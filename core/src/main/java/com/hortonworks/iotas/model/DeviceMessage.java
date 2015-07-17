@@ -32,7 +32,7 @@ public class DeviceMessage {
 
     private String data;
 
-    private Long timestamp = System.currentTimeMillis();
+    protected Long timestamp = System.currentTimeMillis();
 
     public DeviceMessage(){
 
@@ -80,6 +80,10 @@ public class DeviceMessage {
 
     public Long getTimestamp() {
         return this.timestamp;
+    }
+
+    public void setTimestamp(Long timestamp){
+        this.timestamp = timestamp;
     }
 
 }
