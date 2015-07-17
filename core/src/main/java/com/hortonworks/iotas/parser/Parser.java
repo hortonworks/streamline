@@ -18,6 +18,8 @@
 package com.hortonworks.iotas.parser;
 
 
+import com.hortonworks.iotas.common.Schema;
+
 import java.util.Map;
 
 public interface Parser {

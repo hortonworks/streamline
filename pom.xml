@@ -14,4 +14,20 @@
         <module>simulator</module>
         <module>webservice</module>
     </modules>
+
+    <properties>
+        <!-- dependency versions -->
+        <junit.version>4.11</junit.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 </project>

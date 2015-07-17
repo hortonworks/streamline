@@ -15,13 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hortonworks.iotas.parser;
+package com.hortonworks.iotas.common;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Schema {
-    public static enum Type {
+    public enum Type {
         BOOLEAN,
         BYTE, // 8-bit signed integer
         SHORT, // 16-bit
@@ -49,9 +49,28 @@ public class Schema {
         public Type getType(){
             return this.type;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Field)) return false;
+
+            Field field = (Field) o;
+
+            if (name != null ? !name.equals(field.name) : field.name != null) return false;
+            return type == field.type;
+
+        }
+
+        @Override
+        public int hashCode() {
+            int result = name != null ? name.hashCode() : 0;
+            result = 31 * result + (type != null ? type.hashCode() : 0);
+            return result;
+        }
     }
 
-    private List<Field> fields = null;
+    private List<Field> fields;
 
 
     public Schema(){
