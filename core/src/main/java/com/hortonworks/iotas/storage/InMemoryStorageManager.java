@@ -8,23 +8,23 @@ import java.util.concurrent.ConcurrentHashMap;
 //I need to go back and read generics to get the Types correct for now just using the superType storage.
 public class InMemoryStorageManager implements StorageManager {
 
-    private ConcurrentHashMap<String, ConcurrentHashMap<Id, Storable>> storageMap =  new ConcurrentHashMap<String, ConcurrentHashMap<Id, Storable>>();
+    private ConcurrentHashMap<String, ConcurrentHashMap<PrimaryKey, Storable>> storageMap =  new ConcurrentHashMap<String, ConcurrentHashMap<PrimaryKey, Storable>>();
 
     public void add(Storable storable) throws AlreadyExistsException {
         String namespace = storable.getNameSpace();
-        Id id = storable.getId();
+        PrimaryKey id = storable.getPrimaryKey();
         Storable existing = get(namespace, id, storable.getClass());
         if(existing == null) {
             addOrUpdate(storable);
         } else if(existing.equals(storable)) {
             return;
         } else {
-            throw new AlreadyExistsException("Another instnace with same id = " + storable.getId() + " exists with different value in namespace " + namespace +
+            throw new AlreadyExistsException("Another instnace with same id = " + storable.getPrimaryKey() + " exists with different value in namespace " + namespace +
                     " Consider using addOrUpdate method if you always want to overwrite.");
         }
     }
 
-    public void remove(String namespace, Id id) {
+    public void remove(String namespace, PrimaryKey id) {
         if(storageMap.containsKey(namespace)) {
             storageMap.get(namespace).remove(id);
         }
@@ -32,14 +32,14 @@ public class InMemoryStorageManager implements StorageManager {
 
     public void addOrUpdate(Storable storable) {
         String namespace = storable.getNameSpace();
-        Id id = storable.getId();
+        PrimaryKey id = storable.getPrimaryKey();
         if(!storageMap.containsKey(namespace)) {
-            storageMap.putIfAbsent(namespace, new ConcurrentHashMap<Id, Storable>());
+            storageMap.putIfAbsent(namespace, new ConcurrentHashMap<PrimaryKey, Storable>());
         }
         storageMap.get(namespace).put(id, storable);
     }
 
-    public <T extends Storable> T get(String namespace, Id id, Class<T> clazz) throws StorageException {
+    public <T extends Storable> T get(String namespace, PrimaryKey id, Class<T> clazz) throws StorageException {
         return storageMap.containsKey(namespace) ? (T) storageMap.get(namespace).get(id) : null;
     }
 

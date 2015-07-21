@@ -4,11 +4,11 @@ import com.hortonworks.iotas.common.Schema;
 
 import java.util.Map;
 
-public class Id {
+public class PrimaryKey {
 
     private Map<Schema.Field, Object> fieldsToVal;
 
-    public Id(Map<Schema.Field, Object> fieldsToVal) {
+    public PrimaryKey(Map<Schema.Field, Object> fieldsToVal) {
         this.fieldsToVal = fieldsToVal;
     }
 
@@ -22,9 +22,9 @@ public class Id {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Id)) return false;
+        if (!(o instanceof PrimaryKey)) return false;
 
-        Id that = (Id) o;
+        PrimaryKey that = (PrimaryKey) o;
 
         return fieldsToVal.equals(that.fieldsToVal);
 

@@ -68,6 +68,16 @@ public class Schema {
             result = 31 * result + (type != null ? type.hashCode() : 0);
             return result;
         }
+
+        //TODO: need to replace with actual ToJson from Json instead of toString/fromString
+        public String toString() {
+            return this.getName() + "=" + this.getType().name();
+        }
+
+        public static Field fromString(String str) {
+            String[] split = str.split("=");
+            return new Field(split[0], Type.valueOf(split[1]));
+        }
     }
 
     private List<Field> fields;
@@ -91,4 +101,33 @@ public class Schema {
     public List<Field> getFields(){
         return this.fields;
     }
+
+    //TODO: need to replace with actual ToJson from Json
+    public String toString() {
+        if(fields == null) return "null";
+        if(fields.isEmpty()) return "{}";
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        for(Field field : fields) {
+            sb.append(field.toString()).append(",");
+        }
+        return sb.append("}").toString();
+    }
+
+    public static Schema fromString(String str) {
+        if(str.equals("null")) return null;
+        if(str.equals("{}")) return new Schema();
+
+        str = str.replace("{","");
+        str = str.replace("{","");
+
+
+        String[] split = str.split(",");
+        List<Field> fields = new ArrayList<Field>();
+        for(String fieldStr : split) {
+            fields.add(Field.fromString(fieldStr));
+        }
+        return new Schema(fields);
+    }
+
 }

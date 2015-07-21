@@ -27,7 +27,7 @@ public interface Storable {
      * This can be translated to a primary key of a table.
      * of fields.
      */
-    Id getId();
+    PrimaryKey getPrimaryKey();
 
     /**
      * TODO: Following two methods are not needed if we assume all storable entities will have setters and getters

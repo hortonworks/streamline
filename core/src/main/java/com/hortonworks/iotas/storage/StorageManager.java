@@ -12,7 +12,7 @@ import java.util.Collection;
 public interface StorageManager {
     /**
      *
-     * Adds this storable to storage layer, if the storable with same {@code Storable.getId} exists,
+     * Adds this storable to storage layer, if the storable with same {@code Storable.getPrimaryKey} exists,
      * it will do a get and ensure new and old storables instances are equal in which case it will return false.
      * If the old and new instances are not the same it will throw {@code AlreadyExistsException}.
      * Will return true if no existing storable entity was found and the supplied entity gets added successfully.
@@ -30,7 +30,7 @@ public interface StorageManager {
      * @param id
      * @throws StorageException
      */
-    void remove(String namespace, Id id) throws StorageException;
+    void remove(String namespace, PrimaryKey id) throws StorageException;
 
     /**
      * Unlike add, if the storage entity already exists it will be updated if it does not exist it will be creaetd.
@@ -42,14 +42,14 @@ public interface StorageManager {
 
     //TODO I need a 101 on java generics right no to ensure this is how I want to deal with these things.
     /**
-     * Gets the storable entity by using {@code Storable.getId()} as lookup key, return null if no storable entity with
+     * Gets the storable entity by using {@code Storable.getPrimaryKey()} as lookup key, return null if no storable entity with
      * the supplied key is found.
      * @param namespace
      * @param id
      * @return
      * @throws StorageException
      */
-    <T extends Storable> T get(String namespace, Id id, Class<T> clazz) throws StorageException;
+    <T extends Storable> T get(String namespace, PrimaryKey id, Class<T> clazz) throws StorageException;
 
     /**
      * Lists all storable under the given namespace.
