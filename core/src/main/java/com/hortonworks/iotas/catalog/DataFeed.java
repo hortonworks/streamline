@@ -21,12 +21,39 @@ public class DataFeed implements Storable {
     public static final String ENDPOINT = "endpoint";
     public static final String TIME_STAMP = "timestamp";
 
+    /**
+     * Unique Id, this is the primary key.
+     */
     private Long datafeedId;
+
+    /**
+     * Human readable name.
+     */
     private String datafeedName;
+
+    /**
+     * Human readable description.
+     */
     private String description;
+
+    /**
+     * Free form tag strings like "Social, Device, Weather"
+     */
     private String tags;
+
+    /**
+     * Reference to a parserId that defines which parser implementation knows how to parse this feed.
+     */
     private Long parserId;
+
+    /**
+     * Where is the actual data for this feed being pushed. i.e "kafka:\\host1:port\nest-device-data-topic", "twitter:\\twitter-api.host:port\feedname"
+     */
     private String endpoint;
+
+    /**
+     * Time this feed was created/updated.
+     */
     private Long timestamp;
 
     public String getNameSpace() {
@@ -74,6 +101,35 @@ public class DataFeed implements Storable {
         return this;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof DataFeed)) return false;
+
+        DataFeed dataFeed = (DataFeed) o;
+
+        if (!datafeedId.equals(dataFeed.datafeedId)) return false;
+        if (!datafeedName.equals(dataFeed.datafeedName)) return false;
+        if (description != null ? !description.equals(dataFeed.description) : dataFeed.description != null)
+            return false;
+        if (tags != null ? !tags.equals(dataFeed.tags) : dataFeed.tags != null) return false;
+        if (!parserId.equals(dataFeed.parserId)) return false;
+        if (!endpoint.equals(dataFeed.endpoint)) return false;
+        return timestamp.equals(dataFeed.timestamp);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = datafeedId.hashCode();
+        result = 31 * result + datafeedName.hashCode();
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        result = 31 * result + (tags != null ? tags.hashCode() : 0);
+        result = 31 * result + parserId.hashCode();
+        result = 31 * result + endpoint.hashCode();
+        result = 31 * result + timestamp.hashCode();
+        return result;
+    }
 
     public Long getDatafeedId() {
         return datafeedId;
@@ -101,6 +157,19 @@ public class DataFeed implements Storable {
 
     public Long getTimestamp() {
         return timestamp;
+    }
+
+    @Override
+    public String toString() {
+        return "DataFeed{" +
+                "datafeedId=" + datafeedId +
+                ", datafeedName='" + datafeedName + '\'' +
+                ", description='" + description + '\'' +
+                ", tags='" + tags + '\'' +
+                ", parserId=" + parserId +
+                ", endpoint='" + endpoint + '\'' +
+                ", timestamp=" + timestamp +
+                '}';
     }
 
     public class DataFeedBuilder {
