@@ -17,7 +17,7 @@ public class ParserInfo implements Storable {
     public static final String JAR_STORAGE_PATH = "jarStoragePath";
     public static final String SCHEMA = "schema";
     public static final String VERSION = "version";
-    public static final String TIME_STAMP = "timestamp";
+    public static final String TIMESTAMP = "timestamp";
 
     /**
      * Unique Id for a parser info instance. This is the primary key column.
@@ -48,7 +48,7 @@ public class ParserInfo implements Storable {
     /**
      * Time at which this parser was created/updated. //TODO may be we need create and update timestamps.
      */
-    private Long timeStamp;
+    private Long timestamp;
 
 
     public String getNameSpace() {
@@ -69,7 +69,7 @@ public class ParserInfo implements Storable {
                 new Schema.Field(JAR_STORAGE_PATH, Schema.Type.STRING),
                 new Schema.Field(SCHEMA, Schema.Type.STRING),
                 new Schema.Field(VERSION, Schema.Type.LONG),
-                new Schema.Field(TIME_STAMP, Schema.Type.LONG)
+                new Schema.Field(TIMESTAMP, Schema.Type.LONG)
         );
     }
 
@@ -81,7 +81,7 @@ public class ParserInfo implements Storable {
         map.put(JAR_STORAGE_PATH, this.jarStoragePath);
         map.put(SCHEMA, this.schema.toString()); //TODO this needs to be toJson
         map.put(VERSION, this.version);
-        map.put(TIME_STAMP, this.timeStamp);
+        map.put(TIMESTAMP, this.timestamp);
         return map;
     }
 
@@ -92,7 +92,7 @@ public class ParserInfo implements Storable {
         this.jarStoragePath = (String)  map.get(JAR_STORAGE_PATH);
         this.schema = Schema.fromString((String) map.get(SCHEMA)); //TODO this needs to be fromJson
         this.version = (Long)map.get(VERSION);
-        this.timeStamp = (Long)  map.get(TIME_STAMP);
+        this.timestamp = (Long)  map.get(TIMESTAMP);
         return this;
     }
 
@@ -117,8 +117,8 @@ public class ParserInfo implements Storable {
         return version;
     }
 
-    public Long getTimeStamp() {
-        return timeStamp;
+    public Long getTimestamp() {
+        return timestamp;
     }
 
     public static class ParserInfoBuilder {
@@ -128,7 +128,7 @@ public class ParserInfo implements Storable {
         private String jarStoragePath;
         private Schema schema;
         private long version;
-        private long timeStamp;
+        private long timestamp;
 
         public ParserInfoBuilder setParserId(Long parserId) {
             this.parserId = parserId;
@@ -160,8 +160,8 @@ public class ParserInfo implements Storable {
             return this;
         }
 
-        public ParserInfoBuilder setTimeStamp(long timeStamp) {
-            this.timeStamp = timeStamp;
+        public ParserInfoBuilder setTimestamp(long timestamp) {
+            this.timestamp = timestamp;
             return this;
         }
 
@@ -173,7 +173,7 @@ public class ParserInfo implements Storable {
             parserInfo.jarStoragePath = this.jarStoragePath;
             parserInfo.schema = this.schema;
             parserInfo.version = this.version;
-            parserInfo.timeStamp = this.timeStamp;
+            parserInfo.timestamp = this.timestamp;
             return parserInfo;
         }
     }

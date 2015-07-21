@@ -59,8 +59,8 @@ public class Device implements Storable {
 
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<Schema.Field, Object>();
-        fieldToObjectMap.put(new Schema.Field(DEVICE_ID, Schema.Type.STRING), this.DEVICE_ID);
-        fieldToObjectMap.put(new Schema.Field(VERSION, Schema.Type.LONG), this.VERSION);
+        fieldToObjectMap.put(new Schema.Field(DEVICE_ID, Schema.Type.STRING), this.deviceId);
+        fieldToObjectMap.put(new Schema.Field(VERSION, Schema.Type.LONG), this.version);
         return new PrimaryKey(fieldToObjectMap);
     }
 
@@ -120,7 +120,17 @@ public class Device implements Storable {
         return result;
     }
 
-    public class DeviceBuilder {
+    @Override
+    public String toString() {
+        return "Device{" +
+                "deviceId='" + deviceId + '\'' +
+                ", version=" + version +
+                ", dataSourceId=" + dataSourceId +
+                ", timestamp=" + timestamp +
+                '}';
+    }
+
+    public static class DeviceBuilder {
         private String deviceId;
         private Long version;
         private Long dataSourceId;
