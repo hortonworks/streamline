@@ -61,7 +61,7 @@ public class DataSource implements Storable {
 
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<Schema.Field, Object>();
-        fieldToObjectMap.put(new Schema.Field(DATA_SOURCE_ID, Schema.Type.LONG), this.DATA_SOURCE_ID);
+        fieldToObjectMap.put(new Schema.Field(DATA_SOURCE_ID, Schema.Type.LONG), this.dataSourceId);
         return new PrimaryKey(fieldToObjectMap);
     }
 

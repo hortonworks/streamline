@@ -74,7 +74,7 @@ public class DataFeed implements Storable {
 
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<Schema.Field, Object>();
-        fieldToObjectMap.put(new Schema.Field(DATAFEED_ID, Schema.Type.LONG), this.DATAFEED_ID);
+        fieldToObjectMap.put(new Schema.Field(DATAFEED_ID, Schema.Type.LONG), this.datafeedId);
         return new PrimaryKey(fieldToObjectMap);
     }
 
@@ -172,7 +172,7 @@ public class DataFeed implements Storable {
                 '}';
     }
 
-    public class DataFeedBuilder {
+    public static class DataFeedBuilder {
         private Long datafeedId;
         private String datafeedName;
         private String description;
@@ -229,5 +229,4 @@ public class DataFeed implements Storable {
             return dataFeed;
         }
     }
-
 }
