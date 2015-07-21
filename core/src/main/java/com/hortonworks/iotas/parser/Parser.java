@@ -23,13 +23,6 @@ import com.hortonworks.iotas.common.Schema;
 import java.util.Map;
 
 public interface Parser {
-
-    /**
-     * Returns the unique device type associated with this parser.
-     * @return
-     */
-    String deviceType();
-
     /**
      * Returns the device version this parser is associated with. This often
      * corresponds to a particular firmware version.
