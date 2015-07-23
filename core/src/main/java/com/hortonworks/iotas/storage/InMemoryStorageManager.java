@@ -6,14 +6,15 @@ import java.util.concurrent.ConcurrentHashMap;
 
 //TODO: The synchronization is broken right now, so all the methods dont guarantee the semantics as described in the interface.
 //I need to go back and read generics to get the Types correct for now just using the superType storage.
-public class InMemoryStorageManager implements StorageManager {
+public class InMemoryStorageManager<T extends Storable> implements StorageManager {
 
     private ConcurrentHashMap<String, ConcurrentHashMap<PrimaryKey, Storable>> storageMap =  new ConcurrentHashMap<String, ConcurrentHashMap<PrimaryKey, Storable>>();
+    private ConcurrentHashMap<String, Long> sequenceMap = new ConcurrentHashMap<String, Long>();
 
     public void add(Storable storable) throws AlreadyExistsException {
         String namespace = storable.getNameSpace();
         PrimaryKey id = storable.getPrimaryKey();
-        Storable existing = get(namespace, id, storable.getClass());
+        Storable existing = get(namespace, id);
         if(existing == null) {
             addOrUpdate(storable);
         } else if(existing.equals(storable)) {
@@ -39,16 +40,26 @@ public class InMemoryStorageManager implements StorageManager {
         storageMap.get(namespace).put(id, storable);
     }
 
-    public <T extends Storable> T get(String namespace, PrimaryKey id, Class<T> clazz) throws StorageException {
+    public T get(String namespace, PrimaryKey id) throws StorageException {
         return storageMap.containsKey(namespace) ? (T) storageMap.get(namespace).get(id) : null;
     }
 
-    public <T extends Storable> Collection<T> list(String namespace, Class<T> clazz) throws StorageException {
+    public Collection<T> list(String namespace) throws StorageException {
         return (Collection<T>) storageMap.get(namespace).values();
     }
 
     public void cleanup() throws StorageException {
         //no-op
+    }
+
+    public Long nextId(String namespace){
+        Long id = this.sequenceMap.get(namespace);
+        if(id == null){
+            id = 0l;
+        }
+        id++;
+        this.sequenceMap.put(namespace, id);
+        return id;
     }
 
 }

@@ -81,21 +81,6 @@ public class Device implements Storable {
         return this;
     }
 
-    public String getDeviceId() {
-        return deviceId;
-    }
-
-    public Long getVersion() {
-        return version;
-    }
-
-    public Long getDataSourceId() {
-        return dataSourceId;
-    }
-
-    public Long getTimestamp() {
-        return timestamp;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -130,39 +115,35 @@ public class Device implements Storable {
                 '}';
     }
 
-    public static class DeviceBuilder {
-        private String deviceId;
-        private Long version;
-        private Long dataSourceId;
-        private Long timestamp;
+    public String getDeviceId() {
+        return deviceId;
+    }
 
-        public DeviceBuilder setDeviceId(String deviceId) {
-            this.deviceId = deviceId;
-            return this;
-        }
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
+    }
 
-        public DeviceBuilder setVersion(Long version) {
-            this.version = version;
-            return this;
-        }
+    public Long getVersion() {
+        return version;
+    }
 
-        public DeviceBuilder setDataSourceId(Long dataSourceId) {
-            this.dataSourceId = dataSourceId;
-            return this;
-        }
+    public void setVersion(Long version) {
+        this.version = version;
+    }
 
-        public DeviceBuilder setTimestamp(Long timestamp) {
-            this.timestamp = timestamp;
-            return this;
-        }
+    public Long getDataSourceId() {
+        return dataSourceId;
+    }
 
-        public Device createDevice() {
-            Device device = new Device();
-            device.deviceId = this.deviceId;
-            device.version = this.version;
-            device.dataSourceId = this.dataSourceId;
-            device.timestamp = this.timestamp;
-            return device;
-        }
+    public void setDataSourceId(Long dataSourceId) {
+        this.dataSourceId = dataSourceId;
+    }
+
+    public Long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
     }
 }

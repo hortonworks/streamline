@@ -86,80 +86,6 @@ public class DataSource implements Storable {
         return this;
     }
 
-    public Long getDataSourceId() {
-        return dataSourceId;
-    }
-
-    public String getDataSourceName() {
-        return dataSourceName;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public Long getDatafeedId() {
-        return datafeedId;
-    }
-
-    public String getTags() {
-        return tags;
-    }
-
-    public Long getTimestamp() {
-        return timestamp;
-    }
-
-    public static class DataSourceBuilder {
-        private Long dataSourceId;
-        private String dataSourceName;
-        private String description;
-        private Long datafeedId;
-        private String tags;
-        private Long timestamp;
-
-        public DataSourceBuilder setDataSourceId(Long dataSourceId) {
-            this.dataSourceId = dataSourceId;
-            return this;
-        }
-
-        public DataSourceBuilder setDataSourceName(String dataSourceName) {
-            this.dataSourceName = dataSourceName;
-            return this;
-        }
-
-        public DataSourceBuilder setDescription(String description) {
-            this.description = description;
-            return this;
-        }
-
-        public DataSourceBuilder setDatafeedId(Long datafeedId) {
-            this.datafeedId = datafeedId;
-            return this;
-        }
-
-        public DataSourceBuilder setTags(String tags) {
-            this.tags = tags;
-            return this;
-        }
-
-        public DataSourceBuilder setTimestamp(Long timestamp) {
-            this.timestamp = timestamp;
-            return this;
-        }
-
-        public DataSource createDataSource() {
-            DataSource dataSource = new DataSource();
-            dataSource.dataSourceId = this.dataSourceId;
-            dataSource.dataSourceName = this.dataSourceName;
-            dataSource.description = this.description;
-            dataSource.tags = this.tags;
-            dataSource.datafeedId = this.datafeedId;
-            dataSource.timestamp = this.timestamp;
-            return dataSource;
-        }
-    }
-
 
     @Override
     public boolean equals(Object o) {
@@ -198,5 +124,53 @@ public class DataSource implements Storable {
                 ", tags='" + tags + '\'' +
                 ", timestamp=" + timestamp +
                 '}';
+    }
+
+    public Long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public Long getDataSourceId() {
+        return dataSourceId;
+    }
+
+    public void setDataSourceId(Long dataSourceId) {
+        this.dataSourceId = dataSourceId;
+    }
+
+    public String getDataSourceName() {
+        return dataSourceName;
+    }
+
+    public void setDataSourceName(String dataSourceName) {
+        this.dataSourceName = dataSourceName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Long getDatafeedId() {
+        return datafeedId;
+    }
+
+    public void setDatafeedId(Long datafeedId) {
+        this.datafeedId = datafeedId;
+    }
+
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
     }
 }

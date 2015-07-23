@@ -76,71 +76,71 @@ public abstract class AbstractStoreManagerTest {
 
             //test add by inserting the first item in list.
             getStorageManager().add(storable1);
-            Assert.assertEquals(storable1, getStorageManager().get(storable1.getNameSpace(), storable1.getPrimaryKey(), storable1.getClass()));
+            Assert.assertEquals(storable1, getStorageManager().get(storable1.getNameSpace(), storable1.getPrimaryKey()));
 
             //test update by calling addOrUpdate on second item which should have the same primary key value as first item.
             getStorageManager().addOrUpdate(storable2);
-            Assert.assertEquals(storable2, getStorageManager().get(storable1.getNameSpace(), storable1.getPrimaryKey(), storable1.getClass()));
+            Assert.assertEquals(storable2, getStorageManager().get(storable1.getNameSpace(), storable1.getPrimaryKey()));
 
             //add 3rd item, only added so list operation will return more then one item.
             getStorageManager().addOrUpdate(storable3);
-            Assert.assertEquals(storable3, getStorageManager().get(storable3.getNameSpace(), storable3.getPrimaryKey(), storable3.getClass()));
+            Assert.assertEquals(storable3, getStorageManager().get(storable3.getNameSpace(), storable3.getPrimaryKey()));
 
             //test remove by adding 4th item and removin it.
             getStorageManager().addOrUpdate(storable4);
-            Assert.assertEquals(storable4, getStorageManager().get(storable4.getNameSpace(), storable4.getPrimaryKey(), storable4.getClass()));
+            Assert.assertEquals(storable4, getStorageManager().get(storable4.getNameSpace(), storable4.getPrimaryKey()));
             getStorageManager().remove(storable4.getNameSpace(), storable4.getPrimaryKey());
-            Assert.assertNull(getStorageManager().get(storable4.getNameSpace(), storable4.getPrimaryKey(), storable4.getClass()));
+            Assert.assertNull(getStorageManager().get(storable4.getNameSpace(), storable4.getPrimaryKey()));
 
             //The final state of storage layer should only have 2nd item (updated version of 1st item) and 3rd Item.
             Set<Storable> storableSet = new HashSet<Storable>();
             storableSet.add(storable2);
             storableSet.add(storable3);
-            Assert.assertEquals(storableSet, new HashSet(getStorageManager().list(storable2.getNameSpace(), storable2.getClass())));
+            Assert.assertEquals(storableSet, new HashSet(getStorageManager().list(storable2.getNameSpace())));
         }
     }
 
     public static ParserInfo createParserInfo(Long id, String name) {
-        return new ParserInfo.ParserInfoBuilder()
-                .setParserId(id)
-                .setParserName(name)
-                .setClassName("com.org.apache.TestParser")
-                .setJarStoragePath("/tmp/parser.jar")
-                .setSchema(new Schema(new Schema.Field("deviceId", Schema.Type.LONG), new Schema.Field("deviceName", Schema.Type.STRING)))
-                .setVersion(0)
-                .setTimestamp(System.currentTimeMillis())
-                .createParserInfo();
+        ParserInfo pi = new ParserInfo();
+        pi.setParserId(id);
+        pi.setParserName(name);
+        pi.setClassName("com.org.apache.TestParser");
+        pi.setJarStoragePath("/tmp/parser.jar");
+        pi.setSchema(new Schema(new Schema.Field("deviceId", Schema.Type.LONG), new Schema.Field("deviceName", Schema.Type.STRING)));
+        pi.setVersion(0l);
+        pi.setTimestamp(System.currentTimeMillis());
+        return pi;
     }
 
     public static DataFeed createDataFeed(Long id, String name) {
-        return new DataFeed.DataFeedBuilder()
-                .setDatafeedId(id)
-                .setDatafeedName(name)
-                .setDescription("desc")
-                .setEndpoint("kafka://host:port/topic")
-                .setParserId(id)
-                .setTags("a,b,c")
-                .setTimestamp(System.currentTimeMillis())
-                .createDataFeed();
+        DataFeed df = new DataFeed();
+        df.setDatafeedId(id);
+        df.setDatafeedName(name);
+        df.setDescription("desc");
+        df.setEndpoint("kafka://host:port/topic");
+        df.setParserId(id);
+        df.setTags("a,b,c");
+        df.setTimestamp(System.currentTimeMillis());
+        return df;
     }
 
     public static DataSource createDataSource(Long id, String name) {
-        return new DataSource.DataSourceBuilder()
-                .setDatafeedId(id)
-                .setDataSourceId(id)
-                .setDataSourceName(name)
-                .setDescription("desc")
-                .setTags("t1, t2, t3")
-                .setTimestamp(System.currentTimeMillis())
-                .createDataSource();
+        DataSource ds = new DataSource();
+        ds.setDatafeedId(id);
+        ds.setDataSourceId(id);
+        ds.setDataSourceName(name);
+        ds.setDescription("desc");
+        ds.setTags("t1, t2, t3");
+        ds.setTimestamp(System.currentTimeMillis());
+        return ds;
     }
 
     public static Device createDevice(String id, Long version, Long datafeedId) {
-        return new Device.DeviceBuilder()
-                .setDeviceId(id)
-                .setVersion(version)
-                .setDataSourceId(datafeedId)
-                .setTimestamp(System.currentTimeMillis())
-                .createDevice();
+        Device d = new Device();
+        d.setDeviceId(id);
+        d.setVersion(version);
+        d.setDataSourceId(datafeedId);
+        d.setTimestamp(System.currentTimeMillis());
+        return d;
     }
 }

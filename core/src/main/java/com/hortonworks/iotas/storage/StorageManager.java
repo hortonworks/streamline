@@ -9,7 +9,7 @@ import java.util.Collection;
  *
  * I am still not done thinking through the semantics so don't assume this to be concrete APIs.
  */
-public interface StorageManager {
+public interface StorageManager<T> {
     /**
      *
      * Adds this storable to storage layer, if the storable with same {@code Storable.getPrimaryKey} exists,
@@ -49,7 +49,7 @@ public interface StorageManager {
      * @return
      * @throws StorageException
      */
-    <T extends Storable> T get(String namespace, PrimaryKey id, Class<T> clazz) throws StorageException;
+    <T extends Storable> T get(String namespace, PrimaryKey id) throws StorageException;
 
     /**
      * Lists all storable under the given namespace.
@@ -57,7 +57,9 @@ public interface StorageManager {
      * @return
      * @throws StorageException
      */
-    <T extends Storable> Collection<T> list(String namespace, Class<T> clazz) throws StorageException;
+    <T extends Storable> Collection<T> list(String namespace) throws StorageException;
 
     void cleanup() throws StorageException;
+
+    Long nextId(String namespace) throws StorageException;
 }

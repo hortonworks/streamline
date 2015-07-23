@@ -96,85 +96,55 @@ public class ParserInfo implements Storable {
         return this;
     }
 
-
     public Long getParserId() {
         return parserId;
+    }
+
+    public void setParserId(Long parserId) {
+        this.parserId = parserId;
     }
 
     public String getParserName() {
         return parserName;
     }
 
+    public void setParserName(String parserName) {
+        this.parserName = parserName;
+    }
+
     public String getClassName() {
         return className;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
     }
 
     public String getJarStoragePath() {
         return jarStoragePath;
     }
 
+    public void setJarStoragePath(String jarStoragePath) {
+        this.jarStoragePath = jarStoragePath;
+    }
+
+    public void setSchema(Schema schema) {
+        this.schema = schema;
+    }
+
     public Long getVersion() {
         return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 
     public Long getTimestamp() {
         return timestamp;
     }
 
-    public static class ParserInfoBuilder {
-        private Long parserId;
-        private String parserName;
-        private String className;
-        private String jarStoragePath;
-        private Schema schema;
-        private long version;
-        private long timestamp;
-
-        public ParserInfoBuilder setParserId(Long parserId) {
-            this.parserId = parserId;
-            return this;
-        }
-
-        public ParserInfoBuilder setParserName(String parserName) {
-            this.parserName = parserName;
-            return this;
-        }
-
-        public ParserInfoBuilder setClassName(String className) {
-            this.className = className;
-            return this;
-        }
-
-        public ParserInfoBuilder setJarStoragePath(String jarStoragePath) {
-            this.jarStoragePath = jarStoragePath;
-            return this;
-        }
-
-        public ParserInfoBuilder setSchema(Schema schema) {
-            this.schema = schema;
-            return this;
-        }
-
-        public ParserInfoBuilder setVersion(long version) {
-            this.version = version;
-            return this;
-        }
-
-        public ParserInfoBuilder setTimestamp(long timestamp) {
-            this.timestamp = timestamp;
-            return this;
-        }
-
-        public ParserInfo createParserInfo() {
-            ParserInfo parserInfo =  new ParserInfo();
-            parserInfo.parserId = this.parserId;
-            parserInfo.parserName = this.parserName;
-            parserInfo.className = this.className;
-            parserInfo.jarStoragePath = this.jarStoragePath;
-            parserInfo.schema = this.schema;
-            parserInfo.version = this.version;
-            parserInfo.timestamp = this.timestamp;
-            return parserInfo;
-        }
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
     }
 }

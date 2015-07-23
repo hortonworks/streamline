@@ -53,6 +53,7 @@ public class DataFeed implements Storable {
 
     /**
      * Time this feed was created/updated.
+
      */
     private Long timestamp;
 
@@ -131,34 +132,6 @@ public class DataFeed implements Storable {
         return result;
     }
 
-    public Long getDatafeedId() {
-        return datafeedId;
-    }
-
-    public String getDatafeedName() {
-        return datafeedName;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getTags() {
-        return tags;
-    }
-
-    public Long getParserId() {
-        return parserId;
-    }
-
-    public String getEndpoint() {
-        return endpoint;
-    }
-
-    public Long getTimestamp() {
-        return timestamp;
-    }
-
     @Override
     public String toString() {
         return "DataFeed{" +
@@ -172,61 +145,59 @@ public class DataFeed implements Storable {
                 '}';
     }
 
-    public static class DataFeedBuilder {
-        private Long datafeedId;
-        private String datafeedName;
-        private String description;
-        private String tags;
-        private Long parserId;
-        private String endpoint;
-        private Long timestamp;
+    public Long getDatafeedId() {
+        return datafeedId;
+    }
 
-        public DataFeedBuilder setDatafeedId(Long datafeedId) {
-            this.datafeedId = datafeedId;
-            return this;
-        }
+    public void setDatafeedId(Long datafeedId) {
+        this.datafeedId = datafeedId;
+    }
 
-        public DataFeedBuilder setDatafeedName(String datafeedName) {
-            this.datafeedName = datafeedName;
-            return this;
-        }
+    public String getDatafeedName() {
+        return datafeedName;
+    }
 
-        public DataFeedBuilder setDescription(String description) {
-            this.description = description;
-            return this;
-        }
+    public void setDatafeedName(String datafeedName) {
+        this.datafeedName = datafeedName;
+    }
 
-        public DataFeedBuilder setTags(String tags) {
-            this.tags = tags;
-            return this;
-        }
+    public String getDescription() {
+        return description;
+    }
 
-        public DataFeedBuilder setParserId(Long parserId) {
-            this.parserId = parserId;
-            return this;
-        }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-        public DataFeedBuilder setEndpoint(String endpoint) {
-            this.endpoint = endpoint;
-            return this;
-        }
+    public String getTags() {
+        return tags;
+    }
 
-        public DataFeedBuilder setTimestamp(Long timestamp) {
-            this.timestamp = timestamp;
-            return this;
-        }
+    public void setTags(String tags) {
+        this.tags = tags;
+    }
 
-        public DataFeed createDataFeed() {
-            DataFeed dataFeed = new DataFeed();
-            dataFeed.datafeedId = this.datafeedId;
-            dataFeed.datafeedName = this.datafeedName;
-            dataFeed.description = this.description;
-            dataFeed.tags = this.tags;
-            dataFeed.parserId = this.parserId;
-            dataFeed.endpoint = this.endpoint;
-            dataFeed.timestamp = this.timestamp;
+    public Long getParserId() {
+        return parserId;
+    }
 
-            return dataFeed;
-        }
+    public void setParserId(Long parserId) {
+        this.parserId = parserId;
+    }
+
+    public String getEndpoint() {
+        return endpoint;
+    }
+
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
+    }
+
+    public Long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
     }
 }
