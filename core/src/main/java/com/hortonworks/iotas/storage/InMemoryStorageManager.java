@@ -1,12 +1,13 @@
 package com.hortonworks.iotas.storage;
 
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
 //TODO: The synchronization is broken right now, so all the methods dont guarantee the semantics as described in the interface.
 //I need to go back and read generics to get the Types correct for now just using the superType storage.
-public class InMemoryStorageManager<T extends Storable> implements StorageManager {
+public class InMemoryStorageManager implements StorageManager {
 
     private ConcurrentHashMap<String, ConcurrentHashMap<PrimaryKey, Storable>> storageMap =  new ConcurrentHashMap<String, ConcurrentHashMap<PrimaryKey, Storable>>();
     private ConcurrentHashMap<String, Long> sequenceMap = new ConcurrentHashMap<String, Long>();
@@ -40,12 +41,12 @@ public class InMemoryStorageManager<T extends Storable> implements StorageManage
         storageMap.get(namespace).put(id, storable);
     }
 
-    public T get(String namespace, PrimaryKey id) throws StorageException {
+    public <T extends Storable> T get(String namespace, PrimaryKey id) throws StorageException {
         return storageMap.containsKey(namespace) ? (T) storageMap.get(namespace).get(id) : null;
     }
 
-    public Collection<T> list(String namespace) throws StorageException {
-        return (Collection<T>) storageMap.get(namespace).values();
+    public <T extends Storable> Collection<T> list(String namespace) throws StorageException {
+        return storageMap.containsKey(namespace) ? (Collection<T>) storageMap.get(namespace).values() : null;
     }
 
     public void cleanup() throws StorageException {

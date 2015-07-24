@@ -9,7 +9,7 @@ import java.util.Collection;
  *
  * I am still not done thinking through the semantics so don't assume this to be concrete APIs.
  */
-public interface StorageManager<T> {
+public interface StorageManager {
     /**
      *
      * Adds this storable to storage layer, if the storable with same {@code Storable.getPrimaryKey} exists,
