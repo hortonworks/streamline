@@ -42,13 +42,14 @@ public class IotasApplication extends Application<IotasConfiguration> {
 
     @Override
     public void run(IotasConfiguration iotasConfiguration, Environment environment) throws Exception {
-        KafkaProducerManager kafkaProducerManager = new KafkaProducerManager(iotasConfiguration);
-        environment.lifecycle().manage(kafkaProducerManager);
+        // kafka producer shouldn't be starting as part of REST api.
+        // KafkaProducerManager kafkaProducerManager = new KafkaProducerManager(iotasConfiguration);
+        // environment.lifecycle().manage(kafkaProducerManager);
 
-        ZkClient zkClient = new ZkClient(iotasConfiguration.getZookeeperHost());
+        // ZkClient zkClient = new ZkClient(iotasConfiguration.getZookeeperHost());
 
-        final FeedResource feedResource = new FeedResource(kafkaProducerManager.getProducer(), zkClient);
-        environment.jersey().register(feedResource);
+        // final FeedResource feedResource = new FeedResource(kafkaProducerManager.getProducer(), zkClient);
+        // environment.jersey().register(feedResource);
 
         // TODO we should load the implementation based on configuration
         StorageManager manager = new InMemoryStorageManager();
