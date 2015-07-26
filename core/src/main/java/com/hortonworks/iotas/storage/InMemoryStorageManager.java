@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
 //TODO: The synchronization is broken right now, so all the methods dont guarantee the semantics as described in the interface.
-//I need to go back and read generics to get the Types correct for now just using the superType storage.
 public class InMemoryStorageManager implements StorageManager {
 
     private ConcurrentHashMap<String, ConcurrentHashMap<PrimaryKey, Storable>> storageMap =  new ConcurrentHashMap<String, ConcurrentHashMap<PrimaryKey, Storable>>();
@@ -26,10 +25,11 @@ public class InMemoryStorageManager implements StorageManager {
         }
     }
 
-    public void remove(String namespace, PrimaryKey id) {
+    public <T extends Storable> T remove(String namespace, PrimaryKey id) {
         if(storageMap.containsKey(namespace)) {
-            storageMap.get(namespace).remove(id);
+            return (T) storageMap.get(namespace).remove(id);
         }
+        return null;
     }
 
     public void addOrUpdate(Storable storable) {
@@ -62,5 +62,4 @@ public class InMemoryStorageManager implements StorageManager {
         this.sequenceMap.put(namespace, id);
         return id;
     }
-
 }

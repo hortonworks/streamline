@@ -1,5 +1,6 @@
 package com.hortonworks.iotas.catalog;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.PrimaryKey;
@@ -50,17 +51,19 @@ public class ParserInfo implements Storable {
      */
     private Long timestamp;
 
-
+    @JsonIgnore
     public String getNameSpace() {
         return "parser-info";
     }
 
+    @JsonIgnore
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldObjectMap = new HashMap<Schema.Field, Object>();
         fieldObjectMap.put(new Schema.Field(PARSER_ID, Schema.Type.LONG), this.parserId);
         return new PrimaryKey(fieldObjectMap);
     }
 
+    @JsonIgnore
     public Schema getSchema() {
         return new Schema(
                 new Schema.Field(PARSER_ID, Schema.Type.LONG),

@@ -1,6 +1,7 @@
 package com.hortonworks.iotas.catalog;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.storage.PrimaryKey;
 import com.hortonworks.iotas.storage.Storable;
@@ -46,10 +47,12 @@ public class DataSource implements Storable {
      */
     private Long timestamp;
 
+    @JsonIgnore
     public String getNameSpace() {
         return "datasources";
     }
 
+    @JsonIgnore
     public Schema getSchema() {
          return new Schema(new Schema.Field(DATA_SOURCE_ID, Schema.Type.LONG),
                  new Schema.Field(DATA_SOURCE_NAME, Schema.Type.STRING),
@@ -59,6 +62,7 @@ public class DataSource implements Storable {
                  new Schema.Field(TIMESTAMP, Schema.Type.LONG));
     }
 
+    @JsonIgnore
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<Schema.Field, Object>();
         fieldToObjectMap.put(new Schema.Field(DATA_SOURCE_ID, Schema.Type.LONG), this.dataSourceId);
