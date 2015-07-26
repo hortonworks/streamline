@@ -17,12 +17,15 @@
  */
 package com.hortonworks.iotas.webservice;
 
+import com.google.common.collect.Lists;
 import com.hortonworks.iotas.storage.InMemoryStorageManager;
 import com.hortonworks.iotas.storage.StorageManager;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.I0Itec.zkclient.ZkClient;
+
+import java.util.List;
 
 public class IotasApplication extends Application<IotasConfiguration> {
 
@@ -54,7 +57,14 @@ public class IotasApplication extends Application<IotasConfiguration> {
         // TODO we should load the implementation based on configuration
         StorageManager manager = new InMemoryStorageManager();
 
-        final FeedCatalogResource catalogResource = new FeedCatalogResource(manager);
-        environment.jersey().register(catalogResource);
+        final FeedCatalogResource feedResource = new FeedCatalogResource(manager);
+        final ParserInfoCatalogResource parserResource = new ParserInfoCatalogResource(manager);
+        final DataSourceCatalogResource dataSourceResource = new DataSourceCatalogResource(manager);
+        final DeviceCatalogResource deviceResource = new DeviceCatalogResource(manager);
+
+        List<Object> resources = Lists.newArrayList(feedResource, parserResource, dataSourceResource, deviceResource);
+        for(Object resource : resources) {
+            environment.jersey().register(resource);
+        }
     }
 }

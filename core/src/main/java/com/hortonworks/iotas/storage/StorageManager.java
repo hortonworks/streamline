@@ -24,13 +24,14 @@ public interface StorageManager {
 
     /**
      * Removes a storable based on namespace and storableId combination. If the id to remove does not
-     * exist no exception is thrown.
+     * exist no exception is thrown but a null value is returned.
      *
      * @param namespace
      * @param id
+     * @return object that got removed, null if no object was removed.
      * @throws StorageException
      */
-    void remove(String namespace, PrimaryKey id) throws StorageException;
+    <T extends Storable> T remove(String namespace, PrimaryKey id) throws StorageException;
 
     /**
      * Unlike add, if the storage entity already exists it will be updated if it does not exist it will be creaetd.
