@@ -20,6 +20,7 @@ package com.hortonworks.iotas.common;
 import java.util.ArrayList;
 import java.util.List;
 
+//TODO Make this class Jackson Compatible.
 public class Schema {
     public enum Type {
         BOOLEAN,

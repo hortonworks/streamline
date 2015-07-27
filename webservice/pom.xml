@@ -18,6 +18,7 @@
         <scalaVersion>2.9.2</scalaVersion>
         <kafkaArtifact>kafka_2.9.2</kafkaArtifact>
         <dropwizard.version>0.8.2</dropwizard.version>
+        <jersey-media-multipart.version>2.19</jersey-media-multipart.version>
     </properties>
 
     <dependencies>
@@ -94,6 +95,11 @@
                 <!--<artifactId>log4j-core</artifactId>-->
                 <!--<version>2.3</version>-->
             <!--</dependency>-->
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-multipart</artifactId>
+            <version>${jersey-media-multipart.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

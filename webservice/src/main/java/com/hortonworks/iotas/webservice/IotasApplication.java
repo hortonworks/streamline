@@ -24,6 +24,7 @@ import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.I0Itec.zkclient.ZkClient;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 import java.util.List;
 
@@ -58,7 +59,7 @@ public class IotasApplication extends Application<IotasConfiguration> {
         StorageManager manager = new InMemoryStorageManager();
 
         final FeedCatalogResource feedResource = new FeedCatalogResource(manager);
-        final ParserInfoCatalogResource parserResource = new ParserInfoCatalogResource(manager);
+        final ParserInfoCatalogResource parserResource = new ParserInfoCatalogResource(manager, iotasConfiguration);
         final DataSourceCatalogResource dataSourceResource = new DataSourceCatalogResource(manager);
         final DeviceCatalogResource deviceResource = new DeviceCatalogResource(manager);
 
@@ -66,5 +67,6 @@ public class IotasApplication extends Application<IotasConfiguration> {
         for(Object resource : resources) {
             environment.jersey().register(resource);
         }
+        environment.jersey().register(MultiPartFeature.class);
     }
 }

@@ -44,6 +44,12 @@ public class ParserInfo implements Storable {
      */
     private Schema schema;
 
+
+    /**
+     * Parser version.
+     * TODO do we need a version when parserId is uniquly identifying a parser instance?
+     * Or should we remove parserId and make ParserName and version as the PK?
+     */
     private Long version;
 
     /**
