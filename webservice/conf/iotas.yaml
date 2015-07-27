@@ -1,5 +1,6 @@
 brokerList: localhost:9092
 zookeeperHost: localhost:2181
+catalogHomeDir: /tmp
 
 # use the simple server factory if you only want to run on a single port
 #server:

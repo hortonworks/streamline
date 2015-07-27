@@ -29,6 +29,9 @@ public class IotasConfiguration extends Configuration {
     @NotEmpty
     private String zookeeperHost;
 
+    @NotEmpty
+    private String catalogHomeDir;
+
     @JsonProperty
     public String getBrokerList(){
         return this.brokerList;
@@ -39,12 +42,19 @@ public class IotasConfiguration extends Configuration {
         this.brokerList = brokerList;
     }
 
-
     public String getZookeeperHost() {
         return zookeeperHost;
     }
 
     public void setZookeeperHost(String zookeeperHost) {
         this.zookeeperHost = zookeeperHost;
+    }
+
+    public String getCatalogHomeDir() {
+        return catalogHomeDir;
+    }
+
+    public void setCatalogHomeDir(String catalogHomeDir) {
+        this.catalogHomeDir = catalogHomeDir;
     }
 }
