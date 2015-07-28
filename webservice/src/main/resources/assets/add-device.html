@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>IoTas Admin - Add Device</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="./bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- MetisMenu CSS -->
+    <link href="./bower_components/metisMenu/dist/metisMenu.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="./dist/css/sb-admin-2.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="./bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+<body>
+
+    <div id="wrapper">
+
+        <!-- Navigation -->
+        <!-- Navigation -->
+        <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="index.html">Add Device</a>
+            </div>
+            <!-- /.navbar-header -->
+
+            <ul class="nav navbar-top-links navbar-right">
+                <!-- /.dropdown -->
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                        <i class="fa fa-user fa-fw"></i>  <i class="fa fa-caret-down"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-user">
+                        <li><a href="#"><i class="fa fa-user fa-fw"></i> User Profile</a>
+                        </li>
+                        <li><a href="#"><i class="fa fa-gear fa-fw"></i> Settings</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li><a href="login.html"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
+                        </li>
+                    </ul>
+                    <!-- /.dropdown-user -->
+                </li>
+                <!-- /.dropdown -->
+            </ul>
+            <!-- /.navbar-top-links -->
+
+            <div class="navbar-default sidebar" role="navigation">
+                <div class="sidebar-nav navbar-collapse">
+                    <ul class="nav" id="side-menu">
+                        <li class="sidebar-search">
+                            <div class="input-group custom-search-form">
+                                <input type="text" class="form-control" placeholder="Search...">
+                                <span class="input-group-btn">
+                                <button class="btn btn-default" type="button">
+                                    <i class="fa fa-search"></i>
+                                </button>
+                            </span>
+                            </div>
+                            <!-- /input-group -->
+                        </li>
+                        <li>
+                            <a href="index.html"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a>
+                        </li>
+                        <li>
+                            <a href="parsers.html"><i class="fa fa-table fa-fw"></i> Parsers</a>
+                        </li>
+                        <li>
+                            <a href="devices.html"><i class="fa fa-edit fa-fw"></i> Devices</a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fa fa-wrench fa-fw"></i> Advanced Settings<span class="fa arrow"></span></a>
+                            <ul class="nav nav-second-level">
+                                <li>
+                                    <a href="panels-wells.html">Storm Cluster</a>
+                                </li>
+                                <li>
+                                    <a href="buttons.html">Kafka Cluster</a>
+                                </li>
+                            </ul>
+                            <!-- /.nav-second-level -->
+                        </li>
+                    </ul>
+                </div>
+                <!-- /.sidebar-collapse -->
+            </div>
+            <!-- /.navbar-static-side -->
+        </nav>
+
+        <div id="page-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 class="page-header">Add Device</h1>
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            Add Data Feed
+                        </div>
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <form role="form">
+                                      <div class="form-group">
+                                            <label>Data Feed Name</label>
+                                            <input id="feedName" class="form-control" placeholder="Enter Feed Name">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Data Feed Description</label>
+                                            <input id="feedDescription" class="form-control" placeholder="Enter Feed Description">
+                                        </div>
+                                        <div class="form-group">
+                                          <label>Data Feed Tags</label>
+                                          <input id="feedTags" class="form-control" placeholder="Tags">
+                                        </div>
+                                        <div class="form-group" id="parsers-select">
+                                        </div>
+                                        <div class="form-group">
+                                          <label>End Point</label>
+                                          <input id="endpoint" class="form-control" placeholder="EndPoint">
+                                        </div>
+                                </div>
+                                <!-- /.col-lg-6 (nested) -->
+                                <!-- /.col-lg-6 (nested) -->
+                            </div>
+                            <!-- /.row (nested) -->
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                    <!-- /.panel -->
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            Add Data Source
+                        </div>
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <form role="form">
+                                      <div class="form-group">
+                                            <label>Data Source Name</label>
+                                            <input id="sourceName" class="form-control" placeholder="Enter Source Name">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Data Source Description</label>
+                                            <input id="sourceDescription" class="form-control" placeholder="Enter Source Description">
+                                        </div>
+                                        <div class="form-group">
+                                          <label>Data Source Tags</label>
+                                          <input id="sourceTags" class="form-control" placeholder="Tags">
+                                        </div>
+                                </div>
+                                <!-- /.col-lg-6 (nested) -->
+                                <!-- /.col-lg-6 (nested) -->
+                            </div>
+                            <!-- /.row (nested) -->
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                    <!-- /.panel -->
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            Add Device
+                        </div>
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <form role="form">
+                                      <div class="form-group">
+                                            <label>Device ID</label>
+                                            <input id="deviceID" class="form-control" placeholder="Enter Device ID">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Device Version</label>
+                                            <input id="deviceVersion" class="form-control" placeholder="Enter Device Version">
+                                        </div>
+                                        <button id="addDeviceSubmit" type="button" class="btn btn-primary" value="add">Add</button>
+                                    </form>
+
+                                </div>
+                                <!-- /.col-lg-6 (nested) -->
+                                <!-- /.col-lg-6 (nested) -->
+                            </div>
+                            <!-- /.row (nested) -->
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                    <!-- /.panel -->
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->
+        </div>
+        <!-- /#page-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+
+    <!-- jQuery -->
+    <script src="./bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="./js/jquery.mustache.js"></script>
+    <!-- Bootstrap Core JavaScript -->
+    <script src="./bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+
+    <!-- Metis Menu Plugin JavaScript -->
+    <script src="./bower_components/metisMenu/dist/metisMenu.min.js"></script>
+
+    <!-- Custom Theme JavaScript -->
+    <script src="./dist/js/sb-admin-2.js"></script>
+
+    <script type="text/javascript">
+      function addDataFeed() {
+       return jQuery.ajax({
+                   url: "/api/v1/catalog/feeds",
+                   type: "POST",
+                   contentType: 'application/json; charset=utf-8',
+                   dataType: 'json',
+                   data: constructFeedInfo(),
+                   error: function(_, textStatus, errorThrown) {
+                     console.log(textStatus, errorThrown);
+                   },
+                  success: function(response, textStatus) {
+                     console.log(response, textStatus);
+                     return response;
+                  }
+      });
+      }
+
+      function addDataSource(data, textStatus, jqXHR) {
+      return jQuery.ajax({
+      url: "/api/v1/catalog/dataSources",
+      type: "POST",
+      contentType: 'application/json; charset=utf-8',
+      dataType: 'json',
+      data: constructDataSource(jqXHR),
+      error: function(_, textStatus, errorThrown) {
+      console.log(textStatus, errorThrown);
+      },
+      success: function(response, textStatus) {
+      console.log(response, textStatus);
+      }
+      });
+
+      }
+
+      function addDevice(data, textStatus, jqXHR) {
+      return jQuery.ajax({
+      url: "/api/v1/catalog/devices",
+      type: "POST",
+      contentType: 'application/json; charset=utf-8',
+      dataType: 'json',
+      data: constructDevice(jqXHR),
+      error: function(_, textStatus, errorThrown) {
+      console.log(textStatus, errorThrown);
+      },
+      success: function(response, textStatus) {
+      console.log(response, textStatus);
+      window.location.href = '/ui/devices.html?msg='+response['deviceId'];
+      }
+      });
+
+      }
+
+
+      jQuery(document).ready(function() {
+      jQuery("#addDeviceSubmit").click(function() {
+       addDataFeed().then(addDataSource).then(addDevice);
+      });
+
+      });
+      var parsersSelect = $("#parsers-select");
+      $.getJSON("/api/v1/catalog/parsers",function(response,status,jqXHR) {
+      $.get("/ui/templates/parsers-select-template.html", function(template) {
+        parsersSelect.append(Mustache.render($(template).filter("#parsers-select-template").html(),response));
+      });
+      });
+
+
+
+      function constructFeedInfo() {
+           var feedName = jQuery("#feedName").val();
+           var feedDescription = jQuery("#feedDescription").val();
+           var feedTags = jQuery("#feedTags").val();
+           var parserId = jQuery("#parser-select-input").val();
+           var endpoint = jQuery("#endpoint").val();
+           var feedInfo = '{' + '"datafeedName": "' + feedName + '","description": "' + feedDescription + '","tags": "' + feedTags + '", "parserId": "' + parserId + '", "endpoint": "' + endpoint + '"}';
+           return feedInfo;
+      }
+
+      function constructDataSource(jqXHR) {
+      var sourceName = jQuery("#sourceName").val();
+      var sourceDescription = jQuery("#sourceDescription").val();
+      var sourceTags = jQuery("#sourceTags").val();
+      var responseText = jQuery.parseJSON(jqXHR.responseText);
+      var dataFeedId = responseText["datafeedId"];
+      var sourceInfo = '{' + '"dataSourceName": "' + sourceName + '","description": "' + sourceDescription + '","tags": "' + sourceTags + '", "datafeedId": "' + dataFeedId + '"}';
+      return sourceInfo;
+      }
+
+      function constructDevice(jqXHR) {
+      var deviceID = jQuery("#deviceID").val();
+      var deviceVersion = jQuery("#deviceVersion").val();
+      var responseText = jQuery.parseJSON(jqXHR.responseText);
+      var dataSourceId = responseText["dataSourceId"];
+      var deviceInfo = '{' + '"deviceId": "' + deviceID + '","version": "' + deviceVersion + '","dataSourceId": "' + dataSourceId  + '"}';
+      return deviceInfo;
+      }
+
+    </script>
+</body>
+
+</html>

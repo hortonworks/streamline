@@ -10,6 +10,7 @@ catalogHomeDir: /tmp
 #    port: 8080
 
 server:
+  rootPath: '/*'
 #  softNofileLimit: 1000
 #  hardNofileLimit: 1000
   applicationConnectors:
@@ -58,4 +59,3 @@ logging:
 #      archivedFileCount: 7
 #      timeZone: UTC
 #      maxFileSize: 10MB
-

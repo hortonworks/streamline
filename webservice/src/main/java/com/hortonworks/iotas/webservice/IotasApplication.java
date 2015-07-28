@@ -21,6 +21,7 @@ import com.google.common.collect.Lists;
 import com.hortonworks.iotas.storage.InMemoryStorageManager;
 import com.hortonworks.iotas.storage.StorageManager;
 import io.dropwizard.Application;
+import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.I0Itec.zkclient.ZkClient;
@@ -41,6 +42,7 @@ public class IotasApplication extends Application<IotasConfiguration> {
 
     @Override
     public void initialize(Bootstrap<IotasConfiguration> bootstrap) {
+        bootstrap.addBundle(new AssetsBundle("/assets", "/ui", "index.html", "static"));
         super.initialize(bootstrap);
     }
 
