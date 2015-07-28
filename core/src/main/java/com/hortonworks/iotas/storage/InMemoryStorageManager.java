@@ -3,6 +3,7 @@ package com.hortonworks.iotas.storage;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 
 //TODO: The synchronization is broken right now, so all the methods dont guarantee the semantics as described in the interface.
@@ -46,7 +47,7 @@ public class InMemoryStorageManager implements StorageManager {
     }
 
     public <T extends Storable> Collection<T> list(String namespace) throws StorageException {
-        return storageMap.containsKey(namespace) ? (Collection<T>) storageMap.get(namespace).values() : null;
+        return storageMap.containsKey(namespace) ? (Collection<T>) storageMap.get(namespace).values() : Collections.EMPTY_LIST;
     }
 
     public void cleanup() throws StorageException {

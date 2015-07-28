@@ -53,7 +53,7 @@ public interface StorageManager {
     <T extends Storable> T get(String namespace, PrimaryKey id) throws StorageException;
 
     /**
-     * Lists all storable under the given namespace.
+     * Lists all storable under the given namespace, if no entity is found and empty list will be returned.
      * @param namespace
      * @return
      * @throws StorageException
