@@ -58,7 +58,7 @@ public class ParserInfoCatalogResource {
         return this.dao.remove(PARSER_INFO_NAMESPACE, parserInfo.getPrimaryKey());
     }
 
-    //Test curl command curl -X POST -i -F parserJar=@original-webservice-0.1-SNAPSHOT.jar -F parserInfo='{"parserName":"ShitParser","className":"some.shit.class","version":0}' http://localhost:8080/api/v1/catalog/parsers
+    //Test curl command curl -X POST -i -F parserJar=@original-webservice-0.1-SNAPSHOT.jar -F parserInfo='{"parserName":"TestParser","className":"some.test.parserClass","version":0}' http://localhost:8080/api/v1/catalog/parsers
     @Timed
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -76,6 +76,7 @@ public class ParserInfoCatalogResource {
             ByteStreams.copy(inputStream, new FileOutputStream(file));
         }
 
+        //TODO something special about multipart request so it wont let me pass just a ParserInfo json object, instead we must pass ParserInfo as a json string.
         ParserInfo parserInfo = objectMapper.readValue(new StringReader(parserInfoStr), ParserInfo.class);
         if (parserInfo.getParserId() == null) {
             parserInfo.setParserId(this.dao.nextId(PARSER_INFO_NAMESPACE));
@@ -109,5 +110,4 @@ public class ParserInfoCatalogResource {
         };
         return streamOutput;
     }
-
 }
