@@ -51,6 +51,14 @@ public class Schema {
             return this.type;
         }
 
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public void setType(Type type) {
+            this.type = type;
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -101,6 +109,10 @@ public class Schema {
 
     public List<Field> getFields(){
         return this.fields;
+    }
+
+    public void setFields(List<Field> fields) {
+        this.fields = fields;
     }
 
     //TODO: need to replace with actual ToJson from Json
