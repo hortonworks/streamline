@@ -1,6 +1,7 @@
 package com.hortonworks.iotas.webservice;
 
 import com.codahale.metrics.annotation.Timed;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.hortonworks.iotas.catalog.ParserInfo;
@@ -21,6 +22,7 @@ import java.util.Collection;
 public class ParserInfoCatalogResource {
     // TODO should probably make namespace static
     private static final String PARSER_INFO_NAMESPACE = new ParserInfo().getNameSpace();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private StorageManager dao;
     private IotasConfiguration configuration;
@@ -47,20 +49,6 @@ public class ParserInfoCatalogResource {
         return this.dao.<ParserInfo>get(PARSER_INFO_NAMESPACE, parserInfo.getPrimaryKey());
     }
 
-    @POST
-    @Path("/parsers")
-    @Timed
-    public ParserInfo addParserInfo(ParserInfo parserInfo) {
-        if (parserInfo.getParserId() == null) {
-            parserInfo.setParserId(this.dao.nextId(PARSER_INFO_NAMESPACE));
-        }
-        if (parserInfo.getTimestamp() == null) {
-            parserInfo.setTimestamp(System.currentTimeMillis());
-        }
-        this.dao.add(parserInfo);
-        return parserInfo;
-    }
-
     @DELETE
     @Path("/parsers/{id}")
     @Timed
@@ -70,35 +58,40 @@ public class ParserInfoCatalogResource {
         return this.dao.remove(PARSER_INFO_NAMESPACE, parserInfo.getPrimaryKey());
     }
 
-    @PUT
-    @Path("/parsers")
+    //Test curl command curl -X POST -i -F parserJar=@original-webservice-0.1-SNAPSHOT.jar -F parserInfo='{"parserName":"ShitParser","className":"some.shit.class","version":0}' http://localhost:8080/api/v1/catalog/parsers
     @Timed
-    public ParserInfo addOrUpdateParserInfo(ParserInfo parserInfo) {
+    @POST
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Path("/parsers")
+    public ParserInfo addParser(@FormDataParam("parserJar") final InputStream inputStream, @FormDataParam("parserJar") final FormDataContentDisposition contentDispositionHeader,
+                             @FormDataParam("parserInfo") final String parserInfoStr) throws IOException {
+        File file = null;
+        if(contentDispositionHeader != null && contentDispositionHeader.getFileName() != null) {
+            String name = contentDispositionHeader.getFileName();
+            java.nio.file.Path path = FileSystems.getDefault().getPath(configuration.getCatalogHomeDir(), name);
+            file = path.toFile();
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            ByteStreams.copy(inputStream, new FileOutputStream(file));
+        }
+
+        ParserInfo parserInfo = objectMapper.readValue(new StringReader(parserInfoStr), ParserInfo.class);
         if (parserInfo.getParserId() == null) {
             parserInfo.setParserId(this.dao.nextId(PARSER_INFO_NAMESPACE));
         }
         if (parserInfo.getTimestamp() == null) {
             parserInfo.setTimestamp(System.currentTimeMillis());
         }
-        this.dao.addOrUpdate(parserInfo);
+        if (parserInfo.getJarStoragePath() == null) {
+            parserInfo.setJarStoragePath(file.getAbsolutePath());
+        }
+        this.dao.add(parserInfo);
+
         return parserInfo;
     }
 
-    //Test curl command curl -X POST -i  -F file=@original-webservice-0.1-SNAPSHOT.jar http://localhost:8080/api/v1/catalog/parsers/upload
-    @Timed
-    @POST
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Path("/parsers/upload")
-    public String uploadFile(@FormDataParam("file") final InputStream inputStream, @FormDataParam("file") final FormDataContentDisposition contentDispositionHeader) throws IOException {
-        String name = contentDispositionHeader.getFileName();
-        java.nio.file.Path path = FileSystems.getDefault().getPath(configuration.getCatalogHomeDir(), name);
-        File file = path.toFile();
-        if(!file.exists()) {
-            file.createNewFile();
-        }
-        ByteStreams.copy(inputStream, new FileOutputStream(file));
-        return file.getAbsolutePath();
-    }
+    //TODO Still need to implement update/PUT
 
     //TODO, is it better to expect that clients will know the parserId or the jarStoragePath? I like parserId as it
     //hides the storage details from clients.
@@ -106,7 +99,7 @@ public class ParserInfoCatalogResource {
     @GET
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/parsers/download/{parserId}")
-    public StreamingOutput downloadFile(@PathParam("parserId") Long parserId) throws IOException {
+    public StreamingOutput downloadParserJar(@PathParam("parserId") Long parserId) throws IOException {
         ParserInfo parserInfo = getParserInfoById(parserId);
         final InputStream inputStream = new FileInputStream(parserInfo.getJarStoragePath());
         StreamingOutput streamOutput = new StreamingOutput() {

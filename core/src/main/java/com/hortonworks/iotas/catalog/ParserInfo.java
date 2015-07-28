@@ -16,7 +16,7 @@ public class ParserInfo implements Storable {
     public static final String PARSER_NAME = "parserName";
     public static final String CLASS_NAME = "className";
     public static final String JAR_STORAGE_PATH = "jarStoragePath";
-    public static final String SCHEMA = "schema";
+    public static final String SCHEMA = "parserSchema";
     public static final String VERSION = "version";
     public static final String TIMESTAMP = "timestamp";
 
@@ -42,7 +42,7 @@ public class ParserInfo implements Storable {
     /**
      * What schema will {@code Parser} be returned by parser's parse method.
      */
-    private Schema schema;
+    private Schema parserSchema;
 
 
     /**
@@ -88,7 +88,7 @@ public class ParserInfo implements Storable {
         map.put(PARSER_NAME, this.parserName);
         map.put(CLASS_NAME, this.className);
         map.put(JAR_STORAGE_PATH, this.jarStoragePath);
-        map.put(SCHEMA, this.schema.toString()); //TODO this needs to be toJson
+        map.put(SCHEMA, this.parserSchema.toString()); //TODO this needs to be toJson
         map.put(VERSION, this.version);
         map.put(TIMESTAMP, this.timestamp);
         return map;
@@ -99,7 +99,7 @@ public class ParserInfo implements Storable {
         this.parserName = (String)  map.get(PARSER_NAME);
         this.className = (String)  map.get(CLASS_NAME);
         this.jarStoragePath = (String)  map.get(JAR_STORAGE_PATH);
-        this.schema = Schema.fromString((String) map.get(SCHEMA)); //TODO this needs to be fromJson
+        this.parserSchema = Schema.fromString((String) map.get(SCHEMA)); //TODO this needs to be fromJson
         this.version = (Long)map.get(VERSION);
         this.timestamp = (Long)  map.get(TIMESTAMP);
         return this;
@@ -137,8 +137,12 @@ public class ParserInfo implements Storable {
         this.jarStoragePath = jarStoragePath;
     }
 
-    public void setSchema(Schema schema) {
-        this.schema = schema;
+    public Schema getParserSchema() {
+        return this.parserSchema;
+    }
+
+    public void setParserSchema(Schema parserSchema) {
+        this.parserSchema = parserSchema;
     }
 
     public Long getVersion() {
