@@ -22,6 +22,9 @@ import com.hortonworks.iotas.common.Schema;
 
 import java.util.Map;
 
+/**
+ * NEVER MAKE AN ASSUMPTION THAT AN IMPLEMENTATION WILL BE SINGLETON. WE MUCK WITH CLASSLOADERS SO IT IS GUARANTEED THAT ANY IMPLEMENTATION OF THIS CLASS WILL NOT BE A SINGLETON.
+ */
 public interface Parser {
     /**
      * Returns the device version this parser is associated with. This often

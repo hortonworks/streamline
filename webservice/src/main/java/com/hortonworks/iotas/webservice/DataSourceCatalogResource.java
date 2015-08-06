@@ -8,6 +8,8 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.Collection;
 
+//TODO Path should be all lower case.
+
 @Path("/api/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class DataSourceCatalogResource {

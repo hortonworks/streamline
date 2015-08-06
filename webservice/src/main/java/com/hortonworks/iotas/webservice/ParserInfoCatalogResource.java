@@ -3,7 +3,6 @@ package com.hortonworks.iotas.webservice;
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;
-import com.google.common.io.Files;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.storage.StorageManager;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -11,7 +10,6 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.*;
 import java.nio.file.FileSystems;

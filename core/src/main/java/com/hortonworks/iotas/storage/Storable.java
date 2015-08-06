@@ -17,6 +17,8 @@ public interface Storable {
     String getNameSpace();
 
     /**
+     * TODO: Get a better name.
+     *
      * The actual columns for this storable entity and its types.
      * @return
      */

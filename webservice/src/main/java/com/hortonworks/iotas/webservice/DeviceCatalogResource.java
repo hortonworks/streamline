@@ -29,9 +29,9 @@ public class DeviceCatalogResource {
 
     //TODO: This isn't working because "deviceId" param is null, need to debug.
     @GET
-    @Path("/devices/{id}-{version}")
+    @Path("/devices/{id}/{version}")
     @Timed
-    public Device getDeviceById(@PathParam("deviceId") String deviceId, @PathParam("version") Long version) {
+    public Device getDeviceById(@PathParam("id") String deviceId, @PathParam("version") Long version) {
         Device device = new Device();
         device.setDeviceId(deviceId);
         device.setVersion(version);
@@ -50,7 +50,7 @@ public class DeviceCatalogResource {
     }
 
     @DELETE
-    @Path("/devices/{id}-{version}")
+    @Path("/devices/{id}/{version}")
     @Timed
     public Device removeParser(@PathParam("id") String deviceId,  @PathParam("version") Long version) {
         Device device = new Device();
