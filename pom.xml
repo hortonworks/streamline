@@ -13,6 +13,7 @@
         <module>core</module>
         <module>simulator</module>
         <module>webservice</module>
+        <module>storm</module>
     </modules>
 
     <properties>

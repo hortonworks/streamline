@@ -1,4 +1,4 @@
-package com.hortonworks.iotas.common;
+package com.hortonworks.util;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +13,7 @@ import java.util.jar.JarFile;
 public class ReflectionHelper {
     private static final Class[] parameters = new Class[]{URL.class};
 
-    public static void addJarToClassPath(String jarFilePath) throws IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public static void loadJarAndAllItsClasses(String jarFilePath) throws IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         URL u = (new File(jarFilePath).toURI().toURL());
         URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
         Class sysclass = URLClassLoader.class;
@@ -29,7 +29,6 @@ public class ReflectionHelper {
             method.setAccessible(isAccesible);
         }
 
-        //TODO: Don't see a scenario where jar is added to classpath but we don't want to load all of its classes.
         loadAllClassesFromJar(jarFilePath);
     }
 
@@ -39,7 +38,7 @@ public class ReflectionHelper {
      * @throws ClassNotFoundException
      * @throws IOException
      */
-    public static void loadAllClassesFromJar(String jarFilePath) throws ClassNotFoundException, IOException {
+    private static void loadAllClassesFromJar(String jarFilePath) throws ClassNotFoundException, IOException {
         JarFile jarFile = new JarFile(jarFilePath);
         URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
         Enumeration e = jarFile.entries();
@@ -55,6 +54,11 @@ public class ReflectionHelper {
         }
     }
 
+    /**
+     * THIS WILL ONLY TELL IF A JAR IS IN CLASSPATH, JARS LOADED DYNAMICALLY USING loadJarAndAllItsClasses WILL STILL RETURN FALSE.
+     * @param jarFieName
+     * @return
+     */
     public synchronized static boolean isJarInClassPath(String jarFieName) {
         String classpath = System.getProperty("java.class.path");
         //TODO: need to do better than this.

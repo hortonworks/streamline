@@ -137,6 +137,19 @@ public class ParserInfo implements Storable {
         this.jarStoragePath = jarStoragePath;
     }
 
+    @Override
+    public String toString() {
+        return "ParserInfo{" +
+                "parserId=" + parserId +
+                ", parserName='" + parserName + '\'' +
+                ", className='" + className + '\'' +
+                ", jarStoragePath='" + jarStoragePath + '\'' +
+                ", parserSchema=" + parserSchema +
+                ", version=" + version +
+                ", timestamp=" + timestamp +
+                '}';
+    }
+
     public Schema getParserSchema() {
         return this.parserSchema;
     }
