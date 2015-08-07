@@ -82,9 +82,7 @@ public class ParserInfoCatalogResource {
         if (parserInfo.getTimestamp() == null) {
             parserInfo.setTimestamp(System.currentTimeMillis());
         }
-        if (parserInfo.getJarStoragePath() == null) {
-            parserInfo.setJarStoragePath(file.getAbsolutePath());
-        }
+        parserInfo.setJarStoragePath(file.getAbsolutePath());
         this.dao.add(parserInfo);
 
         return parserInfo;
