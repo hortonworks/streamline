@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.storage.StorageManager;
+import com.hortonworks.util.JarStorage;
+import com.hortonworks.util.ReflectionHelper;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
@@ -24,10 +26,17 @@ public class ParserInfoCatalogResource {
 
     private StorageManager dao;
     private IotasConfiguration configuration;
+    private JarStorage jarStorage;
 
     public ParserInfoCatalogResource(StorageManager manager, IotasConfiguration configuration) {
         this.dao = manager;
         this.configuration = configuration;
+        try {
+            this.jarStorage = ReflectionHelper.newInstance(this.configuration
+                    .getJarStorageImplementationClass());
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     @GET
@@ -63,15 +72,11 @@ public class ParserInfoCatalogResource {
     @Path("/parsers")
     public ParserInfo addParser(@FormDataParam("parserJar") final InputStream inputStream, @FormDataParam("parserJar") final FormDataContentDisposition contentDispositionHeader,
                              @FormDataParam("parserInfo") final String parserInfoStr) throws IOException {
-        File file = null;
+        String name = "";
         if(contentDispositionHeader != null && contentDispositionHeader.getFileName() != null) {
-            String name = contentDispositionHeader.getFileName();
-            java.nio.file.Path path = FileSystems.getDefault().getPath(configuration.getCatalogHomeDir(), name);
-            file = path.toFile();
-            if (!file.exists()) {
-                file.createNewFile();
-            }
-            ByteStreams.copy(inputStream, new FileOutputStream(file));
+            name = contentDispositionHeader.getFileName();
+            this.jarStorage.uploadJar(inputStream, name);
+            inputStream.close();
         }
 
         //TODO something special about multipart request so it wont let me pass just a ParserInfo json object, instead we must pass ParserInfo as a json string.
@@ -82,9 +87,8 @@ public class ParserInfoCatalogResource {
         if (parserInfo.getTimestamp() == null) {
             parserInfo.setTimestamp(System.currentTimeMillis());
         }
-        parserInfo.setJarStoragePath(file.getAbsolutePath());
+        parserInfo.setJarStoragePath(name);
         this.dao.add(parserInfo);
-
         return parserInfo;
     }
 
@@ -98,7 +102,6 @@ public class ParserInfoCatalogResource {
     @Path("/parsers/download/{parserId}")
     public StreamingOutput downloadParserJar(@PathParam("parserId") Long parserId) throws IOException {
         ParserInfo parserInfo = getParserInfoById(parserId);
-        final InputStream inputStream = new FileInputStream(parserInfo.getJarStoragePath());
         StreamingOutput streamOutput = new StreamingOutput() {
             public void write(OutputStream os) throws IOException, WebApplicationException {
                 ByteStreams.copy(inputStream, os);
