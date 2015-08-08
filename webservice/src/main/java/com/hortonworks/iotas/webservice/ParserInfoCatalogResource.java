@@ -102,6 +102,7 @@ public class ParserInfoCatalogResource {
     @Path("/parsers/download/{parserId}")
     public StreamingOutput downloadParserJar(@PathParam("parserId") Long parserId) throws IOException {
         ParserInfo parserInfo = getParserInfoById(parserId);
+        final InputStream inputStream = this.jarStorage.downloadJar(parserInfo.getJarStoragePath());
         StreamingOutput streamOutput = new StreamingOutput() {
             public void write(OutputStream os) throws IOException, WebApplicationException {
                 ByteStreams.copy(inputStream, os);
