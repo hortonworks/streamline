@@ -24,7 +24,7 @@ public class NestTopology {
         Config conf = new Config();
         conf.setDebug(true);
         conf.put(ParserBolt.CATALOG_ROOT_URL, "http://localhost:8080/api/v1/catalog");
-        conf.put(ParserBolt.LOCAL_PARSER_JAR_PATH, "/Users/pbrahmbhatt/backup");
+        conf.put(ParserBolt.LOCAL_PARSER_JAR_PATH, "/tmp");
 
         if (args != null && args.length > 0) {
             StormSubmitter.submitTopologyWithProgressBar(args[0], conf, builder.createTopology());
