@@ -73,30 +73,16 @@ public class ParserBolt extends BaseRichBolt {
         ParserInfo parserInfo = client.getParserInfo(header.getDeviceId(), header.getVersion());
         InputStream parserJar = client.getParserJar(parserInfo.getParserId());
         String jarPath = String.format("%s%s%s-%s.jar", localParserJarPath, File.pathSeparator, header.getDeviceId(), header.getVersion());
-        try {
-            IOUtils.copy(parserJar, new FileOutputStream(new File(jarPath)));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
 
         try {
+            IOUtils.copy(parserJar, new FileOutputStream(new File(jarPath)));
             if (!ReflectionHelper.isJarInClassPath(jarPath) && !ReflectionHelper.isClassLoaded(parserInfo.getClassName())) {
                 ReflectionHelper.loadJarAndAllItsClasses(jarPath);
             }
 
             return ReflectionHelper.newInstance(parserInfo.getClassName());
 
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (InstantiationException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
