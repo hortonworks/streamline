@@ -106,7 +106,7 @@ public abstract class AbstractStoreManagerTest {
         pi.setParserName(name);
         pi.setClassName("com.org.apache.TestParser");
         pi.setJarStoragePath("/tmp/parser.jar");
-        pi.setParserSchema(new Schema(new Schema.Field("deviceId", Schema.Type.LONG), new Schema.Field("deviceName", Schema.Type.STRING)));
+        pi.setParserSchema(new Schema.SchemaBuilder().fields(new Schema.Field("deviceId", Schema.Type.LONG), new Schema.Field("deviceName", Schema.Type.STRING)).build());
         pi.setVersion(0l);
         pi.setTimestamp(System.currentTimeMillis());
         return pi;

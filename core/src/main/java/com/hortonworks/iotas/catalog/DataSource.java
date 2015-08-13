@@ -54,12 +54,12 @@ public class DataSource implements Storable {
 
     @JsonIgnore
     public Schema getSchema() {
-         return new Schema(new Schema.Field(DATA_SOURCE_ID, Schema.Type.LONG),
+         return new Schema.SchemaBuilder().fields(new Schema.Field(DATA_SOURCE_ID, Schema.Type.LONG),
                  new Schema.Field(DATA_SOURCE_NAME, Schema.Type.STRING),
                  new Schema.Field(DESCRIPTION, Schema.Type.STRING),
                  new Schema.Field(DATAFEED_ID, Schema.Type.LONG),
                  new Schema.Field(TAGS, Schema.Type.STRING),
-                 new Schema.Field(TIMESTAMP, Schema.Type.LONG));
+                 new Schema.Field(TIMESTAMP, Schema.Type.LONG)).build();
     }
 
     @JsonIgnore
