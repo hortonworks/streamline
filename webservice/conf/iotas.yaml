@@ -1,6 +1,8 @@
 brokerList: localhost:9092
 zookeeperHost: localhost:2181
-catalogHomeDir: /tmp
+#class presumed to be in classpath which will be loaded to upload/download
+#parser jar files
+jarStorageImplementationClass: "com.hortonworks.util.FileSystemJarStorage"
 
 # use the simple server factory if you only want to run on a single port
 #server:

@@ -7,20 +7,9 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
-import com.hortonworks.client.RestClient;
-import com.hortonworks.iotas.catalog.ParserInfo;
-import com.hortonworks.iotas.parser.Parser;
-import com.hortonworks.util.ReflectionHelper;
-import org.apache.commons.io.IOUtils;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 
 public class AddDeviceIdAndVersionHeaderBolt extends BaseRichBolt {

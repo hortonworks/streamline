@@ -30,7 +30,7 @@ public class IotasConfiguration extends Configuration {
     private String zookeeperHost;
 
     @NotEmpty
-    private String catalogHomeDir;
+    private String jarStorageImplementationClass;
 
     @JsonProperty
     public String getBrokerList(){
@@ -50,11 +50,11 @@ public class IotasConfiguration extends Configuration {
         this.zookeeperHost = zookeeperHost;
     }
 
-    public String getCatalogHomeDir() {
-        return catalogHomeDir;
+    public String getJarStorageImplementationClass () {
+        return this.jarStorageImplementationClass;
     }
 
-    public void setCatalogHomeDir(String catalogHomeDir) {
-        this.catalogHomeDir = catalogHomeDir;
+    public void setJarStorageImplementationClass (String jarStorageImplementationClass) {
+        this.jarStorageImplementationClass = jarStorageImplementationClass;
     }
 }
