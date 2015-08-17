@@ -29,7 +29,7 @@ public class ParserBolt extends BaseRichBolt {
     private OutputCollector collector;
     private RestClient client;
     private String localParserJarPath;
-    private static Map<Header, Parser> headerToParserMap = new ConcurrentHashMap<Header, Parser>();
+    private static ConcurrentHashMap<Header, Parser> headerToParserMap = new ConcurrentHashMap<Header, Parser>();
 
     //TODO, This should actually be coming from an admin or some config.
     private static final Fields outputFields = new Fields("userId", "temperature", "eventTime", "longitude", "latitude");
@@ -69,42 +69,31 @@ public class ParserBolt extends BaseRichBolt {
         }
     }
 
+    private Parser loadParser(Header header) {
+        ParserInfo parserInfo = client.getParserInfo(header.getDeviceId(), header.getVersion());
+        InputStream parserJar = client.getParserJar(parserInfo.getParserId());
+        String jarPath = String.format("%s%s%s-%s.jar", localParserJarPath, File.pathSeparator, header.getDeviceId(), header.getVersion());
+
+        try {
+            IOUtils.copy(parserJar, new FileOutputStream(new File(jarPath)));
+            if (!ReflectionHelper.isJarInClassPath(jarPath) && !ReflectionHelper.isClassLoaded(parserInfo.getClassName())) {
+                ReflectionHelper.loadJarAndAllItsClasses(jarPath);
+            }
+
+            return ReflectionHelper.newInstance(parserInfo.getClassName());
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private Parser getParser(Header header) {
         Parser parser = headerToParserMap.get(header);
         if (parser == null) {
-            synchronized (headerToParserMap) {
-                parser = headerToParserMap.get(header);
-                if (parser == null) {
-                    ParserInfo parserInfo = client.getParserInfo(header.getDeviceId(), header.getVersion());
-                    InputStream parserJar = client.getParserJar(parserInfo.getParserId());
-                    String jarPath = String.format("%s%s%s-%s.jar", localParserJarPath, File.pathSeparator, header.getDeviceId(), header.getVersion());
-                    try {
-                        IOUtils.copy(parserJar, new FileOutputStream(new File(jarPath)));
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                    try {
-                        if (!ReflectionHelper.isJarInClassPath(jarPath) && !ReflectionHelper.isClassLoaded(parserInfo.getClassName())) {
-                            ReflectionHelper.loadJarAndAllItsClasses(jarPath);
-                        }
-
-                        parser = ReflectionHelper.newInstance(parserInfo.getClassName());
-                        headerToParserMap.put(header, parser);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    } catch (ClassNotFoundException e) {
-                        throw new RuntimeException(e);
-                    } catch (NoSuchMethodException e) {
-                        throw new RuntimeException(e);
-                    } catch (InvocationTargetException e) {
-                        throw new RuntimeException(e);
-                    } catch (IllegalAccessException e) {
-                        throw new RuntimeException(e);
-                    } catch (InstantiationException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
+            Parser loadedParser = loadParser(header);
+            parser = headerToParserMap.putIfAbsent(header, loadedParser);
+            if (parser == null) {
+                parser = loadedParser;
             }
         }
         return parser;

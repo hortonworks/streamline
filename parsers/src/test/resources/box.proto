@@ -1,0 +1,4 @@
+message Box {
+    required Point topLeft = 3;
+    required Point bottomRight = 5;
+}

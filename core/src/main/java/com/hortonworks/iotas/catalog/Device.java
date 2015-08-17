@@ -8,6 +8,8 @@ import com.hortonworks.iotas.storage.Storable;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.hortonworks.iotas.common.Schema.Field;
+
 
 /**
  * The device storage entity that will capture the actual device related information for admin.
@@ -54,10 +56,10 @@ public class Device implements Storable {
 
     @JsonIgnore
     public Schema getSchema() {
-        return new Schema(new Schema.Field(DEVICE_ID, Schema.Type.STRING),
-                new Schema.Field(DATA_SOURCE_ID, Schema.Type.LONG),
-                new Schema.Field(VERSION, Schema.Type.LONG),
-                new Schema.Field(TIMESTAMP, Schema.Type.LONG));
+        return new Schema.SchemaBuilder().fields(new Field(DEVICE_ID, Schema.Type.STRING),
+                                                 new Field(DATA_SOURCE_ID, Schema.Type.LONG),
+                                                 new Field(VERSION, Schema.Type.LONG),
+                                                 new Field(TIMESTAMP, Schema.Type.LONG)).build();
     }
 
     @JsonIgnore

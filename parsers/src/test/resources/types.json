@@ -1,0 +1,6 @@
+{
+  "intfield" : 100,
+  "booleanfield": true,
+  "stringfield": "hello",
+  "nullfield": null
+}

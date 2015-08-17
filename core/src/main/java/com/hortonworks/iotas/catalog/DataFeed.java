@@ -65,7 +65,7 @@ public class DataFeed implements Storable {
 
     @JsonIgnore
     public Schema getSchema() {
-        return new Schema(
+        return new Schema.SchemaBuilder().fields(
                 new Schema.Field(DATAFEED_ID, Schema.Type.LONG),
                 new Schema.Field(DATAFEED_NAME, Schema.Type.STRING),
                 new Schema.Field(DESCRIPTION, Schema.Type.STRING),
@@ -73,7 +73,7 @@ public class DataFeed implements Storable {
                 new Schema.Field(PARSER_ID, Schema.Type.LONG),
                 new Schema.Field(ENDPOINT, Schema.Type.STRING),
                 new Schema.Field(TIME_STAMP, Schema.Type.LONG)
-        );
+        ).build();
     }
 
     @JsonIgnore

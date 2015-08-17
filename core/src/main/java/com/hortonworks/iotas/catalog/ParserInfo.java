@@ -71,7 +71,7 @@ public class ParserInfo implements Storable {
 
     @JsonIgnore
     public Schema getSchema() {
-        return new Schema(
+        return new Schema.SchemaBuilder().fields(
                 new Schema.Field(PARSER_ID, Schema.Type.LONG),
                 new Schema.Field(PARSER_NAME, Schema.Type.STRING),
                 new Schema.Field(CLASS_NAME, Schema.Type.STRING),
@@ -79,7 +79,7 @@ public class ParserInfo implements Storable {
                 new Schema.Field(SCHEMA, Schema.Type.STRING),
                 new Schema.Field(VERSION, Schema.Type.LONG),
                 new Schema.Field(TIMESTAMP, Schema.Type.LONG)
-        );
+        ).build();
     }
 
     public Map toMap() {

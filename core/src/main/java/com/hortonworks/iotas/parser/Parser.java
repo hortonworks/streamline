@@ -20,6 +20,7 @@ package com.hortonworks.iotas.parser;
 
 import com.hortonworks.iotas.common.Schema;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,11 +41,34 @@ public interface Parser {
     Schema schema();
 
     /**
-     * Given a byte array of raw data from a device, returns a set of key-value
+     * Given a byte array, returns a set of key-value
      * pairs conforming to the parser's Schema.
      * @param data
      * @return
      */
-    Map<String, Object> parse(byte[] data);
+    Map<String, Object> parse(byte[] data) throws ParseException;
+
+    /**
+     * Parse method that accepts the data in String format.
+     * @param data
+     * @return
+     */
+    Map<String, Object> parse(String data) throws ParseException;
+
+    /**
+     * <p>Given a byte array, returns a List of values conforming to the parser's Schema. </p>
+     * <p>This can be used to receive just the field data.</p>
+     * @param data the raw data bytes
+     * @return the List of data conforming to {@link Schema#getFields()}
+     */
+    List<Object> parseFields(byte[] data) throws ParseException;
+
+
+    /**
+     * ParseFields method that accepts the data in String format.
+     * @param data
+     * @return
+     */
+    List<Object> parseFields(String data) throws ParseException;
 
 }

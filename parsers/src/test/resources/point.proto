@@ -1,0 +1,5 @@
+message Point {
+    required int32 x = 1;
+    required sint32 y = 2;
+    optional int32 color = 3;
+}
