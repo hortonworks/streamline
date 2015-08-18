@@ -18,6 +18,14 @@ public class DataSource implements Storable {
     public static final String TIMESTAMP = "timestamp";
 
     /**
+     * The known types of data sources.
+     */
+    public static enum Type {
+        DEVICE,
+        UNKNOWN;
+    }
+
+    /**
      * Unique identifier. This is the primary key.
      */
     private Long dataSourceId;
@@ -33,11 +41,6 @@ public class DataSource implements Storable {
     private String description;
 
     /**
-     * Reference to the datafeed that this data source is going to generate.
-     */
-    private Long datafeedId;
-
-    /**
      * Free form tags.
      */
     private String tags;
@@ -46,6 +49,16 @@ public class DataSource implements Storable {
      * Time when this entry was created/updated.
      */
     private Long timestamp;
+
+    /**
+     * The type of the datasource e.g. 'DEVICE'
+     */
+    private Type type;
+
+    /**
+     * The config string specific to the type. e.g. Device Config.
+     */
+    private String typeConfig;
 
     @JsonIgnore
     public String getNameSpace() {
@@ -71,11 +84,9 @@ public class DataSource implements Storable {
 
     public Map toMap() {
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put(DATA_SOURCE_ID, this.datafeedId);
         map.put(DATA_SOURCE_NAME, this.dataSourceName);
         map.put(DESCRIPTION, this.description);
         map.put(TAGS, this.tags);
-        map.put(DATAFEED_ID, this.datafeedId);
         map.put(TIMESTAMP, this.timestamp);
         return map;
     }
@@ -85,7 +96,6 @@ public class DataSource implements Storable {
         this.dataSourceName = (String)  map.get(DATA_SOURCE_NAME);
         this.description = (String)  map.get(DESCRIPTION);
         this.tags = (String)  map.get(TAGS);
-        this.datafeedId = (Long) map.get(DATAFEED_ID);
         this.timestamp = (Long) map.get(TIMESTAMP);
         return this;
     }
@@ -94,27 +104,30 @@ public class DataSource implements Storable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof DataSource)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
 
         DataSource that = (DataSource) o;
 
-        if (!dataSourceId.equals(that.dataSourceId)) return false;
-        if (!dataSourceName.equals(that.dataSourceName)) return false;
+        if (dataSourceId != null ? !dataSourceId.equals(that.dataSourceId) : that.dataSourceId != null) return false;
+        if (dataSourceName != null ? !dataSourceName.equals(that.dataSourceName) : that.dataSourceName != null)
+            return false;
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
-        if (!datafeedId.equals(that.datafeedId)) return false;
         if (tags != null ? !tags.equals(that.tags) : that.tags != null) return false;
-        return timestamp.equals(that.timestamp);
+        if (timestamp != null ? !timestamp.equals(that.timestamp) : that.timestamp != null) return false;
+        if (type != null ? !type.equals(that.type) : that.type != null) return false;
+        return !(typeConfig != null ? !typeConfig.equals(that.typeConfig) : that.typeConfig != null);
 
     }
 
     @Override
     public int hashCode() {
-        int result = dataSourceId.hashCode();
-        result = 31 * result + dataSourceName.hashCode();
+        int result = dataSourceId != null ? dataSourceId.hashCode() : 0;
+        result = 31 * result + (dataSourceName != null ? dataSourceName.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
-        result = 31 * result + datafeedId.hashCode();
         result = 31 * result + (tags != null ? tags.hashCode() : 0);
-        result = 31 * result + timestamp.hashCode();
+        result = 31 * result + (timestamp != null ? timestamp.hashCode() : 0);
+        result = 31 * result + (type != null ? type.hashCode() : 0);
+        result = 31 * result + (typeConfig != null ? typeConfig.hashCode() : 0);
         return result;
     }
 
@@ -124,9 +137,10 @@ public class DataSource implements Storable {
                 "dataSourceId=" + dataSourceId +
                 ", dataSourceName='" + dataSourceName + '\'' +
                 ", description='" + description + '\'' +
-                ", datafeedId=" + datafeedId +
                 ", tags='" + tags + '\'' +
                 ", timestamp=" + timestamp +
+                ", type=" + type +
+                ", typeConfig='" + typeConfig + '\'' +
                 '}';
     }
 
@@ -162,19 +176,27 @@ public class DataSource implements Storable {
         this.description = description;
     }
 
-    public Long getDatafeedId() {
-        return datafeedId;
-    }
-
-    public void setDatafeedId(Long datafeedId) {
-        this.datafeedId = datafeedId;
-    }
-
     public String getTags() {
         return tags;
     }
 
     public void setTags(String tags) {
         this.tags = tags;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    public String getTypeConfig() {
+        return typeConfig;
+    }
+
+    public void setTypeConfig(String typeConfig) {
+        this.typeConfig = typeConfig;
     }
 }

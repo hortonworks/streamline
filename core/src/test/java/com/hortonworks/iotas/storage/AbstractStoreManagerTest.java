@@ -41,7 +41,7 @@ public abstract class AbstractStoreManagerTest {
 
     List<Storable> devices = new ArrayList<Storable>() {{
         add(createDevice("device-1", 0l, 0l));
-        add(createDevice("device-1", 0l, 1l));//deviceId and version is composite key.
+        add(createDevice("device-1", 1l, 0l));
         add(createDevice("device-2", 2l, 2l));
         add(createDevice("device-3", 3l, 3l));
     }};
@@ -114,8 +114,9 @@ public abstract class AbstractStoreManagerTest {
 
     public static DataFeed createDataFeed(Long id, String name) {
         DataFeed df = new DataFeed();
-        df.setDatafeedId(id);
-        df.setDatafeedName(name);
+        df.setDataFeedId(id);
+        df.setDataSourceId(1L);
+        df.setDataFeedName(name);
         df.setDescription("desc");
         df.setEndpoint("kafka://host:port/topic");
         df.setParserId(id);
@@ -126,7 +127,6 @@ public abstract class AbstractStoreManagerTest {
 
     public static DataSource createDataSource(Long id, String name) {
         DataSource ds = new DataSource();
-        ds.setDatafeedId(id);
         ds.setDataSourceId(id);
         ds.setDataSourceName(name);
         ds.setDescription("desc");
@@ -140,7 +140,6 @@ public abstract class AbstractStoreManagerTest {
         d.setDeviceId(id);
         d.setVersion(version);
         d.setDataSourceId(datafeedId);
-        d.setTimestamp(System.currentTimeMillis());
         return d;
     }
 }

@@ -14,8 +14,9 @@ import java.util.Map;
  */
 public class DataFeed implements Storable {
 
-    public static final String DATAFEED_ID = "datafeedId";
-    public static final String DATAFEED_NAME = "datafeedName";
+    public static final String DATAFEED_ID = "dataFeedId";
+    public static final String DATASOURCE_ID = "dataSourceId";
+    public static final String DATAFEED_NAME = "dataFeedName";
     public static final String DESCRIPTION = "description";
     public static final String TAGS = "tags";
     public static final String PARSER_ID = "parserId";
@@ -25,12 +26,17 @@ public class DataFeed implements Storable {
     /**
      * Unique Id, this is the primary key.
      */
-    private Long datafeedId;
+    private Long dataFeedId;
+
+    /**
+     * The foreign key reference to data source.
+     */
+    private Long dataSourceId;
 
     /**
      * Human readable name.
      */
-    private String datafeedName;
+    private String dataFeedName;
 
     /**
      * Human readable description.
@@ -67,6 +73,7 @@ public class DataFeed implements Storable {
     public Schema getSchema() {
         return new Schema.SchemaBuilder().fields(
                 new Schema.Field(DATAFEED_ID, Schema.Type.LONG),
+                new Schema.Field(DATASOURCE_ID, Schema.Type.STRING),
                 new Schema.Field(DATAFEED_NAME, Schema.Type.STRING),
                 new Schema.Field(DESCRIPTION, Schema.Type.STRING),
                 new Schema.Field(TAGS, Schema.Type.STRING),
@@ -79,14 +86,15 @@ public class DataFeed implements Storable {
     @JsonIgnore
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<Schema.Field, Object>();
-        fieldToObjectMap.put(new Schema.Field(DATAFEED_ID, Schema.Type.LONG), this.datafeedId);
+        fieldToObjectMap.put(new Schema.Field(DATAFEED_ID, Schema.Type.LONG), this.dataFeedId);
         return new PrimaryKey(fieldToObjectMap);
     }
 
     public Map toMap() {
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put(DATAFEED_ID, this.datafeedId);
-        map.put(DATAFEED_NAME, this.datafeedName);
+        map.put(DATAFEED_ID, this.dataFeedId);
+        map.put(DATASOURCE_ID, this.dataSourceId);
+        map.put(DATAFEED_NAME, this.dataFeedName);
         map.put(DESCRIPTION, this.description);
         map.put(TAGS, this.tags);
         map.put(PARSER_ID, this.parserId);
@@ -96,8 +104,9 @@ public class DataFeed implements Storable {
     }
 
     public Storable fromMap(Map<String, Object> map) {
-        this.datafeedId = (Long) map.get(DATAFEED_ID);
-        this.datafeedName = (String)  map.get(DATAFEED_NAME);
+        this.dataFeedId = (Long) map.get(DATAFEED_ID);
+        this.dataSourceId = (Long) map.get(DATASOURCE_ID);
+        this.dataFeedName = (String)  map.get(DATAFEED_NAME);
         this.description = (String)  map.get(DESCRIPTION);
         this.tags = (String)  map.get(TAGS);
         this.parserId = (Long) map.get(PARSER_ID);
@@ -113,8 +122,9 @@ public class DataFeed implements Storable {
 
         DataFeed dataFeed = (DataFeed) o;
 
-        if (!datafeedId.equals(dataFeed.datafeedId)) return false;
-        if (!datafeedName.equals(dataFeed.datafeedName)) return false;
+        if (!dataFeedId.equals(dataFeed.dataFeedId)) return false;
+        if (!dataSourceId.equals(dataFeed.dataSourceId)) return false;
+        if (!dataFeedName.equals(dataFeed.dataFeedName)) return false;
         if (description != null ? !description.equals(dataFeed.description) : dataFeed.description != null)
             return false;
         if (tags != null ? !tags.equals(dataFeed.tags) : dataFeed.tags != null) return false;
@@ -126,8 +136,9 @@ public class DataFeed implements Storable {
 
     @Override
     public int hashCode() {
-        int result = datafeedId.hashCode();
-        result = 31 * result + datafeedName.hashCode();
+        int result = dataFeedId.hashCode();
+        result = 31 * result + dataSourceId.hashCode();
+        result = 31 * result + dataFeedName.hashCode();
         result = 31 * result + (description != null ? description.hashCode() : 0);
         result = 31 * result + (tags != null ? tags.hashCode() : 0);
         result = 31 * result + parserId.hashCode();
@@ -139,8 +150,9 @@ public class DataFeed implements Storable {
     @Override
     public String toString() {
         return "DataFeed{" +
-                "datafeedId=" + datafeedId +
-                ", datafeedName='" + datafeedName + '\'' +
+                "dataFeedId=" + dataFeedId +
+                ", dataSourceId=" + dataSourceId +
+                ", dataFeedName='" + dataFeedName + '\'' +
                 ", description='" + description + '\'' +
                 ", tags='" + tags + '\'' +
                 ", parserId=" + parserId +
@@ -149,20 +161,28 @@ public class DataFeed implements Storable {
                 '}';
     }
 
-    public Long getDatafeedId() {
-        return datafeedId;
+    public Long getDataFeedId() {
+        return dataFeedId;
     }
 
-    public void setDatafeedId(Long datafeedId) {
-        this.datafeedId = datafeedId;
+    public void setDataFeedId(Long dataFeedId) {
+        this.dataFeedId = dataFeedId;
     }
 
-    public String getDatafeedName() {
-        return datafeedName;
+    public Long getDataSourceId() {
+        return dataSourceId;
     }
 
-    public void setDatafeedName(String datafeedName) {
-        this.datafeedName = datafeedName;
+    public void setDataSourceId(Long dataSourceId) {
+        this.dataSourceId = dataSourceId;
+    }
+
+    public String getDataFeedName() {
+        return dataFeedName;
+    }
+
+    public void setDataFeedName(String dataFeedName) {
+        this.dataFeedName = dataFeedName;
     }
 
     public String getDescription() {

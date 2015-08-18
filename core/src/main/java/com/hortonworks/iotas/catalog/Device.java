@@ -2,8 +2,8 @@ package com.hortonworks.iotas.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.storage.DataSourceSubType;
 import com.hortonworks.iotas.storage.PrimaryKey;
-import com.hortonworks.iotas.storage.Storable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,12 +22,11 @@ import static com.hortonworks.iotas.common.Schema.Field;
  *        storage entities (in terms of RDBMS one Device object that gets stored in 2 tables, datasources and devices)
  *        it wont be supported by the manager right now.
  */
-public class Device implements Storable {
+public class Device implements DataSourceSubType {
 
     public static final String DEVICE_ID = "deviceId";
     public static final String VERSION = "version";
     public static final String DATA_SOURCE_ID = "dataSourceId";
-    public static final String TIMESTAMP = "timestamp";
 
     /**
      * NOTE: given we expect this to be part of the actual device message headers, this Id is kept as string.
@@ -44,11 +43,6 @@ public class Device implements Storable {
      */
     private Long dataSourceId;
 
-    /**
-     * Time when this was created updated.
-     */
-    private Long timestamp;
-
     @JsonIgnore
     public String getNameSpace() {
         return "devices";
@@ -58,15 +52,17 @@ public class Device implements Storable {
     public Schema getSchema() {
         return new Schema.SchemaBuilder().fields(new Field(DEVICE_ID, Schema.Type.STRING),
                                                  new Field(DATA_SOURCE_ID, Schema.Type.LONG),
-                                                 new Field(VERSION, Schema.Type.LONG),
-                                                 new Field(TIMESTAMP, Schema.Type.LONG)).build();
+                                                 new Field(VERSION, Schema.Type.LONG)).build();
     }
 
+    /**
+     * The primary key of the device is the datasource id itself which is also a foreign key
+     * reference to the parent 'DataSource'.
+     */
     @JsonIgnore
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<Schema.Field, Object>();
-        fieldToObjectMap.put(new Schema.Field(DEVICE_ID, Schema.Type.STRING), this.deviceId);
-        fieldToObjectMap.put(new Schema.Field(VERSION, Schema.Type.LONG), this.version);
+        fieldToObjectMap.put(new Schema.Field(DATA_SOURCE_ID, Schema.Type.LONG), this.dataSourceId);
         return new PrimaryKey(fieldToObjectMap);
     }
 
@@ -75,7 +71,6 @@ public class Device implements Storable {
         map.put(DEVICE_ID, this.deviceId);
         map.put(VERSION, this.version);
         map.put(DATA_SOURCE_ID, this.dataSourceId);
-        map.put(TIMESTAMP, this.timestamp);
         return map;
     }
 
@@ -83,7 +78,6 @@ public class Device implements Storable {
         this.deviceId = (String)  map.get(DEVICE_ID);
         this.version = (Long)  map.get(VERSION);
         this.dataSourceId = (Long) map.get(DATA_SOURCE_ID);
-        this.timestamp = (Long) map.get(TIMESTAMP);
         return this;
     }
 
@@ -97,8 +91,7 @@ public class Device implements Storable {
 
         if (!deviceId.equals(device.deviceId)) return false;
         if (!version.equals(device.version)) return false;
-        if (!dataSourceId.equals(device.dataSourceId)) return false;
-        return timestamp.equals(device.timestamp);
+        return dataSourceId.equals(device.dataSourceId);
 
     }
 
@@ -107,7 +100,6 @@ public class Device implements Storable {
         int result = deviceId.hashCode();
         result = 31 * result + version.hashCode();
         result = 31 * result + dataSourceId.hashCode();
-        result = 31 * result + timestamp.hashCode();
         return result;
     }
 
@@ -117,7 +109,6 @@ public class Device implements Storable {
                 "deviceId='" + deviceId + '\'' +
                 ", version=" + version +
                 ", dataSourceId=" + dataSourceId +
-                ", timestamp=" + timestamp +
                 '}';
     }
 
@@ -137,6 +128,7 @@ public class Device implements Storable {
         this.version = version;
     }
 
+    @JsonIgnore
     public Long getDataSourceId() {
         return dataSourceId;
     }
@@ -145,11 +137,4 @@ public class Device implements Storable {
         this.dataSourceId = dataSourceId;
     }
 
-    public Long getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(Long timestamp) {
-        this.timestamp = timestamp;
-    }
 }

@@ -2,74 +2,116 @@ package com.hortonworks.iotas.webservice;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.catalog.DataFeed;
-import com.hortonworks.iotas.storage.StorageManager;
+import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.webservice.util.WSUtils;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.*;
+import static javax.ws.rs.core.Response.Status.*;
 
 @Path("/api/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class FeedCatalogResource {
-    private StorageManager dao;
-    // TODO should probably make namespace static
-    private static final String DATA_FEED_NAMESPACE = new DataFeed().getNameSpace();
+    private CatalogService catalogService;
 
-    public FeedCatalogResource(StorageManager manager) {
-        this.dao = manager;
+    public FeedCatalogResource(CatalogService service) {
+        this.catalogService = service;
     }
 
+    /**
+     * List ALL data feeds or the ones matching specific query params.
+     */
     @GET
     @Path("/feeds")
     @Timed
-    // TODO add a way to query/filter and/or page results
-    public Collection<DataFeed> listDataFeeds() {
-        return this.dao.<DataFeed>list(DATA_FEED_NAMESPACE);
+    public Response listDataFeeds(@Context UriInfo uriInfo) {
+        List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>();
+        try {
+            MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
+            Collection<DataFeed> dataFeeds;
+            if (params.isEmpty()) {
+                dataFeeds = catalogService.listDataFeeds();
+            } else {
+                for (String param : params.keySet()) {
+                    queryParams.add(new CatalogService.QueryParam(param, params.getFirst(param)));
+                }
+                dataFeeds = catalogService.listDataFeeds(queryParams);
+            }
+            if(dataFeeds != null && ! dataFeeds.isEmpty()) {
+                return WSUtils.respond(OK, SUCCESS, dataFeeds);
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+
+        return WSUtils.respond(NOT_FOUND, DATAFEED_FILTER_NOT_FOUND, queryParams.toString());
     }
+
 
     @GET
     @Path("/feeds/{id}")
     @Timed
-    public DataFeed getDataFeedById(@PathParam("id") Long dataFeedId) {
-        DataFeed df = new DataFeed();
-        df.setDatafeedId(dataFeedId);
-        return this.dao.<DataFeed>get(DATA_FEED_NAMESPACE, df.getPrimaryKey());
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getDataFeedById(@PathParam("id") Long dataFeedId) {
+        try {
+            DataFeed df = new DataFeed();
+            df.setDataFeedId(dataFeedId);
+            DataFeed result = catalogService.getDataFeed(dataFeedId);
+            if (result != null) {
+                return WSUtils.respond(OK, SUCCESS, result);
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, dataFeedId.toString());
     }
 
     @POST
     @Path("/feeds")
     @Timed
-    public DataFeed addDataFeed(DataFeed feed) {
-        if (feed.getDatafeedId() == null) {
-            feed.setDatafeedId(this.dao.nextId(DATA_FEED_NAMESPACE));
+    public Response addDataFeed(DataFeed feed) {
+        try {
+            DataFeed addedFeed = catalogService.addDataFeed(feed);
+            return WSUtils.respond(CREATED, SUCCESS, addedFeed);
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
-        if (feed.getTimestamp() == null) {
-            feed.setTimestamp(System.currentTimeMillis());
-        }
-        this.dao.add(feed);
-        return feed;
     }
 
     @DELETE
     @Path("/feeds/{id}")
     @Timed
-    public DataFeed removeDatafeed(@PathParam("id") Long dataFeedId) {
-        DataFeed feed = new DataFeed();
-        feed.setDatafeedId(dataFeedId);
-        return this.dao.remove(DATA_FEED_NAMESPACE, feed.getPrimaryKey());
+    public Response removeDatafeed(@PathParam("id") Long dataFeedId) {
+        try {
+            DataFeed removedDatafeed = catalogService.removeDataFeed(dataFeedId);
+            if (removedDatafeed != null) {
+                return WSUtils.respond(OK, SUCCESS, removedDatafeed);
+            } else {
+                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, dataFeedId.toString());
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
     }
 
     @PUT
-    @Path("/feeds")
+    @Path("/feeds/{id}")
     @Timed
-    public DataFeed addOrUpdateDataFeed(DataFeed feed) {
-        if (feed.getDatafeedId() == null) {
-            feed.setDatafeedId(this.dao.nextId(DATA_FEED_NAMESPACE));
+    public Response addOrUpdateDataFeed(@PathParam("id") Long dataFeedId, DataFeed feed) {
+        try {
+            DataFeed newDataFeed = catalogService.addOrUpdateDataFeed(dataFeedId, feed);
+            return WSUtils.respond(OK, SUCCESS, feed);
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
-        if (feed.getTimestamp() == null) {
-            feed.setTimestamp(System.currentTimeMillis());
-        }
-        this.dao.addOrUpdate(feed);
-        return feed;
     }
 }
