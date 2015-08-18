@@ -6,6 +6,9 @@ import com.google.common.io.ByteStreams;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.util.WSUtils;
+import com.hortonworks.iotas.storage.StorageManager;
+import com.hortonworks.util.JarStorage;
+import com.hortonworks.util.ReflectionHelper;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
@@ -30,10 +33,17 @@ public class ParserInfoCatalogResource {
 
     private CatalogService catalogService;
     private IotasConfiguration configuration;
+    private JarStorage jarStorage;
 
     public ParserInfoCatalogResource(CatalogService service, IotasConfiguration configuration) {
         this.catalogService = service;
         this.configuration = configuration;
+        try {
+            this.jarStorage = ReflectionHelper.newInstance(this.configuration
+                    .getJarStorageImplementationClass());
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     @GET
@@ -90,21 +100,16 @@ public class ParserInfoCatalogResource {
                              @FormDataParam("parserInfo") final String parserInfoStr) {
         File file = null;
         try {
-            if (contentDispositionHeader != null && contentDispositionHeader.getFileName() != null) {
-                String name = contentDispositionHeader.getFileName();
-                java.nio.file.Path path = FileSystems.getDefault().getPath(configuration.getCatalogHomeDir(), name);
-                file = path.toFile();
-                if (!file.exists()) {
-                    file.createNewFile();
-                }
-                ByteStreams.copy(inputStream, new FileOutputStream(file));
-            }
+          String name = "";
+          if(contentDispositionHeader != null && contentDispositionHeader.getFileName() != null) {
+            name = contentDispositionHeader.getFileName();
+            this.jarStorage.uploadJar(inputStream, name);
+            inputStream.close();
+          }
 
             //TODO something special about multipart request so it wont let me pass just a ParserInfo json object, instead we must pass ParserInfo as a json string.
             ParserInfo parserInfo = objectMapper.readValue(parserInfoStr, ParserInfo.class);
-            if (parserInfo.getJarStoragePath() == null) {
-                parserInfo.setJarStoragePath(file.getAbsolutePath());
-            }
+            parserInfo.setJarStoragePath(name);
             ParserInfo result = catalogService.addParserInfo(parserInfo);
             return WSUtils.respond(CREATED, SUCCESS, parserInfo);
         } catch (Exception ex) {
@@ -124,7 +129,7 @@ public class ParserInfoCatalogResource {
         try {
             ParserInfo parserInfo = doGetParserInfoById(parserId);
             if(parserInfo != null) {
-                final InputStream inputStream = new FileInputStream(parserInfo.getJarStoragePath());
+                final InputStream inputStream = this.jarStorage.downloadJar(parserInfo.getJarStoragePath());
                 StreamingOutput streamOutput = new StreamingOutput() {
                     public void write(OutputStream os) throws IOException, WebApplicationException {
                         try {
