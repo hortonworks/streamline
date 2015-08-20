@@ -43,6 +43,13 @@ public class Schema {
         String name;
         Type type;
 
+        /**
+         * For jackson
+         */
+        private Field() {
+
+        }
+
         public Field(String name, Type type){
             this.name = name;
             this.type = type;
@@ -215,6 +222,9 @@ public class Schema {
 
     private List<Field> fields;
 
+
+    /** for jackson **/
+    private Schema() {}
 
     private Schema(List<Field> fields){
         this.fields = fields;

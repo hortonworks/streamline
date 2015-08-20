@@ -4,6 +4,8 @@ import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;
 import com.hortonworks.iotas.catalog.ParserInfo;
+import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.webservice.util.WSUtils;
 import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.util.JarStorage;
 import com.hortonworks.util.ReflectionHelper;
@@ -12,24 +14,29 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.*;
 import java.nio.file.FileSystems;
 import java.util.Collection;
 
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.SUCCESS;
+import static javax.ws.rs.core.Response.Status.*;
+
 @Path("/api/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class ParserInfoCatalogResource {
     // TODO should probably make namespace static
-    private static final String PARSER_INFO_NAMESPACE = new ParserInfo().getNameSpace();
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private StorageManager dao;
+    private CatalogService catalogService;
     private IotasConfiguration configuration;
     private JarStorage jarStorage;
 
-    public ParserInfoCatalogResource(StorageManager manager, IotasConfiguration configuration) {
-        this.dao = manager;
+    public ParserInfoCatalogResource(CatalogService service, IotasConfiguration configuration) {
+        this.catalogService = service;
         this.configuration = configuration;
         try {
             this.jarStorage = ReflectionHelper.newInstance(this.configuration
@@ -43,26 +50,45 @@ public class ParserInfoCatalogResource {
     @Path("/parsers")
     @Timed
     // TODO add a way to query/filter and/or page results
-    public Collection<ParserInfo> listParsers() {
-        return this.dao.<ParserInfo>list(PARSER_INFO_NAMESPACE);
+    public Response listParsers() {
+        try {
+            Collection<ParserInfo> parserInfos = catalogService.listParsers();
+            return WSUtils.respond(OK, SUCCESS, parserInfos);
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
     }
 
     @GET
     @Path("/parsers/{id}")
     @Timed
-    public ParserInfo getParserInfoById(@PathParam("id") Long parserId) {
-        ParserInfo parserInfo = new ParserInfo();
-        parserInfo.setParserId(parserId);
-        return this.dao.<ParserInfo>get(PARSER_INFO_NAMESPACE, parserInfo.getPrimaryKey());
+    public Response getParserInfoById(@PathParam("id") Long parserId) {
+        try {
+            ParserInfo result = doGetParserInfoById(parserId);
+            if (result != null) {
+                return WSUtils.respond(OK, SUCCESS, result);
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+
+        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, parserId.toString());
     }
 
     @DELETE
     @Path("/parsers/{id}")
     @Timed
-    public ParserInfo removeParser(@PathParam("id") Long parserId) {
-        ParserInfo parserInfo = new ParserInfo();
-        parserInfo.setParserId(parserId);
-        return this.dao.remove(PARSER_INFO_NAMESPACE, parserInfo.getPrimaryKey());
+    public Response removeParser(@PathParam("id") Long parserId) {
+        try {
+            ParserInfo removedParser = catalogService.removeParser(parserId);
+            if (removedParser != null) {
+                return WSUtils.respond(OK, SUCCESS, removedParser);
+            } else {
+                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, parserId.toString());
+            }
+        }  catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
     }
 
     //Test curl command curl -X POST -i -F parserJar=@original-webservice-0.1-SNAPSHOT.jar -F parserInfo='{"parserName":"TestParser","className":"some.test.parserClass","version":0}' http://localhost:8080/api/v1/catalog/parsers
@@ -70,26 +96,25 @@ public class ParserInfoCatalogResource {
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/parsers")
-    public ParserInfo addParser(@FormDataParam("parserJar") final InputStream inputStream, @FormDataParam("parserJar") final FormDataContentDisposition contentDispositionHeader,
-                             @FormDataParam("parserInfo") final String parserInfoStr) throws IOException {
-        String name = "";
-        if(contentDispositionHeader != null && contentDispositionHeader.getFileName() != null) {
+    public Response addParser(@FormDataParam("parserJar") final InputStream inputStream, @FormDataParam("parserJar") final FormDataContentDisposition contentDispositionHeader,
+                             @FormDataParam("parserInfo") final String parserInfoStr) {
+        File file = null;
+        try {
+          String name = "";
+          if(contentDispositionHeader != null && contentDispositionHeader.getFileName() != null) {
             name = contentDispositionHeader.getFileName();
             this.jarStorage.uploadJar(inputStream, name);
             inputStream.close();
-        }
+          }
 
-        //TODO something special about multipart request so it wont let me pass just a ParserInfo json object, instead we must pass ParserInfo as a json string.
-        ParserInfo parserInfo = objectMapper.readValue(new StringReader(parserInfoStr), ParserInfo.class);
-        if (parserInfo.getParserId() == null) {
-            parserInfo.setParserId(this.dao.nextId(PARSER_INFO_NAMESPACE));
+            //TODO something special about multipart request so it wont let me pass just a ParserInfo json object, instead we must pass ParserInfo as a json string.
+            ParserInfo parserInfo = objectMapper.readValue(parserInfoStr, ParserInfo.class);
+            parserInfo.setJarStoragePath(name);
+            ParserInfo result = catalogService.addParserInfo(parserInfo);
+            return WSUtils.respond(CREATED, SUCCESS, parserInfo);
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
-        if (parserInfo.getTimestamp() == null) {
-            parserInfo.setTimestamp(System.currentTimeMillis());
-        }
-        parserInfo.setJarStoragePath(name);
-        this.dao.add(parserInfo);
-        return parserInfo;
     }
 
     //TODO Still need to implement update/PUT
@@ -98,16 +123,33 @@ public class ParserInfoCatalogResource {
     //hides the storage details from clients.
     @Timed
     @GET
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces({"application/java-archive", "application/json"})
     @Path("/parsers/download/{parserId}")
-    public StreamingOutput downloadParserJar(@PathParam("parserId") Long parserId) throws IOException {
-        ParserInfo parserInfo = getParserInfoById(parserId);
-        final InputStream inputStream = this.jarStorage.downloadJar(parserInfo.getJarStoragePath());
-        StreamingOutput streamOutput = new StreamingOutput() {
-            public void write(OutputStream os) throws IOException, WebApplicationException {
-                ByteStreams.copy(inputStream, os);
+    public Response downloadParserJar(@PathParam("parserId") Long parserId) {
+        try {
+            ParserInfo parserInfo = doGetParserInfoById(parserId);
+            if(parserInfo != null) {
+                final InputStream inputStream = this.jarStorage.downloadJar(parserInfo.getJarStoragePath());
+                StreamingOutput streamOutput = new StreamingOutput() {
+                    public void write(OutputStream os) throws IOException, WebApplicationException {
+                        try {
+                            ByteStreams.copy(inputStream, os);
+                        } finally {
+                            os.close();
+                        }
+                    }
+                };
+                return Response.ok(streamOutput).build();
             }
-        };
-        return streamOutput;
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+
+        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, parserId.toString());
+    }
+
+
+    private ParserInfo doGetParserInfoById(Long parserId) {
+        return catalogService.getParserInfo(parserId);
     }
 }

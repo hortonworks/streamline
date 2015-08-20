@@ -5,6 +5,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,8 +24,7 @@ public abstract class AbstractJarStorageTest {
         File file = File.createTempFile("test", ".tmp");
         file.deleteOnExit();
         List<String> lines = Lists.newArrayList("test-line-1", "test-line-2");
-        Files.write(file.toPath(), lines);
-
+        Files.write(file.toPath(), lines, Charset.forName("UTF-8"));
         String name = "file.name";
         jarStorage.uploadJar(new FileInputStream(file), name);
         InputStream inputStream = jarStorage.downloadJar(name);

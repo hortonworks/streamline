@@ -1,6 +1,10 @@
 package com.hortonworks.iotas.storage;
 
+import com.hortonworks.iotas.service.CatalogService;
+import static com.hortonworks.iotas.service.CatalogService.QueryParam;
+
 import java.util.Collection;
+import java.util.List;
 
 /**
  * TODO: All the methods are very restrictive and needs heavy synchronization to get right but my assumption is that
@@ -52,12 +56,16 @@ public interface StorageManager {
      */
     <T extends Storable> T get(String namespace, PrimaryKey id) throws StorageException;
 
-    /**
-     * Lists all storable under the given namespace, if no entity is found and empty list will be returned.
-     * @param namespace
-     * @return
-     * @throws StorageException
-     */
+    <T extends Storable> T get(String namespace, PrimaryKey id, Class<T> clazz) throws StorageException;
+
+    <T extends Storable> List<T> find(String namespace, List<QueryParam> queryParams, Class<?> clazz) throws Exception;
+
+        /**
+         * Lists all storable under the given namespace, if no entity is found and empty list will be returned.
+         * @param namespace
+         * @return
+         * @throws StorageException
+         */
     <T extends Storable> Collection<T> list(String namespace) throws StorageException;
 
     void cleanup() throws StorageException;

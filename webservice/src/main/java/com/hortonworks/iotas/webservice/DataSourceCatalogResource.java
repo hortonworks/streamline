@@ -2,76 +2,131 @@ package com.hortonworks.iotas.webservice;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.catalog.DataSource;
-import com.hortonworks.iotas.storage.StorageManager;
+import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.webservice.util.WSUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
-//TODO Path should be all lower case.
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.*;
+import static javax.ws.rs.core.Response.Status.*;
 
 @Path("/api/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class DataSourceCatalogResource {
-    private StorageManager dao;
+    private CatalogService catalogService;
     // TODO should probably make namespace static
-    private static final String DATA_SOURCE_NAMESPACE = new DataSource().getNameSpace();
 
-    public DataSourceCatalogResource(StorageManager manager) {
-        this.dao = manager;
+    public DataSourceCatalogResource(CatalogService catalogService) {
+        this.catalogService = catalogService;
     }
 
     @GET
-    @Path("/dataSources")
+    @Path("/datasources")
     @Timed
-    // TODO add a way to query/filter and/or page results
-    public Collection<DataSource> listDataSources() {
-        return this.dao.<DataSource>list(DATA_SOURCE_NAMESPACE);
+    public Response listDataSources(@QueryParam("filter") List<String> filter) {
+        try {
+            Collection<DataSource> dataSources = catalogService.listDataSources();
+            return WSUtils.respond(OK, SUCCESS, dataSources);
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+    }
+
+    /**
+     * List datasource matching the type and the type specific fields and values.
+     */
+    @GET
+    @Path("/datasources/type/{type}")
+    @Timed
+    public Response listDataSourcesForTypeWithFilter(@PathParam("type") DataSource.Type type,
+                                                     @Context UriInfo uriInfo) {
+        List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>();
+        try {
+            MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
+            for(String param: params.keySet()) {
+                queryParams.add(new CatalogService.QueryParam(param, params.getFirst(param)));
+            }
+            Collection<DataSource> dataSources = catalogService.listDataSourcesForType(type, queryParams);
+            if(! dataSources.isEmpty()) {
+                return WSUtils.respond(OK, SUCCESS, dataSources);
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+        return WSUtils.respond(NOT_FOUND, DATASOURCE_TYPE_FILTER_NOT_FOUND, type.toString(), queryParams.toString());
     }
 
     @GET
-    @Path("/dataSources/{id}")
+    @Path("/datasources/{id}")
     @Timed
-    public DataSource getDataSourceById(@PathParam("id") Long dataSourceId) {
-        DataSource ds = new DataSource();
-        ds.setDataSourceId(dataSourceId);
-        return this.dao.<DataSource>get(DATA_SOURCE_NAMESPACE, ds.getPrimaryKey());
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getDataSourceById(@PathParam("id") Long dataSourceId) {
+        try {
+            DataSource result = catalogService.getDataSource(dataSourceId);
+            if (result != null) {
+                return WSUtils.respond(OK, SUCCESS, result);
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+
+        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, dataSourceId.toString());
     }
 
     @POST
-    @Path("/dataSources")
+    @Path("/datasources")
     @Timed
-    public DataSource addDataSource(DataSource dataSource) {
-        if (dataSource.getDataSourceId() == null) {
-            dataSource.setDataSourceId(this.dao.nextId(DATA_SOURCE_NAMESPACE));
+    public Response addDataSource(DataSource dataSource) {
+        try {
+           if (StringUtils.isEmpty(dataSource.getTypeConfig())) {
+                return WSUtils.respond(BAD_REQUEST, BAD_REQUEST_PARAM_MISSING, "typeConfig");
+            }
+            DataSource createdDataSource = catalogService.addDataSource(dataSource);
+            return WSUtils.respond(CREATED, SUCCESS, createdDataSource);
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
-        if (dataSource.getTimestamp() == null) {
-            dataSource.setTimestamp(System.currentTimeMillis());
-        }
-        this.dao.add(dataSource);
-        return dataSource;
     }
 
     @DELETE
-    @Path("/dataSources/{id}")
+    @Path("/datasources/{id}")
     @Timed
-    public DataSource removeParser(@PathParam("id") Long dataSourceId) {
-        DataSource dataSource = new DataSource();
-        dataSource.setDataSourceId(dataSourceId);
-        return this.dao.remove(DATA_SOURCE_NAMESPACE, dataSource.getPrimaryKey());
+    public Response removeDataSource(@PathParam("id") Long dataSourceId) {
+        try {
+            DataSource removedDataSource = catalogService.removeDataSource(dataSourceId);
+            if (removedDataSource != null) {
+                return WSUtils.respond(OK, SUCCESS, removedDataSource);
+            } else {
+                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, dataSourceId.toString());
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
     }
 
     @PUT
-    @Path("/dataSources")
+    @Path("/datasources/{id}")
     @Timed
-    public DataSource addOrUpdateDataSource(DataSource dataSource) {
-        if (dataSource.getDataSourceId() == null) {
-            dataSource.setDataSourceId(this.dao.nextId(DATA_SOURCE_NAMESPACE));
+    public Response addOrUpdateDataSource(@PathParam("id") Long dataSourceId, DataSource dataSource) {
+        try {
+           if (StringUtils.isEmpty(dataSource.getTypeConfig())) {
+                return WSUtils.respond(BAD_REQUEST, BAD_REQUEST_PARAM_MISSING, "typeConfig");
+            }
+            DataSource result = catalogService.addOrUpdateDataSource(dataSourceId, dataSource);
+            return WSUtils.respond(OK, SUCCESS, dataSource);
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
-        if (dataSource.getTimestamp() == null) {
-            dataSource.setTimestamp(System.currentTimeMillis());
-        }
-        this.dao.addOrUpdate(dataSource);
-        return dataSource;
     }
+
 }
+
