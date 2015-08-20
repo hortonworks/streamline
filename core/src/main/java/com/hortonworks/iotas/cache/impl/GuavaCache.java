@@ -65,7 +65,7 @@ public class GuavaCache implements Cache<StorableKey, Storable> {
     }
 
     public void clear() {
-        guavaCache.invalidateAll();     //TODO: What should be the impact of this in the storage layer
+        guavaCache.invalidateAll();
     }
 
     public long size() {

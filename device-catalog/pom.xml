@@ -10,7 +10,6 @@
         <version>0.1-SNAPSHOT</version>
     </parent>
 
-    <groupId>com.hortonworks</groupId>
     <artifactId>device-catalog</artifactId>
 
     <properties>

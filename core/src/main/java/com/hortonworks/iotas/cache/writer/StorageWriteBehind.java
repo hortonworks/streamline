@@ -36,15 +36,8 @@ public class StorageWriteBehind implements StorageWriter {
         executorService.submit(new AddOrUpdateCallable(storable));
     }
 
-    public Storable remove(StorableKey key) {
-        final Future<Storable> future = executorService.submit(new DeleteCallable(key));
-        Storable result = null;
-        try {
-            result = future.get();
-        } catch (InterruptedException|ExecutionException e) {
-            throw new StorageException(e);
-        }
-        return result;
+    public Object remove(StorableKey key) {
+        return executorService.submit(new DeleteCallable(key));
     }
 
     // ======= Callables for async writing to the Storage Layer =============

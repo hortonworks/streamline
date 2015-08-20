@@ -22,7 +22,7 @@ public class StorageWriteThrough implements StorageWriter {
         dao.addOrUpdate(storable);
     }
 
-    public Storable remove(StorableKey key) {
+    public Object remove(StorableKey key) {
         return dao.remove(key);
     }
 }
