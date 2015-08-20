@@ -709,4 +709,9 @@ DELETE /api/v1/catalog/feeds/ID
 }
 ```
 
+### A sample use case
+
+Plese go through [the sample use case](REST-Sample.md) to understand how these APIs can be used.
+
+  
 
