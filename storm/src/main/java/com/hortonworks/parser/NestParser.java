@@ -18,11 +18,11 @@ public class NestParser implements Parser {
 
     public Schema schema() {
         return new Schema(
-                new Schema.Field("userId", Schema.Type.LONG),
-                new Schema.Field("temperature", Schema.Type.LONG),
-                new Schema.Field("eventTime", Schema.Type.LONG),
-                new Schema.Field("longitude", Schema.Type.LONG),
-                new Schema.Field("latitude", Schema.Type.LONG)
+                    new Schema.Field("userId", Schema.Type.LONG),
+                    new Schema.Field("temperature", Schema.Type.LONG),
+                    new Schema.Field("eventTime", Schema.Type.LONG),
+                    new Schema.Field("longitude", Schema.Type.LONG),
+                    new Schema.Field("latitude", Schema.Type.LONG)
         );
     }
 

@@ -49,11 +49,16 @@
             <artifactId>commons-cli</artifactId>
             <version>1.2</version>
         </dependency>
-            <dependency>
-                <groupId>io.dropwizard</groupId>
-                <artifactId>dropwizard-core</artifactId>
-                <version>${dropwizard.version}</version>
-            </dependency>
+        <dependency>
+            <groupId>com.firebase</groupId>
+            <artifactId>firebase-client</artifactId>
+            <version>1.0.7</version>
+        </dependency>
+        <dependency>
+            <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-core</artifactId>
+            <version>${dropwizard.version}</version>
+        </dependency>
         <dependency>
             <artifactId>slf4j-api</artifactId>
             <groupId>org.slf4j</groupId>
