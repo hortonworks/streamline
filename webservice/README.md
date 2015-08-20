@@ -123,6 +123,48 @@ GET /api/v1/catalog/datasources
   ]
 }
 ```
+
+**Query Datasource by type**
+
+Data sources matching a specific type can be queried as follows
+
+GET /api/v1/catalog/datasources/type/DEVICE
+
+In addition, query params can be passed to filter results matching certain criteria. For example to list all devices with deviceid 'nest' with tag 'tag1',
+   
+    GET /api/v1/catalog/datasources/type/DEVICE/?deviceId=nest&version=1
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+  
+```json
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entities": [
+    {
+      "dataSourceId": 3,
+      "dataSourceName": "NestDevice",
+      "description": "This is a nest device",
+      "tags": "tag1",
+      "timestamp": 1440060823724,
+      "type": "DEVICE",
+      "typeConfig": "{\"deviceId\":\"nest\",\"version\":1}"
+    }
+  ]
+}
+```
+
+    GET /api/v1/catalog/datasources/type/DEVICE/?deviceId=foobar&version=1
+    HTTP/1.1 404 Not Found
+    Content-Type: application/json
+
+```json
+{
+  "responseCode": 1104,
+  "responseMessage": "Datasource not found for type [DEVICE], query params [[QueryParam{name='deviceId', value='foobar'}, QueryParam{name='version', value='1'}]]."
+}
+```
+
 ### Update
 PUT /api/v1/catalog/datasources/ID
 
