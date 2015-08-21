@@ -226,7 +226,7 @@ public class Schema {
     /** for jackson **/
     private Schema() {}
 
-    private Schema(List<Field> fields){
+    public Schema(List<Field> fields){
         this.fields = fields;
     }
 

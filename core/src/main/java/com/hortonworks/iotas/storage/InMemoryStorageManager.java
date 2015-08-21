@@ -110,7 +110,7 @@ public class InMemoryStorageManager implements StorageManager {
     public void cleanup() throws StorageException {
         //no-op
     }
-
+    
     @Override
     public Long nextId(String namespace){
         Long id = this.sequenceMap.get(namespace);

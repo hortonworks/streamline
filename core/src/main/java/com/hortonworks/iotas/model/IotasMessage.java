@@ -20,45 +20,45 @@ package com.hortonworks.iotas.model;
 
 import java.util.Map;
 
-public class DeviceMessage {
+public class IotasMessage {
 
-    private String deviceId;
+    private String id;
 
-    private String deviceType;
+    private String type;
 
-    private String version;
+    private Long version;
 
     private Map<String, String> metadata;
 
-    private String data;
+    private byte[] data;
 
     protected Long timestamp = System.currentTimeMillis();
 
-    public DeviceMessage(){
+    public IotasMessage(){
 
     }
 
-    public String getDeviceId() {
-        return deviceId;
+    public String getId() {
+        return id;
     }
 
-    public void setDeviceId(String deviceId) {
-        this.deviceId = deviceId;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public String getDeviceType() {
-        return deviceType;
+    public String getType() {
+        return type;
     }
 
-    public void setDeviceType(String deviceType) {
-        this.deviceType = deviceType;
+    public void setType(String type) {
+        this.type = type;
     }
 
-    public String getVersion() {
+    public Long getVersion() {
         return version;
     }
 
-    public void setVersion(String version) {
+    public void setVersion(Long version) {
         this.version = version;
     }
 
@@ -70,11 +70,11 @@ public class DeviceMessage {
         this.metadata = metadata;
     }
 
-    public String getData() {
+    public byte[] getData() {
         return data;
     }
 
-    public void setData(String data) {
+    public void setData(byte[] data) {
         this.data = data;
     }
 

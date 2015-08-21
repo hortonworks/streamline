@@ -18,8 +18,10 @@
 package com.hortonworks.iotas.parser;
 
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.hortonworks.iotas.common.Schema;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -46,8 +48,9 @@ public interface Parser {
      * @param data
      * @return
      */
-    Map<String, Object> parse(byte[] data) throws ParseException;
+    Map<String, Object> parse(byte[] data) throws ParseException, IOException;
 
+    //TODO: don't understand the need for any of the following methods
     /**
      * Parse method that accepts the data in String format.
      * @param data

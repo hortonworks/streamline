@@ -1,1 +1,1 @@
-{"dataSourceName":"nest-datasource","description":"Nest as datasource","datafeedId":1,"tags":"thermostat, Google smart home"}
+{"dataSourceId":1,"dataSourceName":"nest-datasource","description":"Nest as datasource","tags":"thermostat, Google smart home","timestamp":1440118796994,"type":"DEVICE","typeConfig":"{\"deviceId\":\"nest\",\"version\":1}"}

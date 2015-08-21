@@ -19,13 +19,15 @@ package com.hortonworks.iotas.simulator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.iotas.model.DeviceMessage;
+import com.google.common.base.Charsets;
+import com.hortonworks.iotas.model.IotasMessage;
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
 import org.apache.commons.cli.*;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.Properties;
 import java.util.Scanner;
 
@@ -101,7 +103,7 @@ public class CLI {
             ObjectMapper mapper = new ObjectMapper();
             String line = null;
             while((line = reader.readLine()) != null){
-                DeviceMessage message = mapper.readValue(line, DeviceMessage.class);
+                IotasMessage message = mapper.readValue(line, IotasMessage.class);
                 if(cmd.hasOption(OPTION_TIMESTAMP)){
                     message.setTimestamp(System.currentTimeMillis());
                 }
@@ -127,7 +129,7 @@ public class CLI {
         Scanner scanner = new Scanner(System.in);
         String lastId = "";
         String lastType = "";
-        String lastVersion = "";
+        Long lastVersion = 0l;
         String lastData = "";
 
         String temp;
@@ -147,7 +149,7 @@ public class CLI {
             System.out.print(String.format("Version [%s]: ", lastVersion));
             temp = scanner.nextLine();
             if(!temp.equals("")) {
-                lastVersion = temp;
+                lastVersion = Long.valueOf(temp);
             }
 
             System.out.print(String.format("Data [%s]: ", lastData));
@@ -164,17 +166,17 @@ public class CLI {
                 }
             }
 
-            DeviceMessage message = new DeviceMessage();
-            message.setDeviceId(lastId);
-            message.setDeviceType(lastType);
+            IotasMessage message = new IotasMessage();
+            message.setId(lastId);
+            message.setType(lastType);
             message.setVersion(lastVersion);
-            message.setData(lastData);
+            message.setData(lastData.getBytes(Charsets.UTF_8));
 
             writeToKafka(producer, message, lastTopic);
         }
     }
 
-    private static void writeToKafka(Producer<String, String> producer, DeviceMessage message, String topic){
+    private static void writeToKafka(Producer<String, String> producer, IotasMessage message, String topic){
         ObjectMapper mapper = new ObjectMapper();
         try {
             String json = mapper.writeValueAsString(message);

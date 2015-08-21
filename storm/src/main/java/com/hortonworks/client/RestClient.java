@@ -34,6 +34,7 @@ public class RestClient {
     private static final String PARSER_URL = "parsers";
     private static final String PARSER_DOWNLOAD_URL = PARSER_URL + "/download";
 
+    //TODO: timeouts should come from a config so probably make them constructor args.
     public RestClient(String rootCatalogURL) {
         this.rootCatalogURL = rootCatalogURL;
         client = Client.create();
