@@ -69,8 +69,7 @@ public class CatalogService {
         if (dataSources != null) {
             for (DataSource ds : dataSources) {
                 String ns = getNamespaceForDataSourceType(ds.getType());
-                DataSourceSubType subType = dao.get(ns, ds.getPrimaryKey(),
-                                                    getClassForDataSourceType(ds.getType()));
+                DataSourceSubType subType = dao.get(ns, ds.getPrimaryKey());
                 ds.setTypeConfig(CoreUtils.storableToJson(subType));
             }
         }
@@ -93,8 +92,7 @@ public class CatalogService {
         DataSource result = dao.<DataSource>get(DATA_SOURCE_NAMESPACE, ds.getPrimaryKey());
         if (result != null) {
             String ns = getNamespaceForDataSourceType(result.getType());
-            DataSourceSubType subType = dao.get(ns, ds.getPrimaryKey(),
-                                                getClassForDataSourceType(result.getType()));
+            DataSourceSubType subType = dao.get(ns, ds.getPrimaryKey());
             result.setTypeConfig(CoreUtils.storableToJson(subType));
         }
         return result;

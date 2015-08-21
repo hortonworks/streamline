@@ -55,11 +55,6 @@ public class InMemoryStorageManager implements StorageManager {
         return storageMap.containsKey(namespace) ? (T) storageMap.get(namespace).get(id) : null;
     }
 
-    public <T extends Storable> T get(String namespace, PrimaryKey id, Class<T> clazz) throws StorageException {
-        return storageMap.containsKey(namespace) ? (T) storageMap.get(namespace).get(id) : null;
-    }
-
-
     /**
      * Uses reflection to query the field or the method. Assumes
      * a public getXXX method is available to get the field value.
