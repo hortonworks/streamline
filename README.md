@@ -31,12 +31,12 @@ This will load the following objects:
 Please see `load-device.sh` which is just bunch of curl commands in case you want to add some other objects to webservice's inmemory store.
 
 #Running storm topology
-First you need to populate your kafka topic, if you have not done so create your kafka topic by executing
+First you need to populate your kafka topic, if you have not done so create your kafka topic by executing    
 `kafka-topics.sh --create --topic nest-topic --zookeeper localhost:2181 --replication-factor 1 --partitions 3`  
 
-Then run the device simulator CLI to post some sample `IotasMessage` containing nest data to your kafka topic.
+Then run the device simulator CLI to post some sample `IotasMessage` containing nest data to your kafka topic.  
 `cd $YOUR-IOTAS-ROOT-FOLDER`  
-`java -cp simulator/target/simulator-0.1-SNAPSHOT.jar com.hortonworks.iotas.simulator.CLI -b localhost:9092 -t test -f simulator/src/main/resources/nest-iotas-messages`  
+`java -cp simulator/target/simulator-0.1-SNAPSHOT.jar com.hortonworks.iotas.simulator.CLI -b localhost:9092 -t nest-topic -f simulator/src/main/resources/nest-iotas-messages`  
 
 Now, From intellij you should be able to run `com.hortonworks.topology.IotasTopology` by providing `YOUR-IOTAS-ROOT-FOLDER/storm/src/main/resources/topology.yaml` as argument. you can also run the topology
 on a storm clsuter by providing the name of the topology as second argument.
