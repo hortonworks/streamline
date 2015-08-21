@@ -64,7 +64,12 @@ public class IotasApplication extends Application<IotasConfiguration> {
         final ParserInfoCatalogResource parserResource = new ParserInfoCatalogResource(catalogService, iotasConfiguration);
         final DataSourceCatalogResource dataSourceResource = new DataSourceCatalogResource(catalogService);
 
-        List<Object> resources = Lists.newArrayList(feedResource, parserResource, dataSourceResource);
+        // cluster related
+        final ClusterCatalogResource clusterCatalogResource = new ClusterCatalogResource(catalogService);
+        final ComponentCatalogResource componentCatalogResource = new ComponentCatalogResource(catalogService);
+
+        List<Object> resources = Lists.newArrayList(feedResource, parserResource, dataSourceResource,
+                                                    clusterCatalogResource, componentCatalogResource);
         for(Object resource : resources) {
             environment.jersey().register(resource);
         }

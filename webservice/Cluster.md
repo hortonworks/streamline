@@ -47,10 +47,10 @@ Only the create api is specifed now. Others will be added once we finalize.
 
 ```json
 {
- "clusterName": "Storm cluster",
+ "name": "Storm cluster",
  "type": "STORM",
  "description": "The storm cluster that handles IOT events",
- "tags": "production",
+ "tags": "production"
 }
 ```
    
@@ -68,7 +68,7 @@ Only the create api is specifed now. Others will be added once we finalize.
  "clusterName": "Storm cluster",
  "type": "STORM",
  "description": "The storm cluster that handles IOT events",
- "tags": "production",
+ "tags": "production"
  }
 }
 ```
@@ -87,7 +87,7 @@ Only the create api is specifed now. Others will be added once we finalize.
  "description": "Storm nimbus servers",
  "config": "",
  "hosts": "storm[1-2].hortonworks.com",
- "port": 6627,
+ "port": 6627
 }
 ```
    
@@ -108,7 +108,7 @@ Only the create api is specifed now. Others will be added once we finalize.
  "description": "Storm nimbus servers",
  "config": "",
  "hosts": "storm[1-2].hortonworks.com",
- "port": 6627,
+ "port": 6627
  }
 }
 ```

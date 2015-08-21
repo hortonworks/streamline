@@ -1,5 +1,7 @@
 package com.hortonworks.iotas.service;
 
+import com.hortonworks.iotas.catalog.Cluster;
+import com.hortonworks.iotas.catalog.Component;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.Device;
@@ -203,5 +205,25 @@ public class CatalogService {
         }
         this.dao.add(parserInfo);
         return parserInfo;
+    }
+
+
+    public Cluster addCluster(Cluster cluster) {
+        if (cluster.getId() == null) {
+            cluster.setId(this.dao.nextId(Cluster.NAMESPACE));
+        }
+        this.dao.add(cluster);
+        return cluster;
+    }
+
+
+    public Component addComponent(Long clusterId, Component component) {
+        if (component.getId() == null) {
+            component.setId(this.dao.nextId(Component.NAMESPACE));
+        }
+        component.setClusterId(clusterId);
+        this.dao.add(component);
+        return component;
+
     }
 }
