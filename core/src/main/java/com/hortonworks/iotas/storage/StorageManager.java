@@ -68,12 +68,11 @@ public interface StorageManager {
      *
      * @param namespace
      * @param queryParams
-     * @param clazz
      * @param <T>
      * @return
      * @throws Exception
      */
-    <T extends Storable> List<T> find(String namespace, List<QueryParam> queryParams, Class<?> clazz) throws Exception;
+    <T extends Storable> List<T> find(String namespace, List<QueryParam> queryParams) throws Exception;
 
         /**
          * Lists all storable under the given namespace, if no entity is found and empty list will be returned.

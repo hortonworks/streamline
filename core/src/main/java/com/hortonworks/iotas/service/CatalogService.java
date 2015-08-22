@@ -79,7 +79,7 @@ public class CatalogService {
     public Collection<DataSource> listDataSourcesForType(DataSource.Type type, List<QueryParam> params) throws Exception {
         List<DataSource> dataSources = new ArrayList<DataSource>();
         String ns = getNamespaceForDataSourceType(type);
-        List<DataSourceSubType> subTypes = dao.<DataSourceSubType>find(ns, params, getClassForDataSourceType(type));
+        List<DataSourceSubType> subTypes = dao.<DataSourceSubType>find(ns, params);
         for(DataSourceSubType st: subTypes) {
             dataSources.add(getDataSource(st.getDataSourceId()));
         }
@@ -142,7 +142,7 @@ public class CatalogService {
     }
 
     public Collection<DataFeed> listDataFeeds(List<QueryParam> params) throws Exception {
-        return dao.<DataFeed>find(DATA_FEED_NAMESPACE, params, DataFeed.class);
+        return dao.<DataFeed>find(DATA_FEED_NAMESPACE, params);
     }
 
     public DataFeed getDataFeed(Long dataFeedId) {
