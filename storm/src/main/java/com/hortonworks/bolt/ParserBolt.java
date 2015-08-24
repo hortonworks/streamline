@@ -57,6 +57,10 @@ public class ParserBolt extends BaseRichBolt {
             Parser parser = getParser(iotasMessage);
             Map<String, Object> parsed = parser.parse(iotasMessage.getData());
             Values values = new Values();
+            for(String s: parsed.keySet()) {
+                System.out.print("\"" + s + "\",");
+            }
+            System.out.println();
             for (String str : outputFields) {
                 values.add(parsed.get(str));
             }
