@@ -63,7 +63,7 @@ public interface StorageManager {
      *
      * List<QueryParam> params = Arrays.asList(new QueryParam("deviceId", "nest"), new QueryParam("version", "1");
      *
-     * List<Device> devices = find(DEVICE_NAMESPACE, params, Device.class);
+     * List<Device> devices = find(DEVICE_NAMESPACE, params);
      * </pre>
      *
      * @param namespace
