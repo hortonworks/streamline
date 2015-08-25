@@ -47,9 +47,8 @@ public class RestClient {
             WebResource resource = client.resource(url);
             return resource.accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_OCTET_STREAM_TYPE, MediaType.MULTIPART_FORM_DATA_TYPE).get(clazz);
         } catch (Exception ex) {
-            //System.out.println(ex);
+            throw new RuntimeException(ex);
         }
-        return null;
     }
 
     public <T> List<T> getEntities(String url, Class<T> clazz) {
@@ -64,7 +63,7 @@ public class RestClient {
                 entities.add(mapper.treeToValue(it.next(), clazz));
             }
         } catch (Exception ex) {
-            System.out.println(ex);
+            throw new RuntimeException(ex);
         }
         return entities;
     }
@@ -80,6 +79,13 @@ public class RestClient {
             System.out.println(ex);
         }
         return null;
+    }
+
+    public ParserInfo getParserInfo(String datafeedId) {
+        DataFeed dataFeed = getEntities(String.format("%s/%s/%s",
+                rootCatalogURL, FEED_URL, datafeedId), DataFeed.class).get(0);
+
+        return getEntity(String.format("%s/%s/%s", rootCatalogURL, PARSER_URL, dataFeed.getParserId()), ParserInfo.class);
     }
 
     public ParserInfo getParserInfo(String deviceId, Long version) {

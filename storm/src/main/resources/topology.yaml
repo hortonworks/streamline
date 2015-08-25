@@ -2,7 +2,8 @@ kafka.spout.zkUrl: "localhost:2181"
 kafka.spout.topic: "nest-topic"
 kafka.spout.zkRoot: "/Iotas-kafka-spout"
 kafka.spout.id: "nest-kafka-spout"
-#"fan_timer_timeout","last_connection" is null so removed.
+#"fan_timer_timeout","last_connection" is null so removed as hbase bolt cant handle nulls. Which it self is a bug in HBaseBolt that we need to fix.
+#parser.datafeedId: 1
 parser.output.fields: ["away_temperature_low_c","has_leaf","away_temperature_low_f","away_temperature_high_f","away_temperature_high_c","fan_timer_active","temperature_scale","structure_id","locale","can_heat","target_temperature_high_c","ambient_temperature_c","humidity","software_version","is_online","target_temperature_low_c","ambient_temperature_f","target_temperature_c","target_temperature_low_f","has_fan","hvac_state","hvac_mode","device_id","target_temperature_f","target_temperature_high_f","name_long","can_cool","name","is_using_emergency_heat"]
 hbase.row.key: "device_id"
 hbase.root.dir: "hdfs://localhost:9000/hbase"
@@ -10,3 +11,4 @@ hbase.column.family: "cf"
 hbase.table: "nest"
 catalog.root.url: "http://localhost:8080/api/v1/catalog"
 parser.jar.path: "/tmp"
+

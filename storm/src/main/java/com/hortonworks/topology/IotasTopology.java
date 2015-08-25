@@ -32,6 +32,7 @@ public class IotasTopology {
     private static final String HBASE_ROW_KEY = "hbase.row.key";
     private static final String HBASE_COLUMN_FAMILY = "hbase.column.family";
     private static final String PARSER_OUTPUT_FIELDS = "parser.output.fields";
+    private static final String PARSER_DATAFEED_ID = "parser.datafeedId";
     private static final String CATALOG_ROOT_URL = "catalog.root.url";
     private static final String PARSER_JAR_PATH = "parser.jar.path";
     public static final String HBASE_CONF = "hbase.conf";
@@ -46,6 +47,7 @@ public class IotasTopology {
         final String zkRoot = (String) configuration.get(KAFKA_SPOUT_ZK_ROOT);
         final String id = (String) configuration.get(KAFKA_SPOUT_ID);
         final Fields outputFields = new Fields((List<String>) configuration.get(PARSER_OUTPUT_FIELDS));
+        final String parserDatafeedId = (String) configuration.get(PARSER_DATAFEED_ID);
 
         ZkHosts hosts = new ZkHosts(zkUrl);
         SpoutConfig config = new SpoutConfig(hosts, topic, zkRoot, id);
@@ -65,8 +67,13 @@ public class IotasTopology {
         HBaseBolt hBaseBolt = new HBaseBolt(configuration.get(HBASE_TABLE).toString(), mapper)
                 .withConfigKey(HBASE_CONF);
 
+        ParserBolt parserBolt = new ParserBolt(outputFields);
+        if(parserDatafeedId != null && !parserDatafeedId.isEmpty()) {
+            parserBolt.withDatafeedId(parserDatafeedId);
+        }
+
         builder.setSpout("KafkaSpout", spout);
-        builder.setBolt("ParserBolt", new ParserBolt(outputFields)).shuffleGrouping("KafkaSpout");
+        builder.setBolt("ParserBolt", parserBolt).shuffleGrouping("KafkaSpout");
         builder.setBolt("PrinterBolt", new PrinterBolt()).shuffleGrouping("ParserBolt");
         builder.setBolt("HBaseBolt", hBaseBolt).shuffleGrouping("ParserBolt");
 

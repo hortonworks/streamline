@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,12 +29,23 @@ public class ParserBolt extends BaseRichBolt {
     private OutputCollector collector;
     private RestClient client;
     private String localParserJarPath;
-    private static ConcurrentHashMap<DataSourceIdentifier, Parser> dataSourceToParserMap = new ConcurrentHashMap<DataSourceIdentifier, Parser>();
+    private static ConcurrentHashMap<Object, Parser> parserMap = new ConcurrentHashMap<Object, Parser>();
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private Fields outputFields;
+    private String datafeedId;
 
     public ParserBolt(Fields outputFields) {
         this.outputFields = outputFields;
+    }
+
+    /**
+     * If user knows this instance of parserBolt is mapped to a topic which has messages that conforms to exactly one type of parser,
+     * they can ignore the rest lookup to get parser based on deviceId and version and instead set a single parser via this method.
+     *
+     * @param datafeedId
+     */
+    public void withDatafeedId(String datafeedId) {
+        this.datafeedId = datafeedId;
     }
 
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
@@ -52,15 +62,20 @@ public class ParserBolt extends BaseRichBolt {
 
     public void execute(Tuple input) {
         byte[] bytes = input.getBinaryByField("bytes");
+        Parser parser = null;
         try {
-            IotasMessage iotasMessage = objectMapper.readValue(new String(bytes, StandardCharsets.UTF_8), IotasMessage.class);
-            Parser parser = getParser(iotasMessage);
-            Map<String, Object> parsed = parser.parse(iotasMessage.getData());
-            Values values = new Values();
-            for(String s: parsed.keySet()) {
-                System.out.print("\"" + s + "\",");
+            if (datafeedId == null) {
+                //If a datafeedId is not configured in parser Bolt, we assume the message has iotasMessage.
+                IotasMessage iotasMessage = objectMapper.readValue(new String(bytes, StandardCharsets.UTF_8), IotasMessage.class);
+                parser = getParser(iotasMessage);
+                bytes = iotasMessage.getData();
+            } else {
+                parser = getParser(datafeedId);
             }
-            System.out.println();
+
+            Map<String, Object> parsed = parser.parse(bytes);
+            Values values = new Values();
+
             for (String str : outputFields) {
                 values.add(parsed.get(str));
             }
@@ -72,11 +87,9 @@ public class ParserBolt extends BaseRichBolt {
         }
     }
 
-    private Parser loadParser(DataSourceIdentifier dataSourceId) {
-        //TODO: We need to agree on version's type, string is probably a better choice.
-        ParserInfo parserInfo = client.getParserInfo(dataSourceId.getId(), Long.valueOf(dataSourceId.getVersion()));
+    private Parser loadParser(ParserInfo parserInfo) {
         InputStream parserJar = client.getParserJar(parserInfo.getParserId());
-        String jarPath = String.format("%s%s%s-%s.jar", localParserJarPath, File.pathSeparator, dataSourceId.getId(), dataSourceId.getVersion());
+        String jarPath = String.format("%s%s-%s.jar", localParserJarPath, File.pathSeparator, parserInfo.getParserName());
 
         try {
             IOUtils.copy(parserJar, new FileOutputStream(new File(jarPath)));
@@ -85,7 +98,6 @@ public class ParserBolt extends BaseRichBolt {
             }
 
             return ReflectionHelper.newInstance(parserInfo.getClassName());
-
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -93,16 +105,32 @@ public class ParserBolt extends BaseRichBolt {
 
     private Parser getParser(IotasMessage iotasMessage) {
         DataSourceIdentifier dataSourceId = new DataSourceIdentifier(iotasMessage.getId(), iotasMessage.getVersion());
-        Parser parser = dataSourceToParserMap.get(dataSourceId);
+        Parser parser = parserMap.get(dataSourceId);
         if (parser == null) {
-            Parser loadedParser = loadParser(dataSourceId);
-            parser = dataSourceToParserMap.putIfAbsent(dataSourceId, loadedParser);
-            if (parser == null) {
-                parser = loadedParser;
-            }
+            ParserInfo parserInfo = client.getParserInfo(dataSourceId.getId(), Long.valueOf(dataSourceId.getVersion()));
+            parser = getParserAndOptionallyUpdateCache(parserInfo, datafeedId);
         }
         return parser;
     }
+
+    private Parser getParser(String datafeedId) {
+        Parser parser = parserMap.get(datafeedId);
+        if (parser == null) {
+            ParserInfo parserInfo = client.getParserInfo(datafeedId);
+            parser = getParserAndOptionallyUpdateCache(parserInfo, datafeedId);
+        }
+        return parser;
+    }
+
+    private Parser getParserAndOptionallyUpdateCache(ParserInfo parserInfo, Object key) {
+        Parser loadedParser = loadParser(parserInfo);
+        Parser parser = parserMap.putIfAbsent(datafeedId, loadedParser);
+        if (parser == null) {
+            parser = loadedParser;
+        }
+        return parser;
+    }
+
 
 
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
@@ -118,7 +146,7 @@ public class ParserBolt extends BaseRichBolt {
         private Long version;
 
         private DataSourceIdentifier(String id, Long version) {
-            this.id =  id;
+            this.id = id;
             this.version = version;
         }
 
