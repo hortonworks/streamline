@@ -89,7 +89,7 @@ public class ParserBolt extends BaseRichBolt {
 
     private Parser loadParser(ParserInfo parserInfo) {
         InputStream parserJar = client.getParserJar(parserInfo.getParserId());
-        String jarPath = String.format("%s%s-%s.jar", localParserJarPath, File.pathSeparator, parserInfo.getParserName());
+        String jarPath = String.format("%s%s-%s.jar", localParserJarPath, File.separator, parserInfo.getParserName());
 
         try {
             IOUtils.copy(parserJar, new FileOutputStream(new File(jarPath)));
@@ -108,7 +108,7 @@ public class ParserBolt extends BaseRichBolt {
         Parser parser = parserMap.get(dataSourceId);
         if (parser == null) {
             ParserInfo parserInfo = client.getParserInfo(dataSourceId.getId(), Long.valueOf(dataSourceId.getVersion()));
-            parser = getParserAndOptionallyUpdateCache(parserInfo, datafeedId);
+            parser = getParserAndOptionallyUpdateCache(parserInfo, dataSourceId);
         }
         return parser;
     }
@@ -124,7 +124,7 @@ public class ParserBolt extends BaseRichBolt {
 
     private Parser getParserAndOptionallyUpdateCache(ParserInfo parserInfo, Object key) {
         Parser loadedParser = loadParser(parserInfo);
-        Parser parser = parserMap.putIfAbsent(datafeedId, loadedParser);
+        Parser parser = parserMap.putIfAbsent(key, loadedParser);
         if (parser == null) {
             parser = loadedParser;
         }
