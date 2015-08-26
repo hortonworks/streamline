@@ -8,7 +8,8 @@ import java.util.Map;
  * Represents any entity that can be stored by our storage layer.
  */
 public interface Storable {
-
+    //TODO: probably we can remove getNameSpace and getPrimaryKey since we now have getStorableKey.
+    //TODO: Leaving it for now for discussion purposes, as well as not to break the client code
     /**
      * Storage namespace this can be translated to a jdbc table or zookeeper node or hbase table.
      * TODO: Namesapce can be a first class entity, probably needs its own class.
@@ -30,6 +31,8 @@ public interface Storable {
      * of fields.
      */
     PrimaryKey getPrimaryKey();
+
+    StorableKey getStorableKey();
 
     /**
      * TODO: Following two methods are not needed if we assume all storable entities will have setters and getters
