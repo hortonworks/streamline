@@ -54,7 +54,9 @@ public class CacheBackedStorageManager implements StorageManager {
 
     @Override   //TODO:
     public <T extends Storable> List<T> find(String namespace, List<CatalogService.QueryParam> queryParams) throws Exception {
-        throw new UnsupportedOperationException("TODO: Unsupported for now");
+        //Adding workaroudn methods that calls dao until we figure out what needs to be in caching so the toplogies can work.
+        return ((GuavaCache)cache).getDao().find(namespace, queryParams);
+
     }
 
     @Override
