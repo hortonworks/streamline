@@ -8,6 +8,7 @@ import backtype.storm.tuple.Fields;
 import com.google.common.collect.Lists;
 import com.hortonworks.bolt.ParserBolt;
 import com.hortonworks.bolt.PrinterBolt;
+import com.hortonworks.hbase.ParserOutputHBaseMapper;
 import org.apache.storm.hbase.bolt.HBaseBolt;
 import org.apache.storm.hbase.bolt.mapper.HBaseMapper;
 import org.apache.storm.hbase.bolt.mapper.SimpleHBaseMapper;
@@ -31,8 +32,7 @@ public class IotasTopology {
     private static final String HBASE_TABLE = "hbase.table";
     private static final String HBASE_ROW_KEY = "hbase.row.key";
     private static final String HBASE_COLUMN_FAMILY = "hbase.column.family";
-    private static final String PARSER_OUTPUT_FIELDS = "parser.output.fields";
-    private static final String PARSER_DATAFEED_ID = "parser.datafeedId";
+    private static final String PARSER_ID = "parserId";
     private static final String CATALOG_ROOT_URL = "catalog.root.url";
     private static final String PARSER_JAR_PATH = "parser.jar.path";
     public static final String HBASE_CONF = "hbase.conf";
@@ -46,8 +46,7 @@ public class IotasTopology {
         final String topic = (String) configuration.get(KAFKA_SPOUT_TOPIC);
         final String zkRoot = (String) configuration.get(KAFKA_SPOUT_ZK_ROOT);
         final String id = (String) configuration.get(KAFKA_SPOUT_ID);
-        final Fields outputFields = new Fields((List<String>) configuration.get(PARSER_OUTPUT_FIELDS));
-        final String parserDatafeedId = (String) configuration.get(PARSER_DATAFEED_ID);
+        final Long parserId = configuration.containsKey(PARSER_ID) ? (Long) configuration.get(PARSER_ID) : null;
 
         ZkHosts hosts = new ZkHosts(zkUrl);
         SpoutConfig config = new SpoutConfig(hosts, topic, zkRoot, id);
@@ -56,20 +55,14 @@ public class IotasTopology {
 
         Map hbaseConf = new HashMap();
 
-        final Fields columnFields =  new Fields((List<String>) configuration.get(PARSER_OUTPUT_FIELDS));
-        columnFields.toList().remove(configuration.get(HBASE_ROW_KEY));
-
         hbaseConf.put("hbase.root.dir", "hdfs://localhost:9000/hbase");
-        HBaseMapper mapper = new SimpleHBaseMapper()
-                .withRowKeyField(configuration.get(HBASE_ROW_KEY).toString())
-                .withColumnFamily(configuration.get(HBASE_COLUMN_FAMILY).toString())
-                .withColumnFields(columnFields);
+        HBaseMapper mapper = new ParserOutputHBaseMapper((String) configuration.get(HBASE_ROW_KEY), (String) configuration.get(HBASE_COLUMN_FAMILY));
         HBaseBolt hBaseBolt = new HBaseBolt(configuration.get(HBASE_TABLE).toString(), mapper)
                 .withConfigKey(HBASE_CONF);
 
-        ParserBolt parserBolt = new ParserBolt(outputFields);
-        if(parserDatafeedId != null && !parserDatafeedId.isEmpty()) {
-            parserBolt.withDatafeedId(parserDatafeedId);
+        ParserBolt parserBolt = new ParserBolt();
+        if (parserId != null) {
+            parserBolt.withParserId(parserId);
         }
 
         builder.setSpout("KafkaSpout", spout);
@@ -85,12 +78,9 @@ public class IotasTopology {
 
         if (args != null && args.length > 1) {
             StormSubmitter.submitTopologyWithProgressBar(args[1], conf, builder.createTopology());
-        }
-        else {
+        } else {
             LocalCluster cluster = new LocalCluster();
             cluster.submitTopology("NestTopology", conf, builder.createTopology());
-            Thread.sleep(10000);
-            //cluster.shutdown();
         }
     }
 

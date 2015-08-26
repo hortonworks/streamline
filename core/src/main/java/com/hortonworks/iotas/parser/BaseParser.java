@@ -17,24 +17,16 @@ import static com.hortonworks.iotas.common.Schema.Field;
 public abstract class BaseParser implements Parser {
 
     public Map<String, Object> parse(String data) throws ParseException {
-        try {
-            return parse(data.getBytes(Charsets.UTF_8));
-        } catch (IOException e) {
-            throw new ParseException(e);
-        }
+        return parse(data.getBytes(Charsets.UTF_8));
     }
 
     public List<Object> parseFields(byte[] data) throws ParseException {
-        try {
-            Map<String, Object> parsedData = parse(data);
-            List<Object> fields = new ArrayList<Object>();
-            for (Field f : schema().getFields()) {
-                fields.add(parsedData.get(f.getName()));
-            }
-            return fields;
-        } catch (IOException e) {
-            throw new ParseException(e);
+        Map<String, Object> parsedData = parse(data);
+        List<Object> fields = new ArrayList<Object>();
+        for (Field f : schema().getFields()) {
+            fields.add(parsedData.get(f.getName()));
         }
+        return fields;
     }
 
     public List<Object> parseFields(String data) throws ParseException {
@@ -50,11 +42,7 @@ public abstract class BaseParser implements Parser {
      * @throws ParseException
      */
     public final Schema schemaFromSampleData(byte[] data) throws ParseException {
-        try {
-            return Schema.fromMapData(parse(data));
-        } catch (IOException e) {
-            throw new ParseException(e);
-        }
+        return Schema.fromMapData(parse(data));
     }
 
     /**

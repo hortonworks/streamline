@@ -45,7 +45,8 @@ Now you need to create hbase table where all the messages will be stored.
 `create 'nest', 'cf'`
 
 Now, From intellij you should be able to run `com.hortonworks.topology.IotasTopology` by providing `$IOTAS-HOME/storm/src/main/resources/topology.yaml` as argument and modifying `$IOTAS-HOME/storm/pom.xml` so `storm-core` is not in provided scope. 
-you can also run the topology on a storm cluster by providing the name of the topology as second argument.
+you can also run the topology on a storm cluster by providing the name of the topology as second argument. RIGHT NOW THE TOPOLOGY DOES NOT EXECUTE IN A CLUSTER AS THE JACKSON LIBRARY USED BY US HAVE A CONFLICTING
+VERSION WITH STORM. WE NEED TO DO SOME SHADDING ON OUR SIDE TO MAKE THE TOPOLOGY WORK.
 
 `storm jar $IOTAS-HOME/storm/target/storm-0.1-SNAPSHOT.jar com.hortonworks.topology.IotasTopology  $IOTAS-HOME/storm/src/main/resources/topology.yaml IotasTopology`  
 

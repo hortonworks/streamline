@@ -81,11 +81,8 @@ public class RestClient {
         return null;
     }
 
-    public ParserInfo getParserInfo(String datafeedId) {
-        DataFeed dataFeed = getEntities(String.format("%s/%s/%s",
-                rootCatalogURL, FEED_URL, datafeedId), DataFeed.class).get(0);
-
-        return getEntity(String.format("%s/%s/%s", rootCatalogURL, PARSER_URL, dataFeed.getParserId()), ParserInfo.class);
+    public ParserInfo getParserInfo(Long parserId) {
+        return getEntity(String.format("%s/%s/%s", rootCatalogURL, PARSER_URL, parserId), ParserInfo.class);
     }
 
     public ParserInfo getParserInfo(String deviceId, Long version) {
@@ -95,18 +92,10 @@ public class RestClient {
         DataFeed dataFeed = getEntities(String.format("%s/%s/?dataSourceId=%s",
                                         rootCatalogURL, FEED_URL, dataSource.getDataSourceId()), DataFeed.class).get(0);
 
-        return getEntity(String.format("%s/%s/%s", rootCatalogURL, PARSER_URL, dataFeed.getParserId()), ParserInfo.class);
+        return getParserInfo(dataFeed.getParserId());
     }
 
     public InputStream getParserJar(Long parserId) {
         return get(String.format("%s/%s/%s", rootCatalogURL, PARSER_DOWNLOAD_URL, parserId), InputStream.class);
     }
-
-    public static void main(String[] args) {
-        RestClient restClient = new RestClient("http://localhost:8080/api/v1/catalog");
-        ParserInfo nest = restClient.getParserInfo("nest", 1L);
-        System.out.println(nest);
-        System.out.println(restClient.getParserJar(nest.getParserId()));
-    }
-
 }

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.collect.Lists;
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.parser.BaseParser;
 import com.hortonworks.iotas.parser.ParseException;
 import com.hortonworks.iotas.parser.Parser;
 import com.hortonworks.util.ReflectionHelper;
@@ -20,7 +21,7 @@ import java.util.Map;
 /**
  * Created by pbrahmbhatt on 7/30/15.
  */
-public class NestParser implements Parser {
+public class NestParser extends BaseParser {
 
     private static ObjectMapper mapper = new ObjectMapper();
 
@@ -89,15 +90,4 @@ public class NestParser implements Parser {
         }
     }
 
-    public Map<String, Object> parse(String data) throws ParseException {
-        return null;
-    }
-
-    public List<Object> parseFields(byte[] data) throws ParseException {
-        return null;
-    }
-
-    public List<Object> parseFields(String data) throws ParseException {
-        return null;
-    }
 }

@@ -27,7 +27,6 @@ import kafka.producer.ProducerConfig;
 import org.apache.commons.cli.*;
 
 import java.io.*;
-import java.nio.charset.Charset;
 import java.util.Properties;
 import java.util.Scanner;
 

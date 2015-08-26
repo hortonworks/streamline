@@ -48,7 +48,7 @@ public interface Parser {
      * @param data
      * @return
      */
-    Map<String, Object> parse(byte[] data) throws ParseException, IOException;
+    Map<String, Object> parse(byte[] data) throws ParseException;
 
     //TODO: don't understand the need for any of the following methods
     /**
