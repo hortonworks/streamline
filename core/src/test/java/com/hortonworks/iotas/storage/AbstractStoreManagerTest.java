@@ -76,27 +76,27 @@ public abstract class AbstractStoreManagerTest {
 
             //test add by inserting the first item in list.
             getStorageManager().add(storable1);
-            Assert.assertEquals(storable1, getStorageManager().get(storable1.getNameSpace(), storable1.getPrimaryKey()));
+            Assert.assertEquals(storable1, getStorageManager().get(storable1.getStorableKey()));
 
             //test update by calling addOrUpdate on second item which should have the same primary key value as first item.
             getStorageManager().addOrUpdate(storable2);
-            Assert.assertEquals(storable2, getStorageManager().get(storable1.getNameSpace(), storable1.getPrimaryKey()));
+            Assert.assertEquals(storable2, getStorageManager().get(storable1.getStorableKey()));
 
             //add 3rd item, only added so list operation will return more then one item.
             getStorageManager().addOrUpdate(storable3);
-            Assert.assertEquals(storable3, getStorageManager().get(storable3.getNameSpace(), storable3.getPrimaryKey()));
+            Assert.assertEquals(storable3, getStorageManager().get(storable3.getStorableKey()));
 
             //test remove by adding 4th item and removin it.
             getStorageManager().addOrUpdate(storable4);
-            Assert.assertEquals(storable4, getStorageManager().get(storable4.getNameSpace(), storable4.getPrimaryKey()));
-            getStorageManager().remove(storable4.getNameSpace(), storable4.getPrimaryKey());
-            Assert.assertNull(getStorageManager().get(storable4.getNameSpace(), storable4.getPrimaryKey()));
+            Assert.assertEquals(storable4, getStorageManager().get(storable4.getStorableKey()));
+            getStorageManager().remove(storable4.getStorableKey());
+            Assert.assertNull(getStorageManager().get(storable4.getStorableKey()));
 
             //The final state of storage layer should only have 2nd item (updated version of 1st item) and 3rd Item.
             Set<Storable> storableSet = new HashSet<Storable>();
             storableSet.add(storable2);
             storableSet.add(storable3);
-            Assert.assertEquals(storableSet, new HashSet(getStorageManager().list(storable2.getNameSpace())));
+            Assert.assertEquals(storableSet, new HashSet(getStorageManager().list(storable2.getStorableKey().getNameSpace())));
         }
     }
 

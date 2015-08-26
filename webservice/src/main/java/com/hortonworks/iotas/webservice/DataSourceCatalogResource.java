@@ -23,7 +23,6 @@ import static javax.ws.rs.core.Response.Status.*;
 @Produces(MediaType.APPLICATION_JSON)
 public class DataSourceCatalogResource {
     private CatalogService catalogService;
-    // TODO should probably make namespace static
 
     public DataSourceCatalogResource(CatalogService catalogService) {
         this.catalogService = catalogService;

@@ -28,7 +28,6 @@ import static javax.ws.rs.core.Response.Status.*;
 @Path("/api/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class ParserInfoCatalogResource {
-    // TODO should probably make namespace static
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private CatalogService catalogService;

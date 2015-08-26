@@ -56,7 +56,6 @@ public class FeedCatalogResource {
         return WSUtils.respond(NOT_FOUND, DATAFEED_FILTER_NOT_FOUND, queryParams.toString());
     }
 
-
     @GET
     @Path("/feeds/{id}")
     @Timed
