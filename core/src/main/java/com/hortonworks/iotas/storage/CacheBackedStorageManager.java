@@ -53,12 +53,7 @@ public class CacheBackedStorageManager implements StorageManager {
     }
 
     @Override   //TODO:
-    public <T extends Storable> T get(StorableKey key, Class<T> clazz) throws StorageException {
-        throw new UnsupportedOperationException("TODO: Unsupported for now");
-    }
-
-    @Override   //TODO:
-    public <T extends Storable> List<T> find(String namespace, List<CatalogService.QueryParam> queryParams, Class<?> clazz) throws Exception {
+    public <T extends Storable> List<T> find(String namespace, List<CatalogService.QueryParam> queryParams) throws Exception {
         throw new UnsupportedOperationException("TODO: Unsupported for now");
     }
 

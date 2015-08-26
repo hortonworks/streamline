@@ -54,9 +54,23 @@ public interface StorageManager {
      */
     <T extends Storable> T get(StorableKey key) throws StorageException;
 
-    <T extends Storable> T get(StorableKey key, Class<T> clazz) throws StorageException;
-
-    <T extends Storable> List<T> find(String namespace, List<QueryParam> queryParams, Class<?> clazz) throws Exception;
+    /**
+     * Get the list of storable entities in the namespace, matching the query params.
+     * <pre>
+     * E.g get a list of all devices with deviceId="nest" and version=1
+     *
+     * List<QueryParam> params = Arrays.asList(new QueryParam("deviceId", "nest"), new QueryParam("version", "1");
+     *
+     * List<Device> devices = find(DEVICE_NAMESPACE, params);
+     * </pre>
+     *
+     * @param namespace
+     * @param queryParams
+     * @param <T>
+     * @return
+     * @throws Exception
+     */
+    <T extends Storable> List<T> find(String namespace, List<QueryParam> queryParams) throws Exception;
 
     /**
      * Lists all {@link Storable} objects existing in the given namespace. If no entity is found, and empty list will be returned.

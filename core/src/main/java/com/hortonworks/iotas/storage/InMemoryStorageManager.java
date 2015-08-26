@@ -1,25 +1,22 @@
 package com.hortonworks.iotas.storage;
 
 
-import com.hortonworks.iotas.service.CatalogService;
-import static com.hortonworks.iotas.service.CatalogService.QueryParam;
-
-import javax.xml.crypto.Data;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.hortonworks.iotas.service.CatalogService.QueryParam;
 
 //TODO: The synchronization is broken right now, so all the methods dont guarantee the semantics as described in the interface.
 public class InMemoryStorageManager implements StorageManager {
 
     private ConcurrentHashMap<String, ConcurrentHashMap<PrimaryKey, Storable>> storageMap =  new ConcurrentHashMap<String, ConcurrentHashMap<PrimaryKey, Storable>>();
     private ConcurrentHashMap<String, Long> sequenceMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, Class<?>> nameSpaceClassMap = new ConcurrentHashMap<String, Class<?>>();
 
     @Override
     public void add(Storable storable) throws AlreadyExistsException {
@@ -50,6 +47,7 @@ public class InMemoryStorageManager implements StorageManager {
         PrimaryKey id = storable.getPrimaryKey();
         if(!storageMap.containsKey(namespace)) {
             storageMap.putIfAbsent(namespace, new ConcurrentHashMap<PrimaryKey, Storable>());
+            nameSpaceClassMap.putIfAbsent(namespace, storable.getClass());
         }
         storageMap.get(namespace).put(id, storable);
     }
@@ -60,13 +58,6 @@ public class InMemoryStorageManager implements StorageManager {
                 ? (T) storageMap.get(key.getNameSpace()).get(key.getPrimaryKey())
                 : null;
     }
-
-    public <T extends Storable> T get(StorableKey key, Class<T> clazz) throws StorageException {
-        return storageMap.containsKey(key.getNameSpace()) 
-                ? (T) storageMap.get(key.getNameSpace()).get(key) 
-                : null;
-    }
-
 
     /**
      * Uses reflection to query the field or the method. Assumes
@@ -91,13 +82,16 @@ public class InMemoryStorageManager implements StorageManager {
         return res;
     }
 
-    public <T extends Storable> List<T> find(String namespace, List<QueryParam> queryParams, Class<?> clazz) throws Exception {
+    public <T extends Storable> List<T> find(String namespace, List<QueryParam> queryParams) throws Exception {
         List<Storable> result = new ArrayList<Storable>();
-        Map<PrimaryKey, Storable> storableMap = storageMap.get(namespace);
-        if(storableMap != null) {
-            for (Storable val : storableMap.values()){
-                if (matches(val, queryParams, clazz)) {
-                    result.add(val);
+        Class<?> clazz = nameSpaceClassMap.get(namespace);
+        if(clazz != null) {
+            Map<PrimaryKey, Storable> storableMap = storageMap.get(namespace);
+            if (storableMap != null) {
+                for (Storable val : storableMap.values()) {
+                    if (matches(val, queryParams, clazz)) {
+                        result.add(val);
+                    }
                 }
             }
         }
