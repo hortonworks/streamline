@@ -4,12 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.storage.DataSourceSubType;
 import com.hortonworks.iotas.storage.PrimaryKey;
+import com.hortonworks.iotas.storage.StorableKey;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static com.hortonworks.iotas.common.Schema.Field;
-
 
 /**
  * The device storage entity that will capture the actual device related information for admin.
@@ -43,6 +43,11 @@ public class Device implements DataSourceSubType {
      */
     private Long dataSourceId;
 
+    /**
+     * Time when this was created updated.
+     */
+    private Long timestamp;
+
     @JsonIgnore
     public String getNameSpace() {
         return "devices";
@@ -64,6 +69,11 @@ public class Device implements DataSourceSubType {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<Schema.Field, Object>();
         fieldToObjectMap.put(new Schema.Field(DATA_SOURCE_ID, Schema.Type.LONG), this.dataSourceId);
         return new PrimaryKey(fieldToObjectMap);
+    }
+
+    @JsonIgnore
+    public StorableKey getStorableKey() {
+        return new StorableKey(getNameSpace(), getPrimaryKey());
     }
 
     public Map toMap() {

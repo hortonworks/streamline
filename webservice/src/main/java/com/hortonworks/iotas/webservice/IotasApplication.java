@@ -17,15 +17,22 @@
  */
 package com.hortonworks.iotas.webservice;
 
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.cache.Cache;
+import com.hortonworks.iotas.cache.impl.GuavaCache;
+import com.hortonworks.iotas.cache.writer.StorageWriteThrough;
+import com.hortonworks.iotas.cache.writer.StorageWriter;
+import com.hortonworks.iotas.storage.CacheBackedStorageManager;
 import com.hortonworks.iotas.storage.InMemoryStorageManager;
+import com.hortonworks.iotas.storage.Storable;
+import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import org.I0Itec.zkclient.ZkClient;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 import java.util.List;
@@ -59,7 +66,40 @@ public class IotasApplication extends Application<IotasConfiguration> {
         // environment.jersey().register(feedResource);
 
         // TODO we should load the implementation based on configuration
-        CatalogService catalogService = new CatalogService(new InMemoryStorageManager());
+        final StorageManager cacheBackedDao = getCacheBackedDao();
+
+        registerResources(iotasConfiguration, environment, cacheBackedDao);
+    }
+
+    private StorageManager getCacheBackedDao() {
+        final InMemoryStorageManager dao = new InMemoryStorageManager();
+        final CacheBuilder cacheBuilder = getGuavaCacheBuilder();
+        final Cache<StorableKey, Storable> cache = getCache(dao, cacheBuilder);
+        final StorageWriter storageWriter = getStorageWriter(dao);
+
+        return doGetCacheBackedDao(cache, storageWriter);
+    }
+
+    private StorageWriter getStorageWriter(StorageManager dao) {
+        return new StorageWriteThrough(dao);
+    }
+
+    private StorageManager doGetCacheBackedDao(Cache<StorableKey, Storable> cache, StorageWriter writer) {
+//        return new InMemoryStorageManager();      // for quick debug purposes
+        return new CacheBackedStorageManager(cache, writer);
+    }
+
+    private Cache<StorableKey, Storable> getCache(StorageManager dao, CacheBuilder guavaCacheBuilder) {
+        return new GuavaCache(dao, guavaCacheBuilder);
+    }
+
+    private CacheBuilder getGuavaCacheBuilder() {
+        final long maxSize = 1000;
+        return  CacheBuilder.newBuilder().maximumSize(maxSize);
+    }
+
+    private void registerResources(IotasConfiguration iotasConfiguration, Environment environment, StorageManager manager) {
+        final CatalogService catalogService = new CatalogService(getCacheBackedDao());
         final FeedCatalogResource feedResource = new FeedCatalogResource(catalogService);
         final ParserInfoCatalogResource parserResource = new ParserInfoCatalogResource(catalogService, iotasConfiguration);
         final DataSourceCatalogResource dataSourceResource = new DataSourceCatalogResource(catalogService);

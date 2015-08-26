@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.PrimaryKey;
+import com.hortonworks.iotas.storage.StorableKey;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -67,6 +68,11 @@ public class ParserInfo implements Storable {
         Map<Schema.Field, Object> fieldObjectMap = new HashMap<Schema.Field, Object>();
         fieldObjectMap.put(new Schema.Field(PARSER_ID, Schema.Type.LONG), this.parserId);
         return new PrimaryKey(fieldObjectMap);
+    }
+
+    @JsonIgnore
+    public StorableKey getStorableKey() {
+        return new StorableKey(getNameSpace(), getPrimaryKey());
     }
 
     @JsonIgnore

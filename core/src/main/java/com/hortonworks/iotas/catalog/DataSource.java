@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.storage.PrimaryKey;
 import com.hortonworks.iotas.storage.Storable;
+import com.hortonworks.iotas.storage.StorableKey;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -80,6 +81,11 @@ public class DataSource implements Storable {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<Schema.Field, Object>();
         fieldToObjectMap.put(new Schema.Field(DATA_SOURCE_ID, Schema.Type.LONG), this.dataSourceId);
         return new PrimaryKey(fieldToObjectMap);
+    }
+
+    @JsonIgnore
+    public StorableKey getStorableKey() {
+        return new StorableKey(getNameSpace(), getPrimaryKey());
     }
 
     public Map toMap() {
