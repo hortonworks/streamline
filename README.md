@@ -50,5 +50,26 @@ VERSION WITH STORM. Please merge https://github.com/apache/storm/pull/702 on you
 
 `storm jar $IOTAS-HOME/storm/target/storm-0.1-SNAPSHOT.jar com.hortonworks.topology.IotasTopology  $IOTAS-HOME/storm/src/main/resources/topology.yaml IotasTopology`  
 
+#Accounting for bad tuples in a topplogy
+A mechanism has been added so that when messages are being played from a 
+spout in an IotaS topology and they cant successfully be parsed then such 
+messages end up in some persistent storage. The mechanism has been abstracted
+in to an interface called `com.hortonworks.topology.UnparsedTupleHandler`. A 
+default hdfs based implementation for the interface has been provided in the 
+class com.hortonworks.topology.HdfsUnparsedTupleHandler. To be able to use 
+that implementation a ParserBolt just needs to be supplied with an object of 
+that implementation. Please see usage below. This will write all the tuples 
+to hdfs with fsUrl, path and name of the file as mentioned. Note that it will
+append a UUID to the name of the file. So if one were to search for all the 
+files containing tuples that failed parsing, they would need to search with 
+a regex like data* instead of just data in the hdfs path specified. By 
+default the records are separated by \n. However you can choose to specify 
+another record delimiter character using withRecordDelimiter method.
+
+`UnparsedTupleHandler unparsedTupleHandler = new`
+    `HdfsUnparsedTupleHandler().withFsUrl("hdfs://localhost" +`
+    `":9000").withPath("/failed-tuples").withName("data");`
+`parserBolt.withUnparsedTupleHandler(unparsedTupleHandler);`
+
 #Accessing UI
 http://localhost:8080/ui/index.html
