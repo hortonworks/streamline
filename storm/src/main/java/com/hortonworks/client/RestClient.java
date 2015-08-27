@@ -34,6 +34,7 @@ public class RestClient {
     private static final String PARSER_URL = "parsers";
     private static final String PARSER_DOWNLOAD_URL = PARSER_URL + "/download";
 
+    //TODO: timeouts should come from a config so probably make them constructor args.
     public RestClient(String rootCatalogURL) {
         this.rootCatalogURL = rootCatalogURL;
         client = Client.create();
@@ -46,9 +47,8 @@ public class RestClient {
             WebResource resource = client.resource(url);
             return resource.accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_OCTET_STREAM_TYPE, MediaType.MULTIPART_FORM_DATA_TYPE).get(clazz);
         } catch (Exception ex) {
-            //System.out.println(ex);
+            throw new RuntimeException(ex);
         }
-        return null;
     }
 
     public <T> List<T> getEntities(String url, Class<T> clazz) {
@@ -63,7 +63,7 @@ public class RestClient {
                 entities.add(mapper.treeToValue(it.next(), clazz));
             }
         } catch (Exception ex) {
-            System.out.println(ex);
+            throw new RuntimeException(ex);
         }
         return entities;
     }
@@ -81,6 +81,10 @@ public class RestClient {
         return null;
     }
 
+    public ParserInfo getParserInfo(Long parserId) {
+        return getEntity(String.format("%s/%s/%s", rootCatalogURL, PARSER_URL, parserId), ParserInfo.class);
+    }
+
     public ParserInfo getParserInfo(String deviceId, Long version) {
         DataSource dataSource = getEntities(String.format("%s/%s/type/DEVICE/?deviceId=%s&version=%s",
                                             rootCatalogURL, DATASOURCE_URL, deviceId, version), DataSource.class).get(0);
@@ -88,18 +92,10 @@ public class RestClient {
         DataFeed dataFeed = getEntities(String.format("%s/%s/?dataSourceId=%s",
                                         rootCatalogURL, FEED_URL, dataSource.getDataSourceId()), DataFeed.class).get(0);
 
-        return getEntity(String.format("%s/%s/%s", rootCatalogURL, PARSER_URL, dataFeed.getParserId()), ParserInfo.class);
+        return getParserInfo(dataFeed.getParserId());
     }
 
     public InputStream getParserJar(Long parserId) {
         return get(String.format("%s/%s/%s", rootCatalogURL, PARSER_DOWNLOAD_URL, parserId), InputStream.class);
     }
-
-    public static void main(String[] args) {
-        RestClient restClient = new RestClient("http://localhost:8080/api/v1/catalog");
-        ParserInfo nest = restClient.getParserInfo("nest", 1L);
-        System.out.println(nest);
-        System.out.println(restClient.getParserJar(nest.getParserId()));
-    }
-
 }

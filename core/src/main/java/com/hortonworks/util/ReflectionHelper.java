@@ -1,5 +1,7 @@
 package com.hortonworks.util;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -76,5 +78,11 @@ public class ReflectionHelper {
 
     public static <T> T newInstance(String className) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
         return (T) Class.forName(className).newInstance();
+    }
+
+    public static <T> T invokeGetter(String propertyName, Object object) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        String methodName = "get" + StringUtils.capitalize(propertyName);
+        Method method = object.getClass().getMethod(methodName);
+        return (T) method.invoke(object);
     }
 }

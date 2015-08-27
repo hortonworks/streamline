@@ -19,9 +19,10 @@ package com.hortonworks.iotas.simulator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.iotas.model.DeviceMessage;
-import kafka.producer.KeyedMessage;
+import com.google.common.base.Charsets;
+import com.hortonworks.iotas.model.IotasMessage;
 import kafka.javaapi.producer.Producer;
+import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
 import org.apache.commons.cli.*;
 
@@ -37,6 +38,7 @@ public class CLI {
     private static final String OPTION_TOPIC = "topic";
     private static final String OPTION_DELAY = "delay";
     private static final String OPTION_TIMESTAMP = "timestamp";
+    private static final String OPTION_DATA_FILE_PATH = "dataFilePath";
 
     public static void main(String[] args) throws Exception {
         Options options = new Options();
@@ -45,6 +47,7 @@ public class CLI {
         options.addOption(option(1, "t", OPTION_TOPIC, "Kafka topic to publish to."));
         options.addOption(option(1, "d", OPTION_DELAY, "When processing a data file, the delay, in milliseconds, between messages."));
         options.addOption(option(0, "T", OPTION_TIMESTAMP, "When processing a data file, override timestamp with the current time."));
+        options.addOption(option(1, "f", OPTION_DATA_FILE_PATH, "Data File Path from which data will be read and published to kafka topic."));
 
         CommandLineParser parser = new BasicParser();
         CommandLine cmd = parser.parse(options, args);
@@ -63,18 +66,14 @@ public class CLI {
 
         if(cmd.hasOption(OPTION_INTERACTIVE)) {
             interactiveLoop(producer, cmd);
-        } else {
-            if(cmd.getArgs().length == 0){
-                System.out.println("Error: No data file specified and not running in interactive mode.");
-                usage(options);
-                System.exit(1);
-            }
-
-            File file = new File(cmd.getArgs()[0]);
+        } else if(cmd.hasOption(OPTION_DATA_FILE_PATH)) {
+            File file = new File(cmd.getOptionValue(OPTION_DATA_FILE_PATH));
             if(!(file.exists() && file.canRead() && file.isFile())){
                 System.out.println("Error: Unable to read file: " + file.getAbsolutePath());
             }
             processDataFile(file, producer, cmd);
+        } else {
+            usage(options);
         }
     }
 
@@ -93,21 +92,17 @@ public class CLI {
 
     private static void usage(Options options) {
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("CLI -b <brokerhosts> [options] [data file]", options);
+        formatter.printHelp("CLI -b <brokerhosts> [options]", options);
     }
 
-    private static void processDataFile(File file, Producer producer, CommandLine cmd){
+    private static void processDataFile(File file, Producer producer, CommandLine cmd) throws InterruptedException, IOException {
         String topic = cmd.getOptionValue(OPTION_TOPIC);
         System.out.println("Publishing to topic: " + topic);
-        try {
-            FileInputStream fis = new FileInputStream(file);
-            InputStreamReader isr = new InputStreamReader(fis);
-            BufferedReader reader = new BufferedReader(isr);
-
+        try(BufferedReader reader = new BufferedReader(new InputStreamReader( new FileInputStream(file)))) {
             ObjectMapper mapper = new ObjectMapper();
             String line = null;
             while((line = reader.readLine()) != null){
-                DeviceMessage message = mapper.readValue(line, DeviceMessage.class);
+                IotasMessage message = mapper.readValue(line, IotasMessage.class);
                 if(cmd.hasOption(OPTION_TIMESTAMP)){
                     message.setTimestamp(System.currentTimeMillis());
                 }
@@ -118,9 +113,6 @@ public class CLI {
                     Thread.sleep(delay);
                 }
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -136,7 +128,7 @@ public class CLI {
         Scanner scanner = new Scanner(System.in);
         String lastId = "";
         String lastType = "";
-        String lastVersion = "";
+        Long lastVersion = 0l;
         String lastData = "";
 
         String temp;
@@ -156,7 +148,7 @@ public class CLI {
             System.out.print(String.format("Version [%s]: ", lastVersion));
             temp = scanner.nextLine();
             if(!temp.equals("")) {
-                lastVersion = temp;
+                lastVersion = Long.valueOf(temp);
             }
 
             System.out.print(String.format("Data [%s]: ", lastData));
@@ -173,17 +165,17 @@ public class CLI {
                 }
             }
 
-            DeviceMessage message = new DeviceMessage();
-            message.setDeviceId(lastId);
-            message.setDeviceType(lastType);
+            IotasMessage message = new IotasMessage();
+            message.setId(lastId);
+            message.setType(lastType);
             message.setVersion(lastVersion);
-            message.setData(lastData);
+            message.setData(lastData.getBytes(Charsets.UTF_8));
 
             writeToKafka(producer, message, lastTopic);
         }
     }
 
-    private static void writeToKafka(Producer<String, String> producer, DeviceMessage message, String topic){
+    private static void writeToKafka(Producer<String, String> producer, IotasMessage message, String topic){
         ObjectMapper mapper = new ObjectMapper();
         try {
             String json = mapper.writeValueAsString(message);
