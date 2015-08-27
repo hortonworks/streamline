@@ -1,64 +1,63 @@
 package com.hortonworks.iotas.storage;
 
 
-import com.hortonworks.iotas.service.CatalogService;
-import static com.hortonworks.iotas.service.CatalogService.QueryParam;
-
-import javax.xml.crypto.Data;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.hortonworks.iotas.service.CatalogService.QueryParam;
 
 //TODO: The synchronization is broken right now, so all the methods dont guarantee the semantics as described in the interface.
 public class InMemoryStorageManager implements StorageManager {
 
     private ConcurrentHashMap<String, ConcurrentHashMap<PrimaryKey, Storable>> storageMap =  new ConcurrentHashMap<String, ConcurrentHashMap<PrimaryKey, Storable>>();
-    private ConcurrentHashMap<String, Long> sequenceMap = new ConcurrentHashMap<String, Long>();
+    private ConcurrentHashMap<String, Long> sequenceMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, Class<?>> nameSpaceClassMap = new ConcurrentHashMap<String, Class<?>>();
 
+    @Override
     public void add(Storable storable) throws AlreadyExistsException {
-        String namespace = storable.getNameSpace();
-        PrimaryKey id = storable.getPrimaryKey();
-        Storable existing = get(namespace, id);
+        final Storable existing = get(storable.getStorableKey());
+
         if(existing == null) {
             addOrUpdate(storable);
-        } else if(existing.equals(storable)) {
+        } else if (existing.equals(storable)) {
             return;
         } else {
-            throw new AlreadyExistsException("Another instnace with same id = " + storable.getPrimaryKey() + " exists with different value in namespace " + namespace +
-                    " Consider using addOrUpdate method if you always want to overwrite.");
+            throw new AlreadyExistsException("Another instnace with same id = " + storable.getPrimaryKey()
+                    + " exists with different value in namespace " + storable.getNameSpace()
+                    + " Consider using addOrUpdate method if you always want to overwrite.");
         }
     }
 
-    public <T extends Storable> T remove(String namespace, PrimaryKey id) {
-        if(storageMap.containsKey(namespace)) {
-            return (T) storageMap.get(namespace).remove(id);
+    @Override
+    public <T extends Storable> T  remove(StorableKey key) throws StorageException {
+        if(storageMap.containsKey(key.getNameSpace())) {
+            return (T) storageMap.get(key.getNameSpace()).remove(key.getPrimaryKey());
         }
         return null;
     }
 
+    @Override
     public void addOrUpdate(Storable storable) {
         String namespace = storable.getNameSpace();
         PrimaryKey id = storable.getPrimaryKey();
         if(!storageMap.containsKey(namespace)) {
             storageMap.putIfAbsent(namespace, new ConcurrentHashMap<PrimaryKey, Storable>());
+            nameSpaceClassMap.putIfAbsent(namespace, storable.getClass());
         }
         storageMap.get(namespace).put(id, storable);
     }
 
-    public <T extends Storable> T get(String namespace, PrimaryKey id) throws StorageException {
-        return storageMap.containsKey(namespace) ? (T) storageMap.get(namespace).get(id) : null;
+    @Override
+    public <T extends Storable> T  get(StorableKey key) throws StorageException {
+        return storageMap.containsKey(key.getNameSpace())
+                ? (T) storageMap.get(key.getNameSpace()).get(key.getPrimaryKey())
+                : null;
     }
-
-    public <T extends Storable> T get(String namespace, PrimaryKey id, Class<T> clazz) throws StorageException {
-        return storageMap.containsKey(namespace) ? (T) storageMap.get(namespace).get(id) : null;
-    }
-
 
     /**
      * Uses reflection to query the field or the method. Assumes
@@ -77,23 +76,22 @@ public class InMemoryStorageManager implements StorageManager {
                     return false;
                 }
             }
-        } catch (InvocationTargetException e) {
-            res = false;
-        } catch (NoSuchMethodException e) {
-            res = false;
-        } catch (IllegalAccessException e) {
+        } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
             res = false;
         }
         return res;
     }
 
-    public <T extends Storable> List<T> find(String namespace, List<QueryParam> queryParams, Class<?> clazz) throws Exception {
+    public <T extends Storable> List<T> find(String namespace, List<QueryParam> queryParams) throws Exception {
         List<Storable> result = new ArrayList<Storable>();
-        Map<PrimaryKey, Storable> storableMap = storageMap.get(namespace);
-        if(storableMap != null) {
-            for (Storable val : storableMap.values()){
-                if (matches(val, queryParams, clazz)) {
-                    result.add(val);
+        Class<?> clazz = nameSpaceClassMap.get(namespace);
+        if(clazz != null) {
+            Map<PrimaryKey, Storable> storableMap = storageMap.get(namespace);
+            if (storableMap != null) {
+                for (Storable val : storableMap.values()) {
+                    if (matches(val, queryParams, clazz)) {
+                        result.add(val);
+                    }
                 }
             }
         }
@@ -101,14 +99,19 @@ public class InMemoryStorageManager implements StorageManager {
     }
 
 
+    @Override
     public <T extends Storable> Collection<T> list(String namespace) throws StorageException {
-        return storageMap.containsKey(namespace) ? (Collection<T>) storageMap.get(namespace).values() : Collections.EMPTY_LIST;
+        return (Collection<T>) (storageMap.containsKey(namespace)
+                        ? storageMap.get(namespace).values()
+                        : new ArrayList<Storable>());
     }
 
+    @Override
     public void cleanup() throws StorageException {
         //no-op
     }
 
+    @Override
     public Long nextId(String namespace){
         Long id = this.sequenceMap.get(namespace);
         if(id == null){

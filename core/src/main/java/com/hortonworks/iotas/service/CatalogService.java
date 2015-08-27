@@ -8,6 +8,7 @@ import com.hortonworks.iotas.catalog.Device;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.storage.DataSourceSubType;
 import com.hortonworks.iotas.storage.Storable;
+import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.util.CoreUtils;
 
@@ -71,8 +72,7 @@ public class CatalogService {
         if (dataSources != null) {
             for (DataSource ds : dataSources) {
                 String ns = getNamespaceForDataSourceType(ds.getType());
-                DataSourceSubType subType = dao.get(ns, ds.getPrimaryKey(),
-                                                    getClassForDataSourceType(ds.getType()));
+                DataSourceSubType subType = dao.get(new StorableKey(ns, ds.getPrimaryKey()));
                 ds.setTypeConfig(CoreUtils.storableToJson(subType));
             }
         }
@@ -82,7 +82,7 @@ public class CatalogService {
     public Collection<DataSource> listDataSourcesForType(DataSource.Type type, List<QueryParam> params) throws Exception {
         List<DataSource> dataSources = new ArrayList<DataSource>();
         String ns = getNamespaceForDataSourceType(type);
-        List<DataSourceSubType> subTypes = dao.<DataSourceSubType>find(ns, params, getClassForDataSourceType(type));
+        List<DataSourceSubType> subTypes = dao.<DataSourceSubType>find(ns, params);
         for(DataSourceSubType st: subTypes) {
             dataSources.add(getDataSource(st.getDataSourceId()));
         }
@@ -92,11 +92,10 @@ public class CatalogService {
     public DataSource getDataSource(Long id) throws IOException {
         DataSource ds = new DataSource();
         ds.setDataSourceId(id);
-        DataSource result = dao.<DataSource>get(DATA_SOURCE_NAMESPACE, ds.getPrimaryKey());
+        DataSource result = dao.<DataSource>get(new StorableKey(DATA_SOURCE_NAMESPACE, ds.getPrimaryKey()));
         if (result != null) {
             String ns = getNamespaceForDataSourceType(result.getType());
-            DataSourceSubType subType = dao.get(ns, ds.getPrimaryKey(),
-                                                getClassForDataSourceType(result.getType()));
+            DataSourceSubType subType = dao.get(new StorableKey(ns, ds.getPrimaryKey()));
             result.setTypeConfig(CoreUtils.storableToJson(subType));
         }
         return result;
@@ -124,8 +123,8 @@ public class CatalogService {
             * Delete the child entity first
             */
             String ns = getNamespaceForDataSourceType(dataSource.getType());
-            this.dao.remove(ns, dataSource.getPrimaryKey());
-            dao.<DataSource>remove(DATA_SOURCE_NAMESPACE, dataSource.getPrimaryKey());
+            this.dao.remove(new StorableKey(ns, dataSource.getPrimaryKey()));
+            dao.<DataSource>remove(new StorableKey(DATA_SOURCE_NAMESPACE, dataSource.getPrimaryKey()));
         }
         return dataSource;
     }
@@ -146,13 +145,13 @@ public class CatalogService {
     }
 
     public Collection<DataFeed> listDataFeeds(List<QueryParam> params) throws Exception {
-        return dao.<DataFeed>find(DATA_FEED_NAMESPACE, params, DataFeed.class);
+        return dao.<DataFeed>find(DATA_FEED_NAMESPACE, params);
     }
 
     public DataFeed getDataFeed(Long dataFeedId) {
         DataFeed df = new DataFeed();
         df.setDataFeedId(dataFeedId);
-        return this.dao.<DataFeed>get(DATA_FEED_NAMESPACE, df.getPrimaryKey());
+        return this.dao.<DataFeed>get(new StorableKey(DATA_FEED_NAMESPACE, df.getPrimaryKey()));
     }
 
     public DataFeed addDataFeed(DataFeed feed) {
@@ -169,7 +168,7 @@ public class CatalogService {
     public DataFeed removeDataFeed(Long dataFeedId) {
         DataFeed feed = new DataFeed();
         feed.setDataFeedId(dataFeedId);
-        return dao.<DataFeed>remove(DATA_FEED_NAMESPACE, feed.getPrimaryKey());
+        return dao.<DataFeed>remove(new StorableKey(DATA_FEED_NAMESPACE, feed.getPrimaryKey()));
     }
 
 
@@ -187,13 +186,13 @@ public class CatalogService {
     public ParserInfo getParserInfo(Long parserId) {
         ParserInfo parserInfo = new ParserInfo();
         parserInfo.setParserId(parserId);
-        return dao.<ParserInfo>get(PARSER_INFO_NAMESPACE, parserInfo.getPrimaryKey());
+        return dao.<ParserInfo>get(new StorableKey(PARSER_INFO_NAMESPACE, parserInfo.getPrimaryKey()));
     }
 
     public ParserInfo removeParser(Long parserId) {
         ParserInfo parserInfo = new ParserInfo();
         parserInfo.setParserId(parserId);
-        return this.dao.<ParserInfo>remove(PARSER_INFO_NAMESPACE, parserInfo.getPrimaryKey());
+        return this.dao.<ParserInfo>remove(new StorableKey(PARSER_INFO_NAMESPACE, parserInfo.getPrimaryKey()));
     }
 
     public ParserInfo addParserInfo(ParserInfo parserInfo) {
@@ -206,7 +205,6 @@ public class CatalogService {
         this.dao.add(parserInfo);
         return parserInfo;
     }
-
 
     public Cluster addCluster(Cluster cluster) {
         if (cluster.getId() == null) {

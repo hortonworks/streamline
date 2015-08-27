@@ -15,7 +15,7 @@ import java.util.List;
  */
 public interface StorageManager {
     /**
-     *
+     * TODO: update this javadoc
      * Adds this storable to storage layer, if the storable with same {@code Storable.getPrimaryKey} exists,
      * it will do a get and ensure new and old storables instances are equal in which case it will return false.
      * If the old and new instances are not the same it will throw {@code AlreadyExistsException}.
@@ -27,18 +27,17 @@ public interface StorageManager {
     void add(Storable storable) throws StorageException;
 
     /**
-     * Removes a storable based on namespace and storableId combination. If the id to remove does not
-     * exist no exception is thrown but a null value is returned.
+     * Removes a {@link Storable} object identified by a {@link StorableKey}.
+     * If the key does not exist a null value is returned, no exception is thrown.
      *
-     * @param namespace
-     * @param id
+     * @param key of the {@link Storable} object to remove
      * @return object that got removed, null if no object was removed.
      * @throws StorageException
      */
-    <T extends Storable> T remove(String namespace, PrimaryKey id) throws StorageException;
+    <T extends Storable> T remove(StorableKey key) throws StorageException;
 
     /**
-     * Unlike add, if the storage entity already exists it will be updated if it does not exist it will be creaetd.
+     * Unlike add, if the storage entity already exists, it will be updated. If it does not exist, it will be created.
      * @param storable
      * @return
      * @throws StorageException
@@ -49,25 +48,39 @@ public interface StorageManager {
     /**
      * Gets the storable entity by using {@code Storable.getPrimaryKey()} as lookup key, return null if no storable entity with
      * the supplied key is found.
-     * @param namespace
-     * @param id
+     * @param key
      * @return
      * @throws StorageException
      */
-    <T extends Storable> T get(String namespace, PrimaryKey id) throws StorageException;
+    <T extends Storable> T get(StorableKey key) throws StorageException;
 
-    <T extends Storable> T get(String namespace, PrimaryKey id, Class<T> clazz) throws StorageException;
+    /**
+     * Get the list of storable entities in the namespace, matching the query params.
+     * <pre>
+     * E.g get a list of all devices with deviceId="nest" and version=1
+     *
+     * List<QueryParam> params = Arrays.asList(new QueryParam("deviceId", "nest"), new QueryParam("version", "1");
+     *
+     * List<Device> devices = find(DEVICE_NAMESPACE, params);
+     * </pre>
+     *
+     * @param namespace
+     * @param queryParams
+     * @param <T>
+     * @return
+     * @throws Exception
+     */
+    <T extends Storable> List<T> find(String namespace, List<QueryParam> queryParams) throws Exception;
 
-    <T extends Storable> List<T> find(String namespace, List<QueryParam> queryParams, Class<?> clazz) throws Exception;
-
-        /**
-         * Lists all storable under the given namespace, if no entity is found and empty list will be returned.
-         * @param namespace
-         * @return
-         * @throws StorageException
-         */
+    /**
+     * Lists all {@link Storable} objects existing in the given namespace. If no entity is found, and empty list will be returned.
+     * @param namespace
+     * @return
+     * @throws StorageException
+     */
     <T extends Storable> Collection<T> list(String namespace) throws StorageException;
 
+    //TODO: What is the purpose of this clenup method? Whipe out the DB?
     void cleanup() throws StorageException;
 
     Long nextId(String namespace) throws StorageException;

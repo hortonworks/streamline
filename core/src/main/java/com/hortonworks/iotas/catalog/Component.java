@@ -4,11 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.storage.PrimaryKey;
 import com.hortonworks.iotas.storage.Storable;
+import com.hortonworks.iotas.storage.StorableKey;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class Component implements Storable {
+public class Component extends AbstractStorable {
     public static final String NAMESPACE = "component";
 
     private Long id;
@@ -125,11 +126,4 @@ public class Component implements Storable {
         return new PrimaryKey(fieldToObjectMap);
     }
 
-    public Map toMap() {
-        return null;
-    }
-
-    public Storable fromMap(Map<String, Object> map) {
-        return null;
-    }
 }

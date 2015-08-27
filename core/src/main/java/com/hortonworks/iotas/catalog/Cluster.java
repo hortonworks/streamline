@@ -4,11 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.storage.PrimaryKey;
 import com.hortonworks.iotas.storage.Storable;
+import com.hortonworks.iotas.storage.StorableKey;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class Cluster implements Storable {
+public class Cluster extends AbstractStorable {
     public static final String NAMESPACE = "cluster";
 
     /**
@@ -94,14 +95,6 @@ public class Cluster implements Storable {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<Schema.Field, Object>();
         fieldToObjectMap.put(new Schema.Field("id", Schema.Type.LONG), this.id);
         return new PrimaryKey(fieldToObjectMap);
-    }
-
-    public Map toMap() {
-        return null;
-    }
-
-    public Storable fromMap(Map<String, Object> map) {
-        return null;
     }
 
 }
