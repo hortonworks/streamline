@@ -29,8 +29,12 @@ public class CatalogService {
     private static final String DEVICE_NAMESPACE = new Device().getNameSpace();
     private static final String DATA_FEED_NAMESPACE = new DataFeed().getNameSpace();
     private static final String PARSER_INFO_NAMESPACE = new ParserInfo().getNameSpace();
+    private static final String CLUSTER_NAMESPACE = new Cluster().getNameSpace();
+    private static final String COMPONENT_NAMESPACE = new Component().getNameSpace();
+
 
     private StorageManager dao;
+
 
     public static class QueryParam {
         public final String name;
@@ -208,20 +212,85 @@ public class CatalogService {
 
     public Cluster addCluster(Cluster cluster) {
         if (cluster.getId() == null) {
-            cluster.setId(this.dao.nextId(Cluster.NAMESPACE));
+            cluster.setId(this.dao.nextId(CLUSTER_NAMESPACE));
+        }
+        if (cluster.getTimestamp() == null) {
+            cluster.setTimestamp(System.currentTimeMillis());
         }
         this.dao.add(cluster);
         return cluster;
     }
 
 
+    public Collection<Cluster> listClusters() {
+        return this.dao.<Cluster>list(CLUSTER_NAMESPACE);
+    }
+
+
+    public Collection<Cluster> listClusters(List<QueryParam> params) throws Exception {
+        return dao.<Cluster>find(CLUSTER_NAMESPACE, params);
+    }
+
+    public Cluster getCluster(Long clusterId) {
+        Cluster cluster = new Cluster();
+        cluster.setId(clusterId);
+        return this.dao.<Cluster>get(new StorableKey(CLUSTER_NAMESPACE, cluster.getPrimaryKey()));
+    }
+
+    public Cluster removeCluster(Long clusterId) {
+        Cluster cluster = new Cluster();
+        cluster.setId(clusterId);
+        return dao.<Cluster>remove(new StorableKey(CLUSTER_NAMESPACE, cluster.getPrimaryKey()));
+    }
+
+    public Cluster addOrUpdateCluster(Long clusterId, Cluster cluster) {
+        cluster.setId(clusterId);
+        cluster.setTimestamp(System.currentTimeMillis());
+        this.dao.addOrUpdate(cluster);
+        return cluster;
+    }
+
     public Component addComponent(Long clusterId, Component component) {
         if (component.getId() == null) {
-            component.setId(this.dao.nextId(Component.NAMESPACE));
+            component.setId(this.dao.nextId(COMPONENT_NAMESPACE));
+        }
+        if (component.getTimestamp() == null) {
+            component.setTimestamp(System.currentTimeMillis());
         }
         component.setClusterId(clusterId);
         this.dao.add(component);
         return component;
+    }
+
+    public Collection<Component> listComponents() {
+        return this.dao.<Component>list(COMPONENT_NAMESPACE);
 
     }
+
+    public Collection<Component> listComponents(List<QueryParam> queryParams) throws Exception {
+        return dao.<Component>find(COMPONENT_NAMESPACE, queryParams);
+    }
+
+    public Component getComponent(Long componentId) {
+        Component component = new Component();
+        component.setId(componentId);
+        return this.dao.<Component>get(new StorableKey(COMPONENT_NAMESPACE, component.getPrimaryKey()));
+    }
+
+
+    public Component removeComponent(Long componentId) {
+        Component component = new Component();
+        component.setId(componentId);
+        return dao.<Component>remove(new StorableKey(COMPONENT_NAMESPACE, component.getPrimaryKey()));
+    }
+
+
+    public Component addOrUpdateComponent(Long clusterId, Long componentId, Component component) {
+        component.setClusterId(clusterId);
+        component.setId(componentId);
+        component.setTimestamp(System.currentTimeMillis());
+        this.dao.addOrUpdate(component);
+        return component;
+    }
+
 }

@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Component extends AbstractStorable {
-    public static final String NAMESPACE = "component";
+    private static final String NAMESPACE = "component";
 
     private Long id;
     private Long clusterId;
@@ -21,6 +21,7 @@ public class Component extends AbstractStorable {
     private String config = "";
     private String hosts;
     private int port;
+    private Long timestamp;
 
     /**
      * The primary key.
@@ -111,12 +112,22 @@ public class Component extends AbstractStorable {
         this.port = port;
     }
 
+    @JsonIgnore
     public String getNameSpace() {
         return NAMESPACE;
     }
 
+    @JsonIgnore
     public Schema getSchema() {
         return null;
+    }
+
+    public Long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
     }
 
     @JsonIgnore

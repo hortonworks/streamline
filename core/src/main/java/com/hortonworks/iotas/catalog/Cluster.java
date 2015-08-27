@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Cluster extends AbstractStorable {
-    public static final String NAMESPACE = "cluster";
+    private static final String NAMESPACE = "cluster";
 
     /**
      * The cluster type - STORM, KAFKA, HDFS
@@ -24,6 +24,7 @@ public class Cluster extends AbstractStorable {
     private Type type;
     private String description = "";
     private String tags = "";
+    private Long timestamp;
 
     /**
      * The name of the cluster
@@ -82,12 +83,28 @@ public class Cluster extends AbstractStorable {
         this.id = id;
     }
 
+    @JsonIgnore
     public String getNameSpace() {
         return NAMESPACE;
     }
 
+    public Long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    @JsonIgnore
     public Schema getSchema() {
-        return null;
+        return new Schema.SchemaBuilder()
+                .fields(new Schema.Field("id", Schema.Type.LONG),
+                        new Schema.Field("name", Schema.Type.STRING),
+                        new Schema.Field("type", Schema.Type.STRING),
+                        new Schema.Field("description", Schema.Type.STRING),
+                        new Schema.Field("tags", Schema.Type.STRING),
+                        new Schema.Field("timestamp", Schema.Type.LONG)).build();
     }
 
     @JsonIgnore

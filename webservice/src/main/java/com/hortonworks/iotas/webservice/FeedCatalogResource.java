@@ -62,8 +62,6 @@ public class FeedCatalogResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDataFeedById(@PathParam("id") Long dataFeedId) {
         try {
-            DataFeed df = new DataFeed();
-            df.setDataFeedId(dataFeedId);
             DataFeed result = catalogService.getDataFeed(dataFeedId);
             if (result != null) {
                 return WSUtils.respond(OK, SUCCESS, result);

@@ -3,7 +3,6 @@
 ## Concepts
 
 
-
 **Cluster**
 
 A *Cluster* is a top level entity that can be used to define an external components like storm, kafka or spark clusters
@@ -73,12 +72,142 @@ Only the create api is specifed now. Others will be added once we finalize.
 }
 ```
 
+### Get
+
+`GET /api/v1/catalog/clusters/:clusterid`
+
+**Success Response**
+
+    GET /api/v1/catalog/clusters/1
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+
+```json
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entity": {
+    "id": 1,
+    "name": "Storm cluster",
+    "type": "STORM",
+    "description": "The storm cluster that handles IOT events",
+    "tags": "production",
+    "timestamp": 1440672386842
+  }
+}
+```
+**Error Response**
+
+    GET /api/v1/catalog/clusters/10
+    HTTP/1.1 404 Not Found
+    Content-Type: application/json
+    
+```json
+{
+  "responseCode": 1101,
+  "responseMessage": "Entity with id [10] not found."
+}
+```
+
+### Get All
+
+`GET /api/v1/catalog/clusters`
+
+    GET /api/v1/catalog/clusters
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+
+```json
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entities": [
+    {
+      "id": 1,
+      "name": "Storm cluster",
+      "type": "STORM",
+      "description": "The storm cluster that handles IOT events",
+      "tags": "production",
+      "timestamp": 1440672386842
+    },
+    {
+      "id": 2,
+      "name": "Kafka cluster",
+      "type": "KAFKA",
+      "description": "The kafka cluster",
+      "tags": "production",
+      "timestamp": 1440672386842
+    }    
+    ..
+    ..
+  ]
+}
+```
+### Update
+
+`PUT /api/v1/catalog/clusters/:clusterid`
+
+*Sample Input*
+
+```json
+{
+ "name": "New Storm cluster",
+ "type": "STORM",
+ "description": "The storm cluster that handles IOT events",
+ "tags": "production"
+}
+```
+
+*Success Response*
+
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+
+```json
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entity": {
+    "id": 1,
+    "name": "New Storm cluster",
+    "type": "STORM",
+    "description": "The storm cluster that handles IOT events",
+    "tags": "production",
+    "timestamp": 1440672956507
+  }
+}
+```
+
+### Delete
+
+`DELETE /api/v1/catalog/clusters/:clusterid`
+
+*Success Response*
+
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+
+```json
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entity": {
+    "id": 1,
+    "name": "Storm cluster",
+    "type": "STORM",
+    "description": "The storm cluster that handles IOT events",
+    "tags": "production",
+    "timestamp": 1440672386842
+  }
+}
+```
+
 
 ### Create components
 
 `POST /api/v1/clusters/:clusterid/components`
 
-*Sample Input*
+**Sample Input**
 
 ```json
 {
@@ -91,25 +220,174 @@ Only the create api is specifed now. Others will be added once we finalize.
 }
 ```
    
-*Success Response*
+**Success Response**
 
     HTTP/1.1 201 Created
     Content-Type: application/json
     
 ```json
 {
- "responseCode": 1000,
- "responseMessage": "Success",
- "entity": {
- "id": 1,
- "clusterId": 1,
- "name": "Nimbus",
- "type": "NIMBUS",
- "description": "Storm nimbus servers",
- "config": "",
- "hosts": "storm[1-2].hortonworks.com",
- "port": 6627
- }
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entity": {
+    "id": 1,
+    "clusterId": 1,
+    "name": "Nimbus",
+    "type": "NIMBUS",
+    "description": "Storm nimbus servers",
+    "config": "",
+    "hosts": "storm[1-2].hortonworks.com",
+    "port": 6627,
+    "timestamp": 1440673170488
+  }
 }
 ```
 
+### Get
+
+`GET /api/v1/catalog/clusters/:clusterid/components/:componentid`
+
+**Success Response**
+
+    GET /api/v1/catalog/clusters/1/components/1
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+
+```json
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entity": {
+    "id": 1,
+    "clusterId": 1,
+    "name": "Nimbus",
+    "type": "NIMBUS",
+    "description": "Storm nimbus servers",
+    "config": "",
+    "hosts": "storm[1-2].hortonworks.com",
+    "port": 6627,
+    "timestamp": 1440673170488
+  }
+}
+```
+
+**Error Response**
+
+    GET /api/v1/catalog/clusters/1/components/10
+    HTTP/1.1 404 Not Found
+    Content-Type: application/json
+    
+```json
+{
+  "responseCode": 1101,
+  "responseMessage": "Entity with id [10] not found."
+}
+```
+    
+### Get All
+
+`GET /api/v1/catalog/clusters/:clusterid/components`
+
+    GET /api/v1/catalog/clusters/1/components
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+
+```json
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entities": [
+    {
+      "id": 2,
+      "clusterId": 1,
+      "name": "Supervisor",
+      "type": "SUPERVISOR",
+      "description": "Storm supervisor servers",
+      "config": "",
+      "hosts": "storm[1-2].hortonworks.com",
+      "port": 6627,
+      "timestamp": 1440669873019
+    },
+    {
+      "id": 1,
+      "clusterId": 1,
+      "name": "Nimbus",
+      "type": "NIMBUS",
+      "description": "Storm nimbus servers",
+      "config": "",
+      "hosts": "storm[1-2].hortonworks.com",
+      "port": 6627,
+      "timestamp": 1440669538339
+    }
+    ..
+    ..
+  ]
+}
+```
+
+### Update
+
+`PUT /api/v1/catalog/clusters/:clusterid/components/:componentid`
+
+*Sample Input*
+
+```json
+{
+    "name": "New Supervisor",
+    "type": "SUPERVISOR",
+    "description": "Storm supervisor servers",
+    "config": "",
+    "hosts": "storm[1-2].hortonworks.com",
+    "port": 6627
+}
+```
+
+*Success Response*
+
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+   
+```json
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entity": {
+    "id": 1,
+    "clusterId": 1,
+    "name": "New Supervisor",
+    "type": "SUPERVISOR",
+    "description": "Storm supervisor servers",
+    "config": "",
+    "hosts": "storm[1-2].hortonworks.com",
+    "port": 6627,
+    "timestamp": 1440673315032
+  }
+}
+```
+
+### Delete
+
+`DELETE /api/v1/catalog/clusters/:clusterid/components/:componentid`
+
+*Success Response*
+
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    
+```json
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entity": {
+    "id": 2,
+    "clusterId": 1,
+    "name": "Supervisor",
+    "type": "SUPERVISOR",
+    "description": "Storm supervisor servers",
+    "config": "",
+    "hosts": "storm[1-2].hortonworks.com",
+    "port": 6627,
+    "timestamp": 1440669873019
+  }
+}
+```
