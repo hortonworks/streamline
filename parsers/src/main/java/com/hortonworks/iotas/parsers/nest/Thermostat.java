@@ -434,9 +434,4 @@ public class Thermostat {
         return result;
     }
 
-    public static void main (String[] args) throws Exception {
-        String data = Files.readAllLines(Paths.get("/Users/pbrahmbhatt/repo/IoTaS/parsers/src/main/java/com/hortonworks/iotas/parsers/nest/data")).get(0);
-        Thermostat thermostat = new ObjectMapper().readValue(data, Thermostat.class);
-        System.out.println(thermostat);
-    }
 }
