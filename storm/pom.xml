@@ -106,11 +106,6 @@
             <artifactId>flux-core</artifactId>
             <version>${storm.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.storm</groupId>
-            <artifactId>flux-core</artifactId>
-            <version>${storm.version}</version>
-        </dependency>
     </dependencies>
 
     <build>
