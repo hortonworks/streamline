@@ -12,8 +12,11 @@ import com.hortonworks.client.RestClient;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.model.IotasMessage;
 import com.hortonworks.iotas.parser.Parser;
+import com.hortonworks.topology.UnparsedTupleHandler;
 import com.hortonworks.util.ReflectionHelper;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -24,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 public class ParserBolt extends BaseRichBolt {
+    private static final Logger LOG = LoggerFactory.getLogger(ParserBolt.class);
     public static final String CATALOG_ROOT_URL = "catalog.root.url";
     public static final String LOCAL_PARSER_JAR_PATH = "local.parser.jar.path";
     public static final String PARSED_FIELDS = "parsed.fields";
@@ -33,6 +37,7 @@ public class ParserBolt extends BaseRichBolt {
     private static ConcurrentHashMap<Object, Parser> parserMap = new ConcurrentHashMap<Object, Parser>();
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private Long parserId;
+    private UnparsedTupleHandler unparsedTupleHandler;
 
     /**
      * If user knows this instance of parserBolt is mapped to a topic which has messages that conforms to exactly one type of parser,
@@ -42,6 +47,11 @@ public class ParserBolt extends BaseRichBolt {
      */
     public void withParserId(Long parserId) {
         this.parserId = parserId;
+    }
+
+    public ParserBolt withUnparsedTupleHandler (UnparsedTupleHandler unparsedTupleHandler) {
+        this.unparsedTupleHandler = unparsedTupleHandler;
+        return this;
     }
 
 
@@ -55,10 +65,20 @@ public class ParserBolt extends BaseRichBolt {
         this.collector = collector;
         this.localParserJarPath = stormConf.get(LOCAL_PARSER_JAR_PATH).toString();
         this.client = new RestClient(catalogRootURL);
+        if (this.unparsedTupleHandler != null) {
+            try {
+                this.unparsedTupleHandler.prepare(stormConf);
+            } catch (Exception ex) {
+                throw new RuntimeException("Could not prepare " +
+                        "UnparsedTupleHandler used to account for bad tuples.",
+                        ex);
+            }
+        }
     }
 
     public void execute(Tuple input) {
         byte[] bytes = input.getBinaryByField("bytes");
+        byte[] failedBytes = bytes;
         Parser parser = null;
         try {
             if (parserId == null) {
@@ -66,6 +86,7 @@ public class ParserBolt extends BaseRichBolt {
                 IotasMessage iotasMessage = objectMapper.readValue(new String(bytes, StandardCharsets.UTF_8), IotasMessage.class);
                 parser = getParser(iotasMessage);
                 bytes = iotasMessage.getData();
+
             } else {
                 parser = getParser(parserId);
             }
@@ -75,10 +96,30 @@ public class ParserBolt extends BaseRichBolt {
             collector.emit(input, values);
             collector.ack(input);
         } catch (Exception e) {
-            collector.fail(input);
-            collector.reportError(e);
+            if (this.unparsedTupleHandler != null) {
+                try {
+                    this.unparsedTupleHandler.save(failedBytes);
+                    collector.ack(input);
+                } catch (Exception ex) {
+                    collector.fail(input);
+                    collector.reportError(e);
+                    LOG.error("Failed to parse and save the bad tuple using " +
+                            "UnparsedTupleHandler.", ex);
+                }
+            }
         }
     }
+
+    public void cleanup () {
+        if (this.unparsedTupleHandler != null) {
+            try {
+                this.unparsedTupleHandler.cleanup();
+            } catch (Exception ex) {
+                LOG.warn("Could not cleanup UnparsedTupleHandler", ex);
+            }
+        }
+    }
+
 
     private Parser loadParser(ParserInfo parserInfo) {
         InputStream parserJar = client.getParserJar(parserInfo.getParserId());

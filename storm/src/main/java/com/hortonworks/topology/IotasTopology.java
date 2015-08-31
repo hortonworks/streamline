@@ -65,6 +65,11 @@ public class IotasTopology {
             parserBolt.withParserId(parserId);
         }
 
+        UnparsedTupleHandler unparsedTupleHandler = new
+                HdfsUnparsedTupleHandler().withFsUrl("hdfs://localhost" +
+                ":9000").withPath("/failed-tuples").withName("data");
+        parserBolt.withUnparsedTupleHandler(unparsedTupleHandler);
+
         builder.setSpout("KafkaSpout", spout);
         builder.setBolt("ParserBolt", parserBolt).shuffleGrouping("KafkaSpout");
         builder.setBolt("PrinterBolt", new PrinterBolt()).shuffleGrouping("ParserBolt");
