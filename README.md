@@ -73,3 +73,10 @@ another record delimiter character using withRecordDelimiter method.
 
 #Accessing UI
 http://localhost:8080/ui/index.html
+
+#IoTaS topology using Flux
+IoTaS topologies can also be built using FLUX now. For more information, 
+please visit https://github.com/apache/storm/tree/master/external/flux
+
+After doing a mvn package on IoTaS home directory you can run the following 
+command `storm jar ./storm/target/storm-0.1-SNAPSHOT.jar org.apache.storm.flux.Flux --local --filter ./storm/src/main/resources/flux_iotas_topology.properties ./storm/src/main/resources/flux_iotas_topology_config.yaml`

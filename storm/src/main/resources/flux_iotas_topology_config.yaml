@@ -1,0 +1,91 @@
+name: "iotas-topology"
+config:
+#  topology.debug: true
+  catalog.root.url: ${catalog.root.url}
+  local.parser.jar.path: ${parser.jar.path}
+  hbase.conf:
+    hbase.root.dir: ${hbase.root.dir}
+
+components:
+  - id: "zkHosts"
+    className: "storm.kafka.ZkHosts"
+    constructorArgs:
+      - ${kafka.spout.zkUrl}
+
+  - id: "spoutConfig"
+    className: "storm.kafka.SpoutConfig"
+    constructorArgs:
+      - ref: "zkHosts"
+      - ${kafka.spout.topic}
+      - ${kafka.spout.zkRoot}
+      - ${kafka.spout.id}
+
+  - id: "unparsedTupleHandler"
+    className: ${unparsed.tuple.handler.implementation}
+    configMethods:
+      - name: "withFsUrl"
+        args:
+          - ${hdfs.fsUrl}
+      - name: "withPath"
+        args:
+          - ${hdfs.path}
+      - name: "withName"
+        args:
+          - ${hdfs.name}
+
+  - id: "hBaseMapper"
+    className: "com.hortonworks.hbase.ParserOutputHBaseMapper"
+    constructorArgs:
+      - ${hbase.row.key}
+      - ${hbase.column.family}
+
+
+# spout definitions
+spouts:
+  - id: "KafkaSpout"
+    className: "storm.kafka.KafkaSpout"
+    constructorArgs:
+      - ref: "spoutConfig"
+
+# bolt definitions
+bolts:
+  - id: "ParserBolt"
+    className: "com.hortonworks.bolt.ParserBolt"
+    configMethods:
+      - name: "withUnparsedTupleHandler"
+        args:
+          - ref: "unparsedTupleHandler"
+
+  - id: "PrinterBolt"
+    className: "com.hortonworks.bolt.PrinterBolt"
+
+  - id: "HBaseBolt"
+    className: "org.apache.storm.hbase.bolt.HBaseBolt"
+    constructorArgs:
+      - ${hbase.table}
+      - ref: "hBaseMapper"
+    configMethods:
+      - name: "withConfigKey"
+        args:
+          - "hbase.conf"
+
+#stream definitions
+streams:
+  - name: "kafka --> parser"
+    from: "KafkaSpout"
+    to: "ParserBolt"
+    grouping:
+      type: SHUFFLE
+
+  - name: "paser --> printer"
+    from: "ParserBolt"
+    to: "PrinterBolt"
+    grouping:
+      type: SHUFFLE
+
+  - name: "paser --> hbase"
+    from: "ParserBolt"
+    to: "HBaseBolt"
+    grouping:
+      type: SHUFFLE
+
