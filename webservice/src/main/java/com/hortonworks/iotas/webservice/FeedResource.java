@@ -3,7 +3,7 @@ package com.hortonworks.iotas.webservice;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.iotas.model.DeviceMessage;
+import com.hortonworks.iotas.model.IotasMessage;
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import kafka.utils.ZkUtils;
@@ -34,7 +34,7 @@ public class FeedResource {
 
     @POST
     @Path("{feed}")
-    public void publish(DeviceMessage message, @PathParam("feed") String feed){
+    public void publish(IotasMessage message, @PathParam("feed") String feed){
         ObjectMapper mapper = new ObjectMapper();
         try {
             String json = mapper.writeValueAsString(message);

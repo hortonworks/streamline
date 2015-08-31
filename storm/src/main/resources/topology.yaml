@@ -1,0 +1,12 @@
+kafka.spout.zkUrl: "localhost:2181"
+kafka.spout.topic: "nest-topic"
+kafka.spout.zkRoot: "/Iotas-kafka-spout"
+kafka.spout.id: "nest-kafka-spout"
+#parser.parserId: 1
+hbase.row.key: "device_id"
+hbase.root.dir: "hdfs://localhost:9000/hbase"
+hbase.column.family: "cf"
+hbase.table: "nest"
+catalog.root.url: "http://localhost:8080/api/v1/catalog"
+parser.jar.path: "/tmp"
+
