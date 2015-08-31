@@ -32,6 +32,7 @@ public class ParserBolt extends BaseRichBolt {
     public static final String LOCAL_PARSER_JAR_PATH = "local.parser.jar.path";
     public static final String PARSED_FIELDS = "parsed.fields";
     private OutputCollector collector;
+
     private RestClient client;
     private String localParserJarPath;
     private static ConcurrentHashMap<Object, Parser> parserMap = new ConcurrentHashMap<Object, Parser>();
@@ -103,13 +104,20 @@ public class ParserBolt extends BaseRichBolt {
                     this.unparsedTupleHandler.save(failedBytes);
                     collector.ack(input);
                 } catch (Exception ex) {
-                    collector.fail(input);
-                    collector.reportError(e);
-                    LOG.error("Failed to parse and save the bad tuple using " +
-                            "UnparsedTupleHandler.", ex);
+                    LOG.error("Failed to save bad tuple using UnparsedTupleHandler", ex);
+                    reportFailure(input, e);
                 }
+            } else {
+                reportFailure(input, e);
             }
-        }
+       }
+    }
+
+    private void reportFailure(Tuple input, Exception e) {
+        collector.fail(input);
+        collector.reportError(e);
+        LOG.error("Failed to parse and save the bad tuple using " +
+                "UnparsedTupleHandler.", e);
     }
 
     public void cleanup () {
@@ -129,7 +137,7 @@ public class ParserBolt extends BaseRichBolt {
 
         try {
             IOUtils.copy(parserJar, new FileOutputStream(new File(jarPath)));
-            if (!ReflectionHelper.isJarInClassPath(jarPath) && !ReflectionHelper.isClassLoaded(parserInfo.getClassName())) {
+            if (!ReflectionHelper.isClassLoaded(parserInfo.getClassName())) {
                 ReflectionHelper.loadJarAndAllItsClasses(jarPath);
             }
 
@@ -212,5 +220,11 @@ public class ParserBolt extends BaseRichBolt {
             result = 31 * result + (version != null ? version.hashCode() : 0);
             return result;
         }
+    }
+
+    //in default scope so test can inject a mock instance, We could spin up an in process
+    //rest server and configure it with all the correct catalog entries, but seems like an overkill for a test.
+    void setClient(RestClient client) {
+        this.client = client;
     }
 }
