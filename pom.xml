@@ -23,6 +23,7 @@
         <jackson.version>2.6.0</jackson.version>
         <slf4j.version>1.7.12</slf4j.version>
         <guava.version>18.0</guava.version>
+        <hdfs.version>2.2.0</hdfs.version>
     </properties>
 
     <dependencyManagement>
