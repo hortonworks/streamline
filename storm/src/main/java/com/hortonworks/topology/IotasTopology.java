@@ -35,6 +35,9 @@ public class IotasTopology {
     private static final String PARSER_ID = "parserId";
     private static final String CATALOG_ROOT_URL = "catalog.root.url";
     private static final String PARSER_JAR_PATH = "parser.jar.path";
+    private static final String HDFS_FSURL = "hdfs.fsUrl";
+    private static final String HDFS_PATH = "hdfs.path";
+    private static final String HDFS_NAME = "hdfs.name";
     public static final String HBASE_CONF = "hbase.conf";
 
     public static void main(String[] args) throws Exception {
@@ -66,8 +69,9 @@ public class IotasTopology {
         }
 
         UnparsedTupleHandler unparsedTupleHandler = new
-                HdfsUnparsedTupleHandler().withFsUrl("hdfs://localhost" +
-                ":9000").withPath("/failed-tuples").withName("data");
+                HdfsUnparsedTupleHandler().withFsUrl((String) configuration
+                .get(HDFS_FSURL)).withPath((String) configuration.get
+                (HDFS_PATH)).withName((String) configuration.get(HDFS_NAME));
         parserBolt.withUnparsedTupleHandler(unparsedTupleHandler);
 
         builder.setSpout("KafkaSpout", spout);
