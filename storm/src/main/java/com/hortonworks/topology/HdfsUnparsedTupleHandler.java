@@ -6,12 +6,11 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.client.HdfsDataOutputStream;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.EnumSet;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Created by pshah on 8/26/15.
@@ -19,12 +18,16 @@ import java.util.UUID;
  * tuples to hdfs
  */
 public class HdfsUnparsedTupleHandler implements UnparsedTupleHandler {
+    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(HdfsUnparsedTupleHandler.class);
     protected String fsUrl;
     protected String path;
     protected String name;
+    protected Long rotationInterval;
+    protected long rotation = 0;
     protected transient FileSystem fileSystem;
     private transient FSDataOutputStream out;
     private String recordDelimiter = "\n";
+    protected transient Object lock;
 
     public HdfsUnparsedTupleHandler withFsUrl (String fsUrl) {
         this.fsUrl = fsUrl;
@@ -41,6 +44,19 @@ public class HdfsUnparsedTupleHandler implements UnparsedTupleHandler {
         return this;
     }
 
+    /**
+     *
+     * @param rotationInterval is the interval in seconds at which the files
+     *                         should be rotated. Note that the largest
+     *                         supported value is Math.floor(Long
+     *                         .MAX_VALUE/1000)
+     * @return
+     */
+    public HdfsUnparsedTupleHandler withRotationInterval (long rotationInterval) {
+        this.rotationInterval = (rotationInterval * 1000);
+        return this;
+    }
+
     public HdfsUnparsedTupleHandler withRecordDelimiter (String recordDelimiter) {
         this.recordDelimiter = recordDelimiter;
         return this;
@@ -54,14 +70,16 @@ public class HdfsUnparsedTupleHandler implements UnparsedTupleHandler {
         if ((data == null) || (data.length == 0)) {
             return;
         }
-        this.out.write(data);
-        this.out.write(this.recordDelimiter.getBytes());
-        // calling hsynch here since this is going to be a one-off error
-        // scenario and hence unlikely to affect performance
-        if (this.out instanceof HdfsDataOutputStream) {
-            ((HdfsDataOutputStream) this.out).hsync(EnumSet.of(HdfsDataOutputStream.SyncFlag.UPDATE_LENGTH));
-        } else {
-            this.out.hsync();
+        synchronized (lock) {
+            this.out.write(data);
+            this.out.write(this.recordDelimiter.getBytes());
+            // calling hsynch here since this is going to be a one-off error
+            // scenario and hence unlikely to affect performance
+            if (this.out instanceof HdfsDataOutputStream) {
+                ((HdfsDataOutputStream) this.out).hsync(EnumSet.of(HdfsDataOutputStream.SyncFlag.UPDATE_LENGTH));
+            } else {
+                this.out.hsync();
+            }
         }
     }
 
@@ -84,16 +102,44 @@ public class HdfsUnparsedTupleHandler implements UnparsedTupleHandler {
         this.name = this.name + UUID.randomUUID();
         Configuration hadoopConf = new Configuration();
         this.fileSystem = FileSystem.get(URI.create(this.fsUrl), hadoopConf);
-        Path path =  new Path(this.path, this.name);
+        Path path =  new Path(this.path, this.name + "-" + rotation);
         this.out = this.fileSystem.create(path);
+        lock = new Object();
+        if (this.rotationInterval != null) {
+            Timer timer = new Timer(true);
+            TimerTask timerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    try {
+                        rotateOutputFile();
+                    } catch (IOException ex) {
+                        LOG.warn("Exception during rotating file for " +
+                                "storing unparsed tuples", ex);
+                    }
+                }
+            };
+            timer.scheduleAtFixedRate(timerTask, this.rotationInterval, this.rotationInterval);
+        }
+
     }
 
     /**
      * cleanup underlying hdfs output stream
      */
     public void cleanup () throws IOException {
-        if (this.out != null) {
-            this.out.close();
+        synchronized (lock) {
+            if (this.out != null) {
+                this.out.close();
+            }
+        }
+    }
+
+    protected void rotateOutputFile () throws IOException {
+        synchronized (lock) {
+            cleanup();
+            rotation++;
+            Path path =  new Path(this.path, this.name + "-" + rotation);
+            this.out = this.fileSystem.create(path);
         }
     }
 }

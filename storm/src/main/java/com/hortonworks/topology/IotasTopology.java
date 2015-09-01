@@ -71,7 +71,8 @@ public class IotasTopology {
         UnparsedTupleHandler unparsedTupleHandler = new
                 HdfsUnparsedTupleHandler().withFsUrl((String) configuration
                 .get(HDFS_FSURL)).withPath((String) configuration.get
-                (HDFS_PATH)).withName((String) configuration.get(HDFS_NAME));
+                (HDFS_PATH)).withName((String) configuration.get(HDFS_NAME))
+                .withRotationInterval(1);
         parserBolt.withUnparsedTupleHandler(unparsedTupleHandler);
 
         builder.setSpout("KafkaSpout", spout);
