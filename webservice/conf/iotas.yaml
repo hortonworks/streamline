@@ -2,17 +2,17 @@ brokerList: localhost:9092
 zookeeperHost: localhost:2181
 
 # Filesystem based jar storage
-jarStorageConfiguration:
-  className: "com.hortonworks.util.FileSystemJarStorage"
-  properties:
-    directory: "/tmp"
+#jarStorageConfiguration:
+#  className: "com.hortonworks.util.FileSystemJarStorage"
+#  properties:
+#    directory: "/tmp"
 
 # HDFS based Jar storage
-#jarStorageConfiguration:
-#  className: "com.hortonworks.util.HdfsJarStorage"
-#  properties:
-#    fsUrl: "file:///"
-#    directory: "/tmp/test-hdfs"
+jarStorageConfiguration:
+  className: "com.hortonworks.util.HdfsJarStorage"
+  properties:
+    fsUrl: "file:///"
+    directory: "/tmp/test-hdfs"
 
 # use the simple server factory if you only want to run on a single port
 #server:
