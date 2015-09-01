@@ -72,14 +72,8 @@ public class HdfsUnparsedTupleHandler implements UnparsedTupleHandler {
             return;
         }
         // Changing from lock to AtomicBoolean as per comment on code review.
-        // Note that this might miss a rotation since if the timer thread
-        // gets swapped in after rotateOutputFile is executed and before
-        // shouldRotate.set(false) is called. However, this will not cause
-        // any data loss. Just the number of output files will be one less
-        // every time this happens.
-        if (shouldRotate.get()) {
+        if (shouldRotate.compareAndSet(true, false)) {
             rotateOutputFile();
-            shouldRotate.set(false);
         }
         this.out.write(data);
         this.out.write(this.recordDelimiter.getBytes());
