@@ -32,6 +32,8 @@ public interface Storable {
      */
     PrimaryKey getPrimaryKey();
 
+    // TODO: why have both primary key and stoarable key ?
+    // TODO: add some docs
     StorableKey getStorableKey();
 
     /**

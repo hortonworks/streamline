@@ -24,7 +24,9 @@ public class CatalogResponse {
         EXCEPTION(1102, "An exception with message [%s] was thrown while processing request.", 1),
         BAD_REQUEST_PARAM_MISSING(1103, "Bad request. Param [%s] is missing or empty.", 1),
         DATASOURCE_TYPE_FILTER_NOT_FOUND(1104, "Datasource not found for type [%s], query params [%s].", 2),
-        DATAFEED_FILTER_NOT_FOUND(1104, "Datafeed not found for query params [%s].", 1);
+        DATAFEED_FILTER_NOT_FOUND(1104, "Datafeed not found for query params [%s].", 1),
+        CLUSTER_FILTER_NOT_FOUND(1105, "Cluster not found for query params [%s].", 1),
+        COMPONENT_FILTER_NOT_FOUND(1106, "Component not found for query params [%s].", 1);
 
         private int code;
         private String msg;
