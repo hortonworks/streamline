@@ -6,12 +6,12 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.client.HdfsDataOutputStream;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.EnumSet;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by pshah on 8/26/15.
@@ -19,12 +19,16 @@ import java.util.UUID;
  * tuples to hdfs
  */
 public class HdfsUnparsedTupleHandler implements UnparsedTupleHandler {
+    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(HdfsUnparsedTupleHandler.class);
     protected String fsUrl;
     protected String path;
     protected String name;
+    protected Long rotationInterval;
+    protected long rotation = 0;
     protected transient FileSystem fileSystem;
     private transient FSDataOutputStream out;
     private String recordDelimiter = "\n";
+    protected transient AtomicBoolean shouldRotate;
 
     public HdfsUnparsedTupleHandler withFsUrl (String fsUrl) {
         this.fsUrl = fsUrl;
@@ -41,6 +45,19 @@ public class HdfsUnparsedTupleHandler implements UnparsedTupleHandler {
         return this;
     }
 
+    /**
+     *
+     * @param rotationIntervalSeconds is the interval in seconds at which the files
+     *                         should be rotated. Note that the largest
+     *                         supported value is Math.floor(Long
+     *                         .MAX_VALUE/1000)
+     * @return
+     */
+    public HdfsUnparsedTupleHandler withRotationInterval (long rotationIntervalSeconds) {
+        this.rotationInterval = (rotationIntervalSeconds * 1000);
+        return this;
+    }
+
     public HdfsUnparsedTupleHandler withRecordDelimiter (String recordDelimiter) {
         this.recordDelimiter = recordDelimiter;
         return this;
@@ -53,6 +70,10 @@ public class HdfsUnparsedTupleHandler implements UnparsedTupleHandler {
     public void save(byte[] data) throws IOException {
         if ((data == null) || (data.length == 0)) {
             return;
+        }
+        // Changing from lock to AtomicBoolean as per comment on code review.
+        if (shouldRotate.compareAndSet(true, false)) {
+            rotateOutputFile();
         }
         this.out.write(data);
         this.out.write(this.recordDelimiter.getBytes());
@@ -70,6 +91,7 @@ public class HdfsUnparsedTupleHandler implements UnparsedTupleHandler {
      * @param conf map containing values that will be used in initializing hdfs
      */
     public void prepare (Map conf) throws IOException {
+        shouldRotate = new AtomicBoolean();
         if (this.fsUrl == null) {
             throw new IllegalStateException("File system URL must be specified.");
         }
@@ -84,8 +106,19 @@ public class HdfsUnparsedTupleHandler implements UnparsedTupleHandler {
         this.name = this.name + UUID.randomUUID();
         Configuration hadoopConf = new Configuration();
         this.fileSystem = FileSystem.get(URI.create(this.fsUrl), hadoopConf);
-        Path path =  new Path(this.path, this.name);
+        Path path =  new Path(this.path, this.name + "-" + rotation);
         this.out = this.fileSystem.create(path);
+        if (this.rotationInterval != null) {
+            Timer timer = new Timer(true);
+            TimerTask timerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    shouldRotate.set(true);
+                }
+            };
+            timer.scheduleAtFixedRate(timerTask, this.rotationInterval, this.rotationInterval);
+        }
+
     }
 
     /**
@@ -95,5 +128,12 @@ public class HdfsUnparsedTupleHandler implements UnparsedTupleHandler {
         if (this.out != null) {
             this.out.close();
         }
+    }
+
+    protected void rotateOutputFile () throws IOException {
+        cleanup();
+        rotation++;
+        Path path =  new Path(this.path, this.name + "-" + rotation);
+        this.out = this.fileSystem.create(path);
     }
 }
