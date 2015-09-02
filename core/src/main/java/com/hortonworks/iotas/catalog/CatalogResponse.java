@@ -19,14 +19,14 @@ public class CatalogResponse {
      * ResponseMessage args if any should always be string to keep it simple.
      */
     public enum ResponseMessage {
+        /* 1000 to 1100 reserved for success status messages */
         SUCCESS(1000, "Success", 0),
+        /* 1101 onwards for error messages */
         ENTITY_NOT_FOUND(1101, "Entity with id [%s] not found.", 1),
         EXCEPTION(1102, "An exception with message [%s] was thrown while processing request.", 1),
         BAD_REQUEST_PARAM_MISSING(1103, "Bad request. Param [%s] is missing or empty.", 1),
         DATASOURCE_TYPE_FILTER_NOT_FOUND(1104, "Datasource not found for type [%s], query params [%s].", 2),
-        DATAFEED_FILTER_NOT_FOUND(1104, "Datafeed not found for query params [%s].", 1),
-        CLUSTER_FILTER_NOT_FOUND(1105, "Cluster not found for query params [%s].", 1),
-        COMPONENT_FILTER_NOT_FOUND(1106, "Component not found for query params [%s].", 1);
+        ENTITY_NOT_FOUND_FOR_FILTER(1105, "Entity not found for query params [%s].", 1);
 
         private int code;
         private String msg;
@@ -36,6 +36,13 @@ public class CatalogResponse {
             this.code = code;
             this.msg = msg;
             this.nargs = nargs;
+        }
+
+        /*
+         * whether an error message or just a status.
+         */
+        private boolean isError() {
+            return code > 1100;
         }
 
         public static String format(ResponseMessage responseMessage, String... args) {
@@ -67,6 +74,7 @@ public class CatalogResponse {
         private ResponseMessage responseMessage;
         private Storable entity;
         private Collection<? extends Storable> entities;
+        private String DOC_LINK_MESSAGE = " Please check webservice/ErrorCodes.md for more details.";
 
         public Builder(ResponseMessage responseMessage) {
             this.responseMessage = responseMessage;
@@ -85,7 +93,11 @@ public class CatalogResponse {
         public CatalogResponse format(String... args) {
             CatalogResponse response = new CatalogResponse();
             response.responseCode = responseMessage.code;
-            response.responseMessage = ResponseMessage.format(responseMessage, args);
+            StringBuilder msg = new StringBuilder(ResponseMessage.format(responseMessage, args));
+            if(responseMessage.isError()) {
+                msg.append(DOC_LINK_MESSAGE);
+            }
+            response.responseMessage = msg.toString();
             response.entity = entity;
             response.entities = entities;
             return response;
