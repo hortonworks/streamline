@@ -1,20 +1,20 @@
 define(['require',
   'utils/Globals',
   'collection/BaseCollection',
-  'models/VDeviceCatalog'
-  ], function (require, Globals, BaseCollection, vDeviceCatalog) {
+  'models/VDatafeed'
+  ], function (require, Globals, BaseCollection, vDatafeed) {
   'use strict';
-  var vDeviceCatalogList = BaseCollection.extend(
+  var vDatafeedList = BaseCollection.extend(
     //Prototypal attributes
     {
 
-      url: Globals.baseURL + '/api/v1/catalog/datasources',
+      url: Globals.baseURL + '/api/v1/catalog/feeds',
 
-      model: vDeviceCatalog,
+      model: vDatafeed,
 
 
       initialize: function () {
-        this.modelName = 'VDeviceCatalog';
+        this.modelName = 'VDataFeed';
         this.modelAttrName = 'entities';
         this.bindErrorEvents();
       }
@@ -29,5 +29,5 @@ define(['require',
       tableCols: {}
     }
   );
-  return vDeviceCatalogList;
+  return vDatafeedList;
 });

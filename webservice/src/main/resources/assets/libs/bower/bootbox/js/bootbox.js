@@ -180,7 +180,7 @@
       if (!button.className) {
         if (total <= 2 && index === total-1) {
           // always add a primary to the main option in a two-button dialog
-          button.className = "btn-primary";
+          button.className = "btn-success";
         } else {
           button.className = "btn-default";
         }
@@ -787,7 +787,7 @@
     en : {
       OK      : "OK",
       CANCEL  : "Cancel",
-      CONFIRM : "OK"
+      CONFIRM : "Yes"
     },
     es : {
       OK      : "OK",

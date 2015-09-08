@@ -168,5 +168,15 @@ define(['require', 'bootstrap.notify'], function(require) {
       });
   };
 
+  Utils.showError = function(response){
+    var msg;
+    if(response.responseJSON.responseMessage){
+      msg = response.responseJSON.responseMessage;
+    } else {
+      msg = response.responseJSON.message;
+    }
+    Utils.notifyError(msg);
+  };
+
   return Utils;
 });

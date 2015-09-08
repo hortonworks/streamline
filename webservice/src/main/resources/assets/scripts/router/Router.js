@@ -4,16 +4,17 @@ define([
 	'backbone',
 	'App',
 	'models/VAppState',
-	'utils/Globals'
-], function($, _, Backbone, App, VAppState, Globals) {
+	'utils/Globals',
+	'utils/Utils'
+], function($, _, Backbone, App, VAppState, Globals, Utils) {
 	var AppRouter = Backbone.Router.extend({
 		routes: {
 			// Define some URL routes
 			''						: 'dashboardAction',
 			'!/dashboard'			: 'dashboardAction',
-			'!/datasource'			: 'datasourceAction',
 			'!/parser-registry'		: 'parserRegistryAction',
 			'!/device-catalog'		: 'deviceCatalogAction',
+			'!/device-catalog/:pid'	: 'deviceDetailAction',
 
 			// Default
 			'*actions': 'defaultAction'
@@ -47,12 +48,12 @@ define([
 		},
 
 		preRouteExecute: function() {
-			console.log("Pre-Route Change Operations can be performed here !!");
+			// console.log("Pre-Route Change Operations can be performed here !!");
 		},
 
 		postRouteExecute: function(name, args) {
-			console.log("Post-Route Change Operations can be performed here !!");
-			console.log("Route changed: ", name);
+			// console.log("Post-Route Change Operations can be performed here !!");
+			// console.log("Route changed: ", name);
 		},
 
 		/**
@@ -64,15 +65,6 @@ define([
 			});
 			require(['views/site/Dashboard'],function(DashboardView){
 				App.rContent.show(new DashboardView());
-			});
-		},
-
-		datasourceAction: function() {
-			VAppState.set({
-				'currentTab' : Globals.AppTabs.Datasource.value
-			});
-			require(['views/datasource/DatasourceView'], function(DatasourceView){
-				App.rContent.show(new DatasourceView());
 			});
 		},
 		
@@ -91,6 +83,29 @@ define([
 			});
 			require(['views/device/DeviceCatalogView'],function(DeviceCatalogView){
 				App.rContent.show(new DeviceCatalogView());
+			});
+		},
+
+		deviceDetailAction: function(id){
+			VAppState.set({
+				'currentTab' : Globals.AppTabs.DeviceCatalog.value
+			});
+			require(['models/VDatasource'], function(VDatasource){
+				var dsModel = new VDatasource();
+				dsModel.set('dataSourceId',id);
+				dsModel.fetch({
+					success: function(model, response, options){
+						var tModel = new VDatasource(response.entity);
+						require(['views/datasource/DataSourceDetails'], function(DataSourceDetailsView){
+							App.rContent.show(new DataSourceDetailsView({
+								dsModel: tModel
+							}));
+						});
+					},
+					error: function(model, response, options){
+						Utils.showError(response);
+					}
+				});
 			});
 		},
 		

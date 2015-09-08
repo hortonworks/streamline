@@ -895,3 +895,9 @@ text.id {
 div[data-id=r_tableList] .btn {
   margin-right: 2px;
 }
+.modal-body .form-horizontal .control-label {
+    width:145px;
+}
+.modal-body .form-horizontal .controls{
+    margin-left:160px;
+}

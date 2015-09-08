@@ -34,7 +34,9 @@
           'deviceType': 'Device Type',
           'type': 'Type',
           'datasourceName': 'Datasource Name',
-          'actions': 'Actions'
+          'actions': 'Actions',
+          'dataFeedName': 'Data Feed Name',
+          'endpoint': 'End Point'
         },
         btn: {
           'first': 'First',
@@ -57,12 +59,15 @@
         dialogMsg: {
           'newParserAddedSuccessfully': 'New parser added successfully',
           'parserDeletedSuccessfully': 'Parser deleted successfully',
-          'newDeviceAddedSuccessfully': 'New device added successfully',
-          'deviceUpdatedSuccessfully': 'Device updated successfully',
-          'deviceDeletedSuccessfully': 'Device deleted successfully',
+          // 'newDeviceAddedSuccessfully': 'New device added successfully',
+          // 'deviceUpdatedSuccessfully': 'Device updated successfully',
+          // 'deviceDeletedSuccessfully': 'Device deleted successfully',
           'newDatasourceAddedSuccessfully': 'New datasource added successfully',
           'datasourceUpdatedSuccessfully': 'Datasource updated successfully',
-          'dataSourceDeletedSuccessfully': 'Datasource deleted successfully'
+          'dataSourceDeletedSuccessfully': 'Datasource deleted successfully',
+          'newDataFeedAddedSuccessfully': 'New data feed added successfully',
+          'dataFeedUpdatedSuccessfully': 'Data feed updated successfully',
+          'dataFeedDeletedSuccessfully': 'Data feed deleted successfully',
         },
         validationMessages: {},
         // Server Messages

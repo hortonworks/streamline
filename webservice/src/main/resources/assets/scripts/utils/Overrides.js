@@ -233,4 +233,39 @@ define(['require','bootstrap.filestyle','backbone.forms', 'backgrid'], function 
     }
   });
 
+  var UriCell = Backgrid.UriCell = Backgrid.Cell.extend({
+    className: "uri-cell",
+    title: null,
+    target: "_blank",
+
+    initialize: function(options) {
+      UriCell.__super__.initialize.apply(this, arguments);
+      this.title = options.title || this.title;
+      this.target = options.target || this.target;
+    },
+
+    render: function() {
+      this.$el.empty();
+      var rawValue = this.model.get(this.column.get("name"));
+      var href = _.isFunction(this.column.get("href")) ? this.column.get('href')(this.model) : this.column.get('href');
+      var klass = this.column.get("klass");
+      var formattedValue = this.formatter.fromRaw(rawValue, this.model);
+      this.$el.append($("<a>", {
+        tabIndex: -1,
+        href: href,
+        title: this.title || formattedValue,
+        'class': klass
+      }).text(formattedValue));
+
+      if (this.column.has("iconKlass")) {
+        var iconKlass = this.column.get("iconKlass");
+        var iconTitle = this.column.get("iconTitle");
+        this.$el.find('a').append('<i class="' + iconKlass + '" title="' + iconTitle + '"></i>');
+      }
+      this.delegateEvents();
+      return this;
+    }
+
+  });
+
 });

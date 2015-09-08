@@ -1,0 +1,25 @@
+<div class="modal-dialog" role="document">
+	<div class="modal-content">
+		{{#if title}} 
+		     <div class="modal-header" style="background-color: whiteSmoke;border-top: 1px solid #DDD;">
+		       {{#if allowCancel}}
+		         <a class="close">&times;</a>
+		       {{/if}}
+		       <center>
+		   		 <h3 style="font-size: 16px;">{{tt title}}</h3>
+			   </center>	 
+		     </div>
+		{{/if}}
+		<div class="modal-body">{{content}}</div>
+		{{#if showFooter}}
+			 <div class="modal-footer" >
+			   <a href="#" class="btn ok btn-primary">{{tt okText}}</a>
+			   {{#if allowCancel}}
+			     {{#if cancelText}}
+			       <a href="#" class="btn cancel">{{tt cancelText}}</a>
+			     {{/if}}
+			   {{/if}}
+			 </div>
+		{{/if}}
+	</div>
+</div>
