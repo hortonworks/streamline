@@ -39,7 +39,8 @@ public class ParserInfoCatalogResource {
         this.configuration = configuration;
         try {
             this.jarStorage = ReflectionHelper.newInstance(this.configuration
-                    .getJarStorageImplementationClass());
+                    .getJarStorageConfiguration().getClassName());
+            this.jarStorage.init(configuration.getJarStorageConfiguration().getProperties());
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
