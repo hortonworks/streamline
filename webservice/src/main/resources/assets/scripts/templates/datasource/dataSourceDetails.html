@@ -13,6 +13,10 @@
                     <h5>Data Source Details</h5>
                     <div class="panel-control">
                         <button type="default" id="editDS" title="Edit Data Source"><i class="fa fa-pencil"></i></button>
+                        {{#if showDF}}
+                        {{else}}
+                        <button type="default" id="addDF" title="Add Data Feed"><i class="fa fa-plus"></i></button>
+                        {{/if}}
                     </div>
                 </div>
                 <div class="panel-body">

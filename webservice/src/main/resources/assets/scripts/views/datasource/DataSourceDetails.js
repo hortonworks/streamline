@@ -28,7 +28,8 @@ define(['require',
     events: {
       'click #editDS': 'editDSAction',
       'click #editDF': 'editDFAction',
-      'click #deleteDF': 'deleteDFAction'
+      'click #deleteDF': 'deleteDFAction',
+      'click #addDF': 'evAddDFAction'
     },
 
     initialize: function (options) {
@@ -60,12 +61,12 @@ define(['require',
     onRender: function () {
     },
     editDSAction: function(){
-      this.editAction(this.dsModel, true, false);
+      this.editAction(this.dsModel,false, true, false);
     },
     editDFAction: function(){
-      this.editAction(this.dfModel, false, true);
+      this.editAction(this.dfModel, false, false, true);
     },
-    editAction: function(model, dsActionFlag, dfActionFlag){
+    editAction: function(model, newDFFlag , dsActionFlag, dfActionFlag){
       var self = this;
       require(['views/datasource/DataSourceFeedView'], function(DataSourceFeedView){
         var view = new DataSourceFeedView({
@@ -75,13 +76,16 @@ define(['require',
         });
         
         var modal = new Modal({
-          title: (dsActionFlag) ? 'Edit Datasource' : 'Edit Datafeed',
+          title: (newDFFlag) ? 'Add Data Feed' : (dsActionFlag) ? 'Edit Datasource' : 'Edit Datafeed',
           content: view,
           showFooter: false,
         }).open();
 
         view.on('closeModal',function(){
           modal.trigger('cancel');
+          if(newDFFlag){
+            self.fetchFeed();
+          }
           if(dsActionFlag){
             self.cleanUpDSModel();
           } else {
@@ -90,6 +94,10 @@ define(['require',
           self.render();
         });
       });
+    },
+    evAddDFAction: function(){
+      this.dfModel.set('dataSourceId', this.dsModel.get('dataSourceId'));
+      this.editAction(this.dfModel,true, false, true);
     },
     cleanUpDSModel: function(){
       delete this.dsModel.attributes.entity;
@@ -110,7 +118,9 @@ define(['require',
           self.dfModel.destroy({
             success: function(model,response){
               Utils.notifySuccess(localization.tt('dialogMsg.dataFeedDeletedSuccessfully'));
-              self.$el.find('#panelDF').remove();
+              self.dfModel.attributes = {};
+              // self.fetchFeed();
+              self.render();
             },
             error: function(model, response, options){
               Utils.showError(response);

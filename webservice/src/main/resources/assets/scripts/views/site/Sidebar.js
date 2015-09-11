@@ -20,7 +20,9 @@ define(['require', 'hbs!tmpl/site/sidebar', 'modules/Vent'], function(require, t
     },
     highlightTab : function(){
       this.$('ul > li').siblings('.active').removeClass('active');
-      this.$('li#tab' + this.appState.get('currentTab')).addClass('active');
+      if(this.appState.get('currentTab')){
+        this.$('li#tab' + this.appState.get('currentTab')).addClass('active');
+      }
     },
     onRender: function(){
       this.highlightTab();

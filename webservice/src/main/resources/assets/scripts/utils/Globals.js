@@ -14,5 +14,19 @@ define(['require'], function (require) {
     ParserRegistry      : { value:3, valStr: 'Parser Registry'}
   };
 
+  Globals.Component = {};
+  
+  Globals.Component.Storm = [
+   {value: 'NIMBUS', valStr: 'NIMBUS'},
+   {value: 'SUPERVISOR', valStr: 'SUPERVISOR'},
+   {value: 'UI', valStr: 'UI'},
+   {value: 'ZK', valStr: 'ZK'}
+  ];
+
+  Globals.Component.Kafka = [
+    {value: 'BROKER', valStr: 'BROKER'},
+    {value: 'ZK', valStr: 'ZK'}
+  ];
+
   return Globals; 
 });

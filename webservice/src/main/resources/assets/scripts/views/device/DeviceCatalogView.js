@@ -23,7 +23,6 @@ define(['require',
 
     events: {
       'click #addDevice': 'evAddDevice',
-      'keyup #srchDevice': 'evSearchDevice',
       'click .expand-link': function(e){
         if(e.currentTarget.children.item().classList.contains('fa-expand')){
           this.$el.find('#addDevice').hide(); 

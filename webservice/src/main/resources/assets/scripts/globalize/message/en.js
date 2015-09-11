@@ -36,7 +36,10 @@
           'datasourceName': 'Datasource Name',
           'actions': 'Actions',
           'dataFeedName': 'Data Feed Name',
-          'endpoint': 'End Point'
+          'endpoint': 'End Point',
+          'clusterName': 'Cluster Name',
+          'hosts': 'Hosts',
+          'port': 'Port'
         },
         btn: {
           'first': 'First',
@@ -53,21 +56,25 @@
         msg: {
           'noDeviceFound': 'No Device(s) Found',
           'noParserFound': 'No Parser(s) Found',
-          'noDatasourceFound': 'No Datasource(s) Found'
+          'noDatasourceFound': 'No Datasource(s) Found',
+          'noClusterFound': 'No Cluster(s) Found'
         },
         plcHldr: {},
         dialogMsg: {
           'newParserAddedSuccessfully': 'New parser added successfully',
           'parserDeletedSuccessfully': 'Parser deleted successfully',
-          // 'newDeviceAddedSuccessfully': 'New device added successfully',
-          // 'deviceUpdatedSuccessfully': 'Device updated successfully',
-          // 'deviceDeletedSuccessfully': 'Device deleted successfully',
           'newDatasourceAddedSuccessfully': 'New datasource added successfully',
           'datasourceUpdatedSuccessfully': 'Datasource updated successfully',
           'dataSourceDeletedSuccessfully': 'Datasource deleted successfully',
           'newDataFeedAddedSuccessfully': 'New data feed added successfully',
           'dataFeedUpdatedSuccessfully': 'Data feed updated successfully',
           'dataFeedDeletedSuccessfully': 'Data feed deleted successfully',
+          'newClusterAddedSuccessfully': 'Cluster added successfully',
+          'clusterUpdatedSuccessfully': 'Cluster updated successfully',
+          'clusterDeletedSuccessfully': 'Cluster deleted successfully',
+          'newComponentAddedSuccessfully': 'Component added successfully',
+          'componentUpdatedSuccessfully': 'Component updated successfully',
+          'componentDeletedSuccessfully': 'Component deleted successfully'
         },
         validationMessages: {},
         // Server Messages

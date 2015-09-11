@@ -15,6 +15,8 @@ define([
 			'!/parser-registry'		: 'parserRegistryAction',
 			'!/device-catalog'		: 'deviceCatalogAction',
 			'!/device-catalog/:pid'	: 'deviceDetailAction',
+			'!/configuration'		: 'configurationAction',
+			'!/configuration/:pid'	: 'clusterDetailAction',
 
 			// Default
 			'*actions': 'defaultAction'
@@ -99,6 +101,38 @@ define([
 						require(['views/datasource/DataSourceDetails'], function(DataSourceDetailsView){
 							App.rContent.show(new DataSourceDetailsView({
 								dsModel: tModel
+							}));
+						});
+					},
+					error: function(model, response, options){
+						Utils.showError(response);
+					}
+				});
+			});
+		},
+
+		configurationAction: function(){
+			VAppState.set({
+				'currentTab' : 0
+			});
+			require(['views/config/ConfigurationView'], function(configView){
+				App.rContent.show(new configView());
+			});
+		},
+
+		clusterDetailAction: function(id){
+			VAppState.set({
+				'currentTab' : 0
+			});
+			require(['models/VCluster'], function(VCluster){
+				var clusterModel = new VCluster();
+				clusterModel.set('id',id);
+				clusterModel.fetch({
+					success: function(model, response, options){
+						var tModel = new VCluster(response.entity);
+						require(['views/config/ClusterDetails'], function(ClusterDetailsView){
+							App.rContent.show(new ClusterDetailsView({
+								clusterModel: tModel
 							}));
 						});
 					},
