@@ -1,0 +1,43 @@
+<div>
+	{{#if showWizard}}
+	<div id="tmm-form-wizard">
+		<div class="row stage-container">
+
+			<div class="stage tmm-current col-md-6 col-sm-6">
+				<div class="stage-header">
+					<i class="fa fa-database"></i>
+				</div>
+				<div class="stage-content">
+					<h3 class="stage-title">Create Datasource</h3>
+					<div class="stage-info">
+						Enter datasource details
+					</div> 
+				</div>
+			</div>
+
+			<div class="stage col-md-6 col-sm-6">
+				<div class="stage-header">
+					<i class="fa fa-feed"></i>
+				</div>
+				<div class="stage-content">
+					<h3 class="stage-title">Create Data Feed</h3>
+					<div class="stage-info">
+						Enter data feed details
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+	{{/if}}
+	<div class="row">
+		<div class="col-md-12">
+			<div id="dsForm"></div>
+			<div class="pull-right">
+				<button type="default" class="btn" id="close">Close</button>
+				<button type="default" class="btn btn-success" id="next">{{#if editDataSource}} Save {{else}} Next{{/if}}</button>
+				<button type="default" class="btn btn-success displayNone" id="Save">Save</button>
+			</div>
+		</div>
+	</div>
+</div>

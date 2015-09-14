@@ -1,0 +1,43 @@
+<div>
+	{{#if showWizard}}
+	<div id="tmm-form-wizard">
+		<div class="row stage-container">
+
+			<div class="stage tmm-current col-md-6 col-sm-6">
+				<div class="stage-header">
+					<i class="fa fa-database"></i>
+				</div>
+				<div class="stage-content">
+					<h3 class="stage-title">Add Cluster</h3>
+					<div class="stage-info">
+						Enter cluster details
+					</div> 
+				</div>
+			</div>
+
+			<div class="stage col-md-6 col-sm-6">
+				<div class="stage-header">
+					<i class="fa fa-feed"></i>
+				</div>
+				<div class="stage-content">
+					<h3 class="stage-title">Add Component</h3>
+					<div class="stage-info">
+						Enter component details
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+	{{/if}}
+	<div class="row">
+		<div class="col-md-12">
+			<div id="r_Form"></div>
+			<div class="pull-right">
+				<button type="default" class="btn" id="close">Close</button>
+				<button type="default" class="btn btn-success" id="next">{{#if editCluster}} Save {{else}} Next{{/if}}</button>
+				<button type="default" class="btn btn-success displayNone" id="Save">Save</button>
+			</div>
+		</div>
+	</div>
+</div>

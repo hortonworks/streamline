@@ -12,7 +12,7 @@ define(['require',
     regions: {},
     events: {
       'click #menu-toggle': 'menuToggleAction',
-      'click #config': 'evConfigView'
+      // 'click #config': 'evConfigView'
     },
     initialize: function(options) {
       this.vent = Vent;

@@ -166,13 +166,7 @@ define([
         that.fetchSummary();
       };
       var errorCallback = function(model, response, options){
-        var msg;
-        if(response.responseJSON.responseMessage){
-          msg = response.responseJSON.responseMessage;
-        } else {
-          msg = response.responseJSON.message;
-        }
-        Utils.notifyError(msg);
+        Utils.showError(response);
       };
       Utils.uploadFile(url,formData,successCallback, errorCallback);
     },
@@ -185,13 +179,7 @@ define([
           that.fetchSummary();
         },
         error: function(model, response, options){
-          var msg;
-          if(response.responseJSON.responseMessage){
-            msg = response.responseJSON.responseMessage;
-          } else {
-            msg = response.responseJSON.message;
-          }
-          Utils.notifyError(msg);
+          Utils.showError(response);
         }
       });
     },

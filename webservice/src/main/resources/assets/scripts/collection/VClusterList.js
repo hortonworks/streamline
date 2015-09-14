@@ -1,20 +1,20 @@
 define(['require',
   'utils/Globals',
   'collection/BaseCollection',
-  'models/VDeviceCatalog'
-  ], function (require, Globals, BaseCollection, vDeviceCatalog) {
+  'models/VCluster'
+  ], function (require, Globals, BaseCollection, vCluster) {
   'use strict';
-  var vDeviceCatalogList = BaseCollection.extend(
+  var vClusterList = BaseCollection.extend(
     //Prototypal attributes
     {
 
-      url: Globals.baseURL + '/api/v1/catalog/datasources',
+      url: Globals.baseURL + '/api/v1/catalog/clusters',
 
-      model: vDeviceCatalog,
+      model: vCluster,
 
 
       initialize: function () {
-        this.modelName = 'VDeviceCatalog';
+        this.modelName = 'VCluster';
         this.modelAttrName = 'entities';
         this.bindErrorEvents();
       }
@@ -29,5 +29,5 @@ define(['require',
       tableCols: {}
     }
   );
-  return vDeviceCatalogList;
+  return vClusterList;
 });

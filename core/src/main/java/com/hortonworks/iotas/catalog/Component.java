@@ -12,11 +12,18 @@ import java.util.Map;
 public class Component extends AbstractStorable {
     private static final String NAMESPACE = "component";
 
+    /**
+     * The component types
+     * to ensure that we are dealing with known types
+     */
+    public enum ComponentType {
+        NIMBUS, SUPERVISOR, UI, ZOOKEEPER, BROKER, NAMENODE, DATANODE
+    }
+
     private Long id;
     private Long clusterId;
     private String name;
-    // TODO: change it to Cluster.Type.ComponentType enum
-    private String type;
+    private ComponentType type;
     private String description = "";
     private String config = "";
     private String hosts;
@@ -58,13 +65,12 @@ public class Component extends AbstractStorable {
 
     /**
      * The type of the component (Nimbus, Broker etc).
-     * TODO: change it to enum.
      */
-    public String getType() {
+    public ComponentType getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(ComponentType type) {
         this.type = type;
     }
 

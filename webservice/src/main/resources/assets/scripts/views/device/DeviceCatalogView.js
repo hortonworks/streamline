@@ -5,8 +5,9 @@ define(['require',
     'models/VDatasource',
     'utils/TableLayout',
     'utils/LangSupport',
+    'modules/Modal',
     'bootbox'
-  ], function(require, tmpl, Utils, VDatasourceList, VDatasource, VTableLayout, localization, bootbox){
+  ], function(require, tmpl, Utils, VDatasourceList, VDatasource, VTableLayout, localization, Modal, bootbox){
   'use strict';
 
   var vDeviceCatalogView = Marionette.LayoutView.extend({
@@ -22,7 +23,6 @@ define(['require',
 
     events: {
       'click #addDevice': 'evAddDevice',
-      'keyup #srchDevice': 'evSearchDevice',
       'click .expand-link': function(e){
         if(e.currentTarget.children.item().classList.contains('fa-expand')){
           this.$el.find('#addDevice').hide(); 
@@ -46,24 +46,7 @@ define(['require',
     },
     fetchData: function(){
       var that = this;
-      this.collection.fetchDeviceType({
-        success:function(collection, response, options){
-          that.collection.reset(collection.entities);
-        }, 
-        error: function(collection, response, options){
-          var msg;
-          if(response === 'error'){
-            msg = collection.responseJSON.responseMessage;
-          } else {
-            if(response.responseJSON.responseMessage){
-              msg = response.responseJSON.responseMessage;
-            } else {
-              msg = response.responseJSON.message;
-            }
-          }
-          Utils.notifyError(msg);
-        }
-      });
+      this.collection.fetch();
     },
     showTable: function(){
       this.tableLayout.show(this.getTable());
@@ -83,10 +66,13 @@ define(['require',
     getColumns: function(){
       return [{
         name: 'dataSourceName',
-        cell: 'string',
+        cell: 'uri',
         label: localization.tt('lbl.deviceName'),
         hasTooltip: false,
-        editable: false
+        editable: false,
+        href: function(model) {
+          return '#!/device-catalog/' + model.get('dataSourceId');
+        },
       },{
         name: 'description',
         cell: 'string',
@@ -148,87 +134,47 @@ define(['require',
         model = new VDatasource();
         model.set('type','DEVICE');
       }
-      require(['views/device/DeviceForm'],function(DeviceFormView){
-        if(that.view){
-          that.onDialogClosed();
-        }
-        that.view = new DeviceFormView({
+
+      require(['views/datasource/DataSourceFeedView'], function(DataSourceFeedView){
+        var view = new DataSourceFeedView({
           model: model,
-          readOnlyFlag: true
-        }).render();
-        bootbox.dialog({
-          message: that.view.el,
-          title: localization.tt('h.addNewDevice'),
-          className: 'device-dialog',
-          buttons: {
-            cancel: {
-              label: localization.tt('lbl.close'),
-              className: 'btn-default',
-              callback: function(){
-                that.onDialogClosed();
-              }
-            },
-            success: {
-              label: localization.tt('lbl.add'),
-              className: 'btn-success',
-              callback: function(){
-                var errs = that.view.validate();
-                if(_.isEmpty(errs)){
-                  that.saveDevice();
-                } else {
-                  return false;
-                }
-              }
-            }
-          }
+          editDSFlag: model.has('dataSourceId'),
+          editDFFlag: false 
+        });
+        
+        var modal = new Modal({
+          title: (model.has('dataSourceId')) ? 'Edit Datasource' : 'Create Datasource',
+          content: view,
+          showFooter: false,
+          okText : localization.tt("lbl.next"),
+          okCloses : false
+        }).open();
+
+        view.on('closeModal',function(){
+          modal.trigger('cancel');
+          that.fetchData();
         });
       });
-    },
-    saveDevice: function(){
-      var that = this;
-      var model = this.view.getData();
-      var msg;
-      if(model.id){
-        msg = localization.tt('dialogMsg.deviceUpdatedSuccessfully');
-      } else {
-        msg = localization.tt('dialogMsg.newDeviceAddedSuccessfully');
-      }
-      model.save({},{
-        success:function(model, response, options){
-          Utils.notifySuccess(msg);
-          that.fetchData();
-        }, 
-        error: function(model, response, options){
-          var msg;
-          if(response.responseJSON.responseMessage){
-            msg = response.responseJSON.responseMessage;
-          } else {
-            msg = response.responseJSON.message;
-          }
-          Utils.notifyError(msg);
-        }
-      });
+
     },
     evEditAction: function(e){
       var model = this.getModel(e);
       this.evAddDevice(model);
     },
     evDeleteAction: function(e){
-      var model = this.getModel(e);
-      var that = this;
-      model.destroy({
-        success: function(model,response){
-          Utils.notifySuccess(localization.tt('dialogMsg.deviceDeletedSuccessfully'));
-          that.fetchData();
-        },
-        error: function(model, response, options){
-          var msg;
-          if(response.responseJSON.responseMessage){
-            msg = response.responseJSON.responseMessage;
-          } else {
-            msg = response.responseJSON.message;
-          }
-          Utils.notifyError(msg);
+      var self = this;
+      bootbox.confirm("Do you really want to delete this data source ?", function(result){
+        if(result){
+          var model = self.getModel(e);
+          model.destroy({
+            success: function(model,response){
+              Utils.notifySuccess(localization.tt('dialogMsg.dataSourceDeletedSuccessfully'));
+              self.fetchData();
+            },
+            error: function(model, response, options){
+              Utils.showError(response);
+            }
+          });
         }
       });
     },
@@ -244,13 +190,6 @@ define(['require',
       model.set('version',JSON.parse(model.attributes.typeConfig).version);
       return model;
     },
-    onDialogClosed: function(){
-      if (this.view) {
-        this.view.close();
-        this.view.remove();
-        this.view = null;
-      }
-    }
   });
   return vDeviceCatalogView;
 });

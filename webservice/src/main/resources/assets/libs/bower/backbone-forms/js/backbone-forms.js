@@ -1343,7 +1343,7 @@ Form.editors.Password = Form.editors.Text.extend({
  */
 Form.editors.Number = Form.editors.Text.extend({
 
-  defaultValue: 0,
+  // defaultValue: 0,
 
   events: _.extend({}, Form.editors.Text.prototype.events, {
     'keypress': 'onKeyPress',

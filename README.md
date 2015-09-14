@@ -14,7 +14,7 @@ This should start the webserver on localhost port 8080. If you are running storm
 `java.net.BindException: Address already in use` in which case you should modify `server` section of iotas.yaml.
 
 ##Intellij
-`Run -> Edit Configuration -> Application -> IotasApplication` in the `Prgoram argument section` add `server $IOTAS-HOME/webservice/conf/iotas.yaml`
+`Run -> Edit Configuration -> Application -> IotasApplication` in the `Program argument section` add `server $IOTAS-HOME/webservice/conf/iotas.yaml`
 
 Same config can be used to start debugging.
 
@@ -50,7 +50,7 @@ VERSION WITH STORM. Please merge https://github.com/apache/storm/pull/702 on you
 
 `storm jar $IOTAS-HOME/storm/target/storm-0.1-SNAPSHOT.jar com.hortonworks.topology.IotasTopology  $IOTAS-HOME/storm/src/main/resources/topology.yaml IotasTopology`  
 
-#Accounting for bad tuples in a topplogy
+#Accounting for bad tuples in a topology
 A mechanism has been added so that when messages are being played from a 
 spout in an IotaS topology and they cant successfully be parsed then such 
 messages end up in some persistent storage. The mechanism has been abstracted

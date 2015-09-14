@@ -2,6 +2,7 @@ package com.hortonworks.util;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Map;
 
 /**
  * Created by pshah on 8/7/15.
@@ -11,6 +12,13 @@ import java.io.OutputStream;
  * property in the iotas.yaml
  */
 public interface JarStorage {
+    /**
+     * The jar storage can be initialized with a set of key/value pairs.
+     *
+     * @param config the config specific to implementation
+     */
+    void init(Map<String, String> config);
+
     /**
      *
      * @param inputStream stream to read the jar content from

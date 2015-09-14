@@ -2,7 +2,7 @@ define(['require',
   'utils/Globals',
   'collection/BaseCollection',
   'models/VDatasource'
-  ], function (require, Globals, BaseCollection, vDeviceCatalog) {
+  ], function (require, Globals, BaseCollection, vDatasource) {
   'use strict';
   var vDatasourceList = BaseCollection.extend(
     //Prototypal attributes
@@ -10,7 +10,7 @@ define(['require',
 
       url: Globals.baseURL + '/api/v1/catalog/datasources',
 
-      model: vDeviceCatalog,
+      model: vDatasource,
 
 
       initialize: function () {

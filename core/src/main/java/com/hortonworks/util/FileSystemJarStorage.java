@@ -4,15 +4,26 @@ import com.google.common.io.ByteStreams;
 
 import java.io.*;
 import java.nio.file.FileSystems;
+import java.util.Map;
 
 /**
  * Created by pshah on 8/7/15.
  * Implementation of JarStorage interface backed by local file system
  */
 public class FileSystemJarStorage implements JarStorage {
-    //TODO for now we are using hardcoded /tmp directory as the path to
-    // store the jars. Change it to retrieve it from config later
-    private final String DIRECTORY_PREFIX = "/tmp";
+    // the configuration keys
+    public static final String CONFIG_DIRECTORY = "directory";
+
+    // default to /tmp
+    private String directory = "/tmp";
+
+    @Override
+    public void init(Map<String, String> config) {
+        String dir;
+        if ((dir = config.get(CONFIG_DIRECTORY)) != null) {
+            directory = dir;
+        }
+    }
 
     /**
      *
@@ -24,8 +35,7 @@ public class FileSystemJarStorage implements JarStorage {
      */
     public void uploadJar (InputStream inputStream, String name) throws java
             .io.IOException{
-        java.nio.file.Path path = FileSystems.getDefault().getPath(this
-                        .DIRECTORY_PREFIX, name);
+        java.nio.file.Path path = FileSystems.getDefault().getPath(directory, name);
         File file = path.toFile();
         if (!file.exists()) {
             file.createNewFile();
@@ -43,8 +53,7 @@ public class FileSystemJarStorage implements JarStorage {
      * @throws java.io.IOException
      */
     public InputStream downloadJar (String name) throws java.io.IOException {
-        java.nio.file.Path path = FileSystems.getDefault().getPath(this
-                .DIRECTORY_PREFIX, name);
+        java.nio.file.Path path = FileSystems.getDefault().getPath(directory, name);
         File file = path.toFile();
         return new FileInputStream(file);
     }

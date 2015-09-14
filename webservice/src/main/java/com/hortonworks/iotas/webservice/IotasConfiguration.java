@@ -19,7 +19,10 @@ package com.hortonworks.iotas.webservice;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.Configuration;
+import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.validation.constraints.NotNull;
 
 public class IotasConfiguration extends Configuration {
 
@@ -29,8 +32,8 @@ public class IotasConfiguration extends Configuration {
     @NotEmpty
     private String zookeeperHost;
 
-    @NotEmpty
-    private String jarStorageImplementationClass;
+    @NotNull
+    private JarStorageConfiguration jarStorageConfiguration;
 
     @JsonProperty
     public String getBrokerList(){
@@ -50,11 +53,13 @@ public class IotasConfiguration extends Configuration {
         this.zookeeperHost = zookeeperHost;
     }
 
-    public String getJarStorageImplementationClass () {
-        return this.jarStorageImplementationClass;
+    @JsonProperty("jarStorageConfiguration")
+    public JarStorageConfiguration getJarStorageConfiguration() {
+        return this.jarStorageConfiguration;
     }
 
-    public void setJarStorageImplementationClass (String jarStorageImplementationClass) {
-        this.jarStorageImplementationClass = jarStorageImplementationClass;
+    @JsonProperty("jarStorageConfiguration")
+    public void setJarStorageConfiguration(JarStorageConfiguration configuration) {
+        this.jarStorageConfiguration = configuration;
     }
 }

@@ -1,11 +1,11 @@
 define(['utils/LangSupport',
   'utils/Globals',
-  'hbs!tmpl/device/deviceForm',
+  'hbs!tmpl/datasource/dataSourceForm',
   'backbone.forms'
   ], function (localization, Globals, tmpl) {
   'use strict';
 
-  var ParserForm = Backbone.Form.extend({
+  var DataSourceForm = Backbone.Form.extend({
 
     template: tmpl,
 
@@ -31,23 +31,23 @@ define(['utils/LangSupport',
           placeHolder: localization.tt('lbl.description'),
           validators: ['required']
         },
-        type: {
-          type: 'Select2',
-          title: localization.tt('lbl.deviceType')+'*',
-          options: [
-            {'val':'','label': '--'},
-            {'val':'DEVICE','label': 'DEVICE'}
-          ],
-          editorClass: 'form-control',
-          editorAttrs: {
-            disabled: this.readOnlyFlag ? true : false
-          },
-          pluginAttr: {
-            minimumResultsForSearch: Infinity,
-            placeholder: localization.tt('lbl.deviceType')
-          },
-          validators: ['required']
-        },
+        // type: {
+        //   type: 'Select2',
+        //   title: localization.tt('lbl.deviceType')+'*',
+        //   options: [
+        //     {'val':'','label': '--'},
+        //     {'val':'DEVICE','label': 'DEVICE'}
+        //   ],
+        //   editorClass: 'form-control',
+        //   editorAttrs: {
+        //     disabled: this.readOnlyFlag ? true : false
+        //   },
+        //   pluginAttr: {
+        //     minimumResultsForSearch: Infinity,
+        //     placeholder: localization.tt('lbl.deviceType')
+        //   },
+        //   validators: ['required']
+        // },
         tags: {
           type: 'Tag',
           title: localization.tt('lbl.tags')+'*',
@@ -99,5 +99,5 @@ define(['utils/LangSupport',
     }
   });
 
-  return ParserForm;
+  return DataSourceForm;
 });

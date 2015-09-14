@@ -3,9 +3,9 @@ define(['require',
   'models/BaseModel'
   ], function (require, Globals, vBaseModel) {
   'use strict';
-  var VDeviceCatalog = vBaseModel.extend(
+  var VComponent = vBaseModel.extend(
     {
-      urlRoot: Globals.baseURL + '/api/v1/catalog/datasources',
+      urlRoot: Globals.baseURL + '/api/v1/catalog/clusters/',
 
       defaults: {},
 
@@ -14,7 +14,7 @@ define(['require',
       idAttribute: 'id',
 
       initialize: function () {
-        this.modelName = 'VDeviceCatalog';
+        this.modelName = 'VComponent';
         this.bindErrorEvents();
       },
       toString : function() {
@@ -23,5 +23,5 @@ define(['require',
     },
     {}
   );
-  return VDeviceCatalog;
+  return VComponent;
 });
