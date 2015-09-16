@@ -16,12 +16,18 @@
         <kafka.version>0.8.1.1</kafka.version>
         <jersey.version>1.19</jersey.version>
         <storm.version>0.11.0-SNAPSHOT</storm.version>
+        <hbase.version>0.11.0-SNAPSHOT</hbase.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.hortonworks</groupId>
             <artifactId>core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hortonworks</groupId>
+            <artifactId>webservice</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -73,6 +79,17 @@
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-client</artifactId>
+            <version>0.98.4-hadoop2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.zookeeper</groupId>
+                    <artifactId>zookeeper</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
