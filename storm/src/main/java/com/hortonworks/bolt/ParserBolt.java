@@ -96,6 +96,8 @@ public class ParserBolt extends BaseRichBolt {
             collector.emit(input, values);
             collector.ack(input);
         } catch (Exception e) {
+            LOG.warn("Failed to parse a tuple. Saving it using " +
+                    "UnparsedTupleHandler implementation.", e);
             if (this.unparsedTupleHandler != null) {
                 try {
                     this.unparsedTupleHandler.save(failedBytes);

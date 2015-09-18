@@ -23,7 +23,7 @@ import static com.hortonworks.iotas.common.Schema.Field;
  *        it wont be supported by the manager right now.
  */
 public class Device implements DataSourceSubType {
-
+    public static final String NAME_SPACE = "devices";
     public static final String DEVICE_ID = "deviceId";
     public static final String VERSION = "version";
     public static final String DATA_SOURCE_ID = "dataSourceId";
@@ -34,23 +34,18 @@ public class Device implements DataSourceSubType {
     private String deviceId;
 
     /**
-     * Firmware version of the device. DeviceId + version is the primary key.
+     * Firmware version of the device. deviceId + version is the primary key.
      */
     private Long version;
 
     /**
-     * Reference to the datasource.
+     * Foreign key to reference to the parent 'DataSource'.
      */
     private Long dataSourceId;
 
-    /**
-     * Time when this was created updated.
-     */
-    private Long timestamp;
-
     @JsonIgnore
     public String getNameSpace() {
-        return "devices";
+        return NAME_SPACE;
     }
 
     @JsonIgnore
@@ -61,13 +56,13 @@ public class Device implements DataSourceSubType {
     }
 
     /**
-     * The primary key of the device is the datasource id itself which is also a foreign key
-     * reference to the parent 'DataSource'.
+     * The primary key of the device is the deviceId + version.
      */
     @JsonIgnore
     public PrimaryKey getPrimaryKey() {
-        Map<Schema.Field, Object> fieldToObjectMap = new HashMap<Schema.Field, Object>();
-        fieldToObjectMap.put(new Schema.Field(DATA_SOURCE_ID, Schema.Type.LONG), this.dataSourceId);
+        Map<Schema.Field, Object> fieldToObjectMap = new HashMap<>();
+        fieldToObjectMap.put(new Schema.Field(DEVICE_ID, Schema.Type.STRING), deviceId);
+        fieldToObjectMap.put(new Schema.Field(VERSION, Schema.Type.LONG), version);
         return new PrimaryKey(fieldToObjectMap);
     }
 
@@ -90,7 +85,6 @@ public class Device implements DataSourceSubType {
         this.dataSourceId = (Long) map.get(DATA_SOURCE_ID);
         return this;
     }
-
 
     @Override
     public boolean equals(Object o) {
