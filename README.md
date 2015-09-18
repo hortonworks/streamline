@@ -1,7 +1,7 @@
 # IoTaS
 Internet of Things at Scale.
 
-##How to Run
+##How to run locally
 From command line execute the following commands:
 
 `cd $IOTAS-HOME`  
@@ -44,6 +44,25 @@ Now you need to create hbase table where all the messages will be stored.
 `hbase shell`  
 `create 'nest', 'cf'`
 
+Before starting hbase, put the below hbase-site.xml in the hbase config directory so that hbase uses the local ZK instance running in your localhost and localfs for storage so that you dont need to start a separate HDFS server instance.
+
+```xml
+<configuration>
+  <property>
+    <name>hbase.rootdir</name>
+    <value>file:///tmp/hbase</value>
+  </property>
+  <property>
+    <name>hbase.cluster.distributed</name>
+    <value>true</value>
+  </property>
+  <property>
+    <name>hbase.zookeeper.quorum</name>
+    <value>localhost</value>
+  </property>
+</configuration>
+  ```
+
 Now, From intellij you should be able to run `com.hortonworks.topology.IotasTopology` by providing `$IOTAS-HOME/storm/src/main/resources/topology.yaml` as argument and modifying `$IOTAS-HOME/storm/pom.xml` so `storm-core` is not in provided scope. 
 you can also run the topology on a storm cluster by providing the name of the topology as second argument. RIGHT NOW THE TOPOLOGY DOES NOT EXECUTE IN A STORM CLUSTER AS THE JACKSON LIBRARY USED BY US HAVE A CONFLICTING
 VERSION WITH STORM. Please merge https://github.com/apache/storm/pull/702 on your local storm cluster if you need to execute the topology on a storm cluster.
@@ -79,4 +98,8 @@ IoTaS topologies can also be built using FLUX now. For more information,
 please visit https://github.com/apache/storm/tree/master/external/flux
 
 After doing a mvn package on IoTaS home directory you can run the following 
-command `storm jar ./storm/target/storm-0.1-SNAPSHOT.jar org.apache.storm.flux.Flux --local --filter ./storm/src/main/resources/flux_iotas_topology.properties ./storm/src/main/resources/flux_iotas_topology_config.yaml`
+command `storm jar ./storm/target/storm-0.1-SNAPSHOT.jar org.apache.storm.flux.Flux --local --sleep 3600000 --filter ./storm/src/main/resources/flux_iotas_topology.properties ./storm/src/main/resources/flux_iotas_topology_config.yaml`
+
+This will run the IOTaS topology in local mode for one hour, processing any events published to the 'nest-topic'. You can kill the topology anytime by pressing CNTL + C in the console.
+
+
