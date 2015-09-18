@@ -93,17 +93,25 @@ public class Schema {
         //TODO: need to replace with actual ToJson from Json instead of toString/fromString
         @Override
         public String toString() {
-            return "Field{" +
+            return "{" +
                     "name='" + name + '\'' +
                     ", type=" + type +
                     '}';
         }
 
+        // Input should be of the form: name='deviceId', type=LONG
         public static Field fromString(String str) {
-            String[] split = str.split("=");
-            return new Field(split[0], Type.valueOf(split[1]));
+            String[] nameTypePair = str.split(",");
+            String name = removePrimeSymbols(nameTypePair[0].split("=")[1]);
+            String type = removePrimeSymbols(nameTypePair[1].split("=")[1]);
+            return new Field(name, Type.valueOf(type));
         }
 
+        // Removes the prime symbols that are in the beginning and end of the String,
+        // e.g. 'device', device', 'device will be converted to device
+        private static String removePrimeSymbols(String in) {
+            return in.replaceAll("'?(\\w+)'?","$1");
+        }
     }
 
     /**
@@ -247,18 +255,26 @@ public class Schema {
         for(Field field : fields) {
             sb.append(field.toString()).append(",");
         }
+        sb.setLength(sb.length() -1 );  // remove last, orphan ','
         return sb.append("}").toString();
     }
 
+    // input received is typically of the form {{name='deviceId', type=LONG},{name='deviceName', type=STRING},}
     public static Schema fromString(String str) {
-        if(str.equals("null")) return null;
-        if(str.equals("{}")) return new Schema(new ArrayList<Field>());
+        if (str.equals("null")) {
+            return null;
+        }
 
-        str = str.replace("{","");
-        str = str.replace("{","");
+        if (str.equals("{}")) {
+            return new Schema(new ArrayList<Field>());
+        }
 
+        str = str.replace(",}", ",");   // remove the last orphan ',' in inputs such as {{name='deviceName', type=STRING},}
+        str = str.replace("{", "");
+        str = str.replace("{", "");
+        str = str.replace("}}", "");    // remove }} at the end of the String
 
-        String[] split = str.split(",");
+        String[] split = str.split("},");
         List<Field> fields = new ArrayList<Field>();
         for(String fieldStr : split) {
             fields.add(Field.fromString(fieldStr));
@@ -325,4 +341,19 @@ public class Schema {
         throw new ParseException("Unknown type " + value.getClass());
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Schema schema = (Schema) o;
+
+        return !(fields != null ? !fields.equals(schema.fields) : schema.fields != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return fields != null ? fields.hashCode() : 0;
+    }
 }
