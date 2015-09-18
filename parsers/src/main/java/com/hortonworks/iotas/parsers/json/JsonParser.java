@@ -50,7 +50,6 @@ public class JsonParser extends BaseParser {
         try {
             return mapper.readValue(data, new TypeReference<Map<String, Object>>(){});
         } catch (IOException e) {
-            LOG.error("Error trying to parse data {}", new String(data, Charset.forName("UTF-8")));
             throw new ParseException("Error trying to parse data.", e);
         }
     }
