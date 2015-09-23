@@ -4,7 +4,6 @@ package com.hortonworks.iotas.storage;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -82,7 +81,7 @@ public class InMemoryStorageManager implements StorageManager {
         return res;
     }
 
-    public <T extends Storable> List<T> find(String namespace, List<QueryParam> queryParams) throws Exception {
+    public <T extends Storable> Collection<T> find(String namespace, List<QueryParam> queryParams) throws StorageException {
         List<Storable> result = new ArrayList<Storable>();
         Class<?> clazz = nameSpaceClassMap.get(namespace);
         if(clazz != null) {

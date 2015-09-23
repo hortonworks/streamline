@@ -7,7 +7,6 @@ import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.Device;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.storage.DataSourceSubType;
-import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.util.CoreUtils;
@@ -86,7 +85,7 @@ public class CatalogService {
     public Collection<DataSource> listDataSourcesForType(DataSource.Type type, List<QueryParam> params) throws Exception {
         List<DataSource> dataSources = new ArrayList<DataSource>();
         String ns = getNamespaceForDataSourceType(type);
-        List<DataSourceSubType> subTypes = dao.<DataSourceSubType>find(ns, params);
+        Collection<DataSourceSubType> subTypes = dao.<DataSourceSubType>find(ns, params);
         for(DataSourceSubType st: subTypes) {
             dataSources.add(getDataSource(st.getDataSourceId()));
         }
