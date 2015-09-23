@@ -50,7 +50,7 @@ public class DataFeed implements Storable {
     private String tags;
 
     /**
-     * Reference to a parserId that defines which parser implementation knows how to parse this feed.
+     * Foreign key reference to a parser info that defines which parser implementation can be used to parse this feed.
      */
     private Long parserId;
 
