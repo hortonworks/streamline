@@ -67,7 +67,7 @@ public class ComponentCatalogResource {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
 
-        return WSUtils.respond(NOT_FOUND, COMPONENT_FILTER_NOT_FOUND, queryParams.toString());
+        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, queryParams.toString());
     }
 
     @GET

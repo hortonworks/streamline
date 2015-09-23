@@ -1,5 +1,9 @@
 # IoTas REST API
 
+[Cluster api](webservice/Cluster.md)
+
+[Errorcodes](webservice/ErrorCodes.md)
+
 ## DataSource
 ### Create
 POST /api/v1/catalog/datasources
