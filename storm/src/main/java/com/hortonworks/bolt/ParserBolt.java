@@ -10,6 +10,8 @@ import backtype.storm.tuple.Values;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.client.RestClient;
 import com.hortonworks.iotas.catalog.ParserInfo;
+import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.model.IotasMessage;
 import com.hortonworks.iotas.parser.Parser;
 import com.hortonworks.topology.UnparsedTupleHandler;
@@ -30,7 +32,7 @@ public class ParserBolt extends BaseRichBolt {
     private static final Logger LOG = LoggerFactory.getLogger(ParserBolt.class);
     public static final String CATALOG_ROOT_URL = "catalog.root.url";
     public static final String LOCAL_PARSER_JAR_PATH = "local.parser.jar.path";
-    public static final String PARSED_FIELDS = "parsed.fields";
+    public static final String IOTAS_EVENT = "iotas.event";
     private OutputCollector collector;
     private RestClient client;
     private String localParserJarPath;
@@ -92,7 +94,9 @@ public class ParserBolt extends BaseRichBolt {
             }
 
             Map<String, Object> parsed = parser.parse(bytes);
-            Values values = new Values(parsed);
+            // TODO: add data source ID
+            IotasEvent event = new IotasEventImpl(parsed);
+            Values values = new Values(event);
             collector.emit(input, values);
             collector.ack(input);
         } catch (Exception e) {
@@ -170,7 +174,7 @@ public class ParserBolt extends BaseRichBolt {
 
 
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declare(new Fields(PARSED_FIELDS));
+        declarer.declare(new Fields(IOTAS_EVENT));
     }
 
     /**
