@@ -10,27 +10,27 @@ import java.util.UUID;
  */
 public class IotasEventImpl implements IotasEvent {
 
-    private final Map<String, Object> map;
+    private final Map<String, Object> fieldsAndValues;
+    private final String dataSourceId;
     private final String id;
-    private String dataSourceId = StringUtils.EMPTY;
 
-    public IotasEventImpl(Map<String, Object> keyValues) {
-        this(keyValues, UUID.randomUUID().toString());
+    /**
+     * Creates an IotasEvent with given keyValues, dataSourceId
+     * and a random UUID as the id.
+     */
+    public IotasEventImpl(Map<String, Object> keyValues, String dataSourceId) {
+        this(keyValues, dataSourceId, UUID.randomUUID().toString());
     }
 
-    public IotasEventImpl(Map<String, Object> keyValues, String id) {
-        this.map = keyValues;
-        this.id = id;
-    }
-
-    public IotasEventImpl withDataSourceId(String dataSourceId) {
+    public IotasEventImpl(Map<String, Object> keyValues, String dataSourceId, String id) {
+        this.fieldsAndValues = keyValues;
         this.dataSourceId = dataSourceId;
-        return this;
+        this.id = id;
     }
 
     @Override
     public Map<String, Object> getFieldsAndValues() {
-        return map;
+        return fieldsAndValues;
     }
 
     @Override
@@ -63,7 +63,7 @@ public class IotasEventImpl implements IotasEvent {
     @Override
     public String toString() {
         return "IotasEventImpl{" +
-                "map=" + map +
+                "fieldsAndValues=" + fieldsAndValues +
                 ", id='" + id + '\'' +
                 ", dataSourceId='" + dataSourceId + '\'' +
                 '}';

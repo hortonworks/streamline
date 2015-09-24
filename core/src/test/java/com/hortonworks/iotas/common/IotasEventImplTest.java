@@ -1,5 +1,6 @@
 package com.hortonworks.iotas.common;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -20,7 +21,7 @@ public class IotasEventImplTest {
         map.put("b", "bval");
 
 
-        IotasEvent event = new IotasEventImpl(map);
+        IotasEvent event = new IotasEventImpl(map, StringUtils.EMPTY);
 
         assertEquals(map, event.getFieldsAndValues());
     }
@@ -32,7 +33,7 @@ public class IotasEventImplTest {
         map.put("b", "bval");
 
 
-        IotasEvent event = new IotasEventImpl(map);
+        IotasEvent event = new IotasEventImpl(map, StringUtils.EMPTY);
 
         assertNotNull(UUID.fromString(event.getId()));
     }
@@ -44,7 +45,7 @@ public class IotasEventImplTest {
         map.put("b", "bval");
 
 
-        IotasEvent event = new IotasEventImpl(map).withDataSourceId("1");
+        IotasEvent event = new IotasEventImpl(map, "1");
 
         assertEquals("1", event.getDataSourceId());
 
@@ -58,10 +59,24 @@ public class IotasEventImplTest {
         map.put("b", "bval");
 
 
-        IotasEvent event1 = new IotasEventImpl(map);
+        IotasEvent event1 = new IotasEventImpl(map, StringUtils.EMPTY);
 
-        IotasEvent event2 = new IotasEventImpl(map, event1.getId());
+        IotasEvent event2 = new IotasEventImpl(map, StringUtils.EMPTY, event1.getId());
 
         assertEquals(event1, event2);
+    }
+
+    @Test
+    public void testHashcode() throws Exception {
+        Map<String, Object> map = new HashMap<>();
+        map.put("a", "aval");
+        map.put("b", "bval");
+
+
+        IotasEvent event1 = new IotasEventImpl(map, StringUtils.EMPTY);
+
+        IotasEvent event2 = new IotasEventImpl(map, StringUtils.EMPTY, event1.getId());
+
+        assertEquals(event1.hashCode(), event2.hashCode());
     }
 }
