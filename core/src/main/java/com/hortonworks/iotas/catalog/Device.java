@@ -61,8 +61,7 @@ public class Device implements DataSourceSubType {
     @JsonIgnore
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<>();
-        fieldToObjectMap.put(new Schema.Field(DEVICE_ID, Schema.Type.STRING), deviceId);
-        fieldToObjectMap.put(new Schema.Field(VERSION, Schema.Type.LONG), version);
+        fieldToObjectMap.put(new Schema.Field(DATA_SOURCE_ID, Schema.Type.LONG), dataSourceId);
         return new PrimaryKey(fieldToObjectMap);
     }
 
@@ -93,9 +92,9 @@ public class Device implements DataSourceSubType {
 
         Device device = (Device) o;
 
+        if (!dataSourceId.equals(device.dataSourceId)) return false;
         if (!deviceId.equals(device.deviceId)) return false;
-        if (!version.equals(device.version)) return false;
-        return dataSourceId.equals(device.dataSourceId);
+        return version.equals(device.version);
 
     }
 
