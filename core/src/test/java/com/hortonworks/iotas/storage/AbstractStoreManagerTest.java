@@ -41,7 +41,7 @@ public abstract class AbstractStoreManagerTest {
 
     List<Storable> devices = new ArrayList<Storable>() {{
         add(createDevice("device-1", 0l, 0l));
-        add(createDevice("device-1", 0l, 1l));
+        add(createDevice("device-1", 1l, 0l));
         add(createDevice("device-2", 2l, 2l));
         add(createDevice("device-3", 3l, 3l));
     }};
