@@ -2,8 +2,8 @@ package com.hortonworks.iotas.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.PrimaryKey;
+import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
 
 import java.util.HashMap;
@@ -13,6 +13,7 @@ import java.util.Map;
  * Parser information that will be stored by storage layer.
  */
 public class ParserInfo implements Storable {
+    public static final String NAME_SPACE = "parser_info";
     public static final String PARSER_ID = "parserId";
     public static final String PARSER_NAME = "parserName";
     public static final String CLASS_NAME = "className";
@@ -60,7 +61,7 @@ public class ParserInfo implements Storable {
 
     @JsonIgnore
     public String getNameSpace() {
-        return "parser-info";
+        return NAME_SPACE;
     }
 
     @JsonIgnore
@@ -178,5 +179,35 @@ public class ParserInfo implements Storable {
 
     public void setTimestamp(Long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ParserInfo that = (ParserInfo) o;
+
+        if (parserId != null ? !parserId.equals(that.parserId) : that.parserId != null) return false;
+        if (parserName != null ? !parserName.equals(that.parserName) : that.parserName != null) return false;
+        if (className != null ? !className.equals(that.className) : that.className != null) return false;
+        if (jarStoragePath != null ? !jarStoragePath.equals(that.jarStoragePath) : that.jarStoragePath != null)
+            return false;
+        if (parserSchema != null ? !parserSchema.equals(that.parserSchema) : that.parserSchema != null) return false;
+        if (version != null ? !version.equals(that.version) : that.version != null) return false;
+        return !(timestamp != null ? !timestamp.equals(that.timestamp) : that.timestamp != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = parserId != null ? parserId.hashCode() : 0;
+        result = 31 * result + (parserName != null ? parserName.hashCode() : 0);
+        result = 31 * result + (className != null ? className.hashCode() : 0);
+        result = 31 * result + (jarStoragePath != null ? jarStoragePath.hashCode() : 0);
+        result = 31 * result + (parserSchema != null ? parserSchema.hashCode() : 0);
+        result = 31 * result + (version != null ? version.hashCode() : 0);
+        result = 31 * result + (timestamp != null ? timestamp.hashCode() : 0);
+        return result;
     }
 }
