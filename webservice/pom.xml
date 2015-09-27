@@ -7,10 +7,9 @@
     <parent>
         <groupId>com.hortonworks</groupId>
         <artifactId>IoTaS</artifactId>
-        <version>0.1-SNAPSHOT</version>
+        <version>${snapshot.version}</version>
     </parent>
 
-    <groupId>com.hortonworks</groupId>
     <artifactId>webservice</artifactId>
 
     <properties>
@@ -85,21 +84,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!--<dependency>-->
-            <!--<artifactId>slf4j-api</artifactId>-->
-            <!--<groupId>org.slf4j</groupId>-->
-            <!--<version>1.7.5</version>-->
-        <!--</dependency>-->
-            <!--<dependency>-->
-                <!--<groupId>org.apache.logging.log4j</groupId>-->
-                <!--<artifactId>log4j-api</artifactId>-->
-                <!--<version>2.3</version>-->
-            <!--</dependency>-->
-            <!--<dependency>-->
-                <!--<groupId>org.apache.logging.log4j</groupId>-->
-                <!--<artifactId>log4j-core</artifactId>-->
-                <!--<version>2.3</version>-->
-            <!--</dependency>-->
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-multipart</artifactId>
@@ -117,7 +101,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.3</version>
+                <version>2.4.1</version>
                 <configuration>
                     <createDependencyReducedPom>true</createDependencyReducedPom>
                     <filters>

@@ -26,17 +26,60 @@ import java.util.Map;
 //TODO Make this class Jackson Compatible.
 public class Schema {
     public enum Type {
-        BOOLEAN,
-        BYTE, // 8-bit signed integer
-        SHORT, // 16-bit
-        INTEGER, // 32-bit
-        LONG, // 64-bit
-        FLOAT,
-        DOUBLE,
-        STRING,
-        BINARY, // raw data
-        NESTED,  // nested field
-        ARRAY    // array field
+        // Don't change the order of this enum to prevent bugs. If you need to add a new entry do so by adding it to the end.
+        BOOLEAN(Boolean.class),
+        BYTE(Byte.class), // 8-bit signed integer
+        SHORT(Short.class), // 16-bit
+        INTEGER(Integer.class), // 32-bit
+        LONG(Long.class), // 64-bit
+        FLOAT(Float.class),
+        DOUBLE(Double.class),
+        STRING(String.class),
+        BINARY(byte[].class), // raw data
+        NESTED(Map.class),  // nested field
+        ARRAY(List.class);    // array field
+
+        private Class javaType;
+
+        Type(Class javaType) {
+            this.javaType = javaType;
+        }
+
+        public Class getJavaType() {
+            return javaType;
+        }
+
+        /**
+         * Determines the {@link Type} of the value specified
+         * @param val value for which to determine the type
+         * @return {@link Type} of the value
+         */
+        public static Type getTypeOfVal(String val) {
+            Type type = null;
+            Type[] types = Type.values();
+
+            if (val.equalsIgnoreCase("true") || val.equalsIgnoreCase("false")) {
+                type = BOOLEAN;
+            }
+
+            for (int i = 1; type == null && i < STRING.ordinal(); i++) {
+                final Class clazz = types[i].getJavaType();
+                try {
+                    Object result = clazz.getMethod("valueOf", String.class).invoke(null, val);
+                    // temporary workaround to work for Double as Double get parsed as Float with value infinity
+                    if (!(result instanceof Float) || !((Float) result).isInfinite()) {
+                        type = types[i];
+                        break;
+                    }
+                } catch (Exception e) {
+                    /* Exception is thrown if type does not match. Ignore to search next type */
+                }
+            }
+            if (type == null) {
+                type = STRING;
+            }
+            return type;
+        }
     }
 
     public static class Field {
@@ -80,7 +123,6 @@ public class Schema {
 
             if (name != null ? !name.equals(field.name) : field.name != null) return false;
             return type == field.type;
-
         }
 
         @Override
@@ -103,8 +145,8 @@ public class Schema {
         public static Field fromString(String str) {
             String[] nameTypePair = str.split(",");
             String name = removePrimeSymbols(nameTypePair[0].split("=")[1]);
-            String type = removePrimeSymbols(nameTypePair[1].split("=")[1]);
-            return new Field(name, Type.valueOf(type));
+            String val = removePrimeSymbols(nameTypePair[1].split("=")[1]);
+            return new Field(name, Type.valueOf(val));
         }
 
         // Removes the prime symbols that are in the beginning and end of the String,
@@ -247,6 +289,7 @@ public class Schema {
     }
 
     //TODO: need to replace with actual ToJson from Json
+    //TODO: this can be simplified to fields.toString() a
     public String toString() {
         if(fields == null) return "null";
         if(fields.isEmpty()) return "{}";

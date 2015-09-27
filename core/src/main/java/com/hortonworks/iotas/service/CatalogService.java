@@ -43,9 +43,17 @@ public class CatalogService {
             this.value = value;
         }
 
+        public String getName() {
+            return name;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
         @Override
         public String toString() {
-            return "QueryParam{" +
+            return "{" +
                     "name='" + name + '\'' +
                     ", value='" + value + '\'' +
                     '}';
