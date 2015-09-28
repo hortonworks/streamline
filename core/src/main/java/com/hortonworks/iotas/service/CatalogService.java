@@ -112,7 +112,7 @@ public class CatalogService {
             dataSource.setTimestamp(System.currentTimeMillis());
         }
         DataSourceSubType subType = CoreUtils.jsonToStorable(dataSource.getTypeConfig(),
-                                                             getClassForDataSourceType(dataSource.getType()));
+                getClassForDataSourceType(dataSource.getType()));
         subType.setDataSourceId(dataSource.getDataSourceId());
         this.dao.add(dataSource);
         this.dao.add(subType);
@@ -136,7 +136,7 @@ public class CatalogService {
         dataSource.setDataSourceId(id);
         dataSource.setTimestamp(System.currentTimeMillis());
         DataSourceSubType subType = CoreUtils.jsonToStorable(dataSource.getTypeConfig(),
-                                                             getClassForDataSourceType(dataSource.getType()));
+                getClassForDataSourceType(dataSource.getType()));
         subType.setDataSourceId(dataSource.getDataSourceId());
         this.dao.addOrUpdate(dataSource);
         this.dao.addOrUpdate(subType);
@@ -161,9 +161,6 @@ public class CatalogService {
         if (feed.getDataFeedId() == null) {
             feed.setDataFeedId(this.dao.nextId(DATA_FEED_NAMESPACE));
         }
-        if (feed.getTimestamp() == null) {
-            feed.setTimestamp(System.currentTimeMillis());
-        }
         this.dao.add(feed);
         return feed;
     }
@@ -177,7 +174,6 @@ public class CatalogService {
 
     public DataFeed addOrUpdateDataFeed(Long id, DataFeed feed) {
         feed.setDataFeedId(id);
-        feed.setTimestamp(System.currentTimeMillis());
         this.dao.addOrUpdate(feed);
         return feed;
     }
