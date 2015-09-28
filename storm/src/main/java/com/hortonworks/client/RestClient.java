@@ -8,6 +8,7 @@ import com.hortonworks.iotas.catalog.CatalogResponse;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.Device;
+import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
@@ -32,6 +33,7 @@ public class RestClient {
     private static final String DATASOURCE_URL = "datasources";
     private static final String FEED_URL = "feeds";
     private static final String PARSER_URL = "parsers";
+    private static final String NOTIFIER_URL = "notifiers";
     private static final String PARSER_DOWNLOAD_URL = PARSER_URL + "/download";
 
     //TODO: timeouts should come from a config so probably make them constructor args.
@@ -83,6 +85,11 @@ public class RestClient {
 
     public ParserInfo getParserInfo(Long parserId) {
         return getEntity(String.format("%s/%s/%s", rootCatalogURL, PARSER_URL, parserId), ParserInfo.class);
+    }
+
+    public NotifierInfo getNotifierInfo(String notifierName) {
+        return getEntities(String.format("%s/%s/?notifierName=%s",
+                                         rootCatalogURL, NOTIFIER_URL, notifierName), NotifierInfo.class).get(0);
     }
 
     public ParserInfo getParserInfo(String deviceId, Long version) {
