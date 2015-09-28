@@ -24,7 +24,7 @@ Same config can be used to start debugging.
 
 This will load the following objects:  
 `ParserInfo = ParserInfo{parserId=1, parserName='NestParser', className='com.hortonworks.iotas.parsers.nest.NestParser', jarStoragePath='/tmp/storm-0.1-SNAPSHOT.jar', parserSchema=null, version=0, timestamp=1439323206590}`  
-`DataFeed = {"datafeedId":1,"datafeedName":"nest-datafeed","description":"Datafeed for Nest","tags":"Nest, ThermoStat","parserId":1,"endpoint":"localhost:9092/nest-topic","timestamp":1438055918158}`  
+`DataFeed = {"datafeedId":1,"datafeedName":"nest-datafeed","parserId":1,"endpoint":"localhost:9092/nest-topic"}`  
 `DataSource = {"dataSourceName":"nest-datasource","description":"Nest as datasource","datafeedId":1,"tags":"thermostat, Google smart home"}`  
 `Device = {"deviceId":"nest","version":1,"dataSourceId":1,"timestamp":1437938039136}`  
 
