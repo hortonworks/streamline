@@ -13,13 +13,22 @@
 
     <properties>
         <storm.version>0.11.0-SNAPSHOT</storm.version>
-        <hbase.version>0.98.4-hadoop2</hbase.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.hortonworks</groupId>
             <artifactId>core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hortonworks</groupId>
+            <artifactId>notification-service</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hortonworks</groupId>
+            <artifactId>notifiers</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -115,7 +124,6 @@
             <artifactId>flux-core</artifactId>
             <version>${storm.version}</version>
         </dependency>
-
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.jmockit</groupId>
