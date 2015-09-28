@@ -50,7 +50,7 @@ public class DataFeed implements Storable {
     private String tags;
 
     /**
-     * Reference to a parserId that defines which parser implementation knows how to parse this feed.
+     * Foreign key reference to a parser info that defines which parser implementation can be used to parse this feed.
      */
     private Long parserId;
 
@@ -74,7 +74,7 @@ public class DataFeed implements Storable {
     public Schema getSchema() {
         return new Schema.SchemaBuilder().fields(
                 new Schema.Field(DATAFEED_ID, Schema.Type.LONG),
-                new Schema.Field(DATASOURCE_ID, Schema.Type.STRING),
+                new Schema.Field(DATASOURCE_ID, Schema.Type.LONG),
                 new Schema.Field(DATAFEED_NAME, Schema.Type.STRING),
                 new Schema.Field(DESCRIPTION, Schema.Type.STRING),
                 new Schema.Field(TAGS, Schema.Type.STRING),

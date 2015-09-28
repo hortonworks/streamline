@@ -1,10 +1,9 @@
 package com.hortonworks.iotas.storage;
 
-import com.hortonworks.iotas.service.CatalogService;
-import static com.hortonworks.iotas.service.CatalogService.QueryParam;
-
 import java.util.Collection;
 import java.util.List;
+
+import static com.hortonworks.iotas.service.CatalogService.QueryParam;
 
 /**
  * TODO: All the methods are very restrictive and needs heavy synchronization to get right but my assumption is that
@@ -66,11 +65,10 @@ public interface StorageManager {
      *
      * @param namespace
      * @param queryParams
-     * @param <T>
      * @return
      * @throws Exception
      */
-    <T extends Storable> List<T> find(String namespace, List<QueryParam> queryParams) throws Exception;
+    <T extends Storable> Collection<T> find(String namespace, List<QueryParam> queryParams) throws StorageException;
 
     /**
      * Lists all {@link Storable} objects existing in the given namespace. If no entity is found, and empty list will be returned.
