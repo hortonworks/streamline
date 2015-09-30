@@ -6,7 +6,7 @@
 
     <groupId>com.hortonworks</groupId>
     <artifactId>IoTaS</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>${snapshot.version}</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -18,12 +18,17 @@
     </modules>
 
     <properties>
+        <snapshot.version>0.1-SNAPSHOT</snapshot.version>
         <!-- dependency versions -->
         <junit.version>4.11</junit.version>
         <jackson.version>2.6.0</jackson.version>
         <slf4j.version>1.7.12</slf4j.version>
         <guava.version>18.0</guava.version>
         <hadoop.version>2.7.1</hadoop.version>
+        <jmockit.version>1.7</jmockit.version>
+        <!-- plugin versions -->
+        <maven-jar-plugin.version>2.6</maven-jar-plugin.version>
+        <maven-surefire.version>2.18.1</maven-surefire.version>
     </properties>
 
     <dependencyManagement>
@@ -64,12 +69,6 @@
                 <version>${guava.version}</version>
             </dependency>
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${junit.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-hdfs</artifactId>
                 <version>${hadoop.version}</version>
@@ -99,6 +98,20 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <!-- Test dependencies -->
+            <!-- JMockit dependency must appear before JUnit dependency -->
+            <dependency>
+                <groupId>com.googlecode.jmockit</groupId>
+                <artifactId>jmockit</artifactId>
+                <version>${jmockit.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -114,7 +127,54 @@
                         <target>1.7</target>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>${maven-jar-plugin.version}</version>
+                </plugin>
+                <!-- Test Plugins -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven-surefire.version}</version>
+                    <configuration>
+                        <excludedGroups>com.hortonworks.IntegrationTest</excludedGroups>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-report-plugin</artifactId>
+                    <version>${maven-surefire.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>${maven-surefire.version}</version>
+                    <configuration>
+                        <includes>
+                            <include>**/*.java</include>
+                        </includes>
+                        <groups>com.hortonworks.IntegrationTest</groups>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>integration-test</goal>
+                                <goal>verify</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </reporting>
 </project>

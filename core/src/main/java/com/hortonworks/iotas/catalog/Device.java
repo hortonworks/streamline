@@ -34,12 +34,12 @@ public class Device implements DataSourceSubType {
     private String deviceId;
 
     /**
-     * Firmware version of the device. deviceId + version is the primary key.
+     * Firmware version of the device. DeviceId + version has a unique constraint but is not the primary key.
      */
     private Long version;
 
     /**
-     * Foreign key to reference to the parent 'DataSource'.
+     * Primary key that is also a foreign key to referencing to the parent table 'dataSources'.
      */
     private Long dataSourceId;
 
@@ -56,7 +56,8 @@ public class Device implements DataSourceSubType {
     }
 
     /**
-     * The primary key of the device is the deviceId + version.
+     * The primary key of the device is the datasource id itself which is also a foreign key
+     * reference to the parent 'DataSource'.
      */
     @JsonIgnore
     public PrimaryKey getPrimaryKey() {

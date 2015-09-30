@@ -3,7 +3,7 @@
     <parent>
         <artifactId>IoTaS</artifactId>
         <groupId>com.hortonworks</groupId>
-        <version>0.1-SNAPSHOT</version>
+        <version>${snapshot.version}</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -40,6 +40,22 @@
             <artifactId>jackson-dataformat-protobuf</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+        </dependency>
+        <!-- test dependencies -->
+        <dependency>
+            <groupId>com.hortonworks</groupId>
+            <artifactId>core</artifactId>
+            <version>${snapshot.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.1</version>
@@ -62,7 +78,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.3</version>
+                <version>2.4.1</version>
                 <configuration>
                     <createDependencyReducedPom>true</createDependencyReducedPom>
                     <filters>
