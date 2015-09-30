@@ -111,6 +111,7 @@ public class IotasApplication extends Application<IotasConfiguration> {
         final ParserInfoCatalogResource parserResource = new ParserInfoCatalogResource(catalogService, iotasConfiguration);
         final DataSourceCatalogResource dataSourceResource = new DataSourceCatalogResource(catalogService);
         final DataSourceWithDataFeedCatalogResource dataSourceWithDataFeedCatalogResource = new DataSourceWithDataFeedCatalogResource(catalogService);
+        final DataStreamCatalogResource dataStreamResource = new DataStreamCatalogResource(catalogService);
 
         // cluster related
         final ClusterCatalogResource clusterCatalogResource = new ClusterCatalogResource(catalogService);
@@ -119,9 +120,12 @@ public class IotasApplication extends Application<IotasConfiguration> {
         // notifier
         final NotifierInfoCatalogResource notifierInfoCatalogResource = new NotifierInfoCatalogResource(catalogService);
 
-        List<Object> resources = Lists.newArrayList(feedResource, parserResource, dataSourceResource,
-                                                    clusterCatalogResource, componentCatalogResource,
-                                                    dataSourceWithDataFeedCatalogResource, notifierInfoCatalogResource);
+        List<Object> resources = Lists.newArrayList(feedResource,
+                parserResource, dataSourceResource, dataStreamResource,
+                clusterCatalogResource, componentCatalogResource,
+		 dataSourceWithDataFeedCatalogResource,
+		notifierInfoCatalogResource);
+
         for(Object resource : resources) {
             environment.jersey().register(resource);
         }

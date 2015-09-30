@@ -48,3 +48,11 @@ CREATE TABLE IF NOT EXISTS datafeeds (
     FOREIGN KEY (dataSourceId) REFERENCES datasources(dataSourceId),
     FOREIGN KEY (parserId) REFERENCES parser_info(parserId)
 );
+
+CREATE TABLE IF NOT EXISTS datastreams (
+    dataStreamId BIGINT AUTO_INCREMENT NOT NULL,
+    dataStreamName VARCHAR(256) NOT NULL,
+    json VARCHAR(4096) NOT NULL,
+    timestamp  BIGINT,
+    PRIMARY KEY (dataStreamId)
+);
