@@ -89,6 +89,10 @@
             <artifactId>json-schema-validator</artifactId>
             <version>2.2.6</version>
         </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

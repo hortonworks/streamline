@@ -20,6 +20,7 @@
     <properties>
         <!-- dependency versions -->
         <junit.version>4.11</junit.version>
+        <snakeyaml.version>1.15</snakeyaml.version>
         <jackson.version>2.6.0</jackson.version>
         <slf4j.version>1.7.12</slf4j.version>
         <guava.version>18.0</guava.version>
@@ -169,6 +170,12 @@
                 <version>${junit.version}</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>${snakeyaml.version}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
