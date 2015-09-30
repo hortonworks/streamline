@@ -15,13 +15,12 @@ import java.util.*;
 /**
  * Storm implementation of the DataStreamsAction interface
  */
-public class DataStreamActionsStormImpl implements DataStreamActions {
+public class StormDataStreamActionsImpl implements DataStreamActions {
 
-    private static final DataStreamActionsStormImpl dataStreamActionsStorm =
-            new DataStreamActionsStormImpl();
     // artifact
     private static final String STORM_ARTIFACTS_LOCATION_KEY =
             "stormArtifactsDirectory";
+    private static final String STORM_JAR_LOCATION_KEY = "iotasStormJar";
     private static final String YAML_KEY_NAME = "name";
     private static final String YAML_KEY_CATALOG_ROOT_URL = "catalog.root.url";
     private static final String YAML_KEY_LOCAL_PARSER_JAR_PATH = "local" +
@@ -58,30 +57,58 @@ public class DataStreamActionsStormImpl implements DataStreamActions {
 
     private Map<String, String> jsonUiNameToStormName = new HashMap<>();
 
+    private String stormJarLocation;
+
     //TODO: Remove this wil unparsed tuple handler implementaion change
     private String parserBoltId;
 
-    private DataStreamActionsStormImpl () {
-    }
-
-    public static DataStreamActionsStormImpl getInstance() {
-        return dataStreamActionsStorm;
+    public StormDataStreamActionsImpl() {
     }
 
     @Override
-    synchronized public void init (Map<String, String> conf) {
+    public void init (Map<String, String> conf) {
         if (conf != null) {
             if (conf.containsKey(STORM_ARTIFACTS_LOCATION_KEY)) {
                 stormArtifactsLocation = conf.get(STORM_ARTIFACTS_LOCATION_KEY);
             }
+            stormJarLocation = conf.get(STORM_JAR_LOCATION_KEY);
         }
         File f = new File (stormArtifactsLocation);
         f.mkdirs();
     }
 
     @Override
-    synchronized public void createDataStreamArtifact (DataStream dataStream) throws
-            IOException {
+    public void deploy (DataStream dataStream) throws Exception {
+        String fileName = this.createYamlFile(dataStream);
+        List<String> commands = new ArrayList<String>();
+        commands.add("storm");
+        commands.add("jar");
+        commands.add(stormJarLocation);
+        commands.add("org.apache.storm.flux.Flux");
+        commands.add("--remote");
+        commands.add(fileName);
+        int exitValue = executeShellProcess(commands);
+        if (exitValue != 0) {
+            throw new Exception("Datastream could not be deployed " +
+                    "successfylly.");
+        }
+    }
+
+    @Override
+    public void kill (DataStream dataStream) throws Exception {
+        List<String> commands = new ArrayList<String>();
+        commands.add("storm");
+        commands.add("kill");
+        commands.add(getTopologyName(dataStream));
+        int exitValue = executeShellProcess(commands);
+        if (exitValue != 0) {
+            throw new Exception("Datastream could not be killed " +
+                    "successfylly.");
+        }
+    }
+
+    synchronized private String createYamlFile (DataStream dataStream) throws
+            Exception {
         this.reset();
         this.dataStream = dataStream;
         String json = this.dataStream.getJson();
@@ -92,19 +119,16 @@ public class DataStreamActionsStormImpl implements DataStreamActions {
             f = new File(this.getFilePath());
             if (f.exists()) {
                 if (!f.delete()) {
-                    throw new RuntimeException("Unable to delete old storm " +
+                    throw new Exception("Unable to delete old storm " +
                             "artifact for data stream id " + this.dataStream
                             .getDataStreamId());
-
                 }
             }
 
             jsonMap = objectMapper.readValue(json, Map.class);
             yamlData = new LinkedHashMap<String, Object>();
 
-            yamlData.put(YAML_KEY_NAME, "iotas-" + this.dataStream
-                    .getDataStreamId() + "-" + this.dataStream.getDataStreamName
-                    ());
+            yamlData.put(YAML_KEY_NAME, this.getTopologyName(dataStream));
             addTopologyConfig();
             addDataSources();
             addDataSinks();
@@ -116,8 +140,7 @@ public class DataStreamActionsStormImpl implements DataStreamActions {
             Yaml yaml = new Yaml (options);
             fileWriter = new FileWriter(f);
             yaml.dump(yamlData, fileWriter);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
+            return f.getAbsolutePath();
         } finally {
             if (fileWriter != null) {
                 fileWriter.close();
@@ -125,9 +148,12 @@ public class DataStreamActionsStormImpl implements DataStreamActions {
         }
     }
 
+    private String getTopologyName (DataStream dataStream) {
+        return "iotas-" + dataStream.getDataStreamId();
+    }
     private String getFilePath () {
         return this.stormArtifactsLocation + "dataStreamId-" + this.dataStream
-                .getDataStreamId();
+                .getDataStreamId() + ".yaml";
     }
 
     private void addTopologyConfig () {
@@ -304,7 +330,7 @@ public class DataStreamActionsStormImpl implements DataStreamActions {
         spoutConfigConstructorArgs.add("/Iotas-kafka-spout-" + this
                 .dataStream.getDataStreamId() + "-" + dataSource.get
                 (DataStreamLayoutValidator.JSON_KEY_ID));
-        spoutConfigConstructorArgs.add("nest-kafka-spout-" + this
+        spoutConfigConstructorArgs.add("kafka-spout-" + this
                 .dataStream.getDataStreamId() + "-" + dataSource.get
                 (DataStreamLayoutValidator.JSON_KEY_ID));
         this.addToComponents(this.createComponent(spoutConfigId,
@@ -532,6 +558,16 @@ public class DataStreamActionsStormImpl implements DataStreamActions {
         this.goodTuplesRule = "";
         this.badTuplesRule = "";
 
+    }
+
+    private int executeShellProcess (List<String> commands) throws  Exception {
+        ProcessBuilder processBuilder = new ProcessBuilder(commands);
+        processBuilder.inheritIO();
+        Process process = processBuilder.start();
+        process.waitFor();
+        int exitValue = process.exitValue();
+        System.out.println("Exit value from subprocess is :" + exitValue);
+        return exitValue;
     }
 
 }

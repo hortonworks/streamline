@@ -37,7 +37,6 @@ public class DataStreamLayoutValidator {
     public final static String JSON_KEY_FROM = "from";
     public final static String JSON_KEY_TO = "to";
 
-
     public final static String ERR_MSG_UINAME_DUP = "Uiname %s is already " +
             "used by other component.";
     public final static String ERR_MSG_LINK_FROM = "Link from property %s " +

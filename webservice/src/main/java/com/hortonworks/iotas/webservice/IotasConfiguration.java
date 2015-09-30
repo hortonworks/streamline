@@ -32,6 +32,12 @@ public class IotasConfiguration extends Configuration {
     @NotEmpty
     private String zookeeperHost;
 
+    @NotEmpty
+    private String dataStreamActionsImpl;
+
+    @NotEmpty
+    private String iotasStormJar;
+
     @NotNull
     private JarStorageConfiguration jarStorageConfiguration;
 
@@ -51,6 +57,22 @@ public class IotasConfiguration extends Configuration {
 
     public void setZookeeperHost(String zookeeperHost) {
         this.zookeeperHost = zookeeperHost;
+    }
+
+    public String getDataStreamActionsImpl () {
+        return dataStreamActionsImpl;
+    }
+
+    public void setDataStreamActionsImpl (String dataStreamActionsImpl) {
+        this.dataStreamActionsImpl = dataStreamActionsImpl;
+    }
+
+    public String getIotasStormJar () {
+        return iotasStormJar;
+    }
+
+    public void setIotasStormJar (String iotasStormJar) {
+        this.iotasStormJar = iotasStormJar;
     }
 
     @JsonProperty("jarStorageConfiguration")

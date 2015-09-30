@@ -1,6 +1,8 @@
 brokerList: localhost:9092
 zookeeperHost: localhost:2181
-
+dataStreamActionsImpl: com.hortonworks.iotas.util.StormDataStreamActionsImpl
+#change the below to the path on your local machine
+iotasStormJar: /Users/pshah/dev/IoTaS/storm/target/storm-0.1-SNAPSHOT.jar
 # Filesystem based jar storage
 #jarStorageConfiguration:
 #  className: "com.hortonworks.iotas.util.FileSystemJarStorage"
