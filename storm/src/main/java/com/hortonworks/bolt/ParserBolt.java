@@ -33,7 +33,6 @@ public class ParserBolt extends BaseRichBolt {
     private static final Logger LOG = LoggerFactory.getLogger(ParserBolt.class);
     public static final String CATALOG_ROOT_URL = "catalog.root.url";
     public static final String LOCAL_PARSER_JAR_PATH = "local.parser.jar.path";
-    public static final String IOTAS_EVENT = "iotas.event";
     public static final String BINARY_BYTES = "bytes";
     private OutputCollector collector;
 

@@ -9,6 +9,8 @@ import java.util.Map;
  */
 public interface IotasEvent {
 
+    String IOTAS_EVENT = "iotas.event";
+
     /**
      * The key values in the event.
      * @return the key value map

@@ -47,7 +47,7 @@ public class DummyRuleBolt extends BaseRichBolt {
 
     @Override
     public void execute(Tuple input) {
-        IotasEvent event = (IotasEvent) input.getValueByField(ParserBolt.IOTAS_EVENT);
+        IotasEvent event = (IotasEvent) input.getValueByField(IotasEvent.IOTAS_EVENT);
         List<String> eventIds = Arrays.asList(event.getId());
         List<String> dataSourceIds = Arrays.asList(event.getDataSourceId());
 
