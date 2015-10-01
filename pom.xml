@@ -25,7 +25,7 @@
         <slf4j.version>1.7.12</slf4j.version>
         <guava.version>18.0</guava.version>
         <hadoop.version>2.7.1</hadoop.version>
-        <jmockit.version>1.7</jmockit.version>
+        <jmockit.version>1.19</jmockit.version>
         <!-- plugin versions -->
         <maven-jar-plugin.version>2.6</maven-jar-plugin.version>
         <maven-surefire.version>2.18.1</maven-surefire.version>
@@ -100,8 +100,11 @@
             </dependency>
             <!-- Test dependencies -->
             <!-- JMockit dependency must appear before JUnit dependency -->
+
+
+            <!-- Test dependencies -->
             <dependency>
-                <groupId>com.googlecode.jmockit</groupId>
+                <groupId>org.jmockit</groupId>
                 <artifactId>jmockit</artifactId>
                 <version>${jmockit.version}</version>
                 <scope>test</scope>
