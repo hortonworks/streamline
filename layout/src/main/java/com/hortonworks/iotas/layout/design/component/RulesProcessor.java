@@ -23,7 +23,7 @@ import com.hortonworks.iotas.layout.design.rule.Rule;
 import java.util.List;
 
 /**
- * Object representing a design time rules processor.
+ * Represents a design time rules processor.
  */
 public class RulesProcessor extends Component {     //TODO: Rename to RuleProcessor
     private List<Rule> rules;
@@ -34,5 +34,12 @@ public class RulesProcessor extends Component {     //TODO: Rename to RuleProces
 
     public void setRules(List<Rule> rules) {
         this.rules = rules;
+    }
+
+    @Override
+    public String toString() {
+        return "RulesProcessor{" +
+                "rules=" + rules +
+                "} " + super.toString();
     }
 }

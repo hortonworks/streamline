@@ -16,22 +16,14 @@
  * limitations under the License.
  */
 
-package com.hortonworks.iotas.layout.runtime.rule;
+package com.hortonworks.iotas.layout.design.component;
 
-import com.hortonworks.iotas.layout.design.rule.Rule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.Serializable;
-
-public interface RuleRuntimeBuilder extends Serializable {
-    Logger log = LoggerFactory.getLogger(RuleRuntimeBuilder.class);
-
-    void buildExpression(Rule rule);
-
-    void buildScriptEngine();
-
-    void buildScript();
-
-    RuleRuntime getRuleRuntime(Rule rule);
+/**
+ * Marker class to clearly identify a {@link Sink} <br><br/>
+ * A {@link Sink} receives input but does not communicate with any downstream components, hence it emits no output
+ */
+public class Sink extends Component {
+    // Sink extending Component is a more accurate representation of the physical world than having Component implement
+    // a Sink interface because the later implies that Processor "is a" Sink, which is not correct.
+    // On the other hand Sink "is a" Component
 }

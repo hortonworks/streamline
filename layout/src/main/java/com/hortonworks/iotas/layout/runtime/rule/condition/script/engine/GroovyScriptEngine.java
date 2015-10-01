@@ -24,15 +24,6 @@ import javax.script.Bindings;
 import java.io.Serializable;
 
 public class GroovyScriptEngine implements ScriptEngine<javax.script.ScriptEngine>, Serializable {
-    /*@Override
-    public javax.script.ScriptEngine getEngine() {
-        final ScriptEngineManager factory = new ScriptEngineManager();
-        javax.script.ScriptEngine engine = factory.getEngineByName("groovy");
-        Bindings bindings = engine.createBindings();
-        bindings.put("engine", engine);
-        return engine;
-    }*/
-
     @Override
     public javax.script.ScriptEngine getEngine() {
         javax.script.ScriptEngine engine = new GroovyScriptEngineImplSerializable();

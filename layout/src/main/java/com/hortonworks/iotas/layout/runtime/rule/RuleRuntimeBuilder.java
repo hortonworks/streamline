@@ -19,28 +19,22 @@
 package com.hortonworks.iotas.layout.runtime.rule;
 
 import com.hortonworks.iotas.layout.design.rule.Rule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class RuleRuntimeConstructor {
-    protected static final Logger log = LoggerFactory.getLogger(RuleRuntimeConstructor.class);
-    private RuleRuntimeBuilder ruleRuntimeBuilder;
+import java.io.Serializable;
 
+/**
+ * @param <I> Type of runtime input to this rule, for example {@code Tuple}
+ * @param <E> Type of object required to execute this rule in the underlying streaming framework e.g {@code IOutputCollector}
+ */
+public interface RuleRuntimeBuilder<I, E> extends Serializable {
+    /** Sets the {@link Rule} that is to be used in the subsequent steps of the build  process */
+    void setRule(Rule rule);
 
-    public RuleRuntimeConstructor(RuleRuntimeBuilder ruleRuntimeBuilder) {
-        this.ruleRuntimeBuilder = ruleRuntimeBuilder;
-    }
+    void buildExpression();
 
-    public void construct(Rule rule) {
-        log.debug("Constructing RuleRuntime for rule: {}", rule);
-        ruleRuntimeBuilder.buildExpression(rule);
-        ruleRuntimeBuilder.buildScriptEngine();
-        ruleRuntimeBuilder.buildScript();
-    }
+    void buildScriptEngine();
 
-    public RuleRuntime getRuleRuntime(Rule rule) {
-        RuleRuntime ruleRuntime = ruleRuntimeBuilder.getRuleRuntime(rule);
-        log.debug("Rule [{}] => RuleRuntime [{}]", rule, ruleRuntime);
-        return ruleRuntime;
-    }
+    void buildScript();
+
+    RuleRuntime<I, E> buildRuleRuntime();
 }

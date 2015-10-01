@@ -23,27 +23,28 @@ import com.hortonworks.iotas.layout.design.rule.condition.Condition;
 import java.util.Arrays;
 
 public class GroovyExpression extends Expression {
-
     public GroovyExpression(Condition condition) {
         super(condition);
     }
 
     @Override
     public String getExpression() {
-        final StringBuilder builder = new StringBuilder("");
-        for (Condition.ConditionElement element : condition.getConditionElements()) {
-            builder.append(getName(element.getFirstOperand()))               // x
-                    .append(getOperation(element.getOperation()))            // ==, !=, >, <, ...
-                    .append(element.getSecondOperand());                     // 5 - it is a constant
+        if (expression == null) {           // Builds and caches the expression string the first time it is called
+            final StringBuilder builder = new StringBuilder("");
+            for (Condition.ConditionElement element : condition.getConditionElements()) {
+                builder.append(getName(element.getFirstOperand()))               // x
+                        .append(getOperation(element.getOperation()))            // ==, !=, >, <, ...
+                        .append(element.getSecondOperand());                     // 5 - it is a constant
 
-            if (element.getLogicalOperator() != null) {
-                builder.append(" ");
-                builder.append(getLogicalOperator(element.getLogicalOperator()));   // && or ||
-                builder.append(" ");
+                if (element.getLogicalOperator() != null) {
+                    builder.append(" ");
+                    builder.append(getLogicalOperator(element.getLogicalOperator()));   // && or ||
+                    builder.append(" ");
+                }
             }
+            expression = builder.toString();                                    // x == 5 [&& or ||]
+            log.debug("Built expression [{}] for condition [{}]", expression, condition);
         }
-        final String expression = builder.toString();                              // x == 5 [&& or ||]
-        log.debug("Built expression [{}] for condition [{}]", expression, condition);
         return expression;
     }
 
@@ -54,7 +55,7 @@ public class GroovyExpression extends Expression {
             case OR:
                 return " || ";
             default:
-                throw new UnsupportedOperationException(String.format("Operation [%s] not supported. List of supported operations: %s",
+                throw new UnsupportedOperationException(String.format("Operator [%s] not supported. List of supported operators: %s",
                         logicalOperator, Arrays.toString(Condition.ConditionElement.LogicalOperator.values())));
         }
     }
@@ -78,4 +79,6 @@ public class GroovyExpression extends Expression {
                         operation, Arrays.toString(Condition.ConditionElement.Operation.values())));
         }
     }
+
+
 }

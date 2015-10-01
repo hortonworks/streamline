@@ -31,6 +31,8 @@ public abstract class Expression {
 
     protected final Condition condition;
 
+    protected String expression;
+
     public Expression(Condition condition) {
         this.condition = condition;
     }
@@ -46,5 +48,10 @@ public abstract class Expression {
 
     protected String getType(Field field) {
         return field.getType() + " ";
+    }
+
+    @Override
+    public String toString() {
+        return "Expression{"+ condition + ", " + expression + '}';
     }
 }

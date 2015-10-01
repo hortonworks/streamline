@@ -18,32 +18,49 @@
 
 package com.hortonworks.iotas.layout.runtime.rule;
 
+import backtype.storm.task.OutputCollector;
+import backtype.storm.tuple.Tuple;
 import com.hortonworks.iotas.layout.design.rule.Rule;
 import com.hortonworks.iotas.layout.runtime.rule.condition.expression.GroovyExpression;
 import com.hortonworks.iotas.layout.runtime.rule.condition.script.GroovyScript;
 import com.hortonworks.iotas.layout.runtime.rule.condition.script.engine.GroovyScriptEngine;
 
-public class GroovyRuleRuntimeBuilder implements RuleRuntimeBuilder {
+public class GroovyRuleRuntimeBuilder implements RuleRuntimeBuilder<Tuple, OutputCollector> {
+    private Rule rule;
     private GroovyExpression groovyExpression;
     private GroovyScriptEngine groovyScriptEngine;
     private GroovyScript groovyScript;
 
-    public GroovyRuleRuntimeBuilder() {
+    @Override
+    public void setRule(Rule rule) {
+        this.rule = rule;
     }
 
-    public void buildExpression(Rule rule) {
+    @Override
+    public void buildExpression() {
         groovyExpression = new GroovyExpression(rule.getCondition());
     }
 
+    @Override
     public void buildScriptEngine() {
         groovyScriptEngine = new GroovyScriptEngine();
     }
 
+    @Override
     public void buildScript() {
         groovyScript = new GroovyScript(groovyExpression, groovyScriptEngine);
     }
 
-    public RuleRuntime getRuleRuntime(Rule rule) {
-        return new RuleRuntime(rule, groovyScript);
+    @Override
+    public RuleRuntimeStorm buildRuleRuntime() {
+        return new RuleRuntimeStorm(rule, groovyScript);
+    }
+
+    @Override
+    public String toString() {
+        return "GroovyRuleRuntimeBuilder{" +
+                ", groovyScriptEngine=" + groovyScriptEngine +
+                ", groovyScript=" + groovyScript +
+                '}';
     }
 }
