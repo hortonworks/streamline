@@ -17,6 +17,7 @@ public class NotificationImpl implements Notification {
     private final String ruleId;
     private final Status status;
     private final String notifierName;
+    private final long timestamp;
 
     /**
      * Notification builder
@@ -29,6 +30,7 @@ public class NotificationImpl implements Notification {
         private String ruleId;
         private Status status;
         private String notifierName;
+        private long timestamp;
 
         public Builder(Map<String, String> fieldsAndValues) {
             this.fieldsAndValues = fieldsAndValues;
@@ -64,6 +66,11 @@ public class NotificationImpl implements Notification {
             return this;
         }
 
+        public Builder timestamp(long timestamp) {
+            this.timestamp = timestamp;
+            return this;
+        }
+
         public NotificationImpl build() {
             return new NotificationImpl(this);
         }
@@ -77,6 +84,7 @@ public class NotificationImpl implements Notification {
         this.ruleId = builder.ruleId;
         this.status = (builder.status != null) ? builder.status : Status.NEW;
         this.notifierName = builder.notifierName;
+        this.timestamp = (builder.timestamp == 0) ? System.currentTimeMillis() : builder.timestamp;
     }
 
     @Override
@@ -115,6 +123,11 @@ public class NotificationImpl implements Notification {
     }
 
     @Override
+    public long getTs() {
+        return timestamp;
+    }
+
+    @Override
     public String toString() {
         return "NotificationImpl{" +
                 "id='" + id + '\'' +
@@ -124,6 +137,7 @@ public class NotificationImpl implements Notification {
                 ", ruleId='" + ruleId + '\'' +
                 ", status=" + status +
                 ", notifierName='" + notifierName + '\'' +
+                ", timestamp=" + timestamp +
                 '}';
     }
 }

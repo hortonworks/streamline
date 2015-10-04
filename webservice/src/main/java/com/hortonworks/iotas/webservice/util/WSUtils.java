@@ -14,13 +14,13 @@ import java.util.Collection;
 public class WSUtils {
     private WSUtils() {}
 
-    public static Response respond(Response.Status status, CatalogResponse.ResponseMessage msg, Collection<? extends Storable> storable, String... formatArgs) {
+    public static Response respond(Response.Status status, CatalogResponse.ResponseMessage msg, Collection<? extends Object> storable, String... formatArgs) {
         return Response.status(status)
                 .entity(CatalogResponse.newResponse(msg).entities(storable).format(formatArgs))
                 .build();
     }
 
-    public static Response respond(Response.Status status, CatalogResponse.ResponseMessage msg, Storable storable, String... formatArgs) {
+    public static Response respond(Response.Status status, CatalogResponse.ResponseMessage msg, Object storable, String... formatArgs) {
         return Response.status(status)
                 .entity(CatalogResponse.newResponse(msg).entity(storable).format(formatArgs))
                 .build();

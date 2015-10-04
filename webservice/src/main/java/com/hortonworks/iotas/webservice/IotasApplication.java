@@ -19,6 +19,9 @@ package com.hortonworks.iotas.webservice;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
+import com.hortonworks.iotas.notification.service.NotificationService;
+import com.hortonworks.iotas.notification.service.NotificationServiceImpl;
+import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.cache.Cache;
 import com.hortonworks.iotas.cache.impl.GuavaCache;
 import com.hortonworks.iotas.cache.writer.StorageWriteThrough;
@@ -111,9 +114,11 @@ public class IotasApplication extends Application<IotasConfiguration> {
         // notifier
         final NotifierInfoCatalogResource notifierInfoCatalogResource = new NotifierInfoCatalogResource(catalogService);
 
+        final NotificationService notificationService = new NotificationServiceImpl();
+        final NotificationsResource notificationsResource = new NotificationsResource(notificationService);
         List<Object> resources = Lists.newArrayList(feedResource, parserResource, dataSourceResource,
                                                     clusterCatalogResource, componentCatalogResource,
-                                                    notifierInfoCatalogResource);
+                                                    notifierInfoCatalogResource, notificationsResource);
         for(Object resource : resources) {
             environment.jersey().register(resource);
         }

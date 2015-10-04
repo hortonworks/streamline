@@ -46,6 +46,7 @@ public class DummyRuleBolt extends BaseRichBolt {
                 .eventIds(eventIds)
                 .dataSourceIds(dataSourceIds)
                 .notifierName("console_notifier")
+                .timestamp(System.currentTimeMillis())
                 .ruleId("1")
                 .build();
         collector.emit(new Values(notification));

@@ -8,11 +8,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Create [datasource -> notification] mapping by inserting the
- * record into Datasource_Notification table in HBase.
+ * Secondary index mapping for dataSourceId. This is to enable Notification
+ * lookup based on dataSourceId.
  */
 public class DatasourceNotificationMapper extends NotificationIndexMapper {
+    /**
+     * The HBase index table
+     */
     private static final String TABLE_NAME = "Datasource_Notification";
+    /**
+     * The notification field that is indexed
+     */
+    private static final String INDEX_FIELD_NAME = "dataSourceId";
 
     @Override
     protected List<byte[]> getRowKeys(Notification notification) {
@@ -20,7 +27,7 @@ public class DatasourceNotificationMapper extends NotificationIndexMapper {
         for (String dataSourceId : notification.getDataSourceIds()) {
             rowKeys.add(new StringBuilder(dataSourceId)
                                 .append(ROWKEY_SEP)
-                                .append(System.currentTimeMillis())
+                                .append(notification.getTs())
                                 .toString().getBytes(CHARSET));
         }
         return rowKeys;
@@ -29,5 +36,10 @@ public class DatasourceNotificationMapper extends NotificationIndexMapper {
     @Override
     public String getTableName() {
         return TABLE_NAME;
+    }
+
+    @Override
+    public String getIndexedFieldName() {
+        return INDEX_FIELD_NAME;
     }
 }

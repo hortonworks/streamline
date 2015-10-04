@@ -33,4 +33,12 @@ public class TableMutationImpl implements TableMutation {
     public List<Put> rows() {
         return rows;
     }
+
+    @Override
+    public String toString() {
+        return "TableMutationImpl{" +
+                "tableName='" + tableName + '\'' +
+                ", rows=" + rows +
+                '}';
+    }
 }

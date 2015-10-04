@@ -12,11 +12,11 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by aiyer on 9/29/15.
+ * A base class for Notification index table mappers.
  */
-public abstract class NotificationIndexMapper extends AbstractNotificationMapper {
+public abstract class NotificationIndexMapper extends AbstractNotificationMapper implements IndexMapper<Notification>  {
 
-    protected static final byte[] CF_NOTIFICATION_ID = "ni".getBytes(CHARSET);
+    private static final byte[] CF_NOTIFICATION_ID = "ni".getBytes(CHARSET);
 
     @Override
     protected void addColumns(Put put, Notification notification) {
