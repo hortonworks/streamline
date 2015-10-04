@@ -80,6 +80,11 @@ bolts:
     className: "com.hortonworks.bolt.notification.NotificationBolt"
     constructorArgs:
           - "console_notifier"
+    configMethods:
+      - name: "withHBaseConfigKey"
+        args:
+          - "hbase.conf"
+
     parallelism: 1
 
 #stream definitions

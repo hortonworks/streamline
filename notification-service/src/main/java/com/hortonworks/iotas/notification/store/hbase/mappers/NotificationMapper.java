@@ -1,10 +1,12 @@
 package com.hortonworks.iotas.notification.store.hbase.mappers;
 
 import com.hortonworks.iotas.notification.common.Notification;
-import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -14,9 +16,14 @@ import java.util.List;
  * (e.g, Notifiers_Notification, Rule_Notification etc)
  */
 public class NotificationMapper extends AbstractNotificationMapper {
-    public static final String TABLE_NOTIFICATION = "Notification";
+    private static final Logger LOG = LoggerFactory.getLogger(NotificationMapper.class);
 
     private final List<NotificationIndexMapper> indexMappers;
+    private static final String TABLE_NAME = "Notification";
+
+    public NotificationMapper() {
+        this(new ArrayList<NotificationIndexMapper>());
+    }
 
     public NotificationMapper(List<NotificationIndexMapper> indexMappers) {
         this.indexMappers = indexMappers;
@@ -28,16 +35,21 @@ public class NotificationMapper extends AbstractNotificationMapper {
         for (NotificationIndexMapper im : indexMappers) {
             tableMutations.addAll(im.tableMutations(notification));
         }
+        LOG.trace("Notification {}, tableMutations {}", notification, tableMutations);
         return tableMutations;
     }
 
     /**
-     * Returns a put object for updating the notification status.
+     * Returns a list of table mutations for updating the notification status. This
+     * takes care of updating the index tables, if the index table stores status.
      */
-    public static Put status(String notificationId, Notification.Status status) {
-        Put put = new Put(notificationId.getBytes(CHARSET));
-        put.add(CF_STATUS, CQ_STATUS, status.toString().getBytes(CHARSET));
-        return put;
+    public List<TableMutation> status(Notification notification, Notification.Status status) {
+        List<TableMutation> tableMutations = super.status(notification, status);
+        for (NotificationIndexMapper im : indexMappers) {
+            tableMutations.addAll(im.status(notification, status));
+        }
+        LOG.trace("Notification {}, Status {}, tableMutations {}", notification, status, tableMutations);
+        return tableMutations;
     }
 
     @Override
@@ -52,6 +64,6 @@ public class NotificationMapper extends AbstractNotificationMapper {
 
     @Override
     public String getTableName() {
-        return TABLE_NOTIFICATION;
+        return TABLE_NAME;
     }
 }

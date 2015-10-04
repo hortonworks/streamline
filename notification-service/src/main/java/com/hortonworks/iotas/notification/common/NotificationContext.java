@@ -2,16 +2,18 @@ package com.hortonworks.iotas.notification.common;
 
 
 /**
- * A context object with which the notification service
- * would initialize the notifier.
+ * A context object used by the notification service
+ * to initialize the notifier. This contains the notifier config
+ * and the ack and fail actions.
  */
 public interface NotificationContext {
     /**
      * <p>
-     * Returns the {@link NotifierConfig}, which would have notifier properties and
-     * default values for some the fields.
+     * Returns the {@link NotifierConfig}, which contains the notifier properties and
+     * default values for some of the fields.
      * E.g. email-id, to, from, subject etc for an email notifier.
      * </p>
+     *
      * @return the notifier config.
      */
     NotifierConfig getConfig();

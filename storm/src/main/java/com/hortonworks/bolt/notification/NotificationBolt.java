@@ -13,6 +13,7 @@ import com.hortonworks.iotas.notification.common.NotifierConfig;
 import com.hortonworks.iotas.notification.common.NotifierConfigImpl;
 import com.hortonworks.iotas.notification.service.NotificationService;
 import com.hortonworks.iotas.notification.service.NotificationServiceImpl;
+import com.hortonworks.iotas.notification.store.hbase.HBaseNotificationStore;
 
 import java.io.File;
 import java.util.Map;
@@ -32,6 +33,7 @@ public class NotificationBolt extends BaseRichBolt {
     private Notifier notifier;
     private BoltNotificationContext notificationContext;
     private RestClient restClient;
+    private String hbaseConfigKey = "hbase.conf";
 
     private final String notifierName;
 
@@ -46,12 +48,18 @@ public class NotificationBolt extends BaseRichBolt {
         this.notifierName = notifierName;
     }
 
+    public NotificationBolt withHBaseConfigKey(String key) {
+        this.hbaseConfigKey = key;
+        return this;
+    }
+
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
         if (!stormConf.containsKey(CATALOG_ROOT_URL)) {
             throw new IllegalArgumentException("conf must contain " + CATALOG_ROOT_URL);
         }
-        notificationService = new NotificationServiceImpl();
+        Map<String, String> hbaseConf = (Map<String, String>)stormConf.get(this.hbaseConfigKey);
+        notificationService = new NotificationServiceImpl(new HBaseNotificationStore(hbaseConf));
         restClient = new RestClient(stormConf.get(CATALOG_ROOT_URL).toString());
         NotifierInfo notifierInfo = restClient.getNotifierInfo(this.notifierName);
 
@@ -63,7 +71,7 @@ public class NotificationBolt extends BaseRichBolt {
         NotifierConfig notifierConfig = new NotifierConfigImpl(props, notifierInfo.getFieldValues(),
                                                                notifierInfo.getClassName(), jarPath);
 
-        notificationContext = new BoltNotificationContext(collector, notifierConfig);
+        notificationContext = new BoltNotificationContext(collector, notifierConfig, notificationService);
         notificationService.register(this.notifierName, notificationContext);
     }
 

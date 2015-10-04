@@ -56,14 +56,14 @@ public interface Notification {
     String getRuleId();
 
     /**
-     * The status of the notification, mainly if its delivered or failed.
+     * The status of the notification, i.e. if its new, delivered or failed.
      *
      * @return the status of the notification.
      */
     Status getStatus();
 
     /**
-     * <p>The key, values in the notification.
+     * <p>The [key, value] pairs in the notification.
      * this will be used by the notifier to construct
      * the notification.
      * </p>
@@ -78,4 +78,9 @@ public interface Notification {
      * @return the notifier name.
      */
     String getNotifierName();
+
+    /**
+     * The ts in millis when the notification is generated.
+     */
+    long getTs();
 }

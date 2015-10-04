@@ -5,11 +5,17 @@ import org.apache.hadoop.hbase.client.Put;
 import java.util.List;
 
 /**
- * Represents a list of rows that can be inserted into a HBase table.
+ * Represents a list of rows as HBase PUTs to be inserted/updated in a table.
  */
 public interface TableMutation {
 
+    /**
+     * The table name.
+     */
     String tableName();
 
+    /**
+     * the rows to be inserted or updated as Put requests.
+     */
     List<Put> rows();
 }

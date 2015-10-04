@@ -10,7 +10,7 @@ import com.hortonworks.iotas.notification.common.NotificationImpl;
 import com.hortonworks.iotas.notification.common.Notifier;
 import com.hortonworks.iotas.notification.notifiers.ConsoleNotifier;
 import com.hortonworks.iotas.notification.store.hbase.HBaseNotificationStore;
-import com.hortonworks.util.ReflectionHelper;
+import com.hortonworks.iotas.util.ReflectionHelper;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;

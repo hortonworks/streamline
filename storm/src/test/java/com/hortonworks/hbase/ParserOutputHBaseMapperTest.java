@@ -48,7 +48,7 @@ public class ParserOutputHBaseMapperTest {
         Assert.assertTrue(Arrays.equals(ROW_KEY_FIELD.getBytes(UTF_8), bytes));
 
         ColumnList columns = mapper.columns(mockTuple);
-        Assert.assertEquals(1, columns.getColumns().size());
+        Assert.assertEquals(2, columns.getColumns().size());
         ColumnList.Column column = columns.getColumns().get(0);
         Assert.assertTrue(Arrays.equals(COLUMN_FAMILY.getBytes(Charsets.UTF_8), column.getFamily()));
         Assert.assertTrue(Arrays.equals(COLUMN_FIELD.getBytes(Charsets.UTF_8), column.getQualifier()));
