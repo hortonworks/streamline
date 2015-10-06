@@ -8,23 +8,28 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.hortonworks.client.RestClient;
 import com.hortonworks.iotas.catalog.ParserInfo;
+import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.model.IotasMessage;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Tested;
 import mockit.VerificationsInOrder;
+import mockit.integration.junit4.JMockit;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.io.ByteArrayInputStream;
 
+@RunWith(JMockit.class)
 public class ParserBoltTest {
 
     private static final Long PARSER_ID = 1l;
     private static final String DEVICE_ID = "1";
     private static final Long VERSION = 1l;
     private static final byte[] DATA = "test".getBytes(Charsets.UTF_8);
-    private static final Values VALUES = new Values(MockParser.PARSER_OUTPUT);
+    private static final Values VALUES = new Values(MockParser.IOTAS_EVENT);
 
     private IotasMessage msg;
     private @Tested ParserBolt parserBolt;
@@ -96,7 +101,7 @@ public class ParserBoltTest {
 
         if(isSuccess) {
             new VerificationsInOrder() {{
-                mockOutputCollector.emit(mockTuple, VALUES);
+                mockOutputCollector.emit(mockTuple, withAny(VALUES));
                 mockOutputCollector.ack(mockTuple);
             }};
 
