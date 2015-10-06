@@ -1,4 +1,4 @@
-package com.hortonworks.util;
+package com.hortonworks.iotas.util;
 
 import org.apache.commons.lang3.StringUtils;
 
