@@ -49,13 +49,6 @@
         </dependency>
         <!-- test dependencies -->
         <dependency>
-            <groupId>com.hortonworks</groupId>
-            <artifactId>core</artifactId>
-            <version>${snapshot.version}</version>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.1</version>

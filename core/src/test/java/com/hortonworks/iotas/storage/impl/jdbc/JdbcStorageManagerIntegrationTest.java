@@ -20,7 +20,7 @@
 package com.hortonworks.iotas.storage.impl.jdbc;
 
 import com.google.common.cache.CacheBuilder;
-import com.hortonworks.IntegrationTest;
+import com.hortonworks.iotas.IntegrationTest;
 import com.hortonworks.iotas.storage.AbstractStoreManagerTest;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorageManager;

@@ -189,7 +189,7 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven-surefire.version}</version>
                     <configuration>
-                        <excludedGroups>com.hortonworks.IntegrationTest</excludedGroups>
+                        <excludedGroups>com.hortonworks.iotas.IntegrationTest</excludedGroups>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -205,7 +205,7 @@
                         <includes>
                             <include>**/*.java</include>
                         </includes>
-                        <groups>com.hortonworks.IntegrationTest</groups>
+                        <groups>com.hortonworks.iotas.IntegrationTest</groups>
                     </configuration>
                     <executions>
                         <execution>
