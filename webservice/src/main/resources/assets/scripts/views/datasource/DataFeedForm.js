@@ -23,20 +23,6 @@ define(['utils/LangSupport',
           placeHolder: localization.tt('lbl.dataFeedName'),
           validators: ['required']
         },
-        description: {
-          type: 'Text',
-          title: localization.tt('lbl.description')+'*',
-          editorClass: 'form-control',
-          placeHolder: localization.tt('lbl.description'),
-          validators: ['required']
-        },
-        tags: {
-          type: 'Tag',
-          title: localization.tt('lbl.tags')+'*',
-          editorClass: 'form-control',
-          placeHolder: localization.tt('lbl.tags'),
-          validators: ['required']
-        },
         parserId: {
           type: 'Number',
           title: localization.tt('lbl.parserId')+'*',
