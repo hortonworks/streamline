@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DataSource implements Storable {
+    public static final String NAME_SPACE = "datasources";
     public static final String DATA_SOURCE_ID = "dataSourceId";
     public static final String DATA_SOURCE_NAME = "dataSourceName";
     public static final String DESCRIPTION = "description";
@@ -65,7 +66,7 @@ public class DataSource implements Storable {
 
     @JsonIgnore
     public String getNameSpace() {
-        return "datasources";
+        return NAME_SPACE;
     }
 
     @JsonIgnore

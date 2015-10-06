@@ -19,16 +19,16 @@ package com.hortonworks.iotas.webservice;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
-import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.cache.Cache;
 import com.hortonworks.iotas.cache.impl.GuavaCache;
 import com.hortonworks.iotas.cache.writer.StorageWriteThrough;
 import com.hortonworks.iotas.cache.writer.StorageWriter;
+import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.storage.CacheBackedStorageManager;
-import com.hortonworks.iotas.storage.InMemoryStorageManager;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
+import com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
