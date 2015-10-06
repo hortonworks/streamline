@@ -34,6 +34,8 @@ public class IotasMessage {
 
     protected Long timestamp = System.currentTimeMillis();
 
+    private String messageId;
+
     public IotasMessage(){
 
     }
@@ -84,6 +86,14 @@ public class IotasMessage {
 
     public void setTimestamp(Long timestamp){
         this.timestamp = timestamp;
+    }
+
+    public void setMessageId(String messageId) {
+        this.messageId = messageId;
+    }
+
+    public String getMessageId() {
+        return messageId;
     }
 
 }
