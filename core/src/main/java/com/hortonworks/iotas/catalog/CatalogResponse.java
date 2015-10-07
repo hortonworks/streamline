@@ -66,14 +66,14 @@ public class CatalogResponse {
     /**
      * For response that returns a collection of entities.
      */
-    private Collection entities;
+    private Collection<? extends Object> entities;
 
     private CatalogResponse() {}
 
     public static class Builder {
         private ResponseMessage responseMessage;
         private Object entity;
-        private Collection entities;
+        private Collection<? extends Object> entities;
         private String DOC_LINK_MESSAGE = " Please check webservice/ErrorCodes.md for more details.";
 
         public Builder(ResponseMessage responseMessage) {
@@ -85,7 +85,7 @@ public class CatalogResponse {
             return this;
         }
 
-        public Builder entities(Collection entities) {
+        public Builder entities(Collection<?extends Object> entities) {
             this.entities = entities;
             return this;
         }
@@ -121,7 +121,7 @@ public class CatalogResponse {
     }
 
 
-    public Collection<? extends Storable> getEntities() {
+    public Collection<? extends Object> getEntities() {
         return entities;
     }
 

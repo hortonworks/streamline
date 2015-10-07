@@ -14,7 +14,7 @@ import java.util.Collection;
 public class WSUtils {
     private WSUtils() {}
 
-    public static Response respond(Response.Status status, CatalogResponse.ResponseMessage msg, Collection storable, String... formatArgs) {
+    public static Response respond(Response.Status status, CatalogResponse.ResponseMessage msg, Collection<? extends Object> storable, String... formatArgs) {
         return Response.status(status)
                 .entity(CatalogResponse.newResponse(msg).entities(storable).format(formatArgs))
                 .build();
