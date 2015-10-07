@@ -45,10 +45,7 @@ public class FeedResource {
     }
 
     @GET
-    public Object listFeeds(){
-        JavaConversions.JListWrapper topics =
-                (JavaConversions.JListWrapper)
-                        ZkUtils.getChildrenParentMayNotExist(this.zkClient, ZkUtils.BrokerTopicsPath());
-        return topics.underlying();
+    public Object listFeeds() {
+        return ZkUtils.getChildrenParentMayNotExist(this.zkClient, ZkUtils.BrokerTopicsPath()).toList();
     }
 }

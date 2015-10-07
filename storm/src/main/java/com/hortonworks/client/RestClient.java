@@ -91,6 +91,10 @@ public class RestClient {
         return getEntities(String.format("%s/%s/?notifierName=%s",
                                          rootCatalogURL, NOTIFIER_URL, notifierName), NotifierInfo.class).get(0);
     }
+    public DataSource getDataSource(String deviceId, Long version) {
+        return getEntities(String.format("%s/%s/type/DEVICE/?deviceId=%s&version=%s",
+                                         rootCatalogURL, DATASOURCE_URL, deviceId, version), DataSource.class).get(0);
+    }
 
     public ParserInfo getParserInfo(String deviceId, Long version) {
         DataSource dataSource = getEntities(String.format("%s/%s/type/DEVICE/?deviceId=%s&version=%s",

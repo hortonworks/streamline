@@ -3,13 +3,13 @@ zookeeperHost: localhost:2181
 
 # Filesystem based jar storage
 #jarStorageConfiguration:
-#  className: "com.hortonworks.util.FileSystemJarStorage"
+#  className: "com.hortonworks.iotas.util.FileSystemJarStorage"
 #  properties:
 #    directory: "/tmp"
 
 # HDFS based Jar storage
 jarStorageConfiguration:
-  className: "com.hortonworks.util.HdfsJarStorage"
+  className: "com.hortonworks.iotas.util.HdfsJarStorage"
   properties:
     fsUrl: "file:///"
     directory: "/tmp/test-hdfs"

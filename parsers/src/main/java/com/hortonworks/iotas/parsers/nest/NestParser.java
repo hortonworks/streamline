@@ -8,14 +8,9 @@ import com.google.common.collect.Lists;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.parser.BaseParser;
 import com.hortonworks.iotas.parser.ParseException;
-import com.hortonworks.iotas.parser.Parser;
-import com.hortonworks.util.ReflectionHelper;
+import com.hortonworks.iotas.util.ReflectionHelper;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**

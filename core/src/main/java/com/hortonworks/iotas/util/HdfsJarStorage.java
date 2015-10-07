@@ -1,15 +1,15 @@
-package com.hortonworks.util;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.Map;
+package com.hortonworks.iotas.util;
 
 import com.google.common.io.ByteStreams;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.Map;
 
 
 /**

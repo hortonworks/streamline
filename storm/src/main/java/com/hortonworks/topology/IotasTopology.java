@@ -59,7 +59,7 @@ public class IotasTopology {
         Map hbaseConf = new HashMap();
 
         hbaseConf.put("hbase.root.dir", "hdfs://localhost:9000/hbase");
-        HBaseMapper mapper = new ParserOutputHBaseMapper((String) configuration.get(HBASE_ROW_KEY), (String) configuration.get(HBASE_COLUMN_FAMILY));
+        HBaseMapper mapper = new ParserOutputHBaseMapper((String) configuration.get(HBASE_COLUMN_FAMILY));
         HBaseBolt hBaseBolt = new HBaseBolt(configuration.get(HBASE_TABLE).toString(), mapper)
                 .withConfigKey(HBASE_CONF);
 

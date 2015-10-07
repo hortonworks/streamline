@@ -18,7 +18,7 @@
 
 package com.hortonworks.iotas.storage.impl.jdbc;
 
-import com.hortonworks.IntegrationTest;
+import com.hortonworks.iotas.IntegrationTest;
 import com.hortonworks.iotas.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.iotas.storage.impl.jdbc.config.HikariBasicConfig;
 import com.hortonworks.iotas.storage.impl.jdbc.connection.ConnectionBuilder;

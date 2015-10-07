@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.hortonworks;
+package com.hortonworks.iotas;
 
 /**
  * Marker interface used to mark integration tests. Integration tests will be run during the Maven

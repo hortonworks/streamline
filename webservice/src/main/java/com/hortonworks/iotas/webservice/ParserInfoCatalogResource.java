@@ -5,25 +5,36 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.util.JarStorage;
+import com.hortonworks.iotas.util.ReflectionHelper;
 import com.hortonworks.iotas.webservice.util.WSUtils;
-import com.hortonworks.iotas.storage.StorageManager;
-import com.hortonworks.util.JarStorage;
-import com.hortonworks.util.ReflectionHelper;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
-import java.io.*;
-import java.nio.file.FileSystems;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collection;
 
 import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
 import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
 import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.SUCCESS;
-import static javax.ws.rs.core.Response.Status.*;
+import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static javax.ws.rs.core.Response.Status.OK;
 
 @Path("/api/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
