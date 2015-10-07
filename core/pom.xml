@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.hortonworks</groupId>
         <artifactId>IoTaS</artifactId>
-        <version>${snapshot.version}</version>
+        <version>0.1-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -92,6 +92,10 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+            </plugin>
             <!-- Test plugins -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
