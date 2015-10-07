@@ -1,7 +1,6 @@
 package com.hortonworks.iotas.catalog;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.hortonworks.iotas.storage.Storable;
 
 import java.util.Collection;
 
