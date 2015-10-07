@@ -21,6 +21,13 @@
             <groupId>com.hortonworks</groupId>
             <artifactId>core</artifactId>
             <version>${project.version}</version>
+            <!-- storm uses log4j-over-slf4j so slf4j-log4j2 has to be excluded -->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.hortonworks</groupId>
@@ -104,6 +111,10 @@
                 <exclusion>
                     <groupId>com.sun.jersey</groupId>
                     <artifactId>jersey-json</artifactId>
+                </exclusion>
+                <exclusion>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-common</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
