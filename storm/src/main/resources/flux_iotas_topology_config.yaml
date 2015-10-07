@@ -39,7 +39,6 @@ components:
   - id: "hBaseMapper"
     className: "com.hortonworks.hbase.ParserOutputHBaseMapper"
     constructorArgs:
-      - ${hbase.row.key}
       - ${hbase.column.family}
 
 

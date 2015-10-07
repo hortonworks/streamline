@@ -85,6 +85,11 @@ public class RestClient {
         return getEntity(String.format("%s/%s/%s", rootCatalogURL, PARSER_URL, parserId), ParserInfo.class);
     }
 
+    public DataSource getDataSource(String deviceId, Long version) {
+        return getEntities(String.format("%s/%s/type/DEVICE/?deviceId=%s&version=%s",
+                                         rootCatalogURL, DATASOURCE_URL, deviceId, version), DataSource.class).get(0);
+    }
+
     public ParserInfo getParserInfo(String deviceId, Long version) {
         DataSource dataSource = getEntities(String.format("%s/%s/type/DEVICE/?deviceId=%s&version=%s",
                                             rootCatalogURL, DATASOURCE_URL, deviceId, version), DataSource.class).get(0);

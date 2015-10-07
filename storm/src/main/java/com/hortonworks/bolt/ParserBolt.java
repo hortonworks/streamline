@@ -9,12 +9,16 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.client.RestClient;
+import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.ParserInfo;
+import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.model.IotasMessage;
 import com.hortonworks.iotas.parser.Parser;
+import com.hortonworks.iotas.util.ReflectionHelper;
 import com.hortonworks.topology.UnparsedTupleHandler;
-import com.hortonworks.util.ReflectionHelper;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,14 +34,16 @@ public class ParserBolt extends BaseRichBolt {
     private static final Logger LOG = LoggerFactory.getLogger(ParserBolt.class);
     public static final String CATALOG_ROOT_URL = "catalog.root.url";
     public static final String LOCAL_PARSER_JAR_PATH = "local.parser.jar.path";
-    public static final String PARSED_FIELDS = "parsed.fields";
+    public static final String IOTAS_EVENT = "iotas.event";
     private OutputCollector collector;
 
     private RestClient client;
     private String localParserJarPath;
     private static ConcurrentHashMap<Object, Parser> parserMap = new ConcurrentHashMap<Object, Parser>();
+    private static ConcurrentHashMap<Object, DataSource> dataSourceMap = new ConcurrentHashMap<Object, DataSource>();
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private Long parserId;
+    private Long dataSourceId;
     private UnparsedTupleHandler unparsedTupleHandler;
 
     /**
@@ -48,6 +54,15 @@ public class ParserBolt extends BaseRichBolt {
      */
     public void withParserId(Long parserId) {
         this.parserId = parserId;
+    }
+
+    /**
+     * If the user knows the dataSourceId they can set it here. This will be set in the IotasEvent as the default.
+     *
+     * @param dataSourceId
+     */
+    public void withDataSourceId(Long dataSourceId) {
+        this.dataSourceId = dataSourceId;
     }
 
     public ParserBolt withUnparsedTupleHandler (UnparsedTupleHandler unparsedTupleHandler) {
@@ -61,7 +76,6 @@ public class ParserBolt extends BaseRichBolt {
             throw new IllegalArgumentException("conf must contain " + CATALOG_ROOT_URL + " and " + LOCAL_PARSER_JAR_PATH);
         }
         String catalogRootURL = stormConf.get(CATALOG_ROOT_URL).toString();
-        //TODO May be we should always add the id, version, type and metadata from iotasMessage as output fields?
         //We could also add the iotasMessage timestamp to calculate overall pipeline latency.
         this.collector = collector;
         this.localParserJarPath = stormConf.get(LOCAL_PARSER_JAR_PATH).toString();
@@ -81,19 +95,34 @@ public class ParserBolt extends BaseRichBolt {
         byte[] bytes = input.getBinaryByField("bytes");
         byte[] failedBytes = bytes;
         Parser parser = null;
+        String messageId = null;
         try {
             if (parserId == null) {
                 //If a parserId is not configured in parser Bolt, we assume the message has iotasMessage.
                 IotasMessage iotasMessage = objectMapper.readValue(new String(bytes, StandardCharsets.UTF_8), IotasMessage.class);
                 parser = getParser(iotasMessage);
+                if(dataSourceId == null) {
+                    dataSourceId = getDataSource(iotasMessage).getDataSourceId();
+                }
                 bytes = iotasMessage.getData();
-
+                messageId = iotasMessage.getMessageId();
             } else {
                 parser = getParser(parserId);
             }
 
             Map<String, Object> parsed = parser.parse(bytes);
-            Values values = new Values(parsed);
+            String dsrcId = dataSourceId == null ? StringUtils.EMPTY : dataSourceId.toString();
+            IotasEvent event;
+            /**
+             * If message id is set in the incoming message, we use it as the IotasEvent id, else
+             * the id is random UUID.
+             */
+            if(messageId == null) {
+                event = new IotasEventImpl(parsed, dsrcId);
+            } else {
+                event = new IotasEventImpl(parsed, dsrcId, messageId);
+            }
+            Values values = new Values(event);
             collector.emit(input, values);
             collector.ack(input);
         } catch (Exception e) {
@@ -147,6 +176,19 @@ public class ParserBolt extends BaseRichBolt {
         }
     }
 
+    private DataSource getDataSource(IotasMessage iotasMessage) {
+        DataSourceIdentifier key = new DataSourceIdentifier(iotasMessage.getId(), iotasMessage.getVersion());
+        DataSource dataSource = dataSourceMap.get(key);
+        if(dataSource == null) {
+            dataSource = client.getDataSource(key.getId(), Long.valueOf(key.getVersion()));
+            DataSource existing = dataSourceMap.putIfAbsent(key, dataSource);
+            if(existing != null) {
+                dataSource = existing;
+            }
+        }
+        return dataSource;
+    }
+
     private Parser getParser(IotasMessage iotasMessage) {
         DataSourceIdentifier dataSourceId = new DataSourceIdentifier(iotasMessage.getId(), iotasMessage.getVersion());
         Parser parser = parserMap.get(dataSourceId);
@@ -178,7 +220,7 @@ public class ParserBolt extends BaseRichBolt {
 
 
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declare(new Fields(PARSED_FIELDS));
+        declarer.declare(new Fields(IOTAS_EVENT));
     }
 
     /**

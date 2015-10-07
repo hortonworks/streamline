@@ -1,8 +1,12 @@
-package com.hortonworks.util;
+package com.hortonworks.iotas.util;
 
 import com.google.common.io.ByteStreams;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.FileSystems;
 import java.util.Map;
 

@@ -1,7 +1,6 @@
-package com.hortonworks.util;
+package com.hortonworks.iotas.util;
 
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Map;
 
 /**
