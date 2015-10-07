@@ -290,11 +290,8 @@ public abstract class AbstractStoreManagerTest {
             df.setDataFeedId(id);
             df.setDataSourceId(1L);
             df.setDataFeedName(name);
-            df.setDescription("desc");
             df.setEndpoint("kafka://host:port/topic");
             df.setParserId(id);
-            df.setTags("a,b,c");
-            df.setTimestamp(System.currentTimeMillis());
             return df;
         }
     }

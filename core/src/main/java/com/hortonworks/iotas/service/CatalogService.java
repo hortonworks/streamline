@@ -169,9 +169,6 @@ public class CatalogService {
         if (feed.getDataFeedId() == null) {
             feed.setDataFeedId(this.dao.nextId(DATA_FEED_NAMESPACE));
         }
-        if (feed.getTimestamp() == null) {
-            feed.setTimestamp(System.currentTimeMillis());
-        }
         this.dao.add(feed);
         return feed;
     }
@@ -185,7 +182,6 @@ public class CatalogService {
 
     public DataFeed addOrUpdateDataFeed(Long id, DataFeed feed) {
         feed.setDataFeedId(id);
-        feed.setTimestamp(System.currentTimeMillis());
         this.dao.addOrUpdate(feed);
         return feed;
     }
