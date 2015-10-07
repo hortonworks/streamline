@@ -713,9 +713,65 @@ DELETE /api/v1/catalog/feeds/ID
 }
 ```
 
+## DataSources with DataFeed 
+### Create
+POST /api/v1/catalog/datasourceswithdatafeed
+
+*Sample Input*
+
+```json
+{
+ "dataSourceName": "NestDevice",
+ "description": "This is a nest device",
+ "tags": "tag1",
+ "type": "DEVICE",
+ "typeConfig": "{\"deviceId\": 1, \"version\":1}",
+ "dataFeedName": "feed1",
+ "parserId": 1,
+ "endpoint": "hdfs://url"
+}
+```
+   
+*Success Response*
+
+    HTTP/1.1 201 Created
+    Content-Type: application/json
+    
+```json    
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entity": {
+    "dataSourceId": 1,
+    "dataSourceName": "NestDevice",
+    "description": "This is a nest device",
+    "tags": "tag1",
+    "timestamp": 1444216784208,
+    "type": "DEVICE",
+    "typeConfig": "{\"deviceId\": 1, \"version\":1}",
+    "dataFeedName": "feed1",
+    "parserId": 1,
+    "endpoint": "hdfs://url"
+  }
+}
+```
+
+
+*Error Response*
+
+    HTTP/1.1 500 Internal Server Error
+    Content-Type: application/json
+    
+```json    
+{
+ "responseCode": 1102,
+ "responseMessage": "An exception with message [msg] was thrown while processing request."
+}
+```
+
 ### A sample use case
 
-Plese go through [the sample use case](REST-Sample.md) to understand how these APIs can be used.
+Please go through [the sample use case](REST-Sample.md) to understand how these APIs can be used.
 
   
 

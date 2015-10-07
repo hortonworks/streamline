@@ -62,30 +62,30 @@ public class CatalogResponse {
     /**
      * For response that returns a single entity.
      */
-    private Storable entity;
+    private Object entity;
     /**
      * For response that returns a collection of entities.
      */
-    private Collection<? extends Storable> entities;
+    private Collection entities;
 
     private CatalogResponse() {}
 
     public static class Builder {
         private ResponseMessage responseMessage;
-        private Storable entity;
-        private Collection<? extends Storable> entities;
+        private Object entity;
+        private Collection entities;
         private String DOC_LINK_MESSAGE = " Please check webservice/ErrorCodes.md for more details.";
 
         public Builder(ResponseMessage responseMessage) {
             this.responseMessage = responseMessage;
         }
 
-        public Builder entity(Storable entity) {
+        public Builder entity(Object entity) {
             this.entity = entity;
             return this;
         }
 
-        public Builder entities(Collection<? extends Storable> entities) {
+        public Builder entities(Collection entities) {
             this.entities = entities;
             return this;
         }
@@ -116,7 +116,7 @@ public class CatalogResponse {
         return responseCode;
     }
 
-    public Storable getEntity() {
+    public Object getEntity() {
         return entity;
     }
 
