@@ -77,7 +77,10 @@
             <artifactId>jersey-media-multipart</artifactId>
             <version>${jersey-media-multipart.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.jmockit</groupId>
+            <artifactId>jmockit</artifactId>
+        </dependency>
         <!-- test dependency -->
         <dependency>
             <groupId>io.dropwizard</groupId>

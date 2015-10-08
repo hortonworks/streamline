@@ -5,14 +5,18 @@ import com.hortonworks.iotas.catalog.Component;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.Device;
+import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.storage.DataSourceSubType;
 import com.hortonworks.iotas.storage.StorableKey;
+import com.hortonworks.iotas.storage.StorageException;
 import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.util.CoreUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -30,7 +34,7 @@ public class CatalogService {
     private static final String PARSER_INFO_NAMESPACE = new ParserInfo().getNameSpace();
     private static final String CLUSTER_NAMESPACE = new Cluster().getNameSpace();
     private static final String COMPONENT_NAMESPACE = new Component().getNameSpace();
-
+    private static final String NOTIFIER_INFO_NAMESPACE = new NotifierInfo().getNameSpace();
 
     private StorageManager dao;
 
@@ -58,7 +62,27 @@ public class CatalogService {
                     ", value='" + value + '\'' +
                     '}';
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            QueryParam that = (QueryParam) o;
+
+            if (name != null ? !name.equals(that.name) : that.name != null) return false;
+            return !(value != null ? !value.equals(that.value) : that.value != null);
+
+        }
+
+        @Override
+        public int hashCode() {
+            int result = name != null ? name.hashCode() : 0;
+            result = 31 * result + (value != null ? value.hashCode() : 0);
+            return result;
+        }
     }
+
     public CatalogService(StorageManager dao) {
         this.dao = dao;
     }
@@ -296,4 +320,48 @@ public class CatalogService {
         return component;
     }
 
+    public NotifierInfo addNotifierInfo(NotifierInfo notifierInfo) {
+        if (notifierInfo.getId() == null) {
+            notifierInfo.setId(this.dao.nextId(NOTIFIER_INFO_NAMESPACE));
+        }
+        if (notifierInfo.getTimestamp() == null) {
+            notifierInfo.setTimestamp(System.currentTimeMillis());
+        }
+        if(StringUtils.isEmpty(notifierInfo.getNotifierName())) {
+            throw new StorageException("Notifier name empty");
+        }
+        this.dao.add(notifierInfo);
+        return notifierInfo;
+    }
+
+
+    public NotifierInfo getNotifierInfo(Long id) {
+        NotifierInfo notifierInfo = new NotifierInfo();
+        notifierInfo.setId(id);
+        return this.dao.<NotifierInfo>get(new StorableKey(NOTIFIER_INFO_NAMESPACE, notifierInfo.getPrimaryKey()));
+    }
+
+    public Collection<NotifierInfo> listNotifierInfos() {
+        return this.dao.<NotifierInfo>list(NOTIFIER_INFO_NAMESPACE);
+    }
+
+
+    public Collection<NotifierInfo> listNotifierInfos(List<QueryParam> params) throws Exception {
+        return dao.<NotifierInfo>find(NOTIFIER_INFO_NAMESPACE, params);
+    }
+
+
+    public NotifierInfo removeNotifierInfo(Long notifierId) {
+        NotifierInfo notifierInfo = new NotifierInfo();
+        notifierInfo.setId(notifierId);
+        return dao.<NotifierInfo>remove(new StorableKey(NOTIFIER_INFO_NAMESPACE, notifierInfo.getPrimaryKey()));
+    }
+
+
+    public NotifierInfo addOrUpdateNotifierInfo(Long id, NotifierInfo notifierInfo) {
+        notifierInfo.setId(id);
+        notifierInfo.setTimestamp(System.currentTimeMillis());
+        this.dao.addOrUpdate(notifierInfo);
+        return notifierInfo;
+    }
 }
