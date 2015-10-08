@@ -1,6 +1,8 @@
 package com.hortonworks.iotas.util;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,9 +15,12 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 public class ReflectionHelper {
+    private static final Logger LOG = LoggerFactory.getLogger(ReflectionHelper.class);
+
     private static final Class[] parameters = new Class[]{URL.class};
 
     public static void loadJarAndAllItsClasses(String jarFilePath) throws IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        LOG.debug("loading jar {} and all its classses.", jarFilePath);
         URL u = (new File(jarFilePath).toURI().toURL());
         URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
         Class sysclass = URLClassLoader.class;
@@ -41,6 +46,8 @@ public class ReflectionHelper {
      * @throws IOException
      */
     private static void loadAllClassesFromJar(String jarFilePath) throws ClassNotFoundException, IOException {
+        LOG.debug("loading all classes from jar {}.", jarFilePath);
+
         JarFile jarFile = new JarFile(jarFilePath);
         URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
         Enumeration e = jarFile.entries();
@@ -62,6 +69,7 @@ public class ReflectionHelper {
      * @return
      */
     public synchronized static boolean isJarInClassPath(String jarFieName) {
+        LOG.debug("checking if jar {} is in classPath.", jarFieName);
         String classpath = System.getProperty("java.class.path");
         //TODO: need to do better than this.
         return classpath.contains(jarFieName);
