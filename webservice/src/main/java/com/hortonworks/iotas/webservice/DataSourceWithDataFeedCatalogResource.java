@@ -7,6 +7,8 @@ import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.pojo.DataSourceInfo;
 import com.hortonworks.iotas.webservice.util.WSUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -27,7 +29,8 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 @Path("/api/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class DataSourceWithDataFeedCatalogResource {
-    private CatalogService catalogService;
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceWithDataFeedCatalogResource.class);
+    private final CatalogService catalogService;
 
     public DataSourceWithDataFeedCatalogResource(CatalogService catalogService) {
         this.catalogService = catalogService;
@@ -51,6 +54,7 @@ public class DataSourceWithDataFeedCatalogResource {
 
             return WSUtils.respond(CREATED, SUCCESS, new DataSourceInfo(createdDataSource, createdDataFeed));
         } catch (Exception ex) {
+            LOGGER.error("Error encountered while adding datasource with datafeed", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
     }

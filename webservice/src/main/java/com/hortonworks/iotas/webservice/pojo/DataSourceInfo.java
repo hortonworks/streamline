@@ -156,4 +156,56 @@ public class DataSourceInfo {
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DataSourceInfo that = (DataSourceInfo) o;
+
+        if (dataSourceId != null ? !dataSourceId.equals(that.dataSourceId) : that.dataSourceId != null) return false;
+        if (dataSourceName != null ? !dataSourceName.equals(that.dataSourceName) : that.dataSourceName != null)
+            return false;
+        if (description != null ? !description.equals(that.description) : that.description != null) return false;
+        if (tags != null ? !tags.equals(that.tags) : that.tags != null) return false;
+        if (timestamp != null ? !timestamp.equals(that.timestamp) : that.timestamp != null) return false;
+        if (type != that.type) return false;
+        if (typeConfig != null ? !typeConfig.equals(that.typeConfig) : that.typeConfig != null) return false;
+        if (dataFeedName != null ? !dataFeedName.equals(that.dataFeedName) : that.dataFeedName != null) return false;
+        if (parserId != null ? !parserId.equals(that.parserId) : that.parserId != null) return false;
+        return !(endpoint != null ? !endpoint.equals(that.endpoint) : that.endpoint != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = dataSourceId != null ? dataSourceId.hashCode() : 0;
+        result = 31 * result + (dataSourceName != null ? dataSourceName.hashCode() : 0);
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        result = 31 * result + (tags != null ? tags.hashCode() : 0);
+        result = 31 * result + (timestamp != null ? timestamp.hashCode() : 0);
+        result = 31 * result + (type != null ? type.hashCode() : 0);
+        result = 31 * result + (typeConfig != null ? typeConfig.hashCode() : 0);
+        result = 31 * result + (dataFeedName != null ? dataFeedName.hashCode() : 0);
+        result = 31 * result + (parserId != null ? parserId.hashCode() : 0);
+        result = 31 * result + (endpoint != null ? endpoint.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "DataSourceInfo{" +
+                "dataSourceId=" + dataSourceId +
+                ", dataSourceName='" + dataSourceName + '\'' +
+                ", description='" + description + '\'' +
+                ", tags='" + tags + '\'' +
+                ", timestamp=" + timestamp +
+                ", type=" + type +
+                ", typeConfig='" + typeConfig + '\'' +
+                ", dataFeedName='" + dataFeedName + '\'' +
+                ", parserId=" + parserId +
+                ", endpoint='" + endpoint + '\'' +
+                '}';
+    }
 }
