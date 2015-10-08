@@ -136,4 +136,32 @@ public class NotifierInfo extends AbstractStorable {
         return new PrimaryKey(fieldToObjectMap);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        NotifierInfo that = (NotifierInfo) o;
+
+        return !(id != null ? !id.equals(that.id) : that.id != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return "NotifierInfo{" +
+                "id=" + id +
+                ", notifierName='" + notifierName + '\'' +
+                ", jarFileName='" + jarFileName + '\'' +
+                ", className='" + className + '\'' +
+                ", properties=" + properties +
+                ", fieldValues=" + fieldValues +
+                ", timestamp=" + timestamp +
+                "} " + super.toString();
+    }
 }

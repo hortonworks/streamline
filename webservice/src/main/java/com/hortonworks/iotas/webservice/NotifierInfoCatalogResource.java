@@ -4,6 +4,8 @@ import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.util.WSUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -31,6 +33,8 @@ import static javax.ws.rs.core.Response.Status.*;
 @Path("/api/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class NotifierInfoCatalogResource {
+    private static final Logger LOG = LoggerFactory.getLogger(NotifierInfoCatalogResource.class);
+
     private CatalogService catalogService;
 
     public NotifierInfoCatalogResource(CatalogService catalogService) {
@@ -60,6 +64,7 @@ public class NotifierInfoCatalogResource {
                 return WSUtils.respond(OK, SUCCESS, notifierInfos);
             }
         } catch (Exception ex) {
+            LOG.error("Got exception", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
 
@@ -77,6 +82,7 @@ public class NotifierInfoCatalogResource {
                 return WSUtils.respond(OK, SUCCESS, result);
             }
         } catch (Exception ex) {
+            LOG.error("Got exception", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, id.toString());
@@ -90,6 +96,7 @@ public class NotifierInfoCatalogResource {
             NotifierInfo created = catalogService.addNotifierInfo(notifierInfo);
             return WSUtils.respond(CREATED, SUCCESS, created);
         } catch (Exception ex) {
+            LOG.error("Got exception", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
     }
@@ -106,6 +113,7 @@ public class NotifierInfoCatalogResource {
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, id.toString());
             }
         } catch (Exception ex) {
+            LOG.error("Got exception", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
     }
@@ -118,6 +126,7 @@ public class NotifierInfoCatalogResource {
             NotifierInfo newNotifierInfo = catalogService.addOrUpdateNotifierInfo(id, notifierInfo);
             return WSUtils.respond(OK, SUCCESS, newNotifierInfo);
         } catch (Exception ex) {
+            LOG.error("Got exception", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
     }
