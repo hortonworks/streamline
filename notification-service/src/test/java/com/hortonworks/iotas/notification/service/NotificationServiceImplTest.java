@@ -19,6 +19,7 @@ import org.junit.runner.RunWith;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 @RunWith(JMockit.class)
 public class NotificationServiceImplTest {
@@ -230,14 +231,14 @@ public class NotificationServiceImplTest {
 
         new Verifications() {
             {
-                Criteria criteria;
+                Criteria<Notification> criteria;
                 mockNotificationStore.findEntities(criteria = withCapture());
                 //System.out.println("criteria = " + criteria);
                 assertEquals(criteria.clazz(), Notification.class);
                 assertEquals(criteria.numRows(), 5);
                 assertEquals(criteria.fieldRestrictions().size(), 2);
-                assertEquals(criteria.fieldRestrictions().get("one"), "1");
-                assertEquals(criteria.fieldRestrictions().get("two"), "2");
+                assertEquals(criteria.fieldRestrictions().get(0).getValue(), "1");
+                assertEquals(criteria.fieldRestrictions().get(1).getValue(), "2");
             }
         };
 
@@ -245,14 +246,14 @@ public class NotificationServiceImplTest {
 
         new Verifications() {
             {
-                Criteria criteria;
+                Criteria<Notification> criteria;
                 mockNotificationStore.findEntities(criteria = withCapture());
                 //System.out.println("criteria = " + criteria);
                 assertEquals(criteria.clazz(), Notification.class);
-                assertEquals(criteria.numRows(), 10);
+                assertEquals(0, criteria.numRows());
                 assertEquals(criteria.fieldRestrictions().size(), 2);
-                assertEquals(criteria.fieldRestrictions().get("one"), "1");
-                assertEquals(criteria.fieldRestrictions().get("two"), "2");
+                assertEquals(criteria.fieldRestrictions().get(0).getValue(), "1");
+                assertEquals(criteria.fieldRestrictions().get(1).getValue(), "2");
             }
         };
     }

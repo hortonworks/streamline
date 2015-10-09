@@ -1,34 +1,33 @@
 package com.hortonworks.iotas.notification.store.hbase.mappers;
 
 import com.hortonworks.iotas.notification.common.Notification;
-import com.hortonworks.iotas.notification.store.hbase.mappers.NotificationIndexMapper;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 /**
- * Secondary index mapping for notifier name. This is to enable Notification
- * lookup based on notifier name.
+ * A mapper that indexes notifications based on ts.
+ * i.e. ts:notification_id_suffix -> Notification
  */
-public class NotifierNotificationMapper extends NotificationIndexMapper {
+public class TimestampNotificationMapper extends NotificationIndexMapper {
     /**
      * The HBase index table
      */
-    private static final String TABLE_NAME = "Notifier_Notification";
+    private static final String TABLE_NAME = "Timestamp_Notification";
     /**
      * The notification field that is indexed
      */
-    private static final String INDEX_FIELD_NAME = "notifierName";
-
+    private static final String INDEX_FIELD_NAME = "ts";
 
     @Override
     protected List<byte[]> getRowKeys(Notification notification) {
-        return Arrays.asList(new StringBuilder(notification.getNotifierName())
-                                     .append(ROWKEY_SEP)
+        return Arrays.asList(new StringBuilder()
                                      .append(notification.getTs())
                                      .append(ROWKEY_SEP)
                                      .append(getIndexSuffix(notification))
                                      .toString().getBytes(CHARSET));
+
     }
 
     @Override

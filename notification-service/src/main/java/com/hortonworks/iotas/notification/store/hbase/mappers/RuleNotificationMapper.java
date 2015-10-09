@@ -26,6 +26,8 @@ public class RuleNotificationMapper extends NotificationIndexMapper {
         return Arrays.asList(new StringBuilder(notification.getRuleId())
                         .append(ROWKEY_SEP)
                         .append(notification.getTs())
+                        .append(ROWKEY_SEP)
+                        .append(getIndexSuffix(notification))
                         .toString().getBytes(CHARSET));
     }
 

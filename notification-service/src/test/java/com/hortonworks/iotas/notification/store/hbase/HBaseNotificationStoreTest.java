@@ -3,6 +3,7 @@ package com.hortonworks.iotas.notification.store.hbase;
 import com.hortonworks.iotas.notification.common.Notification;
 import com.hortonworks.iotas.notification.common.NotificationImpl;
 import com.hortonworks.iotas.notification.store.Criteria;
+import com.hortonworks.iotas.notification.store.CriteriaImpl;
 import mockit.Expectations;
 import mockit.Mock;
 import mockit.MockUp;
@@ -26,6 +27,7 @@ import org.junit.runner.RunWith;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -100,7 +102,7 @@ public class HBaseNotificationStoreTest {
         new Verifications() {
             {
                 List<Put> puts;
-                mockHTable.put(puts = withCapture()); times = 4;
+                mockHTable.put(puts = withCapture()); times = 8;
                 //System.out.println("puts = " + puts);
             }
         };
@@ -138,9 +140,9 @@ public class HBaseNotificationStoreTest {
 
     @Test
     public void testFindEntities() throws Exception {
-        final Map<String, String> fr = new HashMap<>();
-        fr.put("ruleId", "1");
-        fr.put("status", "NEW");
+        final List<Criteria.Field> fr = new ArrayList<>();
+        fr.add(new CriteriaImpl.FieldImpl("ruleId", "1"));
+        fr.add(new CriteriaImpl.FieldImpl("status", "NEW"));
 
         final Map<byte[], byte[]> tsMap = new TreeMap<>(new Bytes.ByteArrayComparator());
         tsMap.put("1444042473518".getBytes(), "1".getBytes());
@@ -178,7 +180,7 @@ public class HBaseNotificationStoreTest {
             {
                 Scan scan;
                 mockHTable.getScanner(scan = withCapture()); times = 1;
-                //System.out.println("Scan = " + scan);
+                System.out.println("Scan = " + scan);
             }
         };
     }

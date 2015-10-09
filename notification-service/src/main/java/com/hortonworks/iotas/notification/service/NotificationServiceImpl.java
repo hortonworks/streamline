@@ -23,7 +23,8 @@ public class NotificationServiceImpl implements NotificationService {
     private static final Logger LOG = LoggerFactory.getLogger(NotificationServiceImpl.class);
 
     private static final String QUERY_PARAM_NUM_ROWS = "numRows";
-    private static final int DEFAULT_NUM_ROWS = 10;
+    private static final String QUERY_PARAM_START_TS = "startTs";
+    private static final String QUERY_PARAM_END_TS = "endTs";
 
     private final ConcurrentHashMap<String, Notifier> notifiers = new ConcurrentHashMap<>();
 
@@ -72,6 +73,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void notify(String notifierName, Notification notification) {
         LOG.debug("Notify notifierName {}, notification {}", notifierName, notification);
+        // TODO: for better performance the store could be done asynchronously
         notificationStore.store(notification);
         Notifier notifier = notifiers.get(notifierName);
         if (notifier == null) {
@@ -95,10 +97,14 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public List<Notification> findNotifications(List<CatalogService.QueryParam> queryParams) {
         LOG.debug("findNotifications with queryParams {}", queryParams);
-        CriteriaImpl<Notification> criteria = new CriteriaImpl<>(Notification.class).setNumRows(DEFAULT_NUM_ROWS);
+        CriteriaImpl<Notification> criteria = new CriteriaImpl<>(Notification.class);
         for (CatalogService.QueryParam qp : queryParams) {
             if (qp.name.equalsIgnoreCase(QUERY_PARAM_NUM_ROWS)) {
                 criteria.setNumRows(Integer.parseInt(qp.value));
+            } else if (qp.name.equals(QUERY_PARAM_START_TS)) {
+                criteria.setStartTs(Long.parseLong(qp.value));
+            } else if (qp.name.equals((QUERY_PARAM_END_TS))) {
+                criteria.setEndTs(Long.parseLong(qp.value));
             } else {
                 criteria.addFieldRestriction(qp.name, qp.value);
             }

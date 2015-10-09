@@ -1,5 +1,6 @@
 package com.hortonworks.iotas.notification.store;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -7,6 +8,15 @@ import java.util.Map;
  * The interface is parameterized on the type of the entity (E.g. Notification, IotasEvent etc).
  */
 public interface Criteria<T> {
+
+    /**
+     * The fields (key, value) pair that are specified in the criteria.
+     */
+    interface Field {
+        String getName();
+        String getValue();
+    }
+
     /**
      * The class name of the entity that this query criteria is for.
      */
@@ -16,10 +26,20 @@ public interface Criteria<T> {
      * The secondary field restrictions. (e.g. Notifications with notifier_name = "email_notifier").
      * If the fields are not indexed, it will result in a full table scan in implementations like HBase.
      */
-    Map<String, String> fieldRestrictions();
+    List<Field> fieldRestrictions();
 
     /**
      * The number of rows to return.
      */
     int numRows();
+
+    /**
+     * The start timestamp in millis.
+     */
+    long startTs();
+
+    /**
+     * The end timestamp in millis.
+     */
+    long endTs();
 }
