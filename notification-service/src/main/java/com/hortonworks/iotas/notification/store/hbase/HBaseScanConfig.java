@@ -12,9 +12,13 @@ import java.nio.charset.StandardCharsets;
  * A wrapper class used to hold the HBase table scan config params.
  */
 public class HBaseScanConfig<T> {
+    private static final int DEFAULT_NUM_ROWS = 10;
+
     private IndexMapper<T> mapper;
     private String indexedFieldValue;
     private final FilterList filterList = new FilterList();
+    private long startTs = 0;
+    private long endTs = Long.MAX_VALUE;
 
     public void setMapper(IndexMapper<T> mapper) {
         this.mapper = mapper;
@@ -25,19 +29,43 @@ public class HBaseScanConfig<T> {
     }
 
     public void setNumRows(int n) {
-        this.filterList.addFilter(new PageFilter(n));
+        this.filterList.addFilter(new PageFilter(n == 0 ? DEFAULT_NUM_ROWS : n));
+    }
+
+    public void setStartTs(long startTsMillis) {
+        this.startTs = startTsMillis;
+    }
+
+    public void setEndTs(long endTsMillis) {
+        if (endTsMillis != 0) {
+            this.endTs = endTsMillis;
+        }
     }
 
     public void addFilter(Filter filter) {
         this.filterList.addFilter(filter);
     }
 
+    // assumes that index table row key always has ts as suffix.
     public byte[] getStartRow() {
-        return indexedFieldValue == null ? null : indexedFieldValue.getBytes(StandardCharsets.UTF_8);
+        byte[] startRow = null;
+        StringBuilder sb = new StringBuilder();
+        if (indexedFieldValue != null) {
+            sb.append(indexedFieldValue).append(Mapper.ROWKEY_SEP);
+        }
+        sb.append(startTs);
+        return sb.toString().getBytes(StandardCharsets.UTF_8);
     }
 
+    // assumes that index table row key always has ts as suffix.
+    // TODO: currently stop row excludes end Ts.
     public byte[] getStopRow() {
-        return indexedFieldValue == null ? null : (indexedFieldValue + Mapper.ROWKEY_SEP + "z").getBytes(StandardCharsets.UTF_8);
+        StringBuilder sb = new StringBuilder();
+        if (indexedFieldValue != null) {
+            sb.append(indexedFieldValue).append(Mapper.ROWKEY_SEP);
+        }
+        sb.append(endTs);
+        return sb.toString().getBytes(StandardCharsets.UTF_8);
     }
 
     public FilterList filterList() {
@@ -48,13 +76,14 @@ public class HBaseScanConfig<T> {
         return mapper;
     }
 
-
     @Override
     public String toString() {
         return "HBaseScanConfig{" +
-                "mapper=" + mapper.getClass() +
+                "mapper=" + mapper +
                 ", indexedFieldValue='" + indexedFieldValue + '\'' +
                 ", filterList=" + filterList +
+                ", startTsMillis=" + startTs +
+                ", endTsMillis=" + endTs +
                 '}';
     }
 }

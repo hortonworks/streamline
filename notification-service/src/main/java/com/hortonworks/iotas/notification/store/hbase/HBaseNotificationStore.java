@@ -6,12 +6,16 @@ import com.hortonworks.iotas.notification.store.Criteria;
 import com.hortonworks.iotas.notification.store.NotificationStore;
 import com.hortonworks.iotas.notification.store.NotificationStoreException;
 import com.hortonworks.iotas.notification.store.hbase.mappers.DatasourceNotificationMapper;
+import com.hortonworks.iotas.notification.store.hbase.mappers.DatasourceStatusNotificationMapper;
 import com.hortonworks.iotas.notification.store.hbase.mappers.IotasEventMapper;
 import com.hortonworks.iotas.notification.store.hbase.mappers.NotificationIndexMapper;
 import com.hortonworks.iotas.notification.store.hbase.mappers.NotificationMapper;
 import com.hortonworks.iotas.notification.store.hbase.mappers.NotifierNotificationMapper;
+import com.hortonworks.iotas.notification.store.hbase.mappers.NotifierStatusNotificationMapper;
 import com.hortonworks.iotas.notification.store.hbase.mappers.RuleNotificationMapper;
+import com.hortonworks.iotas.notification.store.hbase.mappers.RuleStatusNotificationMapper;
 import com.hortonworks.iotas.notification.store.hbase.mappers.TableMutation;
+import com.hortonworks.iotas.notification.store.hbase.mappers.TimestampNotificationMapper;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.TableName;
@@ -22,7 +26,6 @@ import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.filter.PageFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,8 +86,12 @@ public class HBaseNotificationStore implements NotificationStore {
             }
             connection = HConnectionManager.createConnection(configuration);
             notificationIndexMappers.add(new NotifierNotificationMapper());
+            notificationIndexMappers.add(new NotifierStatusNotificationMapper());
             notificationIndexMappers.add(new RuleNotificationMapper());
+            notificationIndexMappers.add(new RuleStatusNotificationMapper());
             notificationIndexMappers.add(new DatasourceNotificationMapper());
+            notificationIndexMappers.add(new DatasourceStatusNotificationMapper());
+            notificationIndexMappers.add(new TimestampNotificationMapper());
             for (NotificationIndexMapper indexMapper : notificationIndexMappers) {
                 tables.put(indexMapper.getTableName(),
                            connection.getTable(TableName.valueOf(indexMapper.getTableName())));
@@ -116,9 +123,15 @@ public class HBaseNotificationStore implements NotificationStore {
 
     private void store(List<TableMutation> tableMutations) throws IOException {
         for (TableMutation tm : tableMutations) {
-            LOG.debug("Insert/Update {} row(s) in table {}", tm.rows().size(), tm.tableName());
+            LOG.debug("Insert/Update {} row(s), Delete {} row(s) in table {}",
+                      tm.updates().size(), tm.deletes().size(), tm.tableName());
             HTableInterface table = tables.get(tm.tableName());
-            table.put(tm.rows());
+            if (!tm.updates().isEmpty()) {
+                table.put(tm.updates());
+            }
+            if (!tm.deletes().isEmpty()) {
+                table.delete(tm.deletes());
+            }
         }
     }
 

@@ -25,7 +25,12 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.*;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
@@ -46,6 +51,18 @@ public class NotificationsResource {
         this.notificationService = service;
     }
 
+    Map<String, Integer> knownParams = new HashMap<String, Integer>() {
+        {
+            put("datasourceid", 1);
+            put("ruleid", 1);
+            put("notifiername", 1);
+            put("status", 2);
+            put("startTs", 3);
+            put("endTs", 3);
+            put("numRows", 4);
+        }
+    };
+
     @GET
     @Path("/notifications/{id}")
     @Timed
@@ -62,23 +79,44 @@ public class NotificationsResource {
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, id.toString());
     }
 
+    /**
+     * Returns the slot (position) where a known param is
+     * supposed to be present in a list of query params.
+     */
+    private int paramSlot(String param) {
+        Integer val = knownParams.get(param.toLowerCase());
+        if (val == null) {
+            val = Integer.MAX_VALUE;
+        }
+        return val;
+    }
+
     @GET
     @Path("/notifications/")
     @Timed
     public Response listNotifications(@Context UriInfo uriInfo) {
         List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>();
         try {
-            MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
-            Collection<Notification> notifications = null;
-            if (params.isEmpty()) {
-                //TODO: return latest notifications
-            } else {
-                for (String param : params.keySet()) {
-                    queryParams.add(new CatalogService.QueryParam(param, params.getFirst(param)));
+            // put the query params in order.
+            List<String> keys = new ArrayList<>();
+            MultivaluedMap<String, String> uriInfoParams = uriInfo.getQueryParameters();
+            keys.addAll(uriInfoParams.keySet());
+            Collections.sort(keys, new Comparator<String>() {
+                @Override
+                public int compare(String key1, String key2) {
+                    return paramSlot(key1) - paramSlot(key2);
                 }
-                notifications = notificationService.findNotifications(queryParams);
+            });
+            Collection<Notification> notifications = null;
+            if (!keys.isEmpty()) {
+                for (String key : keys) {
+                    queryParams.add(new CatalogService.QueryParam(key, uriInfoParams.get(key).get(0)));
+                }
+            } else {
+                LOG.info("Query params empty, will use default criteria to return latest notifications.");
             }
-            if(notifications != null && ! notifications.isEmpty()) {
+            notifications = notificationService.findNotifications(queryParams);
+            if (notifications != null && !notifications.isEmpty()) {
                 return WSUtils.respond(OK, SUCCESS, notifications);
             }
         } catch (Exception ex) {

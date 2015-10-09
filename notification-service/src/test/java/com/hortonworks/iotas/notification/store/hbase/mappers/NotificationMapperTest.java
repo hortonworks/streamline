@@ -7,7 +7,6 @@ import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.Row;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,8 +56,8 @@ public class NotificationMapperTest {
         TableMutation tm = tms.get(0);
 
         assertEquals("Notification", tm.tableName());
-        assertEquals(1, tm.rows().size());
-        Put put = tm.rows().get(0);
+        assertEquals(1, tm.updates().size());
+        Put put = tm.updates().get(0);
 
         assertTrue(put.has("f".getBytes(), "one".getBytes(), "A".getBytes()));
         assertTrue(put.has("d".getBytes(), "dsrcid-1".getBytes(), "1".getBytes()));

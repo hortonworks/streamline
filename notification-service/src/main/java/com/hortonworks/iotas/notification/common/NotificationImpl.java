@@ -36,6 +36,20 @@ public class NotificationImpl implements Notification {
             this.fieldsAndValues = fieldsAndValues;
         }
 
+        /**
+         * copy ctor
+         */
+        public Builder(Notification notification) {
+            this.id = notification.getId();
+            this.fieldsAndValues = notification.getFieldsAndValues();
+            this.eventIds = notification.getEventIds();
+            this.dataSourceIds = notification.getDataSourceIds();
+            this.ruleId = notification.getRuleId();
+            this.status = notification.getStatus();
+            this.notifierName = notification.getNotifierName();
+            this.timestamp = notification.getTs();
+        }
+
         public Builder id(String id) {
             this.id = id;
             return this;

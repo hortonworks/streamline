@@ -1,11 +1,12 @@
 package com.hortonworks.iotas.notification.store.hbase.mappers;
 
+import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Put;
 
 import java.util.List;
 
 /**
- * Represents a list of rows as HBase PUTs to be inserted/updated in a table.
+ * Holds a list of inserts/updates/deletes to a HBase table
  */
 public interface TableMutation {
 
@@ -17,5 +18,11 @@ public interface TableMutation {
     /**
      * the rows to be inserted or updated as Put requests.
      */
-    List<Put> rows();
+    List<Put> updates();
+
+
+    /**
+     * the rows to be deleted as Delete requests.
+     */
+    List<Delete> deletes();
 }

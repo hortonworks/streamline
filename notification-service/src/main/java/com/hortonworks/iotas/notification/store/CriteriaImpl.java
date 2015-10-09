@@ -1,6 +1,8 @@
 package com.hortonworks.iotas.notification.store;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -9,8 +11,30 @@ import java.util.Map;
  */
 public class CriteriaImpl<T> implements Criteria<T> {
     private final Class<T> clazz;
-    private Map<String, String> fieldRestrictions = new HashMap<>();
+    private List<Field> fieldRestrictions = new ArrayList<>();
     private int numRows;
+    private long startTs;
+    private long endTs;
+
+    public static class FieldImpl implements Criteria.Field {
+        private final String name;
+        private final String value;
+
+        public FieldImpl(String name, String value) {
+            this.name = name;
+            this.value = value;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String getValue() {
+            return value;
+        }
+    }
 
     public CriteriaImpl(Class<T> clazz) {
         this.clazz = clazz;
@@ -22,17 +46,27 @@ public class CriteriaImpl<T> implements Criteria<T> {
     }
 
     public CriteriaImpl<T> addFieldRestriction(String fieldName, String fieldValue) {
-        this.fieldRestrictions.put(fieldName, fieldValue);
+        this.fieldRestrictions.add(new FieldImpl(fieldName, fieldValue));
         return this;
     }
 
-    public CriteriaImpl<T> setNumRows(int numRows) {
+    public CriteriaImpl<T> setNumRows(Integer numRows) {
         this.numRows = numRows;
         return this;
     }
 
+    public CriteriaImpl<T> setStartTs(Long ts) {
+        this.startTs = ts;
+        return this;
+    }
+
+    public CriteriaImpl<T> setEndTs(Long ts) {
+        this.endTs = ts;
+        return this;
+    }
+
     @Override
-    public Map<String, String> fieldRestrictions() {
+    public List<Field> fieldRestrictions() {
         return fieldRestrictions;
     }
 
@@ -42,11 +76,23 @@ public class CriteriaImpl<T> implements Criteria<T> {
     }
 
     @Override
+    public long startTs() {
+        return startTs;
+    }
+
+    @Override
+    public long endTs() {
+        return endTs;
+    }
+
+    @Override
     public String toString() {
         return "CriteriaImpl{" +
                 "clazz=" + clazz +
                 ", fieldRestrictions=" + fieldRestrictions +
                 ", numRows=" + numRows +
+                ", startTs=" + startTs +
+                ", endTs=" + endTs +
                 '}';
     }
 }
