@@ -114,7 +114,7 @@ public class IotasApplication extends Application<IotasConfiguration> {
 
         List<Object> resources = Lists.newArrayList(feedResource, parserResource, dataSourceResource,
                                                     clusterCatalogResource, componentCatalogResource,
-                                                    notifierInfoCatalogResource);
+                                                    dataSourceWithDataFeedCatalogResource, notifierInfoCatalogResource);
         for(Object resource : resources) {
             environment.jersey().register(resource);
         }

@@ -16,6 +16,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import java.io.IOException;
+
 import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.BAD_REQUEST_PARAM_MISSING;
 import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
 import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.SUCCESS;
@@ -24,6 +26,7 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
 /**
+ * REST API endpoint for adding datasource with datafeed.
  *
  */
 @Path("/api/v1/catalog")
@@ -45,18 +48,23 @@ public class DataSourceWithDataFeedCatalogResource {
             if (StringUtils.isEmpty(dataSourceInfo.getTypeConfig())) {
                 return WSUtils.respond(BAD_REQUEST, BAD_REQUEST_PARAM_MISSING, "typeConfig");
             }
-            DataSource dataSource = createDataSource(dataSourceInfo);
-            DataSource createdDataSource = catalogService.addDataSource(dataSource);
-            dataSourceInfo.setDataSourceId(createdDataSource.getDataSourceId());
-
-            DataFeed dataFeed = createDataFeed(dataSourceInfo);
-            DataFeed createdDataFeed = catalogService.addDataFeed(dataFeed);
-
-            return WSUtils.respond(CREATED, SUCCESS, new DataSourceInfo(createdDataSource, createdDataFeed));
+            DataSourceInfo createdDataSourceInfo = createDataSourceWithDataFeed(dataSourceInfo);
+            return WSUtils.respond(CREATED, SUCCESS, createdDataSourceInfo);
         } catch (Exception ex) {
             LOGGER.error("Error encountered while adding datasource with datafeed", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
+    }
+
+    private DataSourceInfo createDataSourceWithDataFeed(DataSourceInfo dataSourceInfo) throws IOException {
+        DataSource dataSource = createDataSource(dataSourceInfo);
+        DataSource createdDataSource = catalogService.addDataSource(dataSource);
+        dataSourceInfo.setDataSourceId(createdDataSource.getDataSourceId());
+
+        DataFeed dataFeed = createDataFeed(dataSourceInfo);
+        DataFeed createdDataFeed = catalogService.addDataFeed(dataFeed);
+
+        return new DataSourceInfo(createdDataSource, createdDataFeed);
     }
 
     private DataFeed createDataFeed(DataSourceInfo dataSourceInfo) {
