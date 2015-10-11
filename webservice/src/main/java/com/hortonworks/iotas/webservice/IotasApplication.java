@@ -110,8 +110,7 @@ public class IotasApplication extends Application<IotasConfiguration> {
         final ComponentCatalogResource componentCatalogResource = new ComponentCatalogResource(catalogService);
 
         List<Object> resources = Lists.newArrayList(feedResource, parserResource, dataSourceResource,
-                                                    clusterCatalogResource, componentCatalogResource,
-                                                    dataSourceWithDataFeedCatalogResource);
+                                                    clusterCatalogResource, componentCatalogResource);
         for(Object resource : resources) {
             environment.jersey().register(resource);
         }
