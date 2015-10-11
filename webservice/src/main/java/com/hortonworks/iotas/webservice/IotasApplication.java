@@ -109,8 +109,12 @@ public class IotasApplication extends Application<IotasConfiguration> {
         final ClusterCatalogResource clusterCatalogResource = new ClusterCatalogResource(catalogService);
         final ComponentCatalogResource componentCatalogResource = new ComponentCatalogResource(catalogService);
 
+        // notifier
+        final NotifierInfoCatalogResource notifierInfoCatalogResource = new NotifierInfoCatalogResource(catalogService);
+
         List<Object> resources = Lists.newArrayList(feedResource, parserResource, dataSourceResource,
-                                                    clusterCatalogResource, componentCatalogResource);
+                                                    clusterCatalogResource, componentCatalogResource,
+                                                    notifierInfoCatalogResource);
         for(Object resource : resources) {
             environment.jersey().register(resource);
         }

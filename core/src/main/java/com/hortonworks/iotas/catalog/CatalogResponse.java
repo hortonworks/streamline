@@ -48,6 +48,10 @@ public class CatalogResponse {
             //TODO: validate number of args
             return String.format(responseMessage.msg, args);
         }
+
+        public int getCode() {
+            return code;
+        }
     }
 
     /**
