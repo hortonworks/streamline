@@ -54,9 +54,6 @@ public class CatalogResponse {
             return String.format(responseMessage.msg, args);
         }
 
-        public int getCode() {
-            return code;
-        }
     }
 
     /**
