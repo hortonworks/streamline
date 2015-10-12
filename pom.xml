@@ -75,6 +75,18 @@
                 <version>${guava.version}</version>
             </dependency>
             <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jmockit</groupId>
+                <artifactId>jmockit</artifactId>
+                <version>${jmockit.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-hdfs</artifactId>
                 <version>${hadoop.version}</version>
@@ -257,7 +269,6 @@
           </plugins>
         </pluginManagement>
     </build>
-
     <reporting>
         <plugins>
             <plugin>
