@@ -45,14 +45,15 @@ public class CatalogResponse {
             return code > 1100;
         }
 
+        public int getCode() {
+            return code;
+        }
+
         public static String format(ResponseMessage responseMessage, String... args) {
             //TODO: validate number of args
             return String.format(responseMessage.msg, args);
         }
 
-        public int getCode() {
-            return code;
-        }
     }
 
     /**

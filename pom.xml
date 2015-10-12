@@ -6,7 +6,7 @@
 
     <groupId>com.hortonworks</groupId>
     <artifactId>IoTaS</artifactId>
-    <version>${snapshot.version}</version>
+    <version>0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -18,7 +18,6 @@
     </modules>
 
     <properties>
-        <snapshot.version>0.1-SNAPSHOT</snapshot.version>
         <!-- dependency versions -->
         <junit.version>4.11</junit.version>
         <jackson.version>2.6.0</jackson.version>
@@ -139,6 +138,10 @@
                         <groupId>org.apache.zookeeper</groupId>
                         <artifactId>zookeeper</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -150,6 +153,16 @@
                 <groupId>io.dropwizard</groupId>
                 <artifactId>dropwizard-core</artifactId>
                 <version>${dropwizard.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>log4j-over-slf4j</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>jcl-over-slf4j</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <!-- Test dependencies -->
             <!-- JMockit dependency must appear before JUnit dependency -->
