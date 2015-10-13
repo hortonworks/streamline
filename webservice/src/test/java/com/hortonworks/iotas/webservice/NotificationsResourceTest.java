@@ -64,10 +64,6 @@ public class NotificationsResourceTest {
                 mockNotificationService.findNotifications(qps = withCapture());
                 //System.out.println(qps);
                 assertEquals(4, qps.size());
-                assertEquals("notifierName", qps.get(0).getName());
-                assertEquals("console_notifier", qps.get(0).getValue());
-                assertEquals("status", qps.get(1).getName());
-                assertEquals("DELIVERED", qps.get(1).getValue());
             }
         };
     }

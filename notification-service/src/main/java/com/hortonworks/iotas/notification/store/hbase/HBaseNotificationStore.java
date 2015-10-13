@@ -191,10 +191,11 @@ public class HBaseNotificationStore implements NotificationStore {
                 byte[] startRow = scanConfig.getStartRow();
                 byte[] stopRow = scanConfig.getStopRow();
                 Scan scan;
-                if (startRow != null && stopRow != null) {
-                    scan = new Scan(startRow, stopRow);
+                if(criteria.isDescending()) {
+                    scan = new Scan(stopRow, startRow);
+                    scan.setReversed(true);
                 } else {
-                    scan = new Scan(); // all rows
+                    scan = new Scan(startRow, stopRow);
                 }
                 scan.setFilter(scanConfig.filterList());
                 ResultScanner scanner = tables.get(scanConfig.getMapper().getTableName()).getScanner(scan);

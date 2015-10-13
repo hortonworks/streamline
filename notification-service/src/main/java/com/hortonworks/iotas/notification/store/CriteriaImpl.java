@@ -15,6 +15,7 @@ public class CriteriaImpl<T> implements Criteria<T> {
     private int numRows;
     private long startTs;
     private long endTs;
+    private boolean descending;
 
     public static class FieldImpl implements Criteria.Field {
         private final String name;
@@ -33,6 +34,14 @@ public class CriteriaImpl<T> implements Criteria<T> {
         @Override
         public String getValue() {
             return value;
+        }
+
+        @Override
+        public String toString() {
+            return "FieldImpl{" +
+                    "name='" + name + '\'' +
+                    ", value='" + value + '\'' +
+                    '}';
         }
     }
 
@@ -65,6 +74,11 @@ public class CriteriaImpl<T> implements Criteria<T> {
         return this;
     }
 
+    public CriteriaImpl<T> setDescending(boolean flag) {
+        this.descending = flag;
+        return this;
+    }
+
     @Override
     public List<Field> fieldRestrictions() {
         return fieldRestrictions;
@@ -83,6 +97,11 @@ public class CriteriaImpl<T> implements Criteria<T> {
     @Override
     public long endTs() {
         return endTs;
+    }
+
+    @Override
+    public boolean isDescending() {
+        return descending;
     }
 
     @Override

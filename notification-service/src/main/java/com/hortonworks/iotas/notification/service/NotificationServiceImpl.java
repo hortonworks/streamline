@@ -25,6 +25,7 @@ public class NotificationServiceImpl implements NotificationService {
     private static final String QUERY_PARAM_NUM_ROWS = "numRows";
     private static final String QUERY_PARAM_START_TS = "startTs";
     private static final String QUERY_PARAM_END_TS = "endTs";
+    private static final String QUERY_PARAM_DESC = "desc";
 
     private final ConcurrentHashMap<String, Notifier> notifiers = new ConcurrentHashMap<>();
 
@@ -105,6 +106,8 @@ public class NotificationServiceImpl implements NotificationService {
                 criteria.setStartTs(Long.parseLong(qp.value));
             } else if (qp.name.equals((QUERY_PARAM_END_TS))) {
                 criteria.setEndTs(Long.parseLong(qp.value));
+            } else if (qp.name.equals((QUERY_PARAM_DESC))) {
+                criteria.setDescending(true);
             } else {
                 criteria.addFieldRestriction(qp.name, qp.value);
             }

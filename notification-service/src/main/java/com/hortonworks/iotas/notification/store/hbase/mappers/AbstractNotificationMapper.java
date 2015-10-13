@@ -43,6 +43,9 @@ public abstract class AbstractNotificationMapper implements Mapper<Notification>
     static {
         // Right now support queries for status in addition to the indexed fields.
         memberMap.put("status", Arrays.asList(CF_STATUS, CQ_STATUS));
+        memberMap.put("ruleId", Arrays.asList(CF_RULEID));
+        memberMap.put("dataSourceId", Arrays.asList(CF_DATASOURCE_IDS));
+        memberMap.put("notifierName", Arrays.asList(CF_NOTIFIER_NAME));
     }
 
     @Override
@@ -54,9 +57,9 @@ public abstract class AbstractNotificationMapper implements Mapper<Notification>
             res.addAll(cfcq);
             if (cfcq.size() == 2) { // both cf and cq are present
                 res.add(value.getBytes(CHARSET));
-            } else if (cfcq.size() == 1) { // cq is the member name
-                res.add(memberName.getBytes(CHARSET));
-                res.add(value.getBytes(CHARSET));
+            } else if (cfcq.size() == 1) {
+                res.add(value.getBytes(CHARSET)); // cq is the member value
+                res.add(CV_DEFAULT); // cv is default value
             }
         }
         LOG.debug("memberName {} mapped to {}", memberName, res);

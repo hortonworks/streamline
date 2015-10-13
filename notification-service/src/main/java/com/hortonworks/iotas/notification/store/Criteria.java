@@ -13,10 +13,10 @@ public interface Criteria<T> {
      * The fields (key, value) pair that are specified in the criteria.
      */
     interface Field {
+
         String getName();
         String getValue();
     }
-
     /**
      * The class name of the entity that this query criteria is for.
      */
@@ -42,4 +42,9 @@ public interface Criteria<T> {
      * The end timestamp in millis.
      */
     long endTs();
+
+    /**
+     * If the results should be in descending order
+     */
+    boolean isDescending();
 }

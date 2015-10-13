@@ -48,7 +48,6 @@ public class HBaseScanConfig<T> {
 
     // assumes that index table row key always has ts as suffix.
     public byte[] getStartRow() {
-        byte[] startRow = null;
         StringBuilder sb = new StringBuilder();
         if (indexedFieldValue != null) {
             sb.append(indexedFieldValue).append(Mapper.ROWKEY_SEP);
