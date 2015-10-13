@@ -63,6 +63,8 @@ Now you need to create HBase tables where the IotasEvent and Notifications will 
 
 `create 'Notification', 'd', 'f', 's', 'e', 'r', 'nn', 'ts'`
 
+`create 'Timestamp_Notification', 'ni', 'd', 'f', 's', 'e', 'r', 'nn', 'ts'`
+
 `create 'Rule_Notification', 'ni', 'd', 'f', 's', 'e', 'r', 'nn', 'ts'`
 
 `create 'Rule_Status_Notification', 'ni', 'd', 'f', 's', 'e', 'r', 'nn', 'ts'`

@@ -21,7 +21,7 @@ public class NotifierStatusNotificationMapper extends NotificationStatusIndexMap
     /**
      * The notification field that is indexed
      */
-    private static final String INDEX_FIELD_NAME = "notifierName" + Mapper.ROWKEY_SEP + "status";
+    private static final List<String> INDEX_FIELD_NAMES = Arrays.asList("notifierName", "status");
 
 
     @Override
@@ -42,7 +42,7 @@ public class NotifierStatusNotificationMapper extends NotificationStatusIndexMap
     }
 
     @Override
-    public String getIndexedFieldName() {
-        return INDEX_FIELD_NAME;
+    public List<String> getIndexedFieldNames() {
+        return INDEX_FIELD_NAMES;
     }
 }

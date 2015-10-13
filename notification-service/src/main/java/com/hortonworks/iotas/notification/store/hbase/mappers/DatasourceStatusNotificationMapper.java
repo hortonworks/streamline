@@ -15,9 +15,9 @@ public class DatasourceStatusNotificationMapper extends NotificationStatusIndexM
      */
     private static final String TABLE_NAME = "Datasource_Status_Notification";
     /**
-     * The notification field that is indexed
+     * The notification fields that are indexed
      */
-    private static final String INDEX_FIELD_NAME = "dataSourceId" + Mapper.ROWKEY_SEP + "status";
+    private static final List<String> INDEX_FIELD_NAMES = Arrays.asList("dataSourceId", "status");
 
 
     @Override
@@ -42,7 +42,7 @@ public class DatasourceStatusNotificationMapper extends NotificationStatusIndexM
     }
 
     @Override
-    public String getIndexedFieldName() {
-        return INDEX_FIELD_NAME;
+    public List<String> getIndexedFieldNames() {
+        return INDEX_FIELD_NAMES;
     }
 }

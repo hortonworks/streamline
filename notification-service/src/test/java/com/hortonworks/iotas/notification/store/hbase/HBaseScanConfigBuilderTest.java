@@ -68,8 +68,8 @@ public class HBaseScanConfigBuilderTest {
                 mockNotificationCriteria.fieldRestrictions();
                 times = 1;
                 result = fr;
-                mockIndexMapper.getIndexedFieldName(); times = 1;
-                result = "notifierName";
+                mockIndexMapper.getIndexedFieldNames(); times = 1;
+                result = Arrays.asList("notifierName");
                 mockNotificationCriteria.numRows(); times = 1;
                 result = 5;
                 mockIndexMapper.mapMemberValue("status", "NEW"); times = 1;
@@ -117,8 +117,8 @@ public class HBaseScanConfigBuilderTest {
                 mockNotificationCriteria.fieldRestrictions();
                 times = 1;
                 result = fr;
-                mockIndexMapper.getIndexedFieldName(); times = 1;
-                result = "notifierName";
+                mockIndexMapper.getIndexedFieldNames(); times = 1;
+                result = Arrays.asList("notifierName");
                 mockNotificationCriteria.numRows(); times = 1;
                 result = 5;
                 mockIndexMapper.mapMemberValue("status", "NEW"); times = 1;

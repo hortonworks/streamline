@@ -1,5 +1,7 @@
 package com.hortonworks.iotas.notification.store.hbase.mappers;
 
+import java.util.List;
+
 /**
  * Index mappers are for enabling secondary index based look ups based on
  * index tables. (e.g. Notifier_Notification)
@@ -7,8 +9,8 @@ package com.hortonworks.iotas.notification.store.hbase.mappers;
 public interface IndexMapper<T> extends Mapper<T> {
 
     /**
-     * The secondary index field name. E.g ('notifierName' in case of
-     * NotifierNotificationMapper that enables look up based on notifier name)
+     * The secondary index field names. E.g (['notifierName', 'status'] in case of
+     * NotifierStatusNotificationMapper that enables look up based on notifier name)
      */
-    String getIndexedFieldName();
+    List<String> getIndexedFieldNames();
 }

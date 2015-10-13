@@ -157,7 +157,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            </dependency>
+            <dependency>
                 <groupId>org.apache.hbase</groupId>
                 <artifactId>hbase-client</artifactId>
                 <version>${hbase.version}</version>

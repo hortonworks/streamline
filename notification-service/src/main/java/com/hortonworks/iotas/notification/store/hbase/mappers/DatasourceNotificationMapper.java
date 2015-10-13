@@ -5,6 +5,7 @@ import com.hortonworks.iotas.notification.store.NotificationStoreException;
 import org.apache.hadoop.hbase.client.Put;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -19,7 +20,7 @@ public class DatasourceNotificationMapper extends NotificationIndexMapper {
     /**
      * The notification field that is indexed
      */
-    private static final String INDEX_FIELD_NAME = "dataSourceId";
+    private static final List<String> INDEX_FIELD_NAMES = Arrays.asList("dataSourceId");
 
     @Override
     protected List<byte[]> getRowKeys(Notification notification) {
@@ -41,7 +42,7 @@ public class DatasourceNotificationMapper extends NotificationIndexMapper {
     }
 
     @Override
-    public String getIndexedFieldName() {
-        return INDEX_FIELD_NAME;
+    public List<String> getIndexedFieldNames() {
+        return INDEX_FIELD_NAMES;
     }
 }

@@ -51,18 +51,6 @@ public class NotificationsResource {
         this.notificationService = service;
     }
 
-    Map<String, Integer> knownParams = new HashMap<String, Integer>() {
-        {
-            put("datasourceid", 1);
-            put("ruleid", 1);
-            put("notifiername", 1);
-            put("status", 2);
-            put("startTs", 3);
-            put("endTs", 3);
-            put("numRows", 4);
-        }
-    };
-
     @GET
     @Path("/notifications/{id}")
     @Timed
@@ -79,41 +67,20 @@ public class NotificationsResource {
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, id.toString());
     }
 
-    /**
-     * Returns the slot (position) where a known param is
-     * supposed to be present in a list of query params.
-     */
-    private int paramSlot(String param) {
-        Integer val = knownParams.get(param.toLowerCase());
-        if (val == null) {
-            val = Integer.MAX_VALUE;
-        }
-        return val;
-    }
-
     @GET
     @Path("/notifications/")
     @Timed
     public Response listNotifications(@Context UriInfo uriInfo) {
         List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>();
         try {
-            // put the query params in order.
-            List<String> keys = new ArrayList<>();
             MultivaluedMap<String, String> uriInfoParams = uriInfo.getQueryParameters();
-            keys.addAll(uriInfoParams.keySet());
-            Collections.sort(keys, new Comparator<String>() {
-                @Override
-                public int compare(String key1, String key2) {
-                    return paramSlot(key1) - paramSlot(key2);
-                }
-            });
             Collection<Notification> notifications = null;
-            if (!keys.isEmpty()) {
-                for (String key : keys) {
+            if (!uriInfoParams.isEmpty()) {
+                for (String key : uriInfoParams.keySet()) {
                     queryParams.add(new CatalogService.QueryParam(key, uriInfoParams.get(key).get(0)));
                 }
             } else {
-                LOG.info("Query params empty, will use default criteria to return latest notifications.");
+                LOG.info("Query params empty, will use default criteria to return notifications.");
             }
             notifications = notificationService.findNotifications(queryParams);
             if (notifications != null && !notifications.isEmpty()) {
@@ -125,6 +92,20 @@ public class NotificationsResource {
         }
 
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, queryParams.toString());
+    }
+
+    @PUT
+    @Path("/notifications/{id}/{status}")
+    @Timed
+    public Response updateNotificationStatus(@PathParam("id") String notificationId,
+                                             @PathParam("status") Notification.Status status) {
+        try {
+            Notification updateNotification = notificationService.updateNotificationStatus(notificationId, status);
+            return WSUtils.respond(OK, SUCCESS, updateNotification);
+        } catch (Exception ex) {
+            LOG.error("Got exception", ex);
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
     }
 
     @GET
@@ -141,20 +122,6 @@ public class NotificationsResource {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, id.toString());
-    }
-
-    @PUT
-    @Path("/notifications/{id}/{status}")
-    @Timed
-    public Response updateNotificationStatus(@PathParam("id") String notificationId,
-                                             @PathParam("status") Notification.Status status) {
-        try {
-            Notification updateNotification = notificationService.updateNotificationStatus(notificationId, status);
-            return WSUtils.respond(OK, SUCCESS, updateNotification);
-        } catch (Exception ex) {
-            LOG.error("Got exception", ex);
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
-        }
     }
 
 }
