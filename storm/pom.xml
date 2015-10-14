@@ -5,7 +5,7 @@
     <parent>
         <artifactId>IoTaS</artifactId>
         <groupId>com.hortonworks</groupId>
-        <version>${snapshot.version}</version>
+        <version>0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -20,11 +20,6 @@
         <dependency>
             <groupId>com.hortonworks</groupId>
             <artifactId>core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.hortonworks</groupId>
-            <artifactId>webservice</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -104,6 +99,10 @@
                 <exclusion>
                     <groupId>com.sun.jersey</groupId>
                     <artifactId>jersey-json</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-common</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

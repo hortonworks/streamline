@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.hortonworks</groupId>
         <artifactId>IoTaS</artifactId>
-        <version>${snapshot.version}</version>
+        <version>0.1-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -40,10 +40,6 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -92,6 +88,10 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+            </plugin>
             <!-- Test plugins -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
