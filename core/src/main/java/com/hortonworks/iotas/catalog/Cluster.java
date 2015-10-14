@@ -114,4 +114,40 @@ public class Cluster extends AbstractStorable {
         return new PrimaryKey(fieldToObjectMap);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Cluster)) return false;
+
+        Cluster cluster = (Cluster) o;
+
+        if (id != null ? !id.equals(cluster.id) : cluster.id != null) return false;
+        if (name != null ? !name.equals(cluster.name) : cluster.name != null) return false;
+        if (type != cluster.type) return false;
+        if (description != null ? !description.equals(cluster.description) : cluster.description != null) return false;
+        return !(tags != null ? !tags.equals(cluster.tags) : cluster.tags != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (type != null ? type.hashCode() : 0);
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        result = 31 * result + (tags != null ? tags.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Cluster{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", type=" + type +
+                ", description='" + description + '\'' +
+                ", tags='" + tags + '\'' +
+                ", timestamp=" + timestamp +
+                '}';
+    }
 }

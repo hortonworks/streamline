@@ -130,7 +130,6 @@ public class DataSource implements Storable {
             return false;
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
         if (tags != null ? !tags.equals(that.tags) : that.tags != null) return false;
-        if (timestamp != null ? !timestamp.equals(that.timestamp) : that.timestamp != null) return false;
         if (type != null ? !type.equals(that.type) : that.type != null) return false;
         return !(typeConfig != null ? !typeConfig.equals(that.typeConfig) : that.typeConfig != null);
 
@@ -142,7 +141,6 @@ public class DataSource implements Storable {
         result = 31 * result + (dataSourceName != null ? dataSourceName.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
         result = 31 * result + (tags != null ? tags.hashCode() : 0);
-        result = 31 * result + (timestamp != null ? timestamp.hashCode() : 0);
         result = 31 * result + (type != null ? type.hashCode() : 0);
         result = 31 * result + (typeConfig != null ? typeConfig.hashCode() : 0);
         return result;

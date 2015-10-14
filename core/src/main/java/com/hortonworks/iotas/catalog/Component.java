@@ -143,4 +143,50 @@ public class Component extends AbstractStorable {
         return new PrimaryKey(fieldToObjectMap);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Component)) return false;
+
+        Component component = (Component) o;
+
+        if (port != component.port) return false;
+        if (id != null ? !id.equals(component.id) : component.id != null) return false;
+        if (clusterId != null ? !clusterId.equals(component.clusterId) : component.clusterId != null) return false;
+        if (name != null ? !name.equals(component.name) : component.name != null) return false;
+        if (type != component.type) return false;
+        if (description != null ? !description.equals(component.description) : component.description != null)
+            return false;
+        if (config != null ? !config.equals(component.config) : component.config != null) return false;
+        return !(hosts != null ? !hosts.equals(component.hosts) : component.hosts != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (clusterId != null ? clusterId.hashCode() : 0);
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (type != null ? type.hashCode() : 0);
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        result = 31 * result + (config != null ? config.hashCode() : 0);
+        result = 31 * result + (hosts != null ? hosts.hashCode() : 0);
+        result = 31 * result + port;
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Component{" +
+                "id=" + id +
+                ", clusterId=" + clusterId +
+                ", name='" + name + '\'' +
+                ", type=" + type +
+                ", description='" + description + '\'' +
+                ", config='" + config + '\'' +
+                ", hosts='" + hosts + '\'' +
+                ", port=" + port +
+                ", timestamp=" + timestamp +
+                '}';
+    }
 }

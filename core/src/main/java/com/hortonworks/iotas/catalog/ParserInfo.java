@@ -194,9 +194,7 @@ public class ParserInfo implements Storable {
         if (jarStoragePath != null ? !jarStoragePath.equals(that.jarStoragePath) : that.jarStoragePath != null)
             return false;
         if (parserSchema != null ? !parserSchema.equals(that.parserSchema) : that.parserSchema != null) return false;
-        if (version != null ? !version.equals(that.version) : that.version != null) return false;
-        return !(timestamp != null ? !timestamp.equals(that.timestamp) : that.timestamp != null);
-
+        return !(version != null ? !version.equals(that.version) : that.version != null);
     }
 
     @Override
@@ -207,7 +205,6 @@ public class ParserInfo implements Storable {
         result = 31 * result + (jarStoragePath != null ? jarStoragePath.hashCode() : 0);
         result = 31 * result + (parserSchema != null ? parserSchema.hashCode() : 0);
         result = 31 * result + (version != null ? version.hashCode() : 0);
-        result = 31 * result + (timestamp != null ? timestamp.hashCode() : 0);
         return result;
     }
 }

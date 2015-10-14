@@ -1,0 +1,85 @@
+brokerList: localhost:9092
+zookeeperHost: localhost:2181
+dataStreamActionsImpl: com.hortonworks.iotas.util.StormDataStreamActionsImpl
+iotasStormJar: /Users/pshah/dev/IoTaS/storm/target/storm-0.1-SNAPSHOT.jar
+
+# Filesystem based jar storage
+jarStorageConfiguration:
+  className: "com.hortonworks.iotas.util.FileSystemJarStorage"
+  properties:
+    directory: "/tmp"
+
+# HDFS based Jar storage
+#jarStorageConfiguration:
+#  className: "com.hortonworks.iotas.util.HdfsJarStorage"
+#  properties:
+#    fsUrl: "file:///"
+#    directory: "/tmp/test-hdfs"
+
+server:
+  rootPath: '/*'
+#  softNofileLimit: 1000
+#  hardNofileLimit: 1000
+  applicationConnectors:
+    - type: http
+      port: 1111
+#    - type: https
+#      port: 8443
+#      keyStorePath: example.keystore
+#      keyStorePassword: example
+#      validateCerts: false
+# this requires the alpn-boot library on the JVM's boot classpath
+#    - type: spdy3
+#      port: 8445
+#      keyStorePath: example.keystore
+#      keyStorePassword: example
+#      validateCerts: false
+  adminConnectors:
+    - type: http
+      port: 1112
+#    - type: https
+#      port: 8444
+#      keyStorePath: example.keystore
+#      keyStorePassword: example
+#      validateCerts: false
+
+# Logging settings.
+logging:
+
+  # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
+  level: INFO
+
+  # Logger-specific levels.
+  loggers:
+
+    # Sets the level for 'com.example.app' to DEBUG.
+    com.hortonworks.iotas: TRACE
+
+
+  appenders:
+    - type: console
+#    - type: file
+#      threshold: DEBUG
+#      logFormat: "%-6level [%d{HH:mm:ss.SSS}] [%t] %logger{5} - %X{code} %msg %n"
+#      currentLogFilename: /tmp/application.log
+#      archivedLogFilenamePattern: /tmp/application-%d{yyyy-MM-dd}-%i.log.gz
+#      archivedFileCount: 7
+#      timeZone: UTC
+#      maxFileSize: 10MB
+
+#jerseyClient:
+#  minThreads: 1
+#  maxThreads: 16
+#  workQueueSize: 1000
+#  gzipEnabled: true
+#  gzipEnabledForRequests: true
+#  chunkedEncodingEnabled: true
+#  timeout: 1000ms
+#  connectionTimeout: 1000ms
+#  timeToLive: 1h
+#  cookiesEnabled: false
+#  maxConnections: 10
+#  maxConnectionsPerRoute: 1024
+#  keepAlive: 0ms
+#  retries: 10
+#  userAgent: Storm-Client
