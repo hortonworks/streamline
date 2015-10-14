@@ -1,10 +1,10 @@
-package com.hortonworks.iotas.webservice;
+package com.hortonworks.iotas.webservice.catalog;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.service.CatalogService;
-import com.hortonworks.iotas.webservice.pojo.DataSourceInfo;
+import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
 import com.hortonworks.iotas.webservice.util.WSUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -43,49 +43,49 @@ public class DataSourceWithDataFeedCatalogResource {
     @POST
     @Path("/datasourceswithfeed")
     @Timed
-    public Response addDataSourceWithDataFeed(DataSourceInfo dataSourceInfo) {
+    public Response addDataSourceWithDataFeed(DataSourceDto dataSourceDto) {
         try {
-            if (StringUtils.isEmpty(dataSourceInfo.getTypeConfig())) {
+            if (StringUtils.isEmpty(dataSourceDto.getTypeConfig())) {
                 return WSUtils.respond(BAD_REQUEST, BAD_REQUEST_PARAM_MISSING, "typeConfig");
             }
-            DataSourceInfo createdDataSourceInfo = createDataSourceWithDataFeed(dataSourceInfo);
-            return WSUtils.respond(CREATED, SUCCESS, createdDataSourceInfo);
+            DataSourceDto createdDataSourceDto = createDataSourceWithDataFeed(dataSourceDto);
+            return WSUtils.respond(CREATED, SUCCESS, createdDataSourceDto);
         } catch (Exception ex) {
             LOGGER.error("Error encountered while adding datasource with datafeed", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
     }
 
-    private DataSourceInfo createDataSourceWithDataFeed(DataSourceInfo dataSourceInfo) throws IOException {
-        DataSource dataSource = createDataSource(dataSourceInfo);
+    private DataSourceDto createDataSourceWithDataFeed(DataSourceDto dataSourceDto) throws IOException {
+        DataSource dataSource = createDataSource(dataSourceDto);
         DataSource createdDataSource = catalogService.addDataSource(dataSource);
-        dataSourceInfo.setDataSourceId(createdDataSource.getDataSourceId());
+        dataSourceDto.setDataSourceId(createdDataSource.getDataSourceId());
 
-        DataFeed dataFeed = createDataFeed(dataSourceInfo);
+        DataFeed dataFeed = createDataFeed(dataSourceDto);
         DataFeed createdDataFeed = catalogService.addDataFeed(dataFeed);
 
-        return new DataSourceInfo(createdDataSource, createdDataFeed);
+        return new DataSourceDto(createdDataSource, createdDataFeed);
     }
 
-    private DataFeed createDataFeed(DataSourceInfo dataSourceInfo) {
+    private DataFeed createDataFeed(DataSourceDto dataSourceDto) {
         DataFeed dataFeed = new DataFeed();
-        dataFeed.setDataFeedName(dataSourceInfo.getDataFeedName());
-        dataFeed.setDataSourceId(dataSourceInfo.getDataSourceId());
-        dataFeed.setEndpoint(dataSourceInfo.getEndpoint());
-        dataFeed.setParserId(dataSourceInfo.getParserId());
+        dataFeed.setDataFeedName(dataSourceDto.getDataFeedName());
+        dataFeed.setDataSourceId(dataSourceDto.getDataSourceId());
+        dataFeed.setEndpoint(dataSourceDto.getEndpoint());
+        dataFeed.setParserId(dataSourceDto.getParserId());
 
         return dataFeed;
     }
 
-    private DataSource createDataSource(DataSourceInfo dataSourceInfo) {
+    private DataSource createDataSource(DataSourceDto dataSourceDto) {
         DataSource dataSource = new DataSource();
-        dataSource.setDataSourceId(dataSourceInfo.getDataSourceId());
-        dataSource.setDataSourceName(dataSourceInfo.getDataSourceName());
-        dataSource.setDescription(dataSourceInfo.getDescription());
-        dataSource.setTags(dataSourceInfo.getTags());
-        dataSource.setTimestamp(dataSourceInfo.getTimestamp());
-        dataSource.setType(dataSourceInfo.getType());
-        dataSource.setTypeConfig(dataSourceInfo.getTypeConfig());
+        dataSource.setDataSourceId(dataSourceDto.getDataSourceId());
+        dataSource.setDataSourceName(dataSourceDto.getDataSourceName());
+        dataSource.setDescription(dataSourceDto.getDescription());
+        dataSource.setTags(dataSourceDto.getTags());
+        dataSource.setTimestamp(dataSourceDto.getTimestamp());
+        dataSource.setType(dataSourceDto.getType());
+        dataSource.setTypeConfig(dataSourceDto.getTypeConfig());
 
         return dataSource;
     }

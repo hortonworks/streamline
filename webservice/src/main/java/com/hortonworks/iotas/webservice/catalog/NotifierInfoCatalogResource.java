@@ -1,4 +1,4 @@
-package com.hortonworks.iotas.webservice;
+package com.hortonworks.iotas.webservice.catalog;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.catalog.NotifierInfo;

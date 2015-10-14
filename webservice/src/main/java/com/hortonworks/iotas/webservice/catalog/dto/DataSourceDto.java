@@ -1,4 +1,4 @@
-package com.hortonworks.iotas.webservice.pojo;
+package com.hortonworks.iotas.webservice.catalog.dto;
 
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
@@ -6,7 +6,7 @@ import com.hortonworks.iotas.catalog.DataSource;
 /**
  *
  */
-public class DataSourceInfo {
+public class DataSourceDto {
 
     /**
      * Unique identifier. This is the primary key.
@@ -59,10 +59,10 @@ public class DataSourceInfo {
     private String endpoint;
 
 
-    public DataSourceInfo() {
+    public DataSourceDto() {
     }
 
-    public DataSourceInfo(DataSource dataSource, DataFeed dataFeed) {
+    public DataSourceDto(DataSource dataSource, DataFeed dataFeed) {
         dataSourceId = dataSource.getDataSourceId();
         dataSourceName = dataSource.getDataSourceName();
         description = dataSource.getDescription();
@@ -162,7 +162,7 @@ public class DataSourceInfo {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        DataSourceInfo that = (DataSourceInfo) o;
+        DataSourceDto that = (DataSourceDto) o;
 
         if (dataSourceId != null ? !dataSourceId.equals(that.dataSourceId) : that.dataSourceId != null) return false;
         if (dataSourceName != null ? !dataSourceName.equals(that.dataSourceName) : that.dataSourceName != null)
@@ -195,7 +195,7 @@ public class DataSourceInfo {
 
     @Override
     public String toString() {
-        return "DataSourceInfo{" +
+        return "DataSourceDto{" +
                 "dataSourceId=" + dataSourceId +
                 ", dataSourceName='" + dataSourceName + '\'' +
                 ", description='" + description + '\'' +

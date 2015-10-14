@@ -1,7 +1,8 @@
-package com.hortonworks.iotas.webservice;
+package com.hortonworks.iotas.webservice.catalog;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.catalog.Cluster;
+import com.hortonworks.iotas.catalog.Component;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.util.WSUtils;
 
@@ -17,43 +18,50 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.SUCCESS;
+import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+
 import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.*;
 import static javax.ws.rs.core.Response.Status.*;
 
-@Path("/api/v1/catalog")
+
+@Path("/api/v1/catalog/clusters/{clusterId}/components")
 @Produces(MediaType.APPLICATION_JSON)
-public class ClusterCatalogResource {
+
+public class ComponentCatalogResource {
     private CatalogService catalogService;
 
-    public ClusterCatalogResource(CatalogService catalogService) {
+    public ComponentCatalogResource(CatalogService catalogService) {
         this.catalogService = catalogService;
     }
 
     /**
-     * List ALL clusters or the ones matching specific query params.
+     * List ALL components or the ones matching specific query params.
      */
     @GET
-    @Path("/clusters")
     @Timed
-    public Response listClusters(@Context UriInfo uriInfo) {
+    public Response listComponents(@Context UriInfo uriInfo) {
         List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>();
         try {
             MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
-            Collection<Cluster> clusters;
+            Collection<Component> components;
             if (params.isEmpty()) {
-                clusters = catalogService.listClusters();
+                components = catalogService.listComponents();
             } else {
                 for (String param : params.keySet()) {
                     queryParams.add(new CatalogService.QueryParam(param, params.getFirst(param)));
                 }
-                clusters = catalogService.listClusters(queryParams);
+                components = catalogService.listComponents(queryParams);
             }
-            if(clusters != null && ! clusters.isEmpty()) {
-                return WSUtils.respond(OK, SUCCESS, clusters);
+            if(components != null && ! components.isEmpty()) {
+                return WSUtils.respond(OK, SUCCESS, components);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -63,44 +71,42 @@ public class ClusterCatalogResource {
     }
 
     @GET
-    @Path("/clusters/{id}")
+    @Path("/{id}")
     @Timed
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getClusterById(@PathParam("id") Long clusterId) {
+    public Response getComponentById(@PathParam("id") Long componentId) {
         try {
-            Cluster result = catalogService.getCluster(clusterId);
+            Component result = catalogService.getComponent(componentId);
             if (result != null) {
                 return WSUtils.respond(OK, SUCCESS, result);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, clusterId.toString());
+        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, componentId.toString());
     }
 
-
     @POST
-    @Path("/clusters")
     @Timed
-    public Response addCluster(Cluster cluster) {
+    public Response addComponent(@PathParam("clusterId") Long clusterId, Component component) {
         try {
-            Cluster createdCluster = catalogService.addCluster(cluster);
-            return WSUtils.respond(CREATED, SUCCESS, createdCluster);
+            Component createdComponent = catalogService.addComponent(clusterId, component);
+            return WSUtils.respond(CREATED, SUCCESS, createdComponent);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
     }
 
     @DELETE
-    @Path("/clusters/{id}")
+    @Path("/{id}")
     @Timed
-    public Response removeCluster(@PathParam("id") Long clusterId) {
+    public Response removeComponent(@PathParam("id") Long componentId) {
         try {
-            Cluster removedCluster = catalogService.removeCluster(clusterId);
-            if (removedCluster != null) {
-                return WSUtils.respond(OK, SUCCESS, removedCluster);
+            Component removeComponent = catalogService.removeComponent(componentId);
+            if (removeComponent != null) {
+                return WSUtils.respond(OK, SUCCESS, removeComponent);
             } else {
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, clusterId.toString());
+                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, componentId.toString());
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -108,15 +114,15 @@ public class ClusterCatalogResource {
     }
 
     @PUT
-    @Path("/clusters/{id}")
+    @Path("/{id}")
     @Timed
-    public Response addOrUpdateCluster(@PathParam("id") Long clusterId, Cluster cluster) {
+    public Response addOrUpdateComponent(@PathParam("clusterId") Long clusterId,
+                                         @PathParam("id") Long componentId, Component component) {
         try {
-            Cluster newCluster = catalogService.addOrUpdateCluster(clusterId, cluster);
-            return WSUtils.respond(OK, SUCCESS, newCluster);
+            Component newComponent = catalogService.addOrUpdateComponent(clusterId, componentId, component);
+            return WSUtils.respond(OK, SUCCESS, newComponent);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
     }
-
 }

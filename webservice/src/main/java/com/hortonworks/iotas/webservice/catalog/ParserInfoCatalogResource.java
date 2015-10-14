@@ -1,4 +1,4 @@
-package com.hortonworks.iotas.webservice;
+package com.hortonworks.iotas.webservice.catalog;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,6 +7,7 @@ import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.util.JarStorage;
 import com.hortonworks.iotas.util.ReflectionHelper;
+import com.hortonworks.iotas.webservice.IotasConfiguration;
 import com.hortonworks.iotas.webservice.util.WSUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;

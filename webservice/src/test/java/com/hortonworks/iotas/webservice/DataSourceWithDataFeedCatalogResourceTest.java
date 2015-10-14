@@ -4,7 +4,8 @@ import com.hortonworks.iotas.catalog.CatalogResponse;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.service.CatalogService;
-import com.hortonworks.iotas.webservice.pojo.DataSourceInfo;
+import com.hortonworks.iotas.webservice.catalog.DataSourceWithDataFeedCatalogResource;
+import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
@@ -37,7 +38,7 @@ public class DataSourceWithDataFeedCatalogResourceTest {
     public void testAddDataSourceWithDataFeed() throws Exception {
         final DataSource dataSource = createDataSource();
         final DataFeed dataFeed = createDataFeed(dataSource.getDataSourceId());
-        final DataSourceInfo dataSourceInfo = new DataSourceInfo(dataSource, dataFeed);
+        final DataSourceDto dataSourceDto = new DataSourceDto(dataSource, dataFeed);
 
         new Expectations() {
             {
@@ -49,18 +50,18 @@ public class DataSourceWithDataFeedCatalogResourceTest {
             }
         };
 
-        CatalogResponse catalogResponse = (CatalogResponse) dataSourceWithDataFeedCatalogResource.addDataSourceWithDataFeed(dataSourceInfo).getEntity();
+        CatalogResponse catalogResponse = (CatalogResponse) dataSourceWithDataFeedCatalogResource.addDataSourceWithDataFeed(dataSourceDto).getEntity();
         assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), catalogResponse.getResponseCode());
-        assertEquals(dataSourceInfo, catalogResponse.getEntity());
+        assertEquals(dataSourceDto, catalogResponse.getEntity());
     }
 
     @Test
     public void testAddInvalidDataSourceWithDataFeed() throws Exception {
         final DataSource dataSource = new DataSource();
         final DataFeed dataFeed = new DataFeed();
-        final DataSourceInfo dataSourceInfo = new DataSourceInfo(dataSource, dataFeed);
+        final DataSourceDto dataSourceDto = new DataSourceDto(dataSource, dataFeed);
 
-        CatalogResponse catalogResponse = (CatalogResponse) dataSourceWithDataFeedCatalogResource.addDataSourceWithDataFeed(dataSourceInfo).getEntity();
+        CatalogResponse catalogResponse = (CatalogResponse) dataSourceWithDataFeedCatalogResource.addDataSourceWithDataFeed(dataSourceDto).getEntity();
         assertEquals(CatalogResponse.ResponseMessage.BAD_REQUEST_PARAM_MISSING.getCode(), catalogResponse.getResponseCode());
     }
 
@@ -68,7 +69,7 @@ public class DataSourceWithDataFeedCatalogResourceTest {
     public void testAddDataSourceWithDataFeedWithException() throws Exception {
         final DataSource dataSource = createDataSource();
         final DataFeed dataFeed = createDataFeed(dataSource.getDataSourceId());
-        final DataSourceInfo dataSourceInfo = new DataSourceInfo(dataSource, dataFeed);
+        final DataSourceDto dataSourceDto = new DataSourceDto(dataSource, dataFeed);
         new Expectations() {
             {
                 mockCatalogService.addDataSource(dataSource);times=1;
@@ -79,7 +80,7 @@ public class DataSourceWithDataFeedCatalogResourceTest {
             }
         };
 
-        CatalogResponse catalogResponse = (CatalogResponse) dataSourceWithDataFeedCatalogResource.addDataSourceWithDataFeed(dataSourceInfo).getEntity();
+        CatalogResponse catalogResponse = (CatalogResponse) dataSourceWithDataFeedCatalogResource.addDataSourceWithDataFeed(dataSourceDto).getEntity();
         assertEquals(CatalogResponse.ResponseMessage.EXCEPTION.getCode(), catalogResponse.getResponseCode());
     }
 
