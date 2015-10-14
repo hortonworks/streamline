@@ -1,5 +1,7 @@
 package com.hortonworks.iotas.storage;
 
+import com.hortonworks.iotas.storage.exception.StorageException;
+
 import java.util.Collection;
 import java.util.List;
 

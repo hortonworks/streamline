@@ -18,12 +18,12 @@
 package com.hortonworks.iotas.storage.impl.memory;
 
 
-import com.hortonworks.iotas.storage.AlreadyExistsException;
 import com.hortonworks.iotas.storage.PrimaryKey;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
-import com.hortonworks.iotas.storage.StorageException;
 import com.hortonworks.iotas.storage.StorageManager;
+import com.hortonworks.iotas.storage.exception.AlreadyExistsException;
+import com.hortonworks.iotas.storage.exception.StorageException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;

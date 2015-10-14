@@ -11,15 +11,14 @@ import com.hortonworks.iotas.catalog.DataStream;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.storage.DataSourceSubType;
 import com.hortonworks.iotas.storage.StorableKey;
-import com.hortonworks.iotas.storage.StorageException;
 import com.hortonworks.iotas.storage.StorageManager;
+import com.hortonworks.iotas.storage.exception.StorageException;
 import com.hortonworks.iotas.util.CoreUtils;
 import com.hortonworks.iotas.util.DataStreamActions;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import com.hortonworks.iotas.util.DataStreamLayoutValidator;
