@@ -156,7 +156,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            </dependency>
+            <dependency>
                 <groupId>org.apache.hbase</groupId>
                 <artifactId>hbase-client</artifactId>
                 <version>${hbase.version}</version>
@@ -188,6 +188,7 @@
                 <artifactId>junit</artifactId>
                 <version>${junit.version}</version>
                 <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
