@@ -96,24 +96,27 @@ public class DataFeed implements Storable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof DataFeed)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
 
         DataFeed dataFeed = (DataFeed) o;
 
-        if (!dataFeedId.equals(dataFeed.dataFeedId)) return false;
-        if (!dataSourceId.equals(dataFeed.dataSourceId)) return false;
-        if (!dataFeedName.equals(dataFeed.dataFeedName)) return false;
-        if (!parserId.equals(dataFeed.parserId)) return false;
-        return (endpoint.equals(dataFeed.endpoint));
+        if (dataFeedId != null ? !dataFeedId.equals(dataFeed.dataFeedId) : dataFeed.dataFeedId != null) return false;
+        if (dataSourceId != null ? !dataSourceId.equals(dataFeed.dataSourceId) : dataFeed.dataSourceId != null)
+            return false;
+        if (dataFeedName != null ? !dataFeedName.equals(dataFeed.dataFeedName) : dataFeed.dataFeedName != null)
+            return false;
+        if (parserId != null ? !parserId.equals(dataFeed.parserId) : dataFeed.parserId != null) return false;
+        return !(endpoint != null ? !endpoint.equals(dataFeed.endpoint) : dataFeed.endpoint != null);
+
     }
 
     @Override
     public int hashCode() {
-        int result = dataFeedId.hashCode();
-        result = 31 * result + dataSourceId.hashCode();
-        result = 31 * result + dataFeedName.hashCode();
-        result = 31 * result + parserId.hashCode();
-        result = 31 * result + endpoint.hashCode();
+        int result = dataFeedId != null ? dataFeedId.hashCode() : 0;
+        result = 31 * result + (dataSourceId != null ? dataSourceId.hashCode() : 0);
+        result = 31 * result + (dataFeedName != null ? dataFeedName.hashCode() : 0);
+        result = 31 * result + (parserId != null ? parserId.hashCode() : 0);
+        result = 31 * result + (endpoint != null ? endpoint.hashCode() : 0);
         return result;
     }
 
