@@ -7,6 +7,8 @@ import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.Device;
 import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.catalog.ParserInfo;
+import com.hortonworks.iotas.catalog.DataStream;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.storage.DataSourceSubType;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageException;
@@ -19,6 +21,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import com.hortonworks.iotas.util.DataStreamLayoutValidator;
+import com.hortonworks.iotas.util.exception.BadDataStreamLayoutException;
+import com.hortonworks.iotas.util.JsonSchemaValidator;
+
+import java.io.IOException;
+import java.net.URL;
 
 /**
  * A service layer where we could put our business logic.
@@ -35,9 +43,11 @@ public class CatalogService {
     private static final String CLUSTER_NAMESPACE = new Cluster().getNameSpace();
     private static final String COMPONENT_NAMESPACE = new Component().getNameSpace();
     private static final String NOTIFIER_INFO_NAMESPACE = new NotifierInfo().getNameSpace();
+    private static final String DATA_STREAM_NAMESPACE = new DataStream()
+            .getNameSpace();
 
     private StorageManager dao;
-
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     public static class QueryParam {
         public final String name;
@@ -363,5 +373,69 @@ public class CatalogService {
         notifierInfo.setTimestamp(System.currentTimeMillis());
         this.dao.addOrUpdate(notifierInfo);
         return notifierInfo;
+    }
+
+    public Collection<DataStream> listDataStreams () {
+        Collection<DataStream> dataStreams = this.dao.list(DATA_STREAM_NAMESPACE);
+        return dataStreams;
+    }
+
+    public DataStream getDataStream (Long dataStreamId) {
+        DataStream ds = new DataStream();
+        ds.setDataStreamId(dataStreamId);
+        DataStream result = this.dao.get(ds.getStorableKey());
+        return result;
+    }
+
+    public DataStream addDataStream (DataStream dataStream) {
+        if (dataStream.getDataStreamId() == null) {
+            dataStream.setDataStreamId(this.dao.nextId(DATA_STREAM_NAMESPACE));
+        }
+        if (dataStream.getTimestamp() == null) {
+            dataStream.setTimestamp(System.currentTimeMillis());
+        }
+        this.dao.add(dataStream);
+        return dataStream;
+    }
+
+    public DataStream removeDataStream (Long dataStreamId) {
+        DataStream dataStream = new DataStream();
+        dataStream.setDataStreamId(dataStreamId);
+        return dao.remove(new StorableKey(DATA_STREAM_NAMESPACE, dataStream
+                .getPrimaryKey()));
+    }
+
+    public DataStream addOrUpdateDataStream (Long dataStreamId, DataStream
+            dataStream) {
+        dataStream.setDataStreamId(dataStreamId);
+        dataStream.setTimestamp(System.currentTimeMillis());
+        this.dao.addOrUpdate(dataStream);
+        return dataStream;
+    }
+
+    public DataStream isDataStreamLayoutValid (URL schema, Long dataStreamId)
+            throws BadDataStreamLayoutException {
+        DataStream ds = new DataStream();
+        ds.setDataStreamId(dataStreamId);
+        DataStream result = this.dao.get(ds.getStorableKey());
+        if (result != null) {
+            String json = result.getJson();
+            // first step is to validate agains json schema provided
+            try {
+                boolean isValidAsPerSchema = JsonSchemaValidator
+                        .isValidJsonAsPerSchema(schema, json);
+                if (!isValidAsPerSchema) {
+                    throw new BadDataStreamLayoutException("DataStream with id "
+                            + dataStreamId + " failed to validate against json " +
+                            "schema");
+                }
+            } catch (Exception e) {
+                throw new BadDataStreamLayoutException(e);
+            }
+            // if first step succeeds, proceed to other validations that
+            // cannot be covered using json schema
+            DataStreamLayoutValidator.validateDataStreamLayout(json, this.dao);
+        }
+        return result;
     }
 }
