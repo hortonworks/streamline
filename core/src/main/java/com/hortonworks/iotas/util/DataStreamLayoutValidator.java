@@ -16,6 +16,28 @@ import java.util.Set;
  * layout
  */
 public class DataStreamLayoutValidator {
+    public final static String JSON_KEY_CATALOG_ROOT_URL = "catalogRootUrl";
+    public final static String JSON_KEY_DATA_SOURCES = "dataSources";
+    public final static String JSON_KEY_UINAME = "uiname";
+    public final static String JSON_KEY_ID = "id";
+    public final static String JSON_KEY_TYPE = "type";
+    public final static String JSON_KEY_CONFIG = "config";
+    public final static String JSON_KEY_ZK_URL = "zkUrl";
+    public final static String JSON_KEY_TOPIC = "topic";
+    public final static String JSON_KEY_PROCESSORS = "processors";
+    public final static String JSON_KEY_DATA_SINKS = "dataSinks";
+    public final static String JSON_KEY_ROOT_DIR = "rootDir";
+    public final static String JSON_KEY_TABLE = "table";
+    public final static String JSON_KEY_COLUMN_FAMILY = "columnFamily";
+    public final static String JSON_KEY_ROW_KEY = "rowKey";
+    public final static String JSON_KEY_FS_URL = "fsUrl";
+    public final static String JSON_KEY_PATH = "path";
+    public final static String JSON_KEY_NAME = "name";
+    public final static String JSON_KEY_LINKS = "links";
+    public final static String JSON_KEY_FROM = "from";
+    public final static String JSON_KEY_TO = "to";
+
+
     public final static String ERR_MSG_UINAME_DUP = "Uiname %s is already " +
             "used by other component.";
     public final static String ERR_MSG_LINK_FROM = "Link from property %s " +
@@ -41,11 +63,12 @@ public class DataStreamLayoutValidator {
             "parameters missing for Data Source %s.";
     public static final String ERR_MSG_DATA_SINK_MISSING_CONFIG = "Config " +
             "parameters missing for Data Sink %s.";
-    private enum DataSourceType {
+
+    enum DataSourceType {
         KAFKA {
             boolean isValidConfig (Map config) {
-                String zkUrl = (String) config.get("zkUrl");
-                String topic = (String) config.get("topic");
+                String zkUrl = (String) config.get(JSON_KEY_ZK_URL);
+                String topic = (String) config.get(JSON_KEY_TOPIC);
                 if (StringUtils.isEmpty(zkUrl) || StringUtils.isEmpty(topic)) {
                     return false;
                 }
@@ -55,13 +78,23 @@ public class DataStreamLayoutValidator {
         abstract boolean isValidConfig (Map config);
     }
 
-    private enum DataSinkType {
+    enum ProcessorType {
+        RULE {
+            boolean isValidConfig (Map config) {
+                //TODO: Add rule related config check here
+                return true;
+            }
+        };
+        abstract boolean isValidConfig (Map config);
+    }
+
+    enum DataSinkType {
         HBASE {
             boolean isValidConfig (Map config) {
-                String rootDir = (String) config.get("rootDir");
-                String table = (String) config.get("table");
-                String columnFamily = (String) config.get("columnFamily");
-                String rowKey = (String) config.get("rowKey");
+                String rootDir = (String) config.get(JSON_KEY_ROOT_DIR);
+                String table = (String) config.get(JSON_KEY_TABLE);
+                String columnFamily = (String) config.get(JSON_KEY_COLUMN_FAMILY);
+                String rowKey = (String) config.get(JSON_KEY_ROW_KEY);
                 if (StringUtils.isEmpty(rootDir) || StringUtils.isEmpty
                         (table) || StringUtils.isEmpty(columnFamily) ||
                         StringUtils.isEmpty(rowKey)) {
@@ -72,9 +105,9 @@ public class DataStreamLayoutValidator {
         },
         HDFS {
             boolean isValidConfig (Map config) {
-                String fsUrl = (String) config.get("fsUrl");
-                String path = (String) config.get("path");
-                String name = (String) config.get("name");
+                String fsUrl = (String) config.get(JSON_KEY_FS_URL);
+                String path = (String) config.get(JSON_KEY_PATH);
+                String name = (String) config.get(JSON_KEY_NAME);
                 if (StringUtils.isEmpty(fsUrl) || StringUtils.isEmpty (path)
                         || StringUtils.isEmpty(name)) {
                     return false;
@@ -106,10 +139,11 @@ public class DataStreamLayoutValidator {
             Set<String> processorOutComponentKeys = new HashSet<String>();
             Set<String> linkFromComponentKeys = new HashSet<String>();
             Set<String> linkToComponentKeys = new HashSet<String>();
-            List<Map> dataSources = (List<Map>) jsonMap.get("dataSources");
+            List<Map> dataSources = (List<Map>) jsonMap.get(
+                    JSON_KEY_DATA_SOURCES);
             for (Map dataSource: dataSources) {
                 // data source name given by the user in UI
-                String dataSourceName = (String) dataSource.get("uiname");
+                String dataSourceName = (String) dataSource.get(JSON_KEY_UINAME);
                 if (componentKeys.contains(dataSourceName)) {
                     throw new BadDataStreamLayoutException(String.format
                             (ERR_MSG_UINAME_DUP, dataSourceName));
@@ -118,10 +152,10 @@ public class DataStreamLayoutValidator {
                 componentKeys.add(dataSourceName);
                 validateDataSource(dataSource, dao);
             }
-            List<Map> dataSinks = (List<Map>) jsonMap.get("dataSinks");
+            List<Map> dataSinks = (List<Map>) jsonMap.get(JSON_KEY_DATA_SINKS);
             for (Map dataSink: dataSinks) {
                 // data sink name given by the user in UI
-                String dataSinkName = (String) dataSink.get("uiname");
+                String dataSinkName = (String) dataSink.get(JSON_KEY_UINAME);
                 if (componentKeys.contains(dataSinkName)) {
                     throw new BadDataStreamLayoutException(String.format
                             (ERR_MSG_UINAME_DUP, dataSinkName));
@@ -130,10 +164,10 @@ public class DataStreamLayoutValidator {
                 componentKeys.add(dataSinkName);
                 validateDataSink(dataSink);
             }
-            List<Map> processors = (List<Map>) jsonMap.get("processors");
+            List<Map> processors = (List<Map>) jsonMap.get(JSON_KEY_PROCESSORS);
             for (Map processor: processors) {
                 // processor name given by the user in UI
-                String processorName = (String) processor.get("uiname");
+                String processorName = (String) processor.get(JSON_KEY_UINAME);
                 if (componentKeys.contains(processorName)) {
                     throw new BadDataStreamLayoutException(String.format
                             (ERR_MSG_UINAME_DUP, processorName));
@@ -142,10 +176,10 @@ public class DataStreamLayoutValidator {
                 componentKeys.add(processorName);
                 // presumption is all processor components are rules. might
                 // need to change later
-                List<Map> rules = (List<Map>) processor.get("config");
+                List<Map> rules = (List<Map>) processor.get(JSON_KEY_CONFIG);
                 for (Map rule: rules) {
                     // rule name given by the user in UI
-                    String ruleName = (String) rule.get("uiname");
+                    String ruleName = (String) rule.get(JSON_KEY_UINAME);
                     if (componentKeys.contains(ruleName)) {
                         throw new BadDataStreamLayoutException(String.format
                                 (ERR_MSG_UINAME_DUP, ruleName));
@@ -155,16 +189,17 @@ public class DataStreamLayoutValidator {
                     validateRule(rule, dao);
                 }
             }
-            List<Map> links = (List<Map>)  jsonMap.get("links");
+            List<Map> links = (List<Map>)  jsonMap.get(JSON_KEY_LINKS);
+            //TODO: may be add a cycle check for a link that involves processor
             for (Map link: links) {
                 // link name given by the user in UI
-                String linkName = (String) link.get("uiname");
+                String linkName = (String) link.get(JSON_KEY_UINAME);
                 if (componentKeys.contains(linkName)) {
                     throw new BadDataStreamLayoutException(String.format
                             (ERR_MSG_UINAME_DUP, linkName));
                 }
-                String linkFrom = (String) link.get("from");
-                String linkTo = (String) link.get("to");
+                String linkFrom = (String) link.get(JSON_KEY_FROM);
+                String linkTo = (String) link.get(JSON_KEY_TO);
                 if ((!dataSourceComponentKeys.contains(linkFrom) &&
                         !processorOutComponentKeys.contains(linkFrom)) ||
                         dataSinkComponentKeys.contains(linkFrom) ||
@@ -216,7 +251,7 @@ public class DataStreamLayoutValidator {
                                             StorageManager dao) throws
             BadDataStreamLayoutException {
 
-        Long dataSourceId = ((Integer) dataSource.get("id")).longValue();
+        Long dataSourceId = ((Integer) dataSource.get(JSON_KEY_ID)).longValue();
         DataSource ds = new DataSource();
         ds.setDataSourceId(dataSourceId);
         DataSource result = dao.get(ds.getStorableKey());
@@ -224,7 +259,7 @@ public class DataStreamLayoutValidator {
             throw new BadDataStreamLayoutException(String.format
                     (ERR_MSG_DATA_SOURCE_NOT_FOUND, dataSourceId.toString()));
         }
-        String dataSourceType = (String) dataSource.get("type");
+        String dataSourceType = (String) dataSource.get(JSON_KEY_TYPE);
         boolean isDataSourceTypeValid = false;
         DataSourceType matchedDst = null;
         // type of data source has to be one of predefiend enums
@@ -239,7 +274,7 @@ public class DataStreamLayoutValidator {
             throw new BadDataStreamLayoutException(String.format
                     (ERR_MSG_DATA_SOURCE_INVALID_TYPE, dataSourceType));
         }
-        Map config = (Map) dataSource.get("config");
+        Map config = (Map) dataSource.get(JSON_KEY_CONFIG);
         // for the matched enum it has to have all the config properties needed
         if (!matchedDst.isValidConfig(config)) {
             throw new BadDataStreamLayoutException(String.format
@@ -249,7 +284,7 @@ public class DataStreamLayoutValidator {
 
     private static void validateDataSink (Map dataSink) throws
             BadDataStreamLayoutException {
-        String dataSinkType = (String) dataSink.get("type");
+        String dataSinkType = (String) dataSink.get(JSON_KEY_TYPE);
         boolean isDataSinkTypeValid = false;
         DataSinkType matchedDst = null;
         // type of data sink has to be one of predefiend enums
@@ -264,7 +299,7 @@ public class DataStreamLayoutValidator {
             throw new BadDataStreamLayoutException(String.format
                     (ERR_MSG_DATA_SINK_INVALID_TYPE, dataSinkType));
         }
-        Map config = (Map) dataSink.get("config");
+        Map config = (Map) dataSink.get(JSON_KEY_CONFIG);
         // for the matched enum it has to have all the config properties needed
         if (!matchedDst.isValidConfig(config)) {
             throw new BadDataStreamLayoutException(String.format

@@ -25,7 +25,6 @@ import com.hortonworks.iotas.util.DataStreamLayoutValidator;
 import com.hortonworks.iotas.util.exception.BadDataStreamLayoutException;
 import com.hortonworks.iotas.util.JsonSchemaValidator;
 
-import java.io.IOException;
 import java.net.URL;
 
 /**
