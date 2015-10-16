@@ -101,7 +101,7 @@ public class DataSourceWithDataFeedCatalogResourceTest {
         DataFeed dataFeed = new DataFeed();
         dataFeed.setDataSourceId(dataSourceId);
         dataFeed.setDataFeedName("test data feed");
-        dataFeed.setEndpoint("test-endpoint");
+        dataFeed.setType("KAFKA");
         dataFeed.setParserId(1l);
         return dataFeed;
     }

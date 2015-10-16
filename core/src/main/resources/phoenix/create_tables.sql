@@ -2,3 +2,6 @@ CREATE TABLE IF NOT EXISTS datasources ("dataSourceId" BIGINT, "dataSourceName" 
 CREATE TABLE IF NOT EXISTS devices ("deviceId" VARCHAR , "version" BIGINT , "dataSourceId" BIGINT , CONSTRAINT pk PRIMARY KEY ("dataSourceId"))
 CREATE TABLE IF NOT EXISTS parser_info ("parserId" BIGINT NOT NULL, "parserName" VARCHAR(256) ,"version" BIGINT, "className" VARCHAR , "jarStoragePath" VARCHAR ,"parserSchema" VARCHAR, "timestamp"  BIGINT, CONSTRAINT pk PRIMARY KEY ("parserId"))
 CREATE TABLE IF NOT EXISTS datafeeds ("dataFeedId" BIGINT NOT NULL, "dataSourceId" BIGINT , "dataFeedName" VARCHAR(256) , "description" VARCHAR, "tags" VARCHAR, "parserId" BIGINT , "endpoint" VARCHAR , CONSTRAINT pk PRIMARY KEY ("dataFeedId"))
+CREATE TABLE IF NOT EXISTS datafeeds ("dataFeedId" BIGINT NOT NULL, "dataSourceId" BIGINT , "dataFeedName" VARCHAR(256) , "description" VARCHAR, "tags" VARCHAR, "parserId" BIGINT , "type" VARCHAR , CONSTRAINT pk PRIMARY KEY ("dataFeedId"))
+CREATE TABLE IF NOT EXISTS topologies ("id" BIGINT NOT NULL, "name" VARCHAR (256), "config" VARCHAR, "timestamp"  BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
+CREATE TABLE IF NOT EXISTS topology_components ("id" BIGINT NOT NULL, "name" VARCHAR(256), "type" VARCHAR, "subType" VARCHAR, "streamingEngine" VARCHAR, "config" VARCHAR, "transformationClass" VARCHAR, "timestamp"  BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
