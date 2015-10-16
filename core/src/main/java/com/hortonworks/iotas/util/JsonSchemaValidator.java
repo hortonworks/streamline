@@ -6,15 +6,9 @@ import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import com.github.fge.jsonschema.main.JsonSchema;
 import com.github.fge.jsonschema.main.JsonSchemaFactory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 
-/**
- * Created by pshah on 9/30/15.
- */
 public class JsonSchemaValidator {
     /**
      *

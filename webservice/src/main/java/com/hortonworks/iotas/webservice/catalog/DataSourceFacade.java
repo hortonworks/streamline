@@ -68,7 +68,7 @@ public class DataSourceFacade {
         DataFeed dataFeed = new DataFeed();
         dataFeed.setDataFeedName(dataSourceDto.getDataFeedName());
         dataFeed.setDataSourceId(dataSourceDto.getDataSourceId());
-        dataFeed.setEndpoint(dataSourceDto.getEndpoint());
+        dataFeed.setType(dataSourceDto.getDataFeedType());
         dataFeed.setParserId(dataSourceDto.getParserId());
 
         return dataFeed;

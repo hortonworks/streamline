@@ -11,8 +11,10 @@ import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.catalog.ParserInfo;
+import com.hortonworks.iotas.catalog.Topology;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.test.IntegrationTest;
+import com.hortonworks.iotas.topology.TopologyComponent;
 import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
 import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit.DropwizardAppRule;
@@ -27,6 +29,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -64,6 +67,28 @@ public class RestIntegrationTest {
     }
 
     /**
+     * A Test element holder class for testing resources that support a get
+     * with query params
+     */
+    private class QueryParamsResourceTestElement {
+        final List<Object> resourcesToPost; // resources that will be posted to postUrl
+        final String postUrl; // Rest Url to post.
+        // get urls with different query paramters. To be called before
+        // and after post
+        final List<String> getUrls;
+        // expected results for each get url above after the post. should be
+        // same length as getUrls
+        final List<List<Object>> getResults;
+
+        public QueryParamsResourceTestElement (List<Object> resourcesToPost, String postUrl, List<String> getUrls, List<List<Object>> getResults) {
+            this.resourcesToPost = resourcesToPost;
+            this.postUrl = postUrl;
+            this.getUrls = getUrls;
+            this.getResults = getResults;
+        }
+    }
+
+    /**
      * List of all things that will be tested
      */
     private Collection<ResourceTestElement> resourcesToTest = Lists.newArrayList(
@@ -71,10 +96,12 @@ public class RestIntegrationTest {
             new ResourceTestElement(createDataSource(1l, "testDataSource"), createDataSource(1l, "testDataSourcePut"), "1", rootUrl + "deprecated/datasources"),
             new ResourceTestElement(createClusterInfo(1l, "testCluster"), createClusterInfo(1l, "testClusterPut"), "1", rootUrl + "clusters"),
             new ResourceTestElement(createNotifierInfo(1l, "testNotifier"), createNotifierInfo(1l, "testNotifierPut"), "1", rootUrl + "notifiers"),
-
-            new ResourceTestElement(createDataSourceDto(1l, "testDataSourceWithDataFeed:" + System.currentTimeMillis()),
-                    createDataSourceDto(1l, "testDataSourceWithDataFeedPut:" + System.currentTimeMillis()), "1", rootUrl + "datasources")
-
+            new ResourceTestElement(createDataSourceDto(1l, "testDataSourceWithDataFeed:" + System.currentTimeMillis()), createDataSourceDto(1l, "testDataSourceWithDataFeedPut:" + System.currentTimeMillis()), "1", rootUrl + "datasources"),
+            new ResourceTestElement(createTopology(1l, "iotasTopology"), createTopology(1l, "iotasTopologyPut"), "1", rootUrl + "topologies"),
+            new ResourceTestElement(createTopologyComponent(1l, "kafkaSpoutComponent", TopologyComponent.TopologyComponentType.SOURCE, "KAFKA"), createTopologyComponent(1l, "kafkaSpoutComponentPut", TopologyComponent.TopologyComponentType.SOURCE, "KAFKA") , "1", rootUrl + "system/componentdefinitions/SOURCE"),
+            new ResourceTestElement(createTopologyComponent(2l, "parserProcessor", TopologyComponent .TopologyComponentType.PROCESSOR, "PARSER"), createTopologyComponent(2l, "parserProcessorPut", TopologyComponent.TopologyComponentType.PROCESSOR, "PARSER"), "2", rootUrl + "system/componentdefinitions/PROCESSOR"),
+            new ResourceTestElement(createTopologyComponent(3l, "hbaseSink", TopologyComponent.TopologyComponentType.SINK, "HBASE"), createTopologyComponent(3l, "hbaseSinkPut", TopologyComponent.TopologyComponentType.SINK, "HBASE"), "3", rootUrl + "system/componentdefinitions/SINK"),
+            new ResourceTestElement(createTopologyComponent(4l, "shuffleGroupingLink", TopologyComponent.TopologyComponentType.LINK, "SHUFFLE"), createTopologyComponent(4l, "shuffleGroupingLinkPut", TopologyComponent.TopologyComponentType.LINK, "SHUFFLE"), "4", rootUrl + "system/componentdefinitions/LINK")
             // parser is commented as parser takes a jar as input along with the parserInfo instance and so it needs a multipart request.
             //new ResourceTestElement(createParserInfo(1l, "testParser"), createParserInfo(1l, "testParserPut"), "1", rootUrl + "parsers")
     );
@@ -178,6 +205,106 @@ public class RestIntegrationTest {
 
     }
 
+    /*
+    Test the get request for topology components. Currently we only support
+    four types of topology components. SOURCE, PROCESSOR, LINK AND SINK
+     */
+    @Test
+    public void testTopologyComponentTypes () throws Exception {
+        Client client = ClientBuilder.newClient(new ClientConfig());
+
+        String url = rootUrl + "system/componentdefinitions";
+
+        String response = client.target(url).request().get(String.class);
+        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+        Object expected = Arrays.asList(TopologyComponent.TopologyComponentType.values());
+        Object actual = getEntities(response, TopologyComponent.TopologyComponentType.class);
+        Assert.assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testTopologyComponentsForTypeWithFilters () throws Exception {
+        String prefixUrl = rootUrl + "system/componentdefinitions/";
+        String[] postUrls = {
+                prefixUrl + TopologyComponent.TopologyComponentType.SOURCE,
+                prefixUrl + TopologyComponent.TopologyComponentType.PROCESSOR,
+                prefixUrl + TopologyComponent.TopologyComponentType.SINK,
+                prefixUrl + TopologyComponent.TopologyComponentType.LINK
+        };
+        List<List<Object>> resourcesToPost = new ArrayList<List<Object>>();
+        Object source = createTopologyComponent(1l, "kafkaSpoutComponent", TopologyComponent.TopologyComponentType.SOURCE, "KAFKA");
+        Object parser = createTopologyComponent(2l, "parserProcessor", TopologyComponent.TopologyComponentType.PROCESSOR, "PARSER");
+        Object sink = createTopologyComponent(3l, "hbaseSink", TopologyComponent.TopologyComponentType.SINK, "HBASE");
+        Object link = createTopologyComponent(4l, "shuffleGroupingLink", TopologyComponent.TopologyComponentType.LINK, "SHUFFLE");
+        List<Object> sourcesPosted = Arrays.asList(source);
+        List<Object> processorsPosted = Arrays.asList(parser);
+        List<Object> sinksPosted = Arrays.asList(sink);
+        List<Object> linksPosted = Arrays.asList(link);
+        resourcesToPost.add(sourcesPosted);
+        resourcesToPost.add(processorsPosted);
+        resourcesToPost.add(sinksPosted);
+        resourcesToPost.add(linksPosted);
+        String prefixQueryParam = "?streamingEngine=STORM";
+        List<List<String>> getUrlQueryParms = new ArrayList<List<String>>();
+        getUrlQueryParms.add(Arrays.asList(prefixQueryParam + "&subType=KAFKA"));
+        getUrlQueryParms.add(Arrays.asList(prefixQueryParam + "&subType=PARSER"));
+        getUrlQueryParms.add(Arrays.asList(prefixQueryParam + "&subType=HBASE"));
+        getUrlQueryParms.add(Arrays.asList(prefixQueryParam + "&subType=SHUFFLE"));
+        List<List<List<Object>>> getResults = new ArrayList<List<List<Object>>>();
+        getResults.add(Arrays.asList(sourcesPosted));
+        getResults.add(Arrays.asList(processorsPosted));
+        getResults.add(Arrays.asList(sinksPosted));
+        getResults.add(Arrays.asList(linksPosted));
+        List<QueryParamsResourceTestElement> testElements = new ArrayList<QueryParamsResourceTestElement>();
+        for (int i = 0; i < postUrls.length; ++i) {
+            List<String> getUrls = new ArrayList<String>();
+            for (String queryParam: getUrlQueryParms.get(i)) {
+                getUrls.add(postUrls[i] + queryParam);
+            }
+            testElements.add(new QueryParamsResourceTestElement
+                    (resourcesToPost.get(i), postUrls[i], getUrls, getResults
+                            .get(i)));
+        }
+        this.testResourcesWithQueryParams(testElements);
+    }
+
+    /**
+     * For each QueryParamsResourceTestElement it first try to send all get
+     * requests and verifies the response. It then loads all resources via post
+     * and executes get requests to match them with expected results
+     * @param queryParamsResources
+     * @throws Exception
+     */
+    public void testResourcesWithQueryParams (List<QueryParamsResourceTestElement> queryParamsResources) throws Exception {
+        Client client = ClientBuilder.newClient(new ClientConfig());
+        String response;
+        for (QueryParamsResourceTestElement qpte: queryParamsResources) {
+            // all gets first should return no entities
+            for (String getUrl: qpte.getUrls) {
+                try {
+                    client.target(getUrl).request().get(String.class);
+                    Assert.fail("Should have thrown NotFoundException.");
+                } catch (NotFoundException e) {
+                    response = e.getResponse().readEntity(String.class);
+                    Assert.assertEquals(CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER.getCode(), getResponseCode(response));
+                }
+            }
+            // post the resources now
+            for (Object resource: qpte.resourcesToPost) {
+                response = client.target(qpte.postUrl).request().post(Entity.json (resource), String.class);
+                Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+            }
+
+            // send get requests and match the response with expected results
+            for (int i = 0; i < qpte.getUrls.size(); ++i) {
+                String getUrl = qpte.getUrls.get(i);
+                List<Object> expectedResults = qpte.getResults.get(i);
+                response = client.target(getUrl).request().get(String.class);
+                Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+                Assert.assertEquals(expectedResults, getEntities(response, expectedResults.get(i).getClass()));
+            }
+        }
+    }
 
     /**
      * Get response code from the response string.
@@ -252,7 +379,7 @@ public class RestIntegrationTest {
         df.setDataFeedId(id);
         df.setDataSourceId(1L);
         df.setDataFeedName(name);
-        df.setEndpoint("kafka://host:port/topic");
+        df.setType("kafka://host:port/topic");
         df.setParserId(id);
         return df;
     }
@@ -271,7 +398,7 @@ public class RestIntegrationTest {
         df.setDataFeedId(System.currentTimeMillis());
         df.setDataSourceId(datasourceId);
         df.setDataFeedName(feedName);
-        df.setEndpoint("kafka://host:port/topic");
+        df.setType("KAFKA");
         df.setParserId(datasourceId);
         return df;
     }
@@ -320,5 +447,30 @@ public class RestIntegrationTest {
         notifierInfo.setJarFileName(name);
         notifierInfo.setNotifierName(name);
         return notifierInfo;
+    }
+
+    private TopologyComponent createTopologyComponent (Long id, String name,
+                                                       TopologyComponent
+                                                               .TopologyComponentType topologyComponentType, String subType) {
+        TopologyComponent topologyComponent = new TopologyComponent();
+        topologyComponent.setId(id);
+        topologyComponent.setName(name);
+        topologyComponent.setType(topologyComponentType);
+        topologyComponent.setStreamingEngine("STORM");
+        topologyComponent.setConfig("{}");
+        topologyComponent.setSubType(subType);
+        topologyComponent.setTimestamp(System.currentTimeMillis());
+        topologyComponent.setTransformationClass("com.hortonworks.iotas.topology.storm.KafkaSpoutFluxComponent");
+        return topologyComponent;
+
+    }
+
+    private Topology createTopology (Long id, String name) {
+        Topology topology = new Topology();
+        topology.setId(id);
+        topology.setName(name);
+        topology.setConfig("{}");
+        topology.setTimestamp(System.currentTimeMillis());
+        return topology;
     }
 }
