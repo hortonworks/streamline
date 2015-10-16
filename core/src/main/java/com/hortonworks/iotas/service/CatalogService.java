@@ -21,6 +21,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import com.hortonworks.iotas.util.DataStreamLayoutValidator;
+import com.hortonworks.iotas.util.exception.BadDataStreamLayoutException;
+import com.hortonworks.iotas.util.JsonSchemaValidator;
+
+import java.io.IOException;
+import java.net.URL;
 
 /**
  * A service layer where we could put our business logic.
@@ -377,9 +383,7 @@ public class CatalogService {
     public DataStream getDataStream (Long dataStreamId) {
         DataStream ds = new DataStream();
         ds.setDataStreamId(dataStreamId);
-        DataStream result = this.dao.get(new StorableKey
-                (DATA_STREAM_NAMESPACE, ds
-                .getPrimaryKey()));
+        DataStream result = this.dao.get(ds.getStorableKey());
         return result;
     }
 
@@ -401,12 +405,37 @@ public class CatalogService {
                 .getPrimaryKey()));
     }
 
-   public DataStream addOrUpdateDataStream (Long dataStreamId, DataStream
-           dataStream) {
+    public DataStream addOrUpdateDataStream (Long dataStreamId, DataStream
+            dataStream) {
         dataStream.setDataStreamId(dataStreamId);
         dataStream.setTimestamp(System.currentTimeMillis());
         this.dao.addOrUpdate(dataStream);
         return dataStream;
-   }
+    }
 
+    public DataStream isDataStreamLayoutValid (URL schema, Long dataStreamId)
+            throws BadDataStreamLayoutException {
+        DataStream ds = new DataStream();
+        ds.setDataStreamId(dataStreamId);
+        DataStream result = this.dao.get(ds.getStorableKey());
+        if (result != null) {
+            String json = result.getJson();
+            // first step is to validate agains json schema provided
+            try {
+                boolean isValidAsPerSchema = JsonSchemaValidator
+                        .isValidJsonAsPerSchema(schema, json);
+                if (!isValidAsPerSchema) {
+                    throw new BadDataStreamLayoutException("DataStream with id "
+                            + dataStreamId + " failed to validate against json " +
+                            "schema");
+                }
+            } catch (Exception e) {
+                throw new BadDataStreamLayoutException(e);
+            }
+            // if first step succeeds, proceed to other validations that
+            // cannot be covered using json schema
+            DataStreamLayoutValidator.validateDataStreamLayout(json, this.dao);
+        }
+        return result;
+    }
 }
