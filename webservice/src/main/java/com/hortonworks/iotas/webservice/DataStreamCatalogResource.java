@@ -4,6 +4,8 @@ import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.DataStream;
 import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.util.DataStreamLayoutValidator;
+import com.hortonworks.iotas.util.exception.BadDataStreamLayoutException;
 import com.hortonworks.iotas.webservice.util.WSUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -14,6 +16,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.crypto.Data;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -25,6 +28,8 @@ import static javax.ws.rs.core.Response.Status.*;
 @Produces(MediaType.APPLICATION_JSON)
 public class DataStreamCatalogResource {
     private CatalogService catalogService;
+    private final URL SCHEMA = Thread.currentThread().getContextClassLoader()
+            .getResource("assets/schemas/datastream.json");
 
     public DataStreamCatalogResource(CatalogService catalogService) {
         this.catalogService = catalogService;
@@ -119,6 +124,55 @@ public class DataStreamCatalogResource {
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
+    }
+
+    @POST
+    @Path("/datastreams/{id}/actions/validate")
+    @Timed
+    public Response validateDataStream (@PathParam("id") Long dataStreamId) {
+        try {
+            DataStream result = catalogService.getDataStream(dataStreamId);
+            if (result != null) {
+                catalogService.validateDataStream(SCHEMA, dataStreamId);
+                return WSUtils.respond(OK, SUCCESS, result);
+            }
+        } catch (BadDataStreamLayoutException ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, dataStreamId.toString());
+    }
+
+    @POST
+    @Path("/datastreams/{id}/actions/deploy")
+    @Timed
+    public Response deployDataStream (@PathParam("id") Long dataStreamId) {
+        try {
+            DataStream result = catalogService.getDataStream(dataStreamId);
+            if (result != null) {
+                catalogService.validateDataStream(SCHEMA, dataStreamId);
+                catalogService.deployDataStream(result);
+                return WSUtils.respond(OK, SUCCESS, result);
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, dataStreamId.toString());
+    }
+
+    @POST
+    @Path("/datastreams/{id}/actions/kill")
+    @Timed
+    public Response killDataStream (@PathParam("id") Long dataStreamId) {
+        try {
+            DataStream result = catalogService.getDataStream(dataStreamId);
+            if (result != null) {
+                catalogService.killDataStream(result);
+                return WSUtils.respond(OK, SUCCESS, result);
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, dataStreamId.toString());
     }
 
 }

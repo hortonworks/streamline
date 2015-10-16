@@ -13,13 +13,11 @@ public interface DataStreamActions {
     // Any one time initialization is done here
     public void init (Map<String, String> conf);
 
-    // Generate the artifact based on the underlying streaming engine
-    public void createDataStreamArtifact (DataStream dataStream) throws IOException;
 
-    // Submit or deploy the artifact generated using the underlying streaming
+    // Deploy the artifact generated using the underlying streaming
     // engine
-    //public void submitDataStreamArtifact (Long dataStreamId);
+    public void deploy (DataStream dataStream) throws Exception;
 
-    //Kill the artifact that was submitted using submitDataStreamArtifact
-    //public void killDataStreamArtifact (Long dataStreamId);
+    //Kill the artifact that was deployed using deploy
+    public void kill (DataStream dataStream) throws Exception;
 }

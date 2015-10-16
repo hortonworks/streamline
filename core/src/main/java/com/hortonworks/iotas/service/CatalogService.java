@@ -14,6 +14,7 @@ import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageException;
 import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.util.CoreUtils;
+import com.hortonworks.iotas.util.DataStreamActions;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
@@ -46,7 +47,7 @@ public class CatalogService {
             .getNameSpace();
 
     private StorageManager dao;
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private DataStreamActions dataStreamActions;
 
     public static class QueryParam {
         public final String name;
@@ -92,8 +93,9 @@ public class CatalogService {
         }
     }
 
-    public CatalogService(StorageManager dao) {
+    public CatalogService(StorageManager dao, DataStreamActions dataStreamActions) {
         this.dao = dao;
+        this.dataStreamActions = dataStreamActions;
     }
 
     private String getNamespaceForDataSourceType(DataSource.Type dataSourceType) {
@@ -153,7 +155,7 @@ public class CatalogService {
             dataSource.setTimestamp(System.currentTimeMillis());
         }
         DataSourceSubType subType = CoreUtils.jsonToStorable(dataSource.getTypeConfig(),
-                                                             getClassForDataSourceType(dataSource.getType()));
+                getClassForDataSourceType(dataSource.getType()));
         subType.setDataSourceId(dataSource.getDataSourceId());
         this.dao.add(dataSource);
         this.dao.add(subType);
@@ -412,24 +414,25 @@ public class CatalogService {
         return dataStream;
     }
 
-    public DataStream isDataStreamLayoutValid (URL schema, Long dataStreamId)
+    public DataStream validateDataStream (URL schema, Long dataStreamId)
             throws BadDataStreamLayoutException {
         DataStream ds = new DataStream();
         ds.setDataStreamId(dataStreamId);
         DataStream result = this.dao.get(ds.getStorableKey());
+        boolean isValidAsPerSchema;
         if (result != null) {
             String json = result.getJson();
-            // first step is to validate agains json schema provided
             try {
-                boolean isValidAsPerSchema = JsonSchemaValidator
+                // first step is to validate agains json schema provided
+                isValidAsPerSchema = JsonSchemaValidator
                         .isValidJsonAsPerSchema(schema, json);
-                if (!isValidAsPerSchema) {
-                    throw new BadDataStreamLayoutException("DataStream with id "
-                            + dataStreamId + " failed to validate against json " +
-                            "schema");
-                }
             } catch (Exception e) {
                 throw new BadDataStreamLayoutException(e);
+            }
+            if (!isValidAsPerSchema) {
+                throw new BadDataStreamLayoutException("DataStream with id "
+                        + dataStreamId + " failed to validate against json "
+                        + "schema");
             }
             // if first step succeeds, proceed to other validations that
             // cannot be covered using json schema
@@ -437,4 +440,15 @@ public class CatalogService {
         }
         return result;
     }
+
+    public void deployDataStream (DataStream dataStream) throws Exception {
+        this.dataStreamActions.deploy(dataStream);
+        return;
+    }
+
+    public void killDataStream (DataStream dataStream) throws Exception {
+        this.dataStreamActions.kill(dataStream);
+        return;
+    }
+
 }
