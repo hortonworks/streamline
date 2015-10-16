@@ -71,9 +71,11 @@ public class DataSourceDto {
         type = dataSource.getType();
         typeConfig = dataSource.getTypeConfig();
 
-        dataFeedName = dataFeed.getDataFeedName();
-        parserId = dataFeed.getParserId();
-        endpoint = dataFeed.getEndpoint();
+        if (dataFeed != null) {
+            dataFeedName = dataFeed.getDataFeedName();
+            parserId = dataFeed.getParserId();
+            endpoint = dataFeed.getEndpoint();
+        }
 
     }
 
