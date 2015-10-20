@@ -7,11 +7,14 @@ import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.Device;
 import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.catalog.ParserInfo;
+import com.hortonworks.iotas.catalog.DataStream;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.storage.DataSourceSubType;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageException;
 import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.util.CoreUtils;
+import com.hortonworks.iotas.util.DataStreamActions;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
@@ -19,6 +22,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import com.hortonworks.iotas.util.DataStreamLayoutValidator;
+import com.hortonworks.iotas.util.exception.BadDataStreamLayoutException;
+import com.hortonworks.iotas.util.JsonSchemaValidator;
+
+import java.net.URL;
 
 /**
  * A service layer where we could put our business logic.
@@ -35,9 +43,11 @@ public class CatalogService {
     private static final String CLUSTER_NAMESPACE = new Cluster().getNameSpace();
     private static final String COMPONENT_NAMESPACE = new Component().getNameSpace();
     private static final String NOTIFIER_INFO_NAMESPACE = new NotifierInfo().getNameSpace();
+    private static final String DATA_STREAM_NAMESPACE = new DataStream()
+            .getNameSpace();
 
     private StorageManager dao;
-
+    private DataStreamActions dataStreamActions;
 
     public static class QueryParam {
         public final String name;
@@ -83,8 +93,9 @@ public class CatalogService {
         }
     }
 
-    public CatalogService(StorageManager dao) {
+    public CatalogService(StorageManager dao, DataStreamActions dataStreamActions) {
         this.dao = dao;
+        this.dataStreamActions = dataStreamActions;
     }
 
     private String getNamespaceForDataSourceType(DataSource.Type dataSourceType) {
@@ -144,7 +155,7 @@ public class CatalogService {
             dataSource.setTimestamp(System.currentTimeMillis());
         }
         DataSourceSubType subType = CoreUtils.jsonToStorable(dataSource.getTypeConfig(),
-                                                             getClassForDataSourceType(dataSource.getType()));
+                getClassForDataSourceType(dataSource.getType()));
         subType.setDataSourceId(dataSource.getDataSourceId());
         this.dao.add(dataSource);
         this.dao.add(subType);
@@ -364,4 +375,80 @@ public class CatalogService {
         this.dao.addOrUpdate(notifierInfo);
         return notifierInfo;
     }
+
+    public Collection<DataStream> listDataStreams () {
+        Collection<DataStream> dataStreams = this.dao.list(DATA_STREAM_NAMESPACE);
+        return dataStreams;
+    }
+
+    public DataStream getDataStream (Long dataStreamId) {
+        DataStream ds = new DataStream();
+        ds.setDataStreamId(dataStreamId);
+        DataStream result = this.dao.get(ds.getStorableKey());
+        return result;
+    }
+
+    public DataStream addDataStream (DataStream dataStream) {
+        if (dataStream.getDataStreamId() == null) {
+            dataStream.setDataStreamId(this.dao.nextId(DATA_STREAM_NAMESPACE));
+        }
+        if (dataStream.getTimestamp() == null) {
+            dataStream.setTimestamp(System.currentTimeMillis());
+        }
+        this.dao.add(dataStream);
+        return dataStream;
+    }
+
+    public DataStream removeDataStream (Long dataStreamId) {
+        DataStream dataStream = new DataStream();
+        dataStream.setDataStreamId(dataStreamId);
+        return dao.remove(new StorableKey(DATA_STREAM_NAMESPACE, dataStream
+                .getPrimaryKey()));
+    }
+
+    public DataStream addOrUpdateDataStream (Long dataStreamId, DataStream
+            dataStream) {
+        dataStream.setDataStreamId(dataStreamId);
+        dataStream.setTimestamp(System.currentTimeMillis());
+        this.dao.addOrUpdate(dataStream);
+        return dataStream;
+    }
+
+    public DataStream validateDataStream (URL schema, Long dataStreamId)
+            throws BadDataStreamLayoutException {
+        DataStream ds = new DataStream();
+        ds.setDataStreamId(dataStreamId);
+        DataStream result = this.dao.get(ds.getStorableKey());
+        boolean isValidAsPerSchema;
+        if (result != null) {
+            String json = result.getJson();
+            try {
+                // first step is to validate agains json schema provided
+                isValidAsPerSchema = JsonSchemaValidator
+                        .isValidJsonAsPerSchema(schema, json);
+            } catch (Exception e) {
+                throw new BadDataStreamLayoutException(e);
+            }
+            if (!isValidAsPerSchema) {
+                throw new BadDataStreamLayoutException("DataStream with id "
+                        + dataStreamId + " failed to validate against json "
+                        + "schema");
+            }
+            // if first step succeeds, proceed to other validations that
+            // cannot be covered using json schema
+            DataStreamLayoutValidator.validateDataStreamLayout(json, this.dao);
+        }
+        return result;
+    }
+
+    public void deployDataStream (DataStream dataStream) throws Exception {
+        this.dataStreamActions.deploy(dataStream);
+        return;
+    }
+
+    public void killDataStream (DataStream dataStream) throws Exception {
+        this.dataStreamActions.kill(dataStream);
+        return;
+    }
+
 }

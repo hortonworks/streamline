@@ -3,6 +3,7 @@ package com.hortonworks.iotas.webservice;
 import com.hortonworks.iotas.catalog.CatalogResponse;
 import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.webservice.catalog.NotifierInfoCatalogResource;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
