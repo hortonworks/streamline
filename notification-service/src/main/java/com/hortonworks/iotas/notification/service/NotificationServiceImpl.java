@@ -75,6 +75,7 @@ public class NotificationServiceImpl implements NotificationService {
     public void notify(String notifierName, Notification notification) {
         LOG.debug("Notify notifierName {}, notification {}", notifierName, notification);
         // TODO: for better performance the store could be done asynchronously
+        // TODO: add retry logic
         notificationStore.store(notification);
         Notifier notifier = notifiers.get(notifierName);
         if (notifier == null) {
