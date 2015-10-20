@@ -1,0 +1,20 @@
+{
+  "notifierName":"email_notifier",
+  "jarFileName": "notifiers.jar",
+  "className": "com.hortonworks.iotas.notification.notifiers.EmailNotifier",
+  "properties": {
+    "username": "hwemailtest@gmail.com",
+    "password": "testing12",
+    "host": "smtp.gmail.com",
+    "port": "587",
+    "starttls": "true",
+    "debug": "true"
+  },
+  "fieldValues": {
+      "from": "hwemailtest@gmail.com",
+      "to": "hwemailtest@gmail.com",
+      "subject": "Testing email notifications",
+      "contentType": "text/plain",
+      "body": "default body"
+  }
+}

@@ -22,27 +22,19 @@ Same config can be used to start debugging.
 `cd $IOTAS-HOME\bin`  
 `./load-device.sh`  
 
-This will load the following objects:  
-`ParserInfo = ParserInfo{parserId=1, parserName='NestParser', className='com.hortonworks.iotas.parsers.nest.NestParser', jarStoragePath='/tmp/storm-0.1-SNAPSHOT.jar', parserSchema=null, version=0, timestamp=1439323206590}`  
-`DataFeed = {"datafeedId":1,"datafeedName":"nest-datafeed","parserId":1,"endpoint":"localhost:9092/nest-topic"}`  
-`DataSource = {"dataSourceName":"nest-datasource","description":"Nest as datasource","datafeedId":1,"tags":"thermostat, Google smart home"}`  
-`Device = {"deviceId":"nest","version":1,"dataSourceId":1,"timestamp":1437938039136}`  
-
-Please see `load-device.sh` which is just bunch of curl commands in case you want to add some other objects to webservice's inmemory store.
+Please see `load-device.sh` which is just bunch of curl commands in case you want to add some other objects to webservice's in memory store.
 
 #Running storm topology
 First you need to populate your kafka topic, if you have not done so create your kafka topic by executing    
 `kafka-topics.sh --create --topic nest-topic --zookeeper localhost:2181 --replication-factor 1 --partitions 3`  
 
 Then run the device simulator CLI to post some sample `IotasMessage` containing nest data to your kafka topic.  
-`cd $$IOTAS-HOME`  
+`cd $IOTAS-HOME`  
 `java -cp simulator/target/simulator-0.1-SNAPSHOT.jar com.hortonworks.iotas.simulator.CLI -b localhost:9092 -t nest-topic -f simulator/src/main/resources/nest-iotas-messages`  
 
 You can run the simulator command in a loop or run it multiple times to produce same data again and again.
 
-Now you need to create hbase table where all the messages will be stored.  
-`hbase shell`  
-`create 'nest', 'cf'`
+##HBase set up
 
 Before starting hbase, put the below hbase-site.xml in the hbase config directory so that hbase uses the local ZK instance running in your localhost and localfs for storage so that you dont need to start a separate HDFS server instance.
 
@@ -63,11 +55,42 @@ Before starting hbase, put the below hbase-site.xml in the hbase config director
 </configuration>
   ```
 
+Now you need to create HBase tables where the IotasEvent and Notifications will be stored.
+  
+`hbase shell`
+
+`create 'nest', 'cf', 'd'`
+
+`create 'Notification', 'd', 'f', 's', 'e', 'r', 'nn', 'ts'`
+
+`create 'Timestamp_Notification', 'ni', 'd', 'f', 's', 'e', 'r', 'nn', 'ts'`
+
+`create 'Rule_Notification', 'ni', 'd', 'f', 's', 'e', 'r', 'nn', 'ts'`
+
+`create 'Rule_Status_Notification', 'ni', 'd', 'f', 's', 'e', 'r', 'nn', 'ts'`
+
+`create 'Datasource_Notification', 'ni', 'd', 'f', 's', 'e', 'r', 'nn', 'ts'`
+
+`create 'Datasource_Status_Notification', 'ni', 'd', 'f', 's', 'e', 'r', 'nn', 'ts'`
+
+`create 'Notifier_Notification', 'ni', 'd', 'f', 's', 'e', 'r', 'nn', 'ts'`
+
+`create 'Notifier_Status_Notification', 'ni', 'd', 'f', 's', 'e', 'r', 'nn', 'ts'`
+
+
+## Running the Topology
 Now, From intellij you should be able to run `com.hortonworks.topology.IotasTopology` by providing `$IOTAS-HOME/storm/src/main/resources/topology.yaml` as argument and modifying `$IOTAS-HOME/storm/pom.xml` so `storm-core` is not in provided scope. 
 you can also run the topology on a storm cluster by providing the name of the topology as second argument. RIGHT NOW THE TOPOLOGY DOES NOT EXECUTE IN A STORM CLUSTER AS THE JACKSON LIBRARY USED BY US HAVE A CONFLICTING
 VERSION WITH STORM. Please merge https://github.com/apache/storm/pull/702 on your local storm cluster if you need to execute the topology on a storm cluster.
 
-`storm jar $IOTAS-HOME/storm/target/storm-0.1-SNAPSHOT.jar com.hortonworks.topology.IotasTopology  $IOTAS-HOME/storm/src/main/resources/topology.yaml IotasTopology`  
+`storm jar $IOTAS-HOME/storm/target/storm-0.1-SNAPSHOT.jar com.hortonworks.topology.IotasTopology  $IOTAS-HOME/storm/src/main/resources/topology.yaml IotasTopology`
+
+##IoTaS topology using Flux  
+After doing a mvn package on IoTaS home directory you can run the following 
+command `storm jar ./storm/target/storm-0.1-SNAPSHOT.jar org.apache.storm.flux.Flux --local --sleep 3600000 --filter ./storm/src/main/resources/flux_iotas_topology.properties ./storm/src/main/resources/flux_iotas_topology_config.yaml`
+  
+This will run the IOTaS topology in local mode for one hour, processing any events published to the 'nest-topic'. You can kill the topology anytime by pressing CNTL + C in the console.
+
 
 #Accounting for bad tuples in a topology
 A mechanism has been added so that when messages are being played from a 
@@ -93,13 +116,5 @@ another record delimiter character using withRecordDelimiter method.
 #Accessing UI
 http://localhost:8080/ui/index.html
 
-#IoTaS topology using Flux
-IoTaS topologies can also be built using FLUX now. For more information, 
-please visit https://github.com/apache/storm/tree/master/external/flux
-
-After doing a mvn package on IoTaS home directory you can run the following 
-command `storm jar ./storm/target/storm-0.1-SNAPSHOT.jar org.apache.storm.flux.Flux --local --sleep 3600000 --filter ./storm/src/main/resources/flux_iotas_topology.properties ./storm/src/main/resources/flux_iotas_topology_config.yaml`
-
-This will run the IOTaS topology in local mode for one hour, processing any events published to the 'nest-topic'. You can kill the topology anytime by pressing CNTL + C in the console.
 
 

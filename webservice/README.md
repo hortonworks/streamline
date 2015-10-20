@@ -1,6 +1,7 @@
 # IoTas REST API
 
 [Cluster api](webservice/Cluster.md)
+[Notifications api](webservice/Notifications.md)
 
 [Errorcodes](webservice/ErrorCodes.md)
 
