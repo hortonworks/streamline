@@ -12,7 +12,7 @@
     <artifactId>storm</artifactId>
 
     <properties>
-        <storm.version>0.11.0-SNAPSHOT</storm.version>
+        <storm.version>0.10.0-beta1</storm.version>
         <hbase.version>0.98.4-hadoop2</hbase.version>
     </properties>
 
