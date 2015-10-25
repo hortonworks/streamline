@@ -2,6 +2,8 @@ package com.hortonworks.iotas.webservice.catalog;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.catalog.DataFeed;
+import com.hortonworks.iotas.catalog.ParserInfo;
+import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.util.WSUtils;
 
@@ -71,6 +73,27 @@ public class FeedCatalogResource {
         }
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, dataFeedId.toString());
     }
+
+    @GET
+    @Path("/feeds/{id}/schema")
+    @Timed
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getParserSchemaForDatafeed(@PathParam("id") Long dataFeedId) {
+        try {
+            DataFeed dataFeed = catalogService.getDataFeed(dataFeedId);
+            if (dataFeed != null) {
+                ParserInfo parserInfo = catalogService.getParserInfo(dataFeed.getParserId());
+                Schema result = parserInfo.getParserSchema();
+                if (result != null) {
+                    return WSUtils.respond(OK, SUCCESS, result);
+                }
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+        return WSUtils.respond(NOT_FOUND, PARSER_SCHEMA_FOR_ENTITY_NOT_FOUND, dataFeedId.toString());
+    }
+
 
     @POST
     @Path("/feeds")
