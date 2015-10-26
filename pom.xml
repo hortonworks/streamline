@@ -242,6 +242,10 @@
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-surefire-plugin</artifactId>
               <version>${maven-surefire.version}</version>
+                <configuration>
+                    <groups>${include.unit.test.groups}</groups>
+                    <excludedGroups>${exclude.unit.test.groups}</excludedGroups>
+                </configuration>
             </plugin>
             <plugin>
               <groupId>org.apache.maven.plugins</groupId>
@@ -256,7 +260,8 @@
                 <includes>
                   <include>**/*.java</include>
                 </includes>
-                <groups>com.hortonworks.iotas.IntegrationTest</groups>
+                <groups>${include.integration.test.groups}</groups>
+                <excludedGroups>${exclude.integration.test.groups}</excludedGroups>
               </configuration>
               <executions>
                 <execution>
@@ -278,4 +283,29 @@
             </plugin>
         </plugins>
     </reporting>
+
+    <profiles>
+        <profile>
+            <id>dev-tests-basic</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <exclude.unit.test.groups>com.hortonworks.iotas.test.IntegrationTest,com.hortonworks.iotas.test.HBaseIntegrationTest</exclude.unit.test.groups>
+                <include.unit.test.groups></include.unit.test.groups>
+                <exclude.integration.test.groups>com.hortonworks.iotas.test.HBaseIntegrationTest</exclude.integration.test.groups>
+                <include.integration.test.groups>com.hortonworks.iotas.test.IntegrationTest</include.integration.test.groups>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>dev-tests-including-external-env</id>
+            <properties>
+                <exclude.unit.test.groups>com.hortonworks.iotas.test.IntegrationTest,com.hortonworks.iotas.test.HBaseIntegrationTest</exclude.unit.test.groups>
+                <include.unit.test.groups></include.unit.test.groups>
+                <exclude.integration.test.groups></exclude.integration.test.groups>
+                <include.integration.test.groups>com.hortonworks.iotas.test.IntegrationTest,com.hortonworks.iotas.test.HBaseIntegrationTest</include.integration.test.groups>
+            </properties>
+        </profile>
+    </profiles>
 </project>

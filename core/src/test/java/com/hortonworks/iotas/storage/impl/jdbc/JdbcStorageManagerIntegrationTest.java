@@ -20,17 +20,17 @@
 package com.hortonworks.iotas.storage.impl.jdbc;
 
 import com.google.common.cache.CacheBuilder;
-import com.hortonworks.iotas.IntegrationTest;
 import com.hortonworks.iotas.storage.AbstractStoreManagerTest;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.exception.NonIncrementalColumnException;
 import com.hortonworks.iotas.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.iotas.storage.impl.jdbc.connection.ConnectionBuilder;
-import com.hortonworks.iotas.storage.impl.jdbc.mysql.factory.MySqlExecutor;
-import com.hortonworks.iotas.storage.impl.jdbc.mysql.query.MetadataHelper;
-import com.hortonworks.iotas.storage.impl.jdbc.mysql.query.SqlBuilder;
-import com.hortonworks.iotas.storage.impl.jdbc.mysql.statement.PreparedStatementBuilder;
+import com.hortonworks.iotas.storage.impl.jdbc.provider.mysql.factory.MySqlExecutor;
+import com.hortonworks.iotas.storage.impl.jdbc.provider.mysql.query.MySqlQueryUtils;
+import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.query.SqlQuery;
+import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
+import com.hortonworks.iotas.test.IntegrationTest;
 import org.h2.tools.RunScript;
 import org.junit.After;
 import org.junit.Assert;
@@ -52,7 +52,7 @@ public abstract class JdbcStorageManagerIntegrationTest extends AbstractStoreMan
     protected static Database database;
     protected static ConnectionBuilder connectionBuilder;
 
-    protected enum Database {MYSQL, H2}
+    protected enum Database {MYSQL, H2, PHOENIX}
 
     // ===== Tests Setup ====
     // Class level initialization is done in the implementing subclasses
@@ -98,14 +98,14 @@ public abstract class JdbcStorageManagerIntegrationTest extends AbstractStoreMan
     public void testNextId_NoAutoincrementTable_NonIncrementalKeyException() throws Exception {
         for (StorableTest test : storableTests) {
             if (test instanceof DeviceTest) {
-                getStorageManager().nextId(test.getNameSpace());    // should throw exception
-
+                    getStorageManager().nextId(test.getNameSpace());    // should throw exception
             }
         }
     }
 
     @Test
     public void testNextId_AutoincrementColumn_IdPlusOne() throws Exception {
+
         for (StorableTest test : storableTests) {
             // Device does not have auto_increment, and therefore there is no concept of nextId and should throw exception (tested below)
             if (!(test instanceof DeviceTest)) {
@@ -158,9 +158,9 @@ public abstract class JdbcStorageManagerIntegrationTest extends AbstractStoreMan
             super(config, connectionBuilder);
         }
 
-        public MySqlExecutorForTest(CacheBuilder<SqlBuilder, PreparedStatementBuilder> cacheBuilder,
+        public MySqlExecutorForTest(CacheBuilder<SqlQuery, PreparedStatementBuilder> cacheBuilder,
             ExecutionConfig config, ConnectionBuilder connectionBuilder) {
-            super(cacheBuilder, config, connectionBuilder);
+            super(config, connectionBuilder, cacheBuilder);
         }
 
         @Override
@@ -168,7 +168,7 @@ public abstract class JdbcStorageManagerIntegrationTest extends AbstractStoreMan
             if (database.equals(Database.MYSQL)) {
                 return super.nextId(namespace);
             } else {
-                return MetadataHelper.nextIdH2(connection, namespace, getConfig().getQueryTimeoutSecs());
+                return MySqlQueryUtils.nextIdH2(connection, namespace, getConfig().getQueryTimeoutSecs());
             }
         }
     }
@@ -177,11 +177,11 @@ public abstract class JdbcStorageManagerIntegrationTest extends AbstractStoreMan
     // ========= Private helper methods  ==========
 
     private void createTables() throws SQLException, IOException {
-        runScript("create_tables.sql");
+        runScript("mysql/create_tables.sql");
     }
 
     private void dropTables() throws SQLException, IOException {
-        runScript("drop_tables.sql");
+        runScript("mysql/drop_tables.sql");
     }
 
     private void runScript(String fileName) throws SQLException, IOException {

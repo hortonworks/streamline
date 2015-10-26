@@ -3,12 +3,9 @@ package com.hortonworks.iotas.cache;
 
 import com.google.common.collect.ImmutableMap;
 import com.hortonworks.iotas.cache.stats.CacheStats;
-import com.hortonworks.iotas.storage.Storable;
-import com.hortonworks.iotas.storage.StorableKey;
-import com.hortonworks.iotas.storage.StorageException;
+import com.hortonworks.iotas.storage.exception.StorageException;
 
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Created by hlouro on 8/6/15.

@@ -20,17 +20,16 @@ package com.hortonworks.iotas.storage.impl.jdbc;
 
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.service.CatalogService;
-import com.hortonworks.iotas.storage.AlreadyExistsException;
 import com.hortonworks.iotas.storage.PrimaryKey;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
-import com.hortonworks.iotas.storage.StorageException;
 import com.hortonworks.iotas.storage.StorageManager;
+import com.hortonworks.iotas.storage.exception.AlreadyExistsException;
 import com.hortonworks.iotas.storage.exception.IllegalQueryParameterException;
-import com.hortonworks.iotas.storage.impl.jdbc.mysql.factory.MySqlExecutor;
-import com.hortonworks.iotas.storage.impl.jdbc.mysql.factory.SqlExecutor;
-import com.hortonworks.iotas.storage.impl.jdbc.mysql.query.MetadataHelper;
-import com.hortonworks.iotas.storage.impl.jdbc.mysql.query.MySqlSelect;
+import com.hortonworks.iotas.storage.exception.StorageException;
+import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
+import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.query.MetadataHelper;
+import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.query.SqlSelectQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,10 +44,10 @@ import java.util.Map;
 public class JdbcStorageManager implements StorageManager {
     private static final Logger log = LoggerFactory.getLogger(StorageManager.class);
 
-    private final SqlExecutor sqlExecutor;
+    private final QueryExecutor queryExecutor;
 
-    public JdbcStorageManager(SqlExecutor sqlExecutor) {
-        this.sqlExecutor = sqlExecutor;
+    public JdbcStorageManager(QueryExecutor queryExecutor) {
+        this.queryExecutor = queryExecutor;
     }
 
     @Override
@@ -70,7 +69,7 @@ public class JdbcStorageManager implements StorageManager {
         T oldVal = get(key);
         if (key != null) {
             log.debug("Removing storable key [{}]", key);
-            sqlExecutor.delete(key);
+            queryExecutor.delete(key);
         }
         return oldVal;
     }
@@ -78,14 +77,14 @@ public class JdbcStorageManager implements StorageManager {
     @Override
     public void addOrUpdate(Storable storable) throws StorageException {
         log.debug("Adding or updating storable [{}]", storable);
-        sqlExecutor.insertOrUpdate(storable);
+        queryExecutor.insertOrUpdate(storable);
     }
 
     @Override
     public <T extends Storable> T get(StorableKey key) throws StorageException {
         log.debug("Searching entry for storable key [{}]", key);
 
-        final Collection<T> entries = sqlExecutor.select(key);
+        final Collection<T> entries = queryExecutor.select(key);
         T entry = null;
         if (entries.size() > 0) {
             if (entries.size() > 1) {
@@ -110,7 +109,7 @@ public class JdbcStorageManager implements StorageManager {
         try {
             StorableKey storableKey = buildStorableKey(namespace, queryParams);
             if (storableKey != null) {
-                entries = sqlExecutor.select(storableKey);
+                entries = queryExecutor.select(storableKey);
             }
         } catch (Exception e) {
             throw new StorageException(e);
@@ -122,14 +121,14 @@ public class JdbcStorageManager implements StorageManager {
     @Override
     public <T extends Storable> Collection<T> list(String namespace) throws StorageException {
         log.debug("Listing entries for table [{}]", namespace);
-        final Collection<T> entries = sqlExecutor.select(namespace);
+        final Collection<T> entries = queryExecutor.select(namespace);
         log.debug("Querying table = [{}]\n\t returned [{}]", namespace, entries);
         return entries;
     }
 
     @Override
     public void cleanup() throws StorageException {
-        ((MySqlExecutor)sqlExecutor).cleanup();
+        queryExecutor.cleanup();
     }
 
     @Override
@@ -137,14 +136,14 @@ public class JdbcStorageManager implements StorageManager {
         log.debug("Finding nextId for table [{}]", namespace);
         // This only works if the table has auto-increment. The TABLE_SCHEMA part is implicitly specified in the Connection object
         // SELECT AUTO_INCREMENT FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'temp' AND TABLE_SCHEMA = 'test'
-        return sqlExecutor.nextId(namespace);
+        return queryExecutor.nextId(namespace);
     }
 
     // private helper methods
 
     /**
      * Query parameters are typically specified for a column or key in a database table or storage namespace. Therefore, we build
-     * the {@link StorableKey} from the list of query parameters, and then can use {@link MySqlSelect} builder to generate the query using
+     * the {@link StorableKey} from the list of query parameters, and then can use {@link SqlSelectQuery} builder to generate the query using
      * the query parameters in the where clause
      *
      * @return {@link StorableKey} with all query parameters that match database columns <br/>
@@ -152,12 +151,12 @@ public class JdbcStorageManager implements StorageManager {
      */
     private StorableKey buildStorableKey(String namespace, List<CatalogService.QueryParam> queryParams) throws Exception {
         final Map<Schema.Field, Object> fieldsToVal = new HashMap<>();
-        final Connection connection = sqlExecutor.getConnection();
+        final Connection connection = queryExecutor.getConnection();
         StorableKey storableKey = null;
 
         try {
             for (CatalogService.QueryParam qp : queryParams) {
-                int queryTimeoutSecs = ((MySqlExecutor)sqlExecutor).getConfig().getQueryTimeoutSecs();
+                int queryTimeoutSecs = queryExecutor.getConfig().getQueryTimeoutSecs();
                 if (!MetadataHelper.isColumnInNamespace(connection, queryTimeoutSecs, namespace, qp.getName())) {
                     log.warn("Query parameter [{}] does not exist for namespace [{}]. Query parameter ignored.", qp.getName(), namespace);
                 } else {
@@ -180,7 +179,7 @@ public class JdbcStorageManager implements StorageManager {
             log.debug("Exception occurred when attempting to generate StorableKey from QueryParam", e);
             throw new IllegalQueryParameterException(e);
         } finally {
-            ((MySqlExecutor)sqlExecutor).closeConnection(connection);
+            queryExecutor.closeConnection(connection);
         }
 
         return storableKey;
