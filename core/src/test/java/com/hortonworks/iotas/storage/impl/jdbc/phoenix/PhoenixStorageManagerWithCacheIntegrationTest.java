@@ -13,7 +13,7 @@ import org.junit.experimental.categories.Category;
  */
 
 @Category(HBaseIntegrationTest.class)
-public class PhoenixStorageManagerWithCacheNoCacheIntegrationTest extends PhoenixStorageManagerNoCacheIntegrationTest {
+public class PhoenixStorageManagerWithCacheIntegrationTest extends PhoenixStorageManagerNoCacheIntegrationTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {

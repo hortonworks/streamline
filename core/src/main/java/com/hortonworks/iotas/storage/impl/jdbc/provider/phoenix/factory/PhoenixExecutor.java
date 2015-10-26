@@ -9,7 +9,7 @@ import com.hortonworks.iotas.storage.impl.jdbc.connection.ConnectionBuilder;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.query.PhoenixDeleteQuery;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.query.PhoenixSelectQuery;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.query.PhoenixUpsertQuery;
-import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.factory.ProviderQueryExecutor;
+import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.factory.AbstractQueryExecutor;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.query.SqlQuery;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
 
@@ -18,7 +18,7 @@ import java.util.Collection;
 /**
  *
  */
-public class PhoenixExecutor extends ProviderQueryExecutor {
+public class PhoenixExecutor extends AbstractQueryExecutor {
 
     public PhoenixExecutor(ExecutionConfig config, ConnectionBuilder connectionBuilder) {
         super(config, connectionBuilder);

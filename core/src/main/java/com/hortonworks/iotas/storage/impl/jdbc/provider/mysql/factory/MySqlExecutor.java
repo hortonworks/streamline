@@ -25,7 +25,7 @@ import com.hortonworks.iotas.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.iotas.storage.impl.jdbc.connection.ConnectionBuilder;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.mysql.query.MySqlInsertUpdateDuplicate;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.mysql.query.MySqlQueryUtils;
-import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.factory.ProviderQueryExecutor;
+import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.factory.AbstractQueryExecutor;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.query.SqlInsertQuery;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.query.SqlQuery;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
@@ -33,7 +33,7 @@ import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.statement.PreparedSt
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class MySqlExecutor extends ProviderQueryExecutor {
+public class MySqlExecutor extends AbstractQueryExecutor {
 
     /**
      * @param config Object that contains arbitrary configuration that may be needed for any of the steps of the query execution process

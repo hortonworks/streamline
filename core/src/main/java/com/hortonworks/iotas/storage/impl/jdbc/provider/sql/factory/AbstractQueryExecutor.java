@@ -10,7 +10,6 @@ import com.hortonworks.iotas.catalog.Device;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
-import com.hortonworks.iotas.storage.exception.NonIncrementalColumnException;
 import com.hortonworks.iotas.storage.exception.StorageException;
 import com.hortonworks.iotas.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.iotas.storage.impl.jdbc.connection.ConnectionBuilder;
@@ -43,7 +42,7 @@ import java.util.concurrent.ExecutionException;
 /**
  *
  */
-public class ProviderQueryExecutor implements QueryExecutor {
+public abstract class AbstractQueryExecutor implements QueryExecutor {
 
     protected final ExecutionConfig config;
     protected final int queryTimeoutSecs;
@@ -52,11 +51,11 @@ public class ProviderQueryExecutor implements QueryExecutor {
 
     private final Cache<SqlQuery, PreparedStatementBuilder> cache;
 
-    public ProviderQueryExecutor(ExecutionConfig config, ConnectionBuilder connectionBuilder) {
+    public AbstractQueryExecutor(ExecutionConfig config, ConnectionBuilder connectionBuilder) {
         this(config, connectionBuilder, null);
     }
 
-    public ProviderQueryExecutor(ExecutionConfig config, ConnectionBuilder connectionBuilder, CacheBuilder<SqlQuery, PreparedStatementBuilder> cacheBuilder) {
+    public AbstractQueryExecutor(ExecutionConfig config, ConnectionBuilder connectionBuilder, CacheBuilder<SqlQuery, PreparedStatementBuilder> cacheBuilder) {
         this.connectionBuilder = connectionBuilder;
         this.config = config;
         cache = cacheBuilder != null ? buildCache(cacheBuilder) : null;
@@ -69,10 +68,7 @@ public class ProviderQueryExecutor implements QueryExecutor {
         executeUpdate(new SqlInsertQuery(storable));
     }
 
-    @Override
-    public void insertOrUpdate(Storable storable) {
-        throw new UnsupportedOperationException("insert or update operation is not supported.");
-    }
+    public abstract void insertOrUpdate(Storable storable);
 
     @Override
     public void delete(StorableKey storableKey) {
@@ -89,10 +85,7 @@ public class ProviderQueryExecutor implements QueryExecutor {
         return executeQuery(storableKey.getNameSpace(), new SqlSelectQuery(storableKey));
     }
 
-    @Override
-    public Long nextId(String namespace) {
-        throw new NonIncrementalColumnException();
-    }
+    public abstract Long nextId(String namespace);
 
     public ExecutionConfig getConfig() {
         return config;
