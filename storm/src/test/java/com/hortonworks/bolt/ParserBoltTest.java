@@ -8,13 +8,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.hortonworks.client.RestClient;
 import com.hortonworks.iotas.catalog.ParserInfo;
-import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.model.IotasMessage;
-import mockit.Expectations;
-import mockit.Mocked;
-import mockit.Tested;
-import mockit.VerificationsInOrder;
+import mockit.*;
 import mockit.integration.junit4.JMockit;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,9 +30,9 @@ public class ParserBoltTest {
     private @Tested ParserBolt parserBolt;
     private ParserInfo parserInfo;
 
-    private @Mocked OutputCollector mockOutputCollector;
-    private @Mocked RestClient mockClient;
-    private @Mocked Tuple mockTuple;
+    private @Injectable OutputCollector mockOutputCollector;
+    private @Injectable RestClient mockClient;
+    private @Injectable Tuple mockTuple;
 
     @Before
     public void setup() throws Exception {
@@ -58,7 +53,6 @@ public class ParserBoltTest {
         parserInfo.setParserId(PARSER_ID);
         parserInfo.setClassName(MockParser.class.getCanonicalName());
         parserInfo.setParserName("TestParser");
-
     }
 
     @Test
