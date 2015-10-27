@@ -26,6 +26,11 @@
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-log4j12</artifactId>
                 </exclusion>
+                <!-- dropwizard and phoenix have conflicts in jersey related dependencies  -->
+                <exclusion>
+                    <groupId>org.apache.phoenix</groupId>
+                    <artifactId>phoenix-core</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
