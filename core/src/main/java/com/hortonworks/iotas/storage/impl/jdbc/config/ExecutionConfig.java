@@ -18,12 +18,12 @@
 
 package com.hortonworks.iotas.storage.impl.jdbc.config;
 
-import com.hortonworks.iotas.storage.impl.jdbc.mysql.factory.SqlExecutor;
-import com.hortonworks.iotas.storage.impl.jdbc.mysql.statement.PreparedStatementBuilder;
+import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
+import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
 
 /**
  * Wrapper object that serves has a placeholder for configuration (e.g. {@code query timeout}) that needs
- * to be passed to objects like {@link SqlExecutor} or {@link PreparedStatementBuilder}. <p/>
+ * to be passed to objects like {@link QueryExecutor} or {@link PreparedStatementBuilder}. <p/>
  *
  * This class should be immutable as the configuration should not change after passed in to the configurable objects
  **/

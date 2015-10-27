@@ -25,7 +25,8 @@ public class CatalogResponse {
         EXCEPTION(1102, "An exception with message [%s] was thrown while processing request.", 1),
         BAD_REQUEST_PARAM_MISSING(1103, "Bad request. Param [%s] is missing or empty.", 1),
         DATASOURCE_TYPE_FILTER_NOT_FOUND(1104, "Datasource not found for type [%s], query params [%s].", 2),
-        ENTITY_NOT_FOUND_FOR_FILTER(1105, "Entity not found for query params [%s].", 1);
+        ENTITY_NOT_FOUND_FOR_FILTER(1105, "Entity not found for query params [%s].", 1),
+        PARSER_SCHEMA_FOR_ENTITY_NOT_FOUND(1106, "Parser schema not found for entity with id [%s].", 1),;
 
         private int code;
         private String msg;

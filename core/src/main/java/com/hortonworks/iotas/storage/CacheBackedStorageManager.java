@@ -4,6 +4,7 @@ import com.hortonworks.iotas.cache.Cache;
 import com.hortonworks.iotas.cache.impl.GuavaCache;
 import com.hortonworks.iotas.cache.writer.StorageWriter;
 import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.storage.exception.StorageException;
 
 import java.util.Collection;
 import java.util.List;

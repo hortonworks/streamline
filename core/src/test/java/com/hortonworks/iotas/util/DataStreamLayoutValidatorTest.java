@@ -87,7 +87,7 @@ public class DataStreamLayoutValidatorTest {
     public void testDataStreamLayoutGood () throws IOException, BadDataStreamLayoutException {
         // Test for a valid data stream layout json
         URL datastream = Thread.currentThread().getContextClassLoader()
-                .getResource("datastreams/GoodLayout.json");
+                .getResource("datastreams/goodlayout.json");
         DataStream ds = mapper.readValue(datastream, DataStream.class);
         DataStreamLayoutValidator.validateDataStreamLayout(ds.getJson(), dao);
     }

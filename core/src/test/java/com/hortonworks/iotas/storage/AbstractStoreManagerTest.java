@@ -6,6 +6,8 @@ import com.hortonworks.iotas.catalog.Device;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.storage.exception.AlreadyExistsException;
+import com.hortonworks.iotas.storage.exception.StorageException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;

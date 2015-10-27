@@ -268,7 +268,7 @@ POST /api/v1/catalog/parsers
   "version":1
 }
 ```
-   
+
 *Success Response*
 
     HTTP/1.1 201 Created
@@ -309,9 +309,12 @@ POST /api/v1/catalog/parsers
  "responseMessage": "An exception with message [msg] was thrown while processing request."
 }
 ```
-    
+
+**Note:** If schemaFromParserJar is set to 'true' (-F schemaFromParserJar=true) and if the `parserSchema` is not provided, the api will try to figure out the schema by loading the jar and
+invoking `Parser.schema()` method on the parser implementation instance.
+
 ### Get
-GET /api/v1/catalog/parsers/ID
+GET /api/v1/catalog/parsers/{id}
 
 *Success Response*
 
@@ -347,6 +350,33 @@ GET /api/v1/catalog/parsers/ID
 {
   "responseCode": 1101,
   "responseMessage": "Entity with id [10] not found."
+}
+```
+
+### Get parser schema
+GET /api/v1/catalog/parsers/{id}/schema
+
+```json
+    GET /api/v1/catalog/parsers/1/schema
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+{
+    "responseCode":1000,
+    "responseMessage":"Success",
+    "entity":{
+        "fields":[
+            {"name":"device_id","type":"STRING"}, 
+            {"name":"locale","type":"STRING"},
+            {"name":"software_version","type":"STRING"},
+            {"name":"structure_id","type":"STRING"},
+            {"name":"name","type":"STRING"},
+            {"name":"name_long","type":"STRING"},
+            {"name":"last_connection","type":"STRING"},
+            {"name":"is_online","type":"STRING"},
+            ..
+            ..
+        ]
+    }
 }
 ```
     
@@ -556,6 +586,35 @@ GET /api/v1/catalog/feeds/ID
   "responseMessage": "Entity with id [10] not found."
 }
 ```
+
+### Get feed schema
+GET /api/v1/catalog/feeds/{id}/schema
+
+```json
+    GET /api/v1/catalog/feeds/1/schema
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+{
+    "responseCode":1000,
+    "responseMessage":"Success",
+    "entity":{
+        "fields":[
+            {"name":"device_id","type":"STRING"}, 
+            {"name":"locale","type":"STRING"},
+            {"name":"software_version","type":"STRING"},
+            {"name":"structure_id","type":"STRING"},
+            {"name":"name","type":"STRING"},
+            {"name":"name_long","type":"STRING"},
+            {"name":"last_connection","type":"STRING"},
+            {"name":"is_online","type":"STRING"},
+            ..
+            ..
+        ]
+    }
+}
+```
+
+**Note:** This fetches the schema from the parser associated with the data feed. 
     
 ### Get All
 GET /api/v1/catalog/feeds
