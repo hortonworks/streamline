@@ -48,24 +48,24 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public Notifier register(String notifierName, NotificationContext ctx) {
-        LOG.debug("Registering notifier name {}, NotificationContext {}", notifierName, ctx);
+        LOG.info("Registering notifier name {}, NotificationContext {}", notifierName, ctx);
         Notifier notifier = loadNotifier(ctx.getConfig().getJarPath(), ctx.getConfig().getClassName());
         Notifier registeredNotifier = notifiers.putIfAbsent(notifierName, notifier);
         if (registeredNotifier == null) {
-            LOG.debug("Initializing notifier");
+            LOG.info("Initializing notifier");
             notifier.open(ctx);
             registeredNotifier = notifier;
         }
-        LOG.debug("Notifier {} registered", notifierName);
+        LOG.info("Notifier {} registered", notifierName);
         return registeredNotifier;
     }
 
     @Override
     public Notifier remove(String notifierName) {
-        LOG.debug("De-registering notifier {}", notifierName);
+        LOG.info("De-registering notifier {}", notifierName);
         Notifier notifier = notifiers.remove(notifierName);
         if (notifier != null) {
-            LOG.debug("Closing notifier {}", notifierName);
+            LOG.info("Closing notifier {}", notifierName);
             notifier.close();
         }
         return notifier;
