@@ -83,4 +83,8 @@ public interface NotificationService {
      */
     Notification updateNotificationStatus(String notificationId, Notification.Status status);
 
+    /**
+     * Any clean up goes here
+     */
+    void close();
 }

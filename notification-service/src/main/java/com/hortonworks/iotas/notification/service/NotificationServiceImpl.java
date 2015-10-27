@@ -12,7 +12,10 @@ import com.hortonworks.iotas.util.ReflectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -27,8 +30,11 @@ public class NotificationServiceImpl implements NotificationService {
     private static final String QUERY_PARAM_END_TS = "endTs";
     private static final String QUERY_PARAM_DESC = "desc";
 
+    private static final String QUEUEHANDLER_THREADS = "queuehandler.threads";
+
     private final ConcurrentHashMap<String, Notifier> notifiers = new ConcurrentHashMap<>();
 
+    private NotificationQueueHandler queueHandler;
 
     /**
      * the underlying notification store.
@@ -43,7 +49,17 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     public NotificationServiceImpl(NotificationStore store) {
-        notificationStore = store;
+        this(Collections.<String, Object>emptyMap(), store);
+    }
+
+    public NotificationServiceImpl(Map<String, Object> config, NotificationStore store) {
+        LOG.info("Initializing NotificationServiceImpl with config {}", config);
+        this.notificationStore = store;
+        if(config.get(QUEUEHANDLER_THREADS) != null) {
+            this.queueHandler = new NotificationQueueHandler(((Number)config.get(QUEUEHANDLER_THREADS)).intValue());
+        } else {
+            this.queueHandler = new NotificationQueueHandler();
+        }
     }
 
     @Override
@@ -53,7 +69,7 @@ public class NotificationServiceImpl implements NotificationService {
         Notifier registeredNotifier = notifiers.putIfAbsent(notifierName, notifier);
         if (registeredNotifier == null) {
             LOG.info("Initializing notifier");
-            notifier.open(ctx);
+            notifier.open(new NotificationServiceContext(ctx, queueHandler, this));
             registeredNotifier = notifier;
         }
         LOG.info("Notifier {} registered", notifierName);
@@ -74,14 +90,12 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void notify(String notifierName, Notification notification) {
         LOG.debug("Notify notifierName {}, notification {}", notifierName, notification);
-        // TODO: for better performance the store could be done asynchronously
-        // TODO: add retry logic
         notificationStore.store(notification);
         Notifier notifier = notifiers.get(notifierName);
         if (notifier == null) {
             throw new NoSuchNotifierException("Notifier not found for id " + notification.getNotifierName());
         }
-        notifier.notify(notification);
+        queueHandler.enqueue(notifier, notification);
     }
 
     @Override
@@ -133,6 +147,11 @@ public class NotificationServiceImpl implements NotificationService {
     public Notification updateNotificationStatus(String notificationId, Notification.Status status) {
         LOG.debug("updateNotificationStatus for notificationId {}, status {}", notificationId, status);
         return notificationStore.updateNotificationStatus(notificationId, status);
+    }
+
+    @Override
+    public void close() {
+        queueHandler.shutdown();
     }
 
     /**

@@ -60,4 +60,10 @@ public interface Notifier {
      * also be specified in the config.
      */
     List<String> getFields();
+
+    /**
+     * Returns the notification context that this notifier is initialized with.
+     *
+     */
+    NotificationContext getContext();
 }

@@ -16,6 +16,7 @@ import com.hortonworks.iotas.notification.service.NotificationServiceImpl;
 import com.hortonworks.iotas.notification.store.hbase.HBaseNotificationStore;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 
@@ -28,7 +29,7 @@ public class NotificationBolt extends BaseRichBolt {
     public static final String LOCAL_NOTIFIER_JAR_PATH = "local.notifier.jar.path";
 
     private static final String IOTAS_NOTIFICATION = "iotas.notification";
-
+    private static final String NOTIFICATION_SERVICE_CONFIG_KEY = "notification.conf";
     private NotificationService notificationService;
     private Notifier notifier;
     private BoltNotificationContext notificationContext;
@@ -59,7 +60,13 @@ public class NotificationBolt extends BaseRichBolt {
             throw new IllegalArgumentException("conf must contain " + CATALOG_ROOT_URL);
         }
         Map<String, String> hbaseConf = (Map<String, String>)stormConf.get(this.hbaseConfigKey);
-        notificationService = new NotificationServiceImpl(new HBaseNotificationStore(hbaseConf));
+        Map<String, Object> notificationConf = null;
+        if (stormConf.get(NOTIFICATION_SERVICE_CONFIG_KEY) != null) {
+            notificationConf = (Map<String, Object>) stormConf.get(NOTIFICATION_SERVICE_CONFIG_KEY);
+        } else {
+            notificationConf = Collections.emptyMap();
+        }
+        notificationService = new NotificationServiceImpl(notificationConf, new HBaseNotificationStore(hbaseConf));
         catalogRestCient = new CatalogRestClient(stormConf.get(CATALOG_ROOT_URL).toString());
         NotifierInfo notifierInfo = catalogRestCient.getNotifierInfo(this.notifierName);
 
@@ -71,7 +78,7 @@ public class NotificationBolt extends BaseRichBolt {
         NotifierConfig notifierConfig = new NotifierConfigImpl(props, notifierInfo.getFieldValues(),
                                                                notifierInfo.getClassName(), jarPath);
 
-        notificationContext = new BoltNotificationContext(collector, notifierConfig, notificationService);
+        notificationContext = new BoltNotificationContext(collector, notifierConfig);
         notificationService.register(this.notifierName, notificationContext);
     }
 
@@ -85,6 +92,11 @@ public class NotificationBolt extends BaseRichBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
+    }
+
+    @Override
+    public void cleanup() {
+        notificationService.close();
     }
 
 }

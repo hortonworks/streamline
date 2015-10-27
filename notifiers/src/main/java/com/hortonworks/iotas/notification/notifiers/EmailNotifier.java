@@ -172,6 +172,11 @@ public class EmailNotifier implements Notifier, TransportListener {
         return fieldNames;
     }
 
+    @Override
+    public NotificationContext getContext() {
+        return ctx;
+    }
+
     /**
      * Returns a new map containing the values for email message fields from the first map,
      * using values from second map as defaults.
