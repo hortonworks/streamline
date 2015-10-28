@@ -21,27 +21,34 @@ components:
       - ${kafka.spout.zkRoot}
       - ${kafka.spout.id}
 
-  - id: "unparsedTupleHandler"
-    className: ${unparsed.tuple.handler.implementation}
-    configMethods:
-      - name: "withFsUrl"
-        args:
-          - ${hdfs.fsUrl}
-      - name: "withPath"
-        args:
-          - ${hdfs.path}
-      - name: "withName"
-        args:
-          - ${hdfs.name}
-      - name: "withRotationInterval"
-        args:
-          - ${unparsed.tuple.handler.rotationInterval}
-
   - id: "hBaseMapper"
     className: "com.hortonworks.hbase.ParserOutputHBaseMapper"
     constructorArgs:
       - ${hbase.column.family}
 
+  - id: "recordFormat"
+    className: "com.hortonworks.hdfs.IdentityHdfsRecordFormat"
+
+  - id: "syncPolicy"
+    className: "org.apache.storm.hdfs.bolt.sync.CountSyncPolicy"
+    constructorArgs:
+      - ${hdfs.syncPolicyCount}
+
+  - id: "rotationPolicy"
+    className: "org.apache.storm.hdfs.bolt.rotation.TimedRotationPolicy"
+    constructorArgs:
+      - ${hdfs.rotationInterval}
+      - SECONDS
+
+  - id: "fileNameFormat"
+    className: "org.apache.storm.hdfs.bolt.format.DefaultFileNameFormat"
+    configMethods:
+      - name: "withPath"
+        args:
+          - ${hdfs.path}
+      - name: "withPrefix"
+        args:
+          - ${hdfs.name}
 
 # spout definitions
 spouts:
@@ -55,9 +62,12 @@ bolts:
   - id: "ParserBolt"
     className: "com.hortonworks.bolt.ParserBolt"
     configMethods:
-      - name: "withUnparsedTupleHandler"
+      - name: "withParsedTuplesStreamId"
         args:
-          - ref: "unparsedTupleHandler"
+          - "parsed_tuples_stream"
+      - name: "withUnparsedTuplesStreamId"
+        args:
+          - "failed_to_parse_tuples_stream"
 
   - id: "PrinterBolt"
     className: "com.hortonworks.bolt.PrinterBolt"
@@ -87,6 +97,25 @@ bolts:
 
     parallelism: 1
 
+  - id: "HdfsBolt"
+    className: "org.apache.storm.hdfs.bolt.HdfsBolt"
+    configMethods:
+      - name: "withFsUrl"
+        args:
+          - ${hdfs.fsUrl}
+      - name: "withFileNameFormat"
+        args:
+          - ref: "fileNameFormat"
+      - name: "withRecordFormat"
+        args:
+          - ref: "recordFormat"
+      - name: "withRotationPolicy"
+        args:
+          - ref: "rotationPolicy"
+      - name: "withSyncPolicy"
+        args:
+          - ref: "syncPolicy"
+
 #stream definitions
 streams:
   - name: "kafka --> parser"
@@ -100,18 +129,28 @@ streams:
     to: "PrinterBolt"
     grouping:
       type: SHUFFLE
+      streamId: "parsed_tuples_stream"
 
   - name: "paser --> hbase"
     from: "ParserBolt"
     to: "HBaseBolt"
     grouping:
       type: SHUFFLE
+      streamId: "parsed_tuples_stream"
+
+  - name: "paser --> hdfs"
+    from: "ParserBolt"
+    to: "HdfsBolt"
+    grouping:
+      type: SHUFFLE
+      streamId: "failed_to_parse_tuples_stream"
 
   - name: "paser --> rule"
     from: "ParserBolt"
     to: "DummyRuleBolt"
     grouping:
       type: SHUFFLE
+      streamId: "parsed_tuples_stream"
 
   - name: "rule --> notification"
     from: "DummyRuleBolt"
