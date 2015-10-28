@@ -21,6 +21,13 @@
             <groupId>com.hortonworks</groupId>
             <artifactId>core</artifactId>
             <version>${project.version}</version>
+            <!-- dropwizard and phoenix have conflicts in jersey related dependencies  -->
+            <exclusions>
+              <exclusion>
+                <groupId>org.apache.phoenix</groupId>
+                <artifactId>phoenix-core</artifactId>
+               </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
