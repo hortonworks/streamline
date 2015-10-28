@@ -1,25 +1,23 @@
 package com.hortonworks.client;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.hortonworks.iotas.catalog.CatalogResponse;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
-import com.hortonworks.iotas.catalog.Device;
 import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.catalog.ParserInfo;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.WebResource;
+import com.hortonworks.iotas.storage.Storable;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 /**
  * TODO: All the configs should be read from some config file.
@@ -27,7 +25,6 @@ import java.util.Map;
 public class RestClient {
 
     private Client client;
-    private String rootCatalogURL;
 
     private static final String DEVICE_URL = "devices";
     private static final String DATASOURCE_URL = "datasources";
@@ -36,28 +33,39 @@ public class RestClient {
     private static final String NOTIFIER_URL = "notifiers";
     private static final String PARSER_DOWNLOAD_URL = PARSER_URL + "/download";
 
+    private String rootCatalogURL;
+    private WebTarget rootTarget;
+    private WebTarget dataSourceTarget;
+    private WebTarget feedTarget;
+    private WebTarget parserTarget;
+
     //TODO: timeouts should come from a config so probably make them constructor args.
     public RestClient(String rootCatalogURL) {
+        this(rootCatalogURL, new ClientConfig());
+    }
+
+    public RestClient(String rootCatalogURL, ClientConfig clientConfig) {
         this.rootCatalogURL = rootCatalogURL;
-        client = Client.create();
-        client.setConnectTimeout(1000);
-        client.setReadTimeout(5000);
+        client = ClientBuilder.newClient(clientConfig);
+        client.register(MultiPartFeature.class);
+        rootTarget = client.target(rootCatalogURL);
+        dataSourceTarget = rootTarget.path(DATASOURCE_URL);
+        feedTarget = rootTarget.path(FEED_URL);
+        parserTarget = rootTarget.path(PARSER_URL);
     }
 
     public <T> T get(String url, Class<T> clazz) {
-        try {
-            WebResource resource = client.resource(url);
-            return resource.accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_OCTET_STREAM_TYPE, MediaType.MULTIPART_FORM_DATA_TYPE).get(clazz);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
+        return get(client.target(url), clazz);
     }
 
-    public <T> List<T> getEntities(String url, Class<T> clazz) {
+    private <T> T get(WebTarget target, Class<T> clazz) {
+        return target.request(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_OCTET_STREAM_TYPE, MediaType.MULTIPART_FORM_DATA_TYPE).get(clazz);
+    }
+
+    private <T extends Storable> List<T> getEntities(WebTarget target, Class<T> clazz) {
         List<T> entities = new ArrayList<T>();
+        String response = target.request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
         try {
-            WebResource resource = client.resource(url);
-            String response = resource.accept(MediaType.APPLICATION_JSON_TYPE).get(String.class);
             ObjectMapper mapper = new ObjectMapper();
             JsonNode node = mapper.readTree(response);
             Iterator<JsonNode> it = node.get("entities").elements();
@@ -70,38 +78,39 @@ public class RestClient {
         return entities;
     }
 
-    public <T> T getEntity(String url, Class<T> clazz) {
+    private <T extends Storable> T getEntity(WebTarget target, Class<T> clazz) {
+        String response = target.request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
+
         try {
-            WebResource resource = client.resource(url);
-            String response = resource.accept(MediaType.APPLICATION_JSON_TYPE).get(String.class);
             ObjectMapper mapper = new ObjectMapper();
             JsonNode node = mapper.readTree(response);
             return mapper.treeToValue(node.get("entity"), clazz);
         } catch (Exception ex) {
-            System.out.println(ex);
+            throw new RuntimeException(ex);
         }
-        return null;
     }
 
     public ParserInfo getParserInfo(Long parserId) {
-        return getEntity(String.format("%s/%s/%s", rootCatalogURL, PARSER_URL, parserId), ParserInfo.class);
+        return getEntity(parserTarget.path(parserId.toString()), ParserInfo.class);
     }
 
     public NotifierInfo getNotifierInfo(String notifierName) {
-        return getEntities(String.format("%s/%s/?notifierName=%s",
-                                         rootCatalogURL, NOTIFIER_URL, notifierName), NotifierInfo.class).get(0);
+        return getEntities(client.target(String.format("%s/%s/?notifierName=%s",
+                                         rootCatalogURL, NOTIFIER_URL, notifierName)), NotifierInfo.class).get(0);
     }
     public DataSource getDataSource(String deviceId, Long version) {
-        return getEntities(String.format("%s/%s/type/DEVICE/?deviceId=%s&version=%s",
-                                         rootCatalogURL, DATASOURCE_URL, deviceId, version), DataSource.class).get(0);
+        return getEntities(client.target(String.format("%s/%s/type/DEVICE/?deviceId=%s&version=%s",
+                                         rootCatalogURL, DATASOURCE_URL, deviceId, version)), DataSource.class).get(0);
     }
 
     public ParserInfo getParserInfo(String deviceId, Long version) {
-        DataSource dataSource = getEntities(String.format("%s/%s/type/DEVICE/?deviceId=%s&version=%s",
-                                            rootCatalogURL, DATASOURCE_URL, deviceId, version), DataSource.class).get(0);
+        String url = String.format("%s/%s/type/DEVICE?deviceId=%s&version=%s",
+                rootCatalogURL, DATASOURCE_URL, deviceId, version);
+        String catalogResponse = get(url, String.class);
+        DataSource dataSource = getEntities(client.target(url), DataSource.class).get(0);
 
-        DataFeed dataFeed = getEntities(String.format("%s/%s/?dataSourceId=%s",
-                                        rootCatalogURL, FEED_URL, dataSource.getDataSourceId()), DataFeed.class).get(0);
+        DataFeed dataFeed = getEntities(client.target(String.format("%s/%s?dataSourceId=%s",
+                rootCatalogURL, FEED_URL, dataSource.getDataSourceId())), DataFeed.class).get(0);
 
         return getParserInfo(dataFeed.getParserId());
     }

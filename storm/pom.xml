@@ -21,6 +21,13 @@
             <groupId>com.hortonworks</groupId>
             <artifactId>core</artifactId>
             <version>${project.version}</version>
+            <!-- dropwizard and phoenix have conflicts in jersey related dependencies  -->
+            <exclusions>
+              <exclusion>
+                <groupId>org.apache.phoenix</groupId>
+                <artifactId>phoenix-core</artifactId>
+               </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.hortonworks</groupId>
@@ -37,9 +44,17 @@
             <artifactId>${kafkaArtifact}</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.sun.jersey</groupId>
+            <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-server</artifactId>
             <version>${jersey.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-multipart</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.storm</groupId>
@@ -51,24 +66,6 @@
             <artifactId>storm-core</artifactId>
             <version>${storm.version}</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>log4j-over-slf4j</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>log4j-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>log4j-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>log4j-slf4j-impl</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.storm</groupId>

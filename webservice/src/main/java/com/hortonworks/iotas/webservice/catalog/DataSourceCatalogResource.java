@@ -1,7 +1,10 @@
 package com.hortonworks.iotas.webservice.catalog;
 
 import com.codahale.metrics.annotation.Timed;
+import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
+import com.hortonworks.iotas.catalog.ParserInfo;
+import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.util.WSUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -13,6 +16,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -51,11 +55,11 @@ public class DataSourceCatalogResource {
         List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>();
         try {
             MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
-            for(String param: params.keySet()) {
+            for (String param : params.keySet()) {
                 queryParams.add(new CatalogService.QueryParam(param, params.getFirst(param)));
             }
             Collection<DataSource> dataSources = catalogService.listDataSourcesForType(type, queryParams);
-            if(! dataSources.isEmpty()) {
+            if (!dataSources.isEmpty()) {
                 return WSUtils.respond(OK, SUCCESS, dataSources);
             }
         } catch (Exception ex) {
@@ -81,12 +85,39 @@ public class DataSourceCatalogResource {
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, dataSourceId.toString());
     }
 
+    @GET
+    @Path("/datasources/{id}/schema")
+    @Timed
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getDataSourceSchema(@PathParam("id") Long dataSourceId) {
+        try {
+            List<CatalogService.QueryParam> qp = Arrays.asList(new CatalogService.QueryParam("dataSourceId", dataSourceId.toString()));
+            Collection<DataFeed> feeds = catalogService.listDataFeeds(qp);
+            if (feeds != null) {
+                if (feeds.size() == 1) {
+                    ParserInfo parserInfo = catalogService.getParserInfo(feeds.iterator().next().getParserId());
+                    if (parserInfo != null) {
+                        Schema schema = parserInfo.getParserSchema();
+                        if (schema != null) {
+                            return WSUtils.respond(OK, SUCCESS, schema);
+                        }
+                    }
+                } else if (feeds.size() > 1) {
+                    return WSUtils.respond(NOT_FOUND, DATASOURCE_SCHEMA_NOT_UNIQUE, String.valueOf(feeds.size()));
+                }
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+        return WSUtils.respond(NOT_FOUND, PARSER_SCHEMA_FOR_ENTITY_NOT_FOUND, dataSourceId.toString());
+    }
+
     @POST
     @Path("/datasources")
     @Timed
     public Response addDataSource(DataSource dataSource) {
         try {
-           if (StringUtils.isEmpty(dataSource.getTypeConfig())) {
+            if (StringUtils.isEmpty(dataSource.getTypeConfig())) {
                 return WSUtils.respond(BAD_REQUEST, BAD_REQUEST_PARAM_MISSING, "typeConfig");
             }
             DataSource createdDataSource = catalogService.addDataSource(dataSource);
@@ -117,7 +148,7 @@ public class DataSourceCatalogResource {
     @Timed
     public Response addOrUpdateDataSource(@PathParam("id") Long dataSourceId, DataSource dataSource) {
         try {
-           if (StringUtils.isEmpty(dataSource.getTypeConfig())) {
+            if (StringUtils.isEmpty(dataSource.getTypeConfig())) {
                 return WSUtils.respond(BAD_REQUEST, BAD_REQUEST_PARAM_MISSING, "typeConfig");
             }
             DataSource result = catalogService.addOrUpdateDataSource(dataSourceId, dataSource);

@@ -21,6 +21,17 @@
             <groupId>com.hortonworks</groupId>
             <artifactId>core</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <!-- dropwizard and phoenix have conflicts in jersey related dependencies  -->
+                <exclusion>
+                    <groupId>org.apache.phoenix</groupId>
+                    <artifactId>phoenix-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.hortonworks</groupId>
@@ -44,11 +55,9 @@
           <artifactId>dropwizard-assets</artifactId>
           <version>${dropwizard.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-multipart</artifactId>
-            <version>${jersey-media-multipart.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jmockit</groupId>
