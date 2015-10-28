@@ -2,6 +2,7 @@ package com.hortonworks.iotas.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.catalog.DataStream;
+import org.apache.commons.lang.StringUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
@@ -43,6 +44,9 @@ public class StormDataStreamActionsImpl implements DataStreamActions {
     private static final String YAML_KEY_TO = "to";
     private static final String YAML_KEY_GROUPING = "grouping";
     private static final String YAML_KEY_TYPE = "type";
+    private static final String YAML_PARSED_TUPLE_STREAM = "good";
+    private static final String YAML_UNPARSED_TUPLE_STREAM = "bad";
+    private static final String YAML_KEY_STREAM_ID = "streamId";
 
     private String stormArtifactsLocation = "/tmp/storm-artifacts/";
     private Map<String, Object> yamlData;
@@ -214,6 +218,7 @@ public class StormDataStreamActionsImpl implements DataStreamActions {
         this.jsonUiNameToStormName.put(parserBoltId, parserBoltId);
         Map grouping = new LinkedHashMap();
         grouping.put(YAML_KEY_TYPE, "SHUFFLE");
+        grouping.put(YAML_KEY_STREAM_ID, YAML_PARSED_TUPLE_STREAM);
         this.addToStreams(this.createStream(parserBoltId, printerBoltId,
                 grouping));
         return;
@@ -257,6 +262,8 @@ public class StormDataStreamActionsImpl implements DataStreamActions {
                                 (DataStreamLayoutValidator.JSON_KEY_UINAME);
                         this.jsonUiNameToStormName.put(goodTuplesRule,
                                 parserBoltId);
+                        this.jsonUiNameToStormName.put(badTuplesRule,
+                                parserBoltId);
                         continue;
                     }
                 }
@@ -290,12 +297,17 @@ public class StormDataStreamActionsImpl implements DataStreamActions {
                 //special case for good bad tuples processor. do nothing
                 continue;
             }
+            String streamId = "";
             if (linkFrom.equals(badTuplesRule)) {
-                //special case for bad tuples rule
-                continue;
+                streamId = YAML_UNPARSED_TUPLE_STREAM;
+            } else if (linkFrom.equals(goodTuplesRule)) {
+                streamId = YAML_PARSED_TUPLE_STREAM;
             }
             Map grouping = new LinkedHashMap();
             grouping.put(YAML_KEY_TYPE, "SHUFFLE");
+            if (!StringUtils.isEmpty(streamId)) {
+                grouping.put(YAML_KEY_STREAM_ID, streamId);
+            }
             this.addToStreams(this.createStream(linkFrom, linkTo, grouping));
         }
         return;
@@ -347,11 +359,28 @@ public class StormDataStreamActionsImpl implements DataStreamActions {
 
         //When we have a kafka spout as data source we add a parser bolt by
         // default. Hence the below code
+        List parsaerBoltConfigMethods = new ArrayList();
+        Map configParsedTuplesStreamMethod = new LinkedHashMap();
+        configParsedTuplesStreamMethod.put(YAML_KEY_NAME,
+                "withParsedTuplesStreamId");
+        List configParsedTuplesStreamMethodArgs = new ArrayList();
+        configParsedTuplesStreamMethodArgs.add(YAML_PARSED_TUPLE_STREAM);
+        configParsedTuplesStreamMethod.put(YAML_KEY_ARGS,
+                configParsedTuplesStreamMethodArgs);
+        parsaerBoltConfigMethods.add(configParsedTuplesStreamMethod);
+        Map configUnparsedTuplesStreamMethod = new LinkedHashMap();
+        configUnparsedTuplesStreamMethod.put(YAML_KEY_NAME,
+                "withUnparsedTuplesStreamId");
+        List configUnparsedTuplesStreamMethodArgs = new ArrayList();
+        configUnparsedTuplesStreamMethodArgs.add(YAML_UNPARSED_TUPLE_STREAM);
+        configUnparsedTuplesStreamMethod.put(YAML_KEY_ARGS,
+                configUnparsedTuplesStreamMethodArgs);
+        parsaerBoltConfigMethods.add(configUnparsedTuplesStreamMethod);
         String parserBoltId = dataSourceUiName + "ParserBolt";
         this.parserBoltId = parserBoltId;
         String parserBoltClassName = "com.hortonworks.bolt.ParserBolt";
         this.addToBolts(this.createComponent(parserBoltId,
-                parserBoltClassName, null, null));
+                parserBoltClassName, null, parsaerBoltConfigMethods));
 
         //TODO: hack for special case - to connect spout to parser bolt
         // without a link in the ui and hence json
@@ -413,29 +442,44 @@ public class StormDataStreamActionsImpl implements DataStreamActions {
     }
 
     private void addHdfsDataSink (Map dataSink) {
-        //TODO: currently hdfs sink is only used for unparsed tuple handler
-        // from parser bolt. Need to change that to good and bad stream. And
-        // change this method to create a hdfs bolt component rather than
-        // HdfsUnparsedTupleHandler component
-        // uiname needs to be unique - enterd by user
         String dataSinkUiName  = (String) dataSink.get
                 (DataStreamLayoutValidator.JSON_KEY_UINAME);
         Map config = (Map) dataSink.get(DataStreamLayoutValidator
                 .JSON_KEY_CONFIG);
 
-        String hdfsComponentId = dataSinkUiName + "UnparsedTupleHandler";
-        String hdfsComponentClassName = "com.hortonworks.topology" +
-                ".HdfsUnparsedTupleHandler";
+        String recordFormatId = dataSinkUiName + "recordFormat";
+        String recordFormatClassName = "com.hortonworks.hdfs" +
+                ".IdentityHdfsRecordFormat";
+        this.addToComponents(this.createComponent(recordFormatId,
+                recordFormatClassName, null, null));
 
-        List hdfsComponentConfigMethods = new ArrayList();
+        String syncPolicyId = dataSinkUiName + "syncPolicy";
+        String syncPolicyClassName = "org.apache.storm.hdfs.bolt.sync" +
+                ".CountSyncPolicy";
+        List syncPolicyConstructorArgs = new ArrayList();
+        //TODO: Hard coding to classname and value 1 for now. Will come from
+        // template/config
+        syncPolicyConstructorArgs.add(1);
+        this.addToComponents(this.createComponent(syncPolicyId,
+                syncPolicyClassName, syncPolicyConstructorArgs, null));
 
-        Map fsurlConfigMethod = new LinkedHashMap();
-        fsurlConfigMethod.put(YAML_KEY_NAME, "withFsUrl");
-        List fsurlMethodArgs = new ArrayList();
-        fsurlMethodArgs.add(config.get(DataStreamLayoutValidator
-                .JSON_KEY_FS_URL));
-        fsurlConfigMethod.put(YAML_KEY_ARGS, fsurlMethodArgs);
-        hdfsComponentConfigMethods.add(fsurlConfigMethod);
+        //TODO: Hard coding rotation policy and its constructor args for now.
+        // Will come from template/config
+        String rotationPolicyId = dataSinkUiName + "rotationPolicy";
+        String rotationPolicyClassName = "org.apache.storm.hdfs.bolt.rotation" +
+                ".TimedRotationPolicy";
+        List rotationPolicyConstructorArgs = new ArrayList();
+        rotationPolicyConstructorArgs.add(10);
+        rotationPolicyConstructorArgs.add("SECONDS");
+        this.addToComponents(this.createComponent(rotationPolicyId,
+                rotationPolicyClassName, rotationPolicyConstructorArgs, null));
+
+        //TODO: Hard coding FileNameFormat for now. Will be coming from
+        // config/template
+        String fileNameFormatId = dataSinkUiName + "fileNameFormat";
+        String fileNameFormatClassName = "org.apache.storm.hdfs.bolt.format" +
+                ".DefaultFileNameFormat";
+        List fileNameFormatConfigMethods = new ArrayList();
 
         Map pathConfigMethod = new LinkedHashMap();
         pathConfigMethod.put(YAML_KEY_NAME, "withPath");
@@ -443,53 +487,69 @@ public class StormDataStreamActionsImpl implements DataStreamActions {
         pathMethodArgs.add(config.get(DataStreamLayoutValidator
                 .JSON_KEY_PATH));
         pathConfigMethod.put(YAML_KEY_ARGS, pathMethodArgs);
-        hdfsComponentConfigMethods.add(pathConfigMethod);
+        fileNameFormatConfigMethods.add(pathConfigMethod);
 
         Map nameConfigMethod = new LinkedHashMap();
-        nameConfigMethod.put(YAML_KEY_NAME, "withName");
+        nameConfigMethod.put(YAML_KEY_NAME, "withPrefix");
         List nameMethodArgs = new ArrayList();
         nameMethodArgs.add(config.get(DataStreamLayoutValidator
                 .JSON_KEY_NAME));
         nameConfigMethod.put(YAML_KEY_ARGS, nameMethodArgs);
-        hdfsComponentConfigMethods.add(nameConfigMethod);
+        fileNameFormatConfigMethods.add(nameConfigMethod);
+        this.addToComponents(this.createComponent(fileNameFormatId,
+                fileNameFormatClassName, null, fileNameFormatConfigMethods));
 
-        //TODO: figure out where the below config should come from. Hard
-        // coding for now
-        Map rotationIntervalConfigMethod = new LinkedHashMap();
-        rotationIntervalConfigMethod.put(YAML_KEY_NAME, "withRotationInterval");
-        List rotationIntervalMethodArgs = new ArrayList();
-        rotationIntervalMethodArgs.add(1);
-        rotationIntervalConfigMethod.put(YAML_KEY_ARGS,
-                rotationIntervalMethodArgs);
-        hdfsComponentConfigMethods.add(rotationIntervalConfigMethod);
+        String hdfsBoltId = dataSinkUiName + "HdfsBolt";
+        String hdfsBoltClassName = "org.apache.storm.hdfs.bolt.HdfsBolt";
+        List hdfsBoltConfigMethods = new ArrayList();
 
+        Map fsUrlConfigMethod = new LinkedHashMap();
+        fsUrlConfigMethod.put(YAML_KEY_NAME, "withFsUrl");
+        List fsUrlMethodArgs = new ArrayList();
+        fsUrlMethodArgs.add(config.get(DataStreamLayoutValidator
+                .JSON_KEY_FS_URL));
+        fsUrlConfigMethod.put(YAML_KEY_ARGS, fsUrlMethodArgs);
+        hdfsBoltConfigMethods.add(fsUrlConfigMethod);
 
-        this.addToComponents(this.createComponent(hdfsComponentId,
-                hdfsComponentClassName, null, hdfsComponentConfigMethods));
+        Map fileNameFormatConfigMethod = new LinkedHashMap();
+        fileNameFormatConfigMethod.put(YAML_KEY_NAME, "withFileNameFormat");
+        List fileNameFormatMethodArgs = new ArrayList();
+        Map fileNameFormatRef = new LinkedHashMap();
+        fileNameFormatRef.put(YAML_KEY_REF, fileNameFormatId);
+        fileNameFormatMethodArgs.add(fileNameFormatRef);
+        fileNameFormatConfigMethod.put(YAML_KEY_ARGS, fileNameFormatMethodArgs);
+        hdfsBoltConfigMethods.add(fileNameFormatConfigMethod);
 
-        // TODO: below is also throw away code where we add the unparsed
-        // tuple handler to ParserBolt. Once we change the hdfs unparsed
-        // tuple handler implementation to a bolt we will remove the below
-        // code and wire it up using links
-        List<Map> bolts = (List) this.yamlData.get(YAML_KEY_BOLTS);
-        for (Map bolt: bolts) {
-            String id = (String) bolt.get("id");
-            if (id.equals(this.parserBoltId)) {
-                List parserBoltConfigMethods = new ArrayList();
-                Map tupleHandlerConfigMethod = new LinkedHashMap();
-                tupleHandlerConfigMethod.put(YAML_KEY_NAME,
-                        "withUnparsedTupleHandler");
-                List tupleHandlerMethodArgs = new ArrayList();
-                Map ref = new LinkedHashMap();
-                ref.put(YAML_KEY_REF, hdfsComponentId);
-                tupleHandlerMethodArgs.add(ref);
-                tupleHandlerConfigMethod.put(YAML_KEY_ARGS,
-                        tupleHandlerMethodArgs);
-                parserBoltConfigMethods.add(tupleHandlerConfigMethod);
-                bolt.put(YAML_KEY_CONFIG_METHODS, parserBoltConfigMethods);
-                break;
-            }
-        }
+        Map recordFormatConfigMethod = new LinkedHashMap();
+        recordFormatConfigMethod.put(YAML_KEY_NAME, "withRecordFormat");
+        List recordFormatMethodArgs = new ArrayList();
+        Map recordFormatRef = new LinkedHashMap();
+        recordFormatRef.put(YAML_KEY_REF, recordFormatId);
+        recordFormatMethodArgs.add(recordFormatRef);
+        recordFormatConfigMethod.put(YAML_KEY_ARGS, recordFormatMethodArgs);
+        hdfsBoltConfigMethods.add(recordFormatConfigMethod);
+
+        Map rotationPolicyConfigMethod = new LinkedHashMap();
+        rotationPolicyConfigMethod.put(YAML_KEY_NAME, "withRotationPolicy");
+        List rotationPolicyMethodArgs = new ArrayList();
+        Map rotationPolicyRef = new LinkedHashMap();
+        rotationPolicyRef.put(YAML_KEY_REF, rotationPolicyId);
+        rotationPolicyMethodArgs.add(rotationPolicyRef);
+        rotationPolicyConfigMethod.put(YAML_KEY_ARGS, rotationPolicyMethodArgs);
+        hdfsBoltConfigMethods.add(rotationPolicyConfigMethod);
+
+        Map syncPolicyConfigMethod = new LinkedHashMap();
+        syncPolicyConfigMethod.put(YAML_KEY_NAME, "withSyncPolicy");
+        List syncPolicyMethodArgs = new ArrayList();
+        Map syncPolicyRef = new LinkedHashMap();
+        syncPolicyRef.put(YAML_KEY_REF, syncPolicyId);
+        syncPolicyMethodArgs.add(syncPolicyRef);
+        syncPolicyConfigMethod.put(YAML_KEY_ARGS, syncPolicyMethodArgs);
+        hdfsBoltConfigMethods.add(syncPolicyConfigMethod);
+
+       this.addToBolts(this.createComponent(hdfsBoltId, hdfsBoltClassName,
+                null, hdfsBoltConfigMethods));
+        this.jsonUiNameToStormName.put(dataSinkUiName, hdfsBoltId);
     }
 
     private void addRule (Map rule) {
