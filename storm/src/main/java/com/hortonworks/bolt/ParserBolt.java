@@ -8,7 +8,7 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.client.RestClient;
+import com.hortonworks.client.CatalogRestClient;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.common.IotasEvent;
@@ -37,7 +37,7 @@ public class ParserBolt extends BaseRichBolt {
     public static final String IOTAS_EVENT = "iotas.event";
     private OutputCollector collector;
 
-    private RestClient client;
+    private CatalogRestClient client;
     private String localParserJarPath;
     private static ConcurrentHashMap<Object, Parser> parserMap = new ConcurrentHashMap<Object, Parser>();
     private static ConcurrentHashMap<Object, DataSource> dataSourceMap = new ConcurrentHashMap<Object, DataSource>();
@@ -79,7 +79,7 @@ public class ParserBolt extends BaseRichBolt {
         //We could also add the iotasMessage timestamp to calculate overall pipeline latency.
         this.collector = collector;
         this.localParserJarPath = stormConf.get(LOCAL_PARSER_JAR_PATH).toString();
-        this.client = new RestClient(catalogRootURL);
+        this.client = new CatalogRestClient(catalogRootURL);
         if (this.unparsedTupleHandler != null) {
             try {
                 this.unparsedTupleHandler.prepare(stormConf);
@@ -266,7 +266,7 @@ public class ParserBolt extends BaseRichBolt {
 
     //in default scope so test can inject a mock instance, We could spin up an in process
     //rest server and configure it with all the correct catalog entries, but seems like an overkill for a test.
-    void setClient(RestClient client) {
+    void setClient(CatalogRestClient client) {
         this.client = client;
     }
 }

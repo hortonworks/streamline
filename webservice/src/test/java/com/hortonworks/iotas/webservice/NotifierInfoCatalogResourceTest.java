@@ -5,6 +5,7 @@ import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.catalog.NotifierInfoCatalogResource;
 import mockit.Expectations;
+import mockit.Injectable;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
 import org.junit.Before;
@@ -27,10 +28,10 @@ public class NotifierInfoCatalogResourceTest {
 
     NotifierInfoCatalogResource resource;
 
-    @Mocked
+    @Injectable
     CatalogService mockCatalogService;
 
-    @Mocked
+    @Injectable
     UriInfo mockUriInfo;
 
     MultivaluedMap<String, String> multiValuedMap;

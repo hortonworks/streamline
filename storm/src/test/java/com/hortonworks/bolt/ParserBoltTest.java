@@ -6,7 +6,7 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
-import com.hortonworks.client.RestClient;
+import com.hortonworks.client.CatalogRestClient;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.model.IotasMessage;
 import mockit.*;
@@ -31,7 +31,8 @@ public class ParserBoltTest {
     private ParserInfo parserInfo;
 
     private @Injectable OutputCollector mockOutputCollector;
-    private @Injectable RestClient mockClient;
+    private @Injectable
+    CatalogRestClient mockClient;
     private @Injectable Tuple mockTuple;
 
     @Before

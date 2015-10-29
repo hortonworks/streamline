@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * TODO: All the configs should be read from some config file.
  */
-public class RestClient {
+public class CatalogRestClient {
 
     private Client client;
 
@@ -40,11 +40,11 @@ public class RestClient {
     private WebTarget parserTarget;
 
     //TODO: timeouts should come from a config so probably make them constructor args.
-    public RestClient(String rootCatalogURL) {
+    public CatalogRestClient(String rootCatalogURL) {
         this(rootCatalogURL, new ClientConfig());
     }
 
-    public RestClient(String rootCatalogURL, ClientConfig clientConfig) {
+    public CatalogRestClient(String rootCatalogURL, ClientConfig clientConfig) {
         this.rootCatalogURL = rootCatalogURL;
         client = ClientBuilder.newClient(clientConfig);
         client.register(MultiPartFeature.class);
@@ -69,6 +69,9 @@ public class RestClient {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode node = mapper.readTree(response);
             Iterator<JsonNode> it = node.get("entities").elements();
+            while (it.hasNext()) {
+                entities.add(mapper.treeToValue(it.next(), clazz));
+            }
             while (it.hasNext()) {
                 entities.add(mapper.treeToValue(it.next(), clazz));
             }
