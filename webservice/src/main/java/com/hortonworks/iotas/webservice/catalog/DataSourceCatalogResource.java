@@ -28,9 +28,11 @@ import java.util.Collection;
 import java.util.List;
 
 import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.BAD_REQUEST_PARAM_MISSING;
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.DATASOURCE_SCHEMA_NOT_UNIQUE;
 import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.DATASOURCE_TYPE_FILTER_NOT_FOUND;
 import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
 import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.PARSER_SCHEMA_FOR_ENTITY_NOT_FOUND;
 import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;

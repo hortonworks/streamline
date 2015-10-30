@@ -5,15 +5,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.hortonworks.iotas.catalog.CatalogResponse;
-import com.hortonworks.iotas.catalog.DataFeed;
-import com.hortonworks.iotas.catalog.DataSource;
-import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.catalog.Cluster;
 import com.hortonworks.iotas.catalog.Component;
+import com.hortonworks.iotas.catalog.DataFeed;
+import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.NotifierInfo;
-import com.hortonworks.iotas.test.IntegrationTest;
+import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.storage.Storable;
+import com.hortonworks.iotas.test.IntegrationTest;
+import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
 import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import org.glassfish.jersey.client.ClientConfig;
@@ -49,12 +49,12 @@ public class RestIntegrationTest {
      * A Test element holder class
      */
     private class ResourceTestElement {
-        Storable resourceToPost; // resource that will be used to test post
-        Storable resourceToPut; // resource that will be used to test put
+        Object resourceToPost; // resource that will be used to test post
+        Object resourceToPut; // resource that will be used to test put
         String id; //Id by which Get(id) and Delete(id) will be tested, should match the actual Id set in post/put request.
         String url; //Rest Url to test.
 
-        public ResourceTestElement(Storable resourceToPost, Storable resourceToPut, String id, String url) {
+        public ResourceTestElement(Object resourceToPost, Object resourceToPut, String id, String url) {
             this.resourceToPost = resourceToPost;
             this.resourceToPut = resourceToPut;
             this.id = id;
@@ -70,7 +70,11 @@ public class RestIntegrationTest {
             new ResourceTestElement(createDataSource(1l, "testDataSource"), createDataSource(1l, "testDataSourcePut"), "1", rootUrl + "datasources"),
             new ResourceTestElement(createClusterInfo(1l, "testCluster"), createClusterInfo(1l, "testClusterPut"), "1", rootUrl + "clusters"),
             new ResourceTestElement(createComponent(1l, "testComponent"), createComponent(1l, "testComponentPut"), "1", rootUrl + "clusters/1/components"),
-            new ResourceTestElement(createNotifierInfo(1l, "testNotifier"), createNotifierInfo(1l, "testNotifierPut"), "1", rootUrl + "notifiers")
+            new ResourceTestElement(createNotifierInfo(1l, "testNotifier"), createNotifierInfo(1l, "testNotifierPut"), "1", rootUrl + "notifiers"),
+
+            new ResourceTestElement(createDataSourceDto(1l, "testDataSourceWithDataFeed:"+System.currentTimeMillis()),
+                    createDataSourceDto(1l, "testDataSourceWithDataFeedPut:"+System.currentTimeMillis()), "1", rootUrl + "datasourceswithdatafeed")
+
             // parser is commented as parser takes a jar as input along with the parserInfo instance and so it needs a multipart request.
             //new ResourceTestElement(createParserInfo(1l, "testParser"), createParserInfo(1l, "testParserPut"), "1", rootUrl + "parsers")
     );
@@ -85,8 +89,8 @@ public class RestIntegrationTest {
 
         for (ResourceTestElement resourceToTest : resourcesToTest) {
             String url = resourceToTest.url;
-            Storable resourceToPost = resourceToTest.resourceToPost;
-            Storable resourceToPut = resourceToTest.resourceToPut;
+            Object resourceToPost = resourceToTest.resourceToPost;
+            Object resourceToPut = resourceToTest.resourceToPut;
             String id = resourceToTest.id;
 
             String response = client.target(url).request().post(Entity.json(resourceToPost), String.class);
@@ -140,7 +144,7 @@ public class RestIntegrationTest {
      * @param <T>
      * @return
      */
-    private <T extends Storable> List<T> getEntities(String response, Class<T> clazz) {
+    private <T extends Object> List<T> getEntities(String response, Class<T> clazz) {
         List<T> entities = new ArrayList<>();
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -162,7 +166,7 @@ public class RestIntegrationTest {
      * @param <T>
      * @return
      */
-    private <T extends Storable> T getEntity(String response, Class<T> clazz) {
+    private <T extends Object> T getEntity(String response, Class<T> clazz) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode node = mapper.readTree(response);
@@ -193,6 +197,25 @@ public class RestIntegrationTest {
         df.setDataFeedName(name);
         df.setEndpoint("kafka://host:port/topic");
         df.setParserId(id);
+        return df;
+    }
+
+    private DataSourceDto createDataSourceDto(Long dataSourceId, String dataSourceName) {
+
+        DataSource ds = createDataSource(dataSourceId, dataSourceName);
+        DataFeed df = createDataFeedWithDataSourceId(dataSourceId, "feed:"+dataSourceName);
+        DataSourceDto dataSourceDto = new DataSourceDto(ds, df);
+
+        return dataSourceDto;
+    }
+
+    private DataFeed createDataFeedWithDataSourceId(long datasourceId, String feedName) {
+        DataFeed df = new DataFeed();
+        df.setDataFeedId(System.currentTimeMillis());
+        df.setDataSourceId(datasourceId);
+        df.setDataFeedName(feedName);
+        df.setEndpoint("kafka://host:port/topic");
+        df.setParserId(datasourceId);
         return df;
     }
 

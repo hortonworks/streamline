@@ -4,6 +4,7 @@ import com.hortonworks.iotas.catalog.CatalogResponse;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.webservice.catalog.DataSourceFacade;
 import com.hortonworks.iotas.webservice.catalog.DataSourceWithDataFeedCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
 import mockit.Expectations;
@@ -31,7 +32,7 @@ public class DataSourceWithDataFeedCatalogResourceTest {
 
     @Before
     public void setup() {
-        dataSourceWithDataFeedCatalogResource = new DataSourceWithDataFeedCatalogResource(mockCatalogService);
+        dataSourceWithDataFeedCatalogResource = new DataSourceWithDataFeedCatalogResource(new DataSourceFacade(mockCatalogService));
     }
 
     @Test

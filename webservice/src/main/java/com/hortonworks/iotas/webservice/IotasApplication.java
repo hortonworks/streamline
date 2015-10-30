@@ -32,6 +32,7 @@ import com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager;
 import com.hortonworks.iotas.webservice.catalog.ClusterCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.ComponentCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.DataSourceCatalogResource;
+import com.hortonworks.iotas.webservice.catalog.DataSourceFacade;
 import com.hortonworks.iotas.webservice.catalog.DataSourceWithDataFeedCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.FeedCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.NotifierInfoCatalogResource;
@@ -142,7 +143,8 @@ public class IotasApplication extends Application<IotasConfiguration> {
         final FeedCatalogResource feedResource = new FeedCatalogResource(catalogService);
         final ParserInfoCatalogResource parserResource = new ParserInfoCatalogResource(catalogService, iotasConfiguration);
         final DataSourceCatalogResource dataSourceResource = new DataSourceCatalogResource(catalogService);
-        final DataSourceWithDataFeedCatalogResource dataSourceWithDataFeedCatalogResource = new DataSourceWithDataFeedCatalogResource(catalogService);
+        final DataSourceWithDataFeedCatalogResource dataSourceWithDataFeedCatalogResource =
+                new DataSourceWithDataFeedCatalogResource(new DataSourceFacade(catalogService));
         final DataStreamCatalogResource dataStreamResource = new DataStreamCatalogResource(catalogService);
 
         // cluster related

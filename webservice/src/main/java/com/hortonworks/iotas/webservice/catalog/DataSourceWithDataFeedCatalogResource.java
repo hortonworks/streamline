@@ -39,6 +39,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 
 /**
  * REST API endpoint for adding datasource with datafeed.
+ *
  */
 @Path("/api/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
@@ -46,13 +47,13 @@ public class DataSourceWithDataFeedCatalogResource {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceWithDataFeedCatalogResource.class);
     private final DataSourceFacade dataSourceFacade;
 
-    public DataSourceWithDataFeedCatalogResource(CatalogService catalogService) {
-        this.dataSourceFacade = new DataSourceFacade(catalogService);
+    public DataSourceWithDataFeedCatalogResource(DataSourceFacade dataSourceFacade) {
+        this.dataSourceFacade = dataSourceFacade;
     }
 
     // todo: better path for this resource, we may rename it to /datasources once the existing api is removed.
     @POST
-    @Path("/datasourceswithfeed")
+    @Path("/datasourceswithdatafeed")
     @Timed
     public Response addDataSourceWithDataFeed(DataSourceDto dataSourceDto) {
         try {
@@ -68,14 +69,14 @@ public class DataSourceWithDataFeedCatalogResource {
     }
 
     @PUT
-    @Path("/datasourceswithfeed/{id}")
+    @Path("/datasourceswithdatafeed/{id}")
     @Timed
     public Response addOrUpdateDataSourceWithDataFeed(@PathParam("id") Long dataSourceId, DataSourceDto dataSourceDto) {
         try {
             if (StringUtils.isEmpty(dataSourceDto.getTypeConfig())) {
                 return WSUtils.respond(BAD_REQUEST, BAD_REQUEST_PARAM_MISSING, "typeConfig");
             }
-            DataSourceDto createdDataSourceDto = dataSourceFacade.addOrDataSourceWithDataFeed(dataSourceId, dataSourceDto);
+            DataSourceDto createdDataSourceDto = dataSourceFacade.addOrUpdateDataSourceWithDataFeed(dataSourceId, dataSourceDto);
             return WSUtils.respond(CREATED, SUCCESS, createdDataSourceDto);
         } catch (Exception ex) {
             LOGGER.error("Error encountered while adding datasource with datafeed", ex);
@@ -85,7 +86,7 @@ public class DataSourceWithDataFeedCatalogResource {
 
 
     @GET
-    @Path("/datasourceswithfeed")
+    @Path("/datasourceswithdatafeed")
     @Timed
     public Response listDataSourcesWithDataFeed(@QueryParam("filter") List<String> filter) {
         try {
@@ -101,7 +102,7 @@ public class DataSourceWithDataFeedCatalogResource {
      * List datasource matching the type and the type specific fields and values.
      */
     @GET
-    @Path("/datasourceswithfeed/type/{type}")
+    @Path("/datasourceswithdatafeed/type/{type}")
     @Timed
     public Response listDataSourcesWithDataFeedForTypeWithFilter(@PathParam("type") DataSource.Type type,
                                                                  @Context UriInfo uriInfo) {
@@ -123,7 +124,7 @@ public class DataSourceWithDataFeedCatalogResource {
     }
 
     @GET
-    @Path("/datasourceswithfeed/{id}")
+    @Path("/datasourceswithdatafeed/{id}")
     @Timed
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDataSourceWithDataFeedById(@PathParam("id") Long dataSourceId) {
@@ -140,7 +141,7 @@ public class DataSourceWithDataFeedCatalogResource {
     }
 
     @DELETE
-    @Path("/datasourceswithfeed/{id}")
+    @Path("/datasourceswithdatafeed/{id}")
     @Timed
     public Response removeDataSourceWithDataFeed(@PathParam("id") Long dataSourceId) {
         try {

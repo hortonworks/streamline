@@ -27,7 +27,7 @@ public class DataSourceFacade {
         this.catalogService = catalogService;
     }
 
-    public DataSourceDto addOrDataSourceWithDataFeed(Long dataSourceId, DataSourceDto dataSourceDto) throws Exception {
+    public DataSourceDto addOrUpdateDataSourceWithDataFeed(Long dataSourceId, DataSourceDto dataSourceDto) throws Exception {
         DataSource dataSource = createDataSource(dataSourceDto);
         DataSource createdDataSource = catalogService.addOrUpdateDataSource(dataSourceId, dataSource);
         dataSourceDto.setDataSourceId(createdDataSource.getDataSourceId());
