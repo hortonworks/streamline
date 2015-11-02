@@ -30,6 +30,16 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>com.hortonworks</groupId>
+            <artifactId>notification-service</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hortonworks</groupId>
+            <artifactId>notifiers</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>${kafkaArtifact}</artifactId>
         </dependency>
@@ -112,7 +122,6 @@
             <artifactId>flux-core</artifactId>
             <version>${storm.version}</version>
         </dependency>
-
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.jmockit</groupId>

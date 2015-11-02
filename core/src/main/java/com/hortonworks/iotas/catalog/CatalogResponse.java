@@ -91,7 +91,7 @@ public class CatalogResponse {
             return this;
         }
 
-        public Builder entities(Collection<?extends Object> entities) {
+        public Builder entities(Collection<? extends Object> entities) {
             this.entities = entities;
             return this;
         }

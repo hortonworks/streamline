@@ -15,6 +15,8 @@
         <module>webservice</module>
         <module>storm</module>
         <module>parsers</module>
+        <module>notification-service</module>
+        <module>notifiers</module>
     </modules>
 
     <properties>
@@ -36,6 +38,8 @@
         <maven-jar-plugin.version>2.6</maven-jar-plugin.version>
         <maven-surefire.version>2.18.1</maven-surefire.version>
         <maven-shade-plugin.version>2.4.1</maven-shade-plugin.version>
+        <hbase.version>0.98.4-hadoop2</hbase.version>
+        <!--<hbase.version>1.1.2</hbase.version>-->
     </properties>
 
     <dependencyManagement>
@@ -154,6 +158,21 @@
                 </exclusions>
             </dependency>
             <dependency>
+                <groupId>org.apache.hbase</groupId>
+                <artifactId>hbase-client</artifactId>
+                <version>${hbase.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.zookeeper</groupId>
+                        <artifactId>zookeeper</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
                 <groupId>org.glassfish.jersey.core</groupId>
                 <artifactId>jersey-client</artifactId>
                 <version>${jersey.version}</version>
@@ -185,7 +204,6 @@
                 <artifactId>snakeyaml</artifactId>
                 <version>${snakeyaml.version}</version>
             </dependency>
-
         </dependencies>
     </dependencyManagement>
 
