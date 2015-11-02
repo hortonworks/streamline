@@ -71,9 +71,11 @@ public class DataSourceDto {
         type = dataSource.getType();
         typeConfig = dataSource.getTypeConfig();
 
-        dataFeedName = dataFeed.getDataFeedName();
-        parserId = dataFeed.getParserId();
-        endpoint = dataFeed.getEndpoint();
+        if (dataFeed != null) {
+            dataFeedName = dataFeed.getDataFeedName();
+            parserId = dataFeed.getParserId();
+            endpoint = dataFeed.getEndpoint();
+        }
 
     }
 
@@ -169,7 +171,6 @@ public class DataSourceDto {
             return false;
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
         if (tags != null ? !tags.equals(that.tags) : that.tags != null) return false;
-        if (timestamp != null ? !timestamp.equals(that.timestamp) : that.timestamp != null) return false;
         if (type != that.type) return false;
         if (typeConfig != null ? !typeConfig.equals(that.typeConfig) : that.typeConfig != null) return false;
         if (dataFeedName != null ? !dataFeedName.equals(that.dataFeedName) : that.dataFeedName != null) return false;
@@ -184,7 +185,6 @@ public class DataSourceDto {
         result = 31 * result + (dataSourceName != null ? dataSourceName.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
         result = 31 * result + (tags != null ? tags.hashCode() : 0);
-        result = 31 * result + (timestamp != null ? timestamp.hashCode() : 0);
         result = 31 * result + (type != null ? type.hashCode() : 0);
         result = 31 * result + (typeConfig != null ? typeConfig.hashCode() : 0);
         result = 31 * result + (dataFeedName != null ? dataFeedName.hashCode() : 0);

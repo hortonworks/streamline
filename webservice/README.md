@@ -828,6 +828,218 @@ POST /api/v1/catalog/datasourceswithdatafeed
 }
 ```
 
+### Get
+GET /api/v1/catalog/datasourceswithdatafeed/ID
+
+*Success Response*
+
+    GET /api/v1/catalog/datasourceswithdatafeed/1
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+
+```json
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entity": {
+    "dataSourceId": 1,
+    "dataSourceName": "NestDevice",
+    "description": "This is a nest device",
+    "tags": "tag1",
+    "timestamp": 1444216784208,
+    "type": "DEVICE",
+    "typeConfig": "{\"deviceId\": 1, \"version\":1}",
+    "dataFeedName": "feed1",
+    "parserId": 1,
+    "endpoint": "hdfs://url"
+  }
+}
+```
+
+*Error Response*
+
+    GET /api/v1/catalog/datasourceswithdatafeed/10
+    HTTP/1.1 404 Not Found
+    Content-Type: application/json
+    
+```json    
+{
+  "responseCode": 1101,
+  "responseMessage": "Entity with id [10] not found."
+}
+```
+    
+### Get All
+GET /api/v1/catalog/datasourceswithdatafeed
+
+    GET /api/v1/catalog/datasourceswithdatafeed
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    
+```json    
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entities": [
+    {
+      "dataSourceId": 1,
+      "dataSourceName": "NestDevice",
+      "description": "This is a nest device",
+      "tags": "tag1",
+      "timestamp": 1444216784208,
+      "type": "DEVICE",
+      "typeConfig": "{\"deviceId\": 1, \"version\":1}",
+      "dataFeedName": "feed1",
+      "parserId": 1,
+      "endpoint": "hdfs://url"
+    },
+    {
+      "dataSourceId": 2,
+      "dataSourceName": "New Device",
+      "description": "This is a new device",
+      "tags": "foo",
+      "timestamp": 1444216784208,
+      "type": "DEVICE",
+      "typeConfig": "{\"deviceId\": 1, \"version\":1}",
+      "dataFeedName": "feed2",
+      "parserId": 1,
+      "endpoint": "kafka://url"
+    },    
+    ..
+    ..
+  ]
+}
+```
+
+**Query Datasource by type**
+
+Data sources matching a specific type can be queried as follows
+
+GET /api/v1/catalog/datasourceswithdatafeed/type/DEVICE
+
+In addition, query params can be passed to filter results matching certain criteria. For example to list all devices with deviceid 'nest' with tag 'tag1',
+   
+    GET /api/v1/catalog/datasourceswithdatafeed/type/DEVICE/?deviceId=nest&version=1
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+  
+```json
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entities": [
+    {
+      "dataSourceId": 1,
+      "dataSourceName": "NestDevice",
+      "description": "This is a nest device",
+      "tags": "tag1",
+      "timestamp": 1444216784208,
+      "type": "DEVICE",
+      "typeConfig": "{\"deviceId\": \"nest\", \"version\":1}",
+      "dataFeedName": "feed1",
+      "parserId": 1,
+      "endpoint": "kafka://url"
+    }
+  ]
+}
+```
+
+    GET /api/v1/catalog/datasourceswithdatafeed/type/DEVICE/?deviceId=foobar&version=1
+    HTTP/1.1 404 Not Found
+    Content-Type: application/json
+
+```json
+{
+  "responseCode": 1104,
+  "responseMessage": "Datasource not found for type [DEVICE], query params [[QueryParam{name='deviceId', value='foobar'}, QueryParam{name='version', value='1'}]]."
+}
+```
+
+### Update
+PUT /api/v1/catalog/datasourceswithdatafeed/ID
+
+*Sample Input*
+
+```json
+{
+ "dataSourceName": "NestDevice",
+ "description": "This is a nest device",
+ "tags": "tag1",
+ "type": "DEVICE",
+ "typeConfig": "{\"deviceId\": 1, \"version\":1}",
+ "dataFeedName": "feed1",
+ "parserId": 1,
+ "endpoint": "hdfs://url"
+}
+```
+   
+*Success Response*
+
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    
+```json    
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entity": {
+    "dataSourceId": 1,
+    "dataSourceName": "NestDevice",
+    "description": "This is a nest device",
+    "tags": "tag1",
+    "timestamp": 1444216784208,
+    "type": "DEVICE",
+    "typeConfig": "{\"deviceId\": 1, \"version\":1}",
+    "dataFeedName": "feed1",
+    "parserId": 1,
+    "endpoint": "hdfs://url"
+  }
+}
+```
+
+**Note:** The current behavior is for PUT to create a new resource if the resource with the given ID does not exist yet.
+ 
+### Delete
+DELETE /api/v1/catalog/datasourceswithdatafeed/ID
+
+
+*Success Response*
+
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    
+```json    
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entity": {
+    "dataSourceId": 1,
+    "dataSourceName": "NestDevice",
+    "description": "This is a nest device",
+    "tags": "tag1",
+    "timestamp": 1444216784208,
+    "type": "DEVICE",
+    "typeConfig": "{\"deviceId\": 1, \"version\":1}",
+    "dataFeedName": "feed1",
+    "parserId": 1,
+    "endpoint": "hdfs://url"
+  }
+}
+```
+
+*Error Response*
+
+    DELETE /api/v1/catalog/datasourceswithdatafeed/10
+    HTTP/1.1 404 Not Found
+    Content-Type: application/json
+
+```json
+{
+  "responseCode": 1101,
+  "responseMessage": "Entity with id [10] not found."
+}
+```
+
 ### A sample use case
 
 Please go through [the sample use case](REST-Sample.md) to understand how these APIs can be used.
