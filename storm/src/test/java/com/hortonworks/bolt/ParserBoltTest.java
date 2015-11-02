@@ -25,6 +25,8 @@ public class ParserBoltTest {
     private static final Long VERSION = 1l;
     private static final byte[] DATA = "test".getBytes(Charsets.UTF_8);
     private static final Values VALUES = new Values(MockParser.IOTAS_EVENT);
+    private static final String GOOD_STREAM = "good";
+    private static final String BAD_STREAM = "bad";
 
     private IotasMessage msg;
     private @Tested ParserBolt parserBolt;
@@ -39,6 +41,8 @@ public class ParserBoltTest {
     public void setup() throws Exception {
         msg = new IotasMessage();
         parserBolt = new ParserBolt();
+        parserBolt.withParsedTuplesStreamId(GOOD_STREAM);
+        parserBolt.withUnparsedTuplesStreamId(BAD_STREAM);
         parserInfo = new ParserInfo();
 
         msg.setId(DEVICE_ID);
@@ -60,7 +64,7 @@ public class ParserBoltTest {
     public void testParserBoltHandlesIotasMessages() throws Exception {
         final byte[] json = new ObjectMapper().writeValueAsString(msg).getBytes(Charsets.UTF_8);
         new Expectations() {{
-            mockTuple.getBinaryByField("bytes"); returns(json);
+            mockTuple.getBinaryByField(ParserBolt.BINARY_BYTES); returns(json);
             mockClient.getParserJar(PARSER_ID); result = new ByteArrayInputStream("test-stream".getBytes());
             mockClient.getParserInfo(DEVICE_ID, VERSION); result = parserInfo;
         }};
@@ -72,7 +76,7 @@ public class ParserBoltTest {
     public void testBadMessage() throws Exception {
         final byte[] json = "bad-iotas-message".getBytes();
         new Expectations() {{
-            mockTuple.getBinaryByField("bytes"); returns(json);
+            mockTuple.getBinaryByField(ParserBolt.BINARY_BYTES); returns(json);
         }};
 
         callExecuteAndVerifyCollectorInteraction(false);
@@ -83,7 +87,7 @@ public class ParserBoltTest {
         parserBolt.withParserId(PARSER_ID);
 
         new Expectations() {{
-            mockTuple.getBinaryByField("bytes"); returns(DATA);
+            mockTuple.getBinaryByField(ParserBolt.BINARY_BYTES); returns(DATA);
             mockClient.getParserJar(PARSER_ID); returns(new ByteArrayInputStream("test-stream".getBytes()));
             mockClient.getParserInfo(PARSER_ID); returns(parserInfo);
         }};
@@ -96,13 +100,16 @@ public class ParserBoltTest {
 
         if(isSuccess) {
             new VerificationsInOrder() {{
-                mockOutputCollector.emit(mockTuple, withAny(VALUES));
+                mockOutputCollector.emit(GOOD_STREAM, mockTuple, withAny
+                        (VALUES));
                 mockOutputCollector.ack(mockTuple);
             }};
 
         } else {
             new VerificationsInOrder() {{
-                mockOutputCollector.fail(mockTuple);
+                mockOutputCollector.emit(BAD_STREAM, mockTuple, withAny
+                        (VALUES));
+                mockOutputCollector.ack(mockTuple);
             }};
         }
     }

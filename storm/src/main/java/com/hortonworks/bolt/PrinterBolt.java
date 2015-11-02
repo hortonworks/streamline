@@ -6,7 +6,6 @@ import backtype.storm.topology.base.BaseBasicBolt;
 import backtype.storm.tuple.Tuple;
 
 public class PrinterBolt extends BaseBasicBolt {
-
   @Override
   public void execute(Tuple tuple, BasicOutputCollector collector) {
     System.out.println(tuple);
