@@ -2,7 +2,7 @@ package com.hortonworks.bolt.notification;
 
 import backtype.storm.task.OutputCollector;
 import backtype.storm.tuple.Tuple;
-import com.hortonworks.client.RestClient;
+import com.hortonworks.client.CatalogRestClient;
 import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.notification.common.Notification;
 import com.hortonworks.iotas.notification.common.NotificationContext;
@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * Created by aiyer on 9/24/15.
+ *
  */
 @RunWith(JMockit.class)
 public class NotificationBoltTest {
@@ -41,7 +41,7 @@ public class NotificationBoltTest {
     private static final Map<String, String> NOTIFIER_KV = new HashMap<>();
 
     @Mocked
-    private RestClient restClient;
+    private CatalogRestClient catalogRestClient;
 
     @Mocked
     private OutputCollector collector;
@@ -119,7 +119,7 @@ public class NotificationBoltTest {
         NotificationBolt consoleNotificationBolt = new NotificationBolt("console_notifier");
         final ConsoleNotifier consoleNotifier = new ConsoleNotifier();
         new Expectations() {{
-            restClient.getNotifierInfo(anyString);
+            catalogRestClient.getNotifierInfo(anyString);
             result = notifierInfo;
             notifierInfo.getJarFileName();
             result = "console_notifier.jar";
@@ -146,7 +146,7 @@ public class NotificationBoltTest {
 
         new Verifications() {
             {
-                restClient.getNotifierInfo("console_notifier");
+                catalogRestClient.getNotifierInfo("console_notifier");
                 times = 1;
                 collector.ack(tuple); times = 1;
                 hBaseNotificationStore.store(notification);
@@ -164,7 +164,7 @@ public class NotificationBoltTest {
                 .Builder(fieldsAndValues).build();
 
         new Expectations() {{
-            restClient.getNotifierInfo(anyString);
+            catalogRestClient.getNotifierInfo(anyString);
             result = notifierInfo;
             notifierInfo.getJarFileName();
             result = NOTIFIER_NAME + ".jar";
@@ -191,7 +191,7 @@ public class NotificationBoltTest {
 
         new Verifications() {
             {
-                restClient.getNotifierInfo(NOTIFIER_NAME);
+                catalogRestClient.getNotifierInfo(NOTIFIER_NAME);
                 times = 1;
                 hBaseNotificationStore.store(notification);
                 times = 1;
@@ -210,7 +210,7 @@ public class NotificationBoltTest {
                 .Builder(fieldsAndValues).build();
 
         new Expectations() {{
-            restClient.getNotifierInfo(anyString);
+            catalogRestClient.getNotifierInfo(anyString);
             result = notifierInfo;
             notifierInfo.getJarFileName();
             result = NOTIFIER_NAME;
@@ -237,7 +237,7 @@ public class NotificationBoltTest {
 
         new Verifications() {
             {
-                restClient.getNotifierInfo(NOTIFIER_NAME);
+                catalogRestClient.getNotifierInfo(NOTIFIER_NAME);
                 times = 1;
                 hBaseNotificationStore.store(notification);
                 times = 1;

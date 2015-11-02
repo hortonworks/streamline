@@ -5,7 +5,7 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Tuple;
-import com.hortonworks.client.RestClient;
+import com.hortonworks.client.CatalogRestClient;
 import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.notification.common.Notification;
 import com.hortonworks.iotas.notification.common.Notifier;
@@ -32,7 +32,7 @@ public class NotificationBolt extends BaseRichBolt {
     private NotificationService notificationService;
     private Notifier notifier;
     private BoltNotificationContext notificationContext;
-    private RestClient restClient;
+    private CatalogRestClient catalogRestCient;
     private String hbaseConfigKey = "hbase.conf";
 
     private final String notifierName;
@@ -60,8 +60,8 @@ public class NotificationBolt extends BaseRichBolt {
         }
         Map<String, String> hbaseConf = (Map<String, String>)stormConf.get(this.hbaseConfigKey);
         notificationService = new NotificationServiceImpl(new HBaseNotificationStore(hbaseConf));
-        restClient = new RestClient(stormConf.get(CATALOG_ROOT_URL).toString());
-        NotifierInfo notifierInfo = restClient.getNotifierInfo(this.notifierName);
+        catalogRestCient = new CatalogRestClient(stormConf.get(CATALOG_ROOT_URL).toString());
+        NotifierInfo notifierInfo = catalogRestCient.getNotifierInfo(this.notifierName);
 
         String jarPath = String.format("%s%s%s", stormConf.get(LOCAL_NOTIFIER_JAR_PATH).toString(),
                                        File.separator, notifierInfo.getJarFileName());
