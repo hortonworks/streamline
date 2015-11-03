@@ -19,13 +19,18 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.*;
-import static javax.ws.rs.core.Response.Status.*;
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.SUCCESS;
+import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static javax.ws.rs.core.Response.Status.OK;
 
 /**
  * REST endpoint for configuring notifiers
@@ -55,12 +60,10 @@ public class NotifierInfoCatalogResource {
             if (params.isEmpty()) {
                 notifierInfos = catalogService.listNotifierInfos();
             } else {
-                for (String param : params.keySet()) {
-                    queryParams.add(new CatalogService.QueryParam(param, params.getFirst(param)));
-                }
+                queryParams = WSUtils.buildQueryParameters(params);
                 notifierInfos = catalogService.listNotifierInfos(queryParams);
             }
-            if(notifierInfos != null && ! notifierInfos.isEmpty()) {
+            if (notifierInfos != null && !notifierInfos.isEmpty()) {
                 return WSUtils.respond(OK, SUCCESS, notifierInfos);
             }
         } catch (Exception ex) {

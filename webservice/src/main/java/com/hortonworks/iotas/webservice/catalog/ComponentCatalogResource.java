@@ -1,7 +1,6 @@
 package com.hortonworks.iotas.webservice.catalog;
 
 import com.codahale.metrics.annotation.Timed;
-import com.hortonworks.iotas.catalog.Cluster;
 import com.hortonworks.iotas.catalog.Component;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.util.WSUtils;
@@ -18,18 +17,18 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
 import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
 import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.*;
-import static javax.ws.rs.core.Response.Status.*;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static javax.ws.rs.core.Response.Status.OK;
 
 
 @Path("/api/v1/catalog/clusters/{clusterId}/components")
@@ -55,12 +54,10 @@ public class ComponentCatalogResource {
             if (params.isEmpty()) {
                 components = catalogService.listComponents();
             } else {
-                for (String param : params.keySet()) {
-                    queryParams.add(new CatalogService.QueryParam(param, params.getFirst(param)));
-                }
+                queryParams = WSUtils.buildQueryParameters(params);
                 components = catalogService.listComponents(queryParams);
             }
-            if(components != null && ! components.isEmpty()) {
+            if (components != null && !components.isEmpty()) {
                 return WSUtils.respond(OK, SUCCESS, components);
             }
         } catch (Exception ex) {

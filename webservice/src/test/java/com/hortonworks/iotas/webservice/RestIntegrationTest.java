@@ -81,6 +81,7 @@ public class RestIntegrationTest {
 
     /**
      * For each TestResource element in resourcesToTest List, tests Post, Put, Get and Delete.
+     *
      * @throws Exception
      */
     @Test
@@ -127,6 +128,7 @@ public class RestIntegrationTest {
 
     /**
      * Get response code from the response string.
+     *
      * @param response
      * @return
      * @throws Exception
@@ -139,6 +141,7 @@ public class RestIntegrationTest {
 
     /**
      * Get the entities from response string
+     *
      * @param response
      * @param clazz
      * @param <T>
@@ -148,6 +151,7 @@ public class RestIntegrationTest {
         List<T> entities = new ArrayList<>();
         try {
             ObjectMapper mapper = new ObjectMapper();
+            System.out.println("####################### response = " + response);
             JsonNode node = mapper.readTree(response);
             Iterator<JsonNode> it = node.get("entities").elements();
             while (it.hasNext()) {
@@ -161,6 +165,7 @@ public class RestIntegrationTest {
 
     /**
      * Get entity from the response string.
+     *
      * @param response
      * @param clazz
      * @param <T>
@@ -203,7 +208,7 @@ public class RestIntegrationTest {
     private DataSourceDto createDataSourceDto(Long dataSourceId, String dataSourceName) {
 
         DataSource ds = createDataSource(dataSourceId, dataSourceName);
-        DataFeed df = createDataFeedWithDataSourceId(dataSourceId, "feed:"+dataSourceName);
+        DataFeed df = createDataFeedWithDataSourceId(dataSourceId, "feed:" + dataSourceName);
         DataSourceDto dataSourceDto = new DataSourceDto(ds, df);
 
         return dataSourceDto;
