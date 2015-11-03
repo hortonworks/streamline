@@ -24,11 +24,12 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
+import javax.ws.rs.core.UriInfo;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -38,8 +39,8 @@ import java.util.Collection;
 import java.util.UUID;
 
 import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.PARSER_SCHEMA_FOR_ENTITY_NOT_FOUND;
 import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.PARSER_SCHEMA_FOR_ENTITY_NOT_FOUND;
 import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
@@ -62,7 +63,7 @@ public class ParserInfoCatalogResource {
         this.configuration = configuration;
         try {
             this.jarStorage = ReflectionHelper.newInstance(this.configuration
-                                                                   .getJarStorageConfiguration().getClassName());
+                    .getJarStorageConfiguration().getClassName());
             this.jarStorage.init(configuration.getJarStorageConfiguration().getProperties());
         } catch (Exception ex) {
             throw new RuntimeException(ex);
@@ -73,9 +74,15 @@ public class ParserInfoCatalogResource {
     @Path("/parsers")
     @Timed
     // TODO add a way to query/filter and/or page results
-    public Response listParsers() {
+    public Response listParsers(@Context UriInfo uriInfo) {
         try {
-            Collection<ParserInfo> parserInfos = catalogService.listParsers();
+            Collection<ParserInfo> parserInfos = null;
+            MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
+            if (params == null || params.isEmpty()) {
+                parserInfos = catalogService.listParsers();
+            } else {
+                parserInfos = catalogService.listParsers(WSUtils.buildQueryParameters(params));
+            }
             return WSUtils.respond(OK, SUCCESS, parserInfos);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());

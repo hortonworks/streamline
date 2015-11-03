@@ -788,6 +788,7 @@ POST /api/v1/catalog/datasourceswithdatafeed
  "typeConfig": "{\"deviceId\": 1, \"version\":1}",
  "dataFeedName": "feed1",
  "parserId": 1,
+ "parserName": "JSON Parser",
  "endpoint": "hdfs://url"
 }
 ```
@@ -811,6 +812,7 @@ POST /api/v1/catalog/datasourceswithdatafeed
     "typeConfig": "{\"deviceId\": 1, \"version\":1}",
     "dataFeedName": "feed1",
     "parserId": 1,
+    "parserName": "JSON Parser",
     "endpoint": "hdfs://url"
   }
 }
@@ -852,6 +854,7 @@ GET /api/v1/catalog/datasourceswithdatafeed/ID
     "typeConfig": "{\"deviceId\": 1, \"version\":1}",
     "dataFeedName": "feed1",
     "parserId": 1,
+    "parserName": "JSON Parser",    
     "endpoint": "hdfs://url"
   }
 }
@@ -892,6 +895,7 @@ GET /api/v1/catalog/datasourceswithdatafeed
       "typeConfig": "{\"deviceId\": 1, \"version\":1}",
       "dataFeedName": "feed1",
       "parserId": 1,
+      "parserName": "JSON Parser",      
       "endpoint": "hdfs://url"
     },
     {
@@ -904,6 +908,7 @@ GET /api/v1/catalog/datasourceswithdatafeed
       "typeConfig": "{\"deviceId\": 1, \"version\":1}",
       "dataFeedName": "feed2",
       "parserId": 1,
+      "parserName": "JSON Parser",
       "endpoint": "kafka://url"
     },    
     ..
@@ -939,6 +944,7 @@ In addition, query params can be passed to filter results matching certain crite
       "typeConfig": "{\"deviceId\": \"nest\", \"version\":1}",
       "dataFeedName": "feed1",
       "parserId": 1,
+      "parserName": "JSON Parser",      
       "endpoint": "kafka://url"
     }
   ]
@@ -993,6 +999,7 @@ PUT /api/v1/catalog/datasourceswithdatafeed/ID
     "typeConfig": "{\"deviceId\": 1, \"version\":1}",
     "dataFeedName": "feed1",
     "parserId": 1,
+    "parserName": "JSON Parser",    
     "endpoint": "hdfs://url"
   }
 }
@@ -1023,6 +1030,7 @@ DELETE /api/v1/catalog/datasourceswithdatafeed/ID
     "typeConfig": "{\"deviceId\": 1, \"version\":1}",
     "dataFeedName": "feed1",
     "parserId": 1,
+    "parserName": "JSON Parser",
     "endpoint": "hdfs://url"
   }
 }

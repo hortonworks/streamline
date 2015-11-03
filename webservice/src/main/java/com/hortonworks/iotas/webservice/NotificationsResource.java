@@ -25,14 +25,12 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.*;
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -76,9 +74,7 @@ public class NotificationsResource {
             MultivaluedMap<String, String> uriInfoParams = uriInfo.getQueryParameters();
             Collection<Notification> notifications = null;
             if (!uriInfoParams.isEmpty()) {
-                for (String key : uriInfoParams.keySet()) {
-                    queryParams.add(new CatalogService.QueryParam(key, uriInfoParams.get(key).get(0)));
-                }
+                queryParams = WSUtils.buildQueryParameters(uriInfoParams);
             } else {
                 LOG.info("Query params empty, will use default criteria to return notifications.");
             }
