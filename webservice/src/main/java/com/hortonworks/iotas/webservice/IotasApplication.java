@@ -153,14 +153,12 @@ public class IotasApplication extends Application<IotasConfiguration> {
         // cluster related
         final ClusterCatalogResource clusterCatalogResource = new ClusterCatalogResource(catalogService);
         final ComponentCatalogResource componentCatalogResource = new ComponentCatalogResource(catalogService);
-
-        final NotifierInfoCatalogResource notifierInfoCatalogResource = new NotifierInfoCatalogResource(catalogService);
-
-        final NotificationService notificationService = new NotificationServiceImpl();
-        final NotificationsResource notificationsResource = new NotificationsResource(notificationService);
         List<Object> resources = Lists.newArrayList(feedResource, parserResource, dataSourceResource, dataSourceWithDataFeedCatalogResource,
-                                                    dataStreamResource, clusterCatalogResource, componentCatalogResource,
-                                                    notifierInfoCatalogResource, notificationsResource);
+                                                    dataStreamResource, clusterCatalogResource, componentCatalogResource);
+        if (!iotasConfiguration.isNotificationsRestDisabled()) {
+            resources.add(new NotifierInfoCatalogResource(catalogService));
+            resources.add(new NotificationsResource(new NotificationServiceImpl()));
+        }
         for(Object resource : resources) {
             environment.jersey().register(resource);
         }

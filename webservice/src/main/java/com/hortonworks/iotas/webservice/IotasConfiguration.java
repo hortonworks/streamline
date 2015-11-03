@@ -38,6 +38,8 @@ public class IotasConfiguration extends Configuration {
     @NotEmpty
     private String iotasStormJar;
 
+    private Boolean notificationsRestDisable;
+
     @NotNull
     private JarStorageConfiguration jarStorageConfiguration;
 
@@ -83,5 +85,15 @@ public class IotasConfiguration extends Configuration {
     @JsonProperty("jarStorageConfiguration")
     public void setJarStorageConfiguration(JarStorageConfiguration configuration) {
         this.jarStorageConfiguration = configuration;
+    }
+
+    @JsonProperty("notificationsRestDisable")
+    public Boolean isNotificationsRestDisabled() {
+        return notificationsRestDisable != null ? notificationsRestDisable : false;
+    }
+
+    @JsonProperty("notificationsRestDisable")
+    public void setNotificationsRestDisabled(Boolean notificationsRestDisable) {
+        this.notificationsRestDisable = notificationsRestDisable;
     }
 }

@@ -8,7 +8,7 @@ From command line execute the following commands:
 `mvn clean install`  
 `cd webservice`  
 `mvn package`  
-`java -cp target/webservice-0.1-SNAPSHOT.jar com.hortonworks.iotas.webservice.IotasApplication server conf/iotas.yaml`  
+`java -cp target/webservice-0.1-SNAPSHOT.jar com.hortonworks.iotas.webservice.IotasApplication server conf/iotas-dev.yaml`
 
 This should start the webserver on localhost port 8080. If you are running storm on the same host you may get 
 `java.net.BindException: Address already in use` in which case you should modify `server` section of iotas.yaml.
