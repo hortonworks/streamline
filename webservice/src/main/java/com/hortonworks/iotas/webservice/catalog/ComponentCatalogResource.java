@@ -85,10 +85,29 @@ public class ComponentCatalogResource {
 
     @POST
     @Timed
-    public Response addComponent(@PathParam("clusterId") Long clusterId, Component component) {
+    public Response addComponents(@PathParam("clusterId") Long clusterId, List<Component> components) {
         try {
-            Component createdComponent = catalogService.addComponent(clusterId, component);
-            return WSUtils.respond(CREATED, SUCCESS, createdComponent);
+            List<Component> createdComponents = new ArrayList<>();
+            for (Component component : components) {
+                Component createdComponent = catalogService.addComponent(clusterId, component);
+                createdComponents.add(createdComponent);
+            }
+            return WSUtils.respond(CREATED, SUCCESS, createdComponents);
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+    }
+
+    @PUT
+    @Timed
+    public Response addOrUpdateComponents(@PathParam("clusterId") Long clusterId, List<Component> components) {
+        try {
+            List<Component> createdComponents = new ArrayList<>();
+            for (Component component : components) {
+                Component createdComponent = catalogService.addOrUpdateComponent(clusterId, component);
+                createdComponents.add(createdComponent);
+            }
+            return WSUtils.respond(CREATED, SUCCESS, createdComponents);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }

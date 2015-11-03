@@ -324,6 +324,9 @@ public class CatalogService {
         return dao.<Component>remove(new StorableKey(COMPONENT_NAMESPACE, component.getPrimaryKey()));
     }
 
+    public Component addOrUpdateComponent(Long clusterId, Component component) {
+        return addOrUpdateComponent(clusterId, component.getId(), component);
+    }
 
     public Component addOrUpdateComponent(Long clusterId, Long componentId, Component component) {
         component.setClusterId(clusterId);
