@@ -92,7 +92,7 @@ define(function(require) {
         $el.find('.modal-body').html(content.$el);
       }
 
-      if (options.mainClass) $el.addClass(options.mainClass);
+      // if (options.mainClass) $el.addClass(options.mainClass);
 
       if (options.animate) $el.addClass('fade');
 
@@ -187,18 +187,18 @@ define(function(require) {
         return;
       }
 
-      $el.one('hidden', function onHidden(e) {
+      $el.one('hidden.bs.modal', function onHidden(e) {
         // Ignore events propagated from interior objects, like bootstrap tooltips
         if(e.target !== e.currentTarget){
-          return $el.one('hidden', onHidden);
+          return $el.one('hidden.bs.modal', onHidden);
         }
         self.remove();
 
         if (self.options.content && self.options.content.trigger) {
-          self.options.content.trigger('hidden', self);
+          self.options.content.trigger('hidden.bs.modal', self);
         }
 
-        self.trigger('hidden');
+        self.trigger('hidden.bs.modal');
       });
 
       $el.modal('hide');

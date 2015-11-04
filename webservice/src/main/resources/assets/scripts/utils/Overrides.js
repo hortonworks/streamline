@@ -1,6 +1,51 @@
-define(['require','bootstrap.filestyle','backbone.forms', 'backgrid'], function (require) {
+define(['require','bootstrap.filestyle','backbone.forms', 'backgrid', 'bootstrap-multiselect'], function (require) {
   'use strict';
   
+    $.fn.popover.defaults = {
+      animation: true,
+      container: true,
+      content: "",
+      delay: 0,
+      html: true,
+      placement: "right",
+      selector: false,
+      template: '<div class="popover"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>',
+      title: "",
+      trigger: "click"
+    };
+
+    /**
+     * Bootstrap Multiselect
+     */
+    Backbone.Form.editors.MultiSelect = Backbone.Form.editors.Select.extend({    
+      initialize : function(options){
+        var attrObj = {
+          numberDisplayed: 5,
+          buttonWidth: '100%',
+          enableFiltering: true,
+          filterBehavior: 'value'
+        };
+        this.pluginAttr = _.extend(attrObj, options.schema.pluginAttr || {});
+        Backbone.Form.editors.Select.prototype.initialize.call(this,options);
+      },
+   
+      render: function() {
+        var self = this;
+        this.setOptions(this.schema.options);
+        setTimeout(function () {
+            self.$el.multiselect(self.pluginAttr);
+        },0);     
+
+        return this;
+      },
+      getValue: function() {
+        return this.$el.val();
+      },
+      // setValue: function(value){
+      //   throw "need to implement setValue functionality to multiselect.";
+      // }
+   
+    });
     /**
    * SELECT2
    *

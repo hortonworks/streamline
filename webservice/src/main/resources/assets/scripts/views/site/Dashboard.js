@@ -17,9 +17,9 @@ define([
     },
 
     events: {
-      'click .expand-link': function(e){
-        Utils.expandPanel(e);
-      }
+      // 'click .expand-link': function(e){
+      //   Utils.expandPanel(e);
+      // }
     },
 
     ui: {},
@@ -30,7 +30,7 @@ define([
 
     onRender: function () {
       this.showDAG();
-      Utils.panelMinimize(this);
+      // Utils.panelMinimize(this);
     },
     showDAG: function(){
       this.rDAGGraph.show(new TopologyGraphView({

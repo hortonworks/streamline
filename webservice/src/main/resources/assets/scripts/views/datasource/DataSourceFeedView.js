@@ -1,134 +1,64 @@
 define(['require',
     'hbs!tmpl/datasource/dataSourceFeedView',
     'utils/Utils',
+    'utils/LangSupport',
     'models/VDatasource',
-    'models/VDatafeed',
-    'utils/LangSupport'
-  ], function(require, tmpl, Utils, VDatasource, VDatafeed, localization){
+    'models/VDatafeed'
+  ], function(require, tmpl, Utils, localization){
   'use strict';
 
   var vDataSourceFeedView = Marionette.LayoutView.extend({
 
     template: tmpl,
 
-    templateHelpers: function() {
-      return {
-        showWizard: (this.editDSFlag || this.editDFFlag) ? false : true,
-        editDataSource: this.editDSFlag
-      };
-    },
+    templateHelpers: function() {},
 
     regions: {
-      rForm: '#dsForm',
+      rForm: '#rForm',
     },
 
     events: {
-      'click #close': 'evClose',
-      'click #next': 'evNext',
-      'click #Save': 'evSave'
+      'click #btnCancel': 'evClose',
+      'click #btnSave': 'evSave'
     },
 
     initialize: function (options) {
-      _.extend(this, _.pick(options,'editDSFlag', 'editDFFlag'));
-      if(this.editDFFlag){
-        this.dfModel = options.model;
-      } else {
-        this.dsModel = options.model;
-      }
+      _.extend(this, _.pick(options, 'model', 'isEdit'));
     },
 
     onRender: function () {
       var that = this;
-      if(!this.editDFFlag){
-        require(['views/datasource/DataSourceForm'], function(DataSourceForm){
-          that.dataSourceFormView = new DataSourceForm({
-            model: that.dsModel
-          });
-          that.rForm.show(that.dataSourceFormView);
+      require(['views/device/DeviceForm'], function(AddDeviceFormView){
+        that.view = new AddDeviceFormView({
+          model: that.model
         });
-      } else {
-        this.$el.find('#next').addClass('displayNone');
-        this.$el.find('#Save').removeClass('displayNone');
-        require(['views/datasource/DataFeedForm'], function(DataFeedForm){
-          that.dataFeedFormView = new DataFeedForm({
-            model: that.dfModel
-          });
-          that.rForm.show(that.dataFeedFormView);
-        });
-      }
-    },
-
-    evNext: function(e){
-      var that = this;
-      var errs = that.dataSourceFormView.validate();
-      if(_.isEmpty(errs)){
-        that.saveDataSource();
-      } else {
-        return false;
-      }
-    },
-    saveDataSource: function(){
-      var that = this;
-      var model = this.dataSourceFormView.getData();
-      model.save({},{
-        success:function(model, response, options){
-          if(that.editDSFlag) {
-            Utils.notifySuccess(localization.tt('dialogMsg.datasourceUpdatedSuccessfully'));
-            that.trigger('closeModal');
-          } else {
-            Utils.notifySuccess(localization.tt('dialogMsg.newDatasourceAddedSuccessfully'));
-            that.showDataFeedForm(new VDatasource(response.entity));
-          }
-        }, 
-        error: function(model, response, options){
-          Utils.showError(response);
-          that.trigger('closeModal');
-        }
-      });
-    },
-    showDataFeedForm: function(dsModel){
-      var that = this;
-      $($.find('.modal-open .modal-header h3')).text('Create Data Feed');
-      this.$el.find('#next').addClass('displayNone');
-      this.$el.find('#Save').removeClass('displayNone');
-      this.$el.find('.tmm-current').removeClass('tmmm-current').addClass('tmm-success');
-      $(this.$el.find('.stage')[1]).addClass('tmm-current');
-
-      var feedModel = new VDatafeed();
-      feedModel.set('dataSourceId', dsModel.get('dataSourceId'));
-      
-      require(['views/datasource/DataFeedForm'], function(DataFeedForm){
-        that.dataFeedFormView = new DataFeedForm({
-          model: feedModel
-        });
-        that.rForm.destroy();
-        that.rForm.show(that.dataFeedFormView);
+        that.rForm.show(that.view);
       });
     },
 
     evSave: function(e){
-      var errs = this.dataFeedFormView.validate();
+      var errs = this.view.validate();
       if(_.isEmpty(errs)){
-        this.saveDataFeed();
+        this.saveDataSource();
       } else {
         return false;
       }
     },
     
-    saveDataFeed: function(){
+    saveDataSource: function(){
       var that = this;
-      var model = this.dataFeedFormView.getData();
+      var model = this.view.getData();
       model.save({},{
         success:function(model, response, options){
-          if(that.editDFFlag){
-            Utils.notifySuccess(localization.tt('dialogMsg.dataFeedUpdatedSuccessfully'));  
+          if(that.isEdit){
+            Utils.notifySuccess(localization.tt('dialogMsg.datasourceUpdatedSuccessfully'));  
           } else {
-            Utils.notifySuccess(localization.tt('dialogMsg.newDataFeedAddedSuccessfully'));  
+            Utils.notifySuccess(localization.tt('dialogMsg.newDatasourceAddedSuccessfully'));  
           }
           that.trigger('closeModal');
         }, 
         error: function(model, response, options){
-          Utils.showError(response);
+          Utils.showError(model, response);
           that.trigger('closeModal');
         }
       });

@@ -1,36 +1,77 @@
 <div class="page-heading">
-    <ol class="breadcrumb">
-        <li><a href="#/">Home</a></li>
-        <li class="active">Configuration</li>
-    </ol>
+    <h1 class="page-title">Configuration Settings</h1>
 </div>
 <div class="container-fluid">
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-6" align="center">
+           {{#if showKafkaBtn}}
             <div class="panel animated">
-                <div class="panel-head">
-                    <h5>Configuration Details</h5>
-                    <div class="panel-control">
-                        <button class="minimize"><i class="fa fa-minus"></i></button>
-                        <button class="expand-link"><i class="fa fa-expand"></i></button>
-                    </div>
-                </div>
+                <div class="panel-head"></div>
                 <div class="panel-body">
-                    <div class="row row-margin-bottom">
-                        <div class="col-md-4">
-                            <button class="btn btn-primary btn-sm pull-left" id="addCluster">Add New Cluster</button>
-                        </div>
-                        <div class="col-md-4 col-md-offset-4">
-                            <div class="input-group pull-right" data-id="r_filter"></div>
-                        </div>
+                    <img src="images/kafka-logo.jpg" id="btnKafka" class="btn-logo" />
+                </div>
+            </div>
+           {{else}}
+            <div id="rKafka">
+                <div class="panel" id="dataKafka">
+                    <div class="panel-head">
+                        <h5>Kafka Component</h5>
+                        <button class="btn btn-primary btn-sm pull-right" id="editKafka"><i class="fa fa-edit"></i></button>
                     </div>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div id="rTable"></div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <form class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label">HOST: <span class="required">*</span></label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" value="{{kafkaCombObj.hosts}}" readonly="readonly"></div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label">PORT: <span class="required">*</span></label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" value="{{kafkaCombObj.port}}" readonly="readonly"></div>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+            {{/if}}
+        </div>
+        <div class="col-md-6" align="center">
+           {{#if showStormBtn}}
+            <div class="panel animated">
+                <div class="panel-head"></div>
+                <div class="panel-body">
+                    <img src="images/storm-logo.jpg" id="btnStorm" class="btn-logo" />
+                </div>
+            </div>
+            {{else}}
+            <div id="rStorm">
+                <div class="panel" id="dataStorm">
+                    <div class="panel-head">
+                        <h5>Storm Component</h5>
+                        <button class="btn btn-primary btn-sm pull-right" id="editStorm"><i class="fa fa-edit"></i></button>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <form class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label">HOST: <span class="required">*</span></label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" value="{{stormCompObj.hosts}}" readonly="readonly"></div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label">PORT: <span class="required">*</span></label>
+                                        <div class="col-sm-9"><input type="text" class="form-control" value="{{stormCompObj.port}}" readonly="readonly"></div>
+                                    </div>
+                                </form>
+                            </div>
+                         </div>
+                    </div>
+                </div>
+           </div>
+           {{/if}}
         </div>
     </div>
 </div>

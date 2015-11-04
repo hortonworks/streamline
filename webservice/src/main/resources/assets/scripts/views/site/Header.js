@@ -42,7 +42,7 @@ define(['require',
           },
           success: {
             label: 'Save',
-            className: 'btn-success',
+            className: 'btn-primary',
             callback: function(){
               var errs = that.view.validate();
               if(_.isEmpty(errs)){

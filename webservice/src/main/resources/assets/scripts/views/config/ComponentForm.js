@@ -11,60 +11,77 @@ define(['utils/LangSupport',
 
     initialize: function (options) {
       _.extend(this, _.pick(options, 'model', 'type'));
+      if(!this.model.has('id')){
+        if(this.type === 'STORM'){
+          var obj = {
+            'name': 'Auto_Storm_Component',
+            'description': 'This is a auto generated description for storm component',
+            'type': 'NIMBUS'
+          };
+          this.model.set(obj);
+        } else if(this.type === 'KAFKA'){
+          var obj = {
+            'name': 'Auto_Kafka_Component',
+            'description': 'This is a auto generated description for kafka component',
+            'type': 'BROKER'
+          };
+          this.model.set(obj);
+        }
+      }
       Backbone.Form.prototype.initialize.call(this, options);
     },
 
     schema: function () {
-      var typeArr = [{'val':'','label': '--'}];
-      if(this.type==='STORM'){
-        _.each(Globals.Component.Storm, function(obj){
-          var tObj = {
-            'val': obj.value,
-            'label': obj.valStr
-          };
-          typeArr.push(tObj);
-        });
-      } else if(this.type==='KAFKA'){
-        _.each(Globals.Component.Kafka, function(obj){
-          var tObj = {
-            'val': obj.value,
-            'label': obj.valStr
-          };
-          typeArr.push(tObj);
-        });
-      }
+      // var typeArr = [{'val':'','label': '--'}];
+      // if(this.type==='STORM'){
+      //   _.each(Globals.Component.Storm, function(obj){
+      //     var tObj = {
+      //       'val': obj.value,
+      //       'label': obj.valStr
+      //     };
+      //     typeArr.push(tObj);
+      //   });
+      // } else if(this.type==='KAFKA'){
+      //   _.each(Globals.Component.Kafka, function(obj){
+      //     var tObj = {
+      //       'val': obj.value,
+      //       'label': obj.valStr
+      //     };
+      //     typeArr.push(tObj);
+      //   });
+      // }
       return {
-        name: {
-          type: 'Text',
-          title: localization.tt('lbl.name')+'*',
-          editorClass: 'form-control',
-          placeHolder: localization.tt('lbl.name'),
-          validators: ['required']
-        },
-        description: {
-          type: 'Text',
-          title: localization.tt('lbl.description')+'*',
-          editorClass: 'form-control',
-          placeHolder: localization.tt('lbl.description'),
-          validators: ['required']
-        },
-        type: {
-          type: 'Select2',
-          title: localization.tt('lbl.type')+'*',
-          options: typeArr,
-          editorClass: 'form-control',
-          pluginAttr: {
-            minimumResultsForSearch: Infinity,
-            placeholder: localization.tt('lbl.type')
-          },
-          validators: ['required']
-        },
+        // name: {
+        //   type: 'Text',
+        //   title: localization.tt('lbl.name')+'*',
+        //   editorClass: 'form-control',
+        //   placeHolder: localization.tt('lbl.name'),
+        //   validators: ['required']
+        // },
+        // description: {
+        //   type: 'Text',
+        //   title: localization.tt('lbl.description')+'*',
+        //   editorClass: 'form-control',
+        //   placeHolder: localization.tt('lbl.description'),
+        //   validators: ['required']
+        // },
+        // type: {
+        //   type: 'Select2',
+        //   title: localization.tt('lbl.type')+'*',
+        //   options: typeArr,
+        //   editorClass: 'form-control',
+        //   pluginAttr: {
+        //     minimumResultsForSearch: Infinity,
+        //     placeholder: localization.tt('lbl.type')
+        //   },
+        //   validators: ['required']
+        // },
         hosts: {
           type: 'Tag',
           title: localization.tt('lbl.hosts')+'*',
           editorClass: 'form-control',
           placeHolder: localization.tt('lbl.hosts'),
-          validators: ['required']
+          validators: [{'type':'required','message':'Atleast one host name is required.'}]
         },
         port: {
           type: 'Number',
@@ -74,7 +91,7 @@ define(['utils/LangSupport',
             min: 1
           }, 
           placeHolder: localization.tt('lbl.port'),
-          validators: ['required']
+          validators: [{'type':'required','message':'Port number can not be blank.'}]
         }
       };
     },

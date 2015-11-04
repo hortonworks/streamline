@@ -23,14 +23,6 @@ define([
 
     events: {
       'click #addParser': 'evAddParser',
-      'click .expand-link': function(e){
-        if(e.currentTarget.children.item().classList.contains('fa-expand')){
-          this.$el.find('#addParser').hide(); 
-        } else {
-          this.$el.find('#addParser').show();
-        }
-        Utils.expandPanel(e);
-      },
       'click #deleteAction': 'evDeleteAction'
     },
 
@@ -41,7 +33,6 @@ define([
     onRender: function () {
       this.showTable();
       this.fetchSummary();
-      Utils.panelMinimize(this);
     },
 
     getTable: function(){
@@ -131,7 +122,7 @@ define([
             },
             success: {
               label: localization.tt('lbl.add'),
-              className: 'btn-success',
+              className: 'btn-primary',
               callback: function(){
                 var errs = that.view.validate();
                 if(_.isEmpty(errs)){
@@ -166,22 +157,26 @@ define([
         that.fetchSummary();
       };
       var errorCallback = function(model, response, options){
-        Utils.showError(response);
+        Utils.showError(model, response);
       };
       Utils.uploadFile(url,formData,successCallback, errorCallback);
     },
     evDeleteAction: function(e){
-      var model = this.getModel(e);
       var that = this;
-      model.destroy({
-        success: function(model,response){
-          Utils.notifySuccess(localization.tt('dialogMsg.parserDeletedSuccessfully'));
-          that.fetchSummary();
-        },
-        error: function(model, response, options){
-          Utils.showError(response);
+      bootbox.confirm("Are you sure you want to delete this parser ?", function(result) {
+        if(result){
+          var model = this.getModel(e);
+          model.destroy({
+            success: function(model,response){
+              Utils.notifySuccess(localization.tt('dialogMsg.parserDeletedSuccessfully'));
+              that.fetchSummary();
+            },
+            error: function(model, response, options){
+              Utils.showError(model, response);
+            }
+          });
         }
-      });
+      }); 
     },
     getModel: function(e){
       var currentTarget = $(e.currentTarget);

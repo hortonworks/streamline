@@ -1,17 +1,16 @@
 define(['utils/LangSupport',
   'utils/Globals',
-  'hbs!tmpl/datasource/dataSourceForm',
+  'hbs!tmpl/device/deviceForm',
   'backbone.forms'
   ], function (localization, Globals, tmpl) {
   'use strict';
 
-  var DataSourceForm = Backbone.Form.extend({
+  var AddDeviceForm = Backbone.Form.extend({
 
     template: tmpl,
 
     initialize: function (options) {
       this.model = options.model;
-      this.readOnlyFlag = options.readOnlyFlag;
       Backbone.Form.prototype.initialize.call(this, options);
     },
 
@@ -19,9 +18,9 @@ define(['utils/LangSupport',
       return {
         dataSourceName: {
           type: 'Text',
-          title: localization.tt('lbl.name')+'*',
+          title: localization.tt('lbl.deviceName')+'*',
           editorClass: 'form-control',
-          placeHolder: localization.tt('lbl.name'),
+          placeHolder: localization.tt('lbl.deviceName'),
           validators: ['required']
         },
         description: {
@@ -68,13 +67,35 @@ define(['utils/LangSupport',
           editorClass: 'form-control',
           placeHolder: localization.tt('lbl.deviceVersion'),
           validators: ['required']
+        },
+        dataFeedName: {
+          type: 'Text',
+          title: localization.tt('lbl.feedName')+'*',
+          editorClass: 'form-control',
+          placeHolder: localization.tt('lbl.feedName'),
+          validators: ['required']
+        },
+        parserId: {
+          type: 'Number',
+          title: localization.tt('lbl.parserId')+'*',
+          editorClass: 'form-control',
+          editorAttrs: {
+            min: 1
+          }, 
+          placeHolder: localization.tt('lbl.parserId'),
+          validators: ['required']
+        },
+        endpoint: {
+          type: 'Text',
+          title: localization.tt('lbl.endpoint')+'*',
+          editorClass: 'form-control',
+          placeHolder: localization.tt('lbl.endpoint'),
+          validators: ['required']
         }
       };
     },
 
-    onRender: function(){
-      console.log($el);
-    },
+    onRender: function(){},
 
     getData: function () {
       var attrs = this.getValue();
@@ -99,5 +120,5 @@ define(['utils/LangSupport',
     }
   });
 
-  return DataSourceForm;
+  return AddDeviceForm;
 });

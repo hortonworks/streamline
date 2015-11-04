@@ -1,0 +1,29 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-head">
+                    <h4>Topology Editor</h4>
+                    <div class="modal-actions">
+                        <button id="btnDS" class="btn btn-default btnToggle btn-xs" data-rel="tooltip" title="Source"><i class="fa fa-server"></i>
+                        </button> 
+                        <button id="btnProcessor" class="btn btn-default btnToggle btn-xs" data-rel="tooltip" title="Processor"><i class="fa fa-cog"></i></button> 
+                        <button id="btnDataSink" class="btn btn-default btnToggle btn-xs" data-rel="tooltip" title="Data Sink"><i class="fa fa-database"></i></button>
+                        <button title="Submit" id="submitDatastream" class="btn btn-primary btn-xs" data-rel="tooltip"><i class="fa fa-upload"></i></a>
+                        <button title="Run" id="deployDatastream" class="btn btn-success btn-xs" data-rel="tooltip" disabled><i class="fa fa-play"></i></a>
+                        <button title="Kill" id="killDatastream" class="btn btn-danger btn-xs" data-rel="tooltip" disabled><i class="fa fa-times"></i></a>
+                    </div>
+                    <div class="pull-right">
+                        <button class="btn btn-xs btn-default" id="infoHelp"><i class="fa fa-info"></i></button>
+                    </div>
+                    <div id="editorSubhead" class="box-subhead">
+                        <dv class="quick-button btn" data-rel="tooltip" title="Device" data-submenu="Device" data-mainmenu="Datasource">
+                            <i class="fa fa-desktop"></i>
+                        </dv>
+                    </div>
+                </div>
+                <div class="box-body graph-bg" id="graphEditor"></div>
+            </div>
+        </div>
+    </div>
+</div>

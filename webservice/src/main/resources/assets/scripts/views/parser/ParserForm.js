@@ -20,27 +20,27 @@ define(['utils/LangSupport',
           title: localization.tt('lbl.parserName')+'*',
           editorClass: 'form-control',
           placeHolder: localization.tt('lbl.parserName'),
-          validators: ['required']
+          validators: [{'type':'required','message':'Parser name can not be blank.'}]
         },
         className: {
           type: 'Text',
           title: localization.tt('lbl.className')+'*',
           editorClass: 'form-control',
           placeHolder: localization.tt('lbl.className'),
-          validators: ['required']
+          validators: [{'type':'required','message':'Classname can not be blank.'}]
         },
         version: {
           type: 'Text',
           title: localization.tt('lbl.version')+'*',
           editorClass: 'form-control',
           placeHolder: localization.tt('lbl.parserVersion'),
-          validators: ['required']
+          validators: [{'type':'required','message':'Version can not be blank.'}]
         },
         parserJar: {
           type: 'Fileupload',
           title: localization.tt('lbl.parserJar')+'*',
           placeHolder: localization.tt('lbl.parserJar'),
-          validators: ['required']
+          validators: [{'type':'required','message':'Select particular parser jar to upload.'}]
         }
       };
     },

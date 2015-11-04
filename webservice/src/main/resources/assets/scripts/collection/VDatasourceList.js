@@ -8,7 +8,7 @@ define(['require',
     //Prototypal attributes
     {
 
-      url: Globals.baseURL + '/api/v1/catalog/datasources',
+      url: Globals.baseURL + '/api/v1/catalog/datasourceswithdatafeed',
 
       model: vDatasource,
 
@@ -19,7 +19,7 @@ define(['require',
         this.bindErrorEvents();
       },
       fetchDeviceType: function(options) {
-        return this.constructor.nonCrudOperation.call(this, Globals.baseURL + '/api/v1/catalog/datasources/type/DEVICE/', 'GET', options);
+        return this.constructor.nonCrudOperation.call(this, Globals.baseURL + '/api/v1/catalog/datasourceswithdatafeed/type/DEVICE/', 'GET', options);
       },
     },
     //Static Class Members
