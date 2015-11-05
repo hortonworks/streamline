@@ -3,6 +3,7 @@ package com.hortonworks.iotas.service;
 import com.hortonworks.iotas.catalog.Cluster;
 import com.hortonworks.iotas.catalog.Component;
 import com.hortonworks.iotas.catalog.DataFeed;
+import com.hortonworks.iotas.catalog.DataSink;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.DataStream;
 import com.hortonworks.iotas.catalog.Device;
@@ -34,14 +35,14 @@ public class CatalogService {
 
     // TODO: the namespace and Id generation logic should be moved inside DAO
     private static final String DATA_SOURCE_NAMESPACE = new DataSource().getNameSpace();
+    private static final String DATA_SINK_NAMESPACE = new DataSink().getNameSpace();
     private static final String DEVICE_NAMESPACE = new Device().getNameSpace();
     private static final String DATA_FEED_NAMESPACE = new DataFeed().getNameSpace();
     private static final String PARSER_INFO_NAMESPACE = new ParserInfo().getNameSpace();
     private static final String CLUSTER_NAMESPACE = new Cluster().getNameSpace();
     private static final String COMPONENT_NAMESPACE = new Component().getNameSpace();
     private static final String NOTIFIER_INFO_NAMESPACE = new NotifierInfo().getNameSpace();
-    private static final String DATA_STREAM_NAMESPACE = new DataStream()
-            .getNameSpace();
+    private static final String DATA_STREAM_NAMESPACE = new DataStream().getNameSpace();
 
     private StorageManager dao;
     private DataStreamActions dataStreamActions;
@@ -182,6 +183,49 @@ public class CatalogService {
         this.dao.addOrUpdate(dataSource);
         this.dao.addOrUpdate(subType);
         return dataSource;
+    }
+
+    // datasink methods
+    public Collection<DataSink> listDataSinks() throws IOException {
+        return dao.<DataSink>list(DATA_SINK_NAMESPACE);
+    }
+
+    public Collection<DataSink> listDataSinksForType(DataSink.Type type, List<QueryParam> queryParams) throws Exception {
+        List<QueryParam> updatedQueryParam = new ArrayList<>(queryParams);
+        updatedQueryParam.add(new QueryParam("type", type.toString()));
+        return dao.<DataSink>find(DATA_SINK_NAMESPACE, updatedQueryParam);
+    }
+
+    public DataSink getDataSink(Long id) throws IOException {
+        DataSink ds = new DataSink();
+        ds.setId(id);
+        return dao.<DataSink>get(new StorableKey(DATA_SINK_NAMESPACE, ds.getPrimaryKey()));
+    }
+
+    public DataSink addDataSink(DataSink dataSink) throws IOException {
+        if (dataSink.getId() == null) {
+            dataSink.setId(this.dao.nextId(DATA_SOURCE_NAMESPACE));
+        }
+        if (dataSink.getTimestamp() == null) {
+            dataSink.setTimestamp(System.currentTimeMillis());
+        }
+        dao.add(dataSink);
+        return dataSink;
+    }
+
+    public DataSink removeDataSink(Long dataSinkId) throws IOException {
+        DataSink dataSink = getDataSink(dataSinkId);
+        if (dataSink != null) {
+            dao.<DataSink>remove(new StorableKey(DATA_SINK_NAMESPACE, dataSink.getPrimaryKey()));
+        }
+        return dataSink;
+    }
+
+    public DataSink addOrUpdateDataSink(Long id, DataSink dataSink) throws IOException {
+        dataSink.setId(id);
+        dataSink.setTimestamp(System.currentTimeMillis());
+        this.dao.addOrUpdate(dataSink);
+        return dataSink;
     }
 
     public Collection<DataFeed> listDataFeeds() {

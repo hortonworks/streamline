@@ -4,22 +4,14 @@ package com.hortonworks.iotas.catalog;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.storage.PrimaryKey;
-import com.hortonworks.iotas.storage.Storable;
-import com.hortonworks.iotas.storage.StorableKey;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class DataSource implements Storable {
+public class DataSource extends AbstractDataResource {
     public static final String NAME_SPACE = "datasources";
     public static final String DATA_SOURCE_ID = "dataSourceId";
     public static final String DATA_SOURCE_NAME = "dataSourceName";
-    public static final String DESCRIPTION = "description";
-    public static final String DATAFEED_ID = "datafeedId";
-    public static final String TAGS = "tags";
-    public static final String TIMESTAMP = "timestamp";
-    public static final String TYPE = "type";
-    public static final String TYPE_CONFIG = "typeConfig";
 
     /**
      * The known types of data sources.
@@ -38,31 +30,10 @@ public class DataSource implements Storable {
      * Human readable name.
      */
     private String dataSourceName;
-
-    /**
-     * Human readable description.
-     */
-    private String description;
-
-    /**
-     * Free form tags.
-     */
-    private String tags;
-
-    /**
-     * Time when this entry was created/updated.
-     */
-    private Long timestamp;
-
     /**
      * The type of the datasource e.g. 'DEVICE'
      */
     private Type type;
-
-    /**
-     * The config string specific to the type. e.g. Device Config.
-     */
-    private String typeConfig;
 
     @JsonIgnore
     public String getNameSpace() {
@@ -89,11 +60,6 @@ public class DataSource implements Storable {
         return new PrimaryKey(fieldToObjectMap);
     }
 
-    @JsonIgnore
-    public StorableKey getStorableKey() {
-        return new StorableKey(getNameSpace(), getPrimaryKey());
-    }
-
     public Map toMap() {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put(DATA_SOURCE_ID, dataSourceId);
@@ -117,6 +83,29 @@ public class DataSource implements Storable {
         return this;
     }
 
+    public Long getDataSourceId() {
+        return dataSourceId;
+    }
+
+    public void setDataSourceId(Long dataSourceId) {
+        this.dataSourceId = dataSourceId;
+    }
+
+    public String getDataSourceName() {
+        return dataSourceName;
+    }
+
+    public void setDataSourceName(String dataSourceName) {
+        this.dataSourceName = dataSourceName;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -159,59 +148,4 @@ public class DataSource implements Storable {
                 '}';
     }
 
-    public Long getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(Long timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public Long getDataSourceId() {
-        return dataSourceId;
-    }
-
-    public void setDataSourceId(Long dataSourceId) {
-        this.dataSourceId = dataSourceId;
-    }
-
-    public String getDataSourceName() {
-        return dataSourceName;
-    }
-
-    public void setDataSourceName(String dataSourceName) {
-        this.dataSourceName = dataSourceName;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getTags() {
-        return tags;
-    }
-
-    public void setTags(String tags) {
-        this.tags = tags;
-    }
-
-    public Type getType() {
-        return type;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
-    }
-
-    public String getTypeConfig() {
-        return typeConfig;
-    }
-
-    public void setTypeConfig(String typeConfig) {
-        this.typeConfig = typeConfig;
-    }
 }

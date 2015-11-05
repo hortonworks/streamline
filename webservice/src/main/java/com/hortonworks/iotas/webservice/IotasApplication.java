@@ -34,6 +34,7 @@ import com.hortonworks.iotas.util.DataStreamActions;
 import com.hortonworks.iotas.util.ReflectionHelper;
 import com.hortonworks.iotas.webservice.catalog.ClusterCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.ComponentCatalogResource;
+import com.hortonworks.iotas.webservice.catalog.DataSinkCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.DataSourceCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.DataSourceFacade;
 import com.hortonworks.iotas.webservice.catalog.DataSourceWithDataFeedCatalogResource;
@@ -138,12 +139,13 @@ public class IotasApplication extends Application<IotasConfiguration> {
     }
 
     private void registerResources(IotasConfiguration iotasConfiguration, Environment environment, StorageManager manager) {
-        final CatalogService catalogService = new CatalogService
-                (getCacheBackedDao(), getDataStreamActionsImpl
-                        (iotasConfiguration));
+        final CatalogService catalogService =
+                new CatalogService(getCacheBackedDao(), getDataStreamActionsImpl(iotasConfiguration));
+
+        final DataSourceCatalogResource dataSourceResource = new DataSourceCatalogResource(catalogService);
+        final DataSinkCatalogResource dataSinkCatalogResource = new DataSinkCatalogResource(catalogService);
         final FeedCatalogResource feedResource = new FeedCatalogResource(catalogService);
         final ParserInfoCatalogResource parserResource = new ParserInfoCatalogResource(catalogService, iotasConfiguration);
-        final DataSourceCatalogResource dataSourceResource = new DataSourceCatalogResource(catalogService);
         final DataSourceWithDataFeedCatalogResource dataSourceWithDataFeedCatalogResource =
                 new DataSourceWithDataFeedCatalogResource(new DataSourceFacade(catalogService));
         final DataStreamCatalogResource dataStreamResource = new DataStreamCatalogResource(catalogService);
@@ -151,12 +153,16 @@ public class IotasApplication extends Application<IotasConfiguration> {
         // cluster related
         final ClusterCatalogResource clusterCatalogResource = new ClusterCatalogResource(catalogService);
         final ComponentCatalogResource componentCatalogResource = new ComponentCatalogResource(catalogService);
-        List<Object> resources = Lists.newArrayList(feedResource, parserResource, dataSourceResource, dataSourceWithDataFeedCatalogResource,
+
+        List<Object> resources = Lists.newArrayList(dataSourceResource, dataSourceWithDataFeedCatalogResource,
+                                                    dataSinkCatalogResource, feedResource, parserResource,
                                                     dataStreamResource, clusterCatalogResource, componentCatalogResource);
+
         if (!iotasConfiguration.isNotificationsRestDisabled()) {
             resources.add(new NotifierInfoCatalogResource(catalogService));
             resources.add(new NotificationsResource(new NotificationServiceImpl()));
         }
+
         for(Object resource : resources) {
             environment.jersey().register(resource);
         }
