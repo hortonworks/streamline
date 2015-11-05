@@ -68,12 +68,12 @@ public class RestIntegrationTest {
      */
     private Collection<ResourceTestElement> resourcesToTest = Lists.newArrayList(
             new ResourceTestElement(createDataFeed(1l, "testDataFeed"), createDataFeed(1l, "testDataFeedPut"), "1", rootUrl + "feeds"),
-            new ResourceTestElement(createDataSource(1l, "testDataSource"), createDataSource(1l, "testDataSourcePut"), "1", rootUrl + "datasources"),
+            new ResourceTestElement(createDataSource(1l, "testDataSource"), createDataSource(1l, "testDataSourcePut"), "1", rootUrl + "deprecated/datasources"),
             new ResourceTestElement(createClusterInfo(1l, "testCluster"), createClusterInfo(1l, "testClusterPut"), "1", rootUrl + "clusters"),
             new ResourceTestElement(createNotifierInfo(1l, "testNotifier"), createNotifierInfo(1l, "testNotifierPut"), "1", rootUrl + "notifiers"),
 
             new ResourceTestElement(createDataSourceDto(1l, "testDataSourceWithDataFeed:" + System.currentTimeMillis()),
-                    createDataSourceDto(1l, "testDataSourceWithDataFeedPut:" + System.currentTimeMillis()), "1", rootUrl + "datasourceswithdatafeed")
+                    createDataSourceDto(1l, "testDataSourceWithDataFeedPut:" + System.currentTimeMillis()), "1", rootUrl + "datasources")
 
             // parser is commented as parser takes a jar as input along with the parserInfo instance and so it needs a multipart request.
             //new ResourceTestElement(createParserInfo(1l, "testParser"), createParserInfo(1l, "testParserPut"), "1", rootUrl + "parsers")

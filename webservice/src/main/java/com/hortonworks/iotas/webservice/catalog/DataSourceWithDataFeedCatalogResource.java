@@ -52,7 +52,7 @@ public class DataSourceWithDataFeedCatalogResource {
 
     // todo: better path for this resource, we may rename it to /datasources once the existing api is removed.
     @POST
-    @Path("/datasourceswithdatafeed")
+    @Path("/datasources")
     @Timed
     public Response addDataSourceWithDataFeed(DataSourceDto dataSourceDto) {
         try {
@@ -68,7 +68,7 @@ public class DataSourceWithDataFeedCatalogResource {
     }
 
     @PUT
-    @Path("/datasourceswithdatafeed/{id}")
+    @Path("/datasources/{id}")
     @Timed
     public Response addOrUpdateDataSourceWithDataFeed(@PathParam("id") Long dataSourceId, DataSourceDto dataSourceDto) {
         try {
@@ -85,7 +85,7 @@ public class DataSourceWithDataFeedCatalogResource {
 
 
     @GET
-    @Path("/datasourceswithdatafeed")
+    @Path("/datasources")
     @Timed
     public Response listDataSourcesWithDataFeed(@QueryParam("filter") List<String> filter) {
         try {
@@ -101,7 +101,7 @@ public class DataSourceWithDataFeedCatalogResource {
      * List datasource matching the type and the type specific fields and values.
      */
     @GET
-    @Path("/datasourceswithdatafeed/type/{type}")
+    @Path("/datasources/type/{type}")
     @Timed
     public Response listDataSourcesWithDataFeedForTypeWithFilter(@PathParam("type") DataSource.Type type,
                                                                  @Context UriInfo uriInfo) {
@@ -121,7 +121,7 @@ public class DataSourceWithDataFeedCatalogResource {
     }
 
     @GET
-    @Path("/datasourceswithdatafeed/{id}")
+    @Path("/datasources/{id}")
     @Timed
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDataSourceWithDataFeedById(@PathParam("id") Long dataSourceId) {
@@ -138,7 +138,7 @@ public class DataSourceWithDataFeedCatalogResource {
     }
 
     @DELETE
-    @Path("/datasourceswithdatafeed/{id}")
+    @Path("/datasources/{id}")
     @Timed
     public Response removeDataSourceWithDataFeed(@PathParam("id") Long dataSourceId) {
         try {

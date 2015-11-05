@@ -50,7 +50,7 @@ public class DataSourceCatalogResource {
     }
 
     @GET
-    @Path("/datasources")
+    @Path("/deprecated/datasources")
     @Timed
     public Response listDataSources(@QueryParam("filter") List<String> filter) {
         try {
@@ -65,7 +65,7 @@ public class DataSourceCatalogResource {
      * List datasource matching the type and the type specific fields and values.
      */
     @GET
-    @Path("/datasources/type/{type}")
+    @Path("/deprecated/datasources/type/{type}")
     @Timed
     public Response listDataSourcesForTypeWithFilter(@PathParam("type") DataSource.Type type,
                                                      @Context UriInfo uriInfo) {
@@ -84,7 +84,7 @@ public class DataSourceCatalogResource {
     }
 
     @GET
-    @Path("/datasources/{id}")
+    @Path("/deprecated/datasources/{id}")
     @Timed
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDataSourceById(@PathParam("id") Long dataSourceId) {
@@ -101,7 +101,7 @@ public class DataSourceCatalogResource {
     }
 
     @GET
-    @Path("/datasources/{id}/schema")
+    @Path("/deprecated/datasources/{id}/schema")
     @Timed
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDataSourceSchema(@PathParam("id") Long dataSourceId) {
@@ -128,7 +128,7 @@ public class DataSourceCatalogResource {
     }
 
     @POST
-    @Path("/datasources")
+    @Path("/deprecated/datasources")
     @Timed
     public Response addDataSource(DataSource dataSource) {
         try {
@@ -143,7 +143,7 @@ public class DataSourceCatalogResource {
     }
 
     @DELETE
-    @Path("/datasources/{id}")
+    @Path("/deprecated/datasources/{id}")
     @Timed
     public Response removeDataSource(@PathParam("id") Long dataSourceId) {
         try {
@@ -159,7 +159,7 @@ public class DataSourceCatalogResource {
     }
 
     @PUT
-    @Path("/datasources/{id}")
+    @Path("/deprecated/datasources/{id}")
     @Timed
     public Response addOrUpdateDataSource(@PathParam("id") Long dataSourceId, DataSource dataSource) {
         try {
