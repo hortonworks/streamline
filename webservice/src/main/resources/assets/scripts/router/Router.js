@@ -10,13 +10,16 @@ define([
 	var AppRouter = Backbone.Router.extend({
 		routes: {
 			// Define some URL routes
-			''						: 'dashboardAction',
+			// ''						: 'dashboardAction',
+			''						: 'parserRegistryAction',
 			'!/dashboard'			: 'dashboardAction',
 			'!/parser-registry'		: 'parserRegistryAction',
 			'!/device-catalog'		: 'deviceCatalogAction',
 			'!/device-catalog/:pid'	: 'deviceDetailAction',
 			'!/configuration'		: 'configurationAction',
-			'!/configuration/:pid'	: 'clusterDetailAction',
+			'!/topology'			: 'topologyAction',
+			'!/topology-editor'		: 'topologyEditorAction',
+			'!/topology-editor/:pid': 'topologyEditorAction',
 
 			// Default
 			'*actions': 'defaultAction'
@@ -28,8 +31,11 @@ define([
 		},
 
 		showRegions: function() {
-			require(['views/site/Header','views/site/Sidebar'],function(HeaderView, SidebarView){
+			require(['views/site/Header'],function(HeaderView){
 				App.rHeader.show(new HeaderView());
+			});
+
+			require(['views/site/Sidebar'],function(SidebarView){
 				App.rSideBar.show(new SidebarView({
 					appState: VAppState
 				}));
@@ -95,9 +101,10 @@ define([
 			require(['models/VDatasource'], function(VDatasource){
 				var dsModel = new VDatasource();
 				dsModel.set('dataSourceId',id);
-				dsModel.fetch({
+				dsModel.getOnlyDatasource({
+					id: id,
 					success: function(model, response, options){
-						var tModel = new VDatasource(response.entity);
+						var tModel = new VDatasource(model.entity);
 						require(['views/datasource/DataSourceDetails'], function(DataSourceDetailsView){
 							App.rContent.show(new DataSourceDetailsView({
 								dsModel: tModel
@@ -105,7 +112,7 @@ define([
 						});
 					},
 					error: function(model, response, options){
-						Utils.showError(response);
+						Utils.showError(model, response);
 					}
 				});
 			});
@@ -115,31 +122,48 @@ define([
 			VAppState.set({
 				'currentTab' : 0
 			});
-			require(['views/config/ConfigurationView'], function(configView){
-				App.rContent.show(new configView());
+			require(['collection/VClusterList', 'views/config/ConfigurationView'], function(VClusterList, configView){
+				var collection = new VClusterList(),
+					showStormBtn = true,
+					showKafkaBtn = true;
+				collection.fetch({
+					async: false,
+			        success: function(collection, response, options){
+			          if(collection.models.length){
+			            _.each(collection.models, function(model){
+			              if(model.get('type') === 'STORM'){
+			                showStormBtn = false;
+			              } else if(model.get('type') === 'KAFKA'){
+			                showKafkaBtn = false;
+			              }
+			            });
+			          }
+			        }
+			    });
+			    App.rContent.show(new configView({
+					clusterCollection: collection,
+					showStormBtn: showStormBtn,
+					showKafkaBtn: showKafkaBtn
+				}));
 			});
 		},
 
-		clusterDetailAction: function(id){
+		topologyAction: function(){
 			VAppState.set({
-				'currentTab' : 0
+				'currentTab' : Globals.AppTabs.DataStreamEditor.value
 			});
-			require(['models/VCluster'], function(VCluster){
-				var clusterModel = new VCluster();
-				clusterModel.set('id',id);
-				clusterModel.fetch({
-					success: function(model, response, options){
-						var tModel = new VCluster(response.entity);
-						require(['views/config/ClusterDetails'], function(ClusterDetailsView){
-							App.rContent.show(new ClusterDetailsView({
-								clusterModel: tModel
-							}));
-						});
-					},
-					error: function(model, response, options){
-						Utils.showError(response);
-					}
-				});
+			require(['views/topology/TopologyListingMaster'], function(TopologyListingMaster){
+				App.rContent.show(new TopologyListingMaster());
+			});
+		},
+
+		topologyEditorAction: function(id){
+			VAppState.set({
+				'currentTab' : Globals.AppTabs.DataStreamEditor.value
+			});
+			//TODO - support to open existing topology in the editor
+			require(['views/topology/DataStreamMaster'], function(DataStreamMaster){
+				App.rContent.show(new DataStreamMaster());
 			});
 		},
 		

@@ -4,28 +4,26 @@ import com.hortonworks.iotas.catalog.Cluster;
 import com.hortonworks.iotas.catalog.Component;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
+import com.hortonworks.iotas.catalog.DataStream;
 import com.hortonworks.iotas.catalog.Device;
 import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.catalog.ParserInfo;
-import com.hortonworks.iotas.catalog.DataStream;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.storage.DataSourceSubType;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.exception.StorageException;
 import com.hortonworks.iotas.util.CoreUtils;
 import com.hortonworks.iotas.util.DataStreamActions;
+import com.hortonworks.iotas.util.DataStreamLayoutValidator;
+import com.hortonworks.iotas.util.JsonSchemaValidator;
+import com.hortonworks.iotas.util.exception.BadDataStreamLayoutException;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import com.hortonworks.iotas.util.DataStreamLayoutValidator;
-import com.hortonworks.iotas.util.exception.BadDataStreamLayoutException;
-import com.hortonworks.iotas.util.JsonSchemaValidator;
-
-import java.net.URL;
 
 /**
  * A service layer where we could put our business logic.
@@ -51,6 +49,7 @@ public class CatalogService {
     public static class QueryParam {
         public final String name;
         public final String value;
+
         public QueryParam(String name, String value) {
             this.name = name;
             this.value = value;
@@ -128,7 +127,7 @@ public class CatalogService {
         List<DataSource> dataSources = new ArrayList<DataSource>();
         String ns = getNamespaceForDataSourceType(type);
         Collection<DataSourceSubType> subTypes = dao.<DataSourceSubType>find(ns, params);
-        for(DataSourceSubType st: subTypes) {
+        for (DataSourceSubType st : subTypes) {
             dataSources.add(getDataSource(st.getDataSourceId()));
         }
         return dataSources;
@@ -178,7 +177,7 @@ public class CatalogService {
         dataSource.setDataSourceId(id);
         dataSource.setTimestamp(System.currentTimeMillis());
         DataSourceSubType subType = CoreUtils.jsonToStorable(dataSource.getTypeConfig(),
-                                                             getClassForDataSourceType(dataSource.getType()));
+                getClassForDataSourceType(dataSource.getType()));
         subType.setDataSourceId(dataSource.getDataSourceId());
         this.dao.addOrUpdate(dataSource);
         this.dao.addOrUpdate(subType);
@@ -222,6 +221,10 @@ public class CatalogService {
 
     public Collection<ParserInfo> listParsers() {
         return dao.<ParserInfo>list(PARSER_INFO_NAMESPACE);
+    }
+
+    public Collection<ParserInfo> listParsers(List<QueryParam> queryParams) {
+        return dao.<ParserInfo>find(PARSER_INFO_NAMESPACE, queryParams);
     }
 
     public ParserInfo getParserInfo(Long parserId) {
@@ -321,6 +324,9 @@ public class CatalogService {
         return dao.<Component>remove(new StorableKey(COMPONENT_NAMESPACE, component.getPrimaryKey()));
     }
 
+    public Component addOrUpdateComponent(Long clusterId, Component component) {
+        return addOrUpdateComponent(clusterId, component.getId(), component);
+    }
 
     public Component addOrUpdateComponent(Long clusterId, Long componentId, Component component) {
         component.setClusterId(clusterId);
@@ -337,7 +343,7 @@ public class CatalogService {
         if (notifierInfo.getTimestamp() == null) {
             notifierInfo.setTimestamp(System.currentTimeMillis());
         }
-        if(StringUtils.isEmpty(notifierInfo.getNotifierName())) {
+        if (StringUtils.isEmpty(notifierInfo.getNotifierName())) {
             throw new StorageException("Notifier name empty");
         }
         this.dao.add(notifierInfo);
@@ -375,19 +381,19 @@ public class CatalogService {
         return notifierInfo;
     }
 
-    public Collection<DataStream> listDataStreams () {
+    public Collection<DataStream> listDataStreams() {
         Collection<DataStream> dataStreams = this.dao.list(DATA_STREAM_NAMESPACE);
         return dataStreams;
     }
 
-    public DataStream getDataStream (Long dataStreamId) {
+    public DataStream getDataStream(Long dataStreamId) {
         DataStream ds = new DataStream();
         ds.setDataStreamId(dataStreamId);
         DataStream result = this.dao.get(ds.getStorableKey());
         return result;
     }
 
-    public DataStream addDataStream (DataStream dataStream) {
+    public DataStream addDataStream(DataStream dataStream) {
         if (dataStream.getDataStreamId() == null) {
             dataStream.setDataStreamId(this.dao.nextId(DATA_STREAM_NAMESPACE));
         }
@@ -398,14 +404,14 @@ public class CatalogService {
         return dataStream;
     }
 
-    public DataStream removeDataStream (Long dataStreamId) {
+    public DataStream removeDataStream(Long dataStreamId) {
         DataStream dataStream = new DataStream();
         dataStream.setDataStreamId(dataStreamId);
         return dao.remove(new StorableKey(DATA_STREAM_NAMESPACE, dataStream
                 .getPrimaryKey()));
     }
 
-    public DataStream addOrUpdateDataStream (Long dataStreamId, DataStream
+    public DataStream addOrUpdateDataStream(Long dataStreamId, DataStream
             dataStream) {
         dataStream.setDataStreamId(dataStreamId);
         dataStream.setTimestamp(System.currentTimeMillis());
@@ -413,7 +419,7 @@ public class CatalogService {
         return dataStream;
     }
 
-    public DataStream validateDataStream (URL schema, Long dataStreamId)
+    public DataStream validateDataStream(URL schema, Long dataStreamId)
             throws BadDataStreamLayoutException {
         DataStream ds = new DataStream();
         ds.setDataStreamId(dataStreamId);
@@ -440,12 +446,12 @@ public class CatalogService {
         return result;
     }
 
-    public void deployDataStream (DataStream dataStream) throws Exception {
+    public void deployDataStream(DataStream dataStream) throws Exception {
         this.dataStreamActions.deploy(dataStream);
         return;
     }
 
-    public void killDataStream (DataStream dataStream) throws Exception {
+    public void killDataStream(DataStream dataStream) throws Exception {
         this.dataStreamActions.kill(dataStream);
         return;
     }

@@ -56,7 +56,7 @@ define(['require', 'bootstrap.notify'], function(require) {
     }
   };
 
-  Utils.notifyError = function(message){
+  Utils.notifyError = function(message,from,align){
     $.notify({
       // options
       icon: 'fa fa-warning',
@@ -71,13 +71,13 @@ define(['require', 'bootstrap.notify'], function(require) {
         exit: 'animated fadeOutUp'
       },
       placement: {
-        from: "top",
-        align: "right"
+        from: from ? from :"top",
+        align: align ? align :"right"
       },
     });
   };
 
-  Utils.notifySuccess = function(message){
+  Utils.notifySuccess = function(message,from,align){
     $.notify({
       // options
       icon: 'fa fa-check',
@@ -92,13 +92,13 @@ define(['require', 'bootstrap.notify'], function(require) {
         exit: 'animated fadeOutUp'
       },
       placement: {
-        from: "top",
-        align: "right"
+        from: from ? from :"top",
+        align: align ? align :"right"
       },
     });
   };
 
-  Utils.notifyInfo = function(message){
+  Utils.notifyInfo = function(message,from,align){
     $.notify({
       // options
       icon: 'fa fa-info',
@@ -113,8 +113,8 @@ define(['require', 'bootstrap.notify'], function(require) {
         exit: 'animated fadeOutUp'
       },
       placement: {
-        from: "top",
-        align: "right"
+        from: from ? from :"top",
+        align: align ? align :"right"
       },
     });
   };
@@ -168,9 +168,11 @@ define(['require', 'bootstrap.notify'], function(require) {
       });
   };
 
-  Utils.showError = function(response){
+  Utils.showError = function(model, response){
     var msg;
-    if(response.responseJSON.responseMessage){
+    if(typeof response === "string"){
+      msg = model.responseJSON.responseMessage;
+    } else if(response.responseJSON.responseMessage){
       msg = response.responseJSON.responseMessage;
     } else {
       msg = response.responseJSON.message;

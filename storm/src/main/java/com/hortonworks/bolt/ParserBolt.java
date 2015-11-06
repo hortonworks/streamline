@@ -16,7 +16,6 @@ import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.model.IotasMessage;
 import com.hortonworks.iotas.parser.Parser;
 import com.hortonworks.iotas.util.ReflectionHelper;
-import com.hortonworks.topology.UnparsedTupleHandler;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -35,6 +34,7 @@ public class ParserBolt extends BaseRichBolt {
     public static final String CATALOG_ROOT_URL = "catalog.root.url";
     public static final String LOCAL_PARSER_JAR_PATH = "local.parser.jar.path";
     public static final String IOTAS_EVENT = "iotas.event";
+    public static final String BINARY_BYTES = "bytes";
     private OutputCollector collector;
 
     private CatalogRestClient client;
@@ -43,8 +43,9 @@ public class ParserBolt extends BaseRichBolt {
     private static ConcurrentHashMap<Object, DataSource> dataSourceMap = new ConcurrentHashMap<Object, DataSource>();
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private Long parserId;
+    private String parsedTuplesStreamId;
+    private String unparsedTuplesStreamId;
     private Long dataSourceId;
-    private UnparsedTupleHandler unparsedTupleHandler;
 
     /**
      * If user knows this instance of parserBolt is mapped to a topic which has messages that conforms to exactly one type of parser,
@@ -57,6 +58,23 @@ public class ParserBolt extends BaseRichBolt {
     }
 
     /**
+     * The stream id to use for emitting the tuples that were successfully
+     * parsed
+     * @param parsedTuplesStreamId
+     */
+    public void withParsedTuplesStreamId (String parsedTuplesStreamId) {
+        this.parsedTuplesStreamId = parsedTuplesStreamId;
+    }
+
+    /**
+     * The stream id to use for emitting the tuples that could not be parsed
+     * @param unparsedTuplesStreamId
+     */
+    public void withUnparsedTuplesStreamId (String unparsedTuplesStreamId) {
+        this.unparsedTuplesStreamId = unparsedTuplesStreamId;
+    }
+
+    /**
      * If the user knows the dataSourceId they can set it here. This will be set in the IotasEvent as the default.
      *
      * @param dataSourceId
@@ -64,12 +82,6 @@ public class ParserBolt extends BaseRichBolt {
     public void withDataSourceId(Long dataSourceId) {
         this.dataSourceId = dataSourceId;
     }
-
-    public ParserBolt withUnparsedTupleHandler (UnparsedTupleHandler unparsedTupleHandler) {
-        this.unparsedTupleHandler = unparsedTupleHandler;
-        return this;
-    }
-
 
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
         if (!stormConf.containsKey(CATALOG_ROOT_URL) || !stormConf.containsKey(LOCAL_PARSER_JAR_PATH)) {
@@ -80,19 +92,14 @@ public class ParserBolt extends BaseRichBolt {
         this.collector = collector;
         this.localParserJarPath = stormConf.get(LOCAL_PARSER_JAR_PATH).toString();
         this.client = new CatalogRestClient(catalogRootURL);
-        if (this.unparsedTupleHandler != null) {
-            try {
-                this.unparsedTupleHandler.prepare(stormConf);
-            } catch (Exception ex) {
-                throw new RuntimeException("Could not prepare " +
-                        "UnparsedTupleHandler used to account for bad tuples.",
-                        ex);
-            }
+        if (StringUtils.isEmpty(this.parsedTuplesStreamId)) {
+            throw new IllegalStateException("Stream id must be defined for " +
+                    "successfullly parsed tuples");
         }
     }
 
     public void execute(Tuple input) {
-        byte[] bytes = input.getBinaryByField("bytes");
+        byte[] bytes = input.getBinaryByField(BINARY_BYTES);
         byte[] failedBytes = bytes;
         Parser parser = null;
         String messageId = null;
@@ -123,38 +130,20 @@ public class ParserBolt extends BaseRichBolt {
                 event = new IotasEventImpl(parsed, dsrcId, messageId);
             }
             Values values = new Values(event);
-            collector.emit(input, values);
+            collector.emit(this.parsedTuplesStreamId, input, values);
             collector.ack(input);
         } catch (Exception e) {
-            LOG.warn("Failed to parse a tuple. Saving it using " +
-                    "UnparsedTupleHandler implementation.", e);
-            if (this.unparsedTupleHandler != null) {
-                try {
-                    this.unparsedTupleHandler.save(failedBytes);
-                    collector.ack(input);
-                } catch (Exception ex) {
-                    LOG.error("Failed to save bad tuple using UnparsedTupleHandler", ex);
-                    reportFailure(input, e);
-                }
+            if (this.unparsedTuplesStreamId != null) {
+                LOG.warn("Failed to parse a tuple. Sending it to unparsed " +
+                        "tuples stream " + this.unparsedTuplesStreamId, e);
+                collector.emit(this.unparsedTuplesStreamId, input, new Values
+                        (failedBytes));
+                collector.ack(input);
             } else {
-                reportFailure(input, e);
-            }
-       }
-    }
-
-    private void reportFailure(Tuple input, Exception e) {
-        collector.fail(input);
-        collector.reportError(e);
-        LOG.error("Failed to parse and save the bad tuple using " +
-                "UnparsedTupleHandler.", e);
-    }
-
-    public void cleanup () {
-        if (this.unparsedTupleHandler != null) {
-            try {
-                this.unparsedTupleHandler.cleanup();
-            } catch (Exception ex) {
-                LOG.warn("Could not cleanup UnparsedTupleHandler", ex);
+                collector.fail(input);
+                collector.reportError(e);
+                LOG.error("Failed to parse a tuple and no stream defined for " +
+                        "unparsed tuples.", e);
             }
         }
     }
@@ -220,7 +209,12 @@ public class ParserBolt extends BaseRichBolt {
 
 
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declare(new Fields(IOTAS_EVENT));
+        declarer.declareStream(this.parsedTuplesStreamId, new Fields
+                (IOTAS_EVENT));
+        if (this.unparsedTuplesStreamId != null) {
+            declarer.declareStream(this.unparsedTuplesStreamId, new Fields
+                    (BINARY_BYTES));
+        }
     }
 
     /**

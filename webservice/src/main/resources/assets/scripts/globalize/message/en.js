@@ -39,7 +39,24 @@
           'endpoint': 'End Point',
           'clusterName': 'Cluster Name',
           'hosts': 'Hosts',
-          'port': 'Port'
+          'port': 'Port',
+          'devices': 'Devices',
+          'selectDevices': 'Select Devices',
+          'cancel': 'Cancel',
+          'feedName': 'Feed Name',
+          'topologyName': 'Topology Name',
+          'state': 'State',
+          'lastUpdatedOn': 'Last Updated On',
+          'selectProcessor': 'Select Processor',
+          'selectRule': 'Select Rule',
+          'fsURL': 'fs URL',
+          'path': 'Path',
+          'action': 'Action',
+          'formula': 'Formula',
+          'rootDir': 'root dir',
+          'table': 'table',
+          'columnFamily': 'column family',
+          'rowKey': 'row key'
         },
         btn: {
           'first': 'First',
@@ -51,13 +68,16 @@
         h: {
           'addNewParser': 'Add New Parser',
           'addNewDevice': 'Add New Device',
-          'addNewDatasource': 'Add New Datasource'
+          'addNewDatasource': 'Add New Datasource',
+          'deviceInformation': 'Device Information',
+          'parserInformation': 'Parser Information'
         },
         msg: {
           'noDeviceFound': 'No Device(s) Found',
           'noParserFound': 'No Parser(s) Found',
           'noDatasourceFound': 'No Datasource(s) Found',
-          'noClusterFound': 'No Cluster(s) Found'
+          'noClusterFound': 'No Cluster(s) Found',
+          'noTopologyFound': 'No Topology Found'
         },
         plcHldr: {},
         dialogMsg: {
@@ -74,7 +94,8 @@
           'clusterDeletedSuccessfully': 'Cluster deleted successfully',
           'newComponentAddedSuccessfully': 'Component added successfully',
           'componentUpdatedSuccessfully': 'Component updated successfully',
-          'componentDeletedSuccessfully': 'Component deleted successfully'
+          'componentDeletedSuccessfully': 'Component deleted successfully',
+          'topologyDeletedSuccessfully': 'Topology deleted successfully'
         },
         validationMessages: {},
         // Server Messages

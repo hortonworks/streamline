@@ -19,19 +19,19 @@ package com.hortonworks.iotas.webservice;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
-import com.hortonworks.iotas.notification.service.NotificationService;
-import com.hortonworks.iotas.notification.service.NotificationServiceImpl;
-import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.cache.Cache;
 import com.hortonworks.iotas.cache.impl.GuavaCache;
 import com.hortonworks.iotas.cache.writer.StorageWriteThrough;
 import com.hortonworks.iotas.cache.writer.StorageWriter;
+import com.hortonworks.iotas.notification.service.NotificationServiceImpl;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.storage.CacheBackedStorageManager;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager;
+import com.hortonworks.iotas.util.DataStreamActions;
+import com.hortonworks.iotas.util.ReflectionHelper;
 import com.hortonworks.iotas.webservice.catalog.ClusterCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.ComponentCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.DataSourceCatalogResource;
@@ -40,8 +40,6 @@ import com.hortonworks.iotas.webservice.catalog.DataSourceWithDataFeedCatalogRes
 import com.hortonworks.iotas.webservice.catalog.FeedCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.NotifierInfoCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.ParserInfoCatalogResource;
-import com.hortonworks.iotas.util.DataStreamActions;
-import com.hortonworks.iotas.util.ReflectionHelper;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
@@ -110,11 +108,11 @@ public class IotasApplication extends Application<IotasConfiguration> {
 
     private CacheBuilder getGuavaCacheBuilder() {
         final long maxSize = 1000;
-        return  CacheBuilder.newBuilder().maximumSize(maxSize);
+        return CacheBuilder.newBuilder().maximumSize(maxSize);
     }
 
-    private DataStreamActions getDataStreamActionsImpl (IotasConfiguration
-                                                                configuration) {
+    private DataStreamActions getDataStreamActionsImpl(IotasConfiguration
+                                                               configuration) {
         String className = configuration.getDataStreamActionsImpl();
         // Note that iotasStormJar value needs to be changed in iotas.yaml
         // based on the location of the storm module jar of iotas project.
@@ -153,14 +151,12 @@ public class IotasApplication extends Application<IotasConfiguration> {
         // cluster related
         final ClusterCatalogResource clusterCatalogResource = new ClusterCatalogResource(catalogService);
         final ComponentCatalogResource componentCatalogResource = new ComponentCatalogResource(catalogService);
-
-        final NotifierInfoCatalogResource notifierInfoCatalogResource = new NotifierInfoCatalogResource(catalogService);
-
-        final NotificationService notificationService = new NotificationServiceImpl();
-        final NotificationsResource notificationsResource = new NotificationsResource(notificationService);
         List<Object> resources = Lists.newArrayList(feedResource, parserResource, dataSourceResource, dataSourceWithDataFeedCatalogResource,
-                                                    dataStreamResource, clusterCatalogResource, componentCatalogResource,
-                                                    notifierInfoCatalogResource, notificationsResource);
+                                                    dataStreamResource, clusterCatalogResource, componentCatalogResource);
+        if (!iotasConfiguration.isNotificationsRestDisabled()) {
+            resources.add(new NotifierInfoCatalogResource(catalogService));
+            resources.add(new NotificationsResource(new NotificationServiceImpl()));
+        }
         for(Object resource : resources) {
             environment.jersey().register(resource);
         }

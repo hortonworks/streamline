@@ -72,9 +72,7 @@ public class DataSourceCatalogResource {
         List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>();
         try {
             MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
-            for (String param : params.keySet()) {
-                queryParams.add(new CatalogService.QueryParam(param, params.getFirst(param)));
-            }
+            queryParams = WSUtils.buildQueryParameters(params);
             Collection<DataSource> dataSources = catalogService.listDataSourcesForType(type, queryParams);
             if (!dataSources.isEmpty()) {
                 return WSUtils.respond(OK, SUCCESS, dataSources);

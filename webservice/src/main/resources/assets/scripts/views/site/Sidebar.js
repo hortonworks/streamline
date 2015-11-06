@@ -19,9 +19,9 @@ define(['require', 'hbs!tmpl/site/sidebar', 'modules/Vent'], function(require, t
       });
     },
     highlightTab : function(){
-      this.$('ul > li').siblings('.active').removeClass('active');
+      this.$('ul > li a.active').removeClass('active');
       if(this.appState.get('currentTab')){
-        this.$('li#tab' + this.appState.get('currentTab')).addClass('active');
+        this.$('li#tab' + this.appState.get('currentTab') + ' a').addClass('active');
       }
     },
     onRender: function(){

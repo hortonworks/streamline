@@ -54,10 +54,14 @@ public class DataSourceDto {
     private Long parserId;
 
     /**
+     * Parser name of which parser implementation can be used to parse this feed.
+     */
+    private String parserName;
+
+    /**
      * Where is the actual data for this feed being pushed. i.e "kafka:\\host1:port\nest-device-data-topic", "twitter:\\twitter-api.host:port\feedname"
      */
     private String endpoint;
-
 
     public DataSourceDto() {
     }
@@ -76,7 +80,6 @@ public class DataSourceDto {
             parserId = dataFeed.getParserId();
             endpoint = dataFeed.getEndpoint();
         }
-
     }
 
     public Long getDataSourceId() {
@@ -157,6 +160,14 @@ public class DataSourceDto {
 
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
+    }
+
+    public String getParserName() {
+        return parserName;
+    }
+
+    public void setParserName(String parserName) {
+        this.parserName = parserName;
     }
 
     @Override

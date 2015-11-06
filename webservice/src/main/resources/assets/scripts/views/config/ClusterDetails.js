@@ -114,7 +114,7 @@ define(['require',
               self.render();
             },
             error: function(model, response, options){
-              Utils.showError(response);
+              Utils.showError(model, response);
             }
           });
         }

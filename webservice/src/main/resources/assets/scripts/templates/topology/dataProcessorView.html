@@ -1,0 +1,40 @@
+<div>
+	<div class="row">
+		<div class="col-md-12">
+			<div class="row row-margin-bottom">
+                <div class="col-md-4 form-inline">
+                    <label>Rule Name: </label>
+                    <input type="text" placeholder="Rule Name" class="form-control">
+                </div>
+                <div class="col-md-4 form-inline">
+                    <label>Action: </label>
+                    <select class="form-control" style="width:200px;">
+                        <option value="" disabled selected>Select Action</option>
+                        <option value="Store">Store</option>
+                        <option value="Notify">Notify</option>
+                    </select>
+                </div>
+                <!-- <div class="col-md-4">
+                    <div class="pull-right">
+                        <button class="btn btn-sm btn-primary" data-rel="tooltip" title="Save Rule"><i class="fa fa-save"></i></button>
+                        <button class="btn btn-sm btn-primary"  data-rel="tooltip" title="Reset Rule"><i class="fa fa-refresh"></i></button>
+                    </div>
+                </div> -->
+            </div>
+            <hr>
+            <div class="formulaForm"></div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label>Preview</label>
+                        <textarea class="form-control" rows="4" readonly=""></textarea>
+                    </div>
+                </div>
+            </div>
+			<div class="pull-right">
+				<button id="btnCancel" class="btn" type="cancel">{{tt 'lbl.cancel'}}</button>
+				<button id="btnAdd" class="btn btn-primary" type="button">{{tt 'lbl.add'}}</button>
+			</div>
+		</div>
+	</div>
+</div>

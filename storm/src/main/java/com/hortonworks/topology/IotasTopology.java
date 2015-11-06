@@ -4,14 +4,20 @@ import backtype.storm.Config;
 import backtype.storm.LocalCluster;
 import backtype.storm.StormSubmitter;
 import backtype.storm.topology.TopologyBuilder;
-import backtype.storm.tuple.Fields;
-import com.google.common.collect.Lists;
 import com.hortonworks.bolt.ParserBolt;
 import com.hortonworks.bolt.PrinterBolt;
 import com.hortonworks.hbase.ParserOutputHBaseMapper;
+import com.hortonworks.hdfs.IdentityHdfsRecordFormat;
 import org.apache.storm.hbase.bolt.HBaseBolt;
 import org.apache.storm.hbase.bolt.mapper.HBaseMapper;
-import org.apache.storm.hbase.bolt.mapper.SimpleHBaseMapper;
+import org.apache.storm.hdfs.bolt.HdfsBolt;
+import org.apache.storm.hdfs.bolt.format.DefaultFileNameFormat;
+import org.apache.storm.hdfs.bolt.format.FileNameFormat;
+import org.apache.storm.hdfs.bolt.format.RecordFormat;
+import org.apache.storm.hdfs.bolt.rotation.FileRotationPolicy;
+import org.apache.storm.hdfs.bolt.rotation.TimedRotationPolicy;
+import org.apache.storm.hdfs.bolt.sync.CountSyncPolicy;
+import org.apache.storm.hdfs.bolt.sync.SyncPolicy;
 import org.yaml.snakeyaml.Yaml;
 import storm.kafka.KafkaSpout;
 import storm.kafka.SpoutConfig;
@@ -21,7 +27,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class IotasTopology {
@@ -32,13 +37,21 @@ public class IotasTopology {
     private static final String HBASE_TABLE = "hbase.table";
     private static final String HBASE_ROW_KEY = "hbase.row.key";
     private static final String HBASE_COLUMN_FAMILY = "hbase.column.family";
+    private static final String HBASE_ROOT_DIR = "hbase.root.dir";
     private static final String PARSER_ID = "parserId";
     private static final String CATALOG_ROOT_URL = "catalog.root.url";
     private static final String PARSER_JAR_PATH = "parser.jar.path";
     private static final String HDFS_FSURL = "hdfs.fsUrl";
     private static final String HDFS_PATH = "hdfs.path";
     private static final String HDFS_NAME = "hdfs.name";
+    private static final String HDFS_ROTATION_INTERVAL = "hdfs" +
+            ".rotationInterval";
+    private static final String HDFS_SYNC_POLICY_COUNT = "hdfs.syncPolicyCount";
     public static final String HBASE_CONF = "hbase.conf";
+
+    private static final String PARSED_TUPLES_STREAM = "parsed_tuples_stream";
+    private static final String FAILED_TO_PARSE_TUPLES_STREAM =
+            "failed_to_parse_tuples_stream";
 
     public static void main(String[] args) throws Exception {
         Map<String, Object> configuration = getConfiguration(args[0]);
@@ -58,7 +71,7 @@ public class IotasTopology {
 
         Map hbaseConf = new HashMap();
 
-        hbaseConf.put("hbase.root.dir", "hdfs://localhost:9000/hbase");
+        hbaseConf.put("hbase.rootdir", configuration.get(HBASE_ROOT_DIR));
         HBaseMapper mapper = new ParserOutputHBaseMapper((String) configuration.get(HBASE_COLUMN_FAMILY));
         HBaseBolt hBaseBolt = new HBaseBolt(configuration.get(HBASE_TABLE).toString(), mapper)
                 .withConfigKey(HBASE_CONF);
@@ -67,18 +80,36 @@ public class IotasTopology {
         if (parserId != null) {
             parserBolt.withParserId(parserId);
         }
+        parserBolt.withParsedTuplesStreamId(PARSED_TUPLES_STREAM);
+        parserBolt.withUnparsedTuplesStreamId(FAILED_TO_PARSE_TUPLES_STREAM);
 
-        UnparsedTupleHandler unparsedTupleHandler = new
-                HdfsUnparsedTupleHandler().withFsUrl((String) configuration
-                .get(HDFS_FSURL)).withPath((String) configuration.get
-                (HDFS_PATH)).withName((String) configuration.get(HDFS_NAME))
-                .withRotationInterval(1);
-        parserBolt.withUnparsedTupleHandler(unparsedTupleHandler);
+        String fsUrl = (String) configuration.get(HDFS_FSURL);
+        String path =  (String) configuration.get(HDFS_PATH);
+        String name = (String) configuration.get(HDFS_NAME);
+        Integer rotationInterval = (Integer) configuration.get
+                (HDFS_ROTATION_INTERVAL);
+        Integer syncPolicyCount = (Integer) configuration.get
+                (HDFS_SYNC_POLICY_COUNT);
+
+        RecordFormat recordFormat = new IdentityHdfsRecordFormat();
+        SyncPolicy syncPolicy = new CountSyncPolicy(syncPolicyCount);
+        FileRotationPolicy fileRotationPolicy = new TimedRotationPolicy
+                (rotationInterval, TimedRotationPolicy.TimeUnit.SECONDS);
+        FileNameFormat fileNameFormat = new DefaultFileNameFormat().withPath
+                (path).withPrefix(name);
+        HdfsBolt hdfsBolt = new HdfsBolt();
+        hdfsBolt.withFsUrl(fsUrl).withFileNameFormat(fileNameFormat)
+                .withRecordFormat(recordFormat).withRotationPolicy
+                (fileRotationPolicy).withSyncPolicy(syncPolicy);
 
         builder.setSpout("KafkaSpout", spout);
         builder.setBolt("ParserBolt", parserBolt).shuffleGrouping("KafkaSpout");
-        builder.setBolt("PrinterBolt", new PrinterBolt()).shuffleGrouping("ParserBolt");
-        builder.setBolt("HBaseBolt", hBaseBolt).shuffleGrouping("ParserBolt");
+        builder.setBolt("PrinterBolt", new PrinterBolt()).shuffleGrouping
+                ("ParserBolt", PARSED_TUPLES_STREAM);
+        builder.setBolt("HBaseBolt", hBaseBolt).shuffleGrouping("ParserBolt",
+                PARSED_TUPLES_STREAM);
+        builder.setBolt("HdfsBolt", hdfsBolt).shuffleGrouping("ParserBolt",
+                FAILED_TO_PARSE_TUPLES_STREAM);
 
         Config conf = new Config();
         conf.setDebug(true);

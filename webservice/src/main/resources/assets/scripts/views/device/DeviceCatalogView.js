@@ -23,14 +23,6 @@ define(['require',
 
     events: {
       'click #addDevice': 'evAddDevice',
-      'click .expand-link': function(e){
-        if(e.currentTarget.children.item().classList.contains('fa-expand')){
-          this.$el.find('#addDevice').hide(); 
-        } else {
-          this.$el.find('#addDevice').show();
-        }
-        Utils.expandPanel(e);
-      },
       'click #editAction': 'evEditAction',
       'click #deleteAction': 'evDeleteAction'
     },
@@ -42,7 +34,6 @@ define(['require',
     onRender: function () {
       this.showTable();
       this.fetchData();
-      Utils.panelMinimize(this);
     },
     fetchData: function(){
       var that = this;
@@ -79,12 +70,12 @@ define(['require',
         label: localization.tt('lbl.description'),
         hasTooltip: false,
         editable: false
-      },{
-        name: 'type',
-        cell: 'string',
-        label: localization.tt('lbl.type'),
-        hasTooltip: false,
-        editable: false
+      // },{
+      //   name: 'type',
+      //   cell: 'string',
+      //   label: localization.tt('lbl.type'),
+      //   hasTooltip: false,
+      //   editable: false
       }, {
         name: 'tags',
         cell: 'string',
@@ -122,6 +113,7 @@ define(['require',
           formatter: _.extend({}, Backgrid.CellFormatter.prototype, {
             fromRaw: function(rawValue, model) {
               if (model) {
+                // return "<button title='Delete' class='btn btn-danger btn-xs' data-id="+model.get('dataSourceId')+" id='deleteAction' type='default' ><i class='fa fa-trash'></i></button>";
                 return "<button type='default' title='Edit' class='btn btn-success btn-xs' data-id="+model.get('dataSourceId')+" id='editAction'><i class='fa fa-edit'></i></button><button title='Delete' class='btn btn-danger btn-xs' data-id="+model.get('dataSourceId')+" id='deleteAction' type='default' ><i class='fa fa-trash'></i></button>";
               }
             }
@@ -138,16 +130,14 @@ define(['require',
       require(['views/datasource/DataSourceFeedView'], function(DataSourceFeedView){
         var view = new DataSourceFeedView({
           model: model,
-          editDSFlag: model.has('dataSourceId'),
-          editDFFlag: false 
+          isEdit: model.has('dataSourceId')
         });
         
         var modal = new Modal({
-          title: (model.has('dataSourceId')) ? 'Edit Datasource' : 'Create Datasource',
+          title: (model.has('dataSourceId')) ? 'Edit Device' : 'Add Device',
           content: view,
           showFooter: false,
-          okText : localization.tt("lbl.next"),
-          okCloses : false
+          escape: false
         }).open();
 
         view.on('closeModal',function(){
@@ -155,7 +145,6 @@ define(['require',
           that.fetchData();
         });
       });
-
     },
     evEditAction: function(e){
       var model = this.getModel(e);
@@ -172,7 +161,7 @@ define(['require',
               self.fetchData();
             },
             error: function(model, response, options){
-              Utils.showError(response);
+              Utils.showError(model, response);
             }
           });
         }

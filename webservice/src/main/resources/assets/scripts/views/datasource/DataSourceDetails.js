@@ -52,7 +52,7 @@ define(['require',
         },
         error: function(model, response, options){
           if(!_.isString(response)){
-            Utils.showError(response);
+            Utils.showError(model, response);
           }
         }
       });
@@ -123,7 +123,7 @@ define(['require',
               self.render();
             },
             error: function(model, response, options){
-              Utils.showError(response);
+              Utils.showError(model, response);
             }
           });
         }

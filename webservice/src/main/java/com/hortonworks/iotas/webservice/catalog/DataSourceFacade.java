@@ -2,6 +2,7 @@ package com.hortonworks.iotas.webservice.catalog;
 
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
+import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
 import org.slf4j.Logger;
@@ -41,7 +42,7 @@ public class DataSourceFacade {
         return new DataSourceDto(createdDataSource, createdDataFeed);
     }
 
-    public DataSourceDto createDataSourceWithDataFeed(DataSourceDto dataSourceDto) throws IOException {
+    public DataSourceDto createDataSourceWithDataFeed(DataSourceDto dataSourceDto) throws Exception {
         DataSource dataSource = createDataSource(dataSourceDto);
         DataSource createdDataSource = catalogService.addDataSource(dataSource);
         dataSourceDto.setDataSourceId(createdDataSource.getDataSourceId());
@@ -49,7 +50,13 @@ public class DataSourceFacade {
         DataFeed dataFeed = createDataFeed(dataSourceDto);
         DataFeed createdDataFeed = catalogService.addDataFeed(dataFeed);
 
-        return new DataSourceDto(createdDataSource, createdDataFeed);
+        DataSourceDto createdDataSourceDto = new DataSourceDto(createdDataSource, createdDataFeed);
+        ParserInfo parserInfo = catalogService.getParserInfo(dataSourceDto.getParserId());
+        if (parserInfo != null) {
+            createdDataSourceDto.setParserName(parserInfo.getParserName());
+        }
+
+        return createdDataSourceDto;
     }
 
     private DataFeed createDataFeed(DataSourceDto dataSourceDto) {

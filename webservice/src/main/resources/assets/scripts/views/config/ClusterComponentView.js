@@ -82,7 +82,7 @@ define(['require',
           }
         }, 
         error: function(model, response, options){
-          Utils.showError(response);
+          Utils.showError(model, response);
           that.trigger('closeModal');
         }
       });
@@ -131,7 +131,7 @@ define(['require',
           that.trigger('closeModal');
         }, 
         error: function(model, response, options){
-          Utils.showError(response);
+          Utils.showError(model, response);
           that.trigger('closeModal');
         }
       });
