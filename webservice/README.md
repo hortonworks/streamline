@@ -246,6 +246,245 @@ DELETE /api/v1/catalog/datasources/ID
 }
 ```
 
+## DataSink
+### Create
+POST /api/v1/catalog/datasinks
+
+*Sample Input*
+
+```json
+{
+ "name": "data sink - 1",
+ "description": "datasink for hdfs",
+ "tags": "HDFS, D1",
+ "type": "HDFS",
+ "typeConfig": "{\"fsUrl\": \"foo://bar\", \"version\":1}"
+}
+```
+   
+*Success Response*
+
+    HTTP/1.1 201 Created
+    Content-Type: application/json
+    
+```json    
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entity": {
+    "id": 1,
+    "name": "data sink - 1",
+    "description": "datasink for hdfs",
+    "tags": "HDFS, D1",
+    "timestamp": 1439879278020,
+    "type": "HDFS",
+    "typeConfig": "{\"fsUrl\": \"foo://bar\", \"version\":1}"
+  }
+}
+```
+
+
+*Error Response*
+
+    HTTP/1.1 500 Internal Server Error
+    Content-Type: application/json
+    
+```json    
+{
+ "responseCode": 1102,
+ "responseMessage": "An exception with message [msg] was thrown while processing request."
+}
+```
+    
+### Get
+GET /api/v1/catalog/datasinks/ID
+
+*Success Response*
+
+    GET /api/v1/catalog/datasinks/1
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+
+```json
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entity": {
+    "id": 1,
+    "name": "data sink - 1",
+    "description": "datasink for hdfs",
+    "tags": "HDFS, D1",
+    "timestamp": 1439879278020,
+    "type": "HDFS",
+    "typeConfig": "{\"fsUrl\": \"foo://bar\", \"version\":1}"
+  }
+}
+```
+
+*Error Response*
+
+    GET /api/v1/catalog/datasinks/10
+    HTTP/1.1 404 Not Found
+    Content-Type: application/json
+    
+```json    
+{
+  "responseCode": 1101,
+  "responseMessage": "Entity with id [10] not found."
+}
+```
+    
+### Get All
+GET /api/v1/catalog/datasinks
+
+    GET /api/v1/catalog/datasinks
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    
+```json    
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entities": [
+    {
+      "id": 1,
+      "name": "data sink - 1",
+      "description": "datasink for hdfs",
+      "tags": "HDFS, D1",
+      "timestamp": 1439879278020,
+      "type": "HDFS",
+      "typeConfig": "{\"fsUrl\": \"foo://bar\", \"version\":1}"
+    }, 
+    {
+      "id": 2,
+      "name": "data sink - 2",
+      "description": "datasink for HBASE",
+      "tags": "HBASE, D1",
+      "timestamp": 1439879278020,
+      "type": "HBASE",
+      "typeConfig": "{\"table\": \"foo\", \"version\":1}"
+    }, 
+    ..
+    ..
+  ]
+}
+```
+
+**Query Datasource by type**
+
+Data sources matching a specific type can be queried as follows
+
+GET /api/v1/catalog/datasinks/type/HBASE
+
+    GET /api/v1/catalog/datasinks/type/HBASE/
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+  
+```json
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entities": [
+    {
+      "id": 2,
+      "name": "data sink - 2",
+      "description": "datasink for HBASE",
+      "tags": "HBASE, D1",
+      "timestamp": 1439879278020,
+      "type": "HBASE",
+      "typeConfig": "{\"table\": \"foo\", \"version\":1}"
+    }
+  ]
+}
+```
+
+    GET /api/v1/catalog/datasinks/type/HDFS
+    HTTP/1.1 404 Not Found
+    Content-Type: application/json
+
+```json
+{
+  "responseCode": 1104,
+  "responseMessage": "Datasource not found for type [HDFS]."
+}
+```
+
+### Update
+PUT /api/v1/catalog/datasinks/ID
+
+*Sample Input*
+
+```json
+{
+ "name": "data sink - 1",
+ "description": "datasink for hbase",
+ "tags": "HBASE, D1",
+ "type": "HBASE",
+ "typeConfig": "{\"table\": \"foobar\", \"version\":1}"
+}
+```
+   
+*Success Response*
+
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    
+```json    
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entity": {
+    "id": 1,
+    "name": "data sink - 1",
+    "description": "datasink for hbase",
+    "tags": "HBASE, D1",
+    "timestamp": 1439899788020,
+    "type": "HBASE",
+    "typeConfig": "{\"table\": \"foobar\", \"version\":1}"
+  }
+}
+```
+
+**Note:** The current behavior is for PUT to create a new resource if the resource with the given ID does not exist yet.
+ 
+### Delete
+DELETE /api/v1/catalog/datasinks/ID
+
+
+*Success Response*
+
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    
+```json    
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entity": {
+    "id": 1,
+    "name": "data sink - 1",
+    "description": "datasink for hbase",
+    "tags": "HBASE, D1",
+    "timestamp": 1439899788020,
+    "type": "HBASE",
+    "typeConfig": "{\"table\": \"foo\", \"version\":1}"
+  }
+}
+```
+
+*Error Response*
+
+    DELETE /api/v1/catalog/datasinks/10
+    HTTP/1.1 404 Not Found
+    Content-Type: application/json
+
+```json
+{
+  "responseCode": 1101,
+  "responseMessage": "Entity with id [10] not found."
+}
+```
+
 ## Parser
 ### Create
 POST /api/v1/catalog/parsers

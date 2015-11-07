@@ -204,7 +204,7 @@ public class CatalogService {
 
     public DataSink addDataSink(DataSink dataSink) throws IOException {
         if (dataSink.getId() == null) {
-            dataSink.setId(this.dao.nextId(DATA_SOURCE_NAMESPACE));
+            dataSink.setId(this.dao.nextId(DATA_SINK_NAMESPACE));
         }
         if (dataSink.getTimestamp() == null) {
             dataSink.setTimestamp(System.currentTimeMillis());
