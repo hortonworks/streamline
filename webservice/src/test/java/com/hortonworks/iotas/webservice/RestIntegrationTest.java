@@ -8,6 +8,7 @@ import com.hortonworks.iotas.catalog.CatalogResponse;
 import com.hortonworks.iotas.catalog.Cluster;
 import com.hortonworks.iotas.catalog.Component;
 import com.hortonworks.iotas.catalog.DataFeed;
+import com.hortonworks.iotas.catalog.DataSink;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.catalog.ParserInfo;
@@ -28,9 +29,12 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Tests the entire code path for our rest APIs. Currently tests Post, Put, Get(list, ById) and Delete.
@@ -69,6 +73,7 @@ public class RestIntegrationTest {
     private Collection<ResourceTestElement> resourcesToTest = Lists.newArrayList(
             new ResourceTestElement(createDataFeed(1l, "testDataFeed"), createDataFeed(1l, "testDataFeedPut"), "1", rootUrl + "feeds"),
             new ResourceTestElement(createDataSource(1l, "testDataSource"), createDataSource(1l, "testDataSourcePut"), "1", rootUrl + "datasources"),
+            new ResourceTestElement(createDataSink(1l, "testDataSink", DataSink.Type.HDFS), createDataSink(1l, "testDataSinkPut", DataSink.Type.HDFS), "1", rootUrl + "datasinks"),
             new ResourceTestElement(createClusterInfo(1l, "testCluster"), createClusterInfo(1l, "testClusterPut"), "1", rootUrl + "clusters"),
             new ResourceTestElement(createNotifierInfo(1l, "testNotifier"), createNotifierInfo(1l, "testNotifierPut"), "1", rootUrl + "notifiers"),
 
@@ -124,6 +129,38 @@ public class RestIntegrationTest {
                 Assert.assertEquals(CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND.getCode(), getResponseCode(response));
             }
         }
+    }
+
+    @Test
+    public void testDataSinks() throws Exception {
+        long id = 0;
+        Map<DataSink.Type, DataSink> map = new HashMap<>();
+        for (DataSink.Type type : DataSink.Type.values()) {
+            map.put(type, createDataSink(++id, "datasink-"+type, type));
+        }
+
+        Client client = ClientBuilder.newClient(new ClientConfig());
+        String url = rootUrl + "datasinks";
+
+        // POST
+        for (DataSink dataSink : map.values()) {
+            String response = client.target(url).request().post(Entity.json(dataSink), String.class);
+            Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+        }
+
+        // GET all
+        String response = client.target(url).request().get(String.class);
+        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+        Assert.assertEquals(new HashSet<DataSink>(map.values()), new HashSet<DataSink>(getEntities(response, DataSink.class)));
+
+        // Find by type
+        for (DataSink.Type type : map.keySet()) {
+            String findByTypeUrl = url + "/type/"+type;
+            response = client.target(findByTypeUrl).request().get(String.class);
+            Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+            Assert.assertEquals(Collections.singletonList(map.get(type)), getEntities(response, DataSink.class));
+        }
+
     }
 
     /**
@@ -236,57 +273,70 @@ public class RestIntegrationTest {
     //============== Helper methods to create the actual objects that the rest APIS expect as Input ==========//
 
     private DataSource createDataSource(Long id, String name) {
-        DataSource ds = new DataSource();
-        ds.setDataSourceId(id);
-        ds.setDataSourceName(name);
-        ds.setDescription("desc");
-        ds.setTags("t1, t2, t3");
-        ds.setTimestamp(System.currentTimeMillis());
-        ds.setType(DataSource.Type.DEVICE);
-        ds.setTypeConfig("{\"deviceId\":\"1\",\"version\":1}");
-        return ds;
+        DataSource dataSource = new DataSource();
+        dataSource.setDataSourceId(id);
+        dataSource.setDataSourceName(name);
+        dataSource.setDescription("desc");
+        dataSource.setTags("t1, t2, t3");
+        dataSource.setTimestamp(System.currentTimeMillis());
+        dataSource.setType(DataSource.Type.DEVICE);
+        dataSource.setTypeConfig("{\"deviceId\":\"1\",\"version\":1}");
+        return dataSource;
+    }
+
+
+    private DataSink createDataSink(Long id, String name, DataSink.Type type) {
+        DataSink dataSink = new DataSink();
+        dataSink.setId(id);
+        dataSink.setName(name);
+        dataSink.setDescription("Data Sink with " + type);
+        dataSink.setTags("datasink, " + type);
+        dataSink.setTimestamp(System.currentTimeMillis());
+        dataSink.setType(type);
+        dataSink.setTypeConfig("{\"url\":\"foo://fs\",\"version\":1}");
+        return dataSink;
     }
 
     private DataFeed createDataFeed(Long id, String name) {
-        DataFeed df = new DataFeed();
-        df.setDataFeedId(id);
-        df.setDataSourceId(1L);
-        df.setDataFeedName(name);
-        df.setEndpoint("kafka://host:port/topic");
-        df.setParserId(id);
-        return df;
+        DataFeed dataFeed = new DataFeed();
+        dataFeed.setDataFeedId(id);
+        dataFeed.setDataSourceId(1L);
+        dataFeed.setDataFeedName(name);
+        dataFeed.setEndpoint("kafka://host:port/topic");
+        dataFeed.setParserId(id);
+        return dataFeed;
     }
 
     private DataSourceDto createDataSourceDto(Long dataSourceId, String dataSourceName) {
 
-        DataSource ds = createDataSource(dataSourceId, dataSourceName);
-        DataFeed df = createDataFeedWithDataSourceId(dataSourceId, "feed:" + dataSourceName);
-        DataSourceDto dataSourceDto = new DataSourceDto(ds, df);
+        DataSource dataSource = createDataSource(dataSourceId, dataSourceName);
+        DataFeed dataFeed = createDataFeedWithDataSourceId(dataSourceId, "feed:" + dataSourceName);
+        DataSourceDto dataSourceDto = new DataSourceDto(dataSource, dataFeed);
 
         return dataSourceDto;
     }
 
     private DataFeed createDataFeedWithDataSourceId(long datasourceId, String feedName) {
-        DataFeed df = new DataFeed();
-        df.setDataFeedId(System.currentTimeMillis());
-        df.setDataSourceId(datasourceId);
-        df.setDataFeedName(feedName);
-        df.setEndpoint("kafka://host:port/topic");
-        df.setParserId(datasourceId);
-        return df;
+        DataFeed dataFeed = new DataFeed();
+        dataFeed.setDataFeedId(System.currentTimeMillis());
+        dataFeed.setDataSourceId(datasourceId);
+        dataFeed.setDataFeedName(feedName);
+        dataFeed.setEndpoint("kafka://host:port/topic");
+        dataFeed.setParserId(datasourceId);
+        return dataFeed;
     }
 
     private ParserInfo createParserInfo(Long id, String name) {
-        ParserInfo pi = new ParserInfo();
-        pi.setParserId(id);
-        pi.setParserName(name);
-        pi.setClassName("com.org.apache.TestParser");
-        pi.setJarStoragePath("/tmp/parser.jar");
-        pi.setParserSchema(new Schema.SchemaBuilder().fields(new Schema.Field("deviceId", Schema.Type.LONG),
+        ParserInfo parserInfo = new ParserInfo();
+        parserInfo.setParserId(id);
+        parserInfo.setParserName(name);
+        parserInfo.setClassName("com.org.apache.TestParser");
+        parserInfo.setJarStoragePath("/tmp/parser.jar");
+        parserInfo.setParserSchema(new Schema.SchemaBuilder().fields(new Schema.Field("deviceId", Schema.Type.LONG),
                 new Schema.Field("deviceName", Schema.Type.STRING)).build());
-        pi.setVersion(0l);
-        pi.setTimestamp(System.currentTimeMillis());
-        return pi;
+        parserInfo.setVersion(0l);
+        parserInfo.setTimestamp(System.currentTimeMillis());
+        return parserInfo;
     }
 
     private Cluster createClusterInfo(Long id, String name) {

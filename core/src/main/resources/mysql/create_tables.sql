@@ -14,6 +14,19 @@
      PRIMARY KEY (dataSourceId)
  );
 
+-- Keeping datasinks as separate table even though it is very similar to data source table as it is a different entity
+-- and it may change in a different direction.
+ CREATE TABLE IF NOT EXISTS datasinks (
+     id BIGINT AUTO_INCREMENT NOT NULL,
+     name VARCHAR(256) NOT NULL,
+     description TEXT,
+     tags TEXT,
+     timestamp  BIGINT,
+     type TEXT NOT NULL,
+     typeConfig TEXT,
+     PRIMARY KEY (id)
+ );
+
 CREATE TABLE IF NOT EXISTS devices (
     deviceId VARCHAR(256) NOT NULL,
     version BIGINT NOT NULL,

@@ -5,6 +5,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 import com.hortonworks.iotas.catalog.DataFeed;
+import com.hortonworks.iotas.catalog.DataSink;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.Device;
 import com.hortonworks.iotas.catalog.ParserInfo;
@@ -275,6 +276,7 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
         }
 
         private <T extends Storable> T newStorableInstance(String nameSpace) {
+            // todo there should be a factory of namespace/resources
             switch (nameSpace) {
                 case(DataFeed.NAME_SPACE):
                     return (T) new DataFeed();
@@ -284,6 +286,8 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
                     return (T) new Device();
                 case(ParserInfo.NAME_SPACE):
                     return (T) new ParserInfo();
+                case(DataSink.NAME_SPACE):
+                    return (T) new DataSink();
                 default:
                     throw new RuntimeException("Unsupported Storable type");
             }
