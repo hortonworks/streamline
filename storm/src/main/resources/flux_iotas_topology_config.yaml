@@ -85,11 +85,29 @@ bolts:
   - id: "DummyRuleBolt"
     className: "com.hortonworks.bolt.DummyRuleBolt"
     parallelism: 1
+    configMethods:
+      - name: "withConsoleNotificationStream"
+        args:
+          - "console_stream"
+      - name: "withEmailNotificationStream"
+        args:
+          - "email_stream"
 
-  - id: "NotificationBolt"
+  - id: "ConsoleNotificationBolt"
     className: "com.hortonworks.bolt.notification.NotificationBolt"
     constructorArgs:
           - "console_notifier"
+    configMethods:
+      - name: "withHBaseConfigKey"
+        args:
+          - "hbase.conf"
+
+    parallelism: 1
+
+  - id: "EmailNotificationBolt"
+    className: "com.hortonworks.bolt.notification.NotificationBolt"
+    constructorArgs:
+          - "email_notifier"
     configMethods:
       - name: "withHBaseConfigKey"
         args:
@@ -152,8 +170,16 @@ streams:
       type: SHUFFLE
       streamId: "parsed_tuples_stream"
 
-  - name: "rule --> notification"
+  - name: "rule --> console"
     from: "DummyRuleBolt"
-    to: "NotificationBolt"
+    to: "ConsoleNotificationBolt"
     grouping:
+      streamId: "console_stream"
+      type: SHUFFLE
+
+  - name: "rule --> email"
+    from: "DummyRuleBolt"
+    to: "EmailNotificationBolt"
+    grouping:
+      streamId: "email_stream"
       type: SHUFFLE
