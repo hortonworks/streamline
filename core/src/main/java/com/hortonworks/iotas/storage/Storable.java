@@ -7,7 +7,8 @@ import java.util.Map;
 /**
  * Represents any entity that can be stored by our storage layer.
  */
-public interface Storable {
+public interface
+        Storable {
     //TODO: probably we can remove getNameSpace and getPrimaryKey since we now have getStorableKey.
     //TODO: Leaving it for now for discussion purposes, as well as not to break the client code
     /**

@@ -19,12 +19,13 @@ package com.hortonworks.iotas.common;
 
 import com.hortonworks.iotas.parser.ParseException;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 //TODO Make this class Jackson Compatible.
-public class Schema {
+public class Schema implements Serializable {
     public enum Type {
         // Don't change the order of this enum to prevent bugs. If you need to add a new entry do so by adding it to the end.
         BOOLEAN(Boolean.class),
@@ -82,7 +83,7 @@ public class Schema {
         }
     }
 
-    public static class Field {
+    public static class Field implements Serializable {
         String name;
         Type type;
 

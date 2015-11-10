@@ -2,7 +2,6 @@ package com.hortonworks.hbase;
 
 import backtype.storm.tuple.Tuple;
 import com.google.common.base.Charsets;
-import com.hortonworks.bolt.ParserBolt;
 import com.hortonworks.iotas.common.IotasEvent;
 import org.apache.storm.hbase.bolt.mapper.HBaseMapper;
 import org.apache.storm.hbase.common.ColumnList;
@@ -24,13 +23,13 @@ public class ParserOutputHBaseMapper implements HBaseMapper {
 
     @Override
     public byte[] rowKey(Tuple tuple) {
-        IotasEvent event = (IotasEvent) tuple.getValueByField(ParserBolt.IOTAS_EVENT);
+        IotasEvent event = (IotasEvent) tuple.getValueByField(IotasEvent.IOTAS_EVENT);
         return toBytes(event.getId());
     }
 
     @Override
     public ColumnList columns(Tuple tuple) {
-        IotasEvent event = (IotasEvent) tuple.getValueByField(ParserBolt.IOTAS_EVENT);
+        IotasEvent event = (IotasEvent) tuple.getValueByField(IotasEvent.IOTAS_EVENT);
         Map<String, Object> parsedMap = event.getFieldsAndValues();
 
         ColumnList columnList = new ColumnList();

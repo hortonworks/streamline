@@ -2,7 +2,6 @@ package com.hortonworks.hbase;
 
 import backtype.storm.tuple.Tuple;
 import com.google.common.base.Charsets;
-import com.hortonworks.bolt.ParserBolt;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import mockit.Expectations;
@@ -38,7 +37,7 @@ public class ParserOutputHBaseMapperTest {
     @Before
     public void setup() {
         new Expectations() {{
-            mockTuple.getValueByField(ParserBolt.IOTAS_EVENT); returns(TEST_EVENT);
+            mockTuple.getValueByField(IotasEvent.IOTAS_EVENT); returns(TEST_EVENT);
         }};
     }
 
