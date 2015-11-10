@@ -209,7 +209,7 @@ public class ParserBolt extends BaseRichBolt {
 
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
         declarer.declareStream(this.parsedTuplesStreamId, new Fields
-                (IOTAS_EVENT));
+                (IotasEvent.IOTAS_EVENT));
         if (this.unparsedTuplesStreamId != null) {
             declarer.declareStream(this.unparsedTuplesStreamId, new Fields
                     (BINARY_BYTES));
