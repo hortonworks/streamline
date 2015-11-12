@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.hortonworks.iotas.layout.runtime.rule.condition.script.engine;
+package com.hortonworks.iotas.layout.runtime.script.engine;
 
 import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
 
@@ -42,7 +42,7 @@ public class GroovyScriptEngine implements ScriptEngine<javax.script.ScriptEngin
     }
 
     // This is needed to avoid java.io.NotSerializableException: org.codehaus.groovy.jsr223.GroovyScriptEngineImpl
-    public class GroovyScriptEngineImplSerializable extends GroovyScriptEngineImpl implements Serializable {
+    public static class GroovyScriptEngineImplSerializable extends GroovyScriptEngineImpl implements Serializable {
         public GroovyScriptEngineImplSerializable() {
             super();
         }

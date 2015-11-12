@@ -20,8 +20,8 @@ package com.hortonworks.iotas.layout.runtime.rule;
 
 import com.hortonworks.iotas.layout.design.rule.Rule;
 import com.hortonworks.iotas.layout.runtime.rule.condition.expression.GroovyExpression;
-import com.hortonworks.iotas.layout.runtime.rule.condition.script.GroovyScript;
-import com.hortonworks.iotas.layout.runtime.rule.condition.script.engine.GroovyScriptEngine;
+import com.hortonworks.iotas.layout.runtime.script.GroovyScript;
+import com.hortonworks.iotas.layout.runtime.script.engine.GroovyScriptEngine;
 
 public class GroovyRuleRuntimeBuilder implements RuleRuntimeBuilder {
     private GroovyExpression groovyExpression;
@@ -40,7 +40,7 @@ public class GroovyRuleRuntimeBuilder implements RuleRuntimeBuilder {
     }
 
     public void buildScript() {
-        groovyScript = new GroovyScript(groovyExpression, groovyScriptEngine);
+        groovyScript = new GroovyScript(groovyExpression.getExpression(), groovyScriptEngine);
     }
 
     public RuleRuntime getRuleRuntime(Rule rule) {

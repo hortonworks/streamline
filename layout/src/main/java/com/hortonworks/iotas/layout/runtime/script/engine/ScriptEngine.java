@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.hortonworks.iotas.layout.runtime.rule.condition.script.engine;
+package com.hortonworks.iotas.layout.runtime.script.engine;
 
 
 public interface ScriptEngine<T> {

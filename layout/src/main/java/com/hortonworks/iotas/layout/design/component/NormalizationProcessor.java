@@ -15,20 +15,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.hortonworks.iotas.layout.design.component;
 
-package com.hortonworks.iotas.layout.runtime.rule.condition.script.engine;
 
-//TODO
-public class SqlStreamEngine implements ScriptEngine<Object> {
-    @Override
-    public Object getEngine() {
-        throw new UnsupportedOperationException("TODO: SqlStream Compiler Implementation");
-        /*Compiler comp = new Compiler(); // From Haohui's class
-        Evaluation obj = comp.compile("let x = 1:Integer,...; x + y > 0 and 1 < 2");
-        for (Tuple r : record) {
-            if (obj.filter(r)) {
-                action();
-            }
-        }*/
+import com.hortonworks.iotas.layout.design.n11n.Normalizer;
+
+/**
+ *
+ */
+public class NormalizationProcessor extends Processor {
+    private Normalizer normalizer;
+
+    public NormalizationProcessor(Normalizer normalizer) {
+        this.normalizer = normalizer;
+    }
+
+    public Normalizer getNormalizer() {
+        return normalizer;
+    }
+
+    public void setNormalizer(Normalizer normalizer) {
+        this.normalizer = normalizer;
     }
 }

@@ -16,16 +16,16 @@
  * limitations under the License.
  */
 
-package com.hortonworks.iotas.layout.runtime.rule.condition.script;
+package com.hortonworks.iotas.layout.runtime.script;
 
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.layout.runtime.rule.condition.expression.Expression;
-import com.hortonworks.iotas.layout.runtime.rule.condition.script.engine.ScriptEngine;
+import com.hortonworks.iotas.layout.runtime.script.engine.ScriptEngine;
 
 import javax.script.ScriptException;
 
 // TODO: Replace Object parameterized type with SQLStream Framework Object
-public class SqlStreamScript extends Script<IotasEvent, SqlStreamScript.Framework> {
+public class SqlStreamScript<O> extends Script<IotasEvent, O, SqlStreamScript.Framework> {
 
     //TODO: Remove and replace with the actual framework object type
     interface Framework {
@@ -34,14 +34,15 @@ public class SqlStreamScript extends Script<IotasEvent, SqlStreamScript.Framewor
 
     public SqlStreamScript(Expression expression,
                            ScriptEngine<Framework> scriptEngine) {
-        super(expression, scriptEngine);
+        super(expression.getExpression(), scriptEngine);
     }
 
     @Override
-    public boolean evaluate(IotasEvent iotasEvent) throws ScriptException {
+    public O evaluate(IotasEvent iotasEvent) throws ScriptException {
 //        return framework.eval(input);
-        return false;
+        return null;
     }
+
     /*public SqlStreamScript() {
         Interface:
 

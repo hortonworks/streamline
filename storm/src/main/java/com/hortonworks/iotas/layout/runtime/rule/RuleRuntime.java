@@ -25,7 +25,7 @@ import backtype.storm.tuple.Tuple;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.layout.design.rule.Rule;
 import com.hortonworks.iotas.layout.design.rule.exception.ConditionEvaluationException;
-import com.hortonworks.iotas.layout.runtime.rule.condition.script.Script;
+import com.hortonworks.iotas.layout.runtime.script.Script;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,9 +36,9 @@ public class RuleRuntime implements Serializable {
     private static final Logger log = LoggerFactory.getLogger(RuleRuntime.class);
 
     private final Rule rule;
-    private final Script<IotasEvent, ?> script;     // Script used to evaluate the condition
+    private final Script<IotasEvent,Boolean, ?> script;     // Script used to evaluate the condition
 
-    RuleRuntime(Rule rule, Script<IotasEvent, ?> script) {
+    RuleRuntime(Rule rule, Script<IotasEvent,Boolean, ?> script) {
         this.rule = rule;
         this.script = script;
     }
