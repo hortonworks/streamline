@@ -5,7 +5,7 @@ define(['require',
   'use strict';
   var VDatasource = vBaseModel.extend(
     {
-      urlRoot: Globals.baseURL + '/api/v1/catalog/datasourceswithdatafeed',
+      urlRoot: Globals.baseURL + '/api/v1/catalog/datasources',
 
       defaults: {},
 
