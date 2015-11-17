@@ -51,4 +51,9 @@ public class ConsoleNotifier implements Notifier {
     public List<String> getFields() {
         return Collections.emptyList();
     }
+
+    @Override
+    public NotificationContext getContext() {
+        return ctx;
+    }
 }

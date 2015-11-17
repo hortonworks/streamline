@@ -47,8 +47,10 @@ public class HBaseNotificationStore implements NotificationStore {
     private HConnection connection;
     /**
      * A map of table name to the HBase HTable instances.
+     * Since the HTable instances are not threadsafe, its wrapped
+     * in {@link ThreadLocal}
      */
-    private final Map<String, HTableInterface> tables = new HashMap<>();
+    private final Map<String, ThreadLocal<HTableInterface>> tables = new HashMap<>();
 
     /**
      * The mapper for converting notifications
@@ -93,16 +95,13 @@ public class HBaseNotificationStore implements NotificationStore {
             notificationIndexMappers.add(new DatasourceStatusNotificationMapper());
             notificationIndexMappers.add(new TimestampNotificationMapper());
             for (NotificationIndexMapper indexMapper : notificationIndexMappers) {
-                tables.put(indexMapper.getTableName(),
-                           connection.getTable(TableName.valueOf(indexMapper.getTableName())));
+                tables.put(indexMapper.getTableName(), tlHTable(indexMapper.getTableName()));
             }
             notificationMapper = new NotificationMapper(notificationIndexMappers);
-            tables.put(notificationMapper.getTableName(),
-                       connection.getTable(TableName.valueOf(notificationMapper.getTableName())));
+            tables.put(notificationMapper.getTableName(), tlHTable(notificationMapper.getTableName()));
 
             iotaseventMapper = new IotasEventMapper();
-            tables.put(iotaseventMapper.getTableName(),
-                       connection.getTable(TableName.valueOf(iotaseventMapper.getTableName())));
+            tables.put(iotaseventMapper.getTableName(), tlHTable(iotaseventMapper.getTableName()));
 
             hBaseScanConfigBuilder = new HBaseScanConfigBuilder();
             hBaseScanConfigBuilder.addMappers(Notification.class, notificationIndexMappers);
@@ -125,7 +124,7 @@ public class HBaseNotificationStore implements NotificationStore {
         for (TableMutation tm : tableMutations) {
             LOG.debug("Insert/Update {} row(s), Delete {} row(s) in table {}",
                       tm.updates().size(), tm.deletes().size(), tm.tableName());
-            HTableInterface table = tables.get(tm.tableName());
+            HTableInterface table = tables.get(tm.tableName()).get();
             if (!tm.updates().isEmpty()) {
                 table.put(tm.updates());
             }
@@ -141,7 +140,7 @@ public class HBaseNotificationStore implements NotificationStore {
             String tableName = notificationMapper.getTableName();
             LOG.debug("getting notification with notificationId {} from table {}", notificationId, tableName);
             Get get = new Get(notificationId.getBytes(StandardCharsets.UTF_8));
-            Result result = tables.get(tableName).get(get);
+            Result result = tables.get(tableName).get().get(get);
             return result.isEmpty() ? null : notificationMapper.entity(result);
         } catch (IOException ex) {
             throw new NotificationStoreException("Error getting notification id: " + notificationId, ex);
@@ -163,7 +162,7 @@ public class HBaseNotificationStore implements NotificationStore {
             String tableName = iotaseventMapper.getTableName();
             LOG.debug("getting event with eventId {} from table {}", eventId, tableName);
             Get get = new Get(eventId.getBytes(StandardCharsets.UTF_8));
-            Result result = tables.get(tableName).get(get);
+            Result result = tables.get(tableName).get().get(get);
             return result.isEmpty() ? null : iotaseventMapper.entity(result);
         } catch (IOException ex) {
             throw new NotificationStoreException("Error getting event id: " + eventId, ex);
@@ -198,7 +197,7 @@ public class HBaseNotificationStore implements NotificationStore {
                     scan = new Scan(startRow, stopRow);
                 }
                 scan.setFilter(scanConfig.filterList());
-                ResultScanner scanner = tables.get(scanConfig.getMapper().getTableName()).getScanner(scan);
+                ResultScanner scanner = tables.get(scanConfig.getMapper().getTableName()).get().getScanner(scan);
                 for (Result result : scanner) {
                     entities.add(scanConfig.getMapper().entity(result));
                 }
@@ -213,9 +212,9 @@ public class HBaseNotificationStore implements NotificationStore {
     @Override
     public void close() {
         try {
-            for (HTableInterface table : tables.values()) {
+            for (ThreadLocal<HTableInterface> table : tables.values()) {
                 LOG.debug("Closing table {}", table);
-                table.close();
+                table.get().close();
             }
             LOG.debug("Closing connection {}", connection);
             connection.close();
@@ -232,5 +231,20 @@ public class HBaseNotificationStore implements NotificationStore {
         } catch (IOException ex) {
             throw new NotificationStoreException("Error updating status, notification-id: " + notificationId, ex);
         }
+    }
+
+    /**
+     * Return a {@link ThreadLocal} wrapped HTable
+     */
+    private ThreadLocal<HTableInterface> tlHTable(final String tableName) {
+        return new ThreadLocal<HTableInterface>() {
+            @Override protected HTableInterface initialValue() {
+                try {
+                    return connection.getTable(TableName.valueOf(tableName));
+                } catch (IOException ex) {
+                    throw new NotificationStoreException("error getting Htable", ex);
+                }
+            }
+        };
     }
 }

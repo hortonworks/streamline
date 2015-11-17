@@ -6,7 +6,8 @@ config:
   local.notifier.jar.path: ${notifier.jar.path}
   hbase.conf:
     hbase.root.dir: ${hbase.root.dir}
-
+  notification.conf:
+    queuehandler.threads: 10
 components:
   - id: "zkHosts"
     className: "storm.kafka.ZkHosts"

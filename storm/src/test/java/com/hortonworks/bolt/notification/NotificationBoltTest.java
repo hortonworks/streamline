@@ -101,6 +101,11 @@ public class NotificationBoltTest {
             public List<String> getFields() {
                 return new ArrayList<>();
             }
+
+            @Override
+            public NotificationContext getContext() {
+                return myCtx;
+            }
         };
 
     }
@@ -148,7 +153,8 @@ public class NotificationBoltTest {
             {
                 catalogRestClient.getNotifierInfo("console_notifier");
                 times = 1;
-                collector.ack(tuple); times = 1;
+                collector.ack(tuple);
+                times = 1;
                 hBaseNotificationStore.store(notification);
                 times = 1;
             }
@@ -188,15 +194,19 @@ public class NotificationBoltTest {
         bolt.prepare(stormConf, null, collector);
 
         bolt.execute(tuple);
-
+        Thread.sleep(100); // give some time for queue handler to process.
         new Verifications() {
             {
                 catalogRestClient.getNotifierInfo(NOTIFIER_NAME);
                 times = 1;
                 hBaseNotificationStore.store(notification);
                 times = 1;
-                collector.ack(tuple); times = 1;
-                collector.fail(tuple); times = 0;
+                hBaseNotificationStore.updateNotificationStatus(notification.getId(), Notification.Status.DELIVERED);
+                times = 1;
+                collector.ack(tuple);
+                times = 1;
+                collector.fail(tuple);
+                times = 0;
             }
         };
     }
@@ -234,6 +244,7 @@ public class NotificationBoltTest {
         bolt.prepare(stormConf, null, collector);
 
         bolt.execute(tuple);
+        Thread.sleep(100); // give some time for queue handler to process.
 
         new Verifications() {
             {
@@ -241,8 +252,12 @@ public class NotificationBoltTest {
                 times = 1;
                 hBaseNotificationStore.store(notification);
                 times = 1;
-                collector.ack(tuple); times = 0;
-                collector.fail(tuple); times = 1;
+                hBaseNotificationStore.updateNotificationStatus(notification.getId(), Notification.Status.FAILED);
+                times = 1;
+                collector.ack(tuple);
+                times = 0;
+                collector.fail(tuple);
+                times = 1;
             }
         };
     }

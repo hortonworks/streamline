@@ -54,7 +54,7 @@ public class NotificationServiceImplTest {
         new Expectations() {
             {
                 mockCtx.getConfig();
-                times = 2;
+                times = 3;
                 result = mockNotifierConfig;
                 mockNotifierConfig.getClassName();
                 times = 1;
@@ -72,8 +72,10 @@ public class NotificationServiceImplTest {
         assertEquals(mockNotifier, result);
         new Verifications() {
             {
-                mockNotifier.open(mockCtx);
+                NotificationContext ctx;
+                mockNotifier.open(ctx = withCapture());
                 times = 1;
+                assertEquals(NotificationServiceContext.class, ctx.getClass());
             }
         };
     }
@@ -83,7 +85,7 @@ public class NotificationServiceImplTest {
         new Expectations() {
             {
                 mockCtx.getConfig();
-                times = 2;
+                times = 3;
                 result = mockNotifierConfig;
                 mockNotifierConfig.getClassName();
                 times = 1;
@@ -132,7 +134,7 @@ public class NotificationServiceImplTest {
         new Expectations() {
             {
                 mockCtx.getConfig();
-                times = 2;
+                times = 3;
                 result = mockNotifierConfig;
                 mockNotifierConfig.getClassName();
                 times = 1;
@@ -168,7 +170,7 @@ public class NotificationServiceImplTest {
         new Expectations() {
             {
                 mockCtx.getConfig();
-                times = 2;
+                times = 3;
                 result = mockNotifierConfig;
                 mockNotifierConfig.getClassName();
                 times = 1;
@@ -180,6 +182,8 @@ public class NotificationServiceImplTest {
                 result = true;
                 ReflectionHelper.newInstance(anyString);
                 result = mockNotifier;
+                mockNotification.getId(); times = 1;
+                result = "123";
             }
         };
 
@@ -207,7 +211,7 @@ public class NotificationServiceImplTest {
         new Expectations() {
             {
                 mockCtx.getConfig();
-                times = 2;
+                times = 3;
                 result = mockNotifierConfig;
                 mockNotifierConfig.getClassName();
                 times = 1;
