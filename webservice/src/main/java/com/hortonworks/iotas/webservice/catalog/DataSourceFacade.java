@@ -39,7 +39,7 @@ public class DataSourceFacade {
                 ? catalogService.addOrUpdateDataFeed(existingDataFeed.getDataFeedId(), dataFeed)
                 : catalogService.addDataFeed(dataFeed);
 
-        return new DataSourceDto(createdDataSource, createdDataFeed);
+        return createDataSourceDto(createdDataSource, createdDataFeed);
     }
 
     public DataSourceDto createDataSourceWithDataFeed(DataSourceDto dataSourceDto) throws Exception {
@@ -50,12 +50,17 @@ public class DataSourceFacade {
         DataFeed dataFeed = createDataFeed(dataSourceDto);
         DataFeed createdDataFeed = catalogService.addDataFeed(dataFeed);
 
-        DataSourceDto createdDataSourceDto = new DataSourceDto(createdDataSource, createdDataFeed);
-        ParserInfo parserInfo = catalogService.getParserInfo(dataSourceDto.getParserId());
+        DataSourceDto createdDataSourceDto = createDataSourceDto(createdDataSource, createdDataFeed);
+
+        return createdDataSourceDto;
+    }
+
+    private DataSourceDto createDataSourceDto(DataSource dataSource, DataFeed dataFeed) {
+        DataSourceDto createdDataSourceDto = new DataSourceDto(dataSource, dataFeed);
+        ParserInfo parserInfo = catalogService.getParserInfo(dataFeed.getParserId());
         if (parserInfo != null) {
             createdDataSourceDto.setParserName(parserInfo.getParserName());
         }
-
         return createdDataSourceDto;
     }
 
@@ -87,7 +92,7 @@ public class DataSourceFacade {
         List<DataSourceDto> dataSourceDtoList = new ArrayList<>();
         // todo we may want to add an API to fetch results in one invocation from dao/storage layer
         for (DataSource dataSource : dataSources) {
-            dataSourceDtoList.add(new DataSourceDto(dataSource, getDataFeed(dataSource.getDataSourceId())));
+            dataSourceDtoList.add(createDataSourceDto(dataSource, getDataFeed(dataSource.getDataSourceId())));
         }
 
         return dataSourceDtoList;
@@ -103,8 +108,10 @@ public class DataSourceFacade {
 
         List<DataSourceDto> dataSourceDtoList = new ArrayList<>();
         for (DataSource dataSource : dataSources) {
-            dataSourceDtoList.add(new DataSourceDto(dataSource, feedMap.get(dataSource.getDataSourceId())));
+            DataSourceDto dataSourceDto = createDataSourceDto(dataSource, feedMap.get(dataSource.getDataSourceId()));
+            dataSourceDtoList.add(dataSourceDto);
         }
+
         return dataSourceDtoList;
     }
 
@@ -152,6 +159,6 @@ public class DataSourceFacade {
         // todo: can we have datasources without datafeeds?
         // currently returns with whatever info it retrieves.
         DataFeed dataFeed = catalogService.getDataFeed(dataSourceId);
-        return new DataSourceDto(dataSource, dataFeed);
+        return createDataSourceDto(dataSource, dataFeed);
     }
 }

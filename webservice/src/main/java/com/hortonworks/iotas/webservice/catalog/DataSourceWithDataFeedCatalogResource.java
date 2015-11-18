@@ -50,7 +50,6 @@ public class DataSourceWithDataFeedCatalogResource {
         this.dataSourceFacade = dataSourceFacade;
     }
 
-    // todo: better path for this resource, we may rename it to /datasources once the existing api is removed.
     @POST
     @Path("/datasources")
     @Timed
