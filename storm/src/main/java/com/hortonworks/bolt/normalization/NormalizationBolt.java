@@ -15,18 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hortonworks.bolt.n11n;
+package com.hortonworks.bolt.normalization;
 
-import backtype.storm.task.OutputCollector;
-import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
-import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+import com.hortonworks.bolt.AbstractProcessorBolt;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
-import com.hortonworks.iotas.layout.runtime.n11n.NormalizationProcessorRuntime;
+import com.hortonworks.iotas.layout.runtime.normalization.NormalizationProcessorRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,49 +34,25 @@ import java.util.Set;
 /**
  *
  */
-public class NormalizationBolt extends BaseRichBolt {
+public class NormalizationBolt extends AbstractProcessorBolt {
     private static final Logger LOG = LoggerFactory.getLogger(NormalizationBolt.class);
 
-    private TopologyContext context;
-    private OutputCollector collector;
     private NormalizationProcessorRuntime normalizationProcessorRuntime;
 
     public NormalizationBolt(NormalizationProcessorRuntime normalizationProcessorRuntime) {
         this.normalizationProcessorRuntime = normalizationProcessorRuntime;
     }
 
-    @Override
-    public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
-        this.context = context;
-        this.collector = collector;
-    }
+    public void process(Tuple inputTuple, IotasEvent iotasEvent) throws Exception {
+        LOG.debug("Normalizing received IotasEvent: [{}] with tuple: [{}]", iotasEvent, inputTuple);
 
-    @Override
-    public void execute(Tuple input) {
-        IotasEvent iotasEvent = (IotasEvent) input.getValueByField(IotasEvent.IOTAS_EVENT);
-        if(iotasEvent == null) {
-            throw new IllegalArgumentException("input tuple should contain a field with name '"+IotasEvent.IOTAS_EVENT+"'");
-        }
-
-        try {
-            Map<String, Object> resultMap = normalizationProcessorRuntime.execute(iotasEvent);
-            IotasEventImpl newIotasEvent = new IotasEventImpl(resultMap, iotasEvent.getDataSourceId(), iotasEvent.getId());
-            collector.emit(input.getSourceStreamId(), input, new Values(newIotasEvent));
-
-            collector.ack(input);
-        } catch (Exception e) {
-            LOG.error("Error occurred while normalizing the tuple", e);
-            collector.fail(input);
-            collector.reportError(e);
-        }
+        Map<String, Object> outputFieldNameValuePairs = normalizationProcessorRuntime.execute(iotasEvent);
+        IotasEventImpl updatedIotasEvent = new IotasEventImpl(outputFieldNameValuePairs, iotasEvent.getDataSourceId(), iotasEvent.getId());
+        collector.emit(inputTuple.getSourceStreamId(), inputTuple, new Values(updatedIotasEvent));
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        if(context == null) {
-            throw new IllegalStateException("TopologyContext is null, prepare may not have been called.");
-        }
-
         Set<String> thisStreams = context.getThisStreams();
         for (String streamId : thisStreams) {
             declarer.declareStream(streamId, new Fields(IotasEvent.IOTAS_EVENT));

@@ -15,11 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hortonworks.iotas.layout.runtime.n11n;
+package com.hortonworks.iotas.layout.runtime.normalization;
 
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.layout.design.n11n.ValueGenerator;
+import com.hortonworks.iotas.layout.design.normalization.FieldValueGenerator;
 import com.hortonworks.iotas.layout.runtime.script.GroovyScript;
 import com.hortonworks.iotas.layout.runtime.script.engine.GroovyScriptEngine;
 import com.hortonworks.iotas.parser.ParseException;
@@ -29,16 +29,18 @@ import org.slf4j.LoggerFactory;
 import javax.script.ScriptException;
 
 /**
+ * This class represents runtime component of {@link FieldValueGenerator}. It generates an output field with a value.
+ * That value can be either static value or computed dynamically by running the given script with received IotasEvent.
  *
  */
-public class ValueGeneratorRuntime {
-    private static final Logger LOG = LoggerFactory.getLogger(ValueGeneratorRuntime.class);
+public class FieldValueGeneratorRuntime {
+    private static final Logger LOG = LoggerFactory.getLogger(FieldValueGeneratorRuntime.class);
 
     private final Schema.Field field;
     private GroovyScript<Object> groovyScript;
     private Object value;
 
-    public ValueGeneratorRuntime(Schema.Field field) {
+    private FieldValueGeneratorRuntime(Schema.Field field) {
         this.field = field;
     }
 
@@ -73,30 +75,13 @@ public class ValueGeneratorRuntime {
         private String script;
         private Object value;
 
-        public Builder withValueGenerator(ValueGenerator valueGenerator) {
-            this.field = valueGenerator.getField();
-            this.script = valueGenerator.getScript();
-            this.value = valueGenerator.getValue();
-
-            return this;
+        public Builder(FieldValueGenerator fieldValueGenerator) {
+            this.field = fieldValueGenerator.getField();
+            this.script = fieldValueGenerator.getScript();
+            this.value = fieldValueGenerator.getValue();
         }
 
-        public Builder withField(Schema.Field field) {
-            this.field = field;
-            return this;
-        }
-
-        public Builder withScript(String script) {
-            this.script = script;
-            return this;
-        }
-
-        public Builder withValue(Object value) {
-            this.value = value;
-            return this;
-        }
-
-        public ValueGeneratorRuntime build() throws NormalizationException {
+        public FieldValueGeneratorRuntime build() throws NormalizationException {
 
             if(field == null) {
                 throw new NormalizationException("field should always be set.");
@@ -106,14 +91,14 @@ public class ValueGeneratorRuntime {
                 throw new NormalizationException("Either value or script must exist.");
             }
 
-            ValueGeneratorRuntime valueGeneratorRuntime = new ValueGeneratorRuntime(field);
+            FieldValueGeneratorRuntime fieldValueGeneratorRuntime = new FieldValueGeneratorRuntime(field);
             if(value != null) {
-                valueGeneratorRuntime.value = value;
+                fieldValueGeneratorRuntime.value = value;
             } else if(script != null) {
-                valueGeneratorRuntime.groovyScript = new GroovyScript<>(script, new GroovyScriptEngine());
+                fieldValueGeneratorRuntime.groovyScript = new GroovyScript<>(script, new GroovyScriptEngine());
             }
 
-            return valueGeneratorRuntime;
+            return fieldValueGeneratorRuntime;
         }
     }
 

@@ -1,4 +1,4 @@
-package com.hortonworks.bolt.n11n;
+package com.hortonworks.bolt.normalization;
 
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -9,16 +9,14 @@ import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.layout.design.component.NormalizationProcessor;
-import com.hortonworks.iotas.layout.design.n11n.Normalizer;
-import com.hortonworks.iotas.layout.design.n11n.Transformer;
-import com.hortonworks.iotas.layout.design.n11n.ValueGenerator;
-import com.hortonworks.iotas.layout.runtime.n11n.NormalizationException;
-import com.hortonworks.iotas.layout.runtime.n11n.NormalizationProcessorRuntime;
+import com.hortonworks.iotas.layout.design.normalization.Transformer;
+import com.hortonworks.iotas.layout.design.normalization.FieldValueGenerator;
+import com.hortonworks.iotas.layout.runtime.normalization.NormalizationException;
+import com.hortonworks.iotas.layout.runtime.normalization.NormalizationProcessorRuntime;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -71,11 +69,6 @@ public class NormalizationBoltTest {
                 put("new-field", "new value");
             }}, INPUT_IOTAS_EVENT.getDataSourceId(), INPUT_IOTAS_EVENT.getId());
 
-    @Before
-    public void setup() {
-
-    }
-
     @Test
     public void testNormalization() throws NormalizationException {
         NormalizationBolt normalizationBolt = buildNormalizationBolt();
@@ -124,11 +117,10 @@ public class NormalizationBoltTest {
     }
 
     private NormalizationProcessorRuntime buildNormalizationProcessorRuntime() throws NormalizationException {
-        List<Transformer> transformers = Collections.singletonList(new Transformer(new Schema.Field("temp", Schema.Type.INTEGER), new Schema.Field("temperature", Schema.Type.INTEGER), null));
+        List<Transformer> transformers = Collections.singletonList(new Transformer(new Schema.Field("temp", Schema.Type.INTEGER), new Schema.Field("temperature", Schema.Type.INTEGER)));
         List<String> filters = Collections.singletonList("foo");
-        List<ValueGenerator> valueGenerators = Collections.singletonList(new ValueGenerator(new Schema.Field("new-field", Schema.Type.STRING), null, "new value"));
-        Normalizer normalizer = new Normalizer(transformers, filters, valueGenerators);
-        NormalizationProcessor normalizationProcessor = new NormalizationProcessor(normalizer);
+        List<FieldValueGenerator> fieldValueGenerators = Collections.singletonList(new FieldValueGenerator(new Schema.Field("new-field", Schema.Type.STRING), "new value"));
+        NormalizationProcessor normalizationProcessor = new NormalizationProcessor(transformers, filters, fieldValueGenerators);
         normalizationProcessor.setDeclaredOutput(OUTPUT_SCHEMA);
 
         return new NormalizationProcessorRuntime.Builder(normalizationProcessor).build();

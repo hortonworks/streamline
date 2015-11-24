@@ -16,14 +16,15 @@
  * limitations under the License.
  */
 
-package com.hortonworks.iotas.layout.design.n11n;
+package com.hortonworks.iotas.layout.design.normalization;
 
 import com.hortonworks.iotas.common.Schema;
 
+import javax.annotation.Nonnull;
 import java.io.Serializable;
 
 /**
- *
+ * This class represents design time configuration of a transformer which is part of {@link com.hortonworks.iotas.layout.design.component.NormalizationProcessor}.
  */
 public class Transformer implements Serializable {
     private Schema.Field inputField;
@@ -33,10 +34,9 @@ public class Transformer implements Serializable {
     public Transformer() {
     }
 
-    public Transformer(Schema.Field inputField, Schema.Field outputField, String converterScript) {
+    public Transformer(Schema.Field inputField, Schema.Field outputField) {
         this.inputField = inputField;
         this.outputField = outputField;
-        this.converterScript = converterScript;
     }
 
     public Schema.Field getInputField() {

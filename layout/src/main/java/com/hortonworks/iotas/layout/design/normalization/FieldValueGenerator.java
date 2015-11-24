@@ -15,26 +15,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hortonworks.iotas.layout.design.n11n;
+package com.hortonworks.iotas.layout.design.normalization;
 
 import com.hortonworks.iotas.common.Schema;
 
 import java.io.Serializable;
 
 /**
+ * This class represents design time value generator of a given field which is part of
+ * {@link com.hortonworks.iotas.layout.design.component.NormalizationProcessor}.
  *
  */
-public class ValueGenerator implements Serializable {
+public class FieldValueGenerator implements Serializable {
     private Schema.Field field;
     private String script;
     private Object value;
 
-    public ValueGenerator() {
+    public FieldValueGenerator() {
     }
 
-    public ValueGenerator(Schema.Field field, String script, Object value) {
+    public FieldValueGenerator(Schema.Field field, Object value) {
         this.field = field;
-        this.script = script;
         this.value = value;
     }
 
@@ -65,9 +66,9 @@ public class ValueGenerator implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ValueGenerator)) return false;
+        if (!(o instanceof FieldValueGenerator)) return false;
 
-        ValueGenerator that = (ValueGenerator) o;
+        FieldValueGenerator that = (FieldValueGenerator) o;
 
         if (!field.equals(that.field)) return false;
         if (!script.equals(that.script)) return false;

@@ -15,11 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hortonworks.iotas.layout.runtime.n11n;
+package com.hortonworks.iotas.layout.runtime.normalization;
 
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.layout.design.n11n.Transformer;
+import com.hortonworks.iotas.layout.design.normalization.Transformer;
 import com.hortonworks.iotas.layout.runtime.script.GroovyScript;
 import com.hortonworks.iotas.layout.runtime.script.engine.GroovyScriptEngine;
 import com.hortonworks.iotas.parser.ParseException;
@@ -29,6 +29,8 @@ import org.slf4j.LoggerFactory;
 import javax.script.ScriptException;
 
 /**
+ * Runtime component of {@link Transformer}. It transforms a given input field to an output field. Output field value will be
+ * generated if a groovy script is configured else it copies the input field value.
  *
  */
 public class TransformerRuntime {
@@ -45,12 +47,12 @@ public class TransformerRuntime {
     public Object execute(IotasEvent iotasEvent) throws NormalizationException {
         try {
             String inputFieldName = transformer.getInputField().getName();
-            if(!iotasEvent.getFieldsAndValues().containsKey(inputFieldName)) {
-                throw new IllegalArgumentException("IotasEvent does not have input field: "+inputFieldName);
+            if (!iotasEvent.getFieldsAndValues().containsKey(inputFieldName)) {
+                throw new IllegalArgumentException("IotasEvent does not have input field: " + inputFieldName);
             }
 
             Object value = null;
-            if(groovyScript != null) {
+            if (groovyScript != null) {
                 LOG.debug("Running script [{}] with input [{}]", groovyScript, iotasEvent);
 
                 value = groovyScript.evaluate(iotasEvent);
@@ -85,12 +87,12 @@ public class TransformerRuntime {
         }
 
         public TransformerRuntime build() throws NormalizationException {
-            if(transformer.getInputField() == null) {
+            if (transformer.getInputField() == null) {
                 throw new NormalizationException("input field should always be set for transformer");
             }
             //todo may add more validation for script.
             GroovyScript groovyScript = null;
-            if(transformer.getConverterScript() != null) {
+            if (transformer.getConverterScript() != null) {
                 groovyScript = new GroovyScript<>(transformer.getConverterScript(), new GroovyScriptEngine());
             }
 
