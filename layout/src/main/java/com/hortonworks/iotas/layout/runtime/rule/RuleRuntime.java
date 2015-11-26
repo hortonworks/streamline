@@ -37,9 +37,9 @@ public abstract class RuleRuntime<I, E> implements Serializable {
     protected static final Logger log = LoggerFactory.getLogger(RuleRuntime.class);
 
     protected final Rule rule;
-    protected final Script<IotasEvent, ?> script;     // Script used to evaluate the condition
+    protected final Script<IotasEvent, Boolean, ?> script;     // Script used to evaluate the condition
 
-    RuleRuntime(Rule rule, Script<IotasEvent, ?> script) {
+    RuleRuntime(Rule rule, Script<IotasEvent, Boolean, ?> script) {
         this.rule = rule;
         this.script = script;
     }

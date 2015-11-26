@@ -26,8 +26,12 @@ import javax.script.ScriptContext;
 import javax.script.ScriptException;
 import java.util.Map;
 
-//TODO
-public class GroovyScript extends Script<IotasEvent, javax.script.ScriptEngine> {
+/**
+ * TODO
+ *
+ * @param <O> Type of output returned after the script is evaluated with {@link GroovyScript#evaluate(IotasEvent)}.
+ */
+public class GroovyScript<O> extends Script<IotasEvent, O, javax.script.ScriptEngine> {
 
     public GroovyScript(String expression,
                         ScriptEngine<javax.script.ScriptEngine> scriptEngine) {
@@ -36,33 +40,23 @@ public class GroovyScript extends Script<IotasEvent, javax.script.ScriptEngine> 
     }
 
     @Override
-    public boolean evaluate(IotasEvent iotasEvent) throws ScriptException {
+    public O evaluate(IotasEvent iotasEvent) throws ScriptException {
         log.debug("Evaluating [{}] with [{}]", expression, iotasEvent);
-        boolean evaluates = false;
-        try {
-            if (iotasEvent != null) {
-                final Map<String, Object> fieldsToValues = iotasEvent.getFieldsAndValues();
-                if (fieldsToValues != null) {
-                    getEngineScopeBindings().putAll(fieldsToValues);
-                    log.debug("Set script binding to [{}]", fieldsToValues);
-                    evaluates = (boolean) scriptEngine.eval(expression);
-                    log.debug("Expression [{}] evaluated to [{}]", expression, evaluates);
-                }
+        O evaluatedResult = null;
+
+        if (iotasEvent != null) {
+            final Map<String, Object> fieldsToValues = iotasEvent.getFieldsAndValues();
+            if (fieldsToValues != null) {
+                getEngineScopeBindings().putAll(fieldsToValues);
+                log.debug("Set script binding to [{}]", fieldsToValues);
+
+                evaluatedResult = (O) scriptEngine.eval(expression);
+
+                log.debug("Expression [{}] evaluated to [{}]", expression, evaluatedResult);
             }
-        } catch (ScriptException e) {
-            if (e.getCause() != null && e.getCause().getCause() instanceof groovy.lang.MissingPropertyException) {
-                // Occurs when not all the properties required for evaluating the script are set. This can happen for example
-                // when receiving an IotasEvent that does not have all the fields required to evaluate the expression
-                log.debug("Missing property required to evaluate expression. {}", e.getCause().getMessage());
-                log.trace("",e);
-                evaluates = false;
-            } else {
-                throw e;
-            }
-        } finally {
-            clearBindings();
         }
-        return evaluates;
+
+        return evaluatedResult;
     }
 
     private Bindings getEngineScopeBindings() {

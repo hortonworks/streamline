@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 public class RuleRuntimeStorm extends RuleRuntime<Tuple, OutputCollector> {
     private static final Logger log = LoggerFactory.getLogger(RuleRuntimeStorm.class);
 
-    RuleRuntimeStorm(Rule rule, Script<IotasEvent, ?> script) {
+    RuleRuntimeStorm(Rule rule, Script<IotasEvent, Boolean, ?> script) {
         super(rule, script);
     }
 

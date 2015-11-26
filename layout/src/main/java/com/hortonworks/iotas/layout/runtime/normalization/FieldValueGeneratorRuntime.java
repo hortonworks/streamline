@@ -37,7 +37,7 @@ public class FieldValueGeneratorRuntime {
     private static final Logger LOG = LoggerFactory.getLogger(FieldValueGeneratorRuntime.class);
 
     private final Schema.Field field;
-    private GroovyScript groovyScript;
+    private GroovyScript<Object> groovyScript;
     private Object value;
 
     private FieldValueGeneratorRuntime(Schema.Field field) {
@@ -95,7 +95,7 @@ public class FieldValueGeneratorRuntime {
             if(value != null) {
                 fieldValueGeneratorRuntime.value = value;
             } else if(script != null) {
-                fieldValueGeneratorRuntime.groovyScript = new GroovyScript(script, new GroovyScriptEngine());
+                fieldValueGeneratorRuntime.groovyScript = new GroovyScript<>(script, new GroovyScriptEngine());
             }
 
             return fieldValueGeneratorRuntime;

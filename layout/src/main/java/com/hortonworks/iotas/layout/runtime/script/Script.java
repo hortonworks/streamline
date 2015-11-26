@@ -31,9 +31,10 @@ import java.io.Serializable;
 /**
  * Evaluates the {@link Expression} with the {@link ScriptEngine} for each {@code Input}
  * @param <I> The type of input on which this script is evaluated, e.g. {@code tuple} for {@code Apache Storm} or {@link IotasEvent}
+ * @param <O> The type of output returned after the script is evaluated with {@link Script#evaluate(I)}.
  * @param <E> The Script Engine used to evaluate the scripts
  */
-public abstract class Script<I, E> implements Serializable {
+public abstract class Script<I, O, E> implements Serializable {
     protected static final Logger log = LoggerFactory.getLogger(Script.class);
 
     protected final String expression;
@@ -47,7 +48,7 @@ public abstract class Script<I, E> implements Serializable {
         this.scriptEngine = scriptEngine.getEngine();
     }
 
-    public abstract boolean evaluate(I input) throws ScriptException;
+    public abstract O evaluate(I input) throws ScriptException;
 
     @Override
     public String toString() {
