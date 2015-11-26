@@ -29,6 +29,7 @@ import javax.script.ScriptException;
 import java.io.Serializable;
 
 /**
+ * Evaluates the {@link Expression} with the {@link ScriptEngine} for each {@code Input}
  * @param <I> The type of input on which this script is evaluated, e.g. {@code tuple} for {@code Apache Storm} or {@link IotasEvent}
  * @param <E> The Script Engine used to evaluate the scripts
  */
@@ -38,6 +39,9 @@ public abstract class Script<I, E> implements Serializable {
     protected final String expression;
     protected final E scriptEngine;
 
+    /**
+     * Sets the {@link Expression} to be evaluated by the {@link ScriptEngine}
+     */
     public Script(Expression expression, ScriptEngine<E> scriptEngine) {
         this.expression = expression.getExpression();
         this.scriptEngine = scriptEngine.getEngine();
@@ -47,9 +51,6 @@ public abstract class Script<I, E> implements Serializable {
 
     @Override
     public String toString() {
-        return "Script{" +
-                "expression='" + expression + '\'' +
-                ", scriptEngine=" + scriptEngine +
-                '}';
+        return "Script{" + expression + ", scriptEngine=" + scriptEngine + '}';
     }
 }

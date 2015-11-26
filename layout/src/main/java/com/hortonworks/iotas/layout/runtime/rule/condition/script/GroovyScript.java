@@ -22,6 +22,8 @@ import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.layout.runtime.rule.condition.expression.Expression;
 import com.hortonworks.iotas.layout.runtime.rule.condition.script.engine.ScriptEngine;
 
+import javax.script.Bindings;
+import javax.script.ScriptContext;
 import javax.script.ScriptException;
 import java.util.Map;
 
@@ -36,13 +38,40 @@ public class GroovyScript extends Script<IotasEvent, javax.script.ScriptEngine> 
 
     @Override
     public boolean evaluate(IotasEvent iotasEvent) throws ScriptException {
-        log.debug("Evaluating {}" + iotasEvent);
-        for (Map.Entry<String, Object> fieldAndValue : iotasEvent.getFieldsAndValues().entrySet()) {
-            log.debug("{Putting into engine key = {}, val = {}", fieldAndValue.getKey(), fieldAndValue.getValue());
-            scriptEngine.put(fieldAndValue.getKey(), fieldAndValue.getValue());
+        log.debug("Evaluating [{}] with [{}]", expression, iotasEvent);
+        boolean evaluates = false;
+        try {
+            if (iotasEvent != null) {
+                final Map<String, Object> fieldsToValues = iotasEvent.getFieldsAndValues();
+                if (fieldsToValues != null) {
+                    getEngineScopeBindings().putAll(fieldsToValues);
+                    log.debug("Set script binding to [{}]", fieldsToValues);
+                    evaluates = (boolean) scriptEngine.eval(expression);
+                    log.debug("Expression [{}] evaluated to [{}]", expression, evaluates);
+                }
+            }
+        } catch (ScriptException e) {
+            if (e.getCause() != null && e.getCause().getCause() instanceof groovy.lang.MissingPropertyException) {
+                // Occurs when not all the properties required for evaluating the script are set. This can happen for example
+                // when receiving an IotasEvent that does not have all the fields required to evaluate the expression
+                log.debug("Missing property required to evaluate expression. {}", e.getCause().getMessage());
+                log.trace("",e);
+                evaluates = false;
+            } else {
+                throw e;
+            }
+        } finally {
+            clearBindings();
         }
-        final boolean result = (boolean) scriptEngine.eval(expression);
-        log.debug("Expression [{}] evaluated to [{}]", expression, result);
-        return result;
+        return evaluates;
+    }
+
+    private Bindings getEngineScopeBindings() {
+        return scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE);
+    }
+
+    private void clearBindings() {
+        getEngineScopeBindings().clear();
+        log.debug("Script binding reset to empty binding");
     }
 }

@@ -65,4 +65,12 @@ public class Action implements Serializable {
     public List<Field> getDeclaredOutput() {
         return declaredOutput;
     }
+
+    @Override
+    public String toString() {
+        return "Action{" +
+                "components=" + components +
+                ", declaredOutput=" + declaredOutput +
+                '}';
+    }
 }

@@ -18,25 +18,26 @@
 
 package com.hortonworks.iotas.layout.runtime.processor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import backtype.storm.task.OutputCollector;
+import backtype.storm.topology.OutputFieldsDeclarer;
+import backtype.storm.tuple.Tuple;
+import com.hortonworks.iotas.layout.runtime.rule.RuleRuntime;
+import com.hortonworks.iotas.layout.runtime.rule.RuleRuntimeStorm;
 
-public class RuleProcessorRuntimeConstructor {
-    private static final Logger log = LoggerFactory.getLogger(RuleProcessorRuntimeConstructor.class);
 
-    private RulesProcessorRuntimeBuilder builder;
-
-    public RuleProcessorRuntimeConstructor(RulesProcessorRuntimeBuilder builder) {
-        this.builder = builder;
+/**
+ *  Represents a runtime rules processor in the {@code Storm} streaming framework
+ */
+public class RuleProcessorRuntimeStorm extends RuleProcessorRuntime<Tuple, OutputCollector> {
+    public RuleProcessorRuntimeStorm(RuleProcessorRuntimeDependenciesBuilder<Tuple, OutputCollector> builder) {
+        super(builder);
     }
 
-    public void construct() {
-        builder.build();
-    }
-
-    public RuleProcessorRuntime getRuleProcessorRuntime() {
-        RuleProcessorRuntime ruleProcessorRuntime = builder.getRuleProcessorRuntime();
-        log.debug("Constructed: {}", ruleProcessorRuntime);
-        return ruleProcessorRuntime;
+    public void declareOutput(OutputFieldsDeclarer declarer) {
+        log.debug("Declaring output fields");
+        for (RuleRuntime<Tuple, OutputCollector> ruleRuntime : rulesRuntime) {
+            ((RuleRuntimeStorm)ruleRuntime).declareOutput(declarer);
+        }
     }
 }
+

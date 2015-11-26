@@ -22,6 +22,7 @@ import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.common.Schema.Field;
 import com.hortonworks.iotas.layout.design.component.Component;
 import com.hortonworks.iotas.layout.design.component.RulesProcessor;
+import com.hortonworks.iotas.layout.design.component.Sink;
 import com.hortonworks.iotas.layout.design.rule.Rule;
 import com.hortonworks.iotas.layout.design.rule.action.Action;
 import com.hortonworks.iotas.layout.design.rule.condition.Condition;
@@ -34,6 +35,9 @@ import java.util.List;
 public class RuleProcessorMockBuilder {
     public static final String TEMPERATURE = "temperature";
     public static final String HUMIDITY = "humidity";
+    public static final String RULE_PROCESSOR = "rule_processor";
+    public static final String RULE = "rule";
+    public static final String SINK = "sink";
 
     private final long ruleProcessorId;
     private final int numRules;
@@ -50,14 +54,14 @@ public class RuleProcessorMockBuilder {
         RulesProcessor rulesProcessor = new RulesProcessor();
         rulesProcessor.setDeclaredInput(buildDeclaredInputsOutputs());
         rulesProcessor.setId(ruleProcessorId);
-        rulesProcessor.setName("rule_processsor_" + ruleProcessorId);
-        rulesProcessor.setDescription("rule_processsor_" + ruleProcessorId + "_desc");
+        rulesProcessor.setName(RULE_PROCESSOR + "_" + ruleProcessorId);
+        rulesProcessor.setDescription(RULE_PROCESSOR + "_" + ruleProcessorId + "_desc");
         rulesProcessor.setRules(buildRules());
         return rulesProcessor;
     }
 
     private List<Field> buildDeclaredInputsOutputs() {
-        final Schema declaredInputsOutputs = new Schema.SchemaBuilder().fields(new ArrayList() {{
+        final Schema declaredInputsOutputs = new Schema.SchemaBuilder().fields(new ArrayList<Field>() {{
             add(new Field(TEMPERATURE, Schema.Type.INTEGER));
             add(new Field(HUMIDITY, Schema.Type.INTEGER));
         }}).build();
@@ -77,9 +81,9 @@ public class RuleProcessorMockBuilder {
     private Rule buildRule(long ruleId, Condition condition, Action action) {
         Rule rule = new Rule();
         rule.setId(ruleId);
-        rule.setName("rule_" + ruleId);
-        rule.setDescription("rule_" + ruleId + "_desc");
-        rule.setRuleProcessorName("rule_processsor_" + ruleProcessorId);
+        rule.setName(RULE + "_" + ruleId);
+        rule.setDescription(RULE + "_" + ruleId + "_desc");
+        rule.setRuleProcessorName(RULE_PROCESSOR + "_" + ruleProcessorId);
         rule.setCondition(condition);
         rule.setAction(action);
         return rule;
@@ -100,20 +104,20 @@ public class RuleProcessorMockBuilder {
         return sinks;
     }
 
-    private Component buildSink(long sinkId) {
-        Component sink = new Component();
+    private Sink buildSink(long sinkId) {
+        Sink sink = new Sink();
         sink.setId(ruleProcessorId);
-        sink.setName("sink_" + sinkId);
-        sink.setDescription("sink_" + sinkId + "_desc");
+        sink.setName(SINK + "_" + sinkId);
+        sink.setDescription(SINK + "_" + sinkId + "_desc");
         sink.setDeclaredInput(declaredInputsOutputs);
         return sink;
     }
 
     private Condition buildCondition(int idx) {
         if (idx % 2 == 0) {
-            return buildCondition(buildConditionElements(Operation.GREATER_THAN));
+            return buildCondition(buildConditionElements(Operation.GREATER_THAN)); // temperature  > 100  &&  humidity  > 50
         }
-        return buildCondition(buildConditionElements(Operation.LESS_THAN));
+        return buildCondition(buildConditionElements(Operation.LESS_THAN));        // temperature  < 100  &&  humidity  < 50
     }
 
     private Condition buildCondition(List<Condition.ConditionElement> conditionElements) {
@@ -132,10 +136,10 @@ public class RuleProcessorMockBuilder {
     private Condition.ConditionElement buildConditionElement(
             String firstOperand, Operation operation, String secondOperand,
             LogicalOperator logicalOperator) {
-        Condition.ConditionElement conditionElement =
-                new Condition.ConditionElement();
-        final Field temperature = new Field(firstOperand, Schema.Type.INTEGER);
-        conditionElement.setFirstOperand(temperature);
+
+        final Condition.ConditionElement conditionElement = new Condition.ConditionElement();
+        final Field firstOperandField = new Field(firstOperand, Schema.Type.INTEGER);
+        conditionElement.setFirstOperand(firstOperandField);
         conditionElement.setOperation(operation);
         conditionElement.setSecondOperand(secondOperand);
         if (logicalOperator != null) {
