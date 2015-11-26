@@ -25,7 +25,7 @@ import com.hortonworks.iotas.layout.runtime.script.engine.ScriptEngine;
 import javax.script.ScriptException;
 
 // TODO: Replace Object parameterized type with SQLStream Framework Object
-public class SqlStreamScript<O> extends Script<IotasEvent, O, SqlStreamScript.Framework> {
+public class SqlStreamScript<O> extends Script<IotasEvent, SqlStreamScript.Framework> {
 
     //TODO: Remove and replace with the actual framework object type
     interface Framework {
@@ -38,9 +38,9 @@ public class SqlStreamScript<O> extends Script<IotasEvent, O, SqlStreamScript.Fr
     }
 
     @Override
-    public O evaluate(IotasEvent iotasEvent) throws ScriptException {
+    public boolean evaluate(IotasEvent iotasEvent) throws ScriptException {
 //        return framework.eval(input);
-        return null;
+        return false;
     }
 
     /*public SqlStreamScript() {

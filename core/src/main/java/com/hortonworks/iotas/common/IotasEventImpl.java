@@ -1,7 +1,6 @@
 package com.hortonworks.iotas.common;
 
-import org.apache.commons.lang.StringUtils;
-
+import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 
@@ -30,7 +29,7 @@ public class IotasEventImpl implements IotasEvent {
 
     @Override
     public Map<String, Object> getFieldsAndValues() {
-        return fieldsAndValues;
+        return Collections.unmodifiableMap(fieldsAndValues);
     }
 
     @Override
@@ -52,7 +51,6 @@ public class IotasEventImpl implements IotasEvent {
         IotasEventImpl that = (IotasEventImpl) o;
 
         return id.equals(that.id);
-
     }
 
     @Override

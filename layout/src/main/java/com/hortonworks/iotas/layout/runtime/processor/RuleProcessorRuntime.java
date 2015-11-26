@@ -18,48 +18,43 @@
 
 package com.hortonworks.iotas.layout.runtime.processor;
 
-import backtype.storm.topology.OutputFieldsDeclarer;
 import com.hortonworks.iotas.layout.design.component.RulesProcessor;
 import com.hortonworks.iotas.layout.runtime.rule.RuleRuntime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 
 
 /**
- * Object representing a design time rules processor.
+ * Represents a runtime rules processor
+ * @param <I> Type of runtime input to this rule, for example {@code Tuple}
+ * @param <E> Type of object required to execute this rule in the underlying streaming framework e.g {@code IOutputCollector}
  */
-public class RuleProcessorRuntime implements Serializable {
+public class RuleProcessorRuntime<I, E> implements Serializable {
+    protected static final Logger log = LoggerFactory.getLogger(RuleProcessorRuntime.class);
 
     protected RulesProcessor rulesProcessor;
-    protected List<RuleRuntime> rulesRuntime;
+    protected List<RuleRuntime<I,E>> rulesRuntime;
 
-    RuleProcessorRuntime(List<RuleRuntime> rulesRuntime, RulesProcessor rulesProcessor) {
-        this.rulesRuntime = rulesRuntime;
-
-        this.rulesProcessor = rulesProcessor;
+    public RuleProcessorRuntime(RuleProcessorRuntimeDependenciesBuilder<I,E> builder) {
+        this.rulesProcessor = builder.getRulesProcessor();
+        this.rulesRuntime = builder.getRulesRuntime();
     }
 
-    public List<RuleRuntime> getRulesRuntime() {
-        return rulesRuntime;
-    }
-
-    public void declareOutput(OutputFieldsDeclarer declarer) {
-        for (RuleRuntime ruleRuntime:rulesRuntime) {
-            ruleRuntime.declareOutput(declarer);
-        }
-    }
-
-    public void setRulesRuntime(List<RuleRuntime> rulesRuntime) {
-        this.rulesRuntime = rulesRuntime;
-    }
-
-    public RulesProcessor getRuleProcessor() {
+    public RulesProcessor getRulesProcessor() {
         return rulesProcessor;
     }
 
-    public void setRuleProcessor(RulesProcessor rulesProcessor) {
-        this.rulesProcessor = rulesProcessor;
+    public List<RuleRuntime<I, E>> getRulesRuntime() {
+        return Collections.unmodifiableList(rulesRuntime);
+    }
+
+    @Override
+    public String toString() {
+        return "RuleProcessorRuntime{" + rulesProcessor + ", " + rulesRuntime + '}';
     }
 }
 

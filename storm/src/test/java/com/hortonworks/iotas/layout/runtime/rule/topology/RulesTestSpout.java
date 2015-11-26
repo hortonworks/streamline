@@ -51,8 +51,6 @@ public class RulesTestSpout extends BaseRichSpout {
         put("humidity", 49);
     }}, "dataSrcId_2", "24");
 
-//    private static final Values VALUES = new Values(100, 50);
-//    private static final Values VALUES = new Values(IOTAS_EVENT_1);
     private static final List<Values> LIST_VALUES = Lists.newArrayList(new Values(IOTAS_EVENT_1), new Values(IOTAS_EVENT_2));
 
     @Override
@@ -72,7 +70,7 @@ public class RulesTestSpout extends BaseRichSpout {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        log.debug("++++++++ DECLARING OUPTPUT FIELDS");
+        log.debug("++++++++ DECLARING OUTPUT FIELDS");
         declarer.declare(getOutputFields());
     }
 

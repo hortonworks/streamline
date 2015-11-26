@@ -66,4 +66,14 @@ public class Component implements Serializable {
     public void setDeclaredInput(List<Field> declaredInput) {
         this.declaredInput = declaredInput;
     }
+
+    @Override
+    public String toString() {
+        return "Component{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", declaredInput=" + declaredInput +
+                '}';
+    }
 }

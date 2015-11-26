@@ -1,38 +1,76 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.hortonworks.iotas.layout.runtime.script;
 
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.layout.runtime.script.engine.ScriptEngine;
 
+import javax.script.Bindings;
+import javax.script.ScriptContext;
 import javax.script.ScriptException;
 import java.util.Map;
 
-/**
- *
- */
-public class GroovyScript<O> extends Script<IotasEvent, O, javax.script.ScriptEngine> {
+//TODO
+public class GroovyScript extends Script<IotasEvent, javax.script.ScriptEngine> {
 
-    public GroovyScript(String script, ScriptEngine<javax.script.ScriptEngine> scriptEngine) {
-        super(script, scriptEngine);
+    public GroovyScript(String expression,
+                        ScriptEngine<javax.script.ScriptEngine> scriptEngine) {
+        super(expression, scriptEngine);
         log.debug("Created Groovy Script: {}", super.toString());
     }
 
     @Override
-    public O evaluate(IotasEvent iotasEvent) throws ScriptException {
-        log.debug("Evaluating {}" + iotasEvent);
-        if (iotasEvent != null) {
-            //may need to clear all attributes on scriptEngine which may have been set earlier.
-            for (Map.Entry<String, Object> fieldAndValue : iotasEvent.getFieldsAndValues().entrySet()) {
-                log.debug("{Putting into engine key = {}, val = {}", fieldAndValue.getKey(), fieldAndValue.getValue());
-                scriptEngine.put(fieldAndValue.getKey(), fieldAndValue.getValue());
+    public boolean evaluate(IotasEvent iotasEvent) throws ScriptException {
+        log.debug("Evaluating [{}] with [{}]", expression, iotasEvent);
+        boolean evaluates = false;
+        try {
+            if (iotasEvent != null) {
+                final Map<String, Object> fieldsToValues = iotasEvent.getFieldsAndValues();
+                if (fieldsToValues != null) {
+                    getEngineScopeBindings().putAll(fieldsToValues);
+                    log.debug("Set script binding to [{}]", fieldsToValues);
+                    evaluates = (boolean) scriptEngine.eval(expression);
+                    log.debug("Expression [{}] evaluated to [{}]", expression, evaluates);
+                }
             }
+        } catch (ScriptException e) {
+            if (e.getCause() != null && e.getCause().getCause() instanceof groovy.lang.MissingPropertyException) {
+                // Occurs when not all the properties required for evaluating the script are set. This can happen for example
+                // when receiving an IotasEvent that does not have all the fields required to evaluate the expression
+                log.debug("Missing property required to evaluate expression. {}", e.getCause().getMessage());
+                log.trace("",e);
+                evaluates = false;
+            } else {
+                throw e;
+            }
+        } finally {
+            clearBindings();
         }
-        // Does it compile script for every invocation or does it cache? It may be expensive to evaluate the
-        // script for each call.
-        // todo optimize this !!
-        // GroovyShell gives API to do cache parsed script, script = shell#parse(); script.run() etc
-        final O result = (O) scriptEngine.eval(scriptText);
-        log.debug("Expression [{}] evaluated to [{}]", scriptText, result);
+        return evaluates;
+    }
 
-        return result;
+    private Bindings getEngineScopeBindings() {
+        return scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE);
+    }
+
+    private void clearBindings() {
+        getEngineScopeBindings().clear();
+        log.debug("Script binding reset to empty binding");
     }
 }

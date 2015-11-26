@@ -37,9 +37,9 @@ public class TransformerRuntime {
     private static final Logger LOG = LoggerFactory.getLogger(TransformerRuntime.class);
 
     private final Transformer transformer;
-    private GroovyScript<? extends Object> groovyScript;
+    private GroovyScript groovyScript;
 
-    private TransformerRuntime(Transformer transformer, GroovyScript<? extends Object> groovyScript) {
+    private TransformerRuntime(Transformer transformer, GroovyScript groovyScript) {
         this.transformer = transformer;
         this.groovyScript = groovyScript;
     }
@@ -93,7 +93,7 @@ public class TransformerRuntime {
             //todo may add more validation for script.
             GroovyScript groovyScript = null;
             if (transformer.getConverterScript() != null) {
-                groovyScript = new GroovyScript<>(transformer.getConverterScript(), new GroovyScriptEngine());
+                groovyScript = new GroovyScript(transformer.getConverterScript(), new GroovyScriptEngine());
             }
 
             return new TransformerRuntime(transformer, groovyScript);

@@ -56,7 +56,7 @@ public class SqlStreamExpression extends Expression {
             case OR:
                 return " OR ";
             default:
-                throw new UnsupportedOperationException(String.format("Operation [%s] not supported. List of supported operations: %s",
+                throw new UnsupportedOperationException(String.format("Operator [%s] not supported. List of supported operators: %s",
                         logicalOperator, Arrays.toString(Condition.ConditionElement.LogicalOperator.values())));
         }
     }
