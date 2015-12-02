@@ -24,7 +24,7 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.layout.design.rule.Rule;
-import com.hortonworks.iotas.layout.runtime.rule.condition.script.Script;
+import com.hortonworks.iotas.layout.runtime.script.Script;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 public class RuleRuntimeStorm extends RuleRuntime<Tuple, OutputCollector> {
     private static final Logger log = LoggerFactory.getLogger(RuleRuntimeStorm.class);
 
-    RuleRuntimeStorm(Rule rule, Script<IotasEvent, ?> script) {
+    RuleRuntimeStorm(Rule rule, Script<IotasEvent, Boolean, ?> script) {
         super(rule, script);
     }
 

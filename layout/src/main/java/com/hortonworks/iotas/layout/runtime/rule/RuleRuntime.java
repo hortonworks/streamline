@@ -21,7 +21,7 @@ package com.hortonworks.iotas.layout.runtime.rule;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.layout.design.rule.Rule;
 import com.hortonworks.iotas.layout.design.rule.exception.ConditionEvaluationException;
-import com.hortonworks.iotas.layout.runtime.rule.condition.script.Script;
+import com.hortonworks.iotas.layout.runtime.script.Script;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,9 +37,9 @@ public abstract class RuleRuntime<I, E> implements Serializable {
     protected static final Logger log = LoggerFactory.getLogger(RuleRuntime.class);
 
     protected final Rule rule;
-    protected final Script<IotasEvent, ?> script;     // Script used to evaluate the condition
+    protected final Script<IotasEvent, Boolean, ?> script;     // Script used to evaluate the condition
 
-    RuleRuntime(Rule rule, Script<IotasEvent, ?> script) {
+    RuleRuntime(Rule rule, Script<IotasEvent, Boolean, ?> script) {
         this.rule = rule;
         this.script = script;
     }

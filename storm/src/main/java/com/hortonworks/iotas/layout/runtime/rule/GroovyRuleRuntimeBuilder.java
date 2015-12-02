@@ -20,16 +20,19 @@ package com.hortonworks.iotas.layout.runtime.rule;
 
 import backtype.storm.task.OutputCollector;
 import backtype.storm.tuple.Tuple;
+import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.layout.design.rule.Rule;
 import com.hortonworks.iotas.layout.runtime.rule.condition.expression.GroovyExpression;
-import com.hortonworks.iotas.layout.runtime.rule.condition.script.GroovyScript;
-import com.hortonworks.iotas.layout.runtime.rule.condition.script.engine.GroovyScriptEngine;
+import com.hortonworks.iotas.layout.runtime.script.GroovyScript;
+import com.hortonworks.iotas.layout.runtime.script.engine.GroovyScriptEngine;
+
+import javax.script.ScriptException;
 
 public class GroovyRuleRuntimeBuilder implements RuleRuntimeBuilder<Tuple, OutputCollector> {
     private Rule rule;
     private GroovyExpression groovyExpression;
     private GroovyScriptEngine groovyScriptEngine;
-    private GroovyScript groovyScript;
+    private GroovyScript<Boolean> groovyScript;
 
     @Override
     public void setRule(Rule rule) {
@@ -48,7 +51,26 @@ public class GroovyRuleRuntimeBuilder implements RuleRuntimeBuilder<Tuple, Outpu
 
     @Override
     public void buildScript() {
-        groovyScript = new GroovyScript(groovyExpression, groovyScriptEngine);
+        groovyScript = new GroovyScript<Boolean>(groovyExpression.getExpression(), groovyScriptEngine) {
+            @Override
+            public Boolean evaluate(IotasEvent iotasEvent) throws ScriptException {
+                Boolean evaluates = false;
+                try {
+                    evaluates =  super.evaluate(iotasEvent);
+                } catch (ScriptException e) {
+                    if (e.getCause() != null && e.getCause().getCause() instanceof groovy.lang.MissingPropertyException) {
+                        // Occurs when not all the properties required for evaluating the script are set. This can happen for example
+                        // when receiving an IotasEvent that does not have all the fields required to evaluate the expression
+                        log.debug("Missing property required to evaluate expression. {}", e.getCause().getMessage());
+                        log.trace("",e);
+                        evaluates = false;
+                    } else {
+                        throw e;
+                    }
+                }
+                return evaluates;
+            }
+        };
     }
 
     @Override

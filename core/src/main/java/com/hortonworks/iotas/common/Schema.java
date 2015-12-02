@@ -50,6 +50,10 @@ public class Schema implements Serializable {
             return javaType;
         }
 
+        public boolean valueOfSameType(Object value) throws ParseException {
+            return value == null || this.equals(Schema.fromJavaType(value));
+        }
+
         /**
          * Determines the {@link Type} of the value specified
          * @param val value for which to determine the type
@@ -369,9 +373,19 @@ public class Schema implements Serializable {
     }
 
     //TODO: complete this and move into some parser utility class
-    private static Type fromJavaType(Object value) throws ParseException {
+    public static Type fromJavaType(Object value) throws ParseException {
         if(value instanceof String) {
             return Type.STRING;
+        } else if (value instanceof Short) {
+            return Type.SHORT;
+        } else if (value instanceof Byte) {
+            return Type.BYTE;
+        } else if (value instanceof Float) {
+            return Type.FLOAT;
+        } else if (value instanceof Long) {
+            return Type.LONG;
+        } else if (value instanceof Double) {
+            return Type.DOUBLE;
         } else if (value instanceof Integer) {
             return Type.INTEGER;
         } else if (value instanceof Boolean) {
