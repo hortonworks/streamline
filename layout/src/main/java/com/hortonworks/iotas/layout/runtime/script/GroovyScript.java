@@ -44,16 +44,22 @@ public class GroovyScript<O> extends Script<IotasEvent, O, javax.script.ScriptEn
         log.debug("Evaluating [{}] with [{}]", expression, iotasEvent);
         O evaluatedResult = null;
 
-        if (iotasEvent != null) {
-            final Map<String, Object> fieldsToValues = iotasEvent.getFieldsAndValues();
-            if (fieldsToValues != null) {
-                getEngineScopeBindings().putAll(fieldsToValues);
-                log.debug("Set script binding to [{}]", fieldsToValues);
+        try {
+            if (iotasEvent != null) {
+                final Map<String, Object> fieldsToValues = iotasEvent.getFieldsAndValues();
+                if (fieldsToValues != null) {
+                    getEngineScopeBindings().putAll(fieldsToValues);
+                    log.debug("Set script binding to [{}]", fieldsToValues);
 
-                evaluatedResult = (O) scriptEngine.eval(expression);
+                    evaluatedResult = (O) scriptEngine.eval(expression);
 
-                log.debug("Expression [{}] evaluated to [{}]", expression, evaluatedResult);
+                    log.debug("Expression [{}] evaluated to [{}]", expression, evaluatedResult);
+                }
             }
+        } finally {
+            // It is absolutely necessary to clear the bindings. Otherwise the old values of a key will be used
+            // to evaluate the expression when the iotasEvent doesn't have such key
+            clearBindings();
         }
 
         return evaluatedResult;
