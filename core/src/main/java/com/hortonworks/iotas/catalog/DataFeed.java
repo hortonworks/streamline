@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  *
  */
-public class DataFeed implements Storable {
+public class DataFeed extends AbstractStorable {
     public static final String NAME_SPACE = "datafeeds";
     public static final String DATAFEED_ID = "dataFeedId";
     public static final String DATASOURCE_ID = "dataSourceId";
@@ -52,17 +52,6 @@ public class DataFeed implements Storable {
     }
 
     @JsonIgnore
-    public Schema getSchema() {
-        return new Schema.SchemaBuilder().fields(
-                new Schema.Field(DATAFEED_ID, Schema.Type.LONG),
-                new Schema.Field(DATASOURCE_ID, Schema.Type.LONG),
-                new Schema.Field(DATAFEED_NAME, Schema.Type.STRING),
-                new Schema.Field(PARSER_ID, Schema.Type.LONG),
-                new Schema.Field(ENDPOINT, Schema.Type.STRING)
-        ).build();
-    }
-
-    @JsonIgnore
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<Schema.Field, Object>();
         fieldToObjectMap.put(new Schema.Field(DATAFEED_ID, Schema.Type.LONG), this.dataFeedId);
@@ -72,25 +61,6 @@ public class DataFeed implements Storable {
     @JsonIgnore
     public StorableKey getStorableKey() {
         return new StorableKey(getNameSpace(), getPrimaryKey());
-    }
-
-    public Map toMap() {
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put(DATAFEED_ID, this.dataFeedId);
-        map.put(DATASOURCE_ID, this.dataSourceId);
-        map.put(DATAFEED_NAME, this.dataFeedName);
-        map.put(PARSER_ID, this.parserId);
-        map.put(ENDPOINT, this.endpoint);
-        return map;
-    }
-
-    public Storable fromMap(Map<String, Object> map) {
-        this.dataFeedId = (Long) map.get(DATAFEED_ID);
-        this.dataSourceId = (Long) map.get(DATASOURCE_ID);
-        this.dataFeedName = (String)  map.get(DATAFEED_NAME);
-        this.parserId = (Long) map.get(PARSER_ID);
-        this.endpoint = (String) map.get(ENDPOINT);
-        return this;
     }
 
     @Override

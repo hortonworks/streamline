@@ -4,13 +4,12 @@ package com.hortonworks.iotas.catalog;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.storage.PrimaryKey;
-import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class DataSource implements Storable {
+public class DataSource extends AbstractStorable {
     public static final String NAME_SPACE = "datasources";
     public static final String DATA_SOURCE_ID = "dataSourceId";
     public static final String DATA_SOURCE_NAME = "dataSourceName";
@@ -94,26 +93,15 @@ public class DataSource implements Storable {
         return new StorableKey(getNameSpace(), getPrimaryKey());
     }
 
-    public Map toMap() {
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put(DATA_SOURCE_ID, dataSourceId);
-        map.put(DATA_SOURCE_NAME, this.dataSourceName);
-        map.put(DESCRIPTION, this.description);
-        map.put(TAGS, this.tags);
-        map.put(TIMESTAMP, this.timestamp);
+    public Map<String, Object> toMap() {
+        Map map = super.toMap();
         map.put(TYPE, type.name());
-        map.put(TYPE_CONFIG, typeConfig);
         return map;
     }
 
     public DataSource fromMap(Map<String, Object> map) {
-        this.dataSourceId = (Long) map.get(DATA_SOURCE_ID);
-        this.dataSourceName = (String)  map.get(DATA_SOURCE_NAME);
-        this.description = (String)  map.get(DESCRIPTION);
-        this.tags = (String)  map.get(TAGS);
-        this.timestamp = (Long) map.get(TIMESTAMP);
-        type = Type.valueOf((String) map.get(TYPE));
-        typeConfig = (String) map.get(TYPE_CONFIG);
+        type = Type.valueOf((String) map.remove(TYPE));
+        super.fromMap(map);
         return this;
     }
 

@@ -123,11 +123,6 @@ public class Component extends AbstractStorable {
         return NAMESPACE;
     }
 
-    @JsonIgnore
-    public Schema getSchema() {
-        return null;
-    }
-
     public Long getTimestamp() {
         return timestamp;
     }

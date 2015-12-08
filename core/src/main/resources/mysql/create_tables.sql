@@ -43,7 +43,6 @@ CREATE TABLE IF NOT EXISTS datafeeds (
     tags TEXT,
     parserId BIGINT NOT NULL,
     endpoint TEXT NOT NULL,
-    timestamp  BIGINT,
     PRIMARY KEY (dataFeedId),
     FOREIGN KEY (dataSourceId) REFERENCES datasources(dataSourceId),
     FOREIGN KEY (parserId) REFERENCES parser_info(parserId)

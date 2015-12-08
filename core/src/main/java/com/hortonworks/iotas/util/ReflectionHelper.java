@@ -6,11 +6,16 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Map;
 import java.util.Enumeration;
+import java.util.HashMap;
+
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -92,5 +97,27 @@ public class ReflectionHelper {
         String methodName = "get" + StringUtils.capitalize(propertyName);
         Method method = object.getClass().getMethod(methodName);
         return (T) method.invoke(object);
+    }
+
+    public static <T> T invokeSetter(String propertyName, Object object, Object valueToSet) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        String methodName = "set" + StringUtils.capitalize(propertyName);
+        Method method = object.getClass().getMethod(methodName, valueToSet.getClass());
+        return (T) method.invoke(object, valueToSet);
+    }
+
+    /**
+     * Given an object, this method returns a map of names of all the instance (non static) fields -> type.
+     * @param object , not null
+     * @return
+     */
+    public static Map<String, Class> getFieldNamesToTypes(Object object) {
+        Field[] declaredFields = object.getClass().getDeclaredFields();
+        Map<String, Class> instanceVariableNamesToTypes = new HashMap<>();
+        for(Field field : declaredFields) {
+            if(!Modifier.isStatic(field.getModifiers())) {
+                instanceVariableNamesToTypes.put(field.getName(), field.getType());
+            }
+        }
+        return instanceVariableNamesToTypes;
     }
 }

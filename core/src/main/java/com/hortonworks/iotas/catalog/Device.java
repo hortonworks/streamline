@@ -22,7 +22,7 @@ import static com.hortonworks.iotas.common.Schema.Field;
  *        storage entities (in terms of RDBMS one Device object that gets stored in 2 tables, datasources and devices)
  *        it wont be supported by the manager right now.
  */
-public class Device implements DataSourceSubType {
+public class Device extends AbstractStorable implements DataSourceSubType {
     public static final String NAME_SPACE = "devices";
     public static final String DEVICE_ID = "deviceId";
     public static final String VERSION = "version";
@@ -48,13 +48,6 @@ public class Device implements DataSourceSubType {
         return NAME_SPACE;
     }
 
-    @JsonIgnore
-    public Schema getSchema() {
-        return new Schema.SchemaBuilder().fields(new Field(DEVICE_ID, Schema.Type.STRING),
-                                                 new Field(DATA_SOURCE_ID, Schema.Type.LONG),
-                                                 new Field(VERSION, Schema.Type.LONG)).build();
-    }
-
     /**
      * The primary key of the device is the datasource id itself which is also a foreign key
      * reference to the parent 'DataSource'.
@@ -69,21 +62,6 @@ public class Device implements DataSourceSubType {
     @JsonIgnore
     public StorableKey getStorableKey() {
         return new StorableKey(getNameSpace(), getPrimaryKey());
-    }
-
-    public Map toMap() {
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put(DEVICE_ID, this.deviceId);
-        map.put(VERSION, this.version);
-        map.put(DATA_SOURCE_ID, this.dataSourceId);
-        return map;
-    }
-
-    public Device fromMap(Map<String, Object> map) {
-        this.deviceId = (String)  map.get(DEVICE_ID);
-        this.version = (Long)  map.get(VERSION);
-        this.dataSourceId = (Long) map.get(DATA_SOURCE_ID);
-        return this;
     }
 
     @Override
