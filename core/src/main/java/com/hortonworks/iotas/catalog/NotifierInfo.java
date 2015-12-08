@@ -117,19 +117,6 @@ public class NotifierInfo extends AbstractStorable {
 
     @JsonIgnore
     @Override
-    public Schema getSchema() {
-        return new Schema.SchemaBuilder()
-                .fields(new Schema.Field(ID, Schema.Type.LONG),
-                        new Schema.Field(NOTIFIER_NAME, Schema.Type.STRING),
-                        new Schema.Field(JARFILE_NAME, Schema.Type.STRING),
-                        new Schema.Field(CLASS_NAME, Schema.Type.STRING),
-                        new Schema.Field(PROPERTIES, Schema.Type.NESTED),
-                        new Schema.Field(FIELD_VALUES, Schema.Type.NESTED),
-                        new Schema.Field(TIMESTAMP, Schema.Type.LONG)).build();
-    }
-
-    @JsonIgnore
-    @Override
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<Schema.Field, Object>();
         fieldToObjectMap.put(new Schema.Field("id", Schema.Type.LONG), this.id);

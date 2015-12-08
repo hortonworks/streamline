@@ -97,17 +97,6 @@ public class Cluster extends AbstractStorable {
     }
 
     @JsonIgnore
-    public Schema getSchema() {
-        return new Schema.SchemaBuilder()
-                .fields(new Schema.Field("id", Schema.Type.LONG),
-                        new Schema.Field("name", Schema.Type.STRING),
-                        new Schema.Field("type", Schema.Type.STRING),
-                        new Schema.Field("description", Schema.Type.STRING),
-                        new Schema.Field("tags", Schema.Type.STRING),
-                        new Schema.Field("timestamp", Schema.Type.LONG)).build();
-    }
-
-    @JsonIgnore
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<Schema.Field, Object>();
         fieldToObjectMap.put(new Schema.Field("id", Schema.Type.LONG), this.id);

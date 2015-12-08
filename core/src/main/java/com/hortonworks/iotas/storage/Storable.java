@@ -48,7 +48,7 @@ public interface Storable {
      * Converts this storable instance to a map.
      * @return
      */
-    Map toMap();        //TODO: Make this map type safe
+    Map<String, Object> toMap();        //TODO: Make this map type safe
 
     /**
      * Converts the given map to a storable instance and returns that instance.

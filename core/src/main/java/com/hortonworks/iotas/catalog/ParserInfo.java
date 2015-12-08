@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * Parser information that will be stored by storage layer.
  */
-public class ParserInfo implements Storable {
+public class ParserInfo extends AbstractStorable {
     public static final String NAME_SPACE = "parser_info";
     public static final String PARSER_ID = "parserId";
     public static final String PARSER_NAME = "parserName";
@@ -89,26 +89,15 @@ public class ParserInfo implements Storable {
         ).build();
     }
 
-    public Map toMap() {
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put(PARSER_ID, this.parserId);
-        map.put(PARSER_NAME, this.parserName);
-        map.put(CLASS_NAME, this.className);
-        map.put(JAR_STORAGE_PATH, this.jarStoragePath);
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = super.toMap();
         map.put(SCHEMA, this.parserSchema.toString()); //TODO this needs to be toJson
-        map.put(VERSION, this.version);
-        map.put(TIMESTAMP, this.timestamp);
         return map;
     }
 
     public Storable fromMap(Map<String, Object> map) {
-        this.parserId = (Long) map.get(PARSER_ID);
-        this.parserName = (String)  map.get(PARSER_NAME);
-        this.className = (String)  map.get(CLASS_NAME);
-        this.jarStoragePath = (String)  map.get(JAR_STORAGE_PATH);
-        this.parserSchema = Schema.fromString((String) map.get(SCHEMA)); //TODO this needs to be fromJson
-        this.version = (Long)map.get(VERSION);
-        this.timestamp = (Long)  map.get(TIMESTAMP);
+        this.parserSchema = Schema.fromString((String) map.remove(SCHEMA));
+        super.fromMap(map);
         return this;
     }
 
