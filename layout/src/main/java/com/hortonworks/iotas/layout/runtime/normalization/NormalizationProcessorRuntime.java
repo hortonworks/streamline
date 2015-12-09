@@ -85,7 +85,7 @@ public class NormalizationProcessorRuntime {
             String name = fieldValueGeneratorRuntime.getField().getName();
             if (!outputFieldNameValuePairs.containsKey(name)) {
                 Object value = fieldValueGeneratorRuntime.generateValue(iotasEvent);
-                outputFieldNameValuePairs.putIfAbsent(name, value);
+                outputFieldNameValuePairs.put(name, value);
             } else {
                 LOG.debug("Default value for field [{}] is not generated as it exists in the received event [{}]", name, iotasEvent);
             }
