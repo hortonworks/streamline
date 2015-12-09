@@ -25,10 +25,14 @@ import com.hortonworks.iotas.layout.design.rule.Rule;
 import com.hortonworks.iotas.layout.runtime.rule.condition.expression.GroovyExpression;
 import com.hortonworks.iotas.layout.runtime.script.GroovyScript;
 import com.hortonworks.iotas.layout.runtime.script.engine.GroovyScriptEngine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
 
 public class GroovyRuleRuntimeBuilder implements RuleRuntimeBuilder<Tuple, OutputCollector> {
+    private static final Logger LOG = LoggerFactory.getLogger(GroovyRuleRuntimeBuilder.class);
+
     private Rule rule;
     private GroovyExpression groovyExpression;
     private GroovyScriptEngine groovyScriptEngine;
@@ -51,7 +55,7 @@ public class GroovyRuleRuntimeBuilder implements RuleRuntimeBuilder<Tuple, Outpu
 
     @Override
     public void buildScript() {
-        groovyScript = new GroovyScript<Boolean>(groovyExpression.getExpression(), groovyScriptEngine) {
+        groovyScript = new GroovyScript<Boolean>(groovyExpression.asString(), groovyScriptEngine) {
             @Override
             public Boolean evaluate(IotasEvent iotasEvent) throws ScriptException {
                 Boolean evaluates = false;
@@ -61,8 +65,8 @@ public class GroovyRuleRuntimeBuilder implements RuleRuntimeBuilder<Tuple, Outpu
                     if (e.getCause() != null && e.getCause().getCause() instanceof groovy.lang.MissingPropertyException) {
                         // Occurs when not all the properties required for evaluating the script are set. This can happen for example
                         // when receiving an IotasEvent that does not have all the fields required to evaluate the expression
-                        log.debug("Missing property required to evaluate expression. {}", e.getCause().getMessage());
-                        log.trace("",e);
+                        LOG.debug("Missing property required to evaluate expression. {}", e.getCause().getMessage());
+                        LOG.trace("",e);
                         evaluates = false;
                     } else {
                         throw e;

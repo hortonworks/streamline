@@ -13,6 +13,8 @@
 
     <properties>
         <storm.version>0.10.0-beta1</storm.version>
+        <storm.sql.version>0.11.0-SNAPSHOT</storm.sql.version>  <!--Temporary until storm sql code gets merged into master -->
+        <calcite.version>1.4.0-incubating</calcite.version>     <!--StormSQL dependency-->
         <hbase.version>0.98.4-hadoop2</hbase.version>
     </properties>
 
@@ -76,6 +78,21 @@
             <artifactId>storm-core</artifactId>
             <version>${storm.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.storm</groupId>
+            <artifactId>storm-sql-core</artifactId>
+            <version>${storm.sql.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.storm</groupId>
+            <artifactId>storm-sql-runtime</artifactId>
+            <version>${storm.sql.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.calcite</groupId>
+            <artifactId>calcite-core</artifactId>
+            <version>${calcite.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.storm</groupId>

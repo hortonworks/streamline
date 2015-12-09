@@ -19,6 +19,7 @@
 package com.hortonworks.iotas.layout.runtime.processor;
 
 import com.hortonworks.iotas.layout.design.component.RulesProcessor;
+import com.hortonworks.iotas.layout.design.component.RulesProcessorBuilder;
 import com.hortonworks.iotas.layout.design.rule.Rule;
 import com.hortonworks.iotas.layout.runtime.rule.RuleRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.RuleRuntimeBuilder;
@@ -33,13 +34,13 @@ import java.util.List;
  * @param <E> Type of object required to execute this rule in the underlying streaming framework e.g {@code IOutputCollector}
  */
 public class RuleProcessorRuntimeDependenciesBuilder<I, E> {
-    protected static final Logger log = LoggerFactory.getLogger(RuleProcessorRuntimeDependenciesBuilder.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RuleProcessorRuntimeDependenciesBuilder.class);
 
     private final RulesProcessor rulesProcessor;
     private final RuleRuntimeBuilder<I,E> ruleRuntimeBuilder;
 
-    public RuleProcessorRuntimeDependenciesBuilder(RulesProcessor rulesProcessor, RuleRuntimeBuilder<I,E> ruleRuntimeBuilder) {
-        this.rulesProcessor = rulesProcessor;
+    public RuleProcessorRuntimeDependenciesBuilder(RulesProcessorBuilder rulesProcessorBuilder, RuleRuntimeBuilder<I,E> ruleRuntimeBuilder) {
+        this.rulesProcessor = rulesProcessorBuilder.build();
         this.ruleRuntimeBuilder = ruleRuntimeBuilder;
     }
 
@@ -55,9 +56,9 @@ public class RuleProcessorRuntimeDependenciesBuilder<I, E> {
                 ruleRuntimeBuilder.buildScript();
                 RuleRuntime<I, E> ruleRuntime = ruleRuntimeBuilder.buildRuleRuntime();
                 rulesRuntime.add(ruleRuntime);
-                log.trace("Added {}", ruleRuntime);
+                LOG.trace("Added {}", ruleRuntime);
             }
-            log.debug("Finished building. {}", this);
+            LOG.debug("Finished building. [{}]", this);
         }
         return rulesRuntime;
     }

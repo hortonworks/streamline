@@ -24,61 +24,80 @@ import backtype.storm.LocalCluster;
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.generated.StormTopology;
-import backtype.storm.task.OutputCollector;
 import backtype.storm.topology.IRichBolt;
 import backtype.storm.topology.TopologyBuilder;
-import backtype.storm.tuple.Tuple;
 import com.hortonworks.bolt.rules.RulesBolt;
-import com.hortonworks.iotas.layout.design.component.RulesProcessor;
-import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntimeDependenciesBuilder;
-import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntimeStorm;
-import com.hortonworks.iotas.layout.runtime.rule.GroovyRuleRuntimeBuilder;
-import com.hortonworks.iotas.layout.runtime.rule.RuleRuntimeBuilder;
+import com.hortonworks.iotas.layout.design.component.RulesProcessorBuilder;
 import com.hortonworks.iotas.layout.runtime.rule.RuleRuntimeStorm;
+import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
 
-public class RulesTopologyTest {
+public abstract class RulesTopologyTest {
     protected static final String RULES_TEST_SPOUT = "RulesTestSpout";
     protected static final String RULES_BOLT = "rulesBolt";
     protected static final String RULES_TEST_SINK_BOLT = "RulesTestSinkBolt";
     protected static final String RULES_TEST_SINK_BOLT_1 = RULES_TEST_SINK_BOLT + "_1";
     protected static final String RULES_TEST_SINK_BOLT_2 = RULES_TEST_SINK_BOLT + "_2";
-    private RuleProcessorRuntimeStorm ruleProcessorRuntime;
+    private RulesBoltDependenciesFactory rulesBoltDependenciesFactory;
 
-    public static void main(String[] args) throws AlreadyAliveException, InvalidTopologyException {
-        RulesTopologyTest rulesTopologyTest = new RulesTopologyTest();
-        rulesTopologyTest.submitTopology();
-    }
     protected void submitTopology() throws AlreadyAliveException, InvalidTopologyException {
-        final Config config = new Config();
-        config.setDebug(true);
+        final Config config = getConfig();
         final String topologyName = "RulesTopologyTest";
         ILocalCluster localCluster = new LocalCluster();
         localCluster.submitTopology(topologyName, config, createTopology());
     }
 
+    protected Config getConfig() {
+        final Config config = new Config();
+        config.setDebug(true);
+        return config;
+    }
+
     protected StormTopology createTopology() {
         TopologyBuilder builder = new TopologyBuilder();
         builder.setSpout(RULES_TEST_SPOUT, new RulesTestSpout());
-        builder.setBolt(RULES_BOLT, createRulesBolt(createRulesProcessorRuntime())).shuffleGrouping(RULES_TEST_SPOUT);
+        builder.setBolt(RULES_BOLT, createRulesBolt(createDependenciesBuilderFactory(createRulesProcessorBuilder(), getScriptType()))).shuffleGrouping(RULES_TEST_SPOUT);
         builder.setBolt(RULES_TEST_SINK_BOLT_1, new RulesTestSinkBolt()).shuffleGrouping(RULES_BOLT, getStream(0));
         builder.setBolt(RULES_TEST_SINK_BOLT_2, new RulesTestSinkBolt()).shuffleGrouping(RULES_BOLT, getStream(1));
         return builder.createTopology();
     }
 
-    protected IRichBolt createRulesBolt(RuleProcessorRuntimeStorm rulesProcessorRuntime) {
-        return new RulesBolt(rulesProcessorRuntime);
+    protected RulesBoltDependenciesFactory createDependenciesBuilderFactory(RulesProcessorBuilder rulesProcessorBuilder, RulesBoltDependenciesFactory.ScriptType scriptType) {
+        rulesBoltDependenciesFactory = new RulesBoltDependenciesFactory(rulesProcessorBuilder, scriptType);
+        return rulesBoltDependenciesFactory;
     }
 
-    protected RuleProcessorRuntimeStorm createRulesProcessorRuntime() {
-        RulesProcessor rulesProcessor = new RuleProcessorMockBuilder(1,2,2).build();
-        RuleRuntimeBuilder<Tuple, OutputCollector> ruleRuntimeBuilder = new GroovyRuleRuntimeBuilder();
-        RuleProcessorRuntimeDependenciesBuilder<Tuple, OutputCollector> dependenciesBuilder =
-                new RuleProcessorRuntimeDependenciesBuilder<>(rulesProcessor, ruleRuntimeBuilder);
-        ruleProcessorRuntime = new RuleProcessorRuntimeStorm(dependenciesBuilder);
-        return ruleProcessorRuntime;
+    protected IRichBolt createRulesBolt(RulesBoltDependenciesFactory dependenciesBuilder) {
+        return new RulesBolt(dependenciesBuilder);
+    }
+
+    protected RulesProcessorBuilder createRulesProcessorBuilder() {
+        return new RuleProcessorMockBuilder(1,2,2);
     }
 
     protected String getStream(int i) {
-        return ((RuleRuntimeStorm)ruleProcessorRuntime.getRulesRuntime().get(i)).getStreamId();
+        return ((RuleRuntimeStorm)rulesBoltDependenciesFactory.createRuleProcessorRuntimeStorm().getRulesRuntime().get(i)).getStreamId();   //TODO:
+    }
+
+    protected abstract RulesBoltDependenciesFactory.ScriptType getScriptType();
+
+    public static class RulesTopologyTestGroovy extends RulesTopologyTest {
+        public static void main(String[] args) throws AlreadyAliveException, InvalidTopologyException {
+            RulesTopologyTest rulesTopologyTest = new RulesTopologyTestGroovy();
+            rulesTopologyTest.submitTopology();
+        }
+
+        protected RulesBoltDependenciesFactory.ScriptType getScriptType() {
+            return RulesBoltDependenciesFactory.ScriptType.GROOVY;
+        }
+    }
+
+    public static class RulesTopologyTestSql extends RulesTopologyTest {
+        public static void main(String[] args) throws AlreadyAliveException, InvalidTopologyException {
+            RulesTopologyTest rulesTopologyTest = new RulesTopologyTestSql();
+            rulesTopologyTest.submitTopology();
+        }
+        protected RulesBoltDependenciesFactory.ScriptType getScriptType() {
+            return RulesBoltDependenciesFactory.ScriptType.SQL;
+        }
     }
 }

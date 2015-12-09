@@ -35,8 +35,6 @@ import java.io.Serializable;
  * @param <E> The Script Engine used to evaluate the scripts
  */
 public abstract class Script<I, O, E> implements Serializable {
-    protected static final Logger log = LoggerFactory.getLogger(Script.class);
-
     protected final String expression;
     protected final E scriptEngine;
 

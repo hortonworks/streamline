@@ -19,16 +19,20 @@
 package com.hortonworks.iotas.layout.design.rule;
 
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.common.Schema.Field;
 import com.hortonworks.iotas.layout.design.component.Component;
 import com.hortonworks.iotas.layout.design.component.RulesProcessor;
+import com.hortonworks.iotas.layout.design.component.RulesProcessorBuilder;
 import com.hortonworks.iotas.layout.design.component.Sink;
 import com.hortonworks.iotas.layout.design.rule.action.Action;
 import com.hortonworks.iotas.layout.design.rule.condition.Condition;
+import com.hortonworks.iotas.layout.design.rule.condition.Condition.ConditionElement.LogicalOperator;
+import com.hortonworks.iotas.layout.design.rule.condition.Condition.ConditionElement.Operation;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class RuleProcessorMockBuilder {
+public class RuleProcessorMockBuilder implements RulesProcessorBuilder {
     public static final String TEMPERATURE = "temperature";
     public static final String HUMIDITY = "humidity";
     public static final String RULE_PROCESSOR = "rule_processor";
@@ -38,7 +42,7 @@ public class RuleProcessorMockBuilder {
     private final long ruleProcessorId;
     private final int numRules;
     private final int numSinks;
-    private List<Schema.Field> declaredInputsOutputs;
+    private List<Field> declaredInputsOutputs;
 
     public RuleProcessorMockBuilder(long ruleProcessorId, int numRules, int numSinksPerRule) {
         this.ruleProcessorId = ruleProcessorId;
@@ -46,6 +50,7 @@ public class RuleProcessorMockBuilder {
         this.numSinks = numSinksPerRule;
     }
 
+    @Override
     public RulesProcessor build() {
         RulesProcessor rulesProcessor = new RulesProcessor();
         rulesProcessor.setDeclaredInput(buildDeclaredInputsOutputs());
@@ -56,10 +61,10 @@ public class RuleProcessorMockBuilder {
         return rulesProcessor;
     }
 
-    private List<Schema.Field> buildDeclaredInputsOutputs() {
-        final Schema declaredInputsOutputs = new Schema.SchemaBuilder().fields(new ArrayList<Schema.Field>() {{
-            add(new Schema.Field(TEMPERATURE, Schema.Type.INTEGER));
-            add(new Schema.Field(HUMIDITY, Schema.Type.INTEGER));
+    private List<Field> buildDeclaredInputsOutputs() {
+        final Schema declaredInputsOutputs = new Schema.SchemaBuilder().fields(new ArrayList<Field>() {{
+            add(new Field(TEMPERATURE, Schema.Type.INTEGER));
+            add(new Field(HUMIDITY, Schema.Type.INTEGER));
         }}).build();
 
         this.declaredInputsOutputs = declaredInputsOutputs.getFields();
@@ -111,9 +116,9 @@ public class RuleProcessorMockBuilder {
 
     private Condition buildCondition(int idx) {
         if (idx % 2 == 0) {
-            return buildCondition(buildConditionElements(Condition.ConditionElement.Operation.GREATER_THAN));
+            return buildCondition(buildConditionElements(Operation.GREATER_THAN)); // temperature  > 100  &&  humidity  > 50
         }
-        return buildCondition(buildConditionElements(Condition.ConditionElement.Operation.LESS_THAN));
+        return buildCondition(buildConditionElements(Operation.LESS_THAN));        // temperature  < 100  &&  humidity  < 50
     }
 
     private Condition buildCondition(List<Condition.ConditionElement> conditionElements) {
@@ -122,20 +127,20 @@ public class RuleProcessorMockBuilder {
         return condition;
     }
 
-    private List<Condition.ConditionElement> buildConditionElements(Condition.ConditionElement.Operation operation) {
+    private List<Condition.ConditionElement> buildConditionElements(Operation operation) {
         List<Condition.ConditionElement> conditionElements = new ArrayList<>();
-        conditionElements.add(buildConditionElement(TEMPERATURE, operation, "100", Condition.ConditionElement.LogicalOperator.AND));
+        conditionElements.add(buildConditionElement(TEMPERATURE, operation, "100", LogicalOperator.AND));
         conditionElements.add(buildConditionElement(HUMIDITY, operation, "50", null));
         return conditionElements;
     }
 
     private Condition.ConditionElement buildConditionElement(
-            String firstOperand, Condition.ConditionElement.Operation operation, String secondOperand,
-            Condition.ConditionElement.LogicalOperator logicalOperator) {
-        Condition.ConditionElement conditionElement =
-                new Condition.ConditionElement();
-        final Schema.Field temperature = new Schema.Field(firstOperand, Schema.Type.INTEGER);
-        conditionElement.setFirstOperand(temperature);
+            String firstOperand, Operation operation, String secondOperand,
+            LogicalOperator logicalOperator) {
+
+        final Condition.ConditionElement conditionElement = new Condition.ConditionElement();
+        final Field firstOperandField = new Field(firstOperand, Schema.Type.INTEGER);
+        conditionElement.setFirstOperand(firstOperandField);
         conditionElement.setOperation(operation);
         conditionElement.setSecondOperand(secondOperand);
         if (logicalOperator != null) {
