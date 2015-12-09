@@ -54,10 +54,10 @@ public class Condition implements Serializable {
 
         public enum LogicalOperator {AND, OR}
 
-        private Field firstOperand;
-        private Operation operation;
-        private String secondOperand;
-        private LogicalOperator logicalOperator;
+        private Field firstOperand;                 // INTEGER i or STRING s or DOUBLE d...
+        private Operation operation;                // EQUALS, NOT_EQUAL, GREATER_THAN,...
+        private String secondOperand;               // It is a constant 2, 3.2, "Name",...
+        private LogicalOperator logicalOperator;    // [AND, OR]  - Optional - it is null for the last ConditionElement
 
         public ConditionElement() {
             // For JSON serializer

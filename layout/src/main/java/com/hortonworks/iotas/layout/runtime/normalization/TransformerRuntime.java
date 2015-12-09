@@ -66,7 +66,6 @@ public class TransformerRuntime {
                 value = iotasEvent.getFieldsAndValues().get(inputFieldName);
                 LOG.debug("Input field value returned: {}", value);
             }
-
             return value;
         } catch (ScriptException | ParseException e) {
             LOG.error("Error occurred while converting input fields in tranformer: " + transformer);

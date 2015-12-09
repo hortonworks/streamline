@@ -19,16 +19,24 @@
 package com.hortonworks.iotas.layout.runtime.rule.condition.expression;
 
 import com.hortonworks.iotas.layout.design.rule.condition.Condition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 
+/**
+ * Represents the expression of this {@link Condition} in Groovy language syntax
+ **/
 public class GroovyExpression extends Expression {
+    private static final Logger LOG = LoggerFactory.getLogger(GroovyExpression.class);
+
+
     public GroovyExpression(Condition condition) {
         super(condition);
     }
 
     @Override
-    public String getExpression() {
+    public String asString() {
         if (expression == null) {           // Builds and caches the expression string the first time it is called
             final StringBuilder builder = new StringBuilder("");
             for (Condition.ConditionElement element : condition.getConditionElements()) {
@@ -43,7 +51,7 @@ public class GroovyExpression extends Expression {
                 }
             }
             expression = builder.toString();                                    // x == 5 [&& or ||]
-            log.debug("Built expression [{}] for condition [{}]", expression, condition);
+            LOG.debug("Built expression [{}] for condition [{}]", expression, condition);
         }
         return expression;
     }
@@ -79,6 +87,4 @@ public class GroovyExpression extends Expression {
                         operation, Arrays.toString(Condition.ConditionElement.Operation.values())));
         }
     }
-
-
 }

@@ -29,10 +29,7 @@ import java.util.List;
  *
  */
 public class NormalizationProcessor extends Processor {
-
     private List<Transformer> transformers;
-
-
     // List of input fields filtered or removed. These will not be passed to output fields.
     private List<String> fieldsToBeFiltered;
     private List<FieldValueGenerator> newFieldValueGenerators;

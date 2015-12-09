@@ -55,7 +55,8 @@ public class RuleRuntimeStorm extends RuleRuntime<Tuple, OutputCollector> {
         return rule.getRuleProcessorName() + "." + rule.getName() + "." + rule.getId();
     }
 
-    private Fields getFields() {
+    public Fields getFields() {
         return new Fields(IotasEvent.IOTAS_EVENT);
     }
+
 }

@@ -20,15 +20,10 @@ package com.hortonworks.iotas.layout.runtime.rule.condition.expression;
 
 import com.hortonworks.iotas.common.Schema.Field;
 import com.hortonworks.iotas.layout.design.rule.condition.Condition;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-/**
- * Represents the expression of this {@link Condition} in implementation language syntax
- **/
-public abstract class Expression {
-    protected static final Logger log = LoggerFactory.getLogger(Expression.class);
+import java.io.Serializable;
 
+public abstract class Expression implements Serializable {
     protected final Condition condition;
 
     protected String expression;
@@ -40,7 +35,11 @@ public abstract class Expression {
     /**
      * @return The expression of this {@link Condition} in implementation language syntax, ready to be evaluated
      */
-    public abstract String getExpression();
+    public abstract String asString();
+
+    public Condition getCondition() {
+        return condition;
+    }
 
     protected String getName(Field field) {
         return field.getName() + " ";
