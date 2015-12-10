@@ -1,6 +1,10 @@
 package com.hortonworks.iotas.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hortonworks.iotas.catalog.Cluster;
+import com.hortonworks.iotas.catalog.Component;
+import com.hortonworks.iotas.catalog.DataFeed;
+import com.hortonworks.iotas.catalog.DataSet;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.ParserInfo;
@@ -22,6 +26,8 @@ import com.hortonworks.iotas.util.CoreUtils;
 import com.hortonworks.iotas.util.JsonSchemaValidator;
 import com.hortonworks.iotas.util.exception.BadTopologyLayoutException;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URL;
@@ -29,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -39,9 +46,12 @@ import java.util.Map;
  */
 public class CatalogService {
 
+    private static final Logger LOG = LoggerFactory.getLogger(CatalogService.class);
+
     // TODO: the namespace and Id generation logic should be moved inside DAO
     private static final String DATA_SOURCE_NAMESPACE = new DataSource().getNameSpace();
     private static final String DEVICE_NAMESPACE = new Device().getNameSpace();
+    private static final String DATASET_NAMESPACE = new DataSet().getNameSpace();
     private static final String DATA_FEED_NAMESPACE = new DataFeed().getNameSpace();
     private static final String PARSER_INFO_NAMESPACE = new ParserInfo().getNameSpace();
     private static final String CLUSTER_NAMESPACE = new Cluster().getNameSpace();
@@ -107,6 +117,8 @@ public class CatalogService {
     private String getNamespaceForDataSourceType(DataSource.Type dataSourceType) {
         if (dataSourceType == DataSource.Type.DEVICE) {
             return DEVICE_NAMESPACE;
+        } else if (dataSourceType == DataSource.Type.DATASET) {
+            return DATASET_NAMESPACE;
         }
         return DataSource.Type.UNKNOWN.toString();
     }
@@ -122,6 +134,8 @@ public class CatalogService {
     private Class<? extends DataSourceSubType> getClassForDataSourceType(DataSource.Type dataSourceType) {
         if (dataSourceType == DataSource.Type.DEVICE) {
             return Device.class;
+        } else if (dataSourceType == DataSource.Type.DATASET) {
+            return DataSet.class;
         }
         throw new IllegalArgumentException("Unknown data source type " + dataSourceType);
     }
@@ -216,8 +230,38 @@ public class CatalogService {
         if (feed.getId() == null) {
             feed.setId(this.dao.nextId(DATA_FEED_NAMESPACE));
         }
+        validateDatafeed(feed);
         this.dao.add(feed);
         return feed;
+    }
+
+    /**
+     * Basic validation
+     * 1. Datasource referenced in this datafeed should exist
+     * 2. End-points should be unique for Datasets
+     */
+    private void validateDatafeed(DataFeed feed) {
+        DataSource dataSource = null;
+        LOG.debug("Validating data feed [{}]", feed);
+        try {
+            dataSource = getDataSource(feed.getDataSourceId());
+        } catch (Exception ex) {
+            throw new StorageException("Got exception while validating datafeed [" + feed + "]", ex);
+        }
+        if (dataSource == null) {
+            throw new StorageException("Cannot add Datafeed [" + feed + "] for non existent datasource");
+        } else if (dataSource.getType() == DataSource.Type.DATASET) {
+            QueryParam qp = new QueryParam("type", feed.getType());
+            Collection<DataFeed> existing = null;
+            try {
+                existing = listDataFeeds(Collections.singletonList(qp));
+            } catch (Exception ex) {
+                throw new StorageException("Got excepting while listing data feeds with query param " + qp, ex);
+            }
+            if (!existing.isEmpty()) {
+                throw new StorageException("Datafeed type must be unique for a Dataset");
+            }
+        }
     }
 
     public DataFeed removeDataFeed(Long dataFeedId) {
