@@ -8,7 +8,7 @@ import java.util.UUID;
  * A default implementation of IotasEvent.
  */
 public class IotasEventImpl implements IotasEvent {
-
+    private final Map<String, Object> header;
     private final Map<String, Object> fieldsAndValues;
     private final String dataSourceId;
     private final String id;
@@ -21,10 +21,28 @@ public class IotasEventImpl implements IotasEvent {
         this(keyValues, dataSourceId, UUID.randomUUID().toString());
     }
 
+    /**
+     * Creates an IotasEvent with given keyValues, dataSourceId and id.
+     */
     public IotasEventImpl(Map<String, Object> keyValues, String dataSourceId, String id) {
+        this(keyValues, dataSourceId, id, Collections.<String, Object>emptyMap());
+    }
+
+    /**
+     * Creates an IotasEvent with given keyValues, dataSourceId and header.
+     */
+    public IotasEventImpl(Map<String, Object> keyValues, String dataSourceId, Map<String, Object> header) {
+        this(keyValues, dataSourceId, UUID.randomUUID().toString(), header);
+    }
+
+    /**
+     * Creates an IotasEvent with given keyValues, dataSourceId, id and header.
+     */
+    public IotasEventImpl(Map<String, Object> keyValues, String dataSourceId, String id, Map<String, Object> header) {
         this.fieldsAndValues = keyValues;
         this.dataSourceId = dataSourceId;
         this.id = id;
+        this.header = header;
     }
 
     @Override
@@ -42,6 +60,10 @@ public class IotasEventImpl implements IotasEvent {
         return dataSourceId;
     }
 
+    @Override
+    public Map<String, Object> getHeader() {
+        return Collections.unmodifiableMap(header);
+    }
 
     @Override
     public boolean equals(Object o) {
