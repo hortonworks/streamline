@@ -1,0 +1,138 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Topology",
+  "description": "An IoTaS topology representation",
+  "type": "object",
+  "properties": {
+      "dataSources": {
+        "description": "List of data sources",
+        "type": "array",
+        "minItems": 1,
+        "uniqueItems": true,
+        "items": {
+          "type": "object",
+          "title": "A data source",
+          "properties": {
+            "transformationClass": {
+              "description": "Transformation class to transform in to underlying streaming engine artifact",
+              "type": "string",
+              "minLength": 1
+            },
+            "type": {
+              "description": "Type of data source",
+              "type": "string",
+              "minLength": 1
+            },
+            "uiname": {
+              "description": "Name entered by the user",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": ["uiname", "type", "transformationClass"]
+        }
+      },
+      "processors": {
+        "description": "List of processors",
+        "type": "array",
+        "minItems": 1,
+        "uniqueItems": true,
+        "items": {
+          "type": "object",
+          "title": "A data processor",
+          "properties": {
+            "transformationClass": {
+              "description": "Transformation class to transform in to underlying streaming engine artifact",
+              "type": "string",
+              "minLength": 1
+            },
+            "type": {
+              "description": "Type of processor",
+              "type": "string",
+              "minLength": 1
+            },
+            "uiname": {
+              "description": "Name entered by the user",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": ["uiname", "type", "transformationClass"]
+        }
+      },
+      "dataSinks": {
+        "description": "List of data sinks",
+        "type": "array",
+        "minItems": 1,
+        "uniqueItems": true,
+        "items": {
+          "type": "object",
+          "title": "A data sink",
+          "properties": {
+            "transformationClass": {
+              "description": "Transformation class to transform in to underlying streaming engine artifact",
+              "type": "string",
+              "minLength": 1
+            },
+            "type": {
+              "description": "Type of data sink",
+              "type": "string",
+              "minLength": 1
+            },
+            "uiname": {
+              "description": "Name entered by the user",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": ["uiname", "type", "transformationClass"]
+        }
+      },
+      "links": {
+        "description": "List of connections",
+        "type": "array",
+        "minItems": 1,
+        "uniqueItems": true,
+        "items": {
+          "type": "object",
+          "title": "A link",
+          "properties": {
+            "transformationClass": {
+              "description": "Transformation class to transform in to underlying streaming engine artifact",
+              "type": "string",
+              "minLength": 1
+            },
+            "type": {
+              "description": "Type of link",
+              "type": "string",
+              "minLength": 1
+            },
+            "uiname": {
+              "description": "Name entered by the user",
+              "type": "string",
+              "minLength": 1
+            },
+            "config": {
+              "type": "object",
+              "title": "Configuration for a link",
+              "properties": {
+                "from": {
+                  "description": "From node for link",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "to": {
+                  "description": "To node for link",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": ["from", "to"]
+            }
+          },
+          "required": ["uiname", "type", "transformationClass", "config"]
+        }
+      }
+  },
+  "required": ["dataSources", "processors", "dataSinks", "links"]
+}

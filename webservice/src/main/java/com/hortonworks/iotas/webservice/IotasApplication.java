@@ -30,7 +30,7 @@ import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager;
-import com.hortonworks.iotas.util.DataStreamActions;
+import com.hortonworks.iotas.topology.TopologyActions;
 import com.hortonworks.iotas.util.ReflectionHelper;
 import com.hortonworks.iotas.webservice.catalog.ClusterCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.ComponentCatalogResource;
@@ -40,6 +40,7 @@ import com.hortonworks.iotas.webservice.catalog.DataSourceWithDataFeedCatalogRes
 import com.hortonworks.iotas.webservice.catalog.FeedCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.NotifierInfoCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.ParserInfoCatalogResource;
+import com.hortonworks.iotas.webservice.catalog.TopologyCatalogResource;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
@@ -111,48 +112,52 @@ public class IotasApplication extends Application<IotasConfiguration> {
         return CacheBuilder.newBuilder().maximumSize(maxSize);
     }
 
-    private DataStreamActions getDataStreamActionsImpl(IotasConfiguration
-                                                               configuration) {
-        String className = configuration.getDataStreamActionsImpl();
+    private TopologyActions getTopologyActionsImpl (IotasConfiguration
+                                                           configuration) {
+        String className = configuration.getTopologyActionsImpl();
         // Note that iotasStormJar value needs to be changed in iotas.yaml
         // based on the location of the storm module jar of iotas project.
         // Reason for doing it this way is storm ui right now does not
         // support submitting a jar because of security vulnerability. Hence
         // for now, we just run the storm jar command in a shell on machine
-        // where IoTaS is deployed. It is run in StormDataStreamActionsImpl
+        // where IoTaS is deployed. It is run in StormTopologyActionsImpl
         // class. This also adds a security vulnerability. We will change
         // this later on using our cluster entity when its handled right in
         // storm.
         String jar = configuration.getIotasStormJar();
-        DataStreamActions dataStreamActions;
+        TopologyActions topologyActions;
         try {
-            dataStreamActions = ReflectionHelper.newInstance(className);
+            topologyActions = ReflectionHelper.newInstance(className);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
         //pass any config info that might be needed in the constructor as a map
         Map conf = new HashMap();
         conf.put("iotasStormJar", jar);
-        dataStreamActions.init(conf);
-        return dataStreamActions;
+        conf.put("catalog.root.url", configuration.getCatalogRootUrl());
+        topologyActions.init(conf);
+        return topologyActions;
     }
 
+
     private void registerResources(IotasConfiguration iotasConfiguration, Environment environment, StorageManager manager) {
+        StorageManager storageManager = getCacheBackedDao();
+        TopologyActions topologyActions = getTopologyActionsImpl
+                (iotasConfiguration);
         final CatalogService catalogService = new CatalogService
-                (getCacheBackedDao(), getDataStreamActionsImpl
-                        (iotasConfiguration));
+                (storageManager, topologyActions);
         final FeedCatalogResource feedResource = new FeedCatalogResource(catalogService);
         final ParserInfoCatalogResource parserResource = new ParserInfoCatalogResource(catalogService, iotasConfiguration);
         final DataSourceCatalogResource dataSourceResource = new DataSourceCatalogResource(catalogService);
         final DataSourceWithDataFeedCatalogResource dataSourceWithDataFeedCatalogResource =
                 new DataSourceWithDataFeedCatalogResource(new DataSourceFacade(catalogService));
-        final DataStreamCatalogResource dataStreamResource = new DataStreamCatalogResource(catalogService);
+        final TopologyCatalogResource topologyCatalogResource = new TopologyCatalogResource(catalogService);
 
         // cluster related
         final ClusterCatalogResource clusterCatalogResource = new ClusterCatalogResource(catalogService);
         final ComponentCatalogResource componentCatalogResource = new ComponentCatalogResource(catalogService);
         List<Object> resources = Lists.newArrayList(feedResource, parserResource, dataSourceResource, dataSourceWithDataFeedCatalogResource,
-                                                    dataStreamResource, clusterCatalogResource, componentCatalogResource);
+                                                    topologyCatalogResource, clusterCatalogResource, componentCatalogResource);
         if (!iotasConfiguration.isNotificationsRestDisabled()) {
             resources.add(new NotifierInfoCatalogResource(catalogService));
             resources.add(new NotificationsResource(new NotificationServiceImpl()));

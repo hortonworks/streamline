@@ -15,9 +15,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.List;
 
-/**
- * Created by pshah on 8/7/15.
- */
 public abstract class AbstractJarStorageTest {
 
 
