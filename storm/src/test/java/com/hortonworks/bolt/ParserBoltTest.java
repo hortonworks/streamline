@@ -9,7 +9,10 @@ import com.google.common.base.Charsets;
 import com.hortonworks.client.CatalogRestClient;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.model.IotasMessage;
-import mockit.*;
+import mockit.Expectations;
+import mockit.Injectable;
+import mockit.Tested;
+import mockit.VerificationsInOrder;
 import mockit.integration.junit4.JMockit;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,9 +59,9 @@ public class ParserBoltTest {
         parserBolt.prepare(config, null, mockOutputCollector);
         parserBolt.setClient(mockClient);
 
-        parserInfo.setParserId(PARSER_ID);
+        parserInfo.setId(PARSER_ID);
         parserInfo.setClassName(MockParser.class.getCanonicalName());
-        parserInfo.setParserName("TestParser");
+        parserInfo.setName("TestParser");
     }
 
     @Test

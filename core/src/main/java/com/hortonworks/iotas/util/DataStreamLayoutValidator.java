@@ -252,7 +252,7 @@ public class DataStreamLayoutValidator {
 
         Long dataSourceId = ((Integer) dataSource.get(JSON_KEY_ID)).longValue();
         DataSource ds = new DataSource();
-        ds.setDataSourceId(dataSourceId);
+        ds.setId(dataSourceId);
         DataSource result = dao.get(ds.getStorableKey());
         if (result == null) {
             throw new BadDataStreamLayoutException(String.format

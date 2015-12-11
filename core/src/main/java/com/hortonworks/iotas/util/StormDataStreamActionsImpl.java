@@ -6,11 +6,8 @@ import org.apache.commons.lang.StringUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
-import javax.xml.crypto.Data;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.net.URL;
 import java.util.*;
 
 /**
@@ -125,7 +122,7 @@ public class StormDataStreamActionsImpl implements DataStreamActions {
                 if (!f.delete()) {
                     throw new Exception("Unable to delete old storm " +
                             "artifact for data stream id " + this.dataStream
-                            .getDataStreamId());
+                            .getId());
                 }
             }
 
@@ -153,11 +150,11 @@ public class StormDataStreamActionsImpl implements DataStreamActions {
     }
 
     private String getTopologyName (DataStream dataStream) {
-        return "iotas-" + dataStream.getDataStreamId();
+        return "iotas-" + dataStream.getId();
     }
     private String getFilePath () {
         return this.stormArtifactsLocation + "dataStreamId-" + this.dataStream
-                .getDataStreamId() + ".yaml";
+                .getId() + ".yaml";
     }
 
     private void addTopologyConfig () {
@@ -340,10 +337,10 @@ public class StormDataStreamActionsImpl implements DataStreamActions {
         // not using uiname for data source below as it may have spaces and
         // zkRoot needs to be unique across data streams
         spoutConfigConstructorArgs.add("/Iotas-kafka-spout-" + this
-                .dataStream.getDataStreamId() + "-" + dataSource.get
+                .dataStream.getId() + "-" + dataSource.get
                 (DataStreamLayoutValidator.JSON_KEY_ID));
         spoutConfigConstructorArgs.add("kafka-spout-" + this
-                .dataStream.getDataStreamId() + "-" + dataSource.get
+                .dataStream.getId() + "-" + dataSource.get
                 (DataStreamLayoutValidator.JSON_KEY_ID));
         this.addToComponents(this.createComponent(spoutConfigId,
                 spoutConfigClassName, spoutConfigConstructorArgs, null));

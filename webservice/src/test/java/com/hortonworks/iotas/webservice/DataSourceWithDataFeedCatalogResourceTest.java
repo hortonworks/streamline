@@ -38,7 +38,7 @@ public class DataSourceWithDataFeedCatalogResourceTest {
     @Test
     public void testAddDataSourceWithDataFeed() throws Exception {
         final DataSource dataSource = createDataSource();
-        final DataFeed dataFeed = createDataFeed(dataSource.getDataSourceId());
+        final DataFeed dataFeed = createDataFeed(dataSource.getId());
         final DataSourceDto dataSourceDto = new DataSourceDto(dataSource, dataFeed);
 
         new Expectations() {
@@ -69,7 +69,7 @@ public class DataSourceWithDataFeedCatalogResourceTest {
     @Test
     public void testAddDataSourceWithDataFeedWithException() throws Exception {
         final DataSource dataSource = createDataSource();
-        final DataFeed dataFeed = createDataFeed(dataSource.getDataSourceId());
+        final DataFeed dataFeed = createDataFeed(dataSource.getId());
         final DataSourceDto dataSourceDto = new DataSourceDto(dataSource, dataFeed);
         new Expectations() {
             {
@@ -88,8 +88,8 @@ public class DataSourceWithDataFeedCatalogResourceTest {
 
     private DataSource createDataSource() {
         DataSource dataSource = new DataSource();
-        dataSource.setDataSourceId(new Random().nextLong());
-        dataSource.setDataSourceName("datasource-1");
+        dataSource.setId(new Random().nextLong());
+        dataSource.setName("datasource-1");
         dataSource.setType(DataSource.Type.DEVICE);
         dataSource.setTypeConfig("device-datasource-typeconfig");
         dataSource.setTags("tag-1");
@@ -100,7 +100,7 @@ public class DataSourceWithDataFeedCatalogResourceTest {
     private DataFeed createDataFeed(long dataSourceId) {
         DataFeed dataFeed = new DataFeed();
         dataFeed.setDataSourceId(dataSourceId);
-        dataFeed.setDataFeedName("test data feed");
+        dataFeed.setName("test data feed");
         dataFeed.setEndpoint("test-endpoint");
         dataFeed.setParserId(1l);
         return dataFeed;

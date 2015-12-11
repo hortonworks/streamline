@@ -9,16 +9,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-/**
- *
- */
 public class DataSourceFacade {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceFacade.class);
 
@@ -31,12 +28,12 @@ public class DataSourceFacade {
     public DataSourceDto addOrUpdateDataSourceWithDataFeed(Long dataSourceId, DataSourceDto dataSourceDto) throws Exception {
         DataSource dataSource = createDataSource(dataSourceDto);
         DataSource createdDataSource = catalogService.addOrUpdateDataSource(dataSourceId, dataSource);
-        dataSourceDto.setDataSourceId(createdDataSource.getDataSourceId());
+        dataSourceDto.setDataSourceId(createdDataSource.getId());
 
         DataFeed dataFeed = createDataFeed(dataSourceDto);
         DataFeed existingDataFeed = getDataFeed(dataSourceId);
         DataFeed createdDataFeed = existingDataFeed != null
-                ? catalogService.addOrUpdateDataFeed(existingDataFeed.getDataFeedId(), dataFeed)
+                ? catalogService.addOrUpdateDataFeed(existingDataFeed.getId(), dataFeed)
                 : catalogService.addDataFeed(dataFeed);
 
         return createDataSourceDto(createdDataSource, createdDataFeed);
@@ -45,7 +42,7 @@ public class DataSourceFacade {
     public DataSourceDto createDataSourceWithDataFeed(DataSourceDto dataSourceDto) throws Exception {
         DataSource dataSource = createDataSource(dataSourceDto);
         DataSource createdDataSource = catalogService.addDataSource(dataSource);
-        dataSourceDto.setDataSourceId(createdDataSource.getDataSourceId());
+        dataSourceDto.setDataSourceId(createdDataSource.getId());
 
         DataFeed dataFeed = createDataFeed(dataSourceDto);
         DataFeed createdDataFeed = catalogService.addDataFeed(dataFeed);
@@ -59,14 +56,14 @@ public class DataSourceFacade {
         DataSourceDto createdDataSourceDto = new DataSourceDto(dataSource, dataFeed);
         ParserInfo parserInfo = catalogService.getParserInfo(dataFeed.getParserId());
         if (parserInfo != null) {
-            createdDataSourceDto.setParserName(parserInfo.getParserName());
+            createdDataSourceDto.setParserName(parserInfo.getName());
         }
         return createdDataSourceDto;
     }
 
     private DataFeed createDataFeed(DataSourceDto dataSourceDto) {
         DataFeed dataFeed = new DataFeed();
-        dataFeed.setDataFeedName(dataSourceDto.getDataFeedName());
+        dataFeed.setName(dataSourceDto.getDataFeedName());
         dataFeed.setDataSourceId(dataSourceDto.getDataSourceId());
         dataFeed.setEndpoint(dataSourceDto.getEndpoint());
         dataFeed.setParserId(dataSourceDto.getParserId());
@@ -76,8 +73,8 @@ public class DataSourceFacade {
 
     private DataSource createDataSource(DataSourceDto dataSourceDto) {
         DataSource dataSource = new DataSource();
-        dataSource.setDataSourceId(dataSourceDto.getDataSourceId());
-        dataSource.setDataSourceName(dataSourceDto.getDataSourceName());
+        dataSource.setId(dataSourceDto.getDataSourceId());
+        dataSource.setName(dataSourceDto.getDataSourceName());
         dataSource.setDescription(dataSourceDto.getDescription());
         dataSource.setTags(dataSourceDto.getTags());
         dataSource.setTimestamp(dataSourceDto.getTimestamp());
@@ -92,13 +89,13 @@ public class DataSourceFacade {
         List<DataSourceDto> dataSourceDtoList = new ArrayList<>();
         // todo we may want to add an API to fetch results in one invocation from dao/storage layer
         for (DataSource dataSource : dataSources) {
-            dataSourceDtoList.add(createDataSourceDto(dataSource, getDataFeed(dataSource.getDataSourceId())));
+            dataSourceDtoList.add(createDataSourceDto(dataSource, getDataFeed(dataSource.getId())));
         }
 
         return dataSourceDtoList;
     }
 
-    public List<DataSourceDto> getAllDataSourceDtos() throws IOException {
+    public List<DataSourceDto> getAllDataSourceDtos() throws IOException, InstantiationException, IllegalAccessException {
         Collection<DataSource> dataSources = catalogService.listDataSources();
         Collection<DataFeed> dataFeeds = catalogService.listDataFeeds();
         Map<Long, DataFeed> feedMap = new HashMap<Long, DataFeed>();
@@ -108,7 +105,7 @@ public class DataSourceFacade {
 
         List<DataSourceDto> dataSourceDtoList = new ArrayList<>();
         for (DataSource dataSource : dataSources) {
-            DataSourceDto dataSourceDto = createDataSourceDto(dataSource, feedMap.get(dataSource.getDataSourceId()));
+            DataSourceDto dataSourceDto = createDataSourceDto(dataSource, feedMap.get(dataSource.getId()));
             dataSourceDtoList.add(dataSourceDto);
         }
 
@@ -129,14 +126,14 @@ public class DataSourceFacade {
         return dataFeeds.iterator().next();
     }
 
-    public DataSourceDto removeDataSource(Long dataSourceId) throws IOException {
+    public DataSourceDto removeDataSource(Long dataSourceId) throws Exception {
         DataSource removedDataSource = catalogService.removeDataSource(dataSourceId);
         if (removedDataSource == null) {
             return null;
         }
         DataFeed removedDataFeed = catalogService.getDataFeed(dataSourceId);
         if (removedDataFeed != null) {
-            catalogService.removeDataFeed(removedDataFeed.getDataFeedId());
+            catalogService.removeDataFeed(removedDataFeed.getId());
         } else {
             LOGGER.warn("No datafeed found with dataSourceId: " + dataSourceId);
         }
@@ -151,7 +148,7 @@ public class DataSourceFacade {
         return getDataSourceDtos(dataSources);
     }
 
-    public DataSourceDto getDataSource(Long dataSourceId) throws IOException {
+    public DataSourceDto getDataSource(Long dataSourceId) throws Exception {
         DataSource dataSource = catalogService.getDataSource(dataSourceId);
         if (dataSource == null) {
             return null;

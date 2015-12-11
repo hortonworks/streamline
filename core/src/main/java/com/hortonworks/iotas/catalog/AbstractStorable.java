@@ -5,15 +5,14 @@ import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.parser.ParseException;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
-import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.exception.StorageException;
 import com.hortonworks.iotas.util.ReflectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
 import java.util.Set;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
@@ -39,7 +38,7 @@ public abstract class AbstractStorable implements Storable {
      * @return
      */
     public Map<String, Object> toMap() {
-        Set<String> instanceVariableNames = ReflectionHelper.getFieldNamesToTypes(this).keySet();
+        Set<String> instanceVariableNames = ReflectionHelper.getFieldNamesToTypes(this.getClass()).keySet();
         Map<String, Object> fieldToVal = new HashMap<>();
         for(String fieldName : instanceVariableNames) {
             try {
@@ -82,7 +81,7 @@ public abstract class AbstractStorable implements Storable {
      */
     @JsonIgnore
     public Schema getSchema() {
-        Map<String, Class> fieldNamesToTypes = ReflectionHelper.getFieldNamesToTypes(this);
+        Map<String, Class> fieldNamesToTypes = ReflectionHelper.getFieldNamesToTypes(this.getClass());
         List<Schema.Field> fields = new ArrayList<>();
 
         for(Map.Entry<String, Class> entry : fieldNamesToTypes.entrySet()) {

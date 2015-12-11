@@ -17,7 +17,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  * Created by aiyer on 10/26/15.
@@ -64,7 +65,7 @@ public class DataSourceCatalogResourceTest {
     public void testGetDataSourceSchemaOnetoOne() throws Exception {
         DataSourceCatalogResource resource = new DataSourceCatalogResource(mockCatalogService);
         final DataFeed dataFeed = new DataFeed();
-        dataFeed.setDataFeedId(1L);
+        dataFeed.setId(1L);
         dataFeed.setDataSourceId(2L);
         dataFeed.setParserId(3L);
         final ParserInfo parserInfo = new ParserInfo();
@@ -92,11 +93,11 @@ public class DataSourceCatalogResourceTest {
     public void testGetDataSourceSchemaManytoOne() throws Exception {
         DataSourceCatalogResource resource = new DataSourceCatalogResource(mockCatalogService);
         final DataFeed dataFeed1 = new DataFeed();
-        dataFeed1.setDataFeedId(1L);
+        dataFeed1.setId(1L);
         dataFeed1.setDataSourceId(2L);
         dataFeed1.setParserId(3L);
         final DataFeed dataFeed2 = new DataFeed();
-        dataFeed2.setDataFeedId(2L);
+        dataFeed2.setId(2L);
         dataFeed2.setDataSourceId(2L);
         dataFeed2.setParserId(3L);
         final ParserInfo parserInfo = new ParserInfo();

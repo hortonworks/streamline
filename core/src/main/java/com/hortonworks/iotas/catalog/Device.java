@@ -1,15 +1,8 @@
 package com.hortonworks.iotas.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.storage.DataSourceSubType;
-import com.hortonworks.iotas.storage.PrimaryKey;
 import com.hortonworks.iotas.storage.StorableKey;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static com.hortonworks.iotas.common.Schema.Field;
 
 /**
  * The device storage entity that will capture the actual device related information for admin.
@@ -22,41 +15,24 @@ import static com.hortonworks.iotas.common.Schema.Field;
  *        storage entities (in terms of RDBMS one Device object that gets stored in 2 tables, datasources and devices)
  *        it wont be supported by the manager right now.
  */
-public class Device extends AbstractStorable implements DataSourceSubType {
+public class Device extends DataSourceSubType {
     public static final String NAME_SPACE = "devices";
-    public static final String DEVICE_ID = "deviceId";
+    public static final String DEVICE_ID = "id";
     public static final String VERSION = "version";
-    public static final String DATA_SOURCE_ID = "dataSourceId";
 
     /**
      * NOTE: given we expect this to be part of the actual device message headers, this Id is kept as string.
      */
-    private String deviceId;
+    private String id;
 
     /**
      * Firmware version of the device. DeviceId + version has a unique constraint but is not the primary key.
      */
     private Long version;
 
-    /**
-     * Primary key that is also a foreign key to referencing to the parent table 'dataSources'.
-     */
-    private Long dataSourceId;
-
     @JsonIgnore
     public String getNameSpace() {
         return NAME_SPACE;
-    }
-
-    /**
-     * The primary key of the device is the datasource id itself which is also a foreign key
-     * reference to the parent 'DataSource'.
-     */
-    @JsonIgnore
-    public PrimaryKey getPrimaryKey() {
-        Map<Schema.Field, Object> fieldToObjectMap = new HashMap<>();
-        fieldToObjectMap.put(new Schema.Field(DATA_SOURCE_ID, Schema.Type.LONG), dataSourceId);
-        return new PrimaryKey(fieldToObjectMap);
     }
 
     @JsonIgnore
@@ -72,14 +48,14 @@ public class Device extends AbstractStorable implements DataSourceSubType {
         Device device = (Device) o;
 
         if (!dataSourceId.equals(device.dataSourceId)) return false;
-        if (!deviceId.equals(device.deviceId)) return false;
+        if (!id.equals(device.id)) return false;
         return version.equals(device.version);
 
     }
 
     @Override
     public int hashCode() {
-        int result = deviceId.hashCode();
+        int result = id.hashCode();
         result = 31 * result + version.hashCode();
         result = 31 * result + dataSourceId.hashCode();
         return result;
@@ -88,18 +64,18 @@ public class Device extends AbstractStorable implements DataSourceSubType {
     @Override
     public String toString() {
         return "Device{" +
-                "deviceId='" + deviceId + '\'' +
+                "id='" + id + '\'' +
                 ", version=" + version +
                 ", dataSourceId=" + dataSourceId +
                 '}';
     }
 
-    public String getDeviceId() {
-        return deviceId;
+    public String getId() {
+        return id;
     }
 
-    public void setDeviceId(String deviceId) {
-        this.deviceId = deviceId;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public Long getVersion() {
@@ -109,14 +85,4 @@ public class Device extends AbstractStorable implements DataSourceSubType {
     public void setVersion(Long version) {
         this.version = version;
     }
-
-    @JsonIgnore
-    public Long getDataSourceId() {
-        return dataSourceId;
-    }
-
-    public void setDataSourceId(Long dataSourceId) {
-        this.dataSourceId = dataSourceId;
-    }
-
 }

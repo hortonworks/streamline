@@ -1,6 +1,5 @@
 package com.hortonworks.iotas.util;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.DataStream;
@@ -14,7 +13,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 
 /**
  * Created by pshah on 10/5/15.
@@ -67,10 +65,10 @@ public class DataStreamLayoutValidatorTest {
         dao = new InMemoryStorageManager();
         mapper = new ObjectMapper();
         dataSource = new DataSource();
-        dataSource.setDataSourceId(1l);
+        dataSource.setId(1l);
         dao.add(dataSource);
         dataSource2 = new DataSource();
-        dataSource.setDataSourceId(2l);
+        dataSource.setId(2l);
         dao.add(dataSource);
         String prefixString = BadDataStreamLayoutException.class.getName() +
                 ": ";

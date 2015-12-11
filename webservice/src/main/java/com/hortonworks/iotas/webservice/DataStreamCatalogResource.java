@@ -1,28 +1,33 @@
 package com.hortonworks.iotas.webservice;
 
 import com.codahale.metrics.annotation.Timed;
-import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.DataStream;
 import com.hortonworks.iotas.service.CatalogService;
-import com.hortonworks.iotas.util.DataStreamLayoutValidator;
 import com.hortonworks.iotas.util.exception.BadDataStreamLayoutException;
 import com.hortonworks.iotas.webservice.util.WSUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.PUT;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-import javax.xml.crypto.Data;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.*;
-import static javax.ws.rs.core.Response.Status.*;
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.SUCCESS;
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.BAD_REQUEST_PARAM_MISSING;
+import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
 @Path("/api/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
@@ -70,7 +75,7 @@ public class DataStreamCatalogResource {
     @Timed
     public Response addDataStream(DataStream dataStream) {
         try {
-            if (StringUtils.isEmpty(dataStream.getDataStreamName())) {
+            if (StringUtils.isEmpty(dataStream.getName())) {
                 return WSUtils.respond(BAD_REQUEST,
                         BAD_REQUEST_PARAM_MISSING, "dataStreamName");
             }
@@ -110,7 +115,7 @@ public class DataStreamCatalogResource {
     public Response addOrUpdateDataStream(@PathParam("id") Long dataStreamId,
                                       DataStream dataStream) {
         try {
-            if (StringUtils.isEmpty(dataStream.getDataStreamName())) {
+            if (StringUtils.isEmpty(dataStream.getName())) {
                 return WSUtils.respond(BAD_REQUEST,
                         BAD_REQUEST_PARAM_MISSING, "dataStreamName");
             }
@@ -118,8 +123,7 @@ public class DataStreamCatalogResource {
                 return WSUtils.respond(BAD_REQUEST,
                         BAD_REQUEST_PARAM_MISSING, "json");
             }
-            DataStream result = catalogService.addOrUpdateDataStream
-                    (dataStreamId, dataStream);
+            catalogService.addOrUpdateDataStream(dataStreamId, dataStream);
             return WSUtils.respond(OK, SUCCESS, dataStream);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());

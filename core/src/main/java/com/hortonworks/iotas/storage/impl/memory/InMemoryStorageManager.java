@@ -24,19 +24,23 @@ import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.exception.AlreadyExistsException;
 import com.hortonworks.iotas.storage.exception.StorageException;
+import com.hortonworks.iotas.util.ReflectionHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
+import java.util.Map;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.hortonworks.iotas.service.CatalogService.QueryParam;
 
 //TODO: The synchronization is broken right now, so all the methods dont guarantee the semantics as described in the interface.
 public class InMemoryStorageManager implements StorageManager {
+    private static final Logger LOG = LoggerFactory.getLogger(InMemoryStorageManager.class);
 
     private ConcurrentHashMap<String, ConcurrentHashMap<PrimaryKey, Storable>> storageMap = new ConcurrentHashMap<String, ConcurrentHashMap<PrimaryKey, Storable>>();
     private ConcurrentHashMap<String, Long> sequenceMap = new ConcurrentHashMap<>();
@@ -95,19 +99,17 @@ public class InMemoryStorageManager implements StorageManager {
     private boolean matches(Storable val, List<QueryParam> queryParams, Class<?> clazz) {
         Object fieldValue;
         boolean res = true;
-        try {
             for (QueryParam qp : queryParams) {
-                String methodName = new StringBuilder("get")
-                        .append(qp.name.substring(0, 1).toUpperCase())
-                        .append(qp.name.substring(1)).toString();
-                fieldValue = clazz.getDeclaredMethod(methodName).invoke(val);
-                if (!fieldValue.toString().equals(qp.value)) {
+                try {
+                    fieldValue = ReflectionHelper.invokeGetter(qp.name, val);
+                    if (!fieldValue.toString().equals(qp.value)) {
+                        return false;
+                    }
+                } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
+                    LOG.error("FAILED to invoke getter for query param {} , is your param name correct?", qp.getName(), e);
                     return false;
                 }
             }
-        } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
-            res = false;
-        }
         return res;
     }
 

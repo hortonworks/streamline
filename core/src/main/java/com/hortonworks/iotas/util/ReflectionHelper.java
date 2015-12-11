@@ -12,10 +12,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Map;
 import java.util.Enumeration;
 import java.util.HashMap;
-
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -83,6 +82,7 @@ public class ReflectionHelper {
     public synchronized static boolean isClassLoaded(String className) {
         try {
             Class.forName(className);
+            LOG.trace("class {} is loaded", className);
             return true;
         } catch (ClassNotFoundException e) {
             return false;
@@ -106,17 +106,25 @@ public class ReflectionHelper {
     }
 
     /**
-     * Given an object, this method returns a map of names of all the instance (non static) fields -> type.
-     * @param object , not null
+     * Given a class, this method returns a map of names of all the instance (non static) fields -> type.
+     * if the class has any super class it also includes those fields.
+     * @param clazz , not null
      * @return
      */
-    public static Map<String, Class> getFieldNamesToTypes(Object object) {
-        Field[] declaredFields = object.getClass().getDeclaredFields();
+    public static Map<String, Class> getFieldNamesToTypes(Class clazz) {
+        Field[] declaredFields = clazz.getDeclaredFields();
         Map<String, Class> instanceVariableNamesToTypes = new HashMap<>();
         for(Field field : declaredFields) {
             if(!Modifier.isStatic(field.getModifiers())) {
+                LOG.trace("clazz {} has field {} with type {}", clazz.getName(), field.getName(), field.getType().getName());
                 instanceVariableNamesToTypes.put(field.getName(), field.getType());
+            } else {
+                LOG.trace("clazz {} has field {} with type {}, which is static so ignoring", clazz.getName(), field.getName(), field.getType().getName());
             }
+        }
+
+        if(!clazz.getSuperclass().equals(Object.class)) {
+            instanceVariableNamesToTypes.putAll(getFieldNamesToTypes(clazz.getSuperclass()));
         }
         return instanceVariableNamesToTypes;
     }

@@ -1,5 +1,5 @@
 {
-  "notifierName":"console_notifier",
+  "name":"console_notifier",
   "jarFileName": "notifiers.jar",
   "className": "com.hortonworks.iotas.notification.notifiers.ConsoleNotifier",
   "properties": {

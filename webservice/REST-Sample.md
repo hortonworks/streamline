@@ -9,11 +9,11 @@ messages to a single kafa topic *kafa-topic-T1*. Lets say, we also have parsers 
  
      ```
      {
-      "dataSourceName": "DEVICE-A",
+      "name": "DEVICE-A",
       "description": "An example device",
       "tags": "tag1",
       "type": "DEVICE",
-      "typeConfig": "{\"deviceId\": "D1", \"version\":1}"
+      "typeConfig": "{\"id\": "D1", \"version\":1}"
      }
      ```
      
@@ -21,14 +21,14 @@ messages to a single kafa topic *kafa-topic-T1*. Lets say, we also have parsers 
  
      ```
      {
-      "dataSourceName": "DEVICE-B",
+      "name": "DEVICE-B",
       "description": "Another device",
       "tags": "tag2",
       "type": "DEVICE",
-      "typeConfig": "{\"deviceId\": "D2", \"version\":1}"
+      "typeConfig": "{\"id\": "D2", \"version\":1}"
      }
      ```
-  The `deviceId` and `version` fields are assumed to be always present in the message header. This is used to uniquely identify
+  The `id` and `version` fields are assumed to be always present in the message header. This is used to uniquely identify
   the datasource that produced the message in case there are multiple datasources publishing to same endpoint.
      
 2. Next we need to upload parser jars that know how to parse the data from these devices and produce a `Map<String, Object>` 
@@ -48,11 +48,11 @@ messages to a single kafa topic *kafa-topic-T1*. Lets say, we also have parsers 
   * POST /api/v1/catalog/feeds
   ```
   {
-    "dataSourceId": <the dataSourceId in POST response while creating DEVICE-A>,
-    "dataFeedName": "feed1",
+    "id": <the id in POST response while creating DEVICE-A>,
+    "name": "feed1",
     "description": "test feed",
     "tags": "tag1",
-    "parserId": <the parserId in POST response while creating DEVICE-A-parser>,
+    "id": <the id in POST response while creating DEVICE-A-parser>,
     "endpoint": "kafka-topic-T1"
   }
   ```
@@ -60,17 +60,17 @@ messages to a single kafa topic *kafa-topic-T1*. Lets say, we also have parsers 
   * POST /api/v1/catalog/feeds
   ```
   {
-    "dataSourceId": <the dataSourceId in POST response while creating DEVICE-B>,
-    "dataFeedName": "feed2",
+    "id": <the id in POST response while creating DEVICE-B>,
+    "name": "feed2",
     "description": "test feed",
     "tags": "tag1",
-    "parserId": <the parserId in POST response while creating DEVICE-B-parser>,
+    "id": <the id in POST response while creating DEVICE-B-parser>,
     "endpoint": "kafka-topic-T1"
   }
   ```
   The *endpoint* specifies the location from where the data feed is received. It is possible that multiple devices are
   pushing the data via the same end point. If so, the data source type specifc field values will be used to distingush
-  the data source. For e.g, a message with deviceId, version pair `<D1, 1>` would be from `DEVICE-A` and hence would 
+  the data source. For e.g, a message with id, version pair `<D1, 1>` would be from `DEVICE-A` and hence would
   map to `feed1` and be parsed by `DEVICE-A-parser`.
   
   Also note that a `feed` represents the stream of data produced by a single `datasource`. However the same `datasource` can 

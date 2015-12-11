@@ -14,8 +14,8 @@ import java.util.Map;
  */
 public class ParserInfo extends AbstractStorable {
     public static final String NAME_SPACE = "parser_info";
-    public static final String PARSER_ID = "parserId";
-    public static final String PARSER_NAME = "parserName";
+    public static final String PARSER_ID = "id";
+    public static final String PARSER_NAME = "name";
     public static final String CLASS_NAME = "className";
     public static final String JAR_STORAGE_PATH = "jarStoragePath";
     public static final String SCHEMA = "parserSchema";
@@ -25,11 +25,11 @@ public class ParserInfo extends AbstractStorable {
     /**
      * Unique Id for a parser info instance. This is the primary key column.
      */
-    private Long parserId;
+    private Long id;
     /**
      * Human redabale name.
      */
-    private String parserName;
+    private String name;
 
     /**
      * The parser fully qualified class name that implements the {@code Parser} interface.
@@ -46,11 +46,10 @@ public class ParserInfo extends AbstractStorable {
      */
     private Schema parserSchema;
 
-
     /**
      * Parser version.
-     * TODO do we need a version when parserId is uniquly identifying a parser instance?
-     * Or should we remove parserId and make ParserName and version as the PK?
+     * TODO do we need a version when id is uniquly identifying a parser instance?
+     * Or should we remove id and make ParserName and version as the PK?
      */
     private Long version;
 
@@ -67,7 +66,7 @@ public class ParserInfo extends AbstractStorable {
     @JsonIgnore
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldObjectMap = new HashMap<Schema.Field, Object>();
-        fieldObjectMap.put(new Schema.Field(PARSER_ID, Schema.Type.LONG), this.parserId);
+        fieldObjectMap.put(new Schema.Field(PARSER_ID, Schema.Type.LONG), this.id);
         return new PrimaryKey(fieldObjectMap);
     }
 
@@ -101,20 +100,20 @@ public class ParserInfo extends AbstractStorable {
         return this;
     }
 
-    public Long getParserId() {
-        return parserId;
+    public Long getId() {
+        return id;
     }
 
-    public void setParserId(Long parserId) {
-        this.parserId = parserId;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public String getParserName() {
-        return parserName;
+    public String getName() {
+        return name;
     }
 
-    public void setParserName(String parserName) {
-        this.parserName = parserName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getClassName() {
@@ -136,8 +135,8 @@ public class ParserInfo extends AbstractStorable {
     @Override
     public String toString() {
         return "ParserInfo{" +
-                "parserId=" + parserId +
-                ", parserName='" + parserName + '\'' +
+                "id=" + id +
+                ", name='" + name + '\'' +
                 ", className='" + className + '\'' +
                 ", jarStoragePath='" + jarStoragePath + '\'' +
                 ", parserSchema=" + parserSchema +
@@ -177,8 +176,8 @@ public class ParserInfo extends AbstractStorable {
 
         ParserInfo that = (ParserInfo) o;
 
-        if (parserId != null ? !parserId.equals(that.parserId) : that.parserId != null) return false;
-        if (parserName != null ? !parserName.equals(that.parserName) : that.parserName != null) return false;
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (className != null ? !className.equals(that.className) : that.className != null) return false;
         if (jarStoragePath != null ? !jarStoragePath.equals(that.jarStoragePath) : that.jarStoragePath != null)
             return false;
@@ -188,8 +187,8 @@ public class ParserInfo extends AbstractStorable {
 
     @Override
     public int hashCode() {
-        int result = parserId != null ? parserId.hashCode() : 0;
-        result = 31 * result + (parserName != null ? parserName.hashCode() : 0);
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (className != null ? className.hashCode() : 0);
         result = 31 * result + (jarStoragePath != null ? jarStoragePath.hashCode() : 0);
         result = 31 * result + (parserSchema != null ? parserSchema.hashCode() : 0);

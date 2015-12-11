@@ -108,7 +108,7 @@ public class ParserBolt extends BaseRichBolt {
                 IotasMessage iotasMessage = objectMapper.readValue(new String(bytes, StandardCharsets.UTF_8), IotasMessage.class);
                 parser = getParser(iotasMessage);
                 if(dataSourceId == null) {
-                    dataSourceId = getDataSource(iotasMessage).getDataSourceId();
+                    dataSourceId = getDataSource(iotasMessage).getId();
                 }
                 bytes = iotasMessage.getData();
                 messageId = iotasMessage.getMessageId();
@@ -149,8 +149,8 @@ public class ParserBolt extends BaseRichBolt {
 
 
     private Parser loadParser(ParserInfo parserInfo) {
-        InputStream parserJar = client.getParserJar(parserInfo.getParserId());
-        String jarPath = String.format("%s%s-%s.jar", localParserJarPath, File.separator, parserInfo.getParserName());
+        InputStream parserJar = client.getParserJar(parserInfo.getId());
+        String jarPath = String.format("%s%s-%s.jar", localParserJarPath, File.separator, parserInfo.getName());
 
         try {
             IOUtils.copy(parserJar, new FileOutputStream(new File(jarPath)));

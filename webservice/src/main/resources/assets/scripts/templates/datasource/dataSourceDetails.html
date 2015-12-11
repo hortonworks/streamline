@@ -2,7 +2,7 @@
     <ol class="breadcrumb">
         <li><a href="#!/">Home</a></li>
         <li><a href="#!/device-catalog">Device Catalog</a></li>
-        <li class="active">{{dsModel.dataSourceName}}</li>
+        <li class="active">{{dsModel.name}}</li>
     </ol>
 </div>
 <div class="container-fluid">
@@ -24,7 +24,7 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label">Name: </label>
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" value="{{dsModel.dataSourceName}}" readonly="">
+                                <input type="text" class="form-control" value="{{dsModel.name}}" readonly="">
                             </div>
                         </div>
                         <div class="form-group">
@@ -42,7 +42,7 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label">Device Id: </label>
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" value="{{dsModel.deviceId}}" readonly="">
+                                <input type="text" class="form-control" value="{{dsModel.id}}" readonly="">
                             </div>
                         </div>
                         <div class="form-group">
@@ -70,7 +70,7 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label">Name: </label>
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" value="{{dfModel.dataFeedName}}" readonly="">
+                                <input type="text" class="form-control" value="{{dfModel.name}}" readonly="">
                             </div>
                         </div>
                         <div class="form-group">
@@ -82,7 +82,7 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label">Parser Id: </label>
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" value="{{dfModel.parserId}}" readonly="">
+                                <input type="text" class="form-control" value="{{dfModel.id}}" readonly="">
                             </div>
                         </div>
                     </form>

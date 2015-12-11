@@ -4,13 +4,13 @@ package com.hortonworks.iotas.webservice;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import com.hortonworks.iotas.catalog.CatalogResponse;
 import com.hortonworks.iotas.catalog.Cluster;
-import com.hortonworks.iotas.catalog.Component;
 import com.hortonworks.iotas.catalog.DataFeed;
+import com.hortonworks.iotas.catalog.Component;
 import com.hortonworks.iotas.catalog.DataSource;
-import com.hortonworks.iotas.catalog.NotifierInfo;
+import com.hortonworks.iotas.catalog.CatalogResponse;
 import com.hortonworks.iotas.catalog.ParserInfo;
+import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.test.IntegrationTest;
 import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
@@ -26,11 +26,12 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
+
 
 /**
  * Tests the entire code path for our rest APIs. Currently tests Post, Put, Get(list, ById) and Delete.
@@ -237,21 +238,21 @@ public class RestIntegrationTest {
 
     private DataSource createDataSource(Long id, String name) {
         DataSource ds = new DataSource();
-        ds.setDataSourceId(id);
-        ds.setDataSourceName(name);
+        ds.setId(id);
+        ds.setName(name);
         ds.setDescription("desc");
         ds.setTags("t1, t2, t3");
         ds.setTimestamp(System.currentTimeMillis());
         ds.setType(DataSource.Type.DEVICE);
-        ds.setTypeConfig("{\"deviceId\":\"1\",\"version\":1}");
+        ds.setTypeConfig("{\"id\":\"1\",\"version\":1}");
         return ds;
     }
 
     private DataFeed createDataFeed(Long id, String name) {
         DataFeed df = new DataFeed();
-        df.setDataFeedId(id);
+        df.setId(id);
         df.setDataSourceId(1L);
-        df.setDataFeedName(name);
+        df.setName(name);
         df.setEndpoint("kafka://host:port/topic");
         df.setParserId(id);
         return df;
@@ -268,9 +269,9 @@ public class RestIntegrationTest {
 
     private DataFeed createDataFeedWithDataSourceId(long datasourceId, String feedName) {
         DataFeed df = new DataFeed();
-        df.setDataFeedId(System.currentTimeMillis());
+        df.setId(System.currentTimeMillis());
         df.setDataSourceId(datasourceId);
-        df.setDataFeedName(feedName);
+        df.setName(feedName);
         df.setEndpoint("kafka://host:port/topic");
         df.setParserId(datasourceId);
         return df;
@@ -278,8 +279,8 @@ public class RestIntegrationTest {
 
     private ParserInfo createParserInfo(Long id, String name) {
         ParserInfo pi = new ParserInfo();
-        pi.setParserId(id);
-        pi.setParserName(name);
+        pi.setId(id);
+        pi.setName(name);
         pi.setClassName("com.org.apache.TestParser");
         pi.setJarStoragePath("/tmp/parser.jar");
         pi.setParserSchema(new Schema.SchemaBuilder().fields(new Schema.Field("deviceId", Schema.Type.LONG),
@@ -318,7 +319,7 @@ public class RestIntegrationTest {
         notifierInfo.setClassName("A.B.C");
         notifierInfo.setId(id);
         notifierInfo.setJarFileName(name);
-        notifierInfo.setNotifierName(name);
+        notifierInfo.setName(name);
         return notifierInfo;
     }
 }

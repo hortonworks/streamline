@@ -13,8 +13,8 @@ A DataStream entity has the following attributes.
 
 Field| Type | Comment
 ---|---|----
-dataStreamId | Long | The primary key
-dataStreamName | String| Name given by the user from UI
+id | Long | The primary key
+name | String| Name given by the user from UI
 json | String| String representation of json that depicts the graph
 timestamp | Long | Time or creation or last update
  
@@ -93,7 +93,7 @@ The response will have an array of jsons as per link above
 
 *Sample Input*
 
-Same as above with an updated value for dataStreamName and/or json fields
+Same as above with an updated value for name and/or json fields
 
 *Success Response*
 
