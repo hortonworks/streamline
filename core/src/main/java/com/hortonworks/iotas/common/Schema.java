@@ -399,6 +399,32 @@ public class Schema implements Serializable {
         throw new ParseException("Unknown type " + value.getClass());
     }
 
+    public static Type fromJavaType(Class clazz) throws ParseException {
+        if(clazz.equals(String.class)) {
+            return Type.STRING;
+        } else if (clazz.equals(Short.class)) {
+            return Type.SHORT;
+        } else if (clazz.equals(Byte.class)) {
+            return Type.BYTE;
+        } else if (clazz.equals(Float.class)) {
+            return Type.FLOAT;
+        } else if (clazz.equals(Long.class)) {
+            return Type.LONG;
+        } else if (clazz.equals(Double.class)) {
+            return Type.DOUBLE;
+        } else if (clazz.equals(Integer.class)) {
+            return Type.INTEGER;
+        } else if (clazz.equals(Boolean.class)) {
+            return Type.BOOLEAN;
+        } else if (clazz.equals(List.class)) {
+            return Type.ARRAY;
+        } else if (clazz.equals(Map.class)) {
+            return Type.NESTED;
+        }
+
+        throw new ParseException("Unknown type " + clazz);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
