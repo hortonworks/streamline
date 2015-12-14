@@ -148,7 +148,7 @@ public class NotificationBoltTest {
         consoleNotificationBolt.prepare(stormConf, null, collector);
 
         consoleNotificationBolt.execute(tuple);
-
+        Thread.sleep(100); // give some time for queue handler to process.
         new Verifications() {
             {
                 catalogRestClient.getNotifierInfo("console_notifier");
