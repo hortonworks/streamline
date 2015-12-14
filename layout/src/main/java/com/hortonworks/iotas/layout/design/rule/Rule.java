@@ -22,6 +22,7 @@ import com.hortonworks.iotas.layout.design.rule.action.Action;
 import com.hortonworks.iotas.layout.design.rule.condition.Condition;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  *
@@ -34,7 +35,7 @@ public class Rule implements Serializable {
     private String ruleProcessorName;
 
     private Condition condition;
-    private Action action;
+    private List<Action> actions;
 
     public Rule() {     //TODO Check
         // For JSON serializer
@@ -84,12 +85,12 @@ public class Rule implements Serializable {
         this.condition = condition;
     }
 
-    public Action getAction() {
-        return action;
+    public List<Action> getActions() {
+        return actions;
     }
 
-    public void setAction(Action action) {
-        this.action = action;
+    public void setActions(List<Action> actions) {
+        this.actions = actions;
     }
 
     @Override
@@ -100,7 +101,7 @@ public class Rule implements Serializable {
                 ", description='" + description + '\'' +
                 ", ruleProcessorName='" + ruleProcessorName + '\'' +
                 ", condition=" + condition +
-                ", action=" + action +
+                ", actions=" + actions +
                 '}';
     }
 }

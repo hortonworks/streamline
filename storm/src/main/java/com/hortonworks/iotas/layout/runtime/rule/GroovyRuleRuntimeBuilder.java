@@ -18,21 +18,24 @@
 
 package com.hortonworks.iotas.layout.runtime.rule;
 
-import backtype.storm.task.OutputCollector;
-import backtype.storm.tuple.Tuple;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.layout.design.rule.Rule;
+import com.hortonworks.iotas.layout.design.rule.action.Action;
+import com.hortonworks.iotas.layout.runtime.ActionRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.condition.expression.GroovyExpression;
 import com.hortonworks.iotas.layout.runtime.script.GroovyScript;
 import com.hortonworks.iotas.layout.runtime.script.engine.GroovyScriptEngine;
 
 import javax.script.ScriptException;
+import java.util.ArrayList;
+import java.util.List;
 
-public class GroovyRuleRuntimeBuilder implements RuleRuntimeBuilder<Tuple, OutputCollector> {
+public class GroovyRuleRuntimeBuilder implements RuleRuntimeBuilder {
     private Rule rule;
     private GroovyExpression groovyExpression;
     private GroovyScriptEngine groovyScriptEngine;
     private GroovyScript<Boolean> groovyScript;
+    private List<ActionRuntime> actions;
 
     @Override
     public void setRule(Rule rule) {
@@ -47,6 +50,20 @@ public class GroovyRuleRuntimeBuilder implements RuleRuntimeBuilder<Tuple, Outpu
     @Override
     public void buildScriptEngine() {
         groovyScriptEngine = new GroovyScriptEngine();
+    }
+
+    @Override
+    public void buildActions() {
+        List<ActionRuntime> runtimeActions = new ArrayList<>();
+        for (Action action : rule.getActions()) {
+            String streamId = rule.getRuleProcessorName() + "." + rule.getName() + "."
+                    + rule.getId() + "." + action.getName();
+            /*
+             * TODO: add an ActionRuntime to perform necessary transformation for notification
+             */
+            runtimeActions.add(new ActionRuntime(streamId));
+        }
+        actions = runtimeActions;
     }
 
     @Override
@@ -74,15 +91,16 @@ public class GroovyRuleRuntimeBuilder implements RuleRuntimeBuilder<Tuple, Outpu
     }
 
     @Override
-    public RuleRuntimeStorm buildRuleRuntime() {
-        return new RuleRuntimeStorm(rule, groovyScript);
+    public RuleRuntime buildRuleRuntime() {
+       return new RuleRuntime(rule, groovyScript, actions);
     }
 
     @Override
     public String toString() {
         return "GroovyRuleRuntimeBuilder{" +
-                ", groovyScriptEngine=" + groovyScriptEngine +
+                "groovyScriptEngine=" + groovyScriptEngine +
                 ", groovyScript=" + groovyScript +
+                ", actions=" + actions +
                 '}';
     }
 }

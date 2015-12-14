@@ -22,9 +22,12 @@ import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
+import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
+import backtype.storm.tuple.Values;
 import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntimeStorm;
+import com.hortonworks.iotas.layout.runtime.ActionRuntime;
+import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.RuleRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,11 +37,11 @@ import java.util.Map;
 public class RulesBolt extends BaseRichBolt {
     protected static final Logger log = LoggerFactory.getLogger(RulesBolt.class);
 
-    private final RuleProcessorRuntimeStorm ruleProcessorRuntime;
+    private final RuleProcessorRuntime ruleProcessorRuntime;
     private OutputCollector collector;
 
 
-    public RulesBolt(RuleProcessorRuntimeStorm ruleProcessorRuntime) {
+    public RulesBolt(RuleProcessorRuntime ruleProcessorRuntime) {
         this.ruleProcessorRuntime = ruleProcessorRuntime;
     }
 
@@ -56,14 +59,18 @@ public class RulesBolt extends BaseRichBolt {
             if (iotasEvent instanceof IotasEvent) {
                 log.debug("++++++++ Executing tuple [{}] which contains IotasEvent [{}]", input, iotasEvent);
 
-                for (RuleRuntime<Tuple, OutputCollector> rule : ruleProcessorRuntime.getRulesRuntime()) {
+                for (RuleRuntime rule : ruleProcessorRuntime.getRulesRuntime()) {
                     if (rule.evaluate((IotasEvent) iotasEvent)) {
-                        rule.execute(input, collector); // collector can be null when the rule does not forward a stream
+                        for(ActionRuntime.Result result: rule.execute((IotasEvent) iotasEvent)) {
+                            for (IotasEvent event: result.events) {
+                                collector.emit(result.stream, input, new Values(event));
+                            }
+                        }
                     }
                 }
             } else {
                 log.debug("Invalid tuple received. Tuple disregarded and rules not evaluated.\n\tTuple [{}]." +
-                        "\n\tIotasEvent [{}].", input, iotasEvent);
+                                  "\n\tIotasEvent [{}].", input, iotasEvent);
             }
             collector.ack(input);
         } catch (Exception e) {
@@ -75,6 +82,8 @@ public class RulesBolt extends BaseRichBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        ruleProcessorRuntime.declareOutput(declarer);
+        for (String stream : ruleProcessorRuntime.getStreams()) {
+            declarer.declareStream(stream, new Fields(IotasEvent.IOTAS_EVENT));
+        }
     }
 }

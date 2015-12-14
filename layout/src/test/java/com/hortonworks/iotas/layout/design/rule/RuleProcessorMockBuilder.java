@@ -26,6 +26,7 @@ import com.hortonworks.iotas.layout.design.rule.action.Action;
 import com.hortonworks.iotas.layout.design.rule.condition.Condition;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class RuleProcessorMockBuilder {
@@ -81,7 +82,7 @@ public class RuleProcessorMockBuilder {
         rule.setDescription(RULE + "_" + ruleId + "_desc");
         rule.setRuleProcessorName(RULE_PROCESSOR + "_" + ruleProcessorId);
         rule.setCondition(condition);
-        rule.setAction(action);
+        rule.setActions(Collections.singletonList(action));
         return rule;
     }
 

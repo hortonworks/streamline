@@ -21,27 +21,31 @@ package com.hortonworks.iotas.layout.runtime.rule;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.layout.design.rule.Rule;
 import com.hortonworks.iotas.layout.design.rule.exception.ConditionEvaluationException;
+import com.hortonworks.iotas.layout.runtime.ActionRuntime;
 import com.hortonworks.iotas.layout.runtime.script.Script;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import static com.hortonworks.iotas.layout.runtime.ActionRuntime.Result;
 
 /**
  * Represents a rule runtime
- * @param <I> Type of runtime input to this rule, for example {@code Tuple}
- * @param <E> Type of object required to execute this rule in the underlying streaming framework e.g {@code IOutputCollector}
  */
-public abstract class RuleRuntime<I, E> implements Serializable {
+public class RuleRuntime implements Serializable {
     protected static final Logger log = LoggerFactory.getLogger(RuleRuntime.class);
 
     protected final Rule rule;
     protected final Script<IotasEvent, Boolean, ?> script;     // Script used to evaluate the condition
+    protected final List<ActionRuntime> actions;
 
-    RuleRuntime(Rule rule, Script<IotasEvent, Boolean, ?> script) {
+    RuleRuntime(Rule rule, Script<IotasEvent, Boolean, ?> script, List<ActionRuntime> actions) {
         this.rule = rule;
         this.script = script;
+        this.actions = actions;
     }
 
     public boolean evaluate(IotasEvent input) {
@@ -56,13 +60,31 @@ public abstract class RuleRuntime<I, E> implements Serializable {
 
     /**
      * Executes a {@link Rule}'s Action
-     * @param input runtime input to this rule, for example, {@code Tuple} for {@code Storm}
-     * @param executor object required to execute this rule's action in the underlying streaming framework e.g {@code OutputCollector} for {@code Storm}
+     *
+     * @param input runtime input to this rule
      */
-    public abstract void execute(I input, E executor);
+    public List<Result> execute(IotasEvent input) {
+        List<Result> results = new ArrayList<>();
+        for (ActionRuntime action : actions) {
+            results.add(action.execute(input));
+        }
+        return results;
+    }
+
+    public List<String> getStreams() {
+        List<String> streams = new ArrayList<>();
+        for(ActionRuntime action: actions) {
+            streams.add(action.getStream());
+        }
+        return streams;
+    }
 
     @Override
     public String toString() {
-        return "RuleRuntime{" + rule + ", " + script + '}';
+        return "RuleRuntime{" +
+                "rule=" + rule +
+                ", script=" + script +
+                ", actions=" + actions +
+                '}';
     }
 }

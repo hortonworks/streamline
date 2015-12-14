@@ -42,6 +42,7 @@ import java.util.List;
 public class Action implements Serializable {
     private List<Component> components;  // Can be sinks or processors
     private List<Field> declaredOutput;
+    private String name = "default";
 
     public Action() { }
 
@@ -64,6 +65,14 @@ public class Action implements Serializable {
 
     public List<Field> getDeclaredOutput() {
         return declaredOutput;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
