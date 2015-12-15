@@ -28,7 +28,7 @@ public class RulesProcessorJsonBuilder implements RulesProcessorBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(RulesProcessorJsonBuilder.class);
     private final String rulesProcessorJson;
 
-    RulesProcessorJsonBuilder (String rulesProcessorJson) {
+    public RulesProcessorJsonBuilder (String rulesProcessorJson) {
         this.rulesProcessorJson = rulesProcessorJson;
     }
 

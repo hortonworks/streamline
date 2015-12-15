@@ -14,8 +14,10 @@ catalogRootUrl: "http://localhost:8080/api/v1/catalog"
 jarStorageConfiguration:
   className: "com.hortonworks.iotas.util.HdfsJarStorage"
   properties:
-    fsUrl: "file:///"
+    fsUrl: "hdfs://localhost:9000"
     directory: "/tmp/test-hdfs"
+
+notificationsRestDisable: true
 
 # use the simple server factory if you only want to run on a single port
 #server:
