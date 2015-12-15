@@ -25,10 +25,16 @@ import com.hortonworks.iotas.layout.runtime.ActionRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.condition.expression.GroovyExpression;
 import com.hortonworks.iotas.layout.runtime.script.GroovyScript;
 import com.hortonworks.iotas.layout.runtime.script.engine.GroovyScriptEngine;
+import com.hortonworks.iotas.layout.transform.AddHeaderTransform;
+import com.hortonworks.iotas.layout.transform.IdentityTransform;
+import com.hortonworks.iotas.layout.transform.ProjectionTransform;
+import com.hortonworks.iotas.layout.transform.Transform;
 
 import javax.script.ScriptException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class GroovyRuleRuntimeBuilder implements RuleRuntimeBuilder {
     private Rule rule;
@@ -59,9 +65,9 @@ public class GroovyRuleRuntimeBuilder implements RuleRuntimeBuilder {
             String streamId = rule.getRuleProcessorName() + "." + rule.getName() + "."
                     + rule.getId() + "." + action.getName();
             /*
-             * TODO: add an ActionRuntime to perform necessary transformation for notification
+             * Add an ActionRuntime to perform necessary transformation for notification
              */
-            runtimeActions.add(new ActionRuntime(streamId));
+            runtimeActions.add(new ActionRuntime(streamId, getTransforms(action)));
         }
         actions = runtimeActions;
     }
@@ -102,5 +108,25 @@ public class GroovyRuleRuntimeBuilder implements RuleRuntimeBuilder {
                 ", groovyScript=" + groovyScript +
                 ", actions=" + actions +
                 '}';
+    }
+
+    /**
+     * Returns the necessary transforms to perform based on the action.
+     */
+    private List<Transform> getTransforms(Action action) {
+        List<Transform> transforms = new ArrayList<>();
+        if (!action.getOutputFieldsAndDefaults().isEmpty()) {
+            transforms.add(new ProjectionTransform(action.getOutputFieldsAndDefaults()));
+        }
+        if (action.isIncludeMeta()) {
+            Map<String, Object> headers = new HashMap<>();
+            headers.put("ruleId", rule.getId());
+            transforms.add(new AddHeaderTransform(headers));
+        }
+        // default is to just forward the event
+        if(transforms.isEmpty()) {
+            transforms.add(new IdentityTransform());
+        }
+        return transforms;
     }
 }

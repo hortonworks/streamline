@@ -88,8 +88,6 @@ public class RuleProcessorMockBuilder {
 
     private Action buildAction(List<Component> sinks) {
         Action action = new Action();
-        action.setDeclaredOutput(declaredInputsOutputs);
-        action.setComponents(sinks);
         return action;
     }
 
