@@ -1055,16 +1055,16 @@ DELETE /api/v1/catalog/feeds/ID
 }
 ```
 
-## UIInfo 
+## TopologyEditorMetadata 
 ### Create
-POST /api/v1/catalog/system/uiinfos
+POST /api/v1/catalog/system/topologyeditormetadata
 
 *Sample Input*
 
 ```json
 {
   "topologyId": 1,
-  "jsonInfo": "some json stringified string"
+  "data": "some json stringified string"
 }
 ```
    
@@ -1079,7 +1079,7 @@ POST /api/v1/catalog/system/uiinfos
   "responseMessage": "Success",
   "entity": {
     "topologyId": 1,
-    "jsonInfo": "some json stringified string",
+    "data": "some json stringified string",
     "timestamp": 1439884044033
  }
 }
@@ -1099,11 +1099,11 @@ POST /api/v1/catalog/system/uiinfos
 ```
     
 ### Get
-GET /api/v1/catalog/system/uiinfos/ID
+GET /api/v1/catalog/system/topologyeditormetadata/ID
 
 *Success Response*
 
-    GET /api/v1/catalog/system/uiinfos/1
+    GET /api/v1/catalog/system/topologyeditormetadata/1
     HTTP/1.1 200 OK
     Content-Type: application/json
 
@@ -1113,7 +1113,7 @@ GET /api/v1/catalog/system/uiinfos/ID
   "responseMessage": "Success",
   "entity": {
     "topologyId": 1,
-    "jsonInfo": "some json stringified string",
+    "data": "some json stringified string",
     "timestamp": 1439884044033
   }
 }
@@ -1121,7 +1121,7 @@ GET /api/v1/catalog/system/uiinfos/ID
 
 *Error Response*
 
-    GET /api/v1/catalog/system/uiinfos/10
+    GET /api/v1/catalog/system/topologyeditormetadata/10
     HTTP/1.1 404 Not Found
     Content-Type: application/json
     
@@ -1133,9 +1133,9 @@ GET /api/v1/catalog/system/uiinfos/ID
 ```
 
 ### Get All
-GET /api/v1/catalog/system/uiinfos
+GET /api/v1/catalog/system/topologyeditormetadata
 
-    GET /api/v1/catalog/system/uiinfos
+    GET /api/v1/catalog/system/topologyeditormetadata
     HTTP/1.1 200 OK
     Content-Type: application/json
     
@@ -1146,12 +1146,12 @@ GET /api/v1/catalog/system/uiinfos
   "entities": [
     {
       "topologyId": 1,
-      "jsonInfo": "some json stringified string",
+      "data": "some json stringified string",
       "timestamp": 1439884044033
     },
     {
       "topologyId": 2,
-      "jsonInfo": "some json stringified string 2",
+      "data": "some json stringified string 2",
       "timestamp": 1439884162102
     }
     ..
@@ -1161,14 +1161,14 @@ GET /api/v1/catalog/system/uiinfos
 ```
 
 ### Update
-PUT /api/v1/catalog/system/uiinfos/ID
+PUT /api/v1/catalog/system/topologyeditormetadata/ID
 
 *Sample Input*
 
 ```json
 {
   "topologyId": 1,
-  "jsonInfo": "some modified json stringified string"
+  "data": "some modified json stringified string"
 }
 ```
    
@@ -1183,7 +1183,7 @@ PUT /api/v1/catalog/system/uiinfos/ID
   "responseMessage": "Success",
   "entity": {
     "topologyId": 1,
-    "type": "some modified json stringified string",
+    "data": "some modified json stringified string",
     "timestamp": 1439884266987
   }
 }
@@ -1192,7 +1192,7 @@ PUT /api/v1/catalog/system/uiinfos/ID
 **Note:** The current behavior is for PUT to create a new resource if the resource with the given ID does not exist yet.
  
 ### Delete
-DELETE /api/v1/catalog/system/uiinfos/ID
+DELETE /api/v1/catalog/system/topologyeditormetadata/ID
 
 *Success Response*
 
@@ -1205,7 +1205,7 @@ DELETE /api/v1/catalog/system/uiinfos/ID
   "responseMessage": "Success",
   "entity": {
     "topologyId": 1,
-    "jsonInfo": "some json stringified string",
+    "data": "some json stringified string",
     "timestamp": 1439884675590
   }
 }
@@ -1213,7 +1213,7 @@ DELETE /api/v1/catalog/system/uiinfos/ID
 
 *Error Response*
 
-    DELETE /api/v1/catalog/system/uiinfos/10
+    DELETE /api/v1/catalog/system/topologyeditormetadata/10
     HTTP/1.1 404 Not Found
     Content-Type: application/json
 

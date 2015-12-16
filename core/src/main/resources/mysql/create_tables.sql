@@ -68,9 +68,9 @@ CREATE TABLE IF NOT EXISTS topology_components (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS uiinfos (
+CREATE TABLE IF NOT EXISTS topology_editor_metadata (
     topologyId BIGINT NOT NULL,
-    jsonInfo TEXT NOT NULL,
+    data TEXT NOT NULL,
     timestamp BIGINT,
     PRIMARY KEY (topologyId)
 );

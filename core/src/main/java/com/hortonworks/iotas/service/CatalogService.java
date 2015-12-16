@@ -8,7 +8,7 @@ import com.hortonworks.iotas.catalog.Device;
 import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.catalog.Topology;
-import com.hortonworks.iotas.catalog.UIInfo;
+import com.hortonworks.iotas.catalog.TopologyEditorMetadata;
 import com.hortonworks.iotas.storage.DataSourceSubType;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
@@ -520,37 +520,37 @@ public class CatalogService {
                 topologyComponent.getPrimaryKey()));
     }
 
-    public Collection<UIInfo> listUIInfos () {
-        Collection<UIInfo> uiInfos = this.dao.list(UIInfo.NAME_SPACE);
-        return uiInfos;
+    public Collection<TopologyEditorMetadata> listTopologyEditorMetadata () {
+        Collection<TopologyEditorMetadata> topologyEditorMetadatas = this.dao.list(TopologyEditorMetadata.NAME_SPACE);
+        return topologyEditorMetadatas;
     }
 
-    public UIInfo getUIInfo (Long topologyId) {
-        UIInfo uiInfo = new UIInfo();
-        uiInfo.setTopologyId(topologyId);
-        UIInfo result = this.dao.get(uiInfo.getStorableKey());
+    public TopologyEditorMetadata getTopologyEditorMetadata (Long topologyId) {
+        TopologyEditorMetadata topologyEditorMetadata = new TopologyEditorMetadata();
+        topologyEditorMetadata.setTopologyId(topologyId);
+        TopologyEditorMetadata result = this.dao.get(topologyEditorMetadata.getStorableKey());
         return result;
     }
 
-    public UIInfo addUIInfo (UIInfo uiinfo) {
-        if (uiinfo.getTimestamp() == null) {
-            uiinfo.setTimestamp(System.currentTimeMillis());
+    public TopologyEditorMetadata addTopologyEditorMetadata (TopologyEditorMetadata topologyEditorMetadata) {
+        if (topologyEditorMetadata.getTimestamp() == null) {
+            topologyEditorMetadata.setTimestamp(System.currentTimeMillis());
         }
-        this.dao.add(uiinfo);
-        return uiinfo;
+        this.dao.add(topologyEditorMetadata);
+        return topologyEditorMetadata;
     }
 
-    public UIInfo addOrUpdateUIInfo (Long topologyId, UIInfo uiInfo) {
-        uiInfo.setTopologyId(topologyId);
-        uiInfo.setTimestamp(System.currentTimeMillis());
-        this.dao.addOrUpdate(uiInfo);
-        return uiInfo;
+    public TopologyEditorMetadata addOrUpdateTopologyEditorMetadata (Long topologyId, TopologyEditorMetadata topologyEditorMetadata) {
+        topologyEditorMetadata.setTopologyId(topologyId);
+        topologyEditorMetadata.setTimestamp(System.currentTimeMillis());
+        this.dao.addOrUpdate(topologyEditorMetadata);
+        return topologyEditorMetadata;
     }
 
-    public UIInfo removeUIInfo (Long topologyId) {
-        UIInfo uiInfo = new UIInfo();
-        uiInfo.setTopologyId(topologyId);
-        return dao.remove(uiInfo.getStorableKey());
+    public TopologyEditorMetadata removeTopologyEditorMetadata (Long topologyId) {
+        TopologyEditorMetadata topologyEditorMetadata = new TopologyEditorMetadata();
+        topologyEditorMetadata.setTopologyId(topologyId);
+        return dao.remove(topologyEditorMetadata.getStorableKey());
     }
 
 }

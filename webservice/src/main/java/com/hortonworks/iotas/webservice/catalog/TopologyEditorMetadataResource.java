@@ -1,7 +1,7 @@
 package com.hortonworks.iotas.webservice.catalog;
 
 import com.codahale.metrics.annotation.Timed;
-import com.hortonworks.iotas.catalog.UIInfo;
+import com.hortonworks.iotas.catalog.TopologyEditorMetadata;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.util.WSUtils;
 
@@ -27,20 +27,20 @@ import static javax.ws.rs.core.Response.Status.OK;
 
 @Path("/api/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
-public class UIInfoCatalogResource {
+public class TopologyEditorMetadataResource {
     private final CatalogService catalogService;
 
-    public UIInfoCatalogResource (CatalogService catalogService) {
+    public TopologyEditorMetadataResource(CatalogService catalogService) {
         this.catalogService = catalogService;
     }
 
     @GET
-    @Path("/system/uiinfos")
+    @Path("/system/topologyeditormetadata")
     @Timed
     @Produces(MediaType.APPLICATION_JSON)
-    public Response listUIInfos () {
+    public Response listTopologyEditorMetadata () {
         try {
-            Collection<UIInfo> result = catalogService.listUIInfos();
+            Collection<TopologyEditorMetadata> result = catalogService.listTopologyEditorMetadata();
             if (result != null) {
                 return WSUtils.respond(OK, SUCCESS, result);
             }
@@ -51,12 +51,12 @@ public class UIInfoCatalogResource {
     }
 
     @GET
-    @Path("/system/uiinfos/{id}")
+    @Path("/system/topologyeditormetadata/{id}")
     @Timed
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getUIInfoByTopologyId (@PathParam("id") Long topologyId) {
+    public Response getTopologyEditorMetadataByTopologyId (@PathParam("id") Long topologyId) {
         try {
-            UIInfo result = catalogService.getUIInfo(topologyId);
+            TopologyEditorMetadata result = catalogService.getTopologyEditorMetadata(topologyId);
             if (result != null) {
                 return WSUtils.respond(OK, SUCCESS, result);
             }
@@ -67,25 +67,25 @@ public class UIInfoCatalogResource {
     }
 
     @POST
-    @Path("/system/uiinfos")
+    @Path("/system/topologyeditormetadata")
     @Timed
-    public Response addUIInfo (UIInfo uiInfo) {
+    public Response addTopologyEditorMetadata (TopologyEditorMetadata topologyEditorMetadata) {
         try {
-            UIInfo addedUIInfo = catalogService.addUIInfo(uiInfo);
-            return WSUtils.respond(CREATED, SUCCESS, addedUIInfo);
+            TopologyEditorMetadata addedTopologyEditorMetadata = catalogService.addTopologyEditorMetadata(topologyEditorMetadata);
+            return WSUtils.respond(CREATED, SUCCESS, addedTopologyEditorMetadata);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
     }
 
     @DELETE
-    @Path("/system/uiinfos/{id}")
+    @Path("/system/topologyeditormetadata/{id}")
     @Timed
-    public Response removeUIInfo (@PathParam("id") Long topologyId) {
+    public Response removeTopologyEditorMetadata (@PathParam("id") Long topologyId) {
         try {
-            UIInfo removedUIInfo = catalogService.removeUIInfo(topologyId);
-            if (removedUIInfo != null) {
-                return WSUtils.respond(OK, SUCCESS, removedUIInfo);
+            TopologyEditorMetadata removedTopologyEditorMetadata = catalogService.removeTopologyEditorMetadata(topologyId);
+            if (removedTopologyEditorMetadata != null) {
+                return WSUtils.respond(OK, SUCCESS, removedTopologyEditorMetadata);
             } else {
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, topologyId.toString());
             }
@@ -95,12 +95,12 @@ public class UIInfoCatalogResource {
     }
 
     @PUT
-    @Path("/system/uiinfos/{id}")
+    @Path("/system/topologyeditormetadata/{id}")
     @Timed
-    public Response addOrUpdateUIInfo (@PathParam("id") Long topologyId, UIInfo uiInfo) {
+    public Response addOrUpdateTopologyEditorMetadata (@PathParam("id") Long topologyId, TopologyEditorMetadata topologyEditorMetadata) {
         try {
-            UIInfo newUIInfo = catalogService.addOrUpdateUIInfo(topologyId, uiInfo);
-            return WSUtils.respond(OK, SUCCESS, uiInfo);
+            TopologyEditorMetadata newTopologyEditorMetadata = catalogService.addOrUpdateTopologyEditorMetadata(topologyId, topologyEditorMetadata);
+            return WSUtils.respond(OK, SUCCESS, topologyEditorMetadata);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
