@@ -41,6 +41,7 @@ import com.hortonworks.iotas.webservice.catalog.FeedCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.NotifierInfoCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.ParserInfoCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.TopologyCatalogResource;
+import com.hortonworks.iotas.webservice.catalog.UIInfoCatalogResource;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
@@ -156,8 +157,9 @@ public class IotasApplication extends Application<IotasConfiguration> {
         // cluster related
         final ClusterCatalogResource clusterCatalogResource = new ClusterCatalogResource(catalogService);
         final ComponentCatalogResource componentCatalogResource = new ComponentCatalogResource(catalogService);
+        final UIInfoCatalogResource uiInfoCatalogResource = new UIInfoCatalogResource(catalogService);
         List<Object> resources = Lists.newArrayList(feedResource, parserResource, dataSourceResource, dataSourceWithDataFeedCatalogResource,
-                                                    topologyCatalogResource, clusterCatalogResource, componentCatalogResource);
+                                                    topologyCatalogResource, clusterCatalogResource, componentCatalogResource, uiInfoCatalogResource);
         if (!iotasConfiguration.isNotificationsRestDisabled()) {
             resources.add(new NotifierInfoCatalogResource(catalogService));
             resources.add(new NotificationsResource(new NotificationServiceImpl()));

@@ -8,6 +8,7 @@ import com.hortonworks.iotas.catalog.Device;
 import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.catalog.Topology;
+import com.hortonworks.iotas.catalog.UIInfo;
 import com.hortonworks.iotas.storage.DataSourceSubType;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
@@ -517,6 +518,39 @@ public class CatalogService {
         topologyComponent.setId(id);
         return dao.remove(new StorableKey(TopologyComponent.NAME_SPACE,
                 topologyComponent.getPrimaryKey()));
+    }
+
+    public Collection<UIInfo> listUIInfos () {
+        Collection<UIInfo> uiInfos = this.dao.list(UIInfo.NAME_SPACE);
+        return uiInfos;
+    }
+
+    public UIInfo getUIInfo (Long topologyId) {
+        UIInfo uiInfo = new UIInfo();
+        uiInfo.setTopologyId(topologyId);
+        UIInfo result = this.dao.get(uiInfo.getStorableKey());
+        return result;
+    }
+
+    public UIInfo addUIInfo (UIInfo uiinfo) {
+        if (uiinfo.getTimestamp() == null) {
+            uiinfo.setTimestamp(System.currentTimeMillis());
+        }
+        this.dao.add(uiinfo);
+        return uiinfo;
+    }
+
+    public UIInfo addOrUpdateUIInfo (Long topologyId, UIInfo uiInfo) {
+        uiInfo.setTopologyId(topologyId);
+        uiInfo.setTimestamp(System.currentTimeMillis());
+        this.dao.addOrUpdate(uiInfo);
+        return uiInfo;
+    }
+
+    public UIInfo removeUIInfo (Long topologyId) {
+        UIInfo uiInfo = new UIInfo();
+        uiInfo.setTopologyId(topologyId);
+        return dao.remove(uiInfo.getStorableKey());
     }
 
 }

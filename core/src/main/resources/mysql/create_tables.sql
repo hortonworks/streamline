@@ -67,3 +67,10 @@ CREATE TABLE IF NOT EXISTS topology_components (
     timestamp  BIGINT,
     PRIMARY KEY (id)
 );
+
+CREATE TABLE IF NOT EXISTS uiinfos (
+    topologyId BIGINT NOT NULL,
+    jsonInfo TEXT NOT NULL,
+    timestamp BIGINT,
+    PRIMARY KEY (topologyId)
+);
