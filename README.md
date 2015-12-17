@@ -100,6 +100,9 @@ VERSION WITH STORM. Please merge https://github.com/apache/storm/pull/702 on you
 After doing a mvn package on IoTaS home directory you can run the following 
 command `storm jar ./storm/target/storm-0.1-SNAPSHOT.jar org.apache.storm.flux.Flux --local --sleep 3600000 --filter ./storm/src/main/resources/flux_iotas_topology.properties ./storm/src/main/resources/flux_iotas_topology_config.yaml`
   
+Note that in order to submit the topology created using UI the storm jar for the topology must be copied to the path referred to by iotasStormJar config 
+property. Default value for that location is /tmp/storm-0.1-SNAPSHOT.jar
+
 This will run the IOTaS topology in local mode for one hour, processing any events published to the 'nest-topic'. You can kill the topology anytime by pressing CTRL + C in the console.
 
 

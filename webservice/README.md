@@ -22,7 +22,7 @@ POST /api/v1/catalog/datasources
  "dataFeedName": "feed1",
  "parserId": 1,
  "parserName": "JSON Parser",
- "endpoint": "hdfs://url"
+ "dataFeedType": "KAFKA"
 }
 ```
    
@@ -46,7 +46,7 @@ POST /api/v1/catalog/datasources
     "dataFeedName": "feed1",
     "parserId": 1,
     "parserName": "JSON Parser",
-    "endpoint": "hdfs://url"
+    "dataFeedType": "KAFKA"
   }
 }
 ```
@@ -87,8 +87,8 @@ GET /api/v1/catalog/datasources/ID
     "typeConfig": "{\"id\": 1, \"version\":1}",
     "dataFeedName": "feed1",
     "parserId": 1,
-    "parserName": "JSON Parser",
-    "endpoint": "hdfs://url"
+    "parserName": "JSON Parser",    
+    "dataFeedType": "KAFKA"
   }
 }
 ```
@@ -128,8 +128,8 @@ GET /api/v1/catalog/datasources
       "typeConfig": "{\"id\": 1, \"version\":1}",
       "dataFeedName": "feed1",
       "parserId": 1,
-      "parserName": "JSON Parser",
-      "endpoint": "hdfs://url"
+      "parserName": "JSON Parser",      
+      "dataFeedType": "KAFKA"
     },
     {
       "dataSourceId": 2,
@@ -142,7 +142,7 @@ GET /api/v1/catalog/datasources
       "dataFeedName": "feed2",
       "parserId": 1,
       "parserName": "JSON Parser",
-      "endpoint": "kafka://url"
+      "dataFeedType": "KAFKA"
     },    
     ..
     ..
@@ -177,8 +177,8 @@ In addition, query params can be passed to filter results matching certain crite
       "typeConfig": "{\"id\": \"nest\", \"version\":1}",
       "dataFeedName": "feed1",
       "parserId": 1,
-      "parserName": "JSON Parser",
-      "endpoint": "kafka://url"
+      "parserName": "JSON Parser",      
+      "dataFeedType": "KAFKA"
     }
   ]
 }
@@ -209,7 +209,7 @@ PUT /api/v1/catalog/datasources/ID
  "typeConfig": "{\"id\": 1, \"version\":1}",
  "dataFeedName": "feed1",
  "parserId": 1,
- "endpoint": "hdfs://url"
+ "dataFeedType": "KAFKA"
 }
 ```
    
@@ -233,7 +233,7 @@ PUT /api/v1/catalog/datasources/ID
     "dataFeedName": "feed1",
     "parserId": 1,
     "parserName": "JSON Parser",
-    "endpoint": "hdfs://url"
+    "dataFeedType": "KAFKA"
   }
 }
 ```
@@ -264,7 +264,7 @@ DELETE /api/v1/catalog/datasources/ID
     "dataFeedName": "feed1",
     "parserId": 1,
     "parserName": "JSON Parser",
-    "endpoint": "hdfs://url"
+    "dataFeedType": "KAFKA"
   }
 }
 ```
@@ -667,6 +667,7 @@ GET /api/v1/catalog/parsers
     HTTP/1.1 200 OK
     Content-Type: application/json
     
+
 ```json
 {
   "responseCode": 1000,
@@ -698,6 +699,7 @@ GET /api/v1/catalog/parsers
     ..
   ]
 }    
+
 ```
  
 ### Delete
@@ -789,7 +791,7 @@ POST /api/v1/catalog/feeds
   "description": "test feed",
   "tags": "tag1",
   "parserId": 1,
-  "endpoint": "sample endpoint"
+  "type": "KAFKA"
 }
 ```
    
@@ -809,9 +811,9 @@ POST /api/v1/catalog/feeds
     "description": "test feed",
     "tags": "tag1",
     "parserId": 1,
-    "endpoint": "sample endpoint",
+    "type": "KAFKA",
     "timestamp": 1439884044033
-  }
+ }
 }
 ```
 
@@ -848,7 +850,7 @@ GET /api/v1/catalog/feeds/ID
     "description": "test feed",
     "tags": "tag1",
     "parserId": 1,
-    "endpoint": "sample endpoint",
+    "type": "KAFKA",
     "timestamp": 1439884044033
   }
 }
@@ -915,7 +917,7 @@ GET /api/v1/catalog/feeds
       "description": "test feed",
       "tags": "tag1",
       "parserId": 1,
-      "endpoint": "sample endpoint",
+      "type": "KAFKA",
       "timestamp": 1439884044033
     },
     {
@@ -925,7 +927,7 @@ GET /api/v1/catalog/feeds
       "description": "new feed",
       "tags": "foo",
       "parserId": 1,
-      "endpoint": "hdfs://url",
+      "type": "KAFKA",
       "timestamp": 1439884162102
     }
     ..
@@ -956,7 +958,7 @@ For example to list the datafeeds for id '1' with tag 'tag1',
       "description": "test feed",
       "tags": "tag1",
       "parserId": 1,
-      "endpoint": "sample endpoint",
+      "type": "KAFKA",
       "timestamp": 1439917400442
     }
   ]
@@ -986,7 +988,7 @@ PUT /api/v1/catalog/feeds/ID
   "description": "test feed",
   "tags": "tag1",
   "parserId": 1,
-  "endpoint": "hdfs://url"
+  "type": "KAFKA"
 }
 ```
    
@@ -1006,7 +1008,7 @@ PUT /api/v1/catalog/feeds/ID
     "description": "test feed",
     "tags": "tag1",
     "parserId": 1,
-    "endpoint": "hdfs://url",
+    "type": "KAFKA",
     "timestamp": 1439884266987
   }
 }
@@ -1034,7 +1036,7 @@ DELETE /api/v1/catalog/feeds/ID
     "description": "test feed",
     "tags": "tag1",
     "parserId": 1,
-    "endpoint": "hdfs://url",
+    "type": "KAFKA",
     "timestamp": 1439884675590
   }
 }

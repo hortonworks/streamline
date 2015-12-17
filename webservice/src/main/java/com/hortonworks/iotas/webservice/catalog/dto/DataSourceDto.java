@@ -59,9 +59,11 @@ public class DataSourceDto {
     private String parserName;
 
     /**
-     * Where is the actual data for this feed being pushed. i.e "kafka:\\host1:port\nest-device-data-topic", "twitter:\\twitter-api.host:port\feedname"
+     * Where is the actual data for this feed being pushed. e.g. KAFKA, etc.
+     * this should correspond to the subType field of the TopologyComponent
+     * object
      */
-    private String endpoint;
+    private String dataFeedType;
 
     public DataSourceDto() {
     }
@@ -78,7 +80,7 @@ public class DataSourceDto {
         if (dataFeed != null) {
             dataFeedName = dataFeed.getName();
             parserId = dataFeed.getParserId();
-            endpoint = dataFeed.getEndpoint();
+            dataFeedType = dataFeed.getType();
         }
     }
 
@@ -154,12 +156,12 @@ public class DataSourceDto {
         this.parserId = parserId;
     }
 
-    public String getEndpoint() {
-        return endpoint;
+    public String getDataFeedType() {
+        return dataFeedType;
     }
 
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
+    public void setDataFeedType(String dataFeedType) {
+        this.dataFeedType = dataFeedType;
     }
 
     public String getParserName() {
@@ -186,7 +188,7 @@ public class DataSourceDto {
         if (typeConfig != null ? !typeConfig.equals(that.typeConfig) : that.typeConfig != null) return false;
         if (dataFeedName != null ? !dataFeedName.equals(that.dataFeedName) : that.dataFeedName != null) return false;
         if (parserId != null ? !parserId.equals(that.parserId) : that.parserId != null) return false;
-        return !(endpoint != null ? !endpoint.equals(that.endpoint) : that.endpoint != null);
+        return !(dataFeedType != null ? !dataFeedType.equals(that.dataFeedType) : that.dataFeedType != null);
 
     }
 
@@ -200,7 +202,7 @@ public class DataSourceDto {
         result = 31 * result + (typeConfig != null ? typeConfig.hashCode() : 0);
         result = 31 * result + (dataFeedName != null ? dataFeedName.hashCode() : 0);
         result = 31 * result + (parserId != null ? parserId.hashCode() : 0);
-        result = 31 * result + (endpoint != null ? endpoint.hashCode() : 0);
+        result = 31 * result + (dataFeedType != null ? dataFeedType.hashCode() : 0);
         return result;
     }
 
@@ -216,7 +218,7 @@ public class DataSourceDto {
                 ", typeConfig='" + typeConfig + '\'' +
                 ", dataFeedName='" + dataFeedName + '\'' +
                 ", parserId=" + parserId +
-                ", endpoint='" + endpoint + '\'' +
+                ", dataFeedType='" + dataFeedType + '\'' +
                 '}';
     }
 }

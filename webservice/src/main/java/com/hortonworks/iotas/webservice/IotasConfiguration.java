@@ -19,7 +19,6 @@ package com.hortonworks.iotas.webservice;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.Configuration;
-import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.NotNull;
@@ -33,12 +32,15 @@ public class IotasConfiguration extends Configuration {
     private String zookeeperHost;
 
     @NotEmpty
-    private String dataStreamActionsImpl;
+    private String topologyActionsImpl;
 
     @NotEmpty
     private String iotasStormJar;
 
     private Boolean notificationsRestDisable;
+
+    @NotEmpty
+    private String catalogRootUrl;
 
     @NotNull
     private JarStorageConfiguration jarStorageConfiguration;
@@ -61,12 +63,12 @@ public class IotasConfiguration extends Configuration {
         this.zookeeperHost = zookeeperHost;
     }
 
-    public String getDataStreamActionsImpl () {
-        return dataStreamActionsImpl;
+    public String getTopologyActionsImpl() {
+        return topologyActionsImpl;
     }
 
-    public void setDataStreamActionsImpl (String dataStreamActionsImpl) {
-        this.dataStreamActionsImpl = dataStreamActionsImpl;
+    public void setTopologyActionsImpl(String topologyActionsImpl) {
+        this.topologyActionsImpl = topologyActionsImpl;
     }
 
     public String getIotasStormJar () {
@@ -75,6 +77,14 @@ public class IotasConfiguration extends Configuration {
 
     public void setIotasStormJar (String iotasStormJar) {
         this.iotasStormJar = iotasStormJar;
+    }
+
+    public String getCatalogRootUrl () {
+        return catalogRootUrl;
+    }
+
+    public void setCatalogRootUrl (String catalogRootUrl) {
+        this.catalogRootUrl = catalogRootUrl;
     }
 
     @JsonProperty("jarStorageConfiguration")

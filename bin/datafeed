@@ -1,1 +1,1 @@
-{"id":1,"dataSourceId":1,"name":"nest-datafeed","parserId":1,"endpoint":"localhost:9092/nest-topic"}
+{"id":1,"dataSourceId":1,"name":"nest-datafeed","parserId":1,"type":"KAFKA"}

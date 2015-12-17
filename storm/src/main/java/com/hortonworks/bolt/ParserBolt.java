@@ -52,7 +52,7 @@ public class ParserBolt extends BaseRichBolt {
      *
      * @param parserId
      */
-    public void withParserId(Long parserId) {
+    public void withParserId(long parserId) {
         this.parserId = parserId;
     }
 
@@ -78,7 +78,7 @@ public class ParserBolt extends BaseRichBolt {
      *
      * @param dataSourceId
      */
-    public void withDataSourceId(Long dataSourceId) {
+    public void withDataSourceId(long dataSourceId) {
         this.dataSourceId = dataSourceId;
     }
 

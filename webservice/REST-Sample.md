@@ -30,7 +30,7 @@ messages to a single kafa topic *kafa-topic-T1*. Lets say, we also have parsers 
      ```
   The `id` and `version` fields are assumed to be always present in the message header. This is used to uniquely identify
   the datasource that produced the message in case there are multiple datasources publishing to same endpoint.
-     
+
 2. Next we need to upload parser jars that know how to parse the data from these devices and produce a `Map<String, Object>` 
    which is passed to downstream systems for further processing.
    * Upload parser for DEVICE-A (a sample ParserInfo.json is given in the parser create API section)
@@ -52,8 +52,8 @@ messages to a single kafa topic *kafa-topic-T1*. Lets say, we also have parsers 
     "name": "feed1",
     "description": "test feed",
     "tags": "tag1",
-    "id": <the id in POST response while creating DEVICE-A-parser>,
-    "endpoint": "kafka-topic-T1"
+    "parserId": <the parserId in POST response while creating DEVICE-A-parser>,
+    "type": "KAFKA"
   }
   ```
 
@@ -64,13 +64,15 @@ messages to a single kafa topic *kafa-topic-T1*. Lets say, we also have parsers 
     "name": "feed2",
     "description": "test feed",
     "tags": "tag1",
-    "id": <the id in POST response while creating DEVICE-B-parser>,
-    "endpoint": "kafka-topic-T1"
+    "parserId": <the parserId in POST response while creating DEVICE-B-parser>,
+    "type": "KAFKA"
   }
   ```
-  The *endpoint* specifies the location from where the data feed is received. It is possible that multiple devices are
-  pushing the data via the same end point. If so, the data source type specifc field values will be used to distingush
-  the data source. For e.g, a message with id, version pair `<D1, 1>` would be from `DEVICE-A` and hence would
+  The *type* specifies the type of storage layer from where the data feed is 
+  received. For e.g. KAFKA. It is possible that multiple devices are pushing 
+  the data via the same end point. If so, the data source type specifc field 
+  values will be used to distingush the data source. For e.g, a message with 
+  deviceId, version pair `<D1, 1>` would be from `DEVICE-A` and hence would 
   map to `feed1` and be parsed by `DEVICE-A-parser`.
   
   Also note that a `feed` represents the stream of data produced by a single `datasource`. However the same `datasource` can 

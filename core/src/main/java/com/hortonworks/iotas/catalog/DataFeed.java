@@ -18,7 +18,7 @@ public class DataFeed extends AbstractStorable {
     public static final String DATASOURCE_ID = "dataSourceId";
     public static final String DATAFEED_NAME = "name";
     public static final String PARSER_ID = "parserId";
-    public static final String ENDPOINT = "endpoint";
+    public static final String TYPE = "type";
 
     /**
      * Unique Id, this is the primary key.
@@ -41,9 +41,11 @@ public class DataFeed extends AbstractStorable {
     private Long parserId;
 
     /**
-     * Where is the actual data for this feed being pushed. i.e "kafka:\\host1:port\nest-device-data-topic", "twitter:\\twitter-api.host:port\feedname"
+     * Where is the actual data for this feed being pushed. e.g. KAFKA, etc.
+     * this should correspond to the subType field of the TopologyComponent
+     * object
      */
-    private String endpoint;
+    private String type;
 
     @JsonIgnore
     public String getNameSpace() {
@@ -75,7 +77,7 @@ public class DataFeed extends AbstractStorable {
         if (name != null ? !name.equals(dataFeed.name) : dataFeed.name != null)
             return false;
         if (parserId != null ? !parserId.equals(dataFeed.parserId) : dataFeed.parserId != null) return false;
-        return !(endpoint != null ? !endpoint.equals(dataFeed.endpoint) : dataFeed.endpoint != null);
+        return !(type != null ? !type.equals(dataFeed.type) : dataFeed.type != null);
 
     }
 
@@ -85,7 +87,7 @@ public class DataFeed extends AbstractStorable {
         result = 31 * result + (dataSourceId != null ? dataSourceId.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (parserId != null ? parserId.hashCode() : 0);
-        result = 31 * result + (endpoint != null ? endpoint.hashCode() : 0);
+        result = 31 * result + (type != null ? type.hashCode() : 0);
         return result;
     }
 
@@ -96,7 +98,7 @@ public class DataFeed extends AbstractStorable {
                 ", dataSourceId=" + dataSourceId +
                 ", name='" + name + '\'' +
                 ", parserId=" + parserId +
-                ", endpoint='" + endpoint + '\'' +
+                ", type='" + type + '\'' +
                 '}';
     }
 
@@ -132,11 +134,11 @@ public class DataFeed extends AbstractStorable {
         this.parserId = parserId;
     }
 
-    public String getEndpoint() {
-        return endpoint;
+    public String getType() {
+        return type;
     }
 
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
+    public void setType(String type) {
+        this.type = type;
     }
 }

@@ -11,7 +11,6 @@ import java.nio.file.FileSystems;
 import java.util.Map;
 
 /**
- * Created by pshah on 8/7/15.
  * Implementation of JarStorage interface backed by local file system
  */
 public class FileSystemJarStorage implements JarStorage {

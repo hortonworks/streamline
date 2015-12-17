@@ -42,16 +42,28 @@ CREATE TABLE IF NOT EXISTS datafeeds (
     description TEXT,
     tags TEXT,
     parserId BIGINT NOT NULL,
-    endpoint TEXT NOT NULL,
+    type TEXT NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (dataSourceId) REFERENCES datasources(id),
     FOREIGN KEY (parserId) REFERENCES parser_info(id)
 );
 
-CREATE TABLE IF NOT EXISTS datastreams (
+CREATE TABLE IF NOT EXISTS topologies (
     id BIGINT AUTO_INCREMENT NOT NULL,
     name VARCHAR(256) NOT NULL,
-    json VARCHAR(4096) NOT NULL,
+    config TEXT NOT NULL,
+    timestamp  BIGINT,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS topology_components (
+    id BIGINT AUTO_INCREMENT NOT NULL,
+    name VARCHAR(256) NOT NULL,
+    type TEXT NOT NULL,
+    subType TEXT NOT NULL,
+    streamingEngine TEXT NOT NULL,
+    config TEXT NOT NULL,
+    transformationClass TEXT,
     timestamp  BIGINT,
     PRIMARY KEY (id)
 );

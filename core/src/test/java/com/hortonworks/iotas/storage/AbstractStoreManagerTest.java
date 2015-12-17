@@ -292,7 +292,8 @@ public abstract class AbstractStoreManagerTest {
             df.setId(id);
             df.setDataSourceId(1L);
             df.setName(name);
-            df.setEndpoint("kafka://host:port/topic");
+            df.setName(name);
+            df.setType("KAFKA");
             df.setParserId(id);
             return df;
         }
