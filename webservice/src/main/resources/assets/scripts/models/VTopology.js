@@ -5,13 +5,13 @@ define(['require',
   'use strict';
   var VTopology = vBaseModel.extend(
     {
-      urlRoot: Globals.baseURL + '/api/v1/catalog/datastreams',
+      urlRoot: Globals.baseURL + '/api/v1/catalog/topologies',
 
       defaults: {},
 
       serverSchema : {},
 
-      idAttribute: 'dataStreamId',
+      idAttribute: 'id',
 
       initialize: function () {
         this.modelName = 'VTopology';
@@ -21,7 +21,25 @@ define(['require',
         return this.get('name');
       },
       deployTopology: function(options){
-        return this.constructor.nonCrudOperation.call(this, Globals.baseURL + '/api/v1/catalog/datastreams/'+options.id +'/actions/deploy', 'POST');
+        return this.constructor.nonCrudOperation.call(this, Globals.baseURL + '/api/v1/catalog/topologies/'+options.id +'/actions/deploy', 'POST', options);
+      },
+      killTopology: function(options){
+        return this.constructor.nonCrudOperation.call(this, Globals.baseURL + '/api/v1/catalog/topologies/'+options.id +'/actions/kill', 'POST', options);
+      },
+      validateTopology: function(options){
+        return this.constructor.nonCrudOperation.call(this, Globals.baseURL + '/api/v1/catalog/topologies/'+options.id +'/actions/validate', 'POST', options);
+      },
+      getSourceComponent: function(options){
+        return this.constructor.nonCrudOperation.call(this, Globals.baseURL + '/api/v1/catalog/system/componentdefinitions/SOURCE?streamingEngine=STORM', 'GET', options);
+      },
+      getProcessorComponent: function(options){
+        return this.constructor.nonCrudOperation.call(this, Globals.baseURL + '/api/v1/catalog/system/componentdefinitions/PROCESSOR?streamingEngine=STORM', 'GET', options);
+      },
+      getSinkComponent: function(options){
+        return this.constructor.nonCrudOperation.call(this, Globals.baseURL + '/api/v1/catalog/system/componentdefinitions/SINK?streamingEngine=STORM', 'GET', options);
+      },
+      getLinkComponent: function(options){
+        return this.constructor.nonCrudOperation.call(this, Globals.baseURL + '/api/v1/catalog/system/componentdefinitions/LINK?streamingEngine=STORM', 'GET', options);
       }
     },
     {}

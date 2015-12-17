@@ -85,11 +85,11 @@ define(['utils/LangSupport',
           placeHolder: localization.tt('lbl.parserId'),
           validators: ['required']
         },
-        endpoint: {
+        dataFeedType: {
           type: 'Text',
-          title: localization.tt('lbl.endpoint')+'*',
+          title: localization.tt('lbl.feedType')+'*',
           editorClass: 'form-control',
-          placeHolder: localization.tt('lbl.endpoint'),
+          placeHolder: localization.tt('lbl.feedType'),
           validators: ['required']
         }
       };

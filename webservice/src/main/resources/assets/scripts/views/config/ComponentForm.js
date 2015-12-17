@@ -10,20 +10,22 @@ define(['utils/LangSupport',
     template: tmpl,
 
     initialize: function (options) {
+      var obj;
       _.extend(this, _.pick(options, 'model', 'type'));
       if(!this.model.has('id')){
         if(this.type === 'STORM'){
-          var obj = {
+          obj = {
             'name': 'Auto_Storm_Component',
             'description': 'This is a auto generated description for storm component',
             'type': 'NIMBUS'
           };
           this.model.set(obj);
         } else if(this.type === 'KAFKA'){
-          var obj = {
+          obj = {
             'name': 'Auto_Kafka_Component',
             'description': 'This is a auto generated description for kafka component',
             'type': 'BROKER'
+            // 'type': ['BROKER', 'ZK']
           };
           this.model.set(obj);
         }
@@ -32,24 +34,24 @@ define(['utils/LangSupport',
     },
 
     schema: function () {
-      // var typeArr = [{'val':'','label': '--'}];
-      // if(this.type==='STORM'){
-      //   _.each(Globals.Component.Storm, function(obj){
-      //     var tObj = {
-      //       'val': obj.value,
-      //       'label': obj.valStr
-      //     };
-      //     typeArr.push(tObj);
-      //   });
-      // } else if(this.type==='KAFKA'){
-      //   _.each(Globals.Component.Kafka, function(obj){
-      //     var tObj = {
-      //       'val': obj.value,
-      //       'label': obj.valStr
-      //     };
-      //     typeArr.push(tObj);
-      //   });
-      // }
+      var typeArr = [{}];
+      if(this.type==='STORM'){
+        _.each(Globals.Component.Storm, function(obj){
+          var tObj = {
+            'val': obj.value,
+            'label': obj.valStr
+          };
+          typeArr.push(tObj);
+        });
+      } else if(this.type==='KAFKA'){
+        _.each(Globals.Component.Kafka, function(obj){
+          var tObj = {
+            'val': obj.value,
+            'label': obj.valStr
+          };
+          typeArr.push(tObj);
+        });
+      }
       return {
         // name: {
         //   type: 'Text',
@@ -65,17 +67,16 @@ define(['utils/LangSupport',
         //   placeHolder: localization.tt('lbl.description'),
         //   validators: ['required']
         // },
-        // type: {
-        //   type: 'Select2',
-        //   title: localization.tt('lbl.type')+'*',
-        //   options: typeArr,
-        //   editorClass: 'form-control',
-        //   pluginAttr: {
-        //     minimumResultsForSearch: Infinity,
-        //     placeholder: localization.tt('lbl.type')
-        //   },
-        //   validators: ['required']
-        // },
+        type: {
+          type: 'Select2',
+          title: localization.tt('lbl.type')+'*',
+          options: typeArr,
+          editorClass: 'form-control',
+          pluginAttr: {
+            placeholder: localization.tt('lbl.type')
+          },
+          validators: ['required']
+        },
         hosts: {
           type: 'Tag',
           title: localization.tt('lbl.hosts')+'*',

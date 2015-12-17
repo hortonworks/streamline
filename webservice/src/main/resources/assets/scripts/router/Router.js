@@ -11,7 +11,7 @@ define([
 		routes: {
 			// Define some URL routes
 			// ''						: 'dashboardAction',
-			''						: 'parserRegistryAction',
+			''						: 'topologyAction',
 			'!/dashboard'			: 'dashboardAction',
 			'!/parser-registry'		: 'parserRegistryAction',
 			'!/device-catalog'		: 'deviceCatalogAction',

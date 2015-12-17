@@ -810,9 +810,9 @@ div[data-id=r_tableList] .btn {
 
 
 /*---------------IOTAS UI------------------*/
-.select2-container--default .select2-selection--multiple {
+/*.select2-container--default .select2-selection--multiple {
     width: 168px;
-}
+}*/
 
 .navbar {
     position: relative;
@@ -840,12 +840,12 @@ div[data-id=r_tableList] .btn {
     margin-bottom: 5px;
 }
 
-.select2-container--default .select2-selection--single {
+/*.select2-container--default .select2-selection--single {
     height: 28px;
     border: none;
     background-color: #E1E5D0;
     color: white;
-}
+}*/
 
 #deviceModalContent{
     margin: 15px;
@@ -1126,7 +1126,7 @@ svg {
     border: 4px #37444e solid;
 }
 .modal-body .panel-title > a{
-    color: #707980;
+    color: #333;
 }
 
 ._jsPlumb_overlay{
@@ -1164,6 +1164,23 @@ g.selected:hover circle{
     fill: #0e4e9e;
 }
 
+g.conceptG rect{
+    fill: #20a8d8;
+    stroke: #333;
+    stroke-width: 2px;
+}
+
+g.conceptG:hover rect{
+    fill: #1985ac;
+}
+
+g.selected rect{
+    fill: #0e4e9e;
+}
+g.selected:hover rect{
+    fill: #0e4e9e;
+}
+
 path.link {
     fill: none;
     stroke: #333;
@@ -1197,4 +1214,37 @@ option[value=""][disabled] {
 #infoHelp + .popover > .popover-content p {
     font-size: 12px;
     margin-bottom: 5px;
+}
+.formulaError {
+  color: red;
+}
+.formulaField {
+  color: green;
+}
+.formulaComparison{
+  color: blue;
+}
+.formulaLogical{
+  color: yellow;
+}
+.formulaPreviewDiv {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+  box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+  padding: 6px 12px;
+  min-height: 100px;
+}
+.sourceModalConfig{
+  max-height: 300px;
+  overflow-y: auto;
+}
+.modal-title > i > a {
+  margin-left: 5px;
+}
+.editable-click, a.editable-click, a.editable-click:hover{
+  border:none;
+}
+a#editableTitle {
+    color: black;
 }

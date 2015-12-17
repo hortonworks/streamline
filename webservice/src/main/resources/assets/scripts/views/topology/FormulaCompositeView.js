@@ -10,21 +10,30 @@ define(['require',
             var self = this;
             this.comparisonOpArr = [];
             this.logicalOpArr = [];
-            _.each(Globals.Functions.Comparison, function(obj){
+            this.fieldsArr = [];
+
+            _.each(_.findWhere(self.config, {name: 'operations'}).values, function(obj){
                 self.comparisonOpArr.push({
-                    val:obj.valStr,
-                    lbl: obj.value
+                    val:obj,
+                    lbl: obj
                 });
             });
-            _.each(Globals.Functions.Logical, function(obj){
+            _.each(_.findWhere(self.config, {name: 'logicalOperators'}).values, function(obj){
                 self.logicalOpArr.push({
-                    val:obj.valStr,
-                    lbl: obj.value
+                    val:obj,
+                    lbl: obj
                 });
             });
+             _.each(this.fields, function(obj){
+                self.fieldsArr.push({
+                    val:obj.name,
+                    lbl: obj.name
+                 });
+             });
             return {
                 comparisonArr : this.comparisonOpArr,
-                logicalArr : this.logicalOpArr
+                logicalArr : this.logicalOpArr,
+                fieldsArr : this.fieldsArr
             };
         },
 
@@ -37,6 +46,7 @@ define(['require',
                 collection: this.collection,
                 comparisonArr: this.comparisonOpArr,
                 logicalArr: this.logicalOpArr,
+                fieldsArr : this.fieldsArr,
                 id: this.rowId++,
                 vent: this.vent
             };
@@ -49,20 +59,57 @@ define(['require',
 
         initialize: function(options){
         	_.extend(this, options);
+            this.firstFormulaModel = new Backbone.Model({firstModel: true});
         	this.rowId = 2; //1 is for first row already rendered
         	this.collection = new Backbone.Collection();
+            this.bindEvents();
         },
 
-        onRender: function(){},
+        bindEvents: function(){
+            var self = this;
+            this.listenTo(this.vent,'delete:Formula', function(data){
+                self.evChange(data);
+            });
+        },
+
+        generateForumla: function(collection){
+          console.log(dataCollection);
+        },
+
+        onRender: function(){
+            this.$('.field-1').select2({
+                placeholder: 'Field'
+            });
+            this.$('.comparisonOp').select2({
+                placeholder: 'Operator'
+            });
+            this.$('.field-2').select2({
+                tags:true,
+                placeholder: 'Constant/Field'
+            });
+        },
         evAddRow: function(){
-        	this.collection.add(new Backbone.Model());
+        	this.collection.add(new Backbone.Model({id: this.rowId}));
         },
         evChange: function(e){
-            var currentTarget = $(e.currentTarget); 
+            if(e.currentTarget){
+                var currentTarget = $(e.currentTarget);
+                if(currentTarget.data().row == 1){
+                    this.firstFormulaModel.set(currentTarget.data().rowtype, currentTarget.val());
+                } else {
+                    this.collection.get(currentTarget.data().row).set(currentTarget.data().rowtype, currentTarget.val());
+                }
+            } else {
+                this.collection = e.models;
+            }
+            
+            var tempArr = [];
+            tempArr.push(this.firstFormulaModel);
+            // if(this.collection.length){
+            Array.prototype.push.apply(tempArr, this.collection.models);
+            // }
             this.vent.trigger('change:Formula', {
-                rowType: currentTarget.data().rowtype,
-                value: currentTarget.val(),
-                rowNum: currentTarget.data().row
+                models: tempArr
             });
         },
 	});

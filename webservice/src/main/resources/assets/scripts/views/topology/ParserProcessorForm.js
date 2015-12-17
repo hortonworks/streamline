@@ -1,6 +1,6 @@
 define(['utils/LangSupport',
   'utils/Globals',
-  'hbs!tmpl/topology/dataSinkForm',
+  'hbs!tmpl/topology/parserProcessorForm',
   'backbone.forms'
   ], function (localization, Globals, tmpl) {
   'use strict';
@@ -15,7 +15,8 @@ define(['utils/LangSupport',
       this.templateData = {
         fieldName: []
       };
-      this.generateConfigSchema();
+      this.model.set('firstTime', false);
+      // this.generateConfigSchema();
       Backbone.Form.prototype.initialize.call(this, options);
     },
 
@@ -23,7 +24,6 @@ define(['utils/LangSupport',
       var self = this;
       _.each(this.model.get('config'), function(obj){
         var name = obj.name;
-        
         self.schemaObj[name] = {
           type: 'Text',
           title: name+(obj.isOptional?'' : '*'),
@@ -31,20 +31,8 @@ define(['utils/LangSupport',
           placeholder: name,
           validators: (obj.isOptional ? [] : [{'type':'required','message': name+' can not be blank.'}])
         };
-        if(typeof obj.defaultValue === 'number') {
-          self.schemaObj[name].type = 'Number';
-        } else if(_.isArray(obj.defaultValue)){
-          self.schemaObj[name].type = 'Tag';
-          self.schemaObj[name].getValue = function(values, model){
-            if(values === ''){
-              return [];
-            } else {
-              return values.split(',');
-            }
-          };
-        }
         self.templateData.fieldName.push(name);
-        if(!self.model.has(name)){
+        if(self.model.get('firstTime')){
           self.model.set(name, obj.defaultValue, {silent: true});
         }
       });
@@ -53,13 +41,30 @@ define(['utils/LangSupport',
 
     generateSchema: function(){
       return {
-        // name: {
-        //   type: 'Text',
-        //   title: localization.tt('lbl.sinkName')+'*',
-        //   editorClass: 'form-control',
-        //   placeHolder: localization.tt('lbl.name'),
-        //   validators: [{'type':'required','message':'Name can not be blank.'}]
-        // }
+        dataSourceName: {
+          type: 'Text',
+          title: 'Source Name',
+          editorClass: 'form-control',
+          editorAttrs: {
+            readonly: 'readonly'
+          },
+          placeHolder: 'Source Name',
+        },
+        parserName: {
+          type: 'Text',
+          title: 'Parser Name',
+          editorClass: 'form-control',
+          editorAttrs: {
+            readonly: 'readonly'
+          },
+          placeHolder: 'Parser Name',
+        },
+        parallelism: {
+          type: 'Text',
+          title: 'Parallelism',
+          editorClass: 'form-control',
+          placeHolder: 'Parallelism',
+        },
       };
     },
 
@@ -73,22 +78,6 @@ define(['utils/LangSupport',
 
     getData: function() {
       var attrs = this.getValue();
-      var configArr = this.model.get('config');
-      for(var key in attrs){
-        var obj = _.find(configArr, {name: key});
-        if(obj){
-          if(_.isEqual(attrs[key], obj.defaultValue)){
-            delete attrs[key];
-            delete this.model.attributes[key];
-          } else if(typeof obj.defaultValue === 'boolean'){
-            if(_.isEqual(attrs[key], obj.defaultValue.toString())){
-              delete attrs[key];
-              delete this.model.attributes[key];
-            }
-          }
-        }
-      }
-      attrs.type = this.type;
       return this.model.set(attrs);
     },
 

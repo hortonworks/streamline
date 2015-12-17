@@ -11,7 +11,7 @@ define(['require',
 
       serverSchema : {},
 
-      idAttribute: 'id',
+      idAttribute: 'componentId',
 
       initialize: function () {
         this.modelName = 'VComponent';
@@ -19,6 +19,9 @@ define(['require',
       },
       toString : function() {
         return this.get('name');
+      },
+      deploy: function(options){
+        return this.constructor.nonCrudOperation.call(this, Globals.baseURL + '/api/v1/catalog/clusters/'+options.id +'/components', 'POST', options);
       },
     },
     {}

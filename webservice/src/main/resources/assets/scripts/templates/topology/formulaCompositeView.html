@@ -3,15 +3,15 @@
 		<label style="margin-top:5px;">Create Formula: </label>		
 	</div>
     <div class="col-md-3">
-        <select class="form-control ruleRow field-1" data-rowtype="field1" data-row="1">
+        <select class="form-control ruleRow field-1" data-rowtype="field1" data-row="1"  style="width:100%;">
 			<option value="" disabled selected>Select Field</option>
-			<option value="Field1">Field1</option>
-			<option value="Field2">Field2</option>
-			<option value="Field3">Field3</option>
+			{{#each fieldsArr}}
+			<option value="{{this.val}}">{{this.val}}</option>
+			{{/each}}
 		</select>
     </div>
     <div class="col-md-3">
-		<select class="form-control ruleRow comparisonOp" data-rowtype="comp" data-row='1'>
+		<select class="form-control ruleRow comparisonOp" data-rowtype="comp" data-row='1'  style="width:100%;">
 			<option value="" disabled selected>Select Operator</option>
 			{{#each comparisonArr}}
 			<option value="{{this.val}}">{{this.val}}</option>
@@ -19,11 +19,11 @@
 		</select>
 	</div>
     <div class="col-md-3">
-        <select class="form-control ruleRow field-2" data-rowtype="field2" data-row='1'>
+        <select class="form-control ruleRow field-2" data-rowtype="field2" data-row='1'  style="width:100%;">
 			<option value="" disabled selected>Select Field</option>
-			<option value="Field1">Field1</option>
-			<option value="Field2">Field2</option>
-			<option value="Field3">Field3</option>
+			{{#each fieldsArr}}
+			<option value="{{this.val}}">{{this.val}}</option>
+			{{/each}}
 		</select>
     </div>
     <div class="col-md-1">

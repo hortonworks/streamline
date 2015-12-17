@@ -20,6 +20,9 @@ define(['require',
       toString : function() {
         return this.get('name');
       },
+      getSchema:function(options){
+        return this.constructor.nonCrudOperation.call(this, Globals.baseURL + '/api/v1/catalog/parsers/'+options.parserId+'/schema', 'GET', options);
+      },
     },
     {}
   );

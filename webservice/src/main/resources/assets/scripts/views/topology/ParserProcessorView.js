@@ -3,11 +3,11 @@ define(['require',
   'utils/LangSupport',
   'utils/Utils',
   'utils/Globals',
-  'hbs!tmpl/topology/dataFeedView'
+  'hbs!tmpl/topology/parserProcessorView'
 ], function(require, vent, localization, Utils, Globals, tmpl) {
   'use strict';
 
-  var DataFeedLayout = Marionette.LayoutView.extend({
+  var ParserProcessorLayout = Marionette.LayoutView.extend({
 
     template: tmpl,
 
@@ -26,8 +26,8 @@ define(['require',
 
     onRender:function(){
       var self = this;
-      require(['views/topology/DataFeedForm'], function(DataFeedForm){
-        self.view = new DataFeedForm({
+      require(['views/topology/ParserProcessorForm'], function(ParserForm){
+        self.view = new ParserForm({
           model: self.model
         });
         self.rForm.show(self.view);
@@ -37,14 +37,13 @@ define(['require',
     evAdd: function(e){
       var err = this.view.validate();
       if(_.isEmpty(err)){
-        this.saveDataFeed();
+        this.saveParserProcessor();
       }
     },
-    saveDataFeed: function(){
-      // var self = this;
+    saveParserProcessor: function(){
       var data = this.view.getData();
       console.log(data);
-      this.vent.trigger('dataStream:SavedStep1', data);
+      this.vent.trigger('dataStream:SavedStep2', data);
       this.evClose();
     },
     evClose: function(e){
@@ -53,5 +52,5 @@ define(['require',
 
   });
   
-  return DataFeedLayout;
+  return ParserProcessorLayout;
 });
