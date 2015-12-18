@@ -14,7 +14,7 @@ public class NotifierInfo extends AbstractStorable {
     public static final String NAMESPACE = "notifierinfo";
 
     public static final String ID = "id";
-    public static final String NOTIFIER_NAME = "notifierName";
+    public static final String NOTIFIER_NAME = "name";
     public static final String JARFILE_NAME = "jarFileName";
     public static final String CLASS_NAME = "className";
     public static final String PROPERTIES = "properties";
@@ -22,7 +22,7 @@ public class NotifierInfo extends AbstractStorable {
     public static final String TIMESTAMP = "timestamp";
 
     private Long id;
-    private String notifierName;
+    private String name;
     private String jarFileName;
     private String className;
     private Map<String, String> properties;
@@ -45,12 +45,12 @@ public class NotifierInfo extends AbstractStorable {
      * e.g. email_notifier_1
      * @return
      */
-    public String getNotifierName() {
-        return notifierName;
+    public String getName() {
+        return name;
     }
 
-    public void setNotifierName(String notifierName) {
-        this.notifierName = notifierName;
+    public void setName(String name) {
+        this.name = name;
     }
 
 
@@ -143,7 +143,7 @@ public class NotifierInfo extends AbstractStorable {
     public String toString() {
         return "NotifierInfo{" +
                 "id=" + id +
-                ", notifierName='" + notifierName + '\'' +
+                ", name='" + name + '\'' +
                 ", jarFileName='" + jarFileName + '\'' +
                 ", className='" + className + '\'' +
                 ", properties=" + properties +

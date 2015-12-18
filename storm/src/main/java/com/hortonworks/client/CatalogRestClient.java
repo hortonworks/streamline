@@ -113,7 +113,7 @@ public class CatalogRestClient {
         DataSource dataSource = getEntities(client.target(url), DataSource.class).get(0);
 
         DataFeed dataFeed = getEntities(client.target(String.format("%s/%s?dataSourceId=%s",
-                rootCatalogURL, FEED_URL, dataSource.getDataSourceId())), DataFeed.class).get(0);
+                rootCatalogURL, FEED_URL, dataSource.getId())), DataFeed.class).get(0);
 
         return getParserInfo(dataFeed.getParserId());
     }

@@ -11,8 +11,8 @@ import java.util.Map;
 
 public class DataSource extends AbstractStorable {
     public static final String NAME_SPACE = "datasources";
-    public static final String DATA_SOURCE_ID = "dataSourceId";
-    public static final String DATA_SOURCE_NAME = "dataSourceName";
+    public static final String DATA_SOURCE_ID = "id";
+    public static final String DATA_SOURCE_NAME = "name";
     public static final String DESCRIPTION = "description";
     public static final String DATAFEED_ID = "datafeedId";
     public static final String TAGS = "tags";
@@ -31,12 +31,12 @@ public class DataSource extends AbstractStorable {
     /**
      * Unique identifier. This is the primary key.
      */
-    private Long dataSourceId;
+    private Long id;
 
     /**
      * Human readable name.
      */
-    private String dataSourceName;
+    private String name;
 
     /**
      * Human readable description.
@@ -84,7 +84,7 @@ public class DataSource extends AbstractStorable {
     @JsonIgnore
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<Schema.Field, Object>();
-        fieldToObjectMap.put(new Schema.Field(DATA_SOURCE_ID, Schema.Type.LONG), this.dataSourceId);
+        fieldToObjectMap.put(new Schema.Field(DATA_SOURCE_ID, Schema.Type.LONG), this.id);
         return new PrimaryKey(fieldToObjectMap);
     }
 
@@ -113,8 +113,8 @@ public class DataSource extends AbstractStorable {
 
         DataSource that = (DataSource) o;
 
-        if (dataSourceId != null ? !dataSourceId.equals(that.dataSourceId) : that.dataSourceId != null) return false;
-        if (dataSourceName != null ? !dataSourceName.equals(that.dataSourceName) : that.dataSourceName != null)
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+        if (name != null ? !name.equals(that.name) : that.name != null)
             return false;
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
         if (tags != null ? !tags.equals(that.tags) : that.tags != null) return false;
@@ -125,8 +125,8 @@ public class DataSource extends AbstractStorable {
 
     @Override
     public int hashCode() {
-        int result = dataSourceId != null ? dataSourceId.hashCode() : 0;
-        result = 31 * result + (dataSourceName != null ? dataSourceName.hashCode() : 0);
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
         result = 31 * result + (tags != null ? tags.hashCode() : 0);
         result = 31 * result + (type != null ? type.hashCode() : 0);
@@ -137,8 +137,8 @@ public class DataSource extends AbstractStorable {
     @Override
     public String toString() {
         return "DataSource{" +
-                "dataSourceId=" + dataSourceId +
-                ", dataSourceName='" + dataSourceName + '\'' +
+                "id=" + id +
+                ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", tags='" + tags + '\'' +
                 ", timestamp=" + timestamp +
@@ -155,20 +155,20 @@ public class DataSource extends AbstractStorable {
         this.timestamp = timestamp;
     }
 
-    public Long getDataSourceId() {
-        return dataSourceId;
+    public Long getId() {
+        return id;
     }
 
-    public void setDataSourceId(Long dataSourceId) {
-        this.dataSourceId = dataSourceId;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public String getDataSourceName() {
-        return dataSourceName;
+    public String getName() {
+        return name;
     }
 
-    public void setDataSourceName(String dataSourceName) {
-        this.dataSourceName = dataSourceName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getDescription() {

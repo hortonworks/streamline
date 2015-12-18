@@ -1,12 +1,12 @@
 package com.hortonworks.iotas.service;
 
-import com.hortonworks.iotas.catalog.Cluster;
-import com.hortonworks.iotas.catalog.Component;
-import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
-import com.hortonworks.iotas.catalog.Device;
-import com.hortonworks.iotas.catalog.NotifierInfo;
+import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.ParserInfo;
+import com.hortonworks.iotas.catalog.Cluster;
+import com.hortonworks.iotas.catalog.NotifierInfo;
+import com.hortonworks.iotas.catalog.Device;
+import com.hortonworks.iotas.catalog.Component;
 import com.hortonworks.iotas.catalog.Topology;
 import com.hortonworks.iotas.storage.DataSourceSubType;
 import com.hortonworks.iotas.storage.StorableKey;
@@ -106,6 +106,14 @@ public class CatalogService {
         return DataSource.Type.UNKNOWN.toString();
     }
 
+    private DataSourceSubType getSubtypeFromDataSource(DataSource ds) throws IllegalAccessException, InstantiationException {
+        String ns = getNamespaceForDataSourceType(ds.getType());
+        Class<? extends DataSourceSubType> classForDataSourceType = getClassForDataSourceType(ds.getType());
+        DataSourceSubType dataSourcesubType = classForDataSourceType.newInstance();
+        dataSourcesubType.setDataSourceId(ds.getId());
+        return dao.get(new StorableKey(ns, dataSourcesubType.getPrimaryKey()));
+    }
+
     private Class<? extends DataSourceSubType> getClassForDataSourceType(DataSource.Type dataSourceType) {
         if (dataSourceType == DataSource.Type.DEVICE) {
             return Device.class;
@@ -114,13 +122,12 @@ public class CatalogService {
     }
 
     // TODO: implement pagination
-    public Collection<DataSource> listDataSources() throws IOException {
+    public Collection<DataSource> listDataSources() throws IOException, IllegalAccessException, InstantiationException {
         Collection<DataSource> dataSources = this.dao.<DataSource>list(DATA_SOURCE_NAMESPACE);
         if (dataSources != null) {
             for (DataSource ds : dataSources) {
-                String ns = getNamespaceForDataSourceType(ds.getType());
-                DataSourceSubType subType = dao.get(new StorableKey(ns, ds.getPrimaryKey()));
-                ds.setTypeConfig(CoreUtils.storableToJson(subType));
+                DataSourceSubType dataSourcesubType = getSubtypeFromDataSource(ds);
+                ds.setTypeConfig(CoreUtils.storableToJson(dataSourcesubType));
             }
         }
         return dataSources;
@@ -136,34 +143,33 @@ public class CatalogService {
         return dataSources;
     }
 
-    public DataSource getDataSource(Long id) throws IOException {
+    public DataSource getDataSource(Long id) throws IOException, InstantiationException, IllegalAccessException {
         DataSource ds = new DataSource();
-        ds.setDataSourceId(id);
+        ds.setId(id);
         DataSource result = dao.<DataSource>get(new StorableKey(DATA_SOURCE_NAMESPACE, ds.getPrimaryKey()));
         if (result != null) {
-            String ns = getNamespaceForDataSourceType(result.getType());
-            DataSourceSubType subType = dao.get(new StorableKey(ns, ds.getPrimaryKey()));
+            DataSourceSubType subType = getSubtypeFromDataSource(result);
             result.setTypeConfig(CoreUtils.storableToJson(subType));
         }
         return result;
     }
 
     public DataSource addDataSource(DataSource dataSource) throws IOException {
-        if (dataSource.getDataSourceId() == null) {
-            dataSource.setDataSourceId(this.dao.nextId(DATA_SOURCE_NAMESPACE));
+        if (dataSource.getId() == null) {
+            dataSource.setId(this.dao.nextId(DATA_SOURCE_NAMESPACE));
         }
         if (dataSource.getTimestamp() == null) {
             dataSource.setTimestamp(System.currentTimeMillis());
         }
         DataSourceSubType subType = CoreUtils.jsonToStorable(dataSource.getTypeConfig(),
                 getClassForDataSourceType(dataSource.getType()));
-        subType.setDataSourceId(dataSource.getDataSourceId());
+        subType.setDataSourceId(dataSource.getId());
         this.dao.add(dataSource);
         this.dao.add(subType);
         return dataSource;
     }
 
-    public DataSource removeDataSource(Long dataSourceId) throws IOException {
+    public DataSource removeDataSource(Long dataSourceId) throws IOException, IllegalAccessException, InstantiationException {
         DataSource dataSource = getDataSource(dataSourceId);
         if (dataSource != null) {
             /*
@@ -177,11 +183,11 @@ public class CatalogService {
     }
 
     public DataSource addOrUpdateDataSource(Long id, DataSource dataSource) throws IOException {
-        dataSource.setDataSourceId(id);
+        dataSource.setId(id);
         dataSource.setTimestamp(System.currentTimeMillis());
         DataSourceSubType subType = CoreUtils.jsonToStorable(dataSource.getTypeConfig(),
                 getClassForDataSourceType(dataSource.getType()));
-        subType.setDataSourceId(dataSource.getDataSourceId());
+        subType.setDataSourceId(dataSource.getId());
         this.dao.addOrUpdate(dataSource);
         this.dao.addOrUpdate(subType);
         return dataSource;
@@ -197,13 +203,13 @@ public class CatalogService {
 
     public DataFeed getDataFeed(Long dataFeedId) {
         DataFeed df = new DataFeed();
-        df.setDataFeedId(dataFeedId);
+        df.setId(dataFeedId);
         return this.dao.<DataFeed>get(new StorableKey(DATA_FEED_NAMESPACE, df.getPrimaryKey()));
     }
 
     public DataFeed addDataFeed(DataFeed feed) {
-        if (feed.getDataFeedId() == null) {
-            feed.setDataFeedId(this.dao.nextId(DATA_FEED_NAMESPACE));
+        if (feed.getId() == null) {
+            feed.setId(this.dao.nextId(DATA_FEED_NAMESPACE));
         }
         this.dao.add(feed);
         return feed;
@@ -211,13 +217,13 @@ public class CatalogService {
 
     public DataFeed removeDataFeed(Long dataFeedId) {
         DataFeed feed = new DataFeed();
-        feed.setDataFeedId(dataFeedId);
+        feed.setId(dataFeedId);
         return dao.<DataFeed>remove(new StorableKey(DATA_FEED_NAMESPACE, feed.getPrimaryKey()));
     }
 
 
     public DataFeed addOrUpdateDataFeed(Long id, DataFeed feed) {
-        feed.setDataFeedId(id);
+        feed.setId(id);
         this.dao.addOrUpdate(feed);
         return feed;
     }
@@ -232,19 +238,19 @@ public class CatalogService {
 
     public ParserInfo getParserInfo(Long parserId) {
         ParserInfo parserInfo = new ParserInfo();
-        parserInfo.setParserId(parserId);
+        parserInfo.setId(parserId);
         return dao.<ParserInfo>get(new StorableKey(PARSER_INFO_NAMESPACE, parserInfo.getPrimaryKey()));
     }
 
     public ParserInfo removeParser(Long parserId) {
         ParserInfo parserInfo = new ParserInfo();
-        parserInfo.setParserId(parserId);
+        parserInfo.setId(parserId);
         return this.dao.<ParserInfo>remove(new StorableKey(PARSER_INFO_NAMESPACE, parserInfo.getPrimaryKey()));
     }
 
     public ParserInfo addParserInfo(ParserInfo parserInfo) {
-        if (parserInfo.getParserId() == null) {
-            parserInfo.setParserId(this.dao.nextId(PARSER_INFO_NAMESPACE));
+        if (parserInfo.getId() == null) {
+            parserInfo.setId(this.dao.nextId(PARSER_INFO_NAMESPACE));
         }
         if (parserInfo.getTimestamp() == null) {
             parserInfo.setTimestamp(System.currentTimeMillis());
@@ -346,7 +352,7 @@ public class CatalogService {
         if (notifierInfo.getTimestamp() == null) {
             notifierInfo.setTimestamp(System.currentTimeMillis());
         }
-        if (StringUtils.isEmpty(notifierInfo.getNotifierName())) {
+        if (StringUtils.isEmpty(notifierInfo.getName())) {
             throw new StorageException("Notifier name empty");
         }
         this.dao.add(notifierInfo);

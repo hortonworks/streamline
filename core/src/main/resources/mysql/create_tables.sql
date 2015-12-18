@@ -4,48 +4,48 @@
 -- THE NAMES OF THE TABLE COLUMNS MUST MATCH THE NAMES OF THE CORRESPONDING CLASS MODEL FIELDS
 
  CREATE TABLE IF NOT EXISTS datasources (
-     dataSourceId BIGINT AUTO_INCREMENT NOT NULL,
-     dataSourceName VARCHAR(256) NOT NULL,
+     id BIGINT AUTO_INCREMENT NOT NULL,
+     name VARCHAR(256) NOT NULL,
      description TEXT,
      tags TEXT,
      timestamp  BIGINT,
      type TEXT NOT NULL,
      typeConfig TEXT,
-     PRIMARY KEY (dataSourceId)
+     PRIMARY KEY (id)
  );
 
 CREATE TABLE IF NOT EXISTS devices (
-    deviceId VARCHAR(256) NOT NULL,
+    id VARCHAR(256) NOT NULL,
     version BIGINT NOT NULL,
     dataSourceId BIGINT NOT NULL,
     PRIMARY KEY (dataSourceId),
-    UNIQUE (deviceId, version),
-    FOREIGN KEY (dataSourceId) REFERENCES datasources(dataSourceId)
+    UNIQUE (id, version),
+    FOREIGN KEY (dataSourceId) REFERENCES datasources(id)
 );
 
 CREATE TABLE IF NOT EXISTS parser_info (
-    parserId BIGINT AUTO_INCREMENT NOT NULL,
-    parserName VARCHAR(256) NOT NULL,
+    id BIGINT AUTO_INCREMENT NOT NULL,
+    name VARCHAR(256) NOT NULL,
     version BIGINT,                             -- TODO: NOT NULL ???
     className TEXT NOT NULL,
     jarStoragePath TEXT NOT NULL,
     parserSchema TEXT NOT NULL,                 -- the schema is serialized to a String before storing in DB
     timestamp  BIGINT,
-    PRIMARY KEY (parserId),
-    UNIQUE (parserName)
+    PRIMARY KEY (id),
+    UNIQUE (name)
 );
 
 CREATE TABLE IF NOT EXISTS datafeeds (
-    dataFeedId BIGINT AUTO_INCREMENT NOT NULL,
+    id BIGINT AUTO_INCREMENT NOT NULL,
     dataSourceId BIGINT NOT NULL,
-    dataFeedName VARCHAR(256) NOT NULL,
+    name VARCHAR(256) NOT NULL,
     description TEXT,
     tags TEXT,
     parserId BIGINT NOT NULL,
     type TEXT NOT NULL,
-    PRIMARY KEY (dataFeedId),
-    FOREIGN KEY (dataSourceId) REFERENCES datasources(dataSourceId),
-    FOREIGN KEY (parserId) REFERENCES parser_info(parserId)
+    PRIMARY KEY (id),
+    FOREIGN KEY (dataSourceId) REFERENCES datasources(id),
+    FOREIGN KEY (parserId) REFERENCES parser_info(id)
 );
 
 CREATE TABLE IF NOT EXISTS topologies (

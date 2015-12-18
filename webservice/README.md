@@ -18,7 +18,7 @@ POST /api/v1/catalog/datasources
  "description": "This is a nest device",
  "tags": "tag1",
  "type": "DEVICE",
- "typeConfig": "{\"deviceId\": 1, \"version\":1}",
+ "typeConfig": "{\"id\": 1, \"version\":1}",
  "dataFeedName": "feed1",
  "parserId": 1,
  "parserName": "JSON Parser",
@@ -42,7 +42,7 @@ POST /api/v1/catalog/datasources
     "tags": "tag1",
     "timestamp": 1444216784208,
     "type": "DEVICE",
-    "typeConfig": "{\"deviceId\": 1, \"version\":1}",
+    "typeConfig": "{\"id\": 1, \"version\":1}",
     "dataFeedName": "feed1",
     "parserId": 1,
     "parserName": "JSON Parser",
@@ -84,7 +84,7 @@ GET /api/v1/catalog/datasources/ID
     "tags": "tag1",
     "timestamp": 1444216784208,
     "type": "DEVICE",
-    "typeConfig": "{\"deviceId\": 1, \"version\":1}",
+    "typeConfig": "{\"id\": 1, \"version\":1}",
     "dataFeedName": "feed1",
     "parserId": 1,
     "parserName": "JSON Parser",    
@@ -125,7 +125,7 @@ GET /api/v1/catalog/datasources
       "tags": "tag1",
       "timestamp": 1444216784208,
       "type": "DEVICE",
-      "typeConfig": "{\"deviceId\": 1, \"version\":1}",
+      "typeConfig": "{\"id\": 1, \"version\":1}",
       "dataFeedName": "feed1",
       "parserId": 1,
       "parserName": "JSON Parser",      
@@ -138,7 +138,7 @@ GET /api/v1/catalog/datasources
       "tags": "foo",
       "timestamp": 1444216784208,
       "type": "DEVICE",
-      "typeConfig": "{\"deviceId\": 1, \"version\":1}",
+      "typeConfig": "{\"id\": 1, \"version\":1}",
       "dataFeedName": "feed2",
       "parserId": 1,
       "parserName": "JSON Parser",
@@ -158,7 +158,7 @@ GET /api/v1/catalog/datasources/type/DEVICE
 
 In addition, query params can be passed to filter results matching certain criteria. For example to list all devices with deviceid 'nest' with tag 'tag1',
    
-    GET /api/v1/catalog/datasources/type/DEVICE/?deviceId=nest&version=1
+    GET /api/v1/catalog/datasources/type/DEVICE/?id=nest&version=1
     HTTP/1.1 200 OK
     Content-Type: application/json
   
@@ -174,7 +174,7 @@ In addition, query params can be passed to filter results matching certain crite
       "tags": "tag1",
       "timestamp": 1444216784208,
       "type": "DEVICE",
-      "typeConfig": "{\"deviceId\": \"nest\", \"version\":1}",
+      "typeConfig": "{\"id\": \"nest\", \"version\":1}",
       "dataFeedName": "feed1",
       "parserId": 1,
       "parserName": "JSON Parser",      
@@ -184,14 +184,14 @@ In addition, query params can be passed to filter results matching certain crite
 }
 ```
 
-    GET /api/v1/catalog/datasources/type/DEVICE/?deviceId=foobar&version=1
+    GET /api/v1/catalog/datasources/type/DEVICE/?id=foobar&version=1
     HTTP/1.1 404 Not Found
     Content-Type: application/json
 
 ```json
 {
   "responseCode": 1104,
-  "responseMessage": "Datasource not found for type [DEVICE], query params [[QueryParam{name='deviceId', value='foobar'}, QueryParam{name='version', value='1'}]]."
+  "responseMessage": "Datasource not found for type [DEVICE], query params [[QueryParam{name='id', value='foobar'}, QueryParam{name='version', value='1'}]]."
 }
 ```
 
@@ -206,7 +206,7 @@ PUT /api/v1/catalog/datasources/ID
  "description": "This is a nest device",
  "tags": "tag1",
  "type": "DEVICE",
- "typeConfig": "{\"deviceId\": 1, \"version\":1}",
+ "typeConfig": "{\"id\": 1, \"version\":1}",
  "dataFeedName": "feed1",
  "parserId": 1,
  "dataFeedType": "KAFKA"
@@ -229,10 +229,10 @@ PUT /api/v1/catalog/datasources/ID
     "tags": "tag1",
     "timestamp": 1444216784208,
     "type": "DEVICE",
-    "typeConfig": "{\"deviceId\": 1, \"version\":1}",
+    "typeConfig": "{\"id\": 1, \"version\":1}",
     "dataFeedName": "feed1",
     "parserId": 1,
-    "parserName": "JSON Parser",    
+    "parserName": "JSON Parser",
     "dataFeedType": "KAFKA"
   }
 }
@@ -260,7 +260,7 @@ DELETE /api/v1/catalog/datasources/ID
     "tags": "tag1",
     "timestamp": 1444216784208,
     "type": "DEVICE",
-    "typeConfig": "{\"deviceId\": 1, \"version\":1}",
+    "typeConfig": "{\"id\": 1, \"version\":1}",
     "dataFeedName": "feed1",
     "parserId": 1,
     "parserName": "JSON Parser",
@@ -293,11 +293,11 @@ POST /api/v1/catalog/deprecated/datasources
 
 ```json
 {
- "dataSourceName": "NestDevice",
+ "name": "NestDevice",
  "description": "Thisisanestdevice",
  "tags": "tag1",
  "type": "DEVICE",
- "typeConfig": "{\"deviceId\": 1, \"version\":1}"
+ "typeConfig": "{\"id\": 1, \"version\":1}"
 }
 ```
    
@@ -311,13 +311,13 @@ POST /api/v1/catalog/deprecated/datasources
   "responseCode": 1000,
   "responseMessage": "Success",
   "entity": {
-    "dataSourceId": 1,
-    "dataSourceName": "NestDevice",
+    "id": 1,
+    "name": "NestDevice",
     "description": "Thisisanestdevice",
     "tags": "tag1",
     "timestamp": 1439879278020,
     "type": "DEVICE",
-    "typeConfig": "{\"deviceId\": 1, \"version\":1}"
+    "typeConfig": "{\"id\": 1, \"version\":1}"
   }
 }
 ```
@@ -349,13 +349,13 @@ GET /api/v1/catalog/deprecated/datasources/ID
   "responseCode": 1000,
   "responseMessage": "Success",
   "entity": {
-    "dataSourceId": 1,
-    "dataSourceName": "NestDevice",
+    "id": 1,
+    "name": "NestDevice",
     "description": "Thisisanestdevice",
     "tags": "tag1",
     "timestamp": 1439879278020,
     "type": "DEVICE",
-    "typeConfig": "{\"deviceId\":\"1\",\"version\":1}"
+    "typeConfig": "{\"id\":\"1\",\"version\":1}"
   }
 }
 ```
@@ -386,22 +386,22 @@ GET /api/v1/catalog/deprecated/datasources
   "responseMessage": "Success",
   "entities": [
     {
-      "dataSourceId": 1,
-      "dataSourceName": "NestDevice",
+      "id": 1,
+      "name": "NestDevice",
       "description": "Thisisanestdevice",
       "tags": "tag1",
       "timestamp": 1439879278020,
       "type": "DEVICE",
-      "typeConfig": "{\"deviceId\":\"1\",\"version\":1}"
+      "typeConfig": "{\"id\":\"1\",\"version\":1}"
     },
     {
-      "dataSourceId": 2,
-      "dataSourceName": "New Device",
+      "id": 2,
+      "name": "New Device",
       "description": "Foo",
       "tags": "bar",
       "timestamp": 1439879484562,
       "type": "DEVICE",
-      "typeConfig": "{\"deviceId\":\"1\",\"version\":1}"
+      "typeConfig": "{\"id\":\"1\",\"version\":1}"
     }
     ..
     ..
@@ -417,7 +417,7 @@ GET /api/v1/catalog/deprecated/datasources/type/DEVICE
 
 In addition, query params can be passed to filter results matching certain criteria. For example to list all devices with deviceid 'nest' with tag 'tag1',
    
-    GET /api/v1/catalog/deprecated/datasources/type/DEVICE/?deviceId=nest&version=1
+    GET /api/v1/catalog/deprecated/datasources/type/DEVICE/?id=nest&version=1
     HTTP/1.1 200 OK
     Content-Type: application/json
   
@@ -427,26 +427,26 @@ In addition, query params can be passed to filter results matching certain crite
   "responseMessage": "Success",
   "entities": [
     {
-      "dataSourceId": 3,
-      "dataSourceName": "NestDevice",
+      "id": 3,
+      "name": "NestDevice",
       "description": "This is a nest device",
       "tags": "tag1",
       "timestamp": 1440060823724,
       "type": "DEVICE",
-      "typeConfig": "{\"deviceId\":\"nest\",\"version\":1}"
+      "typeConfig": "{\"id\":\"nest\",\"version\":1}"
     }
   ]
 }
 ```
 
-    GET /api/v1/catalog/deprecated/datasources/type/DEVICE/?deviceId=foobar&version=1
+    GET /api/v1/catalog/deprecated/datasources/type/DEVICE/?id=foobar&version=1
     HTTP/1.1 404 Not Found
     Content-Type: application/json
 
 ```json
 {
   "responseCode": 1104,
-  "responseMessage": "Datasource not found for type [DEVICE], query params [[QueryParam{name='deviceId', value='foobar'}, QueryParam{name='version', value='1'}]]."
+  "responseMessage": "Datasource not found for type [DEVICE], query params [[QueryParam{name='id', value='foobar'}, QueryParam{name='version', value='1'}]]."
 }
 ```
 
@@ -457,11 +457,11 @@ PUT /api/v1/catalog/deprecated/datasources/ID
 
 ```json
 {
- "dataSourceName": "NestDevice",
+ "name": "NestDevice",
  "description": "This is a nest device",
  "tags": "foobar",
  "type": "DEVICE",
- "typeConfig": "{\"deviceId\": 1, \"version\":1}"
+ "typeConfig": "{\"id\": 1, \"version\":1}"
 }
 ```
    
@@ -475,13 +475,13 @@ PUT /api/v1/catalog/deprecated/datasources/ID
   "responseCode": 1000,
   "responseMessage": "Success",
   "entity": {
-    "dataSourceId": 1,
-    "dataSourceName": "NestDevice",
+    "id": 1,
+    "name": "NestDevice",
     "description": "This is a nest device",
     "tags": "foobar",
     "timestamp": 1439882682614,
     "type": "DEVICE",
-    "typeConfig": "{\"deviceId\": 1, \"version\":1}"
+    "typeConfig": "{\"id\": 1, \"version\":1}"
   }
 }
 ```
@@ -502,13 +502,13 @@ DELETE /api/v1/catalog/deprecated/datasources/ID
   "responseCode": 1000,
   "responseMessage": "Success",
   "entity": {
-    "dataSourceId": 1,
-    "dataSourceName": "NestDevice",
+    "id": 1,
+    "name": "NestDevice",
     "description": "This is a nest device",
     "tags": "foobar",
     "timestamp": 1439882682614,
     "type": "DEVICE",
-    "typeConfig": "{\"deviceId\": 1, \"version\":1}"
+    "typeConfig": "{\"id\": 1, \"version\":1}"
   }
 }
 ```
@@ -540,7 +540,7 @@ POST /api/v1/catalog/parsers
 
 ```json
 {
-  "parserName": "TestParser",
+  "name": "TestParser",
   "className":"com.hortonworks.iotas.parsers.json.JsonParser",
   "parserSchema": {
                     "fields": [{"name": "DeviceName", "type": "STRING"}]
@@ -559,8 +559,8 @@ POST /api/v1/catalog/parsers
   "responseCode": 1000,
   "responseMessage": "Success",
   "entity": {
-    "parserId": 1,
-    "parserName": "TestParser",
+    "id": 1,
+    "name": "TestParser",
     "className": "com.hortonworks.iotas.parsers.json.JsonParser",
     "jarStoragePath": "/tmp/parsers-0.1-SNAPSHOT.jar",
     "parserSchema": {
@@ -607,8 +607,8 @@ GET /api/v1/catalog/parsers/{id}
   "responseCode": 1000,
   "responseMessage": "Success",
   "entity": {
-    "parserId": 1,
-    "parserName": "TestParser",
+    "id": 1,
+    "name": "TestParser",
     "className": "com.hortonworks.iotas.parsers.json.JsonParser",
     "jarStoragePath": "/tmp/parsers-0.1-SNAPSHOT.jar",
     "parserSchema": {
@@ -674,8 +674,8 @@ GET /api/v1/catalog/parsers
   "responseMessage": "Success",
   "entities": [
     {
-      "parserId": 1,
-      "parserName": "TestParser",
+      "id": 1,
+      "name": "TestParser",
       "className": "com.hortonworks.iotas.parsers.json.JsonParser",
       "jarStoragePath": "/tmp/parsers-0.1-SNAPSHOT.jar",
       "parserSchema": {
@@ -685,8 +685,8 @@ GET /api/v1/catalog/parsers
       "timestamp": 1439885941140
     },
     {
-      "parserId": 2,
-      "parserName": "New Parser",
+      "id": 2,
+      "name": "New Parser",
       "className": "com.hortonworks.iotas.parsers.TestParser",
       "jarStoragePath": "/tmp/test-0.1-SNAPSHOT.jar",
       "parserSchema": {
@@ -716,8 +716,8 @@ DELETE /api/v1/catalog/parsers/ID
   "responseCode": 1000,
   "responseMessage": "Success",
   "entity": {
-    "parserId": 1,
-    "parserName": "TestParser",
+    "id": 1,
+    "name": "TestParser",
     "className": "com.hortonworks.iotas.parsers.json.JsonParser",
     "jarStoragePath": "/tmp/parsers-0.1-SNAPSHOT.jar",
     "parserSchema": {
@@ -787,7 +787,7 @@ POST /api/v1/catalog/feeds
 ```json
 {
   "dataSourceId": 1,
-  "dataFeedName": "feed1",
+  "name": "feed1",
   "description": "test feed",
   "tags": "tag1",
   "parserId": 1,
@@ -805,9 +805,9 @@ POST /api/v1/catalog/feeds
   "responseCode": 1000,
   "responseMessage": "Success",
   "entity": {
-    "dataFeedId": 1,
+    "id": 1,
     "dataSourceId": 1,
-    "dataFeedName": "feed1",
+    "name": "feed1",
     "description": "test feed",
     "tags": "tag1",
     "parserId": 1,
@@ -844,9 +844,9 @@ GET /api/v1/catalog/feeds/ID
   "responseCode": 1000,
   "responseMessage": "Success",
   "entity": {
-    "dataFeedId": 1,
+    "id": 1,
     "dataSourceId": 1,
-    "dataFeedName": "feed1",
+    "name": "feed1",
     "description": "test feed",
     "tags": "tag1",
     "parserId": 1,
@@ -911,9 +911,9 @@ GET /api/v1/catalog/feeds
   "responseMessage": "Success",
   "entities": [
     {
-      "dataFeedId": 1,
+      "id": 1,
       "dataSourceId": 1,
-      "dataFeedName": "feed1",
+      "name": "feed1",
       "description": "test feed",
       "tags": "tag1",
       "parserId": 1,
@@ -921,9 +921,9 @@ GET /api/v1/catalog/feeds
       "timestamp": 1439884044033
     },
     {
-      "dataFeedId": 2,
+      "id": 2,
       "dataSourceId": 1,
-      "dataFeedName": "feed1",
+      "name": "feed1",
       "description": "new feed",
       "tags": "foo",
       "parserId": 1,
@@ -940,9 +940,9 @@ GET /api/v1/catalog/feeds
 
 Query params can be passed to filter results matching certain criteria. 
 
-For example to list the datafeeds for dataSourceId '1' with tag 'tag1',
+For example to list the datafeeds for id '1' with tag 'tag1',
    
-    GET /api/v1/catalog/feeds/?dataSourceId=1&tag=tag1
+    GET /api/v1/catalog/feeds/?id=1&tag=tag1
     HTTP/1.1 200 OK
     Content-Type: application/json
   
@@ -952,9 +952,9 @@ For example to list the datafeeds for dataSourceId '1' with tag 'tag1',
   "responseMessage": "Success",
   "entities": [
     {
-      "dataFeedId": 1,
+      "id": 1,
       "dataSourceId": 1,
-      "dataFeedName": "feed1",
+      "name": "feed1",
       "description": "test feed",
       "tags": "tag1",
       "parserId": 1,
@@ -984,7 +984,7 @@ PUT /api/v1/catalog/feeds/ID
 ```json
 {
   "dataSourceId": 1,
-  "dataFeedName": "feed1",
+  "name": "feed1",
   "description": "test feed",
   "tags": "tag1",
   "parserId": 1,
@@ -1002,9 +1002,9 @@ PUT /api/v1/catalog/feeds/ID
   "responseCode": 1000,
   "responseMessage": "Success",
   "entity": {
-    "dataFeedId": 1,
+    "id": 1,
     "dataSourceId": 1,
-    "dataFeedName": "feed1",
+    "name": "feed1",
     "description": "test feed",
     "tags": "tag1",
     "parserId": 1,
@@ -1030,9 +1030,9 @@ DELETE /api/v1/catalog/feeds/ID
   "responseCode": 1000,
   "responseMessage": "Success",
   "entity": {
-    "dataFeedId": 2,
+    "id": 2,
     "dataSourceId": 1,
-    "dataFeedName": "feed1",
+    "name": "feed1",
     "description": "test feed",
     "tags": "tag1",
     "parserId": 1,
