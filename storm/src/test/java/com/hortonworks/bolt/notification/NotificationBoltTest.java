@@ -9,9 +9,12 @@ import com.hortonworks.iotas.notification.common.NotificationContext;
 import com.hortonworks.iotas.notification.common.NotificationImpl;
 import com.hortonworks.iotas.notification.common.Notifier;
 import com.hortonworks.iotas.notification.notifiers.ConsoleNotifier;
+import com.hortonworks.iotas.notification.service.NotificationQueueHandler;
 import com.hortonworks.iotas.notification.store.hbase.HBaseNotificationStore;
 import com.hortonworks.iotas.util.ReflectionHelper;
 import mockit.Expectations;
+import mockit.Mock;
+import mockit.MockUp;
 import mockit.Mocked;
 import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
@@ -123,6 +126,13 @@ public class NotificationBoltTest {
         final Notification notification = new NotificationImpl.Builder(fieldsAndValues).build();
         NotificationBolt consoleNotificationBolt = new NotificationBolt("console_notifier");
         final ConsoleNotifier consoleNotifier = new ConsoleNotifier();
+        new MockUp<NotificationQueueHandler>() {
+            @Mock
+            public void enqueue(Notifier notifier, Notification notification1) {
+                //System.out.println("Mocked enqueue");
+                notifier.notify(notification);
+            }
+        };
         new Expectations() {{
             catalogRestClient.getNotifierInfo(anyString);
             result = notifierInfo;
@@ -146,9 +156,7 @@ public class NotificationBoltTest {
         stormConf.put("catalog.root.url", "http://localhost:8080/api/v1/catalog");
         stormConf.put("local.notifier.jar.path", "/tmp");
         consoleNotificationBolt.prepare(stormConf, null, collector);
-
         consoleNotificationBolt.execute(tuple);
-        Thread.sleep(100); // give some time for queue handler to process.
         new Verifications() {
             {
                 catalogRestClient.getNotifierInfo("console_notifier");
@@ -168,7 +176,12 @@ public class NotificationBoltTest {
         fieldsAndValues.put("temperature", "100");
         final Notification notification = new NotificationImpl
                 .Builder(fieldsAndValues).build();
-
+        new MockUp<NotificationQueueHandler>() {
+            @Mock
+            public void enqueue(Notifier notifier, Notification notification1) {
+                notifier.notify(notification);
+            }
+        };
         new Expectations() {{
             catalogRestClient.getNotifierInfo(anyString);
             result = notifierInfo;
@@ -194,7 +207,6 @@ public class NotificationBoltTest {
         bolt.prepare(stormConf, null, collector);
 
         bolt.execute(tuple);
-        Thread.sleep(100); // give some time for queue handler to process.
         new Verifications() {
             {
                 catalogRestClient.getNotifierInfo(NOTIFIER_NAME);
@@ -218,6 +230,17 @@ public class NotificationBoltTest {
         fieldsAndValues.put("foobar", "100");
         final Notification notification = new NotificationImpl
                 .Builder(fieldsAndValues).build();
+
+        new MockUp<NotificationQueueHandler>() {
+            @Mock
+            public void enqueue(Notifier notifier, Notification notification1) {
+                notifier.notify(notification);
+            }
+            @Mock
+            public void resubmit(String notificationId) {
+                notifier.notify(notification);
+            }
+        };
 
         new Expectations() {{
             catalogRestClient.getNotifierInfo(anyString);
@@ -244,7 +267,6 @@ public class NotificationBoltTest {
         bolt.prepare(stormConf, null, collector);
 
         bolt.execute(tuple);
-        Thread.sleep(100); // give some time for queue handler to process.
 
         new Verifications() {
             {
