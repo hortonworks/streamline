@@ -15,7 +15,7 @@ define(['utils/LangSupport',
 
     schema: function () {
       return {
-        parserName: {
+        name: {
           type: 'Text',
           title: localization.tt('lbl.parserName')+'*',
           editorClass: 'form-control',

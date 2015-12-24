@@ -2,7 +2,7 @@
     <ol class="breadcrumb">
         <li><a href="#!/">Home</a></li>
         <li><a href="#!/device-catalog">Device Catalog</a></li>
-        <li class="active">{{dsModel.name}}</li>
+        <li class="active">{{dsModel.dataSourceName}}</li>
     </ol>
 </div>
 <div class="container-fluid">
@@ -10,7 +10,7 @@
         <div class="col-md-6">
             <div class="panel animated"><!--fadeInUp class to animate-->
                 <div class="panel-head">
-                    <h5>Data Source Details</h5>
+                    <h5>Source Details</h5>
                     <!-- <div class="panel-control">
                         <button type="default" id="editDS" title="Edit Data Source"><i class="fa fa-pencil"></i></button>
                         {{#if showDF}}
@@ -24,7 +24,7 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label">Name: </label>
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" value="{{dsModel.name}}" readonly="">
+                                <input type="text" class="form-control" value="{{dsModel.dataSourceName}}" readonly="">
                             </div>
                         </div>
                         <div class="form-group">
@@ -59,7 +59,7 @@
         <div class="col-md-6" id="panelDF">
             <div class="panel animated"><!--fadeInUp class to animate-->
                 <div class="panel-head">
-                    <h5>Data Feed Details</h5>
+                    <h5>Feed Details</h5>
                     <!-- <div class="panel-control">
                         <button type="default" id="editDF" title="Edit Data Feed"><i class="fa fa-pencil"></i></button>
                         <button type="default" id="deleteDF" title="Delete Data Feed"><i class="fa fa-trash-o"></i></button>
@@ -70,19 +70,19 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label">Name: </label>
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" value="{{dfModel.name}}" readonly="">
+                                <input type="text" class="form-control" value="{{dsModel.dataFeedName}}" readonly="">
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-2 control-label">End Point: </label>
+                            <label class="col-sm-2 control-label">Type: </label>
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" value="{{dfModel.endpoint}}" readonly="">
+                                <input type="text" class="form-control" value="{{dsModel.dataFeedType}}" readonly="">
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="col-sm-2 control-label">Parser Id: </label>
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" value="{{dfModel.id}}" readonly="">
+                                <input type="text" class="form-control" value="{{dsModel.parserId}}" readonly="">
                             </div>
                         </div>
                     </form>

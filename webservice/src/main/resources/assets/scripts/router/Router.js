@@ -11,7 +11,7 @@ define([
 		routes: {
 			// Define some URL routes
 			// ''						: 'dashboardAction',
-			''						: 'parserRegistryAction',
+			''						: 'topologyAction',
 			'!/dashboard'			: 'dashboardAction',
 			'!/parser-registry'		: 'parserRegistryAction',
 			'!/device-catalog'		: 'deviceCatalogAction',
@@ -161,10 +161,33 @@ define([
 			VAppState.set({
 				'currentTab' : Globals.AppTabs.DataStreamEditor.value
 			});
-			//TODO - support to open existing topology in the editor
-			require(['views/topology/DataStreamMaster'], function(DataStreamMaster){
-				App.rContent.show(new DataStreamMaster());
-			});
+
+			if(id){
+				require(['models/VTopology'], function(VTopology){
+					var vTopology = new VTopology();
+					vTopology.set('id', id);
+					vTopology.fetch({
+						success: function(model, response, options){
+							vTopology.set(response.entity);
+							delete vTopology.attributes.entity;
+							delete vTopology.attributes.responseCode;
+							delete vTopology.attributes.responseMessage;
+							require(['views/topology/DataStreamMaster'], function(DataStreamMaster){
+								App.rContent.show(new DataStreamMaster({
+									model: vTopology
+								}));
+							});
+						},
+						error: function(model, response, options){
+							Utils.showError(model, response);
+						}
+					});
+				});
+			} else {
+				require(['views/topology/DataStreamMaster'], function(DataStreamMaster){
+					App.rContent.show(new DataStreamMaster());
+				});
+			}
 		},
 		
 		defaultAction: function(actions) {

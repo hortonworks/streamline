@@ -11,19 +11,19 @@ define(function(require) {
       'click .close': function(event) {
         event.preventDefault();
 
-        this.trigger('cancel');
+        this.trigger('closeModal');
 
         if (this.options.content && this.options.content.trigger) {
-          this.options.content.trigger('cancel', this);
+          this.options.content.trigger('closeModal', this);
         }
       },
       'click .cancel': function(event) {
         event.preventDefault();
 
-        this.trigger('cancel');
+        this.trigger('closeModal');
 
         if (this.options.content && this.options.content.trigger) {
-          this.options.content.trigger('cancel', this);
+          this.options.content.trigger('closeModal', this);
         }
       },
       'click .ok': function(event) {
@@ -63,7 +63,7 @@ define(function(require) {
         focusOk: true,
         okCloses: true,
         cancelText: 'Cancel',
-        allowCancel: true,
+        allowCancel: false,
         showFooter: true,
         escape: true,
         animate: true,
@@ -84,7 +84,7 @@ define(function(require) {
       //Create the modal container
       $el.html(options.template(options));
 
-      var $content = this.$content = $el.find('.modal-body')
+      var $content = this.$content = $el.find('.modal-body');
 
       //Insert the main content if it's a view
       if (content.$el) {
@@ -145,14 +145,14 @@ define(function(require) {
       if (this.options.allowCancel) {
         $backdrop.one('click', function() {
           if (self.options.content && self.options.content.trigger) {
-            self.options.content.trigger('cancel', self);
+            self.options.content.trigger('closeModal', self);
           }
 
-          self.trigger('cancel');
+          self.trigger('closeModal');
         });
         
         $(document).one('keyup.dismiss.modal', function (e) {
-          e.which == 27 && self.trigger('cancel');
+          e.which == 27 && self.trigger('closeModal');
 
           if (self.options.content && self.options.content.trigger) {
             e.which == 27 && self.options.content.trigger('shown', self);

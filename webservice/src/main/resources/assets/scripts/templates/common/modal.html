@@ -1,13 +1,17 @@
 <div class="modal-dialog {{mainClass}}" role="document">
 	<div class="modal-content">
 		{{#if title}} 
-		     <div class="modal-header" style="background-color: whiteSmoke;border-top: 1px solid #DDD;">
+		     <div class="modal-header">
 		       {{#if allowCancel}}
 		         <a class="close">&times;</a>
 		       {{/if}}
-		       <center>
-		   		 <h3 style="font-size: 16px;">{{tt title}}</h3>
-			   </center>	 
+		   		<h4 class="modal-title">
+		   			{{#if titleHtml}}
+					    {{{tt title}}}
+					  {{else}}
+					    {{tt title}}
+					  {{/if}}
+		   		</h4>
 		     </div>
 		{{/if}}
 		<div class="modal-body">{{content}}</div>

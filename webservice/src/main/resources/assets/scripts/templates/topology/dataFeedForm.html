@@ -1,15 +1,43 @@
 <form class="form-horizontal">
-	<div class="" data-fields="name"></div>
  	<div class="" data-fields="devices"></div>
- 	<hr/>
-    <h4 align="center">Selected Devices</h4>
-    <table class="table table-condensed table-bordered table-selected-device">
-        <thead>
-            <tr>
-                <th>Device Name</th>
-                <th>Parser Id</th>
-            </tr>
-        </thead>
-        <tbody id="table_deviceInfo"></tbody>
-    </table>
+    <hr/>
+    <div id="showDev" class="col-md-12 displayNone">
+        <div class="form-group">
+            <label class="control-label" align="right" for="c12_devices" style="padding-bottom: 10px;padding-left:15px;">Selected Device</label>
+            <div class="col-sm-12">
+                <table class="table table-condensed table-bordered table-selected-device">
+                    <thead>
+                        <tr>
+                            <th>Device Name</th>
+                            <th>Parser Name</th>
+                            <!-- <th>Actions</th> -->
+                        </tr>
+                    </thead>
+                    <tbody id="table_deviceInfo"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                <div class="panel panel-default">
+                    <div class="panel-heading" role="tab" id="headingTwo">
+                      <h4 class="panel-title">
+                        <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                          Configuration
+                        </a>
+                      </h4>
+                    </div>
+                    <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                      <div class="panel-body sourceModalConfig">
+                        {{#each fieldName}}
+                            <div class="sourceFields" data-fields="{{this}}"></div>
+                        {{/each}}
+                      </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </form>

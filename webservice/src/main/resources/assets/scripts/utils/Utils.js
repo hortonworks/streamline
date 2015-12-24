@@ -119,6 +119,27 @@ define(['require', 'bootstrap.notify'], function(require) {
     });
   };
 
+  Utils.notifyWarning = function(message,from,align){
+    $.notify({
+      // options
+      icon: 'fa fa-warning',
+      message: message
+    },{
+      // settings
+      element: 'body',
+      position: null,
+      type: 'warning',
+      animate: {
+        enter: 'animated fadeInDown',
+        exit: 'animated fadeOutUp'
+      },
+      placement: {
+        from: from ? from :"top",
+        align: align ? align :"right"
+      },
+    });
+  };
+
   Utils.expandPanel = function(e){
     var body = $('body');
     e.preventDefault();
@@ -172,13 +193,16 @@ define(['require', 'bootstrap.notify'], function(require) {
     var msg;
     if(typeof response === "string"){
       msg = model.responseJSON.responseMessage;
-    } else if(response.responseJSON.responseMessage){
-      msg = response.responseJSON.responseMessage;
+    } else if(_.isUndefined(response.responseJSON)){
+      msg = _.isEqual(response.statusText, 'Not Found') ? 'Api not found' : response.statusText;
     } else {
-      msg = response.responseJSON.message;
+      if(response.responseJSON.responseMessage){
+        msg = response.responseJSON.responseMessage;
+      } else {
+        msg = response.responseJSON.message;
+      }
     }
     Utils.notifyError(msg);
   };
-
   return Utils;
 });

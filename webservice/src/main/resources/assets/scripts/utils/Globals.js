@@ -61,6 +61,7 @@ define(['require'], function (require) {
     {value: '<=', valStr: 'less than or equal to'}
     // {value: 'contains', valStr: 'contains'},
   ];
+
   Globals.Functions.Logical = [
     {value: '&&', valStr: 'And'},
     {value: '!!', valStr: 'Or'}

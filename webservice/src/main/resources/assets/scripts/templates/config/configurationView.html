@@ -18,22 +18,24 @@
                         <h5>Kafka Component</h5>
                         <button class="btn btn-primary btn-sm pull-right" id="editKafka"><i class="fa fa-edit"></i></button>
                     </div>
+                    {{#each kafkaCombObj}}
                     <div class="panel-body">
                         <div class="row">
                             <div class="col-md-12">
                                 <form class="form-horizontal">
                                     <div class="form-group">
                                         <label class="col-sm-3 control-label">HOST: <span class="required">*</span></label>
-                                        <div class="col-sm-9"><input type="text" class="form-control" value="{{kafkaCombObj.hosts}}" readonly="readonly"></div>
+                                        <div class="col-sm-9"><input type="text" class="form-control" value="{{this.hosts}}" readonly="readonly"></div>
                                     </div>
                                     <div class="form-group">
                                         <label class="col-sm-3 control-label">PORT: <span class="required">*</span></label>
-                                        <div class="col-sm-9"><input type="text" class="form-control" value="{{kafkaCombObj.port}}" readonly="readonly"></div>
+                                        <div class="col-sm-9"><input type="text" class="form-control" value="{{this.port}}" readonly="readonly"></div>
                                     </div>
                                 </form>
                             </div>
                         </div>
                     </div>
+                    {{/each}}
                 </div>
             </div>
             {{/if}}
@@ -53,22 +55,24 @@
                         <h5>Storm Component</h5>
                         <button class="btn btn-primary btn-sm pull-right" id="editStorm"><i class="fa fa-edit"></i></button>
                     </div>
+                    {{#each stormCompObj}}
                     <div class="panel-body">
                         <div class="row">
                             <div class="col-md-12">
                                 <form class="form-horizontal">
                                     <div class="form-group">
                                         <label class="col-sm-3 control-label">HOST: <span class="required">*</span></label>
-                                        <div class="col-sm-9"><input type="text" class="form-control" value="{{stormCompObj.hosts}}" readonly="readonly"></div>
+                                        <div class="col-sm-9"><input type="text" class="form-control" value="{{this.hosts}}" readonly="readonly"></div>
                                     </div>
                                     <div class="form-group">
                                         <label class="col-sm-3 control-label">PORT: <span class="required">*</span></label>
-                                        <div class="col-sm-9"><input type="text" class="form-control" value="{{stormCompObj.port}}" readonly="readonly"></div>
+                                        <div class="col-sm-9"><input type="text" class="form-control" value="{{this.port}}" readonly="readonly"></div>
                                     </div>
                                 </form>
                             </div>
                          </div>
                     </div>
+                    {{/each}}
                 </div>
            </div>
            {{/if}}
