@@ -25,6 +25,7 @@ import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntimeStorm;
 import com.hortonworks.iotas.layout.runtime.rule.RuleRuntimeStorm;
+import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
 import com.hortonworks.iotas.layout.runtime.rule.topology.RuleProcessorMockBuilder;
 import com.hortonworks.iotas.layout.runtime.rule.topology.RulesTopologyTest;
 import mockit.Expectations;
@@ -46,7 +47,7 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 
 @RunWith(JMockit.class)
-public class RulesBoltTest extends RulesTopologyTest {
+public abstract class RulesBoltTest extends RulesTopologyTest {
     protected static final Logger log = LoggerFactory.getLogger(RulesBoltTest.class);
 
     // JUnit constructs for printing which tests are being run
@@ -90,8 +91,14 @@ public class RulesBoltTest extends RulesTopologyTest {
 
     @Before
     public void setup() throws Exception {
-        ruleProcessorRuntime = createRulesProcessorRuntime();
-        rulesBolt = (RulesBolt) createRulesBolt(ruleProcessorRuntime);
+        RulesBoltDependenciesFactory dependenciesBuilderFactory = createDependenciesBuilderFactory(createRulesProcessorBuilder(), getScriptType());
+        ruleProcessorRuntime = dependenciesBuilderFactory.createRuleProcessorRuntimeStorm();
+        createAndPrepareRulesBolt(dependenciesBuilderFactory);
+    }
+
+    private void createAndPrepareRulesBolt(RulesBoltDependenciesFactory dependenciesBuilderFactory) {
+        rulesBolt = (RulesBolt)createRulesBolt(dependenciesBuilderFactory);
+        rulesBolt.prepare(null, null, mockOutputCollector);
     }
 
     @Test

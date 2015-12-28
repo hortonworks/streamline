@@ -16,23 +16,34 @@
  * limitations under the License.
  */
 
-package com.hortonworks.iotas.layout.runtime.script.engine;
+package com.hortonworks.iotas.layout.runtime.rule;
 
-//TODO
-public class SqlStreamEngine implements ScriptEngine<Object> {
-    @Override
-    public Object getEngine() {
-        throw new UnsupportedOperationException("TODO: SqlStream Compiler Implementation");
-        /*Compiler comp = new Compiler(); // From Haohui's class
-        Evaluation obj = comp.compile("let x = 1:Integer,...; x + y > 0 and 1 < 2");
-        for (Tuple r : record) {
-            if (obj.filter(r)) {
-                action();
-            }
-        }*/
+import backtype.storm.tuple.Fields;
+
+import java.io.Serializable;
+
+public class RuleRuntimeStormDeclaredOutput implements Serializable {
+    final String streamId;
+    final Fields field;
+
+    public RuleRuntimeStormDeclaredOutput(String streamId, Fields field) {
+        this.streamId = streamId;
+        this.field = field;
     }
 
-    /*public String toString() {
+    public String getStreamId() {
+        return streamId;
+    }
 
-    }*/
+    public Fields getField() {
+        return field;
+    }
+
+    @Override
+    public String toString() {
+        return "RuleRuntimeStormDeclaredOutput{" +
+                "streamId='" + streamId + '\'' +
+                ", field=" + field +
+                '}';
+    }
 }

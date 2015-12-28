@@ -16,26 +16,15 @@
  * limitations under the License.
  */
 
-package com.hortonworks.iotas.layout.runtime.rule;
+package com.hortonworks.bolt.rules;
 
-import com.hortonworks.iotas.layout.design.rule.Rule;
+import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
+import mockit.integration.junit4.JMockit;
+import org.junit.runner.RunWith;
 
-import java.io.Serializable;
-
-/**
- * @param <I> Type of runtime input to this rule, for example {@code Tuple}
- * @param <E> Type of object required to execute this rule in the underlying streaming framework e.g {@code IOutputCollector}
- */
-public interface RuleRuntimeBuilder<I, E> extends Serializable {
-
-    /** Sets the {@link Rule} that is to be used in the subsequent steps of the build  process */
-    void setRule(Rule rule);
-
-    void buildExpression();
-
-    void buildScriptEngine();
-
-    void buildScript();
-
-    RuleRuntime<I, E> buildRuleRuntime();
+@RunWith(JMockit.class)
+public class RulesBoltSqlTest extends RulesBoltTest {
+    protected RulesBoltDependenciesFactory.ScriptType getScriptType() {
+        return RulesBoltDependenciesFactory.ScriptType.SQL;
+    }
 }

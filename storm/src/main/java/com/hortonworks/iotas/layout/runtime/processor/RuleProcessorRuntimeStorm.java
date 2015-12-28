@@ -19,10 +19,14 @@
 package com.hortonworks.iotas.layout.runtime.processor;
 
 import backtype.storm.task.OutputCollector;
-import backtype.storm.topology.OutputFieldsDeclarer;
+import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import com.hortonworks.iotas.layout.runtime.rule.RuleRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.RuleRuntimeStorm;
+import com.hortonworks.iotas.layout.runtime.rule.RuleRuntimeStormDeclaredOutput;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -33,11 +37,16 @@ public class RuleProcessorRuntimeStorm extends RuleProcessorRuntime<Tuple, Outpu
         super(builder);
     }
 
-    public void declareOutput(OutputFieldsDeclarer declarer) {
-        log.debug("Declaring output fields");
+    public List<RuleRuntimeStormDeclaredOutput> getDeclaredOutputs() {
+        final List<RuleRuntimeStormDeclaredOutput> declaredOutputs = new ArrayList<>();
+
         for (RuleRuntime<Tuple, OutputCollector> ruleRuntime : rulesRuntime) {
-            ((RuleRuntimeStorm)ruleRuntime).declareOutput(declarer);
+            final String streamId = ((RuleRuntimeStorm) ruleRuntime).getStreamId();
+            final Fields fields = ((RuleRuntimeStorm) ruleRuntime).getFields();
+            declaredOutputs.add(new RuleRuntimeStormDeclaredOutput(streamId, fields));
         }
+        log.debug("Declaring output fields [{}]", declaredOutputs);
+        return declaredOutputs;
     }
 }
 

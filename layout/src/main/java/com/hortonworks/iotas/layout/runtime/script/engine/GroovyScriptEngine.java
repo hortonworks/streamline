@@ -23,6 +23,7 @@ import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
 import javax.script.Bindings;
 import java.io.Serializable;
 
+/** Implementation of Groovy Script engine used to evaluate Groovy expressions for each input */
 public class GroovyScriptEngine implements ScriptEngine<javax.script.ScriptEngine>, Serializable {
     @Override
     public javax.script.ScriptEngine getEngine() {

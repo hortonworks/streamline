@@ -51,7 +51,7 @@ public abstract class AbstractProcessorBolt extends BaseRichBolt {
             Object iotasEvent = inputTuple.getValueByField(IotasEvent.IOTAS_EVENT);
             LOG.debug("Executing IotasEvent: [{}] with tuple: [{}]", iotasEvent, inputTuple);
 
-            if(iotasEvent != null && iotasEvent instanceof IotasEvent) {
+            if(iotasEvent instanceof IotasEvent) {
                 process(inputTuple, (IotasEvent) iotasEvent);
             } else {
                 LOG.debug("Received invalid input tuple:[{}] with iotas event:[{}] and it is not processed.", inputTuple, iotasEvent);
