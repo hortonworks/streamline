@@ -1055,6 +1055,175 @@ DELETE /api/v1/catalog/feeds/ID
 }
 ```
 
+## TopologyEditorMetadata 
+### Create
+POST /api/v1/catalog/system/topologyeditormetadata
+
+*Sample Input*
+
+```json
+{
+  "topologyId": 1,
+  "data": "some json stringified string"
+}
+```
+   
+*Success Response*
+
+    HTTP/1.1 201 Created
+    Content-Type: application/json
+    
+```json    
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entity": {
+    "topologyId": 1,
+    "data": "some json stringified string",
+    "timestamp": 1439884044033
+ }
+}
+```
+
+
+*Error Response*
+
+    HTTP/1.1 500 Internal Server Error
+    Content-Type: application/json
+    
+```json    
+{
+ "responseCode": 1102,
+ "responseMessage": "An exception with message [msg] was thrown while processing request."
+}
+```
+    
+### Get
+GET /api/v1/catalog/system/topologyeditormetadata/ID
+
+*Success Response*
+
+    GET /api/v1/catalog/system/topologyeditormetadata/1
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+
+```json
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entity": {
+    "topologyId": 1,
+    "data": "some json stringified string",
+    "timestamp": 1439884044033
+  }
+}
+```
+
+*Error Response*
+
+    GET /api/v1/catalog/system/topologyeditormetadata/10
+    HTTP/1.1 404 Not Found
+    Content-Type: application/json
+    
+```json    
+{
+  "responseCode": 1101,
+  "responseMessage": "Entity with id [10] not found."
+}
+```
+
+### Get All
+GET /api/v1/catalog/system/topologyeditormetadata
+
+    GET /api/v1/catalog/system/topologyeditormetadata
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    
+```json    
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entities": [
+    {
+      "topologyId": 1,
+      "data": "some json stringified string",
+      "timestamp": 1439884044033
+    },
+    {
+      "topologyId": 2,
+      "data": "some json stringified string 2",
+      "timestamp": 1439884162102
+    }
+    ..
+    ..
+  ]
+}
+```
+
+### Update
+PUT /api/v1/catalog/system/topologyeditormetadata/ID
+
+*Sample Input*
+
+```json
+{
+  "topologyId": 1,
+  "data": "some modified json stringified string"
+}
+```
+   
+*Success Response*
+
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    
+```json    
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entity": {
+    "topologyId": 1,
+    "data": "some modified json stringified string",
+    "timestamp": 1439884266987
+  }
+}
+```
+
+**Note:** The current behavior is for PUT to create a new resource if the resource with the given ID does not exist yet.
+ 
+### Delete
+DELETE /api/v1/catalog/system/topologyeditormetadata/ID
+
+*Success Response*
+
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    
+```json    
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entity": {
+    "topologyId": 1,
+    "data": "some json stringified string",
+    "timestamp": 1439884675590
+  }
+}
+```
+
+*Error Response*
+
+    DELETE /api/v1/catalog/system/topologyeditormetadata/10
+    HTTP/1.1 404 Not Found
+    Content-Type: application/json
+
+```json
+{
+  "responseCode": 1101,
+  "responseMessage": "Entity with id [10] not found."
+}
+```
+
 ### A sample use case
 
 Please go through [the sample use case](REST-Sample.md) to understand how these APIs can be used.

@@ -4,3 +4,4 @@ CREATE TABLE IF NOT EXISTS parser_info ("id" BIGINT NOT NULL, "name" VARCHAR(256
 CREATE TABLE IF NOT EXISTS datafeeds ("id" BIGINT NOT NULL, "dataSourceId" BIGINT , "name" VARCHAR(256) , "description" VARCHAR, "tags" VARCHAR, "parserId" BIGINT , "type" VARCHAR , CONSTRAINT pk PRIMARY KEY ("id"))
 CREATE TABLE IF NOT EXISTS topologies ("id" BIGINT NOT NULL, "name" VARCHAR (256), "config" VARCHAR, "timestamp"  BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
 CREATE TABLE IF NOT EXISTS topology_components ("id" BIGINT NOT NULL, "name" VARCHAR(256), "type" VARCHAR, "subType" VARCHAR, "streamingEngine" VARCHAR, "config" VARCHAR, "transformationClass" VARCHAR, "timestamp"  BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
+CREATE TABLE IF NOT EXISTS topology_editor_metadata ("topologyId" BIGINT NOT NULL, "data" VARCHAR, "timestamp"  BIGINT, CONSTRAINT pk PRIMARY KEY ("topologyId"))

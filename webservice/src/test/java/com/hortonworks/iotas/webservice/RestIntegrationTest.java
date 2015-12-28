@@ -12,6 +12,7 @@ import com.hortonworks.iotas.catalog.CatalogResponse;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.catalog.Topology;
+import com.hortonworks.iotas.catalog.TopologyEditorMetadata;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.test.IntegrationTest;
 import com.hortonworks.iotas.topology.TopologyComponent;
@@ -99,6 +100,7 @@ public class RestIntegrationTest {
             new ResourceTestElement(createNotifierInfo(1l, "testNotifier"), createNotifierInfo(1l, "testNotifierPut"), "1", rootUrl + "notifiers"),
             new ResourceTestElement(createDataSourceDto(1l, "testDataSourceWithDataFeed:" + System.currentTimeMillis()), createDataSourceDto(1l, "testDataSourceWithDataFeedPut:" + System.currentTimeMillis()), "1", rootUrl + "datasources"),
             new ResourceTestElement(createTopology(1l, "iotasTopology"), createTopology(1l, "iotasTopologyPut"), "1", rootUrl + "topologies"),
+            new ResourceTestElement(createTopologyEditorMetadata(1l, "{\"x\":5,\"y\":6}"), createTopologyEditorMetadata(1l, "{\"x\":6,\"y\":5}"), "1", rootUrl + "system/topologyeditormetadata"),
             new ResourceTestElement(createTopologyComponent(1l, "kafkaSpoutComponent", TopologyComponent.TopologyComponentType.SOURCE, "KAFKA"), createTopologyComponent(1l, "kafkaSpoutComponentPut", TopologyComponent.TopologyComponentType.SOURCE, "KAFKA") , "1", rootUrl + "system/componentdefinitions/SOURCE"),
             new ResourceTestElement(createTopologyComponent(2l, "parserProcessor", TopologyComponent .TopologyComponentType.PROCESSOR, "PARSER"), createTopologyComponent(2l, "parserProcessorPut", TopologyComponent.TopologyComponentType.PROCESSOR, "PARSER"), "2", rootUrl + "system/componentdefinitions/PROCESSOR"),
             new ResourceTestElement(createTopologyComponent(3l, "hbaseSink", TopologyComponent.TopologyComponentType.SINK, "HBASE"), createTopologyComponent(3l, "hbaseSinkPut", TopologyComponent.TopologyComponentType.SINK, "HBASE"), "3", rootUrl + "system/componentdefinitions/SINK"),
@@ -474,5 +476,13 @@ public class RestIntegrationTest {
         topology.setConfig("{}");
         topology.setTimestamp(System.currentTimeMillis());
         return topology;
+    }
+
+    private TopologyEditorMetadata createTopologyEditorMetadata (Long topologyId, String info) {
+        TopologyEditorMetadata topologyEditorMetadata = new TopologyEditorMetadata();
+        topologyEditorMetadata.setTopologyId(topologyId);
+        topologyEditorMetadata.setData(info);
+        topologyEditorMetadata.setTimestamp(System.currentTimeMillis());
+        return topologyEditorMetadata;
     }
 }

@@ -8,6 +8,7 @@ import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.catalog.Device;
 import com.hortonworks.iotas.catalog.Component;
 import com.hortonworks.iotas.catalog.Topology;
+import com.hortonworks.iotas.catalog.TopologyEditorMetadata;
 import com.hortonworks.iotas.storage.DataSourceSubType;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
@@ -523,6 +524,39 @@ public class CatalogService {
         topologyComponent.setId(id);
         return dao.remove(new StorableKey(TopologyComponent.NAME_SPACE,
                 topologyComponent.getPrimaryKey()));
+    }
+
+    public Collection<TopologyEditorMetadata> listTopologyEditorMetadata () {
+        Collection<TopologyEditorMetadata> topologyEditorMetadatas = this.dao.list(TopologyEditorMetadata.NAME_SPACE);
+        return topologyEditorMetadatas;
+    }
+
+    public TopologyEditorMetadata getTopologyEditorMetadata (Long topologyId) {
+        TopologyEditorMetadata topologyEditorMetadata = new TopologyEditorMetadata();
+        topologyEditorMetadata.setTopologyId(topologyId);
+        TopologyEditorMetadata result = this.dao.get(topologyEditorMetadata.getStorableKey());
+        return result;
+    }
+
+    public TopologyEditorMetadata addTopologyEditorMetadata (TopologyEditorMetadata topologyEditorMetadata) {
+        if (topologyEditorMetadata.getTimestamp() == null) {
+            topologyEditorMetadata.setTimestamp(System.currentTimeMillis());
+        }
+        this.dao.add(topologyEditorMetadata);
+        return topologyEditorMetadata;
+    }
+
+    public TopologyEditorMetadata addOrUpdateTopologyEditorMetadata (Long topologyId, TopologyEditorMetadata topologyEditorMetadata) {
+        topologyEditorMetadata.setTopologyId(topologyId);
+        topologyEditorMetadata.setTimestamp(System.currentTimeMillis());
+        this.dao.addOrUpdate(topologyEditorMetadata);
+        return topologyEditorMetadata;
+    }
+
+    public TopologyEditorMetadata removeTopologyEditorMetadata (Long topologyId) {
+        TopologyEditorMetadata topologyEditorMetadata = new TopologyEditorMetadata();
+        topologyEditorMetadata.setTopologyId(topologyId);
+        return dao.remove(topologyEditorMetadata.getStorableKey());
     }
 
 }
