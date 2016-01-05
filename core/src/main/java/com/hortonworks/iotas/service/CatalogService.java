@@ -1,5 +1,6 @@
 package com.hortonworks.iotas.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.ParserInfo;
@@ -15,6 +16,7 @@ import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.exception.StorageException;
 import com.hortonworks.iotas.topology.TopologyActions;
 import com.hortonworks.iotas.topology.TopologyComponent;
+import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import com.hortonworks.iotas.topology.TopologyLayoutValidator;
 import com.hortonworks.iotas.util.CoreUtils;
 import com.hortonworks.iotas.util.JsonSchemaValidator;
@@ -26,7 +28,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A service layer where we could put our business logic.
@@ -457,6 +461,7 @@ public class CatalogService {
     }
 
     public void deployTopology (Topology topology) throws Exception {
+        this.addUpdateNotifierInfoFromTopology(topology);
         this.topologyActions.deploy(topology);
         return;
     }
@@ -484,7 +489,7 @@ public class CatalogService {
         List<TopologyComponent> topologyComponents = new
                 ArrayList<TopologyComponent>();
         String ns = TopologyComponent.NAME_SPACE;
-        Collection<TopologyComponent> filtered = dao.<TopologyComponent>find (ns, params);
+        Collection<TopologyComponent> filtered = dao.<TopologyComponent>find(ns, params);
         for (TopologyComponent tc: filtered) {
             if (tc.getType().equals(componentType)) {
                 topologyComponents.add(tc);
@@ -557,6 +562,69 @@ public class CatalogService {
         TopologyEditorMetadata topologyEditorMetadata = new TopologyEditorMetadata();
         topologyEditorMetadata.setTopologyId(topologyId);
         return dao.remove(topologyEditorMetadata.getStorableKey());
+    }
+
+    // This method is present because currently NotificationBolt expects a notifier name and queries NotifierInfo rest endpoint to retrieve the information
+    // for that notifier. However, there is no UI present for NotifierInfo rest endpoint. As a result, in order for NotificationBolt to work as is, we need to
+    // add or update any notification sink components present in the topology json before we deploy the topology
+    private void addUpdateNotifierInfoFromTopology (Topology topology) throws Exception {
+        String config = topology.getConfig();
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map jsonMap = objectMapper.readValue(config, Map.class);
+        List<Map> notificationSinks = new ArrayList();
+        if (jsonMap != null) {
+            List<Map> dataSinks = (List) jsonMap.get(TopologyLayoutConstants.JSON_KEY_DATA_SINKS);
+            for (Map dataSink: dataSinks) {
+                if (("NOTIFICATION").equals(dataSink.get(TopologyLayoutConstants.JSON_KEY_TYPE))) {
+                    notificationSinks.add(dataSink);
+                }
+            }
+            for (Map notificationSink: notificationSinks) {
+                NotifierInfo notifierInfo = populateNotifierInfo(notificationSink);
+                NotifierInfo existingNotifierInfo = this.getNotifierInfoByName(notifierInfo.getName());
+                if (existingNotifierInfo != null) {
+                    this.addOrUpdateNotifierInfo(existingNotifierInfo.getId(), notifierInfo);
+                } else {
+                    this.addNotifierInfo(notifierInfo);
+                }
+            }
+        }
+    }
+
+    private NotifierInfo populateNotifierInfo (Map notificationSinkConfig) {
+        NotifierInfo notifierInfo = new NotifierInfo();
+        Map notifierInfoConfig = (Map) notificationSinkConfig.get(TopologyLayoutConstants.JSON_KEY_CONFIG);
+        notifierInfo.setName((String) notifierInfoConfig.get(TopologyLayoutConstants.JSON_KEY_NOTIFIER_NAME));
+        notifierInfo.setClassName((String) notifierInfoConfig.get(TopologyLayoutConstants.JSON_KEY_NOTIFIER_CLASSNAME));
+        notifierInfo.setJarFileName((String) notifierInfoConfig.get(TopologyLayoutConstants.JSON_KEY_NOTIFIER_JAR_FILENAME));
+        Map properties = (Map) notifierInfoConfig.get(TopologyLayoutConstants.JSON_KEY_NOTIFIER_PROPERTIES);
+        notifierInfo.setProperties(convertMapValuesToString(properties));
+        Map fieldValues = (Map) notifierInfoConfig.get(TopologyLayoutConstants.JSON_KEY_NOTIFIER_FIELD_VALUES);
+        notifierInfo.setFieldValues(convertMapValuesToString(fieldValues));
+        return notifierInfo;
+    }
+
+    private Map<String, String> convertMapValuesToString (Map<String, Object> map) {
+        Map<String, String> result = new HashMap<String, String>();
+        for (Map.Entry<String, Object> e : map.entrySet()) {
+            Object val = e.getValue();
+            if (val != null) {
+                result.put(e.getKey(), val.toString());
+            }
+        }
+        return result;
+    }
+
+    private NotifierInfo getNotifierInfoByName (String notifierName) throws Exception {
+        NotifierInfo notifierInfo = null;
+        QueryParam queryParam = new QueryParam(NotifierInfo.NOTIFIER_NAME, notifierName);
+        List<QueryParam> queryParams = new ArrayList<QueryParam>();
+        queryParams.add(queryParam);
+        Collection<NotifierInfo> existingNotifiers = this.listNotifierInfos(queryParams);
+        if ((existingNotifiers != null) && !existingNotifiers.isEmpty()) {
+            notifierInfo = existingNotifiers.iterator().next();
+        }
+        return notifierInfo;
     }
 
 }

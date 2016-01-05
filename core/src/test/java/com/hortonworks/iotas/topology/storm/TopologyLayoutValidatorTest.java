@@ -24,7 +24,7 @@ public class TopologyLayoutValidatorTest {
     ObjectMapper mapper;
     TopologyActions topologyActions = new StormTopologyActionsImpl();
 
-    String[] goodLayouts = {"topology/GoodLayout.json"};
+    String[] goodLayouts = {"topology/GoodLayout.json", "topology/goodlayoutnotificationbolt.json"};
     // if an element is added to the array below then corresponding error
     // message also needs to be added to badLayoutMessages array below
     String[] badLayouts = {
@@ -74,7 +74,7 @@ public class TopologyLayoutValidatorTest {
         String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, TopologyLayoutConstants.JSON_KEY_FS_URL),
         String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, TopologyLayoutConstants.JSON_KEY_ROTATION_INTERVAL),
         String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, TopologyLayoutConstants.JSON_KEY_NOTIFIER_NAME),
-        String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, TopologyLayoutConstants.JSON_KEY_NOTIFIER_CONFIG_KEY),
+        String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, TopologyLayoutConstants.JSON_KEY_NOTIFIER_PROTOCOL),
         String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, TopologyLayoutConstants.JSON_KEY_PARSED_TUPLES_STREAM),
         String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, TopologyLayoutConstants.JSON_KEY_FAILED_TUPLES_STREAM),
         String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, TopologyLayoutConstants.JSON_KEY_RULES_PROCESSOR_CONFIG),
@@ -102,19 +102,21 @@ public class TopologyLayoutValidatorTest {
     public void testTopologyLayoutGood () throws IOException,
             BadTopologyLayoutException {
         // Test for a valid topology layout json
-        URL topologyJson = Thread.currentThread().getContextClassLoader()
-                .getResource("topology/goodlayout.json");
-        Topology topology = mapper.readValue(topologyJson, Topology.class);
-        dao.addOrUpdate(topology);
-        try {
-            TopologyLayoutValidator validator = new TopologyLayoutValidator
-                    (topology.getConfig());
-            validator.validate();
-            topologyActions.validate(topology);
-        } catch (Exception ex) {
-            Assert.fail("Good topology should not throw an exception." + ex.getMessage());
+        for (int i = 0; i < this.goodLayouts.length; ++i) {
+            URL topologyJson = Thread.currentThread().getContextClassLoader()
+                    .getResource(goodLayouts[i]);
+            Topology topology = mapper.readValue(topologyJson, Topology.class);
+            dao.addOrUpdate(topology);
+            try {
+                TopologyLayoutValidator validator = new TopologyLayoutValidator
+                        (topology.getConfig());
+                validator.validate();
+                topologyActions.validate(topology);
+            } catch (Exception ex) {
+                Assert.fail("Good topology should not throw an exception." + ex.getMessage());
+            }
+            dao.remove(topology.getStorableKey());
         }
-        dao.remove(topology.getStorableKey());
     }
 
     @Test

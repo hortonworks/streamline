@@ -5,6 +5,7 @@ curl -X POST http://localhost:8080/api/v1/catalog/deprecated/datasources --data 
 curl -X POST http://localhost:8080/api/v1/catalog/notifiers --data @console_notifier -H "Content-Type: application/json" &&\
 curl -X POST http://localhost:8080/api/v1/catalog/notifiers --data @email_notifier -H "Content-Type: application/json"
 curl -X POST http://localhost:8080/api/v1/catalog/topologies --data @topology -H "Content-Type: application/json" &&\
+curl -X POST http://localhost:8080/api/v1/catalog/topologies --data @topology-with-notification-bolt -H "Content-Type: application/json" &&\
 curl -X POST http://localhost:8080/api/v1/catalog/system/componentdefinitions/SOURCE --data @kafka-topology-component -H "Content-Type: application/json" &&\
 curl -X POST http://localhost:8080/api/v1/catalog/system/componentdefinitions/PROCESSOR --data @rule-topology-component -H "Content-Type: application/json" &&\
 curl -X POST http://localhost:8080/api/v1/catalog/system/componentdefinitions/PROCESSOR --data @parser-topology-component -H "Content-Type: application/json" &&\
