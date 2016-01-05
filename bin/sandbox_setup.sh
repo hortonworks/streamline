@@ -6,7 +6,6 @@ cd storm
 mvn clean install -DskipTests=true
 #Following steps deal with starting up IoTaS server locally and running a topology
 cd /root/IoTaS
-git checkout origin/IOT-demo
 #Copy the 3 files core-site.xml, hdfs-site.xml and hbase-site.xml to the directory inside IoTaS which is storm/src/main/resources. Note that this step is not needed to setup IoTaS server itself. However, to run a sample IoTaS topology that interacts with hbase and hdfs we need to package these files in the topology jar. The topology jar will be created when we compile IoTaS at top level. The commands for copying these files are as below.
 cp /etc/hadoop/conf/core-site.xml /root/IoTaS/storm/src/main/resources/
 cp /etc/hadoop/conf/hdfs-site.xml /root/IoTaS/storm/src/main/resources/

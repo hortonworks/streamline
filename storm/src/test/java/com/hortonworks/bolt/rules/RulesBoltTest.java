@@ -37,7 +37,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.Ignore;
 import org.junit.rules.TestName;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
@@ -102,7 +101,6 @@ public abstract class RulesBoltTest extends RulesTopologyTest {
         rulesBolt.prepare(null, null, mockOutputCollector);
     }
 
-    @Ignore
     @Test
     public void test_allFieldsMatchTuple_oneRuleEvaluates_acks() throws Exception {
         new Expectations() {{
@@ -116,7 +114,6 @@ public abstract class RulesBoltTest extends RulesTopologyTest {
         executeAndVerifyCollectorCallsAcks(1, IOTAS_EVENT_MATCHES_TUPLE_VALUES);
     }
 
-    @Ignore
     @Test
     public void test_someFieldsMatchTuple_oneRuleEvaluates_acks() throws Exception {
         new Expectations() {{

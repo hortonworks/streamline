@@ -27,7 +27,7 @@ public class CatalogRestClient {
     private Client client;
 
     private static final String DEVICE_URL = "devices";
-    private static final String DATASOURCE_URL = "datasources";
+    private static final String DATASOURCE_URL = "deprecated/datasources";
     private static final String FEED_URL = "feeds";
     private static final String PARSER_URL = "parsers";
     private static final String NOTIFIER_URL = "notifiers";
@@ -72,9 +72,6 @@ public class CatalogRestClient {
             while (it.hasNext()) {
                 entities.add(mapper.treeToValue(it.next(), clazz));
             }
-            while (it.hasNext()) {
-                entities.add(mapper.treeToValue(it.next(), clazz));
-            }
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -109,9 +106,7 @@ public class CatalogRestClient {
     public ParserInfo getParserInfo(String deviceId, Long version) {
         String url = String.format("%s/%s/type/DEVICE?deviceId=%s&version=%s",
                 rootCatalogURL, DATASOURCE_URL, deviceId, version);
-        String catalogResponse = get(url, String.class);
         DataSource dataSource = getEntities(client.target(url), DataSource.class).get(0);
-
         DataFeed dataFeed = getEntities(client.target(String.format("%s/%s?dataSourceId=%s",
                 rootCatalogURL, FEED_URL, dataSource.getId())), DataFeed.class).get(0);
 
