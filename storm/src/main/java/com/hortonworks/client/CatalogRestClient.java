@@ -95,16 +95,16 @@ public class CatalogRestClient {
     }
 
     public NotifierInfo getNotifierInfo(String notifierName) {
-        return getEntities(client.target(String.format("%s/%s/?notifierName=%s",
+        return getEntities(client.target(String.format("%s/%s/?name=%s",
                                          rootCatalogURL, NOTIFIER_URL, notifierName)), NotifierInfo.class).get(0);
     }
     public DataSource getDataSource(String deviceId, Long version) {
-        return getEntities(client.target(String.format("%s/%s/type/DEVICE/?deviceId=%s&version=%s",
+        return getEntities(client.target(String.format("%s/%s/type/DEVICE/?id=%s&version=%s",
                                          rootCatalogURL, DATASOURCE_URL, deviceId, version)), DataSource.class).get(0);
     }
 
     public ParserInfo getParserInfo(String deviceId, Long version) {
-        String url = String.format("%s/%s/type/DEVICE?deviceId=%s&version=%s",
+        String url = String.format("%s/%s/type/DEVICE?id=%s&version=%s",
                 rootCatalogURL, DATASOURCE_URL, deviceId, version);
         DataSource dataSource = getEntities(client.target(url), DataSource.class).get(0);
         DataFeed dataFeed = getEntities(client.target(String.format("%s/%s?dataSourceId=%s",
