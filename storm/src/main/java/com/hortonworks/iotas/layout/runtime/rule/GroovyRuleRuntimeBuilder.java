@@ -20,31 +20,20 @@ package com.hortonworks.iotas.layout.runtime.rule;
 
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.layout.design.rule.Rule;
-import com.hortonworks.iotas.layout.design.rule.action.Action;
-import com.hortonworks.iotas.layout.runtime.ActionRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.condition.expression.GroovyExpression;
 import com.hortonworks.iotas.layout.runtime.script.GroovyScript;
 import com.hortonworks.iotas.layout.runtime.script.engine.GroovyScriptEngine;
-import com.hortonworks.iotas.layout.transform.AddHeaderTransform;
-import com.hortonworks.iotas.layout.transform.IdentityTransform;
-import com.hortonworks.iotas.layout.transform.ProjectionTransform;
-import com.hortonworks.iotas.layout.transform.Transform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-public class GroovyRuleRuntimeBuilder implements RuleRuntimeBuilder {
+public class GroovyRuleRuntimeBuilder extends BaseRuleRuntimeBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(GroovyRuleRuntimeBuilder.class);
     private Rule rule;
     private GroovyExpression groovyExpression;
     private GroovyScriptEngine groovyScriptEngine;
     private GroovyScript<Boolean> groovyScript;
-    private List<ActionRuntime> actions;
 
     @Override
     public void setRule(Rule rule) {
@@ -61,19 +50,6 @@ public class GroovyRuleRuntimeBuilder implements RuleRuntimeBuilder {
         groovyScriptEngine = new GroovyScriptEngine();
     }
 
-    @Override
-    public void buildActions() {
-        List<ActionRuntime> runtimeActions = new ArrayList<>();
-        for (Action action : rule.getActions()) {
-            String streamId = rule.getRuleProcessorName() + "." + rule.getName() + "."
-                    + rule.getId() + "." + action.getName();
-            /*
-             * Add an ActionRuntime to perform necessary transformation for notification
-             */
-            runtimeActions.add(new ActionRuntime(streamId, getTransforms(action)));
-        }
-        actions = runtimeActions;
-    }
 
     @Override
     public void buildScript() {
@@ -113,23 +89,8 @@ public class GroovyRuleRuntimeBuilder implements RuleRuntimeBuilder {
                 '}';
     }
 
-    /**
-     * Returns the necessary transforms to perform based on the action.
-     */
-    private List<Transform> getTransforms(Action action) {
-        List<Transform> transforms = new ArrayList<>();
-        if (!action.getOutputFieldsAndDefaults().isEmpty()) {
-            transforms.add(new ProjectionTransform(action.getOutputFieldsAndDefaults()));
-        }
-        if (action.isIncludeMeta()) {
-            Map<String, Object> headers = new HashMap<>();
-            headers.put("ruleId", rule.getId());
-            transforms.add(new AddHeaderTransform(headers));
-        }
-        // default is to just forward the event
-        if(transforms.isEmpty()) {
-            transforms.add(new IdentityTransform());
-        }
-        return transforms;
+    @Override
+    protected Rule getRule() {
+        return rule;
     }
 }

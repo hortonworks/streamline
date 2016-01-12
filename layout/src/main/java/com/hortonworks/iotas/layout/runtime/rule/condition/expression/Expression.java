@@ -20,17 +20,10 @@ package com.hortonworks.iotas.layout.runtime.rule.condition.expression;
 
 import com.hortonworks.iotas.common.Schema.Field;
 import com.hortonworks.iotas.layout.design.rule.condition.Condition;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 
-/**
- * Represents the expression of this {@link Condition} in implementation language syntax
- **/
 public abstract class Expression implements Serializable {
-    protected static final Logger log = LoggerFactory.getLogger(Expression.class);
-
     protected final Condition condition;
 
     protected String expression;
