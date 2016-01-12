@@ -54,7 +54,7 @@ define(['utils/LangSupport',
           placeHolder: localization.tt('lbl.tags'),
           validators: ['required']
         },
-        deviceId: {
+        id: {
           type: 'Text',
           title: localization.tt('lbl.deviceId')+'*',
           editorClass: 'form-control',
@@ -85,11 +85,11 @@ define(['utils/LangSupport',
           placeHolder: localization.tt('lbl.parserId'),
           validators: ['required']
         },
-        endpoint: {
+        dataFeedType: {
           type: 'Text',
-          title: localization.tt('lbl.endpoint')+'*',
+          title: localization.tt('lbl.feedType')+'*',
           editorClass: 'form-control',
-          placeHolder: localization.tt('lbl.endpoint'),
+          placeHolder: localization.tt('lbl.feedType'),
           validators: ['required']
         }
       };
@@ -100,17 +100,21 @@ define(['utils/LangSupport',
     getData: function () {
       var attrs = this.getValue();
       var obj = {
-        deviceId: attrs.deviceId,
+        id: attrs.id,
         version: attrs.version
       };
       attrs.typeConfig = JSON.stringify(obj);
-      delete attrs.deviceId;
+      delete attrs.id;
       delete attrs.version;
       if(this.model.id){
-        delete this.model.attributes.deviceId;
+        delete this.model.attributes.id;
         delete this.model.attributes.version;
         delete this.model.attributes.timestamp;
-        delete this.model.attributes.id;
+      }
+      if(this.model.has('entity')){
+        delete this.model.attributes.entity;
+        delete this.model.attributes.responseCode;
+        delete this.model.attributes.responseMessage;
       }
       return this.model.set(attrs);
     },

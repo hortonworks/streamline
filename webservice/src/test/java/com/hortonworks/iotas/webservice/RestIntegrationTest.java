@@ -4,14 +4,15 @@ package com.hortonworks.iotas.webservice;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import com.hortonworks.iotas.catalog.CatalogResponse;
 import com.hortonworks.iotas.catalog.Cluster;
-import com.hortonworks.iotas.catalog.Component;
 import com.hortonworks.iotas.catalog.DataFeed;
+import com.hortonworks.iotas.catalog.Component;
 import com.hortonworks.iotas.catalog.DataSource;
-import com.hortonworks.iotas.catalog.NotifierInfo;
+import com.hortonworks.iotas.catalog.CatalogResponse;
 import com.hortonworks.iotas.catalog.ParserInfo;
+import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.catalog.Topology;
+import com.hortonworks.iotas.catalog.TopologyEditorMetadata;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.test.IntegrationTest;
 import com.hortonworks.iotas.topology.TopologyComponent;
@@ -28,12 +29,13 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
+
 
 /**
  * Tests the entire code path for our rest APIs. Currently tests Post, Put, Get(list, ById) and Delete.
@@ -98,6 +100,7 @@ public class RestIntegrationTest {
             new ResourceTestElement(createNotifierInfo(1l, "testNotifier"), createNotifierInfo(1l, "testNotifierPut"), "1", rootUrl + "notifiers"),
             new ResourceTestElement(createDataSourceDto(1l, "testDataSourceWithDataFeed:" + System.currentTimeMillis()), createDataSourceDto(1l, "testDataSourceWithDataFeedPut:" + System.currentTimeMillis()), "1", rootUrl + "datasources"),
             new ResourceTestElement(createTopology(1l, "iotasTopology"), createTopology(1l, "iotasTopologyPut"), "1", rootUrl + "topologies"),
+            new ResourceTestElement(createTopologyEditorMetadata(1l, "{\"x\":5,\"y\":6}"), createTopologyEditorMetadata(1l, "{\"x\":6,\"y\":5}"), "1", rootUrl + "system/topologyeditormetadata"),
             new ResourceTestElement(createTopologyComponent(1l, "kafkaSpoutComponent", TopologyComponent.TopologyComponentType.SOURCE, "KAFKA"), createTopologyComponent(1l, "kafkaSpoutComponentPut", TopologyComponent.TopologyComponentType.SOURCE, "KAFKA") , "1", rootUrl + "system/componentdefinitions/SOURCE"),
             new ResourceTestElement(createTopologyComponent(2l, "parserProcessor", TopologyComponent .TopologyComponentType.PROCESSOR, "PARSER"), createTopologyComponent(2l, "parserProcessorPut", TopologyComponent.TopologyComponentType.PROCESSOR, "PARSER"), "2", rootUrl + "system/componentdefinitions/PROCESSOR"),
             new ResourceTestElement(createTopologyComponent(3l, "hbaseSink", TopologyComponent.TopologyComponentType.SINK, "HBASE"), createTopologyComponent(3l, "hbaseSinkPut", TopologyComponent.TopologyComponentType.SINK, "HBASE"), "3", rootUrl + "system/componentdefinitions/SINK"),
@@ -364,21 +367,21 @@ public class RestIntegrationTest {
 
     private DataSource createDataSource(Long id, String name) {
         DataSource ds = new DataSource();
-        ds.setDataSourceId(id);
-        ds.setDataSourceName(name);
+        ds.setId(id);
+        ds.setName(name);
         ds.setDescription("desc");
         ds.setTags("t1, t2, t3");
         ds.setTimestamp(System.currentTimeMillis());
         ds.setType(DataSource.Type.DEVICE);
-        ds.setTypeConfig("{\"deviceId\":\"1\",\"version\":1}");
+        ds.setTypeConfig("{\"id\":\"1\",\"version\":1}");
         return ds;
     }
 
     private DataFeed createDataFeed(Long id, String name) {
         DataFeed df = new DataFeed();
-        df.setDataFeedId(id);
+        df.setId(id);
         df.setDataSourceId(1L);
-        df.setDataFeedName(name);
+        df.setName(name);
         df.setType("kafka://host:port/topic");
         df.setParserId(id);
         return df;
@@ -395,9 +398,10 @@ public class RestIntegrationTest {
 
     private DataFeed createDataFeedWithDataSourceId(long datasourceId, String feedName) {
         DataFeed df = new DataFeed();
-        df.setDataFeedId(System.currentTimeMillis());
+        df.setId(System.currentTimeMillis());
         df.setDataSourceId(datasourceId);
-        df.setDataFeedName(feedName);
+        df.setName(feedName);
+        df.setName(feedName);
         df.setType("KAFKA");
         df.setParserId(datasourceId);
         return df;
@@ -405,8 +409,8 @@ public class RestIntegrationTest {
 
     private ParserInfo createParserInfo(Long id, String name) {
         ParserInfo pi = new ParserInfo();
-        pi.setParserId(id);
-        pi.setParserName(name);
+        pi.setId(id);
+        pi.setName(name);
         pi.setClassName("com.org.apache.TestParser");
         pi.setJarStoragePath("/tmp/parser.jar");
         pi.setParserSchema(new Schema.SchemaBuilder().fields(new Schema.Field("deviceId", Schema.Type.LONG),
@@ -445,7 +449,7 @@ public class RestIntegrationTest {
         notifierInfo.setClassName("A.B.C");
         notifierInfo.setId(id);
         notifierInfo.setJarFileName(name);
-        notifierInfo.setNotifierName(name);
+        notifierInfo.setName(name);
         return notifierInfo;
     }
 
@@ -472,5 +476,13 @@ public class RestIntegrationTest {
         topology.setConfig("{}");
         topology.setTimestamp(System.currentTimeMillis());
         return topology;
+    }
+
+    private TopologyEditorMetadata createTopologyEditorMetadata (Long topologyId, String info) {
+        TopologyEditorMetadata topologyEditorMetadata = new TopologyEditorMetadata();
+        topologyEditorMetadata.setTopologyId(topologyId);
+        topologyEditorMetadata.setData(info);
+        topologyEditorMetadata.setTimestamp(System.currentTimeMillis());
+        return topologyEditorMetadata;
     }
 }

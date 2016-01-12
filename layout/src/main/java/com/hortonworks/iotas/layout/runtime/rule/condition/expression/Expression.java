@@ -42,7 +42,11 @@ public abstract class Expression implements Serializable {
     /**
      * @return The expression of this {@link Condition} in implementation language syntax, ready to be evaluated
      */
-    public abstract String getExpression();
+    public abstract String asString();
+
+    public Condition getCondition() {
+        return condition;
+    }
 
     protected String getName(Field field) {
         return field.getName() + " ";

@@ -19,13 +19,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
+import java.util.Set;
+import java.util.Map;
+import java.util.List;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public abstract class AbstractStoreManagerTest {
     protected static final Logger log = LoggerFactory.getLogger(AbstractStoreManagerTest.class);
@@ -218,7 +218,7 @@ public abstract class AbstractStoreManagerTest {
 
             //Test method with query parameters(filter) matching only the item storable3
             final Collection<Storable> found = getStorageManager().find(namespace, buildQueryParamsForPrimaryKey(storable3));
-            Assert.assertEquals(found.size(), 1);
+            Assert.assertEquals(1, found.size());
             Assert.assertTrue(found.contains(storable3));
         }
 
@@ -265,8 +265,8 @@ public abstract class AbstractStoreManagerTest {
 
         protected ParserInfo createParserInfo(Long id, String name) {
             ParserInfo pi = new ParserInfo();
-            pi.setParserId(id);
-            pi.setParserName(name);
+            pi.setId(id);
+            pi.setName(name);
             pi.setClassName("com.org.apache.TestParser");
             pi.setJarStoragePath("/tmp/parser.jar");
             pi.setParserSchema(new Schema.SchemaBuilder().fields(new Schema.Field("deviceId", Schema.Type.LONG), new Schema.Field("deviceName", Schema.Type.STRING)).build());
@@ -289,9 +289,10 @@ public abstract class AbstractStoreManagerTest {
 
         protected DataFeed createDataFeed(Long id, String name) {
             DataFeed df = new DataFeed();
-            df.setDataFeedId(id);
+            df.setId(id);
             df.setDataSourceId(1L);
-            df.setDataFeedName(name);
+            df.setName(name);
+            df.setName(name);
             df.setType("KAFKA");
             df.setParserId(id);
             return df;
@@ -310,8 +311,8 @@ public abstract class AbstractStoreManagerTest {
 
         protected DataSource createDataSource(Long id, String name) {
             DataSource ds = new DataSource();
-            ds.setDataSourceId(id);
-            ds.setDataSourceName(name);
+            ds.setId(id);
+            ds.setName(name);
             ds.setDescription("desc");
             ds.setTags("t1, t2, t3");
             ds.setTimestamp(System.currentTimeMillis());
@@ -333,7 +334,7 @@ public abstract class AbstractStoreManagerTest {
 
         protected Device createDevice(String id, Long version, Long datafeedId) {
             Device d = new Device();
-            d.setDeviceId(id);
+            d.setId(id);
             d.setVersion(version);
             d.setDataSourceId(datafeedId);
             return d;

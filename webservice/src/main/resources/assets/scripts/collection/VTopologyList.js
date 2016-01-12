@@ -8,14 +8,14 @@ define(['require',
     //Prototypal attributes
     {
 
-      url: Globals.baseURL + '/api/v1/catalog/datastreams',
+      url: Globals.baseURL + '/api/v1/catalog/topologies',
 
       model: vTopology,
 
 
       initialize: function () {
         this.modelName = 'VTopology';
-        this.modelAttrName = 'dataStreamId';
+        this.modelAttrName = 'id';
         this.bindErrorEvents();
       }
     },

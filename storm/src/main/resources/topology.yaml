@@ -2,7 +2,7 @@ kafka.spout.zkUrl: "localhost:2181"
 kafka.spout.topic: "nest-topic"
 kafka.spout.zkRoot: "/Iotas-kafka-spout"
 kafka.spout.id: "nest-kafka-spout"
-#parser.parserId: 1
+#parser.id: 1
 hbase.row.key: "device_id"
 hbase.root.dir: "file:///tmp/hbase"
 hbase.column.family: "cf"

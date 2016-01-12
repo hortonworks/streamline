@@ -27,6 +27,7 @@ define(['require',
       var self = this;
       require(['views/topology/DataSinkForm'], function(DataSinkForm){
         self.view = new DataSinkForm({
+          model: self.model,
           type: self.type
         });
         self.rForm.show(self.view);

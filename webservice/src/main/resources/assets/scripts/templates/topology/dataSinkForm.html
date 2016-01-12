@@ -1,5 +1,21 @@
 <form class="form-horizontal">
-	{{#each fieldName}}
-  		<div class="" data-fields="{{this}}"></div>
-  	{{/each}}
+	<!-- <div class="" data-fields="name"></div> -->
+	<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+      <div class="panel panel-default">
+          <div class="panel-heading" role="tab" id="headingTwo">
+            <h4 class="panel-title">
+              <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                Configuration
+              </a>
+            </h4>
+          </div>
+          <div id="collapseTwo" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingTwo" aria-expanded="true">
+            <div class="panel-body sourceModalConfig">
+              {{#each fieldName}}
+                  <div class="sourceFields" data-fields="{{this}}"></div>
+              {{/each}}
+            </div>
+          </div>
+      </div>
+  </div>
 </form>

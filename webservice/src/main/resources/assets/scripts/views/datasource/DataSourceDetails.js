@@ -16,7 +16,7 @@ define(['require',
     templateHelpers: function() {
       return {
         dsModel: this.dsModel.attributes,
-        showDF: this.dfModel.has('dataFeedId'),
+        showDF: this.dfModel.has('id'),
         dfModel: this.dfModel.attributes
       };
     },
@@ -35,7 +35,7 @@ define(['require',
     initialize: function (options) {
       _.extend(this, _.pick(options, 'dsModel'));
       this.dsModel.set('version', JSON.parse(this.dsModel.get('typeConfig')).version);
-      this.dsModel.set('deviceId', JSON.parse(this.dsModel.get('typeConfig')).deviceId);
+      this.dsModel.set('id', JSON.parse(this.dsModel.get('typeConfig')).id);
       this.dfModel = new VDatafeed();
       this.fetchFeed();
     },
@@ -104,7 +104,7 @@ define(['require',
       delete this.dsModel.attributes.responseCode;
       delete this.dsModel.attributes.responseMessage;
       this.dsModel.set('version', JSON.parse(this.dsModel.get('typeConfig')).version);
-      this.dsModel.set('deviceId', JSON.parse(this.dsModel.get('typeConfig')).deviceId);
+      this.dsModel.set('id', JSON.parse(this.dsModel.get('typeConfig')).id);
     },
     cleanUpDFModel: function(){
       delete this.dfModel.attributes.entity;

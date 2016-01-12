@@ -68,17 +68,6 @@ require.config({
     'Backbone.BootstrapModal': {
       deps: ['jquery', 'underscore', 'backbone']
     },
-    'jquery-toggles': {
-      deps: ['jquery']
-    },
-    'jquery-multiselect': {
-      deps: ['jquery'],
-      exports : 'jquery-multiselect'
-    },
-    'jquery-multiselect-filter': {
-      deps: ['jquery', 'jquery-multiselect'],
-      exports : 'jquery-multiselect-filter'
-    },
     'bootstrap-tag': {
       deps: ['jquery'],
     },
@@ -88,15 +77,8 @@ require.config({
     'jquery-ui': {
       deps: ['jquery'],
     },
-    'jquery-timeago': {
-      deps: ['jquery'],
-    },
     globalize: {
       exports: 'Globalize'
-    },
-    moment: {
-      deps: ['jquery'],
-      exports: 'moment'
     },
     hbs: {
       deps: ['underscore', 'handlebars']
@@ -111,10 +93,6 @@ require.config({
     'typeahead': {
       deps: ['jquery']
     },
-    jsPlumb: {
-      deps: ['jquery'],
-      exports: 'jsPlumb'
-    },
     select2: {
       deps: ['jquery'],
       exports: 'select2'
@@ -125,6 +103,9 @@ require.config({
     },
     'sql': {
       deps: ['jquery']
+    },
+    'x-editable': {
+      deps: ['bootstrap']
     }
   },
 
@@ -147,15 +128,10 @@ require.config({
     'bootstrap.filestyle': '../libs/bower/bootstrap/js/bootstrap-filestyle.min',
     'bootstrap.notify': '../libs/bower/bootstrap/js/bootstrap-notify',
     'bootstrap-multiselect': '../libs/bower/bootstrap-multiselect/js/bootstrap-multiselect',
-    'jquery-toggles': '../libs/bower/jquery-toggles/js/toggles.min',
     'bootstrap-tag': '../libs/other/bootstrap-tag/js/bootstrap-tag',
-    'jquery-multiselect': '../libs/bower/jquery-multiselect/js/jquery.multiselect',
-    'jquery-multiselect-filter': '../libs/bower/jquery-multiselect/js/jquery.multiselect.filter',
     'jquery-ui': '../libs/bower/jquery-ui/js/jquery-ui-1.10.4.custom.min',
-    'jquery-timeago': '../libs/bower/jquery-timeago/js/jquery.timeago',
     'globalize': '../libs/bower/globalize/js/globalize',
     'gblMessages' : '../scripts/globalize',
-    'moment': '../libs/bower/moment/js/moment-with-langs.min',
     'requirejs.text': '../libs/bower/requirejs-text/js/text',
     'bootbox': '../libs/bower/bootbox/js/bootbox',
     'handlebars': '../libs/other/require-handlebars-plugin/js/handlebars',
@@ -167,9 +143,9 @@ require.config({
     'd3-tip':'../libs/other/d3/d3-tip',
     'typeahead': '../libs/other/typeahead/js/typeahead',
     'tmpl': 'templates',
-    'jsPlumb':'../libs/other/jsplumb/js/jsPlumb-2.0.4',
     'codemirror':'../libs/other/codemirror/lib/codemirror',
     'sql':'../libs/other/codemirror/mode/sql',
+    'x-editable':'../libs/bower/x-editable/js/bootstrap-editable',
   },
 
   /**
@@ -189,8 +165,7 @@ require(['App',
       'backbone.forms',
       'select2',
       'typeahead',
-      'bootstrap-tag',
-      'jsPlumb'
+      'bootstrap-tag'
   ], function(App, Router) {
   App.appRouter = new Router();
   App.start();

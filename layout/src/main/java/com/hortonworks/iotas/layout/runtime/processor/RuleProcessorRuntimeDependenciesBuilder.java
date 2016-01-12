@@ -19,6 +19,7 @@
 package com.hortonworks.iotas.layout.runtime.processor;
 
 import com.hortonworks.iotas.layout.design.component.RulesProcessor;
+import com.hortonworks.iotas.layout.design.component.RulesProcessorBuilder;
 import com.hortonworks.iotas.layout.design.rule.Rule;
 import com.hortonworks.iotas.layout.runtime.rule.RuleRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.RuleRuntimeBuilder;
@@ -29,13 +30,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RuleProcessorRuntimeDependenciesBuilder {
-    protected static final Logger log = LoggerFactory.getLogger(RuleProcessorRuntimeDependenciesBuilder.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(RuleProcessorRuntimeDependenciesBuilder.class);
 
     private final RulesProcessor rulesProcessor;
     private final RuleRuntimeBuilder ruleRuntimeBuilder;
 
-    public RuleProcessorRuntimeDependenciesBuilder(RulesProcessor rulesProcessor, RuleRuntimeBuilder ruleRuntimeBuilder) {
-        this.rulesProcessor = rulesProcessor;
+    public RuleProcessorRuntimeDependenciesBuilder(RulesProcessorBuilder rulesProcessorBuilder, RuleRuntimeBuilder ruleRuntimeBuilder) {
+        this.rulesProcessor = rulesProcessorBuilder.build();
         this.ruleRuntimeBuilder = ruleRuntimeBuilder;
     }
 
@@ -52,9 +53,9 @@ public class RuleProcessorRuntimeDependenciesBuilder {
                 ruleRuntimeBuilder.buildActions();
                 RuleRuntime ruleRuntime = ruleRuntimeBuilder.buildRuleRuntime();
                 rulesRuntime.add(ruleRuntime);
-                log.trace("Added {}", ruleRuntime);
+                LOG.trace("Added {}", ruleRuntime);
             }
-            log.debug("Finished building. {}", this);
+            LOG.debug("Finished building. [{}]", this);
         }
         return rulesRuntime;
     }

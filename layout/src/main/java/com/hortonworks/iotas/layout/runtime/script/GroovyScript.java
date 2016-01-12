@@ -19,7 +19,10 @@
 package com.hortonworks.iotas.layout.runtime.script;
 
 import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.layout.runtime.rule.condition.expression.Expression;
 import com.hortonworks.iotas.layout.runtime.script.engine.ScriptEngine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
@@ -27,21 +30,22 @@ import javax.script.ScriptException;
 import java.util.Map;
 
 /**
- * TODO
+ * Evaluates the {@link Expression} for each {@code Input} using the provided Groovy Engine
  *
  * @param <O> Type of output returned after the script is evaluated with {@link GroovyScript#evaluate(IotasEvent)}.
  */
 public class GroovyScript<O> extends Script<IotasEvent, O, javax.script.ScriptEngine> {
+    private static final Logger LOG = LoggerFactory.getLogger(GroovyScript.class);
 
     public GroovyScript(String expression,
                         ScriptEngine<javax.script.ScriptEngine> scriptEngine) {
         super(expression, scriptEngine);
-        log.debug("Created Groovy Script: {}", super.toString());
+        LOG.debug("Created Groovy Script: {}", super.toString());
     }
 
     @Override
     public O evaluate(IotasEvent iotasEvent) throws ScriptException {
-        log.debug("Evaluating [{}] with [{}]", expression, iotasEvent);
+        LOG.debug("Evaluating [{}] with [{}]", expression, iotasEvent);
         O evaluatedResult = null;
 
         try {
@@ -49,11 +53,11 @@ public class GroovyScript<O> extends Script<IotasEvent, O, javax.script.ScriptEn
                 final Map<String, Object> fieldsToValues = iotasEvent.getFieldsAndValues();
                 if (fieldsToValues != null) {
                     getEngineScopeBindings().putAll(fieldsToValues);
-                    log.debug("Set script binding to [{}]", fieldsToValues);
+                    LOG.debug("Set script binding to [{}]", fieldsToValues);
 
                     evaluatedResult = (O) scriptEngine.eval(expression);
 
-                    log.debug("Expression [{}] evaluated to [{}]", expression, evaluatedResult);
+                    LOG.debug("Expression [{}] evaluated to [{}]", expression, evaluatedResult);
                 }
             }
         } finally {
@@ -61,7 +65,6 @@ public class GroovyScript<O> extends Script<IotasEvent, O, javax.script.ScriptEn
             // to evaluate the expression when the iotasEvent doesn't have such key
             clearBindings();
         }
-
         return evaluatedResult;
     }
 
@@ -71,6 +74,6 @@ public class GroovyScript<O> extends Script<IotasEvent, O, javax.script.ScriptEn
 
     private void clearBindings() {
         getEngineScopeBindings().clear();
-        log.debug("Script binding reset to empty binding");
+        LOG.debug("Script binding reset to empty binding");
     }
 }

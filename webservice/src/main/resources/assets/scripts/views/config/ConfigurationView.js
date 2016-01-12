@@ -32,6 +32,8 @@ define([
     
     initialize: function(options) {
       var self = this;
+      this.stormCompObj = [];
+      this.kafkaCompObj = [];
       _.extend(this, _.pick(options, 'clusterCollection','showStormBtn','showKafkaBtn'));
       if(this.clusterCollection.models.length){
         _.each(this.clusterCollection.models, function(model){
@@ -48,10 +50,10 @@ define([
       compCollection.fetch({
         async: false
       });
-      if(type === 'STORM'){
-        this.stormCompObj = compCollection.models[0].attributes;
-      } else if(type ==='KAFKA'){
-        this.kafkaCompObj = compCollection.models[0].attributes;
+      if(compCollection.models.length && type === 'STORM'){
+        this.stormCompObj.push(compCollection.models[0].attributes);
+      } else if(compCollection.models.length && type ==='KAFKA'){
+        this.kafkaCompObj.push(compCollection.models[0].attributes);
       }
     },
 
@@ -109,20 +111,26 @@ define([
     saveStormComponent: function(componentModel, clusterObj){
       var that = this;
       var msg;
+      var options = {};
       if(componentModel.has('id')){
         msg = localization.tt('dialogMsg.componentUpdatedSuccessfully');
       } else {
         msg = localization.tt('dialogMsg.newComponentAddedSuccessfully');
        }
-       componentModel.urlRoot = VComponent.prototype.urlRoot + clusterObj.id + "/components";
-       componentModel.save({},{
+       componentModel.set('clusterId',clusterObj.id);
+       componentModel.set('config', '');
+       componentModel.deploy({
+        id: clusterObj.id,
+        data: JSON.stringify([componentModel.toJSON()]),
+        dataType:'json',
+        contentType: 'application/json',
         success:function(model, response, options){
           Utils.notifySuccess(msg);
           that.showStormBtn = false;
           that.view.trigger('closeModal');
-          that.stormCompObj = response.entity;
+          that.stormCompObj = model.entities;
           that.render();
-        }, 
+        },
         error: function(model, response, options){
           Utils.showError(model, response);
           that.view.trigger('closeModal');
@@ -190,15 +198,20 @@ define([
       } else {
         msg = localization.tt('dialogMsg.newComponentAddedSuccessfully');
       }
-      componentModel.urlRoot = VComponent.prototype.urlRoot + clusterObj.id + "/components";
-      componentModel.save({},{
+      componentModel.set('clusterId',clusterObj.id);
+      componentModel.set('config', '');
+      componentModel.deploy({
+        id: clusterObj.id,
+        data: JSON.stringify([componentModel.toJSON()]),
+        dataType:'json',
+        contentType: 'application/json',
         success:function(model, response, options){
           Utils.notifySuccess(msg);
           that.showKafkaBtn = false;
           that.view.trigger('closeModal');
-          that.kafkaCompObj = response.entity;
+          that.kafkaCompObj = model.entities;
           that.render();
-        }, 
+        },
         error: function(model, response, options){
           Utils.showError(model, response);
           that.view.trigger('closeModal');

@@ -26,6 +26,7 @@ import java.io.Serializable;
  *
  */
 public interface RuleRuntimeBuilder extends Serializable {
+
     /** Sets the {@link Rule} that is to be used in the subsequent steps of the build  process */
     void setRule(Rule rule);
 

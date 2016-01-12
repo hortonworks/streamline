@@ -139,6 +139,7 @@ define(['require',
 			thisGraph.nodeParentType = obj.parentStep;
 			thisGraph.currentStep = obj.currentStep;
 			thisGraph.icon = obj.icon;
+			thisGraph.nodeId = obj.id;
 			d3.event = obj.event;
 			thisGraph.createNode();
 		});
@@ -396,7 +397,13 @@ define(['require',
 					// thisGraph.selectElementContents(txtNode);
 					// txtNode.focus();
 				} else {
-					thisGraph.vent.trigger('click:topologyNode', {parentType: d.parentType, currentType: d.currentType});
+					thisGraph.vent.trigger('click:topologyNode', 
+						{
+							parentType: d.parentType, 
+							currentType: d.currentType, 
+							nodeId: d.nodeId
+						}
+					);
 				}
 			}
 		}
@@ -447,9 +454,21 @@ define(['require',
 				y: xycoords[1],
 				parentType: thisGraph.nodeParentType,
 				currentType: thisGraph.currentStep,
-				icon: thisGraph.icon
+				icon: thisGraph.icon,
+				nodeId: thisGraph.nodeId
 			};
 		thisGraph.nodes.push(d);
+		if(d.currentType === 'Device'){
+			var newObject = jQuery.extend(true, {}, d);
+			newObject.id = thisGraph.idct++;
+			newObject.nodeId = 'Parser'+d.nodeId;
+			newObject.title = 'Parser';
+			newObject.x += 170;
+			newObject.parentType = 'Processor';
+			newObject.currentType = 'Parser';
+			thisGraph.nodes.push(newObject);
+			thisGraph.edges.push({source: d, target: newObject});
+		}
 		thisGraph.updateGraph();
 		state.graphMouseDown = false;
 	};
@@ -467,12 +486,19 @@ define(['require',
 			selectedEdge = state.selectedEdge;
 
 		switch (d3.event.keyCode) {
-			case consts.BACKSPACE_KEY:
+			// case consts.BACKSPACE_KEY:
 			case consts.DELETE_KEY:
 				d3.event.preventDefault();
 				if (selectedNode) {
 					thisGraph.nodes.splice(thisGraph.nodes.indexOf(selectedNode), 1);
 					thisGraph.spliceLinksForNode(selectedNode);
+					thisGraph.vent.trigger('delete:topologyNode', 
+						{
+							parentType: selectedNode.parentType, 
+							currentType: selectedNode.currentType, 
+							nodeId: selectedNode.nodeId
+						}
+					);
 					state.selectedNode = null;
 					thisGraph.updateGraph();
 				} else if (selectedEdge) {

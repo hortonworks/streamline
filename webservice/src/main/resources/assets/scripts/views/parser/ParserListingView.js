@@ -57,13 +57,13 @@ define([
     },
     getColumns: function(){
       return [{
-        name: 'parserId',
+        name: 'id',
         cell: 'string',
         label: localization.tt('lbl.parserId'),
         hasTooltip: false,
         editable: false
       }, {
-        name: 'parserName',
+        name: 'name',
         cell: 'string',
         label: localization.tt('lbl.parserName'),
         hasTooltip: false,
@@ -147,7 +147,7 @@ define([
         return false;
       }
       formData.append('parserJar', attrs.parserJar);
-      obj.parserName = attrs.parserName;
+      obj.name = attrs.name;
       obj.className = attrs.className;
       obj.version = attrs.version;
       formData.append('parserInfo', JSON.stringify(obj));

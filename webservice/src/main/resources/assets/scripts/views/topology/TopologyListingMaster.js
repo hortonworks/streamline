@@ -5,8 +5,9 @@ define(['require',
   'modules/Modal',
   'hbs!tmpl/topology/topologyListingMaster',
   'collection/VTopologyList',
-  'utils/TableLayout'
-], function(require, localization, Utils, Globals, Modal, tmpl, VTopologyList, TableLayout) {
+  'utils/TableLayout',
+  'bootbox',
+], function(require, localization, Utils, Globals, Modal, tmpl, VTopologyList, TableLayout, bootbox) {
   'use strict';
 
   var TopologyListingView = Marionette.LayoutView.extend({
@@ -14,7 +15,8 @@ define(['require',
     template: tmpl,
 
     events: {
-      'click #deleteTopology'     : 'evDeleteTopology'
+      'click #deleteTopology'     : 'evDeleteTopology',
+      'click #addTopology'        : 'evAddTopology'
     },
 
     regions: {
@@ -32,19 +34,27 @@ define(['require',
 
     onRender:function(){
       this.showTable();
-      this.fetchSummary();
+      this.fetchData();
     },
 
-    fetchSummary: function(){
-      // this.collection.fetch({reset:true});
-      for(var i = 1 ; i <= 5; i++){
-        var model = new Backbone.Model();
-        model.set('dataStreamName', 'Topology '+i);
-        model.set('dataStreamId', i);
-        model.set('state', 'Topology 1');
-        model.set('timestamp', new Date());
-        this.collection.add(model);
-      }
+    fetchData: function(){
+      this.collection.fetch({
+        reset:true,
+        success:function(collection, response, options){
+          collection.reset(response.entities);
+        },
+        error: function(collection, response, options){
+          Utils.showError(collection, response);
+        }
+      });
+      // for(var i = 1 ; i <= 5; i++){
+      //   var model = new Backbone.Model();
+      //   model.set('dataStreamName', 'Topology '+i);
+      //   model.set('dataStreamId', i);
+      //   model.set('state', 'Submitted');
+      //   model.set('timestamp', new Date());
+      //   this.collection.add(model);
+      // }
     },
 
     showTable: function(){
@@ -66,26 +76,33 @@ define(['require',
 
     getColumns: function(){
       return [{
-        name: 'dataStreamName',
+        name: 'name',
         cell: 'uri',
         label: localization.tt('lbl.topologyName'),
         hasTooltip: false,
         editable: false,
         href: function(model){
-          return '#!/topology-editor/' + model.get('dataStreamId');
+          return '#!/topology-editor/' + model.get('id');
         }
       }, {
-        name: 'state',
-        cell: 'string',
-        label: localization.tt('lbl.state'),
-        hasTooltip: false,
-        editable: false
-      }, {
+      //   name: 'state',
+      //   cell: 'string',
+      //   label: localization.tt('lbl.state'),
+      //   hasTooltip: false,
+      //   editable: false
+      // }, {
         name: 'timestamp',
         cell: 'string',
         label: localization.tt('lbl.lastUpdatedOn'),
         hasTooltip: false,
-        editable: false
+        editable: false,
+        formatter: _.extend({}, Backgrid.CellFormatter.prototype, {
+            fromRaw: function(rawValue, model) {
+              if (model) {
+                return new Date(model.get('timestamp'));
+              }
+            }
+          })
       }, {
           name: "actions",
           cell: "Html",
@@ -95,11 +112,28 @@ define(['require',
           formatter: _.extend({}, Backgrid.CellFormatter.prototype, {
             fromRaw: function(rawValue, model) {
               if (model) {
-                return "<button title='Delete' class='btn btn-danger btn-xs' data-id="+model.get('dataStreamId')+" id='deleteAction' type='default' ><i class='fa fa-trash'></i></button>";
+                return "<button title='Delete' class='btn btn-danger btn-xs' data-id="+model.get('id')+" id='deleteTopology' type='default' ><i class='fa fa-trash'></i></button>";
               }
             }
           })
         }];
+    },
+
+    evAddTopology: function(e){
+      require(['views/topology/CreateTopologyView'], function(CreateTopologyView){
+        var view = new CreateTopologyView();
+
+        var modal = new Modal({
+          title: 'Create Topology',
+          content: view,
+          showFooter: false,
+          escape: false
+        }).open();
+
+        view.on('closeModal',function(){
+          modal.trigger('cancel');
+        });
+      });
     },
     evDeleteTopology: function(e){
       var self = this;
@@ -117,7 +151,16 @@ define(['require',
           });
         }
       });
-    }
+    },
+    getModel: function(e){
+      var currentTarget = $(e.currentTarget);
+      var id = currentTarget.data().id;
+      var model = _.findWhere(this.collection.models, function(model){
+        if(model.get('id') === id)
+          return model;
+      });
+      return model;
+    },
 
   });
   

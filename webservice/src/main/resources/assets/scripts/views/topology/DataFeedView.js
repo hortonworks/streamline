@@ -27,7 +27,9 @@ define(['require',
     onRender:function(){
       var self = this;
       require(['views/topology/DataFeedForm'], function(DataFeedForm){
-        self.view = new DataFeedForm();
+        self.view = new DataFeedForm({
+          model: self.model
+        });
         self.rForm.show(self.view);
       });
     },

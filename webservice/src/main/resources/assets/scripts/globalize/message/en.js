@@ -56,7 +56,10 @@
           'rootDir': 'root dir',
           'table': 'table',
           'columnFamily': 'column family',
-          'rowKey': 'row key'
+          'rowKey': 'row key',
+          'feedType': 'Feed Type',
+          'sinkName': 'Sink Name',
+          'save': 'Save'
         },
         btn: {
           'first': 'First',

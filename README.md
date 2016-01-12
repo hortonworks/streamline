@@ -30,7 +30,18 @@ First you need to populate your kafka topic, if you have not done so create your
 
 Then run the device simulator CLI to post some sample `IotasMessage` containing nest data to your kafka topic.  
 `cd $IOTAS-HOME`  
-`java -cp simulator/target/simulator-0.1-SNAPSHOT.jar com.hortonworks.iotas.simulator.CLI -b localhost:9092 -t nest-topic -f simulator/src/main/resources/nest-iotas-messages`  
+`java -cp simulator/target/simulator-0.1-SNAPSHOT.jar com.hortonworks.iotas.simulator.CLI -b localhost:9092 -t nest-topic -f simulator/src/main/resources/nest-iotas-messages`
+
+Sometimes the command fails with following exceptions:
+`Exception in thread "main" kafka.common.FailedToSendMessageException: Failed to send messages after 3 tries.
+    at kafka.producer.async.DefaultEventHandler.handle(DefaultEventHandler.scala:90)
+	at kafka.producer.Producer.send(Producer.scala:76)
+	at kafka.javaapi.producer.Producer.send(Producer.scala:33)
+	at com.hortonworks.iotas.simulator.CLI.writeToKafka(CLI.java:182)
+	at com.hortonworks.iotas.simulator.CLI.processDataFile(CLI.java:109)
+	at com.hortonworks.iotas.simulator.CLI.main(CLI.java:74)
+`
+You should verify from kafka's server.properties that the listerner port and host matches. if advertised host is actual hostname like 'HW10960.local' localhost may not work.
 
 You can run the simulator command in a loop or run it multiple times to produce same data again and again.
 
