@@ -188,12 +188,6 @@
                 <groupId>com.github.fge</groupId>
                 <artifactId>json-schema-validator</artifactId>
                 <version>${jsonschemavalidator.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.mail</groupId>
-                        <artifactId>mailapi</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <!-- Test dependencies -->
             <!-- JMockit dependency must appear before JUnit dependency -->

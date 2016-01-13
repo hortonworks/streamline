@@ -17,7 +17,7 @@ Using Ambari UI, stop all components on sandbox except for zookeeper, storm, kaf
 
 At this point, you can clone the IoTaS git repository using your git username. Go to the terminal window with ssh session in to sandbox
 
-`cd root`
+`cd /root`
 
 `git clone https://<gitusername>@github.com/hortonworks/IoTaS.git`
 
