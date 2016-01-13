@@ -17,6 +17,15 @@ public interface IotasEvent {
      */
     Map<String, Object> getFieldsAndValues();
 
+
+    /**
+     * The event header that represents some meta data about
+     * this event. This is optional and by default empty.
+     *
+     * @return the key value map representing the event header
+     */
+    Map<String, Object> getHeader();
+
     /**
      * The unique event id.
      *
