@@ -38,12 +38,13 @@ public abstract class AbstractRuleRuntimeBuilder implements RuleRuntimeBuilder {
      */
     private List<Transform> getTransforms(Action action) {
         List<Transform> transforms = new ArrayList<>();
-        if (!action.getOutputFieldsAndDefaults().isEmpty()) {
+        if (action.getOutputFieldsAndDefaults() != null && !action.getOutputFieldsAndDefaults().isEmpty()) {
             transforms.add(new ProjectionTransform(action.getOutputFieldsAndDefaults()));
         }
         if (action.isIncludeMeta()) {
             Map<String, Object> headers = new HashMap<>();
-            headers.put("ruleId", getRule().getId());
+            headers.put(AddHeaderTransform.HEADER_FIELD_NOTIFIER_NAME, action.getNotifierName());
+            headers.put(AddHeaderTransform.HEADER_FIELD_RULE_ID, getRule().getId());
             transforms.add(new AddHeaderTransform(headers));
         }
         // default is to just forward the event

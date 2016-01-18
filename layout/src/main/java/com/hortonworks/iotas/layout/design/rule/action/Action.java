@@ -31,6 +31,7 @@ public class Action implements Serializable {
     private Map<String, Object> outputFieldsAndDefaults = new HashMap<>();
     private boolean includeMeta = false;
     private String name = "default";
+    private String notifierName = "dummy";
 
     public Action() { }
 
@@ -66,12 +67,21 @@ public class Action implements Serializable {
         this.includeMeta = includeMeta;
     }
 
+    public String getNotifierName() {
+        return notifierName;
+    }
+
+    public void setNotifierName(String notifierName) {
+        this.notifierName = notifierName;
+    }
+
     @Override
     public String toString() {
         return "Action{" +
-                ", outputFieldsAndDefaults=" + outputFieldsAndDefaults +
+                "outputFieldsAndDefaults=" + outputFieldsAndDefaults +
                 ", includeMeta=" + includeMeta +
                 ", name='" + name + '\'' +
+                ", notifierName='" + notifierName + '\'' +
                 '}';
     }
 }

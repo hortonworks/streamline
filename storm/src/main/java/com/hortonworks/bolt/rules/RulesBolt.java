@@ -86,7 +86,7 @@ public class RulesBolt extends BaseRichBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        for (String stream : ruleProcessorRuntime.getStreams()) {
+        for (String stream : boltDependenciesFactory.createRuleProcessorRuntime().getStreams()) {
             declarer.declareStream(stream, new Fields(IotasEvent.IOTAS_EVENT));
         }
     }

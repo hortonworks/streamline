@@ -70,7 +70,7 @@ public interface Notification {
      *
      * @return the key, values in the notification object.
      */
-    Map<String, String> getFieldsAndValues();
+    Map<String, Object> getFieldsAndValues();
 
     /**
      * The unique name of the notifier for which this notification is intended.
