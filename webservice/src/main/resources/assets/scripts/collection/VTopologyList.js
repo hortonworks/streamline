@@ -15,7 +15,7 @@ define(['require',
 
       initialize: function () {
         this.modelName = 'VTopology';
-        this.modelAttrName = 'id';
+        this.modelAttrName = 'entities';
         this.bindErrorEvents();
       }
     },

@@ -1211,7 +1211,8 @@ Applied as jQuery method.
             });
             **/             
             this.$element.triggerHandler('save', params);
-            
+            //Edited by Sanket Shah
+            this.$element.triggerHandler('rendered', params);
             //hide must be after trigger, as saving value may require methods of plugin, applied to input
             this.hide('save');
         },

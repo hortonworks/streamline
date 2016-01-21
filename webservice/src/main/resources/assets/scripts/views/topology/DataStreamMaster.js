@@ -11,14 +11,20 @@ define(['require',
 ], function(require, Vent, localization, Utils, Globals, Modal, tmpl, VTopology, TopologyGraphCreator, xEditable) {
   'use strict';
 
-  var DataStreamEditorLayout = Marionette.LayoutView.extend({
+  var TopologyEditorLayout = Marionette.LayoutView.extend({
 
     template: tmpl,
+    templateHelpers: function(){
+      return {
+        topologyName: this.topologyName
+      };
+    },
 
     events: {
-      'click #submitDatastream'   : 'evSubmitAction',
-      'click #deployDatastream'   : 'evDeployAction',
-      'click #killDatastream'     : 'evKillAction'
+      'click #submitTopology'   : 'evSubmitAction',
+      'click #deployTopology'   : 'evDeployAction',
+      'click #killTopology'     : 'evKillAction',
+      'click #configTopology'   : 'evConfigAction'
     },
 
     ui: {
@@ -32,15 +38,36 @@ define(['require',
     initialize: function(options) {
       _.extend(this, options);
       this.initializeVariables();
+      this.vent = Vent;
+      this.topologyConfigModel = new Backbone.Model({
+        rootdir: '', parserPath: '', notifierPath: ''
+      });
       if(!this.model){
         this.model = new VTopology();
+        this.topologyName = 'Topology-Name';
       } else {
+        this.topologyId = this.model.get('id');
+        this.topologyName = this.model.get('name');
+        this.model.set('_editState', true);
         this.model.set('config', JSON.parse(this.model.get('config')));
-        this.updateVariables();
+        this.setTopologyConfigModel();
       }
       this.getAllConfigurations();
-      this.vent = Vent;
+      if(this.model.get('_editState')){
+        this.updateVariables();
+        this.getMetaInfo();
+      }
       this.bindEvents();
+    },
+
+    setTopologyConfigModel: function(){
+      var config = this.model.get('config').config,
+      obj = {
+        rootdir: config.hbaseConf['hbase.rootdir'],
+        parserPath: config['local.parser.jar.path'],
+        notifierPath: config['local.notifier.jar.path']
+      };
+      this.topologyConfigModel.set(obj);
     },
 
     initializeVariables: function(){
@@ -51,6 +78,7 @@ define(['require',
       this.processorArr = [];
       this.sinkArr = [];
       this.linkArr = [];
+      this.graphNodesData = { source : [], processor: [], sink: [] };
     },
 
     updateVariables: function(){
@@ -61,22 +89,50 @@ define(['require',
       this.sCount = config.dataSinks.length;
 
       _.each(config.dataSources, function(obj, i){
-        self.dsArr.push(self.setAdditionalData(obj, {_nodeId: i, firstTime: false, currentType: 'Device'}));
+        var model = new Backbone.Model({_nodeId: i, firstTime: false, currentType: 'DEVICE', uiname: obj.uiname});
+        self.setHiddenConfigFields(model, _.findWhere(self.sourceConfigArr, {subType: 'KAFKA'}));
+        self.setAdditionalData(model.attributes, obj.config);
+        self.dsArr.push(model.toJSON());
+        var t_obj = _.findWhere(Globals.Topology.Editor.Steps.Datasource.Substeps, {valStr: 'DEVICE'});
+        self.graphNodesData.source.push(_.extend(JSON.parse(JSON.stringify(t_obj)), {uiname: obj.uiname, nodeId: i, currentType: 'DEVICE'}));
       });
 
       _.each(config.processors, function(obj, i){
-        var newData = {_nodeId: i, firstTime: false, currentType: ''};
-        if(_.isEqual(obj.type, 'PARSER')){
-          newData.currentType = 'Parser';
-        } else if(_.isEqual(obj.type, 'RULE')){
-          newData.currentType = 'Rule';
+        var model = new Backbone.Model({_nodeId: i, firstTime: false, currentType: obj.type, uiname: obj.uiname});
+        self.setHiddenConfigFields(model, _.findWhere(self.processorConfigArr, {subType: obj.type}));
+        self.setAdditionalData(model.attributes, obj.config);
+        if(obj.type === 'PARSER'){
+          self.dsArr[0]._selectedTable = [{
+            dataSourceId : model.get('dataSourceId'),
+            parserId : model.get('parserId')
+          }];
         }
-        self.processorArr.push(self.setAdditionalData(obj, newData));
+        self.processorArr.push(model.toJSON());
+        var t_obj = _.findWhere(Globals.Topology.Editor.Steps.Processor.Substeps, {valStr: obj.type});
+        self.graphNodesData.processor.push(_.extend(JSON.parse(JSON.stringify(t_obj)), {uiname: obj.uiname, nodeId: i, currentType: obj.type}));
       });
       
-      _.each(config.dataSources, function(obj, i){
-        var newData = {_nodeId: i, firstTime: false, currentType: obj.type};
-        self.sinkArr.push(self.setAdditionalData(obj, newData));
+      _.each(config.dataSinks, function(obj, i){
+        var model = new Backbone.Model({_nodeId: i, firstTime: false, currentType: obj.type, uiname: obj.uiname});
+        self.setHiddenConfigFields(model, _.findWhere(self.sinkConfigArr, {subType: obj.type}));
+        self.setAdditionalData(model.attributes, obj.config);
+        self.sinkArr.push(model.toJSON());
+        var t_obj = _.findWhere(Globals.Topology.Editor.Steps.DataSink.Substeps, {valStr: obj.type});
+        self.graphNodesData.sink.push(_.extend(JSON.parse(JSON.stringify(t_obj)), {uiname: obj.uiname, nodeId: i, currentType: obj.type}));
+      });
+    },
+
+    getMetaInfo: function(){
+      var self = this;
+      this.model.getMetaInfo({
+        id: this.model.get('id'),
+        async: false,
+        success: function(model, response, options){
+          self.linkArr = JSON.parse(model.entity.data);
+        },
+        error: function(model, response, options){
+          Utils.showError(model, response);
+        }
       });
     },
 
@@ -96,13 +152,14 @@ define(['require',
     },
 
     getAllConfigurations: function(){
+      var self = this;
       this.sourceConfigArr = [];
       this.processorConfigArr = [];
       this.sinkConfigArr = [];
       this.linkConfigArr = [];
-      var self = this;
 
       this.model.getSourceComponent({
+        async: false,
         success: function(model, response, options){
           self.sourceConfigArr = model.entities;
         },
@@ -112,6 +169,7 @@ define(['require',
       });
 
       this.model.getProcessorComponent({
+        async: false,
         success: function(model, response, options){
           self.processorConfigArr = model.entities;
         },
@@ -121,6 +179,7 @@ define(['require',
       });
       
       this.model.getSinkComponent({
+        async: false,
         success: function(model, response, options){
           self.sinkConfigArr = model.entities;
         },
@@ -130,6 +189,7 @@ define(['require',
       });
 
       this.model.getLinkComponent({
+        async: false,
         success: function(model, response, options){
           self.linkConfigArr = model.entities;
         },
@@ -142,15 +202,15 @@ define(['require',
     bindEvents: function(){
       var self = this;
       
-      this.listenTo(this.vent, 'dataStream:SavedStep1', function(data){
+      this.listenTo(this.vent, 'topologyEditor:SaveDeviceSource', function(data){
         self.dsArr[data.get('_nodeId')] = data.toJSON();
       });
       
-      this.listenTo(this.vent, 'dataStream:SavedStep2', function(data){
+      this.listenTo(this.vent, 'topologyEditor:SaveProcessor', function(data){
         self.processorArr[data.get('_nodeId')] = data.toJSON();
       });
       
-      this.listenTo(this.vent, 'dataStream:SavedStep3', function(data){
+      this.listenTo(this.vent, 'topologyEditor:SaveSink', function(data){
         self.syncSinkData(data);
         self.sinkArr[data.get('_nodeId')] = data.toJSON();
       });
@@ -159,16 +219,19 @@ define(['require',
         if(!_.isString(data.nodeId) || !data.nodeId.startsWith('Parser')){
           var model = new Backbone.Model();
           var nodeId = data.nodeId;
+          var obj = {
+            _nodeId: nodeId,
+            firstTime: true,
+            uiname: data.currentType,
+            currentType: data.currentType
+          };
           switch(data.parentType){
             //Source
             case Globals.Topology.Editor.Steps.Datasource.valStr:
               if(this.dsArr[nodeId]){
                 model.set(this.dsArr[nodeId]);
               } else {
-                model.set('_nodeId',nodeId);
-                model.set('firstTime',true);
-                model.set('uiname', 'Source');
-                model.set('currentType', data.currentType);
+                model.set(obj);
                 self.setHiddenConfigFields(model, _.findWhere(this.sourceConfigArr, {subType: 'KAFKA'}));
               }
               self.evDSAction(model);
@@ -179,13 +242,10 @@ define(['require',
               if(this.processorArr[nodeId]){
                 model.set(this.processorArr[nodeId]);
               } else {
-                model.set('_nodeId',nodeId);
-                model.set('firstTime',true);
-                model.set('uiname', data.currentType);
-                model.set('currentType', data.currentType);
-                if(_.isEqual(data.currentType, "Parser")){
+                model.set(obj);
+                if(_.isEqual(data.currentType, "PARSER")){
                   self.setHiddenConfigFields(model, _.findWhere(this.processorConfigArr, {subType: 'PARSER'}));
-                } else if(_.isEqual(data.currentType, "Rule")){
+                } else if(_.isEqual(data.currentType, "RULE")){
                   self.setHiddenConfigFields(model, _.findWhere(this.processorConfigArr, {subType: 'RULE'}));
                 }
               }
@@ -199,10 +259,7 @@ define(['require',
               if(this.sinkArr[nodeId]){
                 model.set(this.sinkArr[nodeId]);
               } else {
-                model.set('_nodeId',nodeId);
-                model.set('firstTime',true);
-                model.set('uiname', data.currentType);
-                model.set('currentType', data.currentType);
+                model.set(obj);
                 self.setHiddenConfigFields(model, _.findWhere(this.sinkConfigArr, {subType: data.currentType}));
               }
               if(this.verifyLink(model.get('currentType'), model.get('_nodeId'))){
@@ -212,27 +269,13 @@ define(['require',
           }
         }
       });
-
-      this.listenTo(this.vent, 'delete:topologyNode', function(data){
-        var nodeId = data.nodeId;
-        if(_.isEqual(data.parentType, Globals.Topology.Editor.Steps.Datasource.valStr)){
-          if(this.dsArr[nodeId]){
-            this.dsArr[nodeId] = undefined;
-          }
-        } else if(_.isEqual(data.parentType, Globals.Topology.Editor.Steps.Processor.valStr)){
-          if(this.processorArr[nodeId]){
-            this.processorArr[nodeId] = undefined;
-          }
-        } else if(_.isEqual(data.parentType, Globals.Topology.Editor.Steps.DataSink.valStr)){
-          if(this.sinkArr[nodeId]){
-            this.sinkArr[nodeId] = undefined;
-          }
-        }
-        this.linkArr = data.linkArr;
+      
+      this.listenTo(this.vent, 'topologyEditor:SaveConfig', function(configData){
+        self.topologyConfigModel = configData;
       });
 
       this.listenTo(this.vent, 'topologyLink', function(linkArr){
-        this.linkArr = linkArr;
+        self.linkArr = linkArr;
       });
     },
 
@@ -243,9 +286,8 @@ define(['require',
       if(!obj.length){
         Utils.notifyError('Connect the node to configre.');
         return false;
-      } else {
-        return true;
       }
+      return true;
     },
 
     setHiddenConfigFields: function(model, obj){
@@ -260,125 +302,120 @@ define(['require',
       }
     },
 
-    bindDomEvents: function(){
-      var self = this;
-      //Toggle Event
-      this.$('.modal-actions .btnToggle').on('click', function(e){
-        if(self.selStepBtn[0] === e.currentTarget){
-          self.$('.box-subhead').slideToggle();  
-        } else {
-          if(!self.$('.box-subhead').is(':hidden')){
-            self.$('.box-subhead').slideToggle();  
-          }
-          setTimeout(function(){
-            if(e.currentTarget === self.ui.btnDS[0]){
-              self.generateSubmenu('step1');
-            } else if(e.currentTarget === self.ui.btnProcessor[0]){
-              self.generateSubmenu('step2');
-            } else if(e.currentTarget === self.ui.btnDataSink[0]){
-              self.generateSubmenu('step3');
-            }
-            self.$('.box-subhead').slideToggle();
-          }, 0);
-        }
-        if($(e.currentTarget).hasClass('active')){
-          $(e.currentTarget).removeClass('active');
-        } else {
-          $(e.currentTarget).siblings('.active').removeClass('active');
-          $(e.currentTarget).addClass('active');
-        }
-      });
-
-      //Tooltip
-      this.$('[data-rel="tooltip"]').tooltip();
-      // this.$('#infoHelp').popover({
-      //   html: true,
-      //   content: '<p><strong>Drag & Drop</strong> to Create <strong>Node</strong></p><p><strong>Click</strong> on <strong>Node</strong> to <strong>Configure</strong> it</p><p><strong>Drag</strong> the <strong>Node</strong> to <strong>Move</strong></p><p><strong>Press Shift + Click</strong> on <strong>Source Node</strong> and <strong>Drag</strong> to <strong>Target Node</strong> to create a <strong>Link</strong></p><p><strong>Click</strong> on <strong>Link</strong> and <strong>Press Delete</strong> to <strong>Delete a Link</strong></p><p><strong>Press Shift + Click</strong> on <strong>Node</strong> and <strong>Press Delete</strong> to <strong>Delete a Node</strong></p>',
-      //   placement: 'left',
-      //   trigger: 'hover'
-      // });
-    },
-
-    bindSubMenuDrag: function(){
-      this.$('.quick-button').draggable({
-        revert: "invalid",
-        helper: function (e) {
-            //Code here
-            return $('<div data-mainmenu="'+e.currentTarget.dataset.mainmenu+'" data-submenu="'+e.currentTarget.dataset.submenu+'"></div>').append('<i class="'+$(e.currentTarget).children().attr('class')+'"></i>');
-        }
-      });
-      this.$('[data-rel="tooltip"]').tooltip();
-    },
-
-    generateSubmenu: function(step){
-      var arr = [], msg = '', self = this;
-      switch(step){
-        case 'step1':
-          self.selStepBtn = self.ui.btnDS;
-          arr = Globals.Topology.Editor.Steps.Datasource.Substeps;
-        break;
-        case 'step2':
-          self.selStepBtn = self.ui.btnProcessor;
-          arr = Globals.Topology.Editor.Steps.Processor.Substeps;
-        break;
-        case 'step3':
-          self.selStepBtn = self.ui.btnDataSink;
-          arr = Globals.Topology.Editor.Steps.DataSink.Substeps;
-        break;
-      }
-      _.each(arr, function(obj){
-        msg += '<dv class="quick-button btn" data-rel="tooltip" title="'+obj.valStr+'" data-submenu="'+obj.valStr+'" data-mainmenu="'+obj.mainStep+'"><i class="'+obj.iconClass+'"></i></dv>'; // '+obj.valStr+'
-      });
-      self.ui.editorSubMenu.html(msg);
-      // this.$('[data-rel="tooltip"]').tooltip();
-      this.bindSubMenuDrag();
-    },
-
     onRender:function(){
+      this.$el.find('#loading').addClass('loader');
       var self = this;
-      this.selStepBtn = this.ui.btnDS;
-      this.bindDomEvents();
+      this.setTopologyName();
       this.bindSubMenuDrag();
-      setTimeout(function(){self.renderGraphGenerator();}, 0);
       setTimeout(function(){
+        self.graphData = self.syncGraphData();
+        self.renderGraphGenerator();
         self.$('#graphEditor svg').droppable({
             drop: function(event, ui){
-              var mainmenu = ui.helper.data().mainmenu.split(' ').join('');
-              var submenu = ui.helper.data().submenu;
-              var icon = _.findWhere(Globals.Topology.Editor.Steps[mainmenu].Substeps, {valStr:submenu});
-              var id, otherId;
-              if(_.isEqual(mainmenu, Globals.Topology.Editor.Steps.Datasource.valStr)){
-                id = self.dsCount++;
-                self.dsArr[id] = undefined;
-                otherId = self.pCount++;
-                self.processorArr[otherId] = undefined;
-              } else if(_.isEqual(mainmenu, Globals.Topology.Editor.Steps.Processor.valStr)){
-                id = self.pCount++;
-                self.processorArr[id] = undefined;
-              } else if(_.isEqual(ui.helper.data().mainmenu, Globals.Topology.Editor.Steps.DataSink.valStr)){
-                id = self.sCount++;
-                self.sinkArr[id] = undefined;
+              var mainmenu  = ui.helper.data().mainmenu,
+                  submenu = ui.helper.data().submenu,
+                  obj = _.findWhere(Globals.Topology.Editor.Steps[mainmenu].Substeps, {valStr:submenu}),
+                  id, otherId;
+              switch(mainmenu){
+                case Globals.Topology.Editor.Steps.Datasource.valStr:
+                  id = self.dsCount++;
+                  self.dsArr[id] = undefined;
+                  otherId = self.pCount++;
+                  self.processorArr[otherId] = undefined;
+                break;
+
+                case Globals.Topology.Editor.Steps.Processor.valStr:
+                  id = self.pCount++;
+                  self.processorArr[id] = undefined;
+                break;
+
+                case Globals.Topology.Editor.Steps.DataSink.valStr:
+                  id = self.sCount++;
+                  self.sinkArr[id] = undefined;
+                break;
               }
 
               self.vent.trigger('change:editor-submenu', {
-                parentStep: ui.helper.data().mainmenu,
-                icon: submenu ? icon.iconContent : '',
-                currentStep: submenu,
+                nodeObj: obj,
                 id: id,
                 otherId: otherId,
                 event: event
               });
             }
         });
-      },0);
+      }, 0);
+      // setTimeout(function(){
+        if(self.model.has('id')){
+          self.$('#deployTopology').removeAttr('disabled');
+        }
+        self.$('[data-rel="tooltip"]').tooltip({placement: 'bottom'});
+        self.$el.find('#loading').removeClass('loader');
+      // }, 0);
+    },
+
+    setTopologyName: function(){
+      var self = this;
+      this.$('#topologyName').editable({
+          mode:'inline',
+          validate: function(value) {
+           if(_.isEqual($.trim(value), '')) return 'Name is required';
+        }
+      });
+
+      this.$('.editable').on('save', function(e, params) {
+        self.topologyName = params.newValue;
+      });
+
+      this.$('.editable').on('rendered', function(e){
+        $(e.currentTarget).append("<i class='fa fa-pencil'></i>");
+      });
+    },
+
+    syncGraphData: function(){
+      var self = this;
+      var nodes = [],
+          edges = [];
+      if(this.model.get('_editState')){
+        Array.prototype.push.apply(nodes, this.graphNodesData.source);
+        Array.prototype.push.apply(nodes, this.graphNodesData.processor);
+        Array.prototype.push.apply(nodes, this.graphNodesData.sink);
+        
+        var tempArr = [];
+        _.each(this.linkArr, function(obj){
+          tempArr.push(obj.source);
+          tempArr.push(obj.target);
+        });
+        
+        var newArr = [];
+        _.each(nodes, function(object, i){
+          var tempObj = _.findWhere(tempArr, {uniqueName: object.currentType+'-'+object.nodeId});
+          newArr.push({
+            x: _.isUndefined(tempObj) ? -800 : tempObj.x,
+            y: _.isUndefined(tempObj) ? -300 : tempObj.y,
+            uniqueName: tempObj.uniqueName,
+            parentType: tempObj.parentType,
+            currentType: tempObj.currentType,
+            imageURL: tempObj.imageURL,
+            id: tempObj.id,
+            nodeId: tempObj.nodeId,
+            streamId: _.isUndefined(tempObj.streamId) ? undefined : tempObj.streamId
+          });
+        });
+        nodes = newArr;
+
+        _.each(this.linkArr, function(obj){
+          obj.source = _.findWhere(newArr, {uniqueName: obj.source.uniqueName});
+          obj.target = _.findWhere(newArr, {uniqueName: obj.target.uniqueName});
+        });
+
+        edges = this.linkArr;
+      }
+      return {nodes: nodes, edges: edges};
     },
 
     renderGraphGenerator: function(){
-      var self = this;
-      var data = {
-        nodes: [],
-        edges: []
-      };
+      var self = this,
+          data = this.graphData;
       var graph = new TopologyGraphCreator({
         elem: this.ui.graphEditor,
         data: data,
@@ -387,16 +424,24 @@ define(['require',
       graph.updateGraph();
     },
 
+    bindSubMenuDrag: function(){
+      this.$('.panel-body img').draggable({
+        revert: "invalid",
+        helper: function (e) {
+            return $(e.currentTarget).clone();
+        }
+      });
+    },
+
     evDSAction: function(model){
       if(model.has('config')){
         model.get('config').sort(this.configSortComparator);
       }
       var self = this;
       var obj = {
-        iconClass: "fa fa-server",
+        iconClass: Globals.Topology.Editor.Steps.Datasource.iconClass,
         titleHtmlFlag: true,
-        titleName: model.get('uiname'),
-        type: 'Source'
+        titleName: model.get('uiname')
       };
       require(['views/topology/DataFeedView'], function(DataFeedView){
         self.showModal(new DataFeedView({
@@ -405,16 +450,17 @@ define(['require',
         }), obj);
       });
     },
+
     evProcessorAction: function(model){
       var self = this;
       var obj = {
-        iconClass: "fa fa-cog",
+        iconClass: Globals.Topology.Editor.Steps.Processor.iconClass,
         titleHtmlFlag: true,
         titleName: model.get('uiname'),
-        type: "Processor"
+        type: Globals.Topology.Editor.Steps.Processor.valStr
       };
       switch(model.get('currentType')){
-        case 'Parser':
+        case 'PARSER':
           if(this.syncParserData(model)){
             require(['views/topology/ParserProcessorView'], function(ParserProcessorView){
               self.showModal(new ParserProcessorView({
@@ -425,7 +471,7 @@ define(['require',
           }
         break;
 
-        case 'Rule':
+        case 'RULE':
           if(this.syncRuleData(model)){
             require(['views/topology/RuleProcessorView'], function(RuleProcessorView){
               self.showModal(new RuleProcessorView({
@@ -437,77 +483,16 @@ define(['require',
         break;
       }
     },
-    syncParserData: function(model){
-      var obj = this.linkArr.filter(function(obj){
-        return (obj.target.currentType === 'Parser' && obj.target.nodeId === model.get('_nodeId'));
-      });
-      if(obj.length){
-        var sourceData = this.dsArr[obj[0].source.nodeId];
-        if(!sourceData){
-          Utils.notifyError("Configure the connected source node first.");
-          return false;
-        } else {
-          model.set('parserId', sourceData._selectedTable[0].parserId);
-          model.set('dataSourceId', sourceData._selectedTable[0].datasourceId);
-          model.set('parserName', sourceData._selectedTable[0].parserName);
-          model.set('dataSourceName', sourceData._selectedTable[0].datasourceName);
-          if(!model.has('parallelism')){
-            model.set('parallelism', 1);
-          }
-          return true;
-        }
-      }
-    },
-    syncRuleData: function(model){
-      var obj = this.linkArr.filter(function(obj){
-        return (obj.target.currentType === 'Rule' && obj.target.nodeId === model.get('_nodeId'));
-      });
-      if(obj.length){
-        var sourceData = this.processorArr[obj[0].source.nodeId];
-        if(!sourceData){
-          Utils.notifyError("Configure the connected node first.");
-          return false;
-        } else {
-          model.set('parserId', sourceData.parserId);
-          model.set('dataSourceId', sourceData.dataSourceId);
-          return true;
-        }
-      }
-    },
-    syncSinkData: function(model, validationFlag){
-      var obj = this.linkArr.filter(function(obj){
-        return (obj.target.parentType === 'Data Sink' && obj.target.nodeId === model.get('_nodeId'));
-      });
-      if(obj.length){
-        if(obj[0].source.parentType === 'Processor'){
-          var sourceData = this.processorArr[obj[0].source.nodeId];
-          if(!sourceData){
-            Utils.notifyError("Configure the connected node first.");
-            return false;
-          }
 
-          if(obj[0].source.currentType === 'Rule' && !validationFlag){
-            sourceData.newConfig.rulesProcessorConfig.rules[0].action.components = [{
-              name: model.get('uiname'),
-              id: new Date().getTime(),
-              description: 'Auto-Generated For '+model.get('uiname'),
-              declaredInput: sourceData.newConfig.rulesProcessorConfig.declaredInput
-            }];
-          }
-          return true;
-        }
-      }
-    },
     evDataSinkAction: function(model, type){
       if(model.has('config')){
         model.get('config').sort(this.configSortComparator);
       }
       var self = this;
       var obj = {
-        iconClass: "fa fa-database",
+        iconClass: Globals.Topology.Editor.Steps.DataSink.iconClass,
         titleHtmlFlag: true,
-        titleName: model.get('uiname'),
-        type: "Sink"
+        titleName: model.get('uiname')
       };
       if(this.syncSinkData(model, true)){
         require(['views/topology/DataSinkView'], function(DataSinkView){
@@ -519,25 +504,96 @@ define(['require',
         });
       }
     },
+
+    syncParserData: function(model){
+      var obj = this.linkArr.filter(function(obj){
+        return (obj.target.currentType === 'PARSER' && obj.target.nodeId === model.get('_nodeId'));
+      });
+      if(obj.length){
+        var sourceData = this.dsArr[obj[0].source.nodeId];
+        if(!sourceData){
+          Utils.notifyError("Configure the connected source node first.");
+          return false;
+        } else {
+          if(!model.has('parserId')) model.set('parserId', sourceData._selectedTable[0].parserId);
+          if(!model.has('dataSourceId')) model.set('dataSourceId', sourceData._selectedTable[0].datasourceId);
+          if(!model.has('parserName')) model.set('parserName', (sourceData._selectedTable) ? sourceData._selectedTable[0].parserName : '');
+          if(!model.has('dataSourceName')) model.set('dataSourceName', (sourceData._selectedTable) ? sourceData._selectedTable[0].datasourceName : '');
+          if(!model.has('parallelism')){
+            model.set('parallelism', 1);
+          }
+          return true;
+        }
+      }
+    },
+
+    syncRuleData: function(model){
+      var obj = this.linkArr.filter(function(obj){
+        return (obj.target.currentType === 'RULE' && obj.target.nodeId === model.get('_nodeId'));
+      });
+      if(obj.length){
+        var sourceData = this.processorArr[obj[0].source.nodeId];
+        if(!sourceData){
+          Utils.notifyError("Configure the connected node first.");
+          return false;
+        } else {
+          model.set('parserId', sourceData.parserId);
+          model.set('dataSourceId', sourceData.dataSourceId);
+          if(model.has('rulesProcessorConfig')){
+            var object = {
+              "rulesProcessorConfig" : model.get('rulesProcessorConfig')
+            };
+            if(!model.has('newConfig')) model.set('newConfig', object);
+          }
+          return true;
+        }
+      }
+    },
+
+    syncSinkData: function(model, validationFlag){
+      var obj = this.linkArr.filter(function(obj){
+        return (obj.target.parentType === 'DataSink' && obj.target.nodeId === model.get('_nodeId'));
+      });
+      if(obj.length){
+        if(obj[0].source.parentType === 'Processor'){
+          var sourceData = this.processorArr[obj[0].source.nodeId];
+          if(!sourceData){
+            Utils.notifyError("Configure the connected node first.");
+            return false;
+          }
+
+          if(obj[0].source.currentType === 'RULE' && !validationFlag){
+            var rulesDataConfig = _.isUndefined(sourceData.newConfig) ? sourceData.rulesProcessorConfig : sourceData.newConfig.rulesProcessorConfig;
+            rulesDataConfig.rules[0].action.components = [{
+              name: model.get('uiname'),
+              id: new Date().getTime(),
+              description: 'Auto-Generated For '+model.get('uiname'),
+              declaredInput: rulesDataConfig.declaredInput
+            }];
+          }
+          return true;
+        }
+      }
+    },
+
     showModal: function(view, object){
       var self = this,
           titleHtml;
       if(this.view){
         return;
-        // this.view = null;
       }
       if(object.titleHtmlFlag){
-        titleHtml = '<i class="'+object.iconClass+'" style="padding-right: 5px;"></i><a href="javascript:void(0)" id="editableTitle" data-type="text"> '+object.titleName+'</a>';
+        titleHtml = '<a href="javascript:void(0)" id="editableTitle" data-type="text"> '+object.titleName+'<i class="fa fa-pencil"></i></a>';
       }
       this.view = view;
       var modal = new Modal({
         title: titleHtml,
         titleHtml: object.titleHtmlFlag,
+        contentWithFooter: true,
         content: self.view,
         showFooter: false,
         escape: false,
-        //todo - find a beter way to add class
-        mainClass: _.isEqual(object.type, 'Processor') ? 'modal-lg' : ''
+        mainClass: _.isEqual(object.type, Globals.Topology.Editor.Steps.Processor.valStr) ? 'modal-lg' : ''
       }).open();
 
       modal.$('#editableTitle').editable({
@@ -549,6 +605,10 @@ define(['require',
 
       modal.$('.editable').on('save', function(e, params) {
         modal.options.content.model.set('uiname', params.newValue);
+      });
+
+      modal.$('.editable').on('rendered', function(e){
+        $(e.currentTarget).append("<i class='fa fa-pencil'></i>");
       });
 
       this.view.on('closeModal', function(){
@@ -563,15 +623,16 @@ define(['require',
           ds = [],
           processors = [],
           sink = [],
-          links = [];
+          links = [],
+          topologyConfig = {
+            "hbaseConf": {
+              "hbase.rootdir": this.topologyConfigModel.get('rootdir')
+            },
+            "local.parser.jar.path": this.topologyConfigModel.get('parserPath'),
+            "local.notifier.jar.path": this.topologyConfigModel.get('notifierPath')
+          };
       var tempData = {
-        config: {
-          "hbaseConf": {
-            "hbase.rootdir": "hdfs://localhost:9000/tmp/hbase"
-          },
-          "local.parser.jar.path": "/tmp",
-          "local.notifier.jar.path": "/tmp"
-        },
+        config: topologyConfig,
         dataSources: [],
         processors: [],
         dataSinks: [],
@@ -597,7 +658,7 @@ define(['require',
         });
         tempData.dataSources = ds;
       } else {
-        this.$el.find('#loading').removeClass('loader');
+        self.$el.find('#loading').removeClass('loader');
         Utils.notifyError('There are some unconfigured nodes present. Kindly configure to proceed.');
         return false;
       }
@@ -618,18 +679,19 @@ define(['require',
                 }
               });
             } else if(obj.hiddenFields.type === 'RULE'){
+
               processors.push({
                 "uiname": obj.uiname,
                 "type": obj.hiddenFields ? obj.hiddenFields.type : '',
                 "transformationClass": obj.hiddenFields ? obj.hiddenFields.transformationClass : '',
-                "config": obj.newConfig
+                "config": obj.newConfig ? obj.newConfig : {parallelism: obj.parallelism, rulesProcessorConfig: obj.rulesProcessorConfig}
               });
             }
           }
         });
         tempData.processors = processors;
       } else {
-        this.$el.find('#loading').removeClass('loader');
+        self.$el.find('#loading').removeClass('loader');
         Utils.notifyError('There are some unconfigured nodes present. Kindly configure to proceed.');
         return false;
       }
@@ -652,7 +714,7 @@ define(['require',
         });
         tempData.dataSinks = sink;
       } else {
-        this.$el.find('#loading').removeClass('loader');
+        self.$el.find('#loading').removeClass('loader');
         Utils.notifyError('There are some unconfigured nodes present. Kindly configure to proceed.');
         return false;
       }
@@ -664,20 +726,20 @@ define(['require',
             sourceObj = self.dsArr[obj.source.nodeId];
           } else if(obj.source.parentType === 'Processor'){
             sourceObj = self.processorArr[obj.source.nodeId];
-          } else if(obj.source.parentType === 'Data Sink'){
+          } else if(obj.source.parentType === 'DataSink'){
             sourceObj = self.sinkArr[obj.source.nodeId];
           }
           if(obj.target.parentType === 'Datasource'){
             targetObj = self.dsArr[obj.target.nodeId];
           } else if(obj.target.parentType === 'Processor'){
             targetObj = self.processorArr[obj.target.nodeId];
-          } else if(obj.target.parentType === 'Data Sink'){
+          } else if(obj.target.parentType === 'DataSink'){
             targetObj = self.sinkArr[obj.target.nodeId];
           }
 
           if(!sourceObj || !targetObj){
             flag = false;
-            this.$el.find('#loading').removeClass('loader');
+            self.$el.find('#loading').removeClass('loader');
             Utils.notifyError("There are some unconfigured nodes present. Kindly configure to proceed.");
           } else {
             var tempObj = {
@@ -689,11 +751,15 @@ define(['require',
                 "to": targetObj.uiname,
               }
             };
-            if(sourceObj.currentType === 'Parser'){
+            if(sourceObj.currentType === 'PARSER'){
               tempObj.config.streamId = obj.target.streamId;
             }
-            if(sourceObj.currentType === 'Rule'){
-              tempObj.config.streamId = sourceObj.newConfig.rulesProcessorConfig.name+'.'+sourceObj.newConfig.rulesProcessorConfig.rules[0].name+'.'+sourceObj.newConfig.rulesProcessorConfig.rules[0].id;
+            if(sourceObj.currentType === 'RULE'){
+              if(sourceObj.newConfig){
+                tempObj.config.streamId = sourceObj.newConfig.rulesProcessorConfig.name+'.'+sourceObj.newConfig.rulesProcessorConfig.rules[0].name+'.'+sourceObj.newConfig.rulesProcessorConfig.rules[0].id;
+              } else {
+                tempObj.config.streamId = sourceObj.rulesProcessorConfig.name+'.'+sourceObj.rulesProcessorConfig.rules[0].name+'.'+sourceObj.rulesProcessorConfig.rules[0].id;
+              }
             }
             tempData.links.push(tempObj);
           }
@@ -703,17 +769,21 @@ define(['require',
       if(flag){
         var tData = JSON.stringify(tempData);
         this.model.set({
-          name: (this.model.has('name')) ? this.model.get('name') : 'topology-'+new Date().getTime(),
+          name: this.topologyName,
           config: tData
         });
+        delete this.model.attributes._editState;
+        delete this.model.attributes.timestamp;
         this.model.save({},{
           success: function(model, response, options){
             self.topologyId = response.entity.id;
+            self.saveTopologyMetaData(self.topologyId);
             self.model = new VTopology();
             self.model.id = self.topologyId;
             self.model.set('id', self.topologyId);
             self.model.set('name', response.entity.name);
-            self.$('#deployDatastream').removeAttr('disabled');
+            self.model.set('_editState', true);
+            self.$('#deployTopology').removeAttr('disabled');
             self.$('#loading').removeClass('loader');
             Utils.notifySuccess('Topology saved successfully.');
           },
@@ -724,14 +794,28 @@ define(['require',
         });
       }
     },
+    saveTopologyMetaData: function(topologyId){
+      var self = this;
+      var obj = {topologyId: topologyId, data: JSON.stringify(this.linkArr)};
+      this.model.saveMetaInfo({
+        id: self.model.id,
+        data: JSON.stringify(obj),
+        dataType:'json',
+        contentType: 'application/json',
+        success: function(model, response, options){},
+        error: function(model, response, options){
+          Utils.showError(model, response);
+        }
+      });
+    },
     evDeployAction: function(e){
       this.$el.find('#loading').addClass('loader');
       if(this.topologyId){
         this.model.deployTopology({
           id: this.topologyId,
           success: function(model, response, options){
-            self.$('#deployDatastream').attr('disabled',true);
-            self.$('#killDatastream').removeAttr('disabled');
+            self.$('#deployTopology').attr('disabled',true);
+            self.$('#killTopology').removeAttr('disabled');
             self.$('#loading').removeClass('loader');
             Utils.notifySuccess('Topology deployed successfully.');
           },
@@ -751,8 +835,8 @@ define(['require',
         this.model.killTopology({
           id: this.topologyId,
           success: function(model, response, options){
-            self.$('#submitDatastream').removeAttr('disabled');
-            self.$('#deployDatastream').removeAttr('disabled');
+            self.$('#submitTopology').removeAttr('disabled');
+            self.$('#deployTopology').removeAttr('disabled');
             self.$('#loading').removeClass('loader');
             Utils.notifySuccess('Topology killed successfully.');
           },
@@ -765,9 +849,28 @@ define(['require',
         this.$el.find('#loading').removeClass('loader');
         Utils.notifyError('Need to save a topology before killing it.');
       }
+    },
+    evConfigAction: function(){
+      var self = this;
+      require(['views/topology/TopologyLevelConfig'], function(TopologyLevelConfig){
+        var view = new TopologyLevelConfig({
+          model: self.topologyConfigModel,
+          vent: self.vent
+        });
+        var modal = new Modal({
+          title: 'Topology Configuration',
+          content: view,
+          contentWithFooter: true,
+          escape: false
+        }).open();
+        view.on('closeModal', function(){
+          view = null;
+          modal.trigger('cancel');
+        });
+      });
     }
 
   });
   
-  return DataStreamEditorLayout;
+  return TopologyEditorLayout;
 });

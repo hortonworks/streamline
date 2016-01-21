@@ -1,12 +1,12 @@
 define(['require',
-	'utils/Globals',
-	'hbs!tmpl/topology/formulaCompositeView',
-	'views/topology/FormulaItemView'
+    'utils/Globals',
+    'hbs!tmpl/topology/formulaCompositeView',
+    'views/topology/FormulaItemView'
 ], function(require, Globals, tmpl, FormulaItemView){
-	'use strict';
-	var FormulaCompositeView = Marionette.CompositeView.extend({
-		template: tmpl,
-		templateHelpers: function(){
+    'use strict';
+    var FormulaCompositeView = Marionette.CompositeView.extend({
+        template: tmpl,
+        templateHelpers: function(){
             var self = this;
             this.comparisonOpArr = [];
             this.logicalOpArr = [];
@@ -48,25 +48,25 @@ define(['require',
                 logicalArr: this.logicalOpArr,
                 fieldsArr : this.fieldsArr,
                 rulesArr: this.rulesArr,
-                id: this.rowId++,
+                // id: this.rowId++,
                 vent: this.vent
             };
         },
 
         events: {
-        	'click #addNewRule': 'evAddRow',
-        	'change .ruleRow': 'evChange'
+            'click #addNewRule': 'evAddRow',
+            'change .ruleRow': 'evChange'
         },
 
         initialize: function(options){
-        	_.extend(this, options);
+            _.extend(this, options);
             this.firstFormulaModel = new Backbone.Model({firstModel: true});
-        	this.rowId = 2; //1 is for first row already rendered
-        	this.collection = new Backbone.Collection();
+            this.rowId = 2; //1 is for first row already rendered
+            this.collection = new Backbone.Collection();
             if(this.rulesArr.length > 1){
                 for(var i = 1; i < this.rulesArr.length; i++){
                     var obj = this.rulesArr[i];
-                    var model = new Backbone.Model({id: this.rowId});
+                    var model = new Backbone.Model({id: this.rowId++});
                     model.set('field1', obj.firstOperand.name);
                     model.set('comp', obj.operation);
                     model.set('field2', obj.secondOperand);
@@ -110,7 +110,7 @@ define(['require',
             }
         },
         evAddRow: function(){
-        	this.collection.add(new Backbone.Model({id: this.rowId}));
+            this.collection.add(new Backbone.Model({id: this.rowId}));
         },
         evChange: function(e){
             if(e.currentTarget){
@@ -133,6 +133,6 @@ define(['require',
                 models: tempArr
             });
         },
-	});
-	return FormulaCompositeView;
+    });
+    return FormulaCompositeView;
 });

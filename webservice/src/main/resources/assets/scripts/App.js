@@ -9,8 +9,6 @@ define(['marionette', 'utils/LangSupport'], function(Marionette, localization) {
 
   App.addRegions({
     rHeader : '#header',
-    rSideBar : '#sidebar-wrapper',
-    // rFooter : '#footer',
     rContent : '#page-content-wrapper'
   });
 

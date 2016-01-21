@@ -67,6 +67,7 @@ define(function(require) {
         showFooter: true,
         escape: true,
         animate: true,
+        contentWithFooter: false,
         template: template
       }, options);
     },
@@ -84,12 +85,16 @@ define(function(require) {
       //Create the modal container
       $el.html(options.template(options));
 
-      var $content = this.$content = $el.find('.modal-body');
+      // var $content = this.$content = $el.find('.modal-body');
 
       //Insert the main content if it's a view
       if (content.$el) {
         content.render();
-        $el.find('.modal-body').html(content.$el);
+        if(options.contentWithFooter){
+          $el.find('.modal-content').append(content.$el);
+        } else {
+          $el.find('.modal-body').html(content.$el);
+        }
       }
 
       // if (options.mainClass) $el.addClass(options.mainClass);

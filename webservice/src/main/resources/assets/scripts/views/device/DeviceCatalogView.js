@@ -136,6 +136,7 @@ define(['require',
         var modal = new Modal({
           title: (model.has('dataSourceId')) ? 'Edit Device' : 'Add Device',
           content: view,
+          contentWithFooter: true,
           showFooter: false,
           escape: false
         }).open();
