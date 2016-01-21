@@ -18,6 +18,9 @@ define(['utils/LangSupport',
       this.templateData = {
         'fieldName': data.fieldArr
       };
+      if(!this.model.has('devices') && this.model.has('_selectedTable')){
+        this.setDevices();
+      }
       Backbone.Form.prototype.initialize.call(this, options);
       this.bindEvents();
     },
@@ -79,26 +82,14 @@ define(['utils/LangSupport',
       });
       
       data.schemaObj = {
-        // dataFeedName: {
-        //   type: 'Text',
-        //   title: localization.tt('lbl.name')+'*',
-        //   editorClass: 'form-control',
-        //   placeHolder: localization.tt('lbl.name'),
-        //   validators: [{'type':'required','message':'Name can not be blank.'}]
-        // },
         devices: {
           type: 'Select2',
           title: localization.tt('lbl.selectDevices')+'*',
           options: deviceArr,
           editorClass: 'form-control',
-          // editorAttrs: {
-          //   multiple: 'multiple',
-          //   maximumSelectionLength: 1
-          // },
           pluginAttr: {
             placeholder: localization.tt('lbl.devices'),
             allowClear: true,
-            // maximumSelectionLength: 1
           },
           validators: ['required']
         }
@@ -159,6 +150,23 @@ define(['utils/LangSupport',
            this.$('#showDev').addClass('displayNone');
          }
       }
+    },
+
+    setDevices: function(){
+      var self = this;
+      var arr = [];
+      _.each(this.model.get('_selectedTable'), function(obj){
+        var tempModel = self.collection.get(obj.dataSourceId);
+        self.model.set('devices', tempModel.get('dataSourceName'));
+        arr.push({
+          datasourceName: tempModel.get('dataSourceName'),
+          parserName: tempModel.get('parserName'),
+          feedType: tempModel.get('dataFeedType'),
+          datasourceId: tempModel.get('dataSourceId'),
+          parserId: tempModel.get('parserId')
+        });
+      });
+      this.model.set('_selectedTable', arr);
     },
 
     generateTable: function(datasourceName, parserName){

@@ -3,17 +3,17 @@ define(['require',
   'utils/LangSupport',
   'utils/Utils',
   'utils/Globals',
-  'hbs!tmpl/topology/dataFeedView'
+  'hbs!tmpl/topology/topologyLevelConfig'
 ], function(require, vent, localization, Utils, Globals, tmpl) {
   'use strict';
 
-  var DataFeedLayout = Marionette.LayoutView.extend({
+  var TopologyConfigLayout = Marionette.LayoutView.extend({
 
     template: tmpl,
 
     events: {
       'click #btnCancel': 'evClose',
-      'click #btnAdd': 'evAdd'
+      'click #btnAdd': 'evSave'
     },
 
     regions: {
@@ -26,25 +26,23 @@ define(['require',
 
     onRender:function(){
       var self = this;
-      require(['views/topology/DataFeedForm'], function(DataFeedForm){
-        self.view = new DataFeedForm({
+      require(['views/topology/TopologyConfigForm'], function(TopologyConfigForm){
+        self.view = new TopologyConfigForm({
           model: self.model
         });
         self.rForm.show(self.view);
       });
     },
 
-    evAdd: function(e){
+    evSave: function(e){
       var err = this.view.validate();
       if(_.isEmpty(err)){
-        this.saveDataFeed();
+        this.saveConfig();
       }
     },
-    saveDataFeed: function(){
-      // var self = this;
+    saveConfig: function(){
       var data = this.view.getData();
-      console.log(data);
-      this.vent.trigger('topologyEditor:SaveDeviceSource', data);
+      this.vent.trigger('topologyEditor:SaveConfig', data);
       this.evClose();
     },
     evClose: function(e){
@@ -53,5 +51,5 @@ define(['require',
 
   });
   
-  return DataFeedLayout;
+  return TopologyConfigLayout;
 });

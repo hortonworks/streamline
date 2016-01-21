@@ -1,8 +1,10 @@
 define(['utils/LangSupport',
   'utils/Globals',
+  'utils/Utils',
   'hbs!tmpl/device/deviceForm',
+  'collection/VParserList',
   'backbone.forms'
-  ], function (localization, Globals, tmpl) {
+  ], function (localization, Globals, Utils, tmpl, VParserList) {
   'use strict';
 
   var AddDeviceForm = Backbone.Form.extend({
@@ -11,10 +13,28 @@ define(['utils/LangSupport',
 
     initialize: function (options) {
       this.model = options.model;
+      this.collection = new VParserList();
+      this.getParsers();
       Backbone.Form.prototype.initialize.call(this, options);
     },
 
+    getParsers: function(){
+      this.collection.fetch({reset: true, async: false});
+    },
+
     schema: function () {
+      var parserArr = [{}],
+          feedTypeArr = [{}];
+      _.each(this.collection.models, function(model){
+        var obj = {
+          'val': model.get('id'),
+          'label': model.get('name')
+        };
+        parserArr.push(obj);
+      });
+
+      Array.prototype.push.apply(feedTypeArr, Utils.GlobalEnumToArray(Globals.Feed.Type));
+
       return {
         dataSourceName: {
           type: 'Text',
@@ -76,20 +96,25 @@ define(['utils/LangSupport',
           validators: ['required']
         },
         parserId: {
-          type: 'Number',
-          title: localization.tt('lbl.parserId')+'*',
+          type: 'Select2',
+          title: localization.tt('lbl.parser')+'*',
+          options: parserArr,
           editorClass: 'form-control',
-          editorAttrs: {
-            min: 1
-          }, 
-          placeHolder: localization.tt('lbl.parserId'),
+          pluginAttr: {
+            placeholder: localization.tt('lbl.parser'),
+            allowClear: true,
+          },
           validators: ['required']
         },
         dataFeedType: {
-          type: 'Text',
+          type: 'Select2',
           title: localization.tt('lbl.feedType')+'*',
+          options: feedTypeArr,
           editorClass: 'form-control',
-          placeHolder: localization.tt('lbl.feedType'),
+          pluginAttr: {
+            placeholder: localization.tt('lbl.feedType'),
+            allowClear: true,
+          },
           validators: ['required']
         }
       };

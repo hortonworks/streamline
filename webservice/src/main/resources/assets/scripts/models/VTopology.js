@@ -40,7 +40,19 @@ define(['require',
       },
       getLinkComponent: function(options){
         return this.constructor.nonCrudOperation.call(this, Globals.baseURL + '/api/v1/catalog/system/componentdefinitions/LINK?streamingEngine=STORM', 'GET', options);
-      }
+      },
+      getMetaInfo: function(options){
+        return this.constructor.nonCrudOperation.call(this, Globals.baseURL + '/api/v1/catalog/system/topologyeditormetadata/'+options.id, 'GET', options);
+      },
+      saveMetaInfo: function(options){
+        var url = Globals.baseURL + '/api/v1/catalog/system/topologyeditormetadata',
+            type = 'POST';
+        if(options.id){
+          url += '/'+options.id;
+          type = 'PUT';
+        }
+        return this.constructor.nonCrudOperation.call(this, url, type, options);
+      },
     },
     {}
   );

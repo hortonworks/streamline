@@ -21,6 +21,7 @@ define(['require',
 
         initialize: function(options) {
             _.extend(this, options);
+            this.id = this.model.get('id');
         },
 
         onRender: function(){
@@ -39,13 +40,15 @@ define(['require',
             });
             if(this.rulesArr.length > 1){
                 var obj = this.rulesArr[this.id-1];
-                this.$el.find('.logicalOp').select2('val',this.rulesArr[this.id-2].logicalOperator);
-                this.$el.find('.field-1').select2('val',obj.firstOperand.name);
-                this.$el.find('.comparisonOp').select2('val',obj.operation);
-                if(!_.find(this.fieldsArr, {val: obj.secondOperand})){
-                    this.$el.find('.field-2').append('<option value="'+obj.secondOperand+'">'+obj.secondOperand+'</option>');
+                if(!_.isUndefined(obj)){
+                    this.$el.find('.logicalOp').select2('val',this.rulesArr[this.id-2].logicalOperator);
+                    this.$el.find('.field-1').select2('val',obj.firstOperand.name);
+                    this.$el.find('.comparisonOp').select2('val',obj.operation);
+                    if(!_.find(this.fieldsArr, {val: obj.secondOperand})){
+                        this.$el.find('.field-2').append('<option value="'+obj.secondOperand+'">'+obj.secondOperand+'</option>');
+                    }
+                    this.$el.find('.field-2').select2('val',obj.secondOperand);
                 }
-                this.$el.find('.field-2').select2('val',obj.secondOperand);
             }
         },
 

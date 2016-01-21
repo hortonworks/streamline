@@ -9,8 +9,8 @@ define(['require'], function (require) {
   Globals.settings.PAGE_SIZE = 25;
 
   Globals.AppTabs = {
-  	Dashboard 			    : { value:1, valStr: 'Dashboard'},
-  	DeviceCatalog 			: { value:2, valStr: 'Device Catalog'},
+    Dashboard           : { value:1, valStr: 'Dashboard'},
+    DeviceCatalog       : { value:2, valStr: 'Device Catalog'},
     ParserRegistry      : { value:3, valStr: 'Parser Registry'},
     DataStreamEditor    : { value:4, valStr: 'Datastream Editor'}
   };
@@ -20,51 +20,45 @@ define(['require'], function (require) {
   Globals.Component.Storm = [
    {value: 'NIMBUS', valStr: 'NIMBUS'},
    {value: 'SUPERVISOR', valStr: 'SUPERVISOR'},
-   {value: 'UI', valStr: 'UI'},
-   {value: 'ZK', valStr: 'ZK'}
+   {value: 'UI', valStr: 'UI'}
   ];
 
   Globals.Component.Kafka = [
     {value: 'BROKER', valStr: 'BROKER'},
-    {value: 'ZK', valStr: 'ZK'}
+    {value: 'ZOOKEEPER', valStr: 'ZOOKEEPER'}
+  ];
+
+  Globals.Component.HDFS =[
+    {value: 'NAMENODE', valStr: 'NAMENODE'},
+    {value: 'DATANODE', valStr: 'DATANODE'}
   ];
 
   Globals.Topology = {};
   Globals.Topology.Editor = {};
 
   Globals.Topology.Editor.Steps = {
-    Datasource  : {value: 1, valStr: 'Datasource'},
-    Processor   : {value: 2, valStr: 'Processor'},
-    DataSink    : {value: 3, valStr: 'Data Sink'}
+    Datasource  : {value: 1, valStr: 'Datasource', iconClass: 'fa fa-server'},
+    Processor   : {value: 2, valStr: 'Processor', iconClass: 'fa fa-cog'},
+    DataSink    : {value: 3, valStr: 'DataSink', iconClass: 'fa fa-server'}
   };
 
   Globals.Topology.Editor.Steps.Datasource.Substeps = [
-    {value: 1, valStr: 'Device', iconClass: 'fa fa-desktop', iconContent: '&#xf108;', mainStep: 'Datasource'}
+    {value: 1, valStr: 'DEVICE', imgUrl: 'images/iconf-device.png', mainStep: Globals.Topology.Editor.Steps.Datasource.valStr, show: true}
   ];
 
   Globals.Topology.Editor.Steps.Processor.Substeps = [
-    {value: 1, valStr: 'Rule', iconClass: 'fa fa-cog', iconContent: '&#xf013;', mainStep: 'Processor'}
+    {value: 1, valStr: 'PARSER', imgUrl: 'images/iconf-parser.png', mainStep: Globals.Topology.Editor.Steps.Processor.valStr, show: false},
+    {value: 2, valStr: 'RULE', imgUrl: 'images/iconf-rule.png', mainStep: Globals.Topology.Editor.Steps.Processor.valStr, show: true}
   ];
 
   Globals.Topology.Editor.Steps.DataSink.Substeps = [
-    {value: 1, valStr: 'HDFS', iconClass: 'fa fa-database', iconContent: '&#xf1c0;', mainStep: 'Data Sink'},
-    {value: 2, valStr: 'HBASE', iconClass: 'fa fa-database', iconContent: '&#xf1c0;', mainStep: 'Data Sink'}
+    {value: 1, valStr: 'HDFS', imgUrl: 'images/iconf-hdfs.png', mainStep: Globals.Topology.Editor.Steps.DataSink.valStr, show: true},
+    {value: 2, valStr: 'HBASE', imgUrl: 'images/iconf-hbase.png', mainStep: Globals.Topology.Editor.Steps.DataSink.valStr, show: true}
   ];
 
-  Globals.Functions = {};
-  Globals.Functions.Comparison = [
-    {value: '==', valStr: 'equal to'},
-    {value: '!=', valStr: 'not equal to'},
-    {value: '>', valStr: 'greater than'},
-    {value: '<', valStr: 'less than'},
-    {value: '>=', valStr: 'greater than or equal to'},
-    {value: '<=', valStr: 'less than or equal to'}
-    // {value: 'contains', valStr: 'contains'},
-  ];
-
-  Globals.Functions.Logical = [
-    {value: '&&', valStr: 'And'},
-    {value: '!!', valStr: 'Or'}
+  Globals.Feed = {};
+  Globals.Feed.Type = [
+    {value: 'KAFKA', valStr: 'KAFKA'}
   ];
 
   return Globals; 

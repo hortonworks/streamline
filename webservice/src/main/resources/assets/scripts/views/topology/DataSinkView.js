@@ -43,7 +43,7 @@ define(['require',
       // var self = this;
       var data = this.view.getData();
       console.log(data);
-      this.vent.trigger('dataStream:SavedStep3', data);
+      this.vent.trigger('topologyEditor:SaveSink', data);
       this.evClose();
     },
     evClose: function(e){

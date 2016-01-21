@@ -1,45 +1,35 @@
 define(['utils/LangSupport',
   'utils/Globals',
-  'hbs!tmpl/topology/parserProcessorForm',
+  'hbs!tmpl/topology/topologyConfigForm',
   'backbone.forms'
   ], function (localization, Globals, tmpl) {
   'use strict';
 
-  var ParserForm = Backbone.Form.extend({
+  var TopologyConfigForm = Backbone.Form.extend({
 
     template: tmpl,
 
     initialize: function (options) {
       _.extend(this, options);
-      this.model.set('firstTime', false);
       Backbone.Form.prototype.initialize.call(this, options);
     },
 
     schema: function () {
       return {
-        dataSourceName: {
+        rootdir: {
           type: 'Text',
-          title: 'Source Name',
-          editorClass: 'form-control',
-          editorAttrs: {
-            readonly: 'readonly'
-          },
-          placeHolder: 'Source Name',
+          title: 'hbase.rootdir',
+          editorClass: 'form-control'
         },
-        parserName: {
+        parserPath: {
           type: 'Text',
-          title: 'Parser Name',
-          editorClass: 'form-control',
-          editorAttrs: {
-            readonly: 'readonly'
-          },
-          placeHolder: 'Parser Name',
+          title: 'local.parser.jar.path',
+          editorClass: 'form-control'
         },
-        parallelism: {
+        notifierPath: {
           type: 'Text',
-          title: 'Parallelism',
-          editorClass: 'form-control',
-          placeHolder: 'Parallelism',
+          title: 'local.notifier.jar.path',
+          editorClass: 'form-control'
         },
       };
     },
@@ -57,5 +47,5 @@ define(['utils/LangSupport',
     }
   });
 
-  return ParserForm;
+  return TopologyConfigForm;
 });

@@ -9,15 +9,23 @@ define(['require',
     templateHelpers: function() {},
     regions: {},
     events: {
-      'click #menu-toggle': 'menuToggleAction',
+      
     },
     initialize: function(options) {
+      _.bindAll(this, 'highlightTab');
       this.vent = Vent;
+      this.appState = options.appState;
+      this.appState.on('change:currentTab', this.highlightTab);
     },
-    menuToggleAction: function(e){
-      this.vent.trigger('sidebar-menu-toggle');
+    highlightTab : function(){
+      this.$('ul.main-navigation > li a.current').removeClass('current');
+      if(this.appState.get('currentTab')){
+        this.$('li#tab' + this.appState.get('currentTab') + ' a').addClass('current');
+      }
     },
-    onRender: function(){},
+    onRender: function(){
+      this.highlightTab();
+    }
     
   });
   return vHeader;

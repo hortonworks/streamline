@@ -2,9 +2,7 @@
 	<div class="modal-content">
 		{{#if title}} 
 		     <div class="modal-header">
-		       {{#if allowCancel}}
-		         <a class="close">&times;</a>
-		       {{/if}}
+		        <a class="close">&times;</a>
 		   		<h4 class="modal-title">
 		   			{{#if titleHtml}}
 					    {{{tt title}}}
@@ -14,16 +12,19 @@
 		   		</h4>
 		     </div>
 		{{/if}}
-		<div class="modal-body">{{content}}</div>
-		{{#if showFooter}}
-			 <div class="modal-footer" >
-			   <a href="#" class="btn ok btn-primary">{{tt okText}}</a>
-			   {{#if allowCancel}}
-			     {{#if cancelText}}
-			       <a href="#" class="btn cancel">{{tt cancelText}}</a>
-			     {{/if}}
-			   {{/if}}
-			 </div>
+		{{#if contentWithFooter}}
+		{{else}}
+			<div class="modal-body">{{content}}</div>
+			{{#if showFooter}}
+				 <div class="modal-footer" >
+				   <a href="#" class="btn ok btn-success">{{tt okText}}</a>
+				   {{#if allowCancel}}
+				     {{#if cancelText}}
+				       <a href="#" class="btn btn-default cancel">{{tt cancelText}}</a>
+				     {{/if}}
+				   {{/if}}
+				 </div>
+			{{/if}}
 		{{/if}}
 	</div>
 </div>
