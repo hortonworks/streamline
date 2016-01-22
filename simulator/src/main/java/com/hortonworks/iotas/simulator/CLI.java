@@ -71,9 +71,9 @@ public class CLI {
             if(!(file.exists() && file.canRead() && file.isFile())){
                 System.out.println("Error: Unable to read file: " + file.getAbsolutePath());
                 System.exit(2);
-            } else {
-                processDataFile(file, producer, cmd);
             }
+
+            processDataFile(file, producer, cmd);
         } else {
             usage(options);
         }
