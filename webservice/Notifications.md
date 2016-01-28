@@ -21,14 +21,14 @@ GET /api/v1/notification/notifications/ID
     "dataSourceIds": ["1"],
     "ruleId": "1",
     "status": "DELIVERED",
-    "name": "console_notifier",
+    "notifierName": "console_notifier",
     "ts": 1444714749066
   }
 }
 ```
 
 ## Get Notifications based on query criteria
-`GET /api/v1/notification/notifications/[id=<>|ruleId=<>|name=<>]&[startTs=<>]&[endTs=<>][numRows=<>]&[desc]`
+`GET /api/v1/notification/notifications/[dataSourceId=<>|ruleId=<>|notifierName=<>]&[startTs=<>]&[endTs=<>][numRows=<>]&[desc]`
 
 All the parameters are optional. 
 
@@ -48,7 +48,7 @@ If no parameters are specified, returns the oldest 10 notifications from the not
       "dataSourceIds": ["1"],
       "ruleId": "1",
       "status": "DELIVERED",
-      "name": "console_notifier",
+      "notifierName": "console_notifier",
       "ts": 1444714749066
     },
     {
@@ -58,7 +58,7 @@ If no parameters are specified, returns the oldest 10 notifications from the not
       "dataSourceIds": ["1"],
       "ruleId": "1",
       "status": "DELIVERED",
-      "name": "console_notifier",
+      "notifierName": "console_notifier",
       "ts": 1444714749069
     },
     ..
@@ -76,9 +76,9 @@ If no parameters are specified, returns the oldest 10 notifications from the not
 |`?startTs=1444714750000&desc`|notifications with ts later than (>=) 1444714750000 millis in descending order|
 |`?endTs=1444714750000&desc`|notifications with ts older than (<) 1444714750000 millis in descending order|
 |`?startTs=1444714750000&endTs=1444714760000&desc`|notifications with ts between start and end ts in descending order (ts >= 1444714750000 && ts < 1444714760000)|
-|`?name=console_notifier&desc`|latest 10 notifications for notifier name 'console_notifier', in descending order|
-|`?name=console_notifier&status=FAILED&desc`|latest (10) failed notifications for notifier name 'console_notifier', in descending order|
-|`?id=123&desc`|latest 10 notifications due to events originated from datasource with id=123 in descending order|
+|`?notifierName=console_notifier&desc`|latest 10 notifications for notifier name 'console_notifier', in descending order|
+|`?notifierName=console_notifier&status=FAILED&desc`|latest (10) failed notifications for notifier name 'console_notifier', in descending order|
+|`?dataSourceId=123&desc`|latest 10 notifications due to events originated from datasource with id=123 in descending order|
 |`?ruleId=100&desc`|latest 10 notifications triggered by rule with id=100 in descending order|
 
 The startTs, endTs, numRows and desc can be used with other criteria to limit and order the results.
@@ -105,7 +105,7 @@ Content-Type: application/json
     "dataSourceIds": ["1"],
     "ruleId": "1",
     "status": "FAILED",
-    "name": "console_notifier",
+    "notifierName": "console_notifier",
     "ts": 1444714749069
   }
 }
@@ -159,7 +159,7 @@ GET /api/v1/notification/events/ID
       "fan_timer_active": "\u0000",
       "humidity": "\u0000\u0000\u0000_"
     },
-    "id": "1",
+    "dataSourceId": "1",
     "id": "0f69607a-95f0-487c-be34-335acf3c9308"
   }
 }
