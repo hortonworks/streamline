@@ -165,12 +165,13 @@ public class RestIntegrationTest {
     public void testComponentAPIs() throws Exception {
         Client client = ClientBuilder.newClient(new ClientConfig());
 
+        Long clusterId = 1L;
         List<Component> componentsToPost = new ArrayList<>();
         for(long i=1; i<4; i++) {
-            componentsToPost.add(createComponent(i, "testComponent:"+i));
+            componentsToPost.add(createComponent(clusterId, i, "testComponent:"+i));
         }
         String url = rootUrl + "clusters/1/components";
-        Component resourceToPut = createComponent(1l, "testComponentPut");
+        Component resourceToPut = createComponent(clusterId, 1l, "testComponentPut");
         Class resourceToPostClass = Component.class;
 
         String response = client.target(url).request().post(Entity.json(componentsToPost), String.class);
@@ -206,6 +207,46 @@ public class RestIntegrationTest {
             Assert.assertEquals(CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND.getCode(), getResponseCode(response));
         }
 
+    }
+
+    /**
+     * IOT-102: Test whether component API can distinguish cluster
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testComponentAPIsCanDistinguishCluster() throws Exception {
+        Client client = ClientBuilder.newClient(new ClientConfig());
+
+        Long clusterId = 1L;
+        String componentBaseUrl = rootUrl + String.format("clusters/%d/components", clusterId);
+
+        Component component = createComponent(clusterId, 1L, "testComponent:"+1);
+
+        String componentEntityUrl = componentBaseUrl + "/" + 1;
+        String response = client.target(componentEntityUrl).request().put(Entity.json(component), String.class);
+        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+
+        Long anotherClusterId = 2L;
+
+        componentBaseUrl = rootUrl + String.format("clusters/%d/components", anotherClusterId);
+
+        try {
+            client.target(componentBaseUrl).request().get(String.class);
+            Assert.fail("Should have thrown NotFoundException.");
+        } catch (NotFoundException e) {
+            response = e.getResponse().readEntity(String.class);
+            Assert.assertEquals(CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER.getCode(), getResponseCode(response));
+        }
+
+        componentEntityUrl = componentBaseUrl + "/" + 1;
+        try {
+            client.target(componentEntityUrl).request().get(String.class);
+            Assert.fail("Should have thrown NotFoundException.");
+        } catch (NotFoundException e) {
+            response = e.getResponse().readEntity(String.class);
+            Assert.assertEquals(CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND.getCode(), getResponseCode(response));
+        }
     }
 
     /*
@@ -431,9 +472,9 @@ public class RestIntegrationTest {
         return cluster;
     }
 
-    private Component createComponent(Long id, String name) {
+    private Component createComponent(Long clusterId, Long id, String name) {
         Component component = new Component();
-        component.setClusterId(1l);
+        component.setClusterId(clusterId);
         component.setDescription("desc");
         component.setHosts("host-1, host-2");
         component.setId(id);
