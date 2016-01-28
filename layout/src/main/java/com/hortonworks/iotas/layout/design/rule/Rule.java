@@ -18,6 +18,7 @@
 
 package com.hortonworks.iotas.layout.design.rule;
 
+import com.google.common.collect.ImmutableList;
 import com.hortonworks.iotas.layout.design.rule.action.Action;
 import com.hortonworks.iotas.layout.design.rule.condition.Condition;
 
@@ -90,7 +91,7 @@ public class Rule implements Serializable {
     }
 
     public void setActions(List<Action> actions) {
-        this.actions = actions;
+        this.actions = ImmutableList.copyOf(actions);
     }
 
     @Override

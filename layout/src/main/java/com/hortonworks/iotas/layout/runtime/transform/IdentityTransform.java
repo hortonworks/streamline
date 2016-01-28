@@ -1,4 +1,4 @@
-package com.hortonworks.iotas.layout.transform;
+package com.hortonworks.iotas.layout.runtime.transform;
 
 import com.hortonworks.iotas.common.IotasEvent;
 
@@ -9,5 +9,10 @@ public class IdentityTransform implements Transform {
     @Override
     public List<IotasEvent> execute(IotasEvent input) {
         return Collections.singletonList(input);
+    }
+
+    @Override
+    public String toString() {
+        return "IdentityTransform{}";
     }
 }

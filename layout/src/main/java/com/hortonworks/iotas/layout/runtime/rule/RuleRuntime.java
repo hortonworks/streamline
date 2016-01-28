@@ -36,7 +36,7 @@ import static com.hortonworks.iotas.layout.runtime.ActionRuntime.Result;
  * Represents a rule runtime
  */
 public class RuleRuntime implements Serializable {
-    protected static final Logger log = LoggerFactory.getLogger(RuleRuntime.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(RuleRuntime.class);
 
     protected final Rule rule;
     protected final Script<IotasEvent, Boolean, ?> script;     // Script used to evaluate the condition
@@ -51,7 +51,7 @@ public class RuleRuntime implements Serializable {
     public boolean evaluate(IotasEvent input) {
         try {
             boolean evaluates = script.evaluate(input);
-            log.debug("Rule condition evaluated to [{}].\n\t[{}]\n\tInput[{}]", evaluates, rule, input);
+            LOG.debug("Rule condition evaluated to [{}].\n\t[{}]\n\tInput[{}]", evaluates, rule, input);
             return evaluates;
         } catch (ScriptException e) {
             throw new ConditionEvaluationException("Exception occurred when evaluating rule condition. " + this, e);
@@ -64,18 +64,25 @@ public class RuleRuntime implements Serializable {
      * @param input runtime input to this rule
      */
     public List<Result> execute(IotasEvent input) {
+        LOG.debug("execute invoked with IotasEvent {}", input);
         List<Result> results = new ArrayList<>();
         for (ActionRuntime action : actions) {
-            results.add(action.execute(input));
+            Result result = action.execute(input);
+            LOG.debug("Applied action {}, Result {}", action, result);
+            results.add(result);
         }
+        LOG.debug("Returning results {}", results);
         return results;
     }
 
     public List<String> getStreams() {
+        LOG.debug("in getStreams");
         List<String> streams = new ArrayList<>();
         for(ActionRuntime action: actions) {
+            LOG.debug("Action {}, Stream {}", action, action.getStream());
             streams.add(action.getStream());
         }
+        LOG.debug("Returning streams {}", streams);
         return streams;
     }
 

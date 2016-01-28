@@ -1,4 +1,4 @@
-package com.hortonworks.iotas.layout.transform;
+package com.hortonworks.iotas.layout.runtime.transform;
 
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
@@ -39,5 +39,12 @@ public class ProjectionTransform implements Transform {
             merged.put(entry.getKey(), value);
         }
         return Collections.<IotasEvent>singletonList(new IotasEventImpl(merged, input.getDataSourceId()));
+    }
+
+    @Override
+    public String toString() {
+        return "ProjectionTransform{" +
+                "fieldsAndDefaults=" + fieldsAndDefaults +
+                '}';
     }
 }

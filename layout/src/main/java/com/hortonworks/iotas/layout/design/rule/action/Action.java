@@ -34,6 +34,10 @@ public class Action implements Serializable {
 
     public Action() { }
 
+    /**
+     * The name of the output fields and the default values for them
+     * to be emitted as a part of this action.
+     */
     public void setOutputFieldsAndDefaults(Map<String, Object> outputFieldsAndDefaults) {
         this.outputFieldsAndDefaults = outputFieldsAndDefaults;
     }
@@ -54,6 +58,10 @@ public class Action implements Serializable {
         return includeMeta;
     }
 
+    /**
+     * Whether to include meta data (rule-id, event-id, datasource-id) in the output
+     * IotasEvent header.
+     */
     public void setIncludeMeta(boolean includeMeta) {
         this.includeMeta = includeMeta;
     }

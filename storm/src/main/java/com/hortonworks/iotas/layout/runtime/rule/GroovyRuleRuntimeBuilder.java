@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
 
-public class GroovyRuleRuntimeBuilder extends BaseRuleRuntimeBuilder {
+public class GroovyRuleRuntimeBuilder extends AbstractRuleRuntimeBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(GroovyRuleRuntimeBuilder.class);
     private Rule rule;
     private GroovyExpression groovyExpression;

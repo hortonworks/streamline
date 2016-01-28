@@ -3,17 +3,18 @@ package com.hortonworks.iotas.layout.runtime.rule;
 import com.hortonworks.iotas.layout.design.rule.Rule;
 import com.hortonworks.iotas.layout.design.rule.action.Action;
 import com.hortonworks.iotas.layout.runtime.ActionRuntime;
-import com.hortonworks.iotas.layout.transform.AddHeaderTransform;
-import com.hortonworks.iotas.layout.transform.IdentityTransform;
-import com.hortonworks.iotas.layout.transform.ProjectionTransform;
-import com.hortonworks.iotas.layout.transform.Transform;
+import com.hortonworks.iotas.layout.runtime.TransformAction;
+import com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransform;
+import com.hortonworks.iotas.layout.runtime.transform.IdentityTransform;
+import com.hortonworks.iotas.layout.runtime.transform.ProjectionTransform;
+import com.hortonworks.iotas.layout.runtime.transform.Transform;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class BaseRuleRuntimeBuilder implements RuleRuntimeBuilder {
+public abstract class AbstractRuleRuntimeBuilder implements RuleRuntimeBuilder {
     protected List<ActionRuntime> actions;
 
     @Override
@@ -24,9 +25,9 @@ public abstract class BaseRuleRuntimeBuilder implements RuleRuntimeBuilder {
             String streamId = rule.getRuleProcessorName() + "." + rule.getName() + "."
                     + rule.getId() + "." + action.getName();
             /*
-             * Add an ActionRuntime to perform necessary transformation for notification
+             * Add an TransformAction to perform necessary transformation for notification
              */
-            runtimeActions.add(new ActionRuntime(streamId, getTransforms(action)));
+            runtimeActions.add(new TransformAction(streamId, getTransforms(action)));
         }
         actions = runtimeActions;
     }

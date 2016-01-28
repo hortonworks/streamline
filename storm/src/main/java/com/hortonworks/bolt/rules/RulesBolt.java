@@ -26,16 +26,15 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.layout.runtime.ActionRuntime;
 import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.RuleRuntime;
-import com.hortonworks.iotas.layout.runtime.rule.RuleRuntimeStormDeclaredOutput;
 import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Map;
+import static com.hortonworks.iotas.layout.runtime.ActionRuntime.Result;
+
 
 public class RulesBolt extends BaseRichBolt {
     private static final Logger LOG = LoggerFactory.getLogger(RulesBolt.class);
@@ -66,7 +65,7 @@ public class RulesBolt extends BaseRichBolt {
 
                 for (RuleRuntime rule : ruleProcessorRuntime.getRulesRuntime()) {
                     if (rule.evaluate((IotasEvent) iotasEvent)) {
-                        for(ActionRuntime.Result result: rule.execute((IotasEvent) iotasEvent)) {
+                        for(Result result: rule.execute((IotasEvent) iotasEvent)) {
                             for (IotasEvent event: result.events) {
                                 collector.emit(result.stream, input, new Values(event));
                             }

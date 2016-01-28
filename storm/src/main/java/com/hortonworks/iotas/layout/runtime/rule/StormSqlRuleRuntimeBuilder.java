@@ -23,7 +23,7 @@ import com.hortonworks.iotas.layout.runtime.rule.condition.expression.StormSqlEx
 import com.hortonworks.iotas.layout.runtime.rule.sql.StormSqlEngine;
 import com.hortonworks.iotas.layout.runtime.rule.sql.StormSqlScript;
 
-public class StormSqlRuleRuntimeBuilder extends BaseRuleRuntimeBuilder {
+public class StormSqlRuleRuntimeBuilder extends AbstractRuleRuntimeBuilder {
     private Rule rule;
     private StormSqlExpression stormSqlExpression;
     private StormSqlEngine stormSqlEngine;

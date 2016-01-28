@@ -1,4 +1,4 @@
-package com.hortonworks.iotas.layout.transform;
+package com.hortonworks.iotas.layout.runtime.transform;
 
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
@@ -21,5 +21,12 @@ public class AddHeaderTransform implements Transform {
     public List<IotasEvent> execute(IotasEvent input) {
         return Collections.<IotasEvent>singletonList(
                 new IotasEventImpl(input.getFieldsAndValues(), input.getDataSourceId(), header));
+    }
+
+    @Override
+    public String toString() {
+        return "AddHeaderTransform{" +
+                "header=" + header +
+                '}';
     }
 }
