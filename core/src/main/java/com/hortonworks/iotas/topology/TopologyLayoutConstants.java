@@ -75,6 +75,24 @@ public final class TopologyLayoutConstants {
     public final static String JSON_KEY_STREAM_ID =
             "streamId";
     public final static String JSON_KEY_NOTIFIER_NAME = "notifierName";
+    public final static String JSON_KEY_NOTIFIER_JAR_FILENAME = "jarFileName";
+    public final static String JSON_KEY_NOTIFIER_CLASSNAME = "className";
+    public final static String JSON_KEY_NOTIFIER_PROPERTIES = "properties";
+    public final static String JSON_KEY_NOTIFIER_FIELD_VALUES = "fieldValues";
+    public final static String JSON_KEY_NOTIFIER_FROM = "from";
+    public final static String JSON_KEY_NOTIFIER_TO = "to";
+    public final static String JSON_KEY_NOTIFIER_SUBJECT = "subject";
+    public final static String JSON_KEY_NOTIFIER_CONTENT_TYPE = "contentType";
+    public final static String JSON_KEY_NOTIFIER_BODY = "body";
+    public final static String JSON_KEY_NOTIFIER_USERNAME = "username";
+    public final static String JSON_KEY_NOTIFIER_PASSWORD = "password";
+    public final static String JSON_KEY_NOTIFIER_HOST = "host";
+    public final static String JSON_KEY_NOTIFIER_PORT = "port";
+    public final static String JSON_KEY_NOTIFIER_SSL = "ssl";
+    public final static String JSON_KEY_NOTIFIER_STARTTLS = "starttls";
+    public final static String JSON_KEY_NOTIFIER_DEBUG = "debug";
+    public final static String JSON_KEY_NOTIFIER_PROTOCOL = "protocol";
+    public final static String JSON_KEY_NOTIFIER_AUTH = "auth";
     public final static String JSON_KEY_NOTIFIER_CONFIG_KEY = "hbaseConfigKey";
     public final static String JSON_KEY_GROUPING = "grouping";
     public final static String JSON_KEY_GROUPING_FIELDS = "groupingFields";
