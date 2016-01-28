@@ -46,17 +46,11 @@ public class ComponentCatalogResource {
      */
     @GET
     @Timed
-    public Response listComponents(@Context UriInfo uriInfo) {
-        List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>();
+    public Response listComponents(@PathParam("clusterId") Long clusterId, @Context UriInfo uriInfo) {
+        List<CatalogService.QueryParam> queryParams = buildClusterIdAwareQueryParams(clusterId, uriInfo);
+
         try {
-            MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
-            Collection<Component> components;
-            if (params.isEmpty()) {
-                components = catalogService.listComponents();
-            } else {
-                queryParams = WSUtils.buildQueryParameters(params);
-                components = catalogService.listComponents(queryParams);
-            }
+            Collection<Component> components = catalogService.listComponents(queryParams);
             if (components != null && !components.isEmpty()) {
                 return WSUtils.respond(OK, SUCCESS, components);
             }
@@ -71,16 +65,16 @@ public class ComponentCatalogResource {
     @Path("/{id}")
     @Timed
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getComponentById(@PathParam("id") Long componentId) {
+    public Response getComponentById(@PathParam("clusterId") Long clusterId, @PathParam("id") Long componentId) {
         try {
-            Component result = catalogService.getComponent(componentId);
-            if (result != null) {
-                return WSUtils.respond(OK, SUCCESS, result);
+            Component component = catalogService.getComponent(componentId);
+            if (component != null && component.getClusterId().equals(clusterId)) {
+                return WSUtils.respond(OK, SUCCESS, component);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, componentId.toString());
+        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, buildMessageForCompositeId(clusterId, componentId));
     }
 
     @POST
@@ -141,4 +135,27 @@ public class ComponentCatalogResource {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
     }
+
+    private List<CatalogService.QueryParam> buildClusterIdAwareQueryParams(Long clusterId) {
+        return buildClusterIdAwareQueryParams(clusterId, null);
+    }
+
+    private List<CatalogService.QueryParam> buildClusterIdAwareQueryParams(Long clusterId, UriInfo uriInfo) {
+        List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>();
+        queryParams.add(new CatalogService.QueryParam("clusterId", clusterId.toString()));
+        if (uriInfo != null) {
+            MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
+            if (!params.isEmpty()) {
+                queryParams.addAll(WSUtils.buildQueryParameters(params));
+            }
+        }
+
+        return queryParams;
+    }
+
+    private String buildMessageForCompositeId(@PathParam("clusterId") Long clusterId, @PathParam("id") Long componentId) {
+        return String.format("cluster id <%d>, id <%d>",
+                clusterId, componentId);
+    }
+
 }
