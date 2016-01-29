@@ -1,6 +1,6 @@
 package com.hortonworks.hbase;
 
-import backtype.storm.tuple.Tuple;
+import org.apache.storm.tuple.Tuple;
 import com.google.common.base.Charsets;
 import com.hortonworks.iotas.common.IotasEvent;
 import org.apache.storm.hbase.bolt.mapper.HBaseMapper;

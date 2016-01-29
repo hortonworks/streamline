@@ -111,7 +111,6 @@ topology json that user will create using UI.
         "streamingEngine":"STORM",
         "subType":"KAFKA",
         "config":"[
-            {\"name\":\"brokerHostsImpl\",\"isOptional\":false,\"defaultValue\":\"storm.kafka.ZkHosts\"},
             {\"name\":\"zkUrl\",\"isOptional\":false,\"defaultValue\":\"localhost:2181\"},
             {\"name\":\"zkPath\",\"isOptional\":true,\"defaultValue\":\"/brokers\"},
             {\"name\":\"refreshFreqSecs\",\"isOptional\":true,\"defaultValue\":60},
@@ -122,7 +121,6 @@ topology json that user will create using UI.
             {\"name\":\"socketTimeoutMs\",\"isOptional\":true,\"defaultValue\":10000},
             {\"name\":\"fetchMaxWait\",\"isOptional\":true,\"defaultValue\":10000},
             {\"name\":\"bufferSizeBytes\",\"isOptional\":true,\"defaultValue\":1048576},
-            {\"name\":\"multiSchemeImpl\",\"isOptional\":true,\"defaultValue\":\"backtype.storm.spout.RawMultiScheme\"},
             {\"name\":\"ignoreZkOffsets\",\"isOptional\":true,\"defaultValue\":false},
             {\"name\":\"maxOffsetBehind\",\"isOptional\":true,\"defaultValue\":9223372036854776000},
             {\"name\":\"useStartOffsetTimeIfOffsetOutOfRange\",\"isOptional\":true,\"defaultValue\":true},

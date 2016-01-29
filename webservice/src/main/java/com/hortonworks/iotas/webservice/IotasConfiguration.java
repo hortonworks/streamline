@@ -45,6 +45,9 @@ public class IotasConfiguration extends Configuration {
     @NotNull
     private JarStorageConfiguration jarStorageConfiguration;
 
+    @NotEmpty
+    private String stormHomeDir;
+
     @JsonProperty
     public String getBrokerList(){
         return this.brokerList;
@@ -105,5 +108,13 @@ public class IotasConfiguration extends Configuration {
     @JsonProperty("notificationsRestDisable")
     public void setNotificationsRestDisabled(Boolean notificationsRestDisable) {
         this.notificationsRestDisable = notificationsRestDisable;
+    }
+
+    public String getStormHomeDir () {
+        return stormHomeDir;
+    }
+
+    public void setStormHomeDir (String stormHomeDir) {
+        this.stormHomeDir = stormHomeDir;
     }
 }

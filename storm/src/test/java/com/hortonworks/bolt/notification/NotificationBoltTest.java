@@ -1,7 +1,7 @@
 package com.hortonworks.bolt.notification;
 
-import backtype.storm.task.OutputCollector;
-import backtype.storm.tuple.Tuple;
+import org.apache.storm.task.OutputCollector;
+import org.apache.storm.tuple.Tuple;
 import com.hortonworks.client.CatalogRestClient;
 import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.notification.common.Notification;
