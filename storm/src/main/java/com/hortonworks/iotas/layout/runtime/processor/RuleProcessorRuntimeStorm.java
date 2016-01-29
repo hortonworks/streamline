@@ -18,9 +18,9 @@
 
 package com.hortonworks.iotas.layout.runtime.processor;
 
-import backtype.storm.task.OutputCollector;
-import backtype.storm.tuple.Fields;
-import backtype.storm.tuple.Tuple;
+import org.apache.storm.task.OutputCollector;
+import org.apache.storm.tuple.Fields;
+import org.apache.storm.tuple.Tuple;
 import com.hortonworks.iotas.layout.runtime.rule.RuleRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.RuleRuntimeStorm;
 import com.hortonworks.iotas.layout.runtime.rule.RuleRuntimeStormDeclaredOutput;

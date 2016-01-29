@@ -1,9 +1,9 @@
 package com.hortonworks.topology;
 
-import backtype.storm.Config;
-import backtype.storm.LocalCluster;
-import backtype.storm.StormSubmitter;
-import backtype.storm.topology.TopologyBuilder;
+import org.apache.storm.Config;
+import org.apache.storm.LocalCluster;
+import org.apache.storm.StormSubmitter;
+import org.apache.storm.topology.TopologyBuilder;
 import com.hortonworks.bolt.ParserBolt;
 import com.hortonworks.bolt.PrinterBolt;
 import com.hortonworks.hbase.ParserOutputHBaseMapper;
@@ -19,9 +19,9 @@ import org.apache.storm.hdfs.bolt.rotation.TimedRotationPolicy;
 import org.apache.storm.hdfs.bolt.sync.CountSyncPolicy;
 import org.apache.storm.hdfs.bolt.sync.SyncPolicy;
 import org.yaml.snakeyaml.Yaml;
-import storm.kafka.KafkaSpout;
-import storm.kafka.SpoutConfig;
-import storm.kafka.ZkHosts;
+import org.apache.storm.kafka.KafkaSpout;
+import org.apache.storm.kafka.SpoutConfig;
+import org.apache.storm.kafka.ZkHosts;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

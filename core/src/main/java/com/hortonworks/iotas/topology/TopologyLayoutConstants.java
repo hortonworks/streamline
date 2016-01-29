@@ -138,6 +138,7 @@ public final class TopologyLayoutConstants {
     public static final String STORM_ARTIFACTS_LOCATION_KEY =
             "stormArtifactsDirectory";
     public static final String STORM_JAR_LOCATION_KEY = "iotasStormJar";
+    public static final String STORM_HOME_DIR = "stormHomeDir";
     // yaml key constants
     public static final String YAML_KEY_NAME = "name";
     public static final String YAML_KEY_VALUE = "value";

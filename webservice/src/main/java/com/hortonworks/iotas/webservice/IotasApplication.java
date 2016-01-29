@@ -31,6 +31,7 @@ import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager;
 import com.hortonworks.iotas.topology.TopologyActions;
+import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import com.hortonworks.iotas.util.ReflectionHelper;
 import com.hortonworks.iotas.webservice.catalog.ClusterCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.ComponentCatalogResource;
@@ -134,8 +135,9 @@ public class IotasApplication extends Application<IotasConfiguration> {
         }
         //pass any config info that might be needed in the constructor as a map
         Map conf = new HashMap();
-        conf.put("iotasStormJar", jar);
+        conf.put(TopologyLayoutConstants.STORM_JAR_LOCATION_KEY, jar);
         conf.put("catalog.root.url", configuration.getCatalogRootUrl());
+        conf.put(TopologyLayoutConstants.STORM_HOME_DIR, configuration.getStormHomeDir());
         topologyActions.init(conf);
         return topologyActions;
     }
