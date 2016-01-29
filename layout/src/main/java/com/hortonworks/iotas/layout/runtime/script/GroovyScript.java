@@ -25,8 +25,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
-import javax.script.ScriptContext;
+import javax.script.Compilable;
+import javax.script.CompiledScript;
 import javax.script.ScriptException;
+import javax.script.SimpleBindings;
 import java.util.Map;
 
 /**
@@ -36,6 +38,8 @@ import java.util.Map;
  */
 public class GroovyScript<O> extends Script<IotasEvent, O, javax.script.ScriptEngine> {
     private static final Logger LOG = LoggerFactory.getLogger(GroovyScript.class);
+
+    private CompiledScript compiledScript;
 
     public GroovyScript(String expression,
                         ScriptEngine<javax.script.ScriptEngine> scriptEngine) {
@@ -48,32 +52,28 @@ public class GroovyScript<O> extends Script<IotasEvent, O, javax.script.ScriptEn
         LOG.debug("Evaluating [{}] with [{}]", expression, iotasEvent);
         O evaluatedResult = null;
 
-        try {
-            if (iotasEvent != null) {
-                final Map<String, Object> fieldsToValues = iotasEvent.getFieldsAndValues();
-                if (fieldsToValues != null) {
-                    getEngineScopeBindings().putAll(fieldsToValues);
-                    LOG.debug("Set script binding to [{}]", fieldsToValues);
-
-                    evaluatedResult = (O) scriptEngine.eval(expression);
-
-                    LOG.debug("Expression [{}] evaluated to [{}]", expression, evaluatedResult);
-                }
-            }
-        } finally {
-            // It is absolutely necessary to clear the bindings. Otherwise the old values of a key will be used
-            // to evaluate the expression when the iotasEvent doesn't have such key
-            clearBindings();
+        // lazy compilation
+        if (compiledScript == null && scriptEngine instanceof Compilable) {
+            compiledScript = ((Compilable) scriptEngine).compile(expression);
         }
+
+        if (iotasEvent != null) {
+            final Map<String, Object> fieldsToValues = iotasEvent.getFieldsAndValues();
+            if (fieldsToValues != null) {
+                Bindings bindings = new SimpleBindings();
+                bindings.putAll(fieldsToValues);
+                LOG.debug("Use script binding to [{}]", fieldsToValues);
+
+                if (compiledScript != null) {
+                    evaluatedResult = (O) compiledScript.eval(bindings);
+                } else {
+                    evaluatedResult = (O) scriptEngine.eval(expression, bindings);
+                }
+
+                LOG.debug("Expression [{}] evaluated to [{}]", expression, evaluatedResult);
+            }
+        }
+
         return evaluatedResult;
-    }
-
-    private Bindings getEngineScopeBindings() {
-        return scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE);
-    }
-
-    private void clearBindings() {
-        getEngineScopeBindings().clear();
-        LOG.debug("Script binding reset to empty binding");
     }
 }
