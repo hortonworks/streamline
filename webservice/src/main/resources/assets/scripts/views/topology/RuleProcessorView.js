@@ -37,7 +37,7 @@ define(['require',
         success: function(model, response, options){
           self.parserModel.schema = model.entity.fields;
         },
-        error: function(model, respone, options){
+        error: function(model, response, options){
           Utils.showError(model, response);
         }
       });
@@ -137,7 +137,7 @@ define(['require',
         };
         this.model.set('newConfig', config);
         this.model.formulaModelArr = this.formulaModelArr;
-        this.vent.trigger('dataStream:SavedStep2', this.model);
+        this.vent.trigger('topologyEditor:SaveProcessor', this.model);
         this.evClose();
       } else {
         Utils.notifyError('Some fields are empty.');

@@ -172,8 +172,12 @@ public abstract class AbstractFluxComponent implements FluxComponent {
 
     // validate boolean fields based on if they are required or not. Meant to
     // be called from base classes that need to validate
-    protected void validateBooleanFields (String[] fieldNames, boolean
-            areRequiredFields) throws BadTopologyLayoutException {
+    protected void validateBooleanFields (String[] fieldNames, boolean areRequiredFields) throws BadTopologyLayoutException {
+        this.validateBooleanFields(fieldNames, areRequiredFields, conf);
+    }
+
+    // Overloaded version of above method since we need it for NotificationBolt and perhaps other components in future
+    protected void validateBooleanFields (String[] fieldNames, boolean areRequiredFields, Map<String, Object> conf) throws BadTopologyLayoutException {
         for (int i = 0; i < fieldNames.length; ++i) {
             String fieldName = fieldNames[i];
             Object value = conf.get(fieldName);
@@ -198,8 +202,12 @@ public abstract class AbstractFluxComponent implements FluxComponent {
 
     // validate string fields based on if they are required or not. Meant to
     // be called from base classes that need to validate
-    protected void validateStringFields (String[] fieldNames, boolean
-            areRequiredFields) throws BadTopologyLayoutException {
+    protected void validateStringFields (String[] fieldNames, boolean areRequiredFields) throws BadTopologyLayoutException {
+        this.validateStringFields(fieldNames, areRequiredFields, conf);
+    }
+
+    // Overloaded version of above method since we need it for NotificationBolt and perhaps other components in future
+    protected void validateStringFields (String[] fieldNames, boolean areRequiredFields, Map<String, Object> conf) throws BadTopologyLayoutException {
         for (String fieldName: fieldNames) {
             Object value = conf.get(fieldName);
             boolean isValid = true;
@@ -289,8 +297,12 @@ public abstract class AbstractFluxComponent implements FluxComponent {
 
     // validate integer fields based on if they are required or not and their
     // valid range. Meant to // be called from base classes that need to validate
-    protected void validateIntegerFields (String[] fieldNames, boolean
-            areRequiredFields, Integer[] mins, Integer[] maxes) throws
+    protected void validateIntegerFields (String[] fieldNames, boolean areRequiredFields, Integer[] mins, Integer[] maxes) throws BadTopologyLayoutException {
+        this.validateIntegerFields(fieldNames, areRequiredFields, mins, maxes, conf);
+    }
+
+    // Overloaded version of above method since we need it for NotificationBolt and perhaps other components in future
+    protected void validateIntegerFields (String[] fieldNames, boolean areRequiredFields, Integer[] mins, Integer[] maxes, Map<String, Object> conf) throws
             BadTopologyLayoutException {
         if ((fieldNames == null) || (fieldNames.length != mins.length) ||
                 (fieldNames.length != maxes.length)) {

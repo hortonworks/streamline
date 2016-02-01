@@ -57,12 +57,6 @@ define([
     },
     getColumns: function(){
       return [{
-        name: 'id',
-        cell: 'string',
-        label: localization.tt('lbl.parserId'),
-        hasTooltip: false,
-        editable: false
-      }, {
         name: 'name',
         cell: 'string',
         label: localization.tt('lbl.parserName'),
@@ -122,7 +116,7 @@ define([
             },
             success: {
               label: localization.tt('lbl.add'),
-              className: 'btn-primary',
+              className: 'btn-success',
               callback: function(){
                 var errs = that.view.validate();
                 if(_.isEmpty(errs)){

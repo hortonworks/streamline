@@ -5,41 +5,17 @@ define(['utils/LangSupport',
   ], function (localization, Globals, tmpl) {
   'use strict';
 
-  var DataSinkForm = Backbone.Form.extend({
+  var ParserForm = Backbone.Form.extend({
 
     template: tmpl,
 
     initialize: function (options) {
       _.extend(this, options);
-      this.schemaObj = this.generateSchema();
-      this.templateData = {
-        fieldName: []
-      };
       this.model.set('firstTime', false);
-      // this.generateConfigSchema();
       Backbone.Form.prototype.initialize.call(this, options);
     },
 
-    generateConfigSchema: function(){
-      var self = this;
-      _.each(this.model.get('config'), function(obj){
-        var name = obj.name;
-        self.schemaObj[name] = {
-          type: 'Text',
-          title: name+(obj.isOptional?'' : '*'),
-          editorClass: 'form-control',
-          placeholder: name,
-          validators: (obj.isOptional ? [] : [{'type':'required','message': name+' can not be blank.'}])
-        };
-        self.templateData.fieldName.push(name);
-        if(self.model.get('firstTime')){
-          self.model.set(name, obj.defaultValue, {silent: true});
-        }
-      });
-      self.model.set('firstTime', false);
-    },
-
-    generateSchema: function(){
+    schema: function () {
       return {
         dataSourceName: {
           type: 'Text',
@@ -68,10 +44,6 @@ define(['utils/LangSupport',
       };
     },
 
-    schema: function () {
-      return this.schemaObj;
-    },
-
     render: function(options){
       Backbone.Form.prototype.render.call(this,options);
     },
@@ -85,5 +57,5 @@ define(['utils/LangSupport',
     }
   });
 
-  return DataSinkForm;
+  return ParserForm;
 });

@@ -64,9 +64,7 @@ public class InMemoryStorageManager implements StorageManager {
     @Override
     public <T extends Storable> T remove(StorableKey key) throws StorageException {
         if (storageMap.containsKey(key.getNameSpace())) {
-            T oldVal = (T) storageMap.get(key.getNameSpace()).remove(key.getPrimaryKey());
-            decrementIdSequence(key.getNameSpace());
-            return oldVal;
+            return (T) storageMap.get(key.getNameSpace()).remove(key.getPrimaryKey());
         }
         return null;
     }
@@ -160,12 +158,5 @@ public class InMemoryStorageManager implements StorageManager {
             id = 0l;
         }
         this.sequenceMap.put(namespace, ++id);
-    }
-
-    private void decrementIdSequence(String namespace) {
-        Long id = sequenceMap.get(namespace);
-        if (id != null && id > 0) {
-            sequenceMap.put(namespace, --id);
-        }
     }
 }

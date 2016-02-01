@@ -31,7 +31,7 @@ public class DataSourceFacade {
         dataSourceDto.setDataSourceId(createdDataSource.getId());
 
         DataFeed dataFeed = createDataFeed(dataSourceDto);
-        DataFeed existingDataFeed = getDataFeed(dataSourceId);
+        DataFeed existingDataFeed = getDataFeedByDataSourceId(dataSourceId);
         DataFeed createdDataFeed = existingDataFeed != null
                 ? catalogService.addOrUpdateDataFeed(existingDataFeed.getId(), dataFeed)
                 : catalogService.addDataFeed(dataFeed);
@@ -89,7 +89,7 @@ public class DataSourceFacade {
         List<DataSourceDto> dataSourceDtoList = new ArrayList<>();
         // todo we may want to add an API to fetch results in one invocation from dao/storage layer
         for (DataSource dataSource : dataSources) {
-            dataSourceDtoList.add(createDataSourceDto(dataSource, getDataFeed(dataSource.getId())));
+            dataSourceDtoList.add(createDataSourceDto(dataSource, getDataFeedByDataSourceId(dataSource.getId())));
         }
 
         return dataSourceDtoList;
@@ -112,7 +112,7 @@ public class DataSourceFacade {
         return dataSourceDtoList;
     }
 
-    public DataFeed getDataFeed(Long dataSourceId) throws Exception {
+    public DataFeed getDataFeedByDataSourceId(Long dataSourceId) throws Exception {
         List<CatalogService.QueryParam> params = Collections.singletonList(new CatalogService.QueryParam(DataFeed.DATASOURCE_ID, dataSourceId.toString()));
         Collection<DataFeed> dataFeeds = catalogService.listDataFeeds(params);
 
@@ -155,7 +155,7 @@ public class DataSourceFacade {
         }
         // todo: can we have datasources without datafeeds?
         // currently returns with whatever info it retrieves.
-        DataFeed dataFeed = catalogService.getDataFeed(dataSourceId);
+        DataFeed dataFeed = getDataFeedByDataSourceId(dataSourceId);
         return createDataSourceDto(dataSource, dataFeed);
     }
 }

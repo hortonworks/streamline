@@ -18,7 +18,7 @@ define(['require',
 		var nodes = thisGraph.data.nodes,
 			edges = thisGraph.data.edges;
 		
-		thisGraph.idct = 0;
+		thisGraph.idct = thisGraph.data.nodes.length;
 
 		thisGraph.nodes = nodes || [];
 		thisGraph.edges = edges || [];
@@ -132,6 +132,7 @@ define(['require',
 		thisGraph.dragLine = svgG.append('svg:path')
 			.attr('class', 'link dragline hidden')
 			.attr('d', 'M0,0L0,0')
+			.attr("stroke-dasharray", "5, 5")
 			.style('marker-end', 'url(#mark-end-arrow)');
 
 		// svg nodes and edges 
@@ -200,9 +201,7 @@ define(['require',
 	TopologyGraphCreator.prototype.bindEvents = function(){
 		var thisGraph = this;
 		this.vent.listenTo(this.vent, 'change:editor-submenu', function(obj){
-			thisGraph.nodeParentType = obj.parentStep;
-			thisGraph.currentStep = obj.currentStep;
-			thisGraph.icon = obj.icon;
+			thisGraph.nodeObject = obj.nodeObj;
 			thisGraph.nodeId = obj.id;
 			if(!_.isUndefined(obj.otherId)) thisGraph.otherId = obj.otherId ;
 			d3.event = obj.event;
@@ -224,8 +223,8 @@ define(['require',
 		DELETE_KEY: 46,
 		ENTER_KEY: 13,
 		nodeRadius: 40,
-		rectangleWidth: 130,
-		rectangleHeight: 70
+		rectangleWidth: 80,
+		rectangleHeight: 90
 	};
 
 	/* PROTOTYPE FUNCTIONS */
@@ -234,7 +233,7 @@ define(['require',
 		var thisGraph = this;
 		if (thisGraph.state.shiftNodeDrag) {
 			if(thisGraph.state.failedTupleDrag){
-				thisGraph.dragLine.attr('d', 'M' + (d.x + thisGraph.consts.rectangleWidth / 2)+ ',' + (d.y + thisGraph.consts.rectangleHeight) + 'L' + d3.mouse(thisGraph.svgG.node())[0] + ',' + d3.mouse(this.svgG.node())[1]);
+				thisGraph.dragLine.attr('d', 'M' + (d.x + thisGraph.consts.rectangleWidth / 2)+ ',' + (d.y + thisGraph.consts.rectangleHeight + 10) + 'L' + d3.mouse(thisGraph.svgG.node())[0] + ',' + d3.mouse(this.svgG.node())[1]);
 			} else {
 				thisGraph.dragLine.attr('d', 'M' + (d.x + thisGraph.consts.rectangleWidth )+ ',' + (d.y + thisGraph.consts.rectangleHeight / 2) + 'L' + d3.mouse(thisGraph.svgG.node())[0] + ',' + d3.mouse(this.svgG.node())[1]);
 			}
@@ -275,12 +274,11 @@ define(['require',
 			thisGraph = this;
 		var el = gEl.append("text")
 			.attr("text-anchor", "middle")
-			.attr("style","fill:#black;")
 			.attr("dx", function(d){
-				return (thisGraph.consts.rectangleWidth / 2) + 10;
+				return (thisGraph.consts.rectangleWidth / 2);
 			})
 			.attr("dy", function(d){
-				return (thisGraph.consts.rectangleHeight / 2) + 5;
+				return (thisGraph.consts.rectangleHeight) + 4;
 			});
 
 		for (var i = 0; i < words.length; i++) {
@@ -419,7 +417,7 @@ define(['require',
 				return d.source === newEdge.source && d.target === newEdge.target;
 			});
 			if (!filtRes[0].length) {
-				if(newEdge.source.currentType === 'Parser'){
+				if(newEdge.source.currentType === Globals.Topology.Editor.Steps.Processor.Substeps[0].valStr){
 					if(thisGraph.state.failedTupleDrag){
 						newEdge.target.streamId = "failedTuplesStream";
 					} else {
@@ -451,7 +449,7 @@ define(['require',
 				} else {
 					thisGraph.vent.trigger('click:topologyNode', 
 						{
-							parentType: d.parentType, 
+							parentType: d.parentType ? d.parentType : d.mainStep, 
 							currentType: d.currentType, 
 							nodeId: d.nodeId
 						}
@@ -492,7 +490,7 @@ define(['require',
 				return d.source === newEdge.source && d.target === newEdge.target;
 			});
 			if (!filtRes[0].length) {
-				if(newEdge.source.currentType === 'Parser'){
+				if(newEdge.source.currentType === Globals.Topology.Editor.Steps.Processor.Substeps[0].valStr){
 					if(thisGraph.state.failedTupleDrag){
 						newEdge.target.streamId = "failedTuplesStream";
 					} else {
@@ -551,25 +549,33 @@ define(['require',
 				id: thisGraph.idct++,
 				x: xycoords[0] - thisGraph.consts.rectangleWidth / 2,
 				y: xycoords[1] - thisGraph.consts.rectangleHeight / 2,
-				parentType: thisGraph.nodeParentType,
-				currentType: thisGraph.currentStep,
-				icon: thisGraph.icon,
+				parentType: thisGraph.nodeObject.mainStep,
+				currentType: thisGraph.nodeObject.valStr,
+				uniqueName: thisGraph.nodeObject.valStr+'-'+thisGraph.nodeId,
+				imageURL: thisGraph.nodeObject.imgUrl,
 				nodeId: thisGraph.nodeId
 			};
 		thisGraph.nodes.push(d);
-		if(d.currentType === 'Device'){
-			var newObject = jQuery.extend(true, {}, d);
-			newObject.id = thisGraph.idct++;
-			newObject.nodeId = thisGraph.otherId;
-			newObject.x += 300;
-			newObject.parentType = 'Processor';
-			newObject.currentType = 'Parser';
-			thisGraph.nodes.push(newObject);
-			thisGraph.edges.push({source: d, target: newObject});
-			thisGraph.vent.trigger('topologyLink', thisGraph.edges);
+		if(d.currentType === Globals.Topology.Editor.Steps.Datasource.Substeps[0].valStr){
+			thisGraph.createParserNode(d);
 		}
 		thisGraph.updateGraph();
 		state.graphMouseDown = false;
+	};
+
+	TopologyGraphCreator.prototype.createParserNode = function(d) {
+		var thisGraph = this,
+			newObject = jQuery.extend(true, {}, d);
+		newObject.id = thisGraph.idct++;
+		newObject.nodeId = thisGraph.otherId;
+		newObject.x += 300;
+		newObject.uniqueName= Globals.Topology.Editor.Steps.Processor.Substeps[0].valStr+'-'+thisGraph.otherId;
+		newObject.parentType = Globals.Topology.Editor.Steps.Processor.Substeps[0].mainStep;
+		newObject.currentType = Globals.Topology.Editor.Steps.Processor.Substeps[0].valStr;
+		newObject.imageURL = Globals.Topology.Editor.Steps.Processor.Substeps[0].imgUrl;
+		thisGraph.nodes.push(newObject);
+		thisGraph.edges.push({source: d, target: newObject});
+		thisGraph.vent.trigger('topologyLink', thisGraph.edges);
 	};
 
 	// keydown on main svg
@@ -635,13 +641,12 @@ define(['require',
 				var arr = [];
 				var flag = false;
 				if(d.target.streamId === "failedTuplesStream"){
-					arr.push({x: (d.source.x + consts.rectangleWidth / 2),y: (d.source.y + consts.rectangleHeight)},
+					arr.push({x: (d.source.x + consts.rectangleWidth / 2),y: (d.source.y + consts.rectangleHeight + 10)},
 							 {x: d.target.x, y: (d.target.y + consts.rectangleHeight / 2)});
 					flag = true;
 				} else {
 					arr.push({x: (d.source.x + consts.rectangleWidth),y: (d.source.y + consts.rectangleHeight / 2)},
 							 {x: d.target.x, y: (d.target.y + consts.rectangleHeight / 2)});
-					// return "M" + (d.source.x + consts.rectangleWidth) + "," + (d.source.y + consts.rectangleHeight / 2)  + "L" + d.target.x + "," + (d.target.y + consts.rectangleHeight / 2);
 				}
 				return thisGraph.pathdef(arr[0], arr[1], flag);
 				// return thisGraph.lineFunction(arr);
@@ -656,7 +661,7 @@ define(['require',
 				var arr = [];
 				var flag = false;
 				if(d.target.streamId === "failedTuplesStream"){
-					arr.push({x: (d.source.x + consts.rectangleWidth / 2),y: (d.source.y + consts.rectangleHeight)},
+					arr.push({x: (d.source.x + consts.rectangleWidth / 2),y: (d.source.y + consts.rectangleHeight + 10)},
 							 {x: d.target.x, y: (d.target.y + consts.rectangleHeight / 2)});
 					flag = true;
 				} else {
@@ -666,6 +671,7 @@ define(['require',
 				return thisGraph.pathdef(arr[0], arr[1], flag);
 				// return thisGraph.lineFunction(arr);
 			})
+			.attr("stroke-dasharray", "5, 5")
 			.on("mousedown", function(d) {
 				thisGraph.pathMouseDown.call(thisGraph, d3.select(this), d);
 			})
@@ -691,11 +697,14 @@ define(['require',
 				.attr("transform", function(d) {
 				return "translate(" + d.x + "," + d.y + ")";
 			});
-			newGs.append("rect")
-			    .attr("rx", 10)
-			    .attr("ry", 10)
-			    .attr("width", consts.rectangleWidth)
-			    .attr("height", consts.rectangleHeight)
+			newGs.append("image")
+				.attr("xlink:href", function(d){
+					return d.imageURL;
+				})
+				.attr("width", "60px")
+				.attr("height", "60px")
+				.attr("x", "10")
+				.attr("y", "10")
 			    .on("mouseover", function(d) {
 					if (state.shiftNodeDrag) {
 						d3.select(this).classed(consts.connectClass, true);
@@ -711,27 +720,50 @@ define(['require',
 					thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);
 				})
 				.call(thisGraph.drag);
+			newGs.append("rect")
+				.attr("rx", "15px")
+				.attr("ry", "15px")
+				.attr("width", "80px")
+				.attr("height", "80px")
+				.attr("class", function(d){
+					if(d.parentType === Globals.Topology.Editor.Steps.Datasource.valStr){
+						return 'source';
+					} else if(d.parentType === Globals.Topology.Editor.Steps.Processor.valStr){
+						return 'processor';
+					} else if(d.parentType === Globals.Topology.Editor.Steps.DataSink.valStr){
+						return 'datasink';
+					}
+				});
 
 			newGs.append("circle")
 				.attr("cx", function (d) { 
-					if(d.parentType !== 'Data Sink')
+					if(!d.parentType) d.parentType = d.mainStep;
+					if(d.parentType !== Globals.Topology.Editor.Steps.DataSink.valStr)
 			    		return (consts.rectangleWidth); 
 			    	else
 			    		return '';
 				})
 		        .attr("cy", function (d) { 
-		        	if(d.parentType !== 'Data Sink')
+		        	if(d.parentType !== Globals.Topology.Editor.Steps.DataSink.valStr)
 		        		return consts.rectangleHeight / 2;
 		        	else
 			    		return ''; 
 		        })
 		        .attr("r", function (d) { 
-		        	if(d.parentType !== 'Data Sink')
+		        	if(d.parentType !== Globals.Topology.Editor.Steps.DataSink.valStr)
 			    		return '5';
 			    	else
 			    		return '0';
 			    })
-		        .style("fill", "black")
+		        .attr("class", function(d){
+					if(d.parentType === Globals.Topology.Editor.Steps.Datasource.valStr){
+						return 'source';
+					} else if(d.parentType === Globals.Topology.Editor.Steps.Processor.valStr){
+						return 'processor';
+					} else if(d.parentType === Globals.Topology.Editor.Steps.DataSink.valStr){
+						return 'datasink';
+					}
+				})
 		        .on("mouseover", function(d) {
 					if (state.shiftNodeDrag) {
 						d3.select(this).classed(consts.connectClass, true);
@@ -750,26 +782,25 @@ define(['require',
 
 			newGs.append("circle")
 				.attr("cx", function (d) { 
-					if(d.currentType === 'Parser')
+					if(d.currentType === Globals.Topology.Editor.Steps.Processor.Substeps[0].valStr)
 			    		return (consts.rectangleWidth / 2); 
 			    	else
 			    		return '';
 				})
 		        .attr("cy", function (d) { 
-		        	if(d.currentType === 'Parser')
-		        		return consts.rectangleHeight;
+		        	if(d.currentType === Globals.Topology.Editor.Steps.Processor.Substeps[0].valStr)
+		        		return consts.rectangleHeight + 10;
 		        	else
 			    		return ''; 
 		        })
 		        .attr("r", function (d) { 
-		        	if(d.currentType === 'Parser')
+		        	if(d.currentType === Globals.Topology.Editor.Steps.Processor.Substeps[0].valStr)
 			    		return '5';
 			    	else
 			    		return '0';
 			    })
 			    .attr("data-failedTuple", true)
 		        .style("fill", "red")
-		        .style("stroke", "red")
 		        .on("mouseover", function(d) {
 					if (state.shiftNodeDrag) {
 						d3.select(this).classed(consts.connectClass, true);
@@ -788,14 +819,22 @@ define(['require',
 
 		    newGs.append("circle")
 		        .attr("cy", function (d) { 
-		        	if(d.parentType !== 'Datasource')
+		        	if(d.parentType !== Globals.Topology.Editor.Steps.Datasource.valStr)
 			    		return consts.rectangleHeight / 2;
 		        })
 		        .attr("r", function (d) { 
-		        	if(d.parentType !== 'Datasource')
+		        	if(d.parentType !== Globals.Topology.Editor.Steps.Datasource.valStr)
 			    		return '5';
 			    })
-		        .style("fill", "black")
+		        .attr("class", function(d){
+					if(d.parentType === Globals.Topology.Editor.Steps.Datasource.valStr){
+						return 'source';
+					} else if(d.parentType === Globals.Topology.Editor.Steps.Processor.valStr){
+						return 'processor';
+					} else if(d.parentType === Globals.Topology.Editor.Steps.DataSink.valStr){
+						return 'datasink';
+					}
+				})
 		        .on("mouseup", function(d) {
 					thisGraph.circleMouseUp.call(thisGraph, d3.select(this), d);
 				});
@@ -803,7 +842,7 @@ define(['require',
 		        
 
 		newGs.each(function(d) {
-			thisGraph.insertIcon(d3.select(this), d.icon);
+			// thisGraph.insertIcon(d3.select(this), d.iconContent);
 			thisGraph.insertTitleLinebreaks(d3.select(this), d.currentType);
 		});
 

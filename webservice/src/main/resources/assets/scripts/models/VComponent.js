@@ -21,7 +21,13 @@ define(['require',
         return this.get('name');
       },
       deploy: function(options){
-        return this.constructor.nonCrudOperation.call(this, Globals.baseURL + '/api/v1/catalog/clusters/'+options.id +'/components', 'POST', options);
+        var url = Globals.baseURL + '/api/v1/catalog/clusters/'+options.id +'/components',
+            type = 'POST';
+        if(options.editState){
+          url += '/'+options.modelId;
+          type = 'PUT';
+        }
+        return this.constructor.nonCrudOperation.call(this, url, type, options);
       },
     },
     {}

@@ -204,5 +204,17 @@ define(['require', 'bootstrap.notify'], function(require) {
     }
     Utils.notifyError(msg);
   };
+
+  Utils.GlobalEnumToArray = function(typeArr) {
+    var optionArr = [];
+    _.each(typeArr, function(item) {
+      var obj = {
+        'val': item.value,
+        'label': item.valStr
+      };
+      optionArr.push(obj);
+    });
+    return optionArr;
+  };
   return Utils;
 });

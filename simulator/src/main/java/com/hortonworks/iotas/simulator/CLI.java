@@ -70,7 +70,9 @@ public class CLI {
             File file = new File(cmd.getOptionValue(OPTION_DATA_FILE_PATH));
             if(!(file.exists() && file.canRead() && file.isFile())){
                 System.out.println("Error: Unable to read file: " + file.getAbsolutePath());
+                System.exit(2);
             }
+
             processDataFile(file, producer, cmd);
         } else {
             usage(options);

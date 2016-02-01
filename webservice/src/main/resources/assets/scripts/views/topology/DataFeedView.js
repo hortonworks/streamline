@@ -44,7 +44,7 @@ define(['require',
       // var self = this;
       var data = this.view.getData();
       console.log(data);
-      this.vent.trigger('dataStream:SavedStep1', data);
+      this.vent.trigger('topologyEditor:SaveDeviceSource', data);
       this.evClose();
     },
     evClose: function(e){

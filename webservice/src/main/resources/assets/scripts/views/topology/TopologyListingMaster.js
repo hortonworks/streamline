@@ -39,22 +39,8 @@ define(['require',
 
     fetchData: function(){
       this.collection.fetch({
-        reset:true,
-        success:function(collection, response, options){
-          collection.reset(response.entities);
-        },
-        error: function(collection, response, options){
-          Utils.showError(collection, response);
-        }
+        reset:true
       });
-      // for(var i = 1 ; i <= 5; i++){
-      //   var model = new Backbone.Model();
-      //   model.set('dataStreamName', 'Topology '+i);
-      //   model.set('dataStreamId', i);
-      //   model.set('state', 'Submitted');
-      //   model.set('timestamp', new Date());
-      //   this.collection.add(model);
-      // }
     },
 
     showTable: function(){

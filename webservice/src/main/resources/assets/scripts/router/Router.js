@@ -11,7 +11,7 @@ define([
 		routes: {
 			// Define some URL routes
 			// ''						: 'dashboardAction',
-			''						: 'topologyAction',
+			''						: 'parserRegistryAction',
 			'!/dashboard'			: 'dashboardAction',
 			'!/parser-registry'		: 'parserRegistryAction',
 			'!/device-catalog'		: 'deviceCatalogAction',
@@ -32,11 +32,7 @@ define([
 
 		showRegions: function() {
 			require(['views/site/Header'],function(HeaderView){
-				App.rHeader.show(new HeaderView());
-			});
-
-			require(['views/site/Sidebar'],function(SidebarView){
-				App.rSideBar.show(new SidebarView({
+				App.rHeader.show(new HeaderView({
 					appState: VAppState
 				}));
 			});
@@ -122,19 +118,22 @@ define([
 			VAppState.set({
 				'currentTab' : 0
 			});
-			require(['collection/VClusterList', 'views/config/ConfigurationView'], function(VClusterList, configView){
+			require(['collection/VClusterList', 'views/config/ConfigView'], function(VClusterList, configView){
 				var collection = new VClusterList(),
-					showStormBtn = true,
-					showKafkaBtn = true;
+					createStormCluster = true,
+					createKafkaCluster = true,
+					createHdfsCluster = true;
 				collection.fetch({
 					async: false,
 			        success: function(collection, response, options){
 			          if(collection.models.length){
 			            _.each(collection.models, function(model){
 			              if(model.get('type') === 'STORM'){
-			                showStormBtn = false;
+			                createStormCluster = false;
 			              } else if(model.get('type') === 'KAFKA'){
-			                showKafkaBtn = false;
+			                createKafkaCluster = false;
+			              } else if(model.get('type') === 'HDFS'){
+			              	createHdfsCluster = false;
 			              }
 			            });
 			          }
@@ -142,8 +141,9 @@ define([
 			    });
 			    App.rContent.show(new configView({
 					clusterCollection: collection,
-					showStormBtn: showStormBtn,
-					showKafkaBtn: showKafkaBtn
+					createStormCluster: createStormCluster,
+					createKafkaCluster: createKafkaCluster,
+					createHdfsCluster: createHdfsCluster
 				}));
 			});
 		},

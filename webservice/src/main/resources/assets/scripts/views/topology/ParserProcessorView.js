@@ -3,8 +3,9 @@ define(['require',
   'utils/LangSupport',
   'utils/Utils',
   'utils/Globals',
-  'hbs!tmpl/topology/parserProcessorView'
-], function(require, vent, localization, Utils, Globals, tmpl) {
+  'hbs!tmpl/topology/parserProcessorView',
+  'models/VDatasource'
+], function(require, vent, localization, Utils, Globals, tmpl, VDatasource) {
   'use strict';
 
   var ParserProcessorLayout = Marionette.LayoutView.extend({
@@ -21,12 +22,24 @@ define(['require',
     },
 
     initialize: function(options) {
-     _.extend(this, options); 
+      _.extend(this, options);
+      if (!this.model.has('dataSourceName')) {
+        this.setSourceName();
+      }
     },
 
-    onRender:function(){
+    setSourceName: function(){
+      var dsModel = new VDatasource();
+      dsModel.set('dataSourceId', this.model.get('dataSourceId'));
+      dsModel.set('id', this.model.get('dataSourceId'));
+      dsModel.fetch({async: false});
+      this.model.set('dataSourceName', dsModel.get('entity').dataSourceName);
+      this.model.set('parserName', dsModel.get('entity').parserName);
+    },
+
+    onRender: function() {
       var self = this;
-      require(['views/topology/ParserProcessorForm'], function(ParserForm){
+      require(['views/topology/ParserProcessorForm'], function(ParserForm) {
         self.view = new ParserForm({
           model: self.model
         });
@@ -34,23 +47,23 @@ define(['require',
       });
     },
 
-    evAdd: function(e){
+    evAdd: function(e) {
       var err = this.view.validate();
-      if(_.isEmpty(err)){
+      if (_.isEmpty(err)) {
         this.saveParserProcessor();
       }
     },
-    saveParserProcessor: function(){
+    saveParserProcessor: function() {
       var data = this.view.getData();
       console.log(data);
-      this.vent.trigger('dataStream:SavedStep2', data);
+      this.vent.trigger('topologyEditor:SaveProcessor', data);
       this.evClose();
     },
-    evClose: function(e){
+    evClose: function(e) {
       this.trigger('closeModal');
     }
 
   });
-  
+
   return ParserProcessorLayout;
 });

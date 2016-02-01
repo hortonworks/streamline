@@ -18,7 +18,7 @@
 
 package com.hortonworks.iotas.layout.runtime.rule.sql;
 
-import backtype.storm.tuple.Values;
+import org.apache.storm.tuple.Values;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.layout.runtime.rule.condition.expression.Expression;
 import com.hortonworks.iotas.layout.runtime.rule.condition.expression.StormSqlExpression;

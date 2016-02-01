@@ -59,7 +59,9 @@
           'rowKey': 'row key',
           'feedType': 'Feed Type',
           'sinkName': 'Sink Name',
-          'save': 'Save'
+          'save': 'Save',
+          'componentType': 'Component Type',
+          'parser': 'Parser'
         },
         btn: {
           'first': 'First',
