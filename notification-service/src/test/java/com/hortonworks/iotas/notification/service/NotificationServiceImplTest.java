@@ -7,6 +7,7 @@ import com.hortonworks.iotas.notification.common.NotifierConfig;
 import com.hortonworks.iotas.notification.store.Criteria;
 import com.hortonworks.iotas.notification.store.NotificationStore;
 import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.util.ProxyUtil;
 import com.hortonworks.iotas.util.ReflectionHelper;
 import mockit.Expectations;
 import mockit.Mocked;
@@ -19,13 +20,12 @@ import org.junit.runner.RunWith;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 @RunWith(JMockit.class)
 public class NotificationServiceImplTest {
 
     @Mocked
-    ReflectionHelper mockReflectionHelper;
+    ProxyUtil<Notifier> mockProxyUtil;
 
     @Mocked
     NotificationStore mockNotificationStore;
@@ -62,9 +62,7 @@ public class NotificationServiceImplTest {
                 mockNotifierConfig.getJarPath();
                 times = 1;
                 result = "/tmp/test.jar";
-                ReflectionHelper.isJarInClassPath(anyString);
-                result = true;
-                ReflectionHelper.newInstance(anyString);
+                mockProxyUtil.loadClassFromJar("/tmp/test.jar", "Test");
                 result = mockNotifier;
             }
         };
@@ -93,9 +91,7 @@ public class NotificationServiceImplTest {
                 mockNotifierConfig.getJarPath();
                 times = 1;
                 result = "/tmp/test.jar";
-                ReflectionHelper.isJarInClassPath(anyString);
-                result = true;
-                ReflectionHelper.newInstance(anyString);
+                mockProxyUtil.loadClassFromJar("/tmp/test.jar", "Test");
                 result = mockNotifier;
             }
         };
@@ -113,9 +109,7 @@ public class NotificationServiceImplTest {
                 mockNotifierConfig.getJarPath();
                 times = 1;
                 result = "/tmp/test.jar";
-                ReflectionHelper.isJarInClassPath(anyString);
-                result = true;
-                ReflectionHelper.newInstance(anyString);
+                mockProxyUtil.loadClassFromJar("/tmp/test.jar", "Test");
                 result = mockNotifier;
             }
         };
@@ -142,9 +136,7 @@ public class NotificationServiceImplTest {
                 mockNotifierConfig.getJarPath();
                 times = 1;
                 result = "/tmp/test.jar";
-                ReflectionHelper.isJarInClassPath(anyString);
-                result = true;
-                ReflectionHelper.newInstance(anyString);
+                mockProxyUtil.loadClassFromJar("/tmp/test.jar", "Test");
                 result = mockNotifier;
             }
         };
@@ -178,9 +170,7 @@ public class NotificationServiceImplTest {
                 mockNotifierConfig.getJarPath();
                 times = 1;
                 result = "/tmp/test.jar";
-                ReflectionHelper.isJarInClassPath(anyString);
-                result = true;
-                ReflectionHelper.newInstance(anyString);
+                mockProxyUtil.loadClassFromJar("/tmp/test.jar", "Test");
                 result = mockNotifier;
                 mockNotification.getId(); times = 1;
                 result = "123";
@@ -219,9 +209,7 @@ public class NotificationServiceImplTest {
                 mockNotifierConfig.getJarPath();
                 times = 1;
                 result = "/tmp/test.jar";
-                ReflectionHelper.isJarInClassPath(anyString);
-                result = true;
-                ReflectionHelper.newInstance(anyString);
+                mockProxyUtil.loadClassFromJar("/tmp/test.jar", "Test");
                 result = mockNotifier;
             }
         };

@@ -1,5 +1,6 @@
 package com.hortonworks.bolt.notification;
 
+import com.hortonworks.iotas.util.ProxyUtil;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.tuple.Tuple;
 import com.hortonworks.client.CatalogRestClient;
@@ -20,6 +21,7 @@ import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -53,7 +55,7 @@ public class NotificationBoltTest {
     private NotifierInfo notifierInfo;
 
     @Mocked
-    private ReflectionHelper reflectionHelper;
+    ProxyUtil<Notifier> mockProxyUtil;
 
     @Mocked
     private Tuple tuple;
@@ -144,9 +146,7 @@ public class NotificationBoltTest {
             result = NOTIFIER_PROPS;
             notifierInfo.getFieldValues();
             result = NOTIFIER_KV;
-            ReflectionHelper.isJarInClassPath(anyString);
-            result = true;
-            ReflectionHelper.newInstance(anyString);
+            mockProxyUtil.loadClassFromJar("/tmp/console_notifier.jar", "ConsoleNotifier");
             result = consoleNotifier;
             tuple.getValueByField(anyString);
             result = notification;
@@ -193,9 +193,7 @@ public class NotificationBoltTest {
             result = NOTIFIER_PROPS;
             notifierInfo.getFieldValues();
             result = NOTIFIER_KV;
-            ReflectionHelper.isJarInClassPath(anyString);
-            result = true;
-            ReflectionHelper.newInstance(anyString);
+            mockProxyUtil.loadClassFromJar(anyString, "TestClass");
             result = notifier;
             tuple.getValueByField(anyString);
             result = notification;
@@ -253,9 +251,7 @@ public class NotificationBoltTest {
             result = NOTIFIER_PROPS;
             notifierInfo.getFieldValues();
             result = NOTIFIER_KV;
-            ReflectionHelper.isJarInClassPath(anyString);
-            result = true;
-            ReflectionHelper.newInstance(anyString);
+            mockProxyUtil.loadClassFromJar(anyString, "TestClass");
             result = notifier;
             tuple.getValueByField(anyString);
             result = notification;
