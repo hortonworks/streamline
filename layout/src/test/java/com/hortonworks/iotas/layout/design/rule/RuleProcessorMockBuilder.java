@@ -30,6 +30,7 @@ import com.hortonworks.iotas.layout.design.rule.condition.Condition.ConditionEle
 import com.hortonworks.iotas.layout.design.rule.condition.Condition.ConditionElement.Operation;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class RuleProcessorMockBuilder implements RulesProcessorBuilder {
@@ -86,14 +87,12 @@ public class RuleProcessorMockBuilder implements RulesProcessorBuilder {
         rule.setDescription(RULE + "_" + ruleId + "_desc");
         rule.setRuleProcessorName(RULE_PROCESSOR + "_" + ruleProcessorId);
         rule.setCondition(condition);
-        rule.setAction(action);
+        rule.setActions(Collections.singletonList(action));
         return rule;
     }
 
     private Action buildAction(List<Component> sinks) {
         Action action = new Action();
-        action.setDeclaredOutput(declaredInputsOutputs);
-        action.setComponents(sinks);
         return action;
     }
 

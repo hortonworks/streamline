@@ -14,7 +14,7 @@ public class NotificationImplTest {
 
     @Test
     public void testDefaultValues() throws Exception {
-        Map<String, String> keyVals = new HashMap<>();
+        Map<String, Object> keyVals = new HashMap<>();
 
         NotificationImpl impl = new NotificationImpl.Builder(keyVals).build();
         assertEquals(Notification.Status.NEW, impl.getStatus());

@@ -18,14 +18,11 @@
 
 package com.hortonworks.iotas.layout.runtime.rule;
 
-import org.apache.storm.task.OutputCollector;
-import org.apache.storm.tuple.Tuple;
 import com.hortonworks.iotas.layout.design.component.RulesProcessorBuilder;
+import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntime;
 import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntimeDependenciesBuilder;
-import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntimeStorm;
 
 import java.io.Serializable;
-import java.util.List;
 
 public class RulesBoltDependenciesFactory implements Serializable {
     public enum ScriptType {GROOVY, SQL}
@@ -38,18 +35,14 @@ public class RulesBoltDependenciesFactory implements Serializable {
         this.scriptType = scriptType;
     }
 
-    public List<RuleRuntimeStormDeclaredOutput> createDeclaredOutputs() {
-        return createRuleProcessorRuntimeStorm().getDeclaredOutputs();
+    public RuleProcessorRuntime createRuleProcessorRuntime() {
+        final RuleRuntimeBuilder ruleRuntimeBuilder = createRuleRuntimeBuilder();
+        RuleProcessorRuntimeDependenciesBuilder dependenciesBuilder =
+                new RuleProcessorRuntimeDependenciesBuilder(rulesProcessorBuilder, ruleRuntimeBuilder);
+        return new RuleProcessorRuntime(dependenciesBuilder);
     }
 
-    public RuleProcessorRuntimeStorm createRuleProcessorRuntimeStorm() {
-        final RuleRuntimeBuilder<Tuple, OutputCollector> ruleRuntimeBuilder = createRuleRuntimeBuilder();
-        RuleProcessorRuntimeDependenciesBuilder<Tuple, OutputCollector> dependenciesBuilder =
-                new RuleProcessorRuntimeDependenciesBuilder<>(rulesProcessorBuilder, ruleRuntimeBuilder);
-        return new RuleProcessorRuntimeStorm(dependenciesBuilder);
-    }
-
-    private RuleRuntimeBuilder<Tuple, OutputCollector> createRuleRuntimeBuilder() {
+    private RuleRuntimeBuilder createRuleRuntimeBuilder() {
         switch(scriptType) {
             case GROOVY:
                 return new GroovyRuleRuntimeBuilder();

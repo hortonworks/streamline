@@ -23,8 +23,8 @@ import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
-import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntimeStorm;
-import com.hortonworks.iotas.layout.runtime.rule.RuleRuntimeStorm;
+import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntime;
+import com.hortonworks.iotas.layout.runtime.rule.RuleRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
 import com.hortonworks.iotas.layout.runtime.rule.topology.RuleProcessorMockBuilder;
 import com.hortonworks.iotas.layout.runtime.rule.topology.RulesTopologyTest;
@@ -87,12 +87,12 @@ public abstract class RulesBoltTest extends RulesTopologyTest {
     private @Tested RulesBolt rulesBolt;
     private @Injectable OutputCollector mockOutputCollector;
     private @Injectable Tuple mockTuple;
-    private RuleProcessorRuntimeStorm ruleProcessorRuntime;
+    private RuleProcessorRuntime ruleProcessorRuntime;
 
     @Before
     public void setup() throws Exception {
         RulesBoltDependenciesFactory dependenciesBuilderFactory = createDependenciesBuilderFactory(createRulesProcessorBuilder(), getScriptType());
-        ruleProcessorRuntime = dependenciesBuilderFactory.createRuleProcessorRuntimeStorm();
+        ruleProcessorRuntime = dependenciesBuilderFactory.createRuleProcessorRuntime();
         createAndPrepareRulesBolt(dependenciesBuilderFactory);
     }
 
@@ -104,8 +104,8 @@ public abstract class RulesBoltTest extends RulesTopologyTest {
     @Test
     public void test_allFieldsMatchTuple_oneRuleEvaluates_acks() throws Exception {
         new Expectations() {{
-            mockTuple.getValues();
-            result = IOTAS_EVENT_MATCHES_TUPLE_VALUES;
+//            mockTuple.getValues();
+//            result = IOTAS_EVENT_MATCHES_TUPLE_VALUES;
 
             mockTuple.getValueByField(IotasEvent.IOTAS_EVENT);
             result = IOTAS_EVENT_MATCHES_TUPLE;
@@ -117,8 +117,8 @@ public abstract class RulesBoltTest extends RulesTopologyTest {
     @Test
     public void test_someFieldsMatchTuple_oneRuleEvaluates_acks() throws Exception {
         new Expectations() {{
-            mockTuple.getValues();
-            result = IOTAS_EVENT_MATCH_AND_NO_MATCH_TUPLE_VALUES;
+//            mockTuple.getValues();
+//            result = IOTAS_EVENT_MATCH_AND_NO_MATCH_TUPLE_VALUES;
 
             mockTuple.getValueByField(IotasEvent.IOTAS_EVENT);
             result = IOTAS_EVENT_MATCH_AND_NO_MATCH_TUPLE;
@@ -152,12 +152,12 @@ public abstract class RulesBoltTest extends RulesTopologyTest {
         rulesBolt.execute(mockTuple);
 
         new VerificationsInOrder() {{
-            mockOutputCollector.emit(((RuleRuntimeStorm) ruleProcessorRuntime.getRulesRuntime().get(0)).getStreamId(),
+            mockOutputCollector.emit(((RuleRuntime) ruleProcessorRuntime.getRulesRuntime().get(0)).getStreams().get(0),
                     mockTuple, IOTAS_EVENT_MATCHES_TUPLE_VALUES);
             times = 0;  // rule 1 does not trigger
 
             Values actualValues;
-            mockOutputCollector.emit(((RuleRuntimeStorm) ruleProcessorRuntime.getRulesRuntime().get(1)).getStreamId(),
+            mockOutputCollector.emit(((RuleRuntime) ruleProcessorRuntime.getRulesRuntime().get(1)).getStreams().get(0),
                     mockTuple, actualValues = withCapture());
             times = rule2NumTimes;    // rule 2 triggers rule2NumTimes
 
