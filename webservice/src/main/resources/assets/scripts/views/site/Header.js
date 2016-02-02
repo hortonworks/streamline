@@ -1,7 +1,6 @@
 define(['require',
-    'hbs!tmpl/site/header',
-    'modules/Vent'
-  ], function(require, tmpl, Vent){
+    'hbs!tmpl/site/header'
+  ], function(require, tmpl){
   'use strict';
 
   var vHeader = Marionette.LayoutView.extend({
@@ -13,7 +12,6 @@ define(['require',
     },
     initialize: function(options) {
       _.bindAll(this, 'highlightTab');
-      this.vent = Vent;
       this.appState = options.appState;
       this.appState.on('change:currentTab', this.highlightTab);
     },

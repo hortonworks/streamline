@@ -1,4 +1,4 @@
-define(['require', 'bootstrap.notify'], function(require) {
+define(['require', 'utils/Globals', 'bootstrap.notify'], function(require, Globals) {
   'use strict';
 
   var Utils = {};
@@ -74,6 +74,8 @@ define(['require', 'bootstrap.notify'], function(require) {
         from: from ? from :"top",
         align: align ? align :"right"
       },
+      z_index: 1200,
+      delay: 7000
     });
   };
 
@@ -95,6 +97,7 @@ define(['require', 'bootstrap.notify'], function(require) {
         from: from ? from :"top",
         align: align ? align :"right"
       },
+      z_index: 1200,
     });
   };
 
@@ -116,6 +119,8 @@ define(['require', 'bootstrap.notify'], function(require) {
         from: from ? from :"top",
         align: align ? align :"right"
       },
+      z_index: 1200,
+      delay: 7000
     });
   };
 
@@ -137,6 +142,7 @@ define(['require', 'bootstrap.notify'], function(require) {
         from: from ? from :"top",
         align: align ? align :"right"
       },
+      z_index: 1200,
     });
   };
 
@@ -192,7 +198,11 @@ define(['require', 'bootstrap.notify'], function(require) {
   Utils.showError = function(model, response){
     var msg;
     if(typeof response === "string"){
-      msg = model.responseJSON.responseMessage;
+      if(model.responseJSON.code === 500){
+        msg = "Internal Server Error";
+      } else {
+        msg = model.responseJSON.responseMessage;
+      }
     } else if(_.isUndefined(response.responseJSON)){
       msg = _.isEqual(response.statusText, 'Not Found') ? 'Api not found' : response.statusText;
     } else {
@@ -215,6 +225,23 @@ define(['require', 'bootstrap.notify'], function(require) {
       optionArr.push(obj);
     });
     return optionArr;
+  };
+
+  Utils.isValidTopologyConnection = function(source, target, failedTupleFlag){
+    var subStepsArray = Globals.Topology.Editor.Steps[source.parentType].Substeps;
+    var obj = _.findWhere(subStepsArray, {valStr: source.currentType});
+    if(!_.isUndefined(obj)){
+      var canConnectToArr = obj.connectsTo.split(',');
+      if(!failedTupleFlag && source.currentType === 'PARSER' && (target.currentType === 'HDFS' || target.currentType === 'HBASE')){
+        return false;
+      } else if(canConnectToArr.indexOf(target.currentType) !== -1){
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
   };
   return Utils;
 });

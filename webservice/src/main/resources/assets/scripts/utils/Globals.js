@@ -43,17 +43,18 @@ define(['require'], function (require) {
   };
 
   Globals.Topology.Editor.Steps.Datasource.Substeps = [
-    {value: 1, valStr: 'DEVICE', imgUrl: 'images/iconf-device.png', mainStep: Globals.Topology.Editor.Steps.Datasource.valStr, show: true}
+    {value: 1, valStr: 'DEVICE', imgUrl: 'images/iconf-device.png', mainStep: Globals.Topology.Editor.Steps.Datasource.valStr, show: true, connectsTo: 'PARSER'}
   ];
 
   Globals.Topology.Editor.Steps.Processor.Substeps = [
-    {value: 1, valStr: 'PARSER', imgUrl: 'images/iconf-parser.png', mainStep: Globals.Topology.Editor.Steps.Processor.valStr, show: false},
-    {value: 2, valStr: 'RULE', imgUrl: 'images/iconf-rule.png', mainStep: Globals.Topology.Editor.Steps.Processor.valStr, show: true}
+    {value: 1, valStr: 'PARSER', imgUrl: 'images/iconf-parser.png', mainStep: Globals.Topology.Editor.Steps.Processor.valStr, show: false, connectsTo: 'RULE,HDFS,HBASE'},
+    {value: 2, valStr: 'RULE', imgUrl: 'images/iconf-rule.png', mainStep: Globals.Topology.Editor.Steps.Processor.valStr, show: true, connectsTo: 'HDFS,HBASE,NOTIFICATION'}
   ];
 
   Globals.Topology.Editor.Steps.DataSink.Substeps = [
     {value: 1, valStr: 'HDFS', imgUrl: 'images/iconf-hdfs.png', mainStep: Globals.Topology.Editor.Steps.DataSink.valStr, show: true},
-    {value: 2, valStr: 'HBASE', imgUrl: 'images/iconf-hbase.png', mainStep: Globals.Topology.Editor.Steps.DataSink.valStr, show: true}
+    {value: 2, valStr: 'HBASE', imgUrl: 'images/iconf-hbase.png', mainStep: Globals.Topology.Editor.Steps.DataSink.valStr, show: true},
+    {value: 3, valStr: 'NOTIFICATION', imgUrl: 'images/iconf-notification.png', mainStep: Globals.Topology.Editor.Steps.DataSink.valStr, show: true}
   ];
 
   Globals.Feed = {};

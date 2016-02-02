@@ -124,7 +124,7 @@ require.config({
     'backgrid': '../libs/bower/backgrid/js/backgrid',
     'backgrid-paginator': '../libs/bower/backgrid-paginator/js/backgrid-paginator',
     'backgrid-filter': '../libs/bower/backgrid-filter/js/backgrid-filter',    
-    'bootstrap': '../libs/bower/bootstrap/js/bootstrap',
+    'bootstrap': '../libs/bower/bootstrap/js/bootstrap.min',
     'bootstrap.filestyle': '../libs/bower/bootstrap/js/bootstrap-filestyle.min',
     'bootstrap.notify': '../libs/bower/bootstrap/js/bootstrap-notify',
     'bootstrap-multiselect': '../libs/bower/bootstrap-multiselect/js/bootstrap-multiselect',
