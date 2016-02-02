@@ -1,7 +1,8 @@
 define([
   'require',
-  'hbs!tmpl/config/configView',
+  'hbs!tmpl/clusterConfig/componentMaster',
   'utils/Utils',
+  'utils/Globals',
   'collection/VComponentList',
   'models/VCluster',
   'models/VComponent',
@@ -10,7 +11,7 @@ define([
   'modules/Modal',
   'modules/Vent',
   'bootbox'
-], function(require, tmpl, Utils, VComponentList, VCluster, VComponent, VTableLayout, localization, Modal, Vent, bootbox) {
+], function(require, tmpl, Utils, Globals, VComponentList, VCluster, VComponent, VTableLayout, localization, Modal, Vent, bootbox) {
   'use strict';
 
   var vConfigView = Marionette.LayoutView.extend({
@@ -29,7 +30,8 @@ define([
 
     events: {
       "click .addNewConfig": "evAddConfig",
-      "click .editConfig": "evEditConfig"
+      "click .editConfig": "evEditConfig",
+      "click .deleteConfig": "evDelConfig"
     },
 
     initialize: function(options) {
@@ -65,17 +67,36 @@ define([
           this.hdfsArr = [];
           Array.prototype.push.apply(this.hdfsArr, compCollection.models);
         }
+      } else {
+        if(type === 'STORM'){
+          this.stormArr = [];
+        } else if(type ==='KAFKA'){
+          this.kafkaArr = [];
+        } else if(type ==='HDFS'){
+          this.hdfsArr = [];
+        }
       }
     },
 
     onRender: function() {
+      $('#cluster-config').toggleClass('current');
+
       this.$('[data-rel="tooltip"]').tooltip({placement: 'bottom'});
+      if(this.stormArr.length === Globals.Component.Storm.length){
+        this.$('[data-id="STORM"]').hide();
+      }
+      if(this.kafkaArr.length === Globals.Component.Kafka.length){
+        this.$('[data-id="KAFKA"]').hide();
+      }
+      if(this.hdfsArr.length === Globals.Component.HDFS.length){
+        this.$('[data-id="HDFS"]').hide();
+      }
     },
 
     bindEvents: function() {
       var self = this;
 
-      this.listenTo(this.vent, 'click:Save', function(model) {
+      this.listenTo(this.vent, 'component:Save', function(model) {
         var type = model.get('clusterType');
         var clusterObj = self.clusterCollection.models.find(function(m){return m.get('type') === type;});
         delete model.attributes.clusterId;
@@ -110,9 +131,23 @@ define([
 
     showModal: function(model, type){
       var self = this;
-      require(['views/config/ConfigFeedView'], function(ConfigFeedView) {
-        var view = new ConfigFeedView({
+      var componentArr;
+      switch(type){
+        case 'STORM':
+          componentArr = this.stormArr;
+        break;
+        case 'KAFKA':
+          componentArr = this.kafkaArr;
+        break;
+        case 'HDFS':
+          componentArr = this.hdfsArr;
+        break;
+      }
+      require(['views/clusterConfig/ComponentView'], function(ComponentView) {
+        var view = new ComponentView({
           model: model,
+          vent: self.vent,
+          componentArr: componentArr, 
           type: type
         });
 
@@ -181,7 +216,6 @@ define([
         dataType:'json',
         contentType: 'application/json',
         success:function(model, response, options){
-          var tModel = new VComponent(model.entity ? model.entity : model.entities[0]);
           self.fetchComponent(clusterType, clusterObj.id);
           Utils.notifySuccess(msg);
            self.render();
@@ -199,6 +233,36 @@ define([
       });
 
       this.showModal(model, $(event.currentTarget).data().type);
+    },
+
+    evDelConfig: function(event) {
+      var self = this;
+      bootbox.confirm("Do you really want to delete this component ?", function(result){
+        if(result){
+          var currentTarget = $(event.currentTarget),
+              clusterType = currentTarget.data().type,
+              id = currentTarget.data().id,
+              model = self.getModel({
+                id: id,
+                type: clusterType
+              });
+          model.destroyModel({
+            clusterId: model.get('clusterId'),
+            componentId: model.get('id'),          
+            data: JSON.stringify(model.toJSON()),
+            dataType:'json',
+            contentType: 'application/json',
+            success: function(model,response, options){            
+              Utils.notifySuccess(localization.tt('dialogMsg.componentDeletedSuccessfully'));
+              self.fetchComponent(clusterType, model.entity.clusterId);
+              self.render();                         
+            },
+            error: function(model, response, options){
+              Utils.showError(model, response);
+            }
+          });
+        }
+      });
     },
 
     getModel: function(obj) {
@@ -224,6 +288,11 @@ define([
       }
       return configModel;
     },
+
+    destroy: function(){
+      this.stopListening(this.vent, 'component:Save');
+      $('#cluster-config').toggleClass('current');
+    }
 
   });
   return vConfigView;

@@ -18,17 +18,18 @@
 
 package com.hortonworks.iotas.layout.runtime.rule.topology;
 
-import backtype.storm.Config;
-import backtype.storm.ILocalCluster;
-import backtype.storm.LocalCluster;
-import backtype.storm.generated.AlreadyAliveException;
-import backtype.storm.generated.InvalidTopologyException;
-import backtype.storm.generated.StormTopology;
-import backtype.storm.topology.IRichBolt;
-import backtype.storm.topology.TopologyBuilder;
+import org.apache.storm.Config;
+import org.apache.storm.ILocalCluster;
+import org.apache.storm.LocalCluster;
+import org.apache.storm.generated.AlreadyAliveException;
+import org.apache.storm.generated.InvalidTopologyException;
+import org.apache.storm.generated.StormTopology;
+import org.apache.storm.topology.IRichBolt;
+import org.apache.storm.topology.TopologyBuilder;
 import com.hortonworks.bolt.rules.RulesBolt;
 import com.hortonworks.iotas.layout.design.component.RulesProcessorBuilder;
-import com.hortonworks.iotas.layout.runtime.rule.RuleRuntimeStorm;
+import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntime;
+import com.hortonworks.iotas.layout.runtime.rule.RuleRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
 
 public abstract class RulesTopologyTest {
@@ -37,6 +38,7 @@ public abstract class RulesTopologyTest {
     protected static final String RULES_TEST_SINK_BOLT = "RulesTestSinkBolt";
     protected static final String RULES_TEST_SINK_BOLT_1 = RULES_TEST_SINK_BOLT + "_1";
     protected static final String RULES_TEST_SINK_BOLT_2 = RULES_TEST_SINK_BOLT + "_2";
+    private RuleProcessorRuntime ruleProcessorRuntime;
     private RulesBoltDependenciesFactory rulesBoltDependenciesFactory;
 
     protected void submitTopology() throws AlreadyAliveException, InvalidTopologyException {
@@ -61,6 +63,10 @@ public abstract class RulesTopologyTest {
         return builder.createTopology();
     }
 
+    protected String getStream(int i) {
+        return ((RuleRuntime) ruleProcessorRuntime.getRulesRuntime().get(i)).getStreams().get(0);
+    }
+
     protected RulesBoltDependenciesFactory createDependenciesBuilderFactory(RulesProcessorBuilder rulesProcessorBuilder, RulesBoltDependenciesFactory.ScriptType scriptType) {
         rulesBoltDependenciesFactory = new RulesBoltDependenciesFactory(rulesProcessorBuilder, scriptType);
         return rulesBoltDependenciesFactory;
@@ -72,10 +78,6 @@ public abstract class RulesTopologyTest {
 
     protected RulesProcessorBuilder createRulesProcessorBuilder() {
         return new RuleProcessorMockBuilder(1,2,2);
-    }
-
-    protected String getStream(int i) {
-        return ((RuleRuntimeStorm)rulesBoltDependenciesFactory.createRuleProcessorRuntimeStorm().getRulesRuntime().get(i)).getStreamId();   //TODO:
     }
 
     protected abstract RulesBoltDependenciesFactory.ScriptType getScriptType();

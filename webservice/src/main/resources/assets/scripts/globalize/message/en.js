@@ -71,7 +71,7 @@
         },
         // h1, h2, h3, fieldset, title
         h: {
-          'addNewParser': 'Add New Parser',
+          'addParser': 'Add New Parser',
           'addNewDevice': 'Add New Device',
           'addNewDatasource': 'Add New Datasource',
           'deviceInformation': 'Device Information',
@@ -88,9 +88,9 @@
         dialogMsg: {
           'newParserAddedSuccessfully': 'New parser added successfully',
           'parserDeletedSuccessfully': 'Parser deleted successfully',
-          'newDatasourceAddedSuccessfully': 'New datasource added successfully',
-          'datasourceUpdatedSuccessfully': 'Datasource updated successfully',
-          'dataSourceDeletedSuccessfully': 'Datasource deleted successfully',
+          'newDeviceAddedSuccessfully': 'New device added successfully',
+          'deviceUpdatedSuccessfully': 'Device updated successfully',
+          'deviceDeletedSuccessfully': 'Device deleted successfully',
           'newDataFeedAddedSuccessfully': 'New data feed added successfully',
           'dataFeedUpdatedSuccessfully': 'Data feed updated successfully',
           'dataFeedDeletedSuccessfully': 'Data feed deleted successfully',
@@ -100,7 +100,8 @@
           'newComponentAddedSuccessfully': 'Component added successfully',
           'componentUpdatedSuccessfully': 'Component updated successfully',
           'componentDeletedSuccessfully': 'Component deleted successfully',
-          'topologyDeletedSuccessfully': 'Topology deleted successfully'
+          'topologyDeletedSuccessfully': 'Topology deleted successfully',
+          'invalidFile': 'Invalid file type'
         },
         validationMessages: {},
         // Server Messages

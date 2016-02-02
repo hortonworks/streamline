@@ -4,9 +4,9 @@ define(['require',
   'utils/Utils',
   'utils/Globals',
   'modules/Modal',
-  'hbs!tmpl/topology/dataStreamMaster',
+  'hbs!tmpl/topology/topologyEditorMaster',
   'models/VTopology',
-  'modules/TopologyGraphCreatorViaRect',
+  'modules/TopologyGraphCreator',
   'x-editable',
 ], function(require, Vent, localization, Utils, Globals, Modal, tmpl, VTopology, TopologyGraphCreator, xEditable) {
   'use strict';
@@ -24,7 +24,9 @@ define(['require',
       'click #submitTopology'   : 'evSubmitAction',
       'click #deployTopology'   : 'evDeployAction',
       'click #killTopology'     : 'evKillAction',
-      'click #configTopology'   : 'evConfigAction'
+      'click #configTopology'   : 'evConfigAction',
+      'click #zoomOut-topo-graph' : 'evZoomOut',
+      'click #zoomIn-topo-graph' : 'evZoomIn',
     },
 
     ui: {
@@ -40,7 +42,7 @@ define(['require',
       this.initializeVariables();
       this.vent = Vent;
       this.topologyConfigModel = new Backbone.Model({
-        rootdir: '', parserPath: '', notifierPath: ''
+        rootdir: 'hdfs://localhost:9000/tmp/hbase', parserPath: '/tmp', notifierPath: '/tmp'
       });
       if(!this.model){
         this.model = new VTopology();
@@ -61,9 +63,18 @@ define(['require',
     },
 
     setTopologyConfigModel: function(){
-      var config = this.model.get('config').config,
-      obj = {
-        rootdir: config.hbaseConf['hbase.rootdir'],
+      var config = this.model.get('config').config;
+      var rootKey = 'hbaseConf';
+      if(_.isUndefined(config.hbaseConf)){
+        var hbaseObj = _.find(this.model.get('config').dataSinks, function(obj){
+          if(obj.type === 'HBASE') return obj;
+        });
+        if(hbaseObj){
+          rootKey = hbaseObj.config.configKey;
+        }
+      }
+      var obj = {
+        rootdir: config[rootKey]['hbase.rootdir'],
         parserPath: config['local.parser.jar.path'],
         notifierPath: config['local.notifier.jar.path']
       };
@@ -92,6 +103,7 @@ define(['require',
         var model = new Backbone.Model({_nodeId: i, firstTime: false, currentType: 'DEVICE', uiname: obj.uiname});
         self.setHiddenConfigFields(model, _.findWhere(self.sourceConfigArr, {subType: 'KAFKA'}));
         self.setAdditionalData(model.attributes, obj.config);
+        model.set('_selectedTable', [{dataSourceId: model.get('dataSourceId')}]);
         self.dsArr.push(model.toJSON());
         var t_obj = _.findWhere(Globals.Topology.Editor.Steps.Datasource.Substeps, {valStr: 'DEVICE'});
         self.graphNodesData.source.push(_.extend(JSON.parse(JSON.stringify(t_obj)), {uiname: obj.uiname, nodeId: i, currentType: 'DEVICE'}));
@@ -101,12 +113,6 @@ define(['require',
         var model = new Backbone.Model({_nodeId: i, firstTime: false, currentType: obj.type, uiname: obj.uiname});
         self.setHiddenConfigFields(model, _.findWhere(self.processorConfigArr, {subType: obj.type}));
         self.setAdditionalData(model.attributes, obj.config);
-        if(obj.type === 'PARSER'){
-          self.dsArr[0]._selectedTable = [{
-            dataSourceId : model.get('dataSourceId'),
-            parserId : model.get('parserId')
-          }];
-        }
         self.processorArr.push(model.toJSON());
         var t_obj = _.findWhere(Globals.Topology.Editor.Steps.Processor.Substeps, {valStr: obj.type});
         self.graphNodesData.processor.push(_.extend(JSON.parse(JSON.stringify(t_obj)), {uiname: obj.uiname, nodeId: i, currentType: obj.type}));
@@ -216,7 +222,7 @@ define(['require',
       });
 
       this.listenTo(this.vent, 'click:topologyNode', function(data){
-        if(!_.isString(data.nodeId) || !data.nodeId.startsWith('Parser')){
+        if(!_.isString(data.nodeId)){
           var model = new Backbone.Model();
           var nodeId = data.nodeId;
           var obj = {
@@ -284,7 +290,7 @@ define(['require',
         return (obj.target.currentType === type && obj.target.nodeId === nodeId);
       });
       if(!obj.length){
-        Utils.notifyError('Connect the node to configre.');
+        Utils.notifyError('Connect the node to configure.');
         return false;
       }
       return true;
@@ -303,7 +309,7 @@ define(['require',
     },
 
     onRender:function(){
-      this.$el.find('#loading').addClass('loader');
+      $('#loading').show();
       var self = this;
       this.setTopologyName();
       this.bindSubMenuDrag();
@@ -344,13 +350,17 @@ define(['require',
             }
         });
       }, 0);
-      // setTimeout(function(){
-        if(self.model.has('id')){
-          self.$('#deployTopology').removeAttr('disabled');
-        }
-        self.$('[data-rel="tooltip"]').tooltip({placement: 'bottom'});
-        self.$el.find('#loading').removeClass('loader');
-      // }, 0);
+      if(self.model.has('id')){
+        self.$('#deployTopology').removeAttr('disabled');
+      }
+      var accordion = this.$('[data-toggle="collapse"]');
+      if(accordion.length){
+        accordion.on('click', function(e){
+          $(e.currentTarget).children('i').toggleClass('fa-caret-right fa-caret-down');
+        });
+      }
+      self.$('[data-rel="tooltip"]').tooltip({placement: 'bottom'});
+      $('#loading').hide();
     },
 
     setTopologyName: function(){
@@ -416,12 +426,12 @@ define(['require',
     renderGraphGenerator: function(){
       var self = this,
           data = this.graphData;
-      var graph = new TopologyGraphCreator({
+      this.topologyGraph = new TopologyGraphCreator({
         elem: this.ui.graphEditor,
         data: data,
         vent: this.vent
       });
-      graph.updateGraph();
+      this.topologyGraph.updateGraph();
     },
 
     bindSubMenuDrag: function(){
@@ -515,10 +525,7 @@ define(['require',
           Utils.notifyError("Configure the connected source node first.");
           return false;
         } else {
-          if(!model.has('parserId')) model.set('parserId', sourceData._selectedTable[0].parserId);
-          if(!model.has('dataSourceId')) model.set('dataSourceId', sourceData._selectedTable[0].datasourceId);
-          if(!model.has('parserName')) model.set('parserName', (sourceData._selectedTable) ? sourceData._selectedTable[0].parserName : '');
-          if(!model.has('dataSourceName')) model.set('dataSourceName', (sourceData._selectedTable) ? sourceData._selectedTable[0].datasourceName : '');
+          if(!model.has('_dataSourceId')) model.set('_dataSourceId', (sourceData.dataSourceId ? sourceData.dataSourceId : sourceData._selectedTable[0].datasourceId));
           if(!model.has('parallelism')){
             model.set('parallelism', 1);
           }
@@ -537,8 +544,12 @@ define(['require',
           Utils.notifyError("Configure the connected node first.");
           return false;
         } else {
-          model.set('parserId', sourceData.parserId);
-          model.set('dataSourceId', sourceData.dataSourceId);
+          var temp1 = this.linkArr.filter(function(o){
+            return (o.target.currentType === 'PARSER' && o.target.nodeId === obj[0].source.nodeId);
+          });
+          //Get dsId from datasource
+          var dsId = this.dsArr[temp1[0].source.nodeId]._selectedTable[0];
+          model.set('dataSourceId', (dsId.dataSourceId ? dsId.dataSourceId : dsId.datasourceId));
           if(model.has('rulesProcessorConfig')){
             var object = {
               "rulesProcessorConfig" : model.get('rulesProcessorConfig')
@@ -564,12 +575,32 @@ define(['require',
 
           if(obj[0].source.currentType === 'RULE' && !validationFlag){
             var rulesDataConfig = _.isUndefined(sourceData.newConfig) ? sourceData.rulesProcessorConfig : sourceData.newConfig.rulesProcessorConfig;
-            rulesDataConfig.rules[0].action.components = [{
-              name: model.get('uiname'),
-              id: new Date().getTime(),
-              description: 'Auto-Generated For '+model.get('uiname'),
-              declaredInput: rulesDataConfig.declaredInput
-            }];
+            if(rulesDataConfig.rules[0].actions.length > 0){
+              var arr = rulesDataConfig.rules[0].actions.filter(function(object){
+                return (object.name !== model.get('type'));
+              });
+              rulesDataConfig.rules[0].actions = arr;
+            }
+            
+            var actionObj = {
+              name: model.get('uiname')
+            };
+
+            var outputFieldObj = {};
+            if(model.get('type') !== 'NOTIFICATION'){
+              // _.each(rulesDataConfig.declaredInput, function(o){
+              //   outputFieldObj[o.name] = null;
+              // });
+              // actionObj.outputFieldsAndDefaults = outputFieldObj;
+              // actionObj.includeMeta = false;
+              // actionObj.notifierName = null;
+            } else {
+              actionObj.outputFieldsAndDefaults = model.get('fieldValues');
+              actionObj.includeMeta = true;
+              actionObj.notifierName = model.get('notifierName');
+            }
+            
+            rulesDataConfig.rules[0].actions.push(actionObj);
           }
           return true;
         }
@@ -593,7 +624,7 @@ define(['require',
         content: self.view,
         showFooter: false,
         escape: false,
-        mainClass: _.isEqual(object.type, Globals.Topology.Editor.Steps.Processor.valStr) ? 'modal-lg' : ''
+        mainClass: 'modal-lg'
       }).open();
 
       modal.$('#editableTitle').editable({
@@ -618,19 +649,27 @@ define(['require',
     },
 
     evSubmitAction: function(e){
-      this.$el.find('#loading').addClass('loader');
+      $('#loading').show();
       var self = this,
           ds = [],
           processors = [],
           sink = [],
           links = [],
-          topologyConfig = {
-            "hbaseConf": {
-              "hbase.rootdir": this.topologyConfigModel.get('rootdir')
-            },
+          rootdirKeyName = 'hbaseConf';
+      var hbaseObj = _.find(this.sinkArr, function(obj){
+        if(obj.type === 'HBASE')
+          return obj;
+      });
+      if(!_.isUndefined(hbaseObj)){
+        rootdirKeyName = hbaseObj.configKey;
+      }
+      var topologyConfig = {
             "local.parser.jar.path": this.topologyConfigModel.get('parserPath'),
             "local.notifier.jar.path": this.topologyConfigModel.get('notifierPath')
           };
+      topologyConfig[rootdirKeyName] = {
+        "hbase.rootdir": this.topologyConfigModel.get('rootdir')
+      };
       var tempData = {
         config: topologyConfig,
         dataSources: [],
@@ -648,6 +687,7 @@ define(['require',
                 configObj[o.name] = obj[o.name];
               }
             });
+            configObj.dataSourceId = (obj._selectedTable[0].datasourceId ? obj._selectedTable[0].datasourceId : obj._selectedTable[0].dataSourceId);
             ds.push({
               "uiname": obj.uiname,
               "type": obj.hiddenFields ? obj.hiddenFields.type : '',
@@ -658,7 +698,7 @@ define(['require',
         });
         tempData.dataSources = ds;
       } else {
-        self.$el.find('#loading').removeClass('loader');
+        $('#loading').hide();
         Utils.notifyError('There are some unconfigured nodes present. Kindly configure to proceed.');
         return false;
       }
@@ -666,17 +706,18 @@ define(['require',
         _.each(this.processorArr, function(obj){
           if(obj){
             if(obj.hiddenFields.type === 'PARSER'){
+              var config = {
+                  "parsedTuplesStream": "parsedTuplesStream",
+                  "failedTuplesStream": "failedTuplesStream",
+                  "parallelism": obj.parallelism
+                };
+              if(obj.dataSourceId) config.dataSourceId = obj.dataSourceId;
+              if(obj.parserId) config.parserId = obj.parserId;
               processors.push({
                 "uiname": obj.uiname,
                 "type": obj.hiddenFields ? obj.hiddenFields.type : '',
                 "transformationClass": obj.hiddenFields ? obj.hiddenFields.transformationClass : '',
-                "config": {
-                  "parsedTuplesStream": "parsedTuplesStream",
-                  "failedTuplesStream": "failedTuplesStream",
-                  "parserId": 1,
-                  "dataSourceId": 1,
-                  "parallelism": 1
-                }
+                "config": config
               });
             } else if(obj.hiddenFields.type === 'RULE'){
 
@@ -691,7 +732,7 @@ define(['require',
         });
         tempData.processors = processors;
       } else {
-        self.$el.find('#loading').removeClass('loader');
+        $('#loading').hide();
         Utils.notifyError('There are some unconfigured nodes present. Kindly configure to proceed.');
         return false;
       }
@@ -714,7 +755,7 @@ define(['require',
         });
         tempData.dataSinks = sink;
       } else {
-        self.$el.find('#loading').removeClass('loader');
+        $('#loading').hide();
         Utils.notifyError('There are some unconfigured nodes present. Kindly configure to proceed.');
         return false;
       }
@@ -739,7 +780,7 @@ define(['require',
 
           if(!sourceObj || !targetObj){
             flag = false;
-            self.$el.find('#loading').removeClass('loader');
+            $('#loading').hide();
             Utils.notifyError("There are some unconfigured nodes present. Kindly configure to proceed.");
           } else {
             var tempObj = {
@@ -756,9 +797,9 @@ define(['require',
             }
             if(sourceObj.currentType === 'RULE'){
               if(sourceObj.newConfig){
-                tempObj.config.streamId = sourceObj.newConfig.rulesProcessorConfig.name+'.'+sourceObj.newConfig.rulesProcessorConfig.rules[0].name+'.'+sourceObj.newConfig.rulesProcessorConfig.rules[0].id;
+                tempObj.config.streamId = sourceObj.newConfig.rulesProcessorConfig.name+'.'+sourceObj.newConfig.rulesProcessorConfig.rules[0].name+'.'+sourceObj.newConfig.rulesProcessorConfig.rules[0].id+'.'+targetObj.uiname;
               } else {
-                tempObj.config.streamId = sourceObj.rulesProcessorConfig.name+'.'+sourceObj.rulesProcessorConfig.rules[0].name+'.'+sourceObj.rulesProcessorConfig.rules[0].id;
+                tempObj.config.streamId = sourceObj.rulesProcessorConfig.name+'.'+sourceObj.rulesProcessorConfig.rules[0].name+'.'+sourceObj.rulesProcessorConfig.rules[0].id+'.'+targetObj.uiname;
               }
             }
             tempData.links.push(tempObj);
@@ -784,11 +825,11 @@ define(['require',
             self.model.set('name', response.entity.name);
             self.model.set('_editState', true);
             self.$('#deployTopology').removeAttr('disabled');
-            self.$('#loading').removeClass('loader');
+            $('#loading').hide();
             Utils.notifySuccess('Topology saved successfully.');
           },
           error: function(model, response, options){
-            self.$('#loading').removeClass('loader');
+            $('#loading').hide();
             Utils.showError(model, response);
           }
         });
@@ -802,51 +843,65 @@ define(['require',
         data: JSON.stringify(obj),
         dataType:'json',
         contentType: 'application/json',
-        success: function(model, response, options){},
+        success: function(model, response, options){
+          if(Backbone.history.fragment !== '!/topology-editor/'+self.topologyId){
+            Backbone.history.navigate('!/topology-editor/'+self.topologyId, {trigger : true});
+          }
+        },
         error: function(model, response, options){
           Utils.showError(model, response);
         }
       });
     },
     evDeployAction: function(e){
-      this.$el.find('#loading').addClass('loader');
+      $('#loading').show();
+      var self = this;
       if(this.topologyId){
-        this.model.deployTopology({
+        this.model.validateTopology({
           id: this.topologyId,
           success: function(model, response, options){
-            self.$('#deployTopology').attr('disabled',true);
-            self.$('#killTopology').removeAttr('disabled');
-            self.$('#loading').removeClass('loader');
-            Utils.notifySuccess('Topology deployed successfully.');
+            self.model.deployTopology({
+              id: self.topologyId,
+              success: function(model, response, options){
+                self.$('#deployTopology').attr('disabled',true);
+                self.$('#killTopology').removeAttr('disabled');
+                $('#loading').hide();
+                Utils.notifySuccess('Topology deployed successfully.');
+              },
+              error: function(model, response, options){
+                $('#loading').hide();
+                Utils.showError(model, response);
+              }
+            });
           },
           error: function(model, response, options){
-            self.$('#loading').removeClass('loader');
+            $('#loading').hide();
             Utils.showError(model, response);
           }
         });
       } else {
-        this.$el.find('#loading').removeClass('loader');
+        $('#loading').hide();
         Utils.notifyError('Need to save a topology before deploying it.');
       }
     },
     evKillAction: function(e){
-      this.$el.find('#loading').addClass('loader');
+      $('#loading').show();
       if(this.topologyId){
         this.model.killTopology({
           id: this.topologyId,
           success: function(model, response, options){
             self.$('#submitTopology').removeAttr('disabled');
             self.$('#deployTopology').removeAttr('disabled');
-            self.$('#loading').removeClass('loader');
+            $('#loading').hide();
             Utils.notifySuccess('Topology killed successfully.');
           },
           error: function(model, response, options){
-            self.$('#loading').removeClass('loader');
+            $('#loading').hide();
             Utils.showError(model, response);
           }
         });
       } else {
-        this.$el.find('#loading').removeClass('loader');
+        $('#loading').hide();
         Utils.notifyError('Need to save a topology before killing it.');
       }
     },
@@ -868,6 +923,24 @@ define(['require',
           modal.trigger('cancel');
         });
       });
+    },
+    evZoomIn: function(){
+      this.vent.trigger('TopologyEditorMaster:Zoom', 'zoom_in');
+    },
+    evZoomOut: function(){
+      this.vent.trigger('TopologyEditorMaster:Zoom', 'zoom_out');
+    },
+    destroy: function(){
+      this.stopListening(this.vent, 'topologyEditor:SaveDeviceSource');
+      this.stopListening(this.vent, 'topologyEditor:SaveProcessor');
+      this.stopListening(this.vent, 'topologyEditor:SaveSink');
+      this.stopListening(this.vent, 'click:topologyNode');
+      this.stopListening(this.vent, 'topologyEditor:SaveConfig');
+      this.stopListening(this.vent, 'topologyLink');
+      if(this.TopologyGraph){
+        this.topologyGraph.vent.stopListening(this.vent, 'change:editor-submenu');
+        this.topologyGraph.vent.stopListening(this.vent, 'TopologyEditorMaster:Zoom');
+      }
     }
 
   });

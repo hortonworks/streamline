@@ -1,12 +1,13 @@
 package com.hortonworks.bolt.notification;
 
-import backtype.storm.task.OutputCollector;
-import backtype.storm.task.TopologyContext;
-import backtype.storm.topology.OutputFieldsDeclarer;
-import backtype.storm.topology.base.BaseRichBolt;
-import backtype.storm.tuple.Tuple;
+import org.apache.storm.task.OutputCollector;
+import org.apache.storm.task.TopologyContext;
+import org.apache.storm.topology.OutputFieldsDeclarer;
+import org.apache.storm.topology.base.BaseRichBolt;
+import org.apache.storm.tuple.Tuple;
 import com.hortonworks.client.CatalogRestClient;
 import com.hortonworks.iotas.catalog.NotifierInfo;
+import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.notification.common.Notification;
 import com.hortonworks.iotas.notification.common.Notifier;
 import com.hortonworks.iotas.notification.common.NotifierConfig;
@@ -84,7 +85,7 @@ public class NotificationBolt extends BaseRichBolt {
 
     @Override
     public void execute(Tuple tuple) {
-        Notification notification = (Notification) tuple.getValueByField(IOTAS_NOTIFICATION);
+        Notification notification = new IotasEventAdapter((IotasEvent) tuple.getValueByField(IotasEvent.IOTAS_EVENT));
         notificationContext.track(notification.getId(), tuple);
         // send to notifier
         notificationService.notify(this.notifierName, notification);

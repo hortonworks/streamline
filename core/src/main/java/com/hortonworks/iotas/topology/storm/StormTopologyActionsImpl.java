@@ -22,6 +22,7 @@ import java.util.Map;
 public class StormTopologyActionsImpl implements TopologyActions {
 
     private String stormArtifactsLocation = "/tmp/storm-artifacts/";
+    private String stormCliPath = "storm";
     private String stormJarLocation;
     private String catalogRootUrl;
 
@@ -36,6 +37,9 @@ public class StormTopologyActionsImpl implements TopologyActions {
             if (conf.containsKey(TopologyLayoutConstants.STORM_ARTIFACTS_LOCATION_KEY)) {
                 stormArtifactsLocation = conf.get(TopologyLayoutConstants.STORM_ARTIFACTS_LOCATION_KEY);
             }
+            if (conf.containsKey(TopologyLayoutConstants.STORM_HOME_DIR)) {
+                stormCliPath = conf.get(TopologyLayoutConstants.STORM_HOME_DIR) + "bin/storm";
+            }
             stormJarLocation = conf.get(TopologyLayoutConstants.STORM_JAR_LOCATION_KEY);
             catalogRootUrl = conf.get(TopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL);
         }
@@ -47,7 +51,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
     public void deploy (Topology topology) throws Exception {
         String fileName = this.createYamlFile(topology);
         List<String> commands = new ArrayList<String>();
-        commands.add("storm");
+        commands.add(stormCliPath);
         commands.add("jar");
         commands.add(stormJarLocation);
         commands.add("org.apache.storm.flux.Flux");
@@ -63,7 +67,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
     @Override
     public void kill (Topology topology) throws Exception {
         List<String> commands = new ArrayList<String>();
-        commands.add("storm");
+        commands.add(stormCliPath);
         commands.add("kill");
         commands.add(getTopologyName(topology));
         int exitValue = executeShellProcess(commands);
@@ -84,7 +88,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
     @Override
     public void suspend (Topology topology) throws Exception {
         List<String> commands = new ArrayList<String>();
-        commands.add("storm");
+        commands.add(stormCliPath);
         commands.add("deactivate");
         commands.add(getTopologyName(topology));
         int exitValue = executeShellProcess(commands);
@@ -97,7 +101,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
     @Override
     public void resume (Topology topology) throws Exception {
         List<String> commands = new ArrayList<String>();
-        commands.add("storm");
+        commands.add(stormCliPath);
         commands.add("activate");
         commands.add(getTopologyName(topology));
         int exitValue = executeShellProcess(commands);

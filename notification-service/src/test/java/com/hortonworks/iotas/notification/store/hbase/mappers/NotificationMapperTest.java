@@ -2,6 +2,7 @@ package com.hortonworks.iotas.notification.store.hbase.mappers;
 
 import com.hortonworks.iotas.notification.common.Notification;
 import com.hortonworks.iotas.notification.common.NotificationImpl;
+import com.hortonworks.iotas.notification.store.hbase.Serializer;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
@@ -38,7 +39,7 @@ public class NotificationMapperTest {
 
     @Test
     public void testTableMutations() throws Exception {
-        Map<String, String> fieldAndValues = new HashMap<>();
+        Map<String, Object> fieldAndValues = new HashMap<>();
         fieldAndValues.put("one", "A");
         Notification notification = new NotificationImpl.Builder(fieldAndValues)
                 .id("notification-id")
@@ -58,8 +59,7 @@ public class NotificationMapperTest {
         assertEquals("Notification", tm.tableName());
         assertEquals(1, tm.updates().size());
         Put put = tm.updates().get(0);
-
-        assertTrue(put.has("f".getBytes(), "one".getBytes(), "A".getBytes()));
+        assertTrue(put.has("f".getBytes(), "one".getBytes(), new Serializer().serialize("A")));
         assertTrue(put.has("d".getBytes(), "dsrcid-1".getBytes(), "1".getBytes()));
         assertTrue(put.has("e".getBytes(), "eventid-1".getBytes(), "1".getBytes()));
         assertTrue(put.has("nn".getBytes(), "test-notifier".getBytes(), "1".getBytes()));

@@ -16,7 +16,9 @@ define(['utils/LangSupport',
       var data = this.generateSchema();
       this.schemaObj = data.schemaObj;
       this.templateData = {
-        'fieldName': data.fieldArr
+        // 'fieldName': data.fieldArr
+        'reqFieldName': data.reqFieldArr,
+        'addFieldRows': data.addFieldRows
       };
       if(!this.model.has('devices') && this.model.has('_selectedTable')){
         this.setDevices();
@@ -94,8 +96,11 @@ define(['utils/LangSupport',
           validators: ['required']
         }
       };
-      data.fieldArr = [];
-      _.each(this.model.get('config'), function(obj){
+      // data.fieldArr = [];
+      data.reqFieldArr = [];
+      data.addFieldRows = [];
+      var fieldRow = [];
+      _.each(this.model.get('config'), function(obj, i){
         var name = obj.name;
 
         data.schemaObj[name] = {
@@ -123,9 +128,19 @@ define(['utils/LangSupport',
           data.schemaObj[name].editorClass = 'inline-element';
         }
         
-        data.fieldArr.push(name);
+        // data.fieldArr.push(name);
+        fieldRow.push(name);
         if(!self.model.has(name)){
-          self.model.set(name, (obj.defaultValue) ? obj.defaultValue : '', {silent: true});
+          self.model.set(name, !_.isNull(obj.defaultValue) ? obj.defaultValue : '', {silent: true});
+        }
+        if (i % 2 !== 0) {
+          if (i < 4) {
+            data.reqFieldArr.push(fieldRow);
+            fieldRow = [];
+          } else {
+            data.addFieldRows.push(fieldRow);
+            fieldRow = [];
+          }
         }
       });
       self.model.set('firstTime', false);
@@ -135,8 +150,8 @@ define(['utils/LangSupport',
     render: function(options){
       var self = this;
       Backbone.Form.prototype.render.call(this, options);
-      this.$('.sourceFields').find('.col-sm-3').removeClass('col-sm-3').addClass('col-sm-6');
-      this.$('.sourceFields').find('.col-sm-9').removeClass('col-sm-9').addClass('col-sm-6');
+      // this.$('.sourceFields').find('.col-sm-3').removeClass('col-sm-3').addClass('col-sm-6');
+      this.$el.find('.col-sm-9').removeClass('col-sm-9').addClass('col-sm-6');
       if(this.model.has('_selectedTable')){
         self.selectedDeviceArr = this.model.get('_selectedTable');
         var table = '';
@@ -149,6 +164,12 @@ define(['utils/LangSupport',
          } else {
            this.$('#showDev').addClass('displayNone');
          }
+      }
+      var accordion = this.$('[data-toggle="collapse"]');
+      if(accordion.length){
+        accordion.on('click', function(e){
+          $(e.currentTarget).children('i').toggleClass('fa-caret-right fa-caret-down');
+        });
       }
     },
 

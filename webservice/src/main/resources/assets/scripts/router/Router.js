@@ -10,9 +10,7 @@ define([
 	var AppRouter = Backbone.Router.extend({
 		routes: {
 			// Define some URL routes
-			// ''						: 'dashboardAction',
 			''						: 'parserRegistryAction',
-			'!/dashboard'			: 'dashboardAction',
 			'!/parser-registry'		: 'parserRegistryAction',
 			'!/device-catalog'		: 'deviceCatalogAction',
 			'!/device-catalog/:pid'	: 'deviceDetailAction',
@@ -63,15 +61,6 @@ define([
 		/**
 		 * Define route handlers here
 		 */
-		dashboardAction: function() {
-			VAppState.set({
-				'currentTab' : Globals.AppTabs.Dashboard.value
-			});
-			require(['views/site/Dashboard'],function(DashboardView){
-				App.rContent.show(new DashboardView());
-			});
-		},
-		
 		parserRegistryAction: function(){
 			VAppState.set({
 				'currentTab' : Globals.AppTabs.ParserRegistry.value
@@ -118,7 +107,7 @@ define([
 			VAppState.set({
 				'currentTab' : 0
 			});
-			require(['collection/VClusterList', 'views/config/ConfigView'], function(VClusterList, configView){
+			require(['collection/VClusterList', 'views/clusterConfig/ComponentMaster'], function(VClusterList, configView){
 				var collection = new VClusterList(),
 					createStormCluster = true,
 					createKafkaCluster = true,
@@ -172,8 +161,8 @@ define([
 							delete vTopology.attributes.entity;
 							delete vTopology.attributes.responseCode;
 							delete vTopology.attributes.responseMessage;
-							require(['views/topology/DataStreamMaster'], function(DataStreamMaster){
-								App.rContent.show(new DataStreamMaster({
+							require(['views/topology/TopologyEditorMaster'], function(TopologyEditorMaster){
+								App.rContent.show(new TopologyEditorMaster({
 									model: vTopology
 								}));
 							});
@@ -184,8 +173,8 @@ define([
 					});
 				});
 			} else {
-				require(['views/topology/DataStreamMaster'], function(DataStreamMaster){
-					App.rContent.show(new DataStreamMaster());
+				require(['views/topology/TopologyEditorMaster'], function(TopologyEditorMaster){
+					App.rContent.show(new TopologyEditorMaster());
 				});
 			}
 		},

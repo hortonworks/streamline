@@ -20,12 +20,12 @@ public interface FluxComponent {
     Get yaml maps of all the components referenced by this component
     Expected to return equivalent of something like below.
     - id: "zkHosts"
-    className: "storm.kafka.ZkHosts"
+    className: "org.apache.storm.kafka.ZkHosts"
     constructorArgs:
       - ${kafka.spout.zkUrl}
 
     - id: "spoutConfig"
-    className: "storm.kafka.SpoutConfig"
+    className: "org.apache.storm.kafka.SpoutConfig"
     constructorArgs:
       - ref: "zkHosts"
      */
@@ -36,7 +36,7 @@ public interface FluxComponent {
     overwritten and hence is optional.
     Expected to return equivalent of something like below
     - id: "KafkaSpout"
-    className: "storm.kafka.KafkaSpout"
+    className: "org.apache.storm.kafka.KafkaSpout"
     constructorArgs:
       - ref: "spoutConfig"
      */

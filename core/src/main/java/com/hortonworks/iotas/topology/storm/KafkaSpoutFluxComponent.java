@@ -17,7 +17,7 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
     protected void generateComponent () {
         String spoutConfigRef = addSpoutConfigComponent();
         String spoutId = "kafkaSpout" + UUID_FOR_COMPONENTS;
-        String spoutClassName = "storm.kafka.KafkaSpout";
+        String spoutClassName = "org.apache.storm.kafka.KafkaSpout";
         List spoutConstructorArgs = new ArrayList();
         Map ref = getRefYaml(spoutConfigRef);
         spoutConstructorArgs.add(ref);
@@ -29,7 +29,7 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
     private String addSpoutConfigComponent () {
         String zkHostsRef = addBrokerHostsComponent();
         String spoutConfigComponentId = "spoutConfig" + UUID_FOR_COMPONENTS;
-        String spoutConfigClassName = "storm.kafka.SpoutConfig";
+        String spoutConfigClassName = "org.apache.storm.kafka.SpoutConfig";
         String[] properties = {
                 TopologyLayoutConstants.JSON_KEY_FETCH_SIZE_BYTES,
                 TopologyLayoutConstants.JSON_KEY_SOCKET_TIMEOUT_MS,
@@ -71,7 +71,7 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
         String zkHostsComponentId = "zkHosts" + UUID_FOR_COMPONENTS;
 
         // currently only BrokerHosts is supported.
-        String zkHostsClassName = "storm.kafka.ZkHosts";
+        String zkHostsClassName = "org.apache.storm.kafka.ZkHosts";
 
         String[] propertyNames = {TopologyLayoutConstants
                 .JSON_KEY_REFRESH_FREQ_SECS};

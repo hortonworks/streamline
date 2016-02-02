@@ -1,7 +1,7 @@
 define(['utils/LangSupport',
   'utils/Globals',
   'utils/Utils',
-  'hbs!tmpl/config/configComponentForm',
+  'hbs!tmpl/clusterConfig/componentForm',
   'backbone.forms'
   ], function (localization, Globals, Utils, tmpl) {
   'use strict';
@@ -24,17 +24,16 @@ define(['utils/LangSupport',
     },
 
     schema: function () {
-        var typeArr = [],
-            Components = Globals.Component;
+      var typeArr = [],
+          Components = Globals.Component;
 
-        if(this.type === 'KAFKA') {
-           typeArr = Utils.GlobalEnumToArray(Components.Kafka);
-        } else if(this.type === 'STORM') {
-          typeArr = Utils.GlobalEnumToArray(Components.Storm);
-        } else if(this.type === 'HDFS') {
-          typeArr = Utils.GlobalEnumToArray(Components.HDFS);
-        }        
-
+      if(this.type === 'KAFKA') {
+         typeArr = this.filterType(Utils.GlobalEnumToArray(Components.Kafka), this.componentArr);
+      } else if(this.type === 'STORM') {
+        typeArr = this.filterType(Utils.GlobalEnumToArray(Components.Storm), this.componentArr);
+      } else if(this.type === 'HDFS') {
+        typeArr = this.filterType(Utils.GlobalEnumToArray(Components.HDFS), this.componentArr);
+      }
       return {
          clusterType: {
           type: 'Text',
@@ -70,6 +69,18 @@ define(['utils/LangSupport',
           validators: [{'type':'required','message':'Port number can not be blank.'}]
         }
       };
+    },
+
+    filterType: function(actualArr, componentArr){
+      if(componentArr.length){
+        _.each(componentArr, function(obj){
+          actualArr = actualArr.filter(function(o){return (o.val !== obj.get('type'));});
+        });
+      }
+      if(this.model.has('id')){
+        actualArr.push({val: this.model.get('type'), label: this.model.get('type')});
+      }
+      return actualArr;
     },
 
     onRender: function(){ },

@@ -30,6 +30,7 @@ define(['require',
 
     initialize: function(options) {
       this.collection = new VTopologyList();
+      this.collection.comparator = 'id';
     },
 
     onRender:function(){
@@ -141,7 +142,7 @@ define(['require',
     getModel: function(e){
       var currentTarget = $(e.currentTarget);
       var id = currentTarget.data().id;
-      var model = _.findWhere(this.collection.models, function(model){
+      var model = _.find(this.collection.models, function(model){
         if(model.get('id') === id)
           return model;
       });

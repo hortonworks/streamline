@@ -1,6 +1,6 @@
 package com.hortonworks.hdfs;
 
-import backtype.storm.tuple.Tuple;
+import org.apache.storm.tuple.Tuple;
 import com.hortonworks.bolt.ParserBolt;
 import org.apache.storm.hdfs.bolt.format.RecordFormat;
 

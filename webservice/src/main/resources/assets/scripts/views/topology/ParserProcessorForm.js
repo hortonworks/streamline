@@ -11,32 +11,38 @@ define(['utils/LangSupport',
 
     initialize: function (options) {
       _.extend(this, options);
+      if(this.model.get('firstTime')){
+        this.model.set('dataSourceId', this.model.get('_dataSourceId'));
+        this.model.set('parserId', this.model.get('_parserId'));
+      }
       this.model.set('firstTime', false);
       Backbone.Form.prototype.initialize.call(this, options);
     },
 
     schema: function () {
       return {
-        dataSourceName: {
-          type: 'Text',
+        dataSourceId: {
+          type: 'Select2',
           title: 'Source Name',
           editorClass: 'form-control',
-          editorAttrs: {
-            readonly: 'readonly'
+          pluginAttr: {
+            placeholder: 'Source Name',
+            allowClear: true,
           },
-          placeHolder: 'Source Name',
+          options: [{val: '0', label:'None'}, {val: this.model.get('_dataSourceId'), label: this.model.get('_dataSourceName')}]
         },
-        parserName: {
-          type: 'Text',
+        parserId: {
+          type: 'Select2',
           title: 'Parser Name',
           editorClass: 'form-control',
-          editorAttrs: {
-            readonly: 'readonly'
+          pluginAttr: {
+            placeholder: 'Parser Name',
+            allowClear: true,
           },
-          placeHolder: 'Parser Name',
+          options: [{val: '0', label:'None'}, {val: this.model.get('_parserId'), label: this.model.get('_parserName')}]
         },
         parallelism: {
-          type: 'Text',
+          type: 'Number',
           title: 'Parallelism',
           editorClass: 'form-control',
           placeHolder: 'Parallelism',
@@ -50,6 +56,18 @@ define(['utils/LangSupport',
 
     getData: function() {
       var attrs = this.getValue();
+      if(attrs.dataSourceId === '0' || _.isNull(attrs.dataSourceId)){
+        this.model.set('emptySource', true);
+      } else {
+        this.model.set('emptySource', false);
+      }
+      if(attrs.parserId === '0' || _.isNull(attrs.parserId)){
+        this.model.set('emptyParser', true);
+      } else {
+        this.model.set('emptyParser', false);
+      }
+      attrs.dataSourceId = parseInt(attrs.dataSourceId);
+      attrs.parserId = parseInt(attrs.parserId);
       return this.model.set(attrs);
     },
 
