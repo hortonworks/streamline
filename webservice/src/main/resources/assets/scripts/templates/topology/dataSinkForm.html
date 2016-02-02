@@ -1,21 +1,111 @@
 <form class="form-horizontal">
-	<!-- <div class="" data-fields="name"></div> -->
-	<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
-      <div class="panel panel-default">
-          <div class="panel-heading" role="tab" id="headingTwo">
-            <h4 class="panel-title">
-              <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
-                Configuration
-              </a>
-            </h4>
-          </div>
-          <div id="collapseTwo" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingTwo" aria-expanded="true">
-            <div class="panel-body sourceModalConfig">
-              {{#each fieldName}}
-                  <div class="sourceFields" data-fields="{{this}}"></div>
-              {{/each}}
+  {{#if notification}}
+    <div class="" data-fields="notifierName"></div>
+    <div class="" data-fields="jarFileName"></div>
+    <div class="" data-fields="className"></div>
+    <div class="" data-fields="hbaseConfigKey"></div>
+    <div class="" data-fields="parallelism"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="panel-group" id="notification-props" role="tablist" aria-multiselectable="true">
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="headingOne">
+                <a role="button" data-toggle="collapse" data-parent="#notification-props" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne"><i class="fa fa-caret-right"></i> Properties</a>
+            </div>
+            <div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+              <div class="panel-body">
+                
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="" data-fields="username"></div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="" data-fields="password"></div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="" data-fields="host"></div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="" data-fields="port"></div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="" data-fields="starttls"></div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="" data-fields="debug"></div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="" data-fields="ssl"></div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="" data-fields="auth"></div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="" data-fields="protocol"></div>
+                  </div>
+                </div>
+
+              </div>
             </div>
           </div>
+        </div>
       </div>
-  </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="panel-group" id="notification-fieldValue" role="tablist" aria-multiselectable="true">
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="headingOne">
+                <a role="button" data-toggle="collapse" data-parent="#notification-fieldValue" href="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo"><i class="fa fa-caret-right"></i> Field Values</a>
+            </div>
+            <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+              <div class="panel-body">
+                
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="" data-fields="from"></div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="" data-fields="to"></div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="" data-fields="subject"></div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="" data-fields="contentType"></div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="" data-fields="body"></div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {{else}}
+    {{#each fieldName}}
+        <div class="" data-fields="{{this}}"></div>
+    {{/each}}
+  {{/if}}  
 </form>

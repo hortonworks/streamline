@@ -1,12 +1,12 @@
 define(['require',
     'modules/Vent',
-    'hbs!tmpl/config/configFeedView',
+    'hbs!tmpl/clusterConfig/componentView',
     'utils/Utils',
     'utils/LangSupport'
   ], function(require, Vent, tmpl, Utils, localization){
   'use strict';
 
-  var vConfigFeedView = Marionette.LayoutView.extend({
+  var vComponentView = Marionette.LayoutView.extend({
 
     template: tmpl,
 
@@ -23,15 +23,15 @@ define(['require',
 
     initialize: function (options) {
       _.extend(this, options);
-      this.vent = Vent;
     },
 
     onRender: function () {
       var self = this;
-      require(['views/config/ConfigComponentForm'], function(ConfigComponentForm){   
-        self.view = new ConfigComponentForm({
+      require(['views/clusterConfig/ComponentForm'], function(ComponentForm){   
+        self.view = new ComponentForm({
           model: self.model,
-          type: self.type
+          type: self.type,
+          componentArr: self.componentArr
         });
         self.rForm.show(self.view);        
       });
@@ -41,16 +41,16 @@ define(['require',
 
       var errs = this.view.validate();
       if(_.isEmpty(errs)){
-        this.saveDataSource();
+        this.saveComponent();
       } else {
         return false;
       }     
     },
     
-    saveDataSource: function(){
+    saveComponent: function(){
       var data = this.view.getData();
   
-      this.vent.trigger('click:Save', data);
+      this.vent.trigger('component:Save', data);
       this.evClose();
     },
     
@@ -59,5 +59,5 @@ define(['require',
     }
    
   });
-  return vConfigFeedView;
+  return vComponentView;
 });

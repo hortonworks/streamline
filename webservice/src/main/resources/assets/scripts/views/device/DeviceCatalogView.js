@@ -29,6 +29,7 @@ define(['require',
 
     initialize: function (options) {
       this.collection = new VDatasourceList();
+      this.collection.comparator = 'dataSourceId';
     },
 
     onRender: function () {
@@ -153,12 +154,12 @@ define(['require',
     },
     evDeleteAction: function(e){
       var self = this;
-      bootbox.confirm("Do you really want to delete this data source ?", function(result){
+      bootbox.confirm("Do you really want to delete this device ?", function(result){
         if(result){
           var model = self.getModel(e);
           model.destroy({
             success: function(model,response){
-              Utils.notifySuccess(localization.tt('dialogMsg.dataSourceDeletedSuccessfully'));
+              Utils.notifySuccess(localization.tt('dialogMsg.deviceDeletedSuccessfully'));
               self.fetchData();
             },
             error: function(model, response, options){
@@ -171,7 +172,7 @@ define(['require',
     getModel: function(e){
       var currentTarget = $(e.currentTarget);
       var id = currentTarget.data().id;
-      var model = _.findWhere(this.collection.models, function(model){
+      var model = _.find(this.collection.models, function(model){
         if(model.get('dataSourceId') === id)
           return model;
       });
