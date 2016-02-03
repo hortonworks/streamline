@@ -46,6 +46,7 @@ public class FeedResource {
 
     @GET
     public Object listFeeds() {
-        return ZkUtils.getChildrenParentMayNotExist(this.zkClient, ZkUtils.BrokerTopicsPath()).toList();
+        return "";
+        //return ZkUtils.getChildrenParentMayNotExist(this.zkClient, ZkUtils.BrokerTopicsPath()).toList();
     }
 }
