@@ -83,8 +83,8 @@ bolts:
         args:
           - "hbase.conf"
 
-  - id: "DummyRuleBolt"
-    className: "com.hortonworks.bolt.DummyRuleBolt"
+  - id: "NotificationsTestBolt"
+    className: "com.hortonworks.iotas.testing.NotificationsTestBolt"
     parallelism: 1
     configMethods:
       - name: "withConsoleNotificationStream"
@@ -166,20 +166,20 @@ streams:
 
   - name: "paser --> rule"
     from: "ParserBolt"
-    to: "DummyRuleBolt"
+    to: "NotificationsTestBolt"
     grouping:
       type: SHUFFLE
       streamId: "parsed_tuples_stream"
 
   - name: "rule --> console"
-    from: "DummyRuleBolt"
+    from: "NotificationsTestBolt"
     to: "ConsoleNotificationBolt"
     grouping:
       streamId: "console_stream"
       type: SHUFFLE
 
   - name: "rule --> email"
-    from: "DummyRuleBolt"
+    from: "NotificationsTestBolt"
     to: "EmailNotificationBolt"
     grouping:
       streamId: "email_stream"
