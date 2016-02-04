@@ -39,6 +39,7 @@ public class CLI {
     private static final String OPTION_DELAY = "delay";
     private static final String OPTION_TIMESTAMP = "timestamp";
     private static final String OPTION_DATA_FILE_PATH = "dataFilePath";
+    private static final String OPTION_NOT_IOTAS_MESSSAGE = "notIotasMessage";
 
     public static void main(String[] args) throws Exception {
         Options options = new Options();
@@ -48,6 +49,7 @@ public class CLI {
         options.addOption(option(1, "d", OPTION_DELAY, "When processing a data file, the delay, in milliseconds, between messages."));
         options.addOption(option(0, "T", OPTION_TIMESTAMP, "When processing a data file, override timestamp with the current time."));
         options.addOption(option(1, "f", OPTION_DATA_FILE_PATH, "Data File Path from which data will be read and published to kafka topic."));
+        options.addOption(option(0, "nim", OPTION_NOT_IOTAS_MESSSAGE, "When processing a data file, input data is not an IoTasMessage"));
 
         CommandLineParser parser = new BasicParser();
         CommandLine cmd = parser.parse(options, args);
@@ -103,12 +105,17 @@ public class CLI {
         try(BufferedReader reader = new BufferedReader(new InputStreamReader( new FileInputStream(file)))) {
             ObjectMapper mapper = new ObjectMapper();
             String line = null;
+            IotasMessage message;
             while((line = reader.readLine()) != null){
-                IotasMessage message = mapper.readValue(line, IotasMessage.class);
-                if(cmd.hasOption(OPTION_TIMESTAMP)){
-                    message.setTimestamp(System.currentTimeMillis());
+                if (!cmd.hasOption(OPTION_NOT_IOTAS_MESSSAGE)) {
+                    message = mapper.readValue(line, IotasMessage.class);
+                    if (cmd.hasOption(OPTION_TIMESTAMP)) {
+                        message.setTimestamp(System.currentTimeMillis());
+                    }
+                    writeToKafka(producer, message, topic);
+                } else {
+                    writeToKafka(producer, line, topic);
                 }
-                writeToKafka(producer, message, topic);
                 if(cmd.hasOption(OPTION_DELAY)){
                     Long delay = Long.parseLong(cmd.getOptionValue(OPTION_DELAY));
                     System.out.println("Delay " + delay + " ms.");
@@ -179,13 +186,18 @@ public class CLI {
 
     private static void writeToKafka(Producer<String, String> producer, IotasMessage message, String topic){
         ObjectMapper mapper = new ObjectMapper();
+        String json = "";
         try {
-            String json = mapper.writeValueAsString(message);
-            producer.send(new KeyedMessage<String, String>(topic, json));
-            System.out.println("Sent: " + json);
+            json = mapper.writeValueAsString(message);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
+        writeToKafka(producer, json, topic);
+    }
+
+    private static void writeToKafka(Producer<String, String> producer, String data, String topic){
+        producer.send(new KeyedMessage<String, String>(topic, data));
+        System.out.println("Sent: " + data);
     }
 
 }
