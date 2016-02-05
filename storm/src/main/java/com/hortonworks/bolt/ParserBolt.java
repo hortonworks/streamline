@@ -9,13 +9,13 @@ import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.client.CatalogRestClient;
+import com.hortonworks.iotas.util.ProxyUtil;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.model.IotasMessage;
 import com.hortonworks.iotas.parser.Parser;
-import com.hortonworks.iotas.util.ReflectionHelper;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -45,6 +45,7 @@ public class ParserBolt extends BaseRichBolt {
     private String parsedTuplesStreamId;
     private String unparsedTuplesStreamId;
     private Long dataSourceId;
+    private ProxyUtil<Parser> parserProxyUtil;
 
     /**
      * If user knows this instance of parserBolt is mapped to a topic which has messages that conforms to exactly one type of parser,
@@ -95,6 +96,7 @@ public class ParserBolt extends BaseRichBolt {
             throw new IllegalStateException("Stream id must be defined for " +
                     "successfullly parsed tuples");
         }
+        this.parserProxyUtil = new ProxyUtil<>(Parser.class);
     }
 
     public void execute(Tuple input) {
@@ -154,13 +156,10 @@ public class ParserBolt extends BaseRichBolt {
 
         try {
             IOUtils.copy(parserJar, new FileOutputStream(new File(jarPath)));
-            if (!ReflectionHelper.isClassLoaded(parserInfo.getClassName())) {
-                ReflectionHelper.loadJarAndAllItsClasses(jarPath);
-            }
 
-            return ReflectionHelper.newInstance(parserInfo.getClassName());
+            return parserProxyUtil.loadClassFromJar(jarPath, parserInfo.getClassName());
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to load parser: " + parserInfo.getJarStoragePath(), e);
         }
     }
 

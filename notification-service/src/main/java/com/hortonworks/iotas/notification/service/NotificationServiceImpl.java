@@ -8,6 +8,7 @@ import com.hortonworks.iotas.notification.store.NotificationStore;
 import com.hortonworks.iotas.notification.store.hbase.HBaseNotificationStore;
 import com.hortonworks.iotas.notification.store.CriteriaImpl;
 import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.util.ProxyUtil;
 import com.hortonworks.iotas.util.ReflectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,8 @@ public class NotificationServiceImpl implements NotificationService {
 
     private NotificationQueueHandler queueHandler;
 
+    private final ProxyUtil<Notifier> notifierProxyUtil;
+
     /**
      * the underlying notification store.
      */
@@ -60,10 +63,12 @@ public class NotificationServiceImpl implements NotificationService {
         } else {
             this.queueHandler = new NotificationQueueHandler();
         }
+        this.notifierProxyUtil = new ProxyUtil<>(Notifier.class);
     }
 
     @Override
     public Notifier register(String notifierName, NotificationContext ctx) {
+        // FIXME: change a way to load jar / class and modify NotificationServiceImplTest as relevant
         LOG.info("Registering notifier name {}, NotificationContext {}", notifierName, ctx);
         Notifier notifier = loadNotifier(ctx.getConfig().getJarPath(), ctx.getConfig().getClassName());
         Notifier registeredNotifier = notifiers.putIfAbsent(notifierName, notifier);
@@ -159,12 +164,8 @@ public class NotificationServiceImpl implements NotificationService {
      */
     private Notifier loadNotifier(String jarPath, String className) {
         try {
-            if (!ReflectionHelper.isJarInClassPath(jarPath) && !ReflectionHelper.isClassLoaded(className)) {
-                LOG.info("Loading jar and all its classses from jar path {}", jarPath);
-                ReflectionHelper.loadJarAndAllItsClasses(jarPath);
-            }
-            LOG.info("Instantiating classs {} via ReflectionHelper", className);
-            return ReflectionHelper.newInstance(className);
+            LOG.info("Instantiating classs {} via ProxyUtil", className);
+            return this.notifierProxyUtil.loadClassFromJar(jarPath, className);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

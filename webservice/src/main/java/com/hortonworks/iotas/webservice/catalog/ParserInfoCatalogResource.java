@@ -8,6 +8,7 @@ import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.parser.Parser;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.util.JarStorage;
+import com.hortonworks.iotas.util.ProxyUtil;
 import com.hortonworks.iotas.util.ReflectionHelper;
 import com.hortonworks.iotas.webservice.IotasConfiguration;
 import com.hortonworks.iotas.webservice.util.WSUtils;
@@ -57,6 +58,7 @@ public class ParserInfoCatalogResource {
     private CatalogService catalogService;
     private IotasConfiguration configuration;
     private JarStorage jarStorage;
+    private final ProxyUtil<Parser> parserProxyUtil;
 
     public ParserInfoCatalogResource(CatalogService service, IotasConfiguration configuration) {
         this.catalogService = service;
@@ -65,6 +67,7 @@ public class ParserInfoCatalogResource {
             this.jarStorage = ReflectionHelper.newInstance(this.configuration
                     .getJarStorageConfiguration().getClassName());
             this.jarStorage.init(configuration.getJarStorageConfiguration().getProperties());
+            this.parserProxyUtil = new ProxyUtil<>(Parser.class);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -154,8 +157,7 @@ public class ParserInfoCatalogResource {
             os = new FileOutputStream(tmpFile);
             is = this.jarStorage.downloadJar(jarName);
             ByteStreams.copy(is, os);
-            ReflectionHelper.loadJarAndAllItsClasses(tmpFile.getAbsolutePath());
-            Parser parser = ReflectionHelper.newInstance(className);
+            Parser parser = parserProxyUtil.loadClassFromJar(tmpFile.getAbsolutePath(), className);
             result = parser.schema();
         } catch (Exception ex) {
             LOG.error("Got exception", ex);
