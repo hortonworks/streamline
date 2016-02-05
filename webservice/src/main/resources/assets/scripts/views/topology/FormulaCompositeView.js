@@ -110,7 +110,7 @@ define(['require',
             }
         },
         evAddRow: function(){
-            this.collection.add(new Backbone.Model({id: this.rowId}));
+            this.collection.add(new Backbone.Model({id: this.rowId++}));
         },
         evChange: function(e){
             if(e.currentTarget){

@@ -1,5 +1,6 @@
 package com.hortonworks.bolt;
 
+import com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransform;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -8,8 +9,7 @@ import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
 import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.notification.common.Notification;
-import com.hortonworks.iotas.notification.common.NotificationImpl;
+import com.hortonworks.iotas.common.IotasEventImpl;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -51,36 +51,39 @@ public class DummyRuleBolt extends BaseRichBolt {
         List<String> eventIds = Arrays.asList(event.getId());
         List<String> dataSourceIds = Arrays.asList(event.getDataSourceId());
 
+
         if (!consoleNotificationStream.isEmpty()) {
             // Create a dummy Notification object
-            Map<String, String> fieldsMap = new HashMap<>();
+            Map<String, Object> fieldsMap = new HashMap<>();
             fieldsMap.put("temperature", "100");
             fieldsMap.put("humidity", "100");
-            Notification notification = new NotificationImpl
-                    .Builder(fieldsMap)
-                    .eventIds(eventIds)
-                    .dataSourceIds(dataSourceIds)
-                    .notifierName("console_notifier")
-                    .timestamp(System.currentTimeMillis())
-                    .ruleId("1")
-                    .build();
-            collector.emit(consoleNotificationStream, new Values(notification));
+
+            Map<String, Object> header = new HashMap<>();
+            header.put(AddHeaderTransform.HEADER_FIELD_EVENT_IDS, eventIds);
+            header.put(AddHeaderTransform.HEADER_FIELD_DATASOURCE_IDS, dataSourceIds);
+            header.put(AddHeaderTransform.HEADER_FIELD_NOTIFIER_NAME, "console_notifier");
+            header.put(AddHeaderTransform.HEADER_FIELD_RULE_ID, "1");
+            header.put(AddHeaderTransform.HEADER_FIELD_TIMESTAMP, System.currentTimeMillis());
+
+            IotasEvent iotasEvent = new IotasEventImpl(fieldsMap, "dummyRuleBolt", header);
+            collector.emit(consoleNotificationStream, new Values(iotasEvent));
         }
 
         // Send an email every EMAIL_NOTIFICATION_INTERVAL
         if (++count % EMAIL_NOTIFICATION_INTERVAL == 0) {
             if (!emailNotificationStream.isEmpty()) {
-                Map<String, String> fieldsMap = new HashMap<>();
+                Map<String, Object> fieldsMap = new HashMap<>();
                 fieldsMap.put("body", "Too many notifications, count so far is " + count);
-                Notification emailNotification = new NotificationImpl
-                        .Builder(fieldsMap)
-                        .eventIds(eventIds)
-                        .dataSourceIds(dataSourceIds)
-                        .notifierName("email_notifier")
-                        .timestamp(System.currentTimeMillis())
-                        .ruleId("2")
-                        .build();
-                collector.emit(emailNotificationStream, new Values(emailNotification));
+                Map<String, Object> header = new HashMap<>();
+                header.put(AddHeaderTransform.HEADER_FIELD_EVENT_IDS, eventIds);
+                header.put(AddHeaderTransform.HEADER_FIELD_DATASOURCE_IDS, dataSourceIds);
+                header.put(AddHeaderTransform.HEADER_FIELD_NOTIFIER_NAME, "email_notifier");
+                header.put(AddHeaderTransform.HEADER_FIELD_RULE_ID, "1");
+                header.put(AddHeaderTransform.HEADER_FIELD_TIMESTAMP, System.currentTimeMillis());
+
+                IotasEvent iotasEvent = new IotasEventImpl(fieldsMap, "dummyRuleBolt", header);
+
+                collector.emit(emailNotificationStream, new Values(iotasEvent));
             }
         }
         collector.ack(input);
@@ -89,10 +92,10 @@ public class DummyRuleBolt extends BaseRichBolt {
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
         if (!consoleNotificationStream.isEmpty()) {
-            declarer.declareStream(consoleNotificationStream, new Fields(IOTAS_NOTIFICATION));
+            declarer.declareStream(consoleNotificationStream, new Fields(IotasEvent.IOTAS_EVENT));
         }
         if (!emailNotificationStream.isEmpty()) {
-            declarer.declareStream(emailNotificationStream, new Fields(IOTAS_NOTIFICATION));
+            declarer.declareStream(emailNotificationStream, new Fields(IotasEvent.IOTAS_EVENT));
         }
     }
 }

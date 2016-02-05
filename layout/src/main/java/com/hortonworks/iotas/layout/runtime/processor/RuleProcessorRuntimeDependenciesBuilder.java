@@ -29,24 +29,20 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @param <I> Type of runtime input to this rule, for example {@code Tuple}
- * @param <E> Type of object required to execute this rule in the underlying streaming framework e.g {@code IOutputCollector}
- */
-public class RuleProcessorRuntimeDependenciesBuilder<I, E> {
-    private static final Logger LOG = LoggerFactory.getLogger(RuleProcessorRuntimeDependenciesBuilder.class);
+public class RuleProcessorRuntimeDependenciesBuilder {
+    protected static final Logger LOG = LoggerFactory.getLogger(RuleProcessorRuntimeDependenciesBuilder.class);
 
     private final RulesProcessor rulesProcessor;
-    private final RuleRuntimeBuilder<I,E> ruleRuntimeBuilder;
+    private final RuleRuntimeBuilder ruleRuntimeBuilder;
 
-    public RuleProcessorRuntimeDependenciesBuilder(RulesProcessorBuilder rulesProcessorBuilder, RuleRuntimeBuilder<I,E> ruleRuntimeBuilder) {
+    public RuleProcessorRuntimeDependenciesBuilder(RulesProcessorBuilder rulesProcessorBuilder, RuleRuntimeBuilder ruleRuntimeBuilder) {
         this.rulesProcessor = rulesProcessorBuilder.build();
         this.ruleRuntimeBuilder = ruleRuntimeBuilder;
     }
 
-    public List<RuleRuntime<I,E>> getRulesRuntime() {
+    public List<RuleRuntime> getRulesRuntime() {
         final List<Rule> rules = rulesProcessor.getRules();
-        final List<RuleRuntime<I, E>> rulesRuntime = new ArrayList<>();
+        final List<RuleRuntime> rulesRuntime = new ArrayList<>();
 
         if (rules != null) {
             for (Rule rule : rules) {
@@ -54,7 +50,8 @@ public class RuleProcessorRuntimeDependenciesBuilder<I, E> {
                 ruleRuntimeBuilder.buildExpression();
                 ruleRuntimeBuilder.buildScriptEngine();
                 ruleRuntimeBuilder.buildScript();
-                RuleRuntime<I, E> ruleRuntime = ruleRuntimeBuilder.buildRuleRuntime();
+                ruleRuntimeBuilder.buildActions();
+                RuleRuntime ruleRuntime = ruleRuntimeBuilder.buildRuleRuntime();
                 rulesRuntime.add(ruleRuntime);
                 LOG.trace("Added {}", ruleRuntime);
             }

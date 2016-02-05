@@ -30,9 +30,12 @@ define(['utils/LangSupport',
           validators: [{'type':'required','message':'Classname can not be blank.'}]
         },
         version: {
-          type: 'Text',
+          type: 'Number',
           title: localization.tt('lbl.version')+'*',
           editorClass: 'form-control',
+          editorAttrs: {
+            min:0
+          },
           placeHolder: localization.tt('lbl.parserVersion'),
           validators: [{'type':'required','message':'Version can not be blank.'}]
         },

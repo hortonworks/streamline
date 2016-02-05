@@ -90,7 +90,9 @@ public class EmailNotifier implements Notifier, TransportListener {
     public void open(NotificationContext ctx) {
         LOG.debug("EmailNotifier open called with context {}", ctx);
         this.ctx = ctx;
-        this.msgFields = getMsgFields(ctx.getConfig().getDefaultFieldValues(), null);
+        Map<String, Object> defaultFieldValues = new HashMap<>();
+        defaultFieldValues.putAll(ctx.getConfig().getDefaultFieldValues());
+        this.msgFields = getMsgFields(defaultFieldValues, null);
         this.emailSession = getEmailSession(ctx.getConfig().getProperties());
         this.emailTransport = getEmailTransport(emailSession, this);
     }
@@ -181,14 +183,15 @@ public class EmailNotifier implements Notifier, TransportListener {
      * Returns a new map containing the values for email message fields from the first map,
      * using values from second map as defaults.
      */
-    private Map<String, String> getMsgFields(Map<String, String> values, Map<String, String> defaults) {
+    private Map<String, String> getMsgFields(Map<String, Object> values, Map<String, String> defaults) {
         Map<String, String> fields = new HashMap<>(MSG_FIELDS.length);
         for (Field field : MSG_FIELDS) {
-            String val = values.get(field.key);
+            String val = (String) values.get(field.key);
             fields.put(field.key, val != null ? val : (defaults != null ? defaults.get(field.key): field.defaultVal));
         }
         return fields;
     }
+
 
     private String getProperty(Properties properties, Field field) {
         return properties.getProperty(field.key, field.defaultVal);

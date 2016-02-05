@@ -1,9 +1,7 @@
 define(['require',
     'hbs!tmpl/datasource/dataSourceFeedView',
     'utils/Utils',
-    'utils/LangSupport',
-    'models/VDatasource',
-    'models/VDatafeed'
+    'utils/LangSupport'
   ], function(require, tmpl, Utils, localization){
   'use strict';
 
@@ -51,9 +49,9 @@ define(['require',
       model.save({},{
         success:function(model, response, options){
           if(that.isEdit){
-            Utils.notifySuccess(localization.tt('dialogMsg.datasourceUpdatedSuccessfully'));  
+            Utils.notifySuccess(localization.tt('dialogMsg.deviceUpdatedSuccessfully'));  
           } else {
-            Utils.notifySuccess(localization.tt('dialogMsg.newDatasourceAddedSuccessfully'));  
+            Utils.notifySuccess(localization.tt('dialogMsg.newDeviceAddedSuccessfully'));  
           }
           that.trigger('closeModal');
         }, 

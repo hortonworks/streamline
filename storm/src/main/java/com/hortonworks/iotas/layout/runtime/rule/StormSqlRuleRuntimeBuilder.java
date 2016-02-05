@@ -18,14 +18,12 @@
 
 package com.hortonworks.iotas.layout.runtime.rule;
 
-import org.apache.storm.task.OutputCollector;
-import org.apache.storm.tuple.Tuple;
 import com.hortonworks.iotas.layout.design.rule.Rule;
 import com.hortonworks.iotas.layout.runtime.rule.condition.expression.StormSqlExpression;
 import com.hortonworks.iotas.layout.runtime.rule.sql.StormSqlEngine;
 import com.hortonworks.iotas.layout.runtime.rule.sql.StormSqlScript;
 
-public class StormSqlRuleRuntimeBuilder implements RuleRuntimeBuilder<Tuple, OutputCollector> {
+public class StormSqlRuleRuntimeBuilder extends AbstractRuleRuntimeBuilder {
     private Rule rule;
     private StormSqlExpression stormSqlExpression;
     private StormSqlEngine stormSqlEngine;
@@ -52,8 +50,13 @@ public class StormSqlRuleRuntimeBuilder implements RuleRuntimeBuilder<Tuple, Out
     }
 
     @Override
-    public RuleRuntimeStorm buildRuleRuntime() {
-        return new RuleRuntimeStorm(rule, stormSqlScript);
+    protected Rule getRule() {
+        return rule;
+    }
+
+    @Override
+    public RuleRuntime buildRuleRuntime() {
+        return new RuleRuntime(rule, stormSqlScript, actions);
     }
 
     @Override

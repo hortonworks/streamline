@@ -18,18 +18,21 @@ define(['utils/LangSupport',
       return {
         rootdir: {
           type: 'Text',
-          title: 'hbase.rootdir',
-          editorClass: 'form-control'
+          title: 'hbase.rootdir*',
+          editorClass: 'form-control',
+          validators: [{'type':'required','message':'hbase.rootdir can not be blank.'}]
         },
         parserPath: {
           type: 'Text',
-          title: 'local.parser.jar.path',
-          editorClass: 'form-control'
+          title: 'local.parser.jar.path*',
+          editorClass: 'form-control',
+          validators: [{'type':'required','message':'local.parser.jar.path can not be blank.'}]
         },
         notifierPath: {
           type: 'Text',
-          title: 'local.notifier.jar.path',
-          editorClass: 'form-control'
+          title: 'local.notifier.jar.path*',
+          editorClass: 'form-control',
+          validators: [{'type':'required','message':'local.notifier.jar.path can not be blank.'}]
         },
       };
     },

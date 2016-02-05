@@ -34,13 +34,25 @@ define(['require',
       });
     },
     evAdd: function(e){
+      var self = this;
       var err = this.view.validate();
       if(_.isEmpty(err)){
         this.saveDataSink();
+      } else {
+        var errArr = _.keys(err);
+        _.each(errArr, function(name){
+          var target = self.$('[data-fields="'+name+'"]').parents('.panel.panel-default');
+          if(target.length){
+            if(target.find('a').hasClass('collapsed')){
+              target.find('a').trigger('click');
+            }
+            target.addClass('error');
+          }
+        });
+        return false;
       }
     },
     saveDataSink: function(){
-      // var self = this;
       var data = this.view.getData();
       console.log(data);
       this.vent.trigger('topologyEditor:SaveSink', data);

@@ -24,22 +24,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 
 /**
  * Represents a runtime rules processor
- * @param <I> Type of runtime input to this rule, for example {@code Tuple}
- * @param <E> Type of object required to execute this rule in the underlying streaming framework e.g {@code IOutputCollector}
  */
-public class RuleProcessorRuntime<I, E> implements Serializable {
+public class RuleProcessorRuntime implements Serializable {
     protected static final Logger log = LoggerFactory.getLogger(RuleProcessorRuntime.class);
 
     protected RulesProcessor rulesProcessor;
-    protected List<RuleRuntime<I,E>> rulesRuntime;
+    protected List<RuleRuntime> rulesRuntime;
 
-    public RuleProcessorRuntime(RuleProcessorRuntimeDependenciesBuilder<I,E> builder) {
+    public RuleProcessorRuntime(RuleProcessorRuntimeDependenciesBuilder builder) {
         this.rulesProcessor = builder.getRulesProcessor();
         this.rulesRuntime = builder.getRulesRuntime();
     }
@@ -48,8 +47,16 @@ public class RuleProcessorRuntime<I, E> implements Serializable {
         return rulesProcessor;
     }
 
-    public List<RuleRuntime<I, E>> getRulesRuntime() {
+    public List<RuleRuntime> getRulesRuntime() {
         return Collections.unmodifiableList(rulesRuntime);
+    }
+
+    public List<String> getStreams() {
+        List<String> streams = new ArrayList<>();
+        for(RuleRuntime ruleRuntime: rulesRuntime) {
+            streams.addAll(ruleRuntime.getStreams());
+        }
+        return streams;
     }
 
     @Override

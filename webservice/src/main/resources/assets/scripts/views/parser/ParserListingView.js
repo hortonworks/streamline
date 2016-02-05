@@ -28,6 +28,7 @@ define([
 
     initialize: function (options) {
       this.collection = new VParserList();
+      this.collection.comparator = 'id';
     },
 
     onRender: function () {
@@ -89,7 +90,7 @@ define([
           formatter: _.extend({}, Backgrid.CellFormatter.prototype, {
             fromRaw: function(rawValue, model) {
               if (model) {
-                return "<button title='Delete' class='btn btn-danger btn-xs' data-id="+model.get('parserId')+" id='deleteAction' type='default' ><i class='fa fa-trash'></i></button>";
+                return "<button title='Delete' class='btn btn-danger btn-xs' data-id="+model.get('id')+" id='deleteAction' type='default' ><i class='fa fa-trash'></i></button>";
               }
             }
           })
@@ -104,7 +105,7 @@ define([
         that.view = new ParserFormView().render();
         bootbox.dialog({
           message: that.view.el,
-          title: localization.tt('h.addNewParser'),
+          title: localization.tt('h.addParser'),
           className: 'parser-dialog',
           buttons: {
             cancel: {
@@ -120,7 +121,7 @@ define([
               callback: function(){
                 var errs = that.view.validate();
                 if(_.isEmpty(errs)){
-                  that.saveParser();
+                  return that.saveParser();
                 } else {
                   return false;
                 }
@@ -145,6 +146,7 @@ define([
       obj.className = attrs.className;
       obj.version = attrs.version;
       formData.append('parserInfo', JSON.stringify(obj));
+      formData.append('schemaFromParserJar', true);
       
       var successCallback = function(response){
         Utils.notifySuccess(localization.tt('dialogMsg.newParserAddedSuccessfully'));
@@ -159,7 +161,7 @@ define([
       var that = this;
       bootbox.confirm("Are you sure you want to delete this parser ?", function(result) {
         if(result){
-          var model = this.getModel(e);
+          var model = that.getModel(e);
           model.destroy({
             success: function(model,response){
               Utils.notifySuccess(localization.tt('dialogMsg.parserDeletedSuccessfully'));
@@ -175,8 +177,8 @@ define([
     getModel: function(e){
       var currentTarget = $(e.currentTarget);
       var id = currentTarget.data().id;
-      var model = _.findWhere(this.collection.models, function(model){
-        if(model.get('parserId') === id)
+      var model = _.find(this.collection.models, function(model){
+        if(model.get('id') === id)
           return model;
       });
       return model;

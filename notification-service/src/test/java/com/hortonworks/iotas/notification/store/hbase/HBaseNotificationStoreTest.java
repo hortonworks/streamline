@@ -80,7 +80,7 @@ public class HBaseNotificationStoreTest {
             }
         };
 
-        Map<String, String> fv = new HashMap<>();
+        Map<String, Object> fv = new HashMap<>();
         fv.put("temp", "100");
         notification = new NotificationImpl.Builder(fv)
                 .id("id1")
