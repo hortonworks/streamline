@@ -24,7 +24,7 @@ public class TopologyLayoutValidatorTest {
     ObjectMapper mapper;
     TopologyActions topologyActions = new StormTopologyActionsImpl();
 
-    String[] goodLayouts = {"topology/GoodLayout.json", "topology/goodlayoutnotificationbolt.json"};
+    String[] goodLayouts = {"topology/goodlayout.json", "topology/goodlayoutnotificationbolt.json"};
     // if an element is added to the array below then corresponding error
     // message also needs to be added to badLayoutMessages array below
     String[] badLayouts = {
