@@ -20,7 +20,7 @@ package com.hortonworks.iotas.layout.design.rule;
 
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.common.Schema.Field;
-import com.hortonworks.iotas.layout.design.component.Component;
+import com.hortonworks.iotas.layout.design.component.IotasSink;
 import com.hortonworks.iotas.layout.design.component.RulesProcessor;
 import com.hortonworks.iotas.layout.design.component.RulesProcessorBuilder;
 import com.hortonworks.iotas.layout.design.component.Sink;
@@ -54,10 +54,8 @@ public class RuleProcessorMockBuilder implements RulesProcessorBuilder {
     @Override
     public RulesProcessor build() {
         RulesProcessor rulesProcessor = new RulesProcessor();
-        rulesProcessor.setDeclaredInput(buildDeclaredInputsOutputs());
-        rulesProcessor.setId(ruleProcessorId);
+        rulesProcessor.setId(String.valueOf(ruleProcessorId));
         rulesProcessor.setName(RULE_PROCESSOR + "_" + ruleProcessorId);
-        rulesProcessor.setDescription(RULE_PROCESSOR + "_" + ruleProcessorId + "_desc");
         rulesProcessor.setRules(buildRules());
         return rulesProcessor;
     }
@@ -91,13 +89,13 @@ public class RuleProcessorMockBuilder implements RulesProcessorBuilder {
         return rule;
     }
 
-    private Action buildAction(List<Component> sinks) {
+    private Action buildAction(List<Sink> sinks) {
         Action action = new Action();
         return action;
     }
 
-    private List<Component> buildSinks() {
-        List<Component> sinks = new ArrayList<>();
+    private List<Sink> buildSinks() {
+        List<Sink> sinks = new ArrayList<>();
         for (int i = 1; i <= numSinks; i++) {
             sinks.add(buildSink(i));
         }
@@ -105,11 +103,9 @@ public class RuleProcessorMockBuilder implements RulesProcessorBuilder {
     }
 
     private Sink buildSink(long sinkId) {
-        Sink sink = new Sink();
-        sink.setId(ruleProcessorId);
+        IotasSink sink = new IotasSink();
+        sink.setId(String.valueOf(ruleProcessorId));
         sink.setName(SINK + "_" + sinkId);
-        sink.setDescription(SINK + "_" + sinkId + "_desc");
-        sink.setDeclaredInput(declaredInputsOutputs);
         return sink;
     }
 

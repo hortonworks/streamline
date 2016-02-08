@@ -17,10 +17,20 @@
  */
 package com.hortonworks.iotas.layout.design.component;
 
-/**
- * A processing component that can receive inputs and do some transformation
- * to produce outputs.
- * A processor is both a source and a sink.
- */
-public interface Processor extends Source, Sink {
+import java.util.Set;
+
+public class IotasProcessor extends IotasSource implements Processor {
+
+    // for serialization
+    public IotasProcessor() {
+    }
+
+    public IotasProcessor(Set<Stream> declaredOutputs) {
+        super(declaredOutputs);
+    }
+
+    @Override
+    public String toString() {
+        return "IotasProcessor{} " + super.toString();
+    }
 }

@@ -17,10 +17,24 @@
  */
 package com.hortonworks.iotas.layout.design.component;
 
+import java.util.Set;
+
 /**
- * A processing component that can receive inputs and do some transformation
- * to produce outputs.
- * A processor is both a source and a sink.
+ * A source component
  */
-public interface Processor extends Source, Sink {
+public interface Source extends Component {
+    /**
+     * The declared output schema of a Source. A source can have
+     * more than one outputs.
+     *
+     * @return the set of output streams.
+     */
+    Set<Stream> getDeclaredOutputs();
+
+    /**
+     * Returns the output Stream of this source corresponding to the given streamId.
+     *
+     * @throws IllegalArgumentException if the stream with the given streamId does not exist
+     */
+    Stream getStream(String streamId);
 }

@@ -15,65 +15,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.hortonworks.iotas.layout.design.component;
 
-import com.hortonworks.iotas.common.Schema.Field;
-
 import java.io.Serializable;
-import java.util.List;
 
 /**
- *  A {@code Sink} is a {@link Component} as from the implementation standpoint there is no difference between them
+ * A component in the topology DAG. A component could be
+ * a source, sink or a processor
  */
-public class Component implements Serializable {
-    private Long id;
-    private String name;
-    private String description;
-    private List<Field> declaredInput;
+public interface Component extends Serializable {
+    /**
+     * Unique id of the component
+     */
+    String getId();
 
-    // Internal ids
-    public Long getId() {
-        return id;
-    }
+    /**
+     * Component name
+     */
+    String getName();
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    // Defined by the user
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    // Input to this component
-    public List<Field> getDeclaredInput() {
-        return declaredInput;
-    }
-
-    public void setDeclaredInput(List<Field> declaredInput) {
-        this.declaredInput = declaredInput;
-    }
-
-    @Override
-    public String toString() {
-        return "Component{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", declaredInput=" + declaredInput +
-                '}';
-    }
+    /**
+     * Component config. This could be runtime specific (Storm/Spark etc)
+     * and will be interpreted during runtime topology construction time to
+     * construct the runtime components.
+     * TODO: Use Config instead of String once https://github.com/hortonworks/IoTaS/pull/104 is merged.
+     */
+    String getConfig();
 }
