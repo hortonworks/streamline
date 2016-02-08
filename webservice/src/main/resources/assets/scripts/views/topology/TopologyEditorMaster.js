@@ -106,7 +106,7 @@ define(['require',
         model.set('_selectedTable', [{dataSourceId: model.get('dataSourceId')}]);
         self.dsArr.push(model.toJSON());
         var t_obj = _.findWhere(Globals.Topology.Editor.Steps.Datasource.Substeps, {valStr: 'DEVICE'});
-        self.graphNodesData.source.push(_.extend(JSON.parse(JSON.stringify(t_obj)), {uiname: obj.uiname, nodeId: i, currentType: 'DEVICE'}));
+        self.graphNodesData.source.push(_.extend(JSON.parse(JSON.stringify(t_obj)), {uiname: obj.uiname, nodeId: i, currentType: 'DEVICE', isConfigured: true}));
       });
 
       _.each(config.processors, function(obj, i){
@@ -115,7 +115,7 @@ define(['require',
         self.setAdditionalData(model.attributes, obj.config);
         self.processorArr.push(model.toJSON());
         var t_obj = _.findWhere(Globals.Topology.Editor.Steps.Processor.Substeps, {valStr: obj.type});
-        self.graphNodesData.processor.push(_.extend(JSON.parse(JSON.stringify(t_obj)), {uiname: obj.uiname, nodeId: i, currentType: obj.type}));
+        self.graphNodesData.processor.push(_.extend(JSON.parse(JSON.stringify(t_obj)), {uiname: obj.uiname, nodeId: i, currentType: obj.type, isConfigured: true}));
       });
       
       _.each(config.dataSinks, function(obj, i){
@@ -124,7 +124,7 @@ define(['require',
         self.setAdditionalData(model.attributes, obj.config);
         self.sinkArr.push(model.toJSON());
         var t_obj = _.findWhere(Globals.Topology.Editor.Steps.DataSink.Substeps, {valStr: obj.type});
-        self.graphNodesData.sink.push(_.extend(JSON.parse(JSON.stringify(t_obj)), {uiname: obj.uiname, nodeId: i, currentType: obj.type}));
+        self.graphNodesData.sink.push(_.extend(JSON.parse(JSON.stringify(t_obj)), {uiname: obj.uiname, nodeId: i, currentType: obj.type, isConfigured: true}));
       });
     },
 
@@ -210,15 +210,24 @@ define(['require',
       
       this.listenTo(this.vent, 'topologyEditor:SaveDeviceSource', function(data){
         self.dsArr[data.get('_nodeId')] = data.toJSON();
+        self.vent.trigger('saveNodeConfig', {
+          uniqueName: data.get("currentType")+'-'+data.get('_nodeId')
+        });
       });
       
       this.listenTo(this.vent, 'topologyEditor:SaveProcessor', function(data){
         self.processorArr[data.get('_nodeId')] = data.toJSON();
+        self.vent.trigger('saveNodeConfig', {
+          uniqueName: data.get("currentType")+'-'+data.get('_nodeId')
+        });
       });
       
       this.listenTo(this.vent, 'topologyEditor:SaveSink', function(data){
         self.syncSinkData(data);
         self.sinkArr[data.get('_nodeId')] = data.toJSON();
+        self.vent.trigger('saveNodeConfig', {
+          uniqueName: data.get("currentType")+'-'+data.get('_nodeId')
+        });
       });
 
       this.listenTo(this.vent, 'click:topologyNode', function(data){
@@ -408,7 +417,8 @@ define(['require',
             imageURL: tempObj.imageURL,
             id: tempObj.id,
             nodeId: tempObj.nodeId,
-            streamId: _.isUndefined(tempObj.streamId) ? undefined : tempObj.streamId
+            streamId: _.isUndefined(tempObj.streamId) ? undefined : tempObj.streamId,
+            isConfigured: object.isConfigured
           });
         });
         nodes = newArr;
@@ -657,7 +667,7 @@ define(['require',
           links = [],
           rootdirKeyName = 'hbaseConf';
       var hbaseObj = _.find(this.sinkArr, function(obj){
-        if(obj.type === 'HBASE')
+        if(obj && obj.type === 'HBASE')
           return obj;
       });
       if(!_.isUndefined(hbaseObj)){
@@ -940,6 +950,7 @@ define(['require',
       if(this.TopologyGraph){
         this.topologyGraph.vent.stopListening(this.vent, 'change:editor-submenu');
         this.topologyGraph.vent.stopListening(this.vent, 'TopologyEditorMaster:Zoom');
+        this.topologyGraph.vent.stopListening(this.vent, 'saveNodeConfig');
       }
     }
 

@@ -194,6 +194,13 @@ define(['require',
 
 		    thisGraph.interpolateZoom([view.x, view.y], view.k);
 		});
+		this.vent.listenTo(this.vent, 'saveNodeConfig', function(obj) {
+			var currentNode = _.findWhere(thisGraph.nodes, {uniqueName: obj.uniqueName});
+			if(currentNode){
+				currentNode.isConfigured = true;
+			}
+			thisGraph.updateGraph();
+		});
 	};
 
 	TopologyGraphCreator.prototype.interpolateZoom = function(translate, scale){
@@ -566,7 +573,8 @@ define(['require',
 				currentType: thisGraph.nodeObject.valStr,
 				uniqueName: thisGraph.nodeObject.valStr+'-'+thisGraph.nodeId,
 				imageURL: thisGraph.nodeObject.imgUrl,
-				nodeId: thisGraph.nodeId
+				nodeId: thisGraph.nodeId,
+				isConfigured: false
 			};
 		thisGraph.nodes.push(d);
 		if(d.currentType === Globals.Topology.Editor.Steps.Datasource.Substeps[0].valStr){
@@ -702,7 +710,14 @@ define(['require',
 		thisGraph.rectangles.attr("transform", function(d) {
 			return "translate(" + d.x + "," + d.y + ")";
 		});
-		
+
+		thisGraph.rectangles.select('text')
+			.text(function(d) {
+				if(d.isConfigured)
+					return '';
+				else return '\uf071';
+			});
+
 		//add new rectangles
 		var newGs = thisGraph.rectangles.enter()
 				.append("g");
@@ -747,6 +762,16 @@ define(['require',
 						return 'datasink';
 					}
 				});
+
+            newGs.append('text')
+                .attr("class", "fa fa-exclamation-triangle")
+                .attr("x","70px")
+                .attr("y","5px")
+                .text(function(d) {
+				if(d.isConfigured)
+					return '';
+				else return '\uf071';
+			});
 
 			newGs.append("circle")
 				.attr("cx", function (d) { 

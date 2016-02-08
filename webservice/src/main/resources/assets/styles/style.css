@@ -1301,3 +1301,6 @@ a#editableTitle {
   height: 20px;
   top: 4px;
 }
+.conceptG .fa-exclamation-triangle {
+  fill: #EA0000;
+}
