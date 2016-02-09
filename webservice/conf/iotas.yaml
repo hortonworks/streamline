@@ -22,7 +22,7 @@ jarStorageConfiguration:
 #
 # Use this to turn on/off notifications rest api
 #
-#notificationsRestDisable: true
+# notificationsRestDisable: true
 
 # use the simple server factory if you only want to run on a single port
 #server:

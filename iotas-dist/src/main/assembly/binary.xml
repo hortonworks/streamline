@@ -1,0 +1,97 @@
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one or more
+ contributor license agreements.  See the NOTICE file distributed with
+ this work for additional information regarding copyright ownership.
+ The ASF licenses this file to You under the Apache License, Version 2.0
+ (the "License"); you may not use this file except in compliance with
+ the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
+<id>bin</id>
+    <formats>
+        <format>tar.gz</format>
+        <format>zip</format>
+    </formats>
+
+    <!-- put deps in the lib folder -->
+    <dependencySets>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>libs</outputDirectory>
+            <unpack>false</unpack>
+        </dependencySet>
+    </dependencySets>
+
+    <fileSets>
+        <!--
+            $IOTAS_HOME/bin
+        -->
+        <fileSet>
+            <directory>${project.basedir}./bin</directory>
+            <outputDirectory>bin</outputDirectory>
+            <includes>
+                <include>*</include>
+            </includes>
+            <fileMode>0755</fileMode>
+        </fileSet>
+        <fileSet>
+            <directory>${project.basedir}./parsers/target</directory>
+            <outputDirectory>/examples/topology/parsers</outputDirectory>
+            <includes>
+                <include>parsers*jar</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>${project.basedir}./notifiers/target</directory>
+            <outputDirectory>/examples/topology/notifications</outputDirectory>
+            <includes>
+                <include>notifiers*jar</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+
+    <files>
+        <!--
+            $IOTAS_HOME/conf
+        -->
+        <file>
+            <source>${project.basedir}./webservice/conf/iotas-dev.yaml</source>
+            <outputDirectory>/conf</outputDirectory>
+            <destName>iotas-dev.yaml</destName>
+        </file>
+        <file>
+            <source>${project.basedir}./webservice/conf/iotas.yaml</source>
+            <outputDirectory>/conf</outputDirectory>
+            <destName>iotas.yaml</destName>
+        </file>
+        <file>
+            <source>${project.basedir}./simulator/src/main/resources/nest-iotas-messages</source>
+            <outputDirectory>/examples/topology/resources</outputDirectory>
+            <destName>nest-iotas-messages</destName>
+        </file>
+        <file>
+            <source>${project.basedir}./webservice/conf/iotas-env.sh</source>
+            <outputDirectory>/conf</outputDirectory>
+            <destName>iotas-env.sh</destName>
+        </file>
+        <file>
+            <source>${project.basedir}/LICENSE</source>
+            <outputDirectory>/</outputDirectory>
+        </file>
+        <file>
+            <source>${project.basedir}./README.md</source>
+            <outputDirectory>/</outputDirectory>
+        </file>
+    </files>
+</assembly>
