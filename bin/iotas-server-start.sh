@@ -38,10 +38,7 @@ fi
 
 # classpath addition for release
 
-CLASSPATH=$base_dir/libs/webservice*.jar;
-if [ "x$EXT_CLASSPATH" = "x" ]; then
- CLASSPATH=$CLASSPATH;$EXT_CLASSPATH;
-fi
+CLASSPATH=$base_dir/libs/webservice*.jar;$base_dir/conf/;
 
 COMMAND=$1
 case $COMMAND in
