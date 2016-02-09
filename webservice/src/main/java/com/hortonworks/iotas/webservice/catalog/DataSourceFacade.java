@@ -45,18 +45,23 @@ public class DataSourceFacade {
         dataSourceDto.setDataSourceId(createdDataSource.getId());
 
         DataFeed dataFeed = createDataFeed(dataSourceDto);
-        DataFeed createdDataFeed = catalogService.addDataFeed(dataFeed);
-
+        DataFeed createdDataFeed = null;
+        if (dataFeed.getName() != null && dataFeed.getType() != null) {
+            createdDataFeed = catalogService.addDataFeed(dataFeed);
+        } else {
+            LOGGER.warn("Not creating datafeed. Name and type must be present");
+        }
         DataSourceDto createdDataSourceDto = createDataSourceDto(createdDataSource, createdDataFeed);
-
         return createdDataSourceDto;
     }
 
     private DataSourceDto createDataSourceDto(DataSource dataSource, DataFeed dataFeed) {
         DataSourceDto createdDataSourceDto = new DataSourceDto(dataSource, dataFeed);
-        ParserInfo parserInfo = catalogService.getParserInfo(dataFeed.getParserId());
-        if (parserInfo != null) {
-            createdDataSourceDto.setParserName(parserInfo.getName());
+        if (dataFeed != null) {
+            ParserInfo parserInfo = catalogService.getParserInfo(dataFeed.getParserId());
+            if (parserInfo != null) {
+                createdDataSourceDto.setParserName(parserInfo.getName());
+            }
         }
         return createdDataSourceDto;
     }

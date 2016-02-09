@@ -1,0 +1,8 @@
+{
+   "dataSourceId":2,
+   "dataSourceName" : "twitter-feed",
+   "type" : "DATASET",
+   "description" : "Twitter feed as datasource",
+   "tags" : "twitter, tweet",
+   "typeConfig" : "{\"config\":\"test\"}"
+}

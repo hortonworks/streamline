@@ -25,6 +25,7 @@ public class DataSource extends AbstractStorable {
      */
     public enum Type {
         DEVICE,
+        DATASET,
         UNKNOWN;
     }
 
