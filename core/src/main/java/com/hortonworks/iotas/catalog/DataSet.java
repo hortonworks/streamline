@@ -1,6 +1,7 @@
 package com.hortonworks.iotas.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hortonworks.iotas.common.Config;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.storage.DataSourceSubType;
 import com.hortonworks.iotas.storage.PrimaryKey;
@@ -19,7 +20,7 @@ public class DataSet extends DataSourceSubType {
     /**
      * The dataset specific config
      */
-    private String config;
+    private Config config;
 
     @JsonIgnore
     @Override
@@ -32,11 +33,11 @@ public class DataSet extends DataSourceSubType {
         this.dataSourceId = dataSourceId;
     }
 
-    public String getConfig() {
+    public Config getConfig() {
         return config;
     }
 
-    public void setConfig(String config) {
+    public void setConfig(Config config) {
         this.config = config;
     }
 
