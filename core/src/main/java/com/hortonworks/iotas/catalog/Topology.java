@@ -48,13 +48,12 @@ public class Topology implements Storable {
 
     @JsonIgnore
     public Schema getSchema () {
-        return new Schema.SchemaBuilder().fields(
+        return Schema.of(
                 new Schema.Field(ID, Schema.Type.LONG),
                 new Schema.Field(NAME, Schema.Type.STRING),
                 new Schema.Field(CONFIG, Schema.Type.STRING),
                 new Schema.Field(TIMESTAMP, Schema.Type.LONG)
-        ).build();
-
+        );
     }
 
     @JsonIgnore

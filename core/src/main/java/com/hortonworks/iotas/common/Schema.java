@@ -17,10 +17,12 @@
  */
 package com.hortonworks.iotas.common;
 
+import com.google.common.collect.ImmutableList;
 import com.hortonworks.iotas.parser.ParseException;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -90,17 +92,30 @@ public class Schema implements Serializable {
     public static class Field implements Serializable {
         String name;
         Type type;
+        boolean optional;
 
-        /**
-         * For jackson
-         */
-        private Field() {
+        // for jackson
+        public Field() {
 
         }
 
+        public static Field of(String name, Type type) {
+            return new Field(name, type);
+        }
+
+        public static Field optional(String name, Type type) {
+            return new Field(name, type, true);
+        }
+
+        // TODO: make it private after refactoring the usages
         public Field(String name, Type type){
+            this(name, type, false);
+        }
+
+        private Field(String name, Type type, boolean optional){
             this.name = name;
             this.type = type;
+            this.optional = optional;
         }
 
         public String getName(){
@@ -111,47 +126,47 @@ public class Schema implements Serializable {
             return this.type;
         }
 
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public void setType(Type type) {
-            this.type = type;
+        public boolean isOptional() {
+            return optional;
         }
 
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
-            if (!(o instanceof Field)) return false;
+            if (o == null || getClass() != o.getClass()) return false;
 
             Field field = (Field) o;
 
+            if (optional != field.optional) return false;
             if (name != null ? !name.equals(field.name) : field.name != null) return false;
             return type == field.type;
+
         }
 
         @Override
         public int hashCode() {
             int result = name != null ? name.hashCode() : 0;
             result = 31 * result + (type != null ? type.hashCode() : 0);
+            result = 31 * result + (optional ? 1 : 0);
             return result;
         }
 
-        //TODO: need to replace with actual ToJson from Json instead of toString/fromString
         @Override
         public String toString() {
-            return "{" +
+            return "Field{" +
                     "name='" + name + '\'' +
                     ", type=" + type +
+                    ", optional=" + optional +
                     '}';
         }
 
-        // Input should be of the form: name='deviceId', type=LONG
+        // Input should be of the form: name='deviceId', type=LONG, optional
         public static Field fromString(String str) {
             String[] nameTypePair = str.split(",");
             String name = removePrimeSymbols(nameTypePair[0].split("=")[1]);
             String val = removePrimeSymbols(nameTypePair[1].split("=")[1]);
-            return new Field(name, Type.valueOf(val));
+            boolean optional = nameTypePair.length >= 3 && nameTypePair[2].equalsIgnoreCase("optional");
+            return new Field(name, Type.valueOf(val), optional);
         }
 
         // Removes the prime symbols that are in the beginning and end of the String,
@@ -196,9 +211,29 @@ public class Schema implements Serializable {
     public static class NestedField extends Field {
         private final List<Field> fields;
 
-        public NestedField(String name, List<Field> fields){
-            super(name, Type.NESTED);
-            this.fields = fields;
+        public static NestedField of(String name, List<Field> fields) {
+            return new NestedField(name, fields);
+        }
+
+        public static NestedField of(String name, Field... fields) {
+            return new NestedField(name, Arrays.asList(fields));
+        }
+
+        public static NestedField optional(String name, List<Field> fields) {
+            return new NestedField(name, fields, true);
+        }
+
+        public static NestedField optional(String name, Field... fields) {
+            return new NestedField(name, Arrays.asList(fields), true);
+        }
+
+        private NestedField(String name, List<Field> fields) {
+            this(name, fields, false);
+        }
+
+        private NestedField(String name, List<Field> fields, boolean optional) {
+            super(name, Type.NESTED, optional);
+            this.fields = ImmutableList.copyOf(fields);
         }
 
         public List<Field> getFields() {
@@ -238,9 +273,30 @@ public class Schema implements Serializable {
      */
     public static class ArrayField extends Field {
         private final List<Field> members;
-        public ArrayField(String name, List<Field> members) {
-            super(name, Type.ARRAY);
-            this.members = members;
+
+        public static ArrayField of(String name, List<Field> fields) {
+            return new ArrayField(name, fields);
+        }
+
+        public static ArrayField of(String name, Field... fields) {
+            return new ArrayField(name, Arrays.asList(fields));
+        }
+
+        public static ArrayField optional(String name, List<Field> fields) {
+            return new ArrayField(name, fields, true);
+        }
+
+        public static ArrayField optional(String name, Field... fields) {
+            return new ArrayField(name, Arrays.asList(fields), true);
+        }
+
+        private ArrayField(String name, List<Field> members) {
+            this(name, members, false);
+        }
+
+        private ArrayField(String name, List<Field> members, boolean optional) {
+            super(name, Type.ARRAY, optional);
+            this.members = ImmutableList.copyOf(members);
         }
 
         public List<Field> getMembers() {
@@ -277,20 +333,35 @@ public class Schema implements Serializable {
 
     private List<Field> fields;
 
+    // for jackson
+    public Schema() {
+    }
+    // use the static factory or the builder
+    private Schema(List<Field> fields){
+        this.fields = ImmutableList.copyOf(fields);
+    }
 
-    /** for jackson **/
-    private Schema() {}
+    /**
+     * Construct a new Schema of the given fields.
+     */
+    public static Schema of(Field... fields) {
+        return new SchemaBuilder().fields(fields).build();
+    }
 
-    public Schema(List<Field> fields){
-        this.fields = fields;
+    /**
+     * Construct a new Schema of the given list of fields.
+     */
+    public static Schema of(List<Field> fields) {
+        return new SchemaBuilder().fields(fields).build();
     }
 
     public List<Field> getFields(){
         return this.fields;
     }
 
+    // for jackson
     public void setFields(List<Field> fields) {
-        this.fields = fields;
+        this.fields = ImmutableList.copyOf(fields);
     }
 
     //TODO: need to replace with actual ToJson from Json

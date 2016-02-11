@@ -102,7 +102,7 @@ public abstract class AbstractStorable implements Storable {
             }
         }
 
-        return new Schema.SchemaBuilder().fields(fields).build();
+        return Schema.of(fields);
     }
 
 

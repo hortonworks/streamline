@@ -83,7 +83,7 @@ public class TopologyComponent implements Storable {
     @Override
     @JsonIgnore
     public Schema getSchema () {
-        return new Schema.SchemaBuilder().fields(
+        return Schema.of(
                 new Schema.Field(ID, Schema.Type.LONG),
                 new Schema.Field(NAME, Schema.Type.STRING),
                 new Schema.Field(TYPE, Schema.Type.STRING),
@@ -92,7 +92,7 @@ public class TopologyComponent implements Storable {
                 new Schema.Field(SUB_TYPE, Schema.Type.STRING),
                 new Schema.Field(CONFIG, Schema.Type.STRING),
                 new Schema.Field(TRANSFORMATION_CLASS, Schema.Type.STRING)
-        ).build();
+        );
     }
 
     @Override

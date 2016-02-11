@@ -77,7 +77,7 @@ public class ParserInfo extends AbstractStorable {
 
     @JsonIgnore
     public Schema getSchema() {
-        return new Schema.SchemaBuilder().fields(
+        return Schema.of(
                 new Schema.Field(PARSER_ID, Schema.Type.LONG),
                 new Schema.Field(PARSER_NAME, Schema.Type.STRING),
                 new Schema.Field(CLASS_NAME, Schema.Type.STRING),
@@ -85,7 +85,7 @@ public class ParserInfo extends AbstractStorable {
                 new Schema.Field(SCHEMA, Schema.Type.STRING),
                 new Schema.Field(VERSION, Schema.Type.LONG),
                 new Schema.Field(TIMESTAMP, Schema.Type.LONG)
-        ).build();
+        );
     }
 
     public Map<String, Object> toMap() {

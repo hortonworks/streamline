@@ -25,7 +25,7 @@ public class NestParser extends BaseParser {
     }
 
     public Schema schema() {
-        return new Schema(Lists.newArrayList(
+        return Schema.of(
                 new Schema.Field("device_id", Schema.Type.STRING),
                 new Schema.Field("locale", Schema.Type.STRING),
                 new Schema.Field("software_version", Schema.Type.STRING),
@@ -56,7 +56,7 @@ public class NestParser extends BaseParser {
                 new Schema.Field("ambient_temperature_f", Schema.Type.STRING),
                 new Schema.Field("ambient_temperature_c", Schema.Type.STRING),
                 new Schema.Field("humidity", Schema.Type.STRING),
-                new Schema.Field("hvac_state", Schema.Type.STRING)));
+                new Schema.Field("hvac_state", Schema.Type.STRING));
     }
 
     //right now it only returns current temperature and id, where id is nest's unique Id.
