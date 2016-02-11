@@ -80,7 +80,7 @@ public interface StorageManager {
      */
     <T extends Storable> Collection<T> list(String namespace) throws StorageException;
 
-    //TODO: What is the purpose of this clenup method? Whipe out the DB?
+    //TODO: What is the purpose of this cleanup method? Wipe out the DB?
     void cleanup() throws StorageException;
 
     Long nextId(String namespace) throws StorageException;

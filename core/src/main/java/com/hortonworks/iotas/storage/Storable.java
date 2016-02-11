@@ -12,7 +12,7 @@ public interface Storable {
     //TODO: Leaving it for now for discussion purposes, as well as not to break the client code
     /**
      * Storage namespace this can be translated to a jdbc table or zookeeper node or hbase table.
-     * TODO: Namesapce can be a first class entity, probably needs its own class.
+     * TODO: Namespace can be a first class entity, probably needs its own class.
      * @return
      */
     String getNameSpace();
@@ -32,7 +32,7 @@ public interface Storable {
      */
     PrimaryKey getPrimaryKey();
 
-    // TODO: why have both primary key and stoarable key ?
+    // TODO: why have both primary key and storable key ?
     // TODO: add some docs
     StorableKey getStorableKey();
 

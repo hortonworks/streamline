@@ -6,7 +6,7 @@ import com.hortonworks.iotas.util.exception.BadTopologyLayoutException;
 import java.util.List;
 
 /**
- * Implmentation for ParserBolt
+ * Implementation for ParserBolt
  */
 public class ParserBoltFluxComponent extends AbstractFluxComponent {
 

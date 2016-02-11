@@ -35,7 +35,7 @@ public abstract class BaseParser implements Parser {
 
     /**
      * Can be used to construct the schema object automatically
-     * in case of schemafull data format like json.
+     * in case of schemaful data format like json.
      *
      * @param data a sample data with all the fields.
      * @return the Schema for the data
@@ -47,7 +47,7 @@ public abstract class BaseParser implements Parser {
 
     /**
      * Can be used to construct the schema object automatically
-     * in case of schemafull data format like json.
+     * in case of schemaful data format like json.
      *
      * @param data a sample data with all the fields.
      * @return the Schema for the data

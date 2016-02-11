@@ -48,7 +48,7 @@ public class PreparedStatementBuilder {
     private PreparedStatement preparedStatement;
     private final SqlQuery sqlBuilder;
     private final ExecutionConfig config;
-    private int numPrepStmntParams;                          // Number of prepared statement parameters
+    private int numPrepStmtParams;                          // Number of prepared statement parameters
 
     /**
      * Creates a {@link PreparedStatement} for which calls to method {@code getPreparedStatement}
@@ -65,7 +65,7 @@ public class PreparedStatementBuilder {
         this.config = config;
         this.sqlBuilder = sqlBuilder;
         setPreparedStatement();
-        setNumPrepStmntParams();
+        setNumPrepStmtParams();
     }
 
     /** Creates the prepared statement with the parameters in place to be replaced */
@@ -82,7 +82,7 @@ public class PreparedStatementBuilder {
         this.preparedStatement = preparedStatement;
     }
 
-    private void setNumPrepStmntParams() {
+    private void setNumPrepStmtParams() {
         Pattern p = Pattern.compile("[?]");
         Matcher m = p.matcher(sqlBuilder.getParametrizedSql());
         int groupCount = 0;
@@ -93,7 +93,7 @@ public class PreparedStatementBuilder {
 
         assertIsNumColumnsMultipleOfNumParameters(sqlBuilder, groupCount);
 
-        numPrepStmntParams = groupCount;
+        numPrepStmtParams = groupCount;
     }
 
     // Used to assert that data passed in is valid
@@ -137,7 +137,7 @@ public class PreparedStatementBuilder {
             final int len = columns.size();
             Map<Schema.Field, Object> columnsToValues = sqlBuilder.getPrimaryKey().getFieldsToVal();
 
-            int nTimes = numPrepStmntParams /len;   // Number of times each column must be replaced on a query parameter
+            int nTimes = numPrepStmtParams /len;   // Number of times each column must be replaced on a query parameter
             for (int j = 0; j < len * nTimes; j++) {
                 Schema.Field column = columns.get(j % len);
                 Schema.Type javaType = column.getType();
@@ -152,7 +152,7 @@ public class PreparedStatementBuilder {
         if (columns != null) {
             final int len = columns.size();
             final Map columnsToValues = ((AbstractStorableSqlQuery)sqlBuilder).getStorable().toMap();
-            final int nTimes = numPrepStmntParams /len;   // Number of times each column must be replaced on a query parameter
+            final int nTimes = numPrepStmtParams /len;   // Number of times each column must be replaced on a query parameter
 
             for (int j = 0; j < len*nTimes; j++) {
                 Schema.Field column = columns.get(j % len);
@@ -175,7 +175,7 @@ public class PreparedStatementBuilder {
     public String toString() {
         return "PreparedStatementBuilder{" +
                 "sqlBuilder=" + sqlBuilder +
-                ", numPrepStmntParams=" + numPrepStmntParams +
+                ", numPrepStmtParams=" + numPrepStmtParams +
                 ", connection=" + connection +
                 ", preparedStatement=" + preparedStatement +
                 ", config=" + config +

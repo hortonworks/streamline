@@ -51,7 +51,7 @@ This section explains how to perform common activities such as reporting a bug o
  4. No wildcard imports. 
  5. No unused imports. Remove all unused imports.
  6. No raw types. Do not use raw generic types, unless strictly necessary (sometime necessary for signature matches, arrays).
- 7. Supress warnings. Add annotations to suppress warnings, if they cannot be avoided (such as “unchecked”, or “serial”).
+ 7. Suppress warnings. Add annotations to suppress warnings, if they cannot be avoided (such as “unchecked”, or “serial”).
  8. Comments.  Add JavaDocs to public methods or inherit them by not adding any comments to the methods. 
  9. logger instance should be upper case LOG.  
  10. When in doubt refer to existing code or <a href="http://google.github.io/styleguide/javaguide.html"> Java Coding Style </a> except line breaking, which is described above. 

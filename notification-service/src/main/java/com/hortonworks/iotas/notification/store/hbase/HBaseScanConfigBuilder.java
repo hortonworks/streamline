@@ -164,7 +164,7 @@ public class HBaseScanConfigBuilder {
             // we haven't found an index mapper, use the default index table if available
             if (indexMapper == null) {
                 if ((indexMapper = (IndexMapper<T>) indexMap.get(DEFAULT_INDEX_FIELD_NAMES)) == null) {
-                    return null; // no default index table, we cant proceed with the scan
+                    return null; // no default index table, we can't proceed with the scan
                 }
                 hBaseScanConfig.setMapper(indexMapper);
                 nonIndexedFields.addAll(fieldRestrictions);

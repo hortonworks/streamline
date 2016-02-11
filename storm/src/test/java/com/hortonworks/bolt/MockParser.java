@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * We can not use a mocking frameowrk as these classes are loaded dynamically as part of parser bolts
+ * We can not use a mocking framework as these classes are loaded dynamically as part of parser bolts
  * using reflection. So we have to create mock class implementation.
  */
 public class MockParser implements Parser {

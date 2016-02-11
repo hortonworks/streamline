@@ -55,7 +55,7 @@ public class CacheBackedStorageManager implements StorageManager {
 
     @Override   //TODO:
     public <T extends Storable> Collection<T> find(String namespace, List<CatalogService.QueryParam> queryParams) throws StorageException {
-        //Adding workaroudn methods that calls dao until we figure out what needs to be in caching so the toplogies can work.
+        //Adding workaround methods that calls dao until we figure out what needs to be in caching so the topologies can work.
         return ((GuavaCache)cache).getDao().find(namespace, queryParams);
 
     }

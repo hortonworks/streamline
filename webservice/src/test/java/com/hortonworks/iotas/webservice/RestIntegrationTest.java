@@ -75,7 +75,7 @@ public class RestIntegrationTest {
     private class QueryParamsResourceTestElement {
         final List<Object> resourcesToPost; // resources that will be posted to postUrl
         final String postUrl; // Rest Url to post.
-        // get urls with different query paramters. To be called before
+        // get urls with different query parameters. To be called before
         // and after post
         final List<String> getUrls;
         // expected results for each get url above after the post. should be

@@ -60,7 +60,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
         int exitValue = executeShellProcess(commands);
         if (exitValue != 0) {
             throw new Exception("Topology could not be deployed " +
-                    "successfylly.");
+                    "successfully.");
         }
     }
 
@@ -73,7 +73,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
         int exitValue = executeShellProcess(commands);
         if (exitValue != 0) {
             throw new Exception("Topology could not be killed " +
-                    "successfylly.");
+                    "successfully.");
         }
     }
 
@@ -94,7 +94,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
         int exitValue = executeShellProcess(commands);
         if (exitValue != 0) {
             throw new Exception("Topology could not be suspended " +
-                    "successfylly.");
+                    "successfully.");
         }
     }
 
@@ -107,7 +107,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
         int exitValue = executeShellProcess(commands);
         if (exitValue != 0) {
             throw new Exception("Topology could not be resumed " +
-                    "successfylly.");
+                    "successfully.");
         }
     }
 
@@ -183,10 +183,10 @@ public class StormTopologyActionsImpl implements TopologyActions {
             FluxComponent fluxComponent = (FluxComponent) ReflectionHelper
                     .newInstance(transformationClass);
             fluxComponent.withConfig(config);
-            List<Map<String, Object>> referencedComponts = fluxComponent
+            List<Map<String, Object>> referencedComponents = fluxComponent
                     .getReferencedComponents();
             // add all the components referenced by this yaml component
-            for (Map<String, Object> referencedComponent: referencedComponts) {
+            for (Map<String, Object> referencedComponent: referencedComponents) {
                 this.addComponentToCollection(yamlMap, referencedComponent,
                         TopologyLayoutConstants.YAML_KEY_COMPONENTS);
             }

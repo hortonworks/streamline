@@ -32,7 +32,7 @@ public interface Mapper<T> {
 
     /**
      * <p>
-     * Return Column_Family, Column_Qualifer, Column_Value triplet for
+     * Return Column_Family, Column_Qualifier, Column_Value triplet for
      * an entity member name and value.
      * E.g. ["s".getBytes(), "qs".getBytes(), "NEW".getBytes()] for
      * {@code NotificationMapper.mapMemberValue("status", NEW)}.

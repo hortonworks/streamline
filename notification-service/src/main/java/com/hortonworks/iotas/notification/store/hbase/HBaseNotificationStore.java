@@ -47,7 +47,7 @@ public class HBaseNotificationStore implements NotificationStore {
     private HConnection connection;
     /**
      * A map of table name to the HBase HTable instances.
-     * Since the HTable instances are not threadsafe, its wrapped
+     * Since the HTable instances are not thread safe, its wrapped
      * in {@link ThreadLocal}
      */
     private final Map<String, ThreadLocal<HTableInterface>> tables = new HashMap<>();
@@ -242,7 +242,7 @@ public class HBaseNotificationStore implements NotificationStore {
                 try {
                     return connection.getTable(TableName.valueOf(tableName));
                 } catch (IOException ex) {
-                    throw new NotificationStoreException("error getting Htable", ex);
+                    throw new NotificationStoreException("error getting HTable", ex);
                 }
             }
         };

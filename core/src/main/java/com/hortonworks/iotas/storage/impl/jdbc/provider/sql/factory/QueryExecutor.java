@@ -60,7 +60,7 @@ public interface QueryExecutor {
     <T extends Storable> Collection<T> select(StorableKey storableKey);
 
     /**
-     * @return The next availabe id for the autoincrement column in the specified {@code namespace}
+     * @return The next available id for the autoincrement column in the specified {@code namespace}
      * @exception NonIncrementalColumnException if {@code namespace} has no autoincrement column
      *
      */

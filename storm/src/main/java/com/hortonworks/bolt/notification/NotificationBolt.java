@@ -34,7 +34,7 @@ public class NotificationBolt extends BaseRichBolt {
     private NotificationService notificationService;
     private Notifier notifier;
     private BoltNotificationContext notificationContext;
-    private CatalogRestClient catalogRestCient;
+    private CatalogRestClient catalogRestClient;
     private String hbaseConfigKey = "hbase.conf";
 
     private final String notifierName;
@@ -68,8 +68,8 @@ public class NotificationBolt extends BaseRichBolt {
             notificationConf = Collections.emptyMap();
         }
         notificationService = new NotificationServiceImpl(notificationConf, new HBaseNotificationStore(hbaseConf));
-        catalogRestCient = new CatalogRestClient(stormConf.get(CATALOG_ROOT_URL).toString());
-        NotifierInfo notifierInfo = catalogRestCient.getNotifierInfo(this.notifierName);
+        catalogRestClient = new CatalogRestClient(stormConf.get(CATALOG_ROOT_URL).toString());
+        NotifierInfo notifierInfo = catalogRestClient.getNotifierInfo(this.notifierName);
 
         String jarPath = String.format("%s%s%s", stormConf.get(LOCAL_NOTIFIER_JAR_PATH).toString(),
                                        File.separator, notifierInfo.getJarFileName());

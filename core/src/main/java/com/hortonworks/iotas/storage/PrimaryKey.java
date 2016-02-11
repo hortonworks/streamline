@@ -11,7 +11,7 @@ public class PrimaryKey {
 
     /**
      * The fieldsToVal map has {@code Schema.Field} as the key which defines the name of columns and their types that forms
-     * the primary key. The value, if not null represents the actual value of that column in a stored instance. for exmaple
+     * the primary key. The value, if not null represents the actual value of that column in a stored instance. for example
      * if you have a storable entity called "Employee" with primaryKey as "employeeId" an instance of this class
      * <pre>
      *     PrimaryKey {
@@ -22,7 +22,7 @@ public class PrimaryKey {
      * </pre>
      *
      * represents that employeeId is the primary key with type String and the value is actually referring to the row with
-     * empolyeeId = 1.
+     * employeeId = 1.
      */
     private Map<Schema.Field, Object> fieldsToVal;
 

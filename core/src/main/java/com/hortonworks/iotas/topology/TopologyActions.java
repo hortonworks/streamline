@@ -23,7 +23,7 @@ public interface TopologyActions {
     // engine
     void validate (Topology topology) throws Exception;
 
-    //Susped the json representing the IoTaS based on underlying streaming
+    //Suspend the json representing the IoTaS based on underlying streaming
     // engine
     void suspend (Topology topology) throws Exception;
 

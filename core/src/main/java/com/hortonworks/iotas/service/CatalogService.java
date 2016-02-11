@@ -484,7 +484,7 @@ public class CatalogService {
         boolean isValidAsPerSchema;
         if (result != null) {
             String json = result.getConfig();
-            // first step is to validate agains json schema provided
+            // first step is to validate against json schema provided
             isValidAsPerSchema = JsonSchemaValidator
                     .isValidJsonAsPerSchema(schema, json);
 

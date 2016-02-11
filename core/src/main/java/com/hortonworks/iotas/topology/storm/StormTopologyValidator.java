@@ -147,7 +147,7 @@ class StormTopologyValidator {
     // For a rule processor config object containing rules, this objects
     // returns a map of streamids(one per rule) and output fields for each
     // such stream. This is used in validation in validateRuleProcessorLinks
-    // methiod above
+    // method above
     private Map<String, Set<String>> getRuleProcessorStreamIdsToOutputFields
             (Map ruleProcessorConfig) {
         Map<String, Set<String>> result = new LinkedHashMap<String, Set<String>>();
