@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.hortonworks</groupId>
-        <artifactId>IoTaS</artifactId>
-        <version>0.1-SNAPSHOT</version>
+        <groupId>com.hortonworks.iotas</groupId>
+        <artifactId>iotas</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>webservice</artifactId>
@@ -18,7 +18,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.hortonworks</groupId>
+            <groupId>com.hortonworks.iotas</groupId>
             <artifactId>core</artifactId>
             <version>${project.version}</version>
             <exclusions>
@@ -34,7 +34,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.hortonworks</groupId>
+            <groupId>com.hortonworks.iotas</groupId>
             <artifactId>notification-service</artifactId>
             <version>${project.version}</version>
         </dependency>
