@@ -121,7 +121,7 @@ public class CLI {
     private static void interactiveLoop(Producer producer, CommandLine cmd){
         String lastTopic = "";
 
-        System.out.println("Entering interactive mode. Press CNTRL + C to exit.");
+        System.out.println("Entering interactive mode. Press CTRL + C to exit.");
         if(!cmd.hasOption(OPTION_TOPIC)){
             System.out.println("No kafka topic specified. Will prompt for topic.");
         } else {

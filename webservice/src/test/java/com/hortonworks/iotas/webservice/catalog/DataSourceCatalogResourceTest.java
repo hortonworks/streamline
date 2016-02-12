@@ -62,7 +62,7 @@ public class DataSourceCatalogResourceTest {
 
 
     @Test
-    public void testGetDataSourceSchemaOnetoOne() throws Exception {
+    public void testGetDataSourceSchemaOneToOne() throws Exception {
         DataSourceCatalogResource resource = new DataSourceCatalogResource(mockCatalogService);
         final DataFeed dataFeed = new DataFeed();
         dataFeed.setId(1L);
@@ -90,7 +90,7 @@ public class DataSourceCatalogResourceTest {
     }
 
     @Test
-    public void testGetDataSourceSchemaManytoOne() throws Exception {
+    public void testGetDataSourceSchemaManyToOne() throws Exception {
         DataSourceCatalogResource resource = new DataSourceCatalogResource(mockCatalogService);
         final DataFeed dataFeed1 = new DataFeed();
         dataFeed1.setId(1L);

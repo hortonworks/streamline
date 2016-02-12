@@ -164,7 +164,7 @@ public class NotificationServiceImpl implements NotificationService {
      */
     private Notifier loadNotifier(String jarPath, String className) {
         try {
-            LOG.info("Instantiating classs {} via ProxyUtil", className);
+            LOG.info("Instantiating class {} via ProxyUtil", className);
             return this.notifierProxyUtil.loadClassFromJar(jarPath, className);
         } catch (Exception e) {
             throw new RuntimeException(e);

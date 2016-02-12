@@ -50,7 +50,7 @@ public class NotificationQueueHandler {
     }
 
     public NotificationQueueHandler(int nThreads) {
-        // TODO: evaluate ThreadPoolExecuter with bounded queue size
+        // TODO: evaluate ThreadPoolExecutor with bounded queue size
         executorService = Executors.newFixedThreadPool(nThreads);
         taskMap = new ConcurrentHashMap<>();
     }

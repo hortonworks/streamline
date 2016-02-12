@@ -71,7 +71,7 @@ public class ProtobufParser extends BaseParser {
                 fields.add(clazz.getField(field.name));
                 fieldNames.add(field.name);
             } catch (NoSuchFieldException e) {
-                throw new ParseException("Error getting fileds from clazz " + clazz, e);
+                throw new ParseException("Error getting fields from clazz " + clazz, e);
             }
         }
         LOG.debug("Field names {}", fieldNames);
@@ -136,7 +136,7 @@ public class ProtobufParser extends BaseParser {
             }
         }
 
-        public ProtobufParser buid() throws ParseException {
+        public ProtobufParser build() throws ParseException {
             checkMandatoryFields();
             ProtobufParser parser = new ProtobufParser();
             parser.protoBufSchemaString = this.protoBufSchemaString;

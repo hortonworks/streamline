@@ -62,10 +62,10 @@ public abstract class AbstractFluxComponent implements FluxComponent {
     abstract protected void generateComponent ();
 
     protected void addParallelismToComponent () {
-        Integer paralleism;
-        if ((paralleism = (Integer) conf.get(TopologyLayoutConstants
+        Integer parallelism;
+        if ((parallelism = (Integer) conf.get(TopologyLayoutConstants
                 .JSON_KEY_PARALLELISM)) != null) {
-            component.put(TopologyLayoutConstants.YAML_KEY_PARALLELISM, paralleism);
+            component.put(TopologyLayoutConstants.YAML_KEY_PARALLELISM, parallelism);
         }
     }
 

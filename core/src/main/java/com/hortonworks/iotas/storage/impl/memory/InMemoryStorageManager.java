@@ -38,7 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static com.hortonworks.iotas.service.CatalogService.QueryParam;
 
-//TODO: The synchronization is broken right now, so all the methods dont guarantee the semantics as described in the interface.
+//TODO: The synchronization is broken right now, so all the methods don't guarantee the semantics as described in the interface.
 public class InMemoryStorageManager implements StorageManager {
     private static final Logger LOG = LoggerFactory.getLogger(InMemoryStorageManager.class);
 
@@ -55,7 +55,7 @@ public class InMemoryStorageManager implements StorageManager {
         } else if (existing.equals(storable)) {
             return;
         } else {
-            throw new AlreadyExistsException("Another instnace with same id = " + storable.getPrimaryKey()
+            throw new AlreadyExistsException("Another instance with same id = " + storable.getPrimaryKey()
                     + " exists with different value in namespace " + storable.getNameSpace()
                     + " Consider using addOrUpdate method if you always want to overwrite.");
         }

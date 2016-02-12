@@ -68,7 +68,7 @@ public class TransformerRuntime {
             }
             return value;
         } catch (ScriptException | ParseException e) {
-            LOG.error("Error occurred while converting input fields in tranformer: " + transformer);
+            LOG.error("Error occurred while converting input fields in transformer: " + transformer);
             throw new NormalizationException("Error occurred while converting input fields in a normalization", e);
         }
 

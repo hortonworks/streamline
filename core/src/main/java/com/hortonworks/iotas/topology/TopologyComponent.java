@@ -39,12 +39,12 @@ public class TopologyComponent implements Storable {
     private String name;
 
     /**
-     * Type of the compoenet. For e.g. a SOURCE
+     * Type of the component. For e.g. a SOURCE
      */
     private TopologyComponentType type;
 
     /**
-     * Time recording the creation or last updation of this instance
+     * Time recording the creation or last update of this instance
      */
     private Long timestamp;
 

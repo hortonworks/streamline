@@ -33,7 +33,7 @@ public abstract class AbstractStorable implements Storable {
      * get the value by calling getter method (POJO) convention on it.
      *
      * Sometimes for JDBC to work we need an extra layer of transformation , for example see the implementation
-     * in {@code DataSource} which defines a field of type @{code Type} which is enum and not a prmitive type as expected
+     * in {@code DataSource} which defines a field of type @{code Type} which is enum and not a primitive type as expected
      * by the JDBC layer, you can call this method and override the fields that needs transformation.
      * @return
      */

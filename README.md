@@ -108,7 +108,7 @@ This will run the IOTaS topology in local mode for one hour, processing any even
 
 #Accounting for bad tuples in a topology
 A mechanism has been added so that when messages are being played from a 
-spout in an IotaS topology and they cant successfully be parsed then such 
+spout in an IotaS topology and they can't successfully be parsed then such 
 messages end up in some persistent storage. The way it works is ParserBolt 
 needs to be supplied with two stream ids using builder methods 
 withParsedTuplesStreamId and withUnparsedTuplesStreamId. The former stream id

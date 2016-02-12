@@ -101,7 +101,7 @@ public class ProtobufParserTest {
         byte[] bytes = w.writeValueAsBytes(point);
         // System.out.println(bytes);
         // pass the protobuf bytes to parser and get back the object.
-        ProtobufParser parser = ProtobufParser.newBuilder().protoBufSchemaString(loadFile("point.proto")).clazz(Point.class).buid();
+        ProtobufParser parser = ProtobufParser.newBuilder().protoBufSchemaString(loadFile("point.proto")).clazz(Point.class).build();
         Map<String, Object> res = parser.parse(bytes);
         assertEquals(10, res.get("x"));
         assertEquals(10, res.get("y"));
@@ -121,7 +121,7 @@ public class ProtobufParserTest {
                                 .protoBufSchemaString(loadFile("point.proto"))
                                 .clazz(Point.class)
                                 .noFieldLookup()
-                                .buid();
+                                .build();
         Map<String, Object> res = parser.parse(bytes);
         assertTrue(res.containsKey("value"));
         assertEquals(1, res.keySet().size());
@@ -139,7 +139,7 @@ public class ProtobufParserTest {
        // System.out.println(bytes);
         // pass the protobuf bytes to parser and get back the object.
         ProtobufParser parser = ProtobufParser.newBuilder()
-                .protoBufSchemaString(loadFile("box.proto") + loadFile("point.proto")).clazz(Box.class).buid();
+                .protoBufSchemaString(loadFile("box.proto") + loadFile("point.proto")).clazz(Box.class).build();
         Map<String, Object> res = parser.parse(bytes);
         assertEquals(tl, res.get("topLeft"));
         assertEquals(br, res.get("bottomRight"));

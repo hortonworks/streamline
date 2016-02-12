@@ -2,7 +2,7 @@ package com.hortonworks.iotas.layout.runtime.normalization;
 
 /**
  * It is thrown when an issue occurs while normalizing the event.
- * For ex: When an event is transformed by using a script adn script throws a ScriptException
+ * For ex: When an event is transformed by using a script and script throws a ScriptException
  */
 public class NormalizationException extends Exception {
     public NormalizationException() {
