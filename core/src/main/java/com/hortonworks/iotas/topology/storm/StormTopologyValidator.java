@@ -1,11 +1,16 @@
 package com.hortonworks.iotas.topology.storm;
 
+import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.topology.ConfigFieldValidation;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
+import com.hortonworks.iotas.util.CoreUtils;
 import com.hortonworks.iotas.util.ReflectionHelper;
 import com.hortonworks.iotas.util.exception.BadTopologyLayoutException;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -19,6 +24,7 @@ import java.util.Set;
  * topology and the connections between them
  */
 class StormTopologyValidator {
+    private static final Logger LOG = LoggerFactory.getLogger(StormTopologyValidator.class);
     private final Map topologyConfig;
     StormTopologyValidator (Map topologyConfig) {
         this.topologyConfig = topologyConfig;
@@ -44,6 +50,7 @@ class StormTopologyValidator {
         validateParserProcessorLinks();
         // Uncomment this with https://hwxiot.atlassian.net/browse/IOT-126
         //validateRuleProcessorLinks();
+        validateCustomProcessorLinks();
     }
 
     // if there is a link from a parser processor then the stream id has to
@@ -138,7 +145,63 @@ class StormTopologyValidator {
             if (ruleProcessorKeys.contains(to)) {
                 // link to a rule processor can not go from a data source
                 if (dataSourceNames.contains(from)) {
-                    throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_INVALID_LINK_TO_RULE, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
+                    throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_INVALID_LINK_TO_PROCESSOR, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
+                }
+            }
+        }
+    }
+
+    void validateCustomProcessorLinks () throws BadTopologyLayoutException {
+        List<Map> dataSources = (List) this.topologyConfig.get(TopologyLayoutConstants.JSON_KEY_DATA_SOURCES);
+        Set<String> dataSourceNames = new HashSet<String>();
+        for (Map dataSource: dataSources) {
+            dataSourceNames.add((String) dataSource.get(TopologyLayoutConstants.JSON_KEY_UINAME));
+        }
+        List<Map> processors = (List) this.topologyConfig.get(TopologyLayoutConstants.JSON_KEY_PROCESSORS);
+        Map<String, Schema> inputSchemas = new LinkedHashMap<String, Schema>();
+        Map<String, Map<String, Schema>> outputSchemas = new LinkedHashMap<String, Map<String, Schema>>();
+        for (Map processor: processors) {
+            String type = (String) processor.get(TopologyLayoutConstants.JSON_KEY_TYPE);
+            if ("CUSTOM".equals(type)) {
+                Map config = (Map) processor.get(TopologyLayoutConstants.JSON_KEY_CONFIG);
+                try {
+                    inputSchemas.put((String) processor.get(TopologyLayoutConstants.JSON_KEY_UINAME), getCustomProcessorInputSchema(config));
+                    outputSchemas.put((String) processor.get(TopologyLayoutConstants.JSON_KEY_UINAME), getCustomProcessorOutputSchema(config));
+                } catch (IOException e) {
+                    String message = "Invalid custom processor input or output schema config.";
+                    LOG.error(message);
+                    throw new BadTopologyLayoutException(message, e);
+                }
+            }
+        }
+        Set<String> customProcessorKeys = outputSchemas.keySet();
+        List<Map> links = (List) this.topologyConfig.get(TopologyLayoutConstants.JSON_KEY_LINKS);
+        for (Map link: links) {
+            Map linkConfig = (Map) link.get(TopologyLayoutConstants.JSON_KEY_CONFIG);
+            String from = (String) linkConfig.get(TopologyLayoutConstants.JSON_KEY_FROM);
+            String to = (String) linkConfig.get(TopologyLayoutConstants.JSON_KEY_TO);
+            if (customProcessorKeys.contains(from)) {
+                String streamId = (String) linkConfig.get(TopologyLayoutConstants.JSON_KEY_STREAM_ID);
+                if (StringUtils.isEmpty(streamId)) {
+                    throw new BadTopologyLayoutException (String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
+                }
+                Map<String, Schema> streamIdToOutput = outputSchemas.get(from);
+                Set<String> outputStreams = streamIdToOutput.keySet();
+                if (!outputStreams.contains(streamId)) {
+                    throw new BadTopologyLayoutException (String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
+                }
+                if ("FIELDS".equals((String) link.get(TopologyLayoutConstants.JSON_KEY_TYPE))) {
+                    Set<String> outputFields = getTopLevelFieldNamesFromSchema(streamIdToOutput.get(streamId));
+                    List<String> groupingFields = (List) linkConfig.get(TopologyLayoutConstants.JSON_KEY_GROUPING_FIELDS);
+                    if (!outputFields.containsAll(groupingFields)) {
+                        throw new BadTopologyLayoutException (String.format(TopologyLayoutConstants.ERR_MSG_INVALID_GROUPING_FIELDS, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
+                    }
+                }
+            }
+            if (customProcessorKeys.contains(to)) {
+                // link to a custom processor can not go from a data source
+                if (dataSourceNames.contains(from)) {
+                    throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_INVALID_LINK_TO_PROCESSOR, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
                 }
             }
         }
@@ -170,6 +233,35 @@ class StormTopologyValidator {
             }
             String streamId = processorName + "." + ruleName + "." + ruleId;
             result.put(streamId, outputFields);
+        }
+        return result;
+    }
+
+    // For a custom processor config object, this method returns a map of output streamids and schema for each
+    // such stream. This is used in validation in validateCustomProcessorLinks method above
+    private Map<String, Schema> getCustomProcessorOutputSchema (Map config) throws IOException {
+        Map<String, Schema> result = new LinkedHashMap<String, Schema>();
+        Map<String, Object> outputSchemaConfig = (Map<String, Object>) config.get(TopologyLayoutConstants.JSON_KEY_OUTPUT_STREAMS_SCHEMA);
+        for (Map.Entry<String, Object> entry: outputSchemaConfig.entrySet()) {
+            result.put(entry.getKey(), CoreUtils.getSchemaFromConfig((Map) entry.getValue()));
+        }
+        return result;
+    }
+
+    // For a custom processor config object, this method returns its input schema.
+    // This is used in validation in validateCustomProcessorLinks method above
+    private Schema getCustomProcessorInputSchema (Map config) throws IOException {
+        return CoreUtils.getSchemaFromConfig((Map) config.get(TopologyLayoutConstants.JSON_KEY_INPUT_SCHEMA));
+    }
+
+
+    private Set<String> getTopLevelFieldNamesFromSchema (Schema schema) {
+        Set<String> result = new HashSet<>();
+        if (schema != null) {
+            List<Schema.Field> fields = schema.getFields();
+            for (Schema.Field f: fields) {
+                result.add(f.getName());
+            }
         }
         return result;
     }

@@ -24,7 +24,7 @@ public class TopologyLayoutValidatorTest {
     ObjectMapper mapper;
     TopologyActions topologyActions = new StormTopologyActionsImpl();
 
-    String[] goodLayouts = {"topology/goodlayout.json", "topology/goodlayoutnotificationbolt.json"};
+    String[] goodLayouts = {"topology/goodlayout.json", "topology/goodlayoutnotificationbolt.json", "topology/goodlayoutcustomprocessor.json"};
     // if an element is added to the array below then corresponding error
     // message also needs to be added to badLayoutMessages array below
     String[] badLayouts = {
@@ -51,11 +51,18 @@ public class TopologyLayoutValidatorTest {
             "topology/linkbadoptionalfieldlayout.json",
             "topology/invalidfieldsgroupinglinklayout.json",
             "topology/noparserprocessorlayout.json",
-            "topology/invalidparserstreamidlayout.json"
+            "topology/invalidparserstreamidlayout.json",
             // Uncomment this with https://hwxiot.atlassian.net/browse/IOT-126
             //"topology/emptystreamidfromrulelinklayout.json",
             //"topology/invalidstreamidfromrulelinklayout.json",
-            //"topology/invalidfieldsfromrulelinklayout.json"
+            //"topology/invalidfieldsfromrulelinklayout.json",
+            "topology/cpboltmissingrequiredfieldlayout.json",
+            "topology/cpboltinvalidinputschemalayout.json",
+            "topology/cpboltinstantiationerrorlayout.json",
+            "topology/cpboltcustomconfigexception.json",
+            "topology/cpboltemptystreamidlayout.json",
+            "topology/cpboltinvalidstreamidlayout.json",
+            "topology/cpboltinvalidfieldsgroupinglayout.json"
     };
     // the size of the array below should be same as size of the array
     // badLayouts above
@@ -84,9 +91,17 @@ public class TopologyLayoutValidatorTest {
         String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, TopologyLayoutConstants.JSON_KEY_GROUPING_FIELDS),
         TopologyLayoutConstants.ERR_MSG_NO_PARSER_PROCESSOR,
         String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, "parserProcessor-parsedTuples->ruleProcessor"),
-        String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, "ruleProcessor-rule1->hbasesink"),
-        String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, "ruleProcessor-rule1->hbasesink"),
-        String.format(TopologyLayoutConstants.ERR_MSG_INVALID_GROUPING_FIELDS, "ruleProcessor-rule1->hbasesink")
+        //String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, "ruleProcessor-rule1->hbasesink"),
+        //String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, "ruleProcessor-rule1->hbasesink"),
+        //String.format(TopologyLayoutConstants.ERR_MSG_INVALID_GROUPING_FIELDS, "ruleProcessor-rule1->hbasesink"),
+        String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_IMPL),
+        String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, TopologyLayoutConstants.JSON_KEY_INPUT_SCHEMA),
+        String.format(TopologyLayoutConstants.ERR_MSG_CP_IMPL_INSTANTIATION, "om.hortonworks.iotas.processor.ConsoleCustomProcessor"),
+        String.format(TopologyLayoutConstants.ERR_MSG_CP_CONFIG_EXCEPTION, "com.hortonworks.iotas.processor.ConsoleCustomProcessor") + " Message from " +
+                "implementation is: Missing config field: configField",
+        String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, "consoleCustomProcessor->hbasesink"),
+        String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, "consoleCustomProcessor->hbasesink"),
+        String.format(TopologyLayoutConstants.ERR_MSG_INVALID_GROUPING_FIELDS, "consoleCustomProcessor->hbasesink")
     };
 
     @Before
