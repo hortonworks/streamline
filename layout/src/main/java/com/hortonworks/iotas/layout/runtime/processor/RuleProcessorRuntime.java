@@ -18,8 +18,12 @@
 
 package com.hortonworks.iotas.layout.runtime.processor;
 
+import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.common.Result;
 import com.hortonworks.iotas.layout.design.component.RulesProcessor;
 import com.hortonworks.iotas.layout.runtime.rule.RuleRuntime;
+import com.hortonworks.iotas.processor.ProcessingException;
+import com.hortonworks.iotas.processor.ProcessorRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +36,7 @@ import java.util.List;
 /**
  * Represents a runtime rules processor
  */
-public class RuleProcessorRuntime implements Serializable {
+public class RuleProcessorRuntime implements Serializable, ProcessorRuntime {
     protected static final Logger log = LoggerFactory.getLogger(RuleProcessorRuntime.class);
 
     protected RulesProcessor rulesProcessor;
@@ -62,6 +66,23 @@ public class RuleProcessorRuntime implements Serializable {
     @Override
     public String toString() {
         return "RuleProcessorRuntime{" + rulesProcessor + ", " + rulesRuntime + '}';
+    }
+
+    @Override
+    public List<Result> process(IotasEvent iotasEvent) throws ProcessingException {
+        List<Result> results = new ArrayList<>();
+        try {
+            for (RuleRuntime rule : rulesRuntime) {
+                if (rule.evaluate(iotasEvent)) {
+                    results.addAll(rule.process(iotasEvent));
+                }
+            }
+        } catch (Exception e) {
+            String message = "Error evaluating rule processor with id:" + rulesProcessor.getId();
+            log.error(message);
+            throw new ProcessingException(message, e);
+        }
+        return results;
     }
 }
 

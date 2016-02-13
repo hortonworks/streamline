@@ -23,6 +23,8 @@ import com.hortonworks.iotas.layout.design.rule.Rule;
 import com.hortonworks.iotas.layout.design.rule.exception.ConditionEvaluationException;
 import com.hortonworks.iotas.layout.runtime.ActionRuntime;
 import com.hortonworks.iotas.layout.runtime.script.Script;
+import com.hortonworks.iotas.processor.ProcessingException;
+import com.hortonworks.iotas.processor.ProcessorRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,12 +32,13 @@ import javax.script.ScriptException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import static com.hortonworks.iotas.layout.runtime.ActionRuntime.Result;
+
+import com.hortonworks.iotas.common.Result;
 
 /**
  * Represents a rule runtime
  */
-public class RuleRuntime implements Serializable {
+public class RuleRuntime implements Serializable, ProcessorRuntime {
     protected static final Logger LOG = LoggerFactory.getLogger(RuleRuntime.class);
 
     protected final Rule rule;
@@ -63,13 +66,20 @@ public class RuleRuntime implements Serializable {
      *
      * @param input runtime input to this rule
      */
-    public List<Result> execute(IotasEvent input) {
-        LOG.debug("execute invoked with IotasEvent {}", input);
+    @Override
+    public List<Result> process (IotasEvent input) throws ProcessingException {
+        LOG.debug("process invoked with IotasEvent {}", input);
         List<Result> results = new ArrayList<>();
-        for (ActionRuntime action : actions) {
-            Result result = action.execute(input);
-            LOG.debug("Applied action {}, Result {}", action, result);
-            results.add(result);
+        try {
+            for (ActionRuntime action : actions) {
+                Result result = action.execute(input);
+                LOG.debug("Applied action {}, Result {}", action, result);
+                results.add(result);
+            }
+        } catch (Exception e) {
+            String message = "Error evaluating rule with id:" + rule.getId();
+            LOG.error(message);
+            throw new ProcessingException(message, e);
         }
         LOG.debug("Returning results {}", results);
         return results;

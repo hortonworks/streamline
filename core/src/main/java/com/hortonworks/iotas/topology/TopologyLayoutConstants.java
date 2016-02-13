@@ -103,6 +103,14 @@ public final class TopologyLayoutConstants {
     public final static String JSON_KEY_RULES = "rules";
     public final static String JSON_KEY_RULE_ACTION = "action";
     public final static String JSON_KEY_RULE_DECLARED_OUTPUT = "declaredOutput";
+    public final static String JSON_KEY_INPUT_SCHEMA = "inputSchema";
+    public final static String JSON_KEY_OUTPUT_STREAMS_SCHEMA = "outputStreamToSchema";
+    public final static String JSON_KEY_CUSTOM_PROCESSOR_IMPL = "customProcessorImpl";
+    // Custom processor's own config fields will be uploaded in IoTaS topology components with a namespace to avoid collision with the CustomProcessorBolt's
+    // config fields. The below constant represents that namespace and the other is regular expression is to remove the namespace when forwarding the config
+    // values to the custom processor implementation
+    public final static String JSON_KEY_CUSTOM_PROCESSOR_PREFIX = "config.";
+    public final static String JSON_KEY_CUSTOM_PROCESSOR_PREFIX_REGEX = "config\\.";
 
     // validation error messages
     public final static String ERR_MSG_UINAME_DUP = "Uiname %s is already " +
@@ -129,10 +137,12 @@ public final class TopologyLayoutConstants {
             "stream id for link %s ";
     public static final String ERR_MSG_INVALID_LINK_TO_PARSER = "Link %s to a" +
             " parser processor can only be from a data source ";
-    public static final String ERR_MSG_INVALID_LINK_TO_RULE = "Link %s to a" +
-            " rule processor can not be from a data source ";
+    public static final String ERR_MSG_INVALID_LINK_TO_PROCESSOR = "Link %s to a" +
+            " rule/custom processor can not be from a data source ";
     public static final String ERR_MSG_INVALID_GROUPING_FIELDS = "Link %s  " +
             "has invalid fields for grouping ";
+    public static final String ERR_MSG_CP_IMPL_INSTANTIATION = "Error instantiating custom processor implementation class %s ";
+    public static final String ERR_MSG_CP_CONFIG_EXCEPTION = "Custom processor %s threw exception while validating the custom config fields.";
 
     // artifact
     public static final String STORM_ARTIFACTS_LOCATION_KEY =
