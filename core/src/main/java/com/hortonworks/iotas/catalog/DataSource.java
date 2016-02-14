@@ -71,7 +71,7 @@ public class DataSource extends AbstractStorable {
 
     @JsonIgnore
     public Schema getSchema() {
-         return new Schema.SchemaBuilder().fields(
+         return Schema.of(
                  new Schema.Field(DATA_SOURCE_ID, Schema.Type.LONG),
                  new Schema.Field(DATA_SOURCE_NAME, Schema.Type.STRING),
                  new Schema.Field(DESCRIPTION, Schema.Type.STRING),
@@ -79,7 +79,7 @@ public class DataSource extends AbstractStorable {
                  new Schema.Field(TIMESTAMP, Schema.Type.LONG),
                  new Schema.Field(TYPE, Schema.Type.STRING),
                  new Schema.Field(TYPE_CONFIG, Schema.Type.STRING)
-         ).build();
+         );
     }
 
     @JsonIgnore

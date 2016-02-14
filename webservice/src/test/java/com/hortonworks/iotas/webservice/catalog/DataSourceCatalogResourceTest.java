@@ -69,8 +69,8 @@ public class DataSourceCatalogResourceTest {
         dataFeed.setDataSourceId(2L);
         dataFeed.setParserId(3L);
         final ParserInfo parserInfo = new ParserInfo();
-        Schema parserSchema = new Schema(Arrays.asList(new Schema.Field("foo", Schema.Type.STRING),
-                                                       new Schema.Field("bar", Schema.Type.INTEGER)));
+        Schema parserSchema = Schema.of(new Schema.Field("foo", Schema.Type.STRING),
+                                        new Schema.Field("bar", Schema.Type.INTEGER));
         parserInfo.setParserSchema(parserSchema);
         final List<CatalogService.QueryParam> queryParams = Arrays.asList(new CatalogService.QueryParam("dataSourceId", "2"));
         new Expectations() {
@@ -101,8 +101,8 @@ public class DataSourceCatalogResourceTest {
         dataFeed2.setDataSourceId(2L);
         dataFeed2.setParserId(3L);
         final ParserInfo parserInfo = new ParserInfo();
-        Schema parserSchema = new Schema(Arrays.asList(new Schema.Field("foo", Schema.Type.STRING),
-                                                       new Schema.Field("bar", Schema.Type.INTEGER)));
+        Schema parserSchema = Schema.of(new Schema.Field("foo", Schema.Type.STRING),
+                                        new Schema.Field("bar", Schema.Type.INTEGER));
         parserInfo.setParserSchema(parserSchema);
         final List<CatalogService.QueryParam> queryParams = Arrays.asList(new CatalogService.QueryParam("dataSourceId", "2"));
         new Expectations() {

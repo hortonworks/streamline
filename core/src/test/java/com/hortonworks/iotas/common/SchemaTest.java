@@ -18,7 +18,9 @@
 
 package com.hortonworks.iotas.common;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import com.hortonworks.iotas.catalog.ParserInfo;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -47,5 +49,13 @@ public class SchemaTest {
             }
             Collections.shuffle(indexes);
         }
+    }
+    @Test
+    public void testSchemaFromJson() throws Exception {
+        String json = "{\"fields\":[{\"name\":\"field1\", \"type\":\"STRING\"},{\"name\":\"field2\", \"type\":\"STRING\"}]}";
+        System.out.println(json);
+        ObjectMapper mapper = new ObjectMapper();
+        Schema schema = mapper.readValue(json, Schema.class);
+        System.out.println(schema);
     }
 }
