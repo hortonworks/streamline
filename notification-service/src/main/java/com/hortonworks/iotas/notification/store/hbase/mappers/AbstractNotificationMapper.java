@@ -2,6 +2,7 @@ package com.hortonworks.iotas.notification.store.hbase.mappers;
 
 import com.hortonworks.iotas.notification.common.Notification;
 import com.hortonworks.iotas.notification.common.NotificationImpl;
+import com.hortonworks.iotas.notification.store.hbase.Serializer;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -39,6 +40,9 @@ public abstract class AbstractNotificationMapper implements Mapper<Notification>
 
     // a map of Notification member name to hbase cf:cq
     private static final Map<String, List<byte[]>> memberMap = new HashMap<>();
+
+    // serializer instance
+    private final Serializer serializer = new Serializer();
 
     static {
         // Right now support queries for status in addition to the indexed fields.
@@ -80,10 +84,10 @@ public abstract class AbstractNotificationMapper implements Mapper<Notification>
     protected void addColumns(Put put, Notification notification) {
 
         // fields
-        for (Map.Entry<String, String> field : notification.getFieldsAndValues().entrySet()) {
+        for (Map.Entry<String, Object> field : notification.getFieldsAndValues().entrySet()) {
             put.add(CF_FIELDS,
                     field.getKey().getBytes(CHARSET),
-                    field.getValue().getBytes(CHARSET));
+                    serializer.serialize(field.getValue()));
         }
 
         // status
@@ -116,9 +120,9 @@ public abstract class AbstractNotificationMapper implements Mapper<Notification>
 
         String id = getNotificationId(result);
 
-        Map<String, String> fieldsAndValues = new HashMap<>();
+        Map<String, Object> fieldsAndValues = new HashMap<>();
         for (Map.Entry<byte[], byte[]> entry : result.getFamilyMap(CF_FIELDS).entrySet()) {
-            fieldsAndValues.put(Bytes.toString(entry.getKey()), Bytes.toString(entry.getValue()));
+            fieldsAndValues.put(Bytes.toString(entry.getKey()), serializer.deserialize(entry.getValue()));
         }
 
         List<String> eventIds = new ArrayList<>();

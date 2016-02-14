@@ -29,6 +29,11 @@ define(['require',
         }
         return this.constructor.nonCrudOperation.call(this, url, type, options);
       },
+      destroyModel: function(options) {
+        var url = Globals.baseURL + '/api/v1/catalog/clusters/'+options.clusterId +'/components/'+options.componentId,
+            type = 'DELETE';        
+        return this.constructor.nonCrudOperation.call(this, url, type, options);
+      }
     },
     {}
   );

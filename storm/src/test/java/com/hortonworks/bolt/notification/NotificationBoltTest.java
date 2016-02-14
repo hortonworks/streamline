@@ -1,9 +1,12 @@
 package com.hortonworks.bolt.notification;
 
+import com.hortonworks.iotas.util.ProxyUtil;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.tuple.Tuple;
 import com.hortonworks.client.CatalogRestClient;
 import com.hortonworks.iotas.catalog.NotifierInfo;
+import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.notification.common.Notification;
 import com.hortonworks.iotas.notification.common.NotificationContext;
 import com.hortonworks.iotas.notification.common.NotificationImpl;
@@ -20,6 +23,7 @@ import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -53,7 +57,7 @@ public class NotificationBoltTest {
     private NotifierInfo notifierInfo;
 
     @Mocked
-    private ReflectionHelper reflectionHelper;
+    ProxyUtil<Notifier> mockProxyUtil;
 
     @Mocked
     private Tuple tuple;
@@ -82,7 +86,7 @@ public class NotificationBoltTest {
             @Override
             public void notify(Notification notification) {
                 System.out.println("Notifier notify called with notification " + notification);
-                String temp = notification.getFieldsAndValues().get("temperature");
+                String temp = (String) notification.getFieldsAndValues().get("temperature");
                 if (temp == null) {
                     myCtx.fail(notification.getId());
                 } else {
@@ -120,12 +124,13 @@ public class NotificationBoltTest {
 
     @Test
     public void testWithConsoleNotifier() throws Exception {
-        Map<String, String> fieldsAndValues = new HashMap<>();
+        Map<String, Object> fieldsAndValues = new HashMap<>();
         fieldsAndValues.put("foo", "100");
         fieldsAndValues.put("bar", "200");
-        final Notification notification = new NotificationImpl.Builder(fieldsAndValues).build();
+        final IotasEvent iotasEvent = new IotasEventImpl(fieldsAndValues, "srcid");
         NotificationBolt consoleNotificationBolt = new NotificationBolt("console_notifier");
         final ConsoleNotifier consoleNotifier = new ConsoleNotifier();
+        final Notification notification = new IotasEventAdapter(iotasEvent);
         new MockUp<NotificationQueueHandler>() {
             @Mock
             public void enqueue(Notifier notifier, Notification notification1) {
@@ -144,12 +149,10 @@ public class NotificationBoltTest {
             result = NOTIFIER_PROPS;
             notifierInfo.getFieldValues();
             result = NOTIFIER_KV;
-            ReflectionHelper.isJarInClassPath(anyString);
-            result = true;
-            ReflectionHelper.newInstance(anyString);
+            mockProxyUtil.loadClassFromJar("/tmp/console_notifier.jar", "ConsoleNotifier");
             result = consoleNotifier;
             tuple.getValueByField(anyString);
-            result = notification;
+            result = iotasEvent;
         }};
 
         Map<String, String> stormConf = new HashMap<>();
@@ -172,10 +175,10 @@ public class NotificationBoltTest {
     @Test
     public void testAck() throws Exception {
 
-        Map<String, String> fieldsAndValues = new HashMap<>();
+        Map<String, Object> fieldsAndValues = new HashMap<>();
         fieldsAndValues.put("temperature", "100");
-        final Notification notification = new NotificationImpl
-                .Builder(fieldsAndValues).build();
+        final IotasEvent iotasEvent = new IotasEventImpl(fieldsAndValues, "srcid");
+        final Notification notification = new IotasEventAdapter(iotasEvent);
         new MockUp<NotificationQueueHandler>() {
             @Mock
             public void enqueue(Notifier notifier, Notification notification1) {
@@ -193,12 +196,10 @@ public class NotificationBoltTest {
             result = NOTIFIER_PROPS;
             notifierInfo.getFieldValues();
             result = NOTIFIER_KV;
-            ReflectionHelper.isJarInClassPath(anyString);
-            result = true;
-            ReflectionHelper.newInstance(anyString);
+            mockProxyUtil.loadClassFromJar(anyString, "TestClass");
             result = notifier;
             tuple.getValueByField(anyString);
-            result = notification;
+            result = iotasEvent;
         }};
 
         Map<String, String> stormConf = new HashMap<>();
@@ -226,10 +227,10 @@ public class NotificationBoltTest {
     @Test
     public void testFail() throws Exception {
 
-        Map<String, String> fieldsAndValues = new HashMap<>();
+        Map<String, Object> fieldsAndValues = new HashMap<>();
         fieldsAndValues.put("foobar", "100");
-        final Notification notification = new NotificationImpl
-                .Builder(fieldsAndValues).build();
+        final IotasEvent iotasEvent = new IotasEventImpl(fieldsAndValues, "srcid");
+        final Notification notification = new IotasEventAdapter(iotasEvent);
 
         new MockUp<NotificationQueueHandler>() {
             @Mock
@@ -253,12 +254,10 @@ public class NotificationBoltTest {
             result = NOTIFIER_PROPS;
             notifierInfo.getFieldValues();
             result = NOTIFIER_KV;
-            ReflectionHelper.isJarInClassPath(anyString);
-            result = true;
-            ReflectionHelper.newInstance(anyString);
+            mockProxyUtil.loadClassFromJar(anyString, "TestClass");
             result = notifier;
             tuple.getValueByField(anyString);
-            result = notification;
+            result = iotasEvent;
         }};
 
         Map<String, String> stormConf = new HashMap<>();

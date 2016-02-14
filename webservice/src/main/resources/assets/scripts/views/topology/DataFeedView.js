@@ -38,6 +38,8 @@ define(['require',
       var err = this.view.validate();
       if(_.isEmpty(err)){
         this.saveDataFeed();
+      } else {
+        return false;
       }
     },
     saveDataFeed: function(){

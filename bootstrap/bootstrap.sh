@@ -51,6 +51,8 @@ done
 
 add_nest_parser
 post /datasources datasource 
+post /datasources dataset
+post /feeds dataset-datafeed
 post /notifiers console_notifier
 post /notifiers email_notifier
 post /topologies topology

@@ -5,13 +5,13 @@ define(['require',
   'use strict';
   var VParser = vBaseModel.extend(
     {
-      urlRoot: Globals.baseURL + '',
+      urlRoot: Globals.baseURL + '/api/v1/catalog/parsers',
 
       defaults: {},
 
       serverSchema : {},
 
-      idAttribute: 'parserId',
+      idAttribute: 'id',
 
       initialize: function () {
         this.modelName = 'VParser';

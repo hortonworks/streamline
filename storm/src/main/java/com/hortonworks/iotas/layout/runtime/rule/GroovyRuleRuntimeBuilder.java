@@ -18,8 +18,6 @@
 
 package com.hortonworks.iotas.layout.runtime.rule;
 
-import org.apache.storm.task.OutputCollector;
-import org.apache.storm.tuple.Tuple;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.layout.design.rule.Rule;
 import com.hortonworks.iotas.layout.runtime.rule.condition.expression.GroovyExpression;
@@ -30,9 +28,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
 
-public class GroovyRuleRuntimeBuilder implements RuleRuntimeBuilder<Tuple, OutputCollector> {
+public class GroovyRuleRuntimeBuilder extends AbstractRuleRuntimeBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(GroovyRuleRuntimeBuilder.class);
-
     private Rule rule;
     private GroovyExpression groovyExpression;
     private GroovyScriptEngine groovyScriptEngine;
@@ -52,6 +49,7 @@ public class GroovyRuleRuntimeBuilder implements RuleRuntimeBuilder<Tuple, Outpu
     public void buildScriptEngine() {
         groovyScriptEngine = new GroovyScriptEngine();
     }
+
 
     @Override
     public void buildScript() {
@@ -78,15 +76,21 @@ public class GroovyRuleRuntimeBuilder implements RuleRuntimeBuilder<Tuple, Outpu
     }
 
     @Override
-    public RuleRuntimeStorm buildRuleRuntime() {
-        return new RuleRuntimeStorm(rule, groovyScript);
+    public RuleRuntime buildRuleRuntime() {
+       return new RuleRuntime(rule, groovyScript, actions);
     }
 
     @Override
     public String toString() {
         return "GroovyRuleRuntimeBuilder{" +
-                ", groovyScriptEngine=" + groovyScriptEngine +
+                "groovyScriptEngine=" + groovyScriptEngine +
                 ", groovyScript=" + groovyScript +
+                ", actions=" + actions +
                 '}';
+    }
+
+    @Override
+    protected Rule getRule() {
+        return rule;
     }
 }

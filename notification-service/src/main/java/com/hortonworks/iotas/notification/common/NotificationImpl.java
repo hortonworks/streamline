@@ -11,7 +11,7 @@ import java.util.UUID;
 public class NotificationImpl implements Notification {
 
     private final String id;
-    private final Map<String, String> fieldsAndValues;
+    private final Map<String, Object> fieldsAndValues;
     private final List<String> eventIds;
     private final List<String> dataSourceIds;
     private final String ruleId;
@@ -24,7 +24,7 @@ public class NotificationImpl implements Notification {
      */
     public static class Builder {
         private String id;
-        private Map<String, String> fieldsAndValues;
+        private Map<String, Object> fieldsAndValues;
         private List<String> eventIds;
         private List<String> dataSourceIds;
         private String ruleId;
@@ -32,7 +32,7 @@ public class NotificationImpl implements Notification {
         private String notifierName;
         private long timestamp;
 
-        public Builder(Map<String, String> fieldsAndValues) {
+        public Builder(Map<String, Object> fieldsAndValues) {
             this.fieldsAndValues = fieldsAndValues;
         }
 
@@ -127,7 +127,7 @@ public class NotificationImpl implements Notification {
     }
 
     @Override
-    public Map<String, String> getFieldsAndValues() {
+    public Map<String, Object> getFieldsAndValues() {
         return fieldsAndValues;
     }
 

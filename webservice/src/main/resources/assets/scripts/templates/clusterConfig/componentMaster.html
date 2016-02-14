@@ -21,6 +21,9 @@
                                     {{#each kafkaArr}}
                                         <li>
                                             {{this.attributes.type}}
+                                            <a href="javascript:void(0)" class="deleteConfig pull-right" title="Delete" data-rel="tooltip" data-type="KAFKA" data-id="{{this.attributes.id}}">
+                                                <i class="fa fa-trash"></i>
+                                            </a>
                                             <a href="javascript:void(0)" class="editConfig pull-right" title="Edit" data-rel="tooltip" data-type="KAFKA" data-id="{{this.attributes.id}}">
                                                 <i class="fa fa-pencil"></i>
                                             </a>
@@ -46,6 +49,9 @@
                                     {{#each stormArr}}
                                         <li>
                                             {{this.attributes.type}}
+                                            <a href="javascript:void(0)" class="deleteConfig pull-right" title="Delete" data-rel="tooltip" data-type="STORM" data-id="{{this.attributes.id}}">
+                                                <i class="fa fa-trash"></i>
+                                            </a>
                                             <a href="javascript:void(0)" class="editConfig pull-right" title="Edit" data-rel="tooltip" data-type="STORM" data-id="{{this.attributes.id}}">
                                                 <i class="fa fa-pencil"></i>
                                             </a>
@@ -71,6 +77,9 @@
                                     {{#each hdfsArr}}
                                         <li>
                                             {{this.attributes.type}}
+                                            <a href="javascript:void(0)" class="deleteConfig pull-right" title="Delete" data-rel="tooltip" data-type="HDFS" data-id="{{this.attributes.id}}">
+                                                <i class="fa fa-trash"></i>
+                                            </a>
                                             <a href="javascript:void(0)" class="editConfig pull-right" title="Edit" data-rel="tooltip" data-type="HDFS" data-id="{{this.attributes.id}}">
                                                 <i class="fa fa-pencil"></i>
                                             </a>

@@ -23,25 +23,27 @@ import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.topology.base.BaseRichBolt;
 import org.apache.storm.tuple.Tuple;
+import org.apache.storm.tuple.Fields;
+import org.apache.storm.tuple.Values;
 import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntimeStorm;
+import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.RuleRuntime;
-import com.hortonworks.iotas.layout.runtime.rule.RuleRuntimeStormDeclaredOutput;
 import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Map;
+import static com.hortonworks.iotas.layout.runtime.ActionRuntime.Result;
+
 
 public class RulesBolt extends BaseRichBolt {
     private static final Logger LOG = LoggerFactory.getLogger(RulesBolt.class);
 
-    private final RulesBoltDependenciesFactory boltDependenciesFactory;
-    private OutputCollector collector;
+    private RuleProcessorRuntime ruleProcessorRuntime;
 
-    // transient fields
-    private transient RuleProcessorRuntimeStorm ruleProcessorRuntime;
+    private final RulesBoltDependenciesFactory boltDependenciesFactory;
+
+    private OutputCollector collector;
 
     public RulesBolt(RulesBoltDependenciesFactory boltDependenciesFactory) {
         this.boltDependenciesFactory = boltDependenciesFactory;
@@ -50,7 +52,7 @@ public class RulesBolt extends BaseRichBolt {
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
         this.collector = collector;
-        ruleProcessorRuntime = boltDependenciesFactory.createRuleProcessorRuntimeStorm();
+        ruleProcessorRuntime = boltDependenciesFactory.createRuleProcessorRuntime();
     }
 
     @Override
@@ -61,9 +63,13 @@ public class RulesBolt extends BaseRichBolt {
             if (iotasEvent instanceof IotasEvent) {
                 LOG.debug("++++++++ Executing tuple [{}] which contains IotasEvent [{}]", input, iotasEvent);
 
-                for (RuleRuntime<Tuple, OutputCollector> rule : ruleProcessorRuntime.getRulesRuntime()) {
+                for (RuleRuntime rule : ruleProcessorRuntime.getRulesRuntime()) {
                     if (rule.evaluate((IotasEvent) iotasEvent)) {
-                        rule.execute(input, collector); // collector can be null when the rule does not forward a stream
+                        for(Result result: rule.execute((IotasEvent) iotasEvent)) {
+                            for (IotasEvent event: result.events) {
+                                collector.emit(result.stream, input, new Values(event));
+                            }
+                        }
                     }
                 }
             } else {
@@ -80,9 +86,8 @@ public class RulesBolt extends BaseRichBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        final List<RuleRuntimeStormDeclaredOutput> declaredOutputs = boltDependenciesFactory.createDeclaredOutputs();
-        for (RuleRuntimeStormDeclaredOutput declaredOutput : declaredOutputs) {
-            declarer.declareStream(declaredOutput.getStreamId(), declaredOutput.getField());
+        for (String stream : boltDependenciesFactory.createRuleProcessorRuntime().getStreams()) {
+            declarer.declareStream(stream, new Fields(IotasEvent.IOTAS_EVENT));
         }
     }
 }

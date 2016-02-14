@@ -18,59 +18,70 @@
 
 package com.hortonworks.iotas.layout.design.rule.action;
 
-import com.hortonworks.iotas.common.Schema.Field;
-import com.hortonworks.iotas.layout.design.component.Component;
 
 import java.io.Serializable;
-import java.util.List;
-
-/**
- * // TODO - OUTDATED JAVADOC
- * Action that has as part of its responsibilities to emit the output (i.e. Schema - tuple for a Storm deployment)
- * that is necessary for the next component, already declared in th the layout, (e.g. HDFS sink, or another processor)
- * to be able to do its job.
- *
- * All the sinks and components associated with this action will be evaluated with the output set by this action. The output set
- * in here becomes the input of the next Sink or Component.
- * @param <F> {@link F}
- **/
+import java.util.HashMap;
+import java.util.Map;
 
 /** Action that is at the end of the chain of execution. Once this action is complete, this rule will not be evaluated anymore.
  *  The actions performed by this rule will not interact directly with any other components of the rule system, e.g., other rules,
  *  components, sinks, ...
  **/
 public class Action implements Serializable {
-    private List<Component> components;  // Can be sinks or processors
-    private List<Field> declaredOutput;
+    private Map<String, Object> outputFieldsAndDefaults = new HashMap<>();
+    private boolean includeMeta = false;
+    private String name = "default";
+    private String notifierName = "dummy";
 
     public Action() { }
 
     /**
-     * All downstream components must receive the same input, as defined by getDeclaredOutput.
-     * Actions that intend to declare different outputs must be declared in a different rule
-     * @return List of downstream components or sinks called as part this action execution
+     * The name of the output fields and the default values for them
+     * to be emitted as a part of this action.
      */
-    public List<Component> getComponents() {
-        return components;
+    public void setOutputFieldsAndDefaults(Map<String, Object> outputFieldsAndDefaults) {
+        this.outputFieldsAndDefaults = outputFieldsAndDefaults;
     }
 
-    public void setComponents(List<Component> components) {
-        this.components = components;
+    public Map<String, Object> getOutputFieldsAndDefaults() {
+        return outputFieldsAndDefaults;
     }
 
-    public void setDeclaredOutput(List<Field> declaredOutput) {
-        this.declaredOutput = declaredOutput;
+    public String getName() {
+        return name;
     }
 
-    public List<Field> getDeclaredOutput() {
-        return declaredOutput;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public boolean isIncludeMeta() {
+        return includeMeta;
+    }
+
+    /**
+     * Whether to include meta data (rule-id, event-id, datasource-id) in the output
+     * IotasEvent header.
+     */
+    public void setIncludeMeta(boolean includeMeta) {
+        this.includeMeta = includeMeta;
+    }
+
+    public String getNotifierName() {
+        return notifierName;
+    }
+
+    public void setNotifierName(String notifierName) {
+        this.notifierName = notifierName;
     }
 
     @Override
     public String toString() {
         return "Action{" +
-                "components=" + components +
-                ", declaredOutput=" + declaredOutput +
+                "outputFieldsAndDefaults=" + outputFieldsAndDefaults +
+                ", includeMeta=" + includeMeta +
+                ", name='" + name + '\'' +
+                ", notifierName='" + notifierName + '\'' +
                 '}';
     }
 }

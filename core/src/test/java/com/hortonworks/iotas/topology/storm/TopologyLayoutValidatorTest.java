@@ -24,7 +24,7 @@ public class TopologyLayoutValidatorTest {
     ObjectMapper mapper;
     TopologyActions topologyActions = new StormTopologyActionsImpl();
 
-    String[] goodLayouts = {"topology/GoodLayout.json", "topology/goodlayoutnotificationbolt.json"};
+    String[] goodLayouts = {"topology/goodlayout.json", "topology/goodlayoutnotificationbolt.json"};
     // if an element is added to the array below then corresponding error
     // message also needs to be added to badLayoutMessages array below
     String[] badLayouts = {
@@ -51,10 +51,11 @@ public class TopologyLayoutValidatorTest {
             "topology/linkbadoptionalfieldlayout.json",
             "topology/invalidfieldsgroupinglinklayout.json",
             "topology/noparserprocessorlayout.json",
-            "topology/invalidparserstreamidlayout.json",
-            "topology/emptystreamidfromrulelinklayout.json",
-            "topology/invalidstreamidfromrulelinklayout.json",
-            "topology/invalidfieldsfromrulelinklayout.json"
+            "topology/invalidparserstreamidlayout.json"
+            // Uncomment this with https://hwxiot.atlassian.net/browse/IOT-126
+            //"topology/emptystreamidfromrulelinklayout.json",
+            //"topology/invalidstreamidfromrulelinklayout.json",
+            //"topology/invalidfieldsfromrulelinklayout.json"
     };
     // the size of the array below should be same as size of the array
     // badLayouts above

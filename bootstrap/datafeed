@@ -1,1 +1,7 @@
-{"id":1,"dataSourceId":1,"name":"nest-datafeed","parserId":1,"type":"KAFKA"}
+{
+   "id":1,
+   "parserId" : 1,
+   "dataSourceId" : 1,
+   "name" : "nest-datafeed",
+   "type" : "KAFKA"
+}

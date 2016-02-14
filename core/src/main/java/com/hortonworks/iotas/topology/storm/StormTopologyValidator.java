@@ -42,7 +42,8 @@ class StormTopologyValidator {
             }
         }
         validateParserProcessorLinks();
-        validateRuleProcessorLinks();
+        // Uncomment this with https://hwxiot.atlassian.net/browse/IOT-126
+        //validateRuleProcessorLinks();
     }
 
     // if there is a link from a parser processor then the stream id has to
