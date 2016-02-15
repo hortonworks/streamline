@@ -21,11 +21,11 @@ package com.hortonworks.iotas.layout.runtime.script;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.layout.runtime.rule.condition.expression.Expression;
 import com.hortonworks.iotas.layout.runtime.script.engine.ScriptEngine;
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.script.Bindings;
-import javax.script.ScriptContext;
 import javax.script.ScriptException;
 import java.util.Map;
 
@@ -37,43 +37,54 @@ import java.util.Map;
 public class GroovyScript<O> extends Script<IotasEvent, O, javax.script.ScriptEngine> {
     private static final Logger LOG = LoggerFactory.getLogger(GroovyScript.class);
 
+    // instance of parsed Script is not thread-safe so we want to store parsed script per each thread
+    // transient to avoid NotSerializableException
+    // volatile to safe lazy-init via Double Checking Lock
+    private transient volatile ThreadLocal<groovy.lang.Script> parsedScript;
+
     public GroovyScript(String expression,
                         ScriptEngine<javax.script.ScriptEngine> scriptEngine) {
         super(expression, scriptEngine);
-        LOG.debug("Created Groovy Script: {}", super.toString());
     }
 
     @Override
     public O evaluate(IotasEvent iotasEvent) throws ScriptException {
         LOG.debug("Evaluating [{}] with [{}]", expression, iotasEvent);
+        groovy.lang.Script parsedScript = getParsedScript();
         O evaluatedResult = null;
 
-        try {
-            if (iotasEvent != null) {
-                final Map<String, Object> fieldsToValues = iotasEvent.getFieldsAndValues();
-                if (fieldsToValues != null) {
-                    getEngineScopeBindings().putAll(fieldsToValues);
+        if (iotasEvent != null) {
+            final Map<String, Object> fieldsToValues = iotasEvent.getFieldsAndValues();
+            if (fieldsToValues != null) {
+                try {
+                    Binding binding = new Binding(fieldsToValues);
+                    parsedScript.setBinding(binding);
                     LOG.debug("Set script binding to [{}]", fieldsToValues);
 
-                    evaluatedResult = (O) scriptEngine.eval(expression);
+                    evaluatedResult = (O) parsedScript.run();
 
                     LOG.debug("Expression [{}] evaluated to [{}]", expression, evaluatedResult);
+                } catch (groovy.lang.MissingPropertyException e) {
+                    LOG.debug("Missing property: Expression [{}] params [{}]", expression, fieldsToValues);
+                    throw new ScriptException(e);
                 }
             }
-        } finally {
-            // It is absolutely necessary to clear the bindings. Otherwise the old values of a key will be used
-            // to evaluate the expression when the iotasEvent doesn't have such key
-            clearBindings();
         }
         return evaluatedResult;
     }
 
-    private Bindings getEngineScopeBindings() {
-        return scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE);
-    }
+    private groovy.lang.Script getParsedScript() {
+        if (parsedScript == null) {
+            synchronized (this) {
+                parsedScript = new ThreadLocal<groovy.lang.Script>() {
+                    @Override
+                    protected groovy.lang.Script initialValue() {
+                        return new GroovyShell().parse(expression);
+                    }
+                };
+            }
+        }
 
-    private void clearBindings() {
-        getEngineScopeBindings().clear();
-        LOG.debug("Script binding reset to empty binding");
+        return parsedScript.get();
     }
 }
