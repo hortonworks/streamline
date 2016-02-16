@@ -18,11 +18,11 @@ This should start the webserver on localhost port 8080. If you are running storm
 
 Same config can be used to start debugging.
 
-##Loading webserver with some data
-`cd $IOTAS-HOME\bin`  
-`./load-device.sh`  
+##Bootstrapping webserver with test data
+`cd $IOTAS-HOME\bootstrap`
+`./bootstrap.sh`
 
-Please see `load-device.sh` which is just bunch of curl commands in case you want to add some other objects to webservice's in memory store.
+Please see `bootstrap.sh` which is just bunch of curl commands in case you want to add some other objects to webservice's in memory store.
 
 #Running storm topology
 First you need to populate your kafka topic, if you have not done so create your kafka topic by executing    
