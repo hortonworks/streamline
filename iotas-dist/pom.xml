@@ -22,7 +22,7 @@
         <artifactId>iotas</artifactId>
         <groupId>com.hortonworks.iotas</groupId>
         <version>0.1.0-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>hortonworks-iotas-bin</artifactId>
     <packaging>pom</packaging>
@@ -62,7 +62,7 @@
                 </executions>
                 <configuration>
                     <attach>true</attach>
-                    <runOnlyAtExecutionRoot>true</runOnlyAtExecutionRoot>
+                    <runOnlyAtExecutionRoot>false</runOnlyAtExecutionRoot>
                     <descriptors>
                         <descriptor>${project.basedir}/src/main/assembly/binary.xml</descriptor>
                     </descriptors>
