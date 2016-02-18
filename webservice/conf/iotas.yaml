@@ -2,7 +2,7 @@ brokerList: localhost:9092
 zookeeperHost: localhost:2181
 topologyActionsImpl: com.hortonworks.iotas.topology.storm.StormTopologyActionsImpl
 #change the below to the path on your local machine
-iotasStormJar: /tmp/storm-0.1-SNAPSHOT.jar
+iotasStormJar: /tmp/storm-0.1.0-SNAPSHOT.jar
 catalogRootUrl: "http://localhost:8080/api/v1/catalog"
 stormHomeDir: /usr/local/Cellar/storm/0.10.0/
 # Filesystem based jar storage

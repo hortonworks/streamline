@@ -8,7 +8,7 @@ From command line execute the following commands:
 `mvn clean install`  
 `cd webservice`  
 `mvn package`  
-`java -cp target/webservice-0.1-SNAPSHOT.jar com.hortonworks.iotas.webservice.IotasApplication server conf/iotas-dev.yaml`
+`java -cp target/webservice-0.1.0-SNAPSHOT.jar com.hortonworks.iotas.webservice.IotasApplication server conf/iotas-dev.yaml`
 
 This should start the webserver on localhost port 8080. If you are running storm on the same host you may get 
 `java.net.BindException: Address already in use` in which case you should modify `server` section of iotas.yaml.
@@ -30,7 +30,7 @@ First you need to populate your kafka topic, if you have not done so create your
 
 Then run the device simulator CLI to post some sample `IotasMessage` containing nest data to your kafka topic.  
 `cd $IOTAS-HOME`  
-`java -cp simulator/target/simulator-0.1-SNAPSHOT.jar com.hortonworks.iotas.simulator.CLI -b localhost:9092 -t nest-topic -f simulator/src/main/resources/nest-iotas-messages`
+`java -cp simulator/target/simulator-0.1.0-SNAPSHOT.jar com.hortonworks.iotas.simulator.CLI -b localhost:9092 -t nest-topic -f simulator/src/main/resources/nest-iotas-messages`
 
 Sometimes the command fails with following exceptions:
 `Exception in thread "main" kafka.common.FailedToSendMessageException: Failed to send messages after 3 tries.
@@ -94,14 +94,14 @@ Now, From intellij you should be able to run `com.hortonworks.topology.IotasTopo
 you can also run the topology on a storm cluster by providing the name of the topology as second argument. RIGHT NOW THE TOPOLOGY DOES NOT EXECUTE IN A STORM CLUSTER AS THE JACKSON LIBRARY USED BY US HAVE A CONFLICTING
 VERSION WITH STORM. Please merge https://github.com/apache/storm/pull/702 on your local storm cluster if you need to execute the topology on a storm cluster.
 
-`storm jar $IOTAS-HOME/storm/target/storm-0.1-SNAPSHOT.jar com.hortonworks.topology.IotasTopology  $IOTAS-HOME/storm/src/main/resources/topology.yaml IotasTopology`
+`storm jar $IOTAS-HOME/storm/target/storm-0.1.0-SNAPSHOT.jar com.hortonworks.topology.IotasTopology  $IOTAS-HOME/storm/src/main/resources/topology.yaml IotasTopology`
 
 ##IoTaS topology using Flux  
 After doing a mvn package on IoTaS home directory you can run the following 
-command `storm jar ./storm/target/storm-0.1-SNAPSHOT.jar org.apache.storm.flux.Flux --local --sleep 3600000 --filter ./storm/src/main/resources/flux_iotas_topology.properties ./storm/src/main/resources/flux_iotas_topology_config.yaml`
+command `storm jar ./storm/target/storm-0.1.0-SNAPSHOT.jar org.apache.storm.flux.Flux --local --sleep 3600000 --filter ./storm/src/main/resources/flux_iotas_topology.properties ./storm/src/main/resources/flux_iotas_topology_config.yaml`
   
 Note that in order to submit the topology created using UI the storm jar for the topology must be copied to the path referred to by iotasStormJar config 
-property. Default value for that location is /tmp/storm-0.1-SNAPSHOT.jar
+property. Default value for that location is /tmp/storm-0.1.0-SNAPSHOT.jar
 
 This will run the IOTaS topology in local mode for one hour, processing any events published to the 'nest-topic'. You can kill the topology anytime by pressing CTRL + C in the console.
 

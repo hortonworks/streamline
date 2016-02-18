@@ -534,7 +534,7 @@ POST /api/v1/catalog/parsers
 
 *Sample Input*
 
-    curl -X POST -v -F parserJar=@parsers-0.1-SNAPSHOT.jar -F parserInfo=@ParserInfo.json http://localhost:8080/api/v1/catalog/parsers
+    curl -X POST -v -F parserJar=@parsers-0.1.0-SNAPSHOT.jar -F parserInfo=@ParserInfo.json http://localhost:8080/api/v1/catalog/parsers
 
 *Sample ParserInfo.json*
 
@@ -562,7 +562,7 @@ POST /api/v1/catalog/parsers
     "id": 1,
     "name": "TestParser",
     "className": "com.hortonworks.iotas.parsers.json.JsonParser",
-    "jarStoragePath": "/tmp/parsers-0.1-SNAPSHOT.jar",
+    "jarStoragePath": "/tmp/parsers-0.1.0-SNAPSHOT.jar",
     "parserSchema": {
       "fields": [
         {
@@ -610,7 +610,7 @@ GET /api/v1/catalog/parsers/{id}
     "id": 1,
     "name": "TestParser",
     "className": "com.hortonworks.iotas.parsers.json.JsonParser",
-    "jarStoragePath": "/tmp/parsers-0.1-SNAPSHOT.jar",
+    "jarStoragePath": "/tmp/parsers-0.1.0-SNAPSHOT.jar",
     "parserSchema": {
       "fields": [{"name": "DeviceName", "type": "STRING"}]
     },
@@ -677,7 +677,7 @@ GET /api/v1/catalog/parsers
       "id": 1,
       "name": "TestParser",
       "className": "com.hortonworks.iotas.parsers.json.JsonParser",
-      "jarStoragePath": "/tmp/parsers-0.1-SNAPSHOT.jar",
+      "jarStoragePath": "/tmp/parsers-0.1.0-SNAPSHOT.jar",
       "parserSchema": {
         "fields": [{"name": "DeviceName","type": "STRING"}]
       },
@@ -688,7 +688,7 @@ GET /api/v1/catalog/parsers
       "id": 2,
       "name": "New Parser",
       "className": "com.hortonworks.iotas.parsers.TestParser",
-      "jarStoragePath": "/tmp/test-0.1-SNAPSHOT.jar",
+      "jarStoragePath": "/tmp/test-0.1.0-SNAPSHOT.jar",
       "parserSchema": {
         "fields": [{"name": "DeviceName","type": "STRING"}]
       },
@@ -719,7 +719,7 @@ DELETE /api/v1/catalog/parsers/ID
     "id": 1,
     "name": "TestParser",
     "className": "com.hortonworks.iotas.parsers.json.JsonParser",
-    "jarStoragePath": "/tmp/parsers-0.1-SNAPSHOT.jar",
+    "jarStoragePath": "/tmp/parsers-0.1.0-SNAPSHOT.jar",
     "parserSchema": {
       "fields": [{"name": "DeviceName", "type": "STRING"}]
     },
