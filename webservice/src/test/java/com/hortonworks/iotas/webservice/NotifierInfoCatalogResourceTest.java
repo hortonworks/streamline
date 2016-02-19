@@ -6,7 +6,6 @@ import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.catalog.NotifierInfoCatalogResource;
 import mockit.Expectations;
 import mockit.Injectable;
-import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,10 +14,9 @@ import org.junit.runner.RunWith;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
-
 import java.util.Arrays;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created by aiyer on 9/28/15.

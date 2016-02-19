@@ -19,6 +19,7 @@ public class TopologyComponent implements Storable {
     public static final String STREAMING_ENGINE = "streamingEngine";
     public static final String SUB_TYPE = "subType";
     public static final String CONFIG = "config";
+    public static final String SCHEMA_CLASS = "schemaClass";
     public static final String TRANSFORMATION_CLASS = "transformationClass";
 
     public enum TopologyComponentType {
@@ -69,6 +70,11 @@ public class TopologyComponent implements Storable {
     private String config;
 
     /**
+     * A fully qualified class name that can simulate evolution of schema
+     */
+    private String schemaClass;
+
+    /**
      * A fully qualified class name that can handle transformation of
      * this component to underlying streaming engine equivalent
      */
@@ -91,6 +97,7 @@ public class TopologyComponent implements Storable {
                 new Schema.Field(STREAMING_ENGINE, Schema.Type.STRING),
                 new Schema.Field(SUB_TYPE, Schema.Type.STRING),
                 new Schema.Field(CONFIG, Schema.Type.STRING),
+                Schema.Field.optional(SCHEMA_CLASS, Schema.Type.STRING),
                 new Schema.Field(TRANSFORMATION_CLASS, Schema.Type.STRING)
         );
     }
@@ -120,6 +127,7 @@ public class TopologyComponent implements Storable {
         map.put(STREAMING_ENGINE, streamingEngine);
         map.put(SUB_TYPE, subType);
         map.put(CONFIG, config);
+        map.put(SCHEMA_CLASS, schemaClass);
         map.put(TRANSFORMATION_CLASS, transformationClass);
         return map;
     }
@@ -133,6 +141,7 @@ public class TopologyComponent implements Storable {
         streamingEngine = (String) map.get(STREAMING_ENGINE);
         subType = (String) map.get(SUB_TYPE);
         config = (String) map.get(CONFIG);
+        schemaClass = (String) map.get(SCHEMA_CLASS);
         transformationClass = (String) map.get(TRANSFORMATION_CLASS);
         return this;
     }
@@ -193,6 +202,14 @@ public class TopologyComponent implements Storable {
         this.config = config;
     }
 
+    public String getSchemaClass() {
+        return schemaClass;
+    }
+
+    public void setSchemaClass(String schemaClass) {
+        this.schemaClass = schemaClass;
+    }
+
     public String getTransformationClass () {
         return transformationClass;
     }
@@ -212,6 +229,7 @@ public class TopologyComponent implements Storable {
                 ", streamingEngine='" + streamingEngine + '\'' +
                 ", subType='" + subType + '\'' +
                 ", config='" + config + '\'' +
+                ", schemaClass=" + schemaClass + '\'' +
                 ", transformationClass='" + transformationClass + '\'' +
                 '}';
     }
@@ -233,6 +251,8 @@ public class TopologyComponent implements Storable {
             return false;
         if (config != null ? !config.equals(that.config) : that.config != null)
             return false;
+        if (schemaClass != null ? !schemaClass.equals(that.schemaClass) : that.schemaClass != null)
+            return false;
         return !(transformationClass != null ? !transformationClass.equals(that.transformationClass) : that.transformationClass != null);
 
     }
@@ -245,6 +265,7 @@ public class TopologyComponent implements Storable {
         result = 31 * result + (streamingEngine != null ? streamingEngine.hashCode() : 0);
         result = 31 * result + (subType != null ? subType.hashCode() : 0);
         result = 31 * result + (config != null ? config.hashCode() : 0);
+        result = 31 * result + (schemaClass != null ? schemaClass.hashCode() : 0);
         result = 31 * result + (transformationClass != null ? transformationClass.hashCode() : 0);
         return result;
     }
