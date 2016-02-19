@@ -1,4 +1,4 @@
-package com.hortonworks.bolt;
+package com.hortonworks.iotas.testing;
 
 import com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransform;
 import org.apache.storm.task.OutputCollector;
@@ -19,7 +19,7 @@ import java.util.Map;
 /**
  * This is a dummy bolt to just send some notifications for testing the Notifications.
  */
-public class DummyRuleBolt extends BaseRichBolt {
+public class NotificationsTestBolt extends BaseRichBolt {
 
     public static final String IOTAS_NOTIFICATION = "iotas.notification";
     private static int EMAIL_NOTIFICATION_INTERVAL = 500; // after every 500 notifications
@@ -30,12 +30,12 @@ public class DummyRuleBolt extends BaseRichBolt {
     private String emailNotificationStream = "";
     private String consoleNotificationStream = "";
 
-    public DummyRuleBolt withEmailNotificationStream(String stream) {
+    public NotificationsTestBolt withEmailNotificationStream(String stream) {
         this.emailNotificationStream = stream;
         return this;
     }
 
-    public DummyRuleBolt withConsoleNotificationStream(String stream) {
+    public NotificationsTestBolt withConsoleNotificationStream(String stream) {
         this.consoleNotificationStream = stream;
         return this;
     }
@@ -62,10 +62,10 @@ public class DummyRuleBolt extends BaseRichBolt {
             header.put(AddHeaderTransform.HEADER_FIELD_EVENT_IDS, eventIds);
             header.put(AddHeaderTransform.HEADER_FIELD_DATASOURCE_IDS, dataSourceIds);
             header.put(AddHeaderTransform.HEADER_FIELD_NOTIFIER_NAME, "console_notifier");
-            header.put(AddHeaderTransform.HEADER_FIELD_RULE_ID, "1");
+            header.put(AddHeaderTransform.HEADER_FIELD_RULE_ID, 1L);
             header.put(AddHeaderTransform.HEADER_FIELD_TIMESTAMP, System.currentTimeMillis());
 
-            IotasEvent iotasEvent = new IotasEventImpl(fieldsMap, "dummyRuleBolt", header);
+            IotasEvent iotasEvent = new IotasEventImpl(fieldsMap, "notificationsTestBolt", header);
             collector.emit(consoleNotificationStream, new Values(iotasEvent));
         }
 
@@ -78,10 +78,10 @@ public class DummyRuleBolt extends BaseRichBolt {
                 header.put(AddHeaderTransform.HEADER_FIELD_EVENT_IDS, eventIds);
                 header.put(AddHeaderTransform.HEADER_FIELD_DATASOURCE_IDS, dataSourceIds);
                 header.put(AddHeaderTransform.HEADER_FIELD_NOTIFIER_NAME, "email_notifier");
-                header.put(AddHeaderTransform.HEADER_FIELD_RULE_ID, "1");
+                header.put(AddHeaderTransform.HEADER_FIELD_RULE_ID, 1L);
                 header.put(AddHeaderTransform.HEADER_FIELD_TIMESTAMP, System.currentTimeMillis());
 
-                IotasEvent iotasEvent = new IotasEventImpl(fieldsMap, "dummyRuleBolt", header);
+                IotasEvent iotasEvent = new IotasEventImpl(fieldsMap, "notificationsTestBolt", header);
 
                 collector.emit(emailNotificationStream, new Values(iotasEvent));
             }
