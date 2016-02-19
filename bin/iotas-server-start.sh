@@ -36,10 +36,12 @@ if [ ! -d "$LOG_DIR" ]; then
     mkdir -p "$LOG_DIR"
 fi
 
-echo $base_dir
 # classpath addition for release
 
-CLASSPATH=$base_dir/libs/webservice*.jar;$base_dir/conf/;
+CLASSPATH=$base_dir/libs/webservice*.jar;
+if [ "x$EXT_CLASSPATH" = "x" ]; then
+ CLASSPATH=$CLASSPATH;$EXT_CLASSPATH;
+fi
 
 COMMAND=$1
 case $COMMAND in
@@ -68,14 +70,9 @@ if [ -z "$IOTAS_JVM_PERFORMANCE_OPTS" ]; then
   IOTAS_JVM_PERFORMANCE_OPTS="-server -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -XX:+CMSScavengeBeforeRemark -XX:+DisableExplicitGC -Djava.awt.headless=true"
 fi
 
-echo $@
 # Launch mode
 if [ "x$DAEMON_MODE" = "xtrue" ]; then
   nohup $JAVA $IOTAS_HEAP_OPTS $IOTAS_JVM_PERFORMANCE_OPTS -cp $CLASSPATH $IOTAS_OPTS "com.hortonworks.iotas.webservice.IotasApplication" "server" "$@" > "$CONSOLE_OUTPUT_FILE" 2>&1 < /dev/null &
 else
-  echo $CLASSPATH
-  echo $IOTAS_OPTS
-  echo $IOTAS_JVM_PERFORMANCE_OPTS
-  echo $IOTAS_HEAP_OPTS
   exec $JAVA $IOTAS_HEAP_OPTS $IOTAS_JVM_PERFORMANCE_OPTS  -cp $CLASSPATH $IOTAS_OPTS "com.hortonworks.iotas.webservice.IotasApplication" "server" "$@"
 fi

@@ -25,6 +25,7 @@ if [ "x$HDP_DIR" = "x" ]; then
     IOTAS_HOME=$base_dir
     PID_DIR=$base_dir/logs
     LOG_DIR=$base_dir/logs
+    mkdir -p $LOG_DIR
 else
     IOTAS_HOME=$HDP_DIR/iotas
 fi

@@ -37,10 +37,24 @@
             <groupId>com.hortonworks.iotas</groupId>
             <artifactId>notification-service</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <!-- dropwizard and phoenix have conflicts in jersey related dependencies  -->
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>${kafkaArtifact}</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <!-- dropwizard and phoenix have conflicts in jersey related dependencies  -->
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>
