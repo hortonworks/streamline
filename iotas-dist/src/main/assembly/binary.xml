@@ -59,6 +59,13 @@
                 <include>notifiers*jar</include>
             </includes>
         </fileSet>
+        <fileSet>
+            <directory>${project.basedir}./simulator/target</directory>
+            <outputDirectory>/examples/topology/simulator</outputDirectory>
+            <includes>
+                <include>simulator*jar</include>
+            </includes>
+        </fileSet>
     </fileSets>
 
     <files>
