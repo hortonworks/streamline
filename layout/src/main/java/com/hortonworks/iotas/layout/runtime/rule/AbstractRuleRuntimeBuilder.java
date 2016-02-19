@@ -22,8 +22,7 @@ public abstract class AbstractRuleRuntimeBuilder implements RuleRuntimeBuilder {
         List<ActionRuntime> runtimeActions = new ArrayList<>();
         Rule rule = getRule();
         for (Action action : rule.getActions()) {
-            String streamId = rule.getRuleProcessorName() + "." + rule.getName() + "."
-                    + rule.getId() + "." + action.getName();
+            String streamId = rule.getOutputStreamNameForAction(action);
             /*
              * Add an TransformAction to perform necessary transformation for notification
              */
