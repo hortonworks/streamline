@@ -23,6 +23,9 @@ define(['require',
       getSchema:function(options){
         return this.constructor.nonCrudOperation.call(this, Globals.baseURL + '/api/v1/catalog/parsers/'+options.parserId+'/schema', 'GET', options);
       },
+      getNamespaceAppliedSchema:function(options){
+          return this.constructor.nonCrudOperation.call(this, Globals.baseURL + '/api/v1/catalog/parsers/'+options.parserId+'/schema/namespace/' + options.dataSourceId, 'GET', options);
+      },
     },
     {}
   );

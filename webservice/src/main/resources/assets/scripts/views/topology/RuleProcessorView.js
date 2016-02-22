@@ -37,7 +37,8 @@ define(['require',
       dsModel.set('id', this.model.get('dataSourceId'));
       dsModel.fetch({async: false});
 
-      this.parserModel.getSchema({
+      this.parserModel.getNamespaceAppliedSchema({
+        dataSourceId: dsModel.get('id'),
         parserId: dsModel.get('entity').parserId,
         async: false,
         success: function(model, response, options){
