@@ -17,9 +17,6 @@ cp /root/IoTaS/storm/target/storm-0.1-SNAPSHOT.jar /tmp/
 sed -i 's/hdfs:\/\/localhost:9000/hdfs:\/\/sandbox.hortonworks.com:8020/g' /root/IoTaS/webservice/conf/iotas.yaml 
 #Under the same configuration check the value for key directory and create hdfs directory with the same value. The is the directory that will be used by IoTaS for storing different jars in hdfs. You can use the default value of /tmp/test-hdfs or use a different value. The command for creating hdfs directory for default value are as below.
 hdfs dfs -mkdir /tmp/test-hdfs
-#Since the default port used by IoTaS to start the web server will conflict with ambari server port, execute the below command to update ports 8080 and 8081 to available ports. In this case available ports are 21000 and 21001. Also note that if you pick other ports than the ones mentioned here you might need to change port forwarding settings to be able to reach the IoTaS web server on sandbox from browser on the host running the sandbox.
-sed -i 's/8080/21000/' /root/IoTaS/webservice/conf/iotas.yaml
-sed -i 's/8081/21001/' /root/IoTaS/webservice/conf/iotas.yaml
 #Now start the IoTaS web server by executing below commands
 cd /root/IoTaS/webservice/
 nohup java -cp target/webservice-0.1-SNAPSHOT.jar com.hortonworks.iotas.webservice.IotasApplication server conf/iotas.yaml&
@@ -27,8 +24,6 @@ sleep 10
 #Once the web server has been successfully started you can quickly add the needed components to create and run a topology using a bunch of curl commands. However, because some of the topology components use configuration specific to the clusters on which those topology components will be running you need to follow the steps below to ensure that the component configurations have the correct value.
 #Change the hdfs url.
 sed -i 's/hdfs:\/\/localhost:9000/hdfs:\/\/sandbox.hortonworks.com:8020/g' /root/IoTaS/bin/topology 
-#Change the port for IoTaS used by curl script load-device.sh
-sed -i 's/8080/21000/' /root/IoTaS/bin/load-device.sh
 cd /root/IoTaS/bin/
 ./load-device.sh 
 #Note that you might get an error response for notifiers endpoint. You can ignore that for now.

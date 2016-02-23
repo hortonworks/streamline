@@ -176,7 +176,7 @@ public class ParserInfoCatalogResource {
         return result;
     }
 
-    //Test curl command curl -X POST -i -F parserJar=@original-webservice-0.1-SNAPSHOT.jar -F parserInfo='{"parserName":"TestParser","className":"some.test.parserClass","version":0}' http://localhost:8080/api/v1/catalog/parsers
+    //Test curl command curl -X POST -i -F parserJar=@original-webservice-0.1-SNAPSHOT.jar -F parserInfo='{"parserName":"TestParser","className":"some.test.parserClass","version":0}' http://localhost:9707/api/v1/catalog/parsers
     @Timed
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)

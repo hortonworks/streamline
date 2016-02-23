@@ -156,7 +156,7 @@ public class NotificationBoltTest {
         }};
 
         Map<String, String> stormConf = new HashMap<>();
-        stormConf.put("catalog.root.url", "http://localhost:8080/api/v1/catalog");
+        stormConf.put("catalog.root.url", "http://localhost:9707/api/v1/catalog");
         stormConf.put("local.notifier.jar.path", "/tmp");
         consoleNotificationBolt.prepare(stormConf, null, collector);
         consoleNotificationBolt.execute(tuple);
@@ -203,7 +203,7 @@ public class NotificationBoltTest {
         }};
 
         Map<String, String> stormConf = new HashMap<>();
-        stormConf.put("catalog.root.url", "http://localhost:8080/api/v1/catalog");
+        stormConf.put("catalog.root.url", "http://localhost:9707/api/v1/catalog");
         stormConf.put("local.notifier.jar.path", "/tmp");
         bolt.prepare(stormConf, null, collector);
 
@@ -261,7 +261,7 @@ public class NotificationBoltTest {
         }};
 
         Map<String, String> stormConf = new HashMap<>();
-        stormConf.put("catalog.root.url", "http://localhost:8080/api/v1/catalog");
+        stormConf.put("catalog.root.url", "http://localhost:9707/api/v1/catalog");
         stormConf.put("local.notifier.jar.path", "/tmp");
         bolt.prepare(stormConf, null, collector);
 
