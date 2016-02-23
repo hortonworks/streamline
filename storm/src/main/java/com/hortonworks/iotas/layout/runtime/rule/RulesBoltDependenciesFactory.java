@@ -18,7 +18,8 @@
 
 package com.hortonworks.iotas.layout.runtime.rule;
 
-import com.hortonworks.iotas.layout.design.component.RulesProcessorBuilder;
+import com.hortonworks.iotas.layout.design.component.ComponentBuilder;
+import com.hortonworks.iotas.layout.design.component.RulesProcessor;
 import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntime;
 import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntimeDependenciesBuilder;
 
@@ -27,10 +28,10 @@ import java.io.Serializable;
 public class RulesBoltDependenciesFactory implements Serializable {
     public enum ScriptType {GROOVY, SQL}
 
-    private RulesProcessorBuilder rulesProcessorBuilder;
+    private ComponentBuilder<RulesProcessor> rulesProcessorBuilder;
     private ScriptType scriptType;
 
-    public RulesBoltDependenciesFactory(RulesProcessorBuilder rulesProcessorBuilder, ScriptType scriptType) {
+    public RulesBoltDependenciesFactory(ComponentBuilder<RulesProcessor> rulesProcessorBuilder, ScriptType scriptType) {
         this.rulesProcessorBuilder = rulesProcessorBuilder;
         this.scriptType = scriptType;
     }

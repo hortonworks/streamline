@@ -82,7 +82,7 @@ public class ParserSchemaEvolverTest {
         parserInfo.setJarStoragePath("dummy");
         parserInfo.setTimestamp(1L);
         parserInfo.setVersion(1L);
-        parserInfo.setParserSchema(buildInputSchema());
+        parserInfo.setParserSchema(EvolverSchemaTestObject.inputSchema());
         return parserInfo;
     }
 
@@ -100,15 +100,5 @@ public class ParserSchemaEvolverTest {
         componentConfig.put("config", configMap);
 
         return componentConfig;
-    }
-
-    private Schema buildInputSchema() {
-        Schema.SchemaBuilder schemaBuilder = new Schema.SchemaBuilder();
-
-        schemaBuilder.field(new Schema.Field("field1", Schema.Type.STRING));
-        schemaBuilder.field(new Schema.Field("field2", Schema.Type.LONG));
-        schemaBuilder.field(new Schema.Field("field3", Schema.Type.STRING));
-
-        return schemaBuilder.build();
     }
 }

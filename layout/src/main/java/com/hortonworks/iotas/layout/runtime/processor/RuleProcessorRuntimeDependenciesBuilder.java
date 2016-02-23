@@ -18,8 +18,8 @@
 
 package com.hortonworks.iotas.layout.runtime.processor;
 
+import com.hortonworks.iotas.layout.design.component.ComponentBuilder;
 import com.hortonworks.iotas.layout.design.component.RulesProcessor;
-import com.hortonworks.iotas.layout.design.component.RulesProcessorBuilder;
 import com.hortonworks.iotas.layout.design.rule.Rule;
 import com.hortonworks.iotas.layout.runtime.rule.RuleRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.RuleRuntimeBuilder;
@@ -35,7 +35,8 @@ public class RuleProcessorRuntimeDependenciesBuilder {
     private final RulesProcessor rulesProcessor;
     private final RuleRuntimeBuilder ruleRuntimeBuilder;
 
-    public RuleProcessorRuntimeDependenciesBuilder(RulesProcessorBuilder rulesProcessorBuilder, RuleRuntimeBuilder ruleRuntimeBuilder) {
+    public RuleProcessorRuntimeDependenciesBuilder(ComponentBuilder<RulesProcessor> rulesProcessorBuilder,
+                                                   RuleRuntimeBuilder ruleRuntimeBuilder) {
         this.rulesProcessor = rulesProcessorBuilder.build();
         this.ruleRuntimeBuilder = ruleRuntimeBuilder;
     }

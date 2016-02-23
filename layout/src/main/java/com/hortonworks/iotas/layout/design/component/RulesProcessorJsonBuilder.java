@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class RulesProcessorJsonBuilder implements RulesProcessorBuilder {
+public class RulesProcessorJsonBuilder implements ComponentBuilder<RulesProcessor> {
     private static final Logger LOG = LoggerFactory.getLogger(RulesProcessorJsonBuilder.class);
     private final String rulesProcessorJson;
 

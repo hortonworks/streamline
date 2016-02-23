@@ -26,7 +26,7 @@ public class RulesSchemaEvolverTest {
         final RulesSchemaEvolver evolver = new RulesSchemaEvolver();
 
         String componentConfig = buildRulesProcessorComponentConfigWithNoTransformation();
-        Schema schema = buildInputSchema();
+        Schema schema = EvolverSchemaTestObject.inputSchema();
 
         Map<String, Schema> schemaMap = evolver.apply(componentConfig, schema);
         assertEquals(schemaMap.size(), 4);
@@ -42,7 +42,7 @@ public class RulesSchemaEvolverTest {
         final RulesSchemaEvolver evolver = new RulesSchemaEvolver();
 
         String componentConfig = buildRulesProcessorComponentConfigWithTransformation();
-        Schema schema = buildInputSchema();
+        Schema schema = EvolverSchemaTestObject.inputSchema();
 
         Map<String, Schema> schemaMap = evolver.apply(componentConfig, schema);
         assertEquals(schemaMap.size(), 1);
@@ -135,15 +135,5 @@ public class RulesSchemaEvolverTest {
 
         componentConfig.put("config", configMap);
         return componentConfig;
-    }
-
-    private Schema buildInputSchema() {
-        Schema.SchemaBuilder schemaBuilder = new Schema.SchemaBuilder();
-
-        schemaBuilder.field(new Schema.Field("field1", Schema.Type.STRING));
-        schemaBuilder.field(new Schema.Field("field2", Schema.Type.LONG));
-        schemaBuilder.field(new Schema.Field("field3", Schema.Type.STRING));
-
-        return schemaBuilder.build();
     }
 }
