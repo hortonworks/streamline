@@ -77,8 +77,8 @@ to link. For DataSink and Processor components following URLs can be used to
 get the supported components for a streaming technology which can then be used
 to populate the drop down for the user to pick one of those components.
 
-http://localhost:8080/api/v1/catalog/system/componentdefinitions/PROCESSOR?streamingEngine=STORM
-http://localhost:8080/api/v1/catalog/system/componentdefinitions/SINK?streamingEngine=STORM
+http://localhost:9707/api/v1/catalog/system/componentdefinitions/PROCESSOR?streamingEngine=STORM
+http://localhost:9707/api/v1/catalog/system/componentdefinitions/SINK?streamingEngine=STORM
 
 Below is a sample response for a get. Note that these configurations returned
 can also be added/updated/deleted with the same endpoint but with a 

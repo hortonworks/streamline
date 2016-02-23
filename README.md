@@ -10,7 +10,7 @@ From command line execute the following commands:
 `mvn package`  
 `java -cp target/webservice-0.1-SNAPSHOT.jar com.hortonworks.iotas.webservice.IotasApplication server conf/iotas-dev.yaml`
 
-This should start the webserver on localhost port 8080. If you are running storm on the same host you may get 
+This should start the webserver on localhost port 9707. If you are running storm on the same host you may get 
 `java.net.BindException: Address already in use` in which case you should modify `server` section of iotas.yaml.
 
 ##Intellij
@@ -120,7 +120,7 @@ an HdfsBolt is used to store the unparsed tuples.
 
 
 #Accessing UI
-http://localhost:8080/ui/index.html
+http://localhost:9707/ui/index.html
 
 
 

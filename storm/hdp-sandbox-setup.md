@@ -11,9 +11,9 @@ Once you successfully ssh into sandbox machine, make sure JAVA_HOME environment 
  /usr/lib/jvm/java-1.7.0-openjdk-1.7.0.91.x86_64 If not set, please set and export the variable system wide so that it points to the correct jdk installation
  version.
  
-Go to ambari server home page at http://127.0.0.1:8080 and login using username and password as admin
+Go to ambari server home page at http://127.0.0.1:9707 and login using username and password as admin
 
-Using Ambari UI, stop all components on sandbox except for zookeeper, storm, kafka, hdfs and hbase. This can be done by going to http://127.0.0.1:8080/#/main/services/ and verifying the services on the list on the left hand side by taking necessary actions - stop/start.
+Using Ambari UI, stop all components on sandbox except for zookeeper, storm, kafka, hdfs and hbase. This can be done by going to http://127.0.0.1:9707/#/main/services/ and verifying the services on the list on the left hand side by taking necessary actions - stop/start.
 
 At this point, you can clone the IoTaS git repository using your git username. Go to the terminal window with ssh session in to sandbox
 

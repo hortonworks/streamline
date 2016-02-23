@@ -480,7 +480,7 @@ public class RestIntegrationTest {
         component.setHosts("host-1, host-2");
         component.setId(id);
         component.setName(name);
-        component.setPort(8080);
+        component.setPort(9707);
         component.setTimestamp(System.currentTimeMillis());
         component.setType(Component.ComponentType.BROKER);
         return component;

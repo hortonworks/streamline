@@ -534,7 +534,7 @@ POST /api/v1/catalog/parsers
 
 *Sample Input*
 
-    curl -X POST -v -F parserJar=@parsers-0.1-SNAPSHOT.jar -F parserInfo=@ParserInfo.json http://localhost:8080/api/v1/catalog/parsers
+    curl -X POST -v -F parserJar=@parsers-0.1-SNAPSHOT.jar -F parserInfo=@ParserInfo.json http://localhost:9707/api/v1/catalog/parsers
 
 *Sample ParserInfo.json*
 
@@ -746,7 +746,7 @@ DELETE /api/v1/catalog/parsers/ID
 GET /api/v1/catalog/parsers/download/ID
 
 
-    curl http://localhost:8080/api/v1/catalog/parsers/download/1 -o new.jar
+    curl http://localhost:9707/api/v1/catalog/parsers/download/1 -o new.jar
     
 *Success Response*
     
