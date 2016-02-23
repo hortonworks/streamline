@@ -26,7 +26,7 @@ public class GroovyScriptNestedExprTest {
 
     @Test
     public void testEvaluateNestedMap() throws Exception {
-        groovyScript = new GroovyScript<>("x < y.b", new GroovyScriptEngine());
+        groovyScript = new GroovyScript<>("x < y['b']", new GroovyScriptEngine());
         Map<String, Object> nested = new HashMap<>();
         nested.put("a", 5);
         nested.put("b", 10);
@@ -54,7 +54,7 @@ public class GroovyScriptNestedExprTest {
 
     @Test
     public void testEvaluateNestedMapList() throws Exception {
-        groovyScript = new GroovyScript<>("x < y.a[0]", new GroovyScriptEngine());
+        groovyScript = new GroovyScript<>("x < y['a'][0]", new GroovyScriptEngine());
         List<Integer> nestedList = new ArrayList<>();
         nestedList.add(5);
         nestedList.add(1);

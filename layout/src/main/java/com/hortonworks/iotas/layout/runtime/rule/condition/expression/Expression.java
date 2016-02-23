@@ -41,6 +41,18 @@ public abstract class Expression implements Serializable {
         return condition;
     }
 
+    /*
+     This splits on '[' to find the field name to handle map and array look ups correctly.
+     E.g, if the field is x['y']['z'] the field name should be x
+     Right now the Condition expression is used to compute the schema which should be fixed. This
+     does not correctly handle conditions like x < y, x > 50 AND x != 100 etc.
+     We could also consider defining the schema based on the input
+     streams the Rule is consuming (once we enforce it in the UI).
+      */
+    protected String getFieldName(Field field) {
+        return field.getName().split("\\[")[0].trim() + " ";
+    }
+
     protected String getName(Field field) {
         return field.getName() + " ";
     }
