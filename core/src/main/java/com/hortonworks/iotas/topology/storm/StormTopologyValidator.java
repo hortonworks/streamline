@@ -26,8 +26,10 @@ import java.util.Set;
 class StormTopologyValidator {
     private static final Logger LOG = LoggerFactory.getLogger(StormTopologyValidator.class);
     private final Map topologyConfig;
-    StormTopologyValidator (Map topologyConfig) {
+    private final String catalogRootUrl;
+    StormTopologyValidator (Map topologyConfig, String catalogRootUrl) {
         this.topologyConfig = topologyConfig;
+        this.catalogRootUrl = catalogRootUrl;
     }
 
     void validate () throws Exception {
@@ -44,6 +46,7 @@ class StormTopologyValidator {
                 Map<String, Object> config = (Map<String, Object>) component.get(TopologyLayoutConstants.JSON_KEY_CONFIG);
                 FluxComponent fluxComponent = ReflectionHelper.newInstance(transformationClass);
                 fluxComponent.withConfig(config);
+                fluxComponent.withCatalogRootUrl(catalogRootUrl);
                 fluxComponent.validateConfig();
             }
         }

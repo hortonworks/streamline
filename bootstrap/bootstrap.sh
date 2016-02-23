@@ -24,6 +24,12 @@ function add_nest_parser {
   run_cmd $cmd
 }
 
+function add_console_custom_processor {
+  echo "POST console_custom_processor"
+  cmd="curl -sS -X POST -i -F jarFile=@../core/target/core-0.1.0-SNAPSHOT.jar -F imageFile=@../webservice/src/main/resources/assets/libs/bower/jquery-ui/css/images/animated-overlay.gif http://localhost:8080/api/v1/catalog/system/componentdefinitions/PROCESSOR/custom -F customProcessorInfo=@console_custom_processor"
+  run_cmd $cmd
+}
+
 function post {
   uri=$1
   data=$2
@@ -61,7 +67,6 @@ post /topologies topology-with-console-custom-processor
 post /system/componentdefinitions/SOURCE kafka-topology-component
 post /system/componentdefinitions/PROCESSOR rule-topology-component
 post /system/componentdefinitions/PROCESSOR parser-topology-component
-post /system/componentdefinitions/PROCESSOR sample-custom-processor-topology-component
 post /system/componentdefinitions/SINK hdfs-topology-component
 post /system/componentdefinitions/SINK hbase-topology-component
 post /system/componentdefinitions/SINK notification-topology-component
@@ -72,3 +77,5 @@ post /system/componentdefinitions/LINK local-or-shuffle-grouping-link-topology-c
 post /system/componentdefinitions/LINK fields-grouping-link-topology-component
 post /system/componentdefinitions/LINK global-grouping-link-topology-component
 post /system/componentdefinitions/LINK none-grouping-link-topology-component
+add_console_custom_processor
+

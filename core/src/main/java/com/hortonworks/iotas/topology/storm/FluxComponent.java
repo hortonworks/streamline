@@ -12,6 +12,10 @@ import java.util.Map;
  */
 public interface FluxComponent {
     /*
+    Initialize the implementation with catalog root url
+     */
+    void withCatalogRootUrl (String catalogRootUrl);
+    /*
     Method to initialize the implementation with a configuration
      */
     void withConfig (Map<String, Object> config);

@@ -1,13 +1,16 @@
 package com.hortonworks.iotas.bolt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hortonworks.iotas.client.CatalogRestClient;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.Result;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.processor.CustomProcessor;
 import com.hortonworks.iotas.common.errors.ProcessingException;
+import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import com.hortonworks.iotas.util.CoreUtils;
-import com.hortonworks.iotas.util.ReflectionHelper;
+import com.hortonworks.iotas.util.ProxyUtil;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
@@ -19,24 +22,52 @@ import org.apache.storm.tuple.Values;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Bolt for supporting custom processors compoents in an IoTaS topology
  */
 public class CustomProcessorBolt extends BaseRichBolt {
     private static final Logger LOG = LoggerFactory.getLogger(CustomProcessorBolt.class);
+    private CatalogRestClient client;
+    private ProxyUtil<CustomProcessor> customProcessorProxyUtil;
+    private static ConcurrentHashMap<String, CustomProcessor> customProcessorConcurrentHashMap = new ConcurrentHashMap<String, CustomProcessor>();
     private OutputCollector collector;
     private CustomProcessor customProcessor;
     private String customProcessorImpl;
     private Map<String, Object> config;
     private Schema inputSchema;
     private Map<String, Schema> outputSchema = new HashMap<>();
+    private String localJarPath;
+    private String jarFileName;
 
     public CustomProcessorBolt customProcessorImpl (String customProcessorImpl) {
         this.customProcessorImpl = customProcessorImpl;
+        return this;
+    }
+    /**
+     * Associate the jar file name to be downloaded
+     * @param jarFileName
+     * @return
+     */
+    public CustomProcessorBolt jarFileName (String jarFileName) {
+        this.jarFileName = jarFileName;
+        return this;
+    }
+
+    /**
+     * Associate a local file system path where jar should be downloaded
+     * @param localJarPath
+     * @return
+     */
+    public CustomProcessorBolt localJarPath (String localJarPath) {
+        this.localJarPath = localJarPath;
         return this;
     }
 
@@ -125,27 +156,33 @@ public class CustomProcessorBolt extends BaseRichBolt {
     }
 
     @Override
-    public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
+    public void prepare (Map stormConf, TopologyContext context, OutputCollector collector) {
         this.collector = collector;
+        String message;
         if (StringUtils.isEmpty(customProcessorImpl)) {
-            String message = "Custom processor implementation class not specified.";
+            message = "Custom processor implementation class not specified.";
             LOG.error(message);
             throw new RuntimeException(message);
         }
-        String errorMessage = "Error instantiating custom processor implementation " + customProcessorImpl;
-        try {
-            //IOT-141: Deals with being able to add or register custom processors with IoTaS. Below line assumes that the implementation class is in class path
-            // With IOT-141 the jar containing custom processor implementation will be downloaded and cached on worker node
-            customProcessor = (CustomProcessor) ReflectionHelper.newInstance(customProcessorImpl);
-        } catch (ClassNotFoundException|IllegalAccessException|InstantiationException e) {
-            LOG.error(errorMessage);
-            throw new RuntimeException(errorMessage, e);
+        if (StringUtils.isEmpty(localJarPath)) {
+            message = "Local path for downloading custom processor jar not provided.";
+            LOG.error(message);
+            throw new IllegalArgumentException(message);
         }
+        if (StringUtils.isEmpty(jarFileName)) {
+            message = "Jar file name to download is not provided.";
+            LOG.error(message);
+            throw new IllegalArgumentException(message);
+        }
+        String catalogRootURL = stormConf.get(TopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL).toString();
+        this.client = new CatalogRestClient(catalogRootURL);
+        this.customProcessorProxyUtil = new ProxyUtil<>(CustomProcessor.class);
+        customProcessor = getCustomProcessor();
         customProcessor.initialize(config);
     }
 
     @Override
-    public void execute(Tuple input) {
+    public void execute (Tuple input) {
         try {
             final Object iotasEvent = input.getValueByField(IotasEvent.IOTAS_EVENT);
             if (iotasEvent instanceof IotasEvent) {
@@ -170,7 +207,7 @@ public class CustomProcessorBolt extends BaseRichBolt {
     }
 
     @Override
-    public void declareOutputFields(OutputFieldsDeclarer declarer) {
+    public void declareOutputFields (OutputFieldsDeclarer declarer) {
         if (outputSchema == null || outputSchema.keySet().isEmpty()) {
             String message = "Custom processor config must have at least one output stream and associated schema.";
             LOG.error(message);
@@ -186,4 +223,20 @@ public class CustomProcessorBolt extends BaseRichBolt {
         customProcessor.cleanup();
     }
 
+    private CustomProcessor getCustomProcessor () {
+        String key = jarFileName + customProcessorImpl;
+        CustomProcessor customProcessor = customProcessorConcurrentHashMap.get(key);
+        if (customProcessor == null) {
+            InputStream customProcessorJar = client.getCustomProcessorJar(jarFileName);
+            String jarPath = String.format("%s%s%s", localJarPath, File.separator, jarFileName);
+            try {
+                IOUtils.copy(customProcessorJar, new FileOutputStream(new File(jarPath)));
+                customProcessor = customProcessorProxyUtil.loadClassFromJar(jarPath, customProcessorImpl);
+                customProcessorConcurrentHashMap.put(key, customProcessor);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to load custom processor: " + customProcessorImpl, e);
+            }
+        }
+        return customProcessor;
+    }
 }

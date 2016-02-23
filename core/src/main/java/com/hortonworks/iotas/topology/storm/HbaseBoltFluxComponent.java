@@ -37,7 +37,7 @@ public class HbaseBoltFluxComponent extends AbstractFluxComponent {
         String hbaseMapperComponentId = "hbaseMapper" + UUID_FOR_COMPONENTS;
 
         // currently only ParserOutputHbaseMapper is supported.
-        String hbaseMapperClassName = "com.hortonworks.hbase" +
+        String hbaseMapperClassName = "com.hortonworks.iotas.hbase" +
                 ".ParserOutputHBaseMapper";
 
         //constructor args

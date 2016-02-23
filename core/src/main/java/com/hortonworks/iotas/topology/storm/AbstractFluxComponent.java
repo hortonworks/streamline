@@ -1,5 +1,6 @@
 package com.hortonworks.iotas.topology.storm;
 
+import com.hortonworks.iotas.client.CatalogRestClient;
 import com.hortonworks.iotas.topology.ConfigFieldValidation;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import com.hortonworks.iotas.util.exception.BadTopologyLayoutException;
@@ -26,6 +27,12 @@ public abstract class AbstractFluxComponent implements FluxComponent {
             ArrayList<Map<String, Object>>();
     protected Map<String, Object> component = new LinkedHashMap<String, Object>();
     protected final UUID UUID_FOR_COMPONENTS = UUID.randomUUID();
+    protected CatalogRestClient catalogRestClient;
+
+    @Override
+    public void withCatalogRootUrl(String catalogRootUrl) {
+        this.catalogRestClient = new CatalogRestClient(catalogRootUrl);
+    }
 
     @Override
     public void withConfig (Map<String, Object> conf) {
