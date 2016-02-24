@@ -57,93 +57,101 @@ define(['require', 'utils/Globals', 'bootstrap.notify'], function(require, Globa
   };
 
   Utils.notifyError = function(message,from,align){
-    $.notify({
+    if(!Utils.isNotifiedMessage(message)) {
+      $.notify({
       // options
-      icon: 'fa fa-warning',
-      message: message
-    },{
+        icon: 'fa fa-warning',
+        message: message
+      },{
       // settings
-      element: 'body',
-      position: null,
-      type: 'danger',
-      animate: {
-        enter: 'animated fadeInDown',
-        exit: 'animated fadeOutUp'
-      },
-      placement: {
-        from: from ? from :"top",
-        align: align ? align :"right"
-      },
-      z_index: 1200,
-      delay: 7000
-    });
+        element: 'body',
+        position: null,
+        type: 'danger',
+        animate: {
+          enter: 'animated fadeInDown',
+          exit: 'animated fadeOutUp'
+        },
+        placement: {
+          from: from ? from :"top",
+          align: align ? align :"right"
+        },
+        z_index: 1200,
+        delay: 7000
+      });
+    }
   };
 
   Utils.notifySuccess = function(message,from,align){
-    $.notify({
+    if(!Utils.isNotifiedMessage(message)) {
+      $.notify({
       // options
-      icon: 'fa fa-check',
-      message: message
-    },{
+        icon: 'fa fa-check',
+        message: message
+      },{
       // settings
-      element: 'body',
-      position: null,
-      type: 'success',
-      animate: {
-        enter: 'animated fadeInDown',
-        exit: 'animated fadeOutUp'
-      },
-      placement: {
-        from: from ? from :"top",
-        align: align ? align :"right"
-      },
-      z_index: 1200,
-    });
+        element: 'body',
+        position: null,
+        type: 'success',
+        animate: {
+          enter: 'animated fadeInDown',
+          exit: 'animated fadeOutUp'
+        },
+        placement: {
+          from: from ? from :"top",
+          align: align ? align :"right"
+        },
+        z_index: 1200,
+      });
+    }
   };
 
   Utils.notifyInfo = function(message,from,align){
-    $.notify({
+    if(!Utils.isNotifiedMessage(message)) {
+      $.notify({
       // options
-      icon: 'fa fa-info',
-      message: message
-    },{
+        icon: 'fa fa-info',
+        message: message
+      },{
       // settings
-      element: 'body',
-      position: null,
-      type: 'info',
-      animate: {
-        enter: 'animated fadeInDown',
-        exit: 'animated fadeOutUp'
-      },
-      placement: {
-        from: from ? from :"top",
-        align: align ? align :"right"
-      },
-      z_index: 1200,
-      delay: 7000
-    });
+        element: 'body',
+        position: null,
+        type: 'info',
+        animate: {
+          enter: 'animated fadeInDown',
+          exit: 'animated fadeOutUp'
+        },
+        placement: {
+          from: from ? from :"top",
+          align: align ? align :"right"
+        },
+        z_index: 1200,
+        delay: 7000
+      });
+    }
   };
 
   Utils.notifyWarning = function(message,from,align){
-    $.notify({
+    if(!Utils.isNotifiedMessage(message)) {
+      $.notify({
       // options
-      icon: 'fa fa-warning',
-      message: message
-    },{
+        icon: 'fa fa-warning',
+        message: message
+      },{
       // settings
-      element: 'body',
-      position: null,
-      type: 'warning',
-      animate: {
-        enter: 'animated fadeInDown',
-        exit: 'animated fadeOutUp'
-      },
-      placement: {
-        from: from ? from :"top",
-        align: align ? align :"right"
-      },
-      z_index: 1200,
-    });
+        element: 'body',
+        position: null,
+        type: 'warning',
+        animate: {
+          enter: 'animated fadeInDown',
+          exit: 'animated fadeOutUp'
+        },
+        placement: {
+          from: from ? from :"top",
+          align: align ? align :"right"
+        },
+        z_index: 1200,
+      });
+    }
   };
 
   Utils.expandPanel = function(e){
@@ -232,9 +240,7 @@ define(['require', 'utils/Globals', 'bootstrap.notify'], function(require, Globa
     var obj = _.findWhere(subStepsArray, {valStr: source.currentType});
     if(!_.isUndefined(obj)){
       var canConnectToArr = obj.connectsTo.split(',');
-      if(!failedTupleFlag && source.currentType === 'PARSER' && (target.currentType === 'HDFS' || target.currentType === 'HBASE')){
-        return false;
-      } else if(canConnectToArr.indexOf(target.currentType) !== -1){
+      if(canConnectToArr.indexOf(target.currentType) !== -1){
         return true;
       } else {
         return false;
@@ -243,5 +249,16 @@ define(['require', 'utils/Globals', 'bootstrap.notify'], function(require, Globa
       return false;
     }
   };
+
+  Utils.isNotifiedMessage = function(message) {
+    var messagesArr = $('[data-notify="message"]'),
+        isShown = false;
+    _.each(messagesArr, function(element) {
+      if($(element).html() == message)
+        isShown = true;
+    });
+    return isShown;
+  };
+
   return Utils;
 });

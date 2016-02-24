@@ -159,10 +159,9 @@ define(['require',
 
 	TopologyGraphCreator.prototype.bindEvents = function(){
 		var thisGraph = this;
-		this.vent.listenTo(this.vent, 'change:editor-submenu', function(obj){
+		this.vent.listenTo(this.vent, 'topologyEditor:DropAction', function(obj){
 			thisGraph.nodeObject = obj.nodeObj;
-			thisGraph.nodeId = obj.id;
-			if(!_.isUndefined(obj.otherId)) thisGraph.otherId = obj.otherId ;
+			thisGraph.uiname = obj.uiname;
 			d3.event = obj.event;
 			thisGraph.createNode();
 		});
@@ -195,7 +194,7 @@ define(['require',
 		    thisGraph.interpolateZoom([view.x, view.y], view.k);
 		});
 		this.vent.listenTo(this.vent, 'saveNodeConfig', function(obj) {
-			var currentNode = _.findWhere(thisGraph.nodes, {uniqueName: obj.uniqueName});
+			var currentNode = _.findWhere(thisGraph.nodes, {uiname: obj.uiname});
 			if(currentNode){
 				currentNode.isConfigured = true;
 			}
@@ -436,6 +435,8 @@ define(['require',
 						} else {
 							newEdge.target.streamId = "parsedTuplesStream";
 						}
+					} else if(newEdge.source.currentType === 'RULE'){
+						thisGraph.vent.trigger('topologyGraph:RuleToOtherNode', newEdge);
 					}
 					thisGraph.edges.push(newEdge);
 					thisGraph.vent.trigger('topologyLink', thisGraph.edges);
@@ -465,9 +466,9 @@ define(['require',
 				} else {
 					thisGraph.vent.trigger('click:topologyNode', 
 						{
-							parentType: d.parentType ? d.parentType : d.mainStep, 
+							parentType: d.parentType,
 							currentType: d.currentType, 
-							nodeId: d.nodeId
+							uiname: d.uiname
 						}
 					);
 				}
@@ -513,6 +514,8 @@ define(['require',
 						} else {
 							newEdge.target.streamId = "parsedTuplesStream";
 						}
+					} else if(newEdge.source.currentType === 'RULE'){
+						thisGraph.vent.trigger('topologyGraph:RuleToOtherNode', newEdge);
 					}
 					thisGraph.edges.push(newEdge);
 					thisGraph.vent.trigger('topologyLink', thisGraph.edges);
@@ -569,11 +572,10 @@ define(['require',
 				id: thisGraph.idct++,
 				x: xycoords[0] - thisGraph.consts.rectangleWidth / 2,
 				y: xycoords[1] - thisGraph.consts.rectangleHeight / 2,
-				parentType: thisGraph.nodeObject.mainStep,
+				parentType: thisGraph.nodeObject.parentType,
 				currentType: thisGraph.nodeObject.valStr,
-				uniqueName: thisGraph.nodeObject.valStr+'-'+thisGraph.nodeId,
+				uiname: thisGraph.uiname,
 				imageURL: thisGraph.nodeObject.imgUrl,
-				nodeId: thisGraph.nodeId,
 				isConfigured: false
 			};
 		thisGraph.nodes.push(d);
@@ -588,10 +590,9 @@ define(['require',
 		var thisGraph = this,
 			newObject = jQuery.extend(true, {}, d);
 		newObject.id = thisGraph.idct++;
-		newObject.nodeId = thisGraph.otherId;
-		newObject.x += 300;
-		newObject.uniqueName= Globals.Topology.Editor.Steps.Processor.Substeps[0].valStr+'-'+thisGraph.otherId;
-		newObject.parentType = Globals.Topology.Editor.Steps.Processor.Substeps[0].mainStep;
+		newObject.x += 200;
+		newObject.uiname= d.uiname.replace('DEVICE','PARSER');
+		newObject.parentType = Globals.Topology.Editor.Steps.Processor.Substeps[0].parentType;
 		newObject.currentType = Globals.Topology.Editor.Steps.Processor.Substeps[0].valStr;
 		newObject.imageURL = Globals.Topology.Editor.Steps.Processor.Substeps[0].imgUrl;
 		thisGraph.nodes.push(newObject);
@@ -729,10 +730,8 @@ define(['require',
 				.attr("xlink:href", function(d){
 					return d.imageURL;
 				})
-				.attr("width", "60px")
-				.attr("height", "60px")
-				.attr("x", "10")
-				.attr("y", "10")
+				.attr("width", "80px")
+				.attr("height", "80px")
 			    .on("mouseover", function(d) {
 					if (state.shiftNodeDrag) {
 						d3.select(this).classed(consts.connectClass, true);
@@ -748,20 +747,6 @@ define(['require',
 					thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);
 				})
 				.call(thisGraph.drag);
-			newGs.append("rect")
-				.attr("rx", "15px")
-				.attr("ry", "15px")
-				.attr("width", "80px")
-				.attr("height", "80px")
-				.attr("class", function(d){
-					if(d.parentType === Globals.Topology.Editor.Steps.Datasource.valStr){
-						return 'source';
-					} else if(d.parentType === Globals.Topology.Editor.Steps.Processor.valStr){
-						return 'processor';
-					} else if(d.parentType === Globals.Topology.Editor.Steps.DataSink.valStr){
-						return 'datasink';
-					}
-				});
 
             newGs.append('text')
                 .attr("class", "fa fa-exclamation-triangle")
@@ -775,7 +760,6 @@ define(['require',
 
 			newGs.append("circle")
 				.attr("cx", function (d) { 
-					if(!d.parentType) d.parentType = d.mainStep;
 					if(d.parentType !== Globals.Topology.Editor.Steps.DataSink.valStr)
 			    		return (consts.rectangleWidth); 
 			    	else

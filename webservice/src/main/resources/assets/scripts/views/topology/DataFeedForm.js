@@ -16,7 +16,6 @@ define(['utils/LangSupport',
       var data = this.generateSchema();
       this.schemaObj = data.schemaObj;
       this.templateData = {
-        // 'fieldName': data.fieldArr
         'reqFieldName': data.reqFieldArr,
         'addFieldRows': data.addFieldRows
       };

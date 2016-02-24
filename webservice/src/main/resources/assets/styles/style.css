@@ -50,6 +50,9 @@ label {
   display: block;
 }
 .modal {z-index: 1100 !important;}
+.editable-error-block {
+  max-width: 470px;
+}
 
 /* Awesome Checkbox & Radio */
 .checkbox {
@@ -531,8 +534,13 @@ header.navbar-fixed-top + .wrapper {
   border-top: 1px #C2CADA solid;
 }
 .graph-bg {
-    background-image: linear-gradient(to right, rgb(0, 0, 0) -10px, transparent 1px), linear-gradient(rgb(0, 0, 0) -10px, transparent 1px);
+    /*background-image: -webkit-linear-gradient(to right, rgb(0, 0, 0) -10px, transparent 1px), -webkit-linear-gradient(rgb(0, 0, 0) -10px, transparent 1px);
+    background-image: -moz-linear-gradient(to right, rgb(0, 0, 0) -10px, transparent 1px), -moz-linear-gradient(rgb(0, 0, 0) -10px, transparent 1px);
+    background-image: -o-linear-gradient(to right, rgb(0, 0, 0) -10px, transparent 1px), -o-linear-gradient(rgb(0, 0, 0) -10px, transparent 1px);
+    background-image: linear-gradient(to right, rgb(0, 0, 0) -10px, transparent 1px), linear-gradient(rgb(0, 0, 0) -10px, transparent 1px);*/
     background-size: 10px 10px;
+    background-image: linear-gradient(to right, #EAEAEA 1px, transparent 1px), linear-gradient(to bottom, #EAEAEA 1px, transparent 1px);
+    /*background-size: 10px 10px;*/
     height: 500px;
 }
 .table-selected-device tr th:last-child,
@@ -585,11 +593,11 @@ header.navbar-fixed-top + .wrapper {
 }
 .topology-icon-inverse {
   width: 75px;
-  padding: 10px;
   margin-right: 5px;
+  /*padding: 10px;
   margin-bottom: 5px;
   border: 2px solid;
-  border-radius: 15px;
+  border-radius: 15px;*/
 }
 .topology-icon-inverse.datasink {
   border-color: #f6a800;
@@ -783,14 +791,6 @@ svg {
 /*svg:not(.active):not(.ctrl) {
   cursor: crosshair;
 }*/
-
-path.link {
-  fill: none;
-  /*stroke: #000;*/
-  stroke: #ccc;
-  stroke-width: 4px;
-  cursor: default;
-}
 
 path.link.dragline {
   pointer-events: none;
@@ -1303,4 +1303,40 @@ a#editableTitle {
 }
 .conceptG .fa-exclamation-triangle {
   fill: #EA0000;
+}
+
+.btn-action {
+  background: none;
+  border: none;
+  -webkit-transition: all .3s ease;
+  -moz-transition: all .3s ease;
+  transition: all .3s ease;
+}
+.btn-action:hover {
+  transform: scale(1.3);
+  background: none;
+}
+.btn-danger.btn-action:hover {
+  color: #e17000;
+}
+.btn-primary.btn-action:hover {
+  color: #43687d;
+}
+.ruleList .list-group-item {
+  padding: 10px 5px;
+}
+.ruleList .list-group-item .row {
+  margin: 0 5px;
+}
+.ruleList .list-group-item .row div[class*="col-sm"] {
+  padding: 0 5px;
+}
+.check-rule.selected {
+  background-color: #EAFFE8;
+}
+.check-rule i.fa-check {
+  cursor: pointer;
+}
+.check-rule i.fa-check.selected {
+  color: green;
 }

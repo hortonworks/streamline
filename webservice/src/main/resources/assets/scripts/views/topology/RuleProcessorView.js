@@ -31,7 +31,7 @@ define(['require',
     getFeedSchema:function (options){
       var self = this;
       this.parserModel = new VParser();
-      
+
       var dsModel = new VDatasource();
       dsModel.set('dataSourceId', this.model.get('dataSourceId'));
       dsModel.set('id', this.model.get('dataSourceId'));
@@ -51,127 +51,95 @@ define(['require',
 
     bindEvents: function(){
       var self = this;
-      this.listenTo(this.vent, 'change:Formula', function(data){
-        self.generateForumla(data.models);
+      this.listenTo(this.vent, 'RuleProcessor:update', function(data){
+          self.ruleCollection = data.models;
       });
-    },
-
-    generateForumla: function(models){
-      this.formulaModelArr = models;
-      var self = this;
-      var msg = '';
-      _.each(models, function(model){
-        if(model.has('logical')){
-          msg += '<br><span class="formulaLogical"> '+model.get('logical')+' </span><br>';
-        } else if(!model.has('firstModel')){
-          msg += '<br><span class="formulaError"> Missing Operator </span><br>';
-        }
-        
-        if(model.has('field1')){
-          msg += '<span class="formulaField">('+model.get('field1')+')</span>';
-        } else {
-          msg += '<span class="formulaError"> (Missing Field) </span>';
-        }
-        
-        if(model.has('comp')){
-          msg += '<span class="formulaComparison"> '+model.get('comp')+' </span>';
-        } else {
-          msg += '<span class="formulaError"> Missing Operator </span>';
-        }
-
-        if(model.has('field2')){
-          msg += '<span class="formulaField">('+model.get('field2')+')</span>';
-        } else {
-          msg += '<span class="formulaError"> (Missing Field) </span>';
-        }
-      });
-      this.$('#previewFormula').html(msg);
     },
 
     onRender:function(){
       var self = this;
       this.$('[data-rel="tooltip"]').tooltip();
-      require(['views/topology/FormulaCompositeView'], function(FormulaCompositeView){
-        self.view = new FormulaCompositeView({
+      require(['views/topology/RuleLayoutView'], function(RuleLayoutView){
+
+        self.view = new RuleLayoutView({
           vent: self.vent,
           fields: self.parserModel.schema,
           config: self.model.get('config'),
-          rulesArr: self.model.has('newConfig') ? self.model.attributes.newConfig.rulesProcessorConfig.rules[0].condition.conditionElements : []
+          rulesArr: self.model.has('newConfig') ? self.model.attributes.newConfig.rulesProcessorConfig.rules : [],
+          linkedToRule: self.linkedToRule,
+          connectedSink: self.connectedSink
         });
         self.formulaForm.show(self.view);
       });
     },
     evAdd: function(e){
-      if(this.validateAll()){
-        var ruleObj = {
-          name: this.model.get('uiname'),
-          id: new Date().getTime(),
-          ruleProcessorName: this.model.get('uiname'),
-          condition: {
-            conditionElements: []
-          },
-          actions: (this.model.has('newConfig') ? this.model.get('newConfig').rulesProcessorConfig.rules[0].actions : []),
-          // action: {
-          //   components: (this.model.has('newConfig')) ? this.model.get('newConfig').rulesProcessorConfig.rules[0].action.components : [],
-          //   declaredOutput: this.parserModel.schema
-          // },
-          description: "Auto-Generated for "+this.model.get('uiname')
-        };
-        _.each(this.formulaModelArr, function(model){
-          var obj = {
-            firstOperand: {
-              name: model.get('field1'),
-              type: 'INTEGER'
-            },
-            operation: model.get('comp'),
-            secondOperand: model.get('field2')
-          };
-          if(!model.get('firstModel')){
-            ruleObj.condition.conditionElements[ruleObj.condition.conditionElements.length - 1].logicalOperator = (model.has('logical') ? model.get('logical') : null);
+      if(this.view.validate()){
+        var ruleArr = [];
+
+        for(var i = 0;i < this.ruleCollection.length; i++) {
+          var ruleConfig = this.ruleCollection[i].get("config"),
+              ruleName = this.ruleCollection[i].get("ruleName"),
+              actions = [];
+          if(this.ruleCollection[i].has('ruleConnectsTo')){
+            actions = this.ruleCollection[i].get('ruleConnectsTo');
           }
-          ruleObj.condition.conditionElements.push(obj);
-        });
-        
+          var id = new Date().getTime();
+          var ruleObj = {
+              name: ruleName,
+              id: id+i+1,
+              ruleProcessorName: this.model.get('uiname'),
+              condition: {
+                conditionElements: []
+              },
+              actions: actions,
+              description: "Auto-Generated for "+this.model.get('uiname')
+            };
+
+          _.each(ruleConfig, function(model){
+            var obj = {
+              firstOperand: {
+                name: model.get('firstOperand'),
+                type: 'INTEGER'
+              },
+              operation: model.get('operation'),
+              secondOperand: model.get('secondOperand')
+            };
+            if(!model.get('firstModel')){
+              ruleObj.condition.conditionElements[ruleObj.condition.conditionElements.length - 1].logicalOperator = (model.has('logicalOperator') ? model.get('logicalOperator') : null);
+            }
+            ruleObj.condition.conditionElements.push(obj);
+          });
+          ruleArr.push(ruleObj);
+        }
+
         var config = {
           parallelism: 1,
           rulesProcessorConfig: {
-            rules: [ruleObj],
+            rules: ruleArr,
             name: this.model.get('uiname'),
             id: new Date().getTime(),
             description: "Auto-Generated for "+this.model.get('uiname'),
             declaredInput: this.parserModel.schema
           }
         };
+        this.model.set('firstTime', false);
         this.model.set('newConfig', config);
-        this.model.formulaModelArr = this.formulaModelArr;
         this.vent.trigger('topologyEditor:SaveProcessor', this.model);
         this.evClose();
       } else {
-        Utils.notifyError('Some fields are empty.');
+        Utils.notifyError('Add the rule to processor');
         return false;
       }
     },
-    validateAll: function(){
-      var self = this;
-      var flag = true;
-      _.each(this.formulaModelArr, function(model){
-        if(flag && model.get('field1') && model.get('comp') && model.get('field2')){
-          if(!model.get('firstModel')){
-            if(!model.get('logical')){
-              flag = false;
-            }
-          }
-        } else {
-          flag = false;
-        }
-      });
-      return flag;
-    },
+
     evClose: function(e){
+      this.stopListening(this.vent, 'RuleLayout:addRule');
+      this.stopListening(this.vent, 'RuleLayout:closeRule');
+      this.stopListening(this.vent, 'RuleProcessor:update');
       this.trigger('closeModal');
     }
 
   });
-  
+
   return RuleProcessorView;
 });

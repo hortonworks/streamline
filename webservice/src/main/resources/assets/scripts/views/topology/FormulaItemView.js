@@ -38,16 +38,16 @@ define(['require',
                 tags:true,
                 placeholder: 'Constant/Field'
             });
-            if(this.rulesArr.length > 1){
-                var obj = this.rulesArr[this.id-1];
+            if(this.collection.models.length){
+                var obj = this.collection.at(this.id-2);
                 if(!_.isUndefined(obj)){
-                    this.$el.find('.logicalOp').select2('val',this.rulesArr[this.id-2].logicalOperator);
-                    this.$el.find('.field-1').select2('val',obj.firstOperand.name);
-                    this.$el.find('.comparisonOp').select2('val',obj.operation);
-                    if(!_.find(this.fieldsArr, {val: obj.secondOperand})){
-                        this.$el.find('.field-2').append('<option value="'+obj.secondOperand+'">'+obj.secondOperand+'</option>');
+                    this.$el.find('.logicalOp').select2('val',obj.get('logical'));
+                    this.$el.find('.field-1').select2('val',obj.get('field1'));
+                    this.$el.find('.comparisonOp').select2('val',obj.get('comp'));
+                    if(!_.find(this.fieldsArr, {val: obj.get('field2')})){
+                        this.$el.find('.field-2').append('<option value="'+obj.get('secondOperand')+'">'+obj.get('field2')+'</option>');
                     }
-                    this.$el.find('.field-2').select2('val',obj.secondOperand);
+                    this.$el.find('.field-2').select2('val',obj.get('field2'));
                 }
             }
         },
