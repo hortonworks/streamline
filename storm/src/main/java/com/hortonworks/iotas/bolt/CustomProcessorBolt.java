@@ -1,12 +1,11 @@
-package com.hortonworks.bolt;
+package com.hortonworks.iotas.bolt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.Result;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.processor.CustomProcessor;
-import com.hortonworks.iotas.processor.ProcessingException;
-import com.hortonworks.iotas.topology.TopologyLayoutConstants;
+import com.hortonworks.iotas.common.errors.ProcessingException;
 import com.hortonworks.iotas.util.CoreUtils;
 import com.hortonworks.iotas.util.ReflectionHelper;
 import org.apache.commons.lang.StringUtils;
@@ -22,7 +21,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -42,6 +40,11 @@ public class CustomProcessorBolt extends BaseRichBolt {
         return this;
     }
 
+    /**
+     * Associate output schema that is a json string
+     * @param outputSchemaJson
+     * @return
+     */
     public CustomProcessorBolt outputSchema (String outputSchemaJson) {
         ObjectMapper mapper = new ObjectMapper();
         Map<String,Schema> outputSchema = new HashMap<>();
@@ -57,11 +60,21 @@ public class CustomProcessorBolt extends BaseRichBolt {
         return outputSchema(outputSchema);
     }
 
+    /**
+     * Associate output schema
+     * @param outputSchema
+     * @return
+     */
     public CustomProcessorBolt outputSchema (Map<String, Schema> outputSchema) {
         this.outputSchema = outputSchema;
         return this;
     }
 
+    /**
+     * Associate input schema that is a json string
+     * @param inputSchemaJson
+     * @return
+     */
     public CustomProcessorBolt inputSchema (String inputSchemaJson) {
         ObjectMapper mapper = new ObjectMapper();
         Schema inputSchema;
@@ -74,11 +87,21 @@ public class CustomProcessorBolt extends BaseRichBolt {
         return inputSchema(inputSchema);
     }
 
+    /**
+     * Associcate input schema
+     * @param inputSchema
+     * @return
+     */
     public CustomProcessorBolt inputSchema (Schema inputSchema) {
         this.inputSchema = inputSchema;
         return this;
     }
 
+    /**
+     * Associate config as a json string
+     * @param configJson
+     * @return
+     */
     public CustomProcessorBolt config (String configJson) {
         ObjectMapper mapper = new ObjectMapper();
         Map<String, Object> config;
@@ -91,6 +114,11 @@ public class CustomProcessorBolt extends BaseRichBolt {
         return config(config);
     }
 
+    /**
+     * Associate config as a Map of String to Object
+     * @param config
+     * @return
+     */
     public CustomProcessorBolt config (Map<String, Object> config) {
         this.config = config;
         return this;
@@ -113,8 +141,7 @@ public class CustomProcessorBolt extends BaseRichBolt {
             LOG.error(errorMessage);
             throw new RuntimeException(errorMessage, e);
         }
-        customProcessor.config(config);
-        customProcessor.initialize();
+        customProcessor.initialize(config);
     }
 
     @Override

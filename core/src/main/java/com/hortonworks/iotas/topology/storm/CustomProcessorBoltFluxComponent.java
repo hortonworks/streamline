@@ -3,7 +3,7 @@ package com.hortonworks.iotas.topology.storm;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.processor.ConfigException;
+import com.hortonworks.iotas.common.errors.ConfigException;
 import com.hortonworks.iotas.processor.CustomProcessor;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import com.hortonworks.iotas.util.CoreUtils;
@@ -29,7 +29,7 @@ public class CustomProcessorBoltFluxComponent extends AbstractFluxComponent {
     @Override
     protected void generateComponent () {
         String boltId = "customProcessorBolt" + UUID_FOR_COMPONENTS;
-        String boltClassName = "com.hortonworks.bolt.CustomProcessorBolt";
+        String boltClassName = "com.hortonworks.iotas.bolt.CustomProcessorBolt";
         String[] configMethodNames = {"customProcessorImpl", "outputSchema", "inputSchema", "config"};
         Object[] values = new Object[configMethodNames.length];
         values[0] = (String) conf.get(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_IMPL);
@@ -64,8 +64,7 @@ public class CustomProcessorBoltFluxComponent extends AbstractFluxComponent {
                 CoreUtils.getSchemaFromConfig(entry.getValue());
             }
             CustomProcessor customProcessor = ReflectionHelper.newInstance((String) conf.get(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_IMPL));
-            customProcessor.config(getCustomConfig());
-            customProcessor.validateConfig();
+            customProcessor.validateConfig(getCustomConfig());
         } catch (ClassCastException|IOException e) {
             throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldToValidate));
         } catch (ClassNotFoundException|InstantiationException|IllegalAccessException e) {

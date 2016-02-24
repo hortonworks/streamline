@@ -96,8 +96,8 @@ public class TopologyLayoutValidatorTest {
         //String.format(TopologyLayoutConstants.ERR_MSG_INVALID_GROUPING_FIELDS, "ruleProcessor-rule1->hbasesink"),
         String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_IMPL),
         String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, TopologyLayoutConstants.JSON_KEY_INPUT_SCHEMA),
-        String.format(TopologyLayoutConstants.ERR_MSG_CP_IMPL_INSTANTIATION, "om.hortonworks.iotas.processor.ConsoleCustomProcessor"),
-        String.format(TopologyLayoutConstants.ERR_MSG_CP_CONFIG_EXCEPTION, "com.hortonworks.iotas.processor.ConsoleCustomProcessor") + " Message from " +
+        String.format(TopologyLayoutConstants.ERR_MSG_CP_IMPL_INSTANTIATION, "om.hortonworks.iotas.processor.examples.ConsoleCustomProcessor"),
+        String.format(TopologyLayoutConstants.ERR_MSG_CP_CONFIG_EXCEPTION, "com.hortonworks.iotas.processor.examples.ConsoleCustomProcessor") + " Message from " +
                 "implementation is: Missing config field: configField",
         String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, "consoleCustomProcessor->hbasesink"),
         String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, "consoleCustomProcessor->hbasesink"),

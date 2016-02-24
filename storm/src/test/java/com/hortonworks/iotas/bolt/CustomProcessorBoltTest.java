@@ -1,11 +1,13 @@
-package com.hortonworks.bolt;
+package com.hortonworks.iotas.bolt;
 
+import com.hortonworks.iotas.bolt.CustomProcessorBolt;
+import com.hortonworks.iotas.bolt.MockParser;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Result;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.processor.CustomProcessor;
-import com.hortonworks.iotas.processor.ProcessingException;
+import com.hortonworks.iotas.common.errors.ProcessingException;
 import com.hortonworks.iotas.util.ReflectionHelper;
 import mockit.Expectations;
 import mockit.Injectable;
@@ -102,9 +104,7 @@ public class CustomProcessorBoltTest {
         customProcessorBolt.config(config);
         customProcessorBolt.prepare(new HashMap(), null, null);
         new VerificationsInOrder(){{
-            customProcessor.config(config);
-            times = 1;
-            customProcessor.initialize();
+            customProcessor.initialize(config);
             times = 1;
         }};
     }
