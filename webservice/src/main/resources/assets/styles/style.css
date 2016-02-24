@@ -549,8 +549,12 @@ header.navbar-fixed-top + .wrapper {
 }
 /* Graph Area */
 .graph-bg i.fa {
-  position: absolute;
+  position: fixed;
+  font-size: 1.4em;
   cursor: pointer;
+}
+.graph-bg i.fa-times {
+  color: #EA0000;
 }
 
 /* Topology Editor */
@@ -1339,4 +1343,7 @@ a#editableTitle {
 }
 .check-rule i.fa-check.selected {
   color: green;
+}
+.conceptG .fa-times{
+  fill: #EA0000;
 }

@@ -65,6 +65,10 @@ define(['require',
       this.topologyConfigModel = new Backbone.Model({
         rootdir: 'hdfs://localhost:9000/tmp/hbase', parserPath: '/tmp', notifierPath: '/tmp'
       });
+      this.graphTransforms = {
+        dragCoords: [0,0],
+        zoomScale: 1
+      };
     },
 
     setTopologyConfigModel: function(){
@@ -108,7 +112,9 @@ define(['require',
         self.sinkConfigArr = resultsArr[2].entities;
         self.linkConfigArr = resultsArr[3].entities;
         if(self.model.get('_editState')){
-          self.linkArr = JSON.parse(resultsArr[4].entity.data);
+          var obj = JSON.parse(resultsArr[4].entity.data);
+          self.linkArr = obj.linkArr;
+          self.graphTransforms = obj.graphTransforms ? obj.graphTransforms : self.graphTransforms;
           self.updateVariables();
         }
       });
@@ -158,8 +164,49 @@ define(['require',
         self.topologyConfigModel = configData;
       });
 
-      this.listenTo(this.vent, 'topologyLink', function(linkArr){
-        self.linkArr = linkArr;
+      this.listenTo(this.vent, 'topologyLink', function(data){
+        self.linkArr = data.edges;
+      });
+
+      this.listenTo(this.vent, 'topologyTransforms', function(graphData){
+        self.graphTransforms = graphData;
+      });
+
+      this.listenTo(this.vent, 'delete:topologyNode', function(options){
+        var object, index, ruleIndex;
+        _.each(options.data, function(obj){
+          if (obj.parentType === 'Datasource') {
+            index = _.findIndex(self.dsArr, {uiname: obj.uiname});
+            if(index !== -1){
+
+              self.nodeNames.splice(self.nodeNames.indexOf(self.dsArr[index].uiname),1);
+              self.dsArr.splice(index, 1);
+            }
+          } else if (obj.parentType === 'Processor') {
+            index = _.findIndex(self.processorArr, {uiname: obj.uiname});
+            if(index !== -1){
+              self.nodeNames.splice(self.nodeNames.indexOf(self.processorArr[index].uiname),1);
+              self.processorArr.splice(index, 1);
+            }
+          } else if (obj.parentType === 'DataSink') {
+            index = _.findIndex(self.sinkArr, {uiname: obj.uiname});
+            if(index !== -1){
+              self.nodeNames.splice(self.nodeNames.indexOf(self.sinkArr[index].uiname),1);
+              self.sinkArr.splice(index, 1);
+            }
+          }
+        });
+
+        self.vent.trigger('delete:topologyEdge', options);
+      });
+
+      this.listenTo(this.vent, 'delete:topologyEdge', function(options){
+        if (!_.isUndefined(options.resetRule)) {
+          TopologyUtils.resetRule(self.processorArr, options);
+        } else if(!_.isUndefined(options.resetRuleAction)){
+          TopologyUtils.resetRuleAction(self.processorArr, options);
+        }
+        options.callback();
       });
 
       this.listenTo(this.vent, 'topologyGraph:RuleToOtherNode', function(data){
@@ -200,7 +247,7 @@ define(['require',
       TopologyUtils.bindDrag(this.$('.panel-body img'));
       
       setTimeout(function(){
-        self.topologyGraph = TopologyUtils.syncGraph(self.model.get('_editState'), self.graphNodesData, self.linkArr, self.ui.graphEditor, self.vent);
+        self.topologyGraph = TopologyUtils.syncGraph(self.model.get('_editState'), self.graphNodesData, self.linkArr, self.ui.graphEditor, self.vent, self.graphTransforms);
         TopologyUtils.bindDrop(self.$('#graphEditor'), self.dsArr, self.processorArr, self.sinkArr, self.vent, self.nodeNames);
       }, 0);
       
@@ -374,27 +421,27 @@ define(['require',
         tempData.dataSources = dsObj.ds;
       } else {
         $('#loading').hide();
-        Utils.notifyError('There are some unconfigured nodes present. Kindly configure to proceed.');
+        Utils.notifyError(dsObj.msg);
         return false;
       }
 
       //Get Processor
-      var processorObj = TopologyUtils.generateJSONForProcessor(this.processorArr);
+      var processorObj = TopologyUtils.generateJSONForProcessor(this.processorArr, this.linkArr);
       if(processorObj.flag){
         tempData.processors = processorObj.processors;
       } else {
         $('#loading').hide();
-        Utils.notifyError('There are some unconfigured nodes present. Kindly configure to proceed.');
+        Utils.notifyError(processorObj.msg);
         return false;
       }
 
       //Get Sink
-      var sinkObj = TopologyUtils.generateJSONForSink(this.sinkArr);
+      var sinkObj = TopologyUtils.generateJSONForSink(this.sinkArr, this.linkArr);
       if(sinkObj.flag){
         tempData.dataSinks = sinkObj.sink;
       } else {
         $('#loading').hide();
-        Utils.notifyError('There are some unconfigured nodes present. Kindly configure to proceed.');
+        Utils.notifyError(sinkObj.msg);
         return false;
       }
 
@@ -460,7 +507,7 @@ define(['require',
               } else {
                 flag = false;
                 $('#loading').hide();
-                Utils.notifyError(targetObj.uiname+"is not associated with any rules. Kindly associate the rules in the rule processor.");
+                Utils.notifyError(targetObj.uiname+" is not associated with any rules. Kindly associate the rules in the rule processor.");
               }
             }
             tempData.links.push(tempObj);
@@ -498,7 +545,11 @@ define(['require',
     },
     saveTopologyMetaData: function(topologyId){
       var self = this;
-      var obj = {topologyId: topologyId, data: JSON.stringify(this.linkArr)};
+      var data = {
+        linkArr: this.linkArr,
+        graphTransforms: this.graphTransforms
+      };
+      var obj = {topologyId: topologyId, data: JSON.stringify(data)};
       this.model.saveMetaInfo({
         id: self.model.id,
         data: JSON.stringify(obj),
@@ -600,6 +651,9 @@ define(['require',
       this.stopListening(this.vent, 'topologyEditor:SaveConfig');
       this.stopListening(this.vent, 'topologyLink');
       this.stopListening(this.vent, 'topologyGraph:RuleToOtherNode');
+      this.stopListening(this.vent, 'topologyTransforms');
+      this.stopListening(this.vent, 'delete:topologyNode');
+      this.stopListening(this.vent, 'delete:topologyEdge');
       if(this.topologyGraph){
         this.topologyGraph.vent.stopListening(this.vent, 'topologyEditor:DropAction');
         this.topologyGraph.vent.stopListening(this.vent, 'TopologyEditorMaster:Zoom');

@@ -246,7 +246,7 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
         parent.vent.trigger('saveNodeConfig', { uiname: newData.get("uiname") });
     };
 
-    TopologyUtils.syncGraph = function(editFlag, graphNodeData, linkArr, graphElem, vent) {
+    TopologyUtils.syncGraph = function(editFlag, graphNodeData, linkArr, graphElem, vent, graphTransforms) {
         var self = this;
         var nodes = [],
             edges = [];
@@ -288,7 +288,7 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
 
             edges = linkArr;
         }
-        var graphData = { nodes: nodes, edges: edges };
+        var graphData = { nodes: nodes, edges: edges, graphTransforms: graphTransforms};
         var topologyGraph = new TopologyGraphCreator({
             elem: graphElem,
             data: graphData,
@@ -373,7 +373,7 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
     };
 
     TopologyUtils.generateJSONForDataSource = function(dsArr) {
-        var ds = [],
+        var ds = [],msg,
             flag = true;
         _.each(dsArr, function(obj) {
             if (!obj.firstTime) {
@@ -392,67 +392,80 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
                 });
             } else {
                 flag = false;
+                msg = obj.uiname+' is not configured yet. Kindly configure to proceed.';
             }
         });
-        return { flag: flag, ds: ds };
+        return { flag: flag, ds: ds, msg: msg};
     };
 
-    TopologyUtils.generateJSONForProcessor = function(processorArr) {
-        var processors = [],
+    TopologyUtils.generateJSONForProcessor = function(processorArr, linkArr) {
+        var processors = [], msg,
             flag = true;
         _.each(processorArr, function(obj) {
             if (!obj.firstTime) {
-                if (obj.hiddenFields.type === 'PARSER') {
-                    var config = {
-                        "parsedTuplesStream": "parsedTuplesStream",
-                        "failedTuplesStream": "failedTuplesStream",
-                        "parallelism": obj.parallelism
-                    };
-                    if (obj.dataSourceId) config.dataSourceId = obj.dataSourceId;
-                    if (obj.parserId) config.parserId = obj.parserId;
-                    processors.push({
-                        "uiname": obj.uiname,
-                        "type": obj.hiddenFields ? obj.hiddenFields.type : '',
-                        "transformationClass": obj.hiddenFields ? obj.hiddenFields.transformationClass : '',
-                        "config": config
-                    });
-                } else if (obj.hiddenFields.type === 'RULE') {
+                if(linkArr.filter(function(o){ return o.target.uiname === obj.uiname;}).length){
+                    if (obj.hiddenFields.type === 'PARSER') {
+                        var config = {
+                            "parsedTuplesStream": "parsedTuplesStream",
+                            "failedTuplesStream": "failedTuplesStream",
+                            "parallelism": obj.parallelism
+                        };
+                        if (obj.dataSourceId) config.dataSourceId = obj.dataSourceId;
+                        if (obj.parserId) config.parserId = obj.parserId;
+                        processors.push({
+                            "uiname": obj.uiname,
+                            "type": obj.hiddenFields ? obj.hiddenFields.type : '',
+                            "transformationClass": obj.hiddenFields ? obj.hiddenFields.transformationClass : '',
+                            "config": config
+                        });
+                    } else if (obj.hiddenFields.type === 'RULE') {
 
-                    processors.push({
-                        "uiname": obj.uiname,
-                        "type": obj.hiddenFields ? obj.hiddenFields.type : '',
-                        "transformationClass": obj.hiddenFields ? obj.hiddenFields.transformationClass : '',
-                        "config": obj.newConfig ? obj.newConfig : { parallelism: obj.parallelism, rulesProcessorConfig: obj.rulesProcessorConfig }
-                    });
+                        processors.push({
+                            "uiname": obj.uiname,
+                            "type": obj.hiddenFields ? obj.hiddenFields.type : '',
+                            "transformationClass": obj.hiddenFields ? obj.hiddenFields.transformationClass : '',
+                            "config": obj.newConfig ? obj.newConfig : { parallelism: obj.parallelism, rulesProcessorConfig: obj.rulesProcessorConfig }
+                        });
+                    }
+                } else {
+                    flag = false;
+                    msg = "Connect "+obj.uiname+" before saving";
                 }
             } else {
                 flag = false;
+                msg = obj.uiname+' is not configured yet. Kindly configure to proceed.';
             }
         });
-        return { flag: flag, processors: processors };
+        return { flag: flag, processors: processors, msg: msg };
     };
 
-    TopologyUtils.generateJSONForSink = function(sinkArr) {
-    	var sink = [], flag = true;
+    TopologyUtils.generateJSONForSink = function(sinkArr, linkArr) {
+        var sink = [], flag = true, msg;
         _.each(sinkArr, function(obj) {
             if (!obj.firstTime) {
-                var configObj = {};
-                _.each(obj.config, function(o) {
-                    if (obj[o.name]) {
-                        configObj[o.name] = obj[o.name];
-                    }
-                });
-                sink.push({
-                    "uiname": obj.uiname,
-                    "type": obj.hiddenFields ? obj.hiddenFields.type : '',
-                    "transformationClass": obj.hiddenFields ? obj.hiddenFields.transformationClass : '',
-                    "config": configObj
-                });
+                if(linkArr.filter(function(o){ return o.target.uiname === obj.uiname;}).length){
+                    var configObj = {};
+                    _.each(obj.config, function(o) {
+                        if (obj[o.name]) {
+                            configObj[o.name] = obj[o.name];
+                        }
+                    });
+                    sink.push({
+                        "uiname": obj.uiname,
+                        "type": obj.hiddenFields ? obj.hiddenFields.type : '',
+                        "transformationClass": obj.hiddenFields ? obj.hiddenFields.transformationClass : '',
+                        "config": configObj
+                    });
+                } else {
+                    flag = false;
+                    msg = "Connect "+obj.uiname+" before saving";
+                }
             } else {
             	flag = false;
+                msg = obj.uiname+' is not configured yet. Kindly configure to proceed.';
             }
         });
-        return {flag: flag, sink: sink};
+        return {flag: flag, sink: sink, msg: msg};
     };
 
     TopologyUtils.updateUiName = function(currentType, oldName, newName, parent){
@@ -494,5 +507,33 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
     	var currentNode = _.findWhere(parent.topologyGraph.nodes, {uiname: oldName});
     	if(currentNode) currentNode.uiname = newName;
     };
+
+    TopologyUtils.resetRule = function(processorArr, options){
+        var ruleIndex = _.findIndex(processorArr, {uiname: options.resetRule.uiname});
+        if(ruleIndex !== -1){
+            var t_obj = processorArr[ruleIndex];
+            if(t_obj.rulesProcessorConfig)
+              delete t_obj.rulesProcessorConfig;
+            else if(t_obj.newConfig){
+              delete t_obj.newConfig;
+            }
+            t_obj.reset = true;
+        }
+    };
+
+    TopologyUtils.resetRuleAction = function(processorArr, options){
+        var ruleIndex = _.findIndex(processorArr, {uiname: options.resetRuleAction.uiname});
+        if(ruleIndex !== -1){
+            var t_object = processorArr[ruleIndex];
+            var rules = t_object.newConfig ? t_object.newConfig.rulesProcessorConfig.rules : t_object.rulesProcessorConfig.rules;
+            _.each(rules, function(o){
+              var num = _.findIndex(o.actions, {name: options.data[0].uiname});
+              if(num !== -1){
+                o.actions.splice(num,1);
+             }
+            });
+        }
+    };
+
     return TopologyUtils;
 });

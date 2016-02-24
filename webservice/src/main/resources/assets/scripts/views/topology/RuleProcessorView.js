@@ -86,7 +86,7 @@ define(['require',
           var id = new Date().getTime();
           var ruleObj = {
               name: ruleName,
-              id: id+i+1,
+              id: id+''+i+1,
               ruleProcessorName: this.model.get('uiname'),
               condition: {
                 conditionElements: []
