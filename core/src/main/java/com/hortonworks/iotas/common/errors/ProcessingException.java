@@ -1,4 +1,6 @@
-package com.hortonworks.iotas.processor;
+package com.hortonworks.iotas.common.errors;
+
+import com.hortonworks.iotas.processor.CustomProcessor;
 
 /**
  * Exception class representing an error while processing a message by a {@link CustomProcessor} implementation

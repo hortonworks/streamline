@@ -22,7 +22,7 @@ import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.Result;
 import com.hortonworks.iotas.layout.design.component.RulesProcessor;
 import com.hortonworks.iotas.layout.runtime.rule.RuleRuntime;
-import com.hortonworks.iotas.processor.ProcessingException;
+import com.hortonworks.iotas.common.errors.ProcessingException;
 import com.hortonworks.iotas.processor.ProcessorRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +31,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -83,6 +84,16 @@ public class RuleProcessorRuntime implements Serializable, ProcessorRuntime {
             throw new ProcessingException(message, e);
         }
         return results;
+    }
+
+    @Override
+    public void initialize(Map<String, Object> config) {
+
+    }
+
+    @Override
+    public void cleanup() {
+
     }
 }
 

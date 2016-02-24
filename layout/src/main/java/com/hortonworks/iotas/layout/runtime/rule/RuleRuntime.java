@@ -23,7 +23,7 @@ import com.hortonworks.iotas.layout.design.rule.Rule;
 import com.hortonworks.iotas.layout.design.rule.exception.ConditionEvaluationException;
 import com.hortonworks.iotas.layout.runtime.ActionRuntime;
 import com.hortonworks.iotas.layout.runtime.script.Script;
-import com.hortonworks.iotas.processor.ProcessingException;
+import com.hortonworks.iotas.common.errors.ProcessingException;
 import com.hortonworks.iotas.processor.ProcessorRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +32,7 @@ import javax.script.ScriptException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.hortonworks.iotas.common.Result;
 
@@ -83,6 +84,16 @@ public class RuleRuntime implements Serializable, ProcessorRuntime {
         }
         LOG.debug("Returning results {}", results);
         return results;
+    }
+
+    @Override
+    public void initialize(Map<String, Object> config) {
+
+    }
+
+    @Override
+    public void cleanup() {
+
     }
 
     public List<String> getStreams() {
