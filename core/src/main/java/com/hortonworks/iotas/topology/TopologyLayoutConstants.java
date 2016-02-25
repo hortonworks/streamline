@@ -100,9 +100,11 @@ public final class TopologyLayoutConstants {
     public final static String JSON_KEY_PARALLELISM = "parallelism";
     public final static String JSON_KEY_RULES_PROCESSOR_CONFIG =
             "rulesProcessorConfig";
-    public final static String JSON_KEY_RULES = "rules";
-    public final static String JSON_KEY_RULE_ACTION = "action";
+    public final static String JSON_KEY_RULE_ACTIONS = "actions";
     public final static String JSON_KEY_RULE_DECLARED_OUTPUT = "declaredOutput";
+    public final static String JSON_KEY_RULES = "rules";
+    public final static String JSON_KEY_NORMALIZATION_PROCESSOR_CONFIG =
+            "normalizationProcessorConfig";
 
     // validation error messages
     public final static String ERR_MSG_UINAME_DUP = "Uiname %s is already " +
