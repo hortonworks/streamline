@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS devices (
     version BIGINT NOT NULL,
     dataSourceId BIGINT NOT NULL,
     PRIMARY KEY (dataSourceId),
-    UNIQUE (id, version),
+    UNIQUE KEY `UK_id_version` (id, version),
     FOREIGN KEY (dataSourceId) REFERENCES datasources(id)
 );
 
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS parser_info (
     parserSchema TEXT NOT NULL,                 -- the schema is serialized to a String before storing in DB
     timestamp  BIGINT,
     PRIMARY KEY (id),
-    UNIQUE (name)
+    UNIQUE KEY `UK_name_version` (name, version)
 );
 
 CREATE TABLE IF NOT EXISTS datafeeds (
