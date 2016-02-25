@@ -108,4 +108,27 @@ public class GroovyTest {
 
         script.run();  // throws exception because no bindings for x, y
     }
+
+    static class Device {
+        String deviceName;
+
+        Device(String deviceName) {
+            this.deviceName = deviceName;
+        }
+
+        public void setName(String name) {
+            this.deviceName = name;
+        }
+
+        public float convertToCelcius(float inFahrenheit) {
+            return (inFahrenheit-32)*5/9;
+        }
+
+        @Override
+        public String toString() {
+            return "Device{" +
+                    "deviceName='" + deviceName + '\'' +
+                    '}';
+        }
+    }
 }

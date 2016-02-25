@@ -17,65 +17,46 @@
  */
 package com.hortonworks.iotas.layout.design.component;
 
+import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.layout.design.normalization.NormalizationConfig;
 
-import com.hortonworks.iotas.layout.design.normalization.FieldValueGenerator;
-import com.hortonworks.iotas.layout.design.normalization.Transformer;
-
+import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 /**
- * Design time component of Normalization processor containing configuration of Transformers,
- * fields to be filtered/removed and new output field/value generators.
+ * Design time component of Normalization processor containing configuration of normalization in {@link NormalizationConfig} for
+ * each given input {@link Schema}.
+ *
+ * This processor can have multiple incoming streams from Parser bolts (for now) which will have their respective schemas and
+ * it should normalize the payload from input schema to output schema.
  *
  */
 public class NormalizationProcessor extends IotasProcessor {
-    private List<Transformer> transformers;
-    // List of input fields filtered or removed. These will not be passed to output fields.
-    private List<String> fieldsToBeFiltered;
-    private List<FieldValueGenerator> newFieldValueGenerators;
+    public static final String DEFAULT_STREAM_ID = "default";
 
-    public NormalizationProcessor() {
+    /**
+     * {@link NormalizationConfig} for each inbound stream for this component.
+     */
+    public Map<String, NormalizationConfig> inputStreamsWithConfig;
+
+    public NormalizationProcessor(Map<String, NormalizationConfig> inputStreamsWithConfig) {
+        super(new HashSet<Stream>());
+        this.inputStreamsWithConfig = inputStreamsWithConfig;
     }
 
-    public NormalizationProcessor(Set<Stream> declaredOutputs, List<Transformer> transformers,
-                                  List<String> fieldsToBeFiltered, List<FieldValueGenerator> newFieldValueGenerators) {
-        super(declaredOutputs);
-        this.transformers = transformers;
-        this.fieldsToBeFiltered = fieldsToBeFiltered;
-        this.newFieldValueGenerators = newFieldValueGenerators;
-    }
-
-    public List<Transformer> getTransformers() {
-        return transformers;
-    }
-
-    public void setTransformers(List<Transformer> transformers) {
-        this.transformers = transformers;
-    }
-
-    public List<String> getFieldsToBeFiltered() {
-        return fieldsToBeFiltered;
-    }
-
-    public void setFieldsToBeFiltered(List<String> fieldsToBeFiltered) {
-        this.fieldsToBeFiltered = fieldsToBeFiltered;
-    }
-
-    public List<FieldValueGenerator> getNewFieldValueGenerators() {
-        return newFieldValueGenerators;
-    }
-
-    public void setNewFieldValueGenerators(List<FieldValueGenerator> newFieldValueGenerators) {
-        this.newFieldValueGenerators = newFieldValueGenerators;
+    public void setDeclaredOutput(List<Schema.Field> declaredOutput) {
+        getDeclaredOutputs().add(new Stream(declaredOutput));
+        Schema outputSchema = Schema.of(declaredOutput);
+        for (NormalizationConfig normalizationConfig : inputStreamsWithConfig.values()) {
+            normalizationConfig.setOutputSchema(outputSchema);
+        }
     }
 
     @Override
     public String toString() {
         return "NormalizationProcessor{" +
-                "transformers=" + transformers +
-                ", fieldsToBeFiltered=" + fieldsToBeFiltered +
-                ", newValueGenerators=" + newFieldValueGenerators +
-                '}';
+                "inputStreamsWithConfig=" + inputStreamsWithConfig +
+                '}' + super.toString();
     }
 }

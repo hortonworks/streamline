@@ -17,14 +17,15 @@
  */
 package com.hortonworks.iotas.bolt.normalization;
 
+import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.layout.runtime.normalization.NormalizationProcessorRuntime;
+import org.apache.storm.task.OutputCollector;
+import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
 import com.hortonworks.iotas.bolt.AbstractProcessorBolt;
-import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.common.IotasEventImpl;
-import com.hortonworks.iotas.layout.runtime.normalization.NormalizationProcessorRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,12 +44,19 @@ public class NormalizationBolt extends AbstractProcessorBolt {
         this.normalizationProcessorRuntime = normalizationProcessorRuntime;
     }
 
+    @Override
+    public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
+        super.prepare(stormConf, context, collector);
+        normalizationProcessorRuntime.prepare();
+    }
+
     public void process(Tuple inputTuple, IotasEvent iotasEvent) throws Exception {
         LOG.debug("Normalizing received IotasEvent: [{}] with tuple: [{}]", iotasEvent, inputTuple);
 
-        Map<String, Object> outputFieldNameValuePairs = normalizationProcessorRuntime.execute(iotasEvent);
-        IotasEventImpl updatedIotasEvent = new IotasEventImpl(outputFieldNameValuePairs, iotasEvent.getDataSourceId(), iotasEvent.getId());
-        collector.emit(inputTuple.getSourceStreamId(), inputTuple, new Values(updatedIotasEvent));
+       IotasEvent outputEvents = normalizationProcessorRuntime.execute(iotasEvent);
+        LOG.debug("Emitting events to collector: [{}]", outputEvents);
+
+        collector.emit(inputTuple.getSourceStreamId(), inputTuple, new Values(outputEvents));
     }
 
     @Override

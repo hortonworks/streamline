@@ -81,14 +81,14 @@ public class FieldValueGeneratorRuntime {
             this.value = fieldValueGenerator.getValue();
         }
 
-        public FieldValueGeneratorRuntime build() throws NormalizationException {
+        public FieldValueGeneratorRuntime build() {
 
             if(field == null) {
-                throw new NormalizationException("field should always be set.");
+                throw new IllegalArgumentException("field should always be set.");
             }
 
             if(value == null && script == null) {
-                throw new NormalizationException("Either value or script must exist.");
+                throw new IllegalArgumentException("Either value or script must exist.");
             }
 
             FieldValueGeneratorRuntime fieldValueGeneratorRuntime = new FieldValueGeneratorRuntime(field);
