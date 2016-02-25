@@ -66,6 +66,13 @@
                 <include>simulator*jar</include>
             </includes>
         </fileSet>
+        <fileSet>
+            <directory>${project.basedir}./bootstrap</directory>
+            <outputDirectory>/bootstrap</outputDirectory>
+            <includes>
+                <include>*</include>
+            </includes>
+        </fileSet>
     </fileSets>
 
     <files>

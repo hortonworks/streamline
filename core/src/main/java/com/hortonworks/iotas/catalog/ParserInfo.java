@@ -28,6 +28,7 @@ public class ParserInfo extends AbstractStorable {
     private Long id;
     /**
      * Human readable name.
+     * NOTE: (parser name, version) pair is unique constraint.
      */
     private String name;
 
@@ -48,8 +49,7 @@ public class ParserInfo extends AbstractStorable {
 
     /**
      * Parser version.
-     * TODO do we need a version when id is uniquely identifying a parser instance?
-     * Or should we remove id and make ParserName and version as the PK?
+     * NOTE: (parser name, version) pair is unique constraint.
      */
     private Long version;
 

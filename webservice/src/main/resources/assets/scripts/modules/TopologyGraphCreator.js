@@ -20,12 +20,11 @@ define(['require',
 
 		var nodes = thisGraph.data.nodes,
 			edges = thisGraph.data.edges;
-		
-		thisGraph.idct = thisGraph.data.nodes.length;
 
 		thisGraph.nodes = nodes || [];
 		thisGraph.edges = edges || [];
 
+		thisGraph.graphTransforms = thisGraph.data.graphTransforms;
 		thisGraph.lineFunction = d3.svg.line()
 								.x(function(d){ return d.x; })
 								.y(function(d){ return d.y; })
@@ -147,7 +146,20 @@ define(['require',
 			thisGraph.state.justScaleTransGraph = true;
 			d3.select("." + thisGraph.consts.graphClass)
 				.attr("transform", "translate(" + thisGraph.dragSvg.translate() + ")" + "scale(" + thisGraph.dragSvg.scale() + ")");
+		}).on("zoomend", function() {
+			var gTranslate = thisGraph.dragSvg.translate(),
+				gScaled = thisGraph.dragSvg.scale();
+
+			thisGraph.graphTransforms = {
+				dragCoords: gTranslate,
+				zoomScale: gScaled
+			};
+			thisGraph.vent.trigger('topologyTransforms', thisGraph.graphTransforms);
 		});
+
+		thisGraph.dragSvg.translate(thisGraph.graphTransforms.dragCoords);
+		thisGraph.dragSvg.scale(thisGraph.graphTransforms.zoomScale);
+		thisGraph.dragSvg.event(svg);
 
 		svg.call(thisGraph.dragSvg).on("dblclick.zoom", null);
 
@@ -159,10 +171,9 @@ define(['require',
 
 	TopologyGraphCreator.prototype.bindEvents = function(){
 		var thisGraph = this;
-		this.vent.listenTo(this.vent, 'change:editor-submenu', function(obj){
+		this.vent.listenTo(this.vent, 'topologyEditor:DropAction', function(obj){
 			thisGraph.nodeObject = obj.nodeObj;
-			thisGraph.nodeId = obj.id;
-			if(!_.isUndefined(obj.otherId)) thisGraph.otherId = obj.otherId ;
+			thisGraph.uiname = obj.uiname;
 			d3.event = obj.event;
 			thisGraph.createNode();
 		});
@@ -193,9 +204,15 @@ define(['require',
 		    view.y += center[1] - l[1];
 
 		    thisGraph.interpolateZoom([view.x, view.y], view.k);
+
+		    thisGraph.graphTransforms = {
+				dragCoords: zoom.translate(),
+				zoomScale: zoom.scale()
+			};
+			thisGraph.vent.trigger('topologyTransforms', thisGraph.graphTransforms);
 		});
 		this.vent.listenTo(this.vent, 'saveNodeConfig', function(obj) {
-			var currentNode = _.findWhere(thisGraph.nodes, {uniqueName: obj.uniqueName});
+			var currentNode = _.findWhere(thisGraph.nodes, {uiname: obj.uiname});
 			if(currentNode){
 				currentNode.isConfigured = true;
 			}
@@ -217,10 +234,6 @@ define(['require',
 					.attr("transform", "translate(" + thisGraph.dragSvg.translate() + ")" + "scale(" + thisGraph.dragSvg.scale() + ")");
 	        };
 	    });
-	};
-
-	TopologyGraphCreator.prototype.setIdCt = function(idct) {
-		this.idct = idct;
 	};
 
 	TopologyGraphCreator.prototype.consts = {
@@ -250,8 +263,6 @@ define(['require',
 		} else {
 			d.x = d3.mouse(thisGraph.svgG.node())[0] - thisGraph.consts.rectangleWidth / 2;
 			d.y = d3.mouse(thisGraph.svgG.node())[1] - thisGraph.consts.rectangleHeight / 2;
-			// d.x = (d.x <= -100) ? -100 : (d.x > 690) ? 690 : d.x;
-			// d.y = (d.y <= -232) ? -232 : (d.y > 142) ? 142 : d.y;
 			thisGraph.updateGraph();
 		}
 	};
@@ -352,9 +363,10 @@ define(['require',
 
 	TopologyGraphCreator.prototype.removeSelectFromEdge = function() {
 		var thisGraph = this;
-		thisGraph.paths.filter(function(cd) {
-			return cd === thisGraph.state.selectedEdge;
-		}).classed(thisGraph.consts.selectedClass, false);
+		var elem = thisGraph.rectangles.filter(function(cd) {
+			return cd.uiname === thisGraph.state.selectedNode.uiname;
+		});
+		d3.select($(elem[0][0]).find('rect')[0]).classed(thisGraph.consts.selectedClass, false);
 		thisGraph.state.selectedEdge = null;
 	};
 
@@ -430,15 +442,18 @@ define(['require',
 					return d.source === newEdge.source && d.target === newEdge.target;
 				});
 				if (!filtRes[0].length) {
+					var data = {edges: thisGraph.edges};
 					if(newEdge.source.currentType === Globals.Topology.Editor.Steps.Processor.Substeps[0].valStr){
 						if(thisGraph.state.failedTupleDrag){
 							newEdge.target.streamId = "failedTuplesStream";
 						} else {
 							newEdge.target.streamId = "parsedTuplesStream";
 						}
+					} else if(newEdge.source.currentType === 'RULE'){
+						thisGraph.vent.trigger('topologyGraph:RuleToOtherNode', newEdge);
 					}
 					thisGraph.edges.push(newEdge);
-					thisGraph.vent.trigger('topologyLink', thisGraph.edges);
+					thisGraph.vent.trigger('topologyLink', data);
 					thisGraph.updateGraph();
 				}
 			} else {
@@ -457,7 +472,7 @@ define(['require',
 					}
 					var prevNode = state.selectedNode;
 
-					if (!prevNode || prevNode.id !== d.id) {
+					if (!prevNode || prevNode.uiname !== d.uiname) {
 						thisGraph.replaceSelectNode(d3node, d);
 					} else {
 						thisGraph.removeSelectFromNode();
@@ -465,9 +480,9 @@ define(['require',
 				} else {
 					thisGraph.vent.trigger('click:topologyNode', 
 						{
-							parentType: d.parentType ? d.parentType : d.mainStep, 
+							parentType: d.parentType,
 							currentType: d.currentType, 
-							nodeId: d.nodeId
+							uiname: d.uiname
 						}
 					);
 				}
@@ -507,15 +522,18 @@ define(['require',
 					return d.source === newEdge.source && d.target === newEdge.target;
 				});
 				if (!filtRes[0].length) {
+					var data = {edges: thisGraph.edges};
 					if(newEdge.source.currentType === Globals.Topology.Editor.Steps.Processor.Substeps[0].valStr){
 						if(thisGraph.state.failedTupleDrag){
 							newEdge.target.streamId = "failedTuplesStream";
 						} else {
 							newEdge.target.streamId = "parsedTuplesStream";
 						}
+					} else if(newEdge.source.currentType === 'RULE'){
+						thisGraph.vent.trigger('topologyGraph:RuleToOtherNode', newEdge);
 					}
 					thisGraph.edges.push(newEdge);
-					thisGraph.vent.trigger('topologyLink', thisGraph.edges);
+					thisGraph.vent.trigger('topologyLink', data);
 					thisGraph.updateGraph();
 				}
 			} else {
@@ -528,7 +546,7 @@ define(['require',
 			}
 			var prevNode = state.selectedNode;
 
-			if (!prevNode || prevNode.id !== d.id) {
+			if (!prevNode || prevNode.uiname !== d.uiname) {
 				thisGraph.replaceSelectNode(d3node, d);
 			} else {
 				thisGraph.removeSelectFromNode();
@@ -566,14 +584,12 @@ define(['require',
 		state.graphMouseDown = true;
 		var xycoords = d3.mouse(thisGraph.svgG.node()),
 			d = {
-				id: thisGraph.idct++,
 				x: xycoords[0] - thisGraph.consts.rectangleWidth / 2,
 				y: xycoords[1] - thisGraph.consts.rectangleHeight / 2,
-				parentType: thisGraph.nodeObject.mainStep,
+				parentType: thisGraph.nodeObject.parentType,
 				currentType: thisGraph.nodeObject.valStr,
-				uniqueName: thisGraph.nodeObject.valStr+'-'+thisGraph.nodeId,
+				uiname: thisGraph.uiname,
 				imageURL: thisGraph.nodeObject.imgUrl,
-				nodeId: thisGraph.nodeId,
 				isConfigured: false
 			};
 		thisGraph.nodes.push(d);
@@ -587,16 +603,14 @@ define(['require',
 	TopologyGraphCreator.prototype.createParserNode = function(d) {
 		var thisGraph = this,
 			newObject = jQuery.extend(true, {}, d);
-		newObject.id = thisGraph.idct++;
-		newObject.nodeId = thisGraph.otherId;
-		newObject.x += 300;
-		newObject.uniqueName= Globals.Topology.Editor.Steps.Processor.Substeps[0].valStr+'-'+thisGraph.otherId;
-		newObject.parentType = Globals.Topology.Editor.Steps.Processor.Substeps[0].mainStep;
+		newObject.x += 200;
+		newObject.uiname= d.uiname.replace('DEVICE','PARSER');
+		newObject.parentType = Globals.Topology.Editor.Steps.Processor.Substeps[0].parentType;
 		newObject.currentType = Globals.Topology.Editor.Steps.Processor.Substeps[0].valStr;
 		newObject.imageURL = Globals.Topology.Editor.Steps.Processor.Substeps[0].imgUrl;
 		thisGraph.nodes.push(newObject);
 		thisGraph.edges.push({source: d, target: newObject});
-		thisGraph.vent.trigger('topologyLink', thisGraph.edges);
+		thisGraph.vent.trigger('topologyLink', {edges: thisGraph.edges});
 	};
 
 	// keydown on main svg
@@ -616,25 +630,107 @@ define(['require',
 			case consts.DELETE_KEY:
 				d3.event.preventDefault();
 				if (selectedNode) {
-					// thisGraph.nodes.splice(thisGraph.nodes.indexOf(selectedNode), 1);
-					// thisGraph.spliceLinksForNode(selectedNode);
-					// thisGraph.vent.trigger('delete:topologyNode', 
-					// 	{
-					// 		parentType: selectedNode.parentType, 
-					// 		currentType: selectedNode.currentType, 
-					// 		nodeId: selectedNode.nodeId,
-					// 		linkArr: thisGraph.edges
-					// 	}
-					// );
-					// state.selectedNode = null;
-					// thisGraph.updateGraph();
+					thisGraph.deleteNode(selectedNode);
 				} else if (selectedEdge) {
-					thisGraph.edges.splice(thisGraph.edges.indexOf(selectedEdge), 1);
-					thisGraph.vent.trigger('topologyLink', thisGraph.edges);
-					state.selectedEdge = null;
-					thisGraph.updateGraph();
+					thisGraph.deleteEdge(selectedEdge);
 				}
 				break;
+		}
+	};
+
+	TopologyGraphCreator.prototype.deleteNode = function(selectedNode){
+		var callback, triggerData, thisGraph = this, state = thisGraph.state;
+		switch(selectedNode.parentType){
+			case 'Datasource':
+				if(_.isEqual(selectedNode.currentType, 'DEVICE')){
+					var deviceToParserObj = _.find(thisGraph.edges, function(obj){
+						return obj.source == selectedNode;
+					});
+					if(!_.isUndefined(deviceToParserObj)){
+						callback = function(){
+							thisGraph.nodes.splice(thisGraph.nodes.indexOf(deviceToParserObj.source), 1);
+							thisGraph.spliceLinksForNode(deviceToParserObj.source);
+							thisGraph.nodes.splice(thisGraph.nodes.indexOf(deviceToParserObj.target), 1);
+							thisGraph.spliceLinksForNode(deviceToParserObj.target);
+							state.selectedNode = null;
+							thisGraph.updateGraph();
+						};
+						triggerData = {
+							data: [deviceToParserObj.source, deviceToParserObj.target],
+							callback: callback
+						};
+						var parserToRuleObj = _.find(thisGraph.edges, function(obj){
+							return (obj.source == deviceToParserObj.target && obj.target.currentType === 'RULE');
+						});
+						if(! _.isUndefined(parserToRuleObj)){
+							parserToRuleObj.target.isConfigured = false;
+							triggerData.resetRule = parserToRuleObj.target;
+						}
+						thisGraph.vent.trigger('delete:topologyNode', triggerData);
+					}
+				}
+			break;
+			case 'Processor':
+				if(_.isEqual(selectedNode.currentType, 'PARSER')){
+					Utils.notifyInfo('Parser can only be deleted if Source is deleted.');
+				} else if(_.isEqual(selectedNode.currentType, 'RULE')){
+					callback = function(){
+						thisGraph.nodes.splice(thisGraph.nodes.indexOf(selectedNode), 1);
+						thisGraph.spliceLinksForNode(selectedNode);
+						state.selectedNode = null;
+						thisGraph.updateGraph();
+					};
+					triggerData = {
+						data: [selectedNode],
+						callback: callback
+					};
+					thisGraph.vent.trigger('delete:topologyNode', triggerData);
+				}
+			break;
+			case 'DataSink':
+				callback = function(){
+					thisGraph.nodes.splice(thisGraph.nodes.indexOf(selectedNode), 1);
+					thisGraph.spliceLinksForNode(selectedNode);
+					state.selectedNode = null;
+					thisGraph.updateGraph();
+				};
+				triggerData = {
+					data: [selectedNode],
+					callback: callback
+				};
+				var ruleToSinkObj = _.find(thisGraph.edges, function(obj){
+					return (obj.target == selectedNode && obj.source.currentType === 'RULE');
+				});
+				if(ruleToSinkObj){
+					triggerData.resetRuleAction = ruleToSinkObj.source;
+				}
+				thisGraph.vent.trigger('delete:topologyNode', triggerData);
+			break;
+		}
+		thisGraph.vent.trigger('topologyLink', {edges: thisGraph.edges});
+	};
+
+	TopologyGraphCreator.prototype.deleteEdge = function(selectedEdge){
+		var thisGraph = this, state = thisGraph.state;
+		var triggerData = {
+			callback: function(){
+				thisGraph.edges.splice(thisGraph.edges.indexOf(selectedEdge), 1);
+				thisGraph.vent.trigger('topologyLink', thisGraph.edges);
+				state.selectedEdge = null;
+				thisGraph.updateGraph();
+			}
+		};
+		if(selectedEdge.source.currentType === 'DEVICE' && selectedEdge.target.currentType === 'PARSER'){
+			Utils.notifyInfo('Link between Device and Parser cannot be deleted.');
+		} else {
+			if(selectedEdge.source.currentType === 'PARSER' && selectedEdge.target.currentType === 'RULE'){
+				selectedEdge.target.isConfigured = false;
+				triggerData.resetRule = selectedEdge.target;
+			} else if(selectedEdge.source.currentType === 'RULE' && selectedEdge.target.parentType === 'DataSink'){
+				triggerData.resetRuleAction = selectedEdge.source;
+				triggerData.data = [selectedEdge.target];
+			}
+			thisGraph.vent.trigger('delete:topologyEdge', triggerData);
 		}
 	};
 
@@ -650,7 +746,7 @@ define(['require',
 			state = thisGraph.state;
 
 		thisGraph.paths = thisGraph.paths.data(thisGraph.edges, function(d) {
-			return String(d.source.id) + "+" + String(d.target.id);
+			return String(d.source.uiname) + "+" + String(d.target.uiname);
 		});
 		var paths = thisGraph.paths;
 		// update existing paths
@@ -705,7 +801,7 @@ define(['require',
 
 		// update existing nodes
 		thisGraph.rectangles = thisGraph.rectangles.data(thisGraph.nodes, function(d) {
-			return d.id;
+			return d.uiname;
 		});
 		thisGraph.rectangles.attr("transform", function(d) {
 			return "translate(" + d.x + "," + d.y + ")";
@@ -729,17 +825,13 @@ define(['require',
 				.attr("xlink:href", function(d){
 					return d.imageURL;
 				})
-				.attr("width", "60px")
-				.attr("height", "60px")
-				.attr("x", "10")
-				.attr("y", "10")
+				.attr("width", "80px")
+				.attr("height", "80px")
 			    .on("mouseover", function(d) {
-					if (state.shiftNodeDrag) {
-						d3.select(this).classed(consts.connectClass, true);
-					}
+					$(this).siblings('foreignobject').show();
 				})
 				.on("mouseout", function(d) {
-					d3.select(this).classed(consts.connectClass, false);
+					$(this).siblings('foreignobject').hide();
 				})
 				.on("mousedown", function(d) {
 					thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);
@@ -748,34 +840,33 @@ define(['require',
 					thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);
 				})
 				.call(thisGraph.drag);
-			newGs.append("rect")
-				.attr("rx", "15px")
-				.attr("ry", "15px")
-				.attr("width", "80px")
-				.attr("height", "80px")
-				.attr("class", function(d){
-					if(d.parentType === Globals.Topology.Editor.Steps.Datasource.valStr){
-						return 'source';
-					} else if(d.parentType === Globals.Topology.Editor.Steps.Processor.valStr){
-						return 'processor';
-					} else if(d.parentType === Globals.Topology.Editor.Steps.DataSink.valStr){
-						return 'datasink';
-					}
-				});
 
             newGs.append('text')
                 .attr("class", "fa fa-exclamation-triangle")
-                .attr("x","70px")
-                .attr("y","5px")
+                .attr("y","6px")
                 .text(function(d) {
 				if(d.isConfigured)
 					return '';
 				else return '\uf071';
 			});
 
+            newGs.append('svg:foreignObject')
+			    .attr("x","66px")
+                .attr("y","-9px")
+                .attr("display","none")
+			    .html('<i class="fa fa-times fa-2"></i>')
+				.on('mouseover', function(d){
+					$(this).show();
+			    })
+				.on('mouseout', function(d){
+					$(this).hide();
+			    })
+				.on('mousedown', function(d){
+					thisGraph.deleteNode(d);
+			    });
+
 			newGs.append("circle")
 				.attr("cx", function (d) { 
-					if(!d.parentType) d.parentType = d.mainStep;
 					if(d.parentType !== Globals.Topology.Editor.Steps.DataSink.valStr)
 			    		return (consts.rectangleWidth); 
 			    	else

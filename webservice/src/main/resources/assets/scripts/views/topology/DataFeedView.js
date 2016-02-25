@@ -7,7 +7,7 @@ define(['require',
 ], function(require, vent, localization, Utils, Globals, tmpl) {
   'use strict';
 
-  var DataFeedLayout = Marionette.LayoutView.extend({
+  var DataSourceLayout = Marionette.LayoutView.extend({
 
     template: tmpl,
 
@@ -37,15 +37,13 @@ define(['require',
     evAdd: function(e){
       var err = this.view.validate();
       if(_.isEmpty(err)){
-        this.saveDataFeed();
+        this.saveDevice();
       } else {
         return false;
       }
     },
-    saveDataFeed: function(){
-      // var self = this;
+    saveDevice: function(){
       var data = this.view.getData();
-      console.log(data);
       this.vent.trigger('topologyEditor:SaveDeviceSource', data);
       this.evClose();
     },
@@ -55,5 +53,5 @@ define(['require',
 
   });
   
-  return DataFeedLayout;
+  return DataSourceLayout;
 });

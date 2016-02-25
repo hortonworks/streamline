@@ -54,7 +54,6 @@ define(['require',
     },
     saveDataSink: function(){
       var data = this.view.getData();
-      console.log(data);
       this.vent.trigger('topologyEditor:SaveSink', data);
       this.evClose();
     },

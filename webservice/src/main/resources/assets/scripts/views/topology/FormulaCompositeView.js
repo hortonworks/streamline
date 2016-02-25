@@ -1,11 +1,13 @@
 define(['require',
     'utils/Globals',
+    'utils/Utils',
     'hbs!tmpl/topology/formulaCompositeView',
     'views/topology/FormulaItemView'
-], function(require, Globals, tmpl, FormulaItemView){
+], function(require, Globals, Utils, tmpl, FormulaItemView){
     'use strict';
     var FormulaCompositeView = Marionette.CompositeView.extend({
         template: tmpl,
+        className: 'panel-body',
         templateHelpers: function(){
             var self = this;
             this.comparisonOpArr = [];
@@ -33,7 +35,9 @@ define(['require',
             return {
                 comparisonArr : this.comparisonOpArr,
                 logicalArr : this.logicalOpArr,
-                fieldsArr : this.fieldsArr
+                fieldsArr : this.fieldsArr,
+                sinkConnected: this.sinkConnected,
+                sinkList: this.connectedSink
             };
         },
 
@@ -47,7 +51,6 @@ define(['require',
                 comparisonArr: this.comparisonOpArr,
                 logicalArr: this.logicalOpArr,
                 fieldsArr : this.fieldsArr,
-                rulesArr: this.rulesArr,
                 // id: this.rowId++,
                 vent: this.vent
             };
@@ -55,22 +58,32 @@ define(['require',
 
         events: {
             'click #addNewRule': 'evAddRow',
-            'change .ruleRow': 'evChange'
+            'change .ruleRow': 'evChange',
+            // 'click #saveRule': 'evAddRule',
+            // 'click #closeRule': 'evCloseRule'
         },
 
         initialize: function(options){
             _.extend(this, options);
-            this.firstFormulaModel = new Backbone.Model({firstModel: true});
+
             this.rowId = 2; //1 is for first row already rendered
+            this.firstFormulaModel = new Backbone.Model({firstModel: true});
             this.collection = new Backbone.Collection();
-            if(this.rulesArr.length > 1){
+            if(this.rulesArr.length){
+
+                this.firstFormulaModel.set({
+                    field1: this.rulesArr[0].get('firstOperand'),
+                    field2: this.rulesArr[0].get('secondOperand'),
+                    comp: this.rulesArr[0].get('operation')
+                });
+
                 for(var i = 1; i < this.rulesArr.length; i++){
                     var obj = this.rulesArr[i];
                     var model = new Backbone.Model({id: this.rowId++});
-                    model.set('field1', obj.firstOperand.name);
-                    model.set('comp', obj.operation);
-                    model.set('field2', obj.secondOperand);
-                    model.set('logical', this.rulesArr[i-1].logicalOperator);
+                    model.set('field1', obj.get('firstOperand'));
+                    model.set('comp', obj.get('operation'));
+                    model.set('field2', obj.get('secondOperand'));
+                    model.set('logical', obj.get('logicalOperator'));
                     this.collection.add(model);
                 }
             }
@@ -84,8 +97,54 @@ define(['require',
             });
         },
 
-        generateForumla: function(collection){
-          console.log(dataCollection);
+        generateFormula: function(models){
+            var firstModel = this.firstFormulaModel,
+            msg = '';
+
+        if(firstModel.has('field1')) {
+            msg += '<span class="formulaField">('+firstModel.get('field1')+')</span>';
+        } else {
+            msg += '<span class="formulaError"> (Missing Field) </span>';
+        }
+
+        if(firstModel.has('comp')) {
+            msg += '<span class="formulaComparison"> '+firstModel.get('comp')+' </span>';
+        } else {
+            msg += '<span class="formulaError"> Missing Operator </span>';
+        }
+
+        if(firstModel.has('field2')) {
+            msg += '<span class="formulaField">('+firstModel.get('field2')+')</span>';
+        } else {
+            msg += '<span class="formulaError"> (Missing Field) </span>';
+        }
+
+      _.each(models, function(model){
+        if(model.has('logical')){
+            msg += '<br><span class="formulaLogical"> '+model.get('logical')+' </span><br>';
+        } else if(!model.has('firstModel')){
+            msg += '<br><span class="formulaError"> Missing Operator </span><br>';
+        }
+
+        if(model.has('field1')){
+            msg += '<span class="formulaField">('+model.get('field1')+')</span>';
+        } else {
+            msg += '<span class="formulaError"> (Missing Field) </span>';
+        }
+
+        if(model.has('comp')){
+            msg += '<span class="formulaComparison"> '+model.get('comp')+' </span>';
+        } else {
+            msg += '<span class="formulaError"> Missing Operator </span>';
+        }
+
+        if(model.has('field2')){
+            msg += '<span class="formulaField">('+model.get('field2')+')</span>';
+        } else {
+            msg += '<span class="formulaError"> (Missing Field) </span>';
+        }
+        });
+        this.$('#previewFormula').html(msg);
         },
 
         onRender: function(){
@@ -99,18 +158,44 @@ define(['require',
                 tags:true,
                 placeholder: 'Constant/Field'
             });
+            this.$("#rule-name").val(this.ruleName);
             if(this.rulesArr.length){
-                var obj = this.rulesArr[0];
-                this.$el.find('.field-1').select2('val',obj.firstOperand.name);
-                this.$el.find('.comparisonOp').select2('val',obj.operation);
-                if(!_.find(this.fieldsArr, {val: obj.secondOperand})){
-                    this.$el.find('.field-2').append('<option value="'+obj.secondOperand+'">'+obj.secondOperand+'</option>');
+                var obj = this.firstFormulaModel;
+                this.$el.find('.field-1').select2('val',obj.get('field1'));
+                this.$el.find('.comparisonOp').select2('val',obj.get('comp'));
+                if(!_.find(this.fieldsArr, {val: obj.get('field2')})){
+                    this.$el.find('.field-2').append('<option value="'+obj.get('field2')+'">'+obj.get('field2')+'</option>');
                 }
-                this.$el.find('.field-2').select2('val',obj.secondOperand);
+                this.$el.find('.field-2').select2('val',obj.get('field2'));
             }
+            this.$('.sinkConnect').select2();
+            if(this.sinkConnected){
+                var arr = [];
+                _.each(this.ruleConnectsTo, function(obj){
+                    arr.push(obj.name);
+                });
+                this.$('.sinkConnect').select2('val', arr);
+            }
+            this.generateFormula(this.collection.models);
+            this.addRuleActionButtons();
+        },
+        addRuleActionButtons: function(){
+          var self = this;
+          if(!$('#saveRule').length){
+            var html = '<button class="rule-action btn btn-default" id="closeRule">Cancel</button>'+
+                     '<button class="rule-action btn btn-success" id="saveRule">Save</button>';
+            $('.modal-footer').append(html);
+            $('#saveRule').on('click', function(e){
+                self.evAddRule(e);
+            });
+            $('#closeRule').on('click', function(e){
+                self.evCloseRule(e);
+            });
+          }
         },
         evAddRow: function(){
             this.collection.add(new Backbone.Model({id: this.rowId++}));
+            this.generateFormula(this.collection.models);
         },
         evChange: function(e){
             if(e.currentTarget){
@@ -123,16 +208,68 @@ define(['require',
             } else {
                 this.collection = e.models;
             }
-            
+
             var tempArr = [];
             tempArr.push(this.firstFormulaModel);
-            // if(this.collection.length){
             Array.prototype.push.apply(tempArr, this.collection.models);
-            // }
             this.vent.trigger('change:Formula', {
                 models: tempArr
             });
         },
+        evAddRule: function(e) {
+            var self = this,
+            tempArr = [],
+            ruleName = this.$("#rule-name").val(),
+            ruleConnectsTo = this.$(".sinkConnect").val();
+
+            tempArr.push(this.firstFormulaModel);
+              if(this.collection.length)
+                Array.prototype.push.apply(tempArr, this.collection.models);
+
+            if(self.validate(tempArr, ruleName)) {
+                self.ruleName = ruleName;
+                var actionArr = [];
+                _.each(ruleConnectsTo, function(name){
+                    actionArr.push({name: name});
+                });
+                self.vent.trigger('RuleLayout:addRule', {
+                    models: tempArr,
+                    ruleId: self.ruleId,
+                    ruleName: self.ruleName,
+                    ruleConnectsTo: actionArr
+                });
+
+             } else {
+                Utils.notifyError('Some fields are empty.');
+                return false;
+            }
+
+        },
+        evCloseRule: function() {
+            this.vent.trigger('RuleLayout:closeRule', {});
+        },
+
+        validate: function(formulaArr, ruleName) {
+
+        var flag = true;
+
+        if(_.isEmpty(ruleName)) {
+            flag = false;
+        }
+
+        _.each(formulaArr, function(model){
+            if(flag && model.get('field1') && model.get('comp') && model.get('field2')){
+                if(!model.get('firstModel')){
+                    if(!model.get('logical')){
+                        flag = false;
+                    }
+                }
+            } else {
+            flag = false;
+            }
+        });
+        return flag;
+        }
     });
     return FormulaCompositeView;
 });

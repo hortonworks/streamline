@@ -64,14 +64,11 @@ define(['require',
     saveParserProcessor: function() {
       var data = this.view.getData();
       if(data.get('emptyParser')){
-        // data.set('_parserId', data.get('parserId'));
         delete data.attributes.parserId;
       }
       if(data.get('emptySource')){
-        // data.set('_dataSourceId', data.get('dataSourceId'));
         delete data.attributes.dataSourceId;
       }
-      console.log(data);
       this.vent.trigger('topologyEditor:SaveProcessor', data);
       this.evClose();
     },
