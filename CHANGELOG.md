@@ -1,4 +1,5 @@
 ## 0.1.1
+ * IOT-128: Refactored design time entities.
  * IOT-148: Topology Editor should be able delete the nodes.
  * IOT-98: Add pair of parser name and version unique constraint in parser info.
  * IOT-149: Topology Editor should allow multiples rules through UI.
