@@ -4,5 +4,5 @@
    "type" : "DATASET",
    "description" : "Twitter feed as datasource",
    "tags" : "twitter, tweet",
-   "typeConfig" : "{\"config\":\"test\"}"
+   "typeConfig" : "{\"config\":{\"properties\":{\"url\":\"twitter.com\",\"port\":8080,\"debug\":true}}}"
 }
