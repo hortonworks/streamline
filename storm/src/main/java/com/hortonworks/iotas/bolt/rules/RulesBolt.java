@@ -18,6 +18,7 @@
 
 package com.hortonworks.bolt.rules;
 
+import com.hortonworks.iotas.common.Result;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -33,7 +34,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import static com.hortonworks.iotas.layout.runtime.ActionRuntime.Result;
 
 
 public class RulesBolt extends BaseRichBolt {
@@ -62,14 +62,9 @@ public class RulesBolt extends BaseRichBolt {
 
             if (iotasEvent instanceof IotasEvent) {
                 LOG.debug("++++++++ Executing tuple [{}] which contains IotasEvent [{}]", input, iotasEvent);
-
-                for (RuleRuntime rule : ruleProcessorRuntime.getRulesRuntime()) {
-                    if (rule.evaluate((IotasEvent) iotasEvent)) {
-                        for(Result result: rule.execute((IotasEvent) iotasEvent)) {
-                            for (IotasEvent event: result.events) {
-                                collector.emit(result.stream, input, new Values(event));
-                            }
-                        }
+                for(Result result: ruleProcessorRuntime.process((IotasEvent) iotasEvent)) {
+                    for (IotasEvent event: result.events) {
+                        collector.emit(result.stream, input, new Values(event));
                     }
                 }
             } else {

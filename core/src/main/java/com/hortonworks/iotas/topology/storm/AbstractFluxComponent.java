@@ -123,21 +123,34 @@ public abstract class AbstractFluxComponent implements FluxComponent {
         return constructorArgs;
     }
 
-    protected List getConfigMethodsYaml (String[] configMethodNames, String[]
-            configKeys) {
+    protected List getConfigMethodsYaml (String[] configMethodNames, String[] configKeys) {
         List configMethods = new ArrayList();
+        List<String> nonNullConfigMethodNames = new ArrayList<String>();
+        List values = new ArrayList();
         if ((configMethodNames != null) && (configKeys != null) &&
                 (configMethodNames.length == configKeys.length) && (configKeys.length > 0)) {
             for (int i = 0; i < configKeys.length; ++i) {
                 if (conf.get(configKeys[i]) != null) {
-                    Map configMethod = new LinkedHashMap();
-                    configMethod.put(TopologyLayoutConstants.YAML_KEY_NAME,
-                            configMethodNames[i]);
-                    List methodArgs = new ArrayList();
-                    methodArgs.add(conf.get(configKeys[i]));
-                    configMethod.put(TopologyLayoutConstants.YAML_KEY_ARGS, methodArgs);
-                    configMethods.add(configMethod);
+                    nonNullConfigMethodNames.add(configMethodNames[i]);
+                    values.add(conf.get(configKeys[i]));
                 }
+            }
+            configMethods = getConfigMethodsYaml(nonNullConfigMethodNames.toArray(new String[0]), values.toArray());
+        }
+        return configMethods;
+    }
+
+    protected List getConfigMethodsYaml (String[] configMethodNames, Object[] values) {
+        List configMethods = new ArrayList();
+        if ((configMethodNames != null) && (values != null) &&
+                (configMethodNames.length == values.length) && (values.length > 0)) {
+            for (int i = 0; i < values.length; ++i) {
+                Map configMethod = new LinkedHashMap();
+                configMethod.put(TopologyLayoutConstants.YAML_KEY_NAME, configMethodNames[i]);
+                List methodArgs = new ArrayList();
+                methodArgs.add(values[i]);
+                configMethod.put(TopologyLayoutConstants.YAML_KEY_ARGS, methodArgs);
+                configMethods.add(configMethod);
             }
 
         }
