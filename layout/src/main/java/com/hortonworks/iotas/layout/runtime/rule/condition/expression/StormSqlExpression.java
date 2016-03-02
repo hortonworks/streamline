@@ -20,6 +20,8 @@ package com.hortonworks.iotas.layout.runtime.rule.condition.expression;
 
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.layout.design.rule.condition.Condition;
+import com.hortonworks.iotas.layout.design.rule.condition.ExpressionTranslator;
+import com.hortonworks.iotas.layout.design.rule.condition.Operator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +32,7 @@ import java.util.List;
 /**
  * Represents the expression of this {@link Condition} in Storm SQL language syntax
  **/
-public class StormSqlExpression extends Expression {
+public class StormSqlExpression extends ExpressionRuntime {
     private static final Logger LOG = LoggerFactory.getLogger(StormSqlExpression.class);
     public static final String RULE_SCHEMA = "RULESCHEMA";  // _ underscores not supported by Storm SQL framework
     public static final String RULE_TABLE = "RULETABLE";
@@ -39,28 +41,18 @@ public class StormSqlExpression extends Expression {
     private static final String FROM = "FROM ";
     private static final String WHERE = "WHERE ";
     private static final String LOCATION = "LOCATION";
-
     private final List<String> fieldsToEmit = new ArrayList<>();
+    private final ExpressionTranslator expressionTranslator;
 
     public StormSqlExpression(Condition condition) {
         super(condition);
+        expressionTranslator = new StormSqlExpressionTranslator();
+        condition.getExpression().accept(expressionTranslator);
     }
 
     @Override
     public String asString() {
-        final StringBuilder builder = new StringBuilder("");
-        for (Condition.ConditionElement element : condition.getConditionElements()) {
-            builder.append(getName(element.getFirstOperand()))          // x
-                .append(getOperation(element.getOperation()))           // =, !=, >, <, ...
-                .append(element.getSecondOperand());                    // 5 - it is a constant
-
-            if (element.getLogicalOperator() != null) {
-                builder.append(" ");
-                builder.append(getLogicalOperator(element.getLogicalOperator()));   // AND or OR
-                builder.append(" ");
-            }
-        }
-        final String expression = builder.toString();                              // x = 5 [AND or OR]
+        final String expression = expressionTranslator.getTranslatedExpression();
         LOG.debug("Built expression [{}] for condition [{}]", expression, condition);
         return expression;
     }
@@ -83,11 +75,11 @@ public class StormSqlExpression extends Expression {
     // F1 INTEGER or F2 STRING or ...
     private String buildCreateDefinition() {
         final StringBuilder builder = new StringBuilder("");
-        for (Condition.ConditionElement element : condition.getConditionElements()) {
-            String fieldName = getFieldName(element.getFirstOperand());
+        for (Schema.Field field: expressionTranslator.getFields()) {
+            String fieldName = getName(field);
             fieldsToEmit.add(fieldName.trim());
             builder.append(fieldName)
-                    .append(getStormSqlType(element.getFirstOperand().getType())).append(", ");
+                    .append(getType(field)).append(", ");
         }
         if (builder.length() >= 2) {
             builder.setLength(builder.length() - 2);    // remove the last ", "
@@ -97,8 +89,8 @@ public class StormSqlExpression extends Expression {
 
     private String buildSelectExpression() {
         final StringBuilder builder = new StringBuilder("");
-        for (Condition.ConditionElement element : condition.getConditionElements()) {
-            builder.append(getName(element.getFirstOperand())).append(", ");
+        for (Schema.Field field: expressionTranslator.getFields()) {
+            builder.append(getName(field)).append(", ");
         }
         if (builder.length() >= 2) {
             builder.setLength(builder.length() - 2);    // remove the last ", "
@@ -106,49 +98,46 @@ public class StormSqlExpression extends Expression {
         return builder.toString();
     }
 
-    private String getLogicalOperator(Condition.ConditionElement.LogicalOperator logicalOperator) {
-        switch(logicalOperator) {
-            case AND:
-                return " AND ";
-            case OR:
-                return " OR ";
-            default:
-                throw new UnsupportedOperationException(String.format("Operator [%s] not supported. List of supported operators: %s",
-                        logicalOperator, Arrays.toString(Condition.ConditionElement.LogicalOperator.values())));
-        }
-    }
-
-    private String getOperation(Condition.ConditionElement.Operation operation) {
-        switch(operation) {
-            case EQUALS:
-                return " = ";
-            case NOT_EQUAL:
-                return " <> ";
-            case GREATER_THAN:
-                return " > ";
-            case LESS_THAN:
-                return " < ";
-            case GREATER_THAN_EQUALS_TO:
-                return " >= ";
-            case LESS_THAN_EQUALS_TO:
-                return " <= ";
-            default:
-                throw new UnsupportedOperationException(String.format("Operation [%s] not supported. List of supported operations: %s",
-                        operation, Arrays.toString(Condition.ConditionElement.Operation.values())));
-        }
-    }
-
-    private String getStormSqlType(Schema.Type iotasType) {
-        switch (iotasType) {
-            case NESTED:
-            case ARRAY:
-                return "ANY ";
-            default:
-                return iotasType + " ";
+    private static class StormSqlExpressionTranslator extends ExpressionTranslator {
+        protected String getOperator(Operator operator) {
+            switch (operator) {
+                case AND:
+                    return " AND ";
+                case OR:
+                    return " OR ";
+                case EQUALS:
+                    return " = ";
+                case NOT_EQUAL:
+                    return " <> ";
+                case GREATER_THAN:
+                    return " > ";
+                case LESS_THAN:
+                    return " < ";
+                case GREATER_THAN_EQUALS_TO:
+                    return " >= ";
+                case LESS_THAN_EQUALS_TO:
+                    return " <= ";
+                default:
+                    throw new UnsupportedOperationException(
+                            String.format("Operator [%s] not supported. List of supported operators: %s",
+                                          operator, Arrays.toString(Operator.values())));
+            }
         }
     }
 
     public List<String> getFieldsToEmit() {
         return fieldsToEmit;
     }
+
+    @Override
+    protected String getType(Schema.Field field) {
+        switch (field.getType()) {
+            case NESTED:
+            case ARRAY:
+                return "ANY ";
+            default:
+                return super.getType(field);
+        }
+    }
+
 }

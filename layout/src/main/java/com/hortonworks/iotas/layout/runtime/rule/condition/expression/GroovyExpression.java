@@ -19,6 +19,8 @@
 package com.hortonworks.iotas.layout.runtime.rule.condition.expression;
 
 import com.hortonworks.iotas.layout.design.rule.condition.Condition;
+import com.hortonworks.iotas.layout.design.rule.condition.ExpressionTranslator;
+import com.hortonworks.iotas.layout.design.rule.condition.Operator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +29,7 @@ import java.util.Arrays;
 /**
  * Represents the expression of this {@link Condition} in Groovy language syntax
  **/
-public class GroovyExpression extends Expression {
+public class GroovyExpression extends ExpressionRuntime {
     private static final Logger LOG = LoggerFactory.getLogger(GroovyExpression.class);
 
 
@@ -38,53 +40,37 @@ public class GroovyExpression extends Expression {
     @Override
     public String asString() {
         if (expression == null) {           // Builds and caches the expression string the first time it is called
-            final StringBuilder builder = new StringBuilder("");
-            for (Condition.ConditionElement element : condition.getConditionElements()) {
-                builder.append(getName(element.getFirstOperand()))               // x
-                        .append(getOperation(element.getOperation()))            // ==, !=, >, <, ...
-                        .append(element.getSecondOperand());                     // 5 - it is a constant
-
-                if (element.getLogicalOperator() != null) {
-                    builder.append(" ");
-                    builder.append(getLogicalOperator(element.getLogicalOperator()));   // && or ||
-                    builder.append(" ");
-                }
-            }
-            expression = builder.toString();                                    // x == 5 [&& or ||]
-            LOG.debug("Built expression [{}] for condition [{}]", expression, condition);
+            GroovyExpressionTranslator expressionTranslator = new GroovyExpressionTranslator();
+            condition.getExpression().accept(expressionTranslator);
+            expression = expressionTranslator.getTranslatedExpression();
         }
         return expression;
     }
 
-    private String getLogicalOperator(Condition.ConditionElement.LogicalOperator logicalOperator) {
-        switch (logicalOperator) {
-            case AND:
-                return " && ";
-            case OR:
-                return " || ";
-            default:
-                throw new UnsupportedOperationException(String.format("Operator [%s] not supported. List of supported operators: %s",
-                        logicalOperator, Arrays.toString(Condition.ConditionElement.LogicalOperator.values())));
-        }
-    }
-
-    private String getOperation(Condition.ConditionElement.Operation operation) {
-        switch (operation) {
-            case EQUALS:
-                return " == ";
-            case NOT_EQUAL:
-                return " != ";
-            case GREATER_THAN:
-                return " > ";
-            case LESS_THAN:
-                return " < ";
-            case GREATER_THAN_EQUALS_TO:
-                return " >= ";
-            case LESS_THAN_EQUALS_TO:
-                return " <= ";
-            default:
-                throw new UnsupportedOperationException(String.format("Operation [%s] not supported. List of supported operations: %s",
-                        operation, Arrays.toString(Condition.ConditionElement.Operation.values())));
+    private static class GroovyExpressionTranslator extends ExpressionTranslator {
+        protected String getOperator(Operator operator) {
+            switch (operator) {
+                case AND:
+                    return " && ";
+                case OR:
+                    return " || ";
+                case EQUALS:
+                    return " == ";
+                case NOT_EQUAL:
+                    return " != ";
+                case GREATER_THAN:
+                    return " > ";
+                case LESS_THAN:
+                    return " < ";
+                case GREATER_THAN_EQUALS_TO:
+                    return " >= ";
+                case LESS_THAN_EQUALS_TO:
+                    return " <= ";
+                default:
+                    throw new UnsupportedOperationException(
+                            String.format("Operator [%s] not supported. List of supported operators: %s",
+                                          operator, Arrays.toString(Operator.values())));
+            }
         }
     }
 }
