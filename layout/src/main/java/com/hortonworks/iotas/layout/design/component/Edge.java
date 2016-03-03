@@ -24,26 +24,26 @@ import java.util.Set;
 /**
  * An edge between components in an IoT topology that encapsulates the
  * source stream(s) from where data is received and the grouping.
- * Edges can be created only between a {@link Source} and {@link Sink} component.
- * {@link Processor} inherits from both Source and Sink so could be
+ * Edges can be created only from an {@link OutputComponent} to an {@link InputComponent}.
+ * {@link Processor} is both an {@code InputComponent} and {@code OutputComponent} so could be
  * at the start or the end of the edge.
  */
 public class Edge {
-    private final Source source;
-    private final Sink sink;
+    private final OutputComponent from;
+    private final InputComponent to;
     private final Set<StreamGrouping> streamGroupings;
 
-    public Edge(Source source, Sink sink, String streamId, Stream.Grouping grouping) {
-        this(source, sink, new StreamGrouping(source.getStream(streamId), grouping));
+    public Edge(OutputComponent from, InputComponent to, String streamId, Stream.Grouping grouping) {
+        this(from, to, new StreamGrouping(from.getStream(streamId), grouping));
     }
 
-    public Edge(Source source, Sink sink, StreamGrouping streamGrouping) {
-        this(source, sink, Collections.singleton(streamGrouping));
+    public Edge(OutputComponent from, InputComponent to, StreamGrouping streamGrouping) {
+        this(from, to, Collections.singleton(streamGrouping));
     }
 
-    public Edge(Source source, Sink sink, Set<StreamGrouping> streamGroupings) {
-        this.source = source;
-        this.sink = sink;
+    public Edge(OutputComponent from, InputComponent to, Set<StreamGrouping> streamGroupings) {
+        this.from = from;
+        this.to = to;
         this.streamGroupings = new HashSet<>(streamGroupings);
     }
 
@@ -63,12 +63,12 @@ public class Edge {
         this.streamGroupings.removeAll(streamGroupings);
     }
 
-    public Source getSource() {
-        return source;
+    public OutputComponent getFrom() {
+        return from;
     }
 
-    public Sink getSink() {
-        return sink;
+    public InputComponent getTo() {
+        return to;
     }
 
     public Set<StreamGrouping> getStreamGroupings() {
@@ -82,16 +82,16 @@ public class Edge {
 
         Edge edge = (Edge) o;
 
-        if (source != null ? !source.equals(edge.source) : edge.source != null) return false;
-        if (sink != null ? !sink.equals(edge.sink) : edge.sink != null) return false;
+        if (from != null ? !from.equals(edge.from) : edge.from != null) return false;
+        if (to != null ? !to.equals(edge.to) : edge.to != null) return false;
         return streamGroupings != null ? streamGroupings.equals(edge.streamGroupings) : edge.streamGroupings == null;
 
     }
 
     @Override
     public int hashCode() {
-        int result = source != null ? source.hashCode() : 0;
-        result = 31 * result + (sink != null ? sink.hashCode() : 0);
+        int result = from != null ? from.hashCode() : 0;
+        result = 31 * result + (to != null ? to.hashCode() : 0);
         result = 31 * result + (streamGroupings != null ? streamGroupings.hashCode() : 0);
         return result;
     }
@@ -99,8 +99,8 @@ public class Edge {
     @Override
     public String toString() {
         return "Edge{" +
-                "source=" + source +
-                ", sink=" + sink +
+                "from=" + from +
+                ", to=" + to +
                 ", streamGroupings=" + streamGroupings +
                 '}';
     }

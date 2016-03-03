@@ -20,6 +20,9 @@ package com.hortonworks.iotas.layout.design.component;
 import java.util.Collections;
 import java.util.Set;
 
+/**
+ * The base implementation of a {@link Source} that all Iotas sources should extend.
+ */
 public class IotasSource extends IotasComponent implements Source {
     private final Set<Stream> declaredOutputs;
 

@@ -28,78 +28,72 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Represents the topology DAG with edges between sources, processors and sinks.
- * There could be only one edge from a source to sink and the edge encapsulates
+ * Represents the topology DAG with edges between input and output components.
+ * There could be only one edge between components and the edge encapsulates
  * the different stream-groupings.
  */
 public class TopologyDag implements Serializable {
-    private Set<Source> sources = new HashSet<>();
-    private Set<Sink> sinks = new HashSet<>();
-    private Set<Processor> processors = new HashSet<>();
+    private Set<OutputComponent> outputComponents = new HashSet<>();
+    private Set<InputComponent> inputComponents = new HashSet<>();
 
-    private Map<Source, List<Edge>> dag = new HashMap<>();
+    private Map<OutputComponent, List<Edge>> dag = new HashMap<>();
 
-    public TopologyDag add(Source source) {
-        sources.add(source);
+    public TopologyDag add(OutputComponent component) {
+        outputComponents.add(component);
         return this;
     }
 
-    public Set<Source> getSources() {
-        return sources;
+    public Set<OutputComponent> getOutputComponents() {
+        return outputComponents;
     }
 
-    public TopologyDag add(Sink sink) {
-        sinks.add(sink);
+    public TopologyDag add(InputComponent component) {
+        inputComponents.add(component);
         return this;
     }
 
-    public Set<Sink> getSinks() {
-        return sinks;
+    public Set<InputComponent> getInputComponents() {
+        return inputComponents;
     }
 
     public TopologyDag add(Processor processor) {
-        sources.add(processor);
-        sinks.add(processor);
-        processors.add(processor);
+        outputComponents.add(processor);
+        inputComponents.add(processor);
         return this;
     }
 
-    public Set<Processor> getProcessors() {
-        return processors;
-    }
-
     // single stream, shuffle grouping
-    public void addEdge(Source source, Sink sink) {
-        addEdge(source, sink, getDefaultStreamId(source));
+    public void addEdge(OutputComponent from, InputComponent to) {
+        addEdge(from, to, getDefaultStreamId(from));
     }
 
     // specify stream, shuffle grouping
-    public void addEdge(Source source, Sink sink, String streamId) {
-        addEdge(source, sink, streamId, Stream.Grouping.GROUPING_SHUFFLE);
+    public void addEdge(OutputComponent from, InputComponent to, String streamId) {
+        addEdge(from, to, streamId, Stream.Grouping.GROUPING_SHUFFLE);
     }
 
     // specify stream and grouping
-    public void addEdge(Source source, Sink sink, String streamId, Stream.Grouping grouping) {
-        ensureValid(source, sink);
-        doAddEdge(source, sink, streamId, grouping);
+    public void addEdge(OutputComponent from, InputComponent to, String streamId, Stream.Grouping grouping) {
+        ensureValid(from, to);
+        doAddEdge(from, to, streamId, grouping);
     }
 
-    public void removeEdge(Source source, Sink sink) {
-        ensureValid(source, sink);
-        Iterator<Edge> it = dag.get(source).iterator();
+    public void removeEdge(OutputComponent from, InputComponent to) {
+        ensureValid(from, to);
+        Iterator<Edge> it = dag.get(from).iterator();
         while (it.hasNext()) {
-            if (it.next().getSink().equals(sink)) {
+            if (it.next().getTo().equals(to)) {
                 it.remove();
             }
         }
     }
 
-    public void removeEdge(Source source, Sink sink, String streamId, Stream.Grouping grouping) {
-        Iterator<Edge> it = dag.get(source).iterator();
+    public void removeEdge(OutputComponent from, InputComponent to, String streamId, Stream.Grouping grouping) {
+        Iterator<Edge> it = dag.get(from).iterator();
         while (it.hasNext()) {
             Edge e = it.next();
-            if (e.getSink().equals(sink)) {
-                e.removeStreamGrouping(new StreamGrouping(source.getStream(streamId), grouping));
+            if (e.getTo().equals(to)) {
+                e.removeStreamGrouping(new StreamGrouping(from.getStream(streamId), grouping));
                 if(e.getStreamGroupings().isEmpty()) {
                     it.remove();
                 }
@@ -108,16 +102,16 @@ public class TopologyDag implements Serializable {
         }
     }
 
-    public List<Edge> getEdgesFrom(Component source) {
-        List<Edge> result = dag.get(source);
+    public List<Edge> getEdgesFrom(Component component) {
+        List<Edge> result = dag.get(component);
         return result == null ? Collections.EMPTY_LIST : Collections.unmodifiableList(result);
     }
 
-    public List<Edge> getEdgesTo(Component sink) {
+    public List<Edge> getEdgesTo(Component component) {
         List<Edge> result = new ArrayList<>();
         for (List<Edge> edges : dag.values()) {
             for (Edge edge : edges) {
-                if (edge.getSink().equals(sink)) {
+                if (edge.getTo().equals(component)) {
                     result.add(edge);
                 }
             }
@@ -140,34 +134,34 @@ public class TopologyDag implements Serializable {
         return result;
     }
 
-    private void ensureValid(Source source, Sink sink) {
-        if (!sources.contains(source)) {
-            throw new IllegalArgumentException("Invalid Source");
-        } else if (!sinks.contains(sink)) {
-            throw new IllegalArgumentException("Invalid Sink");
+    private void ensureValid(OutputComponent from, InputComponent to) {
+        if (!outputComponents.contains(from)) {
+            throw new IllegalArgumentException("Invalid from");
+        } else if (!inputComponents.contains(to)) {
+            throw new IllegalArgumentException("Invalid to");
         }
     }
 
-    private void doAddEdge(Source source, Sink sink, String streamId, Stream.Grouping grouping) {
-        List<Edge> edges = dag.get(source);
+    private void doAddEdge(OutputComponent from, InputComponent to, String streamId, Stream.Grouping grouping) {
+        List<Edge> edges = dag.get(from);
         if (edges == null) {
             edges = new ArrayList<>();
-            dag.put(source, edges);
+            dag.put(from, edges);
         }
-        Stream stream = source.getStream(streamId);
+        Stream stream = from.getStream(streamId);
         StreamGrouping streamGrouping = new StreamGrouping(stream, grouping);
-        // source is already connected to sink, just add the stream grouping
+        // output component is already connected to input component, just add the stream grouping
         for (Edge e : edges) {
-            if (e.getSink().equals(sink)) {
+            if (e.getTo().equals(to)) {
                 e.addStreamGrouping(streamGrouping);
                 return;
             }
         }
-        edges.add(new Edge(source, sink, streamGrouping));
+        edges.add(new Edge(from, to, streamGrouping));
     }
 
-    private String getDefaultStreamId(Source source) {
-        return source.getDeclaredOutputs().iterator().next().getId();
+    private String getDefaultStreamId(OutputComponent component) {
+        return component.getDeclaredOutputs().iterator().next().getId();
     }
 
 

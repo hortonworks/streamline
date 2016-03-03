@@ -22,19 +22,6 @@ import java.util.Set;
 /**
  * A source component
  */
-public interface Source extends Component {
-    /**
-     * The declared output schema of a Source. A source can have
-     * more than one outputs.
-     *
-     * @return the set of output streams.
-     */
-    Set<Stream> getDeclaredOutputs();
+public interface Source extends OutputComponent {
 
-    /**
-     * Returns the output Stream of this source corresponding to the given streamId.
-     *
-     * @throws IllegalArgumentException if the stream with the given streamId does not exist
-     */
-    Stream getStream(String streamId);
 }
