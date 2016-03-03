@@ -84,7 +84,7 @@ public class FieldValueGeneratorRuntime {
         public FieldValueGeneratorRuntime build() {
 
             if(field == null) {
-                throw new IllegalArgumentException("field should always be set.");
+                throw new IllegalArgumentException("field is required");
             }
 
             if(value == null && script == null) {

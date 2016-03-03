@@ -3,6 +3,7 @@
  */
 package com.hortonworks.iotas.layout.design.normalization;
 
+import com.hortonworks.iotas.common.Config;
 import com.hortonworks.iotas.common.Schema;
 
 import java.io.Serializable;
@@ -10,7 +11,7 @@ import java.io.Serializable;
 /**
  * Abstract class for normalization processor configuration.
  */
-public abstract class NormalizationConfig implements Serializable {
+public abstract class NormalizationConfig extends Config {
 
     private Schema inputSchema;
     private Schema outputSchema;
