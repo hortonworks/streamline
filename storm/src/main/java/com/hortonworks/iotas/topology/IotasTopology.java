@@ -29,6 +29,9 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.hortonworks.iotas.bolt.ParserBolt.PARSED_TUPLES_STREAM;
+import static com.hortonworks.iotas.bolt.ParserBolt.FAILED_TO_PARSE_TUPLES_STREAM;
+
 public class IotasTopology {
     private static final String KAFKA_SPOUT_ZK_URL = "kafka.spout.zkUrl";
     private static final String KAFKA_SPOUT_TOPIC = "kafka.spout.topic";
@@ -48,10 +51,6 @@ public class IotasTopology {
             ".rotationInterval";
     private static final String HDFS_SYNC_POLICY_COUNT = "hdfs.syncPolicyCount";
     public static final String HBASE_CONF = "hbase.conf";
-
-    private static final String PARSED_TUPLES_STREAM = "parsed_tuples_stream";
-    private static final String FAILED_TO_PARSE_TUPLES_STREAM =
-            "failed_to_parse_tuples_stream";
 
     public static void main(String[] args) throws Exception {
         Map<String, Object> configuration = getConfiguration(args[0]);

@@ -71,8 +71,7 @@ public class NestParser extends BaseParser {
             Random random = new Random(System.currentTimeMillis());
             //TODO Not sure how do we want to deal with multiple thermostats in a single json response.
             //I guess we could return a list of Maps from parse method to allow for use cases like this.
-            ObjectReader objectReader = mapper.readerFor(new TypeReference<Map<String, Thermostat>>() {
-            });
+            ObjectReader objectReader = mapper.readerFor(new TypeReference<Map<String, Thermostat>>() {/* no-op class*/ } );
             HashMap<String, Thermostat> thermostatMap = objectReader.readValue(thermostats);
             if(thermostatMap.size() > 1) {
                 throw new ParseException("We don't deal with multiple thermo stat in a single json response yet");

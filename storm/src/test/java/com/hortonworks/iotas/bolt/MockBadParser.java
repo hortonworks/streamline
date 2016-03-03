@@ -1,6 +1,7 @@
 package com.hortonworks.iotas.bolt;
 
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.exception.DataValidationException;
 import com.hortonworks.iotas.parser.BaseParser;
 import com.hortonworks.iotas.parser.ParseException;
 
@@ -41,5 +42,15 @@ public class MockBadParser extends BaseParser {
     @Override
     public List<?> parseFields(String data) throws ParseException {
         throw new ParseException("test");
+    }
+
+    @Override
+    public void validate(byte[] rawData) throws DataValidationException {
+        throw new DataValidationException("test");
+    }
+
+    @Override
+    public void validate(Map<String, Object> parsedData) throws DataValidationException {
+        throw new DataValidationException("test");
     }
 }

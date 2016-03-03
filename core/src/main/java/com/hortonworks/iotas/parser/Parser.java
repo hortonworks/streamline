@@ -19,6 +19,7 @@ package com.hortonworks.iotas.parser;
 
 
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.exception.DataValidationException;
 
 import java.util.List;
 import java.util.Map;
@@ -71,5 +72,23 @@ public interface Parser {
      * @return
      */
     List<?> parseFields(String data) throws ParseException;
+
+    /**
+     * Validates an input sequence of bytes and throws {@link DataValidationException} if the data is invalid.
+     * The implementation of this method is optional, i.e. it's up to the discretion of the parser
+     * implementation to decide if raw data should be validated prior to being parsed.
+     * @param rawData the input sequence of bytes to validate
+     */
+    void validate(byte[] rawData) throws DataValidationException;
+
+    /**
+     * Validates the the parsed output of an input sequence and throws {@link DataValidationException} if the data is invalid.
+     * Typically the parsed output will be a result of a call to {@link #parse(byte[])} or {@link #parse(String)}
+     * The implementation of this method is optional, i.e. it's up to the discretion of the parser
+     * implementation to decide if the parsed data should be validated after being parsed.
+     * @param parsedData the parsed output of an input sequence to validate
+     */
+    void validate(Map<String, Object> parsedData) throws DataValidationException;
+
 
 }

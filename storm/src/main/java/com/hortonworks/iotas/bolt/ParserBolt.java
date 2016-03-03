@@ -9,6 +9,7 @@ import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.client.CatalogRestClient;
+import com.hortonworks.iotas.exception.DataValidationException;
 import com.hortonworks.iotas.util.ProxyUtil;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.ParserInfo;
@@ -30,22 +31,27 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 public class ParserBolt extends BaseRichBolt {
-    private static final Logger LOG = LoggerFactory.getLogger(ParserBolt.class);
     public static final String CATALOG_ROOT_URL = "catalog.root.url";
     public static final String LOCAL_PARSER_JAR_PATH = "local.parser.jar.path";
-    public static final String BINARY_BYTES = "bytes";
-    private OutputCollector collector;
+    public static final String BYTES_FIELD = "bytes";
+    public static final String PARSED_TUPLES_STREAM = "parsed_tuples_stream";
+    public static final String FAILED_TO_PARSE_TUPLES_STREAM = "failed_to_parse_tuples_stream";
+
+
+    private static final Logger LOG = LoggerFactory.getLogger(ParserBolt.class);
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static ConcurrentHashMap<Object, Parser> dataSrcIdfToParser = new ConcurrentHashMap<>();      //TODO why is this field static ? It makes the class really hard to test and takes away from the thread safety of storm bolts
+    private static ConcurrentHashMap<Object, DataSource> dataSrcIdfToDataSrc = new ConcurrentHashMap<>(); //TODO why is this field static ? It makes the class really hard to test and takes away from the thread safety of storm bolts
 
     private CatalogRestClient client;
     private String localParserJarPath;
-    private static ConcurrentHashMap<Object, Parser> parserMap = new ConcurrentHashMap<Object, Parser>();
-    private static ConcurrentHashMap<Object, DataSource> dataSourceMap = new ConcurrentHashMap<Object, DataSource>();
-    private static final ObjectMapper objectMapper = new ObjectMapper();
     private Long parserId;
     private String parsedTuplesStreamId;
     private String unparsedTuplesStreamId;
     private Long dataSourceId;
     private ProxyUtil<Parser> parserProxyUtil;
+
+    private OutputCollector collector;
 
     /**
      * If user knows this instance of parserBolt is mapped to a topic which has messages that conforms to exactly one type of parser,
@@ -93,62 +99,64 @@ public class ParserBolt extends BaseRichBolt {
         this.localParserJarPath = stormConf.get(LOCAL_PARSER_JAR_PATH).toString();
         this.client = new CatalogRestClient(catalogRootURL);
         if (StringUtils.isEmpty(this.parsedTuplesStreamId)) {
-            throw new IllegalStateException("Stream id must be defined for " +
-                    "successfullly parsed tuples");
+            throw new IllegalStateException("Stream id must be defined for successfully parsed tuples");
         }
         this.parserProxyUtil = new ProxyUtil<>(Parser.class);
     }
 
     public void execute(Tuple input) {
-        byte[] bytes = input.getBinaryByField(BINARY_BYTES);
-        byte[] failedBytes = bytes;
+        byte[] inputBytes = input.getBinaryByField(BYTES_FIELD);
+        byte[] failedBytes = inputBytes;
         Parser parser = null;
         String messageId = null;
         try {
             if (parserId == null) {
-                //If a parserId is not configured in parser Bolt, we assume the message has iotasMessage.
-                IotasMessage iotasMessage = objectMapper.readValue(new String(bytes, StandardCharsets.UTF_8), IotasMessage.class);
+                //If a parserId is not configured in parser Bolt, we assume that the input is an iotasMessage encoded in JSON
+                final IotasMessage iotasMessage = objectMapper.readValue(new String(inputBytes, StandardCharsets.UTF_8), IotasMessage.class);
                 parser = getParser(iotasMessage);
                 if(dataSourceId == null) {
                     dataSourceId = getDataSource(iotasMessage).getId();
                 }
-                bytes = iotasMessage.getData();
+                // override inputBytes with the data in IotasMessage
+                inputBytes = iotasMessage.getData();
                 messageId = iotasMessage.getMessageId();
             } else {
                 parser = getParser(parserId);
             }
 
-            Map<String, Object> parsed = parser.parse(bytes);
-            String dsrcId = dataSourceId == null ? StringUtils.EMPTY : dataSourceId.toString();
+            // Checks if raw data is valid. Throws DataValidationException if raw data is invalid
+            parser.validate(inputBytes);
+
+            final Map<String, Object> parsedInput = parser.parse(inputBytes);
+
+            // Checks if parsed data is valid. Throws DataValidationException if raw data is invalid
+            parser.validate(parsedInput);
+
+            final String dtSrcId = dataSourceId == null ? StringUtils.EMPTY : dataSourceId.toString();
             IotasEvent event;
-            /**
-             * If message id is set in the incoming message, we use it as the IotasEvent id, else
-             * the id is random UUID.
-             */
+
+            // If message id is set in the incoming message, we use it as the IotasEvent id, else the id is random UUID.
             if(messageId == null) {
-                event = new IotasEventImpl(parsed, dsrcId);
+                event = new IotasEventImpl(parsedInput, dtSrcId);
             } else {
-                event = new IotasEventImpl(parsed, dsrcId, messageId);
+                event = new IotasEventImpl(parsedInput, dtSrcId, messageId);
             }
-            Values values = new Values(event);
-            collector.emit(this.parsedTuplesStreamId, input, values);
+
+            final Values values = new Values(event);
+            collector.emit(parsedTuplesStreamId, input, values);
             collector.ack(input);
         } catch (Exception e) {
-            if (this.unparsedTuplesStreamId != null) {
-                LOG.warn("Failed to parse a tuple. Sending it to unparsed " +
-                        "tuples stream " + this.unparsedTuplesStreamId, e);
-                collector.emit(this.unparsedTuplesStreamId, input, new Values
-                        (failedBytes));
+            if (unparsedTuplesStreamId != null) {
+                LOG.warn("Failed to parse a tuple. Sending it to unparsed tuples stream " + unparsedTuplesStreamId, e);
+                collector.emit(unparsedTuplesStreamId, input, new Values(failedBytes));
                 collector.ack(input);
             } else {
                 collector.fail(input);
                 collector.reportError(e);
-                LOG.error("Failed to parse a tuple and no stream defined for " +
-                        "unparsed tuples.", e);
+                LOG.error("Failed to parse a tuple and no stream defined for unparsed tuples.", e);
             }
         }
     }
-
 
     private Parser loadParser(ParserInfo parserInfo) {
         InputStream parserJar = client.getParserJar(parserInfo.getId());
@@ -164,11 +172,11 @@ public class ParserBolt extends BaseRichBolt {
     }
 
     private DataSource getDataSource(IotasMessage iotasMessage) {
-        DataSourceIdentifier key = new DataSourceIdentifier(iotasMessage.getId(), iotasMessage.getVersion());
-        DataSource dataSource = dataSourceMap.get(key);
+        DataSourceIdentifier dataSrcIdf = new DataSourceIdentifier(iotasMessage.getId(), iotasMessage.getVersion());
+        DataSource dataSource = dataSrcIdfToDataSrc.get(dataSrcIdf);
         if(dataSource == null) {
-            dataSource = client.getDataSource(key.getId(), Long.valueOf(key.getVersion()));
-            DataSource existing = dataSourceMap.putIfAbsent(key, dataSource);
+            dataSource = client.getDataSource(dataSrcIdf.getId(), dataSrcIdf.getVersion());
+            DataSource existing = dataSrcIdfToDataSrc.putIfAbsent(dataSrcIdf, dataSource);
             if(existing != null) {
                 dataSource = existing;
             }
@@ -177,41 +185,37 @@ public class ParserBolt extends BaseRichBolt {
     }
 
     private Parser getParser(IotasMessage iotasMessage) {
-        DataSourceIdentifier dataSourceId = new DataSourceIdentifier(iotasMessage.getId(), iotasMessage.getVersion());
-        Parser parser = parserMap.get(dataSourceId);
+        DataSourceIdentifier dataSrcIdf = new DataSourceIdentifier(iotasMessage.getId(), iotasMessage.getVersion());
+        Parser parser = dataSrcIdfToParser.get(dataSrcIdf);
         if (parser == null) {
-            ParserInfo parserInfo = client.getParserInfo(dataSourceId.getId(), Long.valueOf(dataSourceId.getVersion()));
-            parser = getParserAndOptionallyUpdateCache(parserInfo, dataSourceId);
+            ParserInfo parserInfo = client.getParserInfo(dataSrcIdf.getId(), dataSrcIdf.getVersion());
+            parser = getParserAndCacheIfAbsent(parserInfo, dataSrcIdf);
         }
         return parser;
     }
 
     private Parser getParser(Long parserId) {
-        Parser parser = parserMap.get(parserId);
+        Parser parser = dataSrcIdfToParser.get(parserId);
         if (parser == null) {
             ParserInfo parserInfo = client.getParserInfo(parserId);
-            parser = getParserAndOptionallyUpdateCache(parserInfo, parserId);
+            parser = getParserAndCacheIfAbsent(parserInfo, parserId);
         }
         return parser;
     }
 
-    private Parser getParserAndOptionallyUpdateCache(ParserInfo parserInfo, Object key) {
+    private Parser getParserAndCacheIfAbsent(ParserInfo parserInfo, Object dataSourceId) {
         Parser loadedParser = loadParser(parserInfo);
-        Parser parser = parserMap.putIfAbsent(key, loadedParser);
+        Parser parser = dataSrcIdfToParser.putIfAbsent(dataSourceId, loadedParser);
         if (parser == null) {
             parser = loadedParser;
         }
         return parser;
     }
 
-
-
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declareStream(this.parsedTuplesStreamId, new Fields
-                (IotasEvent.IOTAS_EVENT));
+        declarer.declareStream(this.parsedTuplesStreamId, new Fields(IotasEvent.IOTAS_EVENT));
         if (this.unparsedTuplesStreamId != null) {
-            declarer.declareStream(this.unparsedTuplesStreamId, new Fields
-                    (BINARY_BYTES));
+            declarer.declareStream(this.unparsedTuplesStreamId, new Fields(BYTES_FIELD));
         }
     }
 
@@ -254,11 +258,5 @@ public class ParserBolt extends BaseRichBolt {
             result = 31 * result + (version != null ? version.hashCode() : 0);
             return result;
         }
-    }
-
-    //in default scope so test can inject a mock instance, We could spin up an in process
-    //rest server and configure it with all the correct catalog entries, but seems like an overkill for a test.
-    void setClient(CatalogRestClient client) {
-        this.client = client;
     }
 }
