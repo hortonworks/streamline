@@ -3,6 +3,7 @@ package com.hortonworks.iotas.bolt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.client.CatalogRestClient;
 import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Result;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.processor.CustomProcessor;
@@ -184,16 +185,18 @@ public class CustomProcessorBolt extends BaseRichBolt {
     @Override
     public void execute (Tuple input) {
         try {
-            final Object iotasEvent = input.getValueByField(IotasEvent.IOTAS_EVENT);
-            if (iotasEvent instanceof IotasEvent) {
-                for (Result result: customProcessor.process((IotasEvent) iotasEvent)) {
+            final Object tupleField = input.getValueByField(IotasEvent.IOTAS_EVENT);
+            if (tupleField instanceof IotasEvent) {
+                IotasEvent iotasEvent = (IotasEvent) tupleField;
+                for (Result result: customProcessor.process(new IotasEventImpl(iotasEvent.getFieldsAndValues(), iotasEvent.getDataSourceId(), iotasEvent
+                        .getId(), iotasEvent.getHeader(), input.getSourceStreamId()))) {
                     for (IotasEvent event: result.events) {
                         collector.emit(result.stream, input, new Values(event));
                     }
                 }
             } else {
                 LOG.debug("Invalid tuple received. Tuple disregarded and not sent to custom processor for processing.\n\tTuple [{}]." +
-                        "\n\tIotasEvent [{}].", input, iotasEvent);
+                        "\n\tIotasEvent [{}].", input, tupleField);
             }
             collector.ack(input);
         } catch (ProcessingException e) {

@@ -21,6 +21,7 @@ import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,6 +45,7 @@ public class CustomProcessorBoltTest {
     private Map<String, Schema> outputStreamToSchema = new HashMap<>();
     private final Fields OUTPUT_FIELDS = new Fields(IotasEvent.IOTAS_EVENT);
     private final String someString = "someString";
+    private final String stream = "stream";
     final String jarFileName = "iotas-core.jar";
     final String localJarPath = "/tmp";
 
@@ -157,6 +159,8 @@ public class CustomProcessorBoltTest {
         results.add(result);
         final ProcessingException pe = new ProcessingException("Test");
         new Expectations() {{
+            tuple.getSourceStreamId();
+            returns(stream);
             tuple.getValueByField(IotasEvent.IOTAS_EVENT);
             returns(iotasEvent);
             catalogRestClient.getCustomProcessorJar(withEqual(jarFileName));
@@ -193,8 +197,13 @@ public class CustomProcessorBoltTest {
             }};
         } else {
             new VerificationsInOrder() {{
-                customProcessor.process(iotasEvent);
+                tuple.getSourceStreamId();
                 times = 1;
+                IotasEvent actual;
+                customProcessor.process(actual = withCapture());
+                times = 1;
+                Assert.assertEquals(actual.getSourceStream(), stream);
+                Assert.assertEquals(actual, iotasEvent);
                 Values actualValues;
                 mockOutputCollector.emit(outputStream, tuple, actualValues = withCapture());
                 times = 1;
