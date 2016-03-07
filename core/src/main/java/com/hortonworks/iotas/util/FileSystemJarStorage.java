@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.util.Map;
 
 /**
@@ -36,9 +37,9 @@ public class FileSystemJarStorage implements JarStorage {
      * @throws java
     .io.IOException
      */
-    public void uploadJar (InputStream inputStream, String name) throws java
+    public String uploadJar (InputStream inputStream, String name) throws java
             .io.IOException{
-        java.nio.file.Path path = FileSystems.getDefault().getPath(directory, name);
+        Path path = FileSystems.getDefault().getPath(directory, name);
         File file = path.toFile();
         if (!file.exists()) {
             file.createNewFile();
@@ -46,6 +47,7 @@ public class FileSystemJarStorage implements JarStorage {
         OutputStream outputStream = new FileOutputStream(file);
         ByteStreams.copy(inputStream, outputStream);
         outputStream.close();
+        return path.toString();
     }
 
     /**
