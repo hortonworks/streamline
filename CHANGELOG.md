@@ -13,3 +13,9 @@
  * IOT-133: create iotas-dist, cleanup artifactid, start/stop script.
  * IOT-137: Support shuffle mechanisms based on stream processing framework.
  * IOT-152: Fix rpm build issues.
+ * IOT-159: Topology Editor changes.
+ * IOT-162: UI - connecting Parser to sink should be possible.
+ * IOT-163: UI - Any modal thats open should be closed by esc key.
+ * IOT-178: UI - Support Nested Json.
+ * IOT-179: UI - Enable custom processors registration and using them in topology editor.
+ * IOT-195: Custom Processor in topology editor.

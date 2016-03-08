@@ -138,8 +138,7 @@ define(['require',
           title: (model.has('dataSourceId')) ? 'Edit Device' : 'Add Device',
           content: view,
           contentWithFooter: true,
-          showFooter: false,
-          escape: false
+          showFooter: false
         }).open();
 
         view.on('closeModal',function(){

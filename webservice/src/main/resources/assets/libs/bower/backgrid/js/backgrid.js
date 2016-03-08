@@ -2152,7 +2152,10 @@ var HeaderCell = Backgrid.HeaderCell = Backbone.View.extend({
     }
     
     this.$el.append(label);
-    this.$el.addClass(column.get("name"));
+    // TODO - FIND A BETTER WAY TO OVERRIDE
+    if(column.get("name") == 'tooltip')
+      this.$el.addClass('tool-tip');
+    else this.$el.addClass(column.get("name"));
     this.$el.addClass(column.get("direction"));
     this.delegateEvents();
     return this;

@@ -98,15 +98,43 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
         return model;
     };
 
-    TopologyUtils.updateVariables = function(configArr, topLevelConfigArr, nameList, nodeArr, graphArr, globalObj, currentType, subType) {
+    TopologyUtils.updateVariables = function(configArr, topLevelConfigArr, linkArr, nameList, nodeArr, graphArr, globalObj, currentType, subType) {
         var self = this;
         _.each(configArr, function(obj) {
             nameList.push(obj.uiname);
             var model = new Backbone.Model({ firstTime: false, currentType: (currentType ? currentType : obj.type), uiname: obj.uiname });
-            model = TopologyUtils.setHiddenConfigFields(model, _.findWhere(topLevelConfigArr, { subType: (subType ? subType : obj.type) }));
+            if(obj.type === 'CUSTOM'){
+                var customArr = _.where(topLevelConfigArr, {subType: obj.type});
+                var flag = true, configObj;
+                _.each(customArr, function(o){
+                    if(flag){
+                        var conf = JSON.parse(o.config);
+                        var nameObj = _.findWhere(conf, {name: 'name'});
+                        if(nameObj){
+                            if(nameObj.defaultValue === obj.config.name){
+                                flag = false;
+                                configObj = o;
+                            }
+                        }
+                    }
+                });
+                model = TopologyUtils.setHiddenConfigFields(model, configObj);
+            } else {
+                model = TopologyUtils.setHiddenConfigFields(model, _.findWhere(topLevelConfigArr, { subType: (subType ? subType : obj.type) }));
+            }
             model.attributes = TopologyUtils.setAdditionalData(model.attributes, obj.config);
             if (currentType && currentType === 'DEVICE') {
                 model.set('_selectedTable', [{ dataSourceId: model.get('dataSourceId') }]);
+            }
+            if(obj.type && obj.type === 'CUSTOM'){
+                var arr = [];
+                _.each(linkArr, function(o){
+                    var config = o.config;
+                    if(config.from === obj.uiname){
+                        arr.push({name: config.to, streamName: config.streamId});
+                    }
+                });
+                model.set('selectedStreams', arr);
             }
             nodeArr.push(model.toJSON());
             var t_obj = _.findWhere(globalObj, { valStr: model.get('currentType') });
@@ -141,10 +169,19 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
     TopologyUtils.bindDrop = function(elem, dsArr, processorArr, sinkArr, vent, nodeNamesList) {
         elem.droppable({
             drop: function(event, ui) {
+                if($(ui.draggable).hasClass("nodes-list-container")) {
+                    return;
+                }
                 var parentType = ui.helper.data().parenttype,
                     subType = ui.helper.data().subtype,
-                    obj = _.findWhere(Globals.Topology.Editor.Steps[parentType].Substeps, { valStr: subType }),
+                    obj = _.findWhere(Globals.Topology.Editor.Steps[parentType].Substeps, { valStr: subType });
+                var uiname, customName;
+                if(subType === 'CUSTOM'){
+                    customName = ui.helper.data().name;
+                    uiname = TopologyUtils.generateName(customName, nodeNamesList);
+                } else {
                     uiname = TopologyUtils.generateName(subType, nodeNamesList);
+                }
                 switch (parentType) {
                     case Globals.Topology.Editor.Steps.Datasource.valStr:
                         dsArr.push({ uiname: uiname, firstTime: true, currentType: subType });
@@ -154,7 +191,7 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
                         break;
 
                     case Globals.Topology.Editor.Steps.Processor.valStr:
-                        processorArr.push({ uiname: uiname, firstTime: true, currentType: subType });
+                        processorArr.push({ uiname: uiname, firstTime: true, currentType: subType, customName: customName });
                         break;
 
                     case Globals.Topology.Editor.Steps.DataSink.valStr:
@@ -165,18 +202,37 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
                 vent.trigger('topologyEditor:DropAction', {
                     nodeObj: obj,
                     uiname: uiname,
+                    customName: customName,
                     event: event
                 });
             }
         });
     };
 
-    TopologyUtils.getNode = function(parent, nodeArr, uiname, callback, topLevelConfig, verifyLink, subType, linkArr) {
+    TopologyUtils.getNode = function(parent, nodeArr, uiname, callback, topLevelConfig, verifyLink, subType, linkArr, customName) {
+        var self = this;
         var model = new Backbone.Model();
         var modelObj = nodeArr[_.findIndex(nodeArr, { uiname: uiname })];
         model.set(modelObj);
         if (modelObj.firstTime) {
-            TopologyUtils.setHiddenConfigFields(model, _.findWhere(topLevelConfig, { subType: subType }));
+            if(subType === 'CUSTOM'){
+                var customObjArr = _.where(topLevelConfig, {subType: subType});
+                if(customObjArr.length){
+                    var flag = false;
+                    _.each(customObjArr, function(customObj){
+                        if(!flag){
+                            var config = JSON.parse(customObj.config);
+                            var customConfig = _.findWhere(config, {name: 'name'});
+                            if(customConfig.defaultValue == customName){
+                                TopologyUtils.setHiddenConfigFields(model, customObj);
+                                flag = true;
+                            }
+                        }
+                    });
+                }
+            } else {
+                TopologyUtils.setHiddenConfigFields(model, _.findWhere(topLevelConfig, { subType: subType }));
+            }
         }
         if (verifyLink) {
             if (TopologyUtils.verifyLink(linkArr, model.get('uiname'))) {
@@ -195,7 +251,7 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
 
         var i = _.findIndex(nodeArr, { uiname: newData.get('uiname') });
         nodeArr[i] = newData.toJSON();
-        if(nodeArr[i].currentType === 'NOTIFICATION' || nodeArr[i].currentType === 'HDFS' || nodeArr[i].currentType === 'HBASE'){
+        if(nodeArr[i].currentType === 'NOTIFICATION' || nodeArr[i].currentType === 'HDFS' || nodeArr[i].currentType === 'HBASE' || nodeArr[i].currentType === 'CUSTOM'){
         	var obj = parent.linkArr.filter(function(obj){
         		return (obj.target.uiname === nodeArr[i].uiname);
         	});
@@ -205,18 +261,21 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
         				var index = _.findIndex(parent.processorArr, {uiname: o.source.uiname});
         				var ruleProcessor = parent.processorArr[index];
         				var ruleObj = ruleProcessor.newConfig ? ruleProcessor.newConfig.rulesProcessorConfig.rules : ruleProcessor.rulesProcessorConfig.rules;
-        				_.each(ruleObj, function(r){
+        				var flag = false;
+                        _.each(ruleObj, function(r){
         					var ruleIndex = _.findIndex(r.actions, {name: newData.get('uiname')});
                             if(ruleIndex !== -1){
+                                flag = true;
                                 if(nodeArr[i].currentType === 'NOTIFICATION'){
                                     r.actions[ruleIndex].outputFieldsAndDefaults = newData.get('fieldValues');
                                     r.actions[ruleIndex].includeMeta = true;
                                     r.actions[ruleIndex].notifierName = newData.get('notifierName');
                                 }
-                            } else {
-                                Utils.notifyInfo("No rules is associated with "+newData.get('uiname'));
                             }
         				});
+                        if(!flag){
+                            Utils.notifyInfo("No rules is associated with "+newData.get('uiname'));
+                        }
         			}
         		});
         	}
@@ -242,14 +301,34 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
 					});
 				});
         	}
+        } else if(nodeArr[i].currentType === 'DEVICE') {
+            var deviceToParser = parent.linkArr.filter(function(obj){
+                return (obj.source.uiname === nodeArr[i].uiname);
+            });
+            if(deviceToParser.length){
+                deviceToParser[0].target.isConfigured = true;
+                var parserObj = _.findWhere(parent.processorArr, {uiname: deviceToParser[0].target.uiname});
+                if(parserObj && parserObj.firstTime){
+                    var o = nodeArr[i]._selectedTable ? nodeArr[i]._selectedTable[0] : nodeArr[i];
+
+                    parserObj.dataSourceId = o.datasourceId;
+                    parserObj.parserId = o.parserId;
+                    parserObj.parallelism = 1;
+                    parserObj.firstTime = false;
+                    var model = new Backbone.Model();
+                    TopologyUtils.setHiddenConfigFields(model, _.findWhere(parent.processorConfigArr, { subType: 'PARSER' }));
+                    parserObj.hiddenFields = model.get('hiddenFields');
+                }
+            }
         }
         parent.vent.trigger('saveNodeConfig', { uiname: newData.get("uiname") });
     };
 
-    TopologyUtils.syncGraph = function(editFlag, graphNodeData, linkArr, graphElem, vent, graphTransforms) {
+    TopologyUtils.syncGraph = function(editFlag, graphNodeData, linkArr, graphElem, vent, graphTransforms, linkConfigArr) {
         var self = this;
         var nodes = [],
-            edges = [];
+            edges = [],
+            linkShuffleOptions = [];
         if (editFlag) {
             Array.prototype.push.apply(nodes, graphNodeData.source);
             Array.prototype.push.apply(nodes, graphNodeData.processor);
@@ -288,7 +367,13 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
 
             edges = linkArr;
         }
-        var graphData = { nodes: nodes, edges: edges, graphTransforms: graphTransforms};
+        _.each(linkConfigArr, function(obj){
+            linkShuffleOptions.push({
+                label: obj.subType,
+                val: obj.subType
+            });
+        });
+        var graphData = { nodes: nodes, edges: edges, graphTransforms: graphTransforms, linkShuffleOptions:linkShuffleOptions};
         var topologyGraph = new TopologyGraphCreator({
             elem: graphElem,
             data: graphData,
@@ -306,7 +391,7 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
             var sourceData = dsArr.filter(function(o) {
                 return o.uiname === obj[0].source.uiname;
             });
-            if (!sourceData.length) {
+            if (!sourceData.length || sourceData[0].firstTime) {
                 Utils.notifyError("Configure the connected source node first.");
                 return false;
             } else {
@@ -327,25 +412,59 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
             var sourceData = processorArr.filter(function(o) {
                 return o.uiname === obj[0].source.uiname;
             });
-            if (!sourceData.length) {
+            if (!sourceData.length || sourceData[0].firstTime) {
                 Utils.notifyError("Configure the connected node first.");
                 return false;
             } else {
-                var sourceParserNode = linkArr.filter(function(o) {
-                    return (o.target.currentType === 'PARSER' && o.target.uiname === obj[0].source.uiname);
-                });
-                //Get dsId from datasource
-                var sourceObj = dsArr.filter(function(o) {
-                    return o.uiname === sourceParserNode[0].source.uiname;
-                });
-
-                var dsId = sourceObj[0]._selectedTable[0];
-                model.set('dataSourceId', (dsId.dataSourceId ? dsId.dataSourceId : dsId.datasourceId));
-                if (model.has('rulesProcessorConfig')) {
-                    var object = {
-                        "rulesProcessorConfig": model.get('rulesProcessorConfig')
-                    };
-                    if (!model.has('newConfig')) model.set('newConfig', object);
+                if(obj[0].source.currentType === 'PARSER') {
+                    var dsToParserObj = linkArr.filter(function(o){
+                        return (o.target.currentType === 'PARSER' && o.target.uiname === obj[0].source.uiname);
+                    });
+                    var dsId;
+                    if(dsToParserObj.length){
+                        var deviceObj = dsArr.filter(function(o){ return o.uiname === dsToParserObj[0].source.uiname;});
+                        if(deviceObj.length){
+                            dsId = deviceObj[0].dataSourceId ? deviceObj[0].dataSourceId : deviceObj[0]._selectedTable[0].datasourceId;
+                        }
+                    }
+                    model.set('dataSourceId', dsId);
+                    if (model.has('rulesProcessorConfig')) {
+                        var object = {
+                            "rulesProcessorConfig": model.get('rulesProcessorConfig')
+                        };
+                        if (!model.has('newConfig')) model.set('newConfig', object);
+                    }
+                } else if(obj[0].source.currentType === 'RULE') {
+                    var fields = sourceData[0].newConfig ? sourceData[0].newConfig.rulesProcessorConfig.declaredInput : sourceData[0].rulesProcessorConfig.declaredInput;
+                    if(fields){
+                        model.set('declaredInput', fields);
+                    } else {
+                        Utils.notifyError("No input fields found for rule");
+                        return false;
+                    }
+                } else if(obj[0].source.currentType === 'CUSTOM'){
+                    var fieldNotFound = false;
+                    var streamObj = sourceData[0].selectedStreams ? sourceData[0].selectedStreams : undefined;
+                    if(streamObj){
+                        var arr = _.where(streamObj, {name: obj[0].target.uiname});
+                        if(arr.length){
+                            var outputStreamObj = _.findWhere(sourceData[0].config, {name: "outputStreamToSchema"});
+                            var streamFields = [];
+                            _.each(arr, function(o){
+                                Array.prototype.push.apply(streamFields, outputStreamObj.defaultValue[o.streamName].fields);
+                            });
+                            model.set('declaredInput', streamFields);
+                        } else {
+                            fieldNotFound = true;
+                        }
+                    } else {
+                        Utils.notifyError("No streams were selected for the rule");
+                        return false;
+                    }
+                    if(fieldNotFound){
+                        Utils.notifyError("No input fields found for rule");
+                        return false;
+                    }
                 }
                 return true;
             }
@@ -363,7 +482,7 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
                     var sourceData = processorArr.filter(function(o) {
                         return o.uiname === obj[0].source.uiname;
                     });
-                    if (!sourceData.length) {
+                    if (!sourceData.length || sourceData[0].firstTime) {
                         flag = false;
                     }
                 }
@@ -426,6 +545,22 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
                             "transformationClass": obj.hiddenFields ? obj.hiddenFields.transformationClass : '',
                             "config": obj.newConfig ? obj.newConfig : { parallelism: obj.parallelism, rulesProcessorConfig: obj.rulesProcessorConfig }
                         });
+                    } else if(obj.hiddenFields.type === 'CUSTOM'){
+                        var customObj = {
+                            uiname: obj.uiname,
+                            type: obj.hiddenFields ? obj.hiddenFields.type : '',
+                            transformationClass: obj.hiddenFields ? obj.hiddenFields.transformationClass : ''
+                        };
+                        var configObj = {};
+                        _.each(obj.config, function(o){
+                            if(o.isUserInput){
+                                configObj[o.name] = obj[o.name] ? obj[o.name] : o.defaultValue;
+                            } else {
+                                configObj[o.name] = o.defaultValue;
+                            }
+                        });
+                        customObj.config = configObj;
+                        processors.push(customObj);
                     }
                 } else {
                     flag = false;
@@ -479,9 +614,30 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
     			break;
     		case 'PARSER':
     		case 'RULE':
+            case 'CUSTOM':
     			index = _.findIndex(parent.processorArr, {uiname: oldName});
     			if(index !== -1){
     				parent.processorArr[index].uiname = newName;
+                    if(currentType === 'CUSTOM'){
+                        _.each(parent.processorArr, function(obj){
+                            if(obj.currentType === 'RULE'){
+                                var rules = obj.newConfig ? obj.newConfig.rulesProcessorConfig.rules : obj.rulesProcessorConfig.rules;
+                                _.each(rules, function(o){
+                                    var index = _.findIndex(o.actions, {name: oldName});
+                                    if(index !== -1){
+                                        o.actions[index] = {name: newName};
+                                    }
+                                });
+                            } else if(obj.currentType === 'CUSTOM'){
+                                if(obj.selectedStreams){
+                                    var customIndex = _.findIndex(obj.selectedStreams, {name: oldName});
+                                    if(customIndex !== -1){
+                                        obj.selectedStreams[customIndex].name = newName;
+                                    }
+                                }
+                            }
+                        });
+                    }
     			}
     			break;
     		case 'HDFS':
@@ -525,13 +681,26 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
         var ruleIndex = _.findIndex(processorArr, {uiname: options.resetRuleAction.uiname});
         if(ruleIndex !== -1){
             var t_object = processorArr[ruleIndex];
-            var rules = t_object.newConfig ? t_object.newConfig.rulesProcessorConfig.rules : t_object.rulesProcessorConfig.rules;
+            var rules = t_object.newConfig ? t_object.newConfig.rulesProcessorConfig.rules : (t_object.rulesProcessorConfig ? t_object.rulesProcessorConfig.rules : []);
             _.each(rules, function(o){
               var num = _.findIndex(o.actions, {name: options.data[0].uiname});
               if(num !== -1){
                 o.actions.splice(num,1);
              }
             });
+        }
+    };
+
+    TopologyUtils.resetCustomAction = function(processorArr, options){
+        var customProcessorObj = _.findWhere(processorArr, {uiname: options.resetCustomAction.uiname});
+        if(customProcessorObj && customProcessorObj.selectedStreams){
+            var newStreams = [];
+            _.each(customProcessorObj.selectedStreams, function(o){
+                if(o.name !== options.data[0].uiname){
+                    newStreams.push(o);
+                }
+            });
+            customProcessorObj.selectedStreams = newStreams;
         }
     };
 

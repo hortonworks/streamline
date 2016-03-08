@@ -9,6 +9,9 @@ body {
   font-family: 'Open Sans', sans-serif;
   background-color: #f2f4f8;
 }
+textarea {
+  resize: vertical;
+}
 .loader {
   position: fixed;
   top: 0;
@@ -46,7 +49,7 @@ body {
   box-shadow: 0px 0px 4px rgba(0,0,0,0.1) inset;
 }
 label {
-  font-weight: 400;
+  font-weight: 600;
   display: block;
 }
 .modal {z-index: 1100 !important;}
@@ -534,27 +537,13 @@ header.navbar-fixed-top + .wrapper {
   border-top: 1px #C2CADA solid;
 }
 .graph-bg {
-    /*background-image: -webkit-linear-gradient(to right, rgb(0, 0, 0) -10px, transparent 1px), -webkit-linear-gradient(rgb(0, 0, 0) -10px, transparent 1px);
-    background-image: -moz-linear-gradient(to right, rgb(0, 0, 0) -10px, transparent 1px), -moz-linear-gradient(rgb(0, 0, 0) -10px, transparent 1px);
-    background-image: -o-linear-gradient(to right, rgb(0, 0, 0) -10px, transparent 1px), -o-linear-gradient(rgb(0, 0, 0) -10px, transparent 1px);
-    background-image: linear-gradient(to right, rgb(0, 0, 0) -10px, transparent 1px), linear-gradient(rgb(0, 0, 0) -10px, transparent 1px);*/
-    background-size: 10px 10px;
-    background-image: linear-gradient(to right, #EAEAEA 1px, transparent 1px), linear-gradient(to bottom, #EAEAEA 1px, transparent 1px);
-    /*background-size: 10px 10px;*/
-    height: 500px;
+  margin-bottom: 0px;
+  background-size: 10px 10px;
+  background-image: linear-gradient(to right, #EAEAEA 1px, transparent 1px), linear-gradient(to bottom, #EAEAEA 1px, transparent 1px);
 }
 .table-selected-device tr th:last-child,
 .table-selected-device tr td:last-child {
   text-align: center;
-}
-/* Graph Area */
-.graph-bg i.fa {
-  position: fixed;
-  font-size: 1.4em;
-  cursor: pointer;
-}
-.graph-bg i.fa-times {
-  color: #EA0000;
 }
 
 /* Topology Editor */
@@ -565,6 +554,7 @@ header.navbar-fixed-top + .wrapper {
 .topology-control a.play i {color: #52B302;}
 .topology-control a.remove i {color: #e17000;}
 .topology-control a.config i {color: #f6a800;}
+.topology-control a.show-node-list i {color: #1F9264;}
 
 .node-accordion.panel-group .panel {
   border-radius: 0px;
@@ -596,12 +586,9 @@ header.navbar-fixed-top + .wrapper {
   margin-right: 15px;
 }
 .topology-icon-inverse {
-  width: 75px;
+  width: 48px;
   margin-right: 5px;
-  /*padding: 10px;
-  margin-bottom: 5px;
-  border: 2px solid;
-  border-radius: 15px;*/
+  cursor: pointer;
 }
 .topology-icon-inverse.datasink {
   border-color: #f6a800;
@@ -798,6 +785,7 @@ svg {
 
 path.link.dragline {
   pointer-events: none;
+  stroke-width: 2px;
 }
 
 path.link.hidden {
@@ -815,7 +803,7 @@ circle.node.reflexive {
 }
 
 text {
-  pointer-events: none;
+  /*pointer-events: none;*/
   font-weight: bold;
 }
 
@@ -1092,16 +1080,13 @@ svg {
     color: #333;
 }
 
-._jsPlumb_overlay{
-      padding: 0px 10px;
-    background-color: whitesmoke;
-    border: black solid 1px;
-}
-
 /*Topology Graph Generator*/
+.conceptG {
+  cursor: pointer;
+}
 .conceptG text{
     fill: grey;
-    pointer-events: none;
+    /*pointer-events: none;*/
 }
 
 marker{
@@ -1131,8 +1116,7 @@ g.selected:hover rect{
 path.link {
     fill: none;
     stroke: grey;
-    stroke-width: 2px;
-    cursor: default;
+    cursor: pointer;
 }
 
 path.link:hover{
@@ -1346,4 +1330,62 @@ a#editableTitle {
 }
 .conceptG .fa-times{
   fill: #EA0000;
+  cursor: pointer;
+}
+.node-accordion {
+  margin-bottom: 0px;
+}
+.nodes-list-container {
+  width: 240px;
+  position: absolute;
+  top: 60px;
+  right: 15px;
+}
+#topology-node-list .panel-default > .panel-heading a {
+  color: #44697d;
+}
+#topology-node-list .panel-default > .panel-heading {
+  cursor: move;
+}
+.link-group .fa-random{
+  fill: #69BE29;
+  cursor: pointer;
+}
+.link-btns {
+  text-align: right;
+  margin-top: 10px;
+}
+.json-message {
+  white-space: pre-line;
+  font-family: monospace;
+  font-size: 12px;
+}
+.schema-tabs .tab-content {
+  padding: 15px 0;
+}
+
+.schema-tabs .nav-tabs {border-bottom: 1px solid #8FAEBF;}
+.schema-tabs .nav-tabs>li>a {color: #43687D;background: #f9f9fc;border:none; border-radius:0px;}
+.schema-tabs .nav-tabs>li:last-child>a {background-color: transparent;}
+.schema-tabs .nav-tabs>li.active>a, 
+.schema-tabs .nav-tabs>li.active>a:focus, 
+.schema-tabs .nav-tabs>li.active>a:hover {
+  background-color: #fff;
+  border: 1px solid #8FAEBF;
+  border-bottom-color: transparent;
+}
+li.active > a > span {
+  border-bottom: 1px dashed #666;
+}
+.cancelSchema {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  color: #e17000;
+  font-size: 1.25em;
+  cursor: pointer;
+  z-index: 9;
+}
+.output-fields {
+  margin-top: 15px;
 }

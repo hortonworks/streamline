@@ -213,13 +213,14 @@ define([
         if(this.includeFilter){
           this.renderFilter();
         }
-        if (!this.includePageSize) {
+        if (this.includePageSize) {
+          this.$('[data-id="pageSize"]').val(this.collection.state.pageSize);
+        } else {
           this.$el.find('.clearfix').remove();
         }
         if (this.includeFooterRecords) {
           this.renderFooterRecords(this.collection.state);
         }
-        this.$('[data-id="pageSize"]').val(this.collection.state.pageSize);
       },
 
       /**
