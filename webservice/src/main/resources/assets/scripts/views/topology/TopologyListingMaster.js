@@ -113,8 +113,7 @@ define(['require',
         var modal = new Modal({
           title: 'Create Topology',
           content: view,
-          showFooter: false,
-          escape: false
+          showFooter: false
         }).open();
 
         view.on('closeModal',function(){

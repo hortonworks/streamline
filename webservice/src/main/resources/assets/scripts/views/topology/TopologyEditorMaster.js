@@ -27,6 +27,7 @@ define(['require',
       'click #configTopology'   : 'evConfigAction',
       'click #zoomOut-topo-graph' : 'evZoomOut',
       'click #zoomIn-topo-graph' : 'evZoomIn',
+      'click #editor-node-options, #closeList': 'evToggleNodeOptions'
     },
 
     ui: {
@@ -55,6 +56,7 @@ define(['require',
     },
 
     initializeVariables: function(){
+      this.renderFlag = false;
       this.nodeNames = [];
       this.dsArr = [];
       this.processorArr = [];
@@ -116,6 +118,10 @@ define(['require',
           self.linkArr = obj.linkArr;
           self.graphTransforms = obj.graphTransforms ? obj.graphTransforms : self.graphTransforms;
           self.updateVariables();
+        }
+        if(self.renderFlag){
+          self.$('svg').remove();
+          self.topologyGraph = TopologyUtils.syncGraph(self.model.get('_editState'), self.graphNodesData, self.linkArr, self.ui.graphEditor, self.vent, self.graphTransforms, self.linkConfigArr);
         }
       });
     },
@@ -224,7 +230,6 @@ define(['require',
               contentWithFooter: true,
               content: view,
               showFooter: false,
-              escape: false,
               mainClass: 'modal-lg'
             }).open();
 
@@ -240,21 +245,29 @@ define(['require',
     onRender:function(){
       $('#loading').show();
       var self = this;
+      var actualHeight = $(window).innerHeight() - 138;
+      this.$('.graph-bg').css("height", actualHeight+"px");
       
       TopologyUtils.setTopologyName(this.$('#topologyName'), function(e, params){ 
         self.topologyName = params.newValue; 
       });
       TopologyUtils.bindDrag(this.$('.panel-body img'));
+      this.$(".nodes-list-container").draggable({
+        containment: '#graphEditor'
+      }).css("position", "absolute");
       
       setTimeout(function(){
-        self.topologyGraph = TopologyUtils.syncGraph(self.model.get('_editState'), self.graphNodesData, self.linkArr, self.ui.graphEditor, self.vent, self.graphTransforms);
+        self.renderFlag = true;
+        self.topologyGraph = TopologyUtils.syncGraph(self.model.get('_editState'), self.graphNodesData, self.linkArr, self.ui.graphEditor, self.vent, self.graphTransforms, self.linkConfigArr);
         TopologyUtils.bindDrop(self.$('#graphEditor'), self.dsArr, self.processorArr, self.sinkArr, self.vent, self.nodeNames);
       }, 0);
       
       var accordion = this.$('[data-toggle="collapse"]');
       if(accordion.length){
         accordion.on('click', function(e){
-          $(e.currentTarget).children('i').toggleClass('fa-caret-right fa-caret-down');
+          if($(e.currentTarget).hasClass("collapseNodeList")) {
+            $(e.currentTarget).children('i').toggleClass('fa-expand fa-compress');
+          } else $(e.currentTarget).children('i').toggleClass('fa-caret-right fa-caret-down');
         });
       }
 
@@ -360,7 +373,6 @@ define(['require',
         contentWithFooter: true,
         content: self.view,
         showFooter: false,
-        escape: false,
         mainClass: 'modal-lg'
       }).open();
 
@@ -389,10 +401,6 @@ define(['require',
     evSubmitAction: function(e){
       $('#loading').show();
       var self = this,
-          ds = [],
-          processors = [],
-          sink = [],
-          links = [],
           rootdirKeyName = 'hbaseConf';
       var hbaseObj = _.find(this.sinkArr, function(obj){
         if(obj && obj.type === 'HBASE')
@@ -402,9 +410,9 @@ define(['require',
         rootdirKeyName = hbaseObj.configKey;
       }
       var topologyConfig = {
-            "local.parser.jar.path": this.topologyConfigModel.get('parserPath'),
-            "local.notifier.jar.path": this.topologyConfigModel.get('notifierPath')
-          };
+        "local.parser.jar.path": this.topologyConfigModel.get('parserPath'),
+        "local.notifier.jar.path": this.topologyConfigModel.get('notifierPath')
+      };
       topologyConfig[rootdirKeyName] = {
         "hbase.rootdir": this.topologyConfigModel.get('rootdir')
       };
@@ -628,8 +636,7 @@ define(['require',
         var modal = new Modal({
           title: 'Topology Configuration',
           content: view,
-          contentWithFooter: true,
-          escape: false
+          contentWithFooter: true
         }).open();
         view.on('closeModal', function(){
           view = null;
@@ -642,6 +649,9 @@ define(['require',
     },
     evZoomOut: function(){
       this.vent.trigger('TopologyEditorMaster:Zoom', 'zoom_out');
+    },
+    evToggleNodeOptions: function() {
+      this.$(".node-options-btn, .nodes-list-container").toggleClass("displayNone");
     },
     destroy: function(){
       this.stopListening(this.vent, 'topologyEditor:SaveDeviceSource');

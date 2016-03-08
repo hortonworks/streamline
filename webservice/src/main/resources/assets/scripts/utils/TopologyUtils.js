@@ -141,6 +141,9 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
     TopologyUtils.bindDrop = function(elem, dsArr, processorArr, sinkArr, vent, nodeNamesList) {
         elem.droppable({
             drop: function(event, ui) {
+                if($(ui.draggable).hasClass("nodes-list-container")) {
+                    return;
+                }
                 var parentType = ui.helper.data().parenttype,
                     subType = ui.helper.data().subtype,
                     obj = _.findWhere(Globals.Topology.Editor.Steps[parentType].Substeps, { valStr: subType }),
@@ -242,14 +245,34 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
 					});
 				});
         	}
+        } else if(nodeArr[i].currentType === 'DEVICE') {
+            var deviceToParser = parent.linkArr.filter(function(obj){
+                return (obj.source.uiname === nodeArr[i].uiname);
+            });
+            if(deviceToParser.length){
+                deviceToParser[0].target.isConfigured = true;
+                var parserObj = _.findWhere(parent.processorArr, {uiname: deviceToParser[0].target.uiname});
+                if(parserObj){
+                    var o = nodeArr[i]._selectedTable ? nodeArr[i]._selectedTable[0] : nodeArr[i];
+
+                    parserObj.dataSourceId = o.datasourceId;
+                    parserObj.parserId = o.parserId;
+                    parserObj.parallelism = 1;
+                    parserObj.firstTime = false;
+                    var model = new Backbone.Model();
+                    TopologyUtils.setHiddenConfigFields(model, _.findWhere(parent.processorConfigArr, { subType: 'PARSER' }));
+                    parserObj.hiddenFields = model.get('hiddenFields');
+                }
+            }
         }
         parent.vent.trigger('saveNodeConfig', { uiname: newData.get("uiname") });
     };
 
-    TopologyUtils.syncGraph = function(editFlag, graphNodeData, linkArr, graphElem, vent, graphTransforms) {
+    TopologyUtils.syncGraph = function(editFlag, graphNodeData, linkArr, graphElem, vent, graphTransforms, linkConfigArr) {
         var self = this;
         var nodes = [],
-            edges = [];
+            edges = [],
+            linkShuffleOptions = [];
         if (editFlag) {
             Array.prototype.push.apply(nodes, graphNodeData.source);
             Array.prototype.push.apply(nodes, graphNodeData.processor);
@@ -288,7 +311,13 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
 
             edges = linkArr;
         }
-        var graphData = { nodes: nodes, edges: edges, graphTransforms: graphTransforms};
+        _.each(linkConfigArr, function(obj){
+            linkShuffleOptions.push({
+                label: obj.subType,
+                val: obj.subType
+            });
+        });
+        var graphData = { nodes: nodes, edges: edges, graphTransforms: graphTransforms, linkShuffleOptions:linkShuffleOptions};
         var topologyGraph = new TopologyGraphCreator({
             elem: graphElem,
             data: graphData,
@@ -306,7 +335,7 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
             var sourceData = dsArr.filter(function(o) {
                 return o.uiname === obj[0].source.uiname;
             });
-            if (!sourceData.length) {
+            if (!sourceData.length || sourceData[0].firstTime) {
                 Utils.notifyError("Configure the connected source node first.");
                 return false;
             } else {
@@ -327,25 +356,27 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
             var sourceData = processorArr.filter(function(o) {
                 return o.uiname === obj[0].source.uiname;
             });
-            if (!sourceData.length) {
+            if (!sourceData.length || sourceData[0].firstTime) {
                 Utils.notifyError("Configure the connected node first.");
                 return false;
             } else {
-                var sourceParserNode = linkArr.filter(function(o) {
-                    return (o.target.currentType === 'PARSER' && o.target.uiname === obj[0].source.uiname);
-                });
-                //Get dsId from datasource
-                var sourceObj = dsArr.filter(function(o) {
-                    return o.uiname === sourceParserNode[0].source.uiname;
-                });
-
-                var dsId = sourceObj[0]._selectedTable[0];
-                model.set('dataSourceId', (dsId.dataSourceId ? dsId.dataSourceId : dsId.datasourceId));
-                if (model.has('rulesProcessorConfig')) {
-                    var object = {
-                        "rulesProcessorConfig": model.get('rulesProcessorConfig')
-                    };
-                    if (!model.has('newConfig')) model.set('newConfig', object);
+                if(obj[0].source.currentType === 'PARSER') {
+                    var dsId = sourceData[0].dataSourceId ?  sourceData[0].dataSourceId : sourceData[0]._selectedTable[0].datasourceId;
+                    model.set('dataSourceId', dsId);
+                    if (model.has('rulesProcessorConfig')) {
+                        var object = {
+                            "rulesProcessorConfig": model.get('rulesProcessorConfig')
+                        };
+                        if (!model.has('newConfig')) model.set('newConfig', object);
+                    }
+                } else if(obj[0].source.currentType === 'RULE') {
+                    var fields = sourceData[0].newConfig ? sourceData[0].newConfig.rulesProcessorConfig.declaredInput : sourceData[0].rulesProcessorConfig.declaredInput;
+                    if(fields){
+                        model.set('declaredInput', fields);
+                    } else {
+                        Utils.notifyError("No input fields found for rule");
+                        return false;
+                    }
                 }
                 return true;
             }

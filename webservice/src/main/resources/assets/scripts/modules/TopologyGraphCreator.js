@@ -13,7 +13,7 @@ define(['require',
 		_.extend(thisGraph, options);
 		thisGraph.bindEvents();
 		this.width = thisGraph.elem.width() ? thisGraph.elem.width() : 1220;
-		this.height = thisGraph.elem.height() ? thisGraph.elem.height() : 600;
+		this.height = thisGraph.elem.height() ? thisGraph.elem.height() : 450;
 		var svg = d3.select('#'+thisGraph.elem.attr('id')).append('svg')
 					.attr('width', this.width)
 					.attr('height', this.height);
@@ -56,7 +56,7 @@ define(['require',
 				segments.push("V"+(targetY));
 				segments.push("H"+(targetX));
 			}
-			return segments.toString();
+			return segments.toString().split(',').join(' ');
 		};
 
 		thisGraph.state = {
@@ -82,7 +82,7 @@ define(['require',
 			.attr('markerHeight', 7.5)
 			.attr('orient', 'auto')
 			.append('svg:path')
-			.attr('d', 'M0,-5L10,0L0,5');
+			.attr('d', 'M0 -5 L10 0 L0 5');
 
 		// define arrow markers for leading arrow
 		defs.append('svg:marker')
@@ -93,7 +93,7 @@ define(['require',
 			.attr('markerHeight', 7.5)
 			.attr('orient', 'auto')
 			.append('svg:path')
-			.attr('d', 'M0,-5L10,0L0,5');
+			.attr('d', 'M0 -5 L10 0 L0 5');
 
 		thisGraph.svg = svg;
 		thisGraph.svgG = svg.append("g")
@@ -104,12 +104,12 @@ define(['require',
 		// displayed when dragging between nodes
 		thisGraph.dragLine = svgG.append('svg:path')
 			.attr('class', 'link dragline hidden')
-			.attr('d', 'M0,0L0,0')
+			.attr('d', 'M0 0 L0 0')
 			.attr("stroke-dasharray", "5, 5")
 			.style('marker-end', 'url(#mark-end-arrow)');
 
 		// svg nodes and edges 
-		thisGraph.paths = svgG.append("g").selectAll("g");
+		thisGraph.paths = svgG.append("g").attr('class','link-group').selectAll("g");
 		thisGraph.rectangles = svgG.append("g").selectAll("g");
 
 		thisGraph.drag = d3.behavior.drag()
@@ -138,6 +138,7 @@ define(['require',
 			thisGraph.svgMouseDown.call(thisGraph, d);
 		});
 		svg.on("mouseup", function(d) {
+			thisGraph.hideShuffle();
 			thisGraph.svgMouseUp.call(thisGraph, d);
 		});
 
@@ -192,8 +193,6 @@ define(['require',
 		    direction = (zoomType === 'zoom_in') ? 1 : -1;
 		    target_zoom = zoom.scale() * (1 + factor * direction);
 
-		    // if(target_zoom < extent[0]) target_zoom = extent[0];
-		    // if(target_zoom > extent[1]) target_zoom = extent[1];
 		    if (target_zoom < extent[0] || target_zoom > extent[1]) { return false; }
 
 		    translate0 = [(center[0] - view.x) / view.k, (center[1] - view.y) / view.k];
@@ -363,10 +362,11 @@ define(['require',
 
 	TopologyGraphCreator.prototype.removeSelectFromEdge = function() {
 		var thisGraph = this;
-		var elem = thisGraph.rectangles.filter(function(cd) {
-			return cd.uiname === thisGraph.state.selectedNode.uiname;
+		var path = thisGraph.paths.filter(function(cd) {
+			return cd === thisGraph.state.selectedEdge;
 		});
-		d3.select($(elem[0][0]).find('rect')[0]).classed(thisGraph.consts.selectedClass, false);
+		var selectedPath = $(path[0][0]);
+		d3.select(selectedPath.siblings(("[d='"+$(selectedPath).attr('d')+"']"))[0]).classed(thisGraph.consts.selectedClass, false);
 		thisGraph.state.selectedEdge = null;
 	};
 
@@ -740,7 +740,7 @@ define(['require',
 
 	// call to propagate changes to graph
 	TopologyGraphCreator.prototype.updateGraph = function() {
-
+		$('.visible-link').remove();
 		var thisGraph = this,
 			consts = thisGraph.consts,
 			state = thisGraph.state;
@@ -750,8 +750,7 @@ define(['require',
 		});
 		var paths = thisGraph.paths;
 		// update existing paths
-		paths.style('marker-end', 'url(#end-arrow)')
-			.classed(consts.selectedClass, function(d) {
+		paths.classed(consts.selectedClass, function(d) {
 				return d === state.selectedEdge;
 			})
 			.attr("d", function(d) {
@@ -772,7 +771,6 @@ define(['require',
 		// add new paths
 		paths.enter()
 			.append("path")
-			.style('marker-end', 'url(#end-arrow)')
 			.classed("link", true)
 			.attr("d", function(d){
 				var arr = [];
@@ -786,18 +784,62 @@ define(['require',
 							 {x: d.target.x, y: (d.target.y + consts.rectangleHeight / 2)});
 				}
 				return thisGraph.pathdef(arr[0], arr[1], flag);
-				// return thisGraph.lineFunction(arr);
 			})
-			.attr("stroke-dasharray", "5, 5")
+			.attr("stroke-opacity", "0.0001")
+			.attr("stroke-width", "15")
+			.attr("data-toggle", "popover")
+			.attr("data-name", function(d){ return d.source.uiname +'-'+d.target.uiname; })
+			.on("mouseover", function(d){
+				$('[data-uiname="'+d.source.uiname+'-'+d.target.uiname+'"]').show();
+			})
+			.on("mouseout", function(d){
+				$('[data-uiname="'+d.source.uiname+'-'+d.target.uiname+'"]').hide();
+			})
 			.on("mousedown", function(d) {
-				thisGraph.pathMouseDown.call(thisGraph, d3.select(this), d);
+				// thisGraph.showShuffle(d);
 			})
 			.on("mouseup", function(d) {
-				state.mouseDownLink = null;
+				// thisGraph.showShuffle(d);
+				// state.mouseDownLink = null;
 			});
+
+		// paths.append('text')
+  //           .attr("class", "fa fa-random")
+  //           .attr("x", function(d){
+		// 		return thisGraph.getBoundingBoxCenter(d3.select($(this).parent()[0]))[0] - 8;
+  //           })
+  //           .attr("y", function(d){
+		// 		return thisGraph.getBoundingBoxCenter(d3.select($(this).parent()[0]))[1] + 7;
+  //           })
+  //           .text(function(d) {
+		// 		return '\uf074';
+		// 	})
+		// 	.attr('data-uiname', function(d){ return d.source.uiname +'-'+d.target.uiname; })
+  //           .style("display","none")
+  //           .style("font-size","large")
+  //           .attr("data-toggle", "popover")
+		// 	.on('mouseover', function(d){
+		// 		$(this).show();
+		//     })
+		// 	.on('mouseout', function(d){
+		// 		$(this).hide();
+		//     })
+		//     .on("mousedown", function(d) {
+		//     	// thisGraph.showShuffle(d);
+		// 	})
+		// 	.on("mouseup", function(d) {
+		// 		thisGraph.showShuffle(d);
+		// 		// state.mouseDownLink = null;
+		// 	});
 
 		// remove old links
 		paths.exit().remove();
+
+		//set shuffle icon on links
+		this.setLinkIcon();
+
+		//clone the paths or links to make hover on them with some hidden margin
+		thisGraph.clonePaths();
 
 		// update existing nodes
 		thisGraph.rectangles = thisGraph.rectangles.data(thisGraph.nodes, function(d) {
@@ -828,10 +870,12 @@ define(['require',
 				.attr("width", "80px")
 				.attr("height", "80px")
 			    .on("mouseover", function(d) {
-					$(this).siblings('foreignobject').show();
+			    	$(this).css("opacity", "0.75");
+					$(this).siblings('text.fa-times').show();
 				})
 				.on("mouseout", function(d) {
-					$(this).siblings('foreignobject').hide();
+					$(this).css("opacity", "1");
+					$(this).siblings('text.fa-times').hide();
 				})
 				.on("mousedown", function(d) {
 					thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);
@@ -850,11 +894,15 @@ define(['require',
 				else return '\uf071';
 			});
 
-            newGs.append('svg:foreignObject')
-			    .attr("x","66px")
-                .attr("y","-9px")
-                .attr("display","none")
-			    .html('<i class="fa fa-times fa-2"></i>')
+            newGs.append('text')
+                .attr("class", "fa fa-times")
+                .attr("x","66px")
+                .attr("y","8px")
+                .text(function(d) {
+					return '\uf00d';
+				})
+                .style("display","none")
+                .style("font-size","large")
 				.on('mouseover', function(d){
 					$(this).show();
 			    })
@@ -878,8 +926,8 @@ define(['require',
 		        	else
 			    		return ''; 
 		        })
-		        .attr("r", function (d) { 
-		        	if(d.parentType !== Globals.Topology.Editor.Steps.DataSink.valStr)
+		        .attr("r", function (d) {
+					if(d.parentType !== Globals.Topology.Editor.Steps.DataSink.valStr)
 			    		return '5';
 			    	else
 			    		return '0';
@@ -979,14 +1027,64 @@ define(['require',
 		thisGraph.rectangles.exit().remove();
 	};
 
+	TopologyGraphCreator.prototype.showShuffle = function(d){
+		var thisGraph = this;
+		var shuffleArr = thisGraph.data.linkShuffleOptions;
+		var html = "<div><select class='link-shuffle'>";
+		for(var i = 0, len = shuffleArr.length; i < len; i++){
+			html += "<option value='"+shuffleArr[i].val+"'>"+shuffleArr[i].label+"</option>";
+		}
+		//<div class='link-btns'><button class='btn btn-xs btn-default'><i class='fa fa-times'></i></button>"+
+				// "<button class='btn btn-xs btn-success'><i class='fa fa-check'></i></button></div>
+		html += "</select></div>";
+		$('[data-toggle="popover"]').popover({
+			title: "Select Grouping",
+    		html: true,
+    		content: html,
+    		container: "body",
+    		placement: "top"
+    	});
+    	$('.link-shuffle').select2();
+	};
+
+	TopologyGraphCreator.prototype.hideShuffle = function(){
+		$('[data-toggle="popover"]').popover('hide');
+	};
+
+	TopologyGraphCreator.prototype.clonePaths = function(){
+		var element = $('svg path.link').not('.hidden');
+		for(var i = 0, len = element.length ; i < len; i++){
+			var cloneElem = $(element[i]).clone();
+			cloneElem.css('marker-end', 'url(#end-arrow)')
+				.attr("stroke-dasharray", "5, 5")
+				.attr('stroke-width', '2')
+				.removeAttr('stroke-opacity')
+				.removeAttr('data-toggle')
+				.attr('class', 'link visible-link');
+			cloneElem.insertBefore(element[i]);
+		}
+	};
+
+	TopologyGraphCreator.prototype.setLinkIcon = function(){
+		$('.link-group > text').remove();
+		var shuffleElement = $('path > text').detach();
+		$('.link-group').append(shuffleElement);
+	};
+
+	TopologyGraphCreator.prototype.getBoundingBoxCenter = function(selection) {
+	    // get the DOM element from a D3 selection
+	    // you could also use "this" inside .each()
+	    var element = selection.node(),
+	        // use the native SVG interface to get the bounding box
+	        bbox = element.getBBox();
+	    // return the center of the bounding box
+	    return [bbox.x + bbox.width/2, bbox.y + bbox.height/2];
+	};
+
 	TopologyGraphCreator.prototype.zoomed = function() {
 		this.state.justScaleTransGraph = true;
-		// var a = d3.mouse(this.svgG.node())[0]+","+d3.mouse(this.svgG.node())[1];
-		// var a = d3.event.sourceEvent.screenX+","+d3.event.sourceEvent.screenY;
-		// console.log("x:"+d3.mouse(this.svgG.node())[0]+'\ny:'+d3.mouse(this.svgG.node())[1]);
 		d3.select("." + this.consts.graphClass)
 			.attr("transform", "translate(" + this.dragSvg.translate() + ")" + "scale(" + this.dragSvg.scale() + ")");
-			// .attr("transform", "translate(" + a + ") scale(" + d3.event.scale + ")");
 	};
 
 	TopologyGraphCreator.prototype.updateWindow = function(svg) {

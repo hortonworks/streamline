@@ -12,7 +12,6 @@ define(['require',
             var self = this;
             this.comparisonOpArr = [];
             this.logicalOpArr = [];
-            this.fieldsArr = [];
 
             _.each(_.findWhere(self.config, {name: 'operations'}).values, function(obj){
                 self.comparisonOpArr.push({
@@ -26,16 +25,9 @@ define(['require',
                     lbl: obj
                 });
             });
-             _.each(this.fields, function(obj){
-                self.fieldsArr.push({
-                    val:obj.name,
-                    lbl: obj.name
-                 });
-             });
             return {
                 comparisonArr : this.comparisonOpArr,
                 logicalArr : this.logicalOpArr,
-                fieldsArr : this.fieldsArr,
                 sinkConnected: this.sinkConnected,
                 sinkList: this.connectedSink
             };
@@ -88,6 +80,31 @@ define(['require',
                 }
             }
             this.bindEvents();
+            this.fieldsArr = [];
+            this.getFieldData(this.fields, 0);
+        },
+        getFieldData: function(fields, level) {
+
+            _.each(fields, function(obj) {
+                if(obj.type === 'NESTED') {
+                    this.fieldsArr.push({
+                        id: obj.name,
+                        text: obj.name,
+                        val: obj.name,
+                        level: level,
+                        disabled: true
+                    });
+                    this.getFieldData(obj.fields, level + 1);
+                } else {
+                    this.fieldsArr.push({
+                        id: obj.name,
+                        text: obj.name,
+                        val: obj.name,
+                        level: level,
+                        disabled: false
+                    });
+                }
+            }, this);
         },
 
         bindEvents: function(){
@@ -148,22 +165,41 @@ define(['require',
         },
 
         onRender: function(){
+            var self = this;
             this.$('.field-1').select2({
-                placeholder: 'Field'
+                placeholder: 'Field',
+                data: self.fieldsArr,
+                templateResult: function(node) {
+                    var styleText = "padding-left:" + (20 * node.level) + "px;";
+                    if(node.disabled){
+                        styleText += "font-weight: bold;";
+                    }
+                    var $result = $('<span style="'+styleText+'">' + node.text + '</span>');
+                    return $result;
+                }
             });
             this.$('.comparisonOp').select2({
                 placeholder: 'Operator'
             });
             this.$('.field-2').select2({
                 tags:true,
-                placeholder: 'Constant/Field'
+                placeholder: 'Constant/Field',
+                data: self.fieldsArr,
+                templateResult: function(node) {
+                    var styleText = "padding-left:" + (20 * node.level) + "px;";
+                    if(node.disabled){
+                        styleText += "font-weight: bold;";
+                    }
+                    var $result = $('<span style="'+styleText+'">' + node.text + '</span>');
+                    return $result;
+                }
             });
             this.$("#rule-name").val(this.ruleName);
             if(this.rulesArr.length){
                 var obj = this.firstFormulaModel;
                 this.$el.find('.field-1').select2('val',obj.get('field1'));
                 this.$el.find('.comparisonOp').select2('val',obj.get('comp'));
-                if(!_.find(this.fieldsArr, {val: obj.get('field2')})){
+                if(!_.find(this.fieldsArr, {text: obj.get('field2')})){
                     this.$el.find('.field-2').append('<option value="'+obj.get('field2')+'">'+obj.get('field2')+'</option>');
                 }
                 this.$el.find('.field-2').select2('val',obj.get('field2'));
