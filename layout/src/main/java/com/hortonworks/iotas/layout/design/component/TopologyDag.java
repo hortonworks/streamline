@@ -69,7 +69,7 @@ public class TopologyDag implements Serializable {
 
     // specify stream, shuffle grouping
     public void addEdge(OutputComponent from, InputComponent to, String streamId) {
-        addEdge(from, to, streamId, Stream.Grouping.GROUPING_SHUFFLE);
+        addEdge(from, to, streamId, Stream.Grouping.SHUFFLE);
     }
 
     // specify stream and grouping
