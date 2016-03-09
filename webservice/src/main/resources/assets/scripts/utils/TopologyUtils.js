@@ -364,7 +364,16 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
                 return false;
             } else {
                 if(obj[0].source.currentType === 'PARSER') {
-                    var dsId = sourceData[0].dataSourceId ?  sourceData[0].dataSourceId : sourceData[0]._selectedTable[0].datasourceId;
+                    var dsToParserObj = linkArr.filter(function(o){
+                        return (o.target.currentType === 'PARSER' && o.target.uiname === obj[0].source.uiname);
+                    });
+                    var dsId;
+                    if(dsToParserObj.length){
+                        var deviceObj = dsArr.filter(function(o){ return o.uiname === dsToParserObj[0].source.uiname;});
+                        if(deviceObj.length){
+                            dsId = deviceObj[0].dataSourceId;
+                        }
+                    }
                     model.set('dataSourceId', dsId);
                     if (model.has('rulesProcessorConfig')) {
                         var object = {

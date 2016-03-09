@@ -282,7 +282,6 @@ define(['require',
       var customProcessorArr = _.where(this.processorConfigArr, {subType: 'CUSTOM'});
       _.each(customProcessorArr, function(obj){
         self.$('#collapseProcessor .panel-body').append('<img src="images/icon-custom.png" class="topology-icon-inverse processor" data-rel="tooltip" title="'+obj.name+'" data-subType="CUSTOM" data-parentType="Processor">');
-        self.processorArr.push(obj);
       });
       TopologyUtils.bindDrag(self.$('.panel-body img'));
       self.$('[data-rel="tooltip"]').tooltip({placement: 'bottom'});
