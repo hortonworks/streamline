@@ -51,7 +51,7 @@ define(['require',
                 templateResult: function(node) {
                     var styleText = "padding-left:" + (20 * node.level) + "px;";
                     if(node.disabled){
-                        styleText += "font-weight: bold;"
+                        styleText += "font-weight: bold;";
                     }
                     var $result = $('<span style="'+styleText+'">' + node.text + '</span>');
                     return $result;

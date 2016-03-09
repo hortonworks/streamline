@@ -208,18 +208,21 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
         				var index = _.findIndex(parent.processorArr, {uiname: o.source.uiname});
         				var ruleProcessor = parent.processorArr[index];
         				var ruleObj = ruleProcessor.newConfig ? ruleProcessor.newConfig.rulesProcessorConfig.rules : ruleProcessor.rulesProcessorConfig.rules;
-        				_.each(ruleObj, function(r){
+        				var flag = false;
+                        _.each(ruleObj, function(r){
         					var ruleIndex = _.findIndex(r.actions, {name: newData.get('uiname')});
                             if(ruleIndex !== -1){
+                                flag = true;
                                 if(nodeArr[i].currentType === 'NOTIFICATION'){
                                     r.actions[ruleIndex].outputFieldsAndDefaults = newData.get('fieldValues');
                                     r.actions[ruleIndex].includeMeta = true;
                                     r.actions[ruleIndex].notifierName = newData.get('notifierName');
                                 }
-                            } else {
-                                Utils.notifyInfo("No rules is associated with "+newData.get('uiname'));
                             }
         				});
+                        if(!flag){
+                            Utils.notifyInfo("No rules is associated with "+newData.get('uiname'));
+                        }
         			}
         		});
         	}

@@ -495,30 +495,34 @@ define(['require',
                 "to": targetObj.uiname,
               }
             };
+            if(sourceObj.currentType === 'DEVICE'){
+              tempData.links.push(tempObj);
+            }
             if(sourceObj.currentType === 'PARSER'){
               tempObj.config.streamId = obj.target.streamId;
+              tempData.links.push(tempObj);
             }
             if(sourceObj.currentType === 'RULE'){
               var ruleProcessor = sourceObj.newConfig ? sourceObj.newConfig.rulesProcessorConfig : sourceObj.rulesProcessorConfig;
-              var loopFlag = true, ruleIndex;
+              var loopFlag = false, ruleName;
               _.each(ruleProcessor.rules, function(obj, i){
-                if(loopFlag){
-                  var index = _.findIndex(obj.actions, {name: targetObj.uiname});
-                  if(index !== -1){
-                    ruleIndex = i;
-                    loopFlag = false;
-                  }
+                var actionObj = _.findWhere(obj.actions, {name: targetObj.uiname});
+                if(actionObj){
+                  loopFlag = true;
+                  var o = JSON.parse(JSON.stringify(tempObj));
+                  o.config.streamId = ruleProcessor.name+'.'+obj.name+'.'+obj.id+'.'+targetObj.uiname;
+                  tempData.links.push(o);
+                } else {
+                  loopFlag = loopFlag || false;
+                  ruleName = ruleProcessor.name+'.'+obj.name+' is not associated to any sink. Please associate before saving the topology.';
                 }
               });
-              if(!_.isUndefined(ruleIndex)){
-                tempObj.config.streamId = ruleProcessor.name+'.'+ruleProcessor.rules[ruleIndex].name+'.'+ruleProcessor.rules[ruleIndex].id+'.'+targetObj.uiname;
-              } else {
+              if(!loopFlag){
                 flag = false;
                 $('#loading').hide();
-                Utils.notifyError(targetObj.uiname+" is not associated with any rules. Kindly associate the rules in the rule processor.");
+                Utils.notifyError(ruleName);
               }
             }
-            tempData.links.push(tempObj);
           }
         }
       });
