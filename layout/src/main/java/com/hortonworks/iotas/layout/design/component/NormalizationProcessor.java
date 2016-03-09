@@ -22,14 +22,13 @@ import com.hortonworks.iotas.layout.design.normalization.FieldValueGenerator;
 import com.hortonworks.iotas.layout.design.normalization.Transformer;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * Design time component of Normalization processor containing configuration of Transformers,
  * fields to be filtered/removed and new output field/value generators.
  *
  */
-public class NormalizationProcessor extends IotasProcessor {
+public class NormalizationProcessor extends Processor {
     private List<Transformer> transformers;
     // List of input fields filtered or removed. These will not be passed to output fields.
     private List<String> fieldsToBeFiltered;
@@ -38,9 +37,7 @@ public class NormalizationProcessor extends IotasProcessor {
     public NormalizationProcessor() {
     }
 
-    public NormalizationProcessor(Set<Stream> declaredOutputs, List<Transformer> transformers,
-                                  List<String> fieldsToBeFiltered, List<FieldValueGenerator> newFieldValueGenerators) {
-        super(declaredOutputs);
+    public NormalizationProcessor(List<Transformer> transformers, List<String> fieldsToBeFiltered, List<FieldValueGenerator> newFieldValueGenerators) {
         this.transformers = transformers;
         this.fieldsToBeFiltered = fieldsToBeFiltered;
         this.newFieldValueGenerators = newFieldValueGenerators;

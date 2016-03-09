@@ -20,7 +20,6 @@ package com.hortonworks.iotas.layout.runtime.normalization;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.layout.design.component.NormalizationProcessor;
-import com.hortonworks.iotas.layout.design.component.Stream;
 import com.hortonworks.iotas.layout.design.normalization.FieldValueGenerator;
 import com.hortonworks.iotas.layout.design.normalization.Transformer;
 import com.hortonworks.iotas.parser.ParseException;
@@ -173,10 +172,7 @@ public class NormalizationProcessorRuntime {
         }
 
         private void buildDeclaredOutput() {
-            this.declaredOutputFields = new HashSet<>();
-            for(Stream stream: normalizationProcessor.getDeclaredOutputs()) {
-                this.declaredOutputFields.addAll(stream.fields());
-            }
+            this.declaredOutputFields = new HashSet<>(normalizationProcessor.getDeclaredOutput());
         }
 
         public NormalizationProcessorRuntime build() throws NormalizationException {

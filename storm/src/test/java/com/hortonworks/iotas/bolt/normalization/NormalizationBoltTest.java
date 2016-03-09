@@ -1,6 +1,5 @@
 package com.hortonworks.iotas.bolt.normalization;
 
-import com.hortonworks.iotas.layout.design.component.Stream;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -121,7 +120,8 @@ public class NormalizationBoltTest {
         List<Transformer> transformers = Collections.singletonList(new Transformer(new Schema.Field("temp", Schema.Type.INTEGER), new Schema.Field("temperature", Schema.Type.INTEGER)));
         List<String> filters = Collections.singletonList("foo");
         List<FieldValueGenerator> fieldValueGenerators = Collections.singletonList(new FieldValueGenerator(new Schema.Field("new-field", Schema.Type.STRING), "new value"));
-        NormalizationProcessor normalizationProcessor = new NormalizationProcessor(Collections.singleton(new Stream(OUTPUT_SCHEMA)), transformers, filters, fieldValueGenerators);
+        NormalizationProcessor normalizationProcessor = new NormalizationProcessor(transformers, filters, fieldValueGenerators);
+        normalizationProcessor.setDeclaredOutput(OUTPUT_SCHEMA);
 
         return new NormalizationProcessorRuntime.Builder(normalizationProcessor).build();
     }

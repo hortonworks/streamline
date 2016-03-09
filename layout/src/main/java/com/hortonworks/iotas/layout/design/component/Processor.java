@@ -15,12 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.hortonworks.iotas.layout.design.component;
 
+import com.hortonworks.iotas.common.Schema.Field;
+
+import java.util.List;
+
 /**
- * A processing component that can receive inputs and do some transformation
- * to produce outputs.
- * A processor is both a source and a sink.
+ * A {@link Processor} must declare output, regardless of the output being identical to the input
  */
-public interface Processor extends Source, Sink {
+public class Processor extends Component {
+    private List<Field> declaredOutput;
+
+    public List<Field> getDeclaredOutput() {
+        return declaredOutput;
+    }
+
+    public void setDeclaredOutput(List<Field> declaredOutput) {
+        this.declaredOutput = declaredOutput;
+    }
 }

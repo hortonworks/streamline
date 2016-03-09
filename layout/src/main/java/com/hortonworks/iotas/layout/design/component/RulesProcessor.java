@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * Represents a design time rules processor.
  */
-public class RulesProcessor extends IotasProcessor {     //TODO: Rename to RuleProcessor
+public class RulesProcessor extends Component {     //TODO: Rename to RuleProcessor
     private List<Rule> rules;
 
     public List<Rule> getRules() {
