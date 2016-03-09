@@ -25,7 +25,6 @@ import com.hortonworks.iotas.layout.design.component.NormalizationProcessor;
 import com.hortonworks.iotas.layout.design.normalization.BulkNormalizationConfig;
 import com.hortonworks.iotas.layout.design.normalization.FieldBasedNormalizationConfig;
 import com.hortonworks.iotas.layout.design.normalization.NormalizationConfig;
-import com.hortonworks.iotas.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

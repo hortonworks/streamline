@@ -22,7 +22,7 @@ import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.layout.design.normalization.FieldValueGenerator;
 import com.hortonworks.iotas.layout.runtime.script.GroovyScript;
 import com.hortonworks.iotas.layout.runtime.script.engine.GroovyScriptEngine;
-import com.hortonworks.iotas.parser.ParseException;
+import com.hortonworks.iotas.exception.ParserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +60,7 @@ public class FieldValueGeneratorRuntime {
                 throw new NormalizationException("Computed value is not of expected type: "+ type);
             }
             return evaluatedValue;
-        } catch (ScriptException | ParseException e) {
+        } catch (ScriptException | ParserException e) {
             throw new NormalizationException(e);
         }
     }

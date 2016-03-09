@@ -22,10 +22,10 @@ import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.Result;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.common.errors.ProcessingException;
+import com.hortonworks.iotas.exception.ParserException;
 import com.hortonworks.iotas.layout.design.component.NormalizationProcessor;
 import com.hortonworks.iotas.layout.design.component.Stream;
 import com.hortonworks.iotas.layout.design.normalization.NormalizationConfig;
-import com.hortonworks.iotas.parser.ParseException;
 import com.hortonworks.iotas.processor.ProcessorRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,7 +127,7 @@ public class NormalizationProcessorRuntime implements ProcessorRuntime {
                     if (value != null && fieldNames.contains(entry.getKey()) && !fields.contains(new Schema.Field(entry.getKey(), Schema.fromJavaType(value)))) {
                         throw new NormalizationException("Normalized payload does not conform to declared output schema.");
                     }
-                } catch (ParseException e) {
+                } catch (ParserException e) {
                     throw new NormalizationException("Error occurred while validating normalized payload.", e);
                 }
             }

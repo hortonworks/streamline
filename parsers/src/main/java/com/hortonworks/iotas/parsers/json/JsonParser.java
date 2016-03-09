@@ -4,12 +4,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.parser.BaseParser;
-import com.hortonworks.iotas.parser.ParseException;
+import com.hortonworks.iotas.exception.ParserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.Map;
 
 /**
@@ -32,9 +31,9 @@ public class JsonParser extends BaseParser {
      * sample data.
      *
      * @param sampleJsonData
-     * @throws ParseException
+     * @throws ParserException
      */
-    public void setSchema(String sampleJsonData) throws ParseException {
+    public void setSchema(String sampleJsonData) throws ParserException {
         this.schema = schemaFromSampleData(sampleJsonData);
     }
 
@@ -46,11 +45,11 @@ public class JsonParser extends BaseParser {
         return schema;
     }
 
-    public Map<String, Object> parse(byte[] data) throws ParseException {
+    public Map<String, Object> parse(byte[] data) throws ParserException {
         try {
             return mapper.readValue(data, new TypeReference<Map<String, Object>>(){});
         } catch (IOException e) {
-            throw new ParseException("Error trying to parse data.", e);
+            throw new ParserException("Error trying to parse data.", e);
         }
     }
 }

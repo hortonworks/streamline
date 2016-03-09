@@ -20,6 +20,7 @@ package com.hortonworks.iotas.parser;
 
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.exception.DataValidationException;
+import com.hortonworks.iotas.exception.ParserException;
 
 import java.util.List;
 import java.util.Map;
@@ -47,7 +48,7 @@ public interface Parser {
      * @param data
      * @return
      */
-    Map<String, Object> parse(byte[] data) throws ParseException;
+    Map<String, Object> parse(byte[] data) throws ParserException;
 
     //TODO: don't understand the need for any of the following methods
     /**
@@ -55,7 +56,7 @@ public interface Parser {
      * @param data
      * @return
      */
-    Map<String, Object> parse(String data) throws ParseException;
+    Map<String, Object> parse(String data) throws ParserException;
 
     /**
      * <p>Given a byte array, returns a List of values conforming to the parser's Schema. </p>
@@ -63,7 +64,7 @@ public interface Parser {
      * @param data the raw data bytes
      * @return the List of data conforming to {@link Schema#getFields()}
      */
-    List<?> parseFields(byte[] data) throws ParseException;
+    List<?> parseFields(byte[] data) throws ParserException;
 
 
     /**
@@ -71,7 +72,7 @@ public interface Parser {
      * @param data
      * @return
      */
-    List<?> parseFields(String data) throws ParseException;
+    List<?> parseFields(String data) throws ParserException;
 
     /**
      * Validates an input sequence of bytes and throws {@link DataValidationException} if the data is invalid.

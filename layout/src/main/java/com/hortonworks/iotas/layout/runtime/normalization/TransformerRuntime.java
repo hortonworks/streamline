@@ -22,7 +22,7 @@ import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.layout.design.normalization.Transformer;
 import com.hortonworks.iotas.layout.runtime.script.GroovyScript;
 import com.hortonworks.iotas.layout.runtime.script.engine.GroovyScriptEngine;
-import com.hortonworks.iotas.parser.ParseException;
+import com.hortonworks.iotas.exception.ParserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +67,7 @@ public class TransformerRuntime {
                 LOG.debug("Input field value returned: {}", value);
             }
             return value;
-        } catch (ScriptException | ParseException e) {
+        } catch (ScriptException | ParserException e) {
             LOG.error("Error occurred while converting input fields in transformer: " + transformer);
             throw new NormalizationException("Error occurred while converting input fields in a normalization", e);
         }

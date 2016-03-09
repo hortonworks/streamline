@@ -2,7 +2,7 @@ package com.hortonworks.iotas.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.parser.ParseException;
+import com.hortonworks.iotas.exception.ParserException;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.exception.StorageException;
@@ -97,7 +97,7 @@ public abstract class AbstractStorable implements Storable {
                 if(LOG.isTraceEnabled()) {
                     LOG.trace("getSchema: Adding {} = {} ", entry.getKey(), type);
                 }
-            } catch (NoSuchMethodException|InvocationTargetException|IllegalAccessException|ParseException e) {
+            } catch (NoSuchMethodException|InvocationTargetException|IllegalAccessException|ParserException e) {
                 throw new StorageException(e);
             }
         }
