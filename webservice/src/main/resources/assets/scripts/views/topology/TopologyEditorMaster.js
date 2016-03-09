@@ -120,6 +120,7 @@ define(['require',
           self.updateVariables();
         }
         if(self.renderFlag){
+          self.showCustomProcessors();
           self.$('svg').remove();
           self.topologyGraph = TopologyUtils.syncGraph(self.model.get('_editState'), self.graphNodesData, self.linkArr, self.ui.graphEditor, self.vent, self.graphTransforms, self.linkConfigArr);
         }
@@ -258,6 +259,7 @@ define(['require',
       
       setTimeout(function(){
         self.renderFlag = true;
+        self.showCustomProcessors();
         self.topologyGraph = TopologyUtils.syncGraph(self.model.get('_editState'), self.graphNodesData, self.linkArr, self.ui.graphEditor, self.vent, self.graphTransforms, self.linkConfigArr);
         TopologyUtils.bindDrop(self.$('#graphEditor'), self.dsArr, self.processorArr, self.sinkArr, self.vent, self.nodeNames);
       }, 0);
@@ -272,8 +274,18 @@ define(['require',
       }
 
       self.$('[data-rel="tooltip"]').tooltip({placement: 'bottom'});
-      
       $('#loading').hide();
+    },
+
+    showCustomProcessors: function(){
+      var self = this;
+      var customProcessorArr = _.where(this.processorConfigArr, {subType: 'CUSTOM'});
+      _.each(customProcessorArr, function(obj){
+        self.$('#collapseProcessor .panel-body').append('<img src="images/icon-custom.png" class="topology-icon-inverse processor" data-rel="tooltip" title="'+obj.name+'" data-subType="CUSTOM" data-parentType="Processor">');
+        self.processorArr.push(obj);
+      });
+      TopologyUtils.bindDrag(self.$('.panel-body img'));
+      self.$('[data-rel="tooltip"]').tooltip({placement: 'bottom'});
     },
 
     evDSAction: function(model){

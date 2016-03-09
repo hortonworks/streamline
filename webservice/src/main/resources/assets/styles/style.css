@@ -9,6 +9,9 @@ body {
   font-family: 'Open Sans', sans-serif;
   background-color: #f2f4f8;
 }
+textarea {
+  resize: vertical;
+}
 .loader {
   position: fixed;
   top: 0;
@@ -46,7 +49,7 @@ body {
   box-shadow: 0px 0px 4px rgba(0,0,0,0.1) inset;
 }
 label {
-  font-weight: 400;
+  font-weight: 600;
   display: block;
 }
 .modal {z-index: 1100 !important;}
@@ -1351,4 +1354,32 @@ a#editableTitle {
 .link-btns {
   text-align: right;
   margin-top: 10px;
+}
+.json-message {
+  white-space: pre-line;
+  font-family: monospace;
+  font-size: 12px;
+}
+.schema-tabs .tab-content {
+  padding: 15px 0;
+}
+
+.schema-tabs .nav-tabs {border-bottom: 1px solid #8FAEBF;}
+.schema-tabs .nav-tabs>li>a {color: #43687D;background: #f9f9fc;border:none; border-radius:0px;}
+.schema-tabs .nav-tabs>li:last-child>a {background-color: transparent;}
+.schema-tabs .nav-tabs>li.active>a, 
+.schema-tabs .nav-tabs>li.active>a:focus, 
+.schema-tabs .nav-tabs>li.active>a:hover {
+  background-color: #fff;
+  border: 1px solid #8FAEBF;
+  border-bottom-color: transparent;
+}
+.cancelSchema {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  color: #e17000;
+  font-size: 1.25em;
+  cursor: pointer;
+  /*z-index: 9;*/
 }
