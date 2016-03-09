@@ -124,7 +124,7 @@ define(['require',
             rules: ruleArr,
             name: this.model.get('uiname'),
             id: new Date().getTime(),
-            description: "Auto-Generated for "+this.model.get('uiname'),
+            // description: "Auto-Generated for "+this.model.get('uiname'),
             declaredInput: this.fieldsArr
           }
         };
