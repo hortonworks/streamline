@@ -4,6 +4,7 @@ import com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManager;
 import com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManagerIntegrationTest;
 import com.hortonworks.iotas.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.iotas.storage.impl.jdbc.connection.HikariCPConnectionBuilder;
+import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.PhoenixClient;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
 import com.hortonworks.iotas.test.HBaseIntegrationTest;
 import com.zaxxer.hikari.HikariConfig;
