@@ -12,6 +12,7 @@ import com.hortonworks.iotas.util.ReflectionHelper;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * Created by pbrahmbhatt on 7/30/15.
@@ -19,7 +20,7 @@ import java.util.Map;
 public class NestParser extends BaseParser {
 
     private static ObjectMapper mapper = new ObjectMapper();
-
+    private final String BATTERY_STATE = "battery_state";
     public String version() {
         return "1";
     }
@@ -56,7 +57,8 @@ public class NestParser extends BaseParser {
                 new Schema.Field("ambient_temperature_f", Schema.Type.STRING),
                 new Schema.Field("ambient_temperature_c", Schema.Type.STRING),
                 new Schema.Field("humidity", Schema.Type.STRING),
-                new Schema.Field("hvac_state", Schema.Type.STRING));
+                new Schema.Field("hvac_state", Schema.Type.STRING),
+                new Schema.Field(BATTERY_STATE, Schema.Type.INTEGER));
     }
 
     //right now it only returns current temperature and id, where id is nest's unique Id.
@@ -66,6 +68,7 @@ public class NestParser extends BaseParser {
             Map map = new HashMap();
             JsonNode jsonNode = mapper.readTree(data);
             JsonNode thermostats = jsonNode.get("devices").get("thermostats");
+            Random random = new Random(System.currentTimeMillis());
             //TODO Not sure how do we want to deal with multiple thermostats in a single json response.
             //I guess we could return a list of Maps from parse method to allow for use cases like this.
             ObjectReader objectReader = mapper.readerFor(new TypeReference<Map<String, Thermostat>>() {
@@ -77,7 +80,11 @@ public class NestParser extends BaseParser {
             Thermostat thermostat = thermostatMap.values().iterator().next();
             for(Schema.Field field: schema().getFields()) {
                 String propertyName = field.getName();
-                map.put(propertyName, ReflectionHelper.invokeGetter(propertyName, thermostat));
+                if (BATTERY_STATE.equals(propertyName)) {
+                    map.put(propertyName, random.nextInt(20) + 1);
+                }  else {
+                    map.put(propertyName, ReflectionHelper.invokeGetter(propertyName, thermostat));
+                }
             }
             return map;
         } catch (Exception e) {
