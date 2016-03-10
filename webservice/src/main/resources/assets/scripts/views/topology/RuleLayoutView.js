@@ -76,6 +76,8 @@ define(['require',
     onRender: function(){
       var rulePreview = '',
         ruleCollection = this.ruleCollection.models;
+      if(!ruleCollection.length)
+        this.$(".rule-list-heading").append('<h5>No rules found</h5>');
 
       this.$(".ruleList").append(TopologyUtils.generateFormulaPreview(ruleCollection));
     },

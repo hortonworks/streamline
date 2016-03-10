@@ -76,7 +76,7 @@ define([
           formatter: _.extend({}, Backgrid.CellFormatter.prototype, {
             fromRaw: function(rawValue, model) {
               if (model) {
-                return "<a href='#!/custom-processor/edit/"+model.get('name')+"' title='Edit' class='btn btn-success btn-xs'><i class='fa fa-edit'></i></a>";
+                return "<a href='#!/custom-processor/edit/"+model.get('name')+"' title='Edit' class='btn btn-success btn-xs'><i class='fa fa-edit'></i></a><a href='javascript:void(0)' title='Delete' class='btn btn-danger btn-xs' id='deleteAction' data-name='"+model.get("name")+"' type='default' ><i class='fa fa-trash'></i></a>";
               }
             }
           })
@@ -90,8 +90,8 @@ define([
       model.destroyModel({
             id: name,
             success: function(model,response){
-              Utils.notifySuccess('processor deleted');
-              self.collection.fetch({reset: true})
+              Utils.notifySuccess('Custom processor deleted successfully');
+              self.collection.fetch({reset: true});
             },
             error: function(model, response, options){
               Utils.showError(model, response);

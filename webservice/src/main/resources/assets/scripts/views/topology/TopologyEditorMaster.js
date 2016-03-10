@@ -129,9 +129,9 @@ define(['require',
 
     updateVariables: function(){
       var config = this.model.get('config');
-      TopologyUtils.updateVariables(config.dataSources, this.sourceConfigArr, this.nodeNames, this.dsArr, this.graphNodesData.source, Globals.Topology.Editor.Steps.Datasource.Substeps, 'DEVICE', 'KAFKA');
-      TopologyUtils.updateVariables(config.processors, this.processorConfigArr, this.nodeNames, this.processorArr, this.graphNodesData.processor, Globals.Topology.Editor.Steps.Processor.Substeps);
-      TopologyUtils.updateVariables(config.dataSinks, this.sinkConfigArr, this.nodeNames, this.sinkArr, this.graphNodesData.sink, Globals.Topology.Editor.Steps.DataSink.Substeps);
+      TopologyUtils.updateVariables(config.dataSources, this.sourceConfigArr, config.links, this.nodeNames, this.dsArr, this.graphNodesData.source, Globals.Topology.Editor.Steps.Datasource.Substeps, 'DEVICE', 'KAFKA');
+      TopologyUtils.updateVariables(config.processors, this.processorConfigArr, config.links, this.nodeNames, this.processorArr, this.graphNodesData.processor, Globals.Topology.Editor.Steps.Processor.Substeps);
+      TopologyUtils.updateVariables(config.dataSinks, this.sinkConfigArr, config.links, this.nodeNames, this.sinkArr, this.graphNodesData.sink, Globals.Topology.Editor.Steps.DataSink.Substeps);
     },
 
     bindEvents: function(){
@@ -151,6 +151,7 @@ define(['require',
 
       this.listenTo(this.vent, 'click:topologyNode', function(data){
         var uiname = data.uiname;
+        var customName = data.customName;
         switch(data.parentType){
           //Source
           case Globals.Topology.Editor.Steps.Datasource.valStr:
@@ -158,7 +159,7 @@ define(['require',
           break;
           //Processor
           case Globals.Topology.Editor.Steps.Processor.valStr:
-            TopologyUtils.getNode(this, this.processorArr, uiname, self.evProcessorAction, this.processorConfigArr, true, data.currentType, this.linkArr);
+            TopologyUtils.getNode(this, this.processorArr, uiname, self.evProcessorAction, this.processorConfigArr, true, data.currentType, this.linkArr, customName);
           break;
           //Sink
           case Globals.Topology.Editor.Steps.DataSink.valStr:
@@ -212,6 +213,8 @@ define(['require',
           TopologyUtils.resetRule(self.processorArr, options);
         } else if(!_.isUndefined(options.resetRuleAction)){
           TopologyUtils.resetRuleAction(self.processorArr, options);
+        } else if(!_.isUndefined(options.resetCustomAction)){
+          TopologyUtils.resetCustomAction(self.processorArr, options);
         }
         options.callback();
       });
@@ -222,12 +225,13 @@ define(['require',
           if(ruleProcessorObj.length && !ruleProcessorObj[0].firstTime){
             self.titleName = ruleProcessorObj[0].uiname;
             var view = new RuleToOtherNodeView({
-              ruleProcessorObj: ruleProcessorObj,
+              processorObj: ruleProcessorObj,
               sinkName: data.target.uiname,
+              currentType: data.source.currentType,
               vent: self.vent
             });
             var modal = new Modal({
-              title: 'Select rules for '+data.target.uiname,
+              title: (data.source.currentType === 'RULE') ? 'Select rules for '+data.target.uiname : 'Select streams for '+data.target.uiname,
               contentWithFooter: true,
               content: view,
               showFooter: false,
@@ -281,7 +285,11 @@ define(['require',
       var self = this;
       var customProcessorArr = _.where(this.processorConfigArr, {subType: 'CUSTOM'});
       _.each(customProcessorArr, function(obj){
-        self.$('#collapseProcessor .panel-body').append('<img src="images/icon-custom.png" class="topology-icon-inverse processor" data-rel="tooltip" title="'+obj.name+'" data-subType="CUSTOM" data-parentType="Processor">');
+        var jsonConfig = JSON.parse(obj.config);
+        var nameObj = _.findWhere(jsonConfig, {name: "name"});
+        if(nameObj){
+          self.$('#collapseProcessor .panel-body').append('<img src="images/icon-custom.png" class="topology-icon-inverse processor" data-rel="tooltip" title="'+nameObj.defaultValue+'" data-name="'+nameObj.defaultValue+'" data-subType="CUSTOM" data-parentType="Processor">');
+        }
       });
       TopologyUtils.bindDrag(self.$('.panel-body img'));
       self.$('[data-rel="tooltip"]').tooltip({placement: 'bottom'});
@@ -341,6 +349,25 @@ define(['require',
               }), obj);
             });
           }
+        break;
+
+        case 'CUSTOM':
+          require(['views/topology/CustomProcessorView'], function(CustomProcessorView){
+            var linkObj = self.linkArr.filter(function(o){
+              if(o.source.uiname === model.get('uiname'))
+                return o;
+            });
+            var arr = [];
+            _.each(linkObj, function(o){
+              arr.push(o.target.uiname);
+            });
+            self.showModal(new CustomProcessorView({
+              model: model,
+              vent: self.vent,
+              showOutputFields: linkObj.length ? true : false,
+              connectedNodes: arr
+            }), obj);
+          });
         break;
       }
     },
@@ -532,6 +559,26 @@ define(['require',
                 flag = false;
                 $('#loading').hide();
                 Utils.notifyError(ruleName);
+              }
+            }
+            if(sourceObj.currentType === 'CUSTOM'){
+              if(sourceObj.selectedStreams && sourceObj.selectedStreams.length){
+                var streamObj = _.where(sourceObj.selectedStreams, {name: targetObj.uiname});
+                if(streamObj.length){
+                  _.each(streamObj, function(s){
+                    var o = JSON.parse(JSON.stringify(tempObj));
+                    o.config.streamId = s.streamName;
+                    tempData.links.push(o);
+                  });
+                } else {
+                  flag = false;
+                  $('#loading').hide();
+                  Utils.notifyError("No output streams are selected for "+targetObj.uiname);
+                }
+              } else {
+                flag = false;
+                $('#loading').hide();
+                Utils.notifyError("No output streams are selected from "+sourceObj.uiname);
               }
             }
           }

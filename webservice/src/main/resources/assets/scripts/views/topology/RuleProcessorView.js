@@ -71,7 +71,7 @@ define(['require',
           vent: self.vent,
           fields: self.fieldsArr,
           config: self.model.get('config'),
-          rulesArr: self.model.has('newConfig') ? self.model.attributes.newConfig.rulesProcessorConfig.rules : [],
+          rulesArr: self.model.has('newConfig') ? self.model.attributes.newConfig.rulesProcessorConfig.rules : (self.model.has('rulesProcessorConfig') ? self.model.attributes.rulesProcessorConfig.rules : []),
           linkedToRule: self.linkedToRule,
           connectedSink: self.connectedSink
         });

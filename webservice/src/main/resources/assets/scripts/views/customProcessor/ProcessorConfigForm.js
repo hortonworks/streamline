@@ -62,7 +62,21 @@ define(['utils/LangSupport',
       };
     },
 
-    onRender: function(){ },
+    render: function(options){ 
+      Backbone.Form.prototype.render.call(this, options);
+      var tooltipData = [
+        {id: 'streamingEngine', val: 'Streaming Engine for this custom processor'},
+        {id: 'name', val: 'Name of the custom processor should be unique and is used to identify the custom processor'},
+        {id: 'description', val:'Description of the custom processor'},
+        {id: 'imageFileName', val: 'Unique name of the file that will be used to upload the image. Using same file for different Custom Processor will override the previous one.'},
+        {id: 'jarFileName', val: 'Unique name of the jar file that will be used to upload the jar. Using same file for different Custom Processor will override the previous one.'},
+        {id: 'customProcessorImpl', val: 'Fully qualified class name implementing the interface'}
+      ];
+ 
+      _.each(tooltipData, function(field) {
+        this.$('[name="'+field.id+'"]').tooltip({'trigger':'hover', 'title': field.val});
+      }, this); 
+    },
 
     getData: function () {
       return this.getValue();

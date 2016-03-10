@@ -85,7 +85,7 @@ define(['utils/LangSupport',
       data.schemaObj = {
         devices: {
           type: 'Select2',
-          title: localization.tt('lbl.selectDevices')+'*',
+          title: 'Select Device Name*',
           options: deviceArr,
           editorClass: 'form-control',
           pluginAttr: {

@@ -1383,3 +1383,6 @@ a#editableTitle {
   cursor: pointer;
   /*z-index: 9;*/
 }
+.output-fields {
+  margin-top: 15px;
+}

@@ -23,7 +23,7 @@ define(['require',
         return this.constructor.nonCrudOperation.call(this, Globals.baseURL + '/api/v1/catalog/system/componentdefinitions/PROCESSOR/custom?name='+options.id, 'GET', options);
       },
       destroyModel: function(options) {       
-        return this.constructor.nonCrudOperation.call(this, Globals.baseURL + '/api/v1/catalog/system/componentdefinitions/PROCESSOR/custom?name='+options.id, 'DELETE', options);
+        return this.constructor.nonCrudOperation.call(this, Globals.baseURL + '/api/v1/catalog/system/componentdefinitions/PROCESSOR/custom/'+options.id, 'DELETE', options);
       }
     },
     {}

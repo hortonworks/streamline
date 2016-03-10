@@ -175,6 +175,7 @@ define(['require',
 		this.vent.listenTo(this.vent, 'topologyEditor:DropAction', function(obj){
 			thisGraph.nodeObject = obj.nodeObj;
 			thisGraph.uiname = obj.uiname;
+			thisGraph.customName = obj.customName;
 			d3.event = obj.event;
 			thisGraph.createNode();
 		});
@@ -449,7 +450,7 @@ define(['require',
 						} else {
 							newEdge.target.streamId = "parsedTuplesStream";
 						}
-					} else if(newEdge.source.currentType === 'RULE'){
+					} else if(newEdge.source.currentType === 'RULE' || newEdge.source.currentType === 'CUSTOM'){
 						thisGraph.vent.trigger('topologyGraph:RuleToOtherNode', newEdge);
 					}
 					thisGraph.edges.push(newEdge);
@@ -481,7 +482,8 @@ define(['require',
 					thisGraph.vent.trigger('click:topologyNode', 
 						{
 							parentType: d.parentType,
-							currentType: d.currentType, 
+							currentType: d.currentType,
+							customName: d.customName,
 							uiname: d.uiname
 						}
 					);
@@ -529,7 +531,7 @@ define(['require',
 						} else {
 							newEdge.target.streamId = "parsedTuplesStream";
 						}
-					} else if(newEdge.source.currentType === 'RULE'){
+					} else if(newEdge.source.currentType === 'RULE' || newEdge.source.currentType === 'CUSTOM'){
 						thisGraph.vent.trigger('topologyGraph:RuleToOtherNode', newEdge);
 					}
 					thisGraph.edges.push(newEdge);
@@ -589,6 +591,7 @@ define(['require',
 				parentType: thisGraph.nodeObject.parentType,
 				currentType: thisGraph.nodeObject.valStr,
 				uiname: thisGraph.uiname,
+				customName: thisGraph.customName,
 				imageURL: thisGraph.nodeObject.imgUrl,
 				isConfigured: false
 			};
@@ -673,7 +676,7 @@ define(['require',
 			case 'Processor':
 				if(_.isEqual(selectedNode.currentType, 'PARSER')){
 					Utils.notifyInfo('Parser can only be deleted if Source is deleted.');
-				} else if(_.isEqual(selectedNode.currentType, 'RULE')){
+				} else if(_.isEqual(selectedNode.currentType, 'RULE') || _.isEqual(selectedNode.currentType, 'CUSTOM')){
 					callback = function(){
 						thisGraph.nodes.splice(thisGraph.nodes.indexOf(selectedNode), 1);
 						thisGraph.spliceLinksForNode(selectedNode);
@@ -684,6 +687,18 @@ define(['require',
 						data: [selectedNode],
 						callback: callback
 					};
+					var ruleToRuleObj = _.find(thisGraph.edges, function(obj){
+						return (obj.target == selectedNode && obj.source.currentType === 'RULE');
+					});
+					if(ruleToRuleObj){
+						triggerData.resetRuleAction = ruleToRuleObj.source;
+					}
+					var customToRuleObj = _.find(thisGraph.edges, function(obj){
+						return (obj.target == selectedNode && obj.source.currentType === 'CUSTOM');
+					});
+					if(customToRuleObj){
+						triggerData.resetCustomAction = customToRuleObj.source;
+					}
 					thisGraph.vent.trigger('delete:topologyNode', triggerData);
 				}
 			break;
@@ -700,9 +715,15 @@ define(['require',
 				};
 				var ruleToSinkObj = _.find(thisGraph.edges, function(obj){
 					return (obj.target == selectedNode && obj.source.currentType === 'RULE');
-				});
-				if(ruleToSinkObj){
+               	});
+               	if(ruleToSinkObj){
 					triggerData.resetRuleAction = ruleToSinkObj.source;
+				}
+				var customToSinkObj = _.find(thisGraph.edges, function(obj){
+					return (obj.target == selectedNode && obj.source.currentType === 'CUSTOM');
+				});
+				if(customToSinkObj){
+					triggerData.resetCustomAction = customToSinkObj.source;
 				}
 				thisGraph.vent.trigger('delete:topologyNode', triggerData);
 			break;
@@ -715,7 +736,7 @@ define(['require',
 		var triggerData = {
 			callback: function(){
 				thisGraph.edges.splice(thisGraph.edges.indexOf(selectedEdge), 1);
-				thisGraph.vent.trigger('topologyLink', thisGraph.edges);
+				thisGraph.vent.trigger('topologyLink', {edges: thisGraph.edges});
 				state.selectedEdge = null;
 				thisGraph.updateGraph();
 			}
@@ -728,6 +749,12 @@ define(['require',
 				triggerData.resetRule = selectedEdge.target;
 			} else if(selectedEdge.source.currentType === 'RULE' && selectedEdge.target.parentType === 'DataSink'){
 				triggerData.resetRuleAction = selectedEdge.source;
+				triggerData.data = [selectedEdge.target];
+			} else if(selectedEdge.source.currentType === 'CUSTOM' && selectedEdge.target.currentType === 'RULE'){
+				selectedEdge.target.isConfigured = false;
+				triggerData.resetRule = selectedEdge.target;
+			} else if(selectedEdge.source.currentType === 'CUSTOM' && selectedEdge.target.parentType === 'DataSink'){
+				triggerData.resetCustomAction = selectedEdge.source;
 				triggerData.data = [selectedEdge.target];
 			}
 			thisGraph.vent.trigger('delete:topologyEdge', triggerData);
@@ -790,15 +817,18 @@ define(['require',
 			.attr("data-toggle", "popover")
 			.attr("data-name", function(d){ return d.source.uiname +'-'+d.target.uiname; })
 			.on("mouseover", function(d){
-				$('[data-uiname="'+d.source.uiname+'-'+d.target.uiname+'"]').show();
+				// $('[data-uiname="'+d.source.uiname+'-'+d.target.uiname+'"]').show();
 			})
 			.on("mouseout", function(d){
-				$('[data-uiname="'+d.source.uiname+'-'+d.target.uiname+'"]').hide();
+				// $('[data-uiname="'+d.source.uiname+'-'+d.target.uiname+'"]').hide();
 			})
 			.on("mousedown", function(d) {
+				var elem = $(this).parent().find('.visible-link[d="'+$(this).attr("d")+'"]')[0];
+				thisGraph.pathMouseDown.call(thisGraph, d3.select(elem), d);
 				// thisGraph.showShuffle(d);
 			})
 			.on("mouseup", function(d) {
+				state.mouseDownLink = null;
 				// thisGraph.showShuffle(d);
 				// state.mouseDownLink = null;
 			});
@@ -836,7 +866,7 @@ define(['require',
 		paths.exit().remove();
 
 		//set shuffle icon on links
-		this.setLinkIcon();
+		// this.setLinkIcon();
 
 		//clone the paths or links to make hover on them with some hidden margin
 		thisGraph.clonePaths();
