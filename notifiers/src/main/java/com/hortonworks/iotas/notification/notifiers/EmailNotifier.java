@@ -145,9 +145,13 @@ public class EmailNotifier implements Notifier, TransportListener {
         try {
             Message emailMessage = getEmailMessage(fieldsToSend);
             msgNotificationMap.put(emailMessage, notificationId);
+            if (!emailTransport.isConnected()) {
+                emailTransport.connect();
+            }
             emailTransport.sendMessage(emailMessage, emailMessage.getAllRecipients());
         } catch (MessagingException ex) {
             LOG.error("Got exception", ex);
+            throw new NotifierRuntimeException(ex);
         }
     }
 
