@@ -47,6 +47,14 @@
         <logback.version>1.1.3</logback.version>
     </properties>
 
+    <distributionManagement>
+      <repository>
+        <id>${repoid}</id>
+        <name>${reponame}</name>
+        <url>${repourl}</url>
+      </repository>
+    </distributionManagement>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -259,17 +267,6 @@
             <id>clojars</id>
             <url>https://repository.apache.org/content/repositories/snapshots/</url>
         </repository>
-        <repository>
-       		<id>hortonworks.repo</id>
-          <url>http://nexus-private.hortonworks.com/nexus/content/groups/public/</url>
-       		<name>Hortonworks Repo</name>
-       		<releases>
-          		<enabled>true</enabled>
-       		</releases>
-       		<snapshots>
-         		<enabled>false</enabled>
-       		</snapshots>
-     	</repository>
     </repositories>
 
     <build>
