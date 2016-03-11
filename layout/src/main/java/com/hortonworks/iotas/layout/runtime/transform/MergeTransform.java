@@ -24,40 +24,35 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
- * Extracts some fields from the input IotasEvent.
+ * Produces a new event whose fieldsAndValues is obtained by
+ * merging the event's fieldsAndValues with the defaults. The
+ * event's fieldsAndValues takes precedence over the defaults.
  */
-public class ProjectionTransform implements Transform {
-    private final Set<String> fields;
+public class MergeTransform implements Transform {
+    private final Map<String, ?> defaults;
 
-    /**
-     * Selects the fields from the event matching the input fields.
-     *
-     * @param fields the fields to select
-     */
-    public ProjectionTransform(Set<String> fields) {
-        this.fields = fields;
+    public MergeTransform(Map<String, ?> defaults) {
+        this.defaults = defaults;
     }
 
     @Override
     public List<IotasEvent> execute(IotasEvent input) {
-        return doTransform(input);
-    }
-
-    private List<IotasEvent> doTransform(IotasEvent input) {
-        Map<String, Object> result = new HashMap<>();
-        for (String field : fields) {
-            result.put(field, input.getFieldsAndValues().get(field));
+        Map<String, Object> merged = new HashMap<>();
+        merged.putAll(input.getFieldsAndValues());
+        for (Map.Entry<String, ?> entry : defaults.entrySet()) {
+            if (!merged.containsKey(entry.getKey())) {
+                merged.put(entry.getKey(), entry.getValue());
+            }
         }
-        return Collections.<IotasEvent>singletonList(new IotasEventImpl(result, input.getDataSourceId()));
+        return Collections.<IotasEvent>singletonList(new IotasEventImpl(merged, input.getDataSourceId()));
     }
 
     @Override
     public String toString() {
-        return "ProjectionTransform{" +
-                "fields=" + fields +
+        return "MergeTransform{" +
+                "defaults=" + defaults +
                 '}';
     }
 }

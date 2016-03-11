@@ -19,45 +19,36 @@ package com.hortonworks.iotas.layout.runtime.transform;
 
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
+import org.junit.Before;
+import org.junit.Test;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+
+import static org.junit.Assert.*;
 
 /**
- * Extracts some fields from the input IotasEvent.
+ * Unit tests for {@link MergeTransform}
  */
-public class ProjectionTransform implements Transform {
-    private final Set<String> fields;
+public class MergeTransformTest {
 
-    /**
-     * Selects the fields from the event matching the input fields.
-     *
-     * @param fields the fields to select
-     */
-    public ProjectionTransform(Set<String> fields) {
-        this.fields = fields;
-    }
+    @Test
+    public void testExecute() throws Exception {
+        Map<String, Object> fieldsAndValues = new HashMap<>();
+        fieldsAndValues.put("1", "one");
+        fieldsAndValues.put("2", "two");
 
-    @Override
-    public List<IotasEvent> execute(IotasEvent input) {
-        return doTransform(input);
-    }
+        Map<String, String> defaults = new HashMap<>();
+        defaults.put("2", "TWO");
+        defaults.put("3", "THREE");
 
-    private List<IotasEvent> doTransform(IotasEvent input) {
-        Map<String, Object> result = new HashMap<>();
-        for (String field : fields) {
-            result.put(field, input.getFieldsAndValues().get(field));
-        }
-        return Collections.<IotasEvent>singletonList(new IotasEventImpl(result, input.getDataSourceId()));
-    }
-
-    @Override
-    public String toString() {
-        return "ProjectionTransform{" +
-                "fields=" + fields +
-                '}';
+        IotasEvent event = new IotasEventImpl(fieldsAndValues, "dsrcid");
+        Transform transform = new MergeTransform(defaults);
+        List<IotasEvent> result = transform.execute(event);
+        System.out.println(result);
+        assertEquals(1, result.size());
+        assertEquals("two", result.get(0).getFieldsAndValues().get("2"));
+        assertEquals("THREE", result.get(0).getFieldsAndValues().get("3"));
     }
 }
