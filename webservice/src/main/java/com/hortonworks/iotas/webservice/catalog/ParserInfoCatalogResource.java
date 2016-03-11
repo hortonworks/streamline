@@ -200,12 +200,18 @@ public class ParserInfoCatalogResource {
             ParserInfo parserInfo = objectMapper.readValue(parserInfoStr, ParserInfo.class);
             parserInfo.setJarStoragePath(name);
 
-            // if schema is not set in json, try to load it from the jar just uploaded.
-            if (parserInfo.getParserSchema() == null && schemaFromParserJar) {
-                parserInfo.setParserSchema(loadSchemaFromParserJar(name, parserInfo.getClassName()));
+            // force to load parser class so that we don't store ParserInfo when classloader can't load parser class
+            Schema schema = loadSchemaFromParserJar(name, parserInfo.getClassName());
+            if (schema == null) {
+                throw new RuntimeException("Cannot load parser class from uploaded Jar: " + parserInfo.getClassName());
             }
 
-            ParserInfo result = catalogService.addParserInfo(parserInfo);
+            // if schema is not set in json, try to load it from the jar just uploaded.
+            if (parserInfo.getParserSchema() == null && schemaFromParserJar) {
+                parserInfo.setParserSchema(schema);
+            }
+
+            catalogService.addParserInfo(parserInfo);
             return WSUtils.respond(CREATED, SUCCESS, parserInfo);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
