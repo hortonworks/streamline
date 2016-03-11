@@ -207,6 +207,11 @@ define(['utils/LangSupport',
               delete attrs[key];
               delete this.model.attributes[key];
             }
+          } else if(obj.type === 'array.string'){
+            if((obj.defaultValue === null && attrs[key].length === 0) || (obj.defaultValue == attrs[key].toString())){
+              delete attrs[key];
+              delete this.model.attributes[key];
+            }
           }
         }
       }

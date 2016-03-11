@@ -35,7 +35,7 @@ define(['utils/LangSupport',
             {'val': 'number', 'label': 'Number'},
             {'val': 'boolean', 'label': 'Boolean'},
             // {'val': 'object', 'label': 'Object'},
-            {'val': 'array.string', 'label': 'Array.String'},
+            // {'val': 'array.string', 'label': 'Array.String'},
             // {'val': 'array.number', 'label': 'Array.Number'},
             // {'val': 'array.boolean', 'label': 'Array.Boolean'},
             // {'val': 'array.object', 'label': 'Array.Object'}

@@ -9,8 +9,9 @@ define([
     'utils/LangSupport',
     'bootbox',
     'utils/Globals',
-    'modules/Vent'
-], function(require, tmpl, Utils, Modal, ProcessorConfigForm, VCustomProcessor, VTableLayout, localization, bootbox, Globals, Vent) {
+    'modules/Vent',
+    'x-editable'
+], function(require, tmpl, Utils, Modal, ProcessorConfigForm, VCustomProcessor, VTableLayout, localization, bootbox, Globals, Vent, xEditable) {
     'use strict';
 
     var customProcessorConfigView = Marionette.LayoutView.extend({
@@ -51,6 +52,7 @@ define([
                 this.configFieldCollection.add(model);
             }, this);
             this.bindEvents();
+            this.streamNames = [];
             this.isEditConfig = false;
             this.inputSchema = this.model.get("inputSchema");
             this.currentTabId = 1;
@@ -115,7 +117,7 @@ define([
             } else this.$("#inputSource").val(JSON.stringify(self.sampleSchema, null, "  "));
 
             this.renderOutputShema();
-            this.bindClickEvents(1);
+            this.$('.schema-tab[data-id="'+(this.tabIdCount - 1)+'"]').children('i').show();
         },
 
         renderOutputShema: function() {
@@ -123,17 +125,15 @@ define([
             if (self.model.has("outputStreamToSchema")) {
                 var streams = _.keys(self.model.get("outputStreamToSchema"));
                 _.each(streams, function(name) {
+                    self.streamNames.push(name);
                     var id = self.tabIdCount++;
                     var schema = self.model.get("outputStreamToSchema")[name];
-                    if (id == 1) {
-                        self.$('.outputSource[data-id="1"]').val(JSON.stringify(schema, null, "  "));
-                    } else {
-                        self.renderTab(name, id);
-                        self.$('.outputSource[data-id="' + id + '"]').val(JSON.stringify(schema, null, "  "));
-                    }
+                    self.renderTab(name, id);
+                    self.$('.outputSource[data-id="' + id + '"]').val(JSON.stringify(schema, null, "  "));
                 });
             } else {
                 this.tabIdCount++;
+                self.renderTab('Stream-1', 1);
                 this.$('.outputSource[data-id="1"]').val(JSON.stringify(self.sampleSchema, null, "  "));
             }
         },
@@ -145,43 +145,88 @@ define([
             this.$('.schema-tab[data-id="' + id + '"] > .cancelSchema')
                 .on("click", function() {
                     var anchor = $(this).siblings('a');
-                    var t_id = anchor.attr('href').split('-')[1];
+                    var streamName = anchor.children().html();
+                    self.streamNames.splice(self.streamNames.indexOf(streamName), 1);
+                    var t_id = anchor.children().data('id');
                     var $firstTab = $(".nav-tabs li").children('a').first();
-                    $("#" + anchor.attr('href')).remove();
+                    if($firstTab.parent().data('id') === t_id){
+                        $firstTab = $($(".nav-tabs li").children('a').get(1));
+                    }
+                    $("#tab-" + anchor.children().data('id')).remove();
                     $(this).off('click');
                     $(this).siblings().off('click');
                     self.$('validateOutput[data-id="' + t_id + '"]').off('click');
+                    self.$('.schema-tab > a > span[data-id="'+t_id+'"]').off('click');
                     $(this).parent().remove();
                     if (self.tabNumbers.indexOf(t_id) !== -1) {
                         self.tabNumbers.splice(self.tabNumbers.indexOf(t_id), 1);
+                    }
+                    if($(".nav-tabs li").children('a').not('#add-tab').length === 1){
+                        $(".nav-tabs li").children('a').not('#add-tab').siblings().hide();
                     }
                     $firstTab.click();
                     self.currentTabId = $firstTab.parent().data().id;
                 });
 
             this.$(".schema-tab[data-id='" + id + "']").on("click", "a", function(e) {
-                e.preventDefault();
-                var t_id = $(this).attr("href");
+                // e.stopPropagation();
+                var t_id = $(this).children('span').data('id');
                 self.$('.tab-pane.active').removeClass('active');
-                self.$('#' + t_id).addClass("active");
-                $(this).tab('show');
+                self.$('#tab-' + t_id).addClass("active");
+                self.$('.schema-tab.active').removeClass('active');
+                $(this).parent().addClass('active');
                 self.currentTabId = $(this).parent().data().id;
+                $('.cancelSchema').hide();
+                if($(".nav-tabs li").children('a').not('#add-tab').length !== 1){
+                    $(this).siblings().show();
+                }
             });
 
             this.$('.validateOutput[data-id="' + id + '"]').on('click', function(e) {
                 var id = $(e.currentTarget).data('id');
                 self.evValidateOutputSchema(id);
             });
+
+            var streamTitleElem = this.$('span[data-id="'+id+'"]');
+            streamTitleElem.editable({
+              mode:'popup',
+              toggle: 'manual',
+              validate: function(value) {
+                  if(_.isEqual($.trim(value), '')) return 'Name is required';
+                  if(self.streamNames.indexOf(value) !== -1) {
+                    return 'Stream name should be unique throughout the custom processor';
+                } else {
+                    self.streamNames[self.streamNames.indexOf(streamTitleElem.html())] = value;
+                }
+              }
+            });
+
+            this.$('.schema-tab > a > span[data-id="'+id+'"]').on('click',function(e){
+                if($(e.currentTarget).parents('li').hasClass('active')){
+                    e.stopPropagation();
+                    streamTitleElem.editable('toggle');
+                }
+            });
+
+            streamTitleElem.on('save', function(e, params) {
+                $(e.currentTarget).html(params.newValue);
+            });
         },
+
         evAddTab: function(e) {
             e.preventDefault();
+            if($(".nav-tabs li").children('a').not('#add-tab').length === 1){
+                $(".nav-tabs li").children('a').not('#add-tab').siblings().show();
+            }
             var id = this.tabIdCount++,
                 name = 'Stream ' + id;
             this.renderTab(name, id);
+            $('.cancelSchema').hide();
+            this.$('.schema-tab[data-id="'+id+'"]').children('i').show();
         },
         renderTab: function(name, id) {
 
-            this.$("#add-tab").closest('li').before('<li class="schema-tab" data-id="' + id + '"><a href="tab-' + id + '">' + name + '</a><i class="fa fa-times-circle cancelSchema"></i></li>');
+            this.$("#add-tab").closest('li').before('<li class="schema-tab" data-id="' + id + '"><a href="javascript:void(0);"><span data-id="'+id+'">' + name + '</span></a><i class="fa fa-times-circle cancelSchema" style="display:none;"></i></li>');
             this.$('.tab-pane[id="tab-' + this.currentTabId + '"]').removeClass("active");
             this.$("#add-tab").closest('ul').find('.active').removeClass('active');
             this.$("#add-tab").closest('ul').find('[data-id="' + id + '"]').addClass('active');
@@ -409,7 +454,7 @@ define([
         getOutputStreams: function() {
             var obj = {};
             for (var id in this.tabNumbers) {
-                var streamName = $('.schema-tab[data-id="' + this.tabNumbers[id] + '"] > a').html();
+                var streamName = $('.schema-tab[data-id="' + this.tabNumbers[id] + '"] > a > span').html();
                 var streamData = jsonlint.parse(this.$(".outputSource[data-id='" + this.tabNumbers[id] + "']").val());
                 obj[streamName] = streamData;
             }

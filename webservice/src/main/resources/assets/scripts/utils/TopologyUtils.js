@@ -223,7 +223,7 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
                         if(!flag){
                             var config = JSON.parse(customObj.config);
                             var customConfig = _.findWhere(config, {name: 'name'});
-                            if(customConfig.defaultValue === customName){
+                            if(customConfig.defaultValue == customName){
                                 TopologyUtils.setHiddenConfigFields(model, customObj);
                                 flag = true;
                             }
