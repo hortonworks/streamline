@@ -18,6 +18,7 @@
 package com.hortonworks.iotas.bolt.normalization;
 
 import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.layout.design.component.Stream;
 import com.hortonworks.iotas.layout.runtime.normalization.NormalizationProcessorRuntime;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
@@ -61,9 +62,8 @@ public class NormalizationBolt extends AbstractProcessorBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        Set<String> thisStreams = context.getThisStreams();
-        for (String streamId : thisStreams) {
-            declarer.declareStream(streamId, new Fields(IotasEvent.IOTAS_EVENT));
+        for (Stream stream : normalizationProcessorRuntime.getOutputStream()) {
+            declarer.declareStream(stream.getId(), new Fields(IotasEvent.IOTAS_EVENT));
         }
     }
 }

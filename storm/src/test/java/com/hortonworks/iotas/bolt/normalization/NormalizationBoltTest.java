@@ -143,8 +143,8 @@ public class NormalizationBoltTest {
     private NormalizationBolt createNormalizationBolt(NormalizationProcessorRuntime normalizationProcessorRuntime) throws NormalizationException {
         NormalizationBolt normalizationBolt = new NormalizationBolt(normalizationProcessorRuntime);
 
-        normalizationBolt.prepare(null, topologyContext, outputCollector);
         normalizationBolt.declareOutputFields(outputFieldsDeclarer);
+        normalizationBolt.prepare(null, topologyContext, outputCollector);
         return normalizationBolt;
     }
 

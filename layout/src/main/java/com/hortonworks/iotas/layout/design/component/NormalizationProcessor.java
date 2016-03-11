@@ -46,7 +46,7 @@ public class NormalizationProcessor extends IotasProcessor {
     }
 
     public void setDeclaredOutput(List<Schema.Field> declaredOutput) {
-        getDeclaredOutputs().add(new Stream(declaredOutput));
+        addOutputStream(new Stream(declaredOutput));
         Schema outputSchema = Schema.of(declaredOutput);
         for (NormalizationConfig normalizationConfig : inputStreamsWithConfig.values()) {
             normalizationConfig.setOutputSchema(outputSchema);

@@ -20,12 +20,14 @@ package com.hortonworks.iotas.layout.runtime.normalization;
 
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.layout.design.component.NormalizationProcessor;
+import com.hortonworks.iotas.layout.design.component.Stream;
 import com.hortonworks.iotas.layout.design.normalization.NormalizationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -41,6 +43,10 @@ public class NormalizationProcessorRuntime {
 
     public NormalizationProcessorRuntime(NormalizationProcessor normalizationProcessor) {
         this.normalizationProcessor = normalizationProcessor;
+    }
+
+    public Set<Stream> getOutputStream() {
+        return normalizationProcessor.getDeclaredOutputStreams();
     }
 
     public void prepare() {

@@ -18,23 +18,28 @@
 package com.hortonworks.iotas.layout.design.component;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 public class IotasSource extends IotasComponent implements Source {
-    private final Set<Stream> declaredOutputs;
+    private final Set<Stream> declaredStreams = new HashSet<>();
 
     // for serialization
     protected IotasSource() {
         this(Collections.EMPTY_SET);
     }
 
-    public IotasSource(Set<Stream> declaredOutputs) {
-        this.declaredOutputs = declaredOutputs;
+    public IotasSource(Set<Stream> declaredStreams) {
+        this.declaredStreams.addAll(declaredStreams);
     }
 
     @Override
-    public Set<Stream> getDeclaredOutputs() {
-        return declaredOutputs;
+    public Set<Stream> getDeclaredOutputStreams() {
+        return Collections.unmodifiableSet(declaredStreams);
+    }
+
+    public void addOutputStream(Stream stream) {
+        declaredStreams.add(stream);
     }
 
     @Override
@@ -44,13 +49,13 @@ public class IotasSource extends IotasComponent implements Source {
 
         IotasSource that = (IotasSource) o;
 
-        return declaredOutputs != null ? declaredOutputs.equals(that.declaredOutputs) : that.declaredOutputs == null;
+        return declaredStreams != null ? declaredStreams.equals(that.declaredStreams) : that.declaredStreams == null;
 
     }
 
     @Override
     public Stream getStream(String streamId) {
-        for (Stream stream : this.getDeclaredOutputs()) {
+        for (Stream stream : this.getDeclaredOutputStreams()) {
             if (stream.getId().equals(streamId)) {
                 return stream;
             }
@@ -60,13 +65,13 @@ public class IotasSource extends IotasComponent implements Source {
 
     @Override
     public int hashCode() {
-        return declaredOutputs != null ? declaredOutputs.hashCode() : 0;
+        return declaredStreams != null ? declaredStreams.hashCode() : 0;
     }
 
     @Override
     public String toString() {
         return "IotasSource{" +
-                "declaredOutputs=" + declaredOutputs +
+                "declaredStreams=" + declaredStreams +
                 "} " + super.toString();
     }
 }
