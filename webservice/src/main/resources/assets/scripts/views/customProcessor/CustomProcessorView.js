@@ -83,11 +83,13 @@ define([
         }];
     },
     evDeleteProcessor: function(e) {
-      var name = $(e.currentTarget).data('name'),
-          model = this.getModel(name),
-          self = this;
+      var self = this;
+      bootbox.confirm("Do you really want to delete this custom processor ?", function(result){
+        if(result){
+          var name = $(e.currentTarget).data('name')+'',
+              model = self.getModel(name);
 
-      model.destroyModel({
+          model.destroyModel({
             id: name,
             success: function(model,response){
               Utils.notifySuccess('Custom processor deleted successfully');
@@ -97,6 +99,8 @@ define([
               Utils.showError(model, response);
             }
           });
+        }
+      });
     },
     getModel: function(name){
       var model = _.find(this.collection.models, function(model){
