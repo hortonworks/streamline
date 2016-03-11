@@ -251,7 +251,7 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
 
         var i = _.findIndex(nodeArr, { uiname: newData.get('uiname') });
         nodeArr[i] = newData.toJSON();
-        if(nodeArr[i].currentType === 'NOTIFICATION' || nodeArr[i].currentType === 'HDFS' || nodeArr[i].currentType === 'HBASE'){
+        if(nodeArr[i].currentType === 'NOTIFICATION' || nodeArr[i].currentType === 'HDFS' || nodeArr[i].currentType === 'HBASE' || nodeArr[i].currentType === 'CUSTOM'){
         	var obj = parent.linkArr.filter(function(obj){
         		return (obj.target.uiname === nodeArr[i].uiname);
         	});
@@ -308,7 +308,7 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
             if(deviceToParser.length){
                 deviceToParser[0].target.isConfigured = true;
                 var parserObj = _.findWhere(parent.processorArr, {uiname: deviceToParser[0].target.uiname});
-                if(parserObj){
+                if(parserObj && parserObj.firstTime){
                     var o = nodeArr[i]._selectedTable ? nodeArr[i]._selectedTable[0] : nodeArr[i];
 
                     parserObj.dataSourceId = o.datasourceId;
@@ -618,6 +618,26 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
     			index = _.findIndex(parent.processorArr, {uiname: oldName});
     			if(index !== -1){
     				parent.processorArr[index].uiname = newName;
+                    if(currentType === 'CUSTOM'){
+                        _.each(parent.processorArr, function(obj){
+                            if(obj.currentType === 'RULE'){
+                                var rules = obj.newConfig ? obj.newConfig.rulesProcessorConfig.rules : obj.rulesProcessorConfig.rules;
+                                _.each(rules, function(o){
+                                    var index = _.findIndex(o.actions, {name: oldName});
+                                    if(index !== -1){
+                                        o.actions[index] = {name: newName};
+                                    }
+                                });
+                            } else if(obj.currentType === 'CUSTOM'){
+                                if(obj.selectedStreams){
+                                    var customIndex = _.findIndex(obj.selectedStreams, {name: oldName});
+                                    if(customIndex !== -1){
+                                        obj.selectedStreams[customIndex].name = newName;
+                                    }
+                                }
+                            }
+                        });
+                    }
     			}
     			break;
     		case 'HDFS':
