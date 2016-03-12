@@ -17,7 +17,6 @@
         <mysql-connector-java.version>5.1.31</mysql-connector-java.version>
         <h2database.version>1.4.188</h2database.version>
         <guava.version>12.0.1</guava.version> <!-- Phoenix requires 12.0.1 and it does not support latest release yet -->
-        <phoenix.version>4.6.0-HBase-1.1</phoenix.version>
     </properties>
 
     <artifactId>core</artifactId>

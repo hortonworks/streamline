@@ -26,11 +26,6 @@
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-log4j12</artifactId>
                 </exclusion>
-                <!-- dropwizard and phoenix have conflicts in jersey and jetty related dependencies  -->
-                <!--<exclusion>-->
-                    <!--<groupId>org.apache.phoenix</groupId>-->
-                    <!--<artifactId>phoenix-core</artifactId>-->
-                <!--</exclusion>-->
                 <exclusion>
                     <groupId>com.sun.jersey</groupId>
                     <artifactId>jersey-core</artifactId>

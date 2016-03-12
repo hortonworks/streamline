@@ -18,6 +18,24 @@ jarStorageConfiguration:
 #    fsUrl: "file:///"
 #    directory: "/tmp/test-hdfs"
 
+# storage provider configuration
+# type can be inmemory and jdbc.
+#
+# Example configuration for inmemory is:
+#storageProviderConfiguration:
+# type: "inmemory"
+#
+# Example configuration for phoenix based JDBC driver is
+#storageProviderConfiguration:
+# type: "jdbc"
+# properties:
+#   jdbcDriverClass: "org.apache.phoenix.jdbc.PhoenixDriver"
+#   jdbcUrl: "jdbc:phoenix:localhost:2181"
+
+storageProviderConfiguration:
+ type: "inmemory"
+
+
 server:
   rootPath: '/*'
 #  softNofileLimit: 1000
