@@ -54,7 +54,7 @@ import java.util.Map;
 
 public class IotasApplication extends Application<IotasConfiguration> {
 
-    private static final Logger log = LoggerFactory.getLogger(IotasApplication.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IotasApplication.class);
 
     public static void main(String[] args) throws Exception {
         new IotasApplication().run(args);
@@ -83,16 +83,16 @@ public class IotasApplication extends Application<IotasConfiguration> {
         // environment.jersey().register(feedResource);
 
         // TODO we should load the implementation based on configuration
-        final StorageManager cacheBackedDao = getCacheBackedDao();
+        final StorageManager cacheBackedDao = getCacheBackedDao(iotasConfiguration);
 
         registerResources(iotasConfiguration, environment, cacheBackedDao);
     }
 
-    private StorageManager getCacheBackedDao() {
+    private StorageManager getCacheBackedDao(IotasConfiguration iotasConfiguration) {
         //TODO storage provider configuration should come from IotasConfiguration.
-        String providerType = System.getProperty("storage.provider", "inmemory");
-        log.info("################################### providerType = " + providerType);
-        final StorageManager dao = providerType.equals("phoenix") ? createPhoenixStorageManager() : new InMemoryStorageManager();
+        String providerType = iotasConfiguration.getStorageProvier();
+        LOG.info("################################### providerType = " + providerType);
+        final StorageManager dao = providerType.equalsIgnoreCase("phoenix") ? createPhoenixStorageManager(iotasConfiguration) : new InMemoryStorageManager();
         final CacheBuilder cacheBuilder = getGuavaCacheBuilder();
         final Cache<StorableKey, Storable> cache = getCache(dao, cacheBuilder);
         final StorageWriter storageWriter = getStorageWriter(dao);
@@ -100,14 +100,15 @@ public class IotasApplication extends Application<IotasConfiguration> {
         return doGetCacheBackedDao(cache, storageWriter);
     }
 
-    private StorageManager createPhoenixStorageManager(/*MAP<*/) {
+    private StorageManager createPhoenixStorageManager(IotasConfiguration iotasConfig) {
         //TODO takes config from iotas configuration for the below information and refactor accordingly.
         HikariConfig hikariConfig = new HikariConfig();
         try {
             Class.forName("org.apache.phoenix.jdbc.PhoenixDriver");
-            String jdbcUrl = "jdbc:phoenix:localhost:2181";
+            String jdbcUrl = "jdbc:phoenix:" + iotasConfig.getPhoenixZookeeperHosts();
             hikariConfig.setJdbcUrl(jdbcUrl);
             PhoenixClient phoenixClient = new PhoenixClient(jdbcUrl);
+            LOG.info("creating tables");
             String createPath = "phoenix/create_tables.sql";
             phoenixClient.runScript(createPath);
         } catch (Exception e) {
@@ -164,7 +165,7 @@ public class IotasApplication extends Application<IotasConfiguration> {
 
 
     private void registerResources(IotasConfiguration iotasConfiguration, Environment environment, StorageManager manager) {
-        StorageManager storageManager = getCacheBackedDao();
+        StorageManager storageManager = getCacheBackedDao(iotasConfiguration);
         TopologyActions topologyActions = getTopologyActionsImpl
                 (iotasConfiguration);
         final CatalogService catalogService = new CatalogService
