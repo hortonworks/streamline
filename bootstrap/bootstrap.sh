@@ -55,7 +55,7 @@ while getopts 'hv' flag; do
   esac
 done
 
-add_nest_parser
+#add_nest_parser
 #post /datasources datasource 
 #post /datasources dataset
 #post /feeds dataset-datafeed
