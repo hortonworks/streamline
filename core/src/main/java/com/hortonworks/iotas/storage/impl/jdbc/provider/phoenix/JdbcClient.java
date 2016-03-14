@@ -11,17 +11,17 @@ import java.sql.DriverManager;
 /**
  * Basic PhoenixClient
  */
-public class PhoenixClient {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PhoenixClient.class.getName());
+public class JdbcClient {
+    private static final Logger LOGGER = LoggerFactory.getLogger(JdbcClient.class.getName());
     private static final String DEFAULT_URL = "jdbc:phoenix:localhost:2181";
 
     private final String url;
 
-    public PhoenixClient() {
+    public JdbcClient() {
         this(DEFAULT_URL);
     }
 
-    public PhoenixClient(String url) {
+    public JdbcClient(String url) {
         this.url = url;
     }
 
@@ -46,8 +46,8 @@ public class PhoenixClient {
         String url = "jdbc:phoenix:localhost:2181";
         String createPath = "phoenix/create_tables.sql";
         String dropPath = "phoenix/drop_tables.sql";
-        PhoenixClient phoenixClient = new PhoenixClient(url);
-        phoenixClient.runScript(dropPath);
-        phoenixClient.runScript(createPath);
+        JdbcClient jdbcClient = new JdbcClient(url);
+        jdbcClient.runScript(dropPath);
+        jdbcClient.runScript(createPath);
     }
 }

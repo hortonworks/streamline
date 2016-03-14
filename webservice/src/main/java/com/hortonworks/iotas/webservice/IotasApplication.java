@@ -32,8 +32,10 @@ import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManager;
 import com.hortonworks.iotas.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.iotas.storage.impl.jdbc.connection.HikariCPConnectionBuilder;
-import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.PhoenixClient;
+import com.hortonworks.iotas.storage.impl.jdbc.provider.mysql.factory.MySqlExecutor;
+import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.JdbcClient;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
+import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
 import com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager;
 import com.hortonworks.iotas.topology.TopologyActions;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
@@ -55,7 +57,7 @@ import java.util.Map;
 
 public class IotasApplication extends Application<IotasConfiguration> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(IotasApplication.class);
+    private static final Logger log = LoggerFactory.getLogger(IotasApplication.class);
 
     public static void main(String[] args) throws Exception {
         new IotasApplication().run(args);
@@ -83,17 +85,15 @@ public class IotasApplication extends Application<IotasConfiguration> {
         // final FeedResource feedResource = new FeedResource(kafkaProducerManager.getProducer(), zkClient);
         // environment.jersey().register(feedResource);
 
-        // TODO we should load the implementation based on configuration
         final StorageManager cacheBackedDao = getCacheBackedDao(iotasConfiguration);
 
         registerResources(iotasConfiguration, environment, cacheBackedDao);
     }
 
     private StorageManager getCacheBackedDao(IotasConfiguration iotasConfiguration) {
-        //TODO storage provider configuration should come from IotasConfiguration.
-        String providerType = iotasConfiguration.getStorageProvier();
-        LOG.info("################################### providerType = " + providerType);
-        final StorageManager dao = providerType.equalsIgnoreCase("phoenix") ? createPhoenixStorageManager(iotasConfiguration) : new InMemoryStorageManager();
+        StorageProviderConfiguration storageProviderConfiguration = iotasConfiguration.getStorageProviderConfiguration();
+        final String providerType = storageProviderConfiguration.getType();
+        final StorageManager dao = providerType.equalsIgnoreCase("jdbc") ? createJDBCStorageManager(storageProviderConfiguration.getProperties()) : new InMemoryStorageManager();
         final CacheBuilder cacheBuilder = getGuavaCacheBuilder();
         final Cache<StorableKey, Storable> cache = getCache(dao, cacheBuilder);
         final StorageWriter storageWriter = getStorageWriter(dao);
@@ -101,22 +101,54 @@ public class IotasApplication extends Application<IotasConfiguration> {
         return doGetCacheBackedDao(cache, storageWriter);
     }
 
-    private StorageManager createPhoenixStorageManager(IotasConfiguration iotasConfig) {
-        //TODO takes config from iotas configuration for the below information and refactor accordingly.
-        HikariConfig hikariConfig = new HikariConfig();
+    // this can be moved to JDBCStorageManager
+    private StorageManager createJDBCStorageManager(Map<String, String> jdbcProps) {
+        validateJdbcProperties(jdbcProps);
+        QueryExecutor queryExecutor = null;
+
         try {
-            Class.forName("org.apache.phoenix.jdbc.PhoenixDriver");
-            String jdbcUrl = "jdbc:phoenix:" + iotasConfig.getPhoenixZookeeperHosts();
+            String driverClassName = jdbcProps.get("jdbcDriverClass");
+            log.info("jdbc driver class: [{}]", driverClassName);
+            Class.forName(driverClassName);
+
+            String jdbcUrl = jdbcProps.get("jdbcUrl");
+            log.info("jdbc url is: [{}] ", jdbcUrl);
+
+            String provider = jdbcUrl.split(":")[1];
+            log.info("jdbc provider type: [{}]", provider);
+
+            HikariConfig hikariConfig = new HikariConfig();
             hikariConfig.setJdbcUrl(jdbcUrl);
-            PhoenixClient phoenixClient = new PhoenixClient(jdbcUrl);
-            LOG.info("creating tables");
-            String createPath = "phoenix/create_tables.sql";
-            phoenixClient.runScript(createPath);
+
+            JdbcClient jdbcClient = new JdbcClient(jdbcUrl);
+            log.info("creating tables");
+            String createPath = provider+"/create_tables.sql";
+            jdbcClient.runScript(createPath);
+
+            if("phoenix".equals(provider)) {
+                queryExecutor = new PhoenixExecutor(new ExecutionConfig(-1), new HikariCPConnectionBuilder(hikariConfig));
+            } else if("mysql".equals(provider)) {
+                queryExecutor = new MySqlExecutor(new ExecutionConfig(-1), new HikariCPConnectionBuilder(hikariConfig));
+            }
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        return new JdbcStorageManager(new PhoenixExecutor(new ExecutionConfig(-1), new HikariCPConnectionBuilder(hikariConfig)));
+        return new JdbcStorageManager(queryExecutor);
+    }
+
+    private void validateJdbcProperties(Map<String, String> jdbcProps) {
+        if(jdbcProps == null || jdbcProps.isEmpty()) {
+            throw new IllegalArgumentException("jdbc properties can neither be null nor empty");
+        }
+
+        String[] properties = {"jdbcDriverClass", "jdbcUrl"};
+        for (String property : properties) {
+            if(!jdbcProps.containsKey(property)) {
+                throw new IllegalArgumentException("jdbc properties should contain "+property);
+            }
+        }
     }
 
     private StorageWriter getStorageWriter(StorageManager dao) {

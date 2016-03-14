@@ -4,7 +4,7 @@ import com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManager;
 import com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManagerIntegrationTest;
 import com.hortonworks.iotas.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.iotas.storage.impl.jdbc.connection.HikariCPConnectionBuilder;
-import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.PhoenixClient;
+import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.JdbcClient;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
 import com.hortonworks.iotas.test.HBaseIntegrationTest;
 import com.zaxxer.hikari.HikariConfig;
@@ -23,14 +23,14 @@ import org.junit.experimental.categories.Category;
 public class PhoenixStorageManagerNoCacheIntegrationTest extends JdbcStorageManagerIntegrationTest {
     @Before
     public void setUp() throws Exception {
-        PhoenixClient phoenixClient = new PhoenixClient();
-        phoenixClient.runScript("phoenix/create_tables.sql");
+        JdbcClient jdbcClient = new JdbcClient();
+        jdbcClient.runScript("phoenix/create_tables.sql");
     }
 
     @After
     public void tearDown() throws Exception {
-        PhoenixClient phoenixClient = new PhoenixClient();
-        phoenixClient.runScript("phoenix/drop_tables.sql");
+        JdbcClient jdbcClient = new JdbcClient();
+        jdbcClient.runScript("phoenix/drop_tables.sql");
         jdbcStorageManager.cleanup();
     }
 

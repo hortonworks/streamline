@@ -48,11 +48,18 @@ public class IotasConfiguration extends Configuration {
     @NotEmpty
     private String stormHomeDir;
 
-    @NotEmpty
-    private String storageProvider;
+    @NotNull
+    private StorageProviderConfiguration storageProviderConfiguration;
 
-    private String phoenixZookeeperHosts;
+    @JsonProperty
+    public StorageProviderConfiguration getStorageProviderConfiguration() {
+        return storageProviderConfiguration;
+    }
 
+    @JsonProperty
+    public void setStorageProviderConfiguration(StorageProviderConfiguration storageProviderConfiguration) {
+        this.storageProviderConfiguration = storageProviderConfiguration;
+    }
 
     @JsonProperty
     public String getBrokerList(){
@@ -82,24 +89,6 @@ public class IotasConfiguration extends Configuration {
 
     public String getIotasStormJar () {
         return iotasStormJar;
-    }
-
-    @JsonProperty("storageProvider")
-    public String getStorageProvier() {
-        return storageProvider;
-    }
-
-    public void setStorageProvider (String storageProvider) {
-        this.storageProvider = storageProvider;
-    }
-
-    public void setPhoenixZookeeperHosts(String phoenixZookeeperHosts) {
-        this.phoenixZookeeperHosts = phoenixZookeeperHosts;
-    }
-
-    @JsonProperty("phoenixZookeeperHosts")
-    public String getPhoenixZookeeperHosts() {
-        return phoenixZookeeperHosts;
     }
 
     public void setIotasStormJar (String iotasStormJar) {

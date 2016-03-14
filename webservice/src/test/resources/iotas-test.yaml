@@ -33,7 +33,10 @@ jarStorageConfiguration:
 #   jdbcUrl: "jdbc:phoenix:localhost:2181"
 
 storageProviderConfiguration:
- type: "inmemory"
+ type: "jdbc"
+ properties:
+   jdbcDriverClass: "org.apache.phoenix.jdbc.PhoenixDriver"
+   jdbcUrl: "jdbc:phoenix:localhost:2181"
 
 
 server:
