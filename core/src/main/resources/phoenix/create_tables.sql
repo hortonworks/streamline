@@ -5,3 +5,9 @@ CREATE TABLE IF NOT EXISTS datafeeds ("id" BIGINT NOT NULL, "dataSourceId" BIGIN
 CREATE TABLE IF NOT EXISTS topologies ("id" BIGINT NOT NULL, "name" VARCHAR (256), "config" VARCHAR, "timestamp"  BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
 CREATE TABLE IF NOT EXISTS topology_components ("id" BIGINT NOT NULL, "name" VARCHAR(256), "type" VARCHAR, "subType" VARCHAR, "streamingEngine" VARCHAR, "config" VARCHAR, "transformationClass" VARCHAR, "timestamp"  BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
 CREATE TABLE IF NOT EXISTS topology_editor_metadata ("topologyId" BIGINT NOT NULL, "data" VARCHAR, "timestamp"  BIGINT, CONSTRAINT pk PRIMARY KEY ("topologyId"))
+CREATE TABLE IF NOT EXISTS sequence_table ("id" VARCHAR, "datasources" BIGINT, "datafeeds" BIGINT, "parser_info" BIGINT, "topologies" BIGINT, "topology_components" BIGINT,  CONSTRAINT pk PRIMARY KEY ("id"))
+CREATE SEQUENCE IF NOT EXISTS datasources_sequence
+CREATE SEQUENCE IF NOT EXISTS datafeeds_sequence
+CREATE SEQUENCE IF NOT EXISTS parser_info_sequence
+CREATE SEQUENCE IF NOT EXISTS topologies_sequence
+CREATE SEQUENCE IF NOT EXISTS topology_components_sequence

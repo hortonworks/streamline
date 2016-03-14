@@ -30,19 +30,12 @@ import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManager;
-import com.hortonworks.iotas.storage.impl.jdbc.config.ExecutionConfig;
-import com.hortonworks.iotas.storage.impl.jdbc.connection.HikariCPConnectionBuilder;
-import com.hortonworks.iotas.storage.impl.jdbc.provider.mysql.factory.MySqlExecutor;
-import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.JdbcClient;
-import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
-import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
 import com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager;
 import com.hortonworks.iotas.topology.TopologyActions;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import com.hortonworks.iotas.util.JarStorage;
 import com.hortonworks.iotas.util.ReflectionHelper;
 import com.hortonworks.iotas.webservice.catalog.*;
-import com.zaxxer.hikari.HikariConfig;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
@@ -93,62 +86,13 @@ public class IotasApplication extends Application<IotasConfiguration> {
     private StorageManager getCacheBackedDao(IotasConfiguration iotasConfiguration) {
         StorageProviderConfiguration storageProviderConfiguration = iotasConfiguration.getStorageProviderConfiguration();
         final String providerType = storageProviderConfiguration.getType();
-        final StorageManager dao = providerType.equalsIgnoreCase("jdbc") ? createJDBCStorageManager(storageProviderConfiguration.getProperties()) : new InMemoryStorageManager();
+        final StorageManager dao = providerType.equalsIgnoreCase("jdbc") ?
+                JdbcStorageManager.createStorageManager(storageProviderConfiguration.getProperties()) : new InMemoryStorageManager();
         final CacheBuilder cacheBuilder = getGuavaCacheBuilder();
         final Cache<StorableKey, Storable> cache = getCache(dao, cacheBuilder);
         final StorageWriter storageWriter = getStorageWriter(dao);
 
         return doGetCacheBackedDao(cache, storageWriter);
-    }
-
-    // this can be moved to JDBCStorageManager
-    private StorageManager createJDBCStorageManager(Map<String, String> jdbcProps) {
-        validateJdbcProperties(jdbcProps);
-        QueryExecutor queryExecutor = null;
-
-        try {
-            String driverClassName = jdbcProps.get("jdbcDriverClass");
-            log.info("jdbc driver class: [{}]", driverClassName);
-            Class.forName(driverClassName);
-
-            String jdbcUrl = jdbcProps.get("jdbcUrl");
-            log.info("jdbc url is: [{}] ", jdbcUrl);
-
-            String provider = jdbcUrl.split(":")[1];
-            log.info("jdbc provider type: [{}]", provider);
-
-            HikariConfig hikariConfig = new HikariConfig();
-            hikariConfig.setJdbcUrl(jdbcUrl);
-
-            JdbcClient jdbcClient = new JdbcClient(jdbcUrl);
-            log.info("creating tables");
-            String createPath = provider+"/create_tables.sql";
-            jdbcClient.runScript(createPath);
-
-            if("phoenix".equals(provider)) {
-                queryExecutor = new PhoenixExecutor(new ExecutionConfig(-1), new HikariCPConnectionBuilder(hikariConfig));
-            } else if("mysql".equals(provider)) {
-                queryExecutor = new MySqlExecutor(new ExecutionConfig(-1), new HikariCPConnectionBuilder(hikariConfig));
-            }
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        return new JdbcStorageManager(queryExecutor);
-    }
-
-    private void validateJdbcProperties(Map<String, String> jdbcProps) {
-        if(jdbcProps == null || jdbcProps.isEmpty()) {
-            throw new IllegalArgumentException("jdbc properties can neither be null nor empty");
-        }
-
-        String[] properties = {"jdbcDriverClass", "jdbcUrl"};
-        for (String property : properties) {
-            if(!jdbcProps.containsKey(property)) {
-                throw new IllegalArgumentException("jdbc properties should contain "+property);
-            }
-        }
     }
 
     private StorageWriter getStorageWriter(StorageManager dao) {

@@ -25,12 +25,23 @@ jarStorageConfiguration:
 #storageProviderConfiguration:
 # type: "inmemory"
 #
-# Example configuration for phoenix based JDBC driver is
+# Example configuration for phoenix based JDBC driver
 #storageProviderConfiguration:
 # type: "jdbc"
 # properties:
+#   db.type: "phoenix"
 #   jdbcDriverClass: "org.apache.phoenix.jdbc.PhoenixDriver"
 #   jdbcUrl: "jdbc:phoenix:localhost:2181"
+#   queryTimeoutInSecs: 30
+#
+# MySQL based jdbc provider configuration is:
+#storageProviderConfiguration:
+# type: "jdbc"
+# properties:
+#   db.type: "mysql"
+#   dataSourceClassName: "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
+#   dataSource.url: "jdbc:mysql://localhost/test"
+#   queryTimeoutInSecs: 30
 storageProviderConfiguration:
   type: "inmemory"
 
