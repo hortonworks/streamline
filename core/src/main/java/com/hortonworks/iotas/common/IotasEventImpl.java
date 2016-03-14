@@ -8,6 +8,7 @@ import java.util.UUID;
  * A default implementation of IotasEvent.
  */
 public class IotasEventImpl implements IotasEvent {
+    // Default value chosen to be blank and not the default used in storm since wanted to keep it independent of storm.
     public final static String DEFAULT_SOURCE_STREAM = "";
     private final Map<String, Object> header;
     private final Map<String, Object> fieldsAndValues;

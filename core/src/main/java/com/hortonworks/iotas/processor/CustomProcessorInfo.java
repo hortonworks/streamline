@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class represting information about a custom processor helping in the registration process
+ * Class representing information about a custom processor helping in the registration process
  */
 public class CustomProcessorInfo {
     public static final String NAME = "name";
