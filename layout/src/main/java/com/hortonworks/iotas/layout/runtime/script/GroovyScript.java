@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -41,10 +42,17 @@ public class GroovyScript<O> extends Script<IotasEvent, O, javax.script.ScriptEn
     // transient to avoid NotSerializableException
     // volatile to safe lazy-init via Double Checking Lock
     private transient volatile ThreadLocal<groovy.lang.Script> parsedScript;
+    private final Map<String, Object> initialBindings;
 
     public GroovyScript(String expression,
                         ScriptEngine<javax.script.ScriptEngine> scriptEngine) {
+        this(expression, scriptEngine, Collections.<String, Object>emptyMap());
+    }
+
+    public GroovyScript(String expression,
+                        ScriptEngine<javax.script.ScriptEngine> scriptEngine, Map<String, Object> initialBindings) {
         super(expression, scriptEngine);
+        this.initialBindings = initialBindings;
     }
 
     @Override
@@ -57,7 +65,7 @@ public class GroovyScript<O> extends Script<IotasEvent, O, javax.script.ScriptEn
             final Map<String, Object> fieldsToValues = iotasEvent.getFieldsAndValues();
             if (fieldsToValues != null) {
                 try {
-                    Binding binding = new Binding(fieldsToValues);
+                    Binding binding = createBinding(fieldsToValues);
                     parsedScript.setBinding(binding);
                     LOG.debug("Set script binding to [{}]", fieldsToValues);
 
@@ -73,6 +81,20 @@ public class GroovyScript<O> extends Script<IotasEvent, O, javax.script.ScriptEn
         return evaluatedResult;
     }
 
+    private Binding createBinding(Map<String, Object> fieldsToValues) {
+        Binding binding = new Binding();
+        addToBinding(initialBindings, binding);
+        addToBinding(fieldsToValues, binding);
+
+        return binding;
+    }
+
+    private void addToBinding(Map<String, Object> fieldsToValues, Binding binding) {
+        for (Map.Entry<String, Object> entry : fieldsToValues.entrySet()) {
+            binding.setProperty(entry.getKey(), entry.getValue());
+        }
+    }
+
     private groovy.lang.Script getParsedScript() {
         if (parsedScript == null) {
             synchronized (this) {
@@ -84,7 +106,7 @@ public class GroovyScript<O> extends Script<IotasEvent, O, javax.script.ScriptEn
                 };
             }
         }
-
         return parsedScript.get();
     }
+
 }
