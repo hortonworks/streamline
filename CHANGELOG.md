@@ -1,4 +1,5 @@
 ## 0.1.2
+ * IOT-175: Fix generics in Parser
  * IOT-64:  Added normalization processor for bulk/field level normalization with groovy scripts.
 ## 0.1.1
  * IOT-135: Implement Custom Processors.
