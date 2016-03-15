@@ -18,7 +18,8 @@
         <module>notification-service</module>
         <module>notifiers</module>
         <module>layout</module>
-	<module>iotas-dist</module>
+        <module>metric</module>
+        <module>iotas-dist</module>
     </modules>
 
     <properties>
