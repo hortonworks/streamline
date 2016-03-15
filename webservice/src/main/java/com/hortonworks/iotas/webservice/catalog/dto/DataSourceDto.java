@@ -2,6 +2,10 @@ package com.hortonworks.iotas.webservice.catalog.dto;
 
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
+import com.hortonworks.iotas.catalog.Tag;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -24,9 +28,9 @@ public class DataSourceDto {
     private String description;
 
     /**
-     * Free form tags.
+     * tag ids of the tag associated with this datasource.
      */
-    private String tags;
+    private List<Long> tagIds;
 
     /**
      * Time when this entry was created/updated.
@@ -72,7 +76,7 @@ public class DataSourceDto {
         dataSourceId = dataSource.getId();
         dataSourceName = dataSource.getName();
         description = dataSource.getDescription();
-        tags = dataSource.getTags();
+        tagIds = getTagIds(dataSource.getTags());
         timestamp = dataSource.getTimestamp();
         type = dataSource.getType();
         typeConfig = dataSource.getTypeConfig();
@@ -108,12 +112,12 @@ public class DataSourceDto {
         this.description = description;
     }
 
-    public String getTags() {
-        return tags;
+    public List<Long> getTagIds() {
+        return tagIds;
     }
 
-    public void setTags(String tags) {
-        this.tags = tags;
+    public void setTagIds(List<Long> tagIds) {
+        this.tagIds = tagIds;
     }
 
     public Long getTimestamp() {
@@ -183,7 +187,6 @@ public class DataSourceDto {
         if (dataSourceName != null ? !dataSourceName.equals(that.dataSourceName) : that.dataSourceName != null)
             return false;
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
-        if (tags != null ? !tags.equals(that.tags) : that.tags != null) return false;
         if (type != that.type) return false;
         if (typeConfig != null ? !typeConfig.equals(that.typeConfig) : that.typeConfig != null) return false;
         if (dataFeedName != null ? !dataFeedName.equals(that.dataFeedName) : that.dataFeedName != null) return false;
@@ -197,7 +200,6 @@ public class DataSourceDto {
         int result = dataSourceId != null ? dataSourceId.hashCode() : 0;
         result = 31 * result + (dataSourceName != null ? dataSourceName.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
-        result = 31 * result + (tags != null ? tags.hashCode() : 0);
         result = 31 * result + (type != null ? type.hashCode() : 0);
         result = 31 * result + (typeConfig != null ? typeConfig.hashCode() : 0);
         result = 31 * result + (dataFeedName != null ? dataFeedName.hashCode() : 0);
@@ -212,7 +214,7 @@ public class DataSourceDto {
                 "dataSourceId=" + dataSourceId +
                 ", dataSourceName='" + dataSourceName + '\'' +
                 ", description='" + description + '\'' +
-                ", tags='" + tags + '\'' +
+                ", tagIds='" + tagIds + '\'' +
                 ", timestamp=" + timestamp +
                 ", type=" + type +
                 ", typeConfig='" + typeConfig + '\'' +
@@ -220,5 +222,15 @@ public class DataSourceDto {
                 ", parserId=" + parserId +
                 ", dataFeedType='" + dataFeedType + '\'' +
                 '}';
+    }
+
+    private List<Long> getTagIds(List<Tag> tags) {
+        List<Long> tagIds = new ArrayList<>();
+        if (tags != null) {
+            for (Tag tag : tags) {
+                tagIds.add(tag.getId());
+            }
+        }
+        return tagIds;
     }
 }

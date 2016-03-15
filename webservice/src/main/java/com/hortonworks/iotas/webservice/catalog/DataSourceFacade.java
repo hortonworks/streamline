@@ -3,6 +3,7 @@ package com.hortonworks.iotas.webservice.catalog;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.ParserInfo;
+import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
 import org.slf4j.Logger;
@@ -81,7 +82,16 @@ public class DataSourceFacade {
         dataSource.setId(dataSourceDto.getDataSourceId());
         dataSource.setName(dataSourceDto.getDataSourceName());
         dataSource.setDescription(dataSourceDto.getDescription());
-        dataSource.setTags(dataSourceDto.getTags());
+        List<Tag> tags = new ArrayList<>();
+        if (dataSourceDto.getTagIds() != null) {
+            for (Long tagId : dataSourceDto.getTagIds()) {
+                Tag tag = catalogService.getTag(tagId);
+                if (tag != null) {
+                    tags.add(tag);
+                }
+            }
+        }
+        dataSource.setTags(tags);
         dataSource.setTimestamp(dataSourceDto.getTimestamp());
         dataSource.setType(dataSourceDto.getType());
         dataSource.setTypeConfig(dataSourceDto.getTypeConfig());
