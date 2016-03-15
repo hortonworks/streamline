@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.hortonworks.bolt.rules;
+package com.hortonworks.iotas.bolt.rules;
 
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.tuple.Tuple;

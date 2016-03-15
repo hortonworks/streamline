@@ -69,7 +69,7 @@ public class HdfsBoltFluxComponent extends AbstractFluxComponent {
         String recordFormatComponentId = "recordFormat" +
                 UUID_FOR_COMPONENTS;
         // currently only IdentityHdfsRecordFormat is supported.
-        String recordFormatClassName = "com.hortonworks.hdfs" +
+        String recordFormatClassName = "com.hortonworks.iotas.hdfs" +
                 ".IdentityHdfsRecordFormat";
         addToComponents(createComponent(recordFormatComponentId,
                 recordFormatClassName, null, null, null));

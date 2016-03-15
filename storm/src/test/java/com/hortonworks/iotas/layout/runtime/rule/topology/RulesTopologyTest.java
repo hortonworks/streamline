@@ -26,7 +26,7 @@ import org.apache.storm.generated.InvalidTopologyException;
 import org.apache.storm.generated.StormTopology;
 import org.apache.storm.topology.IRichBolt;
 import org.apache.storm.topology.TopologyBuilder;
-import com.hortonworks.bolt.rules.RulesBolt;
+import com.hortonworks.iotas.bolt.rules.RulesBolt;
 import com.hortonworks.iotas.layout.design.component.RulesProcessorBuilder;
 import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.RuleRuntime;

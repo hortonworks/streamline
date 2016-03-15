@@ -20,7 +20,7 @@ public class RuleBoltFluxComponent extends AbstractFluxComponent {
     protected void generateComponent () {
         String rulesBoltDependenciesFactory = addRulesBoltDependenciesFactory();
         String boltId = "ruleBolt" + UUID_FOR_COMPONENTS;
-        String boltClassName = "com.hortonworks.bolt.rules.RulesBolt";
+        String boltClassName = "com.hortonworks.iotas.bolt.rules.RulesBolt";
         List boltConstructorArgs = new ArrayList();
         Map ref = getRefYaml(rulesBoltDependenciesFactory);
         boltConstructorArgs.add(ref);

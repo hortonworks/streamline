@@ -1,28 +1,29 @@
 package com.hortonworks.iotas.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.catalog.Cluster;
 import com.hortonworks.iotas.catalog.Component;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSet;
 import com.hortonworks.iotas.catalog.DataSource;
-import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.ParserInfo;
-import com.hortonworks.iotas.catalog.Cluster;
 import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.catalog.Device;
-import com.hortonworks.iotas.catalog.Component;
 import com.hortonworks.iotas.catalog.Topology;
 import com.hortonworks.iotas.catalog.TopologyEditorMetadata;
+import com.hortonworks.iotas.processor.CustomProcessorInfo;
 import com.hortonworks.iotas.storage.DataSourceSubType;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.exception.StorageException;
+import com.hortonworks.iotas.topology.ConfigField;
 import com.hortonworks.iotas.topology.TopologyActions;
 import com.hortonworks.iotas.topology.TopologyComponent;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import com.hortonworks.iotas.topology.TopologyLayoutValidator;
 import com.hortonworks.iotas.util.CoreUtils;
+import com.hortonworks.iotas.util.JarStorage;
 import com.hortonworks.iotas.util.JsonSchemaValidator;
 import com.hortonworks.iotas.util.exception.BadTopologyLayoutException;
 import org.apache.commons.lang.StringUtils;
@@ -30,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,6 +64,7 @@ public class CatalogService {
 
     private StorageManager dao;
     private TopologyActions topologyActions;
+    private JarStorage jarStorage;
 
     public static class QueryParam {
         public final String name;
@@ -108,10 +111,10 @@ public class CatalogService {
         }
     }
 
-    public CatalogService(StorageManager dao, TopologyActions
-            topologyActions) {
+    public CatalogService(StorageManager dao, TopologyActions topologyActions, JarStorage jarStorage) {
         this.dao = dao;
         this.topologyActions = topologyActions;
+        this.jarStorage = jarStorage;
     }
 
     private String getNamespaceForDataSourceType(DataSource.Type dataSourceType) {
@@ -573,6 +576,92 @@ public class CatalogService {
         topologyComponent.setId(id);
         return dao.remove(new StorableKey(TopologyComponent.NAME_SPACE,
                 topologyComponent.getPrimaryKey()));
+    }
+
+    public InputStream getCustomProcessorFile (String fileName) throws IOException {
+        final InputStream inputStream = this.jarStorage.downloadJar(fileName);
+        return inputStream;
+    }
+
+    public Collection<CustomProcessorInfo> listCustomProcessorsWithFilter (List<QueryParam> params) throws IOException {
+        Collection<TopologyComponent> customProcessors = this.listCustomProcessorsComponentsWithFilter(params);
+        Collection<CustomProcessorInfo> result = new ArrayList<>();
+        for (TopologyComponent cp: customProcessors) {
+            CustomProcessorInfo customProcessorInfo = new CustomProcessorInfo();
+            customProcessorInfo.fromTopologyComponent(cp);
+            result.add(customProcessorInfo);
+        }
+        return result;
+    }
+
+    private Collection<TopologyComponent> listCustomProcessorsComponentsWithFilter (List<QueryParam> params) throws IOException {
+        List<QueryParam> queryParamsForTopologyComponent = new ArrayList<>();
+        queryParamsForTopologyComponent.add(new QueryParam(TopologyComponent.SUB_TYPE, TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_SUB_TYPE));
+        for (QueryParam qp : params) {
+            if (qp.getName().equals(TopologyComponent.STREAMING_ENGINE)) {
+                queryParamsForTopologyComponent.add(qp);
+            }
+        }
+        Collection<TopologyComponent> customProcessors = this.listTopologyComponentsForTypeWithFilter(TopologyComponent.TopologyComponentType.PROCESSOR,
+                queryParamsForTopologyComponent);
+        Collection<TopologyComponent> result = new ArrayList<>();
+        ObjectMapper mapper = new ObjectMapper();
+        for (TopologyComponent cp: customProcessors) {
+            List<ConfigField> configFields = mapper.readValue(cp.getConfig(), new TypeReference<List<ConfigField>>() { });
+            Map<String, Object> config  = new HashMap<>();
+            for (ConfigField configField: configFields) {
+                config.put(configField.getName(), configField.getDefaultValue());
+            }
+            boolean matches = true;
+            for (QueryParam qp: params) {
+                if (!qp.getName().equals(TopologyComponent.STREAMING_ENGINE) && !qp.getValue().equals(config.get(qp.getName()))) {
+                    matches = false;
+                    break;
+                }
+            }
+            if (matches) {
+                result.add(cp);
+            }
+        }
+        return result;
+    }
+
+    public CustomProcessorInfo addCustomProcessorInfo (CustomProcessorInfo customProcessorInfo, InputStream jarFile, InputStream imageFile) throws IOException {
+        this.jarStorage.uploadJar(jarFile, customProcessorInfo.getJarFileName());
+        this.jarStorage.uploadJar(imageFile, customProcessorInfo.getImageFileName());
+        TopologyComponent topologyComponent = customProcessorInfo.toTopologyComponent();
+        topologyComponent.setId(this.dao.nextId(TopologyComponent.NAME_SPACE));
+        this.dao.add(topologyComponent);
+        return customProcessorInfo;
+    }
+
+    public CustomProcessorInfo updateCustomProcessorInfo (CustomProcessorInfo customProcessorInfo, InputStream jarFile, InputStream imageFile) throws
+            IOException {
+        List<QueryParam> queryParams = new ArrayList<>();
+        queryParams.add(new QueryParam(customProcessorInfo.NAME, customProcessorInfo.getName()));
+        Collection<TopologyComponent> result = this.listCustomProcessorsComponentsWithFilter(queryParams);
+        if (result.isEmpty() || result.size() != 1) {
+            throw new IOException("Failed to update custom processor with name:" + customProcessorInfo.getName());
+        }
+        this.jarStorage.uploadJar(jarFile, customProcessorInfo.getJarFileName());
+        this.jarStorage.uploadJar(imageFile, customProcessorInfo.getImageFileName());
+        TopologyComponent customProcessorComponent = result.iterator().next();
+        TopologyComponent newCustomProcessorComponent = customProcessorInfo.toTopologyComponent();
+        newCustomProcessorComponent.setId(customProcessorComponent.getId());
+        this.dao.addOrUpdate(newCustomProcessorComponent);
+        return customProcessorInfo;
+    }
+
+    public CustomProcessorInfo removeCustomProcessorInfo (String name) throws IOException {
+        List<QueryParam> queryParams = new ArrayList<>();
+        queryParams.add(new QueryParam(CustomProcessorInfo.NAME, name));
+        Collection<TopologyComponent> result = this.listCustomProcessorsComponentsWithFilter(queryParams);
+        if (result.isEmpty() || result.size() != 1) {
+            throw new IOException("Failed to delete custom processor with name:" + name);
+        }
+        TopologyComponent customProcessorComponent = result.iterator().next();
+        this.dao.remove(customProcessorComponent.getStorableKey());
+        return new CustomProcessorInfo().fromTopologyComponent(customProcessorComponent);
     }
 
     public Collection<TopologyEditorMetadata> listTopologyEditorMetadata () {

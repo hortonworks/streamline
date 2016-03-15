@@ -1,0 +1,11 @@
+{
+  "streamingEngine": "STORM",
+  "name": "Console Custom Processor",
+  "description": "Console Custom Processor",
+  "imageFileName": "image.gif",
+  "jarFileName": "iotas-core.jar",
+  "configFields": [{"name":"configField", "isOptional":false, "type":"string", "defaultValue":null,"isUserInput":true,"tooltip":"Config field"}],
+  "inputSchema": {"fields":[{"name":"childField1","type":"INTEGER"},{"name":"childField2","type":"BOOLEAN"},{"name":"topLevelStringField","type":"STRING"}]},
+  "outputStreamToSchema": {"stream1":{"fields":[{"name":"childField1","type":"INTEGER"},{"name":"childField2","type":"BOOLEAN"},{"name":"topLevelStringField","type":"STRING"}]}},
+  "customProcessorImpl": "com.hortonworks.iotas.processor.examples.ConsoleCustomProcessor"
+}

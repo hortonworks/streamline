@@ -32,6 +32,7 @@ import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager;
 import com.hortonworks.iotas.topology.TopologyActions;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
+import com.hortonworks.iotas.util.JarStorage;
 import com.hortonworks.iotas.util.ReflectionHelper;
 import com.hortonworks.iotas.webservice.catalog.ClusterCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.ComponentCatalogResource;
@@ -142,15 +143,27 @@ public class IotasApplication extends Application<IotasConfiguration> {
         return topologyActions;
     }
 
+    private JarStorage getJarStorage (IotasConfiguration configuration) {
+        JarStorage jarStorage = null;
+        try {
+            jarStorage = ReflectionHelper.newInstance(configuration.getJarStorageConfiguration().getClassName());
+            jarStorage.init(configuration.getJarStorageConfiguration().getProperties());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return jarStorage;
+    }
+
 
     private void registerResources(IotasConfiguration iotasConfiguration, Environment environment, StorageManager manager) {
         StorageManager storageManager = getCacheBackedDao();
         TopologyActions topologyActions = getTopologyActionsImpl
                 (iotasConfiguration);
+        JarStorage jarStorage = this.getJarStorage(iotasConfiguration);
         final CatalogService catalogService = new CatalogService
-                (storageManager, topologyActions);
+                (storageManager, topologyActions, jarStorage);
         final FeedCatalogResource feedResource = new FeedCatalogResource(catalogService);
-        final ParserInfoCatalogResource parserResource = new ParserInfoCatalogResource(catalogService, iotasConfiguration);
+        final ParserInfoCatalogResource parserResource = new ParserInfoCatalogResource(catalogService, iotasConfiguration, jarStorage);
         final DataSourceCatalogResource dataSourceResource = new DataSourceCatalogResource(catalogService);
         final DataSourceWithDataFeedCatalogResource dataSourceWithDataFeedCatalogResource =
                 new DataSourceWithDataFeedCatalogResource(new DataSourceFacade(catalogService));
