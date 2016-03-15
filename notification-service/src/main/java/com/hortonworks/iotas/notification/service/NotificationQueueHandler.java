@@ -35,7 +35,7 @@ public class NotificationQueueHandler {
             try {
                 notifier.notify(notification);
             } catch (Throwable th) {
-                LOG.error("Sending notification failed with uncaught exception ", th);
+                LOG.error("Sending notification failed ", th);
                 // fail so that the framework can retry
                 notifier.getContext().fail(notification.getId());
                 throw th;
