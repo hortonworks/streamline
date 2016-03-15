@@ -60,13 +60,11 @@ public class ParserInfoCatalogResource {
     private JarStorage jarStorage;
     private final ProxyUtil<Parser> parserProxyUtil;
 
-    public ParserInfoCatalogResource(CatalogService service, IotasConfiguration configuration) {
+    public ParserInfoCatalogResource(CatalogService service, IotasConfiguration configuration, JarStorage jarStorage) {
         this.catalogService = service;
         this.configuration = configuration;
         try {
-            this.jarStorage = ReflectionHelper.newInstance(this.configuration
-                    .getJarStorageConfiguration().getClassName());
-            this.jarStorage.init(configuration.getJarStorageConfiguration().getProperties());
+            this.jarStorage = jarStorage;
             this.parserProxyUtil = new ProxyUtil<>(Parser.class);
         } catch (Exception ex) {
             throw new RuntimeException(ex);

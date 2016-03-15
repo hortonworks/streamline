@@ -32,6 +32,7 @@ public class CatalogRestClient {
     private static final String PARSER_URL = "parsers";
     private static final String NOTIFIER_URL = "notifiers";
     private static final String PARSER_DOWNLOAD_URL = PARSER_URL + "/download";
+    private static final String CUSTOM_PROCESSOR_JAR_DOWNLOAD_URL = "system/componentdefinitions/PROCESSOR/custom";
 
     private String rootCatalogURL;
     private WebTarget rootTarget;
@@ -113,7 +114,8 @@ public class CatalogRestClient {
         return getParserInfo(dataFeed.getParserId());
     }
 
-    public InputStream getParserJar(Long parserId) {
-        return get(String.format("%s/%s/%s", rootCatalogURL, PARSER_DOWNLOAD_URL, parserId), InputStream.class);
+    public InputStream getCustomProcessorJar (String jarFileName) {
+        return get(String.format("%s/%s/%s", rootCatalogURL, CUSTOM_PROCESSOR_JAR_DOWNLOAD_URL, jarFileName), InputStream.class);
     }
+    public InputStream getParserJar(Long parserId) { return get(String.format("%s/%s/%s", rootCatalogURL, PARSER_DOWNLOAD_URL, parserId), InputStream.class); }
 }

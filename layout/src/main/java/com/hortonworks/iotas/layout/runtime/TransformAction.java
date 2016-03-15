@@ -1,6 +1,7 @@
 package com.hortonworks.iotas.layout.runtime;
 
 import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.common.Result;
 import com.hortonworks.iotas.layout.runtime.transform.IdentityTransform;
 import com.hortonworks.iotas.layout.runtime.transform.Transform;
 

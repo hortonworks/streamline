@@ -2,29 +2,45 @@ package com.hortonworks.iotas.topology.storm;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.catalog.Topology;
+import com.hortonworks.iotas.client.CatalogRestClient;
+import com.hortonworks.iotas.processor.CustomProcessor;
+import com.hortonworks.iotas.processor.examples.ConsoleCustomProcessor;
 import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager;
 import com.hortonworks.iotas.topology.TopologyActions;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import com.hortonworks.iotas.topology.TopologyLayoutValidator;
-import com.hortonworks.iotas.topology.storm.StormTopologyActionsImpl;
-import com.hortonworks.iotas.util.exception.BadTopologyLayoutException;
+import com.hortonworks.iotas.util.ProxyUtil;
+import mockit.Expectations;
+import mockit.Mocked;
+import mockit.integration.junit4.JMockit;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
+@RunWith(JMockit.class)
 public class TopologyLayoutValidatorTest {
+    private @Mocked
+    ProxyUtil<CustomProcessor> customProcessorProxyUtil;
+    private @Mocked
+    CatalogRestClient catalogRestClient;
+    private CustomProcessor customProcessor = new ConsoleCustomProcessor();
     StorageManager dao;
     ObjectMapper mapper;
     TopologyActions topologyActions = new StormTopologyActionsImpl();
 
-    String[] goodLayouts = {"topology/goodlayout.json", "topology/goodlayoutnotificationbolt.json"};
+    String[] goodLayouts = {"topology/goodlayout.json", "topology/goodlayoutnotificationbolt.json", "topology/goodlayoutcustomprocessor.json"};
     // if an element is added to the array below then corresponding error
     // message also needs to be added to badLayoutMessages array below
     String[] badLayouts = {
@@ -51,11 +67,17 @@ public class TopologyLayoutValidatorTest {
             "topology/linkbadoptionalfieldlayout.json",
             "topology/invalidfieldsgroupinglinklayout.json",
             "topology/noparserprocessorlayout.json",
-            "topology/invalidparserstreamidlayout.json"
+            "topology/invalidparserstreamidlayout.json",
             // Uncomment this with https://hwxiot.atlassian.net/browse/IOT-126
             //"topology/emptystreamidfromrulelinklayout.json",
             //"topology/invalidstreamidfromrulelinklayout.json",
-            //"topology/invalidfieldsfromrulelinklayout.json"
+            //"topology/invalidfieldsfromrulelinklayout.json",
+            "topology/cpboltmissingrequiredfieldlayout.json",
+            "topology/cpboltinvalidinputschemalayout.json",
+            "topology/cpboltcustomconfigexception.json",
+            "topology/cpboltemptystreamidlayout.json",
+            "topology/cpboltinvalidstreamidlayout.json",
+            "topology/cpboltinvalidfieldsgroupinglayout.json"
     };
     // the size of the array below should be same as size of the array
     // badLayouts above
@@ -84,15 +106,29 @@ public class TopologyLayoutValidatorTest {
         String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, TopologyLayoutConstants.JSON_KEY_GROUPING_FIELDS),
         TopologyLayoutConstants.ERR_MSG_NO_PARSER_PROCESSOR,
         String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, "parserProcessor-parsedTuples->ruleProcessor"),
-        String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, "ruleProcessor-rule1->hbasesink"),
-        String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, "ruleProcessor-rule1->hbasesink"),
-        String.format(TopologyLayoutConstants.ERR_MSG_INVALID_GROUPING_FIELDS, "ruleProcessor-rule1->hbasesink")
+        //String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, "ruleProcessor-rule1->hbasesink"),
+        //String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, "ruleProcessor-rule1->hbasesink"),
+        //String.format(TopologyLayoutConstants.ERR_MSG_INVALID_GROUPING_FIELDS, "ruleProcessor-rule1->hbasesink"),
+        String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_IMPL),
+        String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, TopologyLayoutConstants.JSON_KEY_INPUT_SCHEMA),
+        String.format(TopologyLayoutConstants.ERR_MSG_CP_CONFIG_EXCEPTION, "com.hortonworks.iotas.processor.examples.ConsoleCustomProcessor") + " Message from " +
+                "implementation is: Missing config field: configField",
+        String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, "consoleCustomProcessor->hbasesink"),
+        String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, "consoleCustomProcessor->hbasesink"),
+        String.format(TopologyLayoutConstants.ERR_MSG_INVALID_GROUPING_FIELDS, "consoleCustomProcessor->hbasesink")
     };
 
     @Before
-    public void setup () {
+    public void setup () throws ClassNotFoundException, MalformedURLException, InstantiationException, IllegalAccessException {
         dao = new InMemoryStorageManager();
         mapper = new ObjectMapper();
+        Map conf = new HashMap<>();
+        conf.put(TopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL, "http://localhost:8080/api/v1/catalog");
+        topologyActions.init(conf);
+        new Expectations() {{
+            catalogRestClient.getCustomProcessorJar(withAny("")); result = new ByteArrayInputStream("some-stream".getBytes());
+            customProcessorProxyUtil.loadClassFromJar(withAny(""), ConsoleCustomProcessor.class.getCanonicalName()); result = customProcessor;
+        }};
     }
 
     @After
@@ -100,8 +136,7 @@ public class TopologyLayoutValidatorTest {
     }
 
     @Test
-    public void testTopologyLayoutGood () throws IOException,
-            BadTopologyLayoutException {
+    public void testTopologyLayoutGood () throws IOException {
         // Test for a valid topology layout json
         for (int i = 0; i < this.goodLayouts.length; ++i) {
             URL topologyJson = Thread.currentThread().getContextClassLoader()

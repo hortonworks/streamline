@@ -13,7 +13,7 @@ public class ParserBoltFluxComponent extends AbstractFluxComponent {
     @Override
     protected void generateComponent () {
         String boltId = "parserBolt" + UUID_FOR_COMPONENTS;
-        String boltClassName = "com.hortonworks.bolt.ParserBolt";
+        String boltClassName = "com.hortonworks.iotas.bolt.ParserBolt";
         String[] configMethodNames = {"withParsedTuplesStreamId",
                 "withUnparsedTuplesStreamId", "withParserId",
                 "withDataSourceId"};
