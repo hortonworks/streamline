@@ -41,6 +41,13 @@ public class IotasEventImpl implements IotasEvent {
     /**
      * Creates an IotasEvent with given keyValues, dataSourceId, id and header.
      */
+    public IotasEventImpl(Map<String, Object> keyValues, String dataSourceId, String id, Map<String, Object> header) {
+        this(keyValues, dataSourceId, id, header, DEFAULT_SOURCE_STREAM);
+    }
+
+    /**
+     * Creates an IotasEvent with given keyValues, dataSourceId, id and header.
+     */
     public IotasEventImpl(Map<String, Object> keyValues, String dataSourceId, String id, Map<String, Object> header, String sourceStream) {
         this.fieldsAndValues = keyValues;
         this.dataSourceId = dataSourceId;
