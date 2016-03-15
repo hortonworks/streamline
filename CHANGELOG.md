@@ -1,4 +1,7 @@
+## 0.1.2
+ * IOT-64:  Added normalization processor for bulk/field level normalization with groovy scripts.
 ## 0.1.1
+ * IOT-135: Implement Custom Processors.
  * IOT-131: Added common Config object.
  * IOT-128: Refactored design time entities.
  * IOT-148: Topology Editor should be able delete the nodes.

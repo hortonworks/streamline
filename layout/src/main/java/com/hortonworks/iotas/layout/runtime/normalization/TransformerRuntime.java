@@ -85,9 +85,9 @@ public class TransformerRuntime {
             this.transformer = transformer;
         }
 
-        public TransformerRuntime build() throws NormalizationException {
+        public TransformerRuntime build() {
             if (transformer.getInputField() == null) {
-                throw new NormalizationException("input field should always be set for transformer");
+                throw new IllegalArgumentException("input field should always be set for transformer");
             }
             //todo may add more validation for script.
             GroovyScript groovyScript = null;

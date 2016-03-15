@@ -10,7 +10,7 @@ public class NotificationBoltFluxComponent extends AbstractFluxComponent {
     @Override
     protected void generateComponent() {
         String boltId = "notificationBolt" + UUID_FOR_COMPONENTS;
-        String boltClassName = "com.hortonworks.bolt.notification" +
+        String boltClassName = "com.hortonworks.iotas.bolt.notification" +
                 ".NotificationBolt";
         String[] constructorArgNames =  {
                 TopologyLayoutConstants.JSON_KEY_NOTIFIER_NAME

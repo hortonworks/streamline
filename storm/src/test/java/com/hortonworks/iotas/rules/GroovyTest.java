@@ -108,4 +108,5 @@ public class GroovyTest {
 
         script.run();  // throws exception because no bindings for x, y
     }
+
 }

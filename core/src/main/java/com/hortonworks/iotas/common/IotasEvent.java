@@ -39,4 +39,10 @@ public interface IotasEvent {
      * @return the data source id
      */
     String getDataSourceId();
+
+    /**
+     * The source stream that generated this event
+     * @return stream name
+     */
+    String getSourceStream ();
 }

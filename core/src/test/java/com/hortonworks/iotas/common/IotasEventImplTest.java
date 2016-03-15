@@ -52,6 +52,15 @@ public class IotasEventImplTest {
     }
 
     @Test
+    public void testGetSourceStream() throws Exception {
+        String sourceStream = "stream";
+        IotasEvent event = new IotasEventImpl(new HashMap<String, Object>(), "1");
+        assertEquals(IotasEventImpl.DEFAULT_SOURCE_STREAM, event.getSourceStream());
+        event = new IotasEventImpl(new HashMap<String, Object>(), "1", "1", new HashMap<String, Object>(), sourceStream);
+        assertEquals(sourceStream, event.getSourceStream());
+    }
+
+    @Test
     public void testEquals() throws Exception {
 
         Map<String, Object> map = new HashMap<>();

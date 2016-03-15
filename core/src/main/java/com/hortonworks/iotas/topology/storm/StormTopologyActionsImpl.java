@@ -81,7 +81,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
     public void validate (Topology topology) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         Map topologyConfig = mapper.readValue(topology.getConfig(), Map.class);
-        StormTopologyValidator validator = new StormTopologyValidator(topologyConfig);
+        StormTopologyValidator validator = new StormTopologyValidator(topologyConfig, this.catalogRootUrl);
         validator.validate();
     }
 

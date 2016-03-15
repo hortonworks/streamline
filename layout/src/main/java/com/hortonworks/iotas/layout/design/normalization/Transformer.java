@@ -20,11 +20,14 @@ package com.hortonworks.iotas.layout.design.normalization;
 
 import com.hortonworks.iotas.common.Schema;
 
-import javax.annotation.Nonnull;
 import java.io.Serializable;
 
 /**
- * This class represents design time configuration of a transformer which is part of {@link com.hortonworks.iotas.layout.design.component.NormalizationProcessor}.
+ * This class represents design time configuration of a transformer which converts a given input field value to an output
+ * field value using a converter script.
+ * For example, input field with name `temp` (in degree centigrade). It should be mapped to output field with name
+ * `temperature` (in degree fahrenheit) by passing a groovy script which does the transformation.
+ *
  */
 public class Transformer implements Serializable {
     private Schema.Field inputField;
