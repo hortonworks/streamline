@@ -23,12 +23,15 @@ import com.hortonworks.iotas.layout.design.rule.condition.Condition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Represents the expression of this {@link Condition} in Storm SQL language syntax
  **/
 public class StormSqlExpression extends Expression {
+    private static final Logger LOG = LoggerFactory.getLogger(StormSqlExpression.class);
     public static final String RULE_SCHEMA = "RULESCHEMA";  // _ underscores not supported by Storm SQL framework
     public static final String RULE_TABLE = "RULETABLE";
     private static final String CREATE_EXTERNAL_TABLE = "CREATE EXTERNAL TABLE ";
@@ -37,7 +40,7 @@ public class StormSqlExpression extends Expression {
     private static final String WHERE = "WHERE ";
     private static final String LOCATION = "LOCATION";
 
-    private static final Logger LOG = LoggerFactory.getLogger(StormSqlExpression.class);
+    private final List<String> fieldsToEmit = new ArrayList<>();
 
     public StormSqlExpression(Condition condition) {
         super(condition);
@@ -81,7 +84,9 @@ public class StormSqlExpression extends Expression {
     private String buildCreateDefinition() {
         final StringBuilder builder = new StringBuilder("");
         for (Condition.ConditionElement element : condition.getConditionElements()) {
-            builder.append(getFieldName(element.getFirstOperand()))
+            String fieldName = getFieldName(element.getFirstOperand());
+            fieldsToEmit.add(fieldName.trim());
+            builder.append(fieldName)
                     .append(getStormSqlType(element.getFirstOperand().getType())).append(", ");
         }
         if (builder.length() >= 2) {
@@ -141,5 +146,9 @@ public class StormSqlExpression extends Expression {
             default:
                 return iotasType + " ";
         }
+    }
+
+    public List<String> getFieldsToEmit() {
+        return fieldsToEmit;
     }
 }
