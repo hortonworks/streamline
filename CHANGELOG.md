@@ -1,4 +1,5 @@
 ## 0.1.2
+ * IOT-176: topology editor deploy fails if stormHomeDir lacks leading /
  * IOT-147: Support array and nested field lookup with Storm Sql.
  * IOT-177: Email notification bolt is throwing IllegalStateException.
  * IOT-175: Fix generics in Parser.
