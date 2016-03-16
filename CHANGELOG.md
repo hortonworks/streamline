@@ -1,4 +1,5 @@
 ## 0.1.2
+ * IOT-147: Support array and nested field lookup with Storm Sql
  * IOT-177: Email notification bolt is throwing IllegalStateException
  * IOT-175: Fix generics in Parser
  * IOT-64:  Added normalization processor for bulk/field level normalization with groovy scripts.
