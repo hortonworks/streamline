@@ -18,16 +18,20 @@
 
 package com.hortonworks.iotas.layout.runtime.rule.condition.expression;
 
+import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.layout.design.rule.condition.Condition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Represents the expression of this {@link Condition} in Storm SQL language syntax
  **/
 public class StormSqlExpression extends Expression {
+    private static final Logger LOG = LoggerFactory.getLogger(StormSqlExpression.class);
     public static final String RULE_SCHEMA = "RULESCHEMA";  // _ underscores not supported by Storm SQL framework
     public static final String RULE_TABLE = "RULETABLE";
     private static final String CREATE_EXTERNAL_TABLE = "CREATE EXTERNAL TABLE ";
@@ -36,7 +40,7 @@ public class StormSqlExpression extends Expression {
     private static final String WHERE = "WHERE ";
     private static final String LOCATION = "LOCATION";
 
-    private static final Logger LOG = LoggerFactory.getLogger(StormSqlExpression.class);
+    private final List<String> fieldsToEmit = new ArrayList<>();
 
     public StormSqlExpression(Condition condition) {
         super(condition);
@@ -73,20 +77,22 @@ public class StormSqlExpression extends Expression {
 
     // "SELECT F1, F2, F3 FROM RT WHERE F1 < 2 AND F2 < 3 AND F3 < 4"
     public String select(String tableName) {
-        return SELECT_STREAM + buildSelectExpression() + FROM + tableName + " " + WHERE + asString().toUpperCase();
+        return SELECT_STREAM + buildSelectExpression() + FROM + tableName + " " + WHERE + asString();
     }
 
     // F1 INTEGER or F2 STRING or ...
     private String buildCreateDefinition() {
         final StringBuilder builder = new StringBuilder("");
         for (Condition.ConditionElement element : condition.getConditionElements()) {
-            builder.append(getName(element.getFirstOperand()))
-                    .append(getType(element.getFirstOperand())).append(", ");
+            String fieldName = getFieldName(element.getFirstOperand());
+            fieldsToEmit.add(fieldName.trim());
+            builder.append(fieldName)
+                    .append(getStormSqlType(element.getFirstOperand().getType())).append(", ");
         }
         if (builder.length() >= 2) {
             builder.setLength(builder.length() - 2);    // remove the last ", "
         }
-        return builder.toString().toUpperCase();
+        return builder.toString();
     }
 
     private String buildSelectExpression() {
@@ -97,7 +103,7 @@ public class StormSqlExpression extends Expression {
         if (builder.length() >= 2) {
             builder.setLength(builder.length() - 2);    // remove the last ", "
         }
-        return builder.toString().toUpperCase();
+        return builder.toString();
     }
 
     private String getLogicalOperator(Condition.ConditionElement.LogicalOperator logicalOperator) {
@@ -117,7 +123,7 @@ public class StormSqlExpression extends Expression {
             case EQUALS:
                 return " = ";
             case NOT_EQUAL:
-                return " != ";
+                return " <> ";
             case GREATER_THAN:
                 return " > ";
             case LESS_THAN:
@@ -130,5 +136,19 @@ public class StormSqlExpression extends Expression {
                 throw new UnsupportedOperationException(String.format("Operation [%s] not supported. List of supported operations: %s",
                         operation, Arrays.toString(Condition.ConditionElement.Operation.values())));
         }
+    }
+
+    private String getStormSqlType(Schema.Type iotasType) {
+        switch (iotasType) {
+            case NESTED:
+            case ARRAY:
+                return "ANY ";
+            default:
+                return iotasType + " ";
+        }
+    }
+
+    public List<String> getFieldsToEmit() {
+        return fieldsToEmit;
     }
 }
