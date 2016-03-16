@@ -114,7 +114,8 @@ define(['require','bootstrap.filestyle','backbone.forms', 'backgrid', 'bootstrap
    Backbone.Form.editors.Fileupload = Backbone.Form.editors.Base.extend({
     initialize: function(options) {
       Backbone.Form.editors.Base.prototype.initialize.call(this, options);
-      this.template = _.template('<input type="file" name="fileInput" class="filestyle">');
+      var id = this.id = options.schema.elementId || undefined;
+      this.template = _.template('<input type="file" id="'+ id +'" class="filestyle">');
     },
     render: function() {
       this.$el.html(this.template);
@@ -122,7 +123,10 @@ define(['require','bootstrap.filestyle','backbone.forms', 'backgrid', 'bootstrap
       return this;
     },
     getValue: function() {
-      return $('input[name="fileInput"]')[0].files[0];
+      return $('input[type="file"][id="'+this.id+'"]')[0].files[0];
+    },
+    setValue: function(value){
+      console.log(value);
     }
   });
 

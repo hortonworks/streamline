@@ -21,8 +21,13 @@ define(['require',
 
 		initialize: function(options){
 			_.extend(this, options);
-			this.rulesProcessor = this.ruleProcessorObj[0];
-			this.syncRuleData();
+			if(this.currentType === 'RULE'){
+				this.rulesProcessor = this.processorObj[0];
+				this.syncRuleData();
+			} else if(this.currentType === 'CUSTOM'){
+				this.customProcessor = this.processorObj[0];
+				this.syncCustomData();
+			}
 		},
 
 		syncRuleData: function(){
@@ -40,6 +45,20 @@ define(['require',
 			this.html = TopologyUtils.generateFormulaPreview(arr, true);
 			
 		},
+		syncCustomData: function(){
+			var self = this;
+			this.html = '';
+			var outputStreams = _.findWhere(this.customProcessor.config, {name: "outputStreamToSchema"});
+			if(outputStreams){
+				var keys = _.keys(outputStreams.defaultValue);
+				for(var i = 0; i < keys.length; i++){
+					self.html += '<li data-id="' + keys[i] +
+	                '" class="check-rule list-group-item"><div class="row"><div class="col-sm-11"><b>' + keys[i] +
+	                ':  </b>' + JSON.stringify(outputStreams.defaultValue[keys[i]]) + '</div>'+
+	                '<div class="btn-group btn-group-sm col-sm-1"><i class="fa fa-check"></i></div></div></li>';
+				}
+			}
+		},
 		onRender: function(){
 			this.$('.ruleList').append(this.html);
 		},
@@ -51,16 +70,27 @@ define(['require',
 		evSaveAction: function(e){
 			var self = this;
 			var selectedElem = this.$el.find('.check-rule.selected');
-			var obj = this.rulesProcessor.newConfig ? this.rulesProcessor.newConfig.rulesProcessorConfig : this.rulesProcessor.rulesProcessorConfig;
-			_.each(selectedElem, function(e){
-				var id = $(e).data().id;
-				if(_.isArray(obj.rules[id].actions)){
-					obj.rules[id].actions.push({name: self.sinkName});
-				} else {
-					obj.rules[id].actions = [{name: self.sinkName}];
-				}
-			});
-			this.vent.trigger('topologyEditor:SaveProcessor', new Backbone.Model(this.rulesProcessor));
+			if(this.currentType === 'RULE'){
+				var obj = this.rulesProcessor.newConfig ? this.rulesProcessor.newConfig.rulesProcessorConfig : this.rulesProcessor.rulesProcessorConfig;
+				_.each(selectedElem, function(e){
+					var id = $(e).data().id;
+					if(_.isArray(obj.rules[id].actions)){
+						obj.rules[id].actions.push({name: self.sinkName});
+					} else {
+						obj.rules[id].actions = [{name: self.sinkName}];
+					}
+				});
+				this.vent.trigger('topologyEditor:SaveProcessor', new Backbone.Model(this.rulesProcessor));
+			} else if(this.currentType === 'CUSTOM'){
+				_.each(selectedElem, function(e){
+					var id = $(e).data().id;
+					if(_.isArray(self.customProcessor.selectedStreams)){
+						self.customProcessor.selectedStreams.push({name: self.sinkName, streamName: id});
+					} else {
+						self.customProcessor.selectedStreams = [{name: self.sinkName, streamName: id}];
+					}
+				});
+			}
 			this.evCancelAction();
 		},
 		evCancelAction: function(e){

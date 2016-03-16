@@ -18,10 +18,8 @@
 package com.hortonworks.iotas.parser;
 
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.hortonworks.iotas.common.Schema;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -64,7 +62,7 @@ public interface Parser {
      * @param data the raw data bytes
      * @return the List of data conforming to {@link Schema#getFields()}
      */
-    List<Object> parseFields(byte[] data) throws ParseException;
+    List<?> parseFields(byte[] data) throws ParseException;
 
 
     /**
@@ -72,6 +70,6 @@ public interface Parser {
      * @param data
      * @return
      */
-    List<Object> parseFields(String data) throws ParseException;
+    List<?> parseFields(String data) throws ParseException;
 
 }

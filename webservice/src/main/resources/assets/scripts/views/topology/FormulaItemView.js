@@ -25,8 +25,18 @@ define(['require',
         },
 
         onRender: function(){
+            var self = this;
             this.$('.field-1').select2({
-                placeholder: 'Field'
+                placeholder: 'Field',
+                data: self.fieldsArr,
+                templateResult: function(node) {
+                    var styleText = "padding-left:" + (20 * node.level) + "px;";
+                    if(node.disabled){
+                        styleText += "font-weight: bold;"
+                    }
+                    var $result = $('<span style="'+styleText+'">' + node.text + '</span>');
+                    return $result;
+                }
             });
             this.$('.comparisonOp').select2({
                 placeholder: 'Operator'
@@ -36,7 +46,16 @@ define(['require',
             });
             this.$('.field-2').select2({
                 tags:true,
-                placeholder: 'Constant/Field'
+                placeholder: 'Constant/Field',
+                data: self.fieldsArr,
+                templateResult: function(node) {
+                    var styleText = "padding-left:" + (20 * node.level) + "px;";
+                    if(node.disabled){
+                        styleText += "font-weight: bold;";
+                    }
+                    var $result = $('<span style="'+styleText+'">' + node.text + '</span>');
+                    return $result;
+                }
             });
             if(this.collection.models.length){
                 var obj = this.collection.at(this.id-2);

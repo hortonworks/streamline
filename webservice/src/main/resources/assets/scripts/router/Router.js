@@ -10,14 +10,17 @@ define([
 	var AppRouter = Backbone.Router.extend({
 		routes: {
 			// Define some URL routes
-			''						: 'parserRegistryAction',
-			'!/parser-registry'		: 'parserRegistryAction',
-			'!/device-catalog'		: 'deviceCatalogAction',
-			'!/device-catalog/:pid'	: 'deviceDetailAction',
-			'!/configuration'		: 'configurationAction',
-			'!/topology'			: 'topologyAction',
-			'!/topology-editor'		: 'topologyEditorAction',
-			'!/topology-editor/:pid': 'topologyEditorAction',
+			''								: 'parserRegistryAction',
+			'!/parser-registry'				: 'parserRegistryAction',
+			'!/device-catalog'				: 'deviceCatalogAction',
+			'!/device-catalog/:pid'			: 'deviceDetailAction',
+			'!/configuration'				: 'configurationAction',
+			'!/topology'					: 'topologyAction',
+			'!/topology-editor'				: 'topologyEditorAction',
+			'!/topology-editor/:pid'		: 'topologyEditorAction',
+			'!/custom-processor'			: 'customProcessorAction',
+			'!/custom-processor/add'		: 'customProcessorConfig',
+			'!/custom-processor/edit/:id'	: 'customProcessorConfig',
 
 			// Default
 			'*actions': 'defaultAction'
@@ -178,7 +181,48 @@ define([
 				});
 			}
 		},
-		
+
+		customProcessorAction: function() {
+			VAppState.set({
+				'currentTab' : 0
+			});
+			require(['views/customProcessor/CustomProcessorView'], function(CustomProcessorView){
+				App.rContent.show(new CustomProcessorView());
+			});
+		},
+
+		customProcessorConfig: function(id){
+			VAppState.set({
+				'currentTab' : 0
+			});
+			if(id){
+				require(['models/VCustomProcessor'], function(VCustomProcessor){
+					var vCustomProcessorModel = new VCustomProcessor();
+					vCustomProcessorModel.getCustomProcessor({
+						id: id,
+						success: function(model,response,options){
+							vCustomProcessorModel.set(model.entities[0]);
+							delete vCustomProcessorModel.attributes.entities;
+							delete vCustomProcessorModel.attributes.responseCode;
+							delete vCustomProcessorModel.attributes.responseMessage;
+							require(['views/customProcessor/CustomProcessorConfigView'], function(CustomProcessorConfigView){
+								App.rContent.show(new CustomProcessorConfigView({
+									model: vCustomProcessorModel
+								}));
+							});
+						},
+						error: function(model, response, options){
+							Utils.showError(model, response);
+						}
+					});
+				});
+			} else {
+				require(['views/customProcessor/CustomProcessorConfigView'], function(CustomProcessorConfigView){
+					App.rContent.show(new CustomProcessorConfigView());
+				});
+			}
+		},
+
 		defaultAction: function(actions) {
 			// We have no matching route, lets just log what the URL was
 			console.log('No route:', actions);

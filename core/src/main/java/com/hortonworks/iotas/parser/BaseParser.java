@@ -3,7 +3,6 @@ package com.hortonworks.iotas.parser;
 import com.google.common.base.Charsets;
 import com.hortonworks.iotas.common.Schema;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +19,7 @@ public abstract class BaseParser implements Parser {
         return parse(data.getBytes(Charsets.UTF_8));
     }
 
-    public List<Object> parseFields(byte[] data) throws ParseException {
+    public List<?> parseFields(byte[] data) throws ParseException {
         Map<String, Object> parsedData = parse(data);
         List<Object> fields = new ArrayList<Object>();
         for (Field f : schema().getFields()) {
@@ -29,7 +28,7 @@ public abstract class BaseParser implements Parser {
         return fields;
     }
 
-    public List<Object> parseFields(String data) throws ParseException {
+    public List<?> parseFields(String data) throws ParseException {
         return parseFields(data.getBytes(Charsets.UTF_8));
     }
 

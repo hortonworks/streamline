@@ -146,6 +146,7 @@ require.config({
     'codemirror':'../libs/other/codemirror/lib/codemirror',
     'sql':'../libs/other/codemirror/mode/sql',
     'x-editable':'../libs/bower/x-editable/js/bootstrap-editable',
+    'jsonlint': '../libs/other/codemirror/addone/jsonlint.min'
   },
 
   /**
@@ -165,7 +166,8 @@ require(['App',
       'backbone.forms',
       'select2',
       'typeahead',
-      'bootstrap-tag'
+      'bootstrap-tag',
+      'jsonlint'
   ], function(App, Router) {
   App.appRouter = new Router();
   App.start();

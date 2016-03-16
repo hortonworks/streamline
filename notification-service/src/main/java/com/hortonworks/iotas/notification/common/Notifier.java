@@ -56,7 +56,7 @@ public interface Notifier {
      * The fields that this notifier processes.
      * E.g[email-id, from, to, subject, body] for EmailNotifier.
      * This can be used by the framework to create the
-     * ‘Notification’ object. The default values for the fields could
+     * Notification object. The default values for the fields could
      * also be specified in the config.
      */
     List<String> getFields();

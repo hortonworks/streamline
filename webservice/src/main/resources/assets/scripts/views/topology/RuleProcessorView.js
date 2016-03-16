@@ -25,7 +25,13 @@ define(['require',
     initialize: function(options) {
       _.extend(this, options);
       this.bindEvents();
-      this.getFeedSchema();
+      if(this.model.has('declaredInput')){
+          //For RULE-TO-RULE
+        this.fieldsArr = this.model.get("declaredInput");
+      } else {
+        //For PARSER-TO-RULE
+        this.getFeedSchema();
+      }
     },
 
     getFeedSchema:function (options){
@@ -41,7 +47,7 @@ define(['require',
         parserId: dsModel.get('entity').parserId,
         async: false,
         success: function(model, response, options){
-          self.parserModel.schema = model.entity.fields;
+          self.fieldsArr = model.entity.fields;
         },
         error: function(model, response, options){
           Utils.showError(model, response);
@@ -63,9 +69,9 @@ define(['require',
 
         self.view = new RuleLayoutView({
           vent: self.vent,
-          fields: self.parserModel.schema,
+          fields: self.fieldsArr,
           config: self.model.get('config'),
-          rulesArr: self.model.has('newConfig') ? self.model.attributes.newConfig.rulesProcessorConfig.rules : [],
+          rulesArr: self.model.has('newConfig') ? self.model.attributes.newConfig.rulesProcessorConfig.rules : (self.model.has('rulesProcessorConfig') ? self.model.attributes.rulesProcessorConfig.rules : []),
           linkedToRule: self.linkedToRule,
           connectedSink: self.connectedSink
         });
@@ -86,7 +92,7 @@ define(['require',
           var id = new Date().getTime();
           var ruleObj = {
               name: ruleName,
-              id: id+''+i+1,
+              id: id+(i+1),
               ruleProcessorName: this.model.get('uiname'),
               condition: {
                 conditionElements: []
@@ -119,7 +125,7 @@ define(['require',
             name: this.model.get('uiname'),
             id: new Date().getTime(),
             description: "Auto-Generated for "+this.model.get('uiname'),
-            declaredInput: this.parserModel.schema
+            declaredInput: this.fieldsArr
           }
         };
         this.model.set('firstTime', false);

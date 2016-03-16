@@ -27,6 +27,7 @@ define(['require',
       'click #configTopology'   : 'evConfigAction',
       'click #zoomOut-topo-graph' : 'evZoomOut',
       'click #zoomIn-topo-graph' : 'evZoomIn',
+      'click #editor-node-options, #closeList': 'evToggleNodeOptions'
     },
 
     ui: {
@@ -55,6 +56,7 @@ define(['require',
     },
 
     initializeVariables: function(){
+      this.renderFlag = false;
       this.nodeNames = [];
       this.dsArr = [];
       this.processorArr = [];
@@ -117,14 +119,19 @@ define(['require',
           self.graphTransforms = obj.graphTransforms ? obj.graphTransforms : self.graphTransforms;
           self.updateVariables();
         }
+        if(self.renderFlag){
+          self.showCustomProcessors();
+          self.$('svg').remove();
+          self.topologyGraph = TopologyUtils.syncGraph(self.model.get('_editState'), self.graphNodesData, self.linkArr, self.ui.graphEditor, self.vent, self.graphTransforms, self.linkConfigArr);
+        }
       });
     },
 
     updateVariables: function(){
       var config = this.model.get('config');
-      TopologyUtils.updateVariables(config.dataSources, this.sourceConfigArr, this.nodeNames, this.dsArr, this.graphNodesData.source, Globals.Topology.Editor.Steps.Datasource.Substeps, 'DEVICE', 'KAFKA');
-      TopologyUtils.updateVariables(config.processors, this.processorConfigArr, this.nodeNames, this.processorArr, this.graphNodesData.processor, Globals.Topology.Editor.Steps.Processor.Substeps);
-      TopologyUtils.updateVariables(config.dataSinks, this.sinkConfigArr, this.nodeNames, this.sinkArr, this.graphNodesData.sink, Globals.Topology.Editor.Steps.DataSink.Substeps);
+      TopologyUtils.updateVariables(config.dataSources, this.sourceConfigArr, config.links, this.nodeNames, this.dsArr, this.graphNodesData.source, Globals.Topology.Editor.Steps.Datasource.Substeps, 'DEVICE', 'KAFKA');
+      TopologyUtils.updateVariables(config.processors, this.processorConfigArr, config.links, this.nodeNames, this.processorArr, this.graphNodesData.processor, Globals.Topology.Editor.Steps.Processor.Substeps);
+      TopologyUtils.updateVariables(config.dataSinks, this.sinkConfigArr, config.links, this.nodeNames, this.sinkArr, this.graphNodesData.sink, Globals.Topology.Editor.Steps.DataSink.Substeps);
     },
 
     bindEvents: function(){
@@ -144,6 +151,7 @@ define(['require',
 
       this.listenTo(this.vent, 'click:topologyNode', function(data){
         var uiname = data.uiname;
+        var customName = data.customName;
         switch(data.parentType){
           //Source
           case Globals.Topology.Editor.Steps.Datasource.valStr:
@@ -151,7 +159,7 @@ define(['require',
           break;
           //Processor
           case Globals.Topology.Editor.Steps.Processor.valStr:
-            TopologyUtils.getNode(this, this.processorArr, uiname, self.evProcessorAction, this.processorConfigArr, true, data.currentType, this.linkArr);
+            TopologyUtils.getNode(this, this.processorArr, uiname, self.evProcessorAction, this.processorConfigArr, true, data.currentType, this.linkArr, customName);
           break;
           //Sink
           case Globals.Topology.Editor.Steps.DataSink.valStr:
@@ -205,6 +213,8 @@ define(['require',
           TopologyUtils.resetRule(self.processorArr, options);
         } else if(!_.isUndefined(options.resetRuleAction)){
           TopologyUtils.resetRuleAction(self.processorArr, options);
+        } else if(!_.isUndefined(options.resetCustomAction)){
+          TopologyUtils.resetCustomAction(self.processorArr, options);
         }
         options.callback();
       });
@@ -215,16 +225,16 @@ define(['require',
           if(ruleProcessorObj.length && !ruleProcessorObj[0].firstTime){
             self.titleName = ruleProcessorObj[0].uiname;
             var view = new RuleToOtherNodeView({
-              ruleProcessorObj: ruleProcessorObj,
+              processorObj: ruleProcessorObj,
               sinkName: data.target.uiname,
+              currentType: data.source.currentType,
               vent: self.vent
             });
             var modal = new Modal({
-              title: 'Select rules for '+data.target.uiname,
+              title: (data.source.currentType === 'RULE') ? 'Select rules for '+data.target.uiname : 'Select streams for '+data.target.uiname,
               contentWithFooter: true,
               content: view,
               showFooter: false,
-              escape: false,
               mainClass: 'modal-lg'
             }).open();
 
@@ -240,27 +250,49 @@ define(['require',
     onRender:function(){
       $('#loading').show();
       var self = this;
+      var actualHeight = $(window).innerHeight() - 138;
+      this.$('.graph-bg').css("height", actualHeight+"px");
       
       TopologyUtils.setTopologyName(this.$('#topologyName'), function(e, params){ 
         self.topologyName = params.newValue; 
       });
       TopologyUtils.bindDrag(this.$('.panel-body img'));
+      this.$(".nodes-list-container").draggable({
+        containment: '#graphEditor'
+      }).css("position", "absolute");
       
       setTimeout(function(){
-        self.topologyGraph = TopologyUtils.syncGraph(self.model.get('_editState'), self.graphNodesData, self.linkArr, self.ui.graphEditor, self.vent, self.graphTransforms);
+        self.renderFlag = true;
+        self.showCustomProcessors();
+        self.topologyGraph = TopologyUtils.syncGraph(self.model.get('_editState'), self.graphNodesData, self.linkArr, self.ui.graphEditor, self.vent, self.graphTransforms, self.linkConfigArr);
         TopologyUtils.bindDrop(self.$('#graphEditor'), self.dsArr, self.processorArr, self.sinkArr, self.vent, self.nodeNames);
       }, 0);
       
       var accordion = this.$('[data-toggle="collapse"]');
       if(accordion.length){
         accordion.on('click', function(e){
-          $(e.currentTarget).children('i').toggleClass('fa-caret-right fa-caret-down');
+          if($(e.currentTarget).hasClass("collapseNodeList")) {
+            $(e.currentTarget).children('i').toggleClass('fa-expand fa-compress');
+          } else $(e.currentTarget).children('i').toggleClass('fa-caret-right fa-caret-down');
         });
       }
 
       self.$('[data-rel="tooltip"]').tooltip({placement: 'bottom'});
-      
       $('#loading').hide();
+    },
+
+    showCustomProcessors: function(){
+      var self = this;
+      var customProcessorArr = _.where(this.processorConfigArr, {subType: 'CUSTOM'});
+      _.each(customProcessorArr, function(obj){
+        var jsonConfig = JSON.parse(obj.config);
+        var nameObj = _.findWhere(jsonConfig, {name: "name"});
+        if(nameObj){
+          self.$('#collapseProcessor .panel-body').append('<img src="images/icon-custom.png" class="topology-icon-inverse processor" data-rel="tooltip" title="'+nameObj.defaultValue+'" data-name="'+nameObj.defaultValue+'" data-subType="CUSTOM" data-parentType="Processor">');
+        }
+      });
+      TopologyUtils.bindDrag(self.$('.panel-body img'));
+      self.$('[data-rel="tooltip"]').tooltip({placement: 'bottom'});
     },
 
     evDSAction: function(model){
@@ -318,6 +350,25 @@ define(['require',
             });
           }
         break;
+
+        case 'CUSTOM':
+          require(['views/topology/CustomProcessorView'], function(CustomProcessorView){
+            var linkObj = self.linkArr.filter(function(o){
+              if(o.source.uiname === model.get('uiname'))
+                return o;
+            });
+            var arr = [];
+            _.each(linkObj, function(o){
+              arr.push(o.target.uiname);
+            });
+            self.showModal(new CustomProcessorView({
+              model: model,
+              vent: self.vent,
+              showOutputFields: linkObj.length ? true : false,
+              connectedNodes: arr
+            }), obj);
+          });
+        break;
       }
     },
 
@@ -360,7 +411,6 @@ define(['require',
         contentWithFooter: true,
         content: self.view,
         showFooter: false,
-        escape: false,
         mainClass: 'modal-lg'
       }).open();
 
@@ -389,10 +439,6 @@ define(['require',
     evSubmitAction: function(e){
       $('#loading').show();
       var self = this,
-          ds = [],
-          processors = [],
-          sink = [],
-          links = [],
           rootdirKeyName = 'hbaseConf';
       var hbaseObj = _.find(this.sinkArr, function(obj){
         if(obj && obj.type === 'HBASE')
@@ -402,9 +448,9 @@ define(['require',
         rootdirKeyName = hbaseObj.configKey;
       }
       var topologyConfig = {
-            "local.parser.jar.path": this.topologyConfigModel.get('parserPath'),
-            "local.notifier.jar.path": this.topologyConfigModel.get('notifierPath')
-          };
+        "local.parser.jar.path": this.topologyConfigModel.get('parserPath'),
+        "local.notifier.jar.path": this.topologyConfigModel.get('notifierPath')
+      };
       topologyConfig[rootdirKeyName] = {
         "hbase.rootdir": this.topologyConfigModel.get('rootdir')
       };
@@ -487,30 +533,54 @@ define(['require',
                 "to": targetObj.uiname,
               }
             };
+            if(sourceObj.currentType === 'DEVICE'){
+              tempData.links.push(tempObj);
+            }
             if(sourceObj.currentType === 'PARSER'){
               tempObj.config.streamId = obj.target.streamId;
+              tempData.links.push(tempObj);
             }
             if(sourceObj.currentType === 'RULE'){
               var ruleProcessor = sourceObj.newConfig ? sourceObj.newConfig.rulesProcessorConfig : sourceObj.rulesProcessorConfig;
-              var loopFlag = true, ruleIndex;
+              var loopFlag = false, ruleName;
               _.each(ruleProcessor.rules, function(obj, i){
-                if(loopFlag){
-                  var index = _.findIndex(obj.actions, {name: targetObj.uiname});
-                  if(index !== -1){
-                    ruleIndex = i;
-                    loopFlag = false;
-                  }
+                var actionObj = _.findWhere(obj.actions, {name: targetObj.uiname});
+                if(actionObj){
+                  loopFlag = true;
+                  var o = JSON.parse(JSON.stringify(tempObj));
+                  o.config.streamId = ruleProcessor.name+'.'+obj.name+'.'+obj.id+'.'+targetObj.uiname;
+                  tempData.links.push(o);
+                } else {
+                  loopFlag = loopFlag || false;
+                  ruleName = ruleProcessor.name+'.'+obj.name+' is not associated to any sink. Please associate before saving the topology.';
                 }
               });
-              if(!_.isUndefined(ruleIndex)){
-                tempObj.config.streamId = ruleProcessor.name+'.'+ruleProcessor.rules[ruleIndex].name+'.'+ruleProcessor.rules[ruleIndex].id+'.'+targetObj.uiname;
+              if(!loopFlag){
+                flag = false;
+                $('#loading').hide();
+                Utils.notifyError(ruleName);
+              }
+            }
+            if(sourceObj.currentType === 'CUSTOM'){
+              if(sourceObj.selectedStreams && sourceObj.selectedStreams.length){
+                var streamObj = _.where(sourceObj.selectedStreams, {name: targetObj.uiname});
+                if(streamObj.length){
+                  _.each(streamObj, function(s){
+                    var o = JSON.parse(JSON.stringify(tempObj));
+                    o.config.streamId = s.streamName;
+                    tempData.links.push(o);
+                  });
+                } else {
+                  flag = false;
+                  $('#loading').hide();
+                  Utils.notifyError("No output streams are selected for "+targetObj.uiname);
+                }
               } else {
                 flag = false;
                 $('#loading').hide();
-                Utils.notifyError(targetObj.uiname+" is not associated with any rules. Kindly associate the rules in the rule processor.");
+                Utils.notifyError("No output streams are selected from "+sourceObj.uiname);
               }
             }
-            tempData.links.push(tempObj);
           }
         }
       });
@@ -628,8 +698,7 @@ define(['require',
         var modal = new Modal({
           title: 'Topology Configuration',
           content: view,
-          contentWithFooter: true,
-          escape: false
+          contentWithFooter: true
         }).open();
         view.on('closeModal', function(){
           view = null;
@@ -642,6 +711,9 @@ define(['require',
     },
     evZoomOut: function(){
       this.vent.trigger('TopologyEditorMaster:Zoom', 'zoom_out');
+    },
+    evToggleNodeOptions: function() {
+      this.$(".node-options-btn, .nodes-list-container").toggleClass("displayNone");
     },
     destroy: function(){
       this.stopListening(this.vent, 'topologyEditor:SaveDeviceSource');
