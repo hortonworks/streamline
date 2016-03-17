@@ -3,6 +3,7 @@ package com.hortonworks.iotas.topology.storm;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import com.hortonworks.iotas.util.exception.BadTopologyLayoutException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -21,14 +22,17 @@ public class HbaseBoltFluxComponent extends AbstractFluxComponent {
         List boltConstructorArgs = getConstructorArgsYaml(constructorArgNames);
         Map ref = getRefYaml(hbaseMapperRef);
         boltConstructorArgs.add(ref);
-
-        String[] configMethodNames = {"writeToWAL", "withConfigKey"};
-        String[] configKeys = {
-                TopologyLayoutConstants.JSON_KEY_WRITE_TO_WAL,
-                TopologyLayoutConstants.JSON_KEY_CONFIG_KEY
-        };
-        List configMethods = getConfigMethodsYaml(configMethodNames,
-                configKeys);
+        List<String> configMethodNames = new ArrayList<>();
+        List values = new ArrayList();
+        if (conf.get(TopologyLayoutConstants.JSON_KEY_WRITE_TO_WAL) != null) {
+            configMethodNames.add("writeToWAL");
+            values.add(conf.get(TopologyLayoutConstants.JSON_KEY_WRITE_TO_WAL));
+        }
+        configMethodNames.add("withConfigKey");
+        // IOT-203: We are not exposing configKey in hbase component since the value is what really matters and it is captured in topology level config which
+        // translates to storm topology level config. UI uses the same key as below for the value of hbase config object in topology level config json
+        values.add("hbaseConf");
+        List configMethods = getConfigMethodsYaml(configMethodNames.toArray(new String[0]), values.toArray());
         component = createComponent(boltId, boltClassName, null, boltConstructorArgs, configMethods);
         addParallelismToComponent();
     }

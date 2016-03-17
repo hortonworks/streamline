@@ -76,14 +76,6 @@ define(['require',
     setTopologyConfigModel: function(){
       var config = this.model.get('config').config;
       var rootKey = 'hbaseConf';
-      if(_.isUndefined(config.hbaseConf)){
-        var hbaseObj = _.find(this.model.get('config').dataSinks, function(obj){
-          if(obj.type === 'HBASE') return obj;
-        });
-        if(hbaseObj){
-          rootKey = hbaseObj.config.configKey;
-        }
-      }
       var obj = {
         rootdir: config[rootKey]['hbase.rootdir'],
         parserPath: config['local.parser.jar.path'],
@@ -440,13 +432,6 @@ define(['require',
       $('#loading').show();
       var self = this,
           rootdirKeyName = 'hbaseConf';
-      var hbaseObj = _.find(this.sinkArr, function(obj){
-        if(obj && obj.type === 'HBASE')
-          return obj;
-      });
-      if(!_.isUndefined(hbaseObj)){
-        rootdirKeyName = hbaseObj.configKey;
-      }
       var topologyConfig = {
         "local.parser.jar.path": this.topologyConfigModel.get('parserPath'),
         "local.notifier.jar.path": this.topologyConfigModel.get('notifierPath')
