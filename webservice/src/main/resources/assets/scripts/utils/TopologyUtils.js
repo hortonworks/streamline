@@ -63,7 +63,7 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
         var count = 1,
             newName = name;
         while (nameList.indexOf(newName) !== -1) {
-            newName = newName + '-' + count;
+            newName = newName.split('-')[0] + '-' + count;
             count++;
         }
         nameList.push(newName);
@@ -185,8 +185,8 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
                 switch (parentType) {
                     case Globals.Topology.Editor.Steps.Datasource.valStr:
                         dsArr.push({ uiname: uiname, firstTime: true, currentType: subType });
-                        var parserName = uiname.replace('DEVICE', 'PARSER');
-                        nodeNamesList.push(parserName);
+                        var parserName = TopologyUtils.generateName('PARSER', nodeNamesList);
+                        obj.parserUiname = parserName;
                         processorArr.push({ uiname: parserName, firstTime: true, currentType: 'PARSER' });
                         break;
 
