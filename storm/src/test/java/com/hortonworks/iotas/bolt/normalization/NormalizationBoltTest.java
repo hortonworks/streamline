@@ -42,7 +42,10 @@ import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -76,7 +79,7 @@ public class NormalizationBoltTest {
         put("humidity", "40");
     }}, "ds-" + System.currentTimeMillis(), "id-" + System.currentTimeMillis());
 
-    private static final List<Schema.Field> OUTPUT_SCHEMA_FIELDS = Arrays.asList(
+    private static final Schema OUTPUT_SCHEMA_FIELDS = Schema.of(
             new Schema.Field("temperature", Schema.Type.FLOAT),
             new Schema.Field("humidity", Schema.Type.STRING),
             new Schema.Field("illuminance", Schema.Type.INTEGER),
@@ -119,7 +122,7 @@ public class NormalizationBoltTest {
         normalizationBolt.execute(tuple);
 
         new Verifications() {{
-            outputCollector.emit(tuple.getSourceStreamId(), tuple, new Values(VALID_OUTPUT_IOTAS_EVENT));
+            outputCollector.emit(withAny(""), tuple, new Values(VALID_OUTPUT_IOTAS_EVENT));
             times = 1;
             outputCollector.ack(tuple);
         }};
@@ -197,7 +200,7 @@ public class NormalizationBoltTest {
         for (Map.Entry<String, Object> entry : INPUT_IOTAS_EVENT.getFieldsAndValues().entrySet()) {
             binding.setVariable(entry.getKey(), entry.getValue());
         }
-        binding.setVariable("__outputSchema", Schema.of(OUTPUT_SCHEMA_FIELDS));
+        binding.setVariable("__outputSchema", OUTPUT_SCHEMA_FIELDS);
 
         GroovyShell groovyShell = new GroovyShell(binding);
 
