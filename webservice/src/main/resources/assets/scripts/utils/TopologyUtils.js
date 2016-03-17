@@ -498,7 +498,7 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
             if (!obj.firstTime) {
                 var configObj = {};
                 _.each(obj.config, function(o) {
-                    if (obj[o.name]) {
+                    if (!_.isUndefined(obj[o.name])) {
                         configObj[o.name] = obj[o.name];
                     }
                 });
@@ -554,7 +554,7 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
                         var configObj = {};
                         _.each(obj.config, function(o){
                             if(o.isUserInput){
-                                configObj[o.name] = obj[o.name] ? obj[o.name] : o.defaultValue;
+                                configObj[o.name] = !_.isUndefined(obj[o.name]) ? obj[o.name] : o.defaultValue;
                             } else {
                                 configObj[o.name] = o.defaultValue;
                             }
@@ -581,7 +581,7 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
                 if(linkArr.filter(function(o){ return o.target.uiname === obj.uiname;}).length){
                     var configObj = {};
                     _.each(obj.config, function(o) {
-                        if (obj[o.name]) {
+                        if (!_.isUndefined(obj[o.name])) {
                             configObj[o.name] = obj[o.name];
                         }
                     });
