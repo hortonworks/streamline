@@ -49,7 +49,6 @@ public class FieldBasedNormalizationRuntime extends NormalizationRuntime {
         this.transformerRuntimes = builder.transformerRuntimes;
         this.fieldValueGeneratorRuntimes = builder.fieldValueGeneratorRuntimes;
         this.normalizationConfig = builder.normalizationConfig;
-
     }
 
     public Map<String, Object> normalize(IotasEvent iotasEvent) throws NormalizationException {
@@ -59,9 +58,10 @@ public class FieldBasedNormalizationRuntime extends NormalizationRuntime {
 
         executeTransformers(iotasEvent, outputFieldNameValuePairs);
 
-        executeFilters(outputFieldNameValuePairs);
-
         executeOutputFieldValueGenerators(iotasEvent, outputFieldNameValuePairs);
+
+        // filtered fields should not exist in the output event.
+        executeFilters(outputFieldNameValuePairs);
 
         return outputFieldNameValuePairs;
     }

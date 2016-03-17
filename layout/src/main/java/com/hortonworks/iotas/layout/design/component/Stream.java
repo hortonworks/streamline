@@ -29,7 +29,7 @@ import java.util.UUID;
  */
 public class Stream {
     private String id;
-    private List<Schema.Field> fields;
+    private Schema schema;
 
     public enum Grouping {
         GROUPING_SHUFFLE
@@ -45,20 +45,20 @@ public class Stream {
             schemaFields.add(new Schema.Field(field, Schema.Type.STRING));
         }
         this.id = UUID.randomUUID().toString();
-        this.fields = schemaFields;
+        this.schema = Schema.of(schemaFields);
     }
 
-    public Stream(List<Schema.Field> fields) {
+    public Stream(Schema schema) {
         this.id = UUID.randomUUID().toString();
-        this.fields = fields;
+        this.schema = schema;
     }
 
     public String getId() {
         return id;
     }
 
-    public List<Schema.Field> fields() {
-        return fields;
+    public Schema fields() {
+        return schema;
     }
 
     @Override
@@ -81,7 +81,7 @@ public class Stream {
     public String toString() {
         return "Stream{" +
                 "id='" + id + '\'' +
-                ", fields=" + fields +
+                ", fields=" + schema +
                 '}';
     }
 }

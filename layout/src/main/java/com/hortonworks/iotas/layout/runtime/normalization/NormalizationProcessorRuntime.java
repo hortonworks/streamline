@@ -19,18 +19,21 @@
 package com.hortonworks.iotas.layout.runtime.normalization;
 
 import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.common.Result;
+import com.hortonworks.iotas.common.errors.ProcessingException;
 import com.hortonworks.iotas.layout.design.component.NormalizationProcessor;
+import com.hortonworks.iotas.layout.design.component.Stream;
 import com.hortonworks.iotas.layout.design.normalization.NormalizationConfig;
+import com.hortonworks.iotas.processor.ProcessorRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  *
  */
-public class NormalizationProcessorRuntime {
+public class NormalizationProcessorRuntime implements ProcessorRuntime {
     private static final Logger LOG = LoggerFactory.getLogger(NormalizationProcessorRuntime.class);
 
     // todo this map would be changed to Map<Stream, NormalizationRuntime> once we have support of streams on Processor
@@ -43,30 +46,26 @@ public class NormalizationProcessorRuntime {
         this.normalizationProcessor = normalizationProcessor;
     }
 
-    public void prepare() {
-        NormalizationRuntime.Factory factory = new NormalizationRuntime.Factory();
-        Map<String, NormalizationRuntime> schemaRuntimes = new HashMap<>();
-        for (Map.Entry<String, NormalizationConfig> entry : normalizationProcessor.inputStreamsWithConfig.entrySet()) {
-            schemaRuntimes.put(entry.getKey(), factory.create(entry.getValue()));
-        }
-        schemasWithNormalizationRuntime = schemaRuntimes;
+    public Set<Stream> getOutputStream() {
+        return normalizationProcessor.getDeclaredOutputStreams();
     }
 
     /*
      * todo: It should receive input Stream also and generate output Stream along with IotasEvent. This support should
      * come from processor framework, will add later.
-     *
      */
-    public IotasEvent execute(IotasEvent iotasEvent) {
+    @Override
+    public List<Result> process(IotasEvent iotasEvent) throws ProcessingException {
         // todo receive input stream through IotasEvent, get respective normalization-runtime for that and execute it.
         // taking default stream for now.
-        String currentStreamId = NormalizationProcessor.DEFAULT_STREAM_ID;
+        String currentStreamId = iotasEvent.getSourceStream() != null ? iotasEvent.getSourceStream() : NormalizationProcessor.DEFAULT_STREAM_ID;
         NormalizationRuntime normalizationRuntime = schemasWithNormalizationRuntime.get(currentStreamId);
         LOG.debug("Normalization runtime for this stream [{}]", normalizationRuntime);
 
+        IotasEvent outputEvent = iotasEvent;
         if (normalizationRuntime != null) {
             try {
-                return normalizationRuntime.execute(iotasEvent);
+                outputEvent =  normalizationRuntime.execute(iotasEvent);
             } catch (NormalizationException e) {
                 throw new RuntimeException(e);
             }
@@ -76,7 +75,21 @@ public class NormalizationProcessorRuntime {
 
         // if it is not found return received tuple without any normalization, it is kind of pass through normalization for streams
         // which does not have normalization configuration.
-        return iotasEvent;
+        return Collections.singletonList(new Result(NormalizationProcessor.DEFAULT_STREAM_ID, Collections.singletonList(outputEvent)));
+    }
+
+    @Override
+    public void initialize(Map<String, Object> config) {
+        NormalizationRuntime.Factory factory = new NormalizationRuntime.Factory();
+        Map<String, NormalizationRuntime> schemaRuntimes = new HashMap<>();
+        for (Map.Entry<String, NormalizationConfig> entry : normalizationProcessor.inputStreamsWithConfig.entrySet()) {
+            schemaRuntimes.put(entry.getKey(), factory.create(entry.getValue()));
+        }
+        schemasWithNormalizationRuntime = schemaRuntimes;
+    }
+
+    @Override
+    public void cleanup() {
 
     }
 }

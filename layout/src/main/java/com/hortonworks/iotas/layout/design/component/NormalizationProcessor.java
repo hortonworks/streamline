@@ -21,7 +21,6 @@ import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.layout.design.normalization.NormalizationConfig;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -45,11 +44,10 @@ public class NormalizationProcessor extends IotasProcessor {
         this.inputStreamsWithConfig = inputStreamsWithConfig;
     }
 
-    public void setDeclaredOutput(List<Schema.Field> declaredOutput) {
-        getDeclaredOutputs().add(new Stream(declaredOutput));
-        Schema outputSchema = Schema.of(declaredOutput);
+    public void setDeclaredOutput(Schema declaredOutput) {
+        addOutputStream(new Stream(declaredOutput));
         for (NormalizationConfig normalizationConfig : inputStreamsWithConfig.values()) {
-            normalizationConfig.setOutputSchema(outputSchema);
+            normalizationConfig.setOutputSchema(declaredOutput);
         }
     }
 

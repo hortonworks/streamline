@@ -167,7 +167,7 @@ public class TopologyDag implements Serializable {
     }
 
     private String getDefaultStreamId(Source source) {
-        return source.getDeclaredOutputs().iterator().next().getId();
+        return source.getDeclaredOutputStreams().iterator().next().getId();
     }
 
 

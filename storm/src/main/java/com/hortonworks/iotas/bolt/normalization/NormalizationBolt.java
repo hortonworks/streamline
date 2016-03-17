@@ -17,7 +17,11 @@
  */
 package com.hortonworks.iotas.bolt.normalization;
 
+import com.hortonworks.iotas.bolt.AbstractProcessorBolt;
 import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.common.IotasEventImpl;
+import com.hortonworks.iotas.common.Result;
+import com.hortonworks.iotas.layout.design.component.Stream;
 import com.hortonworks.iotas.layout.runtime.normalization.NormalizationProcessorRuntime;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
@@ -25,12 +29,11 @@ import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
-import com.hortonworks.iotas.bolt.AbstractProcessorBolt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  *
@@ -47,23 +50,27 @@ public class NormalizationBolt extends AbstractProcessorBolt {
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
         super.prepare(stormConf, context, collector);
-        normalizationProcessorRuntime.prepare();
+        normalizationProcessorRuntime.initialize(null);
     }
 
     public void process(Tuple inputTuple, IotasEvent iotasEvent) throws Exception {
         LOG.debug("Normalizing received IotasEvent: [{}] with tuple: [{}]", iotasEvent, inputTuple);
-
-       IotasEvent outputEvents = normalizationProcessorRuntime.execute(iotasEvent);
+        //todo this bolt will be replaced with custom baseprocessor bolt.
+        IotasEventImpl iotasEventWithStream = new IotasEventImpl(iotasEvent.getFieldsAndValues(), iotasEvent.getDataSourceId(),
+                iotasEvent.getId(), iotasEvent.getHeader(), inputTuple.getSourceStreamId());
+        List<Result> outputEvents = normalizationProcessorRuntime.process(iotasEventWithStream);
         LOG.debug("Emitting events to collector: [{}]", outputEvents);
-
-        collector.emit(inputTuple.getSourceStreamId(), inputTuple, new Values(outputEvents));
+        for (Result outputEvent : outputEvents) {
+            for (IotasEvent event : outputEvent.events) {
+                collector.emit(outputEvent.stream, inputTuple, new Values(event));
+            }
+        }
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        Set<String> thisStreams = context.getThisStreams();
-        for (String streamId : thisStreams) {
-            declarer.declareStream(streamId, new Fields(IotasEvent.IOTAS_EVENT));
+        for (Stream stream : normalizationProcessorRuntime.getOutputStream()) {
+            declarer.declareStream(stream.getId(), new Fields(IotasEvent.IOTAS_EVENT));
         }
     }
 }
