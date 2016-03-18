@@ -742,6 +742,36 @@ DELETE /api/v1/catalog/parsers/ID
 }
 ```
 
+### Verify uploading parser
+GET /api/v1/catalog/parsers/verify-upload
+
+    curl -X POST -i -F parserJar=@parsers-0.1.0-SNAPSHOT.jar http://localhost:8080/api/v1/catalog/parsers/upload-verify
+    
+*Success Response*
+
+    HTTP/1.1 100 Continue
+    
+    HTTP/1.1 200 OK
+    Date: Mon, 14 Mar 2016 01:08:01 GMT
+    Content-Type: application/json
+    Content-Length: 158
+    
+    {"responseCode":1000,"responseMessage":"Success","entities":["com.hortonworks.iotas.parsers.json.JsonParser","com.hortonworks.iotas.parsers.nest.NestParser"]}%
+    
+*Error Response*
+
+    *Error Response*
+    
+        HTTP/1.1 500 Internal Server Error
+        Content-Type: application/json
+        
+    ```json    
+    {
+     "responseCode": 1102,
+     "responseMessage": "An exception with message [msg] was thrown while processing request."
+    }
+    ```
+
 ### Download Jar
 GET /api/v1/catalog/parsers/download/ID
 

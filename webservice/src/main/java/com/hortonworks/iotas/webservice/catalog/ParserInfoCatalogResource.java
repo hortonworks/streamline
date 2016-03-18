@@ -2,21 +2,26 @@ package com.hortonworks.iotas.webservice.catalog;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import com.google.common.io.ByteStreams;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.parser.Parser;
 import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.util.FileUtil;
 import com.hortonworks.iotas.util.JarStorage;
 import com.hortonworks.iotas.util.ProxyUtil;
 import com.hortonworks.iotas.util.ReflectionHelper;
 import com.hortonworks.iotas.webservice.IotasConfiguration;
+import com.hortonworks.iotas.util.JarReader;
 import com.hortonworks.iotas.webservice.util.WSUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -37,6 +42,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
@@ -172,6 +178,34 @@ public class ParserInfoCatalogResource {
             }
         }
         return result;
+    }
+
+    //Test curl command curl -X POST -i -F parserJar=@parsers-0.1.0-SNAPSHOT.jar http://localhost:8080/api/v1/catalog/parsers/upload-verify
+    @Timed
+    @POST
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Path("/parsers/upload-verify")
+    public Response verifyParserUpload(@FormDataParam("parserJar") final InputStream inputStream) {
+        try {
+            final File tmpFile = FileUtil.writeInputStreamToTempFile(inputStream, ".jar");
+            List<String> parserClasses = JarReader.findSubtypeOfClasses(tmpFile, Parser.class);
+            Collection<String> availableParserClasses = Collections2.filter(parserClasses, new Predicate<String>() {
+                @Override
+                public boolean apply(@Nullable String s) {
+                    try {
+                        parserProxyUtil.loadClassFromJar(tmpFile.getAbsolutePath(), s);
+                        return true;
+                    } catch (Throwable ex) {
+                        LOG.warn("class {} is subtype of Parser, but it can't be initialized.", s);
+                        return false;
+                    }
+                }
+            });
+
+            return WSUtils.respond(Response.Status.OK, SUCCESS, availableParserClasses);
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
     }
 
     //Test curl command curl -X POST -i -F parserJar=@original-webservice-0.1.0-SNAPSHOT.jar -F parserInfo='{"parserName":"TestParser","className":"some.test.parserClass","version":0}' http://localhost:8080/api/v1/catalog/parsers
