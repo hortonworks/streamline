@@ -14,14 +14,25 @@ import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.catalog.Topology;
 import com.hortonworks.iotas.catalog.TopologyEditorMetadata;
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.processor.CustomProcessorInfo;
+import com.hortonworks.iotas.processor.examples.ConsoleCustomProcessor;
 import com.hortonworks.iotas.test.IntegrationTest;
+import com.hortonworks.iotas.topology.ConfigField;
 import com.hortonworks.iotas.topology.TopologyComponent;
+import com.hortonworks.iotas.topology.TopologyLayoutConstants;
+import com.hortonworks.iotas.webservice.catalog.TopologyCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
 import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit.DropwizardAppRule;
+import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.MultiPart;
+import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
+import org.glassfish.jersey.media.multipart.internal.MultiPartWriter;
 import org.junit.Assert;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -29,12 +40,20 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 
 
 /**
@@ -50,7 +69,8 @@ public class RestIntegrationTest {
     public static final DropwizardAppRule RULE = new DropwizardAppRule(IotasApplication.class, ResourceHelpers.resourceFilePath("iotas-test.yaml"));
 
     private String rootUrl = String.format("http://localhost:%d/api/v1/catalog/", RULE.getLocalPort());
-
+    private final InputStream IMAGE_FILE_STREAM = new ByteArrayInputStream("some gif gibberish".getBytes());
+    private final InputStream JAR_FILE_STREAM = new ByteArrayInputStream("some jar gibberish".getBytes());
     /**
      * A Test element holder class
      */
@@ -313,6 +333,58 @@ public class RestIntegrationTest {
         this.testResourcesWithQueryParams(testElements);
     }
 
+    @Test
+    @Ignore
+    public void testCustomProcessorInfos () throws Exception {
+        //Some issue with sending multi part for requests using this client and hence this test case is ignored for now. Fix later.
+        String response;
+        String prefixUrl = rootUrl + "system/componentdefinitions/PROCESSOR/custom";
+        CustomProcessorInfo customProcessorInfo = createCustomProcessorInfo();
+        String prefixQueryParam = "?streamingEngine=STORM";
+        List<String> getUrlQueryParms = new ArrayList<String>();
+        getUrlQueryParms.add(prefixQueryParam + "&name=ConsoleCustomProcessor");
+        getUrlQueryParms.add(prefixQueryParam + "&imageFileName=image.gif");
+        getUrlQueryParms.add(prefixQueryParam + "&jarFileName=iotas-core.jar");
+        getUrlQueryParms.add(prefixQueryParam + "&customProcessorImpl=" + ConsoleCustomProcessor.class.getCanonicalName());
+        List<List<CustomProcessorInfo>> getResults = new ArrayList<List<CustomProcessorInfo>>();
+        getResults.add(Arrays.asList(customProcessorInfo));
+        getResults.add(Arrays.asList(customProcessorInfo));
+        getResults.add(Arrays.asList(customProcessorInfo));
+        getResults.add(Arrays.asList(customProcessorInfo));
+        List<String> getUrls = new ArrayList<String>();
+        for (String queryParam: getUrlQueryParms) {
+            getUrls.add(prefixUrl + queryParam);
+        }
+        ClientConfig clientConfig = new ClientConfig();
+        clientConfig.register(MultiPartWriter.class);
+        Client client = ClientBuilder.newClient(clientConfig);
+        for (String getUrl: getUrls) {
+            try {
+                client.target(getUrl).request().get(String.class);
+                Assert.fail("Should have thrown NotFoundException.");
+            } catch (NotFoundException e) {
+                response = e.getResponse().readEntity(String.class);
+                Assert.assertEquals(CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER.getCode(), getResponseCode(response));
+            }
+        }
+        /*FileDataBodyPart imageFileBodyPart = new FileDataBodyPart(TopologyCatalogResource.IMAGE_FILE_PARAM_NAME, getCpImageFile(), MediaType
+                .APPLICATION_OCTET_STREAM_TYPE);
+        FileDataBodyPart jarFileBodyPart = new FileDataBodyPart(TopologyCatalogResource.JAR_FILE_PARAM_NAME, getCpJarFile(), MediaType
+                .APPLICATION_OCTET_STREAM_TYPE);*/
+        MultiPart multiPart = new MultiPart(MediaType.MULTIPART_FORM_DATA_TYPE);
+        multiPart.bodyPart(new StreamDataBodyPart(TopologyCatalogResource.IMAGE_FILE_PARAM_NAME, IMAGE_FILE_STREAM));
+        multiPart.bodyPart(new StreamDataBodyPart(TopologyCatalogResource.JAR_FILE_PARAM_NAME, JAR_FILE_STREAM));
+        multiPart.bodyPart(new FormDataBodyPart(TopologyCatalogResource.CP_INFO_PARAM_NAME, customProcessorInfo, MediaType.APPLICATION_JSON_TYPE));
+        client.target(prefixUrl).request(MediaType.MULTIPART_FORM_DATA_TYPE).post(Entity.entity(multiPart, multiPart.getMediaType()));
+        for (int i = 0; i < getUrls.size(); ++i) {
+            String getUrl = getUrls.get(i);
+            List<CustomProcessorInfo> expectedResults = getResults.get(i);
+            response = client.target(getUrl).request().get(String.class);
+            Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+            Assert.assertEquals(expectedResults, getEntities(response, expectedResults.get(i).getClass()));
+        }
+    }
+
     /**
      * For each QueryParamsResourceTestElement it first try to send all get
      * requests and verifies the response. It then loads all resources via post
@@ -527,4 +599,55 @@ public class RestIntegrationTest {
         topologyEditorMetadata.setTimestamp(System.currentTimeMillis());
         return topologyEditorMetadata;
     }
+
+    private CustomProcessorInfo createCustomProcessorInfo () {
+        CustomProcessorInfo customProcessorInfo = new CustomProcessorInfo();
+        customProcessorInfo.setName("ConsoleCustomProcessor");
+        customProcessorInfo.setDescription("Console Custom Processor");
+        customProcessorInfo.setImageFileName("image.gif");
+        customProcessorInfo.setJarFileName("iotas-core.jar");
+        customProcessorInfo.setCustomProcessorImpl(ConsoleCustomProcessor.class.getCanonicalName());
+        customProcessorInfo.setStreamingEngine(TopologyLayoutConstants.STORM_STREAMING_ENGINE);
+        customProcessorInfo.setConfigFields(getConfigFields());
+        customProcessorInfo.setInputSchema(getSchema());
+        customProcessorInfo.setOutputStreamToSchema(getOutputStreamsToSchema());
+        return customProcessorInfo;
+    }
+
+    private List<ConfigField> getConfigFields () {
+        List<ConfigField> configFields = new ArrayList<>();
+        ConfigField configField = new ConfigField();
+        configField.setName("configField");
+        configField.setDefaultValue(1);
+        configField.setType(ConfigField.Type.NUMBER);
+        configField.setTooltip("A number field");
+        configField.setIsUserInput(true);
+        configField.setIsOptional(true);
+        configFields.add(configField);
+        return configFields;
+    }
+
+    private Schema getSchema () {
+        Schema schema = new Schema.SchemaBuilder().field(new Schema.Field("field1", Schema.Type.INTEGER)).build();
+        return schema;
+    }
+
+    private Map<String, Schema> getOutputStreamsToSchema() {
+        Map<String, Schema> outputStreamToSchema = new HashMap<>();
+        outputStreamToSchema.put("outputStream", getSchema());
+        return outputStreamToSchema;
+    }
+
+    private File getCpImageFile () throws IOException {
+        File imageFile = new File("/tmp/image.gif");
+        IOUtils.copy(IMAGE_FILE_STREAM, new FileOutputStream(imageFile));
+        return imageFile;
+    }
+
+    private File getCpJarFile () throws IOException {
+        File jarFile = new File("/tmp/iotas-core.jar");
+        IOUtils.copy(JAR_FILE_STREAM, new FileOutputStream(jarFile));
+        return jarFile;
+    }
+
 }

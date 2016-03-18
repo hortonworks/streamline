@@ -1,4 +1,14 @@
+## 0.1.2
+ * IOT-203: Make configKey to not be a user input for hbase bolt.
+ * IOT-176: topology editor deploy fails if stormHomeDir lacks leading /
+ * IOT-147: Support array and nested field lookup with Storm Sql.
+ * IOT-177: Email notification bolt is throwing IllegalStateException.
+ * IOT-175: Fix generics in Parser.
+ * IOT-64:  Added normalization processor for bulk/field level normalization with groovy scripts.
+ * IOT-171: Normalization processor/bolt contract
+
 ## 0.1.1
+ * IOT-135: Implement Custom Processors.
  * IOT-131: Added common Config object.
  * IOT-128: Refactored design time entities.
  * IOT-148: Topology Editor should be able delete the nodes.
@@ -13,3 +23,9 @@
  * IOT-133: create iotas-dist, cleanup artifactid, start/stop script.
  * IOT-137: Support shuffle mechanisms based on stream processing framework.
  * IOT-152: Fix rpm build issues.
+ * IOT-159: Topology Editor changes.
+ * IOT-162: UI - connecting Parser to sink should be possible.
+ * IOT-163: UI - Any modal thats open should be closed by esc key.
+ * IOT-178: UI - Support Nested Json.
+ * IOT-179: UI - Enable custom processors registration and using them in topology editor.
+ * IOT-195: Custom Processor in topology editor.

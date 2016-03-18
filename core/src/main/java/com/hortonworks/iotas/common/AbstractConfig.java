@@ -1,5 +1,6 @@
 package com.hortonworks.iotas.common;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -7,7 +8,7 @@ import java.util.NoSuchElementException;
 /**
  * The base class for any type of configuration.
  */
-public abstract class AbstractConfig {
+public abstract class AbstractConfig implements Serializable {
     private final Map<String, Object> properties = new HashMap<>();
 
     public AbstractConfig() {

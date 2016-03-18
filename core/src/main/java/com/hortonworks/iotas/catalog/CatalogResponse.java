@@ -27,7 +27,8 @@ public class CatalogResponse {
         DATASOURCE_TYPE_FILTER_NOT_FOUND(1104, "Datasource not found for type [%s], query params [%s].", 2),
         ENTITY_NOT_FOUND_FOR_FILTER(1105, "Entity not found for query params [%s].", 1),
         PARSER_SCHEMA_FOR_ENTITY_NOT_FOUND(1106, "Parser schema not found for entity with id [%s].", 1),
-        DATASOURCE_SCHEMA_NOT_UNIQUE(1107, "Datasource has [%s] datafeeds and cannot be mapped to a unique schema.", 1);
+        DATASOURCE_SCHEMA_NOT_UNIQUE(1107, "Datasource has [%s] datafeeds and cannot be mapped to a unique schema.", 1),
+        CUSTOM_PROCESSOR_ONLY(1108, "Custom endpoint supported only for processors.", 0);
 
         private int code;
         private String msg;

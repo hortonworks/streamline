@@ -71,6 +71,14 @@ public class Stream {
     }
 
     /**
+     * A stream with the given schema and random UUID string as the stream id.
+     *
+     * @param schema the schema of the stream
+     */
+    public Stream(Schema schema) {
+        this(UUID.randomUUID().toString(), schema);
+    }
+    /**
      * A stream with the given id and schema.
      *
      * @param id the unique id of the stream

@@ -76,6 +76,8 @@ define(['require',
     onRender: function(){
       var rulePreview = '',
         ruleCollection = this.ruleCollection.models;
+      if(!ruleCollection.length)
+        this.$(".rule-list-heading").append('<h5>No rules found</h5>');
 
       this.$(".ruleList").append(TopologyUtils.generateFormulaPreview(ruleCollection));
     },
@@ -114,8 +116,8 @@ define(['require',
                   tempArr.push(new Backbone.Model(tempObj));
                 });
 
-          if(this.isEditState) {
-            ruleModel = _.find(this.ruleCollection.models, function(model) {
+          if(self.isEditState) {
+            ruleModel = _.find(self.ruleCollection.models, function(model) {
             if(model.get('ruleId') == data.ruleId) {
                 return model;
               }
@@ -132,14 +134,14 @@ define(['require',
                 });
             self.ruleCollection.add(ruleModel);
           }
-            this.isEditState = false;
+            self.isEditState = false;
             self.closeRuleForm();
             self.render();
             self.vent.trigger('RuleProcessor:update', self.ruleCollection);
         });
 
         this.listenTo(this.vent, 'RuleLayout:closeRule', function(){
-          this.isEditState = false;
+          self.isEditState = false;
           self.closeRuleForm();
         });
     },
@@ -178,18 +180,17 @@ define(['require',
 
     evAddRule: function(){
         var self = this;
-
-        this.ruleForm.show(new FormulaCompositeView({
-            vent: self.vent,
-            fields: self.fields,
-            config: self.config,
-            rulesArr: [],
-            ruleId: self.ruleCount,
-            ruleName: '',
-            sinkConnected: self.sinkConnected,
-            connectedSink: self.connectedSink
-        })
-        );
+        this.view = new FormulaCompositeView({
+          vent: self.vent,
+          fields: self.fields,
+          config: self.config,
+          rulesArr: [],
+          ruleId: self.ruleCount,
+          ruleName: '',
+          sinkConnected: self.sinkConnected,
+          connectedSink: self.connectedSink
+        });
+        this.ruleForm.show(this.view);
         this.$("#addRule, .btn-action").addClass("hidden").hide();
         $('#saveRule, #closeRule').show();
         $("#btnAdd, #btnCancel").hide();
@@ -201,28 +202,28 @@ define(['require',
           ruleId = $(e.currentTarget).data().id;
 
       var ruleModel = _.find(this.ruleCollection.models, function(model) {
-          if(model.get('ruleId') == ruleId) {
-            return model;
-          }
-        });
-        this.isEditState = true;
-        this.ruleForm.show(new FormulaCompositeView({
-            vent: self.vent,
-            fields: self.fields,
-            config: self.config,
-            rulesArr: ruleModel.get('config'),
-            ruleId: ruleModel.get('ruleId'),
-            ruleName: ruleModel.get('ruleName'),
-            sinkConnected: self.sinkConnected,
-            connectedSink: self.connectedSink,
-            ruleConnectsTo: ruleModel.get('ruleConnectsTo')
-          })
-        );
+        if(model.get('ruleId') == ruleId) {
+          return model;
+        }
+      });
+      this.isEditState = true;
+      this.view = new FormulaCompositeView({
+        vent: self.vent,
+        fields: self.fields,
+        config: self.config,
+        rulesArr: ruleModel.get('config'),
+        ruleId: ruleModel.get('ruleId'),
+        ruleName: ruleModel.get('ruleName'),
+        sinkConnected: self.sinkConnected,
+        connectedSink: self.connectedSink,
+        ruleConnectsTo: ruleModel.get('ruleConnectsTo')
+      });
+      this.ruleForm.show(this.view);
 
-        this.$("#addRule, .btn-action").addClass("hidden").hide();
-        $("#btnAdd, #btnCancel").hide();
-        $('#saveRule, #closeRule').show();
-        this.$(".ruleForm").addClass('panel panel-default');
+      this.$("#addRule, .btn-action").addClass("hidden").hide();
+      $("#btnAdd, #btnCancel").hide();
+      $('#saveRule, #closeRule').show();
+      this.$(".ruleForm").addClass('panel panel-default');
     },
 
     evDelRule: function(e) {

@@ -24,25 +24,29 @@ import java.util.Set;
  * The base implementation of a {@link Processor} that all Iotas processors should extend.
  */
 public class IotasProcessor extends IotasComponent implements Processor {
-    private final Set<Stream> declaredOutputs;
+    private final Set<Stream> declaredStreams;
 
     // for serialization
     protected IotasProcessor() {
         this(Collections.EMPTY_SET);
     }
 
-    public IotasProcessor(Set<Stream> declaredOutputs) {
-        this.declaredOutputs = declaredOutputs;
+    public IotasProcessor(Set<Stream> declaredStreams) {
+        this.declaredStreams = declaredStreams;
     }
 
     @Override
-    public Set<Stream> getDeclaredOutputs() {
-        return declaredOutputs;
+    public Set<Stream> getDeclaredOutputStreams() {
+        return declaredStreams;
+    }
+
+    public void addOutputStream(Stream stream) {
+        declaredStreams.add(stream);
     }
 
     @Override
     public Stream getStream(String streamId) {
-        for (Stream stream : this.getDeclaredOutputs()) {
+        for (Stream stream : this.getDeclaredOutputStreams()) {
             if (stream.getId().equals(streamId)) {
                 return stream;
             }

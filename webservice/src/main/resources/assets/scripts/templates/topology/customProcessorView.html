@@ -1,0 +1,44 @@
+<div class="modal-body">
+    <div class="row">
+        <div class="col-md-12">
+            <div id="rForm"></div>
+        </div>
+    </div>
+    {{#if showOutputFields}}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel-group" id="outputStreamListing" role="tablist" aria-multiselectable="true">
+                <div class="panel panel-default">
+                    <div class="panel-heading" role="tab" id="headingOne">
+                        <a role="button" data-toggle="collapse" data-parent="#outputStreamListing" href="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo"><i class="fa fa-caret-right"></i> Select output streams for the connected components</a>
+                    </div>
+                    <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+                        <div class="panel-body">
+                            {{#each outputFields}}
+                            <div class="row output-fields">
+                            	<div class="col-md-8">
+                            		<b>Stream Name:</b> {{this.name}}
+	                            	<br/>
+	                            	<b>Fields:</b> {{this.fields}}
+                            	</div>
+                            	<div class="col-md-4">
+                            		<select class="sinkConnect" data-stream="{{this.name}}" multiple="multiple">
+                                        {{#each this.connectedNodes}}
+                                            <option value="{{this}}">{{this}}</option>
+                                        {{/each}}
+                                    </select>
+                            	</div>
+                            </div>
+                            {{/each}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{/if}}
+</div>
+<div class="modal-footer">
+    <a href="javascript:void(0);" id="btnCancel" class="btn ok btn-default">Cancel</a>
+    <a href="javascript:void(0);" id="btnAdd" class="btn ok btn-success">Save</a>
+</div>

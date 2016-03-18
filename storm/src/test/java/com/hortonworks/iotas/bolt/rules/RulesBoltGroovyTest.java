@@ -16,8 +16,9 @@
  * limitations under the License.
  */
 
-package com.hortonworks.bolt.rules;
+package com.hortonworks.iotas.bolt.rules;
 
+import com.hortonworks.iotas.bolt.rules.RulesBoltTest;
 import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
 import mockit.integration.junit4.JMockit;
 import org.junit.runner.RunWith;

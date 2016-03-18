@@ -24,12 +24,12 @@ import java.util.Set;
  */
 public interface OutputComponent extends Component {
     /**
-     * The declared output schema of a Source. A source can have
-     * more than one outputs.
+     * The declared output streams of a Source. A source can have
+     * more than one output stream.
      *
      * @return the set of output streams.
      */
-    Set<Stream> getDeclaredOutputs();
+    Set<Stream> getDeclaredOutputStreams();
 
     /**
      * Returns the output Stream of this source corresponding to the given streamId.

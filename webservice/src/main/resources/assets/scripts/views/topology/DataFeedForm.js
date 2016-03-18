@@ -85,7 +85,7 @@ define(['utils/LangSupport',
       data.schemaObj = {
         devices: {
           type: 'Select2',
-          title: localization.tt('lbl.selectDevices')+'*',
+          title: 'Select Device Name*',
           options: deviceArr,
           editorClass: 'form-control',
           pluginAttr: {
@@ -204,6 +204,11 @@ define(['utils/LangSupport',
             delete this.model.attributes[key];
           } else if(typeof obj.defaultValue === 'boolean'){
             if(_.isEqual(attrs[key], obj.defaultValue.toString())){
+              delete attrs[key];
+              delete this.model.attributes[key];
+            }
+          } else if(obj.type === 'array.string'){
+            if((obj.defaultValue === null && attrs[key].length === 0) || (obj.defaultValue == attrs[key].toString())){
               delete attrs[key];
               delete this.model.attributes[key];
             }

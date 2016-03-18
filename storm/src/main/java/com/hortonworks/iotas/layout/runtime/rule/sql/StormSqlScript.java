@@ -40,7 +40,7 @@ import static com.hortonworks.iotas.layout.runtime.rule.condition.expression.Sto
 public class StormSqlScript<O> extends Script<IotasEvent, O, StormSqlEngine> {
     private static final Logger LOG = LoggerFactory.getLogger(StormSqlScript.class);
     private final ValuesConverter<O> valuesConverter;
-
+    private final List<String> fieldsToEmit;
     public StormSqlScript(Expression expression, ScriptEngine<StormSqlEngine> scriptEngine) {
         this(expression, scriptEngine, null);
     }
@@ -54,6 +54,7 @@ public class StormSqlScript<O> extends Script<IotasEvent, O, StormSqlEngine> {
         RulesDataSourcesProvider.setDelegate(((StormSqlEngine)scriptEngine).getDataSourceProvider());
 
         ((StormSqlEngine)scriptEngine).compileQuery(createQuery((StormSqlExpression) expression));
+        fieldsToEmit = ((StormSqlExpression) expression).getFieldsToEmit();
     }
 
     private List<String> createQuery(StormSqlExpression expression) {
@@ -77,8 +78,8 @@ public class StormSqlScript<O> extends Script<IotasEvent, O, StormSqlEngine> {
 
     private Values createValues(IotasEvent iotasEvent) {
         final Values values = new Values();
-        for (Object value : iotasEvent.getFieldsAndValues().values()) {
-            values.add(value);
+        for(String fieldName: fieldsToEmit) {
+            values.add(iotasEvent.getFieldsAndValues().get(fieldName));
         }
         return values;
     }

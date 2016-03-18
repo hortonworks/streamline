@@ -155,8 +155,7 @@ define([
           title: (model.has('id')) ? 'Edit Component' : 'Add Component',
           content: view,
           contentWithFooter: true,
-          showFooter: false,
-          escape: false
+          showFooter: false
         }).open();
 
         view.on('closeModal', function() {

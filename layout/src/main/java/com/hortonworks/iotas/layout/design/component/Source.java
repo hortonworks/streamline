@@ -17,11 +17,8 @@
  */
 package com.hortonworks.iotas.layout.design.component;
 
-import java.util.Set;
-
 /**
  * A source component
  */
 public interface Source extends OutputComponent {
-
 }

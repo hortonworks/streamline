@@ -38,7 +38,11 @@ public class StormTopologyActionsImpl implements TopologyActions {
                 stormArtifactsLocation = conf.get(TopologyLayoutConstants.STORM_ARTIFACTS_LOCATION_KEY);
             }
             if (conf.containsKey(TopologyLayoutConstants.STORM_HOME_DIR)) {
-                stormCliPath = conf.get(TopologyLayoutConstants.STORM_HOME_DIR) + "bin/storm";
+                String stormHomeDir = conf.get(TopologyLayoutConstants.STORM_HOME_DIR).toString();
+                if (!stormHomeDir.endsWith(File.separator)) {
+                    stormHomeDir += File.separator;
+                }
+                stormCliPath = stormHomeDir + "bin" + File.separator + "storm";
             }
             stormJarLocation = conf.get(TopologyLayoutConstants.STORM_JAR_LOCATION_KEY);
             catalogRootUrl = conf.get(TopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL);
@@ -81,7 +85,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
     public void validate (Topology topology) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         Map topologyConfig = mapper.readValue(topology.getConfig(), Map.class);
-        StormTopologyValidator validator = new StormTopologyValidator(topologyConfig);
+        StormTopologyValidator validator = new StormTopologyValidator(topologyConfig, this.catalogRootUrl);
         validator.validate();
     }
 

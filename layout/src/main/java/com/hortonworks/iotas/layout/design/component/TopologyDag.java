@@ -160,10 +160,9 @@ public class TopologyDag implements Serializable {
         edges.add(new Edge(from, to, streamGrouping));
     }
 
-    private String getDefaultStreamId(OutputComponent component) {
-        return component.getDeclaredOutputs().iterator().next().getId();
+    private String getDefaultStreamId(OutputComponent source) {
+        return source.getDeclaredOutputStreams().iterator().next().getId();
     }
-
 
     @Override
     public String toString() {

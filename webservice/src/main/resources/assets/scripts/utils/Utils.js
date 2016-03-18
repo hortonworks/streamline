@@ -190,14 +190,14 @@ define(['require', 'utils/Globals', 'bootstrap.notify'], function(require, Globa
     });
   };
 
-  Utils.uploadFile = function(restURL, data, successCallback, errorCallback){
+  Utils.uploadFile = function(restURL, data, successCallback, errorCallback, type){
     $.ajax({
         url: restURL,
         data: data,
         cache: false,
         contentType: false,
         processData: false,
-        type: 'POST',
+        type: type? type: 'POST',
         success: successCallback,
         error: errorCallback
       });

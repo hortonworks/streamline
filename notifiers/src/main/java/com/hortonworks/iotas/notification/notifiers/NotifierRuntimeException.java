@@ -10,4 +10,7 @@ public class NotifierRuntimeException extends RuntimeException {
     public NotifierRuntimeException(String msg, Throwable th) {
         super(msg, th);
     }
+    public NotifierRuntimeException(Throwable th) {
+        super(th);
+    }
 }
