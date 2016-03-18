@@ -1,4 +1,5 @@
 ## 0.1.2
+ * IOT-173: Parser upload should throw a error back to user if the specified class is not available in the jar.
  * IOT-174: Improve Parser upload experience.
  * IOT-203: Make configKey to not be a user input for hbase bolt.
  * IOT-176: topology editor deploy fails if stormHomeDir lacks leading /
