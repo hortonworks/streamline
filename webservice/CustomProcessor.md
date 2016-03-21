@@ -163,3 +163,42 @@ was used to assign the property imageFileName and jarFileName in custom processo
 
 `GET /api/v1/catalog/system/componentdefinitions/PROCESSOR/custom/image.gif`
 `GET /api/v1/catalog/system/componentdefinitions/PROCESSOR/custom/iotas-core.jar`
+
+## Auto upload for Custom Processors
+
+IoTaS also provides a way to drop and upload custom processors to the system so that they can be used
+in topology editor, just as if they were uploaded using a POST request using REST endpoint. For this,
+IoTaS server needs to be started with three configuration parameters set in iotas.yaml. They are
+
+customProcessorWatchPath: "/tmp"
+
+customProcessorUploadFailPath: "/tmp/failed"
+
+customProcessorUploadSuccessPath: "/tmp/uploaded"
+
+customProcessorWatchPath is where IoTaS will poll for any tar files that are created. Those tar files
+will automatically be tried for upload as CustomProcessor implementations. If the upload succeeds the
+tar file will be moved to customProcessorUploadSuccessPath location and customProcessorUploadFailPath
+otherwise. Note that these 3 directories are expected to be created with right permissions before
+starting IoTaS. Any files other than tar will be ignored and moved to customProcessorUploadFailPath.
+The tar file is expected to have 3 files in it. The main file is info.json. This is the json file 
+containing json representing CustomProcessorInfo. A sample json is shown below. The name of the file
+has to be info.json. Otherwise it will fail to upload. The other two files are the jar file and image file.
+As mentioned above jar file should contain the class implementing the CustomProcessor interface. Name of
+the class should be the same as the value of the property customProcessorImpl in info.json. The jar
+and image files in the tar should have the same name as the jarFileName and imageFileName properties
+respectively in info.json
+
+```json
+{
+  "streamingEngine": "STORM",
+  "name": "Console Custom Processor",
+  "description": "Console Custom Processor",
+  "imageFileName": "image.png",
+  "jarFileName": "iotas-core.jar",
+  "configFields": [{"name":"configField", "isOptional":false, "type":"string", "defaultValue":null,"isUserInput":true,"tooltip":"Config field"}],
+  "inputSchema": {"fields":[{"name":"childField1","type":"INTEGER"},{"name":"childField2","type":"BOOLEAN"},{"name":"topLevelStringField","type":"STRING"}]},
+  "outputStreamToSchema": {"stream1":{"fields":[{"name":"childField1","type":"INTEGER"},{"name":"childField2","type":"BOOLEAN"},{"name":"topLevelStringField","type":"STRING"}]}},
+  "customProcessorImpl": "com.hortonworks.iotas.processor.examples.ConsoleCustomProcessor"
+}
+```

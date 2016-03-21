@@ -23,8 +23,11 @@ import com.hortonworks.iotas.cache.Cache;
 import com.hortonworks.iotas.cache.impl.GuavaCache;
 import com.hortonworks.iotas.cache.writer.StorageWriteThrough;
 import com.hortonworks.iotas.cache.writer.StorageWriter;
+import com.hortonworks.iotas.common.CustomProcessorUploadHandler;
+import com.hortonworks.iotas.common.FileEventHandler;
 import com.hortonworks.iotas.notification.service.NotificationServiceImpl;
 import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.service.FileWatcher;
 import com.hortonworks.iotas.storage.CacheBackedStorageManager;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
@@ -51,6 +54,7 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -186,5 +190,28 @@ public class IotasApplication extends Application<IotasConfiguration> {
             environment.jersey().register(resource);
         }
         environment.jersey().register(MultiPartFeature.class);
+        watchFiles(iotasConfiguration, catalogService);
+    }
+
+    private void watchFiles (IotasConfiguration iotasConfiguration, CatalogService catalogService) {
+        if (iotasConfiguration.getCustomProcessorWatchPath() == null || iotasConfiguration.getCustomProcessorUploadFailPath() == null || iotasConfiguration
+                .getCustomProcessorUploadSuccessPath() == null) {
+            return;
+        }
+        FileEventHandler customProcessorUploadHandler = new CustomProcessorUploadHandler(iotasConfiguration.getCustomProcessorWatchPath(), iotasConfiguration
+                .getCustomProcessorUploadFailPath(), iotasConfiguration.getCustomProcessorUploadSuccessPath(), catalogService);
+        List<FileEventHandler> fileEventHandlers = new ArrayList<>();
+        fileEventHandlers.add(customProcessorUploadHandler);
+        final FileWatcher fileWatcher = new FileWatcher(fileEventHandlers);
+        fileWatcher.register();
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (fileWatcher.processEvents()) {
+
+                }
+            }
+        });
+        thread.start();
     }
 }

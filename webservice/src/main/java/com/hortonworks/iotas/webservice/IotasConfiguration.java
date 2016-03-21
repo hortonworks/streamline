@@ -53,6 +53,12 @@ public class IotasConfiguration extends Configuration {
         return this.brokerList;
     }
 
+    private String customProcessorWatchPath;
+
+    private String customProcessorUploadFailPath;
+
+    private String customProcessorUploadSuccessPath;
+
     @JsonProperty
     public void setBrokerList(String brokerList){
         this.brokerList = brokerList;
@@ -116,5 +122,29 @@ public class IotasConfiguration extends Configuration {
 
     public void setStormHomeDir (String stormHomeDir) {
         this.stormHomeDir = stormHomeDir;
+    }
+
+    public String getCustomProcessorWatchPath () {
+        return customProcessorWatchPath;
+    }
+
+    public void setCustomProcessorWatchPath (String customProcessorWatchPath) {
+        this.customProcessorWatchPath = customProcessorWatchPath;
+    }
+
+    public String getCustomProcessorUploadFailPath () {
+        return customProcessorUploadFailPath;
+    }
+
+    public void setCustomProcessorUploadFailPath (String customProcessorUploadFailPath) {
+        this.customProcessorUploadFailPath = customProcessorUploadFailPath;
+    }
+
+    public String getCustomProcessorUploadSuccessPath () {
+        return customProcessorUploadSuccessPath;
+    }
+
+    public void setCustomProcessorUploadSuccessPath (String customProcessorUploadSuccessPath) {
+        this.customProcessorUploadSuccessPath = customProcessorUploadSuccessPath;
     }
 }
