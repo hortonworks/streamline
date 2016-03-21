@@ -1,4 +1,5 @@
 ## 0.1.2
+ * IOT-217: Refactor to keep source, sink and processor interfaces independent
  * IOT-173: Parser upload should throw a error back to user if the specified class is not available in the jar.
  * IOT-174: Improve Parser upload experience.
  * IOT-203: Make configKey to not be a user input for hbase bolt.
