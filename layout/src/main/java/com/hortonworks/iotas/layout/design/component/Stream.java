@@ -19,6 +19,7 @@ package com.hortonworks.iotas.layout.design.component;
 
 import com.hortonworks.iotas.common.Schema;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -27,7 +28,7 @@ import java.util.UUID;
  * Stream represents the schema of the
  * output stream that a component emits.
  */
-public class Stream {
+public class Stream implements Serializable {
     private String id;
     private Schema schema;
 
@@ -40,6 +41,9 @@ public class Stream {
          * Fields grouping
          */
         FIELDS
+    }
+
+    private Stream() {
     }
 
     /**
@@ -93,11 +97,7 @@ public class Stream {
         return id;
     }
 
-    public List<Schema.Field> fields() {
-        return schema.getFields();
-    }
-
-    public Schema schema() {
+    public Schema getSchema() {
         return schema;
     }
 
@@ -124,7 +124,6 @@ public class Stream {
                 ", schema=" + schema +
                 '}';
     }
-
 
     private static List<Schema.Field> schemaFields(String... fields) {
         List<Schema.Field> schemaFields = new ArrayList<>();

@@ -20,7 +20,7 @@ package com.hortonworks.iotas.layout.design.component;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.layout.design.normalization.NormalizationConfig;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -37,24 +37,51 @@ public class NormalizationProcessor extends IotasProcessor {
     /**
      * {@link NormalizationConfig} for each inbound stream for this component.
      */
-    public Map<String, NormalizationConfig> inputStreamsWithConfig;
+    private Map<String, NormalizationConfig> inputStreamsWithNormalizationConfig;
+    private Type type;
 
-    public NormalizationProcessor(Map<String, NormalizationConfig> inputStreamsWithConfig) {
-        super(new HashSet<Stream>());
-        this.inputStreamsWithConfig = inputStreamsWithConfig;
+    private NormalizationProcessor() {
+        inputStreamsWithNormalizationConfig = new HashMap<>();
     }
 
-    public void setDeclaredOutput(Schema declaredOutput) {
-        addOutputStream(new Stream(declaredOutput));
-        for (NormalizationConfig normalizationConfig : inputStreamsWithConfig.values()) {
-            normalizationConfig.setOutputSchema(declaredOutput);
-        }
+    /**
+     *
+     * @param inputStreamsWithNormalizationConfig normalization configuration for each input stream
+     * @param declaredOutputStream output stream of this component
+     * @param type type of normalization which can be {@code Type.bulk} or {@code Type.fineGrained}
+     */
+    public NormalizationProcessor(Map<String, NormalizationConfig> inputStreamsWithNormalizationConfig, Stream declaredOutputStream, Type type) {
+        this.inputStreamsWithNormalizationConfig = inputStreamsWithNormalizationConfig;
+        this.type = type;
+        addOutputStream(declaredOutputStream);
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public Map<String, NormalizationConfig> getInputStreamsWithNormalizationConfig() {
+        return inputStreamsWithNormalizationConfig;
     }
 
     @Override
     public String toString() {
         return "NormalizationProcessor{" +
-                "inputStreamsWithConfig=" + inputStreamsWithConfig +
-                '}' + super.toString();
+                "inputStreamsWithNormalizationConfig=" + inputStreamsWithNormalizationConfig +
+                ", type=" + type +
+                '}'+super.toString();
     }
+
+    public enum Type {
+        /**
+         * It represents a configuration of using a bulk script for normalizing input to output schema.
+         */
+        bulk,
+
+        /**
+         * It represents a configuration of using a script for each field for normalizing input to output schema.
+         */
+        fineGrained
+    }
+
 }

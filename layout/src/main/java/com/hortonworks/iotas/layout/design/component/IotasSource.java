@@ -25,24 +25,24 @@ import java.util.Set;
  * The base implementation of a {@link Source} that all Iotas sources should extend.
  */
 public class IotasSource extends IotasComponent implements Source {
-    private final Set<Stream> declaredStreams = new HashSet<>();
+    private final Set<Stream> declaredOutputStreams = new HashSet<>();
 
     // for serialization
     protected IotasSource() {
         this(Collections.EMPTY_SET);
     }
 
-    public IotasSource(Set<Stream> declaredStreams) {
-        this.declaredStreams.addAll(declaredStreams);
+    public IotasSource(Set<Stream> declaredOutputStreams) {
+        this.declaredOutputStreams.addAll(declaredOutputStreams);
     }
 
     @Override
     public Set<Stream> getDeclaredOutputStreams() {
-        return Collections.unmodifiableSet(declaredStreams);
+        return Collections.unmodifiableSet(declaredOutputStreams);
     }
 
     public void addOutputStream(Stream stream) {
-        declaredStreams.add(stream);
+        declaredOutputStreams.add(stream);
     }
 
     @Override
@@ -52,7 +52,7 @@ public class IotasSource extends IotasComponent implements Source {
 
         IotasSource that = (IotasSource) o;
 
-        return declaredStreams != null ? declaredStreams.equals(that.declaredStreams) : that.declaredStreams == null;
+        return declaredOutputStreams != null ? declaredOutputStreams.equals(that.declaredOutputStreams) : that.declaredOutputStreams == null;
 
     }
 
@@ -68,13 +68,13 @@ public class IotasSource extends IotasComponent implements Source {
 
     @Override
     public int hashCode() {
-        return declaredStreams != null ? declaredStreams.hashCode() : 0;
+        return declaredOutputStreams != null ? declaredOutputStreams.hashCode() : 0;
     }
 
     @Override
     public String toString() {
         return "IotasSource{" +
-                "declaredStreams=" + declaredStreams +
+                "declaredStreams=" + declaredOutputStreams +
                 "} " + super.toString();
     }
 }

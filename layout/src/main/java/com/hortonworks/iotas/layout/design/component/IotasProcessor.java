@@ -18,30 +18,31 @@
 package com.hortonworks.iotas.layout.design.component;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
  * The base implementation of a {@link Processor} that all Iotas processors should extend.
  */
 public class IotasProcessor extends IotasComponent implements Processor {
-    private final Set<Stream> declaredStreams;
+    private final Set<Stream> declaredOutputStreams = new HashSet<>();
 
     // for serialization
     protected IotasProcessor() {
         this(Collections.EMPTY_SET);
     }
 
-    public IotasProcessor(Set<Stream> declaredStreams) {
-        this.declaredStreams = declaredStreams;
+    public IotasProcessor(Set<Stream> declaredOutputStreams) {
+        this.declaredOutputStreams.addAll(declaredOutputStreams);
     }
 
     @Override
     public Set<Stream> getDeclaredOutputStreams() {
-        return declaredStreams;
+        return declaredOutputStreams;
     }
 
     public void addOutputStream(Stream stream) {
-        declaredStreams.add(stream);
+        declaredOutputStreams.add(stream);
     }
 
     @Override
@@ -56,6 +57,8 @@ public class IotasProcessor extends IotasComponent implements Processor {
 
     @Override
     public String toString() {
-        return "IotasProcessor{} " + super.toString();
+        return "IotasProcessor{" +
+                "declaredOutputStreams=" + declaredOutputStreams +
+                '}'+super.toString();
     }
 }

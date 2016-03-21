@@ -16,6 +16,7 @@ import java.util.Map;
  */
 public class RuleBoltFluxComponent extends AbstractFluxComponent {
     private final Logger log = LoggerFactory.getLogger(RuleBoltFluxComponent.class);
+
     @Override
     protected void generateComponent () {
         String rulesBoltDependenciesFactory = addRulesBoltDependenciesFactory();
@@ -24,8 +25,7 @@ public class RuleBoltFluxComponent extends AbstractFluxComponent {
         List boltConstructorArgs = new ArrayList();
         Map ref = getRefYaml(rulesBoltDependenciesFactory);
         boltConstructorArgs.add(ref);
-        component = createComponent(boltId, boltClassName, null, boltConstructorArgs,
-                null);
+        component = createComponent(boltId, boltClassName, null, boltConstructorArgs, null);
         addParallelismToComponent();
     }
 
