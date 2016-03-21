@@ -17,12 +17,24 @@
  */
 package com.hortonworks.iotas.layout.design.component;
 
+import java.util.Set;
+
 /**
- * The base implementation of a {@link Sink} that all Iotas sinks should extend.
+ * A component that produces output and has a set of output streams.
  */
-public class IotasSink extends IotasComponent implements Sink {
-    @Override
-    public String toString() {
-        return "IotasSink{} " + super.toString();
-    }
+public interface OutputComponent extends Component {
+    /**
+     * The declared output streams of a Source. A source can have
+     * more than one output stream.
+     *
+     * @return the set of output streams.
+     */
+    Set<Stream> getDeclaredOutputStreams();
+
+    /**
+     * Returns the output Stream of this source corresponding to the given streamId.
+     *
+     * @throws IllegalArgumentException if the stream with the given streamId does not exist
+     */
+    Stream getStream(String streamId);
 }

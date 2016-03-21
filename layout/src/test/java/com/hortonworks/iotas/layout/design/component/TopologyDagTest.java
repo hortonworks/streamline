@@ -47,12 +47,12 @@ public class TopologyDagTest {
         topology.addEdge(processor, sink);
 
         assertEquals(1, topology.getEdgesFrom(src).size());
-        assertEquals(src, topology.getEdgesFrom(src).get(0).getSource());
-        assertEquals(processor, topology.getEdgesFrom(src).get(0).getSink());
+        assertEquals(src, topology.getEdgesFrom(src).get(0).getFrom());
+        assertEquals(processor, topology.getEdgesFrom(src).get(0).getTo());
 
         assertEquals(1, topology.getEdgesFrom(processor).size());
-        assertEquals(processor, topology.getEdgesFrom(processor).get(0).getSource());
-        assertEquals(sink, topology.getEdgesFrom(processor).get(0).getSink());
+        assertEquals(processor, topology.getEdgesFrom(processor).get(0).getFrom());
+        assertEquals(sink, topology.getEdgesFrom(processor).get(0).getTo());
 
         assertEquals(2, topology.getEdges(processor).size());
 
@@ -70,9 +70,8 @@ public class TopologyDagTest {
         topology.addEdge(src, processor);
         topology.addEdge(processor, sink);
 
-        assertEquals(Sets.newHashSet(src, processor), topology.getSources());
-        assertEquals(Sets.newHashSet(sink, processor), topology.getSinks());
-        assertEquals(Sets.newHashSet(processor), topology.getProcessors());
+        assertEquals(Sets.newHashSet(src, processor), topology.getOutputComponents());
+        assertEquals(Sets.newHashSet(sink, processor), topology.getInputComponents());
 
         assertEquals(2, topology.getAllEdges().size());
 

@@ -19,7 +19,7 @@ package com.hortonworks.iotas.layout.design.component;
 
 /**
  * Any Iotas design time topology component (source, sink, processor etc)
- * could inherit from {@link IotasComponent} to provide
+ * inherits from {@link IotasComponent} to provide
  * the default implementation for the {@link Component} methods.
  */
 public abstract class IotasComponent implements Component {

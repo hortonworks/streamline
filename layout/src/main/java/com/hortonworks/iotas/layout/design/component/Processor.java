@@ -20,7 +20,6 @@ package com.hortonworks.iotas.layout.design.component;
 /**
  * A processing component that can receive inputs and do some transformation
  * to produce outputs.
- * A processor is both a source and a sink.
  */
-public interface Processor extends Source, Sink {
+public interface Processor extends InputComponent, OutputComponent {
 }

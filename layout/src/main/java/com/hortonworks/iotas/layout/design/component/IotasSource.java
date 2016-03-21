@@ -21,6 +21,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * The base implementation of a {@link Source} that all Iotas sources should extend.
+ */
 public class IotasSource extends IotasComponent implements Source {
     private final Set<Stream> declaredStreams = new HashSet<>();
 
