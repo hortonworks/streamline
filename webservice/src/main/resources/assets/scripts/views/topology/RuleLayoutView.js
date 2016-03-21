@@ -80,6 +80,9 @@ define(['require',
         this.$(".rule-list-heading").append('<h5>No rules found</h5>');
 
       this.$(".ruleList").append(TopologyUtils.generateFormulaPreview(ruleCollection));
+      if(!this.editMode) {
+        this.$("#addRule, button").toggleClass("displayNone");
+      }
     },
 
     bindEvents: function() {

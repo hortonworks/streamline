@@ -88,6 +88,7 @@ define(['utils/LangSupport',
           title: 'Select Device Name*',
           options: deviceArr,
           editorClass: 'form-control',
+          editorAttrs: self.editMode ? {} : {disabled: 'disabled'},
           pluginAttr: {
             placeholder: localization.tt('lbl.devices'),
             allowClear: true,
@@ -106,6 +107,7 @@ define(['utils/LangSupport',
           type: 'Text',
           title: name+(obj.isOptional?'' : '*'),
           editorClass: 'form-control',
+          editorAttrs: self.editMode ? {} : {disabled: 'disabled'},
           placeholder: name,
           validators: (obj.isOptional ? [] : [{'type':'required','message': name+' can not be blank.'}])
         };

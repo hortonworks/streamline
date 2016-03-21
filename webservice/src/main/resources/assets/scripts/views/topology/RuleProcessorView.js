@@ -73,10 +73,14 @@ define(['require',
           config: self.model.get('config'),
           rulesArr: self.model.has('newConfig') ? self.model.attributes.newConfig.rulesProcessorConfig.rules : (self.model.has('rulesProcessorConfig') ? self.model.attributes.rulesProcessorConfig.rules : []),
           linkedToRule: self.linkedToRule,
-          connectedSink: self.connectedSink
+          connectedSink: self.connectedSink,
+          editMode: self.editMode
         });
         self.formulaForm.show(self.view);
       });
+      if(!self.editMode) {
+        self.$("#btnAdd").toggleClass("displayNone");
+      }
     },
     evAdd: function(e){
       if(this.view.validate()){

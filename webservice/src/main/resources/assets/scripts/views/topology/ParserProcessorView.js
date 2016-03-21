@@ -47,10 +47,14 @@ define(['require',
       var self = this;
       require(['views/topology/ParserProcessorForm'], function(ParserForm) {
         self.view = new ParserForm({
-          model: self.model
+          model: self.model,
+          editMode: self.editMode
         });
         self.rForm.show(self.view);
       });
+      if(!self.editMode) {
+        self.$("#btnAdd").toggleClass("displayNone");
+      }
     },
 
     evAdd: function(e) {

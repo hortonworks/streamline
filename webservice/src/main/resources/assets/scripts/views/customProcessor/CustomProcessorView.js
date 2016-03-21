@@ -42,6 +42,7 @@ define([
         columns: this.getColumns(),
         collection: this.collection,
         gridOpts: {
+          emptyText: 'No processor found',
           className: 'table table-backgrid table-bordered table-striped table-condensed'
         },
         includePagination: false,
@@ -76,7 +77,7 @@ define([
           formatter: _.extend({}, Backgrid.CellFormatter.prototype, {
             fromRaw: function(rawValue, model) {
               if (model) {
-                return "<a href='#!/custom-processor/edit/"+model.get('name')+"' title='Edit' class='btn btn-success btn-xs'><i class='fa fa-edit'></i></a><a href='javascript:void(0)' title='Delete' class='btn btn-danger btn-xs' id='deleteAction' data-name='"+model.get("name")+"' type='default' ><i class='fa fa-trash'></i></a>";
+                return "<a href='javascript:void(0);' id='editAction' data-name='"+model.get("name")+"' title='Edit' class='btn btn-success btn-xs'><i class='fa fa-edit'></i></a><a href='javascript:void(0)' title='Delete' class='btn btn-danger btn-xs' id='deleteAction' data-name='"+model.get("name")+"' type='default' ><i class='fa fa-trash'></i></a>";
               }
             }
           })

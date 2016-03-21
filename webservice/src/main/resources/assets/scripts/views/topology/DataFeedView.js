@@ -28,10 +28,14 @@ define(['require',
       var self = this;
       require(['views/topology/DataFeedForm'], function(DataFeedForm){
         self.view = new DataFeedForm({
-          model: self.model
+          model: self.model,
+          editMode: self.editMode
         });
         self.rForm.show(self.view);
       });
+      if(!self.editMode) {
+        self.$("#btnAdd").toggleClass("displayNone");
+      }
     },
 
     evAdd: function(e){

@@ -14,13 +14,10 @@ define([
 			'!/parser-registry'				: 'parserRegistryAction',
 			'!/device-catalog'				: 'deviceCatalogAction',
 			'!/device-catalog/:pid'			: 'deviceDetailAction',
-			'!/configuration'				: 'configurationAction',
 			'!/topology'					: 'topologyAction',
 			'!/topology-editor'				: 'topologyEditorAction',
 			'!/topology-editor/:pid'		: 'topologyEditorAction',
-			'!/custom-processor'			: 'customProcessorAction',
-			'!/custom-processor/add'		: 'customProcessorConfig',
-			'!/custom-processor/edit/:id'	: 'customProcessorConfig',
+			'!/control-panel'				: 'controlPanelAction',
 
 			// Default
 			'*actions': 'defaultAction'
@@ -106,40 +103,6 @@ define([
 			});
 		},
 
-		configurationAction: function(){
-			VAppState.set({
-				'currentTab' : 0
-			});
-			require(['collection/VClusterList', 'views/clusterConfig/ComponentMaster'], function(VClusterList, configView){
-				var collection = new VClusterList(),
-					createStormCluster = true,
-					createKafkaCluster = true,
-					createHdfsCluster = true;
-				collection.fetch({
-					async: false,
-			        success: function(collection, response, options){
-			          if(collection.models.length){
-			            _.each(collection.models, function(model){
-			              if(model.get('type') === 'STORM'){
-			                createStormCluster = false;
-			              } else if(model.get('type') === 'KAFKA'){
-			                createKafkaCluster = false;
-			              } else if(model.get('type') === 'HDFS'){
-			              	createHdfsCluster = false;
-			              }
-			            });
-			          }
-			        }
-			    });
-			    App.rContent.show(new configView({
-					clusterCollection: collection,
-					createStormCluster: createStormCluster,
-					createKafkaCluster: createKafkaCluster,
-					createHdfsCluster: createHdfsCluster
-				}));
-			});
-		},
-
 		topologyAction: function(){
 			VAppState.set({
 				'currentTab' : Globals.AppTabs.DataStreamEditor.value
@@ -182,45 +145,13 @@ define([
 			}
 		},
 
-		customProcessorAction: function() {
+		controlPanelAction: function() {
 			VAppState.set({
 				'currentTab' : 0
 			});
-			require(['views/customProcessor/CustomProcessorView'], function(CustomProcessorView){
-				App.rContent.show(new CustomProcessorView());
+			require(['views/site/ControlPanelView'], function(ControlPanelView){
+				App.rContent.show(new ControlPanelView());
 			});
-		},
-
-		customProcessorConfig: function(id){
-			VAppState.set({
-				'currentTab' : 0
-			});
-			if(id){
-				require(['models/VCustomProcessor'], function(VCustomProcessor){
-					var vCustomProcessorModel = new VCustomProcessor();
-					vCustomProcessorModel.getCustomProcessor({
-						id: id,
-						success: function(model,response,options){
-							vCustomProcessorModel.set(model.entities[0]);
-							delete vCustomProcessorModel.attributes.entities;
-							delete vCustomProcessorModel.attributes.responseCode;
-							delete vCustomProcessorModel.attributes.responseMessage;
-							require(['views/customProcessor/CustomProcessorConfigView'], function(CustomProcessorConfigView){
-								App.rContent.show(new CustomProcessorConfigView({
-									model: vCustomProcessorModel
-								}));
-							});
-						},
-						error: function(model, response, options){
-							Utils.showError(model, response);
-						}
-					});
-				});
-			} else {
-				require(['views/customProcessor/CustomProcessorConfigView'], function(CustomProcessorConfigView){
-					App.rContent.show(new CustomProcessorConfigView());
-				});
-			}
 		},
 
 		defaultAction: function(actions) {
