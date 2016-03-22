@@ -1,4 +1,8 @@
 ## 0.1.2
+ * IOT-191: UI - topology actions should be integrated and provide view mode and edit mode on topology editor
+ * IOT-210: UI - Drop down for configs should be just move to Control Panel
+ * IOT-211: UI - Add breadcrumbs navigation bar for all the pages.
+ * IOT-199: UI - Improve the componen icon status to show its not configured
  * IOT-217: Refactor to keep source, sink and processor interfaces independent
  * IOT-173: Parser upload should throw a error back to user if the specified class is not available in the jar.
  * IOT-174: Improve Parser upload experience.
