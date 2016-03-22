@@ -29,32 +29,33 @@ import com.hortonworks.iotas.storage.CacheBackedStorageManager;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
+import com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManager;
+import com.hortonworks.iotas.storage.impl.jdbc.config.ExecutionConfig;
+import com.hortonworks.iotas.storage.impl.jdbc.connection.HikariCPConnectionBuilder;
+import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.PhoenixClient;
+import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
 import com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager;
 import com.hortonworks.iotas.topology.TopologyActions;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import com.hortonworks.iotas.util.JarStorage;
 import com.hortonworks.iotas.util.ReflectionHelper;
-import com.hortonworks.iotas.webservice.catalog.ClusterCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.ComponentCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.DataSourceCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.DataSourceFacade;
-import com.hortonworks.iotas.webservice.catalog.DataSourceWithDataFeedCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.FeedCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.NotifierInfoCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.ParserInfoCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.TopologyCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.TopologyEditorMetadataResource;
+import com.hortonworks.iotas.webservice.catalog.*;
+import com.zaxxer.hikari.HikariConfig;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class IotasApplication extends Application<IotasConfiguration> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(IotasApplication.class);
 
     public static void main(String[] args) throws Exception {
         new IotasApplication().run(args);
@@ -83,13 +84,16 @@ public class IotasApplication extends Application<IotasConfiguration> {
         // environment.jersey().register(feedResource);
 
         // TODO we should load the implementation based on configuration
-        final StorageManager cacheBackedDao = getCacheBackedDao();
+        final StorageManager cacheBackedDao = getCacheBackedDao(iotasConfiguration);
 
         registerResources(iotasConfiguration, environment, cacheBackedDao);
     }
 
-    private StorageManager getCacheBackedDao() {
-        final InMemoryStorageManager dao = new InMemoryStorageManager();
+    private StorageManager getCacheBackedDao(IotasConfiguration iotasConfiguration) {
+        //TODO storage provider configuration should come from IotasConfiguration.
+        String providerType = iotasConfiguration.getStorageProvier();
+        LOG.info("################################### providerType = " + providerType);
+        final StorageManager dao = providerType.equalsIgnoreCase("phoenix") ? createPhoenixStorageManager(iotasConfiguration) : new InMemoryStorageManager();
         final CacheBuilder cacheBuilder = getGuavaCacheBuilder();
         final Cache<StorableKey, Storable> cache = getCache(dao, cacheBuilder);
         final StorageWriter storageWriter = getStorageWriter(dao);
@@ -97,12 +101,29 @@ public class IotasApplication extends Application<IotasConfiguration> {
         return doGetCacheBackedDao(cache, storageWriter);
     }
 
+    private StorageManager createPhoenixStorageManager(IotasConfiguration iotasConfig) {
+        //TODO takes config from iotas configuration for the below information and refactor accordingly.
+        HikariConfig hikariConfig = new HikariConfig();
+        try {
+            Class.forName("org.apache.phoenix.jdbc.PhoenixDriver");
+            String jdbcUrl = "jdbc:phoenix:" + iotasConfig.getPhoenixZookeeperHosts();
+            hikariConfig.setJdbcUrl(jdbcUrl);
+            PhoenixClient phoenixClient = new PhoenixClient(jdbcUrl);
+            LOG.info("creating tables");
+            String createPath = "phoenix/create_tables.sql";
+            phoenixClient.runScript(createPath);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return new JdbcStorageManager(new PhoenixExecutor(new ExecutionConfig(-1), new HikariCPConnectionBuilder(hikariConfig)));
+    }
+
     private StorageWriter getStorageWriter(StorageManager dao) {
         return new StorageWriteThrough(dao);
     }
 
     private StorageManager doGetCacheBackedDao(Cache<StorableKey, Storable> cache, StorageWriter writer) {
-//        return new InMemoryStorageManager();      // for quick debug purposes
         return new CacheBackedStorageManager(cache, writer);
     }
 
@@ -156,7 +177,7 @@ public class IotasApplication extends Application<IotasConfiguration> {
 
 
     private void registerResources(IotasConfiguration iotasConfiguration, Environment environment, StorageManager manager) {
-        StorageManager storageManager = getCacheBackedDao();
+        StorageManager storageManager = getCacheBackedDao(iotasConfiguration);
         TopologyActions topologyActions = getTopologyActionsImpl
                 (iotasConfiguration);
         JarStorage jarStorage = this.getJarStorage(iotasConfiguration);

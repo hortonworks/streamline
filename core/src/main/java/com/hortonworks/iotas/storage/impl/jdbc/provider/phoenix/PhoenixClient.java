@@ -1,4 +1,4 @@
-package com.hortonworks.iotas.storage.impl.jdbc.phoenix;
+package com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

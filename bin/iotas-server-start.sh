@@ -74,5 +74,5 @@ fi
 if [ "x$DAEMON_MODE" = "xtrue" ]; then
   nohup $JAVA $IOTAS_HEAP_OPTS $IOTAS_JVM_PERFORMANCE_OPTS -cp $CLASSPATH $IOTAS_OPTS "com.hortonworks.iotas.webservice.IotasApplication" "server" "$@" > "$CONSOLE_OUTPUT_FILE" 2>&1 < /dev/null &
 else
-  exec $JAVA $IOTAS_HEAP_OPTS $IOTAS_JVM_PERFORMANCE_OPTS  -cp $CLASSPATH $IOTAS_OPTS "com.hortonworks.iotas.webservice.IotasApplication" "server" "$@"
+  exec $JAVA $IOTAS_HEAP_OPTS $IOTAS_JVM_PERFORMANCE_OPTS -cp $CLASSPATH $IOTAS_OPTS "com.hortonworks.iotas.webservice.IotasApplication" "server" "$@"
 fi
