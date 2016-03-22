@@ -528,6 +528,10 @@ public class CatalogService {
         return;
     }
 
+    public TopologyActions.Status topologyStatus (Topology topology) throws Exception {
+        return this.topologyActions.status(topology);
+    }
+
     public Collection<TopologyComponent.TopologyComponentType> listTopologyComponentTypes () {
         return Arrays.asList(TopologyComponent.TopologyComponentType.values());
     }
