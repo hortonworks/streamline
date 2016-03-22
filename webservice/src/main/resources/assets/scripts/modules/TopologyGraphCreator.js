@@ -254,8 +254,8 @@ define(['require',
 		DELETE_KEY: 46,
 		ENTER_KEY: 13,
 		nodeRadius: 40,
-		rectangleWidth: 48,
-		rectangleHeight: 58
+		rectangleWidth: 68,
+		rectangleHeight: 78
 	};
 
 	/* PROTOTYPE FUNCTIONS */
@@ -957,8 +957,8 @@ define(['require',
 						return "url(#grayscale)";
 					} else return "";
 				})
-				.attr("width", "48px")
-				.attr("height", "48px")
+				.attr("width", "68px")
+				.attr("height", "68px")
 			    .on("mouseover", function(d) {
 			    	if(thisGraph.editMode){
 			    		$(this).css("opacity", "0.75");
@@ -981,7 +981,7 @@ define(['require',
 
             newGs.append('text')
                 .attr("class", "fa fa-times")
-                .attr("x","36px")
+                .attr("x","56px")
                 .attr("y","10px")
                 .text(function(d) {
 					return '\uf00d';
