@@ -1,4 +1,5 @@
 ## 0.1.2
+ * IOT-86: Added api to query topology status.
  * IOT-191: UI - topology actions should be integrated and provide view mode and edit mode on topology editor
  * IOT-210: UI - Drop down for configs should be just move to Control Panel
  * IOT-211: UI - Add breadcrumbs navigation bar for all the pages.
