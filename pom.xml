@@ -10,6 +10,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>sdk</module>
         <module>core</module>
         <module>simulator</module>
         <module>webservice</module>
@@ -18,7 +19,7 @@
         <module>notification-service</module>
         <module>notifiers</module>
         <module>layout</module>
-	<module>iotas-dist</module>
+        <module>iotas-dist</module>
     </modules>
 
     <properties>

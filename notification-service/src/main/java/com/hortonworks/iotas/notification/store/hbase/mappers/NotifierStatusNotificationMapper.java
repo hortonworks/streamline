@@ -1,11 +1,6 @@
 package com.hortonworks.iotas.notification.store.hbase.mappers;
 
-import com.hortonworks.iotas.notification.common.Notification;
-import com.hortonworks.iotas.notification.common.NotificationImpl;
-import org.apache.hadoop.hbase.client.Delete;
-import org.apache.hadoop.hbase.client.Put;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.hortonworks.iotas.notification.Notification;
 
 import java.util.Arrays;
 import java.util.List;

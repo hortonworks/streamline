@@ -1,4 +1,4 @@
-package com.hortonworks.iotas.notification.common;
+package com.hortonworks.iotas.notification;
 
 import java.util.List;
 

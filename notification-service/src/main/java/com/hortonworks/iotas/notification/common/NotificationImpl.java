@@ -1,5 +1,7 @@
 package com.hortonworks.iotas.notification.common;
 
+import com.hortonworks.iotas.notification.Notification;
+
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;

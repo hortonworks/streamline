@@ -1,8 +1,8 @@
 package com.hortonworks.iotas.notification.notifiers;
 
-import com.hortonworks.iotas.notification.common.Notification;
-import com.hortonworks.iotas.notification.common.NotificationContext;
-import com.hortonworks.iotas.notification.common.NotifierConfig;
+import com.hortonworks.iotas.notification.Notification;
+import com.hortonworks.iotas.notification.NotificationContext;
+import com.hortonworks.iotas.notification.NotifierConfig;
 import com.sun.mail.smtp.SMTPTransport;
 import mockit.Expectations;
 import mockit.Mocked;
@@ -11,12 +11,10 @@ import mockit.integration.junit4.JMockit;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import javax.mail.Address;
 import javax.mail.Message;
-import javax.mail.Transport;
 import javax.mail.event.TransportEvent;
 import java.util.HashMap;
 import java.util.Map;
