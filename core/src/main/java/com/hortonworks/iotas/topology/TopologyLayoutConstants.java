@@ -156,6 +156,9 @@ public final class TopologyLayoutConstants {
 
     public static final String STORM_STREAMING_ENGINE = "STORM";
 
+    // metric
+    public static final String STORM_API_ROOT_URL_KEY = "stormApiRootUrl";
+
     // artifact
     public static final String STORM_ARTIFACTS_LOCATION_KEY =
             "stormArtifactsDirectory";
