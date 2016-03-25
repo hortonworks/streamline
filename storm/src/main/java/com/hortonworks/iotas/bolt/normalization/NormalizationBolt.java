@@ -78,7 +78,7 @@ public class NormalizationBolt extends AbstractProcessorBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        for (Stream stream : normalizationProcessor.getDeclaredOutputStreams()) {
+        for (Stream stream : normalizationProcessor.getOutputStreams()) {
             declarer.declareStream(stream.getId(), new Fields(IotasEvent.IOTAS_EVENT));
         }
     }

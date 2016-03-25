@@ -25,24 +25,24 @@ import java.util.Set;
  * The base implementation of a {@link Source} that all Iotas sources should extend.
  */
 public class IotasSource extends IotasComponent implements Source {
-    private final Set<Stream> declaredOutputStreams = new HashSet<>();
+    private final Set<Stream> outputStreams = new HashSet<>();
 
     // for serialization
     protected IotasSource() {
         this(Collections.EMPTY_SET);
     }
 
-    public IotasSource(Set<Stream> declaredOutputStreams) {
-        this.declaredOutputStreams.addAll(declaredOutputStreams);
+    public IotasSource(Set<Stream> outputStreams) {
+        this.outputStreams.addAll(outputStreams);
     }
 
     @Override
-    public Set<Stream> getDeclaredOutputStreams() {
-        return Collections.unmodifiableSet(declaredOutputStreams);
+    public Set<Stream> getOutputStreams() {
+        return Collections.unmodifiableSet(outputStreams);
     }
 
     public void addOutputStream(Stream stream) {
-        declaredOutputStreams.add(stream);
+        outputStreams.add(stream);
     }
 
     @Override
@@ -52,13 +52,13 @@ public class IotasSource extends IotasComponent implements Source {
 
         IotasSource that = (IotasSource) o;
 
-        return declaredOutputStreams != null ? declaredOutputStreams.equals(that.declaredOutputStreams) : that.declaredOutputStreams == null;
+        return outputStreams != null ? outputStreams.equals(that.outputStreams) : that.outputStreams == null;
 
     }
 
     @Override
-    public Stream getStream(String streamId) {
-        for (Stream stream : this.getDeclaredOutputStreams()) {
+    public Stream getOutputStream(String streamId) {
+        for (Stream stream : this.getOutputStreams()) {
             if (stream.getId().equals(streamId)) {
                 return stream;
             }
@@ -68,13 +68,13 @@ public class IotasSource extends IotasComponent implements Source {
 
     @Override
     public int hashCode() {
-        return declaredOutputStreams != null ? declaredOutputStreams.hashCode() : 0;
+        return outputStreams != null ? outputStreams.hashCode() : 0;
     }
 
     @Override
     public String toString() {
         return "IotasSource{" +
-                "declaredStreams=" + declaredOutputStreams +
+                "outputStreams=" + outputStreams +
                 "} " + super.toString();
     }
 }

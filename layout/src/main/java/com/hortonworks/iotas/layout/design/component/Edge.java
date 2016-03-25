@@ -34,7 +34,7 @@ public class Edge {
     private final Set<StreamGrouping> streamGroupings;
 
     public Edge(OutputComponent from, InputComponent to, String streamId, Stream.Grouping grouping) {
-        this(from, to, new StreamGrouping(from.getStream(streamId), grouping));
+        this(from, to, new StreamGrouping(from.getOutputStream(streamId), grouping));
     }
 
     public Edge(OutputComponent from, InputComponent to, StreamGrouping streamGrouping) {

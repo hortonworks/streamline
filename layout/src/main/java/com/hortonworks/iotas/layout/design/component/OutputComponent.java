@@ -29,12 +29,12 @@ public interface OutputComponent extends Component {
      *
      * @return the set of output streams.
      */
-    Set<Stream> getDeclaredOutputStreams();
+    Set<Stream> getOutputStreams();
 
     /**
      * Returns the output Stream of this source corresponding to the given streamId.
      *
      * @throws IllegalArgumentException if the stream with the given streamId does not exist
      */
-    Stream getStream(String streamId);
+    Stream getOutputStream(String streamId);
 }

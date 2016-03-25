@@ -11,7 +11,7 @@ import com.hortonworks.iotas.common.Schema;
 import java.io.Serializable;
 
 /**
- * Abstract class for normalization processor configuration.
+ * Base class for normalization processor configuration.
  */
 @JsonTypeInfo(use= JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY, property="class")
 public class NormalizationConfig extends Config {
@@ -29,7 +29,4 @@ public class NormalizationConfig extends Config {
         return inputSchema;
     }
 
-    public void setInputSchema(Schema inputSchema) {
-        this.inputSchema = inputSchema;
-    }
 }

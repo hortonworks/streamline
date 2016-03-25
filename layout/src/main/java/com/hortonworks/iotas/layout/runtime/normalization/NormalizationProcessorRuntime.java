@@ -76,7 +76,7 @@ public class NormalizationProcessorRuntime implements ProcessorRuntime {
 
     @Override
     public void initialize(Map<String, Object> config) {
-        final Iterator<Stream> iterator = normalizationProcessor.getDeclaredOutputStreams().iterator();
+        final Iterator<Stream> iterator = normalizationProcessor.getOutputStreams().iterator();
         if(!iterator.hasNext()) {
             throw new IllegalStateException("normalization processor "+normalizationProcessor+" does not have output streams");
         }
