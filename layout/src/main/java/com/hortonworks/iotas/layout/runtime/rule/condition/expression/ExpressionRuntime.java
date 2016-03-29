@@ -23,12 +23,12 @@ import com.hortonworks.iotas.layout.design.rule.condition.Condition;
 
 import java.io.Serializable;
 
-public abstract class Expression implements Serializable {
+public abstract class ExpressionRuntime implements Serializable {
     protected final Condition condition;
 
     protected String expression;
 
-    public Expression(Condition condition) {
+    public ExpressionRuntime(Condition condition) {
         this.condition = condition;
     }
 
@@ -63,6 +63,6 @@ public abstract class Expression implements Serializable {
 
     @Override
     public String toString() {
-        return "Expression{"+ condition + ", " + expression + '}';
+        return "ExpressionRuntime{"+ condition + ", " + expression + '}';
     }
 }

@@ -3,7 +3,14 @@ package com.hortonworks.iotas.layout.runtime.rule.sql;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.layout.design.rule.condition.ArrayFieldExpression;
+import com.hortonworks.iotas.layout.design.rule.condition.BinaryExpression;
 import com.hortonworks.iotas.layout.design.rule.condition.Condition;
+import com.hortonworks.iotas.layout.design.rule.condition.Expression;
+import com.hortonworks.iotas.layout.design.rule.condition.FieldExpression;
+import com.hortonworks.iotas.layout.design.rule.condition.Literal;
+import com.hortonworks.iotas.layout.design.rule.condition.MapFieldExpression;
+import com.hortonworks.iotas.layout.design.rule.condition.Operator;
 import com.hortonworks.iotas.layout.runtime.rule.condition.expression.StormSqlExpression;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,11 +36,8 @@ public class StormSqlNestedExprScriptTest {
     @Test
     public void testBasic() throws Exception {
         Condition condition = new Condition();
-        Condition.ConditionElement conditionElement = new Condition.ConditionElement();
-        conditionElement.setFirstOperand(Schema.Field.of("x", Schema.Type.INTEGER));
-        conditionElement.setOperation(Condition.ConditionElement.Operation.NOT_EQUAL);
-        conditionElement.setSecondOperand("100");
-        condition.setConditionElements(Arrays.asList(conditionElement));
+        Expression x = new FieldExpression(Schema.Field.of("x", Schema.Type.INTEGER));;
+        condition.setExpression(new BinaryExpression(Operator.NOT_EQUAL, x, new Literal("100")));
         stormSqlScript = new StormSqlScript<Boolean>(new StormSqlExpression(condition), new StormSqlEngine(),
                                                      new StormSqlScript.ValuesToBooleanConverter());
 
@@ -48,11 +52,9 @@ public class StormSqlNestedExprScriptTest {
     @Test
     public void testEvaluateNestedMap() throws Exception {
         Condition condition = new Condition();
-        Condition.ConditionElement conditionElement = new Condition.ConditionElement();
-        conditionElement.setFirstOperand(Schema.Field.of("y['b']", Schema.Type.NESTED));
-        conditionElement.setOperation(Condition.ConditionElement.Operation.LESS_THAN);
-        conditionElement.setSecondOperand("100");
-        condition.setConditionElements(Collections.singletonList(conditionElement));
+        Expression y_b = new MapFieldExpression(
+                new FieldExpression(Schema.Field.of("y", Schema.Type.NESTED)), "b");
+        condition.setExpression(new BinaryExpression(Operator.LESS_THAN, y_b, new Literal("100")));
         stormSqlScript = new StormSqlScript<Boolean>(new StormSqlExpression(condition), new StormSqlEngine(),
                                                      new StormSqlScript.ValuesToBooleanConverter());
 
@@ -71,14 +73,11 @@ public class StormSqlNestedExprScriptTest {
     @Test
     public void testEvaluateNestedMapList() throws Exception {
         Condition condition = new Condition();
-        Condition.ConditionElement conditionElement = new Condition.ConditionElement();
-        conditionElement.setFirstOperand(Schema.Field.of("y['a'][0]", Schema.Type.NESTED));
-        conditionElement.setOperation(Condition.ConditionElement.Operation.LESS_THAN);
-        conditionElement.setSecondOperand("100");
-        condition.setConditionElements(Collections.singletonList(conditionElement));
+        Expression y_a_0 = new ArrayFieldExpression(new MapFieldExpression(
+                new FieldExpression(Schema.Field.of("y", Schema.Type.NESTED)), "a"), 0);
+        condition.setExpression(new BinaryExpression(Operator.LESS_THAN, y_a_0, new Literal("100")));
         stormSqlScript = new StormSqlScript<Boolean>(new StormSqlExpression(condition), new StormSqlEngine(),
                                                      new StormSqlScript.ValuesToBooleanConverter());
-
         List<Integer> nestedList = new ArrayList<>();
         nestedList.add(500);
         nestedList.add(1);
