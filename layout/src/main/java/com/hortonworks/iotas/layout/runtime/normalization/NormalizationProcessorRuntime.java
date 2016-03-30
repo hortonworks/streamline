@@ -20,10 +20,12 @@ package com.hortonworks.iotas.layout.runtime.normalization;
 
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.Result;
+import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.common.errors.ProcessingException;
 import com.hortonworks.iotas.layout.design.component.NormalizationProcessor;
 import com.hortonworks.iotas.layout.design.component.Stream;
 import com.hortonworks.iotas.layout.design.normalization.NormalizationConfig;
+import com.hortonworks.iotas.parser.ParseException;
 import com.hortonworks.iotas.processor.ProcessorRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,18 +38,13 @@ import java.util.*;
 public class NormalizationProcessorRuntime implements ProcessorRuntime {
     private static final Logger LOG = LoggerFactory.getLogger(NormalizationProcessorRuntime.class);
 
-    // todo this map would be changed to Map<Stream, NormalizationRuntime> once we have support of streams on Processor
-    // so that normalization can be done by taking input schema as respective stream's schema.
     private Map<String, NormalizationRuntime> schemasWithNormalizationRuntime;
 
     final NormalizationProcessor normalizationProcessor;
+    private SchemaValidator schemaValidator;
 
     public NormalizationProcessorRuntime(NormalizationProcessor normalizationProcessor) {
         this.normalizationProcessor = normalizationProcessor;
-    }
-
-    public Set<Stream> getOutputStream() {
-        return normalizationProcessor.getDeclaredOutputStreams();
     }
 
     /*
@@ -56,8 +53,6 @@ public class NormalizationProcessorRuntime implements ProcessorRuntime {
      */
     @Override
     public List<Result> process(IotasEvent iotasEvent) throws ProcessingException {
-        // todo receive input stream through IotasEvent, get respective normalization-runtime for that and execute it.
-        // taking default stream for now.
         String currentStreamId = iotasEvent.getSourceStream() != null ? iotasEvent.getSourceStream() : NormalizationProcessor.DEFAULT_STREAM_ID;
         NormalizationRuntime normalizationRuntime = schemasWithNormalizationRuntime.get(currentStreamId);
         LOG.debug("Normalization runtime for this stream [{}]", normalizationRuntime);
@@ -66,6 +61,7 @@ public class NormalizationProcessorRuntime implements ProcessorRuntime {
         if (normalizationRuntime != null) {
             try {
                 outputEvent =  normalizationRuntime.execute(iotasEvent);
+                schemaValidator.validate(iotasEvent.getFieldsAndValues());
             } catch (NormalizationException e) {
                 throw new RuntimeException(e);
             }
@@ -80,16 +76,62 @@ public class NormalizationProcessorRuntime implements ProcessorRuntime {
 
     @Override
     public void initialize(Map<String, Object> config) {
+        final Iterator<Stream> iterator = normalizationProcessor.getOutputStreams().iterator();
+        if(!iterator.hasNext()) {
+            throw new IllegalStateException("normalization processor "+normalizationProcessor+" does not have output streams");
+        }
+        Stream outputStream = iterator.next();
         NormalizationRuntime.Factory factory = new NormalizationRuntime.Factory();
         Map<String, NormalizationRuntime> schemaRuntimes = new HashMap<>();
-        for (Map.Entry<String, NormalizationConfig> entry : normalizationProcessor.inputStreamsWithConfig.entrySet()) {
-            schemaRuntimes.put(entry.getKey(), factory.create(entry.getValue()));
+        for (Map.Entry<String, ? extends NormalizationConfig> entry : normalizationProcessor.getInputStreamsWithNormalizationConfig().entrySet()) {
+            schemaRuntimes.put(entry.getKey(), factory.create(entry.getValue(), outputStream.getSchema(), normalizationProcessor.getType()));
         }
         schemasWithNormalizationRuntime = schemaRuntimes;
+        schemaValidator = new SchemaValidator(outputStream.getSchema());
     }
 
     @Override
     public void cleanup() {
+
+    }
+
+
+    /**
+     * This class provides validation of given field/values against a schema.
+     */
+    private static class SchemaValidator {
+        private Set<String> fieldNames;
+        private Set<Schema.Field> fields;
+
+        private SchemaValidator(Schema schema) {
+            fieldNames = new HashSet<>();
+            fields = new HashSet<>();
+            for (Schema.Field field : schema.getFields()) {
+                fields.add(field);
+                fieldNames.add(field.getName());
+            }
+        }
+
+        /**
+         * Validates {@code fieldNameValuePairs} with the given {@code schema} instance.
+         *
+         * @param fieldNameValuePairs field name values to be validated
+         * @throws NormalizationException throws when there are any parse errors or validation failures.
+         */
+        private void validate(Map<String, Object> fieldNameValuePairs) throws NormalizationException {
+            LOG.debug("Validating generated output field values: [{}] with [{}]", fieldNameValuePairs, fields);
+
+            for (Map.Entry<String, Object> entry : fieldNameValuePairs.entrySet()) {
+                try {
+                    Object value = entry.getValue();
+                    if (value != null && fieldNames.contains(entry.getKey()) && !fields.contains(new Schema.Field(entry.getKey(), Schema.fromJavaType(value)))) {
+                        throw new NormalizationException("Normalized payload does not conform to declared output schema.");
+                    }
+                } catch (ParseException e) {
+                    throw new NormalizationException("Error occurred while validating normalized payload.", e);
+                }
+            }
+        }
 
     }
 }

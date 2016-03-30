@@ -36,9 +36,4 @@ public class BulkNormalizationConfig extends NormalizationConfig {
         super(inputSchema);
         this.normalizationScript = normalizationScript;
     }
-
-    @Override
-    public TYPE getType() {
-        return TYPE.bulk;
-    }
 }

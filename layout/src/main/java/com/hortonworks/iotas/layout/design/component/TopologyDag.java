@@ -93,7 +93,7 @@ public class TopologyDag implements Serializable {
         while (it.hasNext()) {
             Edge e = it.next();
             if (e.getTo().equals(to)) {
-                e.removeStreamGrouping(new StreamGrouping(from.getStream(streamId), grouping));
+                e.removeStreamGrouping(new StreamGrouping(from.getOutputStream(streamId), grouping));
                 if(e.getStreamGroupings().isEmpty()) {
                     it.remove();
                 }
@@ -148,7 +148,7 @@ public class TopologyDag implements Serializable {
             edges = new ArrayList<>();
             dag.put(from, edges);
         }
-        Stream stream = from.getStream(streamId);
+        Stream stream = from.getOutputStream(streamId);
         StreamGrouping streamGrouping = new StreamGrouping(stream, grouping);
         // output component is already connected to input component, just add the stream grouping
         for (Edge e : edges) {
@@ -161,7 +161,7 @@ public class TopologyDag implements Serializable {
     }
 
     private String getDefaultStreamId(OutputComponent source) {
-        return source.getDeclaredOutputStreams().iterator().next().getId();
+        return source.getOutputStreams().iterator().next().getId();
     }
 
     @Override

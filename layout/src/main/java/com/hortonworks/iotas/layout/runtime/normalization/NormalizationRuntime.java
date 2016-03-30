@@ -21,6 +21,7 @@ package com.hortonworks.iotas.layout.runtime.normalization;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.layout.design.component.NormalizationProcessor;
 import com.hortonworks.iotas.layout.design.normalization.BulkNormalizationConfig;
 import com.hortonworks.iotas.layout.design.normalization.FieldBasedNormalizationConfig;
 import com.hortonworks.iotas.layout.design.normalization.NormalizationConfig;
@@ -38,31 +39,27 @@ import java.util.Set;
 public abstract class NormalizationRuntime {
     private static Logger LOG = LoggerFactory.getLogger(NormalizationRuntime.class);
     protected final NormalizationConfig normalizationConfig;
-    private final SchemaValidator schemaValidator;
 
     protected NormalizationRuntime(NormalizationConfig normalizationConfig) {
         this.normalizationConfig = normalizationConfig;
-        schemaValidator = new SchemaValidator(normalizationConfig.getOutputSchema());
     }
 
     public final IotasEvent execute(IotasEvent iotasEvent) throws NormalizationException {
         Map<String, Object> result = normalize(iotasEvent);
-        schemaValidator.validate(result);
         return new IotasEventImpl(result, iotasEvent.getDataSourceId(), iotasEvent.getId(), iotasEvent.getHeader());
     }
 
     protected abstract Map<String, Object> normalize(IotasEvent iotasEvent) throws NormalizationException;
 
     public static class Factory {
-        public NormalizationRuntime create(NormalizationConfig normalizationConfig) {
+        public NormalizationRuntime create(NormalizationConfig normalizationConfig, Schema declaredOutputSchema, NormalizationProcessor.Type type) {
             NormalizationRuntime normalizationProcessorRuntime = null;
-            NormalizationConfig.TYPE type = normalizationConfig.getType();
             switch(type) {
-                case single:
+                case fineGrained:
                     normalizationProcessorRuntime = new FieldBasedNormalizationRuntime.Builder((FieldBasedNormalizationConfig) normalizationConfig).build();
                     break;
                 case bulk:
-                    normalizationProcessorRuntime = new BulkNormalizationRuntime((BulkNormalizationConfig) normalizationConfig);
+                    normalizationProcessorRuntime = new BulkNormalizationRuntime((BulkNormalizationConfig) normalizationConfig, declaredOutputSchema);
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown normalization config type: "+type);
@@ -73,44 +70,4 @@ public abstract class NormalizationRuntime {
 
     }
 
-    /**
-     * This class provides validation of given field/values against a schema.
-     */
-    private static class SchemaValidator {
-        private final Schema schema;
-        private Set<String> fieldNames;
-        private Set<Schema.Field> fields;
-
-        private SchemaValidator(Schema schema) {
-            this.schema = schema;
-            fieldNames = new HashSet<>();
-            fields = new HashSet<>();
-            for (Schema.Field field : schema.getFields()) {
-                fields.add(field);
-                fieldNames.add(field.getName());
-            }
-        }
-
-        /**
-         * Validates {@code fieldNameValuePairs} with the given {@code schema} instance.
-         *
-         * @param fieldNameValuePairs field name values to be validated
-         * @throws NormalizationException throws when there are any parse errors or validation failures.
-         */
-        private void validate(Map<String, Object> fieldNameValuePairs) throws NormalizationException {
-            LOG.debug("Validating generated output field values: [{}] with [{}]", fieldNameValuePairs, fields);
-
-            for (Map.Entry<String, Object> entry : fieldNameValuePairs.entrySet()) {
-                try {
-                    Object value = entry.getValue();
-                    if (value != null && fieldNames.contains(entry.getKey()) && !fields.contains(new Schema.Field(entry.getKey(), Schema.fromJavaType(value)))) {
-                        throw new NormalizationException("Normalized payload does not conform to declared output schema.");
-                    }
-                } catch (ParseException e) {
-                    throw new NormalizationException("Error occurred while validating normalized payload.", e);
-                }
-            }
-        }
-
-    }
 }
