@@ -16,34 +16,31 @@
  *   limitations under the License.
  */
 
-package com.hortonworks.iotas.cache;
-
-
-import com.hortonworks.iotas.cache.stats.CacheStats;
-import com.hortonworks.iotas.cache.view.config.ExpiryPolicy;
+package com.hortonworks.iotas.cache.view.datastore;
 
 import java.util.Collection;
 import java.util.Map;
 
+public abstract class AbstractDataStore<K,V> implements DataStoreReader<K,V>, DataStoreWriter<K,V> {
+    private String nameSpace;
 
-public interface Cache<K, V> {
-    V get(K key);
+    public AbstractDataStore(String nameSpace) {
+        this.nameSpace = nameSpace;
+    }
 
-    Map<K, V> getAll(Collection<? extends K> keys);
+    public String getNameSpace() {
+        return nameSpace;
+    }
 
-    void put(K key, V val);
+    public abstract V read(K key);
 
-    void putAll(Map<? extends K,? extends V> entries);
+    public abstract Map<K, V> readAll(Collection<? extends K> keys);
 
-    void remove(K key);
+    public abstract void write(K key, V val);
 
-    void removeAll(Collection<? extends K> keys);
+    public abstract void writeAll(Map<? extends K, ? extends V> entries);
 
-    void clear();
+    public abstract void delete(K key);
 
-    long size();
-
-    CacheStats stats();
-
-    ExpiryPolicy getExpiryPolicy();
+    public abstract void deleteAll(Collection<? extends K> keys);
 }

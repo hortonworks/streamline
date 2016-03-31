@@ -16,34 +16,41 @@
  *   limitations under the License.
  */
 
-package com.hortonworks.iotas.cache;
+package com.hortonworks.iotas.cache.view.service;
 
+import java.net.URI;
 
-import com.hortonworks.iotas.cache.stats.CacheStats;
-import com.hortonworks.iotas.cache.view.config.ExpiryPolicy;
+public class CacheServiceId {
+    private final String id;
 
-import java.util.Collection;
-import java.util.Map;
+    public CacheServiceId(URI uri) {
+        this(uri.toString());
+    }
 
+    public CacheServiceId(String id) {
+        this.id = id;
+    }
 
-public interface Cache<K, V> {
-    V get(K key);
+    public String getId() {
+        return id;
+    }
 
-    Map<K, V> getAll(Collection<? extends K> keys);
+    public static CacheServiceId redis(String host, int port) {
+        return new CacheServiceId("redis://" +  host + ":" + port);
+    }
 
-    void put(K key, V val);
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-    void putAll(Map<? extends K,? extends V> entries);
+        CacheServiceId that = (CacheServiceId) o;
 
-    void remove(K key);
+        return !(id != null ? !id.equals(that.id) : that.id != null);
+    }
 
-    void removeAll(Collection<? extends K> keys);
-
-    void clear();
-
-    long size();
-
-    CacheStats stats();
-
-    ExpiryPolicy getExpiryPolicy();
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
 }

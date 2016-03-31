@@ -8,6 +8,7 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.hortonworks.iotas.cache.Cache;
 import com.hortonworks.iotas.cache.exception.NonexistentStorableKeyException;
 import com.hortonworks.iotas.cache.stats.CacheStats;
+import com.hortonworks.iotas.cache.view.config.ExpiryPolicy;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
@@ -15,6 +16,7 @@ import com.hortonworks.iotas.storage.exception.StorageException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -40,7 +42,7 @@ public class GuavaCache implements Cache<StorableKey, Storable> {
         });
     }
 
-    public Storable get(StorableKey key) throws StorageException {
+    public Storable get(StorableKey key) {
         Storable val = null;
         try {
             val = guavaCache.get(key);
@@ -59,12 +61,12 @@ public class GuavaCache implements Cache<StorableKey, Storable> {
         return val;
     }
 
-    public ImmutableMap<StorableKey, Storable> getAllPresent(Iterable<? extends StorableKey> keys) {
+    public Map<StorableKey, Storable> getAll(Collection<? extends StorableKey> keys) {
         return guavaCache.getAllPresent(keys);
     }
 
-    public void put(StorableKey key, Storable value) {
-        guavaCache.put(key, value);
+    public void put(StorableKey key, Storable val) {
+        guavaCache.put(key, val);
     }
 
     public void putAll(Map<? extends StorableKey, ? extends Storable> map) {
@@ -75,10 +77,9 @@ public class GuavaCache implements Cache<StorableKey, Storable> {
         guavaCache.invalidate(key);
     }
 
-    public ImmutableMap<StorableKey, Storable> removeAllPresent(Iterable<? extends StorableKey> keys) {
+    public void removeAll(Collection<? extends StorableKey> keys) {
         final ImmutableMap<StorableKey, Storable> allPresent = guavaCache.getAllPresent(keys);
         guavaCache.invalidateAll(keys);
-        return allPresent;
     }
 
     public void clear() {
@@ -92,6 +93,11 @@ public class GuavaCache implements Cache<StorableKey, Storable> {
     //TODO
     public CacheStats stats() {
         return null;
+    }
+
+    @Override
+    public ExpiryPolicy getExpiryPolicy() {
+        return null;    //TODO
     }
 
     public StorageManager getDao() {

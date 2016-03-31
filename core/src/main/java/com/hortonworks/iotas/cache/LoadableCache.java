@@ -18,32 +18,10 @@
 
 package com.hortonworks.iotas.cache;
 
-
-import com.hortonworks.iotas.cache.stats.CacheStats;
-import com.hortonworks.iotas.cache.view.config.ExpiryPolicy;
+import com.hortonworks.iotas.cache.view.io.loader.CacheLoaderCallback;
 
 import java.util.Collection;
-import java.util.Map;
 
-
-public interface Cache<K, V> {
-    V get(K key);
-
-    Map<K, V> getAll(Collection<? extends K> keys);
-
-    void put(K key, V val);
-
-    void putAll(Map<? extends K,? extends V> entries);
-
-    void remove(K key);
-
-    void removeAll(Collection<? extends K> keys);
-
-    void clear();
-
-    long size();
-
-    CacheStats stats();
-
-    ExpiryPolicy getExpiryPolicy();
+public interface LoadableCache<K, V> extends Cache<K, V> {
+    void loadAll(Collection<? extends K> keys, CacheLoaderCallback<K,V> callback);
 }

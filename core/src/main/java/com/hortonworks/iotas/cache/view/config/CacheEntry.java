@@ -16,34 +16,34 @@
  *   limitations under the License.
  */
 
-package com.hortonworks.iotas.cache;
+package com.hortonworks.iotas.cache.view.config;
 
+public class CacheEntry {
+    private String key;
+    private String val;
+    private String codec;
 
-import com.hortonworks.iotas.cache.stats.CacheStats;
-import com.hortonworks.iotas.cache.view.config.ExpiryPolicy;
+    public String getKey() {
+        return key;
+    }
 
-import java.util.Collection;
-import java.util.Map;
+    public void setKey(String key) {
+        this.key = key;
+    }
 
+    public String getVal() {
+        return val;
+    }
 
-public interface Cache<K, V> {
-    V get(K key);
+    public void setVal(String val) {
+        this.val = val;
+    }
 
-    Map<K, V> getAll(Collection<? extends K> keys);
+    public String getCodec() {
+        return codec;
+    }
 
-    void put(K key, V val);
-
-    void putAll(Map<? extends K,? extends V> entries);
-
-    void remove(K key);
-
-    void removeAll(Collection<? extends K> keys);
-
-    void clear();
-
-    long size();
-
-    CacheStats stats();
-
-    ExpiryPolicy getExpiryPolicy();
+    public void setCodec(String codec) {
+        this.codec = codec;
+    }
 }

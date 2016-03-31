@@ -18,32 +18,28 @@
 
 package com.hortonworks.iotas.cache;
 
-
-import com.hortonworks.iotas.cache.stats.CacheStats;
 import com.hortonworks.iotas.cache.view.config.ExpiryPolicy;
 
-import java.util.Collection;
-import java.util.Map;
+public abstract class AbstractCache<K, V> implements Cache<K, V> {
+    protected ExpiryPolicy expiryPolicy;
 
+    public AbstractCache() {
+        this(null);
+    }
 
-public interface Cache<K, V> {
-    V get(K key);
+    public AbstractCache(ExpiryPolicy expiryPolicy) {
+        this.expiryPolicy = expiryPolicy;
+    }
 
-    Map<K, V> getAll(Collection<? extends K> keys);
+    @Override
+    public ExpiryPolicy getExpiryPolicy() {
+        return expiryPolicy;
+    }
 
-    void put(K key, V val);
-
-    void putAll(Map<? extends K,? extends V> entries);
-
-    void remove(K key);
-
-    void removeAll(Collection<? extends K> keys);
-
-    void clear();
-
-    long size();
-
-    CacheStats stats();
-
-    ExpiryPolicy getExpiryPolicy();
+    @Override
+    public String toString() {
+        return "AbstractCache{" +
+                "expiryPolicy=" + expiryPolicy +
+                '}';
+    }
 }
