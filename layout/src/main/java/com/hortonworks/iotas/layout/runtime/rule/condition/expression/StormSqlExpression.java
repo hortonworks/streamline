@@ -18,16 +18,22 @@
 
 package com.hortonworks.iotas.layout.runtime.rule.condition.expression;
 
+import com.google.common.base.Joiner;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.layout.design.rule.condition.Condition;
+import com.hortonworks.iotas.layout.design.rule.condition.Expression;
 import com.hortonworks.iotas.layout.design.rule.condition.ExpressionTranslator;
+import com.hortonworks.iotas.layout.design.rule.condition.FunctionExpression;
 import com.hortonworks.iotas.layout.design.rule.condition.Operator;
+import com.hortonworks.iotas.layout.design.rule.condition.Projection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Represents the expression of this {@link Condition} in Storm SQL language syntax
@@ -37,24 +43,56 @@ public class StormSqlExpression extends ExpressionRuntime {
     public static final String RULE_SCHEMA = "RULESCHEMA";  // _ underscores not supported by Storm SQL framework
     public static final String RULE_TABLE = "RULETABLE";
     private static final String CREATE_EXTERNAL_TABLE = "CREATE EXTERNAL TABLE ";
+    private static final String CREATE_FUNCTION = "CREATE FUNCTION ";
     private static final String SELECT_STREAM = "SELECT STREAM ";
     private static final String FROM = "FROM ";
     private static final String WHERE = "WHERE ";
     private static final String LOCATION = "LOCATION";
-    private final List<String> fieldsToEmit = new ArrayList<>();
-    private final ExpressionTranslator expressionTranslator;
+    private static final String AS = "AS";
+    private final LinkedHashSet<Schema.Field> fieldsToEmit = new LinkedHashSet<>();
+    private final LinkedHashSet<FunctionExpression.Function> functions = new LinkedHashSet<>();
+    private final List<String> projectedFields = new ArrayList<>();
 
     public StormSqlExpression(Condition condition) {
-        super(condition);
-        expressionTranslator = new StormSqlExpressionTranslator();
-        condition.getExpression().accept(expressionTranslator);
+        this(condition, null);
     }
+
+    public StormSqlExpression(Condition condition, Projection projection) {
+        super(condition, projection);
+        if (projection != null) {
+            for (Expression expr : projection.getExpressions()) {
+                ExpressionTranslator translator = new StormSqlExpressionTranslator();
+                expr.accept(translator);
+                fieldsToEmit.addAll(translator.getFields());
+                functions.addAll(translator.getFunctions());
+                projectedFields.add(translator.getTranslatedExpression());
+            }
+        }
+        ExpressionTranslator conditionTranslator = new StormSqlExpressionTranslator();
+        condition.getExpression().accept(conditionTranslator);
+        fieldsToEmit.addAll(conditionTranslator.getFields());
+        functions.addAll(conditionTranslator.getFunctions());
+        expression = conditionTranslator.getTranslatedExpression();
+        LOG.debug("Built expression [{}] for condition [{}]", expression, condition);
+    }
+
 
     @Override
     public String asString() {
-        final String expression = expressionTranslator.getTranslatedExpression();
-        LOG.debug("Built expression [{}] for condition [{}]", expression, condition);
         return expression;
+    }
+
+    /*
+     * e.g. [CREATE FUNCTION TEST_FN AS 'com.hortonworks.iotas.builtin.TestFn']
+     */
+    public List<String> createFunctions() {
+        List<String> result = new ArrayList<>();
+        for(FunctionExpression.Function fn: functions) {
+            if (fn.isUdf()) {
+                result.add(CREATE_FUNCTION + fn.getName() + " " + AS + " " + "'" + fn.getClassName() + "'");
+            }
+        }
+        return result;
     }
 
     /*
@@ -69,33 +107,36 @@ public class StormSqlExpression extends ExpressionRuntime {
 
     // "SELECT F1, F2, F3 FROM RT WHERE F1 < 2 AND F2 < 3 AND F3 < 4"
     public String select(String tableName) {
-        return SELECT_STREAM + buildSelectExpression() + FROM + tableName + " " + WHERE + asString();
+        return SELECT_STREAM + buildSelectExpression() + " " + FROM + tableName + " " + WHERE + asString();
     }
 
     // F1 INTEGER or F2 STRING or ...
     private String buildCreateDefinition() {
         final StringBuilder builder = new StringBuilder("");
-        for (Schema.Field field: expressionTranslator.getFields()) {
-            String fieldName = getName(field);
-            fieldsToEmit.add(fieldName.trim());
-            builder.append(fieldName)
-                    .append(getType(field)).append(", ");
-        }
-        if (builder.length() >= 2) {
-            builder.setLength(builder.length() - 2);    // remove the last ", "
+        int count = 0;
+        for (Schema.Field field : fieldsToEmit) {
+            String fieldName = field.getName();
+            if (++count > 1) {
+                builder.append(", ");
+            }
+            builder.append(fieldName).append(" ")
+                    .append(getType(field));
         }
         return builder.toString();
     }
 
     private String buildSelectExpression() {
-        final StringBuilder builder = new StringBuilder("");
-        for (Schema.Field field: expressionTranslator.getFields()) {
-            builder.append(getName(field)).append(", ");
+        String result;
+        if (projection != null) {
+            result = Joiner.on(", ").join(projectedFields);
+        } else {
+            List<String> fields = new ArrayList<>();
+            for(Schema.Field field: fieldsToEmit) {
+                fields.add(field.getName());
+            }
+            result = Joiner.on(", ").join(fields);
         }
-        if (builder.length() >= 2) {
-            builder.setLength(builder.length() - 2);    // remove the last ", "
-        }
-        return builder.toString();
+        return result;
     }
 
     private static class StormSqlExpressionTranslator extends ExpressionTranslator {
@@ -125,8 +166,12 @@ public class StormSqlExpression extends ExpressionRuntime {
         }
     }
 
-    public List<String> getFieldsToEmit() {
-        return fieldsToEmit;
+    public List<Schema.Field> getFieldsToEmit() {
+        return new ArrayList<>(fieldsToEmit);
+    }
+
+    public List<String> getProjectedFields() {
+        return projectedFields;
     }
 
     @Override
@@ -134,7 +179,9 @@ public class StormSqlExpression extends ExpressionRuntime {
         switch (field.getType()) {
             case NESTED:
             case ARRAY:
-                return "ANY ";
+                return "ANY";
+            case STRING:
+                return "VARCHAR";
             default:
                 return super.getType(field);
         }

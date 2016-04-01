@@ -18,6 +18,7 @@
 
 package com.hortonworks.iotas.layout.runtime.rule;
 
+import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.layout.design.rule.Rule;
 import com.hortonworks.iotas.layout.runtime.rule.condition.expression.StormSqlExpression;
 import com.hortonworks.iotas.layout.runtime.rule.sql.StormSqlEngine;
@@ -27,7 +28,7 @@ public class StormSqlRuleRuntimeBuilder extends AbstractRuleRuntimeBuilder {
     private Rule rule;
     private StormSqlExpression stormSqlExpression;
     private StormSqlEngine stormSqlEngine;
-    private StormSqlScript<Boolean> stormSqlScript;
+    private StormSqlScript<IotasEvent> stormSqlScript;
 
     @Override
     public void setRule(Rule rule) {
@@ -36,7 +37,7 @@ public class StormSqlRuleRuntimeBuilder extends AbstractRuleRuntimeBuilder {
 
     @Override
     public void buildExpression() {
-        stormSqlExpression = new StormSqlExpression(rule.getCondition());
+        stormSqlExpression = new StormSqlExpression(rule.getCondition(), rule.getProjection());
     }
 
     @Override
@@ -46,7 +47,8 @@ public class StormSqlRuleRuntimeBuilder extends AbstractRuleRuntimeBuilder {
 
     @Override
     public void buildScript() {
-        stormSqlScript = new StormSqlScript<>(stormSqlExpression, stormSqlEngine, new StormSqlScript.ValuesToBooleanConverter());
+        stormSqlScript = new StormSqlScript<>(stormSqlExpression, stormSqlEngine);
+        stormSqlScript.setValuesConverter(new StormSqlScript.ValuesToIotasEventConverter(stormSqlScript.getProjectedFields()));
     }
 
     @Override

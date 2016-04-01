@@ -20,16 +20,22 @@ package com.hortonworks.iotas.layout.runtime.rule.condition.expression;
 
 import com.hortonworks.iotas.common.Schema.Field;
 import com.hortonworks.iotas.layout.design.rule.condition.Condition;
+import com.hortonworks.iotas.layout.design.rule.condition.Projection;
 
 import java.io.Serializable;
 
 public abstract class ExpressionRuntime implements Serializable {
+    protected final Projection projection;
     protected final Condition condition;
-
     protected String expression;
 
     public ExpressionRuntime(Condition condition) {
+        this(condition, null);
+    }
+
+    public ExpressionRuntime(Condition condition, Projection projection) {
         this.condition = condition;
+        this.projection = projection;
     }
 
     /**
@@ -41,24 +47,12 @@ public abstract class ExpressionRuntime implements Serializable {
         return condition;
     }
 
-    /*
-     This splits on '[' to find the field name to handle map and array look ups correctly.
-     E.g, if the field is x['y']['z'] the field name should be x
-     Right now the Condition expression is used to compute the schema which should be fixed. This
-     does not correctly handle conditions like x < y, x > 50 AND x != 100 etc.
-     We could also consider defining the schema based on the input
-     streams the Rule is consuming (once we enforce it in the UI).
-      */
-    protected String getFieldName(Field field) {
-        return field.getName().split("\\[")[0].trim() + " ";
-    }
-
-    protected String getName(Field field) {
-        return field.getName() + " ";
+    public Projection getProjection() {
+        return projection;
     }
 
     protected String getType(Field field) {
-        return field.getType() + " ";
+        return field.getType().toString();
     }
 
     @Override

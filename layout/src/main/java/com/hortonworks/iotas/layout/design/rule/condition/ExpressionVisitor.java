@@ -9,4 +9,5 @@ interface ExpressionVisitor {
     void visit(ArrayFieldExpression arrayFieldExpression);
     void visit(MapFieldExpression mapFieldExpression);
     void visit(Literal literal);
+    void visit(FunctionExpression functionExpression);
 }

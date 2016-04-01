@@ -73,9 +73,10 @@ public class RuleProcessorRuntime implements Serializable, ProcessorRuntime {
     public List<Result> process(IotasEvent iotasEvent) throws ProcessingException {
         List<Result> results = new ArrayList<>();
         try {
+            IotasEvent result;
             for (RuleRuntime rule : rulesRuntime) {
-                if (rule.evaluate(iotasEvent)) {
-                    results.addAll(rule.process(iotasEvent));
+                if ((result = rule.evaluate(iotasEvent)) != null) {
+                    results.addAll(rule.process(result));
                 }
             }
         } catch (Exception e) {

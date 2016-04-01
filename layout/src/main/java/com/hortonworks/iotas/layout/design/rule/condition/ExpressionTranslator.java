@@ -1,5 +1,4 @@
 package com.hortonworks.iotas.layout.design.rule.condition;
-
 import com.hortonworks.iotas.common.Schema;
 
 import java.util.ArrayList;
@@ -9,8 +8,9 @@ import java.util.List;
  * Translates expression tree to different formats like groovy, storm sql expression formats.
  */
 public abstract class ExpressionTranslator implements ExpressionVisitor {
-    private StringBuilder builder = new StringBuilder();
-    private List<Schema.Field> fields = new ArrayList<>();
+    private final StringBuilder builder = new StringBuilder();
+    private final List<Schema.Field> fields = new ArrayList<>();
+    private final List<FunctionExpression.Function> functions = new ArrayList<>();
 
     @Override
     public void visit(BinaryExpression binaryExpression) {
@@ -43,12 +43,30 @@ public abstract class ExpressionTranslator implements ExpressionVisitor {
         builder.append(literal.getValue());
     }
 
+    @Override
+    public void visit(FunctionExpression functionExpression) {
+        builder.append(functionExpression.getFunction().getName()).append("(");
+        int count = 0;
+        for (Expression expression : functionExpression.getOperands()) {
+            if (++count > 1) {
+                builder.append(", ");
+            }
+            expression.accept(this);
+        }
+        builder.append(")");
+        functions.add(functionExpression.getFunction());
+    }
+
     public String getTranslatedExpression() {
         return builder.toString();
     }
 
     public List<Schema.Field> getFields() {
         return fields;
+    }
+
+    public List<FunctionExpression.Function> getFunctions() {
+        return functions;
     }
 
     private void maybeParenthesize(BinaryExpression parent, Expression child) {

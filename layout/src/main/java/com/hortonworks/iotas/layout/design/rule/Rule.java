@@ -21,6 +21,7 @@ package com.hortonworks.iotas.layout.design.rule;
 import com.google.common.collect.ImmutableList;
 import com.hortonworks.iotas.layout.design.rule.action.Action;
 import com.hortonworks.iotas.layout.design.rule.condition.Condition;
+import com.hortonworks.iotas.layout.design.rule.condition.Projection;
 
 import java.io.Serializable;
 import java.util.List;
@@ -35,6 +36,7 @@ public class Rule implements Serializable {
     private String description;
     private String ruleProcessorName;
 
+    private Projection projection;
     private Condition condition;
     private List<Action> actions;
 
@@ -84,6 +86,14 @@ public class Rule implements Serializable {
 
     public void setCondition(Condition condition) {
         this.condition = condition;
+    }
+
+    public Projection getProjection() {
+        return projection;
+    }
+
+    public void setProjection(Projection projection) {
+        this.projection = projection;
     }
 
     public List<Action> getActions() {
