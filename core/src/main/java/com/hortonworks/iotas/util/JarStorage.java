@@ -18,13 +18,13 @@ public interface JarStorage {
     void init(Map<String, String> config);
 
     /**
-     *
      * @param inputStream stream to read the jar content from
-     * @param name identifier of the jar file to be used later to retrieve
-     *             using downloadJar
+     * @param name        identifier of the jar file to be used later to retrieve
+     *                    using downloadJar
+     * @return the path where the file was uploaded
      * @throws java.io.IOException
      */
-    void uploadJar(InputStream inputStream, String name) throws java.io.IOException;
+    String uploadJar(InputStream inputStream, String name) throws java.io.IOException;
 
     /**
      *

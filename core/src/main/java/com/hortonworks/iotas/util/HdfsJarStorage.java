@@ -53,7 +53,7 @@ public class HdfsJarStorage implements JarStorage {
     }
 
     @Override
-    public void uploadJar(InputStream inputStream, String name) throws IOException {
+    public String uploadJar(InputStream inputStream, String name) throws IOException {
         Path jarPath = new Path(directory, name);
         FSDataOutputStream outputStream = null;
         try {
@@ -64,6 +64,7 @@ public class HdfsJarStorage implements JarStorage {
                 outputStream.close();
             }
         }
+        return jarPath.toString();
     }
 
     @Override
