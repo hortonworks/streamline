@@ -1,4 +1,5 @@
 ## 0.1.2
+ * IOT-172: Fix parser file name conflict.
  * IOT-206: Generate normalization processor related components required for flux yaml and UI.
  * IOT-86: Added api to query topology status.
  * IOT-191: UI - topology actions should be integrated and provide view mode and edit mode on topology editor
