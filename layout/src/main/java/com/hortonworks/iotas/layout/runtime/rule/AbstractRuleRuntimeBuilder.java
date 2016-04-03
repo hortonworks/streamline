@@ -6,7 +6,9 @@ import com.hortonworks.iotas.layout.runtime.ActionRuntime;
 import com.hortonworks.iotas.layout.runtime.TransformAction;
 import com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransform;
 import com.hortonworks.iotas.layout.runtime.transform.IdentityTransform;
+import com.hortonworks.iotas.layout.runtime.transform.MergeTransform;
 import com.hortonworks.iotas.layout.runtime.transform.ProjectionTransform;
+import com.hortonworks.iotas.layout.runtime.transform.SubstituteTransform;
 import com.hortonworks.iotas.layout.runtime.transform.Transform;
 
 import java.util.ArrayList;
@@ -39,7 +41,9 @@ public abstract class AbstractRuleRuntimeBuilder implements RuleRuntimeBuilder {
     private List<Transform> getTransforms(Action action) {
         List<Transform> transforms = new ArrayList<>();
         if (action.getOutputFieldsAndDefaults() != null && !action.getOutputFieldsAndDefaults().isEmpty()) {
-            transforms.add(new ProjectionTransform(action.getOutputFieldsAndDefaults()));
+            transforms.add(new MergeTransform(action.getOutputFieldsAndDefaults()));
+            transforms.add(new SubstituteTransform(action.getOutputFieldsAndDefaults().keySet()));
+            transforms.add(new ProjectionTransform(action.getOutputFieldsAndDefaults().keySet()));
         }
         if (action.isIncludeMeta()) {
             Map<String, Object> headers = new HashMap<>();
