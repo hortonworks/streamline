@@ -14,7 +14,11 @@ import com.hortonworks.iotas.test.HBaseIntegrationTest;
 import com.hortonworks.iotas.topology.TopologyComponent;
 import com.zaxxer.hikari.HikariConfig;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 /**

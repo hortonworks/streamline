@@ -35,7 +35,16 @@ import com.hortonworks.iotas.topology.TopologyActions;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import com.hortonworks.iotas.util.JarStorage;
 import com.hortonworks.iotas.util.ReflectionHelper;
-import com.hortonworks.iotas.webservice.catalog.*;
+import com.hortonworks.iotas.webservice.catalog.ClusterCatalogResource;
+import com.hortonworks.iotas.webservice.catalog.ComponentCatalogResource;
+import com.hortonworks.iotas.webservice.catalog.DataSourceCatalogResource;
+import com.hortonworks.iotas.webservice.catalog.DataSourceFacade;
+import com.hortonworks.iotas.webservice.catalog.DataSourceWithDataFeedCatalogResource;
+import com.hortonworks.iotas.webservice.catalog.FeedCatalogResource;
+import com.hortonworks.iotas.webservice.catalog.NotifierInfoCatalogResource;
+import com.hortonworks.iotas.webservice.catalog.ParserInfoCatalogResource;
+import com.hortonworks.iotas.webservice.catalog.TopologyCatalogResource;
+import com.hortonworks.iotas.webservice.catalog.TopologyEditorMetadataResource;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
@@ -51,6 +60,7 @@ import java.util.Map;
 public class IotasApplication extends Application<IotasConfiguration> {
 
     private static final Logger log = LoggerFactory.getLogger(IotasApplication.class);
+    private static final String JDBC = "jdbc";
 
     public static void main(String[] args) throws Exception {
         new IotasApplication().run(args);
@@ -86,7 +96,7 @@ public class IotasApplication extends Application<IotasConfiguration> {
     private StorageManager getCacheBackedDao(IotasConfiguration iotasConfiguration) {
         StorageProviderConfiguration storageProviderConfiguration = iotasConfiguration.getStorageProviderConfiguration();
         final String providerType = storageProviderConfiguration.getType();
-        final StorageManager dao = providerType.equalsIgnoreCase("jdbc") ?
+        final StorageManager dao = providerType.equalsIgnoreCase(JDBC) ?
                 JdbcStorageManager.createStorageManager(storageProviderConfiguration.getProperties()) : new InMemoryStorageManager();
         final CacheBuilder cacheBuilder = getGuavaCacheBuilder();
         final Cache<StorableKey, Storable> cache = getCache(dao, cacheBuilder);
