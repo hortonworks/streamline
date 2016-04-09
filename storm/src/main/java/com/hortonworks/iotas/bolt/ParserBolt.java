@@ -1,5 +1,7 @@
 package com.hortonworks.iotas.bolt;
 
+import com.google.common.collect.Maps;
+import com.hortonworks.iotas.util.SchemaNamespaceUtil;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -120,6 +122,8 @@ public class ParserBolt extends BaseRichBolt {
 
             Map<String, Object> parsed = parser.parse(bytes);
             String dsrcId = dataSourceId == null ? StringUtils.EMPTY : dataSourceId.toString();
+            // apply datasource id as namespace
+            parsed = SchemaNamespaceUtil.applyNamespace(dsrcId, parsed);
             IotasEvent event;
             /**
              * If message id is set in the incoming message, we use it as the IotasEvent id, else
@@ -148,7 +152,6 @@ public class ParserBolt extends BaseRichBolt {
             }
         }
     }
-
 
     private Parser loadParser(ParserInfo parserInfo) {
         InputStream parserJar = client.getParserJar(parserInfo.getId());

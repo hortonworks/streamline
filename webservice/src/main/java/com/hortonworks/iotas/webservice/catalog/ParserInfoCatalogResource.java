@@ -13,6 +13,7 @@ import com.hortonworks.iotas.util.FileUtil;
 import com.hortonworks.iotas.util.JarStorage;
 import com.hortonworks.iotas.util.ProxyUtil;
 import com.hortonworks.iotas.util.ReflectionHelper;
+import com.hortonworks.iotas.util.SchemaNamespaceUtil;
 import com.hortonworks.iotas.webservice.IotasConfiguration;
 import com.hortonworks.iotas.util.JarReader;
 import com.hortonworks.iotas.webservice.util.WSUtils;
@@ -107,6 +108,25 @@ public class ParserInfoCatalogResource {
                 Schema result = parserInfo.getParserSchema();
                 if (result != null) {
                     return WSUtils.respond(OK, SUCCESS, result);
+                }
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+
+        return WSUtils.respond(NOT_FOUND, PARSER_SCHEMA_FOR_ENTITY_NOT_FOUND, parserId.toString());
+    }
+
+    @GET
+    @Path("/parsers/{id}/schema/namespace/{namespace}")
+    public Response getNamespaceAppliedParserSchema(@PathParam("id") Long parserId, @PathParam("namespace") String namespace) {
+        try {
+            ParserInfo parserInfo = doGetParserInfoById(parserId);
+            if (parserInfo != null) {
+                Schema result = parserInfo.getParserSchema();
+                if (result != null) {
+                    Schema applied = SchemaNamespaceUtil.applyNamespace(namespace, result);
+                    return WSUtils.respond(OK, SUCCESS, applied);
                 }
             }
         } catch (Exception ex) {
