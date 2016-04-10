@@ -1,4 +1,5 @@
 ## 0.1.2
+ * IOT-116: Parser Exception handling requirements.
  * IOT-192: Added support for templatized message.
  * IOT-172: Fix parser file name conflict.
  * IOT-206: Generate normalization processor related components required for flux yaml and UI.
