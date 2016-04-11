@@ -74,4 +74,10 @@ public class DataSet extends DataSourceSubType {
                 ", config='" + config + '\'' +
                 '}';
     }
+
+    @JsonIgnore
+    @Override
+    public Long getId() {
+        return super.getId();
+    }
 }

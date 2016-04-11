@@ -1,1 +1,13 @@
-{"dataSourceId":1,"dataSourceName":"nest-datasource","description":"Nest as datasource","tags":"thermostat, Google smart home","timestamp":1440118796994,"type":"DEVICE","typeConfig":"{\"id\":\"nest\",\"version\":1}", "dataFeedName": "nest-datafeed", "parserId": 1, "parserName": "NestParser", "dataFeedType": "KAFKA"}
+{
+   "typeConfig" : "{\"id\":\"nest\",\"version\":1}",
+   "timestamp" : 1440118796994,
+   "dataFeedType" : "KAFKA",
+   "parserName" : "NestParser",
+   "dataSourceName" : "nest-datasource",
+   "type" : "DEVICE",
+   "tagIds" : [1],
+   "dataFeedName" : "nest-datafeed",
+   "dataSourceId" : 1,
+   "description" : "Nest as datasource",
+   "parserId" : 1
+}

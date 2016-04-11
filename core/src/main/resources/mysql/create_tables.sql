@@ -15,11 +15,11 @@
  );
 
 CREATE TABLE IF NOT EXISTS devices (
-    id VARCHAR(256) NOT NULL,
+    deviceId VARCHAR(256) NOT NULL,
     version BIGINT NOT NULL,
     dataSourceId BIGINT NOT NULL,
     PRIMARY KEY (dataSourceId),
-    UNIQUE KEY `UK_id_version` (id, version),
+    UNIQUE KEY `UK_id_version` (deviceId, version),
     FOREIGN KEY (dataSourceId) REFERENCES datasources(id)
 );
 
@@ -73,4 +73,19 @@ CREATE TABLE IF NOT EXISTS topology_editor_metadata (
     data TEXT NOT NULL,
     timestamp BIGINT,
     PRIMARY KEY (topologyId)
+);
+
+CREATE TABLE IF NOT EXISTS tag (
+    id BIGINT AUTO_INCREMENT NOT NULL,
+    name VARCHAR(256) NOT NULL,
+    description VARCHAR(256) NOT NULL,
+    timestamp BIGINT,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS tag_storable_mapping (
+    tagId BIGINT NOT NULL,
+    storableNamespace VARCHAR(32) NOT NULL,
+    storableId BIGINT NOT NULL,
+    PRIMARY KEY (tagId, storableNamespace, storableId)
 );

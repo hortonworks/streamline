@@ -10,10 +10,13 @@ import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.catalog.Device;
+import com.hortonworks.iotas.catalog.Tag;
+import com.hortonworks.iotas.catalog.TagStorableMapping;
 import com.hortonworks.iotas.catalog.Topology;
 import com.hortonworks.iotas.catalog.TopologyEditorMetadata;
 import com.hortonworks.iotas.processor.CustomProcessorInfo;
 import com.hortonworks.iotas.storage.DataSourceSubType;
+import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.exception.StorageException;
@@ -61,15 +64,19 @@ public class CatalogService {
     private static final String NOTIFIER_INFO_NAMESPACE = new NotifierInfo().getNameSpace();
     private static final String TOPOLOGY_NAMESPACE = new Topology()
             .getNameSpace();
+    private static final String TAG_NAMESPACE = new Tag().getNameSpace();
+    private static final String TAG_STORABLE_MAPPING_NAMESPACE = new TagStorableMapping().getNameSpace();
+
 
     private StorageManager dao;
     private TopologyActions topologyActions;
     private JarStorage jarStorage;
+    private TagService tagService;
 
     public static class QueryParam {
+
         public final String name;
         public final String value;
-
         public QueryParam(String name, String value) {
             this.name = name;
             this.value = value;
@@ -115,6 +122,7 @@ public class CatalogService {
         this.dao = dao;
         this.topologyActions = topologyActions;
         this.jarStorage = jarStorage;
+        this.tagService = new CatalogTagService(dao);
     }
 
     private String getNamespaceForDataSourceType(DataSource.Type dataSourceType) {
@@ -150,6 +158,7 @@ public class CatalogService {
             for (DataSource ds : dataSources) {
                 DataSourceSubType dataSourcesubType = getSubtypeFromDataSource(ds);
                 ds.setTypeConfig(CoreUtils.storableToJson(dataSourcesubType));
+                ds.setTags(tagService.getTags(ds));
             }
         }
         return dataSources;
@@ -172,6 +181,7 @@ public class CatalogService {
         if (result != null) {
             DataSourceSubType subType = getSubtypeFromDataSource(result);
             result.setTypeConfig(CoreUtils.storableToJson(subType));
+            result.setTags(tagService.getTags(result));
         }
         return result;
     }
@@ -188,6 +198,7 @@ public class CatalogService {
         subType.setDataSourceId(dataSource.getId());
         this.dao.add(dataSource);
         this.dao.add(subType);
+        tagService.addTagsForStorable(dataSource, dataSource.getTags());
         return dataSource;
     }
 
@@ -200,6 +211,7 @@ public class CatalogService {
             String ns = getNamespaceForDataSourceType(dataSource.getType());
             this.dao.remove(new StorableKey(ns, dataSource.getPrimaryKey()));
             dao.<DataSource>remove(new StorableKey(DATA_SOURCE_NAMESPACE, dataSource.getPrimaryKey()));
+            tagService.removeTagsFromStorable(dataSource, dataSource.getTags());
         }
         return dataSource;
     }
@@ -212,6 +224,7 @@ public class CatalogService {
         subType.setDataSourceId(dataSource.getId());
         this.dao.addOrUpdate(dataSource);
         this.dao.addOrUpdate(subType);
+        tagService.addOrUpdateTagsForStorable(dataSource, dataSource.getTags());
         return dataSource;
     }
 
@@ -273,12 +286,12 @@ public class CatalogService {
         return dao.<DataFeed>remove(new StorableKey(DATA_FEED_NAMESPACE, feed.getPrimaryKey()));
     }
 
-
     public DataFeed addOrUpdateDataFeed(Long id, DataFeed feed) {
         feed.setId(id);
         this.dao.addOrUpdate(feed);
         return feed;
     }
+
 
     public Collection<ParserInfo> listParsers() {
         return dao.<ParserInfo>list(PARSER_INFO_NAMESPACE);
@@ -322,7 +335,6 @@ public class CatalogService {
         return cluster;
     }
 
-
     public Collection<Cluster> listClusters() {
         return this.dao.<Cluster>list(CLUSTER_NAMESPACE);
     }
@@ -331,6 +343,7 @@ public class CatalogService {
     public Collection<Cluster> listClusters(List<QueryParam> params) throws Exception {
         return dao.<Cluster>find(CLUSTER_NAMESPACE, params);
     }
+
 
     public Cluster getCluster(Long clusterId) {
         Cluster cluster = new Cluster();
@@ -378,12 +391,12 @@ public class CatalogService {
         return this.dao.<Component>get(new StorableKey(COMPONENT_NAMESPACE, component.getPrimaryKey()));
     }
 
-
     public Component removeComponent(Long componentId) {
         Component component = new Component();
         component.setId(componentId);
         return dao.<Component>remove(new StorableKey(COMPONENT_NAMESPACE, component.getPrimaryKey()));
     }
+
 
     public Component addOrUpdateComponent(Long clusterId, Component component) {
         return addOrUpdateComponent(clusterId, component.getId(), component);
@@ -421,7 +434,6 @@ public class CatalogService {
         return this.dao.<NotifierInfo>list(NOTIFIER_INFO_NAMESPACE);
     }
 
-
     public Collection<NotifierInfo> listNotifierInfos(List<QueryParam> params) throws Exception {
         return dao.<NotifierInfo>find(NOTIFIER_INFO_NAMESPACE, params);
     }
@@ -440,6 +452,7 @@ public class CatalogService {
         this.dao.addOrUpdate(notifierInfo);
         return notifierInfo;
     }
+
 
     public Collection<Topology> listTopologies () {
         Collection<Topology> topologies = this.dao.list(TOPOLOGY_NAMESPACE);
@@ -762,6 +775,34 @@ public class CatalogService {
             notifierInfo = existingNotifiers.iterator().next();
         }
         return notifierInfo;
+    }
+
+    public Tag addTag(Tag tag) {
+        return tagService.addTag(tag);
+    }
+
+    public Tag getTag(Long tagId) {
+        return tagService.getTag(tagId);
+    }
+
+    public Tag removeTag(Long tagId) {
+        return tagService.removeTag(tagId);
+    }
+
+    public Tag addOrUpdateTag(Long tagId, Tag tag) {
+        return tagService.addOrUpdateTag(tagId, tag);
+    }
+    
+    public Collection<Tag> listTags() {
+        return tagService.listTags();
+    }
+
+    public Collection<Tag> listTags(List<QueryParam> queryParams) {
+        return tagService.listTags(queryParams);
+    }
+
+    public List<Storable> getEntities(Long tagId) {
+        return tagService.getEntities(tagId, true);
     }
 
 }

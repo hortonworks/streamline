@@ -105,5 +105,9 @@ public abstract class AbstractStorable implements Storable {
         return Schema.of(fields);
     }
 
+    @Override
+    public Long getId() {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 
 }
