@@ -30,7 +30,7 @@ public class JdbcClient {
         final InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream(path);
         if(resourceAsStream == null) {
             log.warn("Given resource with path [{}] could not be found", path);
-            return;
+            throw new RuntimeException("Resource not found for given path "+path);
         }
 
         try (BufferedReader reader =

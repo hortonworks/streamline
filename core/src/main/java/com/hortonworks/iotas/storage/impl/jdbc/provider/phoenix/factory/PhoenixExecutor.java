@@ -77,8 +77,8 @@ public class PhoenixExecutor extends AbstractQueryExecutor {
 
         int queryTimeOutInSecs = -1;
         if(jdbcProps.containsKey("queryTimeoutInSecs")) {
-            int timeout = (Integer) jdbcProps.get("queryTimeoutInSecs");
-            if(timeout < 0) {
+            queryTimeOutInSecs = (Integer) jdbcProps.get("queryTimeoutInSecs");
+            if(queryTimeOutInSecs < 0) {
                 throw new IllegalArgumentException("queryTimeoutInSecs property can not be negative");
             }
         }
