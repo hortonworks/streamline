@@ -17,20 +17,48 @@
  */
 package com.hortonworks.iotas.layout.design.component;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
-public class IotasProcessor extends IotasSource implements Processor {
+/**
+ * The base implementation of a {@link Processor} that all Iotas processors should extend.
+ */
+public class IotasProcessor extends IotasComponent implements Processor {
+    private final Set<Stream> outputStreams = new HashSet<>();
 
     // for serialization
-    public IotasProcessor() {
+    protected IotasProcessor() {
+        this(Collections.EMPTY_SET);
     }
 
-    public IotasProcessor(Set<Stream> declaredOutputs) {
-        super(declaredOutputs);
+    public IotasProcessor(Set<Stream> outputStreams) {
+        this.outputStreams.addAll(outputStreams);
+    }
+
+    @Override
+    public Set<Stream> getOutputStreams() {
+        return outputStreams;
+    }
+
+    public void addOutputStream(Stream stream) {
+        outputStreams.add(stream);
+    }
+
+    @Override
+    public Stream getOutputStream(String streamId) {
+        for (Stream stream : this.getOutputStreams()) {
+            if (stream.getId().equals(streamId)) {
+                return stream;
+            }
+        }
+        throw new IllegalArgumentException("Invalid streamId " + streamId);
     }
 
     @Override
     public String toString() {
-        return "IotasProcessor{} " + super.toString();
+        return "IotasProcessor{" +
+                "outputStreams=" + outputStreams +
+                '}'+super.toString();
     }
 }

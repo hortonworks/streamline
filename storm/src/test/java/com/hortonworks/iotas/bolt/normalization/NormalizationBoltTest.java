@@ -18,13 +18,14 @@
  */
 package com.hortonworks.iotas.bolt.normalization;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.layout.design.component.NormalizationProcessor;
+import com.hortonworks.iotas.layout.design.component.Stream;
 import com.hortonworks.iotas.layout.design.normalization.*;
 import com.hortonworks.iotas.layout.runtime.normalization.NormalizationException;
-import com.hortonworks.iotas.layout.runtime.normalization.NormalizationProcessorRuntime;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import mockit.Expectations;
@@ -37,8 +38,11 @@ import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,6 +56,7 @@ import java.util.Map;
  */
 @RunWith(JMockit.class)
 public class NormalizationBoltTest {
+    private static final Logger log = LoggerFactory.getLogger(NormalizationBoltTest.class);
 
     @Injectable
     private TopologyContext topologyContext;
@@ -105,12 +110,12 @@ public class NormalizationBoltTest {
 
     @Test
     public void testBulkNormalization() throws NormalizationException, IOException {
-        testNormalizationBolt(createNormalizationBolt(buildBulkNormalizationProcessorRuntime()));
+        testNormalizationBolt(createNormalizationBolt(createBulkNormalizationProcessorRuntime()));
     }
 
     @Test
     public void testBulkNormalizationFailure() throws NormalizationException, IOException {
-        testNormalizationBoltFailure(createNormalizationBolt(buildBulkNormalizationProcessorRuntime()));
+        testNormalizationBoltFailure(createNormalizationBolt(createBulkNormalizationProcessorRuntime()));
     }
 
     private void testNormalizationBolt(NormalizationBolt normalizationBolt) {
@@ -143,15 +148,15 @@ public class NormalizationBoltTest {
         }};
     }
 
-    private NormalizationBolt createNormalizationBolt(NormalizationProcessorRuntime normalizationProcessorRuntime) throws NormalizationException {
-        NormalizationBolt normalizationBolt = new NormalizationBolt(normalizationProcessorRuntime);
+    private NormalizationBolt createNormalizationBolt(NormalizationProcessor normalizationProcessor) throws NormalizationException {
+        NormalizationBolt normalizationBolt = new NormalizationBolt(normalizationProcessor);
 
         normalizationBolt.declareOutputFields(outputFieldsDeclarer);
         normalizationBolt.prepare(null, topologyContext, outputCollector);
         return normalizationBolt;
     }
 
-    private NormalizationProcessorRuntime buildBulkNormalizationProcessorRuntime() throws NormalizationException, IOException {
+    private NormalizationProcessor createBulkNormalizationProcessorRuntime() throws NormalizationException, IOException {
         Map<String, NormalizationConfig> inputStreamsWithConfig = new HashMap<>();
         Schema.Field tempField = new Schema.Field("temp", Schema.Type.INTEGER);
         Schema inputSchema = Schema.of(tempField, new Schema.Field("foo", Schema.Type.STRING));
@@ -160,10 +165,9 @@ public class NormalizationBoltTest {
         BulkNormalizationConfig bulkNormalizationConfig = new BulkNormalizationConfig(inputSchema, bulkScriptText);
         inputStreamsWithConfig.put(NormalizationProcessor.DEFAULT_STREAM_ID, bulkNormalizationConfig);
 
-        NormalizationProcessor normalizationProcessor = new NormalizationProcessor(inputStreamsWithConfig);
-        normalizationProcessor.setDeclaredOutput(OUTPUT_SCHEMA_FIELDS);
+        NormalizationProcessor normalizationProcessor = new NormalizationProcessor(inputStreamsWithConfig, new Stream("normalized-output", OUTPUT_SCHEMA_FIELDS),  NormalizationProcessor.Type.bulk);
 
-        return new NormalizationProcessorRuntime(normalizationProcessor);
+        return normalizationProcessor;
     }
 
     private String getBulkScriptText() throws IOException {
@@ -172,7 +176,7 @@ public class NormalizationBoltTest {
         }
     }
 
-    private NormalizationProcessorRuntime createFieldBasedNormalizationProcessorRuntime() throws NormalizationException {
+    private NormalizationProcessor createFieldBasedNormalizationProcessorRuntime() throws NormalizationException {
         Map<String, NormalizationConfig> inputStreamsWithConfig = new HashMap<>();
         Schema.Field tempField = new Schema.Field("temp", Schema.Type.INTEGER);
         Schema inputSchema = Schema.of(tempField, new Schema.Field("foo", Schema.Type.STRING));
@@ -187,10 +191,33 @@ public class NormalizationBoltTest {
 
         inputStreamsWithConfig.put(NormalizationProcessor.DEFAULT_STREAM_ID, fieldBasedNormalizationConfig);
 
-        NormalizationProcessor normalizationProcessor = new NormalizationProcessor(inputStreamsWithConfig);
-        normalizationProcessor.setDeclaredOutput(OUTPUT_SCHEMA_FIELDS);
+        NormalizationProcessor normalizationProcessor = new NormalizationProcessor(inputStreamsWithConfig, new Stream("normalized-output", OUTPUT_SCHEMA_FIELDS), NormalizationProcessor.Type.fineGrained);
+        return normalizationProcessor;
+    }
 
-        return new NormalizationProcessorRuntime(normalizationProcessor);
+
+    @Test
+    public void testBulkNormalizationProcessorJsons() throws Exception {
+        testNormalizationProcessorJson(createBulkNormalizationProcessorRuntime());
+    }
+
+    @Test
+    public void testFinegrainedNormalizationProcessorJsons() throws Exception {
+        testNormalizationProcessorJson(createFieldBasedNormalizationProcessorRuntime());
+    }
+
+    private void testNormalizationProcessorJson(NormalizationProcessor normalizationProcessor) throws IOException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final String normalizationProcessorJson = objectMapper.writeValueAsString(normalizationProcessor);
+        log.info("####### normalizationProcessorJson = " + normalizationProcessorJson);
+
+        final NormalizationProcessor readNormalizationProcessor = objectMapper.readValue(normalizationProcessorJson, NormalizationProcessor.class);
+        Assert.assertEquals(normalizationProcessor, readNormalizationProcessor);
+
+        final String jsonFromGeneratedObject = objectMapper.writeValueAsString(readNormalizationProcessor);
+        log.info("####### jsonFromGeneratedObject = " + jsonFromGeneratedObject);
+
+        Assert.assertEquals(normalizationProcessorJson, jsonFromGeneratedObject);
     }
 
     @Test

@@ -91,9 +91,4 @@ public class FieldBasedNormalizationConfig extends NormalizationConfig {
                 ", newValueGenerators=" + newFieldValueGenerators +
                 '}';
     }
-
-    @Override
-    public TYPE getType() {
-        return TYPE.single;
-    }
 }

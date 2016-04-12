@@ -20,5 +20,5 @@ package com.hortonworks.iotas.layout.design.component;
 /**
  * A sink component
  */
-public interface Sink extends Component {
+public interface Sink extends InputComponent {
 }

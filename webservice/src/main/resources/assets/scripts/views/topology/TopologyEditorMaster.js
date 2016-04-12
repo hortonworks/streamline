@@ -27,7 +27,8 @@ define(['require',
       'click #configTopology'   : 'evConfigAction',
       'click #zoomOut-topo-graph' : 'evZoomOut',
       'click #zoomIn-topo-graph' : 'evZoomIn',
-      'click #editor-node-options, #closeList': 'evToggleNodeOptions'
+      'click #editor-node-options, #closeList': 'evToggleNodeOptions',
+      'click #toggle-editor-mode': 'evToggleEditorMode'
     },
 
     ui: {
@@ -44,12 +45,14 @@ define(['require',
       if(!this.model){
         this.model = new VTopology();
         this.topologyName = 'Topology-Name';
+        this.editMode = true;
       } else {
         this.topologyId = this.model.get('id');
         this.topologyName = this.model.get('name');
         this.model.set('_editState', true);
         this.model.set('config', JSON.parse(this.model.get('config')));
         this.setTopologyConfigModel();
+        this.editMode = false;
       }
       this.getAllConfigurations();
       this.bindEvents();
@@ -98,6 +101,7 @@ define(['require',
       promiseArr.push(this.model.getLinkComponent());
       if(this.model.get('_editState')){
         promiseArr.push(this.model.getMetaInfo({id: this.model.get('id')}));
+        //promiseArr.push(this.model.getTopologyStatus({id: this.model.get('id')}));
       }
 
       Promise.all(promiseArr).then(function(resultsArr){
@@ -114,7 +118,7 @@ define(['require',
         if(self.renderFlag){
           self.showCustomProcessors();
           self.$('svg').remove();
-          self.topologyGraph = TopologyUtils.syncGraph(self.model.get('_editState'), self.graphNodesData, self.linkArr, self.ui.graphEditor, self.vent, self.graphTransforms, self.linkConfigArr);
+          self.topologyGraph = TopologyUtils.syncGraph(self.model.get('_editState'), self.graphNodesData, self.linkArr, self.ui.graphEditor, self.vent, self.graphTransforms, self.linkConfigArr, self.editMode);
         }
       });
     },
@@ -242,8 +246,8 @@ define(['require',
     onRender:function(){
       $('#loading').show();
       var self = this;
-      var actualHeight = $(window).innerHeight() - 138;
-      this.$('.graph-bg').css("height", actualHeight+"px");
+      var actualHeight = $(window).innerHeight() - 185;
+      this.$('#graphEditor').css("height", actualHeight+"px");
       
       TopologyUtils.setTopologyName(this.$('#topologyName'), function(e, params){ 
         self.topologyName = params.newValue; 
@@ -252,11 +256,20 @@ define(['require',
       this.$(".nodes-list-container").draggable({
         containment: '#graphEditor'
       }).css("position", "absolute");
+
+      if(!this.editMode) {
+        this.$("#graphEditor").removeClass("graph-bg");
+        this.$(".nodes-list-container, .topology-control-btn, .topology-mode-control").toggleClass("displayNone");
+        this.$("#topologyName").html(this.topologyName);        
+        this.$('#topologyName').editable('toggleDisabled');
+      } else {
+        this.$(".topology-capsule").hide();
+      }   
       
       setTimeout(function(){
         self.renderFlag = true;
         self.showCustomProcessors();
-        self.topologyGraph = TopologyUtils.syncGraph(self.model.get('_editState'), self.graphNodesData, self.linkArr, self.ui.graphEditor, self.vent, self.graphTransforms, self.linkConfigArr);
+        self.topologyGraph = TopologyUtils.syncGraph(self.model.get('_editState'), self.graphNodesData, self.linkArr, self.ui.graphEditor, self.vent, self.graphTransforms, self.linkConfigArr, self.editMode);
         TopologyUtils.bindDrop(self.$('#graphEditor'), self.dsArr, self.processorArr, self.sinkArr, self.vent, self.nodeNames);
       }, 0);
       
@@ -269,7 +282,7 @@ define(['require',
         });
       }
 
-      self.$('[data-rel="tooltip"]').tooltip({placement: 'bottom'});
+      self.$('[data-rel="tooltip"]').tooltip({placement: 'bottom', trigger: 'hover'});
       $('#loading').hide();
     },
 
@@ -299,7 +312,8 @@ define(['require',
       require(['views/topology/DataFeedView'], function(DataFeedView){
         self.showModal(new DataFeedView({
           model: model,
-          vent: self.vent
+          vent: self.vent,
+          editMode: self.editMode
         }), obj);
       });
     },
@@ -316,7 +330,8 @@ define(['require',
             require(['views/topology/ParserProcessorView'], function(ParserProcessorView){
               self.showModal(new ParserProcessorView({
                 model: model,
-                vent: self.vent
+                vent: self.vent,
+                editMode: self.editMode
               }), obj);
             });
           }
@@ -337,7 +352,8 @@ define(['require',
                 model: model,
                 vent: self.vent,
                 linkedToRule: linkObj,
-                connectedSink: arr
+                connectedSink: arr,
+                editMode: self.editMode
               }), obj);
             });
           }
@@ -357,7 +373,8 @@ define(['require',
               model: model,
               vent: self.vent,
               showOutputFields: linkObj.length ? true : false,
-              connectedNodes: arr
+              connectedNodes: arr,
+              editMode: self.editMode
             }), obj);
           });
         break;
@@ -378,7 +395,8 @@ define(['require',
           self.showModal(new DataSinkView({
             model: model,
             vent: self.vent,
-            type: type
+            type: type,
+            editMode: self.editMode
           }), obj);
         });
       } else {
@@ -393,7 +411,7 @@ define(['require',
         return;
       }
       if(object.titleHtmlFlag){
-        titleHtml = '<a href="javascript:void(0)" id="editableTitle" data-type="text"> '+object.titleName+'<i class="fa fa-pencil"></i></a>';
+        titleHtml = self.editMode ? '<a href="javascript:void(0)" id="editableTitle" data-type="text"> '+object.titleName+'<i class="fa fa-pencil"></i></a>' : '<a href="javascript:void(0)" id="editableTitle" data-type="text"> '+object.titleName+'</a>';
         this.titleName = object.titleName;
       }
       this.view = view;
@@ -406,21 +424,23 @@ define(['require',
         mainClass: 'modal-lg'
       }).open();
 
-      modal.$('#editableTitle').editable({
+      if(self.editMode) {
+        modal.$('#editableTitle').editable({
           mode:'inline',
           validate: function(value) {
-           if(_.isEqual($.trim(value), '')) return 'Name is required';
-           if(self.nodeNames.indexOf(value) !== -1) return 'Node name should be unique throughout topology';
-        }
-      });
+            if(_.isEqual($.trim(value), '')) return 'Name is required';
+            if(self.nodeNames.indexOf(value) !== -1) return 'Node name should be unique throughout topology';
+          }
+        });
 
-      modal.$('.editable').on('save', function(e, params) {
-        modal.options.content.model.set('uiname', params.newValue);
-      });
+        modal.$('.editable').on('save', function(e, params) {
+          modal.options.content.model.set('uiname', params.newValue);
+        });
 
-      modal.$('.editable').on('rendered', function(e){
-        $(e.currentTarget).append("<i class='fa fa-pencil'></i>");
-      });
+        modal.$('.editable').on('rendered', function(e){
+          $(e.currentTarget).append("<i class='fa fa-pencil'></i>");
+        });
+      }
 
       this.view.on('closeModal', function(){
         self.view = null;
@@ -511,7 +531,7 @@ define(['require',
           } else {
             var tempObj = {
               uiname: sourceObj.uiname + '->' + targetObj.uiname,
-              type: "SHUFFLE",
+              type: obj.linkType ? obj.linkType : 'SHUFFLE',
               transformationClass: "com.hortonworks.iotas.topology.storm.ShuffleGroupingLinkFluxComponent",
               config: {
                 "from": sourceObj.uiname,
@@ -590,6 +610,7 @@ define(['require',
             self.$('#deployTopology').removeAttr('disabled');
             $('#loading').hide();
             Utils.notifySuccess('Topology saved successfully.');
+            self.evToggleEditorMode();
           },
           error: function(model, response, options){
             $('#loading').hide();
@@ -634,6 +655,7 @@ define(['require',
                 self.$('#killTopology').removeAttr('disabled');
                 $('#loading').hide();
                 Utils.notifySuccess('Topology deployed successfully.');
+                self.evToggleEditorMode();
               },
               error: function(model, response, options){
                 $('#loading').hide();
@@ -699,6 +721,24 @@ define(['require',
     },
     evToggleNodeOptions: function() {
       this.$(".node-options-btn, .nodes-list-container").toggleClass("displayNone");
+    },
+    evToggleEditorMode: function(e) {
+      this.editMode = this.editMode ? false : true;
+      this.$(".topology-control-btn, .topology-mode-control").toggleClass("displayNone");
+      if(this.editMode){
+        this.$("#graphEditor").addClass("graph-bg"); 
+        this.$(".nodes-list-container").removeClass("displayNone");
+        this.$(".node-options-btn").addClass("displayNone");
+        this.$("#topologyName").html(this.topologyName+'<i class="fa fa-pencil"></i>');
+        this.$(".topology-capsule").hide();
+      } else {
+        this.$("#graphEditor").removeClass("graph-bg");
+        this.$(".nodes-list-container").addClass("displayNone");
+        this.$("#topologyName").html(this.topologyName);
+        this.$(".topology-capsule").show();
+      }
+      this.$('#topologyName').editable('toggleDisabled');
+      this.topologyGraph.editMode = this.editMode;
     },
     destroy: function(){
       this.stopListening(this.vent, 'topologyEditor:SaveDeviceSource');

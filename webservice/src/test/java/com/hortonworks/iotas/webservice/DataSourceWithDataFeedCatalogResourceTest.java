@@ -3,6 +3,7 @@ package com.hortonworks.iotas.webservice;
 import com.hortonworks.iotas.catalog.CatalogResponse;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
+import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.catalog.DataSourceFacade;
 import com.hortonworks.iotas.webservice.catalog.DataSourceWithDataFeedCatalogResource;
@@ -14,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
 import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
@@ -92,7 +94,11 @@ public class DataSourceWithDataFeedCatalogResourceTest {
         dataSource.setName("datasource-1");
         dataSource.setType(DataSource.Type.DEVICE);
         dataSource.setTypeConfig("device-datasource-typeconfig");
-        dataSource.setTags("tag-1");
+        Tag tag = new Tag();
+        tag.setId(1L);
+        tag.setName("test-tag");
+        tag.setDescription("test");
+        dataSource.setTags(Arrays.asList(tag));
         dataSource.setDescription("test device data source");
         return dataSource;
     }

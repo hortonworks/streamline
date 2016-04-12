@@ -55,18 +55,20 @@ while getopts 'hv' flag; do
   esac
 done
 
-#add_nest_parser
-#post /datasources datasource 
-#post /datasources dataset
-#post /feeds dataset-datafeed
-#post /notifiers console_notifier
-#post /notifiers email_notifier
-#post /topologies topology
-#post /topologies topology-with-notification-bolt
-#post /topologies topology-with-console-custom-processor 
+add_nest_parser
+post /tags tags
+post /datasources datasource 
+post /datasources dataset
+post /feeds dataset-datafeed
+post /notifiers console_notifier
+post /notifiers email_notifier
+post /topologies topology
+post /topologies topology-with-notification-bolt
+post /topologies topology-with-console-custom-processor 
 post /system/componentdefinitions/SOURCE kafka-topology-component
 post /system/componentdefinitions/PROCESSOR rule-topology-component
 post /system/componentdefinitions/PROCESSOR parser-topology-component
+post /system/componentdefinitions/PROCESSOR normalization-processor-topology-component
 post /system/componentdefinitions/SINK hdfs-topology-component
 post /system/componentdefinitions/SINK hbase-topology-component
 post /system/componentdefinitions/SINK notification-topology-component

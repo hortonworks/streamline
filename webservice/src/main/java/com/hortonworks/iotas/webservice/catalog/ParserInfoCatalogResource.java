@@ -16,6 +16,7 @@ import com.hortonworks.iotas.util.ReflectionHelper;
 import com.hortonworks.iotas.webservice.IotasConfiguration;
 import com.hortonworks.iotas.util.JarReader;
 import com.hortonworks.iotas.webservice.util.WSUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
@@ -217,34 +218,26 @@ public class ParserInfoCatalogResource {
                               @FormDataParam("parserInfo") final String parserInfoStr, @FormDataParam("schemaFromParserJar") boolean schemaFromParserJar) {
 
         LOG.debug("schemaFromParser {}", schemaFromParserJar);
-
-        File file = null;
         try {
-            String name = "";
-            if (contentDispositionHeader != null && contentDispositionHeader.getFileName() != null) {
-                name = contentDispositionHeader.getFileName();
-                this.jarStorage.uploadJar(inputStream, name);
-                inputStream.close();
-            }
-
-
-            //TODO something special about multipart request so it wont let me pass just a ParserInfo json object, instead we must pass ParserInfo as a json string.
             ParserInfo parserInfo = objectMapper.readValue(parserInfoStr, ParserInfo.class);
-            parserInfo.setJarStoragePath(name);
-
+            String prefix = StringUtils.isBlank(parserInfo.getName()) ? "parser-" : parserInfo.getName() + "-";
+            String jarStoragePath = prefix + UUID.randomUUID().toString() + ".jar";
+            String uploadedPath = this.jarStorage.uploadJar(inputStream, jarStoragePath);
+            inputStream.close();
+            LOG.debug("Jar file uploaded to {}", uploadedPath);
+            //TODO something special about multipart request so it wont let me pass just a ParserInfo json object, instead we must pass ParserInfo as a json string.
+            parserInfo.setJarStoragePath(jarStoragePath);
             // force to load parser class so that we don't store ParserInfo when classloader can't load parser class
-            Schema schema = loadSchemaFromParserJar(name, parserInfo.getClassName());
+            Schema schema = loadSchemaFromParserJar(jarStoragePath, parserInfo.getClassName());
             if (schema == null) {
                 throw new RuntimeException("Cannot load parser class from uploaded Jar: " + parserInfo.getClassName());
             }
-
             // if schema is not set in json, try to load it from the jar just uploaded.
             if (parserInfo.getParserSchema() == null && schemaFromParserJar) {
                 parserInfo.setParserSchema(schema);
             }
-
-            catalogService.addParserInfo(parserInfo);
-            return WSUtils.respond(CREATED, SUCCESS, parserInfo);
+            ParserInfo result = catalogService.addParserInfo(parserInfo);
+            return WSUtils.respond(CREATED, SUCCESS, result);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }

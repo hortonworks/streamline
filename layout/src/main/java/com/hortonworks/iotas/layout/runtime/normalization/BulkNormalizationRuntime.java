@@ -42,7 +42,7 @@ public class BulkNormalizationRuntime extends NormalizationRuntime {
 
     private final GroovyScript<Map<String, Object>> groovyScript;
 
-    public BulkNormalizationRuntime(BulkNormalizationConfig bulkNormalizationConfig) {
+    public BulkNormalizationRuntime(BulkNormalizationConfig bulkNormalizationConfig, final Schema declaredOutputSchema) {
         super(bulkNormalizationConfig);
 
         String normalizationScript = bulkNormalizationConfig.normalizationScript;
@@ -50,7 +50,7 @@ public class BulkNormalizationRuntime extends NormalizationRuntime {
         Map<String, Object> initialBindings = new HashMap<String, Object>() {{
             // creating new instances to avoid modifying the actual schemas by script.
             put(INPUT_SCHEMA_BINDING, Schema.of(normalizationConfig.getInputSchema().getFields()));
-            put(OUTPUT_SCHEMA_BINDING, Schema.of(normalizationConfig.getOutputSchema().getFields()));}};
+            put(OUTPUT_SCHEMA_BINDING, Schema.of(declaredOutputSchema.getFields()));}};
 
         groovyScript = normalizationScript != null && !normalizationScript.isEmpty()
                 ? new GroovyScript<Map<String, Object>>(normalizationScript, new GroovyScriptEngine(), initialBindings) : null;

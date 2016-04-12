@@ -4,10 +4,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.google.common.collect.Lists;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.parser.BaseParser;
-import com.hortonworks.iotas.parser.ParseException;
+import com.hortonworks.iotas.exception.ParserException;
 import com.hortonworks.iotas.util.ReflectionHelper;
 
 import java.util.HashMap;
@@ -63,7 +62,7 @@ public class NestParser extends BaseParser {
 
     //right now it only returns current temperature and id, where id is nest's unique Id.
     //We can probably improve it by adding more fields
-    public Map<String, Object> parse(byte[] data) throws ParseException {
+    public Map<String, Object> parse(byte[] data) throws ParserException {
         try {
             Map map = new HashMap();
             JsonNode jsonNode = mapper.readTree(data);
@@ -71,11 +70,10 @@ public class NestParser extends BaseParser {
             Random random = new Random(System.currentTimeMillis());
             //TODO Not sure how do we want to deal with multiple thermostats in a single json response.
             //I guess we could return a list of Maps from parse method to allow for use cases like this.
-            ObjectReader objectReader = mapper.readerFor(new TypeReference<Map<String, Thermostat>>() {
-            });
+            ObjectReader objectReader = mapper.readerFor(new TypeReference<Map<String, Thermostat>>() {/* no-op class*/ } );
             HashMap<String, Thermostat> thermostatMap = objectReader.readValue(thermostats);
             if(thermostatMap.size() > 1) {
-                throw new ParseException("We don't deal with multiple thermo stat in a single json response yet");
+                throw new ParserException("We don't deal with multiple thermo stat in a single json response yet");
             }
             Thermostat thermostat = thermostatMap.values().iterator().next();
             for(Schema.Field field: schema().getFields()) {
@@ -88,7 +86,7 @@ public class NestParser extends BaseParser {
             }
             return map;
         } catch (Exception e) {
-            throw new ParseException(e);
+            throw new ParserException(e);
         }
     }
 

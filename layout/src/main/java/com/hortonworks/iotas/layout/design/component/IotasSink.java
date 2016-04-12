@@ -17,6 +17,9 @@
  */
 package com.hortonworks.iotas.layout.design.component;
 
+/**
+ * The base implementation of a {@link Sink} that all Iotas sinks should extend.
+ */
 public class IotasSink extends IotasComponent implements Sink {
     @Override
     public String toString() {

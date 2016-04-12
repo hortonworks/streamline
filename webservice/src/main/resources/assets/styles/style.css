@@ -56,6 +56,16 @@ label {
 .editable-error-block {
   max-width: 470px;
 }
+.breadcrumb {
+  background-color: #fff;
+  margin-bottom: 10px;
+}
+.breadcrumb>li+li:before {
+  font-family: FontAwesome;
+  content: "\f105";
+  padding: 0 10px;
+  color: #999;
+}
 
 /* Awesome Checkbox & Radio */
 .checkbox {
@@ -450,11 +460,13 @@ header .navbar-nav.navbar-right li.dropdown-user a:hover img {
   box-shadow: 0px 2px #69be28;
 }
 
-#cluster-config.current{
+#tab0 > a.current > i {
   color: #69be28;
+  border-color: #69be28;
 }
-#cluster-config.current > i{
-  border: 1px solid #69be28;
+
+#toggle-editor-mode{
+  color: #69be28;
 }
 
 /* Sidebar & Wrapper */
@@ -1339,7 +1351,7 @@ a#editableTitle {
   width: 240px;
   position: absolute;
   top: 60px;
-  right: 15px;
+  right: 30px;
 }
 #topology-node-list .panel-default > .panel-heading a {
   color: #44697d;
@@ -1388,4 +1400,55 @@ li.active > a > span {
 }
 .output-fields {
   margin-top: 15px;
+}
+.position-relative {
+  position: relative
+  ;
+}
+.topology-capsule {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border: 2px solid;
+  border-radius: 15px;
+}
+.topology-capsule.view {
+  color: #69be28;
+  border-color: #69be28;
+}
+.topology-capsule.edit {
+  color: #28AABE;
+  border-color: #28AABE;
+ }
+.control-tab {
+  margin-bottom: 20px;
+}
+.control-tab .nav-tabs {
+  background: #fcfcfd;
+  border: 1px #e1e6ef solid;
+  padding: 0 15px;
+}
+.control-tab .nav-tabs > li > a {
+  border-radius: 0px;
+  color: #666;
+}
+.control-tab .nav-tabs > li > a:hover {
+  border-color: transparent;
+}
+.control-tab .nav-tabs > li.active > a,
+.control-tab .nav-tabs > li.active > a:hover,
+.control-tab .nav-tabs > li.active > a:focus {
+  border: 1px solid #ddd;
+  border-bottom-color: transparent;
+  border-top-color: transparent;
+  color: #29aabe;
+}
+.control-tab .tab-content {
+  background-color: #fff;
+  padding: 15px;
+  border: 1px #e1e6ef solid;
+  border-top: none;
 }

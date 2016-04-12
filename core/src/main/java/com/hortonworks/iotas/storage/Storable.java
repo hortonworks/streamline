@@ -58,4 +58,11 @@ public interface Storable {
      */
     Storable fromMap(Map<String, Object> map);
 
+    /**
+     * A unique Id to identify the storable.
+     *
+     * @return the id.
+     */
+    Long getId();
+
 }

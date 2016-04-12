@@ -25,9 +25,12 @@ import com.hortonworks.iotas.layout.design.component.RulesProcessor;
 import com.hortonworks.iotas.layout.design.component.RulesProcessorBuilder;
 import com.hortonworks.iotas.layout.design.component.Sink;
 import com.hortonworks.iotas.layout.design.rule.action.Action;
+import com.hortonworks.iotas.layout.design.rule.condition.BinaryExpression;
 import com.hortonworks.iotas.layout.design.rule.condition.Condition;
-import com.hortonworks.iotas.layout.design.rule.condition.Condition.ConditionElement.LogicalOperator;
-import com.hortonworks.iotas.layout.design.rule.condition.Condition.ConditionElement.Operation;
+import com.hortonworks.iotas.layout.design.rule.condition.Expression;
+import com.hortonworks.iotas.layout.design.rule.condition.FieldExpression;
+import com.hortonworks.iotas.layout.design.rule.condition.Literal;
+import com.hortonworks.iotas.layout.design.rule.condition.Operator;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -110,37 +113,24 @@ public class RuleProcessorMockBuilder implements RulesProcessorBuilder {
     }
 
     private Condition buildCondition(int idx) {
-        if (idx % 2 == 0) {
-            return buildCondition(buildConditionElements(Operation.GREATER_THAN)); // temperature  > 100  &&  humidity  > 50
-        }
-        return buildCondition(buildConditionElements(Operation.LESS_THAN));        // temperature  < 100  &&  humidity  < 50
-    }
-
-    private Condition buildCondition(List<Condition.ConditionElement> conditionElements) {
         Condition condition = new Condition();
-        condition.setConditionElements(conditionElements);
+        if (idx % 2 == 0) {
+            condition.setExpression(comparisonOperation(Operator.GREATER_THAN));// temperature  > 100  &&  humidity  > 50
+        } else {
+            condition.setExpression(comparisonOperation(Operator.LESS_THAN));        // temperature  < 100  &&  humidity  < 50
+        }
         return condition;
     }
 
-    private List<Condition.ConditionElement> buildConditionElements(Operation operation) {
-        List<Condition.ConditionElement> conditionElements = new ArrayList<>();
-        conditionElements.add(buildConditionElement(TEMPERATURE, operation, "100", LogicalOperator.AND));
-        conditionElements.add(buildConditionElement(HUMIDITY, operation, "50", null));
-        return conditionElements;
+    private Expression comparisonOperation(Operator operator) {
+        return binaryOperation(Operator.AND,
+                               binaryOperation(operator, new FieldExpression(Field.of("temperature", Schema.Type.INTEGER)),
+                                               new Literal("100")),
+                               binaryOperation(operator, new FieldExpression(Field.of("humidity", Schema.Type.INTEGER)),
+                                               new Literal("50")));
     }
 
-    private Condition.ConditionElement buildConditionElement(
-            String firstOperand, Operation operation, String secondOperand,
-            LogicalOperator logicalOperator) {
-
-        final Condition.ConditionElement conditionElement = new Condition.ConditionElement();
-        final Field firstOperandField = new Field(firstOperand, Schema.Type.INTEGER);
-        conditionElement.setFirstOperand(firstOperandField);
-        conditionElement.setOperation(operation);
-        conditionElement.setSecondOperand(secondOperand);
-        if (logicalOperator != null) {
-            conditionElement.setLogicalOperator(logicalOperator);
-        }
-        return conditionElement;
+    private Expression binaryOperation(Operator operator, Expression left, Expression right) {
+        return new BinaryExpression(operator, left, right);
     }
 }

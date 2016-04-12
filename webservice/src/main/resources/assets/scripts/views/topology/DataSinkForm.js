@@ -39,6 +39,7 @@ define(['utils/LangSupport',
           type: 'Text',
           title: name+(obj.isOptional?'' : '*'),
           editorClass: 'form-control',
+          editorAttrs: self.editMode ? {} : {disabled: 'disabled'},
           placeholder: name,
           validators: (obj.isOptional ? [] : [{'type':'required','message': name+' can not be blank.'}])
         };
@@ -124,59 +125,69 @@ define(['utils/LangSupport',
           type: 'Text',
           title: 'username*',
           editorClass: 'form-control',
+          editorAttrs: self.editMode ? {} : {disabled: 'disabled'},
           validators: [{'type':'required','message':'username can not be blank.'}]
         },
         password: {
           type: 'Password',
           title: 'password*',
           editorClass: 'form-control',
+          editorAttrs: self.editMode ? {} : {disabled: 'disabled'},
           validators: [{'type':'required','message':'password can not be blank.'}]
         },
         host: {
           type: 'Text',
           title: 'host*',
           editorClass: 'form-control',
+          editorAttrs: self.editMode ? {} : {disabled: 'disabled'},
           validators: [{'type':'required','message':'host can not be blank.'}]
         },
         port: {
           type: 'Number',
           title: 'port*',
           editorClass: 'form-control',
+          editorAttrs: self.editMode ? {} : {disabled: 'disabled'},
           validators: [{'type':'required','message':'port can not be blank.'}]
         },
         ssl: {
           type: 'Radio',
           title: 'ssl',
           options: [{val: 'true', label: 'true'}, {val: 'false', label: 'false'}],
-          editorClass: 'inline-element'
+          editorClass: 'inline-element',
+          editorAttrs: self.editMode ? {} : {disabled: 'disabled'},
         },
         starttls: {
           type: 'Radio',
           title: 'starttls',
           options: [{val: 'true', label: 'true'}, {val: 'false', label: 'false'}],
-          editorClass: 'inline-element'
+          editorClass: 'inline-element',
+          editorAttrs: self.editMode ? {} : {disabled: 'disabled'},
         },
         debug: {
           type: 'Radio',
           title: 'debug',
           options: [{val: 'true', label: 'true'}, {val: 'false', label: 'false'}],
-          editorClass: 'inline-element'
+          editorClass: 'inline-element',
+          editorAttrs: self.editMode ? {} : {disabled: 'disabled'},
         },
         protocol: {
           type: 'Text',
           title: 'protocol',
-          editorClass: 'form-control'
+          editorClass: 'form-control',
+          editorAttrs: self.editMode ? {} : {disabled: 'disabled'},
         },
         auth: {
           type: 'Radio',
           title: 'auth',
           options: [{val: 'true', label: 'true'}, {val: 'false', label: 'false'}],
-          editorClass: 'inline-element'
+          editorClass: 'inline-element',
+          editorAttrs: self.editMode ? {} : {disabled: 'disabled'},
         },
         from: {
           type: 'Text',
           title: 'from*',
           editorClass: 'form-control',
+          editorAttrs: self.editMode ? {} : {disabled: 'disabled'},
           validators: [{'type':'required','message':'from can not be blank.'},
                       {'type': 'email', 'message': 'Invalid email address'}]
         },
@@ -184,6 +195,7 @@ define(['utils/LangSupport',
           type: 'Text',
           title: 'to*',
           editorClass: 'form-control',
+          editorAttrs: self.editMode ? {} : {disabled: 'disabled'},
           validators: [{'type':'required','message':'to can not be blank.'},
                       {'type': 'email', 'message': 'Invalid email address'}]
         },
@@ -191,23 +203,27 @@ define(['utils/LangSupport',
           type: 'Text',
           title: 'subject*',
           editorClass: 'form-control',
+          editorAttrs: self.editMode ? {} : {disabled: 'disabled'},
           validators: [{'type':'required','message':'subject can not be blank.'}]
         },
         contentType: {
           type: 'Text',
           title: 'contentType',
-          editorClass: 'form-control'
+          editorClass: 'form-control',
+          editorAttrs: self.editMode ? {} : {disabled: 'disabled'},
         },
         body: {
           type: 'TextArea',
           title: 'body*',
           editorClass: 'form-control',
+          editorAttrs: self.editMode ? {} : {disabled: 'disabled'},
           validators: [{'type':'required','message':'body can not be blank.'}]
         },
         parallelism: {
           type: 'Number',
           title: 'parallelism',
-          editorClass: 'form-control'
+          editorClass: 'form-control',
+          editorAttrs: self.editMode ? {} : {disabled: 'disabled'},
         },
       };
       return this.schemaObj;

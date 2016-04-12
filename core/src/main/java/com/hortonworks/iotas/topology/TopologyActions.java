@@ -30,4 +30,12 @@ public interface TopologyActions {
     //Resume the json representing the IoTaS based on underlying streaming
     // engine
     void resume (Topology topology) throws Exception;
+
+    // return topology status
+    Status status (Topology topology) throws Exception;
+
+    interface Status {
+        String getStatus();
+        Map<String, String> getExtra();
+    }
 }

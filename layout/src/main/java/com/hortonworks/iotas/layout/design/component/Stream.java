@@ -19,6 +19,7 @@ package com.hortonworks.iotas.layout.design.component;
 
 import com.hortonworks.iotas.common.Schema;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -27,29 +28,68 @@ import java.util.UUID;
  * Stream represents the schema of the
  * output stream that a component emits.
  */
-public class Stream {
+public class Stream implements Serializable {
     private String id;
     private Schema schema;
 
     public enum Grouping {
-        GROUPING_SHUFFLE
+        /**
+         * Shuffle grouping
+         */
+        SHUFFLE,
+        /**
+         * Fields grouping
+         */
+        FIELDS
+    }
+
+    private Stream() {
     }
 
     /**
      * Stream where all fields are of String type.
-     * @param fields
+     *
+     * @param fields the fields
      */
     public Stream(String... fields) {
-        List<Schema.Field> schemaFields = new ArrayList<>();
-        for(String field: fields) {
-            schemaFields.add(new Schema.Field(field, Schema.Type.STRING));
-        }
-        this.id = UUID.randomUUID().toString();
-        this.schema = Schema.of(schemaFields);
+        this(schemaFields(fields));
     }
 
+    /**
+     * A stream of the given list of fields.
+     *
+     * @param fields the fields
+     */
+    public Stream(List<Schema.Field> fields) {
+        this(UUID.randomUUID().toString(), fields);
+    }
+
+    /**
+     * A stream of the given list of fields.
+     *
+     * @param id the unique id of the stream
+     * @param fields the fields
+     */
+    public Stream(String id, List<Schema.Field> fields) {
+        this(id, Schema.of(fields));
+    }
+
+    /**
+     * A stream with the given schema and random UUID string as the stream id.
+     *
+     * @param schema the schema of the stream
+     */
     public Stream(Schema schema) {
-        this.id = UUID.randomUUID().toString();
+        this(UUID.randomUUID().toString(), schema);
+    }
+    /**
+     * A stream with the given id and schema.
+     *
+     * @param id the unique id of the stream
+     * @param schema the schema of the stream
+     */
+    public Stream(String id, Schema schema) {
+        this.id = id;
         this.schema = schema;
     }
 
@@ -57,7 +97,7 @@ public class Stream {
         return id;
     }
 
-    public Schema fields() {
+    public Schema getSchema() {
         return schema;
     }
 
@@ -81,7 +121,15 @@ public class Stream {
     public String toString() {
         return "Stream{" +
                 "id='" + id + '\'' +
-                ", fields=" + schema +
+                ", schema=" + schema +
                 '}';
+    }
+
+    private static List<Schema.Field> schemaFields(String... fields) {
+        List<Schema.Field> schemaFields = new ArrayList<>();
+        for(String field: fields) {
+            schemaFields.add(Schema.Field.of(field, Schema.Type.STRING));
+        }
+        return schemaFields;
     }
 }

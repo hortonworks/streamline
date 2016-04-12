@@ -11,6 +11,7 @@ import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.CatalogResponse;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.catalog.NotifierInfo;
+import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.catalog.Topology;
 import com.hortonworks.iotas.catalog.TopologyEditorMetadata;
 import com.hortonworks.iotas.common.Schema;
@@ -114,7 +115,6 @@ public class RestIntegrationTest {
      * List of all things that will be tested
      */
     private Collection<ResourceTestElement> resourcesToTest = Lists.newArrayList(
-            new ResourceTestElement(createDataSource(1l, "testDataSource"), createDataSource(1l, "testDataSourcePut"), "1", rootUrl + "deprecated/datasources"),
             // TODO: The below test case needs to be fixed since it should first create the data source and then add the corresponding datafeed
             //new ResourceTestElement(createDataFeed(1l, "testDataFeed"), createDataFeed(1l, "testDataFeedPut"), "1", rootUrl + "feeds"),
             new ResourceTestElement(createClusterInfo(1l, "testCluster"), createClusterInfo(1l, "testClusterPut"), "1", rootUrl + "clusters"),
@@ -484,10 +484,14 @@ public class RestIntegrationTest {
         ds.setId(id);
         ds.setName(name);
         ds.setDescription("desc");
-        ds.setTags("t1, t2, t3");
+        Tag tag = new Tag();
+        tag.setId(1L);
+        tag.setName("test-tag");
+        tag.setDescription("test");
+        ds.setTags(Arrays.asList(tag));
         ds.setTimestamp(System.currentTimeMillis());
         ds.setType(DataSource.Type.DEVICE);
-        ds.setTypeConfig("{\"id\":\"1\",\"version\":1}");
+        ds.setTypeConfig("{\"deviceId\":\"1\",\"version\":1}");
         return ds;
     }
 

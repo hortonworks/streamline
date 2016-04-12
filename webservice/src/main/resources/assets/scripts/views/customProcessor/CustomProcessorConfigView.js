@@ -92,6 +92,7 @@ define([
                     includePagination: false,
                     includeFooterRecords: false,
                     gridOpts: {
+                        emptyText: 'No fields found.',
                         className: 'table table-backgrid table-bordered table-striped table-condensed'
                     }
                 })
@@ -148,9 +149,9 @@ define([
                     var streamName = anchor.children().html();
                     self.streamNames.splice(self.streamNames.indexOf(streamName), 1);
                     var t_id = anchor.children().data('id');
-                    var $firstTab = $(".nav-tabs li").children('a').first();
+                    var $firstTab = $(".schema-tabs .nav-tabs li").children('a').first();
                     if($firstTab.parent().data('id') === t_id){
-                        $firstTab = $($(".nav-tabs li").children('a').get(1));
+                        $firstTab = $($(".schema-tabs .nav-tabs li").children('a').get(1));
                     }
                     $("#tab-" + anchor.children().data('id')).remove();
                     $(this).off('click');
@@ -161,8 +162,8 @@ define([
                     if (self.tabNumbers.indexOf(t_id) !== -1) {
                         self.tabNumbers.splice(self.tabNumbers.indexOf(t_id), 1);
                     }
-                    if($(".nav-tabs li").children('a').not('#add-tab').length === 1){
-                        $(".nav-tabs li").children('a').not('#add-tab').siblings().hide();
+                    if($(".schema-tabs .nav-tabs li").children('a').not('#add-tab').length === 1){
+                        $(".schema-tabs .nav-tabs li").children('a').not('#add-tab').siblings().hide();
                     }
                     $firstTab.click();
                     self.currentTabId = $firstTab.parent().data().id;
@@ -177,7 +178,7 @@ define([
                 $(this).parent().addClass('active');
                 self.currentTabId = $(this).parent().data().id;
                 $('.cancelSchema').hide();
-                if($(".nav-tabs li").children('a').not('#add-tab').length !== 1){
+                if($(".schema-tabs .nav-tabs li").children('a').not('#add-tab').length !== 1){
                     $(this).siblings().show();
                 }
             });
@@ -215,8 +216,8 @@ define([
 
         evAddTab: function(e) {
             e.preventDefault();
-            if($(".nav-tabs li").children('a').not('#add-tab').length === 1){
-                $(".nav-tabs li").children('a').not('#add-tab').siblings().show();
+            if($(".schema-tabs .nav-tabs li").children('a').not('#add-tab').length === 1){
+                $(".schema-tabs .nav-tabs li").children('a').not('#add-tab').siblings().show();
             }
             var id = this.tabIdCount++,
                 name = 'Stream ' + id;
@@ -367,7 +368,8 @@ define([
                 attrs = this.processorConfigView.getData(),
                 configFields = [],
                 obj = {},
-                type = this.editState? 'PUT': 'POST';
+                type = this.editState? 'PUT': 'POST',
+                self = this;
 
             if (!_.isEqual(attrs.jarFileName.name.split('.').pop().toLowerCase(), 'jar')) {
                 Utils.notifyError(localization.tt('dialogMsg.invalidFile'));
@@ -399,8 +401,12 @@ define([
             formData.append('customProcessorInfo', JSON.stringify(obj));
             var url = '/api/v1/catalog/system/componentdefinitions/PROCESSOR/custom';
             var successCallback = function(response) {
-                Utils.notifySuccess(localization.tt('dialogMsg.newParserAddedSuccessfully'));
-                Backbone.history.navigate('#!/custom-processor', { trigger: true });
+                var msg = 'New processor added successfully.';
+                if(self.editState){
+                    msg = 'Processor updated successfully.';
+                }
+                Utils.notifySuccess(msg);
+                self.vent.trigger('controlPanel:Cancel');
             };
             var errorCallback = function(model, response, options) {
                 Utils.showError(model, response);
@@ -408,7 +414,7 @@ define([
             Utils.uploadFile(url, formData, successCallback, errorCallback, type);
         },
         evCloseProcessorConfig: function() {
-            Backbone.history.navigate('#!/custom-processor', { trigger: true });
+            this.vent.trigger('controlPanel:Cancel');
         },
         evValidateInputSchema: function() {
             try {

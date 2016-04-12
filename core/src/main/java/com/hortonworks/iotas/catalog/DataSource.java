@@ -7,6 +7,7 @@ import com.hortonworks.iotas.storage.PrimaryKey;
 import com.hortonworks.iotas.storage.StorableKey;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DataSource extends AbstractStorable {
@@ -45,9 +46,9 @@ public class DataSource extends AbstractStorable {
     private String description;
 
     /**
-     * Free form tags.
+     * the tags associated with this datasource.
      */
-    private String tags;
+    private List<Tag> tags;
 
     /**
      * Time when this entry was created/updated.
@@ -75,7 +76,6 @@ public class DataSource extends AbstractStorable {
                  new Schema.Field(DATA_SOURCE_ID, Schema.Type.LONG),
                  new Schema.Field(DATA_SOURCE_NAME, Schema.Type.STRING),
                  new Schema.Field(DESCRIPTION, Schema.Type.STRING),
-                 new Schema.Field(TAGS, Schema.Type.STRING),
                  new Schema.Field(TIMESTAMP, Schema.Type.LONG),
                  new Schema.Field(TYPE, Schema.Type.STRING),
                  new Schema.Field(TYPE_CONFIG, Schema.Type.STRING)
@@ -118,7 +118,6 @@ public class DataSource extends AbstractStorable {
         if (name != null ? !name.equals(that.name) : that.name != null)
             return false;
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
-        if (tags != null ? !tags.equals(that.tags) : that.tags != null) return false;
         if (type != null ? !type.equals(that.type) : that.type != null) return false;
         return !(typeConfig != null ? !typeConfig.equals(that.typeConfig) : that.typeConfig != null);
 
@@ -129,7 +128,6 @@ public class DataSource extends AbstractStorable {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
-        result = 31 * result + (tags != null ? tags.hashCode() : 0);
         result = 31 * result + (type != null ? type.hashCode() : 0);
         result = 31 * result + (typeConfig != null ? typeConfig.hashCode() : 0);
         return result;
@@ -180,11 +178,11 @@ public class DataSource extends AbstractStorable {
         this.description = description;
     }
 
-    public String getTags() {
+    public List<Tag> getTags() {
         return tags;
     }
 
-    public void setTags(String tags) {
+    public void setTags(List<Tag> tags) {
         this.tags = tags;
     }
 

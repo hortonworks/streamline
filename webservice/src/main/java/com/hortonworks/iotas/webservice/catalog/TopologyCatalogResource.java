@@ -6,6 +6,7 @@ import com.google.common.io.ByteStreams;
 import com.hortonworks.iotas.catalog.Topology;
 import com.hortonworks.iotas.processor.CustomProcessorInfo;
 import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.topology.TopologyActions;
 import com.hortonworks.iotas.topology.TopologyComponent;
 import com.hortonworks.iotas.webservice.util.WSUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -153,6 +154,22 @@ public class TopologyCatalogResource {
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
+    }
+
+    @GET
+    @Path("/topologies/{id}/actions/status")
+    @Timed
+    public Response topologyStatus (@PathParam("id") Long topologyId) {
+        try {
+            Topology result = catalogService.getTopology(topologyId);
+            if (result != null) {
+                TopologyActions.Status status = catalogService.topologyStatus(result);
+                return WSUtils.respond(OK, SUCCESS, status);
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, topologyId.toString());
     }
 
     @POST

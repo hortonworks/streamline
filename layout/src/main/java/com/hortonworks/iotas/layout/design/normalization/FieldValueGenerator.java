@@ -70,17 +70,17 @@ public class FieldValueGenerator implements Serializable {
 
         FieldValueGenerator that = (FieldValueGenerator) o;
 
-        if (!field.equals(that.field)) return false;
-        if (!script.equals(that.script)) return false;
-        return value.equals(that.value);
+        if (field != null ? !field.equals(that.field) : that.field != null) return false;
+        if (script != null ? !script.equals(that.script) : that.script != null) return false;
+        return !(value != null ? !value.equals(that.value) : that.value != null);
 
     }
 
     @Override
     public int hashCode() {
-        int result = field.hashCode();
-        result = 31 * result + script.hashCode();
-        result = 31 * result + value.hashCode();
+        int result = field != null ? field.hashCode() : 0;
+        result = 31 * result + (script != null ? script.hashCode() : 0);
+        result = 31 * result + (value != null ? value.hashCode() : 0);
         return result;
     }
 

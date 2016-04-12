@@ -18,9 +18,9 @@
 
 package com.hortonworks.iotas.layout.runtime.rule.sql;
 
+import com.hortonworks.iotas.layout.runtime.rule.condition.expression.ExpressionRuntime;
 import org.apache.storm.tuple.Values;
 import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.layout.runtime.rule.condition.expression.Expression;
 import com.hortonworks.iotas.layout.runtime.rule.condition.expression.StormSqlExpression;
 import com.hortonworks.iotas.layout.runtime.script.Script;
 import com.hortonworks.iotas.layout.runtime.script.engine.ScriptEngine;
@@ -35,26 +35,25 @@ import static com.hortonworks.iotas.layout.runtime.rule.condition.expression.Sto
 import static com.hortonworks.iotas.layout.runtime.rule.condition.expression.StormSqlExpression.RULE_TABLE;
 
 /**
- * Evaluates the {@link Expression} for each {@code Input} using the provided {@code Storm} SQL Engine
+ * Evaluates the {@link ExpressionRuntime} for each {@code Input} using the provided {@code Storm} SQL Engine
  */
 public class StormSqlScript<O> extends Script<IotasEvent, O, StormSqlEngine> {
     private static final Logger LOG = LoggerFactory.getLogger(StormSqlScript.class);
     private final ValuesConverter<O> valuesConverter;
     private final List<String> fieldsToEmit;
-    public StormSqlScript(Expression expression, ScriptEngine<StormSqlEngine> scriptEngine) {
-        this(expression, scriptEngine, null);
+    public StormSqlScript(ExpressionRuntime expressionRuntime, ScriptEngine<StormSqlEngine> scriptEngine) {
+        this(expressionRuntime, scriptEngine, null);
     }
 
-    public StormSqlScript(Expression expression, ScriptEngine<StormSqlEngine> scriptEngine, ValuesConverter<O> valuesConverter) {
-        super(expression.asString(), scriptEngine);
+    public StormSqlScript(ExpressionRuntime expressionRuntime, ScriptEngine<StormSqlEngine> scriptEngine, ValuesConverter<O> valuesConverter) {
+        super(expressionRuntime.asString(), scriptEngine);
         this.valuesConverter = valuesConverter;
 
         // This is needed to avoid ServiceLoader limitation. Please read comments in RulesDataSourcesProvider
         // The delegate must be set before compiling the query
         RulesDataSourcesProvider.setDelegate(((StormSqlEngine)scriptEngine).getDataSourceProvider());
-
-        ((StormSqlEngine)scriptEngine).compileQuery(createQuery((StormSqlExpression) expression));
-        fieldsToEmit = ((StormSqlExpression) expression).getFieldsToEmit();
+        ((StormSqlEngine)scriptEngine).compileQuery(createQuery((StormSqlExpression) expressionRuntime));
+        fieldsToEmit = ((StormSqlExpression) expressionRuntime).getFieldsToEmit();
     }
 
     private List<String> createQuery(StormSqlExpression expression) {

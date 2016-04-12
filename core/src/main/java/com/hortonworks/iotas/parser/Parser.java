@@ -19,6 +19,8 @@ package com.hortonworks.iotas.parser;
 
 
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.exception.DataValidationException;
+import com.hortonworks.iotas.exception.ParserException;
 
 import java.util.List;
 import java.util.Map;
@@ -46,7 +48,7 @@ public interface Parser {
      * @param data
      * @return
      */
-    Map<String, Object> parse(byte[] data) throws ParseException;
+    Map<String, Object> parse(byte[] data) throws ParserException;
 
     //TODO: don't understand the need for any of the following methods
     /**
@@ -54,7 +56,7 @@ public interface Parser {
      * @param data
      * @return
      */
-    Map<String, Object> parse(String data) throws ParseException;
+    Map<String, Object> parse(String data) throws ParserException;
 
     /**
      * <p>Given a byte array, returns a List of values conforming to the parser's Schema. </p>
@@ -62,7 +64,7 @@ public interface Parser {
      * @param data the raw data bytes
      * @return the List of data conforming to {@link Schema#getFields()}
      */
-    List<?> parseFields(byte[] data) throws ParseException;
+    List<?> parseFields(byte[] data) throws ParserException;
 
 
     /**
@@ -70,6 +72,24 @@ public interface Parser {
      * @param data
      * @return
      */
-    List<?> parseFields(String data) throws ParseException;
+    List<?> parseFields(String data) throws ParserException;
+
+    /**
+     * Validates an input sequence of bytes and throws {@link DataValidationException} if the data is invalid.
+     * The implementation of this method is optional, i.e. it's up to the discretion of the parser
+     * implementation to decide if raw data should be validated prior to being parsed.
+     * @param rawData the input sequence of bytes to validate
+     */
+    void validate(byte[] rawData) throws DataValidationException;
+
+    /**
+     * Validates the the parsed output of an input sequence and throws {@link DataValidationException} if the data is invalid.
+     * Typically the parsed output will be a result of a call to {@link #parse(byte[])} or {@link #parse(String)}
+     * The implementation of this method is optional, i.e. it's up to the discretion of the parser
+     * implementation to decide if the parsed data should be validated after being parsed.
+     * @param parsedData the parsed output of an input sequence to validate
+     */
+    void validate(Map<String, Object> parsedData) throws DataValidationException;
+
 
 }

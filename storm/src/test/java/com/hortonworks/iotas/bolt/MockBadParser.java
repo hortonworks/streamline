@@ -1,8 +1,9 @@
 package com.hortonworks.iotas.bolt;
 
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.exception.DataValidationException;
 import com.hortonworks.iotas.parser.BaseParser;
-import com.hortonworks.iotas.parser.ParseException;
+import com.hortonworks.iotas.exception.ParserException;
 
 import java.util.List;
 import java.util.Map;
@@ -24,22 +25,33 @@ public class MockBadParser extends BaseParser {
     }
 
     @Override
-    public Map<String, Object> parse(byte[] data) throws ParseException {
-        throw new ParseException("test");
+    public Map<String, Object> parse(byte[] data) throws ParserException {
+        throw new ParserException("test");
     }
 
     @Override
-    public Map<String, Object> parse(String data) throws ParseException {
-        throw new ParseException("test");
+    public Map<String, Object> parse(String data) throws ParserException {
+        throw new ParserException("test");
     }
 
     @Override
-    public List<?> parseFields(byte[] data) throws ParseException {
-        throw new ParseException("test");
+    public List<?> parseFields(byte[] data) throws ParserException {
+        throw new ParserException("test");
+    }
+
+
+    @Override
+    public List<?> parseFields(String data) throws ParserException {
+        throw new ParserException("test");
     }
 
     @Override
-    public List<?> parseFields(String data) throws ParseException {
-        throw new ParseException("test");
+    public void validate(byte[] rawData) throws DataValidationException {
+        throw new DataValidationException("test");
+    }
+
+    @Override
+    public void validate(Map<String, Object> parsedData) throws DataValidationException {
+        throw new DataValidationException("test");
     }
 }

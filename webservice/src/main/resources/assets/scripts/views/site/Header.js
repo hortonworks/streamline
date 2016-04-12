@@ -18,7 +18,10 @@ define(['require',
     highlightTab : function(){
       this.$('ul.main-navigation > li a.current').removeClass('current');
       if(this.appState.get('currentTab')){
+        this.$('li#tab0 a').removeClass('current');
         this.$('li#tab' + this.appState.get('currentTab') + ' a').addClass('current');
+      } else {
+        this.$('li#tab0 a').addClass('current');
       }
     },
     onRender: function(){

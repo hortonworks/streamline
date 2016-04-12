@@ -14,7 +14,7 @@ import org.apache.storm.hdfs.bolt.format.RecordFormat;
 public class IdentityHdfsRecordFormat implements RecordFormat {
     @Override
     public byte[] format(Tuple tuple) {
-        byte[] data = tuple.getBinaryByField(ParserBolt.BINARY_BYTES);
+        byte[] data = tuple.getBinaryByField(ParserBolt.BYTES_FIELD);
         byte[] recordDelimiter = "\n".getBytes();
         byte[] result = new byte[data.length + recordDelimiter.length];
         System.arraycopy(data, 0, result, 0, data.length);

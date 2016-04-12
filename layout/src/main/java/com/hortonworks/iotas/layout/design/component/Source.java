@@ -17,24 +17,8 @@
  */
 package com.hortonworks.iotas.layout.design.component;
 
-import java.util.Set;
-
 /**
  * A source component
  */
-public interface Source extends Component {
-    /**
-     * Set of declared output streams of a Source. A source can have
-     * more than one output stream.
-     *
-     * @return the set of output streams.
-     */
-    Set<Stream> getDeclaredOutputStreams();
-
-    /**
-     * Returns the output Stream of this source corresponding to the given streamId.
-     *
-     * @throws IllegalArgumentException if the stream with the given streamId does not exist
-     */
-    Stream getStream(String streamId);
+public interface Source extends OutputComponent {
 }

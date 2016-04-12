@@ -28,10 +28,14 @@ define(['require',
       require(['views/topology/DataSinkForm'], function(DataSinkForm){
         self.view = new DataSinkForm({
           model: self.model,
+          editMode: self.editMode,
           type: self.type
         });
         self.rForm.show(self.view);
       });
+      if(!self.editMode) {
+        self.$("#btnAdd").toggleClass("displayNone");
+      }
     },
     evAdd: function(e){
       var self = this;

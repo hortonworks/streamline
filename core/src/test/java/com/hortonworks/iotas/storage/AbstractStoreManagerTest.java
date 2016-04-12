@@ -4,6 +4,7 @@ import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.Device;
 import com.hortonworks.iotas.catalog.ParserInfo;
+import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.storage.exception.AlreadyExistsException;
@@ -19,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.Map;
 import java.util.List;
@@ -314,7 +316,11 @@ public abstract class AbstractStoreManagerTest {
             ds.setId(id);
             ds.setName(name);
             ds.setDescription("desc");
-            ds.setTags("t1, t2, t3");
+            Tag tag = new Tag();
+            tag.setId(1L);
+            tag.setName("test-tag");
+            tag.setDescription("test");
+            ds.setTags(Arrays.asList(tag));
             ds.setTimestamp(System.currentTimeMillis());
             ds.setType(DataSource.Type.DEVICE);
             ds.setTypeConfig("device_type_config");
@@ -334,7 +340,7 @@ public abstract class AbstractStoreManagerTest {
 
         protected Device createDevice(String id, Long version, Long datafeedId) {
             Device d = new Device();
-            d.setId(id);
+            d.setDeviceId(id);
             d.setVersion(version);
             d.setDataSourceId(datafeedId);
             return d;

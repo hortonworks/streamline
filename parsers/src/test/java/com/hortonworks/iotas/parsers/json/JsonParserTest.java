@@ -1,7 +1,7 @@
 package com.hortonworks.iotas.parsers.json;
 
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.parser.ParseException;
+import com.hortonworks.iotas.exception.ParserException;
 import com.hortonworks.iotas.parser.Parser;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
@@ -56,7 +56,7 @@ public class JsonParserTest {
         assertEquals(null, res.get("nullfield"));
     }
 
-    @Test(expected = ParseException.class)
+    @Test(expected = ParserException.class)
     public void testInvalidJson() throws Exception {
         String json = loadJson("invalid.json");
         Map<String, Object> res = parser.parse(json);

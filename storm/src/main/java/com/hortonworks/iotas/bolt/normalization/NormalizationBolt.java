@@ -21,7 +21,9 @@ import com.hortonworks.iotas.bolt.AbstractProcessorBolt;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Result;
+import com.hortonworks.iotas.layout.design.component.NormalizationProcessor;
 import com.hortonworks.iotas.layout.design.component.Stream;
+import com.hortonworks.iotas.layout.design.normalization.NormalizationProcessorJsonBuilder;
 import com.hortonworks.iotas.layout.runtime.normalization.NormalizationProcessorRuntime;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
@@ -32,6 +34,7 @@ import org.apache.storm.tuple.Values;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -40,17 +43,23 @@ import java.util.Map;
  */
 public class NormalizationBolt extends AbstractProcessorBolt {
     private static final Logger LOG = LoggerFactory.getLogger(NormalizationBolt.class);
+    private final NormalizationProcessor normalizationProcessor;
 
     private NormalizationProcessorRuntime normalizationProcessorRuntime;
 
-    public NormalizationBolt(NormalizationProcessorRuntime normalizationProcessorRuntime) {
-        this.normalizationProcessorRuntime = normalizationProcessorRuntime;
+    public NormalizationBolt(NormalizationProcessor normalizationProcessor) {
+        this.normalizationProcessor = normalizationProcessor;
+    }
+
+    public NormalizationBolt(NormalizationProcessorJsonBuilder normalizationProcessorJsonBuilder) {
+        this.normalizationProcessor = normalizationProcessorJsonBuilder.build();
     }
 
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
         super.prepare(stormConf, context, collector);
-        normalizationProcessorRuntime.initialize(null);
+        normalizationProcessorRuntime = new NormalizationProcessorRuntime(normalizationProcessor);
+        normalizationProcessorRuntime.initialize(Collections.<String, Object>emptyMap());
     }
 
     public void process(Tuple inputTuple, IotasEvent iotasEvent) throws Exception {
@@ -69,7 +78,7 @@ public class NormalizationBolt extends AbstractProcessorBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        for (Stream stream : normalizationProcessorRuntime.getOutputStream()) {
+        for (Stream stream : normalizationProcessor.getOutputStreams()) {
             declarer.declareStream(stream.getId(), new Fields(IotasEvent.IOTAS_EVENT));
         }
     }

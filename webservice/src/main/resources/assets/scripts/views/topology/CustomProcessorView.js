@@ -50,7 +50,8 @@ define(['require',
       var self = this;
       require(['views/topology/CustomProcessorForm'], function(CustomProcessorForm){
         self.view = new CustomProcessorForm({
-          model: self.model
+          model: self.model,
+          editMode: self.editMode
         });
         self.rForm.show(self.view);
       });
@@ -69,6 +70,9 @@ define(['require',
         _.each(streams, function(name){
           self.$('.sinkConnect[data-stream="'+name+'"]').select2('val', obj[name]);
         });
+      }
+      if(!self.editMode) {
+        self.$("#btnAdd").toggleClass("displayNone");
       }
     },
     evAdd: function(e){

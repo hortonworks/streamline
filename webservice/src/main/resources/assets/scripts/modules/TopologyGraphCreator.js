@@ -95,6 +95,12 @@ define(['require',
 			.append('svg:path')
 			.attr('d', 'M0 -5 L10 0 L0 5');
 
+		defs.append('svg:filter')
+			.attr('id', 'grayscale')
+			.append('feColorMatrix')
+				.attr('type', 'saturate')
+				.attr('values', '0');
+
 		thisGraph.svg = svg;
 		thisGraph.svgG = svg.append("g")
 			// .attr('transform','translate('+ (thisGraph.elem.width() ? thisGraph.elem.width() : 1220) + ',' + (thisGraph.elem.height() ? thisGraph.elem.height() : 600) + ')')
@@ -120,8 +126,10 @@ define(['require',
 				};
 			})
 			.on("drag", function(args) {
-				thisGraph.state.justDragged = true;
-				thisGraph.dragmove.call(thisGraph, args);
+				if(thisGraph.editMode) {
+					thisGraph.state.justDragged = true;
+					thisGraph.dragmove.call(thisGraph, args);
+				}
 			})
 			.on("dragend", function() {
 				// todo check if edge-mode is selected
@@ -138,8 +146,8 @@ define(['require',
 			thisGraph.svgMouseDown.call(thisGraph, d);
 		});
 		svg.on("mouseup", function(d) {
-			thisGraph.hideShuffle();
 			thisGraph.svgMouseUp.call(thisGraph, d);
+			// thisGraph.hideShuffle();
 		});
 
 		// listen for dragging
@@ -246,8 +254,8 @@ define(['require',
 		DELETE_KEY: 46,
 		ENTER_KEY: 13,
 		nodeRadius: 40,
-		rectangleWidth: 80,
-		rectangleHeight: 90
+		rectangleWidth: 68,
+		rectangleHeight: 78
 	};
 
 	/* PROTOTYPE FUNCTIONS */
@@ -294,9 +302,11 @@ define(['require',
 	TopologyGraphCreator.prototype.insertTitleLinebreaks = function(gEl, title) {
 		var words = title.split(/\s+/g),
 			nwords = words.length,
-			thisGraph = this;
+			thisGraph = this,
+			nodeTitle = '';
 		var el = gEl.append("text")
 			.attr("text-anchor", "middle")
+			.attr("class", "node-title")
 			.attr("dx", function(d){
 				return (thisGraph.consts.rectangleWidth / 2);
 			})
@@ -305,8 +315,9 @@ define(['require',
 			});
 
 		for (var i = 0; i < words.length; i++) {
-			var tspan = el.append('tspan').text(words[i]);
+			nodeTitle += words[i]+' ';
 		}
+		el.text(nodeTitle.trim());
 	};
 
 	TopologyGraphCreator.prototype.insertIcon = function(gEl, icon){
@@ -607,7 +618,7 @@ define(['require',
 		var thisGraph = this,
 			newObject = jQuery.extend(true, {}, d);
 		newObject.x += 200;
-		newObject.uiname= d.uiname.replace('DEVICE','PARSER');
+		newObject.uiname = thisGraph.nodeObject.parserUiname;
 		newObject.parentType = Globals.Topology.Editor.Steps.Processor.Substeps[0].parentType;
 		newObject.currentType = Globals.Topology.Editor.Steps.Processor.Substeps[0].valStr;
 		newObject.imageURL = Globals.Topology.Editor.Steps.Processor.Substeps[0].imgUrl;
@@ -817,56 +828,91 @@ define(['require',
 			.attr("data-toggle", "popover")
 			.attr("data-name", function(d){ return d.source.uiname +'-'+d.target.uiname; })
 			.on("mouseover", function(d){
-				// $('[data-uiname="'+d.source.uiname+'-'+d.target.uiname+'"]').show();
+				if(thisGraph.editMode) {
+					// $('[data-uiname="'+d.source.uiname+'-'+d.target.uiname+'"]').show();
+				}
 			})
 			.on("mouseout", function(d){
-				// $('[data-uiname="'+d.source.uiname+'-'+d.target.uiname+'"]').hide();
+				if(thisGraph.editMode) {
+					// $('[data-uiname="'+d.source.uiname+'-'+d.target.uiname+'"]').hide();
+				}
 			})
 			.on("mousedown", function(d) {
-				var elem = $(this).parent().find('.visible-link[d="'+$(this).attr("d")+'"]')[0];
-				thisGraph.pathMouseDown.call(thisGraph, d3.select(elem), d);
-				// thisGraph.showShuffle(d);
+				if(thisGraph.editMode) {
+					if(d3.event.shiftKey){
+						var elem = $(this).parent().find('.visible-link[d="'+$(this).attr("d")+'"]')[0];
+						thisGraph.pathMouseDown.call(thisGraph, d3.select(elem), d);
+					} else {
+						// thisGraph.showShuffle(d);
+					}
+				}
 			})
 			.on("mouseup", function(d) {
-				state.mouseDownLink = null;
-				// thisGraph.showShuffle(d);
-				// state.mouseDownLink = null;
+				if(thisGraph.editMode){
+					if(d3.event.shiftKey){
+						state.mouseDownLink = null;
+					} else {
+						// $('[data-uiname="'+d.source.uiname+'-'+d.target.uiname+'"][data-toggle="popover"]').popover('show');
+						// thisGraph.bindPopoverDropdown(d);
+					}
+				}
 			});
 
-		// paths.append('text')
-  //           .attr("class", "fa fa-random")
-  //           .attr("x", function(d){
-		// 		return thisGraph.getBoundingBoxCenter(d3.select($(this).parent()[0]))[0] - 8;
-  //           })
-  //           .attr("y", function(d){
-		// 		return thisGraph.getBoundingBoxCenter(d3.select($(this).parent()[0]))[1] + 7;
-  //           })
-  //           .text(function(d) {
-		// 		return '\uf074';
-		// 	})
-		// 	.attr('data-uiname', function(d){ return d.source.uiname +'-'+d.target.uiname; })
-  //           .style("display","none")
-  //           .style("font-size","large")
-  //           .attr("data-toggle", "popover")
-		// 	.on('mouseover', function(d){
-		// 		$(this).show();
-		//     })
-		// 	.on('mouseout', function(d){
-		// 		$(this).hide();
-		//     })
-		//     .on("mousedown", function(d) {
-		//     	// thisGraph.showShuffle(d);
-		// 	})
-		// 	.on("mouseup", function(d) {
-		// 		thisGraph.showShuffle(d);
-		// 		// state.mouseDownLink = null;
-		// 	});
+		paths.append('text')
+            .attr("class", "fa fa-random")
+            .attr("x", function(d){
+				return thisGraph.getBoundingBoxCenter(d3.select($(this).parent()[0]))[0] - 8;
+            })
+            .attr("y", function(d){
+				return thisGraph.getBoundingBoxCenter(d3.select($(this).parent()[0]))[1] + 7;
+            })
+            .text(function(d) {
+				return '\uf074';
+			})
+			.attr('data-uiname', function(d){ return d.source.uiname +'-'+d.target.uiname; })
+            .style("display","none")
+            .style("font-size","large")
+            .attr("data-toggle", "popover")
+            .attr("data-type", "shuffle")
+			.on('mouseover', function(d){
+				if(thisGraph.editMode) {
+					// $(this).show();
+				}
+		    })
+			.on('mouseout', function(d){
+				if(thisGraph.editMode) {
+					// $(this).hide();
+				}
+		    })
+		    .on("mousedown", function(d) {
+		    	if(thisGraph.editMode) {
+		    		if(d3.event.shiftKey){
+						var elem = $(this).parent().find('.visible-link[d="'+$(this).attr("d")+'"]')[0];
+						thisGraph.pathMouseDown.call(thisGraph, d3.select(elem), d);
+					} else {
+						// thisGraph.showShuffle(d);
+					}
+		    	}
+			})
+			.on("mouseup", function(d) {
+				if(thisGraph.editMode) {
+					if(d3.event.shiftKey){
+						state.mouseDownLink = null;
+					} else {
+						// $('[data-uiname="'+d.source.uiname+'-'+d.target.uiname+'"][data-toggle="popover"]').popover('show');
+						// thisGraph.bindPopoverDropdown(d);
+					}
+				}
+			});
 
 		// remove old links
 		paths.exit().remove();
 
 		//set shuffle icon on links
-		// this.setLinkIcon();
+		this.setLinkIcon();
+
+		//adding dropdown for toggle
+		this.showShuffle();
 
 		//clone the paths or links to make hover on them with some hidden margin
 		thisGraph.clonePaths();
@@ -878,15 +924,24 @@ define(['require',
 		thisGraph.rectangles.attr("transform", function(d) {
 			return "translate(" + d.x + "," + d.y + ")";
 		});
+		thisGraph.rectangles.select('text.node-title').text(function(d) {
+			return d.uiname;
+		});
 
-		thisGraph.rectangles.select('text')
-			.text(function(d) {
-				if(d.isConfigured)
-					return '';
-				else return '\uf071';
+		thisGraph.rectangles.selectAll('image')
+			.attr("filter", function(d){
+				if(!d.isConfigured){
+					return "url(#grayscale)";
+				} else return "";
+			});
+		thisGraph.rectangles.selectAll('circle')
+			.attr("filter", function(d){
+				if(!d.isConfigured){
+					return "url(#grayscale)";
+				} else return "";
 			});
 
-		//add new rectangles
+		//add new nodes
 		var newGs = thisGraph.rectangles.enter()
 				.append("g");
 			newGs.classed(consts.rectangleGClass, true)
@@ -897,15 +952,24 @@ define(['require',
 				.attr("xlink:href", function(d){
 					return d.imageURL;
 				})
-				.attr("width", "80px")
-				.attr("height", "80px")
+				.attr("filter", function(d){
+					if(!d.isConfigured){
+						return "url(#grayscale)";
+					} else return "";
+				})
+				.attr("width", "68px")
+				.attr("height", "68px")
 			    .on("mouseover", function(d) {
-			    	$(this).css("opacity", "0.75");
-					$(this).siblings('text.fa-times').show();
+			    	if(thisGraph.editMode){
+			    		$(this).css("opacity", "0.75");
+						$(this).siblings('text.fa-times').show();
+			    	}
 				})
 				.on("mouseout", function(d) {
-					$(this).css("opacity", "1");
-					$(this).siblings('text.fa-times').hide();
+					if(thisGraph.editMode){
+						$(this).css("opacity", "1");
+						$(this).siblings('text.fa-times').hide();
+					}
 				})
 				.on("mousedown", function(d) {
 					thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);
@@ -916,31 +980,28 @@ define(['require',
 				.call(thisGraph.drag);
 
             newGs.append('text')
-                .attr("class", "fa fa-exclamation-triangle")
-                .attr("y","6px")
-                .text(function(d) {
-				if(d.isConfigured)
-					return '';
-				else return '\uf071';
-			});
-
-            newGs.append('text')
                 .attr("class", "fa fa-times")
-                .attr("x","66px")
-                .attr("y","8px")
+                .attr("x","56px")
+                .attr("y","10px")
                 .text(function(d) {
 					return '\uf00d';
 				})
                 .style("display","none")
                 .style("font-size","large")
 				.on('mouseover', function(d){
-					$(this).show();
+					if(thisGraph.editMode){
+						$(this).show();
+					}
 			    })
 				.on('mouseout', function(d){
-					$(this).hide();
+					if(thisGraph.editMode){
+						$(this).hide();
+					}
 			    })
 				.on('mousedown', function(d){
-					thisGraph.deleteNode(d);
+					if(thisGraph.editMode){
+						thisGraph.deleteNode(d);
+					}
 			    });
 
 			newGs.append("circle")
@@ -958,7 +1019,7 @@ define(['require',
 		        })
 		        .attr("r", function (d) {
 					if(d.parentType !== Globals.Topology.Editor.Steps.DataSink.valStr)
-			    		return '5';
+			    		return '4.5';
 			    	else
 			    		return '0';
 			    })
@@ -971,6 +1032,11 @@ define(['require',
 						return 'datasink';
 					}
 				})
+				.attr("filter", function(d){
+					if(!d.isConfigured){
+						return "url(#grayscale)";
+					} else return "";
+				})
 		        .on("mouseover", function(d) {
 					if (state.shiftNodeDrag) {
 						d3.select(this).classed(consts.connectClass, true);
@@ -980,10 +1046,14 @@ define(['require',
 					d3.select(this).classed(consts.connectClass, false);
 				})
 				.on("mousedown", function(d) {
-					thisGraph.circleMouseDown.call(thisGraph, d3.select(this), d);
+					if(thisGraph.editMode){
+						thisGraph.circleMouseDown.call(thisGraph, d3.select(this), d);
+					}
 				})
 				.on("mouseup", function(d) {
-					thisGraph.circleMouseUp.call(thisGraph, d3.select(this), d);
+					if(thisGraph.editMode){
+						thisGraph.circleMouseUp.call(thisGraph, d3.select(this), d);
+					}
 				})
 				.call(thisGraph.drag);
 
@@ -1002,10 +1072,15 @@ define(['require',
 		        })
 		        .attr("r", function (d) { 
 		        	if(d.currentType === Globals.Topology.Editor.Steps.Processor.Substeps[0].valStr)
-			    		return '5';
+			    		return '4.5';
 			    	else
 			    		return '0';
 			    })
+			    .attr("filter", function(d){
+					if(!d.isConfigured){
+						return "url(#grayscale)";
+					} else return "";
+				})
 			    .attr("data-failedTuple", true)
 		        .style("fill", "red")
 		        .on("mouseover", function(d) {
@@ -1017,10 +1092,14 @@ define(['require',
 					d3.select(this).classed(consts.connectClass, false);
 				})
 				.on("mousedown", function(d) {
-					thisGraph.circleMouseDown.call(thisGraph, d3.select(this), d);
+					if(thisGraph.editMode){
+						thisGraph.circleMouseDown.call(thisGraph, d3.select(this), d);
+					}
 				})
 				.on("mouseup", function(d) {
-					thisGraph.circleMouseUp.call(thisGraph, d3.select(this), d);
+					if(thisGraph.editMode){
+						thisGraph.circleMouseUp.call(thisGraph, d3.select(this), d);
+					}
 				})
 				.call(thisGraph.drag);
 
@@ -1031,7 +1110,7 @@ define(['require',
 		        })
 		        .attr("r", function (d) { 
 		        	if(d.parentType !== Globals.Topology.Editor.Steps.Datasource.valStr)
-			    		return '5';
+			    		return '4.5';
 			    })
 		        .attr("class", function(d){
 					if(d.parentType === Globals.Topology.Editor.Steps.Datasource.valStr){
@@ -1042,32 +1121,37 @@ define(['require',
 						return 'datasink';
 					}
 				})
+				.attr("filter", function(d){
+					if(!d.isConfigured){
+						return "url(#grayscale)";
+					} else return "";
+				})
 		        .on("mouseup", function(d) {
-					thisGraph.circleMouseUp.call(thisGraph, d3.select(this), d);
+		        	if(thisGraph.editMode){
+		        		thisGraph.circleMouseUp.call(thisGraph, d3.select(this), d);
+		        	}
 				});
 		        
 		        
 
 		newGs.each(function(d) {
 			// thisGraph.insertIcon(d3.select(this), d.iconContent);
-			thisGraph.insertTitleLinebreaks(d3.select(this), d.currentType);
+			thisGraph.insertTitleLinebreaks(d3.select(this), d.uiname);
 		});
 
 		// remove old nodes
 		thisGraph.rectangles.exit().remove();
 	};
 
-	TopologyGraphCreator.prototype.showShuffle = function(d){
+	TopologyGraphCreator.prototype.showShuffle = function(){
 		var thisGraph = this;
 		var shuffleArr = thisGraph.data.linkShuffleOptions;
 		var html = "<div><select class='link-shuffle'>";
 		for(var i = 0, len = shuffleArr.length; i < len; i++){
 			html += "<option value='"+shuffleArr[i].val+"'>"+shuffleArr[i].label+"</option>";
 		}
-		//<div class='link-btns'><button class='btn btn-xs btn-default'><i class='fa fa-times'></i></button>"+
-				// "<button class='btn btn-xs btn-success'><i class='fa fa-check'></i></button></div>
 		html += "</select></div>";
-		$('[data-toggle="popover"]').popover({
+		$('[data-toggle="popover"][data-type="shuffle"]').popover({
 			title: "Select Grouping",
     		html: true,
     		content: html,
@@ -1078,7 +1162,19 @@ define(['require',
 	};
 
 	TopologyGraphCreator.prototype.hideShuffle = function(){
-		$('[data-toggle="popover"]').popover('hide');
+		$('.link-shuffle').off('change');
+		$('[data-toggle="popover"][data-type="shuffle"]').popover('hide');
+	};
+
+	TopologyGraphCreator.prototype.bindPopoverDropdown = function(d){
+		$('.link-shuffle').on('change', function(e){
+    		console.log(d);
+    		console.log(e);
+    	});
+	};
+
+	TopologyGraphCreator.prototype.unbindPopoverDropdown = function(){
+		$('.link-shuffle').off('change');
 	};
 
 	TopologyGraphCreator.prototype.clonePaths = function(){

@@ -4,12 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.protobuf.ProtobufFactory;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufField;
-import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufMessage;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
 import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.parser.BaseParser;
-import com.hortonworks.iotas.parser.ParseException;
+import com.hortonworks.iotas.exception.ParserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,19 +50,19 @@ public class ProtobufParser extends BaseParser {
     private ProtobufParser() {
     }
 
-    private void init() throws ParseException {
+    private void init() throws ParserException {
         try {
             protoBufSchema = ProtobufSchemaLoader.std.parse(protoBufSchemaString);
             mapper = new ObjectMapper(new ProtobufFactory());
             reader = mapper.readerFor(clazz).with(protoBufSchema);
             rootClassFields = getFields(protoBufSchema, clazz);
         } catch (IOException ex) {
-            throw new ParseException("Error in protobuf parser", ex);
+            throw new ParserException("Error in protobuf parser", ex);
         }
 
     }
 
-    private List<Field> getFields(ProtobufSchema protoSchema, Class<?> clazz) throws ParseException {
+    private List<Field> getFields(ProtobufSchema protoSchema, Class<?> clazz) throws ParserException {
         List<Field> fields = new ArrayList<Field>();
         List<String> fieldNames = new ArrayList<String>();
         for (ProtobufField field : protoSchema.getRootType().fields()) {
@@ -71,7 +70,7 @@ public class ProtobufParser extends BaseParser {
                 fields.add(clazz.getField(field.name));
                 fieldNames.add(field.name);
             } catch (NoSuchFieldException e) {
-                throw new ParseException("Error getting fields from clazz " + clazz, e);
+                throw new ParserException("Error getting fields from clazz " + clazz, e);
             }
         }
         LOG.debug("Field names {}", fieldNames);
@@ -128,15 +127,15 @@ public class ProtobufParser extends BaseParser {
             return this;
         }
 
-        public void checkMandatoryFields() throws ParseException {
+        public void checkMandatoryFields() throws ParserException {
             if (protoBufSchemaString == null) {
-                throw new ParseException("protoBufSchemaString not set.");
+                throw new ParserException("protoBufSchemaString not set.");
             } else if (clazz == null) {
-                throw new ParseException("clazz not set.");
+                throw new ParserException("clazz not set.");
             }
         }
 
-        public ProtobufParser build() throws ParseException {
+        public ProtobufParser build() throws ParserException {
             checkMandatoryFields();
             ProtobufParser parser = new ProtobufParser();
             parser.protoBufSchemaString = this.protoBufSchemaString;
@@ -157,7 +156,7 @@ public class ProtobufParser extends BaseParser {
         return this.schema;
     }
 
-    public Map<String, Object> parse(byte[] data) throws ParseException {
+    public Map<String, Object> parse(byte[] data) throws ParserException {
         Map<String, Object> res = new HashMap<String, Object>();
         try {
             Object value = reader.readValue(data);
@@ -169,7 +168,7 @@ public class ProtobufParser extends BaseParser {
                 res.put("value", value);
             }
         } catch (Exception e) {
-            throw new ParseException("Error parsing data", e);
+            throw new ParserException("Error parsing data", e);
         }
         return res;
     }

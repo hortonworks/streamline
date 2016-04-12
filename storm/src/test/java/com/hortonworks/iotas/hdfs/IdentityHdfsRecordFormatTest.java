@@ -24,7 +24,7 @@ public class IdentityHdfsRecordFormatTest {
     @Before
     public void setup () {
         new Expectations() {{
-            mockTuple.getBinaryByField(ParserBolt.BINARY_BYTES); returns(TEST_BYTES);
+            mockTuple.getBinaryByField(ParserBolt.BYTES_FIELD); returns(TEST_BYTES);
         }};
     }
 
