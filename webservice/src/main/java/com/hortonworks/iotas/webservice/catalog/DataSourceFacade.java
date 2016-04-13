@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +28,7 @@ public class DataSourceFacade {
     }
 
     public DataSourceDto addOrUpdateDataSourceWithDataFeed(Long dataSourceId, DataSourceDto dataSourceDto) throws Exception {
+        createTagsForDataSourceDto(dataSourceDto);
         DataSource dataSource = createDataSource(dataSourceDto);
         DataSource createdDataSource = catalogService.addOrUpdateDataSource(dataSourceId, dataSource);
         dataSourceDto.setDataSourceId(createdDataSource.getId());
@@ -41,6 +43,7 @@ public class DataSourceFacade {
     }
 
     public DataSourceDto createDataSourceWithDataFeed(DataSourceDto dataSourceDto) throws Exception {
+        createTagsForDataSourceDto(dataSourceDto);
         DataSource dataSource = createDataSource(dataSourceDto);
         DataSource createdDataSource = catalogService.addDataSource(dataSource);
         dataSourceDto.setDataSourceId(createdDataSource.getId());
@@ -172,5 +175,29 @@ public class DataSourceFacade {
         // currently returns with whatever info it retrieves.
         DataFeed dataFeed = getDataFeedByDataSourceId(dataSourceId);
         return createDataSourceDto(dataSource, dataFeed);
+    }
+
+    private void createTagsForDataSourceDto (DataSourceDto dataSourceDto) {
+        if (dataSourceDto.getTagIds() == null) {
+            if (dataSourceDto.getTags() != null) {
+                String[] tags = dataSourceDto.getTags().split(",");
+                List<Long> tagIds = new ArrayList<>();
+                for (String tag: tags) {
+                    CatalogService.QueryParam tagNameQueryParam = new CatalogService.QueryParam(Tag.NAME, tag);
+                    Collection<Tag> existingTags = catalogService.listTags(Arrays.asList(tagNameQueryParam));
+                    if (existingTags.isEmpty()) {
+                        Tag newTag = new Tag();
+                        newTag.setName(tag);
+                        newTag.setDescription(tag);
+                        newTag.setTags(new ArrayList<Tag>());
+                        Tag createdTag = catalogService.addTag(newTag);
+                        tagIds.add(createdTag.getId());
+                    } else {
+                        tagIds.add(existingTags.iterator().next().getId());
+                    }
+                }
+                dataSourceDto.setTagIds(tagIds);
+            }
+        }
     }
 }

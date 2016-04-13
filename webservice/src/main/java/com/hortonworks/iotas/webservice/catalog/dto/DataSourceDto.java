@@ -27,6 +27,13 @@ public class DataSourceDto {
      */
     private String description;
 
+
+
+    /**
+     * Support on the fly tag creation and make it backward compatible
+     */
+    private String tags;
+
     /**
      * tag ids of the tag associated with this datasource.
      */
@@ -77,6 +84,7 @@ public class DataSourceDto {
         dataSourceName = dataSource.getName();
         description = dataSource.getDescription();
         tagIds = getTagIds(dataSource.getTags());
+        tags = getTagNames(dataSource.getTags());
         timestamp = dataSource.getTimestamp();
         type = dataSource.getType();
         typeConfig = dataSource.getTypeConfig();
@@ -87,6 +95,10 @@ public class DataSourceDto {
             dataFeedType = dataFeed.getType();
         }
     }
+
+    public String getTags() { return tags; }
+
+    public void setTags(String tags) { this.tags = tags; }
 
     public Long getDataSourceId() {
         return dataSourceId;
@@ -232,5 +244,16 @@ public class DataSourceDto {
             }
         }
         return tagIds;
+    }
+
+    private String getTagNames (List<Tag> tags) {
+        StringBuilder tagNames = new StringBuilder();
+        if (tags != null && !tags.isEmpty()) {
+            for (Tag tag : tags) {
+                tagNames.append(tag.getName()).append(",");
+            }
+            tagNames.deleteCharAt(tagNames.length() - 1);
+        }
+        return tagNames.toString();
     }
 }
