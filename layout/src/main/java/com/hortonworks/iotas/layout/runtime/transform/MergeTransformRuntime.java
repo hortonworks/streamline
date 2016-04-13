@@ -19,6 +19,9 @@ package com.hortonworks.iotas.layout.runtime.transform;
 
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
+import com.hortonworks.iotas.layout.design.transform.MergeTransform;
+import com.hortonworks.iotas.layout.design.transform.Transform;
+import com.hortonworks.iotas.layout.runtime.RuntimeService;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,18 +33,19 @@ import java.util.Map;
  * merging the event's fieldsAndValues with the defaults. The
  * event's fieldsAndValues takes precedence over the defaults.
  */
-public class MergeTransform implements Transform {
-    private final Map<String, ?> defaults;
+public class MergeTransformRuntime implements TransformRuntime {
 
-    public MergeTransform(Map<String, ?> defaults) {
-        this.defaults = defaults;
+    private final MergeTransform mergeTransform;
+
+    public MergeTransformRuntime(MergeTransform mergeTransform) {
+        this.mergeTransform = mergeTransform;
     }
 
     @Override
     public List<IotasEvent> execute(IotasEvent input) {
         Map<String, Object> merged = new HashMap<>();
         merged.putAll(input.getFieldsAndValues());
-        for (Map.Entry<String, ?> entry : defaults.entrySet()) {
+        for (Map.Entry<String, ?> entry : mergeTransform.getDefaults().entrySet()) {
             if (!merged.containsKey(entry.getKey())) {
                 merged.put(entry.getKey(), entry.getValue());
             }
@@ -51,8 +55,17 @@ public class MergeTransform implements Transform {
 
     @Override
     public String toString() {
-        return "MergeTransform{" +
-                "defaults=" + defaults +
+        return "MergeTransformRuntime{" +
+                "mergeTransform=" + mergeTransform +
                 '}';
+    }
+
+
+    public static class Factory implements RuntimeService.Factory<TransformRuntime, Transform> {
+
+        @Override
+        public TransformRuntime create(Transform transform) {
+            return new MergeTransformRuntime((MergeTransform) transform);
+        }
     }
 }

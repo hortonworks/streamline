@@ -38,6 +38,7 @@ import java.util.Random;
 
 public class RulesTestSpout extends BaseRichSpout {
     protected static final Logger log = LoggerFactory.getLogger(RulesTestSpout.class);
+    private final long tupleEmitInterval;
 
     private SpoutOutputCollector collector;
 
@@ -53,6 +54,14 @@ public class RulesTestSpout extends BaseRichSpout {
 
     private static final List<Values> LIST_VALUES = Lists.newArrayList(new Values(IOTAS_EVENT_1), new Values(IOTAS_EVENT_2));
 
+    public RulesTestSpout() {
+        this(100);
+    }
+
+    public RulesTestSpout(long tupleEmitInterval) {
+        this.tupleEmitInterval = tupleEmitInterval;
+    }
+
     @Override
     public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {
         this.collector = collector;
@@ -60,7 +69,7 @@ public class RulesTestSpout extends BaseRichSpout {
 
     @Override
     public void nextTuple() {
-        Utils.sleep(100);
+        Utils.sleep(tupleEmitInterval);
         final Random rand = new Random();
         final Values values = LIST_VALUES.get(rand.nextInt(LIST_VALUES.size()));
         log.debug("++++++++ Emitting Tuple: [{}]", values);

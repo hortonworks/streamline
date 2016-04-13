@@ -20,9 +20,9 @@ package com.hortonworks.iotas.layout.runtime.processor;
 
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.Result;
+import com.hortonworks.iotas.common.errors.ProcessingException;
 import com.hortonworks.iotas.layout.design.component.RulesProcessor;
 import com.hortonworks.iotas.layout.runtime.rule.RuleRuntime;
-import com.hortonworks.iotas.common.errors.ProcessingException;
 import com.hortonworks.iotas.processor.ProcessorRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,7 +89,9 @@ public class RuleProcessorRuntime implements Serializable, ProcessorRuntime {
 
     @Override
     public void initialize(Map<String, Object> config) {
-
+        for (RuleRuntime ruleRuntime : rulesRuntime) {
+            ruleRuntime.initialize(config);
+        }
     }
 
     @Override

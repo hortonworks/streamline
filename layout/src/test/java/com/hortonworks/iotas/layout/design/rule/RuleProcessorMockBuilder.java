@@ -25,6 +25,7 @@ import com.hortonworks.iotas.layout.design.component.IotasSink;
 import com.hortonworks.iotas.layout.design.component.RulesProcessor;
 import com.hortonworks.iotas.layout.design.component.Sink;
 import com.hortonworks.iotas.layout.design.rule.action.Action;
+import com.hortonworks.iotas.layout.design.rule.action.TransformAction;
 import com.hortonworks.iotas.layout.design.rule.condition.BinaryExpression;
 import com.hortonworks.iotas.layout.design.rule.condition.Condition;
 import com.hortonworks.iotas.layout.design.rule.condition.Expression;
@@ -81,20 +82,19 @@ public class RuleProcessorMockBuilder implements ComponentBuilder<RulesProcessor
         return rules;
     }
 
-    private Rule buildRule(long ruleId, Condition condition, Action action) {
+    private Rule buildRule(long ruleId, Condition condition, TransformAction action) {
         Rule rule = new Rule();
         rule.setId(ruleId);
         rule.setName(RULE + "_" + ruleId);
         rule.setDescription(RULE + "_" + ruleId + "_desc");
         rule.setRuleProcessorName(RULE_PROCESSOR + "_" + ruleProcessorId);
         rule.setCondition(condition);
-        rule.setActions(Collections.singletonList(action));
+        rule.setActions(Collections.singletonList((Action) action));
         return rule;
     }
 
-    private Action buildAction(List<Sink> sinks) {
-        Action action = new Action();
-        return action;
+    private TransformAction buildAction(List<Sink> sinks) {
+        return new TransformAction();
     }
 
     private List<Sink> buildSinks() {

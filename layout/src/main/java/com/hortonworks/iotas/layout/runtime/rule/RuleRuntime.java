@@ -19,11 +19,12 @@
 package com.hortonworks.iotas.layout.runtime.rule;
 
 import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.common.Result;
+import com.hortonworks.iotas.common.errors.ProcessingException;
 import com.hortonworks.iotas.layout.design.rule.Rule;
 import com.hortonworks.iotas.layout.design.rule.exception.ConditionEvaluationException;
-import com.hortonworks.iotas.layout.runtime.ActionRuntime;
+import com.hortonworks.iotas.layout.runtime.rule.action.ActionRuntime;
 import com.hortonworks.iotas.layout.runtime.script.Script;
-import com.hortonworks.iotas.common.errors.ProcessingException;
 import com.hortonworks.iotas.processor.ProcessorRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,10 +32,11 @@ import org.slf4j.LoggerFactory;
 import javax.script.ScriptException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
-import com.hortonworks.iotas.common.Result;
+import java.util.Set;
 
 /**
  * Represents a rule runtime
@@ -68,25 +70,29 @@ public class RuleRuntime implements Serializable, ProcessorRuntime {
     @Override
     public List<Result> process (IotasEvent input) throws ProcessingException {
         LOG.debug("process invoked with IotasEvent {}", input);
-        List<Result> results = new ArrayList<>();
+        List<Result> allResults = new ArrayList<>();
         try {
             for (ActionRuntime action : actions) {
-                Result result = action.execute(input);
-                LOG.debug("Applied action {}, Result {}", action, result);
-                results.add(result);
+                List<Result> actionResults = action.execute(input);
+                LOG.debug("Applied action {}, Result {}", action, actionResults);
+                if(actionResults != null) {
+                    allResults.addAll(actionResults);
+                }
             }
         } catch (Exception e) {
             String message = "Error evaluating rule with id:" + rule.getId();
             LOG.error(message);
             throw new ProcessingException(message, e);
         }
-        LOG.debug("Returning results {}", results);
-        return results;
+        LOG.debug("Returning allResults {}", allResults);
+        return allResults;
     }
 
     @Override
     public void initialize(Map<String, Object> config) {
-
+        for (ActionRuntime action : actions) {
+            action.initialize(config);
+        }
     }
 
     @Override
@@ -94,12 +100,12 @@ public class RuleRuntime implements Serializable, ProcessorRuntime {
 
     }
 
-    public List<String> getStreams() {
+    public Collection<String> getStreams() {
         LOG.debug("in getStreams");
-        List<String> streams = new ArrayList<>();
+        Set<String> streams = new HashSet<>();
         for(ActionRuntime action: actions) {
-            LOG.debug("Action {}, Stream {}", action, action.getStream());
-            streams.add(action.getStream());
+            LOG.debug("Action {}, Stream {}", action, action.getOutputStreams());
+            streams.addAll(action.getOutputStreams());
         }
         LOG.debug("Returning streams {}", streams);
         return streams;

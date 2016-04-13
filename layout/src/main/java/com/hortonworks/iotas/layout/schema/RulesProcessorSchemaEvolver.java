@@ -10,6 +10,7 @@ import com.hortonworks.iotas.layout.design.component.RulesProcessorJsonBuilder;
 import com.hortonworks.iotas.layout.design.component.Stream;
 import com.hortonworks.iotas.layout.design.rule.Rule;
 import com.hortonworks.iotas.layout.design.rule.action.Action;
+import com.hortonworks.iotas.layout.design.rule.action.NotifierAction;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 
 import java.util.List;
@@ -63,7 +64,10 @@ public class RulesProcessorSchemaEvolver implements EvolvingSchema {
     private Stream extractSchemaFromAction(Stream inputStream, Rule rule, Action action) throws ParserException {
         String streamId = rule.getOutputStreamNameForAction(action);
 
-        Map<String, Object> outputFieldsAndDefaults = action.getOutputFieldsAndDefaults();
+        Map<String, Object> outputFieldsAndDefaults = null ;
+        if(action instanceof NotifierAction) {
+            outputFieldsAndDefaults = ((NotifierAction) action).getOutputFieldsAndDefaults();
+        }
 
         if (outputFieldsAndDefaults != null && !outputFieldsAndDefaults.isEmpty()) {
             Schema schema = simulateFieldsProjection(inputStream.getSchema(), outputFieldsAndDefaults);

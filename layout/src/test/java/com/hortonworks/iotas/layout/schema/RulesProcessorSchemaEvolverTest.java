@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.hortonworks.iotas.layout.schema;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,6 +26,8 @@ import com.hortonworks.iotas.layout.design.component.RulesProcessor;
 import com.hortonworks.iotas.layout.design.component.Stream;
 import com.hortonworks.iotas.layout.design.rule.Rule;
 import com.hortonworks.iotas.layout.design.rule.action.Action;
+import com.hortonworks.iotas.layout.design.rule.action.TransformAction;
+import com.hortonworks.iotas.layout.design.rule.action.NotifierAction;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import org.junit.Test;
 
@@ -59,13 +79,13 @@ public class RulesProcessorSchemaEvolverTest {
     }
 
     private String buildRulesProcessorComponentConfigWithNoTransformation() throws IOException {
-        Action action = createAction("HBASE");
-        Action action2 = createAction("HDFS");
+        TransformAction action = createForwardAction("HBASE");
+        TransformAction action2 = createForwardAction("HDFS");
 
         String ruleProcessorName = "RULE1";
 
-        Rule rule = createRule(1L, "RULE1", ruleProcessorName, Lists.newArrayList(action, action2));
-        Rule rule2 = createRule(2L, "RULE2", ruleProcessorName, Lists.newArrayList(action, action2));
+        Rule rule = createRule(1L, "RULE1", ruleProcessorName, Lists.<Action>newArrayList(action, action2));
+        Rule rule2 = createRule(2L, "RULE2", ruleProcessorName, Lists.<Action>newArrayList(action, action2));
 
         RulesProcessor rulesProcessor = createRulesProcessor(ruleProcessorName, Lists.newArrayList(rule, rule2));
 
@@ -76,7 +96,7 @@ public class RulesProcessorSchemaEvolverTest {
     }
 
     private String buildRulesProcessorComponentConfigWithTransformation() throws IOException {
-        Action action = createAction("NOTIFICATION");
+        NotifierAction action = createNotifierAction("NOTIFICATION");
         action.setNotifierName("NOTIFIER");
 
         Map<String, Object> outputFieldsAndDefaults = Maps.newHashMap();
@@ -85,10 +105,9 @@ public class RulesProcessorSchemaEvolverTest {
         // for testing new field
         outputFieldsAndDefaults.put("newfield", "hello");
         action.setOutputFieldsAndDefaults(outputFieldsAndDefaults);
-        action.setIncludeMeta(true);
 
         String ruleProcessorName = "RULE1";
-        Rule rule = createRule(1L, "RULE1", ruleProcessorName, Lists.newArrayList(action));
+        Rule rule = createRule(1L, "RULE1", ruleProcessorName, Lists.<Action>newArrayList(action));
         RulesProcessor rulesProcessor = createRulesProcessor(ruleProcessorName, Lists.newArrayList(rule));
 
         String rulesProcessorJson = objectMapper.writeValueAsString(rulesProcessor);
@@ -97,8 +116,14 @@ public class RulesProcessorSchemaEvolverTest {
         return objectMapper.writeValueAsString(componentConfig);
     }
 
-    private Action createAction(String actionName) {
-        Action action = new Action();
+    private TransformAction createForwardAction(String actionName) {
+        TransformAction action = new TransformAction();
+        action.setName(actionName);
+        return action;
+    }
+
+    private NotifierAction createNotifierAction(String actionName) {
+        NotifierAction action = new NotifierAction();
         action.setName(actionName);
         return action;
     }
