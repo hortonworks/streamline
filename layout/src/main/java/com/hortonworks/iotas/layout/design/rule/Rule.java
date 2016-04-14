@@ -94,6 +94,10 @@ public class Rule implements Serializable {
         this.actions = ImmutableList.copyOf(actions);
     }
 
+    public String getOutputStreamNameForAction(Action action) {
+        return ruleProcessorName + "." + name + "." + id + "." + action.getName();
+    }
+
     @Override
     public String toString() {
         return "Rule{" +

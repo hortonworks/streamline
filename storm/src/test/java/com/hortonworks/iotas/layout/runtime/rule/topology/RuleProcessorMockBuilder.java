@@ -20,9 +20,9 @@ package com.hortonworks.iotas.layout.runtime.rule.topology;
 
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.common.Schema.Field;
+import com.hortonworks.iotas.layout.design.component.ComponentBuilder;
 import com.hortonworks.iotas.layout.design.component.IotasSink;
 import com.hortonworks.iotas.layout.design.component.RulesProcessor;
-import com.hortonworks.iotas.layout.design.component.RulesProcessorBuilder;
 import com.hortonworks.iotas.layout.design.component.Sink;
 import com.hortonworks.iotas.layout.design.rule.Rule;
 import com.hortonworks.iotas.layout.design.rule.action.Action;
@@ -37,7 +37,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class RuleProcessorMockBuilder implements RulesProcessorBuilder {
+public class RuleProcessorMockBuilder implements ComponentBuilder<RulesProcessor> {
     public static final String TEMPERATURE = "temperature";
     public static final String HUMIDITY = "humidity";
     public static final String RULE_PROCESSOR = "rule_processor";

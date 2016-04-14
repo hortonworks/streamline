@@ -229,7 +229,7 @@ class StormTopologyValidator {
             }
             String ruleName = (String) rule.get(TopologyLayoutConstants.JSON_KEY_NAME);
             Set<String> outputFields = new HashSet<String>();
-            Map action = (Map) rule.get(TopologyLayoutConstants.JSON_KEY_RULE_ACTION);
+            Map action = (Map) rule.get(TopologyLayoutConstants.JSON_KEY_RULE_ACTIONS);
             List<Map> declaredOutputs = (List<Map>) action.get(TopologyLayoutConstants.JSON_KEY_RULE_DECLARED_OUTPUT);
             for (Map declaredOutput: declaredOutputs) {
                 outputFields.add((String) declaredOutput.get(TopologyLayoutConstants.JSON_KEY_NAME));
