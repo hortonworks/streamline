@@ -35,11 +35,6 @@ public class DataSourceDto {
     private String tags;
 
     /**
-     * tag ids of the tag associated with this datasource.
-     */
-    private List<Long> tagIds;
-
-    /**
      * Time when this entry was created/updated.
      */
     private Long timestamp;
@@ -83,7 +78,6 @@ public class DataSourceDto {
         dataSourceId = dataSource.getId();
         dataSourceName = dataSource.getName();
         description = dataSource.getDescription();
-        tagIds = getTagIds(dataSource.getTags());
         tags = getTagNames(dataSource.getTags());
         timestamp = dataSource.getTimestamp();
         type = dataSource.getType();
@@ -122,14 +116,6 @@ public class DataSourceDto {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public List<Long> getTagIds() {
-        return tagIds;
-    }
-
-    public void setTagIds(List<Long> tagIds) {
-        this.tagIds = tagIds;
     }
 
     public Long getTimestamp() {
@@ -226,7 +212,7 @@ public class DataSourceDto {
                 "dataSourceId=" + dataSourceId +
                 ", dataSourceName='" + dataSourceName + '\'' +
                 ", description='" + description + '\'' +
-                ", tagIds='" + tagIds + '\'' +
+                ", tags='" + tags + '\'' +
                 ", timestamp=" + timestamp +
                 ", type=" + type +
                 ", typeConfig='" + typeConfig + '\'' +
@@ -234,16 +220,6 @@ public class DataSourceDto {
                 ", parserId=" + parserId +
                 ", dataFeedType='" + dataFeedType + '\'' +
                 '}';
-    }
-
-    private List<Long> getTagIds(List<Tag> tags) {
-        List<Long> tagIds = new ArrayList<>();
-        if (tags != null) {
-            for (Tag tag : tags) {
-                tagIds.add(tag.getId());
-            }
-        }
-        return tagIds;
     }
 
     private String getTagNames (List<Tag> tags) {

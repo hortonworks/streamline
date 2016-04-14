@@ -6,6 +6,7 @@ import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,20 +86,11 @@ public class DataSourceFacade {
         dataSource.setId(dataSourceDto.getDataSourceId());
         dataSource.setName(dataSourceDto.getDataSourceName());
         dataSource.setDescription(dataSourceDto.getDescription());
-        List<Tag> tags = new ArrayList<>();
-        if (dataSourceDto.getTagIds() != null) {
-            for (Long tagId : dataSourceDto.getTagIds()) {
-                Tag tag = catalogService.getTag(tagId);
-                if (tag != null) {
-                    tags.add(tag);
-                }
-            }
-        }
+        List<Tag> tags = getTagsForDataSourceDto(dataSourceDto);
         dataSource.setTags(tags);
         dataSource.setTimestamp(dataSourceDto.getTimestamp());
         dataSource.setType(dataSourceDto.getType());
         dataSource.setTypeConfig(dataSourceDto.getTypeConfig());
-
         return dataSource;
     }
 
@@ -178,26 +170,41 @@ public class DataSourceFacade {
     }
 
     private void createTagsForDataSourceDto (DataSourceDto dataSourceDto) {
-        if (dataSourceDto.getTagIds() == null) {
-            if (dataSourceDto.getTags() != null) {
-                String[] tags = dataSourceDto.getTags().split(",");
-                List<Long> tagIds = new ArrayList<>();
-                for (String tag: tags) {
-                    CatalogService.QueryParam tagNameQueryParam = new CatalogService.QueryParam(Tag.NAME, tag);
-                    Collection<Tag> existingTags = catalogService.listTags(Arrays.asList(tagNameQueryParam));
-                    if (existingTags.isEmpty()) {
-                        Tag newTag = new Tag();
-                        newTag.setName(tag);
-                        newTag.setDescription(tag);
-                        newTag.setTags(new ArrayList<Tag>());
-                        Tag createdTag = catalogService.addTag(newTag);
-                        tagIds.add(createdTag.getId());
-                    } else {
-                        tagIds.add(existingTags.iterator().next().getId());
+        if (dataSourceDto.getTags() != null) {
+            String[] tags = dataSourceDto.getTags().split(",");
+            for (String tagString: tags) {
+                Collection<Tag> existingTags = catalogService.listTags();
+                boolean found = false;
+                for (Tag tag: existingTags) {
+                    if (tag.getName().equals(tagString)) {
+                        found = true;
+                        break;
                     }
                 }
-                dataSourceDto.setTagIds(tagIds);
+                if (!found) {
+                    Tag newTag = new Tag();
+                    newTag.setName(tagString);
+                    newTag.setDescription(tagString);
+                    newTag.setTags(new ArrayList<Tag>());
+                    catalogService.addTag(newTag);
+                }
             }
         }
+    }
+
+    private List<Tag> getTagsForDataSourceDto (DataSourceDto dataSourceDto) {
+        List<Tag> result = new ArrayList<>();
+        if (!StringUtils.isEmpty(dataSourceDto.getTags())) {
+            Collection<Tag> existingTags = catalogService.listTags();
+            for (String tagString: dataSourceDto.getTags().split(",")) {
+                for (Tag tag: existingTags) {
+                    if (tag.getName().equals(tagString)) {
+                        result.add(tag);
+                        break;
+                    }
+                }
+            }
+        }
+        return result;
     }
 }

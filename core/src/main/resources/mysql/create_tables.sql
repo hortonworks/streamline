@@ -80,6 +80,7 @@ CREATE TABLE IF NOT EXISTS tag (
     name VARCHAR(256) NOT NULL,
     description VARCHAR(256) NOT NULL,
     timestamp BIGINT,
+    UNIQUE KEY `UK_name` (name),
     PRIMARY KEY (id)
 );
 
