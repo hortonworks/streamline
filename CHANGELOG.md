@@ -1,4 +1,5 @@
 ## 0.1.2
+ * IOT-99 : Implement hierarchical tags for IoTaS
  * IOT-116: Parser Exception handling requirements.
  * IOT-192: Added support for templatized message.
  * IOT-172: Fix parser file name conflict.
