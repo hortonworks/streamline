@@ -1,6 +1,8 @@
 package com.hortonworks.iotas.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.hortonworks.iotas.storage.DataSourceSubType;
 import com.hortonworks.iotas.storage.StorableKey;
 
@@ -15,6 +17,10 @@ import com.hortonworks.iotas.storage.StorableKey;
  *        storage entities (in terms of RDBMS one Device object that gets stored in 2 tables, datasources and devices)
  *        it wont be supported by the manager right now.
  */
+@JsonPropertyOrder({"id", "version"})
+//Order annotation exists above because Device gets translated to a json string in typeConfig in DataSourceDto
+//For some reason with JsonProperty annotation present in a class the order of serialization of fields is not the same
+//That was breaking a test in RestIntegrationTest as typeCongig string is used in equals comparision
 public class Device extends DataSourceSubType {
     public static final String NAME_SPACE = "devices";
     public static final String DEVICE_ID = "id";
@@ -70,10 +76,12 @@ public class Device extends DataSourceSubType {
                 '}';
     }
 
+    @JsonProperty("id")
     public String getDeviceId() {
         return deviceId;
     }
 
+    @JsonProperty("id")
     public void setDeviceId(String id) {
         this.deviceId = id;
     }

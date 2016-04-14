@@ -491,7 +491,7 @@ public class RestIntegrationTest {
         ds.setTags(Arrays.asList(tag));
         ds.setTimestamp(System.currentTimeMillis());
         ds.setType(DataSource.Type.DEVICE);
-        ds.setTypeConfig("{\"deviceId\":\"1\",\"version\":1}");
+        ds.setTypeConfig("{\"id\":\"1\",\"version\":1}");
         return ds;
     }
 
