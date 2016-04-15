@@ -4,16 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import com.hortonworks.iotas.common.IotasEventImpl;
-import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.layout.design.component.IotasProcessor;
 import com.hortonworks.iotas.layout.design.component.NormalizationProcessor;
 import com.hortonworks.iotas.layout.design.component.Stream;
 import com.hortonworks.iotas.layout.design.normalization.NormalizationConfig;
 import com.hortonworks.iotas.layout.design.normalization.NormalizationProcessorJsonBuilder;
-import com.hortonworks.iotas.parser.ParseException;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 

@@ -2,15 +2,14 @@ package com.hortonworks.iotas.layout.schema;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.exception.ParserException;
 import com.hortonworks.iotas.layout.design.component.RulesProcessor;
 import com.hortonworks.iotas.layout.design.component.RulesProcessorJsonBuilder;
 import com.hortonworks.iotas.layout.design.component.Stream;
 import com.hortonworks.iotas.layout.design.rule.Rule;
 import com.hortonworks.iotas.layout.design.rule.action.Action;
-import com.hortonworks.iotas.parser.ParseException;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 
 import java.util.List;
@@ -50,7 +49,7 @@ public class RulesProcessorSchemaEvolver implements EvolvingSchema {
         return rulesProcessorJsonBuilder.build();
     }
 
-    private Set<Stream> extractStreamsFromRule(Stream inputStream, Rule rule) throws ParseException {
+    private Set<Stream> extractStreamsFromRule(Stream inputStream, Rule rule) throws ParserException {
         Set<Stream> streamSet = Sets.newHashSet();
 
         // TODO: do we evaluate all rules per each input stream? if not, how we connect (input stream, rule) and how we know it?
@@ -61,7 +60,7 @@ public class RulesProcessorSchemaEvolver implements EvolvingSchema {
         return streamSet;
     }
 
-    private Stream extractSchemaFromAction(Stream inputStream, Rule rule, Action action) throws ParseException {
+    private Stream extractSchemaFromAction(Stream inputStream, Rule rule, Action action) throws ParserException {
         String streamId = rule.getOutputStreamNameForAction(action);
 
         Map<String, Object> outputFieldsAndDefaults = action.getOutputFieldsAndDefaults();
@@ -75,7 +74,7 @@ public class RulesProcessorSchemaEvolver implements EvolvingSchema {
         }
     }
 
-    private Schema simulateFieldsProjection(Schema inputSchema, Map<String, Object> outputFieldsAndDefaults) throws ParseException {
+    private Schema simulateFieldsProjection(Schema inputSchema, Map<String, Object> outputFieldsAndDefaults) throws ParserException {
         Schema.SchemaBuilder schemaBuilder = new Schema.SchemaBuilder();
 
         // projection
