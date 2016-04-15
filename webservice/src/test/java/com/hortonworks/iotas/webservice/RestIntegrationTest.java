@@ -1,16 +1,35 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package com.hortonworks.iotas.webservice;
 
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import com.hortonworks.iotas.catalog.Cluster;
-import com.hortonworks.iotas.catalog.DataFeed;
-import com.hortonworks.iotas.catalog.Component;
-import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.CatalogResponse;
-import com.hortonworks.iotas.catalog.ParserInfo;
+import com.hortonworks.iotas.catalog.Cluster;
+import com.hortonworks.iotas.catalog.Component;
+import com.hortonworks.iotas.catalog.DataFeed;
+import com.hortonworks.iotas.catalog.DataSource;
+import com.hortonworks.iotas.catalog.File;
 import com.hortonworks.iotas.catalog.NotifierInfo;
+import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.catalog.Topology;
 import com.hortonworks.iotas.catalog.TopologyEditorMetadata;
@@ -29,6 +48,7 @@ import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
 import org.glassfish.jersey.media.multipart.internal.MultiPartWriter;
 import org.junit.Assert;
@@ -43,17 +63,17 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayInputStream;
-import java.io.File;
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 
@@ -67,7 +87,7 @@ public class RestIntegrationTest {
      * See https://dropwizard.github.io/dropwizard/manual/testing.html#integration-testing
      */
     @ClassRule
-    public static final DropwizardAppRule RULE = new DropwizardAppRule(IotasApplication.class, ResourceHelpers.resourceFilePath("iotas-test.yaml"));
+    public static final DropwizardAppRule<IotasConfiguration> RULE = new DropwizardAppRule<>(IotasApplication.class, ResourceHelpers.resourceFilePath("iotas-test.yaml"));
 
     private String rootUrl = String.format("http://localhost:%d/api/v1/catalog/", RULE.getLocalPort());
     private final InputStream IMAGE_FILE_STREAM = new ByteArrayInputStream("some gif gibberish".getBytes());
@@ -385,6 +405,100 @@ public class RestIntegrationTest {
         }
     }
 
+    @Test
+    public void testFileResources() throws Exception {
+        Client client = ClientBuilder.newBuilder().register(MultiPartFeature.class).build();
+        String response = null;
+        String url = rootUrl + "files";
+
+        // POST
+        File file = new File();
+        file.setName("milkyway-jar");
+        file.setVersion(System.currentTimeMillis());
+
+        MultiPart multiPart = new MultiPart(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+        String initialJarContent = "milkyway-jar-contents";
+
+        final InputStream fileStream = new ByteArrayInputStream(initialJarContent.getBytes());
+        multiPart.bodyPart(new StreamDataBodyPart("file", fileStream, "file"));
+        multiPart.bodyPart(new FormDataBodyPart("fileInfo", file, MediaType.APPLICATION_JSON_TYPE));
+
+        response = client.target(url)
+                .request(MediaType.MULTIPART_FORM_DATA_TYPE, MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_OCTET_STREAM_TYPE)
+                .post(Entity.entity(multiPart, multiPart.getMediaType()), String.class);
+        File postedFile = getEntity(response, File.class);
+
+        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+
+
+        //DOWNLOAD
+        InputStream downloadInputStream = client.target(url+"/download/"+ postedFile.getId()).request().get(InputStream.class);
+        ByteArrayOutputStream downloadedJarOutputStream = new ByteArrayOutputStream();
+        IOUtils.copy(downloadInputStream, downloadedJarOutputStream);
+
+        ByteArrayOutputStream uploadedOutputStream = new ByteArrayOutputStream();
+        IOUtils.copy(new ByteArrayInputStream(initialJarContent.getBytes()), uploadedOutputStream);
+
+        Assert.assertArrayEquals(uploadedOutputStream.toByteArray(), downloadedJarOutputStream.toByteArray());
+
+
+        // GET all
+        response = client.target(url).request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
+        List<File> files = getEntities(response, File.class);
+
+        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+        Assert.assertEquals(files.size(), 1);
+        Assert.assertEquals(files.iterator().next().getName(), file.getName());
+
+
+        // GET /files/1
+        response = client.target(url+"/"+ postedFile.getId()).request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
+        File receivedFile = getEntity(response, File.class);
+
+        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+        Assert.assertEquals(receivedFile.getName(), postedFile.getName());
+        Assert.assertEquals(receivedFile.getId(), postedFile.getId());
+
+
+        // PUT
+        postedFile.setName("andromeda-jar");
+        postedFile.setVersion(System.currentTimeMillis());
+
+        multiPart = new MultiPart(MediaType.MULTIPART_FORM_DATA_TYPE);
+        InputStream updatedFileStream = new ByteArrayInputStream("andromeda-jar-contents".getBytes());
+        multiPart.bodyPart(new StreamDataBodyPart("file", updatedFileStream, "file"));
+        multiPart.bodyPart(new FormDataBodyPart("fileInfo", postedFile, MediaType.APPLICATION_JSON_TYPE));
+        response = client.target(url)
+                .request(MediaType.MULTIPART_FORM_DATA_TYPE, MediaType.APPLICATION_JSON_TYPE)
+                .post(Entity.entity(multiPart, multiPart.getMediaType()), String.class);
+        File updatedFile = getEntity(response, File.class);
+
+        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+        Assert.assertEquals(updatedFile.getId(), postedFile.getId());
+        Assert.assertEquals(updatedFile.getName(), postedFile.getName());
+
+
+        // DELETE
+        response = client.target(url+"/"+ updatedFile.getId()).request().delete(String.class);
+        final File deletedFile = getEntity(response, File.class);
+
+        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+        Assert.assertEquals(deletedFile.getId(), updatedFile.getId());
+
+
+        // GET
+        response = client.target(url).request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
+        files = getEntities(response, File.class);
+
+        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+        Assert.assertTrue(files.isEmpty());
+
+    }
+
     /**
      * For each QueryParamsResourceTestElement it first try to send all get
      * requests and verifies the response. It then loads all resources via post
@@ -642,16 +756,16 @@ public class RestIntegrationTest {
         return outputStreamToSchema;
     }
 
-    private File getCpImageFile () throws IOException {
-        File imageFile = new File("/tmp/image.gif");
+    private java.io.File getCpImageFile () throws IOException {
+        java.io.File imageFile = new java.io.File("/tmp/image.gif");
         IOUtils.copy(IMAGE_FILE_STREAM, new FileOutputStream(imageFile));
         return imageFile;
     }
 
-    private File getCpJarFile () throws IOException {
-        File jarFile = new File("/tmp/iotas-core.jar");
-        IOUtils.copy(JAR_FILE_STREAM, new FileOutputStream(jarFile));
-        return jarFile;
+    private java.io.File getCpJarFile () throws IOException {
+        java.io.File fileFile = new java.io.File("/tmp/iotas-core.jar");
+        IOUtils.copy(JAR_FILE_STREAM, new FileOutputStream(fileFile));
+        return fileFile;
     }
 
 }

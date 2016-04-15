@@ -46,7 +46,7 @@ public class IotasConfiguration extends Configuration {
     private String catalogRootUrl;
 
     @NotNull
-    private JarStorageConfiguration jarStorageConfiguration;
+    private FileStorageConfiguration fileStorageConfiguration;
 
     @NotEmpty
     private String stormHomeDir;
@@ -115,14 +115,12 @@ public class IotasConfiguration extends Configuration {
         this.catalogRootUrl = catalogRootUrl;
     }
 
-    @JsonProperty("jarStorageConfiguration")
-    public JarStorageConfiguration getJarStorageConfiguration() {
-        return this.jarStorageConfiguration;
+    public FileStorageConfiguration getFileStorageConfiguration() {
+        return this.fileStorageConfiguration;
     }
 
-    @JsonProperty("jarStorageConfiguration")
-    public void setJarStorageConfiguration(JarStorageConfiguration configuration) {
-        this.jarStorageConfiguration = configuration;
+    public void setFileStorageConfiguration(FileStorageConfiguration configuration) {
+        this.fileStorageConfiguration = configuration;
     }
 
     @JsonProperty("notificationsRestDisable")

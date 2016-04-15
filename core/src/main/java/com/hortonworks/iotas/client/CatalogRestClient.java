@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package com.hortonworks.iotas.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -33,6 +51,7 @@ public class CatalogRestClient {
     private static final String NOTIFIER_URL = "notifiers";
     private static final String PARSER_DOWNLOAD_URL = PARSER_URL + "/download";
     private static final String CUSTOM_PROCESSOR_JAR_DOWNLOAD_URL = "system/componentdefinitions/PROCESSOR/custom";
+    private static final String JAR_DOWNLOAD_URL = "jars/download/";
 
     private String rootCatalogURL;
     private WebTarget rootTarget;
@@ -53,14 +72,6 @@ public class CatalogRestClient {
         dataSourceTarget = rootTarget.path(DATASOURCE_URL);
         feedTarget = rootTarget.path(FEED_URL);
         parserTarget = rootTarget.path(PARSER_URL);
-    }
-
-    public <T> T get(String url, Class<T> clazz) {
-        return get(client.target(url), clazz);
-    }
-
-    private <T> T get(WebTarget target, Class<T> clazz) {
-        return target.request(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_OCTET_STREAM_TYPE, MediaType.MULTIPART_FORM_DATA_TYPE).get(clazz);
     }
 
     private <T extends Storable> List<T> getEntities(WebTarget target, Class<T> clazz) {
@@ -115,11 +126,22 @@ public class CatalogRestClient {
         return getParserInfo(dataFeed.getParserId());
     }
 
-    public InputStream getCustomProcessorJar(String jarFileName) {
-        return get(String.format("%s/%s/%s", rootCatalogURL, CUSTOM_PROCESSOR_JAR_DOWNLOAD_URL, jarFileName), InputStream.class);
+    protected InputStream getInputStream(String fileId, String relativeUrl) {
+        return client.target(String.format("%s/%s/%s", rootCatalogURL, relativeUrl, fileId))
+                .request(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_OCTET_STREAM_TYPE, MediaType.MULTIPART_FORM_DATA_TYPE)
+                .get(InputStream.class);
+    }
+
+    public InputStream getCustomProcessorJar (String jarFileName) {
+        return getInputStream(jarFileName, CUSTOM_PROCESSOR_JAR_DOWNLOAD_URL);
     }
 
     public InputStream getParserJar(Long parserId) {
-        return get(String.format("%s/%s/%s", rootCatalogURL, PARSER_DOWNLOAD_URL, parserId), InputStream.class);
+        return getInputStream(parserId.toString(), PARSER_DOWNLOAD_URL);
     }
+
+    public InputStream getJar(Long jarId) {
+        return getInputStream(jarId.toString(), JAR_DOWNLOAD_URL);
+    }
+
 }
