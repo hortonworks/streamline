@@ -3,8 +3,8 @@ package com.hortonworks.iotas.layout.schema;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.exception.ParserException;
 import com.hortonworks.iotas.layout.design.component.Stream;
-import com.hortonworks.iotas.parser.ParseException;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 
 import java.io.IOException;
@@ -32,7 +32,7 @@ public class CustomProcessorSchemaEvolver implements EvolvingSchema {
         }
     }
 
-    private Set<Stream> convertOutputStreamToSchemaConfigToStreams(Map<String, Object> outputStreamToSchemaConfig) throws ParseException, IOException {
+    private Set<Stream> convertOutputStreamToSchemaConfigToStreams(Map<String, Object> outputStreamToSchemaConfig) throws ParserException, IOException {
         Set<Stream> streams = Sets.newHashSet();
         for (Map.Entry<String, Object> streamToSchema : outputStreamToSchemaConfig.entrySet()) {
             String streamId = streamToSchema.getKey();
