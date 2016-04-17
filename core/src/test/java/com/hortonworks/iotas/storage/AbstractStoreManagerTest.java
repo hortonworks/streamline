@@ -340,7 +340,7 @@ public abstract class AbstractStoreManagerTest {
 
         protected Device createDevice(String id, Long version, Long datafeedId) {
             Device d = new Device();
-            d.setDeviceId(id);
+            d.setId(id);
             d.setVersion(version);
             d.setDataSourceId(datafeedId);
             return d;

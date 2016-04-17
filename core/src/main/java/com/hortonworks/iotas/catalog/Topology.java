@@ -86,6 +86,12 @@ public class Topology implements Storable {
         return this;
     }
 
+    @Override
+    @JsonIgnore
+    public Long getIdForTagging() {
+        return getId();
+    }
+
 
     public Long getId() {
         return id;

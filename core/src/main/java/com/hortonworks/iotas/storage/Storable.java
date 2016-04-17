@@ -59,10 +59,10 @@ public interface Storable {
     Storable fromMap(Map<String, Object> map);
 
     /**
-     * A unique Id to identify the storable.
+     * An id to be used for tagging for storable since a storable entity can have multiple tags associated
      *
      * @return the id.
      */
-    Long getId();
+    Long getIdForTagging ();
 
 }

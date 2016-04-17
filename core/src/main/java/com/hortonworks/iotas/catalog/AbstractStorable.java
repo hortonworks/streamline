@@ -106,8 +106,15 @@ public abstract class AbstractStorable implements Storable {
     }
 
     @Override
-    public Long getId() {
-        throw new UnsupportedOperationException("Not implemented");
+    @JsonIgnore
+    public Long getIdForTagging () {
+        try {
+            Object val = ReflectionHelper.invokeGetter("id", this);
+            return (Long) val;
+        } catch (NoSuchMethodException|InvocationTargetException|IllegalAccessException|ClassCastException e) {
+            LOG.info("", e);
+            throw new UnsupportedOperationException("Not implemented");
+        }
     }
 
 }

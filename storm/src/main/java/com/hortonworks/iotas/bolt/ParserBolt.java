@@ -9,7 +9,6 @@ import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.client.CatalogRestClient;
-import com.hortonworks.iotas.exception.DataValidationException;
 import com.hortonworks.iotas.util.ProxyUtil;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.ParserInfo;

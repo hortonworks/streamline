@@ -1,8 +1,6 @@
 package com.hortonworks.iotas.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.hortonworks.iotas.storage.DataSourceSubType;
 import com.hortonworks.iotas.storage.StorableKey;
 
@@ -17,10 +15,6 @@ import com.hortonworks.iotas.storage.StorableKey;
  *        storage entities (in terms of RDBMS one Device object that gets stored in 2 tables, datasources and devices)
  *        it wont be supported by the manager right now.
  */
-@JsonPropertyOrder({"id", "version"})
-//Order annotation exists above because Device gets translated to a json string in typeConfig in DataSourceDto
-//For some reason with JsonProperty annotation present in a class the order of serialization of fields is not the same
-//That was breaking a test in RestIntegrationTest as typeCongig string is used in equals comparision
 public class Device extends DataSourceSubType {
     public static final String NAME_SPACE = "devices";
     public static final String DEVICE_ID = "id";
@@ -29,7 +23,7 @@ public class Device extends DataSourceSubType {
     /**
      * NOTE: given we expect this to be part of the actual device message headers, this Id is kept as string.
      */
-    private String deviceId;
+    private String id;
 
     /**
      * Firmware version of the device. DeviceId + version has a unique constraint but is not the primary key.
@@ -54,14 +48,14 @@ public class Device extends DataSourceSubType {
         Device device = (Device) o;
 
         if (!dataSourceId.equals(device.dataSourceId)) return false;
-        if (!deviceId.equals(device.deviceId)) return false;
+        if (!id.equals(device.id)) return false;
         return version.equals(device.version);
 
     }
 
     @Override
     public int hashCode() {
-        int result = deviceId.hashCode();
+        int result = id.hashCode();
         result = 31 * result + version.hashCode();
         result = 31 * result + dataSourceId.hashCode();
         return result;
@@ -70,20 +64,18 @@ public class Device extends DataSourceSubType {
     @Override
     public String toString() {
         return "Device{" +
-                "deviceId='" + deviceId + '\'' +
+                "id='" + id + '\'' +
                 ", version=" + version +
                 ", dataSourceId=" + dataSourceId +
                 '}';
     }
 
-    @JsonProperty("id")
-    public String getDeviceId() {
-        return deviceId;
+    public String getId () {
+        return this.id;
     }
 
-    @JsonProperty("id")
-    public void setDeviceId(String id) {
-        this.deviceId = id;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public Long getVersion() {
@@ -94,9 +86,4 @@ public class Device extends DataSourceSubType {
         this.version = version;
     }
 
-    @JsonIgnore
-    @Override
-    public Long getId() {
-        return super.getId();
-    }
 }
