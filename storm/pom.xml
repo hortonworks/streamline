@@ -12,7 +12,7 @@
     <artifactId>storm</artifactId>
 
     <properties>
-        <storm.version>1.0.0-SNAPSHOT</storm.version>
+        <storm.version>1.0.1-SNAPSHOT</storm.version>
         <calcite.version>1.4.0-incubating</calcite.version>     <!--StormSQL dependency-->
     </properties>
 
