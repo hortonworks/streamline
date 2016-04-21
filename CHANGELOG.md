@@ -1,4 +1,5 @@
 ## 0.1.2
+ * IOT-224: Create tags on the fly for datasources for backward compatibility.
  * IOT-201: Integrate storm-sql UDF in Iotas.
  * IOT-99 : Implement hierarchical tags for IoTaS
  * IOT-116: Parser Exception handling requirements.
