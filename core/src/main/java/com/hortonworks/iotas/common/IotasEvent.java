@@ -45,4 +45,22 @@ public interface IotasEvent {
      * @return stream name
      */
     String getSourceStream ();
+
+    /**
+     * Returns a new Iotas event with the given fieldsAndValues added to the existing fieldsAndValues.
+     * All the other fields are copied from this event.
+     *
+     * @param fieldsAndValues the map of fieldsAndValues to add
+     * @return the new IotasEvent
+     */
+    IotasEvent putFieldsAndValues(Map<String, Object> fieldsAndValues);
+
+    /**
+     * Returns a new Iotas event with the given headers added to the existing headers.
+     * All the other fields are copied from this event.
+     *
+     * @param headers the map of fieldsAndValues to add or overwrite
+     * @return the new IotasEvent
+     */
+    IotasEvent putHeaders(Map<String, Object> headers);
 }

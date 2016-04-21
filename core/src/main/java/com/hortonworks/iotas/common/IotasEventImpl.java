@@ -1,6 +1,7 @@
 package com.hortonworks.iotas.common;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -46,7 +47,14 @@ public class IotasEventImpl implements IotasEvent {
     }
 
     /**
-     * Creates an IotasEvent with given keyValues, dataSourceId, id and header.
+     * Creates an IotasEvent with given keyValues, dataSourceId, header and sourceStream.
+     */
+    public IotasEventImpl(Map<String, Object> keyValues, String dataSourceId, Map<String, Object> header, String sourceStream) {
+        this(keyValues, dataSourceId, UUID.randomUUID().toString(), header, sourceStream);
+    }
+
+    /**
+     * Creates an IotasEvent with given keyValues, dataSourceId, id, header and sourceStream.
      */
     public IotasEventImpl(Map<String, Object> keyValues, String dataSourceId, String id, Map<String, Object> header, String sourceStream) {
         this.fieldsAndValues = keyValues;
@@ -74,6 +82,35 @@ public class IotasEventImpl implements IotasEvent {
     @Override
     public String getSourceStream() {
         return sourceStream;
+    }
+
+    /**
+     * Returns a new Iotas event with the given fieldsAndValues added to the existing fieldsAndValues
+     *
+     * @param fieldsAndValues the map of fieldsAndValues to add
+     * @return the new IotasEvent
+     */
+    @Override
+    public IotasEvent putFieldsAndValues(Map<String, Object> fieldsAndValues) {
+        Map<String, Object> kv = new HashMap<>();
+        kv.putAll(getFieldsAndValues());
+        kv.putAll(fieldsAndValues);
+        return new IotasEventImpl(kv, this.getDataSourceId(), this.getHeader(), this.getSourceStream());
+    }
+
+    /**
+     * Returns a new Iotas event with the given headers added to the existing headers.
+     * All the other fields are copied from this event.
+     *
+     * @param headers the map of fieldsAndValues to add or overwrite
+     * @return the new IotasEvent
+     */
+    @Override
+    public IotasEvent putHeaders(Map<String, Object> headers) {
+        Map<String, Object> kv = new HashMap<>();
+        kv.putAll(getHeader());
+        kv.putAll(headers);
+        return new IotasEventImpl(this.getFieldsAndValues(), this.getDataSourceId(), kv, this.getSourceStream());
     }
 
     @Override

@@ -29,7 +29,7 @@ public class RuleBoltFluxComponent extends AbstractFluxComponent {
         addParallelismToComponent();
     }
 
-    private String addRulesBoltDependenciesFactory () {
+    protected String addRulesBoltDependenciesFactory () {
         String rulesProcessorBuilderRef = addRulesProcessorBuilder();
         String dependenciesFactoryId = "dependenciesFactory" + UUID_FOR_COMPONENTS;
         String dependenciesFactoryClassName = "com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory";

@@ -24,6 +24,8 @@ import com.hortonworks.iotas.layout.design.rule.condition.Condition;
 import com.hortonworks.iotas.layout.design.rule.condition.Expression;
 import com.hortonworks.iotas.layout.design.rule.condition.ExpressionTranslator;
 import com.hortonworks.iotas.layout.design.rule.condition.FunctionExpression;
+import com.hortonworks.iotas.layout.design.rule.condition.GroupBy;
+import com.hortonworks.iotas.layout.design.rule.condition.Having;
 import com.hortonworks.iotas.layout.design.rule.condition.Operator;
 import com.hortonworks.iotas.layout.design.rule.condition.Projection;
 import org.slf4j.Logger;
@@ -31,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -47,10 +50,14 @@ public class StormSqlExpression extends ExpressionRuntime {
     private static final String SELECT_STREAM = "SELECT STREAM ";
     private static final String FROM = "FROM ";
     private static final String WHERE = "WHERE ";
+    private static final String GROUP_BY = "GROUP BY ";
+    private static final String HAVING = "HAVING ";
     private static final String LOCATION = "LOCATION";
     private static final String AS = "AS";
     private final LinkedHashSet<Schema.Field> fieldsToEmit = new LinkedHashSet<>();
+    private final Set<Schema.Field> groupByFields = new HashSet<>();
     private final LinkedHashSet<FunctionExpression.Function> functions = new LinkedHashSet<>();
+    private final LinkedHashSet<FunctionExpression.Function> aggregateFunctions = new LinkedHashSet<>();
     private final List<String> projectedFields = new ArrayList<>();
 
     public StormSqlExpression(Condition condition) {
@@ -58,24 +65,65 @@ public class StormSqlExpression extends ExpressionRuntime {
     }
 
     public StormSqlExpression(Condition condition, Projection projection) {
-        super(condition, projection);
+        this(condition, projection, null, null);
+    }
+
+    public StormSqlExpression(Condition condition, Projection projection, GroupBy groupBy, Having having) {
+        super(condition, projection, groupBy, having);
+        handleProjection();
+        handleFilter();
+        handleGroupByHaving();
+    }
+
+    private void handleProjection() {
         if (projection != null) {
             for (Expression expr : projection.getExpressions()) {
                 ExpressionTranslator translator = new StormSqlExpressionTranslator();
                 expr.accept(translator);
                 fieldsToEmit.addAll(translator.getFields());
+                if (groupBy != null && !translator.getFunctions().isEmpty()) {
+                    throw new IllegalArgumentException("Cannot have non-aggregate function in projection while using group-by.");
+                }
                 functions.addAll(translator.getFunctions());
+                aggregateFunctions.addAll(translator.getAggregateFunctions());
                 projectedFields.add(translator.getTranslatedExpression());
             }
         }
-        ExpressionTranslator conditionTranslator = new StormSqlExpressionTranslator();
-        condition.getExpression().accept(conditionTranslator);
-        fieldsToEmit.addAll(conditionTranslator.getFields());
-        functions.addAll(conditionTranslator.getFunctions());
-        expression = conditionTranslator.getTranslatedExpression();
-        LOG.debug("Built expression [{}] for condition [{}]", expression, condition);
     }
 
+    private void handleFilter() {
+        if (condition != null) {
+            ExpressionTranslator conditionTranslator = new StormSqlExpressionTranslator();
+            condition.getExpression().accept(conditionTranslator);
+            fieldsToEmit.addAll(conditionTranslator.getFields());
+            if (!conditionTranslator.getAggregateFunctions().isEmpty()) {
+                throw new IllegalArgumentException("Cannot have aggregate functions filter condition.");
+            }
+            functions.addAll(conditionTranslator.getFunctions());
+            expression = conditionTranslator.getTranslatedExpression();
+            LOG.debug("Built expression [{}] for filter condition [{}]", expression, condition);
+        }
+    }
+
+    private void handleGroupByHaving() {
+        if (groupBy != null) {
+            ExpressionTranslator groupByTranslator = new StormSqlExpressionTranslator();
+            groupBy.getExpression().accept(groupByTranslator);
+            fieldsToEmit.addAll(groupByTranslator.getFields());
+            groupByFields.addAll(groupByTranslator.getFields());
+            functions.addAll(groupByTranslator.getFunctions());
+            groupByExpression = groupByTranslator.getTranslatedExpression();
+            if (having != null) {
+                ExpressionTranslator havingTranslator = new StormSqlExpressionTranslator();
+                having.getExpression().accept(havingTranslator);
+                fieldsToEmit.addAll(havingTranslator.getFields());
+                functions.addAll(havingTranslator.getFunctions());
+                aggregateFunctions.addAll(havingTranslator.getAggregateFunctions());
+                havingExpression = havingTranslator.getTranslatedExpression();
+                LOG.debug("Built expression [{}] for having [{}]", havingExpression, having);
+            }
+        }
+    }
 
     @Override
     public String asString() {
@@ -87,7 +135,14 @@ public class StormSqlExpression extends ExpressionRuntime {
      */
     public List<String> createFunctions() {
         List<String> result = new ArrayList<>();
-        for(FunctionExpression.Function fn: functions) {
+        result.addAll(doCreateFunctions(functions));
+        result.addAll(doCreateFunctions(aggregateFunctions));
+        return result;
+    }
+
+    private List<String> doCreateFunctions(Set<FunctionExpression.Function> functions) {
+        List<String> result = new ArrayList<>();
+        for (FunctionExpression.Function fn : functions) {
             if (fn.isUdf()) {
                 result.add(CREATE_FUNCTION + fn.getName() + " " + AS + " " + "'" + fn.getClassName() + "'");
             }
@@ -102,12 +157,22 @@ public class StormSqlExpression extends ExpressionRuntime {
     */
     public String createTable(String schemaName, String tableName) {
         return CREATE_EXTERNAL_TABLE + tableName + " (" + buildCreateDefinition() + ") " +
-                LOCATION + " '" + schemaName + ":///" + tableName +"'";
+                LOCATION + " '" + schemaName + ":///" + tableName + "'";
     }
 
     // "SELECT F1, F2, F3 FROM RT WHERE F1 < 2 AND F2 < 3 AND F3 < 4"
     public String select(String tableName) {
-        return SELECT_STREAM + buildSelectExpression() + " " + FROM + tableName + " " + WHERE + asString();
+        StringBuilder select = new StringBuilder(SELECT_STREAM);
+        select.append(buildSelectExpression()).append(" ")
+                .append(FROM).append(tableName).append(" ")
+                .append(WHERE).append(asString());
+        if (groupBy != null) {
+            select.append(" ").append(GROUP_BY).append(groupByExpression).append(" ");
+            if (having != null) {
+                select.append(HAVING).append(havingExpression);
+            }
+        }
+        return select.toString();
     }
 
     // F1 INTEGER or F2 STRING or ...
@@ -121,6 +186,12 @@ public class StormSqlExpression extends ExpressionRuntime {
             }
             builder.append(fieldName).append(" ")
                     .append(getType(field));
+            if (groupByFields.contains(field)) {
+                /* for monotonicity of group by field, make it a "primary key"
+                 * TODO: see if an option other than PK can be used for monotonicity
+                 */
+                builder.append(" ").append("PRIMARY KEY");
+            }
         }
         return builder.toString();
     }
@@ -131,7 +202,7 @@ public class StormSqlExpression extends ExpressionRuntime {
             result = Joiner.on(", ").join(projectedFields);
         } else {
             List<String> fields = new ArrayList<>();
-            for(Schema.Field field: fieldsToEmit) {
+            for (Schema.Field field : fieldsToEmit) {
                 fields.add(field.getName());
             }
             result = Joiner.on(", ").join(fields);
@@ -182,6 +253,8 @@ public class StormSqlExpression extends ExpressionRuntime {
                 return "ANY";
             case STRING:
                 return "VARCHAR";
+            case LONG:
+                return "BIGINT";
             default:
                 return super.getType(field);
         }

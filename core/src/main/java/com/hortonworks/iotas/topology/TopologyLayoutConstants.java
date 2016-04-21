@@ -103,6 +103,7 @@ public final class TopologyLayoutConstants {
     public final static String JSON_KEY_RULES = "rules";
     public final static String JSON_KEY_RULE_ACTIONS = "actions";
     public final static String JSON_KEY_RULE_DECLARED_OUTPUT = "declaredOutput";
+    public final static String JSON_KEY_RULE_WINDOW_CONFIG = "windowConfig";
 
     // normalization processor related constants
     public final static String JSON_KEY_NORMALIZATION_PROCESSOR_CONFIG ="normalizationProcessorConfig";

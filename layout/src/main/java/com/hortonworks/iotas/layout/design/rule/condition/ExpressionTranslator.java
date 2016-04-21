@@ -11,6 +11,7 @@ public abstract class ExpressionTranslator implements ExpressionVisitor {
     private final StringBuilder builder = new StringBuilder();
     private final List<Schema.Field> fields = new ArrayList<>();
     private final List<FunctionExpression.Function> functions = new ArrayList<>();
+    private final List<FunctionExpression.Function> aggregateFunctions = new ArrayList<>();
 
     @Override
     public void visit(BinaryExpression binaryExpression) {
@@ -45,16 +46,14 @@ public abstract class ExpressionTranslator implements ExpressionVisitor {
 
     @Override
     public void visit(FunctionExpression functionExpression) {
-        builder.append(functionExpression.getFunction().getName()).append("(");
-        int count = 0;
-        for (Expression expression : functionExpression.getOperands()) {
-            if (++count > 1) {
-                builder.append(", ");
-            }
-            expression.accept(this);
-        }
-        builder.append(")");
+        buildFunctionExpression(functionExpression);
         functions.add(functionExpression.getFunction());
+    }
+
+    @Override
+    public void visit(AggregateFunctionExpression aggregateFunctionExpression) {
+        buildFunctionExpression(aggregateFunctionExpression);
+        aggregateFunctions.add(aggregateFunctionExpression.getFunction());
     }
 
     public String getTranslatedExpression() {
@@ -67,6 +66,22 @@ public abstract class ExpressionTranslator implements ExpressionVisitor {
 
     public List<FunctionExpression.Function> getFunctions() {
         return functions;
+    }
+
+    public List<FunctionExpression.Function> getAggregateFunctions() {
+        return aggregateFunctions;
+    }
+
+    private void buildFunctionExpression(FunctionExpression functionExpression) {
+        builder.append(functionExpression.getFunction().getName()).append("(");
+        int count = 0;
+        for (Expression expression : functionExpression.getOperands()) {
+            if (++count > 1) {
+                builder.append(", ");
+            }
+            expression.accept(this);
+        }
+        builder.append(")");
     }
 
     private void maybeParenthesize(BinaryExpression parent, Expression child) {

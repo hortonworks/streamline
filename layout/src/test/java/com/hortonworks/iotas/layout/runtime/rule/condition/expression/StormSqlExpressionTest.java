@@ -1,12 +1,17 @@
 package com.hortonworks.iotas.layout.runtime.rule.condition.expression;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.layout.design.rule.Rule;
+import com.hortonworks.iotas.layout.design.rule.condition.AggregateFunctionExpression;
 import com.hortonworks.iotas.layout.design.rule.condition.BinaryExpression;
 import com.hortonworks.iotas.layout.design.rule.condition.Condition;
 import com.hortonworks.iotas.layout.design.rule.condition.Expression;
 import com.hortonworks.iotas.layout.design.rule.condition.FieldExpression;
 import com.hortonworks.iotas.layout.design.rule.condition.FunctionExpression;
+import com.hortonworks.iotas.layout.design.rule.condition.GroupBy;
+import com.hortonworks.iotas.layout.design.rule.condition.Having;
 import com.hortonworks.iotas.layout.design.rule.condition.Literal;
 import com.hortonworks.iotas.layout.design.rule.condition.Operator;
 import com.hortonworks.iotas.layout.design.rule.condition.Projection;
@@ -122,4 +127,40 @@ public class StormSqlExpressionTest {
                      stormSqlExpression.createFunctions());
     }
 
+    @Test
+    public void testCreateSelectProjectGroupBy() throws Exception {
+        // SELECT STREAM ID, MIN(SALARY) FROM FOO where ID > 0 GROUP BY (ID) HAVING ID > 2 AND MAX(SALARY) > 5
+
+        Expression min_salary = new AggregateFunctionExpression("MIN",
+                                                              ImmutableList.of(new FieldExpression(
+                                                             Schema.Field.of("salary", Schema.Type.INTEGER))));
+
+        Expression max_salary = new AggregateFunctionExpression("MAX",
+                                                     ImmutableList.of(new FieldExpression(
+                                                             Schema.Field.of("salary", Schema.Type.INTEGER))));
+
+        Expression id = new FieldExpression(Schema.Field.of("id", Schema.Type.INTEGER));
+
+        Expression id_gt_0 = new BinaryExpression(Operator.GREATER_THAN, id, new Literal("0"));
+        Expression id_gt_2 = new BinaryExpression(Operator.GREATER_THAN, id, new Literal("2"));
+        Expression max_salary_gt_5 = new BinaryExpression(Operator.GREATER_THAN, max_salary, new Literal("5"));
+
+        GroupBy groupBy_id = new GroupBy();
+        groupBy_id.setExpression(id);
+
+        Having having_id_gt_2 = new Having();
+        having_id_gt_2.setExpression(new BinaryExpression(Operator.AND, id_gt_2, max_salary_gt_5));
+        Condition condition = new Condition();
+        condition.setExpression(id_gt_0);
+
+        Projection projection = new Projection();
+        projection.setExpressions(ImmutableList.<Expression>of(id, min_salary));
+        stormSqlExpression = new StormSqlExpression(condition, projection, groupBy_id, having_id_gt_2);
+
+        assertEquals("CREATE EXTERNAL TABLE table (id INTEGER PRIMARY KEY, salary INTEGER) LOCATION 'schema:///table'",
+                     stormSqlExpression.createTable("schema", "table"));
+        assertEquals("SELECT STREAM id, MIN(salary) FROM table WHERE id > 0 GROUP BY id HAVING id > 2 AND MAX(salary) > 5",
+                     stormSqlExpression.select("table"));
+
+    }
 }

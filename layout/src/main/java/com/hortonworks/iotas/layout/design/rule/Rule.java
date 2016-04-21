@@ -21,7 +21,9 @@ package com.hortonworks.iotas.layout.design.rule;
 import com.google.common.collect.ImmutableList;
 import com.hortonworks.iotas.layout.design.rule.action.Action;
 import com.hortonworks.iotas.layout.design.rule.condition.Condition;
+import com.hortonworks.iotas.layout.design.rule.condition.Having;
 import com.hortonworks.iotas.layout.design.rule.condition.Projection;
+import com.hortonworks.iotas.layout.design.rule.condition.Window;
 
 import java.io.Serializable;
 import java.util.List;
@@ -38,6 +40,8 @@ public class Rule implements Serializable {
 
     private Projection projection;
     private Condition condition;
+    private Having having;
+    private Window window;
     private List<Action> actions;
 
     public Rule() {     //TODO Check
@@ -108,6 +112,22 @@ public class Rule implements Serializable {
         return ruleProcessorName + "." + name + "." + id + "." + action.getName();
     }
 
+    public Having getHaving() {
+        return having;
+    }
+
+    public void setHaving(Having having) {
+        this.having = having;
+    }
+
+    public Window getWindow() {
+        return window;
+    }
+
+    public void setWindow(Window window) {
+        this.window = window;
+    }
+
     @Override
     public String toString() {
         return "Rule{" +
@@ -115,7 +135,10 @@ public class Rule implements Serializable {
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", ruleProcessorName='" + ruleProcessorName + '\'' +
+                ", projection=" + projection +
                 ", condition=" + condition +
+                ", having=" + having +
+                ", window=" + window +
                 ", actions=" + actions +
                 '}';
     }

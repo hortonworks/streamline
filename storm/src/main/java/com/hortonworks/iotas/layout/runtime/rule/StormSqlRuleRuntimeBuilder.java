@@ -19,17 +19,22 @@
 package com.hortonworks.iotas.layout.runtime.rule;
 
 import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.layout.design.rule.Rule;
+import com.hortonworks.iotas.layout.design.rule.condition.FieldExpression;
+import com.hortonworks.iotas.layout.design.rule.condition.GroupBy;
 import com.hortonworks.iotas.layout.runtime.rule.condition.expression.StormSqlExpression;
 import com.hortonworks.iotas.layout.runtime.rule.sql.StormSqlEngine;
 import com.hortonworks.iotas.layout.runtime.rule.sql.StormSqlScript;
+
+import static com.hortonworks.iotas.layout.design.rule.condition.Window.WINDOW_ID;
 
 public class StormSqlRuleRuntimeBuilder extends AbstractRuleRuntimeBuilder {
     private Rule rule;
     private StormSqlExpression stormSqlExpression;
     private StormSqlEngine stormSqlEngine;
     private StormSqlScript<IotasEvent> stormSqlScript;
-
+    private static final GroupBy GROUP_BY_WINDOWID = new GroupBy(new FieldExpression(Schema.Field.of(WINDOW_ID, Schema.Type.LONG)));
     @Override
     public void setRule(Rule rule) {
         this.rule = rule;
@@ -37,7 +42,10 @@ public class StormSqlRuleRuntimeBuilder extends AbstractRuleRuntimeBuilder {
 
     @Override
     public void buildExpression() {
-        stormSqlExpression = new StormSqlExpression(rule.getCondition(), rule.getProjection());
+        stormSqlExpression = new StormSqlExpression(rule.getCondition(),
+                                                    rule.getProjection(),
+                                                    rule.getWindow() != null ? GROUP_BY_WINDOWID : null,
+                                                    rule.getWindow() != null ? rule.getHaving() : null);
     }
 
     @Override

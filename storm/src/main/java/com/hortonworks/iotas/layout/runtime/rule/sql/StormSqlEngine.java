@@ -79,11 +79,9 @@ public class StormSqlEngine implements ScriptEngine<StormSqlEngine> {
 
     public Values eval(Values input) {
         Values cachedResult = null;
-        if (input != null && !input.isEmpty()) {
-            channelContext.emit(input);
-            cachedResult = result;              // this.result is set synchronously in ChannelHandler
-            result = null;                      // reset this.result
-        }
+        channelContext.emit(input);
+        cachedResult = result;              // this.result is set synchronously in ChannelHandler
+        result = null;                      // reset this.result
         return cachedResult;
     }
 

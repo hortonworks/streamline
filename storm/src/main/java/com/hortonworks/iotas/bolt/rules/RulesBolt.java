@@ -28,7 +28,6 @@ import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Values;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntime;
-import com.hortonworks.iotas.layout.runtime.rule.RuleRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

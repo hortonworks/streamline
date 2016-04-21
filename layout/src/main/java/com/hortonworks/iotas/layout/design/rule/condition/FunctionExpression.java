@@ -31,7 +31,7 @@ public class FunctionExpression extends Expression {
     }
 
     // for jackson
-    private FunctionExpression() {
+    protected FunctionExpression() {
     }
 
     public Function getFunction() {
@@ -64,9 +64,9 @@ public class FunctionExpression extends Expression {
     }
 
     public static class Function {
-        private final String name;
-        private final String className;
-        private final boolean udf;
+        private String name;
+        private String className;
+        private boolean udf;
 
         /**
          * Built in function (e.g. built in sql functions like UPPER)
@@ -82,6 +82,10 @@ public class FunctionExpression extends Expression {
             this.name = name;
             this.className = className;
             this.udf = udf;
+        }
+
+        // for jackson
+        private Function() {
         }
 
         public String getName() {

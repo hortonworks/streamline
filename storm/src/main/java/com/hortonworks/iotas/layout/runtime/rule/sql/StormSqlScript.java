@@ -80,12 +80,14 @@ public class StormSqlScript<O> extends Script<IotasEvent, O, StormSqlEngine> {
         final String expressionStr = expression;
         LOG.debug("Evaluating [{}] with [{}]", expressionStr, iotasEvent);
         Values result = null;
-        if (iotasEvent != null) {
-            try {
+        try {
+            if (iotasEvent != null) {
                 result = scriptEngine.eval(createValues(iotasEvent));
-            } catch (ConditionEvaluationException ex) {
-                LOG.error("Got exception {} while processing IotasEvent {}", ex, iotasEvent);
+            } else {
+                result = scriptEngine.eval(null); // for forcing a group by evaluation
             }
+        } catch (ConditionEvaluationException ex) {
+            LOG.error("Got exception {} while processing IotasEvent {}", ex, iotasEvent);
         }
         LOG.debug("Expression [{}] evaluated to [{}]", expressionStr, result);
         return convert(result, iotasEvent);
@@ -149,8 +151,12 @@ public class StormSqlScript<O> extends Script<IotasEvent, O, StormSqlEngine> {
                 for (int i = 0; i < projectedFields.size(); i++) {
                     fieldsAndValues.put(projectedFields.get(i), input.get(i));
                 }
-                result = new IotasEventImpl(fieldsAndValues, inputEvent.getDataSourceId(), inputEvent.getId(),
-                                            inputEvent.getHeader(), inputEvent.getSourceStream());
+                if (inputEvent != null) {
+                    result = new IotasEventImpl(fieldsAndValues, inputEvent.getDataSourceId(), inputEvent.getId(),
+                                                inputEvent.getHeader(), inputEvent.getSourceStream());
+                } else {
+                    result = new IotasEventImpl(fieldsAndValues, "");
+                }
             } else {
                 result = inputEvent;
             }
