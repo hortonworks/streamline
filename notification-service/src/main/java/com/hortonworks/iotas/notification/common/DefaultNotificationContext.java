@@ -1,5 +1,8 @@
 package com.hortonworks.iotas.notification.common;
 
+import com.hortonworks.iotas.notification.NotificationContext;
+import com.hortonworks.iotas.notification.NotifierConfig;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

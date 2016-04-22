@@ -14,6 +14,11 @@
     <dependencies>
         <dependency>
             <groupId>com.hortonworks.iotas</groupId>
+            <artifactId>sdk</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hortonworks.iotas</groupId>
             <artifactId>notification-service</artifactId>
             <version>${project.version}</version>
         </dependency>

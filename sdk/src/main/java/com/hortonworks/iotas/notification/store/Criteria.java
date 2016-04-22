@@ -1,7 +1,6 @@
 package com.hortonworks.iotas.notification.store;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * An interface for specifying different query criteria for querying the Notification store.

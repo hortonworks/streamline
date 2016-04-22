@@ -1,6 +1,6 @@
 package com.hortonworks.iotas.notification.store.hbase.mappers;
 
-import com.hortonworks.iotas.notification.common.Notification;
+import com.hortonworks.iotas.notification.Notification;
 
 import java.util.Arrays;
 import java.util.List;

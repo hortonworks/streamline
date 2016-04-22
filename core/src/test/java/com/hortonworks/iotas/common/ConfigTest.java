@@ -28,7 +28,6 @@ public class ConfigTest {
 
     @Test
     public void testGet() throws Exception {
-        //System.out.println(config);
         assertEquals(1, config.getInt("a"));
         assertEquals(10, config.getInt("aa", 10));
         assertEquals(true, config.getBoolean("c"));
@@ -36,7 +35,6 @@ public class ConfigTest {
 
     @Test(expected = NoSuchElementException.class)
     public void testGetEx() throws Exception {
-        //System.out.println(config);
         assertEquals(1, config.getInt("aa"));
     }
 

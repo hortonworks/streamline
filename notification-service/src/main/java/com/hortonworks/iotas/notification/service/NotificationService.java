@@ -1,10 +1,10 @@
 package com.hortonworks.iotas.notification.service;
 
 import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.notification.common.Notification;
-import com.hortonworks.iotas.notification.common.NotificationContext;
-import com.hortonworks.iotas.notification.common.Notifier;
-import com.hortonworks.iotas.notification.common.NotifierConfig;
+import com.hortonworks.iotas.notification.Notification;
+import com.hortonworks.iotas.notification.NotificationContext;
+import com.hortonworks.iotas.notification.Notifier;
+import com.hortonworks.iotas.notification.NotifierConfig;
 import com.hortonworks.iotas.service.CatalogService;
 
 import java.util.List;

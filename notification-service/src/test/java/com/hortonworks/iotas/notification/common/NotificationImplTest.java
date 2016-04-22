@@ -1,5 +1,6 @@
 package com.hortonworks.iotas.notification.common;
 
+import com.hortonworks.iotas.notification.Notification;
 import org.junit.Test;
 
 import java.util.HashMap;

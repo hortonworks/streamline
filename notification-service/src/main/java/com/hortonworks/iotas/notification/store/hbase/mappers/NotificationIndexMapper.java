@@ -1,15 +1,10 @@
 package com.hortonworks.iotas.notification.store.hbase.mappers;
 
-import com.hortonworks.iotas.notification.common.Notification;
-import com.hortonworks.iotas.notification.store.hbase.mappers.AbstractNotificationMapper;
-import com.hortonworks.iotas.notification.store.hbase.mappers.TableMutation;
-import com.hortonworks.iotas.notification.store.hbase.mappers.TableMutationImpl;
+import com.hortonworks.iotas.notification.Notification;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * A base class for Notification index table mappers.

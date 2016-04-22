@@ -1,7 +1,7 @@
 package com.hortonworks.iotas.notification.store.hbase;
 
 import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.notification.common.Notification;
+import com.hortonworks.iotas.notification.Notification;
 import com.hortonworks.iotas.notification.store.Criteria;
 import com.hortonworks.iotas.notification.store.NotificationStore;
 import com.hortonworks.iotas.notification.store.NotificationStoreException;

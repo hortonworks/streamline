@@ -1,7 +1,7 @@
 package com.hortonworks.iotas.notification.store;
 
 import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.notification.common.Notification;
+import com.hortonworks.iotas.notification.Notification;
 
 import java.util.List;
 

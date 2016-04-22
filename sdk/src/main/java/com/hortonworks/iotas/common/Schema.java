@@ -17,8 +17,7 @@
  */
 package com.hortonworks.iotas.common;
 
-import com.google.common.collect.ImmutableList;
-import com.hortonworks.iotas.exception.ParserException;
+import com.hortonworks.iotas.parser.ParseException;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -52,7 +51,7 @@ public class Schema implements Serializable {
             return javaType;
         }
 
-        public boolean valueOfSameType(Object value) throws ParserException {
+        public boolean valueOfSameType(Object value) throws ParseException {
             return value == null || this.equals(Schema.fromJavaType(value));
         }
 
@@ -296,7 +295,7 @@ public class Schema implements Serializable {
 
         private ArrayField(String name, List<Field> members, boolean optional) {
             super(name, Type.ARRAY, optional);
-            this.members = ImmutableList.copyOf(members);
+            this.members = Collections.unmodifiableList(members);
         }
 
         public List<Field> getMembers() {
@@ -338,7 +337,7 @@ public class Schema implements Serializable {
     }
     // use the static factory or the builder
     private Schema(List<Field> fields){
-        this.fields = ImmutableList.copyOf(fields);
+        this.fields = Collections.unmodifiableList(fields);
     }
 
     /**
@@ -361,7 +360,7 @@ public class Schema implements Serializable {
 
     // for jackson
     public void setFields(List<Field> fields) {
-        this.fields = ImmutableList.copyOf(fields);
+        this.fields = Collections.unmodifiableList(fields);
     }
 
     //TODO: need to replace with actual ToJson from Json
@@ -407,14 +406,14 @@ public class Schema implements Serializable {
      *
      * @param parsedData
      * @return
-     * @throws ParserException
+     * @throws ParseException
      */
-    public static Schema fromMapData(Map<String, Object> parsedData) throws ParserException {
+    public static Schema fromMapData(Map<String, Object> parsedData) throws ParseException {
         List<Field> fields = parseFields(parsedData);
         return new SchemaBuilder().fields(fields).build();
     }
 
-    private static List<Field> parseFields(Map<String, Object> fieldMap) throws ParserException {
+    private static List<Field> parseFields(Map<String, Object> fieldMap) throws ParseException {
         List<Field> fields = new ArrayList<Field>();
         for(Map.Entry<String, Object> entry: fieldMap.entrySet()) {
             fields.add(parseField(entry.getKey(), entry.getValue()));
@@ -422,7 +421,7 @@ public class Schema implements Serializable {
         return fields;
     }
 
-    private static Field parseField(String fieldName, Object fieldValue) throws ParserException {
+    private static Field parseField(String fieldName, Object fieldValue) throws ParseException {
         Field field = null;
         Type fieldType = fromJavaType(fieldValue);
         if(fieldType == Type.NESTED) {
@@ -435,7 +434,7 @@ public class Schema implements Serializable {
         return field;
     }
 
-    private static List<Field> parseArray(List<Object> array) throws ParserException {
+    private static List<Field> parseArray(List<Object> array) throws ParseException {
         List<Field> arrayMembers = new ArrayList<Field>();
         for(Object member: array) {
             arrayMembers.add(parseField(null, member));
@@ -444,7 +443,7 @@ public class Schema implements Serializable {
     }
 
     //TODO: complete this and move into some parser utility class
-    public static Type fromJavaType(Object value) throws ParserException {
+    public static Type fromJavaType(Object value) throws ParseException {
         if(value instanceof String) {
             return Type.STRING;
         } else if (value instanceof Short) {
@@ -467,10 +466,10 @@ public class Schema implements Serializable {
             return Type.NESTED;
         }
 
-        throw new ParserException("Unknown type " + value.getClass());
+        throw new ParseException("Unknown type " + value.getClass());
     }
 
-    public static Type fromJavaType(Class clazz) throws ParserException {
+    public static Type fromJavaType(Class clazz) throws ParseException {
         if(clazz.equals(String.class)) {
             return Type.STRING;
         } else if (clazz.equals(Short.class)) {
@@ -493,7 +492,7 @@ public class Schema implements Serializable {
             return Type.NESTED;
         }
 
-        throw new ParserException("Unknown type " + clazz);
+        throw new ParseException("Unknown type " + clazz);
     }
 
     @Override

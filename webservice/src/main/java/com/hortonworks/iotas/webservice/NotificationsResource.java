@@ -6,7 +6,7 @@ package com.hortonworks.iotas.webservice;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.notification.common.Notification;
+import com.hortonworks.iotas.notification.Notification;
 import com.hortonworks.iotas.notification.service.NotificationService;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.util.WSUtils;

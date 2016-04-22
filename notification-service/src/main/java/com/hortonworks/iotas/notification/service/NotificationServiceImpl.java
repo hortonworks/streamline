@@ -1,22 +1,20 @@
 package com.hortonworks.iotas.notification.service;
 
 import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.notification.common.Notification;
-import com.hortonworks.iotas.notification.common.NotificationContext;
-import com.hortonworks.iotas.notification.common.Notifier;
+import com.hortonworks.iotas.notification.Notification;
+import com.hortonworks.iotas.notification.NotificationContext;
+import com.hortonworks.iotas.notification.Notifier;
 import com.hortonworks.iotas.notification.store.NotificationStore;
 import com.hortonworks.iotas.notification.store.hbase.HBaseNotificationStore;
 import com.hortonworks.iotas.notification.store.CriteriaImpl;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.util.ProxyUtil;
-import com.hortonworks.iotas.util.ReflectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**

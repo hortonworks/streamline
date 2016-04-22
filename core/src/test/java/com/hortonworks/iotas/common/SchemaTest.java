@@ -19,10 +19,10 @@
 package com.hortonworks.iotas.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
-import com.hortonworks.iotas.catalog.ParserInfo;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,14 +30,15 @@ import static com.hortonworks.iotas.common.Schema.Type;
 import static org.junit.Assert.assertEquals;
 
 public class SchemaTest {
+
     @Test
     public void testGetTypeOfValue() {
-        final List<String> queryValues = Lists.newArrayList(Boolean.TRUE.toString(), Byte.toString(Byte.MAX_VALUE), Short.toString(Short.MAX_VALUE),
-                Integer.toString(Integer.MAX_VALUE), Long.toString(Long.MAX_VALUE), Float.toString(Float.MAX_VALUE), Double.toString(Double.MAX_VALUE), "SOME_STRING");
+        final List<String> queryValues = new ArrayList(Arrays.asList(Boolean.TRUE.toString(), Byte.toString(Byte.MAX_VALUE), Short.toString(Short.MAX_VALUE),
+                Integer.toString(Integer.MAX_VALUE), Long.toString(Long.MAX_VALUE), Float.toString(Float.MAX_VALUE), Double.toString(Double.MAX_VALUE), "SOME_STRING"));
 
-        final List<Type> expectedTypes = Lists.newArrayList(Type.BOOLEAN, Type.BYTE, Type.SHORT, Type.INTEGER, Type.LONG, Type.FLOAT, Type.DOUBLE, Type.STRING);
+        final List<Type> expectedTypes = new ArrayList(Arrays.asList(Type.BOOLEAN, Type.BYTE, Type.SHORT, Type.INTEGER, Type.LONG, Type.FLOAT, Type.DOUBLE, Type.STRING));
 
-        final List<Integer> indexes = Lists.newArrayList(0, 1, 2, 3, 4, 5, 6, 7);
+        final List<Integer> indexes = new ArrayList(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7));
 
         assertEquals(queryValues.size(), expectedTypes.size());
         assertEquals(queryValues.size(), indexes.size());
@@ -50,12 +51,11 @@ public class SchemaTest {
             Collections.shuffle(indexes);
         }
     }
+
     @Test
     public void testSchemaFromJson() throws Exception {
         String json = "{\"fields\":[{\"name\":\"field1\", \"type\":\"STRING\"},{\"name\":\"field2\", \"type\":\"STRING\"}]}";
-        System.out.println(json);
         ObjectMapper mapper = new ObjectMapper();
         Schema schema = mapper.readValue(json, Schema.class);
-        System.out.println(schema);
     }
 }

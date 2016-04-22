@@ -1,8 +1,8 @@
 package com.hortonworks.iotas.notification.notifiers;
 
-import com.hortonworks.iotas.notification.common.Notification;
-import com.hortonworks.iotas.notification.common.NotificationContext;
-import com.hortonworks.iotas.notification.common.Notifier;
+import com.hortonworks.iotas.notification.Notification;
+import com.hortonworks.iotas.notification.NotificationContext;
+import com.hortonworks.iotas.notification.Notifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +20,6 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;

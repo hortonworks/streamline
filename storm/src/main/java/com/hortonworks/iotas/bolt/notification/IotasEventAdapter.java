@@ -1,7 +1,7 @@
 package com.hortonworks.iotas.bolt.notification;
 
 import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.notification.common.Notification;
+import com.hortonworks.iotas.notification.Notification;
 
 import java.util.Collections;
 import java.util.List;
@@ -14,7 +14,7 @@ import static com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransform.
 import static com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransform.HEADER_FIELD_TIMESTAMP;
 
 /**
- * Adapts {@link com.hortonworks.iotas.common.IotasEvent} to {@link com.hortonworks.iotas.notification.common.Notification}
+ * Adapts {@link com.hortonworks.iotas.common.IotasEvent} to {@link com.hortonworks.iotas.notification.Notification}
  */
 public class IotasEventAdapter implements Notification {
     private final IotasEvent iotasEvent;
