@@ -18,6 +18,10 @@ jarStorageConfiguration:
     fsUrl: "hdfs://localhost:9000"
     directory: "/tmp/test-hdfs"
 
+#Custom processor upload configuration
+#customProcessorWatchPath: "/tmp"
+#customProcessorUploadFailPath: "/tmp/failed"
+#customProcessorUploadSuccessPath: "/tmp/uploaded"
 
 #
 # Use this to turn on/off notifications rest api
