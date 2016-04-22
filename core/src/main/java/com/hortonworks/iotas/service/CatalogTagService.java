@@ -91,7 +91,7 @@ public class CatalogTagService implements TagService {
                 TagStorableMapping tagStorable = new TagStorableMapping();
                 tagStorable.setTagId(tag.getId());
                 tagStorable.setStorableNamespace(storable.getNameSpace());
-                tagStorable.setStorableId(storable.getId());
+                tagStorable.setStorableId(storable.getIdForTagging());
                 this.dao.add(tagStorable);
             }
         }
@@ -112,7 +112,7 @@ public class CatalogTagService implements TagService {
             for (Tag tag : tags) {
                 TagStorableMapping tagStorable = new TagStorableMapping();
                 tagStorable.setTagId(tag.getId());
-                tagStorable.setStorableId(storable.getId());
+                tagStorable.setStorableId(storable.getIdForTagging());
                 tagStorable.setStorableNamespace(storable.getNameSpace());
                 this.dao.remove(tagStorable.getStorableKey());
             }
@@ -123,7 +123,7 @@ public class CatalogTagService implements TagService {
     public List<Tag> getTags(Storable storable) {
         List<Tag> tags = new ArrayList<>();
         QueryParam qp1 = new QueryParam(TagStorableMapping.FIELD_STORABLE_ID,
-                                        String.valueOf(storable.getId()));
+                                        String.valueOf(storable.getIdForTagging()));
         QueryParam qp2 = new QueryParam(TagStorableMapping.FIELD_STORABLE_NAMESPACE,
                                         String.valueOf(storable.getNameSpace()));
         for (TagStorableMapping mapping : listTagStorableMapping(ImmutableList.of(qp1, qp2))) {
@@ -137,7 +137,7 @@ public class CatalogTagService implements TagService {
         List<Storable> result = new ArrayList<>();
         for (Storable storable : getTagStorable(tagId)) {
             if (recurse && storable instanceof Tag) {
-                result.addAll(getEntities(storable.getId(), recurse));
+                result.addAll(getEntities(((Tag) storable).getId(), recurse));
             } else {
                 result.add(storable);
             }

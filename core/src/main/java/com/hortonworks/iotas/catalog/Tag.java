@@ -39,8 +39,8 @@ public class Tag extends AbstractStorable {
         return new PrimaryKey(fieldToObjectMap);
     }
 
-    public Long getId() {
-        return id;
+    public Long getId () {
+        return this.id;
     }
 
     public void setId(Long id) {

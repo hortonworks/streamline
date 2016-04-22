@@ -23,7 +23,7 @@ public class Device extends DataSourceSubType {
     /**
      * NOTE: given we expect this to be part of the actual device message headers, this Id is kept as string.
      */
-    private String deviceId;
+    private String id;
 
     /**
      * Firmware version of the device. DeviceId + version has a unique constraint but is not the primary key.
@@ -48,14 +48,14 @@ public class Device extends DataSourceSubType {
         Device device = (Device) o;
 
         if (!dataSourceId.equals(device.dataSourceId)) return false;
-        if (!deviceId.equals(device.deviceId)) return false;
+        if (!id.equals(device.id)) return false;
         return version.equals(device.version);
 
     }
 
     @Override
     public int hashCode() {
-        int result = deviceId.hashCode();
+        int result = id.hashCode();
         result = 31 * result + version.hashCode();
         result = 31 * result + dataSourceId.hashCode();
         return result;
@@ -64,18 +64,18 @@ public class Device extends DataSourceSubType {
     @Override
     public String toString() {
         return "Device{" +
-                "deviceId='" + deviceId + '\'' +
+                "id='" + id + '\'' +
                 ", version=" + version +
                 ", dataSourceId=" + dataSourceId +
                 '}';
     }
 
-    public String getDeviceId() {
-        return deviceId;
+    public String getId () {
+        return this.id;
     }
 
-    public void setDeviceId(String id) {
-        this.deviceId = id;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public Long getVersion() {
@@ -86,9 +86,4 @@ public class Device extends DataSourceSubType {
         this.version = version;
     }
 
-    @JsonIgnore
-    @Override
-    public Long getId() {
-        return super.getId();
-    }
 }

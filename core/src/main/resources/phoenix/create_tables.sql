@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS datasources ("id" BIGINT, "name" VARCHAR, "description" VARCHAR, "tags" VARCHAR, "timestamp"  BIGINT, "type" VARCHAR ,"typeConfig" VARCHAR, CONSTRAINT pk PRIMARY KEY ("id"))
-CREATE TABLE IF NOT EXISTS devices ("deviceId" VARCHAR , "version" BIGINT , "dataSourceId" BIGINT , CONSTRAINT pk PRIMARY KEY ("dataSourceId"))
+CREATE TABLE IF NOT EXISTS devices ("id" VARCHAR , "version" BIGINT , "dataSourceId" BIGINT , CONSTRAINT pk PRIMARY KEY ("dataSourceId"))
 CREATE TABLE IF NOT EXISTS parser_info ("id" BIGINT NOT NULL, "name" VARCHAR(256) ,"version" BIGINT, "className" VARCHAR , "jarStoragePath" VARCHAR ,"parserSchema" VARCHAR, "timestamp"  BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
 CREATE TABLE IF NOT EXISTS datafeeds ("id" BIGINT NOT NULL, "dataSourceId" BIGINT , "name" VARCHAR(256) , "description" VARCHAR, "tags" VARCHAR, "parserId" BIGINT , "type" VARCHAR , CONSTRAINT pk PRIMARY KEY ("id"))
 CREATE TABLE IF NOT EXISTS topologies ("id" BIGINT NOT NULL, "name" VARCHAR (256), "config" VARCHAR, "timestamp"  BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))

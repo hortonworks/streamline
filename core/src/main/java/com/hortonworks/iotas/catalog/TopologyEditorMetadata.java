@@ -86,9 +86,4 @@ public class TopologyEditorMetadata extends AbstractStorable {
         return result;
     }
 
-    @JsonIgnore
-    @Override
-    public Long getId() {
-        return super.getId();
-    }
 }

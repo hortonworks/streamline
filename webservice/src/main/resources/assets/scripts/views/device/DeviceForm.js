@@ -75,7 +75,7 @@ define(['utils/LangSupport',
           placeHolder: localization.tt('lbl.tags'),
           validators: [{'type':'required','message':'Tag should have atleast one tag.'}]
         },
-        deviceId: {
+        id: {
           type: 'Text',
           title: localization.tt('lbl.deviceId')+'*',
           editorClass: 'form-control',
@@ -129,14 +129,14 @@ define(['utils/LangSupport',
     getData: function () {
       var attrs = this.getValue();
       var obj = {
-        deviceId: attrs.deviceId,
+        id: attrs.id,
         version: attrs.version
       };
       attrs.typeConfig = JSON.stringify(obj);
-      delete attrs.deviceId;
+      delete attrs.id;
       delete attrs.version;
       if(this.model.id){
-        delete this.model.attributes.deviceId;
+        delete this.model.attributes.id;
         delete this.model.attributes.version;
         delete this.model.attributes.timestamp;
       }
