@@ -1,4 +1,8 @@
 ## 0.1.2
+ * IOT-170: Add file watcher and custom processor file watcher handler with unit tests.
+ * IOT-224: Create tags on the fly for datasources for backward compatibility.
+ * IOT-201: Integrate storm-sql UDF in Iotas.
+ * IOT-99 : Implement hierarchical tags for IoTaS
  * IOT-116: Parser Exception handling requirements.
  * IOT-192: Added support for templatized message.
  * IOT-172: Fix parser file name conflict.

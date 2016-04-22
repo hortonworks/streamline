@@ -5,7 +5,7 @@
    "parserName" : "NestParser",
    "dataSourceName" : "nest-datasource",
    "type" : "DEVICE",
-   "tagIds" : [1],
+   "tags" : "datasources",
    "dataFeedName" : "nest-datafeed",
    "dataSourceId" : 1,
    "description" : "Nest as datasource",

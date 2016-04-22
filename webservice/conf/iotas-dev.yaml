@@ -18,7 +18,6 @@ jarStorageConfiguration:
     fsUrl: "file:///"
     directory: "/tmp/test-hdfs"
 
-
 # storage provider configuration
 # type can be inmemory and jdbc.
 #
@@ -46,6 +45,11 @@ jarStorageConfiguration:
 
 storageProviderConfiguration:
   type: "inmemory"
+
+#Custom processor upload configuration
+#customProcessorWatchPath: "/tmp"
+#customProcessorUploadFailPath: "/tmp/failed"
+#customProcessorUploadSuccessPath: "/tmp/uploaded"
 
 #
 # Use this to turn on/off notifications rest api in dev env

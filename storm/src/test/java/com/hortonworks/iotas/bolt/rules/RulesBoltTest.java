@@ -84,10 +84,10 @@ public abstract class RulesBoltTest extends RulesTopologyTest {
 
     private static final Values IOTAS_EVENT_MATCH_AND_NO_MATCH_TUPLE_VALUES = new Values(IOTAS_EVENT_MATCH_AND_NO_MATCH_TUPLE);
 
-    private @Tested RulesBolt rulesBolt;
-    private @Injectable OutputCollector mockOutputCollector;
-    private @Injectable Tuple mockTuple;
-    private RuleProcessorRuntime ruleProcessorRuntime;
+    protected  @Tested RulesBolt rulesBolt;
+    protected  @Injectable OutputCollector mockOutputCollector;
+    protected  @Injectable Tuple mockTuple;
+    protected RuleProcessorRuntime ruleProcessorRuntime;
 
     @Before
     public void setup() throws Exception {

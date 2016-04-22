@@ -3,6 +3,6 @@
    "dataSourceName" : "twitter-feed",
    "type" : "DATASET",
    "description" : "Twitter feed as datasource",
-   "tagIds" : [1],
+   "tags" : "datasources",
    "typeConfig" : "{\"config\":{\"properties\":{\"url\":\"twitter.com\",\"port\":8080,\"debug\":true}}}"
 }

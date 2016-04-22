@@ -50,6 +50,11 @@ storageProviderConfiguration:
    jdbcUrl: "jdbc:phoenix:localhost:2181"
    queryTimeoutInSecs: 30
 
+#Custom processor upload configuration
+#customProcessorWatchPath: "/tmp"
+#customProcessorUploadFailPath: "/tmp/failed"
+#customProcessorUploadSuccessPath: "/tmp/uploaded"
+
 #
 # Use this to turn on/off notifications rest api
 #

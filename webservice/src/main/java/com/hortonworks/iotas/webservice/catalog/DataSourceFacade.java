@@ -6,10 +6,12 @@ import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +29,7 @@ public class DataSourceFacade {
     }
 
     public DataSourceDto addOrUpdateDataSourceWithDataFeed(Long dataSourceId, DataSourceDto dataSourceDto) throws Exception {
+        createTagsForDataSourceDto(dataSourceDto);
         DataSource dataSource = createDataSource(dataSourceDto);
         DataSource createdDataSource = catalogService.addOrUpdateDataSource(dataSourceId, dataSource);
         dataSourceDto.setDataSourceId(createdDataSource.getId());
@@ -41,6 +44,7 @@ public class DataSourceFacade {
     }
 
     public DataSourceDto createDataSourceWithDataFeed(DataSourceDto dataSourceDto) throws Exception {
+        createTagsForDataSourceDto(dataSourceDto);
         DataSource dataSource = createDataSource(dataSourceDto);
         DataSource createdDataSource = catalogService.addDataSource(dataSource);
         dataSourceDto.setDataSourceId(createdDataSource.getId());
@@ -82,20 +86,11 @@ public class DataSourceFacade {
         dataSource.setId(dataSourceDto.getDataSourceId());
         dataSource.setName(dataSourceDto.getDataSourceName());
         dataSource.setDescription(dataSourceDto.getDescription());
-        List<Tag> tags = new ArrayList<>();
-        if (dataSourceDto.getTagIds() != null) {
-            for (Long tagId : dataSourceDto.getTagIds()) {
-                Tag tag = catalogService.getTag(tagId);
-                if (tag != null) {
-                    tags.add(tag);
-                }
-            }
-        }
+        List<Tag> tags = getTagsForDataSourceDto(dataSourceDto);
         dataSource.setTags(tags);
         dataSource.setTimestamp(dataSourceDto.getTimestamp());
         dataSource.setType(dataSourceDto.getType());
         dataSource.setTypeConfig(dataSourceDto.getTypeConfig());
-
         return dataSource;
     }
 
@@ -172,5 +167,44 @@ public class DataSourceFacade {
         // currently returns with whatever info it retrieves.
         DataFeed dataFeed = getDataFeedByDataSourceId(dataSourceId);
         return createDataSourceDto(dataSource, dataFeed);
+    }
+
+    private void createTagsForDataSourceDto (DataSourceDto dataSourceDto) {
+        if (dataSourceDto.getTags() != null) {
+            String[] tags = dataSourceDto.getTags().split(",");
+            for (String tagString: tags) {
+                Collection<Tag> existingTags = catalogService.listTags();
+                boolean found = false;
+                for (Tag tag: existingTags) {
+                    if (tag.getName().equals(tagString)) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    Tag newTag = new Tag();
+                    newTag.setName(tagString);
+                    newTag.setDescription(tagString);
+                    newTag.setTags(new ArrayList<Tag>());
+                    catalogService.addTag(newTag);
+                }
+            }
+        }
+    }
+
+    private List<Tag> getTagsForDataSourceDto (DataSourceDto dataSourceDto) {
+        List<Tag> result = new ArrayList<>();
+        if (!StringUtils.isEmpty(dataSourceDto.getTags())) {
+            Collection<Tag> existingTags = catalogService.listTags();
+            for (String tagString: dataSourceDto.getTags().split(",")) {
+                for (Tag tag: existingTags) {
+                    if (tag.getName().equals(tagString)) {
+                        result.add(tag);
+                        break;
+                    }
+                }
+            }
+        }
+        return result;
     }
 }

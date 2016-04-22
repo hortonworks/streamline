@@ -102,7 +102,7 @@ define(['require',
         editable: false,
         formatter: _.extend({}, Backgrid.CellFormatter.prototype, {
           fromRaw: function (rawValue) {
-            return JSON.parse(rawValue).id;
+            return JSON.parse(rawValue).deviceId;
           }
         }),
       }, {
@@ -176,7 +176,7 @@ define(['require',
           return model;
       });
       // model.set('id',model.get('dataSourceId'));
-      model.set('id',JSON.parse(model.attributes.typeConfig).id);
+      model.set('deviceId',JSON.parse(model.attributes.typeConfig).deviceId);
       model.set('version',JSON.parse(model.attributes.typeConfig).version);
       return model;
     },

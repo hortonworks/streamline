@@ -101,7 +101,7 @@ public final class TopologyLayoutConstants {
     public final static String JSON_KEY_PARALLELISM_TOOLTIP = "Number of executors";
     public final static String JSON_KEY_RULES_PROCESSOR_CONFIG ="rulesProcessorConfig";
     public final static String JSON_KEY_RULES = "rules";
-    public final static String JSON_KEY_RULE_ACTION = "action";
+    public final static String JSON_KEY_RULE_ACTIONS = "actions";
     public final static String JSON_KEY_RULE_DECLARED_OUTPUT = "declaredOutput";
 
     // normalization processor related constants
