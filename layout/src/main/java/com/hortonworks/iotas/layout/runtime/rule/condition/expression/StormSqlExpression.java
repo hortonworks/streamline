@@ -55,7 +55,7 @@ public class StormSqlExpression extends ExpressionRuntime {
     private static final String LOCATION = "LOCATION";
     private static final String AS = "AS";
     private final LinkedHashSet<Schema.Field> fieldsToEmit = new LinkedHashSet<>();
-    private final Set<Schema.Field> groupByFields = new HashSet<>();
+    private final List<Schema.Field> groupByFields = new ArrayList<>();
     private final LinkedHashSet<FunctionExpression.Function> functions = new LinkedHashSet<>();
     private final LinkedHashSet<FunctionExpression.Function> aggregateFunctions = new LinkedHashSet<>();
     private final List<String> projectedFields = new ArrayList<>();
@@ -81,9 +81,6 @@ public class StormSqlExpression extends ExpressionRuntime {
                 ExpressionTranslator translator = new StormSqlExpressionTranslator();
                 expr.accept(translator);
                 fieldsToEmit.addAll(translator.getFields());
-                if (groupBy != null && !translator.getFunctions().isEmpty()) {
-                    throw new IllegalArgumentException("Cannot have non-aggregate function in projection while using group-by.");
-                }
                 functions.addAll(translator.getFunctions());
                 aggregateFunctions.addAll(translator.getAggregateFunctions());
                 projectedFields.add(translator.getTranslatedExpression());
@@ -107,12 +104,16 @@ public class StormSqlExpression extends ExpressionRuntime {
 
     private void handleGroupByHaving() {
         if (groupBy != null) {
-            ExpressionTranslator groupByTranslator = new StormSqlExpressionTranslator();
-            groupBy.getExpression().accept(groupByTranslator);
-            fieldsToEmit.addAll(groupByTranslator.getFields());
-            groupByFields.addAll(groupByTranslator.getFields());
-            functions.addAll(groupByTranslator.getFunctions());
-            groupByExpression = groupByTranslator.getTranslatedExpression();
+            List<String> groupByExpressions = new ArrayList<>();
+            for (Expression expr: groupBy.getExpressions()) {
+                ExpressionTranslator groupByTranslator = new StormSqlExpressionTranslator();
+                expr.accept(groupByTranslator);
+                fieldsToEmit.addAll(groupByTranslator.getFields());
+                groupByFields.addAll(groupByTranslator.getFields());
+                functions.addAll(groupByTranslator.getFunctions());
+                groupByExpressions.add(groupByTranslator.getTranslatedExpression());
+            }
+            groupByExpression = Joiner.on(",").join(groupByExpressions);
             if (having != null) {
                 ExpressionTranslator havingTranslator = new StormSqlExpressionTranslator();
                 having.getExpression().accept(havingTranslator);
@@ -167,8 +168,9 @@ public class StormSqlExpression extends ExpressionRuntime {
                 .append(FROM).append(tableName).append(" ")
                 .append(WHERE).append(asString());
         if (groupBy != null) {
-            select.append(" ").append(GROUP_BY).append(groupByExpression).append(" ");
+            select.append(" ").append(GROUP_BY).append(groupByExpression);
             if (having != null) {
+                select.append(" ");
                 select.append(HAVING).append(havingExpression);
             }
         }
@@ -186,8 +188,8 @@ public class StormSqlExpression extends ExpressionRuntime {
             }
             builder.append(fieldName).append(" ")
                     .append(getType(field));
-            if (groupByFields.contains(field)) {
-                /* for monotonicity of group by field, make it a "primary key"
+            if (!groupByFields.isEmpty() && groupByFields.get(0).equals(field)) {
+                /* for monotonicity of group by field, make the first group by field a "primary key"
                  * TODO: see if an option other than PK can be used for monotonicity
                  */
                 builder.append(" ").append("PRIMARY KEY");

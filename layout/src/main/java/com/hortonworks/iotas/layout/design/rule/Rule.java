@@ -21,6 +21,7 @@ package com.hortonworks.iotas.layout.design.rule;
 import com.google.common.collect.ImmutableList;
 import com.hortonworks.iotas.layout.design.rule.action.Action;
 import com.hortonworks.iotas.layout.design.rule.condition.Condition;
+import com.hortonworks.iotas.layout.design.rule.condition.GroupBy;
 import com.hortonworks.iotas.layout.design.rule.condition.Having;
 import com.hortonworks.iotas.layout.design.rule.condition.Projection;
 import com.hortonworks.iotas.layout.design.rule.condition.Window;
@@ -41,6 +42,7 @@ public class Rule implements Serializable {
     private Projection projection;
     private Condition condition;
     private Having having;
+    private GroupBy groupBy;
     private Window window;
     private List<Action> actions;
 
@@ -128,6 +130,14 @@ public class Rule implements Serializable {
         this.window = window;
     }
 
+    public GroupBy getGroupBy() {
+        return groupBy;
+    }
+
+    public void setGroupBy(GroupBy groupBy) {
+        this.groupBy = groupBy;
+    }
+
     @Override
     public String toString() {
         return "Rule{" +
@@ -138,6 +148,7 @@ public class Rule implements Serializable {
                 ", projection=" + projection +
                 ", condition=" + condition +
                 ", having=" + having +
+                ", groupBy=" + groupBy +
                 ", window=" + window +
                 ", actions=" + actions +
                 '}';

@@ -91,7 +91,7 @@ public class IotasEventImpl implements IotasEvent {
      * @return the new IotasEvent
      */
     @Override
-    public IotasEvent putFieldsAndValues(Map<String, Object> fieldsAndValues) {
+    public IotasEvent addFieldsAndValues(Map<String, Object> fieldsAndValues) {
         Map<String, Object> kv = new HashMap<>();
         kv.putAll(getFieldsAndValues());
         kv.putAll(fieldsAndValues);
@@ -106,7 +106,7 @@ public class IotasEventImpl implements IotasEvent {
      * @return the new IotasEvent
      */
     @Override
-    public IotasEvent putHeaders(Map<String, Object> headers) {
+    public IotasEvent addHeaders(Map<String, Object> headers) {
         Map<String, Object> kv = new HashMap<>();
         kv.putAll(getHeader());
         kv.putAll(headers);

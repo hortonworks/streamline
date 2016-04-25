@@ -59,6 +59,32 @@ public class WindowRulesBoltTest {
     }
 
     @Test
+    public void testCountBasedWindowWithGroupby() throws Exception {
+        doTest(readFile("/window-rule-count-withgroupby.json"), 0);
+        new Verifications() {
+            {
+                String streamId;
+                Collection<Tuple> anchors;
+                List<List<Object>> tuples = new ArrayList<>();
+                mockCollector.emit(streamId = withCapture(), anchors = withCapture(), withCapture(tuples));
+                System.out.println(tuples);
+                Map<String, Object> fieldsAndValues1 = ((IotasEvent) tuples.get(0).get(0)).getFieldsAndValues();
+                Assert.assertEquals("count is 2, min salary is 30, max salary is 40", fieldsAndValues1.get("body"));
+                Map<String, Object> fieldsAndValues2 = ((IotasEvent) tuples.get(1).get(0)).getFieldsAndValues();
+                Assert.assertEquals("count is 5, min salary is 50, max salary is 90", fieldsAndValues2.get("body"));
+                Map<String, Object> fieldsAndValues3 = ((IotasEvent) tuples.get(2).get(0)).getFieldsAndValues();
+                Assert.assertEquals("count is 1, min salary is 100, max salary is 100", fieldsAndValues3.get("body"));
+                Map<String, Object> fieldsAndValues4 = ((IotasEvent) tuples.get(3).get(0)).getFieldsAndValues();
+                Assert.assertEquals("count is 4, min salary is 110, max salary is 140", fieldsAndValues4.get("body"));
+                Map<String, Object> fieldsAndValues5 = ((IotasEvent) tuples.get(4).get(0)).getFieldsAndValues();
+                Assert.assertEquals("count is 5, min salary is 150, max salary is 190", fieldsAndValues5.get("body"));
+                Map<String, Object> fieldsAndValues6 = ((IotasEvent) tuples.get(5).get(0)).getFieldsAndValues();
+                Assert.assertEquals("count is 1, min salary is 200, max salary is 200", fieldsAndValues6.get("body"));
+            }
+        };
+    }
+
+    @Test
     public void testTimeBasedWindow() throws Exception {
         doTest(readFile("/window-rule-time.json"), 900);
         new Verifications() {
@@ -103,7 +129,7 @@ public class WindowRulesBoltTest {
     }
 
     private Tuple getNextTuple(int i) {
-        IotasEvent event = new IotasEventImpl(ImmutableMap.<String, Object>of("empid", i, "salary", i * 10), "dsrcid");
+        IotasEvent event = new IotasEventImpl(ImmutableMap.<String, Object>of("empid", i, "salary", i * 10, "deptid", i/5), "dsrcid");
         return new TupleImpl(mockContext, new Values(event), 1, "stream");
     }
 

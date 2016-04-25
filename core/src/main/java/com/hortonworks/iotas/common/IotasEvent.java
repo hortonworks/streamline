@@ -53,7 +53,7 @@ public interface IotasEvent {
      * @param fieldsAndValues the map of fieldsAndValues to add
      * @return the new IotasEvent
      */
-    IotasEvent putFieldsAndValues(Map<String, Object> fieldsAndValues);
+    IotasEvent addFieldsAndValues(Map<String, Object> fieldsAndValues);
 
     /**
      * Returns a new Iotas event with the given headers added to the existing headers.
@@ -62,5 +62,5 @@ public interface IotasEvent {
      * @param headers the map of fieldsAndValues to add or overwrite
      * @return the new IotasEvent
      */
-    IotasEvent putHeaders(Map<String, Object> headers);
+    IotasEvent addHeaders(Map<String, Object> headers);
 }

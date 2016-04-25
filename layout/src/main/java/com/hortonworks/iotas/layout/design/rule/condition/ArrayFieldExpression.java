@@ -7,6 +7,10 @@ public class ArrayFieldExpression extends Expression {
     private Expression expression;
     private int index;
 
+    // for jackson
+    private ArrayFieldExpression() {
+    }
+
     public ArrayFieldExpression(Expression expression, int index) {
         this.expression = expression;
         this.index = index;

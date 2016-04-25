@@ -1,33 +1,42 @@
 package com.hortonworks.iotas.layout.design.rule.condition;
 
+import com.google.common.collect.ImmutableList;
+
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A group by expression
  */
 public class GroupBy implements Serializable {
-    private Expression expression;
+    private List<Expression> expressions = new ArrayList<>();
 
     // for jackson
     public GroupBy() {
     }
 
     public GroupBy(Expression expression) {
-        this.expression = expression;
+        this.expressions.add(expression);
     }
 
-    public Expression getExpression() {
-        return expression;
+    public GroupBy(List<Expression> expressions) {
+        this.expressions.addAll(expressions);
     }
 
-    public void setExpression(Expression expression) {
-        this.expression = expression;
+    public List<Expression> getExpressions() {
+        return Collections.unmodifiableList(expressions);
+    }
+
+    public void setExpression(List<Expression> expressions) {
+        this.expressions = new ArrayList<>(expressions);
     }
 
     @Override
     public String toString() {
         return "GroupBy{" +
-                "expression=" + expression +
+                "expressions=" + expressions +
                 '}';
     }
 }

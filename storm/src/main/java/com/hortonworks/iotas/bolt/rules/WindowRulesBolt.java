@@ -2,6 +2,7 @@ package com.hortonworks.iotas.bolt.rules;
 
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.Result;
+import com.hortonworks.iotas.common.errors.ProcessingException;
 import com.hortonworks.iotas.layout.design.rule.condition.Window;
 import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
@@ -63,24 +64,31 @@ public class WindowRulesBolt extends BaseWindowedBolt {
     public void execute(TupleWindow inputWindow) {
         ++windowId;
         LOG.debug("Window activated, window id {}", windowId);
+        List<Tuple> curGroup = new ArrayList<>();
         try {
             IotasEvent event;
             for (Tuple input : inputWindow.get()) {
                 if ((event = getIotasEventFromTuple(input)) != null) {
                     LOG.debug("++++++++ Executing tuple [{}] which contains IotasEvent [{}]", input, event);
-                    ruleProcessorRuntime.process(iotasEventWithWindowId((IotasEvent) event));
+                    processAndEmit(event, curGroup);
+                    curGroup.add(input);
                 }
             }
-            // force evaluation of group by emitting null
-            for (Result result : ruleProcessorRuntime.process(null)) {
-                for (IotasEvent e : result.events) {
-                    // TODO: updateHeaders can be handled at ruleProcessorRuntime.process stage passing context info.
-                    collector.emit(result.stream, new Values(updateHeaders(e, inputWindow.get())));
-                }
-            }
+            // force evaluation of the last group by emitting null
+            processAndEmit(null, curGroup);
         } catch (Exception e) {
             collector.reportError(e);
             LOG.debug("", e);                        // useful to debug unit tests
+        }
+    }
+
+    private void processAndEmit(IotasEvent event, List<Tuple> curGroup) throws ProcessingException {
+        for (Result result : ruleProcessorRuntime.process(iotasEventWithWindowId(event))) {
+            for (IotasEvent e : result.events) {
+                // TODO: updateHeaders can be handled at ruleProcessorRuntime.process stage passing context info.
+                collector.emit(result.stream, new Values(updateHeaders(e, curGroup)));
+            }
+            curGroup.clear(); // current group is processed and result emitted
         }
     }
 
@@ -88,7 +96,7 @@ public class WindowRulesBolt extends BaseWindowedBolt {
         Map<String, Object> headers = new HashMap<>();
         headers.put(HEADER_FIELD_EVENT_IDS, getEventIds(tuples));
         headers.put(HEADER_FIELD_DATASOURCE_IDS, getDataSourceIds(tuples));
-        event = event.putHeaders(headers);
+        event = event.addHeaders(headers);
         return event;
     }
 
@@ -167,6 +175,6 @@ public class WindowRulesBolt extends BaseWindowedBolt {
     }
 
     private IotasEvent iotasEventWithWindowId(final IotasEvent event) {
-        return event.putFieldsAndValues(Collections.<String, Object>singletonMap(WINDOW_ID, windowId));
+        return event != null ? event.addFieldsAndValues(Collections.<String, Object>singletonMap(WINDOW_ID, windowId)) : null;
     }
 }
