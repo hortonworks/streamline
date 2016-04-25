@@ -33,8 +33,8 @@ import static com.hortonworks.iotas.bolt.ParserBolt.FAILED_TO_PARSE_TUPLES_STREA
 public class ParserBoltTest {
 
     private static final Long PARSER_ID = 1L;
-    private static final String DEVICE_ID = "1";
-    private static final Long VERSION = 1L;
+    private static final String DEVICE_MAKE = "1";
+    private static final String MODEL = "1";
     private static final byte[] DATA = "test".getBytes(Charsets.UTF_8);
     private static final Values VALUES = new Values(MockParser.IOTAS_EVENT);
 
@@ -59,8 +59,8 @@ public class ParserBoltTest {
         parserBolt.prepare(config, null, mockOutputCollector);
 
         msg = new IotasMessage();
-        msg.setId(DEVICE_ID);
-        msg.setVersion(VERSION);
+        msg.setMake(DEVICE_MAKE);
+        msg.setModel(MODEL);
         msg.setData(DATA);
 
         parserInfo = new ParserInfo();
@@ -84,7 +84,7 @@ public class ParserBoltTest {
         new Expectations() {{
             mockTuple.getBinaryByField(ParserBolt.BYTES_FIELD); returns(json);
             mockRestClient.getParserJar(PARSER_ID); result = new ByteArrayInputStream("test-stream".getBytes());
-            mockRestClient.getParserInfo(DEVICE_ID, VERSION); result = parserInfo;
+            mockRestClient.getParserInfo(DEVICE_MAKE, MODEL); result = parserInfo;
         }};
 
         callExecuteAndVerifyCollectorInteraction(true);

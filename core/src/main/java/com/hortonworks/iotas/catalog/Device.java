@@ -17,18 +17,18 @@ import com.hortonworks.iotas.storage.StorableKey;
  */
 public class Device extends DataSourceSubType {
     public static final String NAME_SPACE = "devices";
-    public static final String DEVICE_ID = "id";
-    public static final String VERSION = "version";
+    public static final String MAKE = "make";
+    public static final String MODEL = "model";
 
     /**
-     * NOTE: given we expect this to be part of the actual device message headers, this Id is kept as string.
+     * Make of the device. For example nest
      */
-    private String deviceId;
+    private String make;
 
     /**
-     * Firmware version of the device. DeviceId + version has a unique constraint but is not the primary key.
+     * Model of the device
      */
-    private Long version;
+    private String model;
 
     @JsonIgnore
     public String getNameSpace() {
@@ -48,15 +48,15 @@ public class Device extends DataSourceSubType {
         Device device = (Device) o;
 
         if (!dataSourceId.equals(device.dataSourceId)) return false;
-        if (!deviceId.equals(device.deviceId)) return false;
-        return version.equals(device.version);
+        if (!make.equals(device.make)) return false;
+        return model.equals(device.model);
 
     }
 
     @Override
     public int hashCode() {
-        int result = deviceId.hashCode();
-        result = 31 * result + version.hashCode();
+        int result = make.hashCode();
+        result = 31 * result + model.hashCode();
         result = 31 * result + dataSourceId.hashCode();
         return result;
     }
@@ -64,30 +64,30 @@ public class Device extends DataSourceSubType {
     @Override
     public String toString() {
         return "Device{" +
-                "deviceId='" + deviceId + '\'' +
-                ", version=" + version +
+                "make='" + make + '\'' +
+                ", model=" + model +
                 ", dataSourceId=" + dataSourceId +
                 '}';
     }
 
-    public String getDeviceId() {
-        return deviceId;
+    public String getMake() {
+        return make;
     }
 
-    public void setDeviceId(String id) {
-        this.deviceId = id;
+    public void setMake(String make) {
+        this.make = make;
     }
 
-    public Long getVersion() {
-        return version;
+    public String getModel() {
+        return model;
     }
 
-    public void setVersion(Long version) {
-        this.version = version;
+    public void setModel(String model) {
+        this.model = model;
     }
 
-    @JsonIgnore
     @Override
+    @JsonIgnore
     public Long getId() {
         return super.getId();
     }

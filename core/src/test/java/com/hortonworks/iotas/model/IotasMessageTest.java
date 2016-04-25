@@ -5,7 +5,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.*;
 
@@ -21,7 +20,7 @@ public class IotasMessageTest {
 
         IotasMessage iotasMessage = objectMapper.readValue(in, IotasMessage.class);
 
-        assertEquals(iotasMessage.getId(), "nest");
+        assertEquals(iotasMessage.getMake(), "nest");
         assertNull(iotasMessage.getMessageId());
     }
 
@@ -31,7 +30,7 @@ public class IotasMessageTest {
 
         IotasMessage iotasMessage = objectMapper.readValue(in, IotasMessage.class);
 
-        assertEquals(iotasMessage.getId(), "nest");
+        assertEquals(iotasMessage.getMake(), "nest");
         assertEquals(iotasMessage.getMessageId(), "100");
     }
 }
