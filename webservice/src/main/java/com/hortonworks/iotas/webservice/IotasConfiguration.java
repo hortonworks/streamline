@@ -35,6 +35,9 @@ public class IotasConfiguration extends Configuration {
     private String topologyActionsImpl;
 
     @NotEmpty
+    private String topologyMetricsImpl;
+
+    @NotEmpty
     private String iotasStormJar;
 
     private Boolean notificationsRestDisable;
@@ -60,6 +63,9 @@ public class IotasConfiguration extends Configuration {
     public void setStorageProviderConfiguration(StorageProviderConfiguration storageProviderConfiguration) {
         this.storageProviderConfiguration = storageProviderConfiguration;
     }
+
+    @NotEmpty
+    private String stormApiRootUrl;
 
     @JsonProperty
     public String getBrokerList(){
@@ -160,5 +166,20 @@ public class IotasConfiguration extends Configuration {
     public void setCustomProcessorUploadSuccessPath (String customProcessorUploadSuccessPath) {
         this.customProcessorUploadSuccessPath = customProcessorUploadSuccessPath;
     }
-    
+
+    public String getTopologyMetricsImpl() {
+        return topologyMetricsImpl;
+    }
+
+    public void setTopologyMetricsImpl(String topologyMetricsImpl) {
+        this.topologyMetricsImpl = topologyMetricsImpl;
+    }
+
+    public String getStormApiRootUrl() {
+        return stormApiRootUrl;
+    }
+
+    public void setStormApiRootUrl(String stormApiRootUrl) {
+        this.stormApiRootUrl = stormApiRootUrl;
+    }
 }

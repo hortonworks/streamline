@@ -1,4 +1,5 @@
 ## 0.1.2
+ * IOT-215: Introduce new REST API to show metrics for topology.
  * IOT-170: Add file watcher and custom processor file watcher handler with unit tests.
  * IOT-224: Create tags on the fly for datasources for backward compatibility.
  * IOT-201: Integrate storm-sql UDF in Iotas.

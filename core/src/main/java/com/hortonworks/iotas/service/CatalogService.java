@@ -25,6 +25,7 @@ import com.hortonworks.iotas.topology.TopologyActions;
 import com.hortonworks.iotas.topology.TopologyComponent;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import com.hortonworks.iotas.topology.TopologyLayoutValidator;
+import com.hortonworks.iotas.topology.TopologyMetrics;
 import com.hortonworks.iotas.util.CoreUtils;
 import com.hortonworks.iotas.util.JarStorage;
 import com.hortonworks.iotas.util.JsonSchemaValidator;
@@ -68,6 +69,7 @@ public class CatalogService {
 
     private StorageManager dao;
     private TopologyActions topologyActions;
+    private TopologyMetrics topologyMetrics;
     private JarStorage jarStorage;
     private TagService tagService;
 
@@ -116,9 +118,10 @@ public class CatalogService {
         }
     }
 
-    public CatalogService(StorageManager dao, TopologyActions topologyActions, JarStorage jarStorage) {
+    public CatalogService(StorageManager dao, TopologyActions topologyActions, TopologyMetrics topologyMetrics, JarStorage jarStorage) {
         this.dao = dao;
         this.topologyActions = topologyActions;
+        this.topologyMetrics = topologyMetrics;
         this.jarStorage = jarStorage;
         this.tagService = new CatalogTagService(dao);
     }
@@ -541,6 +544,10 @@ public class CatalogService {
 
     public TopologyActions.Status topologyStatus (Topology topology) throws Exception {
         return this.topologyActions.status(topology);
+    }
+
+    public Map<String, TopologyMetrics.ComponentMetric> getTopologyMetrics (Topology topology) throws Exception {
+        return this.topologyMetrics.getMetricsForTopology(topology);
     }
 
     public Collection<TopologyComponent.TopologyComponentType> listTopologyComponentTypes () {
