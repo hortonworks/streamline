@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * <p>
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -25,18 +25,18 @@ import com.hortonworks.iotas.layout.design.rule.action.Action;
  *
  */
 public class SplitAction extends Action {
-    private String jarId;
+    private Long jarId;
     private String splitterClassName;
 
     public SplitAction() {
     }
 
-    public SplitAction(String jarId, String splitterClassName) {
+    public SplitAction(Long jarId, String splitterClassName) {
         this.jarId = jarId;
         this.splitterClassName = splitterClassName;
     }
 
-    public String getJarId() {
+    public Long getJarId() {
         return jarId;
     }
 
@@ -49,6 +49,6 @@ public class SplitAction extends Action {
         return "SplitAction{" +
                 "jarId='" + jarId + '\'' +
                 ", splitterClassName='" + splitterClassName + '\'' +
-                '}'+super.toString();
+                '}' + super.toString();
     }
 }

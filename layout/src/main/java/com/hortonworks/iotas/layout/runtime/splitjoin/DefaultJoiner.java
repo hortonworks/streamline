@@ -32,10 +32,7 @@ import java.util.UUID;
  */
 public class DefaultJoiner implements Joiner {
 
-    private final String outputStream;
-
-    public DefaultJoiner(String outputStream) {
-        this.outputStream = outputStream;
+    public DefaultJoiner() {
     }
 
     @Override
@@ -52,6 +49,6 @@ public class DefaultJoiner implements Joiner {
         }
 
         return new IotasEventImpl(fieldValues, eventGroup.getDataSourceId(),
-                UUID.randomUUID().toString(), Collections.<String, Object>emptyMap(), outputStream, auxiliaryFieldValues);
+                UUID.randomUUID().toString(), Collections.<String, Object>emptyMap(), null, auxiliaryFieldValues);
     }
 }

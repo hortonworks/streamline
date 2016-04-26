@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * <p>
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -25,7 +25,6 @@ import com.hortonworks.iotas.layout.design.splitjoin.SplitAction;
 import com.hortonworks.iotas.layout.runtime.RuntimeService;
 import com.hortonworks.iotas.layout.runtime.rule.action.AbstractActionRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.action.ActionRuntime;
-import com.hortonworks.iotas.util.ProxyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,17 +60,10 @@ public class SplitActionRuntime extends AbstractActionRuntime {
     public void initialize(Map<String, Object> config) {
         super.initialize(config);
 
-        final String jarId = splitAction.getJarId();
+        final Long jarId = splitAction.getJarId();
         final String splitterClassName = splitAction.getSplitterClassName();
-        if (jarId != null && splitterClassName != null) {
-            ProxyUtil<Splitter> proxyUtil = new ProxyUtil<>(Splitter.class, this.getClass().getClassLoader());
-            try {
-                String jarPath = getJarPathFor(jarId);
-                splitter = proxyUtil.loadClassFromJar(jarPath, splitterClassName);
-            } catch (Exception e) {
-                throw new RuntimeException(e.getMessage(), e);
-            }
-        } else {
+        splitter = getInstance(jarId, splitterClassName, Splitter.class);
+        if(splitter == null) {
             splitter = new DefaultSplitter();
         }
     }
@@ -94,11 +86,11 @@ public class SplitActionRuntime extends AbstractActionRuntime {
     private void checkGroupIdPartitionId(IotasEvent event) {
         final Map<String, Object> header = event.getHeader();
 
-        if(header == null) {
+        if (header == null) {
             log.error("Event [{}] does not have headers", event);
             throw new IllegalStateException("header can not be null for split events");
         }
-        if(header.get(SPLIT_GROUP_ID) == null || header.get(SPLIT_PARTITION_ID) == null) {
+        if (header.get(SPLIT_GROUP_ID) == null || header.get(SPLIT_PARTITION_ID) == null) {
             log.error("Event [{}] does not have complete split event info with group-id:[{}] and partition-id:[{}]", event, header.get(SPLIT_GROUP_ID), header.get(SPLIT_PARTITION_ID));
             throw new IllegalStateException("header should have group-id and partition-id for split events");
         }

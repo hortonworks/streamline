@@ -31,17 +31,21 @@ import com.hortonworks.iotas.layout.design.transform.Transform;
 import com.hortonworks.iotas.layout.runtime.rule.action.ActionRuntimeContext;
 import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
  * Tests related to split/join/stage processors.
  */
 public class SplitJoinTest {
+    private static final Logger log = LoggerFactory.getLogger(SplitJoinTest.class);
 
     @Test
     public void testSplitJoinProcessors() throws Exception {
@@ -49,6 +53,59 @@ public class SplitJoinTest {
 
         final SplitAction splitAction = new SplitAction();
         splitAction.setOutputStreams(Sets.newHashSet(outputStreams));
+        final JoinAction joinAction = new JoinAction();
+        joinAction.setOutputStreams(Collections.singleton("output-stream"));
+
+        runSplitJoin(splitAction, joinAction);
+    }
+
+    public static class MySplitter extends DefaultSplitter {
+        public static int invocationCount = 0;
+
+        public MySplitter() {
+        }
+
+        @Override
+        public List<Result> splitEvent(IotasEvent inputEvent, Set<String> outputStreams) {
+            log.info("##########MySplitter.splitEvent");
+            invocationCount++;
+            return super.splitEvent(inputEvent, outputStreams);
+        }
+    }
+
+    public static class MyJoiner extends DefaultJoiner {
+        public static int invocationCount = 0;
+
+        public MyJoiner() {
+        }
+
+        @Override
+        public IotasEvent join(EventGroup eventGroup) {
+            log.info("##########MyJoiner.join");
+            invocationCount++;
+            return super.join(eventGroup);
+        }
+    }
+
+    @Test
+    public void testCustomSplitJoin() {
+
+        String[] outputStreams = {"stream-1", "stream-2", "stream-3"};
+
+        final SplitAction splitAction = new SplitAction(null, MySplitter.class.getName());
+        splitAction.setOutputStreams(Sets.newHashSet(outputStreams));
+
+        final JoinAction joinAction = new JoinAction(null, MyJoiner.class.getName());
+        joinAction.setOutputStreams(Collections.singleton("output-stream"));
+        MySplitter.invocationCount= 0;
+
+        runSplitJoin(splitAction, joinAction);
+
+        Assert.assertTrue(MySplitter.invocationCount == 1);
+        Assert.assertTrue(MyJoiner.invocationCount == 1);
+    }
+
+    protected void runSplitJoin(SplitAction splitAction, JoinAction joinAction) {
         SplitActionRuntime splitActionRuntime = new SplitActionRuntime(splitAction);
         splitActionRuntime.setActionRuntimeContext(new ActionRuntimeContext(null, splitAction));
         splitActionRuntime.initialize(Collections.<String, Object>emptyMap());
@@ -56,8 +113,6 @@ public class SplitJoinTest {
         IotasEvent iotasEvent = createRootEvent();
         final List<Result> results = splitActionRuntime.execute(iotasEvent);
 
-        final JoinAction joinAction = new JoinAction();
-        joinAction.setOutputStreams(Collections.singleton("output-stream"));
         JoinActionRuntime joinActionRuntime = new JoinActionRuntime(joinAction);
         joinActionRuntime.setActionRuntimeContext(new ActionRuntimeContext(null, joinAction));
         joinActionRuntime.initialize(Collections.<String, Object>emptyMap());
