@@ -19,6 +19,38 @@ jarStorageConfiguration:
     fsUrl: "hdfs://localhost:9000"
     directory: "/tmp/test-hdfs"
 
+# storage provider configuration
+# type can be inmemory and jdbc.
+#
+# Example configuration for inmemory is:
+#storageProviderConfiguration:
+# type: "inmemory"
+#
+# Example configuration for phoenix based JDBC driver
+#storageProviderConfiguration:
+# type: "jdbc"
+# properties:
+#   db.type: "phoenix"
+#   jdbcDriverClass: "org.apache.phoenix.jdbc.PhoenixDriver"
+#   jdbcUrl: "jdbc:phoenix:localhost:2181"
+#   queryTimeoutInSecs: 30
+#
+# MySQL based jdbc provider configuration is:
+#storageProviderConfiguration:
+# type: "jdbc"
+# properties:
+#   db.type: "mysql"
+#   dataSourceClassName: "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
+#   dataSource.url: "jdbc:mysql://localhost/test"
+#   queryTimeoutInSecs: 30
+storageProviderConfiguration:
+ type: "jdbc"
+ properties:
+   db.type: "phoenix"
+   jdbcDriverClass: "org.apache.phoenix.jdbc.PhoenixDriver"
+   jdbcUrl: "jdbc:phoenix:localhost:2181"
+   queryTimeoutInSecs: 30
+
 #Custom processor upload configuration
 #customProcessorWatchPath: "/tmp"
 #customProcessorUploadFailPath: "/tmp/failed"

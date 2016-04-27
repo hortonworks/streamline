@@ -63,11 +63,9 @@ public class CatalogService {
     private static final String CLUSTER_NAMESPACE = new Cluster().getNameSpace();
     private static final String COMPONENT_NAMESPACE = new Component().getNameSpace();
     private static final String NOTIFIER_INFO_NAMESPACE = new NotifierInfo().getNameSpace();
-    private static final String TOPOLOGY_NAMESPACE = new Topology()
-            .getNameSpace();
+    private static final String TOPOLOGY_NAMESPACE = new Topology().getNameSpace();
     private static final String TAG_NAMESPACE = new Tag().getNameSpace();
     private static final String TAG_STORABLE_MAPPING_NAMESPACE = new TagStorableMapping().getNameSpace();
-
 
     private StorageManager dao;
     private TopologyActions topologyActions;

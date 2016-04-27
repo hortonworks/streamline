@@ -22,6 +22,8 @@ import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.List;
+import java.util.Map;
 
 public class Util {
     private static String getSqlTypeName(int sqlType) {
@@ -71,6 +73,18 @@ public class Util {
                 return Timestamp.class;
             default:
                 throw new RuntimeException("We do not support tables with SqlType: " + getSqlTypeName(sqlType));
+        }
+    }
+
+    public static void validateJDBCProperties(Map<String, Object> jdbcProps, List<String> propertyNames) {
+        if(jdbcProps == null || jdbcProps.isEmpty()) {
+            throw new IllegalArgumentException("jdbc properties can neither be null nor empty");
+        }
+
+        for (String property : propertyNames) {
+            if(!jdbcProps.containsKey(property)) {
+                throw new IllegalArgumentException("jdbc properties should contain "+property);
+            }
         }
     }
 }

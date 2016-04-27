@@ -33,6 +33,7 @@ import com.hortonworks.iotas.storage.CacheBackedStorageManager;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
+import com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManager;
 import com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager;
 import com.hortonworks.iotas.topology.TopologyActions;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
@@ -55,6 +56,8 @@ import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -62,6 +65,9 @@ import java.util.List;
 import java.util.Map;
 
 public class IotasApplication extends Application<IotasConfiguration> {
+
+    private static final Logger log = LoggerFactory.getLogger(IotasApplication.class);
+    private static final String JDBC = "jdbc";
 
     public static void main(String[] args) throws Exception {
         new IotasApplication().run(args);
@@ -89,14 +95,14 @@ public class IotasApplication extends Application<IotasConfiguration> {
         // final FeedResource feedResource = new FeedResource(kafkaProducerManager.getProducer(), zkClient);
         // environment.jersey().register(feedResource);
 
-        // TODO we should load the implementation based on configuration
-        final StorageManager cacheBackedDao = getCacheBackedDao();
-
-        registerResources(iotasConfiguration, environment, cacheBackedDao);
+        registerResources(iotasConfiguration, environment);
     }
 
-    private StorageManager getCacheBackedDao() {
-        final InMemoryStorageManager dao = new InMemoryStorageManager();
+    private StorageManager getCacheBackedDao(IotasConfiguration iotasConfiguration) {
+        StorageProviderConfiguration storageProviderConfiguration = iotasConfiguration.getStorageProviderConfiguration();
+        final String providerType = storageProviderConfiguration.getType();
+        final StorageManager dao = providerType.equalsIgnoreCase(JDBC) ?
+                JdbcStorageManager.createStorageManager(storageProviderConfiguration.getProperties()) : new InMemoryStorageManager();
         final CacheBuilder cacheBuilder = getGuavaCacheBuilder();
         final Cache<StorableKey, Storable> cache = getCache(dao, cacheBuilder);
         final StorageWriter storageWriter = getStorageWriter(dao);
@@ -109,7 +115,6 @@ public class IotasApplication extends Application<IotasConfiguration> {
     }
 
     private StorageManager doGetCacheBackedDao(Cache<StorableKey, Storable> cache, StorageWriter writer) {
-//        return new InMemoryStorageManager();      // for quick debug purposes
         return new CacheBackedStorageManager(cache, writer);
     }
 
@@ -177,14 +182,12 @@ public class IotasApplication extends Application<IotasConfiguration> {
     }
 
 
-    private void registerResources(IotasConfiguration iotasConfiguration, Environment environment, StorageManager manager) throws ConfigException {
-        StorageManager storageManager = getCacheBackedDao();
-        TopologyActions topologyActions = getTopologyActionsImpl
-                (iotasConfiguration);
+    private void registerResources(IotasConfiguration iotasConfiguration, Environment environment) throws ConfigException {
+        StorageManager storageManager = getCacheBackedDao(iotasConfiguration);
+        TopologyActions topologyActions = getTopologyActionsImpl(iotasConfiguration);
         TopologyMetrics topologyMetrics = getTopologyMetricsImpl(iotasConfiguration);
         JarStorage jarStorage = this.getJarStorage(iotasConfiguration);
-        final CatalogService catalogService = new CatalogService
-                (storageManager, topologyActions, topologyMetrics, jarStorage);
+        final CatalogService catalogService = new CatalogService(storageManager, topologyActions, topologyMetrics, jarStorage);
         final FeedCatalogResource feedResource = new FeedCatalogResource(catalogService);
         final ParserInfoCatalogResource parserResource = new ParserInfoCatalogResource(catalogService, iotasConfiguration, jarStorage);
         final DataSourceCatalogResource dataSourceResource = new DataSourceCatalogResource(catalogService);
