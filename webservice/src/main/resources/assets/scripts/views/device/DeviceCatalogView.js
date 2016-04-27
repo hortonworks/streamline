@@ -84,25 +84,25 @@ define(['require',
         hasTooltip: false,
         editable: false
       }, {
-        name: 'version',
+        name: 'model',
         cell: 'string',
-        label: localization.tt('lbl.version'),
+        label: localization.tt('lbl.deviceModel'),
         hasTooltip: false,
         editable: false,
         formatter: _.extend({}, Backgrid.CellFormatter.prototype, {
           fromRaw: function (rawValue,model) {
-            return JSON.parse(model.get('typeConfig')).version;
+            return JSON.parse(model.get('typeConfig')).model;
           }
         })
       }, {
         name: 'typeConfig',
         cell: 'string',
-        label: localization.tt('lbl.deviceId'),
+        label: localization.tt('lbl.deviceMake'),
         hasTooltip: false,
         editable: false,
         formatter: _.extend({}, Backgrid.CellFormatter.prototype, {
           fromRaw: function (rawValue) {
-            return JSON.parse(rawValue).deviceId;
+            return JSON.parse(rawValue).make;
           }
         }),
       }, {
@@ -176,8 +176,8 @@ define(['require',
           return model;
       });
       // model.set('id',model.get('dataSourceId'));
-      model.set('deviceId',JSON.parse(model.attributes.typeConfig).deviceId);
-      model.set('version',JSON.parse(model.attributes.typeConfig).version);
+      model.set('make',JSON.parse(model.attributes.typeConfig).make);
+      model.set('model',JSON.parse(model.attributes.typeConfig).model);
       return model;
     },
   });

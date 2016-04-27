@@ -331,17 +331,17 @@ public abstract class AbstractStoreManagerTest {
     public class DeviceTest extends StorableTest {
         {
             storableList = new ArrayList<Storable>() {{
-                add(createDevice("device-1", 0l, 1l));
-                add(createDevice("device-1", 1l, 1l));
-                add(createDevice("device-2", 2l, 2l));
-                add(createDevice("device-3", 3l, 3l));
+                add(createDevice("device-1", "0", 1l));
+                add(createDevice("device-1", "1", 1l));
+                add(createDevice("device-2", "2", 2l));
+                add(createDevice("device-3", "3", 3l));
             }};
         }
 
-        protected Device createDevice(String id, Long version, Long datafeedId) {
+        protected Device createDevice(String make, String model, Long datafeedId) {
             Device d = new Device();
-            d.setDeviceId(id);
-            d.setVersion(version);
+            d.setMake(make);
+            d.setModel(model);
             d.setDataSourceId(datafeedId);
             return d;
         }

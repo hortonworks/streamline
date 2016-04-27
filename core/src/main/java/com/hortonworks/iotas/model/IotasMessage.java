@@ -22,11 +22,11 @@ import java.util.Map;
 
 public class IotasMessage {
 
-    private String id;
+    private String make;
 
     private String type;
 
-    private Long version;
+    private String model;
 
     private Map<String, String> metadata;
 
@@ -40,12 +40,12 @@ public class IotasMessage {
 
     }
 
-    public String getId() {
-        return id;
+    public String getMake() {
+        return make;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setMake(String make) {
+        this.make = make;
     }
 
     public String getType() {
@@ -56,12 +56,12 @@ public class IotasMessage {
         this.type = type;
     }
 
-    public Long getVersion() {
-        return version;
+    public String getModel() {
+        return model;
     }
 
-    public void setVersion(Long version) {
-        this.version = version;
+    public void setModel(String model) {
+        this.model = model;
     }
 
     public Map<String, String> getMetadata() {

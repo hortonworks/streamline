@@ -18,7 +18,7 @@ POST /api/v1/catalog/datasources
  "description": "This is a nest device",
  "tags": "tag1",
  "type": "DEVICE",
- "typeConfig": "{\"id\": 1, \"version\":1}",
+ "typeConfig": "{\"id\": 1, \"model\":1}",
  "dataFeedName": "feed1",
  "parserId": 1,
  "parserName": "JSON Parser",
@@ -42,7 +42,7 @@ POST /api/v1/catalog/datasources
     "tags": "tag1",
     "timestamp": 1444216784208,
     "type": "DEVICE",
-    "typeConfig": "{\"id\": 1, \"version\":1}",
+    "typeConfig": "{\"id\": 1, \"model\":1}",
     "dataFeedName": "feed1",
     "parserId": 1,
     "parserName": "JSON Parser",
@@ -84,7 +84,7 @@ GET /api/v1/catalog/datasources/ID
     "tags": "tag1",
     "timestamp": 1444216784208,
     "type": "DEVICE",
-    "typeConfig": "{\"id\": 1, \"version\":1}",
+    "typeConfig": "{\"id\": 1, \"model\":1}",
     "dataFeedName": "feed1",
     "parserId": 1,
     "parserName": "JSON Parser",    
@@ -125,7 +125,7 @@ GET /api/v1/catalog/datasources
       "tags": "tag1",
       "timestamp": 1444216784208,
       "type": "DEVICE",
-      "typeConfig": "{\"id\": 1, \"version\":1}",
+      "typeConfig": "{\"id\": 1, \"model\":1}",
       "dataFeedName": "feed1",
       "parserId": 1,
       "parserName": "JSON Parser",      
@@ -138,7 +138,7 @@ GET /api/v1/catalog/datasources
       "tags": "foo",
       "timestamp": 1444216784208,
       "type": "DEVICE",
-      "typeConfig": "{\"id\": 1, \"version\":1}",
+      "typeConfig": "{\"id\": 1, \"model\":1}",
       "dataFeedName": "feed2",
       "parserId": 1,
       "parserName": "JSON Parser",
@@ -158,7 +158,7 @@ GET /api/v1/catalog/datasources/type/DEVICE
 
 In addition, query params can be passed to filter results matching certain criteria. For example to list all devices with deviceid 'nest' with tag 'tag1',
    
-    GET /api/v1/catalog/datasources/type/DEVICE/?id=nest&version=1
+    GET /api/v1/catalog/datasources/type/DEVICE/?id=nest&model=1
     HTTP/1.1 200 OK
     Content-Type: application/json
   
@@ -174,7 +174,7 @@ In addition, query params can be passed to filter results matching certain crite
       "tags": "tag1",
       "timestamp": 1444216784208,
       "type": "DEVICE",
-      "typeConfig": "{\"id\": \"nest\", \"version\":1}",
+      "typeConfig": "{\"id\": \"nest\", \"model\":1}",
       "dataFeedName": "feed1",
       "parserId": 1,
       "parserName": "JSON Parser",      
@@ -184,14 +184,14 @@ In addition, query params can be passed to filter results matching certain crite
 }
 ```
 
-    GET /api/v1/catalog/datasources/type/DEVICE/?id=foobar&version=1
+    GET /api/v1/catalog/datasources/type/DEVICE/?id=foobar&model=1
     HTTP/1.1 404 Not Found
     Content-Type: application/json
 
 ```json
 {
   "responseCode": 1104,
-  "responseMessage": "Datasource not found for type [DEVICE], query params [[QueryParam{name='id', value='foobar'}, QueryParam{name='version', value='1'}]]."
+  "responseMessage": "Datasource not found for type [DEVICE], query params [[QueryParam{name='id', value='foobar'}, QueryParam{name='model', value='1'}]]."
 }
 ```
 
@@ -206,7 +206,7 @@ PUT /api/v1/catalog/datasources/ID
  "description": "This is a nest device",
  "tags": "tag1",
  "type": "DEVICE",
- "typeConfig": "{\"id\": 1, \"version\":1}",
+ "typeConfig": "{\"id\": 1, \"model\":1}",
  "dataFeedName": "feed1",
  "parserId": 1,
  "dataFeedType": "KAFKA"
@@ -229,7 +229,7 @@ PUT /api/v1/catalog/datasources/ID
     "tags": "tag1",
     "timestamp": 1444216784208,
     "type": "DEVICE",
-    "typeConfig": "{\"id\": 1, \"version\":1}",
+    "typeConfig": "{\"id\": 1, \"model\":1}",
     "dataFeedName": "feed1",
     "parserId": 1,
     "parserName": "JSON Parser",
@@ -260,7 +260,7 @@ DELETE /api/v1/catalog/datasources/ID
     "tags": "tag1",
     "timestamp": 1444216784208,
     "type": "DEVICE",
-    "typeConfig": "{\"id\": 1, \"version\":1}",
+    "typeConfig": "{\"id\": 1, \"model\":1}",
     "dataFeedName": "feed1",
     "parserId": 1,
     "parserName": "JSON Parser",
@@ -297,7 +297,7 @@ POST /api/v1/catalog/deprecated/datasources
  "description": "Thisisanestdevice",
  "tags": "tag1",
  "type": "DEVICE",
- "typeConfig": "{\"id\": 1, \"version\":1}"
+ "typeConfig": "{\"id\": 1, \"model\":1}"
 }
 ```
    
@@ -317,7 +317,7 @@ POST /api/v1/catalog/deprecated/datasources
     "tags": "tag1",
     "timestamp": 1439879278020,
     "type": "DEVICE",
-    "typeConfig": "{\"id\": 1, \"version\":1}"
+    "typeConfig": "{\"id\": 1, \"model\":1}"
   }
 }
 ```
@@ -355,7 +355,7 @@ GET /api/v1/catalog/deprecated/datasources/ID
     "tags": "tag1",
     "timestamp": 1439879278020,
     "type": "DEVICE",
-    "typeConfig": "{\"id\":\"1\",\"version\":1}"
+    "typeConfig": "{\"id\":\"1\",\"model\":1}"
   }
 }
 ```
@@ -392,7 +392,7 @@ GET /api/v1/catalog/deprecated/datasources
       "tags": "tag1",
       "timestamp": 1439879278020,
       "type": "DEVICE",
-      "typeConfig": "{\"id\":\"1\",\"version\":1}"
+      "typeConfig": "{\"id\":\"1\",\"model\":1}"
     },
     {
       "id": 2,
@@ -401,7 +401,7 @@ GET /api/v1/catalog/deprecated/datasources
       "tags": "bar",
       "timestamp": 1439879484562,
       "type": "DEVICE",
-      "typeConfig": "{\"id\":\"1\",\"version\":1}"
+      "typeConfig": "{\"id\":\"1\",\"model\":1}"
     }
     ..
     ..
@@ -417,7 +417,7 @@ GET /api/v1/catalog/deprecated/datasources/type/DEVICE
 
 In addition, query params can be passed to filter results matching certain criteria. For example to list all devices with deviceid 'nest' with tag 'tag1',
    
-    GET /api/v1/catalog/deprecated/datasources/type/DEVICE/?id=nest&version=1
+    GET /api/v1/catalog/deprecated/datasources/type/DEVICE/?id=nest&model=1
     HTTP/1.1 200 OK
     Content-Type: application/json
   
@@ -433,20 +433,20 @@ In addition, query params can be passed to filter results matching certain crite
       "tags": "tag1",
       "timestamp": 1440060823724,
       "type": "DEVICE",
-      "typeConfig": "{\"id\":\"nest\",\"version\":1}"
+      "typeConfig": "{\"id\":\"nest\",\"model\":1}"
     }
   ]
 }
 ```
 
-    GET /api/v1/catalog/deprecated/datasources/type/DEVICE/?id=foobar&version=1
+    GET /api/v1/catalog/deprecated/datasources/type/DEVICE/?id=foobar&model=1
     HTTP/1.1 404 Not Found
     Content-Type: application/json
 
 ```json
 {
   "responseCode": 1104,
-  "responseMessage": "Datasource not found for type [DEVICE], query params [[QueryParam{name='id', value='foobar'}, QueryParam{name='version', value='1'}]]."
+  "responseMessage": "Datasource not found for type [DEVICE], query params [[QueryParam{name='id', value='foobar'}, QueryParam{name='model', value='1'}]]."
 }
 ```
 
@@ -461,7 +461,7 @@ PUT /api/v1/catalog/deprecated/datasources/ID
  "description": "This is a nest device",
  "tags": "foobar",
  "type": "DEVICE",
- "typeConfig": "{\"id\": 1, \"version\":1}"
+ "typeConfig": "{\"id\": 1, \"model\":1}"
 }
 ```
    
@@ -481,7 +481,7 @@ PUT /api/v1/catalog/deprecated/datasources/ID
     "tags": "foobar",
     "timestamp": 1439882682614,
     "type": "DEVICE",
-    "typeConfig": "{\"id\": 1, \"version\":1}"
+    "typeConfig": "{\"id\": 1, \"model\":1}"
   }
 }
 ```
@@ -508,7 +508,7 @@ DELETE /api/v1/catalog/deprecated/datasources/ID
     "tags": "foobar",
     "timestamp": 1439882682614,
     "type": "DEVICE",
-    "typeConfig": "{\"id\": 1, \"version\":1}"
+    "typeConfig": "{\"id\": 1, \"model\":1}"
   }
 }
 ```
@@ -545,7 +545,7 @@ POST /api/v1/catalog/parsers
   "parserSchema": {
                     "fields": [{"name": "DeviceName", "type": "STRING"}]
                   },
-  "version":1
+  "model":1
 }
 ```
 
@@ -571,7 +571,7 @@ POST /api/v1/catalog/parsers
         }
       ]
     },
-    "version": 1,
+    "model": 1,
     "timestamp": 1439885941140
   }
 }
@@ -614,7 +614,7 @@ GET /api/v1/catalog/parsers/{id}
     "parserSchema": {
       "fields": [{"name": "DeviceName", "type": "STRING"}]
     },
-    "version": 1,
+    "model": 1,
     "timestamp": 1439885941140
   }
 }
@@ -681,7 +681,7 @@ GET /api/v1/catalog/parsers
       "parserSchema": {
         "fields": [{"name": "DeviceName","type": "STRING"}]
       },
-      "version": 1,
+      "model": 1,
       "timestamp": 1439885941140
     },
     {
@@ -692,7 +692,7 @@ GET /api/v1/catalog/parsers
       "parserSchema": {
         "fields": [{"name": "DeviceName","type": "STRING"}]
       },
-      "version": 1,
+      "model": 1,
       "timestamp": 1439886289774
     }
     ..
@@ -723,7 +723,7 @@ DELETE /api/v1/catalog/parsers/ID
     "parserSchema": {
       "fields": [{"name": "DeviceName", "type": "STRING"}]
     },
-    "version": 1,
+    "model": 1,
     "timestamp": 1439885941140
   }
 }

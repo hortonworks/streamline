@@ -9,7 +9,6 @@ import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.client.CatalogRestClient;
-import com.hortonworks.iotas.exception.DataValidationException;
 import com.hortonworks.iotas.util.ProxyUtil;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.ParserInfo;
@@ -172,7 +171,7 @@ public class ParserBolt extends BaseRichBolt {
     }
 
     private DataSource getDataSource(IotasMessage iotasMessage) {
-        DataSourceIdentifier dataSrcIdf = new DataSourceIdentifier(iotasMessage.getId(), iotasMessage.getVersion());
+        DataSourceIdentifier dataSrcIdf = new DataSourceIdentifier(iotasMessage.getMake(), iotasMessage.getModel());
         DataSource dataSource = dataSrcIdfToDataSrc.get(dataSrcIdf);
         if(dataSource == null) {
             dataSource = client.getDataSource(dataSrcIdf.getId(), dataSrcIdf.getVersion());
@@ -185,7 +184,7 @@ public class ParserBolt extends BaseRichBolt {
     }
 
     private Parser getParser(IotasMessage iotasMessage) {
-        DataSourceIdentifier dataSrcIdf = new DataSourceIdentifier(iotasMessage.getId(), iotasMessage.getVersion());
+        DataSourceIdentifier dataSrcIdf = new DataSourceIdentifier(iotasMessage.getMake(), iotasMessage.getModel());
         Parser parser = dataSrcIdfToParser.get(dataSrcIdf);
         if (parser == null) {
             ParserInfo parserInfo = client.getParserInfo(dataSrcIdf.getId(), dataSrcIdf.getVersion());
@@ -225,9 +224,9 @@ public class ParserBolt extends BaseRichBolt {
      */
     private static class DataSourceIdentifier {
         private String id;
-        private Long version;
+        private String version;
 
-        private DataSourceIdentifier(String id, Long version) {
+        private DataSourceIdentifier(String id, String version) {
             this.id = id;
             this.version = version;
         }
@@ -236,7 +235,7 @@ public class ParserBolt extends BaseRichBolt {
             return id;
         }
 
-        public Long getVersion() {
+        public String getVersion() {
             return version;
         }
 
