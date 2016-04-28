@@ -18,6 +18,7 @@
 
 package com.hortonworks.iotas.layout.design.component;
 
+import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.layout.design.rule.Rule;
 
 import java.util.List;
@@ -27,6 +28,16 @@ import java.util.List;
  */
 public class RulesProcessor extends IotasProcessor {     //TODO: Rename to RuleProcessor
     private List<Rule> rules;
+
+    // TODO: HACK this is to temporarily get the rules json working with the old json format
+    private List<Schema.Field> declaredInput;
+    public List<Schema.Field> getDeclaredInput() {
+        return declaredInput;
+    }
+    public void setDeclaredInput(List<Schema.Field> declaredInput) {
+        this.declaredInput = declaredInput;
+    }
+    // TODO: END HACK
 
     public List<Rule> getRules() {
         return rules;
