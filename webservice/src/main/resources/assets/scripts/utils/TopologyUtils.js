@@ -24,7 +24,7 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
                     firstOp = rule[j].firstOperand.name;
                     op = rule[j].operation;
                     secondOp = rule[j].secondOperand;
-                    logicalOp = (j === 0 ? '' : rule[j - 1].logicalOperator);
+                    logicalOp = (j === 0 ? '' : rule[j].logicalOperator);
                 } else {
                     firstOp = rule[j].get('firstOperand');
                     op = rule[j].get('operation');
