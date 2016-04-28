@@ -82,6 +82,7 @@ define(['require',
         self.$("#btnAdd").toggleClass("displayNone");
       }
     },
+
     evAdd: function(e){
       if(this.view.validate()){
         var ruleArr = [];
@@ -99,28 +100,61 @@ define(['require',
               id: id+(i+1),
               ruleProcessorName: this.model.get('uiname'),
               condition: {
-                conditionElements: []
               },
               actions: actions,
               description: "Auto-Generated for "+this.model.get('uiname')
             };
 
-          _.each(ruleConfig, function(model){
-            var obj = {
-              firstOperand: {
+           var expression = {};
+          _.each(ruleConfig, function(model, index){
+            var secondOperand = model.get('secondOperand'),
+                first = {},
+                second = {},
+                temp = {};
+
+            first = {
+              class: 'com.hortonworks.iotas.layout.design.rule.condition.FieldExpression',
+              value: {
                 name: model.get('firstOperand'),
-                type: 'INTEGER'
-              },
-              operation: model.get('operation'),
-              secondOperand: model.get('secondOperand')
+                type: 'STRING',
+                optional: false
+               }
             };
-            if(!model.get('firstModel')){
-              ruleObj.condition.conditionElements[ruleObj.condition.conditionElements.length - 1].logicalOperator = (model.has('logicalOperator') ? model.get('logicalOperator') : null);
+
+            if(!_.isNaN(parseInt(secondOperand, 10))) {
+              second.class = 'com.hortonworks.iotas.layout.design.rule.condition.Literal';
+              second.value = secondOperand;
+            } else {
+              second.class = 'com.hortonworks.iotas.layout.design.rule.condition.FieldExpression';
+              second.value = {
+                name: secondOperand,
+                type: "STRING",
+                optional: false
+              };
             }
-            ruleObj.condition.conditionElements.push(obj);
-          });
-          ruleArr.push(ruleObj);
-        }
+
+            temp = {
+              class: 'com.hortonworks.iotas.layout.design.rule.condition.BinaryExpression',
+              operator: model.get('operation'),
+              first: first,
+              second: second
+            };
+
+            if(index == 0) {
+              expression = temp;
+            } else {
+              expression = {
+                class: 'com.hortonworks.iotas.layout.design.rule.condition.BinaryExpression',
+                operator: model.get('logicalOperator'),
+                first: expression,
+                second: temp
+              }
+            }
+        });
+        ruleObj.condition.expression = expression;
+        ruleArr.push(ruleObj);
+
+      }
 
         var config = {
           parallelism: 1,
@@ -128,8 +162,9 @@ define(['require',
             rules: ruleArr,
             name: this.model.get('uiname'),
             id: new Date().getTime(),
-            description: "Auto-Generated for "+this.model.get('uiname'),
-            declaredInput: this.fieldsArr
+            // description: "Auto-Generated for "+this.model.get('uiname'),
+            declaredInput: this.fieldsArr,
+            config: ""
           }
         };
         this.model.set('firstTime', false);
