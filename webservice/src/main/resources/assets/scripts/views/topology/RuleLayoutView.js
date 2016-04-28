@@ -36,31 +36,34 @@ define(['require',
       this.ruleCollection = new Backbone.Collection();
         for (var i = 0;i < this.rulesArr.length;i++) {
           var ruleObj = this.rulesArr[i],
-              rulesConfig = ruleObj.condition.conditionElements,
+              expression = ruleObj.condition.expression,
               tempArr = [];
 
-          for(var j = 0;j < rulesConfig.length;j++) {
-            var tempObj = {},
-              formulaObj = rulesConfig[j];
+          var tempObj = expression;
+          var flag = true;
 
-            if(j === 0) {
-              tempObj = {
-                firstOperand: formulaObj.firstOperand.name,
-                secondOperand: formulaObj.secondOperand,
-                operation: formulaObj.operation,
-                firstModel: true
-              };
-            } else {
-              tempObj = {
-                firstOperand: formulaObj.firstOperand.name,
-                secondOperand: formulaObj.secondOperand,
-                operation: formulaObj.operation,
-                logicalOperator: rulesConfig[j-1].logicalOperator
-              };
+            while(flag) {
+              if(tempObj.first.value) {
+                flag = false;
+                tempArr.push(new Backbone.Model({
+                  operation: tempObj.operator,
+                  firstOperand: tempObj.first.value.name,
+                  secondOperand: tempObj.second.value.name ? tempObj.second.value.name : tempObj.second.value
+                }));
+                continue;
+              }
+              var secondObj = tempObj.second;
+                tempArr.push(new Backbone.Model({
+                  operation: secondObj.operator,
+                  firstOperand: secondObj.first.value.name,
+                  secondOperand: secondObj.second.value.name ? secondObj.second.value.name : secondObj.second.value,
+                  logicalOperator: tempObj.operator
+                }));
+              tempObj = tempObj.first;
             }
-            tempArr.push(new Backbone.Model(tempObj));
-          }
 
+          tempArr = tempArr.reverse();
+          tempArr[0].set('firstModel', true);
           var ruleModel = new Backbone.Model({
             config: tempArr,
             ruleName: ruleObj.name,
@@ -71,6 +74,7 @@ define(['require',
           this.ruleCollection.push(ruleModel);
 
         }
+
       },
 
     onRender: function(){

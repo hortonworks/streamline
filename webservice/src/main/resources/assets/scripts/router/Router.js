@@ -12,8 +12,8 @@ define([
 			// Define some URL routes
 			''								: 'parserRegistryAction',
 			'!/parser-registry'				: 'parserRegistryAction',
-			'!/device-catalog'				: 'deviceCatalogAction',
-			'!/device-catalog/:pid'			: 'deviceDetailAction',
+			'!/device-profiles'				: 'deviceCatalogAction',
+			'!/device-profiles/:pid'		: 'deviceDetailAction',
 			'!/topology'					: 'topologyAction',
 			'!/topology-editor'				: 'topologyEditorAction',
 			'!/topology-editor/:pid'		: 'topologyEditorAction',
