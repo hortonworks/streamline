@@ -27,6 +27,8 @@ import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.exception.AlreadyExistsException;
 import com.hortonworks.iotas.storage.exception.IllegalQueryParameterException;
 import com.hortonworks.iotas.storage.exception.StorageException;
+import com.hortonworks.iotas.storage.impl.jdbc.provider.mysql.factory.MySqlExecutor;
+import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.query.MetadataHelper;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.query.SqlSelectQuery;
@@ -43,6 +45,7 @@ import java.util.Map;
 //TODO: Need to assess synchronization
 public class JdbcStorageManager implements StorageManager {
     private static final Logger log = LoggerFactory.getLogger(StorageManager.class);
+    public static final String DB_TYPE = "db.type";
 
     private final QueryExecutor queryExecutor;
 
@@ -184,4 +187,45 @@ public class JdbcStorageManager implements StorageManager {
 
         return storableKey;
     }
+
+    /**
+     * Returns an instance of {@link JdbcStorageManager} with the given {@code jdbcProps}.
+     * Some of these properties are jdbcDriverClass, jdbcUrl, queryTimeoutInSecs.
+     *
+     * @param jdbcProps properties with name/value pairs
+     */
+    public static JdbcStorageManager createStorageManager(Map<String, Object> jdbcProps) {
+
+        if(!jdbcProps.containsKey(DB_TYPE)) {
+            throw new IllegalArgumentException("db.type should be set on jdbc properties");
+        }
+
+        String type = (String) jdbcProps.get(DB_TYPE);
+
+        // When we have more providers we can add a layer to have a factory to create respective jdbc storage managers.
+        // For now, keeping it simple as there are only 2.
+        if(!"phoenix".equals(type) && !"mysql".equals(type)) {
+            throw new IllegalArgumentException("Unknown jdbc storage provider type: "+type);
+        }
+        log.info("jdbc provider type: [{}]", type);
+
+        QueryExecutor queryExecutor = null;
+        switch (type) {
+            case "phoenix":
+                try {
+                    queryExecutor = PhoenixExecutor.createExecutor(jdbcProps);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                break;
+            case "mysql":
+                queryExecutor = MySqlExecutor.createExecutor(jdbcProps);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported storage provider type: "+type);
+        }
+
+        return new JdbcStorageManager(queryExecutor);
+    }
+
 }

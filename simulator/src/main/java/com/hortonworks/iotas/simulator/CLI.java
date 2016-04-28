@@ -128,17 +128,17 @@ public class CLI {
             lastTopic = cmd.getOptionValue(OPTION_TOPIC);
         }
         Scanner scanner = new Scanner(System.in);
-        String lastId = "";
+        String lastMake = "";
         String lastType = "";
-        Long lastVersion = 0l;
+        String lastModel = "";
         String lastData = "";
 
         String temp;
         while(true){
-            System.out.print(String.format("Device ID [%s]: ", lastId));
+            System.out.print(String.format("Device Make [%s]: ", lastMake));
             temp = scanner.nextLine();
             if(!temp.equals("")){
-                lastId = temp;
+                lastMake = temp;
             }
 
             System.out.print(String.format("Device Type [%s]: ", lastType));
@@ -147,10 +147,10 @@ public class CLI {
                 lastType = temp;
             }
 
-            System.out.print(String.format("Version [%s]: ", lastVersion));
+            System.out.print(String.format("Device Model [%s]: ", lastModel));
             temp = scanner.nextLine();
             if(!temp.equals("")) {
-                lastVersion = Long.valueOf(temp);
+                lastModel = temp;
             }
 
             System.out.print(String.format("Data [%s]: ", lastData));
@@ -168,9 +168,9 @@ public class CLI {
             }
 
             IotasMessage message = new IotasMessage();
-            message.setId(lastId);
+            message.setMake(lastMake);
             message.setType(lastType);
-            message.setVersion(lastVersion);
+            message.setModel(lastModel);
             message.setData(lastData.getBytes(Charsets.UTF_8));
 
             writeToKafka(producer, message, lastTopic);

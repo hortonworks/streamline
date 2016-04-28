@@ -13,7 +13,7 @@ messages to a single kafa topic *kafa-topic-T1*. Lets say, we also have parsers 
       "description": "An example device",
       "tags": "tag1",
       "type": "DEVICE",
-      "typeConfig": "{\"id\": "D1", \"version\":1}"
+      "typeConfig": "{\"id\": "D1", \"model\":1}"
      }
      ```
      
@@ -25,10 +25,10 @@ messages to a single kafa topic *kafa-topic-T1*. Lets say, we also have parsers 
       "description": "Another device",
       "tags": "tag2",
       "type": "DEVICE",
-      "typeConfig": "{\"id\": "D2", \"version\":1}"
+      "typeConfig": "{\"id\": "D2", \"model\":1}"
      }
      ```
-  The `id` and `version` fields are assumed to be always present in the message header. This is used to uniquely identify
+  The `id` and `model` fields are assumed to be always present in the message header. This is used to uniquely identify
   the datasource that produced the message in case there are multiple datasources publishing to same endpoint.
 
 2. Next we need to upload parser jars that know how to parse the data from these devices and produce a `Map<String, Object>` 
@@ -72,7 +72,7 @@ messages to a single kafa topic *kafa-topic-T1*. Lets say, we also have parsers 
   received. For e.g. KAFKA. It is possible that multiple devices are pushing 
   the data via the same end point. If so, the data source type specifc field 
   values will be used to distingush the data source. For e.g, a message with 
-  deviceId, version pair `<D1, 1>` would be from `DEVICE-A` and hence would 
+  deviceId, model pair `<D1, 1>` would be from `DEVICE-A` and hence would 
   map to `feed1` and be parsed by `DEVICE-A-parser`.
   
   Also note that a `feed` represents the stream of data produced by a single `datasource`. However the same `datasource` can 

@@ -1,2 +1,2 @@
-{"id":"json", "type":"ThermoStat", "version":1, "metadata":null, "data":"ewogICJmaWVsZDEiIDogInZhbHVlMSIsCiAgImh1bWlkaXR5IjogNQp9", "timestamp":1440142639514}
-{"id":"nested-json", "type":"ThermoStat", "version":1, "metadata":null, "data":"ew0KICAic3RyIjogImlvdCIsDQogICJsaXN0IjogWyJjb3JlIiwgInBhcnNlciJdLA0KICAib2JqZWN0Ijogew0KICAgICJmMSI6ICJ2MSIsDQogICAgImh1bWlkaXR5IjogNQ0KICB9LA0KICAib2JqZWN0YXJyYXkiOiBbeyJzdHIiOjEgfSwgeyJzdHIiOiAyfV0NCn0=", "timestamp":1440142639514}
+{"make":"json", "type":"ThermoStat", "model":1, "metadata":null, "data":"ewogICJmaWVsZDEiIDogInZhbHVlMSIsCiAgImh1bWlkaXR5IjogNQp9", "timestamp":1440142639514}
+{"make":"nested-json", "type":"ThermoStat", "model":1, "metadata":null, "data":"ew0KICAic3RyIjogImlvdCIsDQogICJsaXN0IjogWyJjb3JlIiwgInBhcnNlciJdLA0KICAib2JqZWN0Ijogew0KICAgICJmMSI6ICJ2MSIsDQogICAgImh1bWlkaXR5IjogNQ0KICB9LA0KICAib2JqZWN0YXJyYXkiOiBbeyJzdHIiOjEgfSwgeyJzdHIiOiAyfV0NCn0=", "timestamp":1440142639514}

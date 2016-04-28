@@ -75,22 +75,19 @@ define(['utils/LangSupport',
           placeHolder: localization.tt('lbl.tags'),
           validators: [{'type':'required','message':'Tag should have atleast one tag.'}]
         },
-        deviceId: {
+        make: {
           type: 'Text',
-          title: localization.tt('lbl.deviceId')+'*',
+          title: localization.tt('lbl.deviceMake')+'*',
           editorClass: 'form-control',
-          placeHolder: localization.tt('lbl.deviceId'),
-          validators: [{'type':'required','message':'Device id can not be blank.'}]
+          placeHolder: localization.tt('lbl.deviceMake'),
+          validators: [{'type':'required','message':'Device make can not be blank.'}]
         },
-        version: {
-          type: 'Number',
-          title: localization.tt('lbl.version')+'*',
+        model: {
+          type: 'Text',
+          title: localization.tt('lbl.deviceModel')+'*',
           editorClass: 'form-control',
-          editorAttrs: {
-            min:0
-          },
-          placeHolder: localization.tt('lbl.deviceVersion'),
-          validators: [{'type':'required','message':'Version can not be blank.'}]
+          placeHolder: localization.tt('lbl.deviceModel'),
+          validators: [{'type':'required','message':'Model can not be blank.'}]
         },
         dataFeedName: {
           type: 'Text',
@@ -129,15 +126,15 @@ define(['utils/LangSupport',
     getData: function () {
       var attrs = this.getValue();
       var obj = {
-        deviceId: attrs.deviceId,
-        version: attrs.version
+        make: attrs.make,
+        model: attrs.model
       };
       attrs.typeConfig = JSON.stringify(obj);
-      delete attrs.deviceId;
-      delete attrs.version;
+      delete attrs.make;
+      delete attrs.model;
       if(this.model.id){
-        delete this.model.attributes.deviceId;
-        delete this.model.attributes.version;
+        delete this.model.attributes.make;
+        delete this.model.attributes.model;
         delete this.model.attributes.timestamp;
       }
       if(this.model.has('entity')){

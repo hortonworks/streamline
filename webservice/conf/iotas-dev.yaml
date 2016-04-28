@@ -20,17 +20,44 @@ jarStorageConfiguration:
     fsUrl: "file:///"
     directory: "/tmp/test-hdfs"
 
+# storage provider configuration
+# type can be inmemory and jdbc.
+#
+# Example configuration for inmemory is:
+#storageProviderConfiguration:
+# type: "inmemory"
+#
+# Example configuration for phoenix based JDBC driver
+#storageProviderConfiguration:
+# type: "jdbc"
+# properties:
+#   db.type: "phoenix"
+#   jdbcDriverClass: "org.apache.phoenix.jdbc.PhoenixDriver"
+#   jdbcUrl: "jdbc:phoenix:localhost:2181"
+#   queryTimeoutInSecs: 30
+#
+# MySQL based jdbc provider configuration is:
+#storageProviderConfiguration:
+# type: "jdbc"
+# properties:
+#   db.type: "mysql"
+#   dataSourceClassName: "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
+#   dataSource.url: "jdbc:mysql://localhost/test"
+#   queryTimeoutInSecs: 30
+
+storageProviderConfiguration:
+  type: "inmemory"
+
 #Custom processor upload configuration
 #customProcessorWatchPath: "/tmp"
 #customProcessorUploadFailPath: "/tmp/failed"
 #customProcessorUploadSuccessPath: "/tmp/uploaded"
 
-
 #
 # Use this to turn on/off notifications rest api in dev env
 # default is on
 #
-#notificationsRestDisable: true
+notificationsRestDisable: true
 
 # use the simple server factory if you only want to run on a single port
 #server:

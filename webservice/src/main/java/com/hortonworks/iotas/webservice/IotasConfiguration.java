@@ -51,6 +51,19 @@ public class IotasConfiguration extends Configuration {
     @NotEmpty
     private String stormHomeDir;
 
+    @NotNull
+    private StorageProviderConfiguration storageProviderConfiguration;
+
+    @JsonProperty
+    public StorageProviderConfiguration getStorageProviderConfiguration() {
+        return storageProviderConfiguration;
+    }
+
+    @JsonProperty
+    public void setStorageProviderConfiguration(StorageProviderConfiguration storageProviderConfiguration) {
+        this.storageProviderConfiguration = storageProviderConfiguration;
+    }
+
     @NotEmpty
     private String stormApiRootUrl;
 

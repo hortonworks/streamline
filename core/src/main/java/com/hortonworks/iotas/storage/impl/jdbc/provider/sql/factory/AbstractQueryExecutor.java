@@ -8,6 +8,7 @@ import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.Device;
 import com.hortonworks.iotas.catalog.ParserInfo;
+import com.hortonworks.iotas.catalog.Topology;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.exception.StorageException;
@@ -284,7 +285,10 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
                     return (T) new Device();
                 case(ParserInfo.NAME_SPACE):
                     return (T) new ParserInfo();
+                case (Topology.NAME_SPACE):
+                    return (T) new Topology();
                 default:
+                    log.error("Storable for namespace [{}] is not registered");
                     throw new RuntimeException("Unsupported Storable type");
             }
         }

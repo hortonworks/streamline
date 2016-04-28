@@ -1,6 +1,6 @@
-{"deviceId":"123","deviceType":"Nest","version":"1.0","metadata":{"foo":"bar"},"data":"asdfasdfasdfasdf","timestamp":1437076277379}
-{"deviceId":"123","deviceType":"Nest","version":"1.0","metadata":null,"data":"asdfasdfasdfasdf","timestamp":1437076277380}
-{"deviceId":"123","deviceType":"Nest","version":"1.0","metadata":null,"data":"asdfasdfasdfasdf","timestamp":1437076277381}
-{"deviceId":"123","deviceType":"Nest","version":"1.0","metadata":null,"data":"asdfasdfasdfasdf","timestamp":1437076277382}
-{"deviceId":"123","deviceType":"Nest","version":"1.0","metadata":null,"data":"asdfasdfasdfasdf","timestamp":1437076277383}
-{"deviceId":"123","deviceType":"Nest","version":"1.0","metadata":null,"data":"asdfasdfasdfasdf","timestamp":1437076277384}
+{"deviceId":"123","deviceType":"Nest","model":"1.0","metadata":{"foo":"bar"},"data":"asdfasdfasdfasdf","timestamp":1437076277379}
+{"deviceId":"123","deviceType":"Nest","model":"1.0","metadata":null,"data":"asdfasdfasdfasdf","timestamp":1437076277380}
+{"deviceId":"123","deviceType":"Nest","model":"1.0","metadata":null,"data":"asdfasdfasdfasdf","timestamp":1437076277381}
+{"deviceId":"123","deviceType":"Nest","model":"1.0","metadata":null,"data":"asdfasdfasdfasdf","timestamp":1437076277382}
+{"deviceId":"123","deviceType":"Nest","model":"1.0","metadata":null,"data":"asdfasdfasdfasdf","timestamp":1437076277383}
+{"deviceId":"123","deviceType":"Nest","model":"1.0","metadata":null,"data":"asdfasdfasdfasdf","timestamp":1437076277384}

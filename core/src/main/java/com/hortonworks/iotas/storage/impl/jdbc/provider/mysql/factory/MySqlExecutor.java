@@ -19,19 +19,25 @@
 package com.hortonworks.iotas.storage.impl.jdbc.provider.mysql.factory;
 
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.Lists;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.exception.StorageException;
 import com.hortonworks.iotas.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.iotas.storage.impl.jdbc.connection.ConnectionBuilder;
+import com.hortonworks.iotas.storage.impl.jdbc.connection.HikariCPConnectionBuilder;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.mysql.query.MySqlInsertUpdateDuplicate;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.mysql.query.MySqlQueryUtils;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.factory.AbstractQueryExecutor;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.query.SqlInsertQuery;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.query.SqlQuery;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
+import com.hortonworks.iotas.storage.impl.jdbc.util.Util;
+import com.zaxxer.hikari.HikariConfig;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Map;
+import java.util.Properties;
 
 public class MySqlExecutor extends AbstractQueryExecutor {
 
@@ -83,6 +89,32 @@ public class MySqlExecutor extends AbstractQueryExecutor {
     // Protected to be able to override it in the test framework
     protected Long getNextId(Connection connection, String namespace) throws SQLException {
         return MySqlQueryUtils.nextIdMySql(connection, namespace, queryTimeoutSecs);
+    }
+
+    public static MySqlExecutor createExecutor(Map<String, Object> jdbcProps) {
+        Util.validateJDBCProperties(jdbcProps, Lists.newArrayList("dataSourceClassName", "dataSource.url"));
+
+        String dataSourceClassName = (String) jdbcProps.get("dataSourceClassName");
+        log.info("data source class: [{}]", dataSourceClassName);
+
+        String jdbcUrl = (String) jdbcProps.get("dataSource.url");
+        log.info("dataSource.url is: [{}] ", jdbcUrl);
+
+        int queryTimeOutInSecs = -1;
+        if(jdbcProps.containsKey("queryTimeoutInSecs")) {
+            queryTimeOutInSecs = (Integer) jdbcProps.get("queryTimeoutInSecs");
+            if(queryTimeOutInSecs < 0) {
+                throw new IllegalArgumentException("queryTimeoutInSecs property can not be negative");
+            }
+        }
+
+        Properties properties = new Properties();
+        properties.putAll(jdbcProps);
+        HikariConfig hikariConfig = new HikariConfig(properties);
+
+        HikariCPConnectionBuilder connectionBuilder = new HikariCPConnectionBuilder(hikariConfig);
+        ExecutionConfig executionConfig = new ExecutionConfig(queryTimeOutInSecs);
+        return new MySqlExecutor(executionConfig, connectionBuilder);
     }
 
 }

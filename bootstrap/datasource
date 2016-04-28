@@ -1,5 +1,5 @@
 {
-   "typeConfig" : "{\"id\":\"nest\",\"version\":1}",
+   "typeConfig" : "{\"make\":\"nest\",\"model\":\"1\"}",
    "timestamp" : 1440118796994,
    "dataFeedType" : "KAFKA",
    "parserName" : "NestParser",
