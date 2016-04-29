@@ -5,9 +5,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.model.IotasMessage;
 import com.hortonworks.iotas.parser.BaseParser;
 import com.hortonworks.iotas.exception.ParserException;
 import com.hortonworks.iotas.util.ReflectionHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,6 +20,7 @@ import java.util.Random;
  * Created by pbrahmbhatt on 7/30/15.
  */
 public class NestParser extends BaseParser {
+    private static final Logger log = LoggerFactory.getLogger(NestParser.class);
 
     private static ObjectMapper mapper = new ObjectMapper();
     private final String BATTERY_STATE = "battery_state";
@@ -64,6 +68,7 @@ public class NestParser extends BaseParser {
     //We can probably improve it by adding more fields
     public Map<String, Object> parse(byte[] data) throws ParserException {
         try {
+            log.info("Received data length: [{}]", data.length);
             Map map = new HashMap();
             JsonNode jsonNode = mapper.readTree(data);
             JsonNode thermostats = jsonNode.get("devices").get("thermostats");

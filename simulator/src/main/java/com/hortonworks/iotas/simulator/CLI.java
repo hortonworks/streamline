@@ -104,6 +104,8 @@ public class CLI {
             ObjectMapper mapper = new ObjectMapper();
             String line = null;
             while((line = reader.readLine()) != null){
+                if(line.trim().length() == 0) continue;
+
                 IotasMessage message = mapper.readValue(line, IotasMessage.class);
                 if(cmd.hasOption(OPTION_TIMESTAMP)){
                     message.setTimestamp(System.currentTimeMillis());
