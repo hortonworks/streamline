@@ -13,7 +13,7 @@ import java.util.Map;
  * this has to be maintained manually.
  */
 public class TagStorableMapping extends AbstractStorable {
-    private static final String NAMESPACE = "tag_storable_mapping";
+    public static final String NAMESPACE = "tag_storable_mapping";
     public static final String FIELD_TAG_ID = "tagId";
     public static final String FIELD_STORABLE_NAMESPACE = "storableNamespace";
     public static final String FIELD_STORABLE_ID = "storableId";
