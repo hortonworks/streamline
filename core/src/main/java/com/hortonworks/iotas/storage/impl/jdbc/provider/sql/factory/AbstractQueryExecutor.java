@@ -8,7 +8,10 @@ import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.Device;
 import com.hortonworks.iotas.catalog.ParserInfo;
+import com.hortonworks.iotas.catalog.Tag;
+import com.hortonworks.iotas.catalog.TagStorableMapping;
 import com.hortonworks.iotas.catalog.Topology;
+import com.hortonworks.iotas.catalog.TopologyEditorMetadata;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.exception.StorageException;
@@ -20,6 +23,7 @@ import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.query.SqlQuery;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.query.SqlSelectQuery;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
 import com.hortonworks.iotas.storage.impl.jdbc.util.Util;
+import com.hortonworks.iotas.topology.TopologyComponent;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -285,11 +289,19 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
                     return (T) new Device();
                 case(ParserInfo.NAME_SPACE):
                     return (T) new ParserInfo();
+                case (TopologyComponent.NAME_SPACE):
+                    return (T) new TopologyComponent();
+                case (TopologyEditorMetadata.NAME_SPACE):
+                    return (T) new TopologyEditorMetadata();
                 case (Topology.NAME_SPACE):
                     return (T) new Topology();
+                case (Tag.NAMESPACE):
+                    return (T) new Tag();
+                case (TagStorableMapping.NAMESPACE):
+                    return (T) new TagStorableMapping();
                 default:
-                    log.error("Storable for namespace [{}] is not registered");
-                    throw new RuntimeException("Unsupported Storable type");
+                    log.error("Storable for namespace [{}] is not registered", nameSpace);
+                    throw new RuntimeException("Unsupported Storable type: "+nameSpace);
             }
         }
 

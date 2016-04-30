@@ -63,7 +63,7 @@ define(['require',
         hasTooltip: false,
         editable: false,
         href: function(model) {
-          return '#!/device-catalog/' + model.get('dataSourceId');
+          return '#!/device-profiles/' + model.get('dataSourceId');
         },
       },{
         name: 'description',

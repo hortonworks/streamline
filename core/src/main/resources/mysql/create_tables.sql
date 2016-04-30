@@ -63,6 +63,7 @@ CREATE TABLE IF NOT EXISTS topology_components (
     subType TEXT NOT NULL,
     streamingEngine TEXT NOT NULL,
     config TEXT NOT NULL,
+    schemaClass TEXT,
     transformationClass TEXT,
     timestamp  BIGINT,
     PRIMARY KEY (id)
