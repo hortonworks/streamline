@@ -1,4 +1,5 @@
 ## 0.1.2
+ * IOT-238: Fixed Tag and TagStorableMapping to be created as Storables in JDBC/Phoenix storgae providers
  * IOT-196: Phoenix storage provider support in webservices modules.
  * IOT-231: Change device id and version to make and model.
  * IOT-215: Introduce new REST API to show metrics for topology.
