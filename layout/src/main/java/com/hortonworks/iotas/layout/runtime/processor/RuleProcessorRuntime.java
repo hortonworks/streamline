@@ -100,7 +100,8 @@ public class RuleProcessorRuntime implements Serializable, ProcessorRuntime {
                 }
             }
         } catch (Exception e) {
-            String message = "Error evaluating rule processor with id:" + rulesProcessor.getId();
+            String message = String.format("Error evaluating rule processor with id: %s, error: %s",
+                                           rulesProcessor.getId(), e.getMessage());
             LOG.error(message);
             throw new ProcessingException(message, e);
         }

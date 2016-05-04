@@ -38,9 +38,6 @@ public class RuleProcessorRuntimeTest {
     RuleRuntime mockRr2;
 
     @Mocked
-    RuleRuntime mockRr3;
-
-    @Mocked
     Rule mockRule1;
 
     @Mocked
@@ -67,7 +64,7 @@ public class RuleProcessorRuntimeTest {
             result = "rp1";
             minTimes = 0;
             mockBuilder.getRulesRuntime();
-            result = ImmutableList.of(mockRr1, mockRr2, mockRr3);
+            result = ImmutableList.of(mockRr1, mockRr2);
             mockRr1.getRule();
             result = mockRule1;
             mockRr2.getRule();
@@ -92,7 +89,7 @@ public class RuleProcessorRuntimeTest {
     }
 
     @Test
-    public void testRule1Fires() throws Exception {
+    public void testRule2Fires() throws Exception {
         RuleProcessorRuntime rpr = new RuleProcessorRuntime(mockBuilder);
         rpr.process(event2);
         new Verifications() {{
@@ -120,9 +117,9 @@ public class RuleProcessorRuntimeTest {
         RuleProcessorRuntime rpr = new RuleProcessorRuntime(mockBuilder);
         rpr.process(event3);
         new Verifications() {{
-            mockRr1.evaluate(event1);
+            mockRr1.evaluate(event3);
             times=0;
-            mockRr2.evaluate(event1);
+            mockRr2.evaluate(event3);
             times=0;
         }};
     }
