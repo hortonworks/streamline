@@ -7,7 +7,7 @@ DROP TABLE IF EXISTS topology_components
 DROP TABLE IF EXISTS files
 DROP TABLE IF EXISTS sequence_table
 DROP TABLE IF EXISTS streaminfo
-DROP TABLE IF EXISTS notifierinfo;
+DROP TABLE IF EXISTS notifierinfos
 DROP SEQUENCE IF EXISTS datasources_sequence
 DROP SEQUENCE IF EXISTS datafeeds_sequence
 DROP SEQUENCE IF EXISTS parser_info_sequence
@@ -15,4 +15,4 @@ DROP SEQUENCE IF EXISTS topologies_sequence
 DROP SEQUENCE IF EXISTS topology_components_sequence
 DROP SEQUENCE IF EXISTS files_sequence
 DROP SEQUENCE IF EXISTS streaminfo_sequence
-DROP SEQUENCE IF EXISTS notifierinfo_sequence
+DROP SEQUENCE IF EXISTS notifierinfos_sequence
