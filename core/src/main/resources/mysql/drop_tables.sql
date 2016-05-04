@@ -6,4 +6,4 @@ DROP TABLE IF EXISTS topologies;
 DROP TABLE IF EXISTS topology_components;
 DROP TABLE IF EXISTS files;
 DROP TABLE IF EXISTS streaminfo;
-DROP TABLE IF EXISTS notifierinfo;
+DROP TABLE IF EXISTS notifierinfos;

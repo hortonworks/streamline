@@ -112,13 +112,13 @@ CREATE TABLE IF NOT EXISTS streaminfo (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS notifierinfo (
-    id BIGINT AUTO_INCREMENT NOT NULL,
-    name VARCHAR(256),
-    jarFileName VARCHAR(256),
-    className VARCHAR(256),
-    propertiesData TEXT,
-    fieldValuesData TEXT,
-    timestamp BIGINT,
-    PRIMARY KEY (id)
+CREATE TABLE IF NOT EXISTS notifierinfos (
+     id BIGINT AUTO_INCREMENT NOT NULL,
+     name VARCHAR(256) NOT NULL,
+     jarFileName TEXT NOT NULL,
+     className TEXT NOT NULL,
+     timestamp  BIGINT,
+     properties TEXT,
+     fieldValues TEXT,
+     PRIMARY KEY (id)
 );

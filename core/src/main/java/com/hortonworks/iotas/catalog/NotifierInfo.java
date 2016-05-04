@@ -2,10 +2,14 @@ package com.hortonworks.iotas.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.storage.PrimaryKey;
+import com.hortonworks.iotas.storage.Storable;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +18,7 @@ import java.util.Map;
  * The notifier instance config stored in database.
  */
 public class NotifierInfo extends AbstractStorable {
-    public static final String NAMESPACE = "notifierinfo";
+    public static final String NAMESPACE = "notifierinfos";
 
     public static final String ID = "id";
     public static final String NOTIFIER_NAME = "name";
@@ -161,31 +165,44 @@ public class NotifierInfo extends AbstractStorable {
     }
 
     @Override
-    public Schema getSchema() {
-        return Schema.of(
-                Schema.Field.of(ID, Schema.Type.LONG),
-                Schema.Field.of(NOTIFIER_NAME, Schema.Type.STRING),
-                Schema.Field.of(JARFILE_NAME, Schema.Type.STRING),
-                Schema.Field.of(CLASS_NAME, Schema.Type.STRING),
-                Schema.Field.of(PROPERTIES_DATA, Schema.Type.STRING),
-                Schema.Field.of(FIELD_VALUES_DATA, Schema.Type.STRING),
-                Schema.Field.of(TIMESTAMP, Schema.Type.LONG)
-                );
+    public Map<String, Object> toMap() {
+        Map result = super.toMap();
+        try {
+            result.put(PROPERTIES, this.getMapAsString(properties));
+            result.put(FIELD_VALUES, this.getMapAsString(fieldValues));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        return result;
     }
 
     @Override
-    public Map<String, Object> toMap() {
-        final Map<String, Object> values = super.toMap();
-        values.remove(PROPERTIES);
-        values.remove(FIELD_VALUES);
+    public Storable fromMap(Map<String, Object> map) {
+        this.setName((String) map.get(NOTIFIER_NAME));
+        this.setId((Long) map.get(ID));
+        this.setJarFileName((String) map.get(JARFILE_NAME));
+        this.setClassName((String) map.get(CLASS_NAME));
+        this.setTimestamp((Long) map.get(TIMESTAMP));
         try {
-            values.put(PROPERTIES_DATA, getPropertiesData());
-            values.put(FIELD_VALUES_DATA, getFieldValuesData());
-        } catch (Exception e) {
+            this.setProperties(this.getStringAsMap((String) map.get(PROPERTIES)));
+            this.setFieldValues(this.getStringAsMap((String) map.get(FIELD_VALUES)));
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        return this;
+    }
 
-        return values;
+    @JsonIgnore
+    public Schema getSchema() {
+        List<Schema.Field> fields = new ArrayList<>();
+        fields.add(new Schema.Field(NOTIFIER_NAME, Schema.Type.STRING));
+        fields.add(new Schema.Field(ID, Schema.Type.LONG));
+        fields.add(new Schema.Field(JARFILE_NAME, Schema.Type.STRING));
+        fields.add(new Schema.Field(CLASS_NAME, Schema.Type.STRING));
+        fields.add(new Schema.Field(TIMESTAMP, Schema.Type.LONG));
+        fields.add(new Schema.Field(PROPERTIES, Schema.Type.STRING));
+        fields.add(new Schema.Field(FIELD_VALUES, Schema.Type.STRING));
+        return Schema.of(fields);
     }
 
     @Override
@@ -215,5 +232,15 @@ public class NotifierInfo extends AbstractStorable {
                 ", fieldValues=" + fieldValues +
                 ", timestamp=" + timestamp +
                 "} " + super.toString();
+    }
+
+    private String getMapAsString (Map<String, String> map) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(map);
+    }
+
+    private Map<String, String> getStringAsMap (String mapString) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(mapString, Map.class);
     }
 }
