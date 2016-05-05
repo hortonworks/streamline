@@ -5,6 +5,7 @@ define(['marionette', 'utils/LangSupport'], function(Marionette, localization) {
   localization.setDefaultCulture(); // will take default that is en
   localization.chooseCulture();
 
+  window._preventNavigation = false;
   var App = new Marionette.Application();
 
   App.addRegions({
