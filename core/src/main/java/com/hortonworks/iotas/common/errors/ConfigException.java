@@ -1,9 +1,7 @@
 package com.hortonworks.iotas.common.errors;
 
-import com.hortonworks.iotas.processor.CustomProcessor;
-
 /**
- * Exception class representing a malformed configuration for a {@link CustomProcessor} implementation
+ * Exception class representing a malformed configuration.
  */
 public class ConfigException extends Exception {
 

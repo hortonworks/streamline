@@ -5,6 +5,7 @@ topologyActionsImpl: com.hortonworks.iotas.topology.storm.StormTopologyActionsIm
 iotasStormJar: /tmp/storm-0.1.0-SNAPSHOT.jar
 catalogRootUrl: "http://localhost:8080/api/v1/catalog"
 stormHomeDir: /usr/local/Cellar/storm/0.10.0/
+stormApiRootUrl: "http://localhost:8888/api/v1"
 # Filesystem based jar storage
 #jarStorageConfiguration:
 #  className: "com.hortonworks.iotas.util.FileSystemJarStorage"
@@ -18,6 +19,42 @@ jarStorageConfiguration:
     fsUrl: "hdfs://localhost:9000"
     directory: "/tmp/test-hdfs"
 
+# storage provider configuration
+# type can be inmemory and jdbc.
+#
+# Example configuration for inmemory is:
+#storageProviderConfiguration:
+# type: "inmemory"
+#
+# Example configuration for phoenix based JDBC driver
+#storageProviderConfiguration:
+# type: "jdbc"
+# properties:
+#   db.type: "phoenix"
+#   jdbcDriverClass: "org.apache.phoenix.jdbc.PhoenixDriver"
+#   jdbcUrl: "jdbc:phoenix:localhost:2181"
+#   queryTimeoutInSecs: 30
+#
+# MySQL based jdbc provider configuration is:
+#storageProviderConfiguration:
+# type: "jdbc"
+# properties:
+#   db.type: "mysql"
+#   dataSourceClassName: "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
+#   dataSource.url: "jdbc:mysql://localhost/test"
+#   queryTimeoutInSecs: 30
+storageProviderConfiguration:
+ type: "jdbc"
+ properties:
+   db.type: "phoenix"
+   jdbcDriverClass: "org.apache.phoenix.jdbc.PhoenixDriver"
+   jdbcUrl: "jdbc:phoenix:localhost:2181"
+   queryTimeoutInSecs: 30
+
+#Custom processor upload configuration
+#customProcessorWatchPath: "/tmp"
+#customProcessorUploadFailPath: "/tmp/failed"
+#customProcessorUploadSuccessPath: "/tmp/uploaded"
 
 #
 # Use this to turn on/off notifications rest api

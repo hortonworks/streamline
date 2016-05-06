@@ -35,6 +35,9 @@ public class IotasConfiguration extends Configuration {
     private String topologyActionsImpl;
 
     @NotEmpty
+    private String topologyMetricsImpl;
+
+    @NotEmpty
     private String iotasStormJar;
 
     private Boolean notificationsRestDisable;
@@ -48,10 +51,32 @@ public class IotasConfiguration extends Configuration {
     @NotEmpty
     private String stormHomeDir;
 
+    @NotNull
+    private StorageProviderConfiguration storageProviderConfiguration;
+
+    @JsonProperty
+    public StorageProviderConfiguration getStorageProviderConfiguration() {
+        return storageProviderConfiguration;
+    }
+
+    @JsonProperty
+    public void setStorageProviderConfiguration(StorageProviderConfiguration storageProviderConfiguration) {
+        this.storageProviderConfiguration = storageProviderConfiguration;
+    }
+
+    @NotEmpty
+    private String stormApiRootUrl;
+
     @JsonProperty
     public String getBrokerList(){
         return this.brokerList;
     }
+
+    private String customProcessorWatchPath;
+
+    private String customProcessorUploadFailPath;
+
+    private String customProcessorUploadSuccessPath;
 
     @JsonProperty
     public void setBrokerList(String brokerList){
@@ -116,5 +141,45 @@ public class IotasConfiguration extends Configuration {
 
     public void setStormHomeDir (String stormHomeDir) {
         this.stormHomeDir = stormHomeDir;
+    }
+
+    public String getCustomProcessorWatchPath () {
+        return customProcessorWatchPath;
+    }
+
+    public void setCustomProcessorWatchPath (String customProcessorWatchPath) {
+        this.customProcessorWatchPath = customProcessorWatchPath;
+    }
+
+    public String getCustomProcessorUploadFailPath () {
+        return customProcessorUploadFailPath;
+    }
+
+    public void setCustomProcessorUploadFailPath (String customProcessorUploadFailPath) {
+        this.customProcessorUploadFailPath = customProcessorUploadFailPath;
+    }
+
+    public String getCustomProcessorUploadSuccessPath () {
+        return customProcessorUploadSuccessPath;
+    }
+
+    public void setCustomProcessorUploadSuccessPath (String customProcessorUploadSuccessPath) {
+        this.customProcessorUploadSuccessPath = customProcessorUploadSuccessPath;
+    }
+
+    public String getTopologyMetricsImpl() {
+        return topologyMetricsImpl;
+    }
+
+    public void setTopologyMetricsImpl(String topologyMetricsImpl) {
+        this.topologyMetricsImpl = topologyMetricsImpl;
+    }
+
+    public String getStormApiRootUrl() {
+        return stormApiRootUrl;
+    }
+
+    public void setStormApiRootUrl(String stormApiRootUrl) {
+        this.stormApiRootUrl = stormApiRootUrl;
     }
 }

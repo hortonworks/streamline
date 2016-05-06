@@ -11,7 +11,7 @@ import java.util.Map;
  * A storable object mainly to store any information needed by UI in a persistent fashion
  */
 public class TopologyEditorMetadata extends AbstractStorable {
-    public static final String NAME_SPACE = "topologyeditormetadata";
+    public static final String NAME_SPACE = "topology_editor_metadata";
     public static final String TOPOLOGY_ID = "topologyId";
     public static final String DATA = "data";
     public static final String TIMESTAMP = "timestamp";

@@ -15,11 +15,11 @@
  );
 
 CREATE TABLE IF NOT EXISTS devices (
-    deviceId VARCHAR(256) NOT NULL,
-    version BIGINT NOT NULL,
+    make VARCHAR(256) NOT NULL,
+    model VARCHAR(256) NOT NULL,
     dataSourceId BIGINT NOT NULL,
     PRIMARY KEY (dataSourceId),
-    UNIQUE KEY `UK_id_version` (deviceId, version),
+    UNIQUE KEY `UK_id_version` (make, model),
     FOREIGN KEY (dataSourceId) REFERENCES datasources(id)
 );
 
@@ -63,6 +63,7 @@ CREATE TABLE IF NOT EXISTS topology_components (
     subType TEXT NOT NULL,
     streamingEngine TEXT NOT NULL,
     config TEXT NOT NULL,
+    schemaClass TEXT,
     transformationClass TEXT,
     timestamp  BIGINT,
     PRIMARY KEY (id)

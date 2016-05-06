@@ -117,8 +117,24 @@ define([
                 this.$("#inputSource").val(JSON.stringify(self.model.get("inputSchema"), null, "  "));
             } else this.$("#inputSource").val(JSON.stringify(self.sampleSchema, null, "  "));
 
+            $("body").on("click", ".nav-link", function(e) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                var target = this,
+                    message = 'Do you want to leave the page without saving?',
+                    title = 'Confirm',
+                    successCallback = function(){
+                        window._preventNavigation = false;
+                        $("body").off('click', '.nav-link');
+                        target.click();
+                    };
+                Utils.ConfirmDialog(message, title, successCallback);
+                return false;
+            });
+
             this.renderOutputShema();
             this.$('.schema-tab[data-id="'+(this.tabIdCount - 1)+'"]').children('i').show();
+            window._preventNavigation = true;
         },
 
         renderOutputShema: function() {

@@ -35,15 +35,48 @@ define(['require',
 			var arr = [];
 			_.each(ruleProcessor.rules, function(o, i){
 				var obj = {
-					config: o.condition.conditionElements,
+					config: this.getRuleExpressions(o.condition.expression),
 					ruleConnectsTo: o.actions ? o.actions : [],
 					ruleId: i,
 					ruleName: o.name
 				};
 				arr.push(new Backbone.Model(obj));
-			});
+			}, this);
 			this.html = TopologyUtils.generateFormulaPreview(arr, true);
-			
+
+		},
+		getRuleExpressions: function(expression) {
+			var tempArr = [],
+				tempObj = expression,
+				flag = true;
+
+            while(flag) {
+              if(tempObj.first.value) {
+                flag = false;
+                tempArr.push({
+                  operation: tempObj.operator,
+                  firstOperand: {
+                  	name: tempObj.first.value.name
+                  },
+                  secondOperand: tempObj.second.value.name ? tempObj.second.value.name : tempObj.second.value
+                });
+                continue;
+              }
+              var secondObj = tempObj.second;
+                tempArr.push({
+                  operation: secondObj.operator,
+                  firstOperand: {
+                  	name: secondObj.first.value.name
+                  },
+                  secondOperand: secondObj.second.value.name ? secondObj.second.value.name : secondObj.second.value,
+                  logicalOperator: tempObj.operator
+                });
+              tempObj = tempObj.first;
+            }
+
+          tempArr = tempArr.reverse();
+          tempArr[0].firstModel = true;
+          return tempArr;
 		},
 		syncCustomData: function(){
 			var self = this;

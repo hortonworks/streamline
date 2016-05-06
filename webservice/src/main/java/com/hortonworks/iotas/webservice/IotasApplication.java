@@ -23,15 +23,21 @@ import com.hortonworks.iotas.cache.Cache;
 import com.hortonworks.iotas.cache.impl.GuavaCache;
 import com.hortonworks.iotas.cache.writer.StorageWriteThrough;
 import com.hortonworks.iotas.cache.writer.StorageWriter;
+import com.hortonworks.iotas.common.CustomProcessorUploadHandler;
+import com.hortonworks.iotas.common.FileEventHandler;
+import com.hortonworks.iotas.common.errors.ConfigException;
 import com.hortonworks.iotas.notification.service.NotificationServiceImpl;
 import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.service.FileWatcher;
 import com.hortonworks.iotas.storage.CacheBackedStorageManager;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
+import com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManager;
 import com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager;
 import com.hortonworks.iotas.topology.TopologyActions;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
+import com.hortonworks.iotas.topology.TopologyMetrics;
 import com.hortonworks.iotas.util.JarStorage;
 import com.hortonworks.iotas.util.ReflectionHelper;
 import com.hortonworks.iotas.webservice.catalog.ClusterCatalogResource;
@@ -50,12 +56,18 @@ import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class IotasApplication extends Application<IotasConfiguration> {
+
+    private static final Logger log = LoggerFactory.getLogger(IotasApplication.class);
+    private static final String JDBC = "jdbc";
 
     public static void main(String[] args) throws Exception {
         new IotasApplication().run(args);
@@ -83,14 +95,14 @@ public class IotasApplication extends Application<IotasConfiguration> {
         // final FeedResource feedResource = new FeedResource(kafkaProducerManager.getProducer(), zkClient);
         // environment.jersey().register(feedResource);
 
-        // TODO we should load the implementation based on configuration
-        final StorageManager cacheBackedDao = getCacheBackedDao();
-
-        registerResources(iotasConfiguration, environment, cacheBackedDao);
+        registerResources(iotasConfiguration, environment);
     }
 
-    private StorageManager getCacheBackedDao() {
-        final InMemoryStorageManager dao = new InMemoryStorageManager();
+    private StorageManager getCacheBackedDao(IotasConfiguration iotasConfiguration) {
+        StorageProviderConfiguration storageProviderConfiguration = iotasConfiguration.getStorageProviderConfiguration();
+        final String providerType = storageProviderConfiguration.getType();
+        final StorageManager dao = providerType.equalsIgnoreCase(JDBC) ?
+                JdbcStorageManager.createStorageManager(storageProviderConfiguration.getProperties()) : new InMemoryStorageManager();
         final CacheBuilder cacheBuilder = getGuavaCacheBuilder();
         final Cache<StorableKey, Storable> cache = getCache(dao, cacheBuilder);
         final StorageWriter storageWriter = getStorageWriter(dao);
@@ -103,7 +115,6 @@ public class IotasApplication extends Application<IotasConfiguration> {
     }
 
     private StorageManager doGetCacheBackedDao(Cache<StorableKey, Storable> cache, StorageWriter writer) {
-//        return new InMemoryStorageManager();      // for quick debug purposes
         return new CacheBackedStorageManager(cache, writer);
     }
 
@@ -138,10 +149,25 @@ public class IotasApplication extends Application<IotasConfiguration> {
         //pass any config info that might be needed in the constructor as a map
         Map conf = new HashMap();
         conf.put(TopologyLayoutConstants.STORM_JAR_LOCATION_KEY, jar);
-        conf.put("catalog.root.url", configuration.getCatalogRootUrl());
+        conf.put(TopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL, configuration.getCatalogRootUrl());
         conf.put(TopologyLayoutConstants.STORM_HOME_DIR, configuration.getStormHomeDir());
         topologyActions.init(conf);
         return topologyActions;
+    }
+
+    private TopologyMetrics getTopologyMetricsImpl(IotasConfiguration configuration) throws ConfigException {
+        String className = configuration.getTopologyMetricsImpl();
+        TopologyMetrics topologyMetrics;
+        try {
+            topologyMetrics = ReflectionHelper.newInstance(className);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+        //pass any config info that might be needed in the constructor as a map
+        Map conf = new HashMap();
+        conf.put(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY, configuration.getStormApiRootUrl());
+        topologyMetrics.init(conf);
+        return topologyMetrics;
     }
 
     private JarStorage getJarStorage (IotasConfiguration configuration) {
@@ -156,19 +182,19 @@ public class IotasApplication extends Application<IotasConfiguration> {
     }
 
 
-    private void registerResources(IotasConfiguration iotasConfiguration, Environment environment, StorageManager manager) {
-        StorageManager storageManager = getCacheBackedDao();
-        TopologyActions topologyActions = getTopologyActionsImpl
-                (iotasConfiguration);
+    private void registerResources(IotasConfiguration iotasConfiguration, Environment environment) throws ConfigException {
+        StorageManager storageManager = getCacheBackedDao(iotasConfiguration);
+        TopologyActions topologyActions = getTopologyActionsImpl(iotasConfiguration);
+        TopologyMetrics topologyMetrics = getTopologyMetricsImpl(iotasConfiguration);
         JarStorage jarStorage = this.getJarStorage(iotasConfiguration);
-        final CatalogService catalogService = new CatalogService
-                (storageManager, topologyActions, jarStorage);
+        final CatalogService catalogService = new CatalogService(storageManager, topologyActions, topologyMetrics, jarStorage);
         final FeedCatalogResource feedResource = new FeedCatalogResource(catalogService);
         final ParserInfoCatalogResource parserResource = new ParserInfoCatalogResource(catalogService, iotasConfiguration, jarStorage);
         final DataSourceCatalogResource dataSourceResource = new DataSourceCatalogResource(catalogService);
         final DataSourceWithDataFeedCatalogResource dataSourceWithDataFeedCatalogResource =
                 new DataSourceWithDataFeedCatalogResource(new DataSourceFacade(catalogService));
         final TopologyCatalogResource topologyCatalogResource = new TopologyCatalogResource(catalogService);
+        final MetricsResource metricsResource = new MetricsResource(catalogService);
 
         // cluster related
         final ClusterCatalogResource clusterCatalogResource = new ClusterCatalogResource(catalogService);
@@ -177,7 +203,7 @@ public class IotasApplication extends Application<IotasConfiguration> {
         final TagCatalogResource tagCatalogResource = new TagCatalogResource(catalogService);
         List<Object> resources = Lists.newArrayList(feedResource, parserResource, dataSourceResource, dataSourceWithDataFeedCatalogResource,
                                                     topologyCatalogResource, clusterCatalogResource, componentCatalogResource,
-                                                    topologyEditorMetadataResource, tagCatalogResource);
+                                                    topologyEditorMetadataResource, tagCatalogResource, metricsResource);
         if (!iotasConfiguration.isNotificationsRestDisabled()) {
             resources.add(new NotifierInfoCatalogResource(catalogService));
             resources.add(new NotificationsResource(new NotificationServiceImpl()));
@@ -186,5 +212,29 @@ public class IotasApplication extends Application<IotasConfiguration> {
             environment.jersey().register(resource);
         }
         environment.jersey().register(MultiPartFeature.class);
+        watchFiles(iotasConfiguration, catalogService);
     }
+
+    private void watchFiles (IotasConfiguration iotasConfiguration, CatalogService catalogService) {
+        if (iotasConfiguration.getCustomProcessorWatchPath() == null || iotasConfiguration.getCustomProcessorUploadFailPath() == null || iotasConfiguration
+                .getCustomProcessorUploadSuccessPath() == null) {
+            return;
+        }
+        FileEventHandler customProcessorUploadHandler = new CustomProcessorUploadHandler(iotasConfiguration.getCustomProcessorWatchPath(), iotasConfiguration
+                .getCustomProcessorUploadFailPath(), iotasConfiguration.getCustomProcessorUploadSuccessPath(), catalogService);
+        List<FileEventHandler> fileEventHandlers = new ArrayList<>();
+        fileEventHandlers.add(customProcessorUploadHandler);
+        final FileWatcher fileWatcher = new FileWatcher(fileEventHandlers);
+        fileWatcher.register();
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (fileWatcher.processEvents()) {
+
+                }
+            }
+        });
+        thread.start();
+    }
+
 }
