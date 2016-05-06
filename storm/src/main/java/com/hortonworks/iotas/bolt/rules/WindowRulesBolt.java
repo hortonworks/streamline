@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import static com.hortonworks.iotas.common.IotasEventImpl.GROUP_BY_TRIGGER_EVENT;
 import static com.hortonworks.iotas.layout.design.rule.condition.Window.WINDOW_ID;
 import static com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransform.HEADER_FIELD_DATASOURCE_IDS;
 import static com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransform.HEADER_FIELD_EVENT_IDS;
@@ -74,8 +75,8 @@ public class WindowRulesBolt extends BaseWindowedBolt {
                     curGroup.add(input);
                 }
             }
-            // force evaluation of the last group by emitting null
-            processAndEmit(null, curGroup);
+            // force evaluation of the last group by
+            processAndEmit(GROUP_BY_TRIGGER_EVENT, curGroup);
         } catch (Exception e) {
             collector.reportError(e);
             LOG.debug("", e);                        // useful to debug unit tests
@@ -175,6 +176,9 @@ public class WindowRulesBolt extends BaseWindowedBolt {
     }
 
     private IotasEvent iotasEventWithWindowId(final IotasEvent event) {
-        return event != null ? event.addFieldsAndValues(Collections.<String, Object>singletonMap(WINDOW_ID, windowId)) : null;
+        if (event == GROUP_BY_TRIGGER_EVENT) {
+            return event;
+        }
+        return event.addFieldsAndValues(Collections.<String, Object>singletonMap(WINDOW_ID, windowId));
     }
 }

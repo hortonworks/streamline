@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.hortonworks.iotas.common.IotasEventImpl.GROUP_BY_TRIGGER_EVENT;
 import static com.hortonworks.iotas.layout.runtime.rule.condition.expression.StormSqlExpression.RULE_SCHEMA;
 import static com.hortonworks.iotas.layout.runtime.rule.condition.expression.StormSqlExpression.RULE_TABLE;
 
@@ -84,7 +85,7 @@ public class StormSqlScript<O> extends Script<IotasEvent, O, StormSqlEngine> {
             if (iotasEvent != null) {
                 result = scriptEngine.eval(createValues(iotasEvent));
             } else {
-                result = scriptEngine.eval(null); // for forcing a group by evaluation
+                LOG.error("Cannot evaluate null iotasEvent");
             }
         } catch (ConditionEvaluationException ex) {
             LOG.error("Got exception {} while processing IotasEvent {}", ex, iotasEvent);
@@ -94,13 +95,16 @@ public class StormSqlScript<O> extends Script<IotasEvent, O, StormSqlEngine> {
     }
 
     private Values createValues(IotasEvent iotasEvent) {
-        final Values values = new Values();
-        for(Schema.Field field: fieldsToEmit) {
-            Object value = iotasEvent.getFieldsAndValues().get(field.getName());
-            if (value == null) {
-                throw new ConditionEvaluationException("Missing property " + field.getName());
+        Values values = null;
+        if (iotasEvent != GROUP_BY_TRIGGER_EVENT) {
+            values = new Values();
+            for (Schema.Field field : fieldsToEmit) {
+                Object value = iotasEvent.getFieldsAndValues().get(field.getName());
+                if (value == null) {
+                    throw new ConditionEvaluationException("Missing property " + field.getName());
+                }
+                values.add(value);
             }
-            values.add(value);
         }
         return values;
     }

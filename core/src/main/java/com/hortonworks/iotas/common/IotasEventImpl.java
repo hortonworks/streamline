@@ -11,6 +11,9 @@ import java.util.UUID;
 public class IotasEventImpl implements IotasEvent {
     // Default value chosen to be blank and not the default used in storm since wanted to keep it independent of storm.
     public final static String DEFAULT_SOURCE_STREAM = "default";
+    // special event to trigger evaluation of group by
+    public static final IotasEvent GROUP_BY_TRIGGER_EVENT = new IotasEventImpl(null, null);
+
     private final Map<String, Object> header;
     private final Map<String, Object> fieldsAndValues;
     private final String dataSourceId;
