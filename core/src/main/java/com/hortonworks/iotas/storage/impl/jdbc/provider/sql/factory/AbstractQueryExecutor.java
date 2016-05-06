@@ -7,7 +7,7 @@ import com.google.common.cache.RemovalNotification;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.Device;
-import com.hortonworks.iotas.catalog.File;
+import com.hortonworks.iotas.catalog.FileInfo;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.catalog.StreamInfo;
 import com.hortonworks.iotas.catalog.Tag;
@@ -301,8 +301,8 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
                     return (T) new Tag();
                 case (TagStorableMapping.NAMESPACE):
                     return (T) new TagStorableMapping();
-                case (File.NAME_SPACE):
-                    return (T) new File();
+                case (FileInfo.NAME_SPACE):
+                    return (T) new FileInfo();
                 case (StreamInfo.NAMESPACE):
                     return (T) new StreamInfo();
                 default:

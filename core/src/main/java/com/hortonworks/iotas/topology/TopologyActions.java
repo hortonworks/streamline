@@ -2,6 +2,7 @@ package com.hortonworks.iotas.topology;
 
 import com.hortonworks.iotas.catalog.Topology;
 
+import java.nio.file.Path;
 import java.util.Map;
 
 /**
@@ -33,6 +34,11 @@ public interface TopologyActions {
 
     // return topology status
     Status status (Topology topology) throws Exception;
+
+    /**
+     * the Path where topology specific artifacts are kept
+     */
+    Path getArtifactsLocation(Topology topology);
 
     interface Status {
         String getStatus();

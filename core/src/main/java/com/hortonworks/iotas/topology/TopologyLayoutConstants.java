@@ -122,6 +122,8 @@ public final class TopologyLayoutConstants {
     public final static String JSON_KEY_CUSTOM_PROCESSOR_PREFIX = "config.";
     public final static String JSON_KEY_CUSTOM_PROCESSOR_PREFIX_REGEX = "config\\.";
 
+    public static final String JSON_KEY_CLUSTERS = "clusters";
+
     // validation error messages
     public final static String ERR_MSG_UINAME_DUP = "Uiname %s is already " +
             "used by other component.";
@@ -163,6 +165,7 @@ public final class TopologyLayoutConstants {
     public static final String STORM_ARTIFACTS_LOCATION_KEY =
             "stormArtifactsDirectory";
     public static final String STORM_JAR_LOCATION_KEY = "iotasStormJar";
+    public static final String JAVA_JAR_COMMAND = "javaJarCommand";
     public static final String STORM_HOME_DIR = "stormHomeDir";
     // yaml key constants
     public static final String YAML_KEY_NAME = "name";

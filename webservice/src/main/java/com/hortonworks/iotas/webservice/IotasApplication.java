@@ -152,6 +152,7 @@ public class IotasApplication extends Application<IotasConfiguration> {
         conf.put(TopologyLayoutConstants.STORM_JAR_LOCATION_KEY, jar);
         conf.put(TopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL, configuration.getCatalogRootUrl());
         conf.put(TopologyLayoutConstants.STORM_HOME_DIR, configuration.getStormHomeDir());
+        conf.put(TopologyLayoutConstants.JAVA_JAR_COMMAND, configuration.getJavaJarCommand());
         topologyActions.init(conf);
         return topologyActions;
     }
@@ -199,7 +200,7 @@ public class IotasApplication extends Application<IotasConfiguration> {
         final StreamCatalogResource streamCatalogResource = new StreamCatalogResource(catalogService);
 
         // cluster related
-        final ClusterCatalogResource clusterCatalogResource = new ClusterCatalogResource(catalogService);
+        final ClusterCatalogResource clusterCatalogResource = new ClusterCatalogResource(catalogService, fileStorage);
         final ComponentCatalogResource componentCatalogResource = new ComponentCatalogResource(catalogService);
         final TopologyEditorMetadataResource topologyEditorMetadataResource = new TopologyEditorMetadataResource(catalogService);
         final TagCatalogResource tagCatalogResource = new TagCatalogResource(catalogService);

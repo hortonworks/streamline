@@ -25,7 +25,7 @@ import com.hortonworks.iotas.catalog.Component;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSet;
 import com.hortonworks.iotas.catalog.DataSource;
-import com.hortonworks.iotas.catalog.File;
+import com.hortonworks.iotas.catalog.FileInfo;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.catalog.Device;
@@ -49,13 +49,19 @@ import com.hortonworks.iotas.util.CoreUtils;
 import com.hortonworks.iotas.util.FileStorage;
 import com.hortonworks.iotas.util.JsonSchemaValidator;
 import com.hortonworks.iotas.util.exception.BadTopologyLayoutException;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -83,7 +89,7 @@ public class CatalogService {
     private static final String COMPONENT_NAMESPACE = new Component().getNameSpace();
     private static final String NOTIFIER_INFO_NAMESPACE = new NotifierInfo().getNameSpace();
     private static final String TOPOLOGY_NAMESPACE = new Topology().getNameSpace();
-    private static final String FILE_NAMESPACE = File.NAME_SPACE;
+    private static final String FILE_NAMESPACE = FileInfo.NAME_SPACE;
     private static final String STREAMINFO_NAMESPACE = new StreamInfo().getNameSpace();
 
     private StorageManager dao;
@@ -378,8 +384,12 @@ public class CatalogService {
     }
 
     public Cluster addOrUpdateCluster(Long clusterId, Cluster cluster) {
-        cluster.setId(clusterId);
-        cluster.setTimestamp(System.currentTimeMillis());
+        if (cluster.getId() == null) {
+            cluster.setId(clusterId);
+        }
+        if (cluster.getTimestamp() == null) {
+            cluster.setTimestamp(System.currentTimeMillis());
+        }
         this.dao.addOrUpdate(cluster);
         return cluster;
     }
@@ -540,10 +550,49 @@ public class CatalogService {
         return result;
     }
 
-    public void deployTopology (Topology topology) throws Exception {
-        this.addUpdateNotifierInfoFromTopology(topology);
-        this.topologyActions.deploy(topology);
-        return;
+    public void deployTopology(Topology topology) throws Exception {
+        addUpdateNotifierInfoFromTopology(topology);
+        setUpClusterArtifacts(topology);
+        topologyActions.deploy(topology);
+    }
+
+    private void setUpClusterArtifacts(Topology topology) throws IOException {
+        String config = topology.getConfig();
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map jsonMap = objectMapper.readValue(config, Map.class);
+        if (jsonMap != null) {
+            List<Object> clusterList = (List<Object>) jsonMap.get(TopologyLayoutConstants.JSON_KEY_CLUSTERS);
+            if (clusterList != null) {
+                List<Cluster> clusters = objectMapper.readValue(objectMapper.writeValueAsString(clusterList),
+                                                                new TypeReference<List<Cluster>>() {
+                                                                });
+                Path artifactsDir = topologyActions.getArtifactsLocation(topology);
+                if (artifactsDir.toFile().exists()) {
+                    if (artifactsDir.toFile().isDirectory()) {
+                        FileUtils.cleanDirectory(artifactsDir.toFile());
+                    } else {
+                        final String errorMessage = String.format("Artifacts location '%s' must be a directory.", artifactsDir);
+                        LOG.error(errorMessage);
+                        throw new IOException(errorMessage);
+                    }
+                } else if (!artifactsDir.toFile().mkdirs()) {
+                    LOG.error("Could not create artifacts dir {}", artifactsDir);
+                    throw new IOException("Could not create artifacts dir: " + artifactsDir);
+                }
+                for (Cluster c : clusters) {
+                    Cluster cluster = getCluster(c.getId());
+                    String resource = cluster.getClusterConfigStorageName();
+                    File destPath = Paths.get(artifactsDir.toString(), cluster.getClusterConfigFileName()).toFile();
+                    try (
+                            InputStream src = fileStorage.downloadFile(resource);
+                            FileOutputStream dest = new FileOutputStream(destPath);
+                    ) {
+                        IOUtils.copy(src, dest);
+                        LOG.debug("Resource {} copied to {}", resource, destPath);
+                    }
+                }
+            }
+        }
     }
 
     public void killTopology (Topology topology) throws Exception {
@@ -841,27 +890,27 @@ public class CatalogService {
         return tagService.getEntities(tagId, true);
     }
 
-    public Collection<File> listFiles() {
+    public Collection<FileInfo> listFiles() {
         return dao.list(FILE_NAMESPACE);
     }
 
-    public Collection<File> listFiles(List<QueryParam> queryParams) {
+    public Collection<FileInfo> listFiles(List<QueryParam> queryParams) {
         return dao.find(FILE_NAMESPACE, queryParams);
     }
 
-    public File getFile(Long jarId) {
-        File file = new File();
+    public FileInfo getFile(Long jarId) {
+        FileInfo file = new FileInfo();
         file.setId(jarId);
         return dao.get(new StorableKey(FILE_NAMESPACE, file.getPrimaryKey()));
     }
 
-    public File removeFile(Long fileId) {
-        File file = new File();
+    public FileInfo removeFile(Long fileId) {
+        FileInfo file = new FileInfo();
         file.setId(fileId);
         return dao.remove(new StorableKey(FILE_NAMESPACE, file.getPrimaryKey()));
     }
 
-    public File addOrUpdateFile(File file) {
+    public FileInfo addOrUpdateFile(FileInfo file) {
         if (file.getId() == null) {
             file.setId(dao.nextId(FILE_NAMESPACE));
         }
