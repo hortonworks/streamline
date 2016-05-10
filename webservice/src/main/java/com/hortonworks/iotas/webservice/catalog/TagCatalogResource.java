@@ -34,6 +34,11 @@ import static javax.ws.rs.core.Response.Status.*;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.OK;
 
+/**
+ * REST resource for managing hierarchical tags in the Iotas system.
+ * <p>
+ * <b>Note:</b> The JAVADOCS should be updated whenever there are any changes to the api.
+ */
 @Path("/api/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class TagCatalogResource {
@@ -46,7 +51,58 @@ public class TagCatalogResource {
     }
 
     /**
-     * List ALL tags or the ones matching specific query params.
+     * <p>
+     * Lists all the tags in the system or the ones matching specific query params. For example to
+     * list all the tags in the system,
+     * </p>
+     * <b>GET /api/v1/catalog/tags</b>
+     * <p>
+     * <pre>
+     * {
+     *  "responseCode": 1000,
+     *  "responseMessage": "Success",
+     *  "entities": [
+     *    {
+     *      "id": 1,
+     *      "name": "device",
+     *      "description": "device tag",
+     *      "timestamp": 1462865727579,
+     *      "tagIds": []
+     *    },
+     *    {
+     *      "id": 2,
+     *      "name": "thermostat",
+     *      "description": "thermostat device",
+     *      "timestamp": 1462866539146,
+     *      "tagIds": [1]
+     *    }
+     *    ..
+     *    ..
+     *  ]
+     * }
+     * </pre>
+     * <p>
+     * <p>
+     * The tags can also be listed based on specific query params. For example to list
+     * tag(s) with the name "device",
+     * </p>
+     * <b>GET /api/v1/catalog/tags?name=device</b>
+     * <pre>
+     * {
+     *   "responseCode": 1000,
+     *   "responseMessage": "Success",
+     *   "entities": [{
+     *     "id": 1,
+     *     "name": "device",
+     *     "description": "device tag",
+     *     "timestamp": 1462865727579,
+     *     "tagIds": []
+     *   }]
+     * }
+     * </pre>
+     *
+     * @param uriInfo the URI info which contains the query params
+     * @return the response
      */
     @GET
     @Path("/tags")
@@ -72,6 +128,28 @@ public class TagCatalogResource {
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, queryParams.toString());
     }
 
+    /**
+     * <p>
+     * Gets a specific tag by Id. For example,
+     * </p>
+     * <b>GET /api/v1/catalog/tags/1</b>
+     * <pre>
+     * {
+     *   "responseCode": 1000,
+     *   "responseMessage": "Success",
+     *   "entity": {
+     *     "id": 1,
+     *     "name": "device",
+     *     "description": "device tag",
+     *     "timestamp": 1462865727579,
+     *     "tagIds": []
+     *   }
+     * }
+     * </pre>
+     *
+     * @param tagId the tag id
+     * @return the response
+     */
     @GET
     @Path("/tags/{id}")
     @Timed
@@ -88,6 +166,63 @@ public class TagCatalogResource {
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, tagId.toString());
     }
 
+    /**
+     * <p>
+     * Creates a tag in the system. For example,
+     * </p>
+     * <b>POST /api/v1/catalog/tags</b>
+     * <pre>
+     * {
+     *   "name": "device",
+     *   "description": "device tag"
+     * }
+     * </pre>
+     * <i>Sample success response: </i>
+     * <pre>
+     * {
+     *   "responseCode": 1000,
+     *   "responseMessage": "Success",
+     *     "entity": {
+     *       "id": 1,
+     *       "name": "device",
+     *       "description": "device tag",
+     *       "timestamp": 1462865727579,
+     *       "tagIds": []
+     *     }
+     * }
+     * </pre>
+     * <p>
+     * Tags can be optionally nested. To create a nested tag, specify a parent tag id
+     * while creating the tag. Parent tags can also be added later via the update api (PUT).
+     * For example a thermostat tag can be added as a child of device tag as follows.
+     * </p>
+     * <p>
+     * <b>POST /api/v1/catalog/tags</b>
+     * <pre>
+     * {
+     *   "name": "thermostat",
+     *   "description": "thermostat device",
+     *   "tagIds": [1]
+     * }
+     * </pre>
+     * <i>Response:</i>
+     * <pre>
+     * {
+     *    "responseCode": 1000,
+     *    "responseMessage": "Success",
+     *    "entity": {
+     *      "id": 2,
+     *      "name": "thermostat",
+     *      "description": "thermostat device",
+     *      "timestamp": 1462866539146,
+     *      "tagIds": [1]
+     *    }
+     * }
+     * </pre>
+     *
+     * @param tagDto the tag object to be created
+     * @return the response
+     */
     @POST
     @Path("/tags")
     @Timed
@@ -101,6 +236,40 @@ public class TagCatalogResource {
     }
 
 
+    /**
+     * <p>
+     * Removes a tag from the system. Tags cannot be removed if it has any associated entities.
+     * </p>
+     * <b>DELETE /api/v1/catalog/tags/3</b>
+     * <pre>
+     * {
+     *   "responseCode": 1000,
+     *   "responseMessage": "Success",
+     *   "entity": {
+     *     "id": 3,
+     *     "name": "weather",
+     *     "description": "weather related",
+     *     "timestamp": 1462868853582,
+     *     "tagIds": []
+     *   }
+     * }
+     * </pre>
+     * <p>
+     * Trying to delete a tag that has some child entities would result in an error. A tag should be
+     * first removed from all the entities (including child tags) before it can be deleted.
+     * </p>
+     * <b>DELETE /api/v1/catalog/tags/1</b>
+     * <pre>
+     * {
+     * "responseCode": 1102,
+     * "responseMessage": "An exception with message [Tag not empty, has child entities.]
+     *   was thrown while processing request. Please check webservice/ErrorCodes.md
+     *   for more details."
+     * }</pre>
+     *
+     * @param tagId the id of the tag to be deleted
+     * @return the response
+     */
     @DELETE
     @Path("/tags/{id}")
     @Timed
@@ -117,6 +286,35 @@ public class TagCatalogResource {
         }
     }
 
+    /**
+     * <p>Updates a tag in the system.</p>
+     * <p>
+     * <b>PUT /api/v1/catalog/tags/1</b>
+     * <pre>
+     * {
+     *   "name": "device",
+     *   "description": "updated device tag"
+     * }
+     * </pre>
+     * <i>Sample success response: </i>
+     * <pre>
+     * {
+     *   "responseCode": 1000,
+     *   "responseMessage": "Success",
+     *     "entity": {
+     *       "id": 1,
+     *       "name": "device",
+     *       "description": "updated device tag",
+     *       "timestamp": 1462870576965,
+     *       "tagIds": []
+     *     }
+     * }
+     * </pre>
+     *
+     * @param tagId  the id of the tag to be updated
+     * @param tagDto the updated tag object
+     * @return the response
+     */
     @PUT
     @Path("/tags/{id}")
     @Timed
@@ -129,6 +327,36 @@ public class TagCatalogResource {
         }
     }
 
+    /**
+     * <p>
+     * Gets all the entities tagged with the given tag id. This also recursively gets
+     * all the entities belonging to any child tags of the given tag. The child tags itself
+     * are not included in the result.
+     * </p>
+     * <b>GET /api/v1/catalog/tags/1/entities</b>
+     * <pre>
+     * {
+     *   "responseCode":1000,
+     *   "responseMessage":"Success",
+     *   "entities":[{
+     *     "dataSourceId":12,
+     *     "dataSourceName":"nest-thermostat",
+     *     "description":"desc",
+     *     "tags":"thermostat",
+     *     "timestamp":1462871809306,
+     *     "type":"DEVICE",
+     *     "typeConfig":"{\"make\":\"1\",\"model\":\"1\"}",
+     *     "dataFeedName":"feed:test-tag-ds",
+     *     "parserId":12,
+     *     "parserName":null,
+     *     "dataFeedType":"KAFKA"
+     *     }]
+     * }
+     * </pre>
+     *
+     * @param tagId the tag id
+     * @return the response
+     */
     @GET
     @Path("/tags/{id}/entities")
     @Timed
@@ -183,10 +411,10 @@ public class TagCatalogResource {
 
     private Collection<Object> makeDto(Collection<Storable> storables) throws Exception {
         List<Object> result = new ArrayList<>();
-        for(Storable storable: storables) {
-            if(storable instanceof Tag) {
+        for (Storable storable : storables) {
+            if (storable instanceof Tag) {
                 result.add(makeTagDto((Tag) storable));
-            } else if(storable instanceof DataSource) {
+            } else if (storable instanceof DataSource) {
                 result.add(makeDataSourceDto((DataSource) storable));
             } else {
                 throw new StorageException("Storable " + storable + " does not have a corresponding dto");

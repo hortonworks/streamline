@@ -21,6 +21,7 @@ package com.hortonworks.iotas.webservice;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.hortonworks.iotas.catalog.CatalogResponse;
 import com.hortonworks.iotas.catalog.Cluster;
@@ -42,6 +43,7 @@ import com.hortonworks.iotas.topology.TopologyComponent;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import com.hortonworks.iotas.webservice.catalog.TopologyCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
+import com.hortonworks.iotas.webservice.catalog.dto.TagDto;
 import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import org.apache.commons.io.IOUtils;
@@ -177,6 +179,7 @@ public class RestIntegrationTest {
      * List of all things that will be tested
      */
     private Collection<ResourceTestElement> resourcesToTest = Lists.newArrayList(
+            new ResourceTestElement(createTag(1L, "foo-tag"), createTag(1L, "foo-tag-new"), "1", rootUrl + "tags"),
             // TODO: The below test case needs to be fixed since it should first create the data source and then add the corresponding datafeed
             //new ResourceTestElement(createDataFeed(1l, "testDataFeed"), createDataFeed(1l, "testDataFeedPut"), "1", rootUrl + "feeds"),
             new ResourceTestElement(createClusterInfo(1l, "testCluster"), createClusterInfo(1l, "testClusterPut"), "1", rootUrl + "clusters")
@@ -366,6 +369,53 @@ public class RestIntegrationTest {
             response = e.getResponse().readEntity(String.class);
             Assert.assertEquals(CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND.getCode(), getResponseCode(response));
         }
+    }
+
+    @Test
+    public void testHeirarchicalTags() throws Exception {
+        Client client = ClientBuilder.newClient(new ClientConfig());
+        String tagUrl = rootUrl + "tags";
+        String dsUrl = rootUrl + "datasources";
+        long parentTagId = 10L;
+        long childTagId = 11L;
+
+        /*
+         * create a "parent-tag"
+         */
+        TagDto parent = createTag(parentTagId, "parent-tag");
+        String response = client.target(tagUrl).request().post(Entity.json(parent), String.class);
+        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+
+        /*
+         * create a "child-tag" which is tagged under "parent-tag"
+         */
+        TagDto child = createTag(childTagId, "child-tag", ImmutableList.<Long>of(parentTagId));
+        response = client.target(tagUrl).request().post(Entity.json(child), String.class);
+        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+
+        /*
+         * create a datasource tagged with "child-tag"
+         */
+        DataSourceDto dataSourceDto = createDataSourceDto(12L, "test-tag-ds");
+        dataSourceDto.setTags("child-tag");
+        response = client.target(dsUrl).request().post(Entity.json(dataSourceDto), String.class);
+        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+
+        /*
+         * data source should be listed under "parent-tag" even though its tagged with "child-tag"
+         */
+        String tagEntitiesUrl = String.format("%s/%s/entities", tagUrl, parentTagId);
+        response = client.target(tagEntitiesUrl).request().get(String.class);
+        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+        Assert.assertEquals(Lists.newArrayList(dataSourceDto), getEntities(response, DataSourceDto.class));
+
+        /*
+         * data source should also be listed under "child-tag"
+         */
+        tagEntitiesUrl = String.format("%s/%s/entities", tagUrl, childTagId);
+        response = client.target(tagEntitiesUrl).request().get(String.class);
+        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+        Assert.assertEquals(Lists.newArrayList(dataSourceDto), getEntities(response, DataSourceDto.class));
     }
 
     /*
@@ -738,6 +788,20 @@ public class RestIntegrationTest {
         pi.setVersion(0l);
         pi.setTimestamp(System.currentTimeMillis());
         return pi;
+    }
+
+    private TagDto createTag(Long id, String name, List<Long> tagIds) {
+        TagDto tag = new TagDto();
+        tag.setId(id);
+        tag.setName(name);
+        tag.setDescription("test");
+        tag.setTimestamp(System.currentTimeMillis());
+        tag.setTagIds(tagIds);
+        return tag;
+    }
+
+    private TagDto createTag(Long id, String name) {
+        return createTag(id, name, Collections.<Long>emptyList());
     }
 
     private Cluster createClusterInfo(Long id, String name) {
