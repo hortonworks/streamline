@@ -18,21 +18,23 @@
 
 package com.hortonworks.iotas.bolt.rules;
 
+import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.Result;
+import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntime;
+import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
+import com.hortonworks.iotas.util.CoreUtils;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.topology.base.BaseRichBolt;
-import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Fields;
+import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
-import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntime;
-import com.hortonworks.iotas.layout.runtime.rule.RuleRuntime;
-import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -53,6 +55,14 @@ public class RulesBolt extends BaseRichBolt {
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
         this.collector = collector;
         ruleProcessorRuntime = boltDependenciesFactory.createRuleProcessorRuntime();
+
+        Map<String, Object> config = Collections.emptyMap();
+        if (stormConf != null) {
+            config = new HashMap<>();
+            config.put(CoreUtils.CATALOG_ROOT_URL, stormConf.get(CoreUtils.CATALOG_ROOT_URL));
+            config.put(CoreUtils.LOCAL_JAR_PATH, stormConf.get(CoreUtils.LOCAL_JAR_PATH));
+        }
+        ruleProcessorRuntime.initialize(config);
     }
 
     @Override

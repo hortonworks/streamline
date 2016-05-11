@@ -1,6 +1,5 @@
 package com.hortonworks.iotas.webservice;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import java.util.Map;
@@ -9,7 +8,7 @@ import java.util.Map;
  * The configuration for jar storage.
  *
  */
-public class JarStorageConfiguration {
+public class FileStorageConfiguration {
 
     @NotEmpty
     private String className;

@@ -1,23 +1,21 @@
 package com.hortonworks.iotas.bolt;
 
-import org.apache.storm.Config;
-import org.apache.storm.task.OutputCollector;
-import org.apache.storm.tuple.Tuple;
-import org.apache.storm.tuple.Values;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
-
-import com.hortonworks.iotas.client.CatalogRestClient;
 import com.hortonworks.iotas.catalog.ParserInfo;
+import com.hortonworks.iotas.client.CatalogRestClient;
 import com.hortonworks.iotas.model.IotasMessage;
-
+import com.hortonworks.iotas.util.CoreUtils;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Mocked;
 import mockit.Tested;
 import mockit.VerificationsInOrder;
 import mockit.integration.junit4.JMockit;
-
+import org.apache.storm.Config;
+import org.apache.storm.task.OutputCollector;
+import org.apache.storm.tuple.Tuple;
+import org.apache.storm.tuple.Values;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,8 +24,8 @@ import org.junit.runner.RunWith;
 import java.io.ByteArrayInputStream;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.hortonworks.iotas.bolt.ParserBolt.PARSED_TUPLES_STREAM;
 import static com.hortonworks.iotas.bolt.ParserBolt.FAILED_TO_PARSE_TUPLES_STREAM;
+import static com.hortonworks.iotas.bolt.ParserBolt.PARSED_TUPLES_STREAM;
 
 @RunWith(JMockit.class)
 public class ParserBoltTest {
@@ -53,7 +51,7 @@ public class ParserBoltTest {
         parserBolt.withUnparsedTuplesStreamId(FAILED_TO_PARSE_TUPLES_STREAM);
 
         Config config = new Config();
-        config.put(ParserBolt.CATALOG_ROOT_URL, "test");
+        config.put(CoreUtils.CATALOG_ROOT_URL, "test");
         config.put(ParserBolt.LOCAL_PARSER_JAR_PATH, "/tmp");
 
         parserBolt.prepare(config, null, mockOutputCollector);
