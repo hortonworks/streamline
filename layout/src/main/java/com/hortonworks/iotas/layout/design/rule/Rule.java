@@ -19,23 +19,27 @@
 package com.hortonworks.iotas.layout.design.rule;
 
 import com.google.common.collect.ImmutableList;
+import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.layout.design.rule.action.Action;
 import com.hortonworks.iotas.layout.design.rule.condition.Condition;
 import com.hortonworks.iotas.layout.design.rule.condition.Projection;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
  * A rule as represented in the UI layout
  */
 public class Rule implements Serializable {
+    private static final Set<String> DEFAULT_STREAM = Collections.singleton(IotasEventImpl.DEFAULT_SOURCE_STREAM);
     private Long id;
     private String name;
     private String description;
     private String ruleProcessorName;
-
+    private Set<String> streams;
     private Projection projection;
     private Condition condition;
     private List<Action> actions;
@@ -104,6 +108,14 @@ public class Rule implements Serializable {
         this.actions = ImmutableList.copyOf(actions);
     }
 
+    public Set<String> getStreams() {
+        return streams != null ? streams : DEFAULT_STREAM;
+    }
+
+    public void setStreams(Set<String> streams) {
+        this.streams = streams;
+    }
+
     public String getOutputStreamNameForAction(Action action) {
         return ruleProcessorName + "." + name + "." + id + "." + action.getName();
     }
@@ -115,6 +127,8 @@ public class Rule implements Serializable {
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", ruleProcessorName='" + ruleProcessorName + '\'' +
+                ", streams=" + streams +
+                ", projection=" + projection +
                 ", condition=" + condition +
                 ", actions=" + actions +
                 '}';

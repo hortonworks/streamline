@@ -1,5 +1,4 @@
 /*
-/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -80,6 +79,7 @@ public abstract class JdbcStorageManagerIntegrationTest extends AbstractStoreMan
             add(new DeviceJdbcTest());
             add(new ParsersTest());
             add(new DataFeedsJdbcTest());
+            add(new FilesTest());
         }};
     }
 

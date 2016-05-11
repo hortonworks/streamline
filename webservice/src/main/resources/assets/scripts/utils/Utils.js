@@ -1,4 +1,4 @@
-define(['require', 'utils/Globals', 'bootstrap.notify'], function(require, Globals) {
+define(['require', 'utils/Globals', 'bootbox', 'bootstrap.notify'], function(require, Globals, bootbox) {
   'use strict';
 
   var Utils = {};
@@ -258,6 +258,26 @@ define(['require', 'utils/Globals', 'bootstrap.notify'], function(require, Globa
         isShown = true;
     });
     return isShown;
+  };
+
+  Utils.ConfirmDialog = function(message, title, successCallback, cancelCallback) {
+    bootbox.dialog({
+      message: message,
+      title: title,
+      className: 'confirmation-dialog',
+      buttons: {
+        cancel: {
+          label: 'No',
+          className: 'btn-default btn-small',
+          callback: cancelCallback ? cancelCallback : function(){}
+        },
+        success: {
+          label: 'Yes',
+          className: 'btn-success btn-small',
+          callback: successCallback
+        }
+      }
+    });
   };
 
   return Utils;

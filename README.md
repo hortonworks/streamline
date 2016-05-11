@@ -90,21 +90,7 @@ Now you need to create HBase tables where the IotasEvent and Notifications will 
 
 
 ## Running the Topology
-Now, From intellij you should be able to run `com.hortonworks.topology.IotasTopology` by providing `$IOTAS-HOME/storm/src/main/resources/topology.yaml` as argument and modifying `$IOTAS-HOME/storm/pom.xml` so `storm-core` is not in provided scope. 
-you can also run the topology on a storm cluster by providing the name of the topology as second argument. RIGHT NOW THE TOPOLOGY DOES NOT EXECUTE IN A STORM CLUSTER AS THE JACKSON LIBRARY USED BY US HAVE A CONFLICTING
-VERSION WITH STORM. Please merge https://github.com/apache/storm/pull/702 on your local storm cluster if you need to execute the topology on a storm cluster.
-
-`storm jar $IOTAS-HOME/storm/target/storm-0.1.0-SNAPSHOT.jar com.hortonworks.topology.IotasTopology  $IOTAS-HOME/storm/src/main/resources/topology.yaml IotasTopology`
-
-##IoTaS topology using Flux  
-After doing a mvn package on IoTaS home directory you can run the following 
-command `storm jar ./storm/target/storm-0.1.0-SNAPSHOT.jar org.apache.storm.flux.Flux --local --sleep 3600000 --filter ./storm/src/main/resources/flux_iotas_topology.properties ./storm/src/main/resources/flux_iotas_topology_config.yaml`
-  
-Note that in order to submit the topology created using UI the storm jar for the topology must be copied to the path referred to by iotasStormJar config 
-property. Default value for that location is /tmp/storm-0.1.0-SNAPSHOT.jar
-
-This will run the IOTaS topology in local mode for one hour, processing any events published to the 'nest-topic'. You can kill the topology anytime by pressing CTRL + C in the console.
-
+UI can be used to create/generate a topology and run that on a storm cluster.
 
 #Accounting for bad tuples in a topology
 A mechanism has been added so that when messages are being played from a 

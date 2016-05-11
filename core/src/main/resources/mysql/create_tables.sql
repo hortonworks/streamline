@@ -35,6 +35,17 @@ CREATE TABLE IF NOT EXISTS parser_info (
     UNIQUE KEY `UK_name_version` (name, version)
 );
 
+CREATE TABLE IF NOT EXISTS files (
+    id BIGINT AUTO_INCREMENT NOT NULL,
+    name VARCHAR(256) NOT NULL,
+    version BIGINT NOT NULL,
+    storedFileName TEXT NOT NULL,
+    auxiliaryInfo TEXT,
+    timestamp  BIGINT,
+    PRIMARY KEY (id),
+    UNIQUE KEY `jars_UK_name_version` (name, version)
+);
+
 CREATE TABLE IF NOT EXISTS datafeeds (
     id BIGINT AUTO_INCREMENT NOT NULL,
     dataSourceId BIGINT NOT NULL,

@@ -44,12 +44,26 @@ define([
 		 * @param  {Array}   args - route params
 		 */
 		execute: function(callback, args) {
-			this.preRouteExecute();
-			if (callback) callback.apply(this, args);
+			this.preRouteExecute(callback, args);
 			this.postRouteExecute();
 		},
 
-		preRouteExecute: function() {
+		preRouteExecute: function(callback, args) {
+			if(window._preventNavigation){
+				var successCallBack = function() {
+					$("body").off('click', '.nav-link');
+					window._preventNavigation = false;
+					VAppState.set('previousFragment', Backbone.history.getFragment());
+					if (callback) callback.apply(this, args);
+				},
+				cancelCallback = function() {
+					Backbone.history.navigate(VAppState.get('previousFragment'), { trigger: false });
+				};
+				Utils.ConfirmDialog('Are you sure you want to leave this page ?', 'Confirm', successCallBack, cancelCallback);
+			} else {
+				VAppState.set('previousFragment', Backbone.history.getFragment());
+				if (callback) callback.apply(this, args);
+			}
 			// console.log("Pre-Route Change Operations can be performed here !!");
 		},
 

@@ -8,14 +8,14 @@ catalogRootUrl: "http://localhost:8080/api/v1/catalog"
 stormHomeDir: /usr/local/Cellar/storm/0.10.0/
 stormApiRootUrl: "http://localhost:8888/api/v1"
 # Filesystem based jar storage
-#jarStorageConfiguration:
-#  className: "com.hortonworks.iotas.util.FileSystemJarStorage"
+#fileStorageConfiguration:
+#  className: "com.hortonworks.iotas.util.LocalFileSystemStorage"
 #  properties:
 #    directory: "/tmp"
 
 # HDFS based Jar storage
-jarStorageConfiguration:
-  className: "com.hortonworks.iotas.util.HdfsJarStorage"
+fileStorageConfiguration:
+  className: "com.hortonworks.iotas.util.HdfsFileStorage"
   properties:
     fsUrl: "file:///"
     directory: "/tmp/test-hdfs"

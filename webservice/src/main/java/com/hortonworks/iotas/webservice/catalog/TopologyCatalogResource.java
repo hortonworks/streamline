@@ -1,8 +1,25 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package com.hortonworks.iotas.webservice.catalog;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.io.ByteStreams;
 import com.hortonworks.iotas.catalog.Topology;
 import com.hortonworks.iotas.processor.CustomProcessorInfo;
 import com.hortonworks.iotas.service.CatalogService;
@@ -23,7 +40,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -32,7 +48,6 @@ import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -346,9 +361,7 @@ public class TopologyCatalogResource {
     @Timed
     public Response removeTopologyComponentConfig (@PathParam("component") TopologyComponent.TopologyComponentType componentType, @PathParam ("id") Long id) {
         try {
-            TopologyComponent removedTopologyComponent = catalogService
-                    .removeTopologyComponent
-                            (id);
+            TopologyComponent removedTopologyComponent = catalogService.removeTopologyComponent(id);
             if (removedTopologyComponent != null) {
                 return WSUtils.respond(OK, SUCCESS, removedTopologyComponent);
             } else {
@@ -367,18 +380,9 @@ public class TopologyCatalogResource {
     @Path("/system/componentdefinitions/{processor}/custom/{fileName}")
     public Response downloadCustomProcessorFile (@PathParam("fileName") String fileName) {
         try {
-            final InputStream inputStream = catalogService.getCustomProcessorFile(fileName);
+            final InputStream inputStream = catalogService.getFileFromJarStorage(fileName);
             if (inputStream != null) {
-                StreamingOutput streamOutput = new StreamingOutput() {
-                    @Override
-                    public void write(OutputStream os) throws IOException, WebApplicationException {
-                        try {
-                            ByteStreams.copy(inputStream, os);
-                        } finally {
-                            os.close();
-                        }
-                    }
-                };
+                StreamingOutput streamOutput = WSUtils.wrapWithStreamingOutput(inputStream);
                 return Response.ok(streamOutput).build();
             }
         } catch (Exception ex) {

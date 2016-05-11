@@ -115,10 +115,11 @@ define(['require',
           self.graphTransforms = obj.graphTransforms ? obj.graphTransforms : self.graphTransforms;
           self.updateVariables();
         }
+        self.promiseResolvedFlag = true;
         if(self.renderFlag){
           self.showCustomProcessors();
-          self.$('svg').remove();
           self.topologyGraph = TopologyUtils.syncGraph(self.model.get('_editState'), self.graphNodesData, self.linkArr, self.ui.graphEditor, self.vent, self.graphTransforms, self.linkConfigArr, self.editMode);
+          TopologyUtils.bindDrop(self.$('#graphEditor'), self.dsArr, self.processorArr, self.sinkArr, self.vent, self.nodeNames);
         }
       });
     },
@@ -262,16 +263,37 @@ define(['require',
         this.$(".nodes-list-container, .topology-control-btn, .topology-mode-control").toggleClass("displayNone");
         this.$("#topologyName").html(this.topologyName);        
         this.$('#topologyName').editable('toggleDisabled');
+        window._preventNavigation = false;
       } else {
+        window._preventNavigation = true;
         this.$(".topology-capsule").hide();
       }   
       
       setTimeout(function(){
         self.renderFlag = true;
-        self.showCustomProcessors();
-        self.topologyGraph = TopologyUtils.syncGraph(self.model.get('_editState'), self.graphNodesData, self.linkArr, self.ui.graphEditor, self.vent, self.graphTransforms, self.linkConfigArr, self.editMode);
-        TopologyUtils.bindDrop(self.$('#graphEditor'), self.dsArr, self.processorArr, self.sinkArr, self.vent, self.nodeNames);
+        if(self.promiseResolvedFlag){
+          self.showCustomProcessors();
+          self.topologyGraph = TopologyUtils.syncGraph(self.model.get('_editState'), self.graphNodesData, self.linkArr, self.ui.graphEditor, self.vent, self.graphTransforms, self.linkConfigArr, self.editMode);
+          TopologyUtils.bindDrop(self.$('#graphEditor'), self.dsArr, self.processorArr, self.sinkArr, self.vent, self.nodeNames);
+        }
       }, 0);
+
+      $("body").on("click", ".nav-link", function(e) {
+        var target = this,
+            message = 'Are you sure you want to leave this page ?',
+            title = 'Confirm',
+            successCallback = function(){
+              window._preventNavigation = false;
+              $("body").off('click', '.nav-link');
+              target.click();
+            };
+        if(self.editMode) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          Utils.ConfirmDialog(message, title, successCallback);
+          return false;
+        }
+      });
       
       var accordion = this.$('[data-toggle="collapse"]');
       if(accordion.length){
@@ -726,12 +748,14 @@ define(['require',
       this.editMode = this.editMode ? false : true;
       this.$(".topology-control-btn, .topology-mode-control").toggleClass("displayNone");
       if(this.editMode){
+        window._preventNavigation = true;
         this.$("#graphEditor").addClass("graph-bg"); 
         this.$(".nodes-list-container").removeClass("displayNone");
         this.$(".node-options-btn").addClass("displayNone");
         this.$("#topologyName").html(this.topologyName+'<i class="fa fa-pencil"></i>');
         this.$(".topology-capsule").hide();
       } else {
+        window._preventNavigation = false;
         this.$("#graphEditor").removeClass("graph-bg");
         this.$(".nodes-list-container").addClass("displayNone");
         this.$("#topologyName").html(this.topologyName);

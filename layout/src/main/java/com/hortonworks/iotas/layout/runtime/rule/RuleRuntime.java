@@ -111,6 +111,10 @@ public class RuleRuntime implements Serializable, ProcessorRuntime {
         return streams;
     }
 
+    public Rule getRule() {
+        return rule;
+    }
+
     @Override
     public String toString() {
         return "RuleRuntime{" +

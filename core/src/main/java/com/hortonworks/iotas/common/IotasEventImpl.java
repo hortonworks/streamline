@@ -10,7 +10,7 @@ import java.util.UUID;
  */
 public class IotasEventImpl implements IotasEvent {
     // Default value chosen to be blank and not the default used in storm since wanted to keep it independent of storm.
-    public final static String DEFAULT_SOURCE_STREAM = "";
+    public final static String DEFAULT_SOURCE_STREAM = "default";
     private final Map<String, Object> header;
     private final String sourceStream;
     private final Map<String, Object> fieldsAndValues;
