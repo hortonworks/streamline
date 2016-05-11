@@ -102,3 +102,12 @@ CREATE TABLE IF NOT EXISTS tag_storable_mapping (
     storableId BIGINT NOT NULL,
     PRIMARY KEY (tagId, storableNamespace, storableId)
 );
+
+CREATE TABLE IF NOT EXISTS streaminfo (
+    id BIGINT AUTO_INCREMENT NOT NULL,
+    streamId VARCHAR(256) NOT NULL,
+    fieldsData TEXT NOT NULL,
+    timestamp BIGINT,
+    UNIQUE KEY `UK_streamId` (streamId),
+    PRIMARY KEY (id)
+);

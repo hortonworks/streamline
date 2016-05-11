@@ -49,6 +49,7 @@ import com.hortonworks.iotas.webservice.catalog.FeedCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.FileCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.NotifierInfoCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.ParserInfoCatalogResource;
+import com.hortonworks.iotas.webservice.catalog.StreamCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.TagCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.TopologyCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.TopologyEditorMetadataResource;
@@ -195,6 +196,7 @@ public class IotasApplication extends Application<IotasConfiguration> {
                 new DataSourceWithDataFeedCatalogResource(new DataSourceFacade(catalogService));
         final TopologyCatalogResource topologyCatalogResource = new TopologyCatalogResource(catalogService);
         final MetricsResource metricsResource = new MetricsResource(catalogService);
+        final StreamCatalogResource streamCatalogResource = new StreamCatalogResource(catalogService);
 
         // cluster related
         final ClusterCatalogResource clusterCatalogResource = new ClusterCatalogResource(catalogService);
@@ -205,8 +207,8 @@ public class IotasApplication extends Application<IotasConfiguration> {
 
         List<Object> resources = Lists.newArrayList(feedResource, parserResource, dataSourceResource, dataSourceWithDataFeedCatalogResource,
                 topologyCatalogResource, clusterCatalogResource, componentCatalogResource,
-                topologyEditorMetadataResource, tagCatalogResource, fileCatalogResource, metricsResource);
-
+                topologyEditorMetadataResource, tagCatalogResource, fileCatalogResource, metricsResource,
+                streamCatalogResource);
         if (!iotasConfiguration.isNotificationsRestDisabled()) {
             resources.add(new NotifierInfoCatalogResource(catalogService));
             resources.add(new NotificationsResource(new NotificationServiceImpl()));
