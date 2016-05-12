@@ -51,6 +51,10 @@ public class JoinAction extends Action {
     public JoinAction() {
     }
 
+    public JoinAction(String joinerClassName) {
+        this(null, joinerClassName);
+    }
+
     public JoinAction(Long jarId, String joinerClassName) {
         this.jarId = jarId;
         this.joinerClassName = joinerClassName;

@@ -35,7 +35,7 @@ import java.util.Set;
 /**
  * Runtime for {@link SplitAction}
  */
-public class SplitActionRuntime extends AbstractActionRuntime {
+public class SplitActionRuntime extends AbstractSplitJoinActionRuntime {
 
     private static final Logger log = LoggerFactory.getLogger(SplitActionRuntime.class);
 

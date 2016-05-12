@@ -31,6 +31,10 @@ public class SplitAction extends Action {
     public SplitAction() {
     }
 
+    public SplitAction(String splitterClassName) {
+        this(null, splitterClassName);
+    }
+
     public SplitAction(Long jarId, String splitterClassName) {
         this.jarId = jarId;
         this.splitterClassName = splitterClassName;

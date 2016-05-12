@@ -31,7 +31,7 @@ import java.util.Map;
 public final class CoreUtils {
 
     public static final String CATALOG_ROOT_URL = "catalog.root.url";
-    public static final String LOCAL_JAR_PATH = "local.jar.path";
+    public static final String LOCAL_FILES_PATH = "local.files.path";
 
     private CoreUtils() {
     }

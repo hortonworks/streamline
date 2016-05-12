@@ -60,7 +60,7 @@ public class RulesBolt extends BaseRichBolt {
         if (stormConf != null) {
             config = new HashMap<>();
             config.put(CoreUtils.CATALOG_ROOT_URL, stormConf.get(CoreUtils.CATALOG_ROOT_URL));
-            config.put(CoreUtils.LOCAL_JAR_PATH, stormConf.get(CoreUtils.LOCAL_JAR_PATH));
+            config.put(CoreUtils.LOCAL_FILES_PATH, stormConf.get(CoreUtils.LOCAL_FILES_PATH));
         }
         ruleProcessorRuntime.initialize(config);
     }

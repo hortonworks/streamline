@@ -39,7 +39,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * {@link ActionRuntime} implementation for {@link JoinAction}
  */
-public class JoinActionRuntime extends AbstractActionRuntime {
+public class JoinActionRuntime extends AbstractSplitJoinActionRuntime {
     private Cache<String, EventGroup> groupedEvents;
     private final JoinAction joinAction;
     private Joiner joiner;

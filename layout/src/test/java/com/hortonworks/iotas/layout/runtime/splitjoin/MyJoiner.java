@@ -16,26 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.hortonworks.iotas.layout.runtime.rule.action;
+package com.hortonworks.iotas.layout.runtime.splitjoin;
 
-import java.util.Map;
+import com.hortonworks.iotas.common.IotasEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Abstract class of {@link ActionRuntime} which implements {@link #setActionRuntimeContext(ActionRuntimeContext)} and {@link #initialize(Map)}
+ *
  */
-public abstract class AbstractActionRuntime implements ActionRuntime {
+public class MyJoiner extends DefaultJoiner {
+    private static final Logger log = LoggerFactory.getLogger(MyJoiner.class);
 
-    protected ActionRuntimeContext actionRuntimeContext;
-    protected Map<String, Object> config;
+    public static int invocationCount = 0;
 
-    @Override
-    public void setActionRuntimeContext(ActionRuntimeContext actionRuntimeContext) {
-        this.actionRuntimeContext = actionRuntimeContext;
+    public MyJoiner() {
     }
 
     @Override
-    public void initialize(Map<String, Object> config) {
-        this.config = config;
+    public IotasEvent join(EventGroup eventGroup) {
+        log.info("########## join");
+        invocationCount++;
+        return super.join(eventGroup);
     }
-
 }
