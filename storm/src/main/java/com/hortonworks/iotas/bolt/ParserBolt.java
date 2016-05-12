@@ -1,5 +1,35 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package com.hortonworks.iotas.bolt;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hortonworks.iotas.catalog.DataSource;
+import com.hortonworks.iotas.catalog.ParserInfo;
+import com.hortonworks.iotas.client.CatalogRestClient;
+import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.common.IotasEventImpl;
+import com.hortonworks.iotas.model.IotasMessage;
+import com.hortonworks.iotas.parser.Parser;
+import com.hortonworks.iotas.util.CoreUtils;
+import com.hortonworks.iotas.util.ProxyUtil;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -7,17 +37,6 @@ import org.apache.storm.topology.base.BaseRichBolt;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.iotas.client.CatalogRestClient;
-import com.hortonworks.iotas.util.ProxyUtil;
-import com.hortonworks.iotas.catalog.DataSource;
-import com.hortonworks.iotas.catalog.ParserInfo;
-import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.common.IotasEventImpl;
-import com.hortonworks.iotas.model.IotasMessage;
-import com.hortonworks.iotas.parser.Parser;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +49,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 public class ParserBolt extends BaseRichBolt {
-    public static final String CATALOG_ROOT_URL = "catalog.root.url";
     public static final String LOCAL_PARSER_JAR_PATH = "local.parser.jar.path";
     public static final String BYTES_FIELD = "bytes";
     public static final String PARSED_TUPLES_STREAM = "parsed_tuples_stream";
@@ -89,10 +107,10 @@ public class ParserBolt extends BaseRichBolt {
     }
 
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
-        if (!stormConf.containsKey(CATALOG_ROOT_URL) || !stormConf.containsKey(LOCAL_PARSER_JAR_PATH)) {
-            throw new IllegalArgumentException("conf must contain " + CATALOG_ROOT_URL + " and " + LOCAL_PARSER_JAR_PATH);
+        if (!stormConf.containsKey(CoreUtils.CATALOG_ROOT_URL) || !stormConf.containsKey(LOCAL_PARSER_JAR_PATH)) {
+            throw new IllegalArgumentException("conf must contain " + CoreUtils.CATALOG_ROOT_URL + " and " + LOCAL_PARSER_JAR_PATH);
         }
-        String catalogRootURL = stormConf.get(CATALOG_ROOT_URL).toString();
+        String catalogRootURL = stormConf.get(CoreUtils.CATALOG_ROOT_URL).toString();
         //We could also add the iotasMessage timestamp to calculate overall pipeline latency.
         this.collector = collector;
         this.localParserJarPath = stormConf.get(LOCAL_PARSER_JAR_PATH).toString();

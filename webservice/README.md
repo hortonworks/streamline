@@ -1254,6 +1254,268 @@ DELETE /api/v1/catalog/system/topologyeditormetadata/ID
 }
 ```
 
+## Files
+### Create
+
+POST /api/v1/catalog/files
+
+*Sample Input*
+
+    curl -X POST -i -F file=@user-lib.jar -F "jar={\"name\":\"my-lib-jar-1\",\"version\":1};type=application/json"  http://localhost:8080/api/v1/catalog/files
+
+
+*Success Response*
+
+    HTTP/1.1 201 Created
+    Content-Type: application/json
+
+```json    
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entity": {
+    "id": 1234,
+    "name": "jar-1",
+    "className": null,
+    "storedFileName": "my-lib-jar-1-ea41fe3a-12f9-45d4-ae24-818d570b8963.jar",
+    "version": 1,
+    "timestamp": 1460716593157,
+    "auxiliaryInfo": null
+  }
+}
+```
+
+
+*Error Response*
+
+    HTTP/1.1 500 Internal Server Error
+    Content-Type: application/json
+        
+```json    
+{
+ "responseCode": 1102,
+ "responseMessage": "An exception with message [msg] was thrown while processing request."
+}
+```
+
+### Update
+PUT /api/v1/catalog/files
+
+
+*Sample Input*
+
+    curl -X PUT -i -F file=@user-lib-2.jar -F "jar={\"id\":1234,\"name\":\"my-lib-jar-1\",\"version\":2};type=application/json"  http://localhost:8080/api/v1/catalog/files
+
+
+*Success Response*
+
+    HTTP/1.1 201 Created
+    Content-Type: application/json
+        
+```json    
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entity": {
+    "id": 1234,
+    "name": "my-lib-jar-1",
+    "className": null,
+    "storedFileName": "my-lib-jar-1-ea41fe3a-12f9-45d4-ae24-818d570b8963.jar",
+    "version": 2,
+    "timestamp": 1460716619876,
+    "auxiliaryInfo": null
+  }
+}
+```
+
+
+*Error Response*
+
+    HTTP/1.1 500 Internal Server Error
+    Content-Type: application/json
+    
+```json    
+{
+ "responseCode": 1102,
+ "responseMessage": "An exception with message [msg] was thrown while processing request."
+}
+```
+
+
+### Get
+GET /api/v1/catalog/files/{id}
+
+*Success Response*
+
+    GET /api/v1/catalog/files/1
+    
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    
+```json    
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entity": {
+    "id": 1234,
+    "name": "my-lib-jar-1",
+    "className": null,
+    "storedFileName": "my-lib-jar-1-ea41fe3a-12f9-45d4-ae24-818d570b8963.jar",
+    "version": 2,
+    "timestamp": 1460716619876,
+    "auxiliaryInfo": null
+  }
+}
+```
+
+*Error Response*
+
+    GET /api/v1/catalog/files/10
+    
+    HTTP/1.1 404 Not Found
+    Content-Type: application/json
+        
+```json    
+{
+  "responseCode": 1101,
+  "responseMessage": "Entity with id [10] not found."
+}
+```
+    
+### Get All
+GET /api/v1/catalog/files
+
+*Success Response*
+
+    GET /api/v1/catalog/files
+    
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    
+```json
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entities": [
+    {
+        "id": 1,
+        "name": "my-lib-jar-1",
+        "className": null,
+        "storedFileName": "my-lib-jar-1-ea41fe3a-12f9-45d4-ae24-818d570b8963.jar",
+        "version": 2,
+        "timestamp": 1460716619876,
+        "auxiliaryInfo": null
+    },
+    {
+        "id": 2,
+        "name": "my-lib-jar-2",
+        "className": null,
+        "storedFileName": "my-lib-jar-2-ea41fe3a-12f9-45d4-ae24-818d570b8963.jar",
+        "version": 2,
+        "timestamp": 1460716619876,
+        "auxiliaryInfo": null
+      }
+    ..
+    ..
+  ]
+}    
+```
+    
+    
+*Error Response*
+
+    GET /api/v1/catalog/files/
+    
+    HTTP/1.1 500 Internal Server Error
+    Content-Type: application/json
+    
+```json    
+{
+ "responseCode": 1102,
+ "responseMessage": "An exception with message [msg] was thrown while processing request."
+}
+```
+    
+ 
+### Delete
+DELETE /api/v1/catalog/files/ID
+
+
+*Success Response*
+
+    DELETE /api/v1/catalog/files/1
+
+    HTTP/1.1 200 OK
+    Content-Type: application/json    
+ 
+```json    
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entity": {
+    "id": 1234,
+    "name": "my-lib-jar-1",
+    "className": null,
+    "storedFileName": "my-lib-jar-1-ea41fe3a-12f9-45d4-ae24-818d570b8963.jar",
+    "version": 2,
+    "timestamp": 1460716619876,
+    "auxiliaryInfo": null
+  }
+}
+```
+
+*Error Response*
+
+    DELETE /api/v1/catalog/parsers/10
+    
+    HTTP/1.1 404 Not Found
+    Content-Type: application/json
+
+```json
+{
+  "responseCode": 1101,
+  "responseMessage": "Entity with id [10] not found."
+}
+```
+
+### Download File
+GET /api/v1/catalog/files/download/ID
+
+
+    curl http://localhost:8080/api/v1/catalog/files/download/1 -o downloaded-lib.jar
+    
+*Success Response*
+
+    GET /api/v1/catalog/files/download/1
+
+    HTTP/1.1 200 OK
+    Content-Type: application/octet-stream
+        
+*Error Response*
+    
+     GET /api/v1/catalog/files/download/10
+
+     HTTP/1.1 404 Not Found
+     Content-Type: application/json
+        
+```json    
+{
+  "responseCode": 1101,
+  "responseMessage": "Entity with id [10] not found."
+}
+```
+
+    HTTP/1.1 500 Internal Server Error
+    Content-Type: application/json
+    
+```json    
+{
+  "responseCode": 1102,
+  "responseMessage": "An exception with message [msg] was thrown while processing request."
+}
+```
+
+
 ### A sample use case
 
 Please go through [the sample use case](REST-Sample.md) to understand how these APIs can be used.
