@@ -82,7 +82,9 @@ public class StormSqlScript<O> extends Script<IotasEvent, O, StormSqlEngine> {
         LOG.debug("Evaluating [{}] with [{}]", expressionStr, iotasEvent);
         Values result = null;
         try {
-            if (iotasEvent != null) {
+            if (iotasEvent == GROUP_BY_TRIGGER_EVENT) {
+                result = scriptEngine.flush();
+            } else if (iotasEvent != null) {
                 result = scriptEngine.eval(createValues(iotasEvent));
             } else {
                 LOG.error("Cannot evaluate null iotasEvent");
@@ -95,16 +97,13 @@ public class StormSqlScript<O> extends Script<IotasEvent, O, StormSqlEngine> {
     }
 
     private Values createValues(IotasEvent iotasEvent) {
-        Values values = null;
-        if (iotasEvent != GROUP_BY_TRIGGER_EVENT) {
-            values = new Values();
-            for (Schema.Field field : fieldsToEmit) {
-                Object value = iotasEvent.getFieldsAndValues().get(field.getName());
-                if (value == null) {
-                    throw new ConditionEvaluationException("Missing property " + field.getName());
-                }
-                values.add(value);
+        Values values = new Values();
+        for (Schema.Field field : fieldsToEmit) {
+            Object value = iotasEvent.getFieldsAndValues().get(field.getName());
+            if (value == null) {
+                throw new ConditionEvaluationException("Missing property " + field.getName());
             }
+            values.add(value);
         }
         return values;
     }
