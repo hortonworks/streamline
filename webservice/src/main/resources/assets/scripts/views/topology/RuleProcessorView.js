@@ -3,10 +3,10 @@ define(['require',
   'utils/Utils',
   'utils/Globals',
   'modules/Modal',
-  'models/VParser',
-  'models/VDatasource',
+  // 'models/VParser',
+  // 'models/VDatasource',
   'hbs!tmpl/topology/ruleProcessorView'
-], function(require, localization, Utils, Globals, Modal, VParser, VDatasource, tmpl) {
+], function(require, localization, Utils, Globals, Modal, tmpl) {
   'use strict';
 
   var RuleProcessorView = Marionette.LayoutView.extend({
@@ -30,29 +30,8 @@ define(['require',
         this.fieldsArr = this.model.get("declaredInput");
       } else {
         //For PARSER-TO-RULE
-        this.getFeedSchema();
+        this.fieldsArr = Utils.getParserSchema(this.model.get('dataSourceId'));
       }
-    },
-
-    getFeedSchema:function (options){
-      var self = this;
-      this.parserModel = new VParser();
-
-      var dsModel = new VDatasource();
-      dsModel.set('dataSourceId', this.model.get('dataSourceId'));
-      dsModel.set('id', this.model.get('dataSourceId'));
-      dsModel.fetch({async: false});
-
-      this.parserModel.getSchema({
-        parserId: dsModel.get('entity').parserId,
-        async: false,
-        success: function(model, response, options){
-          self.fieldsArr = model.entity.fields;
-        },
-        error: function(model, response, options){
-          Utils.showError(model, response);
-        }
-      });
     },
 
     bindEvents: function(){

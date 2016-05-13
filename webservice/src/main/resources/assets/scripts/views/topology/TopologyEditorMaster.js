@@ -118,7 +118,7 @@ define(['require',
         self.promiseResolvedFlag = true;
         if(self.renderFlag){
           self.showCustomProcessors();
-          self.topologyGraph = TopologyUtils.syncGraph(self.model.get('_editState'), self.graphNodesData, self.linkArr, self.ui.graphEditor, self.vent, self.graphTransforms, self.linkConfigArr, self.editMode);
+          self.topologyGraph = TopologyUtils.syncGraph(self.model.get('_editState'), self.graphNodesData, self.linkArr, self.ui.graphEditor, self.vent, self.graphTransforms, self.linkConfigArr, self.editMode, self);
           TopologyUtils.bindDrop(self.$('#graphEditor'), self.dsArr, self.processorArr, self.sinkArr, self.vent, self.nodeNames);
         }
       });
@@ -273,7 +273,7 @@ define(['require',
         self.renderFlag = true;
         if(self.promiseResolvedFlag){
           self.showCustomProcessors();
-          self.topologyGraph = TopologyUtils.syncGraph(self.model.get('_editState'), self.graphNodesData, self.linkArr, self.ui.graphEditor, self.vent, self.graphTransforms, self.linkConfigArr, self.editMode);
+          self.topologyGraph = TopologyUtils.syncGraph(self.model.get('_editState'), self.graphNodesData, self.linkArr, self.ui.graphEditor, self.vent, self.graphTransforms, self.linkConfigArr, self.editMode, self);
           TopologyUtils.bindDrop(self.$('#graphEditor'), self.dsArr, self.processorArr, self.sinkArr, self.vent, self.nodeNames);
         }
       }, 0);
@@ -560,6 +560,9 @@ define(['require',
                 "to": targetObj.uiname,
               }
             };
+            if(obj.linkType === 'FIELDS'){
+              tempObj.config.groupingFields = obj.fieldsArr ? obj.fieldsArr : [];
+            }
             if(sourceObj.currentType === 'DEVICE'){
               tempData.links.push(tempObj);
             }
