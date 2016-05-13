@@ -1,5 +1,6 @@
 ## 0.1.3
  * IOT-158: UI should provide functionality to select a shuffle
+ * IOT-250: REST api for output streams
  
 ## 0.1.2
  * IOT-226: Create file resource(including jars) utility to be used in any component of a topology
