@@ -42,9 +42,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -57,6 +59,8 @@ public class ParserBolt extends BaseRichBolt {
 
     private static final Logger LOG = LoggerFactory.getLogger(ParserBolt.class);
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final Random RANDOM = new Random();
+
     private static ConcurrentHashMap<Object, Parser> dataSrcIdfToParser = new ConcurrentHashMap<>();      //TODO why is this field static ? It makes the class really hard to test and takes away from the thread safety of storm bolts
     private static ConcurrentHashMap<Object, DataSource> dataSrcIdfToDataSrc = new ConcurrentHashMap<>(); //TODO why is this field static ? It makes the class really hard to test and takes away from the thread safety of storm bolts
 
@@ -176,15 +180,36 @@ public class ParserBolt extends BaseRichBolt {
     }
 
     private Parser loadParser(ParserInfo parserInfo) {
-        InputStream parserJar = client.getParserJar(parserInfo.getId());
-        String jarPath = String.format("%s%s-%s.jar", localParserJarPath, File.separator, parserInfo.getName());
-
         try {
-            IOUtils.copy(parserJar, new FileOutputStream(new File(jarPath)));
+            File parserJar = createLocalParserJar(parserInfo);
 
-            return parserProxyUtil.loadClassFromJar(jarPath, parserInfo.getClassName());
+            try (InputStream parserJarInputStream = client.getParserJar(parserInfo.getId());
+                 FileOutputStream fileOutputStream = new FileOutputStream(parserJar)) {
+                IOUtils.copy(parserJarInputStream, fileOutputStream);
+                return parserProxyUtil.loadClassFromJar(parserJar.getAbsolutePath(), parserInfo.getClassName());
+            }
         } catch (Exception e) {
             throw new RuntimeException("Failed to load parser: " + parserInfo.getJarStoragePath(), e);
+        }
+    }
+
+    private File createLocalParserJar(ParserInfo parserInfo) throws IOException {
+        ensureDirExists(localParserJarPath);
+
+        File parserJar = File.createTempFile(parserInfo.getName().trim(), "", new File(localParserJarPath));
+        parserJar.deleteOnExit();
+
+        return parserJar;
+    }
+
+    private void ensureDirExists(String localParserJarDir) throws IOException {
+        File file = new File(localParserJarDir);
+        if(file.exists() ) {
+            if(!file.isDirectory()) {
+                throw new IOException("Given path ["+localParserJarDir+"] is not a directory.");
+            }
+        } else if(!file.mkdirs()) {
+            throw new IOException("Failed to create directory ["+localParserJarDir+"]");
         }
     }
 
