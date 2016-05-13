@@ -9,6 +9,7 @@ import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.Device;
 import com.hortonworks.iotas.catalog.File;
 import com.hortonworks.iotas.catalog.ParserInfo;
+import com.hortonworks.iotas.catalog.StreamInfo;
 import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.catalog.TagStorableMapping;
 import com.hortonworks.iotas.catalog.Topology;
@@ -302,6 +303,8 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
                     return (T) new TagStorableMapping();
                 case (File.NAME_SPACE):
                     return (T) new File();
+                case (StreamInfo.NAMESPACE):
+                    return (T) new StreamInfo();
                 default:
                     log.error("Storable for namespace [{}] is not registered", nameSpace);
                     throw new RuntimeException("Unsupported Storable type: "+nameSpace);

@@ -22,6 +22,7 @@ public class StreamInfo extends AbstractStorable {
     public static final String STREAMID = "streamId";
     public static final String FIELDSDATA = "fieldsData";
     public static final String TIMESTAMP = "timestamp";
+    public static final String FIELDS = "fields";
 
     // unique storage level id
     private Long id;
@@ -85,7 +86,7 @@ public class StreamInfo extends AbstractStorable {
         this.fields = fields;
     }
 
-    // for internal storage
+    // for internal storage, not part of JSON
     @JsonIgnore
     public String getFieldsData() throws Exception {
         if (fields != null) {
@@ -95,18 +96,64 @@ public class StreamInfo extends AbstractStorable {
         return "";
     }
 
+    // for internal storage, not part of JSON
+    @JsonIgnore
     public void setFieldsData(String fieldsData) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         fields = mapper.readValue(fieldsData, new TypeReference<List<Field>>() {
         });
     }
 
-    @JsonIgnore
     public Long getTimestamp() {
         return timestamp;
     }
 
     public void setTimestamp(Long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        StreamInfo that = (StreamInfo) o;
+
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+        if (streamId != null ? !streamId.equals(that.streamId) : that.streamId != null) return false;
+        if (fields != null ? !fields.equals(that.fields) : that.fields != null) return false;
+        return timestamp != null ? timestamp.equals(that.timestamp) : that.timestamp == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (streamId != null ? streamId.hashCode() : 0);
+        result = 31 * result + (fields != null ? fields.hashCode() : 0);
+        result = 31 * result + (timestamp != null ? timestamp.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "StreamInfo{" +
+                "id=" + id +
+                ", streamId='" + streamId + '\'' +
+                ", fields=" + fields +
+                ", timestamp=" + timestamp +
+                "} " + super.toString();
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = super.toMap();
+        map.remove(FIELDS);
+        try {
+            map.put(FIELDSDATA, getFieldsData());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return map;
     }
 }

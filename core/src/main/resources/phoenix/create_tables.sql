@@ -17,3 +17,4 @@ CREATE SEQUENCE IF NOT EXISTS topologies_sequence
 CREATE SEQUENCE IF NOT EXISTS topology_components_sequence
 CREATE SEQUENCE IF NOT EXISTS tag_sequence
 CREATE SEQUENCE IF NOT EXISTS files_sequence
+CREATE SEQUENCE IF NOT EXISTS streaminfo_sequence
