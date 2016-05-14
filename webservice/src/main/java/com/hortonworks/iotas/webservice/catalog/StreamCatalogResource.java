@@ -52,7 +52,8 @@ public class StreamCatalogResource {
      *       "fields": [
      *         {"name": "f1", "type": "STRING", "optional": false},
      *         {"name": "f2", "type": "LONG", "optional": false}
-     *       ]
+     *       ],
+     *       "timestamp": 1463238366216
      *     },
      *     {
      *     ..
@@ -101,7 +102,8 @@ public class StreamCatalogResource {
      *     "fields": [
      *       {"name": "f1", "type": "STRING", "optional": false},
      *       {"name": "f2", "type": "LONG", "optional": false}
-     *       ]
+     *       ],
+     *     "timestamp": 1463238366216
      *   }
      * }
      * </pre>
@@ -158,7 +160,8 @@ public class StreamCatalogResource {
      *         "type": "LONG",
      *         "optional": false
      *       }
-     *     ]
+     *     ],
+     *     "timestamp": 1463238366216
      *   }
      * }
      * </pre>
@@ -213,7 +216,8 @@ public class StreamCatalogResource {
      *         "type": "STRING",
      *         "optional": false
      *       }
-     *     ]
+     *     ],
+     *     "timestamp": 1463238891203
      *   }
      * }
      * </pre>
@@ -257,7 +261,8 @@ public class StreamCatalogResource {
      *         "type": "LONG",
      *         "optional": false
      *       }
-     *     ]
+     *     ],
+     *     "timestamp": 1463238609751
      *   }
      * }
      * </pre>

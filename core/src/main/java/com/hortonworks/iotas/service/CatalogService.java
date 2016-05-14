@@ -892,6 +892,7 @@ public class CatalogService {
 
     public StreamInfo addOrUpdateStreamInfo(Long id, StreamInfo stream) {
         stream.setId(id);
+        stream.setTimestamp(System.currentTimeMillis());
         this.dao.addOrUpdate(stream);
         return stream;
     }
