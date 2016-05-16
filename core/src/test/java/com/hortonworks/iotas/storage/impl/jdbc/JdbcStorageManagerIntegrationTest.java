@@ -80,6 +80,7 @@ public abstract class JdbcStorageManagerIntegrationTest extends AbstractStoreMan
             add(new ParsersTest());
             add(new DataFeedsJdbcTest());
             add(new FilesTest());
+            add(new StreamInfoTest());
         }};
     }
 

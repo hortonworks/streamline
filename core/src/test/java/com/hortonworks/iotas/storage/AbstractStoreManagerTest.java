@@ -1,10 +1,12 @@
 package com.hortonworks.iotas.storage;
 
+import com.google.common.collect.Lists;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.Device;
 import com.hortonworks.iotas.catalog.File;
 import com.hortonworks.iotas.catalog.ParserInfo;
+import com.hortonworks.iotas.catalog.StreamInfo;
 import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.service.CatalogService;
@@ -276,6 +278,30 @@ public abstract class AbstractStoreManagerTest {
             pi.setVersion(0l);
             pi.setTimestamp(System.currentTimeMillis());
             return pi;
+        }
+    }
+
+    public class StreamInfoTest extends StorableTest {
+        {
+            storableList = new ArrayList<Storable>() {{
+                List<Schema.Field> fields = Lists.newArrayList(Schema.Field.of("foo", Schema.Type.INTEGER), Schema.Field.of("bar", Schema.Type.STRING));
+                List<Schema.Field> updatedFields = Lists.newArrayList(Schema.Field.of("foo", Schema.Type.INTEGER), Schema.Field.of("fubar", Schema.Type.STRING));
+
+                add(createStreamInfo(1l, fields));
+                add(createStreamInfo(1l, updatedFields));
+                add(createStreamInfo(2l, fields));
+                add(createStreamInfo(3l, fields));
+            }};
+        }
+
+        private StreamInfo createStreamInfo(long id, List<Schema.Field> fields) {
+            StreamInfo streamInfo = new StreamInfo();
+            streamInfo.setId(id);
+            streamInfo.setStreamId("Stream-"+id);
+            streamInfo.setFields(fields);
+            streamInfo.setTimestamp(System.currentTimeMillis());
+
+            return streamInfo;
         }
     }
 
