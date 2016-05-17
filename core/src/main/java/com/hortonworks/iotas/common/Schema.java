@@ -355,13 +355,20 @@ public class Schema implements Serializable {
         return new SchemaBuilder().fields(fields).build();
     }
 
-    public List<Field> getFields(){
-        return this.fields;
+    public static Schema unionOf(Schema first, Schema second) {
+        List<Field> fields = new ArrayList<>();
+        fields.addAll(first.getFields());
+        fields.addAll(second.getFields());
+        return new Schema(fields);
     }
 
     // for jackson
     public void setFields(List<Field> fields) {
         this.fields = ImmutableList.copyOf(fields);
+    }
+
+    public List<Field> getFields(){
+        return this.fields;
     }
 
     //TODO: need to replace with actual ToJson from Json

@@ -26,6 +26,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -68,6 +69,20 @@ public class WSUtils {
         for (String param : params.keySet()) {
             queryParams.add(new CatalogService.QueryParam(param, params.getFirst(param)));
         }
+        return queryParams;
+    }
+
+
+    public static List<CatalogService.QueryParam> buildTopologyIdAwareQueryParams(Long topologyId, UriInfo uriInfo) {
+        List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>();
+        queryParams.add(new CatalogService.QueryParam("topologyId", topologyId.toString()));
+        if (uriInfo != null) {
+            MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
+            if (!params.isEmpty()) {
+                queryParams.addAll(WSUtils.buildQueryParameters(params));
+            }
+        }
+
         return queryParams;
     }
 
