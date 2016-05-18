@@ -77,16 +77,16 @@ define(['utils/LangSupport',
         },
         make: {
           type: 'Text',
-          title: localization.tt('lbl.deviceMake')+'*',
+          title: localization.tt('lbl.make')+'*',
           editorClass: 'form-control',
-          placeHolder: localization.tt('lbl.deviceMake'),
-          validators: [{'type':'required','message':'Device make can not be blank.'}]
+          placeHolder: localization.tt('lbl.make'),
+          validators: [{'type':'required','message':'Make can not be blank.'}]
         },
         model: {
           type: 'Text',
-          title: localization.tt('lbl.deviceModel')+'*',
+          title: localization.tt('lbl.model')+'*',
           editorClass: 'form-control',
-          placeHolder: localization.tt('lbl.deviceModel'),
+          placeHolder: localization.tt('lbl.model'),
           validators: [{'type':'required','message':'Model can not be blank.'}]
         },
         dataFeedName: {

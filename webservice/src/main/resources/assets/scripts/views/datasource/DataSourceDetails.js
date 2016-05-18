@@ -34,8 +34,8 @@ define(['require',
 
     initialize: function (options) {
       _.extend(this, _.pick(options, 'dsModel'));
-      this.dsModel.set('version', JSON.parse(this.dsModel.get('typeConfig')).version);
-      this.dsModel.set('id', JSON.parse(this.dsModel.get('typeConfig')).id);
+      this.dsModel.set('model', JSON.parse(this.dsModel.get('typeConfig')).model);
+      this.dsModel.set('make', JSON.parse(this.dsModel.get('typeConfig')).make);
       this.dfModel = new VDatafeed();
       this.fetchFeed();
     },
@@ -103,8 +103,8 @@ define(['require',
       delete this.dsModel.attributes.entity;
       delete this.dsModel.attributes.responseCode;
       delete this.dsModel.attributes.responseMessage;
-      this.dsModel.set('version', JSON.parse(this.dsModel.get('typeConfig')).version);
-      this.dsModel.set('id', JSON.parse(this.dsModel.get('typeConfig')).id);
+      this.dsModel.set('model', JSON.parse(this.dsModel.get('typeConfig')).model);
+      this.dsModel.set('make', JSON.parse(this.dsModel.get('typeConfig')).make);
     },
     cleanUpDFModel: function(){
       delete this.dfModel.attributes.entity;

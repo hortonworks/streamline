@@ -66,6 +66,7 @@ define(['require','bootstrap.filestyle','backbone.forms', 'backgrid', 'bootstrap
     var self = this;
     this.setOptions(this.schema.options);
     setTimeout(function () {
+        self.$el.parents('.bootbox').removeAttr('tabindex'); 
         self.$el.select2(self.pluginAttr);
     },0);     
 
@@ -112,6 +113,11 @@ define(['require','bootstrap.filestyle','backbone.forms', 'backgrid', 'bootstrap
   });
 
    Backbone.Form.editors.Fileupload = Backbone.Form.editors.Base.extend({
+    events: {
+      'change': function(event) {
+        this.trigger('change', this);
+      },
+    },
     initialize: function(options) {
       Backbone.Form.editors.Base.prototype.initialize.call(this, options);
       var id = this.id = options.schema.elementId || undefined;
