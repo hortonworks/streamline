@@ -1,0 +1,1 @@
+{"type": "TRANSFORM","name": "enrichmentTransform","subType": "ENRICHMENT","streamingEngine": "*","config": "[{\"name\": \"enrichment-field-name\",\"isOptional\": false,\"type\": \"string\",\"defaultValue\": null}]","transformationClass": null,"timestamp": 1463731689527}

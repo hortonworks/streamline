@@ -69,4 +69,9 @@ post /system/componentdefinitions/LINK local-or-shuffle-grouping-link-topology-c
 post /system/componentdefinitions/LINK fields-grouping-link-topology-component
 post /system/componentdefinitions/LINK global-grouping-link-topology-component
 post /system/componentdefinitions/LINK none-grouping-link-topology-component
-
+post /system/componentdefinitions/PROCESSOR split-topology-component
+post /system/componentdefinitions/PROCESSOR join-topology-component
+post /system/componentdefinitions/PROCESSOR stage-topology-component
+post /system/componentdefinitions/ACTION transform-action-topology-component
+post /system/componentdefinitions/TRANSFORM projection-transform-topology-component
+post /system/componentdefinitions/TRANSFORM enrichment-transform-topology-component
