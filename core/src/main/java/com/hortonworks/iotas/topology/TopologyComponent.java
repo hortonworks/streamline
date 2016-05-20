@@ -26,7 +26,9 @@ public class TopologyComponent implements Storable {
         SOURCE,
         PROCESSOR,
         LINK,
-        SINK
+        SINK,
+        ACTION,
+        TRANSFORM
     }
 
     /**

@@ -1,0 +1,1 @@
+{"type": "ACTION","name": "transformAction","subType": "TRANSFORM","streamingEngine": "*","config": "[{\"name\": \"subComponentTypes\",\"isOptional\": false,\"type\": \"string\",\"defaultValue\": null,\"subComponentTypes\": [\"transform\"]}]","transformationClass": null,"timestamp": 1463731689527}
