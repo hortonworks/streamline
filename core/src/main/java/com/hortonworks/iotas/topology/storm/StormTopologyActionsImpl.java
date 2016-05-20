@@ -133,7 +133,6 @@ public class StormTopologyActionsImpl implements TopologyActions {
         commands.add(stormCliPath);
         commands.add("list");
         String topologyName = getTopologyName(topology);
-        commands.add(topologyName);
         ShellProcessResult result = executeShellProcess(commands);
         int exitValue = result.exitValue;
         if (exitValue != 0) {
