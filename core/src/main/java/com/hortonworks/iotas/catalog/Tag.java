@@ -111,6 +111,6 @@ public class Tag extends AbstractStorable {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
-                "} " + super.toString();
+                "}";
     }
 }

@@ -14,7 +14,10 @@ import static com.hortonworks.iotas.service.CatalogService.QueryParam;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Catalog db based tag service.
@@ -36,17 +39,44 @@ public class CatalogTagService implements TagService {
         if (tag.getTimestamp() == null) {
             tag.setTimestamp(System.currentTimeMillis());
         }
+        checkCycles(tag, tag.getTags());
         dao.add(tag);
         addTagsForStorable(tag, tag.getTags());
         return tag;
+    }
+
+    private void checkCycles(Tag current, List<Tag> tags) {
+        for (Tag tag : tags) {
+            if (tag.equals(current) || flatten(getTags(tag)).contains(current)) {
+                throw new IllegalArgumentException("Tagging " + current +
+                        " with " + tag + " would result in a cycle.");
+            }
+        }
+    }
+
+    private List<Tag> flatten(Tag tag) {
+        return flatten(Collections.singletonList(tag));
+    }
+
+    private List<Tag> flatten(List<Tag> tags) {
+        List<Tag> res = new ArrayList<>();
+        for (Tag tag: tags) {
+            res.add(tag);
+            res.addAll(flatten(tag.getTags()));
+        }
+        return res;
     }
 
     @Override
     public Tag addOrUpdateTag(Long tagId, Tag tag) {
         tag.setId(tagId);
         tag.setTimestamp(System.currentTimeMillis());
+        List<Tag> existingTags = getTags(tag);
+        List<Tag> tagsToBeAdded = getTagsToBeAdded(existingTags, tag.getTags());
+        List<Tag> tagsToBeRemoved = getTagsToBeRemoved(existingTags, tag.getTags());
+        checkCycles(tag, tagsToBeAdded);
         this.dao.addOrUpdate(tag);
-        addOrUpdateTagsForStorable(tag, tag.getTags());
+        updateTags(tag, tagsToBeAdded, tagsToBeRemoved);
         return tag;
     }
 
@@ -100,10 +130,22 @@ public class CatalogTagService implements TagService {
     @Override
     public void addOrUpdateTagsForStorable(Storable storable, List<Tag> tags) {
         List<Tag> existingTags = getTags(storable);
-        Sets.SetView<Tag> tagsToBeRemoved = Sets.difference(ImmutableSet.copyOf(existingTags), ImmutableSet.copyOf(tags));
-        Sets.SetView<Tag> tagsToBeAdded = Sets.difference(ImmutableSet.copyOf(tags), ImmutableSet.copyOf(existingTags));
-        removeTagsFromStorable(storable, Lists.newArrayList(tagsToBeRemoved));
-        addTagsForStorable(storable, Lists.newArrayList(tagsToBeAdded));
+        updateTags(storable, getTagsToBeAdded(existingTags, tags), getTagsToBeRemoved(existingTags, tags));
+    }
+
+    private List<Tag> getTagsToBeRemoved(List<Tag> existing, List<Tag> newList) {
+        return Lists.newArrayList(
+                Sets.difference(ImmutableSet.copyOf(existing), ImmutableSet.copyOf(newList)));
+    }
+
+    private List<Tag> getTagsToBeAdded(List<Tag> existing, List<Tag> newList) {
+        return Lists.newArrayList(
+                Sets.difference(ImmutableSet.copyOf(newList), ImmutableSet.copyOf(existing)));
+    }
+
+    private void updateTags(Storable storable, List<Tag> tagsToBeAdded, List<Tag> tagsToBeRemoved) {
+        removeTagsFromStorable(storable, tagsToBeRemoved);
+        addTagsForStorable(storable, tagsToBeAdded);
     }
 
     @Override
@@ -132,15 +174,30 @@ public class CatalogTagService implements TagService {
         return tags;
     }
 
+    enum State {
+        VISITING, VISITED
+    }
+
     @Override
     public List<Storable> getEntities(Long tagId, boolean recurse) {
+        return getEntities(tagId, recurse, new HashMap<Long, State>());
+    }
+
+    public List<Storable> getEntities(Long tagId, boolean recurse, Map<Long, State> state) {
+        State tagState = state.get(tagId);
         List<Storable> result = new ArrayList<>();
-        for (Storable storable : getTagStorable(tagId)) {
-            if (recurse && storable instanceof Tag) {
-                result.addAll(getEntities(storable.getId(), recurse));
-            } else {
-                result.add(storable);
+        if (tagState == State.VISITING) {
+            throw new IllegalStateException("Cycle detected");
+        } else if (tagState != State.VISITED) {
+            state.put(tagId, State.VISITING);
+            for (Storable storable : getTagStorable(tagId)) {
+                if (recurse && storable instanceof Tag) {
+                    result.addAll(getEntities(storable.getId(), recurse, state));
+                } else {
+                    result.add(storable);
+                }
             }
+            state.put(tagId, State.VISITED);
         }
         return result;
     }
