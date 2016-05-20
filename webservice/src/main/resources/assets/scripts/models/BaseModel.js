@@ -1,4 +1,4 @@
-define(['require', 'utils/Utils', 'backbone'], function (require, Utils, Backbone) {
+define(['require', 'backbone'], function (require, Backbone) {
   'use strict';
 
 var BaseModel = Backbone.Model.extend(
@@ -13,7 +13,11 @@ var BaseModel = Backbone.Model.extend(
 			
 		},
 		bindErrorEvents :function(){
-			this.bind("error", Utils.defaultErrorHandler);
+			this.bind("error", function(model, error){
+				if (error.status == 401) {
+			      throw new Error("ERROR 401 occured.");
+			    }
+			});
 		},
 		/**
 		 * toString for a model. Every model should implement this function.

@@ -130,6 +130,7 @@ define(['utils/LangSupport',
         model: attrs.model
       };
       attrs.typeConfig = JSON.stringify(obj);
+      attrs.parserName = this.collection.get(attrs.parserId).get('name');
       delete attrs.make;
       delete attrs.model;
       if(this.model.id){

@@ -141,13 +141,21 @@ define(['require',
 			})
 			.on("keyup", function() {
 				thisGraph.svgKeyUp.call(thisGraph);
+			})
+			.on("mousedown", function(){
+				if($(".popover").length && $(d3.event.target).parents('.popover').length == 0 && $(d3.event.target).parents('svg').length == 0){
+				  $('.popover').popover('toggle');
+			    }
 			});
 		svg.on("mousedown", function(d) {
 			thisGraph.svgMouseDown.call(thisGraph, d);
+			var $popover = $('.popover');
+			if($popover.length == 1 && d3.event.target.nodeName == 'svg'){
+				$('[aria-describedby="'+$popover.attr('id')+'"]').popover('toggle');
+			}
 		});
 		svg.on("mouseup", function(d) {
 			thisGraph.svgMouseUp.call(thisGraph, d);
-			// thisGraph.hideShuffle();
 		});
 
 		// listen for dragging
@@ -778,6 +786,9 @@ define(['require',
 
 	// call to propagate changes to graph
 	TopologyGraphCreator.prototype.updateGraph = function() {
+		if($('.popover').length == 1){
+			$('[aria-describedby="'+$('.popover').attr('id')+'"]').popover('toggle');
+		}
 		$('.visible-link').remove();
 		var thisGraph = this,
 			consts = thisGraph.consts,
@@ -825,16 +836,16 @@ define(['require',
 			})
 			.attr("stroke-opacity", "0.0001")
 			.attr("stroke-width", "15")
-			.attr("data-toggle", "popover")
+			// .attr("data-toggle", "popover")
 			.attr("data-name", function(d){ return d.source.uiname +'-'+d.target.uiname; })
 			.on("mouseover", function(d){
-				if(thisGraph.editMode) {
-					// $('[data-uiname="'+d.source.uiname+'-'+d.target.uiname+'"]').show();
+				if(thisGraph.editMode && d.target.currentType != 'PARSER') {
+					$('[data-uiname="'+d.source.uiname+'-'+d.target.uiname+'"]').show();
 				}
 			})
 			.on("mouseout", function(d){
 				if(thisGraph.editMode) {
-					// $('[data-uiname="'+d.source.uiname+'-'+d.target.uiname+'"]').hide();
+					$('[data-uiname="'+d.source.uiname+'-'+d.target.uiname+'"]').hide();
 				}
 			})
 			.on("mousedown", function(d) {
@@ -843,7 +854,11 @@ define(['require',
 						var elem = $(this).parent().find('.visible-link[d="'+$(this).attr("d")+'"]')[0];
 						thisGraph.pathMouseDown.call(thisGraph, d3.select(elem), d);
 					} else {
-						// thisGraph.showShuffle(d);
+						var $popover = $('.popover');
+						if($popover.length == 1){
+						 if($popover.attr('id') != $('[data-uiname="'+d.source.uiname+'-'+d.target.uiname+'"]').attr('aria-describedby'))
+							$('[aria-describedby="'+$popover.attr("id")+'"]').popover('toggle');
+						}
 					}
 				}
 			})
@@ -852,8 +867,8 @@ define(['require',
 					if(d3.event.shiftKey){
 						state.mouseDownLink = null;
 					} else {
-						// $('[data-uiname="'+d.source.uiname+'-'+d.target.uiname+'"][data-toggle="popover"]').popover('show');
-						// thisGraph.bindPopoverDropdown(d);
+						$('[data-uiname="'+d.source.uiname+'-'+d.target.uiname+'"][data-toggle="popover"]').popover('toggle');
+
 					}
 				}
 			});
@@ -861,10 +876,15 @@ define(['require',
 		paths.append('text')
             .attr("class", "fa fa-random")
             .attr("x", function(d){
-				return thisGraph.getBoundingBoxCenter(d3.select($(this).parent()[0]))[0] - 8;
+				if(d.target.streamId == 'failedTuplesStream') {
+					return thisGraph.getBoundingBoxCenter(d3.select($(this).parent()[0]), true)[0] - 8;
+				}
+				else return thisGraph.getBoundingBoxCenter(d3.select($(this).parent()[0]))[0] - 8;
             })
             .attr("y", function(d){
-				return thisGraph.getBoundingBoxCenter(d3.select($(this).parent()[0]))[1] + 7;
+				if(d.target.streamId == 'failedTuplesStream')
+					return thisGraph.getBoundingBoxCenter(d3.select($(this).parent()[0]), true)[1] + 7;
+				else return thisGraph.getBoundingBoxCenter(d3.select($(this).parent()[0]))[1] + 7;
             })
             .text(function(d) {
 				return '\uf074';
@@ -875,13 +895,15 @@ define(['require',
             .attr("data-toggle", "popover")
             .attr("data-type", "shuffle")
 			.on('mouseover', function(d){
-				if(thisGraph.editMode) {
-					// $(this).show();
+				if(thisGraph.editMode && d.target.currentType != 'PARSER') {
+					$(this).show();
+					//$('[data-uiname="'+d.source.uiname+'-'+d.target.uiname+'"]').show();
 				}
 		    })
 			.on('mouseout', function(d){
 				if(thisGraph.editMode) {
-					// $(this).hide();
+					$(this).hide();
+					//$('[data-uiname="'+d.source.uiname+'-'+d.target.uiname+'"]').hide();
 				}
 		    })
 		    .on("mousedown", function(d) {
@@ -890,7 +912,11 @@ define(['require',
 						var elem = $(this).parent().find('.visible-link[d="'+$(this).attr("d")+'"]')[0];
 						thisGraph.pathMouseDown.call(thisGraph, d3.select(elem), d);
 					} else {
-						// thisGraph.showShuffle(d);
+						var $popover = $('.popover');
+							if($popover.length == 1){
+							 if($popover.attr('id') != $(d3.event.target).attr('aria-describedby'))
+								$('[aria-describedby="'+$popover.attr("id")+'"]').popover('toggle');
+							}
 					}
 		    	}
 			})
@@ -899,8 +925,7 @@ define(['require',
 					if(d3.event.shiftKey){
 						state.mouseDownLink = null;
 					} else {
-						// $('[data-uiname="'+d.source.uiname+'-'+d.target.uiname+'"][data-toggle="popover"]').popover('show');
-						// thisGraph.bindPopoverDropdown(d);
+						$('[data-uiname="'+d.source.uiname+'-'+d.target.uiname+'"][data-toggle="popover"]').popover('toggle');
 					}
 				}
 			});
@@ -973,6 +998,7 @@ define(['require',
 				})
 				.on("mousedown", function(d) {
 					thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);
+
 				})
 				.on("mouseup", function(d) {
 					thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);
@@ -1150,31 +1176,68 @@ define(['require',
 		for(var i = 0, len = shuffleArr.length; i < len; i++){
 			html += "<option value='"+shuffleArr[i].val+"'>"+shuffleArr[i].label+"</option>";
 		}
-		html += "</select></div>";
+		html += "</select></div><div class='select-fields-container'></div>";
 		$('[data-toggle="popover"][data-type="shuffle"]').popover({
 			title: "Select Grouping",
-    		html: true,
-    		content: html,
-    		container: "body",
-    		placement: "top"
-    	});
-    	$('.link-shuffle').select2();
+			html: true,
+			content: html,
+			container: "body",
+			placement: "top",
+			trigger:'manual'
+		}).on('shown.bs.popover',function(e){
+			var d = e.currentTarget.__data__;
+			// $('.link-shuffle').select2();
+			if(!d.linkType){
+				d.linkType = 'SHUFFLE';
+			}
+			d.previousLinkType = d.linkType;
+			$('.link-shuffle').val(d.linkType);
+			if(d.linkType == 'FIELDS') {
+				thisGraph.showGroupingFields(d);
+				$(".popover").css({
+					top: $(".popover").position().top - 60
+				});
+			}
+			$('.link-shuffle').on('change', function(e){
+				d.previousLinkType = d.linkType;
+				d.linkType = $(e.currentTarget).val();
+				var id = $(".popover").attr('id');
+				if(d.linkType == 'FIELDS'){
+					thisGraph.showGroupingFields(d);
+					$(".popover").css({
+					  top: $(".popover").position().top - 60
+					});
+				}
+				else if(d.previousLinkType === 'FIELDS'){
+					if(d.fieldsArr){
+						delete d.fieldsArr;
+					}
+					$(".select-fields-container").html('');
+					$(".popover").css({
+					  top: $(".popover").position().top + 60
+					});
+				}
+			});
+			}).on('hide.bs.popover', function(){
+				$('.link-shuffle').off('change');
+			});
 	};
 
-	TopologyGraphCreator.prototype.hideShuffle = function(){
-		$('.link-shuffle').off('change');
-		$('[data-toggle="popover"][data-type="shuffle"]').popover('hide');
-	};
-
-	TopologyGraphCreator.prototype.bindPopoverDropdown = function(d){
-		$('.link-shuffle').on('change', function(e){
-    		console.log(d);
-    		console.log(e);
-    	});
-	};
-
-	TopologyGraphCreator.prototype.unbindPopoverDropdown = function(){
-		$('.link-shuffle').off('change');
+	TopologyGraphCreator.prototype.showGroupingFields = function(d) {
+		var fieldsHtml = '<label>Select Fields:</label><select class="select-fields" multiple="multiple">';
+		var fieldsArr = Utils.getFields({uiname: d.source.uiname, currentType: d.source.currentType}, this.parentScope);
+		for(var i = 0; i < fieldsArr.length; i++) {
+			fieldsHtml += '<option value="'+fieldsArr[i].name+'">'+fieldsArr[i].name+'</option>';
+		}
+		fieldsHtml += '</select></div>';
+		$(".select-fields-container").append(fieldsHtml);
+		$(".select-fields").select2();
+		if(d.fieldsArr && d.fieldsArr.length){
+			$(".select-fields").select2('val', d.fieldsArr);
+		}
+		$(".select-fields").on('change', function(e) {
+			d.fieldsArr = $(e.currentTarget).val();
+		});
 	};
 
 	TopologyGraphCreator.prototype.clonePaths = function(){
@@ -1197,14 +1260,18 @@ define(['require',
 		$('.link-group').append(shuffleElement);
 	};
 
-	TopologyGraphCreator.prototype.getBoundingBoxCenter = function(selection) {
-	    // get the DOM element from a D3 selection
-	    // you could also use "this" inside .each()
+	TopologyGraphCreator.prototype.getBoundingBoxCenter = function(selection, isFailedTuplesStream) {
 	    var element = selection.node(),
-	        // use the native SVG interface to get the bounding box
 	        bbox = element.getBBox();
-	    // return the center of the bounding box
-	    return [bbox.x + bbox.width/2, bbox.y + bbox.height/2];
+		if(isFailedTuplesStream) {
+			//Need to clean this logic, currently giving out the x & y point of the line from failedStream
+			var pathArr = $(selection[0]).attr('d').split(' ');
+			var x = parseInt(pathArr[0].split('M')[1]);
+			var y = parseInt(pathArr[2].split('V')[1]);
+			return [x, y];
+			// return [bbox.x + bbox.width / 2, bbox.y + bbox.height];
+	    }
+	    else return [bbox.x + bbox.width/2, bbox.y + bbox.height/2];
 	};
 
 	TopologyGraphCreator.prototype.zoomed = function() {

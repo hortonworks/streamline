@@ -324,7 +324,7 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
         parent.vent.trigger('saveNodeConfig', { uiname: newData.get("uiname") });
     };
 
-    TopologyUtils.syncGraph = function(editFlag, graphNodeData, linkArr, graphElem, vent, graphTransforms, linkConfigArr, editModeFlag) {
+    TopologyUtils.syncGraph = function(editFlag, graphNodeData, linkArr, graphElem, vent, graphTransforms, linkConfigArr, editModeFlag, parentScope) {
         var self = this;
         var nodes = [],
             edges = [],
@@ -378,7 +378,8 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
             elem: graphElem,
             data: graphData,
             vent: vent,
-            editMode: editModeFlag
+            editMode: editModeFlag,
+            parentScope: parentScope
         });
         topologyGraph.updateGraph();
         return topologyGraph;

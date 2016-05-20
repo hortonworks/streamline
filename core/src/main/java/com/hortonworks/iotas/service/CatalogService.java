@@ -29,6 +29,7 @@ import com.hortonworks.iotas.catalog.File;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.catalog.Device;
+import com.hortonworks.iotas.catalog.StreamInfo;
 import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.catalog.Topology;
 import com.hortonworks.iotas.catalog.TopologyEditorMetadata;
@@ -83,6 +84,7 @@ public class CatalogService {
     private static final String NOTIFIER_INFO_NAMESPACE = new NotifierInfo().getNameSpace();
     private static final String TOPOLOGY_NAMESPACE = new Topology().getNameSpace();
     private static final String FILE_NAMESPACE = File.NAME_SPACE;
+    private static final String STREAMINFO_NAMESPACE = new StreamInfo().getNameSpace();
 
     private StorageManager dao;
     private TopologyActions topologyActions;
@@ -870,4 +872,43 @@ public class CatalogService {
 
         return file;
     }
+
+    public StreamInfo getStreamInfo(Long id) {
+        StreamInfo streamInfo = new StreamInfo();
+        streamInfo.setId(id);
+        return this.dao.<StreamInfo>get(new StorableKey(STREAMINFO_NAMESPACE, streamInfo.getPrimaryKey()));
+    }
+
+    public StreamInfo addStreamInfo(StreamInfo streamInfo) {
+        if (streamInfo.getId() == null) {
+            streamInfo.setId(this.dao.nextId(STREAMINFO_NAMESPACE));
+        }
+        if (streamInfo.getTimestamp() == null) {
+            streamInfo.setTimestamp(System.currentTimeMillis());
+        }
+        this.dao.add(streamInfo);
+        return streamInfo;
+    }
+
+    public StreamInfo addOrUpdateStreamInfo(Long id, StreamInfo stream) {
+        stream.setId(id);
+        stream.setTimestamp(System.currentTimeMillis());
+        this.dao.addOrUpdate(stream);
+        return stream;
+    }
+
+    public StreamInfo removeStreamInfo(Long id) {
+        StreamInfo streamInfo = new StreamInfo();
+        streamInfo.setId(id);
+        return dao.<StreamInfo>remove(new StorableKey(STREAMINFO_NAMESPACE, streamInfo.getPrimaryKey()));
+    }
+
+    public Collection<StreamInfo> listStreamInfos() {
+        return this.dao.<StreamInfo>list(STREAMINFO_NAMESPACE);
+    }
+
+    public Collection<StreamInfo> listStreamInfos(List<QueryParam> params) throws Exception {
+        return dao.<StreamInfo>find(STREAMINFO_NAMESPACE, params);
+    }
+
 }

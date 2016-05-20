@@ -1,4 +1,10 @@
-define(['require', 'utils/Globals', 'bootbox', 'bootstrap.notify'], function(require, Globals, bootbox) {
+define(['require', 
+  'utils/Globals', 
+  'bootbox',
+  'models/VParser',
+  'models/VDatasource',
+  'bootstrap.notify'
+], function(require, Globals, bootbox, VParser, VDatasource) {
   'use strict';
 
   var Utils = {};
@@ -278,6 +284,54 @@ define(['require', 'utils/Globals', 'bootbox', 'bootstrap.notify'], function(req
         }
       }
     });
+  };
+
+  Utils.getFields = function(obj, parentScope){
+    var arr = parentScope.processorArr, 
+        dataObj = _.findWhere(arr, {uiname: obj.uiname});
+    if(dataObj){
+      if(obj.currentType === 'PARSER'){
+        var deviceLink = parentScope.linkArr.filter(function(o) {
+          return (o.target.currentType === 'PARSER' && o.target.uiname === obj.uiname);
+        });
+        if(deviceLink.length){
+          var deviceObj = _.findWhere(parentScope.dsArr, {uiname: deviceLink[0].source.uiname});
+          if(deviceObj){
+            var dsId = deviceObj._selectedTable[0].dataSourceId;
+            return Utils.getParserSchema(dsId);
+          }
+        }
+      } else if (obj.currentType === 'RULE'){
+        return dataObj.newConfig ? dataObj.newConfig.rulesProcessorConfig.declaredInput : dataObj.rulesProcessorConfig.declaredInput;
+      } else if (obj.currentType === 'CUSTOM'){
+        console.log(dataObj);
+        return [];
+      }
+    } else {
+      throw new Error('Object not found!');
+    }
+  };
+
+  Utils.getParserSchema = function(dsId){
+    var self = this;
+    var fields;
+    var parserModel = new VParser();
+    var sourceModel = new VDatasource();
+    sourceModel.set('dataSourceId', dsId);
+    sourceModel.set('id', dsId);
+    sourceModel.fetch({async: false});
+
+    parserModel.getSchema({
+      parserId: sourceModel.get('entity').parserId,
+      async: false,
+      success: function(model, response, options){
+        fields = model.entity.fields;
+      },
+      error: function(model, response, options){
+        Utils.showError(model, response);
+      }
+    });
+    return fields;
   };
 
   return Utils;

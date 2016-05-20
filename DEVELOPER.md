@@ -98,7 +98,7 @@ Take a look at [Creating a pull request](https://help.github.com/articles/creati
 need to:
 
 1. [Fork](https://help.github.com/articles/fork-a-repo) the IoTaS GitHub repository at
-   [https://github.com/apache/storm/](https://github.com/hortonworks/IoTaS/) to your personal GitHub
+   [https://github.com/hortonworks/IoTaS/](https://github.com/hortonworks/IoTaS/) to your personal GitHub
    account.  See [Fork a repo](https://help.github.com/articles/fork-a-repo) for detailed instructions.
 2. Commit any changes to your fork.
 3. Send a [pull request](https://help.github.com/articles/creating-a-pull-request) to the IoTaS GitHub repository
