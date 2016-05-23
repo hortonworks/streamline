@@ -1,8 +1,6 @@
 package com.hortonworks.iotas.notification.store.hbase.mappers;
 
 import com.hortonworks.iotas.notification.common.Notification;
-import com.hortonworks.iotas.notification.store.NotificationStoreException;
-import org.apache.hadoop.hbase.client.Put;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,8 +25,6 @@ public class DatasourceNotificationMapper extends NotificationIndexMapper {
         List<byte[]> rowKeys = new ArrayList<>();
         for (String dataSourceId : notification.getDataSourceIds()) {
             rowKeys.add(new StringBuilder(dataSourceId)
-                                .append(ROWKEY_SEP)
-                                .append(notification.getTs())
                                 .append(ROWKEY_SEP)
                                 .append(getIndexSuffix(notification))
                                 .toString().getBytes(CHARSET));

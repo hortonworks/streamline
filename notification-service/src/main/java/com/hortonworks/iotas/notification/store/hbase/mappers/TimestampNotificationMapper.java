@@ -2,7 +2,6 @@ package com.hortonworks.iotas.notification.store.hbase.mappers;
 
 import com.hortonworks.iotas.notification.common.Notification;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,11 +21,7 @@ public class TimestampNotificationMapper extends NotificationIndexMapper {
 
     @Override
     protected List<byte[]> getRowKeys(Notification notification) {
-        return Arrays.asList(new StringBuilder()
-                                     .append(notification.getTs())
-                                     .append(ROWKEY_SEP)
-                                     .append(getIndexSuffix(notification))
-                                     .toString().getBytes(CHARSET));
+        return Arrays.asList(getIndexSuffix(notification).getBytes(CHARSET));
 
     }
 
