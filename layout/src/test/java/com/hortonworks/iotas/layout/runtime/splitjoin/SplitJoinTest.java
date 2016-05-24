@@ -24,6 +24,7 @@ import com.hortonworks.iotas.client.CatalogRestClient;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Result;
+import com.hortonworks.iotas.layout.design.rule.Rule;
 import com.hortonworks.iotas.layout.design.rule.action.Action;
 import com.hortonworks.iotas.layout.design.splitjoin.JoinAction;
 import com.hortonworks.iotas.layout.design.splitjoin.SplitAction;
@@ -55,6 +56,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
@@ -68,7 +71,7 @@ public class SplitJoinTest {
     private static final Logger log = LoggerFactory.getLogger(SplitJoinTest.class);
 
     @Test
-    public void testSplitJoinProcessors() throws Exception {
+    public void testSplitJoinProcessorsWithActionsHavingStreams() throws Exception {
         String[] outputStreams = {"stream-1", "stream-2", "stream-3"};
 
         final SplitAction splitAction = new SplitAction();
@@ -77,6 +80,107 @@ public class SplitJoinTest {
         joinAction.setOutputStreams(Collections.singleton("output-stream"));
 
         runSplitJoin(splitAction, joinAction);
+    }
+
+    @Test
+    public void testSplitJoinProcessorsWithRuleHavingStreams() throws Exception {
+        String[] outputStreams = {"stream-1", "stream-2", "stream-3"};
+        SplitJoinRule splitRule = new SplitJoinRule("split", new SplitAction(), Sets.newHashSet(outputStreams));
+
+        SplitJoinRule joinRule = new SplitJoinRule("join", new JoinAction(), Collections.singleton("output-stream"));
+
+        runSplitJoin(splitRule, joinRule);
+    }
+
+    static class SplitJoinRule extends Rule {
+
+        private final Action action;
+
+        public SplitJoinRule(String name, Action action, Set<String> outputStreams) {
+            this.action = action;
+            setName(name);
+            setId(new Random().nextLong());
+            setActions(Collections.singletonList(action));
+            setStreams(outputStreams);
+        }
+
+        public Action getAction() {
+            return action;
+        }
+    }
+
+    @Test
+    public void testCustomSplitJoinWithRules() {
+
+        String[] outputStreams = {"stream-1", "stream-2", "stream-3"};
+
+        final SplitAction splitAction = new SplitAction(MySplitter.class.getName());
+        SplitJoinRule splitRule = new SplitJoinRule("split", splitAction, Sets.newHashSet(outputStreams));
+
+        final JoinAction joinAction = new JoinAction(MyJoiner.class.getName());
+        SplitJoinRule joinRule = new SplitJoinRule("join", joinAction, Collections.singleton("output-stream"));
+
+        resetCounters();
+
+        runSplitJoin(splitRule, joinRule);
+
+        Assert.assertTrue(MySplitter.invocationCount == 1);
+        Assert.assertTrue(MyJoiner.invocationCount == 1);
+    }
+
+    @Test
+    public void testStageProcessorWithRules() {
+        final String enrichFieldName = "foo";
+        final String enrichedValue = "foo-enriched-value";
+
+        Map<Object, Object> data = new HashMap<Object, Object>(){{put("foo-value", enrichedValue);}};
+        InmemoryTransformDataProvider transformDataProvider = new InmemoryTransformDataProvider(data);
+        EnrichmentTransform enrichmentTransform = new EnrichmentTransform("enricher", Collections.singletonList(enrichFieldName), transformDataProvider);
+        StageAction stageAction = new StageAction(Collections.<Transform>singletonList(enrichmentTransform));
+        SplitJoinRule stageRule = new SplitJoinRule("stage-1", stageAction, Collections.singleton("output-stream"));
+
+        StageActionRuntime stageActionRuntime = new StageActionRuntime(stageAction);
+        stageActionRuntime.setActionRuntimeContext(new ActionRuntimeContext(stageRule, stageAction));
+        stageActionRuntime.initialize(Collections.<String, Object>emptyMap());
+
+        final List<Result> results = stageActionRuntime.execute(createRootEvent());
+        for (Result result : results) {
+            for (IotasEvent event : result.events) {
+                final Map enrichments = (Map) event.getAuxiliaryFieldsAndValues().get(EnrichmentTransform.ENRICHMENTS_FIELD_NAME);
+                Assert.assertEquals(enrichments.get(enrichFieldName), enrichedValue);
+            }
+        }
+    }
+
+    private void runSplitJoin(SplitJoinRule splitRule, SplitJoinRule joinRule) {
+        runSplitJoin(splitRule, joinRule, Collections.<String, Object>emptyMap());
+    }
+
+    private void runSplitJoin(SplitJoinRule splitRule, SplitJoinRule joinRule, Map<String, Object> config) {
+        final SplitAction splitAction = (SplitAction) splitRule.getAction();
+        SplitActionRuntime splitActionRuntime = new SplitActionRuntime(splitAction);
+        splitActionRuntime.setActionRuntimeContext(new ActionRuntimeContext(splitRule, splitAction));
+        splitActionRuntime.initialize(config);
+
+        IotasEvent iotasEvent = createRootEvent();
+        final List<Result> results = splitActionRuntime.execute(iotasEvent);
+
+        JoinAction joinAction = (JoinAction) joinRule.getAction();
+        JoinActionRuntime joinActionRuntime = new JoinActionRuntime(joinAction);
+        joinActionRuntime.setActionRuntimeContext(new ActionRuntimeContext(joinRule, joinAction));
+        joinActionRuntime.initialize(config);
+
+        List<Result> effectiveResult = null;
+        for (Result result : results) {
+            for (IotasEvent event : result.events) {
+                List<Result> processedResult = joinActionRuntime.execute(event);
+                if(processedResult != null ) {
+                    effectiveResult = processedResult;
+                }
+            }
+        }
+
+        Assert.assertNotNull(effectiveResult);
     }
 
     @Test
@@ -89,7 +193,7 @@ public class SplitJoinTest {
 
         final JoinAction joinAction = new JoinAction(MyJoiner.class.getName());
         joinAction.setOutputStreams(Collections.singleton("output-stream"));
-        MySplitter.invocationCount= 0;
+        resetCounters();
 
         runSplitJoin(splitAction, joinAction);
 
@@ -97,9 +201,16 @@ public class SplitJoinTest {
         Assert.assertTrue(MyJoiner.invocationCount == 1);
     }
 
+    protected void resetCounters() {
+        MySplitter.invocationCount= 0;
+        MyJoiner.invocationCount = 0;
+    }
+
+
     protected void runSplitJoin(SplitAction splitAction, JoinAction joinAction) {
         runSplitJoin(splitAction, joinAction, Collections.<String, Object>emptyMap());
     }
+
     protected void runSplitJoin(SplitAction splitAction, JoinAction joinAction, Map<String, Object> config) {
         SplitActionRuntime splitActionRuntime = new SplitActionRuntime(splitAction);
         splitActionRuntime.setActionRuntimeContext(new ActionRuntimeContext(null, splitAction));

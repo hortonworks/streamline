@@ -19,7 +19,9 @@
 package com.hortonworks.iotas.layout.runtime.splitjoin;
 
 import com.hortonworks.iotas.client.CatalogRestClient;
+import com.hortonworks.iotas.layout.design.rule.action.Action;
 import com.hortonworks.iotas.layout.runtime.rule.action.AbstractActionRuntime;
+import com.hortonworks.iotas.layout.runtime.rule.action.ActionRuntimeContext;
 import com.hortonworks.iotas.util.CoreUtils;
 import com.hortonworks.iotas.util.ProxyUtil;
 import org.apache.commons.io.IOUtils;
@@ -38,6 +40,17 @@ import java.util.UUID;
  */
 public abstract class AbstractSplitJoinActionRuntime extends AbstractActionRuntime {
     private static final Logger log = LoggerFactory.getLogger(AbstractSplitJoinActionRuntime.class);
+
+    @Override
+    public void setActionRuntimeContext(ActionRuntimeContext actionRuntimeContext) {
+        super.setActionRuntimeContext(actionRuntimeContext);
+        final Action action = actionRuntimeContext.getAction();
+        if(actionRuntimeContext.getRule() != null &&
+                action != null &&
+                (action.getOutputStreams() == null || action.getOutputStreams().isEmpty())) {
+            action.setOutputStreams(actionRuntimeContext.getRule().getStreams());
+        }
+    }
 
     protected String getJarPathFor(Long jarId) throws IOException {
 

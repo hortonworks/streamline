@@ -26,7 +26,6 @@ import com.hortonworks.iotas.layout.design.splitjoin.StageAction;
 import com.hortonworks.iotas.layout.design.transform.Transform;
 import com.hortonworks.iotas.layout.runtime.RuntimeService;
 import com.hortonworks.iotas.layout.runtime.TransformActionRuntime;
-import com.hortonworks.iotas.layout.runtime.rule.action.AbstractActionRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.action.ActionRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.action.ActionRuntimeContext;
 
@@ -37,14 +36,20 @@ import java.util.Set;
  * {@link ActionRuntime} of a stage processor.
  *
  */
-public class StageActionRuntime extends AbstractActionRuntime {
+public class StageActionRuntime extends AbstractSplitJoinActionRuntime {
 
     private final StageAction stageAction;
     private TransformActionRuntime transformActionRuntime;
 
     public StageActionRuntime(StageAction stageAction) {
         this.stageAction = stageAction;
+    }
+
+    @Override
+    public void setActionRuntimeContext(ActionRuntimeContext actionRuntimeContext) {
+        super.setActionRuntimeContext(actionRuntimeContext);
         buildTransformActionRuntime();
+        transformActionRuntime.setActionRuntimeContext(actionRuntimeContext);
     }
 
     protected void buildTransformActionRuntime() {
@@ -53,11 +58,6 @@ public class StageActionRuntime extends AbstractActionRuntime {
             throw new RuntimeException("Stage can only have one output stream.");
         }
         transformActionRuntime = new TransformActionRuntime(new TransformAction(transforms, stageAction.getOutputStreams()));
-    }
-
-    @Override
-    public void setActionRuntimeContext(ActionRuntimeContext actionRuntimeContext) {
-        transformActionRuntime.setActionRuntimeContext(actionRuntimeContext);
     }
 
     @Override
