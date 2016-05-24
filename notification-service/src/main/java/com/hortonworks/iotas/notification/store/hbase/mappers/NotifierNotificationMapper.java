@@ -1,7 +1,6 @@
 package com.hortonworks.iotas.notification.store.hbase.mappers;
 
 import com.hortonworks.iotas.notification.common.Notification;
-import com.hortonworks.iotas.notification.store.hbase.mappers.NotificationIndexMapper;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,8 +23,6 @@ public class NotifierNotificationMapper extends NotificationIndexMapper {
     @Override
     protected List<byte[]> getRowKeys(Notification notification) {
         return Arrays.asList(new StringBuilder(notification.getNotifierName())
-                                     .append(ROWKEY_SEP)
-                                     .append(notification.getTs())
                                      .append(ROWKEY_SEP)
                                      .append(getIndexSuffix(notification))
                                      .toString().getBytes(CHARSET));
