@@ -1261,7 +1261,7 @@ POST /api/v1/catalog/files
 
 *Sample Input*
 
-    curl -X POST -i -F file=@user-lib.jar -F "jar={\"name\":\"my-lib-jar-1\",\"version\":1};type=application/json"  http://localhost:8080/api/v1/catalog/files
+    curl -X POST -i -F file=@user-lib.jar -F "fileInfo={\"name\":\"my-lib-jar-1\",\"version\":1};type=application/json"  http://localhost:8080/api/v1/catalog/files
 
 
 *Success Response*
@@ -1304,7 +1304,7 @@ PUT /api/v1/catalog/files
 
 *Sample Input*
 
-    curl -X PUT -i -F file=@user-lib-2.jar -F "jar={\"id\":1234,\"name\":\"my-lib-jar-1\",\"version\":2};type=application/json"  http://localhost:8080/api/v1/catalog/files
+    curl -X PUT -i -F file=@user-lib-2.jar -F "fileInfo={\"id\":1234,\"name\":\"my-lib-jar-1\",\"version\":2};type=application/json"  http://localhost:8080/api/v1/catalog/files
 
 
 *Success Response*

@@ -32,7 +32,7 @@ import java.util.Set;
  * components, sinks, ...
  *
  */
-@JsonTypeInfo(use= JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY, property="class")
+@JsonTypeInfo(use= JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY, property="__type")
 public class Action implements Serializable {
     protected String name = "default";
 

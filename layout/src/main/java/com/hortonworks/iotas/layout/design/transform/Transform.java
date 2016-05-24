@@ -18,11 +18,14 @@
  */
 package com.hortonworks.iotas.layout.design.transform;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import java.io.Serializable;
 
 /**
  * Design time component of a basic transform.
  */
+@JsonTypeInfo(use= JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY, property="__type")
 public class Transform implements Serializable {
 
     protected final String name;

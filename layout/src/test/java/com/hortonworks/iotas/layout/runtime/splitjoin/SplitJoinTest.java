@@ -18,16 +18,19 @@
  */
 package com.hortonworks.iotas.layout.runtime.splitjoin;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import com.hortonworks.iotas.client.CatalogRestClient;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Result;
+import com.hortonworks.iotas.layout.design.rule.action.Action;
 import com.hortonworks.iotas.layout.design.splitjoin.JoinAction;
 import com.hortonworks.iotas.layout.design.splitjoin.SplitAction;
 import com.hortonworks.iotas.layout.design.splitjoin.StageAction;
 import com.hortonworks.iotas.layout.design.transform.EnrichmentTransform;
 import com.hortonworks.iotas.layout.design.transform.InmemoryTransformDataProvider;
+import com.hortonworks.iotas.layout.design.transform.ProjectionTransform;
 import com.hortonworks.iotas.layout.design.transform.Transform;
 import com.hortonworks.iotas.layout.runtime.rule.action.ActionRuntimeContext;
 import com.hortonworks.iotas.util.CoreUtils;
@@ -62,6 +65,7 @@ import java.util.jar.JarOutputStream;
  */
 @RunWith(JMockit.class)
 public class SplitJoinTest {
+    private static final Logger log = LoggerFactory.getLogger(SplitJoinTest.class);
 
     @Test
     public void testSplitJoinProcessors() throws Exception {
@@ -226,5 +230,27 @@ public class SplitJoinTest {
         }
 
         return new JarInputStream(new FileInputStream(tempFile));
+    }
+
+    @Test
+    public void testActionsJsonSerDeser() throws Exception {
+        Action[] actions = {
+                new SplitAction(System.currentTimeMillis(), "com.hortonworks.iotas.sj.SplitterClass"),
+                new JoinAction(System.currentTimeMillis(), "com.hortonworks.iotas.sj.JoinerClass"),
+                new StageAction(Collections.<Transform>singletonList(new ProjectionTransform("projection", Collections.singleton("foo")))),
+        };
+        for (Action action : actions) {
+            checkActionWriteReadJsons(action);
+        }
+    }
+
+    protected static void checkActionWriteReadJsons(Action action) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        final String value = objectMapper.writeValueAsString(action);
+        log.info("####### value = " + value);
+
+        Class<? extends Action> actionClass = Action.class;
+        Action actionRead = objectMapper.readValue(value, actionClass);
+        log.info("####### actionRead = " + actionRead);
     }
 }
