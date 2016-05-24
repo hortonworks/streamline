@@ -3,7 +3,7 @@ package com.hortonworks.iotas.storage;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.Device;
-import com.hortonworks.iotas.catalog.File;
+import com.hortonworks.iotas.catalog.FileInfo;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.common.Schema;
@@ -289,8 +289,8 @@ public abstract class AbstractStoreManagerTest {
             }};
         }
 
-        protected File createFiles(Long id, String name) {
-            File file = new File();
+        protected FileInfo createFiles(Long id, String name) {
+            FileInfo file = new FileInfo();
             file.setId(id);
             file.setName(name);
             file.setStoredFileName("/tmp/parser.jar");

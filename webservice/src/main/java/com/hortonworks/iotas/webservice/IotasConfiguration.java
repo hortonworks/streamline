@@ -42,6 +42,8 @@ public class IotasConfiguration extends Configuration {
 
     private Boolean notificationsRestDisable;
 
+    private String javaJarCommand;
+
     @NotEmpty
     private String catalogRootUrl;
 
@@ -113,6 +115,14 @@ public class IotasConfiguration extends Configuration {
 
     public void setCatalogRootUrl (String catalogRootUrl) {
         this.catalogRootUrl = catalogRootUrl;
+    }
+
+    public String getJavaJarCommand() {
+        return javaJarCommand;
+    }
+
+    public void setJavaJarCommand(String javaJarCommand) {
+        this.javaJarCommand = javaJarCommand;
     }
 
     public FileStorageConfiguration getFileStorageConfiguration() {

@@ -2,11 +2,13 @@ package com.hortonworks.iotas.topology.storm;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
 import com.hortonworks.iotas.catalog.Topology;
 import com.hortonworks.iotas.topology.StatusImpl;
 import com.hortonworks.iotas.topology.TopologyActions;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import com.hortonworks.iotas.util.ReflectionHelper;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,12 +19,17 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +43,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
     private String stormCliPath = "storm";
     private String stormJarLocation;
     private String catalogRootUrl;
+    private String javaJarCommand;
 
     private Map<String, String> jsonUiNameToStormName = new HashMap<>();
 
@@ -57,18 +65,26 @@ public class StormTopologyActionsImpl implements TopologyActions {
             }
             stormJarLocation = conf.get(TopologyLayoutConstants.STORM_JAR_LOCATION_KEY);
             catalogRootUrl = conf.get(TopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL);
+            String res;
+            if ((res=conf.get(TopologyLayoutConstants.JAVA_JAR_COMMAND)) != null) {
+                javaJarCommand = res;
+            } else {
+                javaJarCommand = "jar";
+            }
         }
         File f = new File (stormArtifactsLocation);
         f.mkdirs();
     }
 
+
     @Override
     public void deploy (Topology topology) throws Exception {
+        Path jarToDeploy = addArtifactsToJar(getArtifactsLocation(topology));
         String fileName = this.createYamlFile(topology);
         List<String> commands = new ArrayList<String>();
         commands.add(stormCliPath);
         commands.add("jar");
-        commands.add(stormJarLocation);
+        commands.add(jarToDeploy.toString());
         commands.add("org.apache.storm.flux.Flux");
         commands.add("--remote");
         commands.add(fileName);
@@ -77,6 +93,26 @@ public class StormTopologyActionsImpl implements TopologyActions {
             throw new Exception("Topology could not be deployed " +
                     "successfully.");
         }
+    }
+
+    private Path addArtifactsToJar(Path artifactsLocation) throws Exception {
+        Path jarFile = Paths.get(stormJarLocation);
+        if (artifactsLocation.toFile().isDirectory()) {
+            File[] artifacts = artifactsLocation.toFile().listFiles();
+            if (artifacts.length > 0) {
+                Path newJar = Files.copy(jarFile, artifactsLocation.resolve(jarFile.getFileName()));
+                for (File artifact : artifacts) {
+                    executeShellProcess(
+                            ImmutableList.of(javaJarCommand, "uf", newJar.toString(),
+                                             "-C", artifactsLocation.toString(), artifact.getName()));
+                    LOG.debug("Added file {} to jar {}", artifact, jarFile);
+                }
+                return newJar;
+            }
+        } else {
+            LOG.debug("Artifacts directory {} does not exist, not adding any artifacts to jar", artifactsLocation);
+        }
+        return jarFile;
     }
 
     @Override
@@ -89,6 +125,11 @@ public class StormTopologyActionsImpl implements TopologyActions {
         if (exitValue != 0) {
             throw new Exception("Topology could not be killed " +
                     "successfully.");
+        }
+        File artifactsDir = getArtifactsLocation(topology).toFile();
+        if (artifactsDir.exists() && artifactsDir.isDirectory()) {
+            LOG.debug("Cleaning up {}", artifactsDir);
+            FileUtils.cleanDirectory(artifactsDir);
         }
     }
 
@@ -153,6 +194,14 @@ public class StormTopologyActionsImpl implements TopologyActions {
             }
         }
         return status;
+    }
+
+    /**
+     * the Path where any topology specific artifacts are kept
+     */
+    @Override
+    public Path getArtifactsLocation(Topology topology) {
+        return Paths.get(stormArtifactsLocation, getTopologyName(topology));
     }
 
     private String createYamlFile (Topology topology) throws

@@ -11,12 +11,11 @@ import java.util.Map;
 
 public class Cluster extends AbstractStorable {
     private static final String NAMESPACE = "cluster";
-
     /**
-     * The cluster type - STORM, KAFKA, HDFS
+     * The cluster type
      */
     public enum Type {
-        STORM, KAFKA, HDFS
+        STORM, KAFKA, HDFS, HBASE
     }
 
     private Long id;
@@ -25,6 +24,8 @@ public class Cluster extends AbstractStorable {
     private String description = "";
     private String tags = "";
     private Long timestamp;
+    private String clusterConfigFileName;
+    private String clusterConfigStorageName;
 
     /**
      * The name of the cluster
@@ -96,6 +97,28 @@ public class Cluster extends AbstractStorable {
         this.timestamp = timestamp;
     }
 
+    /**
+     * Name of cluster specific config file. E.g. hdfs-site.xml, hbase-site.xml etc
+     */
+    public String getClusterConfigFileName() {
+        return clusterConfigFileName;
+    }
+
+    public void setClusterConfigFileName(String clusterConfigFileName) {
+        this.clusterConfigFileName = clusterConfigFileName;
+    }
+
+    /**
+     * The actual name with which the file is stored in the storage. E.g. hdfs-site.xml-UUID
+     */
+    public String getClusterConfigStorageName() {
+        return clusterConfigStorageName;
+    }
+
+    public void setClusterConfigStorageName(String clusterConfigStorageName) {
+        this.clusterConfigStorageName = clusterConfigStorageName;
+    }
+
     @JsonIgnore
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<Schema.Field, Object>();
@@ -106,7 +129,7 @@ public class Cluster extends AbstractStorable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Cluster)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
 
         Cluster cluster = (Cluster) o;
 
@@ -114,7 +137,11 @@ public class Cluster extends AbstractStorable {
         if (name != null ? !name.equals(cluster.name) : cluster.name != null) return false;
         if (type != cluster.type) return false;
         if (description != null ? !description.equals(cluster.description) : cluster.description != null) return false;
-        return !(tags != null ? !tags.equals(cluster.tags) : cluster.tags != null);
+        if (tags != null ? !tags.equals(cluster.tags) : cluster.tags != null) return false;
+        if (timestamp != null ? !timestamp.equals(cluster.timestamp) : cluster.timestamp != null) return false;
+        if (clusterConfigFileName != null ? !clusterConfigFileName.equals(cluster.clusterConfigFileName) : cluster.clusterConfigFileName != null)
+            return false;
+        return clusterConfigStorageName != null ? clusterConfigStorageName.equals(cluster.clusterConfigStorageName) : cluster.clusterConfigStorageName == null;
 
     }
 
@@ -125,6 +152,9 @@ public class Cluster extends AbstractStorable {
         result = 31 * result + (type != null ? type.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
         result = 31 * result + (tags != null ? tags.hashCode() : 0);
+        result = 31 * result + (timestamp != null ? timestamp.hashCode() : 0);
+        result = 31 * result + (clusterConfigFileName != null ? clusterConfigFileName.hashCode() : 0);
+        result = 31 * result + (clusterConfigStorageName != null ? clusterConfigStorageName.hashCode() : 0);
         return result;
     }
 
@@ -137,6 +167,8 @@ public class Cluster extends AbstractStorable {
                 ", description='" + description + '\'' +
                 ", tags='" + tags + '\'' +
                 ", timestamp=" + timestamp +
-                '}';
+                ", clusterConfigFileName='" + clusterConfigFileName + '\'' +
+                ", clusterConfigStorageName='" + clusterConfigStorageName + '\'' +
+                "}";
     }
 }

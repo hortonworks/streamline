@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * File configuration
  */
-public class File extends AbstractStorable {
+public class FileInfo extends AbstractStorable {
     public static final String NAME_SPACE = "files";
     public static final String ID = "id";
 
@@ -160,9 +160,9 @@ public class File extends AbstractStorable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof File)) return false;
+        if (!(o instanceof FileInfo)) return false;
 
-        File file = (File) o;
+        FileInfo file = (FileInfo) o;
 
         if (id != null ? !id.equals(file.id) : file.id != null) return false;
         if (name != null ? !name.equals(file.name) : file.name != null) return false;
