@@ -1,9 +1,11 @@
 package com.hortonworks.iotas.storage;
 
+import com.google.common.collect.Maps;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.Device;
 import com.hortonworks.iotas.catalog.FileInfo;
+import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.common.Schema;
@@ -22,6 +24,8 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Random;
 import java.util.Set;
 import java.util.Map;
 import java.util.List;
@@ -276,6 +280,27 @@ public abstract class AbstractStoreManagerTest {
             pi.setVersion(0l);
             pi.setTimestamp(System.currentTimeMillis());
             return pi;
+        }
+    }
+
+    public class NotifierInfoTest extends StorableTest {
+        {
+            storableList = new ArrayList<Storable>() {{
+                add(createFiles(1l, "file-1"));
+                add(createFiles(1l, "file-2"));
+                add(createFiles(2l, "file-3"));
+                add(createFiles(3l, "file-4"));
+            }};
+        }
+
+        protected NotifierInfo createFiles(Long id, String name) {
+            NotifierInfo notifierInfo = new NotifierInfo();
+            notifierInfo.setId(id);
+            notifierInfo.setName(name);
+            Map<String, String> props = new HashMap<String, String>(){{put("cur", new Random().nextInt()+"");}};
+            notifierInfo.setProperties(props);
+            notifierInfo.setTimestamp(System.currentTimeMillis());
+            return notifierInfo;
         }
     }
 
