@@ -27,7 +27,7 @@ import com.hortonworks.iotas.catalog.Cluster;
 import com.hortonworks.iotas.catalog.Component;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
-import com.hortonworks.iotas.catalog.File;
+import com.hortonworks.iotas.catalog.FileInfo;
 import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.catalog.Tag;
@@ -46,9 +46,11 @@ import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.media.multipart.BodyPart;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
 import org.glassfish.jersey.media.multipart.internal.MultiPartWriter;
 import org.junit.Assert;
@@ -64,16 +66,21 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 
@@ -100,6 +107,11 @@ public class RestIntegrationTest {
         final Object resourceToPut; // resource that will be used to test put
         final String id; //Id by which Get(id) and Delete(id) will be tested, should match the actual Id set in post/put request.
         final String url; //Rest Url to test.
+        boolean multipart;
+        String entityNameHeader;
+        String fileNameHeader;
+        File fileToUpload;
+        List<String> fieldsToIgnore;
 
         public ResourceTestElement(Object resourceToPost, Object resourceToPut, String id, String url) {
             this.resourceToPost = resourceToPost;
@@ -107,6 +119,36 @@ public class RestIntegrationTest {
             this.id = id;
             this.url = url;
         }
+
+        public ResourceTestElement withMultiPart() {
+            this.multipart = true;
+            return this;
+        }
+
+        public ResourceTestElement withEntitiyNameHeader(String entitiyNameHeader) {
+            this.entityNameHeader = entitiyNameHeader;
+            return this;
+        }
+
+        public ResourceTestElement withFileNameHeader(String fileNameHeader) {
+            this.fileNameHeader = fileNameHeader;
+            return this;
+        }
+
+        public ResourceTestElement withFileToUpload(String fileName) {
+            try {
+                this.fileToUpload = Paths.get(this.getClass().getClassLoader().getResource(fileName).toURI()).toFile();
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
+            return this;
+        }
+
+        public ResourceTestElement withFieldsToIgnore(List<String> fields) {
+            this.fieldsToIgnore = fields;
+            return this;
+        }
+
     }
 
     /**
@@ -137,7 +179,9 @@ public class RestIntegrationTest {
     private Collection<ResourceTestElement> resourcesToTest = Lists.newArrayList(
             // TODO: The below test case needs to be fixed since it should first create the data source and then add the corresponding datafeed
             //new ResourceTestElement(createDataFeed(1l, "testDataFeed"), createDataFeed(1l, "testDataFeedPut"), "1", rootUrl + "feeds"),
-            new ResourceTestElement(createClusterInfo(1l, "testCluster"), createClusterInfo(1l, "testClusterPut"), "1", rootUrl + "clusters"),
+            new ResourceTestElement(createClusterInfo(1l, "testCluster"), createClusterInfo(1l, "testClusterPut"), "1", rootUrl + "clusters")
+                                    .withMultiPart().withEntitiyNameHeader("cluster").withFileNameHeader("clusterConfigFile")
+                                    .withFileToUpload("hdfs-site.xml").withFieldsToIgnore(Collections.singletonList("clusterConfigStorageName")),
             new ResourceTestElement(createNotifierInfo(1l, "testNotifier"), createNotifierInfo(1l, "testNotifierPut"), "1", rootUrl + "notifiers"),
             new ResourceTestElement(createDataSourceDto(1l, "testDataSourceWithDataFeed:" + System.currentTimeMillis()), createDataSourceDto(1l, "testDataSourceWithDataFeedPut:" + System.currentTimeMillis()), "1", rootUrl + "datasources"),
             new ResourceTestElement(createTopology(1l, "iotasTopology"), createTopology(1l, "iotasTopologyPut"), "1", rootUrl + "topologies"),
@@ -145,11 +189,32 @@ public class RestIntegrationTest {
             new ResourceTestElement(createTopologyComponent(1l, "kafkaSpoutComponent", TopologyComponent.TopologyComponentType.SOURCE, "KAFKA"), createTopologyComponent(1l, "kafkaSpoutComponentPut", TopologyComponent.TopologyComponentType.SOURCE, "KAFKA") , "1", rootUrl + "system/componentdefinitions/SOURCE"),
             new ResourceTestElement(createTopologyComponent(2l, "parserProcessor", TopologyComponent .TopologyComponentType.PROCESSOR, "PARSER"), createTopologyComponent(2l, "parserProcessorPut", TopologyComponent.TopologyComponentType.PROCESSOR, "PARSER"), "2", rootUrl + "system/componentdefinitions/PROCESSOR"),
             new ResourceTestElement(createTopologyComponent(3l, "hbaseSink", TopologyComponent.TopologyComponentType.SINK, "HBASE"), createTopologyComponent(3l, "hbaseSinkPut", TopologyComponent.TopologyComponentType.SINK, "HBASE"), "3", rootUrl + "system/componentdefinitions/SINK"),
-            new ResourceTestElement(createTopologyComponent(4l, "shuffleGroupingLink", TopologyComponent.TopologyComponentType.LINK, "SHUFFLE"), createTopologyComponent(4l, "shuffleGroupingLinkPut", TopologyComponent.TopologyComponentType.LINK, "SHUFFLE"), "4", rootUrl + "system/componentdefinitions/LINK")
+            new ResourceTestElement(createTopologyComponent(4l, "shuffleGroupingLink", TopologyComponent.TopologyComponentType.LINK, "SHUFFLE"), createTopologyComponent(4l, "shuffleGroupingLinkPut", TopologyComponent.TopologyComponentType.LINK, "SHUFFLE"), "4", rootUrl + "system/componentdefinitions/LINK"),
             // parser is commented as parser takes a jar as input along with the parserInfo instance and so it needs a multipart request.
-            //new ResourceTestElement(createParserInfo(1l, "testParser"), createParserInfo(1l, "testParserPut"), "1", rootUrl + "parsers")
+            new ResourceTestElement(createParserInfo(1l, "testParser"), null, "1", rootUrl + "parsers")
+                                    .withMultiPart().withEntitiyNameHeader("parserInfo").withFileNameHeader("parserJar")
+                                    .withFileToUpload("parser.jar").withFieldsToIgnore(Collections.singletonList("jarStoragePath"))
     );
 
+    private MultiPart getMultiPart(ResourceTestElement resourceToTest, Object entity) {
+        MultiPart multiPart = new MultiPart();
+        BodyPart filePart = new FileDataBodyPart(resourceToTest.fileNameHeader, resourceToTest.fileToUpload);
+        BodyPart entityPart = new FormDataBodyPart(resourceToTest.entityNameHeader, entity, MediaType.APPLICATION_JSON_TYPE);
+        multiPart.bodyPart(filePart).bodyPart(entityPart);
+        return multiPart;
+    }
+
+    public <T> T filterFields(T object, List<String> fields) throws Exception {
+        if (fields != null && !fields.isEmpty()) {
+            Class<?> clazz = object.getClass();
+            for (String fieldName : fields) {
+                Field field = clazz.getDeclaredField(fieldName);
+                field.setAccessible(true);
+                field.set(object, null);
+            }
+        }
+        return object;
+    }
     /**
      * For each TestResource element in resourcesToTest List, tests Post, Put, Get and Delete.
      *
@@ -158,31 +223,44 @@ public class RestIntegrationTest {
     @Test
     public void testAllResources() throws Exception {
         Client client = ClientBuilder.newClient(new ClientConfig());
-
+        client.register(MultiPartFeature.class);
         for (ResourceTestElement resourceToTest : resourcesToTest) {
             String url = resourceToTest.url;
             Object resourceToPost = resourceToTest.resourceToPost;
             Object resourceToPut = resourceToTest.resourceToPut;
             String id = resourceToTest.id;
+            String response;
 
-            String response = client.target(url).request().post(Entity.json(resourceToPost), String.class);
+            if (resourceToTest.multipart) {
+                response = client.target(url).request().post(Entity.entity(getMultiPart(resourceToTest, resourceToPost),
+                                                                           MediaType.MULTIPART_FORM_DATA), String.class);
+            } else {
+                response = client.target(url).request().post(Entity.json(resourceToPost), String.class);
+            }
             Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
 
             response = client.target(url).request().get(String.class);
             Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
-            Assert.assertEquals(Lists.newArrayList(resourceToPost), getEntities(response, resourceToPost.getClass()));
+            Assert.assertEquals(Lists.newArrayList(filterFields(resourceToPost, resourceToTest.fieldsToIgnore)),
+                                getEntities(response, resourceToPost.getClass(), resourceToTest.fieldsToIgnore));
 
             url = url + "/" + id;
             response = client.target(url).request().get(String.class);
             Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
-            Assert.assertEquals(resourceToPost, getEntity(response, resourceToPost.getClass()));
+            Assert.assertEquals(resourceToPost, getEntity(response, resourceToPost.getClass(), resourceToTest.fieldsToIgnore));
 
-            response = client.target(url).request().put(Entity.json(resourceToPut), String.class);
-            Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
-
-            response = client.target(url).request().get(String.class);
-            Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
-            Assert.assertEquals(resourceToPut, getEntity(response, resourceToPut.getClass()));
+            if (resourceToPut != null) {
+                if (resourceToTest.multipart) {
+                    response = client.target(url).request().put(Entity.entity(getMultiPart(resourceToTest, resourceToPut),
+                                                                              MediaType.MULTIPART_FORM_DATA), String.class);
+                } else {
+                    response = client.target(url).request().put(Entity.json(resourceToPut), String.class);
+                }
+                Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+                response = client.target(url).request().get(String.class);
+                Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+                Assert.assertEquals(resourceToPut, getEntity(response, resourceToPut.getClass(), resourceToTest.fieldsToIgnore));
+            }
 
             response = client.target(url).request().delete(String.class);
             Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
@@ -412,7 +490,7 @@ public class RestIntegrationTest {
         String url = rootUrl + "files";
 
         // POST
-        File file = new File();
+        FileInfo file = new FileInfo();
         file.setName("milkyway-jar");
         file.setVersion(System.currentTimeMillis());
 
@@ -427,7 +505,7 @@ public class RestIntegrationTest {
         response = client.target(url)
                 .request(MediaType.MULTIPART_FORM_DATA_TYPE, MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_OCTET_STREAM_TYPE)
                 .post(Entity.entity(multiPart, multiPart.getMediaType()), String.class);
-        File postedFile = getEntity(response, File.class);
+        FileInfo postedFile = getEntity(response, FileInfo.class);
 
         Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
 
@@ -445,7 +523,7 @@ public class RestIntegrationTest {
 
         // GET all
         response = client.target(url).request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
-        List<File> files = getEntities(response, File.class);
+        List<FileInfo> files = getEntities(response, FileInfo.class);
 
         Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
         Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
@@ -455,7 +533,7 @@ public class RestIntegrationTest {
 
         // GET /files/1
         response = client.target(url+"/"+ postedFile.getId()).request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
-        File receivedFile = getEntity(response, File.class);
+        FileInfo receivedFile = getEntity(response, FileInfo.class);
 
         Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
         Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
@@ -474,7 +552,7 @@ public class RestIntegrationTest {
         response = client.target(url)
                 .request(MediaType.MULTIPART_FORM_DATA_TYPE, MediaType.APPLICATION_JSON_TYPE)
                 .post(Entity.entity(multiPart, multiPart.getMediaType()), String.class);
-        File updatedFile = getEntity(response, File.class);
+        FileInfo updatedFile = getEntity(response, FileInfo.class);
 
         Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
         Assert.assertEquals(updatedFile.getId(), postedFile.getId());
@@ -483,7 +561,7 @@ public class RestIntegrationTest {
 
         // DELETE
         response = client.target(url+"/"+ updatedFile.getId()).request().delete(String.class);
-        final File deletedFile = getEntity(response, File.class);
+        final FileInfo deletedFile = getEntity(response, FileInfo.class);
 
         Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
         Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
@@ -492,7 +570,7 @@ public class RestIntegrationTest {
 
         // GET
         response = client.target(url).request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
-        files = getEntities(response, File.class);
+        files = getEntities(response, FileInfo.class);
 
         Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
         Assert.assertTrue(files.isEmpty());
@@ -550,6 +628,10 @@ public class RestIntegrationTest {
         return mapper.treeToValue(node.get("responseCode"), Integer.class);
     }
 
+    private <T extends Object> List<T> getEntities(String response, Class<T> clazz) {
+        return getEntities(response, clazz, Collections.<String>emptyList());
+    }
+
     /**
      * Get the entities from response string
      *
@@ -558,19 +640,24 @@ public class RestIntegrationTest {
      * @param <T>
      * @return
      */
-    private <T extends Object> List<T> getEntities(String response, Class<T> clazz) {
+    private <T extends Object> List<T> getEntities(String response, Class<T> clazz,
+                                                   List<String> fieldsToIgnore) {
         List<T> entities = new ArrayList<>();
         try {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode node = mapper.readTree(response);
             Iterator<JsonNode> it = node.get("entities").elements();
             while (it.hasNext()) {
-                entities.add(mapper.treeToValue(it.next(), clazz));
+                entities.add(filterFields(mapper.treeToValue(it.next(), clazz), fieldsToIgnore));
             }
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
         return entities;
+    }
+
+    private <T> T getEntity(String response, Class<T> clazz) {
+        return getEntity(response, clazz, Collections.<String>emptyList());
     }
 
     /**
@@ -581,11 +668,12 @@ public class RestIntegrationTest {
      * @param <T>
      * @return
      */
-    private <T extends Object> T getEntity(String response, Class<T> clazz) {
+    private <T> T getEntity(String response, Class<T> clazz,
+                                           List<String> fieldsToIgnore) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode node = mapper.readTree(response);
-            return mapper.treeToValue(node.get("entity"), clazz);
+            return filterFields(mapper.treeToValue(node.get("entity"), clazz), fieldsToIgnore);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -643,7 +731,7 @@ public class RestIntegrationTest {
         ParserInfo pi = new ParserInfo();
         pi.setId(id);
         pi.setName(name);
-        pi.setClassName("com.org.apache.TestParser");
+        pi.setClassName("com.hortonworks.iotas.parsers.nest.NestParser");
         pi.setJarStoragePath("/tmp/parser.jar");
         pi.setParserSchema(new Schema.SchemaBuilder().fields(new Schema.Field("deviceId", Schema.Type.LONG),
                 new Schema.Field("deviceName", Schema.Type.STRING)).build());
@@ -660,6 +748,7 @@ public class RestIntegrationTest {
         cluster.setTags("tags");
         cluster.setTimestamp(System.currentTimeMillis());
         cluster.setType(Cluster.Type.HDFS);
+        cluster.setClusterConfigFileName("hdfs-site.xml");
         return cluster;
     }
 

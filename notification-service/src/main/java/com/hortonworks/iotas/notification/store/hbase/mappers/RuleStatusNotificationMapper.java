@@ -22,10 +22,6 @@ public class RuleStatusNotificationMapper extends NotificationStatusIndexMapper 
     protected List<byte[]> getRowKeys(Notification notification) {
         return Arrays.asList(new StringBuilder(notification.getRuleId())
                                      .append(ROWKEY_SEP)
-                                     .append(notification.getStatus())
-                                     .append(ROWKEY_SEP)
-                                     .append(notification.getTs())
-                                     .append(ROWKEY_SEP)
                                      .append(getIndexSuffix(notification))
                                      .toString().getBytes(CHARSET));
     }

@@ -28,4 +28,12 @@ public abstract class NotificationStatusIndexMapper extends NotificationIndexMap
         LOG.trace("TableMutations for status update {}", tableMutations);
         return tableMutations;
     }
+
+    protected String getIndexSuffix(Notification notification) {
+        return new StringBuilder()
+                .append(notification.getStatus())
+                .append(ROWKEY_SEP)
+                .append(super.getIndexSuffix(notification))
+                .toString();
+    }
 }

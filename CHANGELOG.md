@@ -1,5 +1,7 @@
 ## 0.1.3
  * IOT-252: Add integration test for StreamInfo storage with JDBC provider
+ * IOT-248: Integration tests for Notification Service
+ * IOT-189: Support adding custom artifacts in storm.jar
  * IOT-251: Multiple parser bolts can over write the same loaded parser jars leading to classloading issues.
  * IOT-250: REST api for output streams
  * IOT-158: UI should provide functionality to select a shuffle
