@@ -23,7 +23,7 @@ import java.io.Serializable;
 
 /**
  * This class represents design time value generator of a given field which is part of
- * {@link com.hortonworks.iotas.layout.design.component.NormalizationProcessor}.
+ * {@link NormalizationProcessor}.
  *
  */
 public class FieldValueGenerator implements Serializable {

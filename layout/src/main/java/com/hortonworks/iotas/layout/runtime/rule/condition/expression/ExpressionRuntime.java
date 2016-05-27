@@ -19,10 +19,10 @@
 package com.hortonworks.iotas.layout.runtime.rule.condition.expression;
 
 import com.hortonworks.iotas.common.Schema.Field;
-import com.hortonworks.iotas.layout.design.rule.condition.Condition;
-import com.hortonworks.iotas.layout.design.rule.condition.GroupBy;
-import com.hortonworks.iotas.layout.design.rule.condition.Having;
-import com.hortonworks.iotas.layout.design.rule.condition.Projection;
+import com.hortonworks.iotas.topology.component.rule.condition.GroupBy;
+import com.hortonworks.iotas.topology.component.rule.condition.Having;
+import com.hortonworks.iotas.topology.component.rule.condition.Condition;
+import com.hortonworks.iotas.topology.component.rule.condition.Projection;
 
 import java.io.Serializable;
 

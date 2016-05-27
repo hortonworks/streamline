@@ -1,6 +1,7 @@
 package com.hortonworks.iotas.layout.design.rule.condition;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hortonworks.iotas.topology.component.rule.condition.Window;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

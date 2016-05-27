@@ -18,6 +18,8 @@
 
 package com.hortonworks.iotas.layout.design.component;
 
+import com.hortonworks.iotas.topology.component.Component;
+
 import java.io.Serializable;
 
 public interface ComponentBuilder<T extends Component> extends Serializable {

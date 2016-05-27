@@ -3,10 +3,9 @@ package com.hortonworks.iotas.layout.runtime.processor;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.common.errors.ProcessingException;
-import com.hortonworks.iotas.layout.design.component.RulesProcessor;
-import com.hortonworks.iotas.layout.design.rule.Rule;
+import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
+import com.hortonworks.iotas.topology.component.rule.Rule;
 import com.hortonworks.iotas.layout.runtime.rule.RuleRuntime;
 import mockit.Expectations;
 import mockit.Mocked;
@@ -15,10 +14,6 @@ import mockit.integration.junit4.JMockit;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.Collections;
-
-import static org.junit.Assert.*;
 
 /**
  * Unit tests for {@link RuleProcessorRuntime}

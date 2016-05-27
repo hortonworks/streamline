@@ -46,6 +46,7 @@ import com.hortonworks.iotas.catalog.TopologyProcessorStreamMapping;
 import com.hortonworks.iotas.catalog.TopologySink;
 import com.hortonworks.iotas.catalog.TopologySource;
 import com.hortonworks.iotas.catalog.TopologySourceStreamMapping;
+import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.processor.CustomProcessorInfo;
 import com.hortonworks.iotas.storage.DataSourceSubType;
 import com.hortonworks.iotas.storage.Storable;
@@ -58,6 +59,11 @@ import com.hortonworks.iotas.topology.TopologyComponent;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import com.hortonworks.iotas.topology.TopologyLayoutValidator;
 import com.hortonworks.iotas.topology.TopologyMetrics;
+import com.hortonworks.iotas.topology.component.InputComponent;
+import com.hortonworks.iotas.topology.component.OutputComponent;
+import com.hortonworks.iotas.topology.component.TopologyDag;
+import com.hortonworks.iotas.topology.component.TopologyDagBuilder;
+import com.hortonworks.iotas.topology.component.impl.NotificationSink;
 import com.hortonworks.iotas.util.CoreUtils;
 import com.hortonworks.iotas.util.FileStorage;
 import com.hortonworks.iotas.util.JsonSchemaValidator;
@@ -120,6 +126,7 @@ public class CatalogService {
     private TopologyMetrics topologyMetrics;
     private FileStorage fileStorage;
     private TagService tagService;
+    private TopologyDagBuilder topologyDagBuilder;
 
     public static class QueryParam {
 
@@ -172,6 +179,7 @@ public class CatalogService {
         this.topologyMetrics = topologyMetrics;
         this.fileStorage = fileStorage;
         this.tagService = new CatalogTagService(dao);
+        this.topologyDagBuilder = new TopologyDagBuilder(this);
     }
 
     private String getNamespaceForDataSourceType(DataSource.Type dataSourceType) {
@@ -574,6 +582,9 @@ public class CatalogService {
     }
 
     public void deployTopology(Topology topology) throws Exception {
+        TopologyDag dag = topologyDagBuilder.getDag(topology);
+        topology.setTopologyDag(dag);
+        LOG.debug("Deploying topology {}", topology);
         addUpdateNotifierInfoFromTopology(topology);
         setUpClusterArtifacts(topology);
         topologyActions.deploy(topology);
@@ -618,22 +629,19 @@ public class CatalogService {
         }
     }
 
-    public void killTopology (Topology topology) throws Exception {
-        this.topologyActions.kill(topology);
-        return;
+    public void killTopology(Topology topology) throws Exception {
+        topologyActions.kill(topology);
     }
 
-    public void suspendTopology (Topology topology) throws Exception {
-        this.topologyActions.suspend(topology);
-        return;
+    public void suspendTopology(Topology topology) throws Exception {
+        topologyActions.suspend(topology);
     }
 
-    public void resumeTopology (Topology topology) throws Exception {
-        this.topologyActions.resume(topology);
-        return;
+    public void resumeTopology(Topology topology) throws Exception {
+        topologyActions.resume(topology);
     }
 
-    public TopologyActions.Status topologyStatus (Topology topology) throws Exception {
+    public TopologyActions.Status topologyStatus(Topology topology) throws Exception {
         return this.topologyActions.status(topology);
     }
 
@@ -822,23 +830,16 @@ public class CatalogService {
         return dao.remove(topologyEditorMetadata.getStorableKey());
     }
 
-    // This method is present because currently NotificationBolt expects a notifier name and queries NotifierInfo rest endpoint to retrieve the information
-    // for that notifier. However, there is no UI present for NotifierInfo rest endpoint. As a result, in order for NotificationBolt to work as is, we need to
-    // add or update any notification sink components present in the topology json before we deploy the topology
+    /*
+     * This method is present because currently NotificationBolt expects a notifier name and queries NotifierInfo
+     * rest endpoint to retrieve the information for that notifier. However, there is no UI present for NotifierInfo
+     * rest endpoint. As a result, in order for NotificationBolt to work as is, we need to
+     * add or update any notification sink components present in the topology json before we deploy the topology
+     */
     private void addUpdateNotifierInfoFromTopology (Topology topology) throws Exception {
-        String config = topology.getConfig();
-        ObjectMapper objectMapper = new ObjectMapper();
-        Map jsonMap = objectMapper.readValue(config, Map.class);
-        List<Map> notificationSinks = new ArrayList();
-        if (jsonMap != null) {
-            List<Map> dataSinks = (List) jsonMap.get(TopologyLayoutConstants.JSON_KEY_DATA_SINKS);
-            for (Map dataSink: dataSinks) {
-                if (("NOTIFICATION").equals(dataSink.get(TopologyLayoutConstants.JSON_KEY_TYPE))) {
-                    notificationSinks.add(dataSink);
-                }
-            }
-            for (Map notificationSink: notificationSinks) {
-                NotifierInfo notifierInfo = populateNotifierInfo(notificationSink);
+        for (InputComponent inputComponent: topology.getTopologyDag().getInputComponents()) {
+            if (inputComponent instanceof NotificationSink) {
+                NotifierInfo notifierInfo = populateNotifierInfo((NotificationSink) inputComponent);
                 NotifierInfo existingNotifierInfo = this.getNotifierInfoByName(notifierInfo.getName());
                 if (existingNotifierInfo != null) {
                     this.addOrUpdateNotifierInfo(existingNotifierInfo.getId(), notifierInfo);
@@ -849,21 +850,18 @@ public class CatalogService {
         }
     }
 
-    private NotifierInfo populateNotifierInfo (Map notificationSinkConfig) {
+    private NotifierInfo populateNotifierInfo (NotificationSink notificationSink) {
         NotifierInfo notifierInfo = new NotifierInfo();
-        Map notifierInfoConfig = (Map) notificationSinkConfig.get(TopologyLayoutConstants.JSON_KEY_CONFIG);
-        notifierInfo.setName((String) notifierInfoConfig.get(TopologyLayoutConstants.JSON_KEY_NOTIFIER_NAME));
-        notifierInfo.setClassName((String) notifierInfoConfig.get(TopologyLayoutConstants.JSON_KEY_NOTIFIER_CLASSNAME));
-        notifierInfo.setJarFileName((String) notifierInfoConfig.get(TopologyLayoutConstants.JSON_KEY_NOTIFIER_JAR_FILENAME));
-        Map properties = (Map) notifierInfoConfig.get(TopologyLayoutConstants.JSON_KEY_NOTIFIER_PROPERTIES);
-        notifierInfo.setProperties(convertMapValuesToString(properties));
-        Map fieldValues = (Map) notifierInfoConfig.get(TopologyLayoutConstants.JSON_KEY_NOTIFIER_FIELD_VALUES);
-        notifierInfo.setFieldValues(convertMapValuesToString(fieldValues));
+        notifierInfo.setName(notificationSink.getNotifierName());
+        notifierInfo.setClassName(notificationSink.getNotifierClassName());
+        notifierInfo.setJarFileName(notificationSink.getNotifierJarFileName());
+        notifierInfo.setProperties(convertMapValuesToString(notificationSink.getNotifierProperties()));
+        notifierInfo.setFieldValues(convertMapValuesToString(notificationSink.getNotifierFieldValues()));
         return notifierInfo;
     }
 
     private Map<String, String> convertMapValuesToString (Map<String, Object> map) {
-        Map<String, String> result = new HashMap<String, String>();
+        Map<String, String> result = new HashMap<>();
         for (Map.Entry<String, Object> e : map.entrySet()) {
             Object val = e.getValue();
             if (val != null) {
@@ -1245,6 +1243,23 @@ public class CatalogService {
         if (!outputStreamIds.containsAll(edgeStreamIds)) {
             throw new IllegalArgumentException("Edge stream Ids " + edgeStreamIds +
                     " must be a subset of outputStreamIds " + outputStreamIds);
+        }
+        // check the fields specified in the fields grouping is a subset of the stream fields
+        for (StreamGrouping streamGrouping : edge.getStreamGroupings()) {
+            List<String> fields;
+            if ((fields = streamGrouping.getFields()) != null) {
+                Set<String> streamFields = new HashSet<>(
+                        Collections2.transform(getStreamInfo(streamGrouping.getStreamId()).getFields(),
+                                new Function<Schema.Field, String>() {
+                                    public String apply(Schema.Field field) {
+                                        return field.getName();
+                                    }
+                                }));
+                if (!streamFields.containsAll(fields)) {
+                    throw new IllegalArgumentException("Fields in the grouping " + fields +
+                            " must be a subset the stream fields " + streamFields);
+                }
+            }
         }
     }
 

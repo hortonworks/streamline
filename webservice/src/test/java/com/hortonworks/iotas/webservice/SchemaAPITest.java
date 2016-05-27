@@ -1,7 +1,7 @@
 package com.hortonworks.iotas.webservice;
 
 import com.hortonworks.iotas.catalog.CatalogResponse;
-import com.hortonworks.iotas.layout.design.component.Stream;
+import com.hortonworks.iotas.topology.component.Stream;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.topology.TopologyComponent;
 import com.hortonworks.iotas.webservice.schema.MockEvolvingSchemaCatalogServiceAwareImpl;

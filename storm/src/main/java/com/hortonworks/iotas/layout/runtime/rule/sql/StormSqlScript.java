@@ -20,7 +20,7 @@ package com.hortonworks.iotas.layout.runtime.rule.sql;
 
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.layout.design.rule.exception.ConditionEvaluationException;
+import com.hortonworks.iotas.topology.component.rule.exception.ConditionEvaluationException;
 import com.hortonworks.iotas.layout.runtime.rule.condition.expression.ExpressionRuntime;
 import org.apache.storm.tuple.Values;
 import com.hortonworks.iotas.common.IotasEvent;

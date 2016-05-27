@@ -1,6 +1,6 @@
 package com.hortonworks.iotas.layout.schema;
 
-import com.hortonworks.iotas.layout.design.component.Stream;
+import com.hortonworks.iotas.topology.component.Stream;
 
 import java.util.Set;
 

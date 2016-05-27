@@ -19,12 +19,25 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     public Object get(String key) {
+        return getObject(key);
+    }
+
+    private Object getObject(String key) {
         Object value = properties.get(key);
         if (value != null) {
             return value;
         } else {
             throw new NoSuchElementException(key);
         }
+    }
+
+    public <T> T getAny(String key) {
+        return (T) getObject(key);
+    }
+
+    // for unit tests
+    public void setAny(String key, Object value) {
+        properties.put(key, value);
     }
 
     public Object get(String key, Object defaultValue) {

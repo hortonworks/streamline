@@ -1,22 +1,18 @@
 package com.hortonworks.iotas.layout.runtime.rule.condition.expression;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.layout.design.rule.Rule;
-import com.hortonworks.iotas.layout.design.rule.condition.AggregateFunctionExpression;
-import com.hortonworks.iotas.layout.design.rule.condition.BinaryExpression;
-import com.hortonworks.iotas.layout.design.rule.condition.Condition;
-import com.hortonworks.iotas.layout.design.rule.condition.Expression;
-import com.hortonworks.iotas.layout.design.rule.condition.FieldExpression;
-import com.hortonworks.iotas.layout.design.rule.condition.FunctionExpression;
-import com.hortonworks.iotas.layout.design.rule.condition.GroupBy;
-import com.hortonworks.iotas.layout.design.rule.condition.Having;
-import com.hortonworks.iotas.layout.design.rule.condition.Literal;
-import com.hortonworks.iotas.layout.design.rule.condition.Operator;
-import com.hortonworks.iotas.layout.design.rule.condition.Projection;
-import org.apache.commons.math3.analysis.function.Exp;
-import org.junit.Before;
+import com.hortonworks.iotas.topology.component.rule.condition.AggregateFunctionExpression;
+import com.hortonworks.iotas.topology.component.rule.condition.GroupBy;
+import com.hortonworks.iotas.topology.component.rule.condition.Having;
+import com.hortonworks.iotas.topology.component.rule.condition.BinaryExpression;
+import com.hortonworks.iotas.topology.component.rule.condition.Condition;
+import com.hortonworks.iotas.topology.component.rule.condition.Expression;
+import com.hortonworks.iotas.topology.component.rule.condition.FieldExpression;
+import com.hortonworks.iotas.topology.component.rule.condition.FunctionExpression;
+import com.hortonworks.iotas.topology.component.rule.condition.Literal;
+import com.hortonworks.iotas.topology.component.rule.condition.Operator;
+import com.hortonworks.iotas.topology.component.rule.condition.Projection;
 import org.junit.Test;
 
 import java.util.Arrays;
