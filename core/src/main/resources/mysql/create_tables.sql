@@ -111,3 +111,14 @@ CREATE TABLE IF NOT EXISTS streaminfo (
     UNIQUE KEY `UK_streamId` (streamId),
     PRIMARY KEY (id)
 );
+
+CREATE TABLE IF NOT EXISTS notifierinfo (
+    id BIGINT AUTO_INCREMENT NOT NULL,
+    name VARCHAR(256),
+    jarFileName VARCHAR(256),
+    className VARCHAR(256),
+    propertiesData TEXT,
+    fieldValuesData TEXT,
+    timestamp BIGINT,
+    PRIMARY KEY (id)
+);
