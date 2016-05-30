@@ -286,14 +286,14 @@ public abstract class AbstractStoreManagerTest {
     public class NotifierInfoTest extends StorableTest {
         {
             storableList = new ArrayList<Storable>() {{
-                add(createFiles(1l, "file-1"));
-                add(createFiles(1l, "file-2"));
-                add(createFiles(2l, "file-3"));
-                add(createFiles(3l, "file-4"));
+                add(createNotifierInfo(1l, "notifier-1"));
+                add(createNotifierInfo(1l, "notifier-2"));
+                add(createNotifierInfo(2l, "notifier-3"));
+                add(createNotifierInfo(3l, "notifier-4"));
             }};
         }
 
-        protected NotifierInfo createFiles(Long id, String name) {
+        protected NotifierInfo createNotifierInfo(Long id, String name) {
             NotifierInfo notifierInfo = new NotifierInfo();
             notifierInfo.setId(id);
             notifierInfo.setName(name);

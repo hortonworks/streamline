@@ -18,7 +18,6 @@
         <module>notification-service</module>
         <module>notifiers</module>
         <module>layout</module>
-	<module>iotas-dist</module>
     </modules>
 
     <properties>
@@ -376,6 +375,18 @@
     </reporting>
 
     <profiles>
+         <profile>
+           <id>dist</id>
+           <properties>
+             <exclude.unit.test.groups>com.hortonworks.iotas.test.IntegrationTest,com.hortonworks.iotas.test.HBaseIntegrationTest</exclude.unit.test.groups>
+             <include.unit.test.groups></include.unit.test.groups>
+             <exclude.integration.test.groups>com.hortonworks.iotas.test.HBaseIntegrationTest</exclude.integration.test.groups>
+             <include.integration.test.groups>com.hortonworks.iotas.test.IntegrationTest</include.integration.test.groups>
+           </properties>
+           <modules>
+             <module>iotas-dist</module>
+           </modules>
+         </profile>    
         <profile>
             <id>dev-tests-basic</id>
             <activation>

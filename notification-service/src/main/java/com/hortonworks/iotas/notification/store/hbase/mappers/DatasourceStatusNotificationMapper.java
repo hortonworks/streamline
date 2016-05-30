@@ -26,10 +26,6 @@ public class DatasourceStatusNotificationMapper extends NotificationStatusIndexM
         for (String dataSourceId : notification.getDataSourceIds()) {
             rowKeys.add(new StringBuilder(dataSourceId)
                                 .append(ROWKEY_SEP)
-                                .append(notification.getStatus())
-                                .append(ROWKEY_SEP)
-                                .append(notification.getTs())
-                                .append(ROWKEY_SEP)
                                 .append(getIndexSuffix(notification))
                                 .toString().getBytes(CHARSET));
         }

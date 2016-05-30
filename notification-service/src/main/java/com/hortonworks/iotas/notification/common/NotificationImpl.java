@@ -154,4 +154,38 @@ public class NotificationImpl implements Notification {
                 ", timestamp=" + timestamp +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof NotificationImpl)) return false;
+
+        NotificationImpl that = (NotificationImpl) o;
+
+        if (timestamp != that.timestamp) return false;
+        if (getId() != null ? !getId().equals(that.getId()) : that.getId() != null) return false;
+        if (getFieldsAndValues() != null ? !getFieldsAndValues().equals(that.getFieldsAndValues()) : that.getFieldsAndValues() != null)
+            return false;
+        if (getEventIds() != null ? !getEventIds().equals(that.getEventIds()) : that.getEventIds() != null)
+            return false;
+        if (getDataSourceIds() != null ? !getDataSourceIds().equals(that.getDataSourceIds()) : that.getDataSourceIds() != null)
+            return false;
+        if (getRuleId() != null ? !getRuleId().equals(that.getRuleId()) : that.getRuleId() != null) return false;
+        if (getStatus() != that.getStatus()) return false;
+        return getNotifierName() != null ? getNotifierName().equals(that.getNotifierName()) : that.getNotifierName() == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getId() != null ? getId().hashCode() : 0;
+        result = 31 * result + (getFieldsAndValues() != null ? getFieldsAndValues().hashCode() : 0);
+        result = 31 * result + (getEventIds() != null ? getEventIds().hashCode() : 0);
+        result = 31 * result + (getDataSourceIds() != null ? getDataSourceIds().hashCode() : 0);
+        result = 31 * result + (getRuleId() != null ? getRuleId().hashCode() : 0);
+        result = 31 * result + (getStatus() != null ? getStatus().hashCode() : 0);
+        result = 31 * result + (getNotifierName() != null ? getNotifierName().hashCode() : 0);
+        result = 31 * result + (int) (timestamp ^ (timestamp >>> 32));
+        return result;
+    }
 }
