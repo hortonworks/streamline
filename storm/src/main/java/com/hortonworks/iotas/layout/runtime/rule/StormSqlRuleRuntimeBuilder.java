@@ -19,17 +19,26 @@
 package com.hortonworks.iotas.layout.runtime.rule;
 
 import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.layout.design.rule.Rule;
+import com.hortonworks.iotas.layout.design.rule.condition.Expression;
+import com.hortonworks.iotas.layout.design.rule.condition.FieldExpression;
+import com.hortonworks.iotas.layout.design.rule.condition.GroupBy;
 import com.hortonworks.iotas.layout.runtime.rule.condition.expression.StormSqlExpression;
 import com.hortonworks.iotas.layout.runtime.rule.sql.StormSqlEngine;
 import com.hortonworks.iotas.layout.runtime.rule.sql.StormSqlScript;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.hortonworks.iotas.layout.design.rule.condition.Window.WINDOW_ID;
 
 public class StormSqlRuleRuntimeBuilder extends AbstractRuleRuntimeBuilder {
     private Rule rule;
     private StormSqlExpression stormSqlExpression;
     private StormSqlEngine stormSqlEngine;
     private StormSqlScript<IotasEvent> stormSqlScript;
-
+    private static final GroupBy GROUP_BY_WINDOWID = new GroupBy(new FieldExpression(Schema.Field.of(WINDOW_ID, Schema.Type.LONG)));
     @Override
     public void setRule(Rule rule) {
         this.rule = rule;
@@ -37,7 +46,17 @@ public class StormSqlRuleRuntimeBuilder extends AbstractRuleRuntimeBuilder {
 
     @Override
     public void buildExpression() {
-        stormSqlExpression = new StormSqlExpression(rule.getCondition(), rule.getProjection());
+        List<Expression> groupByExpressions = new ArrayList<>();
+        if (rule.getWindow() != null) {
+            groupByExpressions.addAll(GROUP_BY_WINDOWID.getExpressions());
+        }
+        if (rule.getGroupBy() != null) {
+            groupByExpressions.addAll(rule.getGroupBy().getExpressions());
+        }
+        stormSqlExpression = new StormSqlExpression(rule.getCondition(),
+                                                    rule.getProjection(),
+                                                    groupByExpressions.isEmpty() ? null : new GroupBy(groupByExpressions),
+                                                    groupByExpressions.isEmpty() ? null : rule.getHaving());
     }
 
     @Override

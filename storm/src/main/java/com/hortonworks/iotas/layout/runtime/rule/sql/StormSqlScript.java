@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.hortonworks.iotas.common.IotasEventImpl.GROUP_BY_TRIGGER_EVENT;
 import static com.hortonworks.iotas.layout.runtime.rule.condition.expression.StormSqlExpression.RULE_SCHEMA;
 import static com.hortonworks.iotas.layout.runtime.rule.condition.expression.StormSqlExpression.RULE_TABLE;
 
@@ -80,20 +81,24 @@ public class StormSqlScript<O> extends Script<IotasEvent, O, StormSqlEngine> {
         final String expressionStr = expression;
         LOG.debug("Evaluating [{}] with [{}]", expressionStr, iotasEvent);
         Values result = null;
-        if (iotasEvent != null) {
-            try {
+        try {
+            if (iotasEvent == GROUP_BY_TRIGGER_EVENT) {
+                result = scriptEngine.flush();
+            } else if (iotasEvent != null) {
                 result = scriptEngine.eval(createValues(iotasEvent));
-            } catch (ConditionEvaluationException ex) {
-                LOG.error("Got exception {} while processing IotasEvent {}", ex, iotasEvent);
+            } else {
+                LOG.error("Cannot evaluate null iotasEvent");
             }
+        } catch (ConditionEvaluationException ex) {
+            LOG.error("Got exception {} while processing IotasEvent {}", ex, iotasEvent);
         }
         LOG.debug("Expression [{}] evaluated to [{}]", expressionStr, result);
         return convert(result, iotasEvent);
     }
 
     private Values createValues(IotasEvent iotasEvent) {
-        final Values values = new Values();
-        for(Schema.Field field: fieldsToEmit) {
+        Values values = new Values();
+        for (Schema.Field field : fieldsToEmit) {
             Object value = iotasEvent.getFieldsAndValues().get(field.getName());
             if (value == null) {
                 throw new ConditionEvaluationException("Missing property " + field.getName());
@@ -149,8 +154,12 @@ public class StormSqlScript<O> extends Script<IotasEvent, O, StormSqlEngine> {
                 for (int i = 0; i < projectedFields.size(); i++) {
                     fieldsAndValues.put(projectedFields.get(i), input.get(i));
                 }
-                result = new IotasEventImpl(fieldsAndValues, inputEvent.getDataSourceId(), inputEvent.getId(),
-                                            inputEvent.getHeader(), inputEvent.getSourceStream());
+                if (inputEvent != null) {
+                    result = new IotasEventImpl(fieldsAndValues, inputEvent.getDataSourceId(), inputEvent.getId(),
+                                                inputEvent.getHeader(), inputEvent.getSourceStream());
+                } else {
+                    result = new IotasEventImpl(fieldsAndValues, "");
+                }
             } else {
                 result = inputEvent;
             }

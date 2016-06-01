@@ -20,22 +20,34 @@ package com.hortonworks.iotas.layout.runtime.rule.condition.expression;
 
 import com.hortonworks.iotas.common.Schema.Field;
 import com.hortonworks.iotas.layout.design.rule.condition.Condition;
+import com.hortonworks.iotas.layout.design.rule.condition.GroupBy;
+import com.hortonworks.iotas.layout.design.rule.condition.Having;
 import com.hortonworks.iotas.layout.design.rule.condition.Projection;
 
 import java.io.Serializable;
 
 public abstract class ExpressionRuntime implements Serializable {
-    protected final Projection projection;
     protected final Condition condition;
+    protected final Projection projection;
+    protected final GroupBy groupBy;
+    protected final Having having;
     protected String expression;
+    protected String groupByExpression;
+    protected String havingExpression;
 
     public ExpressionRuntime(Condition condition) {
         this(condition, null);
     }
 
     public ExpressionRuntime(Condition condition, Projection projection) {
+        this(condition, projection, null, null);
+    }
+
+    public ExpressionRuntime(Condition condition, Projection projection, GroupBy groupBy, Having having) {
         this.condition = condition;
         this.projection = projection;
+        this.groupBy = groupBy;
+        this.having = having;
     }
 
     /**
@@ -49,6 +61,14 @@ public abstract class ExpressionRuntime implements Serializable {
 
     public Projection getProjection() {
         return projection;
+    }
+
+    public GroupBy getGroupBy() {
+        return groupBy;
+    }
+
+    public Having getHaving() {
+        return having;
     }
 
     protected String getType(Field field) {

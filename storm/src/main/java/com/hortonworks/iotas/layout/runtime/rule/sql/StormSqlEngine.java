@@ -79,11 +79,20 @@ public class StormSqlEngine implements ScriptEngine<StormSqlEngine> {
 
     public Values eval(Values input) {
         Values cachedResult = null;
-        if (input != null && !input.isEmpty()) {
-            channelContext.emit(input);
-            cachedResult = result;              // this.result is set synchronously in ChannelHandler
-            result = null;                      // reset this.result
-        }
+        channelContext.emit(input);
+        cachedResult = result;              // this.result is set synchronously in ChannelHandler
+        result = null;                      // reset this.result
+        return cachedResult;
+    }
+
+    /*
+     * force evaluation of pending results, for e.g. evaluate last group in case of group-by
+     */
+    public Values flush() {
+        Values cachedResult = null;
+        channelContext.flush();
+        cachedResult = result;              // this.result is set synchronously in ChannelHandler
+        result = null;                      // reset this.result
         return cachedResult;
     }
 
@@ -118,6 +127,9 @@ public class StormSqlEngine implements ScriptEngine<StormSqlEngine> {
 
         @Override
         public void exceptionCaught(Throwable cause) { }
+
+        @Override
+        public void flush(ChannelContext channelContext) { }
     }
 
     private class RulesDataSourcesProvider implements DataSourcesProvider {
