@@ -1,4 +1,5 @@
 ## 0.1.3
+ * IOT-256: Hierarchical tagging UI integration
  * IOT-255: UI integration to improve parser upload experience
  * IOT-265: Topologies with notification sinks throw error while deploying to storm 
  * IOT-248: Integration tests for Notification Service
