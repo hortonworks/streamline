@@ -166,7 +166,6 @@ public class ParserInfoCatalogResource {
     private Schema loadSchemaFromParserJar(String jarName, String className) {
         OutputStream os = null;
         InputStream is = null;
-        Schema result = null;
         try {
             File tmpFile = File.createTempFile(UUID.randomUUID().toString(), ".jar");
             tmpFile.deleteOnExit();
@@ -174,9 +173,10 @@ public class ParserInfoCatalogResource {
             is = catalogService.downloadFileFromStorage(jarName);
             ByteStreams.copy(is, os);
             Parser parser = parserProxyUtil.loadClassFromJar(tmpFile.getAbsolutePath(), className);
-            result = parser.schema();
+            return parser.schema();
         } catch (Exception ex) {
             LOG.error("Got exception", ex);
+            throw new RuntimeException("Cannot load parser class from uploaded Jar: " + className);
         } finally {
             try {
                 if (os != null) {
@@ -189,7 +189,6 @@ public class ParserInfoCatalogResource {
                 LOG.error("Got exception", ex);
             }
         }
-        return result;
     }
 
     //Test curl command curl -X POST -i -F parserJar=@parsers-0.1.0-SNAPSHOT.jar http://localhost:8080/api/v1/catalog/parsers/upload-verify
@@ -240,9 +239,6 @@ public class ParserInfoCatalogResource {
             parserInfo.setJarStoragePath(jarStoragePath);
             // force to load parser class so that we don't store ParserInfo when classloader can't load parser class
             Schema schema = loadSchemaFromParserJar(jarStoragePath, parserInfo.getClassName());
-            if (schema == null) {
-                throw new RuntimeException("Cannot load parser class from uploaded Jar: " + parserInfo.getClassName());
-            }
             // if schema is not set in json, try to load it from the jar just uploaded.
             if (parserInfo.getParserSchema() == null && schemaFromParserJar) {
                 parserInfo.setParserSchema(schema);
