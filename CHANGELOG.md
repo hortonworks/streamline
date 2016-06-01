@@ -1,4 +1,5 @@
 ## 0.1.3
+ * IOT-8: Sliding Time Windows
  * IOT-252: Add integration test for StreamInfo storage with JDBC provider
  * IOT-261: topology status API can't determine status of topology on Storm
  * IOT-262: Fix tagging api throwing java.lang.StackOverflowError: null
