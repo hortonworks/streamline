@@ -77,6 +77,9 @@ require.config({
     'jquery-ui': {
       deps: ['jquery'],
     },
+    'jquery-nestable': {
+      deps: ['jquery']
+    },
     globalize: {
       exports: 'Globalize'
     },
@@ -130,6 +133,7 @@ require.config({
     'bootstrap-multiselect': '../libs/bower/bootstrap-multiselect/js/bootstrap-multiselect',
     'bootstrap-tag': '../libs/other/bootstrap-tag/js/bootstrap-tag',
     'jquery-ui': '../libs/bower/jquery-ui/js/jquery-ui-1.10.4.custom.min',
+    'jquery-nestable': '../libs/bower/jquery/js/jquery.nestable',
     'globalize': '../libs/bower/globalize/js/globalize',
     'gblMessages' : '../scripts/globalize',
     'requirejs.text': '../libs/bower/requirejs-text/js/text',

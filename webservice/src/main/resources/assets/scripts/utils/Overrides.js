@@ -1,4 +1,4 @@
-define(['require','bootstrap.filestyle','backbone.forms', 'backgrid', 'bootstrap-multiselect'], function (require) {
+define(['require','bootstrap.filestyle','backbone.forms', 'backgrid', 'bootstrap-multiselect', 'jquery-nestable'], function (require) {
   'use strict';
   
     $.fn.popover.defaults = {
@@ -13,6 +13,33 @@ define(['require','bootstrap.filestyle','backbone.forms', 'backgrid', 'bootstrap
       title: "",
       trigger: "click"
     };
+
+    var nestableOrg = $.fn.nestable;
+    $.fn.nestable = function(params){
+      var lists  = this;
+        lists.each(function()
+        {
+          var $this = $(this);
+          nestableOrg.call($this, params)
+          var nestable = $this.data('nestable');
+          nestable.dragStop = function(e){
+            var el = this.dragEl.children(this.options.itemNodeName).first();
+            el[0].parentNode.removeChild(el[0]);
+            this.placeEl.replaceWith(el);
+
+            this.dragEl.remove();
+            var currentElemId = el.data('id');
+            var parentId = el.parent().parent().data('id');
+            this.el.trigger('change', {currentId: currentElemId, parentId: parentId});
+            if (this.hasNewRoot) {
+                this.dragRootEl.trigger('change');
+            }
+            this.reset();
+          }
+        });
+
+        return lists;
+    }
 
     /**
      * Bootstrap Multiselect
@@ -68,6 +95,8 @@ define(['require','bootstrap.filestyle','backbone.forms', 'backgrid', 'bootstrap
     setTimeout(function () {
         self.$el.parents('.bootbox').removeAttr('tabindex'); 
         self.$el.select2(self.pluginAttr);
+        if(self.value)
+          self.$el.select2('val', self.value);
     },0);     
 
     return this;
