@@ -7,11 +7,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransform.HEADER_FIELD_EVENT_IDS;
-import static com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransform.HEADER_FIELD_DATASOURCE_IDS;
-import static com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransform.HEADER_FIELD_RULE_ID;
-import static com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransform.HEADER_FIELD_NOTIFIER_NAME;
-import static com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransform.HEADER_FIELD_TIMESTAMP;
+import static com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_EVENT_IDS;
+import static com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_DATASOURCE_IDS;
+import static com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_RULE_ID;
+import static com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_NOTIFIER_NAME;
+import static com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_TIMESTAMP;
 
 /**
  * Adapts {@link com.hortonworks.iotas.common.IotasEvent} to {@link com.hortonworks.iotas.notification.common.Notification}

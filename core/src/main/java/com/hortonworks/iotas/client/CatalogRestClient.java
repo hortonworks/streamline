@@ -51,7 +51,7 @@ public class CatalogRestClient {
     private static final String NOTIFIER_URL = "notifiers";
     private static final String PARSER_DOWNLOAD_URL = PARSER_URL + "/download";
     private static final String CUSTOM_PROCESSOR_JAR_DOWNLOAD_URL = "system/componentdefinitions/PROCESSOR/custom";
-    private static final String JAR_DOWNLOAD_URL = "jars/download/";
+    private static final String FILE_DOWNLOAD_URL = "files/download/";
 
     private String rootCatalogURL;
     private WebTarget rootTarget;
@@ -140,8 +140,8 @@ public class CatalogRestClient {
         return getInputStream(parserId.toString(), PARSER_DOWNLOAD_URL);
     }
 
-    public InputStream getJar(Long jarId) {
-        return getInputStream(jarId.toString(), JAR_DOWNLOAD_URL);
+    public InputStream getFile(Long jarId) {
+        return getInputStream(jarId.toString(), FILE_DOWNLOAD_URL);
     }
 
 }

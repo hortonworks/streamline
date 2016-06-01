@@ -22,7 +22,6 @@ import com.hortonworks.iotas.bolt.rules.RulesBolt;
 import com.hortonworks.iotas.layout.design.component.ComponentBuilder;
 import com.hortonworks.iotas.layout.design.component.RulesProcessor;
 import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntime;
-import com.hortonworks.iotas.layout.runtime.rule.RuleRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
 import org.apache.storm.Config;
 import org.apache.storm.ILocalCluster;
@@ -65,7 +64,7 @@ public abstract class RulesTopologyTest {
     }
 
     protected String getStream(int i) {
-        return ((RuleRuntime) ruleProcessorRuntime.getRulesRuntime().get(i)).getStreams().get(0);
+        return ruleProcessorRuntime.getRulesRuntime().get(i).getStreams().iterator().next();
     }
 
     protected RulesBoltDependenciesFactory createDependenciesBuilderFactory(ComponentBuilder<RulesProcessor> rulesProcessorBuilder,

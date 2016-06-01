@@ -19,19 +19,19 @@ package com.hortonworks.iotas.layout.runtime.transform;
 
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
-import org.junit.Before;
+import com.hortonworks.iotas.layout.design.transform.MergeTransform;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
- * Unit tests for {@link MergeTransform}
+ * Unit tests for {@link MergeTransformRuntime}
  */
-public class MergeTransformTest {
+public class MergeTransformRuntimeTest {
 
     @Test
     public void testExecute() throws Exception {
@@ -44,8 +44,8 @@ public class MergeTransformTest {
         defaults.put("3", "THREE");
 
         IotasEvent event = new IotasEventImpl(fieldsAndValues, "dsrcid");
-        Transform transform = new MergeTransform(defaults);
-        List<IotasEvent> result = transform.execute(event);
+        TransformRuntime transformRuntime = new MergeTransformRuntime(new MergeTransform(defaults));
+        List<IotasEvent> result = transformRuntime.execute(event);
         System.out.println(result);
         assertEquals(1, result.size());
         assertEquals("two", result.get(0).getFieldsAndValues().get("2"));

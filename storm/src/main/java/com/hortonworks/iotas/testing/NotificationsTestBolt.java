@@ -1,6 +1,6 @@
 package com.hortonworks.iotas.testing;
 
-import com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransform;
+import com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransformRuntime;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -59,11 +59,11 @@ public class NotificationsTestBolt extends BaseRichBolt {
             fieldsMap.put("humidity", "100");
 
             Map<String, Object> header = new HashMap<>();
-            header.put(AddHeaderTransform.HEADER_FIELD_EVENT_IDS, eventIds);
-            header.put(AddHeaderTransform.HEADER_FIELD_DATASOURCE_IDS, dataSourceIds);
-            header.put(AddHeaderTransform.HEADER_FIELD_NOTIFIER_NAME, "console_notifier");
-            header.put(AddHeaderTransform.HEADER_FIELD_RULE_ID, 1L);
-            header.put(AddHeaderTransform.HEADER_FIELD_TIMESTAMP, System.currentTimeMillis());
+            header.put(AddHeaderTransformRuntime.HEADER_FIELD_EVENT_IDS, eventIds);
+            header.put(AddHeaderTransformRuntime.HEADER_FIELD_DATASOURCE_IDS, dataSourceIds);
+            header.put(AddHeaderTransformRuntime.HEADER_FIELD_NOTIFIER_NAME, "console_notifier");
+            header.put(AddHeaderTransformRuntime.HEADER_FIELD_RULE_ID, 1L);
+            header.put(AddHeaderTransformRuntime.HEADER_FIELD_TIMESTAMP, System.currentTimeMillis());
 
             IotasEvent iotasEvent = new IotasEventImpl(fieldsMap, "notificationsTestBolt", header);
             collector.emit(consoleNotificationStream, new Values(iotasEvent));
@@ -75,11 +75,11 @@ public class NotificationsTestBolt extends BaseRichBolt {
                 Map<String, Object> fieldsMap = new HashMap<>();
                 fieldsMap.put("body", "Too many notifications, count so far is " + count);
                 Map<String, Object> header = new HashMap<>();
-                header.put(AddHeaderTransform.HEADER_FIELD_EVENT_IDS, eventIds);
-                header.put(AddHeaderTransform.HEADER_FIELD_DATASOURCE_IDS, dataSourceIds);
-                header.put(AddHeaderTransform.HEADER_FIELD_NOTIFIER_NAME, "email_notifier");
-                header.put(AddHeaderTransform.HEADER_FIELD_RULE_ID, 1L);
-                header.put(AddHeaderTransform.HEADER_FIELD_TIMESTAMP, System.currentTimeMillis());
+                header.put(AddHeaderTransformRuntime.HEADER_FIELD_EVENT_IDS, eventIds);
+                header.put(AddHeaderTransformRuntime.HEADER_FIELD_DATASOURCE_IDS, dataSourceIds);
+                header.put(AddHeaderTransformRuntime.HEADER_FIELD_NOTIFIER_NAME, "email_notifier");
+                header.put(AddHeaderTransformRuntime.HEADER_FIELD_RULE_ID, 1L);
+                header.put(AddHeaderTransformRuntime.HEADER_FIELD_TIMESTAMP, System.currentTimeMillis());
 
                 IotasEvent iotasEvent = new IotasEventImpl(fieldsMap, "notificationsTestBolt", header);
 

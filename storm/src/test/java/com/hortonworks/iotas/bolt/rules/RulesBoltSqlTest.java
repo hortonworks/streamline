@@ -62,12 +62,12 @@ public class RulesBoltSqlTest extends RulesBoltTest {
         rulesBolt.execute(mockTuple);
 
         new VerificationsInOrder() {{
-            mockOutputCollector.emit(((RuleRuntime) ruleProcessorRuntime.getRulesRuntime().get(0)).getStreams().get(0),
+            mockOutputCollector.emit(ruleProcessorRuntime.getRulesRuntime().get(0).getStreams().iterator().next(),
                                      mockTuple, IOTAS_EVENT_VALUES);
             times = 0; // rule 1 does not trigger
 
             Values actualValues;
-            mockOutputCollector.emit(((RuleRuntime) ruleProcessorRuntime.getRulesRuntime().get(1)).getStreams().get(0),
+            mockOutputCollector.emit(ruleProcessorRuntime.getRulesRuntime().get(1).getStreams().iterator().next(),
                                      mockTuple, actualValues = withCapture());
             times = 1;    // rule 2 triggers
             Assert.assertEquals(PROJECTED_IOTAS_EVENT.getFieldsAndValues(), ((IotasEvent)actualValues.get(0)).getFieldsAndValues());
