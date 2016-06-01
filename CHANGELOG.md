@@ -1,5 +1,10 @@
 ## 0.1.3
  * IOT-252: Add integration test for StreamInfo storage with JDBC provider
+ * IOT-262: Fix tagging api throwing java.lang.StackOverflowError: null
+ * IOT-259: Do not throw an exception if schema is null
+ * IOT-256: Hierarchical tagging UI integration
+ * IOT-255: UI integration to improve parser upload experience
+ * IOT-265: Topologies with notification sinks throw error while deploying to storm 
  * IOT-248: Integration tests for Notification Service
  * IOT-189: Support adding custom artifacts in storm.jar
  * IOT-251: Multiple parser bolts can over write the same loaded parser jars leading to classloading issues.

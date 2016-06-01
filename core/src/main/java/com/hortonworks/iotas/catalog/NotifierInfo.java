@@ -1,10 +1,13 @@
 package com.hortonworks.iotas.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.storage.PrimaryKey;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,7 +21,9 @@ public class NotifierInfo extends AbstractStorable {
     public static final String JARFILE_NAME = "jarFileName";
     public static final String CLASS_NAME = "className";
     public static final String PROPERTIES = "properties";
+    public static final String PROPERTIES_DATA = "propertiesData";
     public static final String FIELD_VALUES = "fieldValues";
+    public static final String FIELD_VALUES_DATA = "fieldValuesData";
     public static final String TIMESTAMP = "timestamp";
 
     private Long id;
@@ -121,6 +126,66 @@ public class NotifierInfo extends AbstractStorable {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<Schema.Field, Object>();
         fieldToObjectMap.put(new Schema.Field("id", Schema.Type.LONG), this.id);
         return new PrimaryKey(fieldToObjectMap);
+    }
+
+    private String getPropertiesData() throws Exception {
+        if(properties == null) {
+            return "";
+        }
+
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(properties);
+    }
+
+    public void setPropertiesData(String propertiesData) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        this.properties = mapper.readValue(propertiesData, new TypeReference<Map<String, String>>() {});
+    }
+
+    private String getFieldValuesData() throws Exception {
+        if(fieldValues == null) {
+            return "";
+        }
+
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(fieldValues);
+    }
+
+    public void setFieldValuesData(String fieldValuesData) throws Exception {
+        if(fieldValuesData == null || fieldValuesData.isEmpty()) {
+            return;
+        }
+
+        ObjectMapper mapper = new ObjectMapper();
+        fieldValues = mapper.readValue(fieldValuesData, new TypeReference<Map<String, String>>() {});
+    }
+
+    @Override
+    public Schema getSchema() {
+        return Schema.of(
+                Schema.Field.of(ID, Schema.Type.LONG),
+                Schema.Field.of(NOTIFIER_NAME, Schema.Type.STRING),
+                Schema.Field.of(JARFILE_NAME, Schema.Type.STRING),
+                Schema.Field.of(CLASS_NAME, Schema.Type.STRING),
+                Schema.Field.of(PROPERTIES_DATA, Schema.Type.STRING),
+                Schema.Field.of(FIELD_VALUES_DATA, Schema.Type.STRING),
+                Schema.Field.of(TIMESTAMP, Schema.Type.LONG)
+                );
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        final Map<String, Object> values = super.toMap();
+        values.remove(PROPERTIES);
+        values.remove(FIELD_VALUES);
+        try {
+            values.put(PROPERTIES_DATA, getPropertiesData());
+            values.put(FIELD_VALUES_DATA, getFieldValuesData());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return values;
     }
 
     @Override

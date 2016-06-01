@@ -1,7 +1,7 @@
 <div class="page-heading">
     <ol class="breadcrumb">
-        <li><a href="#!/">Home</a></li>
-        <li><a href="#!/device-catalog">Device Catalog</a></li>
+        <li><a href="#">Home</a></li>
+        <li><a href="#!/device-profiles">Device Profiles</a></li>
         <li class="active">{{dsModel.dataSourceName}}</li>
     </ol>
 </div>
@@ -40,15 +40,15 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-2 control-label">Device Id: </label>
+                            <label class="col-sm-2 control-label">Make: </label>
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" value="{{dsModel.id}}" readonly="">
+                                <input type="text" class="form-control" value="{{dsModel.make}}" readonly="">
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-2 control-label">Version: </label>
+                            <label class="col-sm-2 control-label">Model: </label>
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" value="{{dsModel.version}}" readonly="">
+                                <input type="text" class="form-control" value="{{dsModel.model}}" readonly="">
                             </div>
                         </div>
                     </form>

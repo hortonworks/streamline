@@ -187,3 +187,33 @@ The following commands must be run from the top-level directory.
 
 If you wish to skip the unit tests you can do this by adding `-DskipTests` to the command line. 
 
+## Create a distribution (packaging)
+
+You can create a _distribution_ as follows.
+
+    # First, build the code.
+    $ mvn clean install # you may skip tests with `-DskipTests=true` to save time
+
+    # Create the binary distribution.
+    $ cd iotas-dist && mvn package
+
+You can also use the maven `dist` profile to build the code and create the distribution in one step.
+
+    $ mvn clean install -P dist
+
+The binaries will be created at:
+
+    iotas-dist/target/hortonworks-iotas-<version>.pom
+    iotas-dist/target/hortonworks-iotas-<version>.tar.gz
+    iotas-dist/target/hortonworks-iotas-<version>.zip
+
+including corresponding `*.asc` digital signature files.
+
+After running `mvn package` you may be asked to enter your GPG/PGP credentials (once for each binary file, in fact).
+This happens because the packaging step will create `*.asc` digital signatures for all the binaries, and in the workflow
+above _your_ GPG private key will be used to create those signatures.
+
+You can verify whether the digital signatures match their corresponding files:
+
+    # Example: Verify the signature of the `.tar.gz` binary.
+    $ gpg --verify iotas-dist/target/hortonworks-iotas-<version>.tar.gz.asc

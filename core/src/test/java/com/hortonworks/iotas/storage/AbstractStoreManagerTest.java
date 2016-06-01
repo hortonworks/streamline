@@ -5,6 +5,7 @@ import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.Device;
 import com.hortonworks.iotas.catalog.FileInfo;
+import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.catalog.StreamInfo;
 import com.hortonworks.iotas.catalog.Tag;
@@ -24,6 +25,8 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Random;
 import java.util.Set;
 import java.util.Map;
 import java.util.List;
@@ -297,11 +300,32 @@ public abstract class AbstractStoreManagerTest {
         private StreamInfo createStreamInfo(long id, List<Schema.Field> fields) {
             StreamInfo streamInfo = new StreamInfo();
             streamInfo.setId(id);
-            streamInfo.setStreamId("Stream-"+id);
+            streamInfo.setStreamId("Stream-" + id);
             streamInfo.setFields(fields);
             streamInfo.setTimestamp(System.currentTimeMillis());
 
             return streamInfo;
+        }
+    }
+
+    public class NotifierInfoTest extends StorableTest {
+        {
+            storableList = new ArrayList<Storable>() {{
+                add(createNotifierInfo(1l, "notifier-1"));
+                add(createNotifierInfo(1l, "notifier-2"));
+                add(createNotifierInfo(2l, "notifier-3"));
+                add(createNotifierInfo(3l, "notifier-4"));
+            }};
+        }
+
+        protected NotifierInfo createNotifierInfo(Long id, String name) {
+            NotifierInfo notifierInfo = new NotifierInfo();
+            notifierInfo.setId(id);
+            notifierInfo.setName(name);
+            Map<String, String> props = new HashMap<String, String>(){{put("cur", new Random().nextInt()+"");}};
+            notifierInfo.setProperties(props);
+            notifierInfo.setTimestamp(System.currentTimeMillis());
+            return notifierInfo;
         }
     }
 

@@ -161,7 +161,11 @@ public class TagCatalogResource {
         List<Tag> parentTags = new ArrayList<>();
         if (tagDto.getTagIds() != null) {
             for (Long tagId : tagDto.getTagIds()) {
-                parentTags.add(catalogService.getTag(tagId));
+                Tag tag = catalogService.getTag(tagId);
+                if (tag == null) {
+                    throw new IllegalArgumentException("Tag with id " + tagId + " does not exist.");
+                }
+                parentTags.add(tag);
             }
         }
         Tag tag = new Tag();

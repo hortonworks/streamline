@@ -10,11 +10,13 @@ define(['require',
         templateHelpers: function() {},
         regions: {
             configTab: '#config',
-            customTab: '#custom'
+            customTab: '#custom',
+            tagsTab  : '#hTags'
         },
         events: {
             'click #cluster-config': 'evShowClusterConfig',
             'click #custom-processor': 'showCustomProcessors',
+            'click #tags': 'evShowTags',
             'click #add-btn': 'evAddProcessor',
             'click #editAction': 'evEditProcessor'
         },
@@ -89,6 +91,16 @@ define(['require',
                 }));
             });
         },
+        evShowTags: function(e) {
+            if (!_.isUndefined(e) && $(e.currentTarget).parent().hasClass("active"))
+                return;
+            this.$("#hTags").tab('show');
+            var self = this;
+            require(['views/tag/TagView'], function(TagView) {
+                self.tagsTab.show(new TagView());
+            });
+        },
+
         showCustomProcessors: function(e) {
           if(!_.isUndefined(e) && $(e.currentTarget).parent().hasClass("active"))
             return;

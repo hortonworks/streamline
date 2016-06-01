@@ -86,7 +86,7 @@ define(['require',
       }, {
         name: 'model',
         cell: 'string',
-        label: localization.tt('lbl.deviceModel'),
+        label: localization.tt('lbl.model'),
         hasTooltip: false,
         editable: false,
         formatter: _.extend({}, Backgrid.CellFormatter.prototype, {
@@ -97,7 +97,7 @@ define(['require',
       }, {
         name: 'typeConfig',
         cell: 'string',
-        label: localization.tt('lbl.deviceMake'),
+        label: localization.tt('lbl.make'),
         hasTooltip: false,
         editable: false,
         formatter: _.extend({}, Backgrid.CellFormatter.prototype, {
