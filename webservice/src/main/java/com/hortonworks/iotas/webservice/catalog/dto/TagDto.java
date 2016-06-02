@@ -14,7 +14,7 @@ public class TagDto {
     private List<Long> tagIds;
 
     // for jackson
-    private TagDto() {
+    public TagDto() {
     }
 
     public TagDto(Tag tag) {
@@ -61,6 +61,9 @@ public class TagDto {
         return tagIds;
     }
 
+    /**
+     * Set parent tag ids
+     */
     public void setTagIds(List<Long> tagIds) {
         this.tagIds = tagIds;
     }
@@ -73,5 +76,41 @@ public class TagDto {
             }
         }
         return tagIds;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        TagDto tagDto = (TagDto) o;
+
+        if (id != null ? !id.equals(tagDto.id) : tagDto.id != null) return false;
+        if (name != null ? !name.equals(tagDto.name) : tagDto.name != null) return false;
+        if (description != null ? !description.equals(tagDto.description) : tagDto.description != null) return false;
+        if (timestamp != null ? !timestamp.equals(tagDto.timestamp) : tagDto.timestamp != null) return false;
+        return tagIds != null ? tagIds.equals(tagDto.tagIds) : tagDto.tagIds == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        result = 31 * result + (timestamp != null ? timestamp.hashCode() : 0);
+        result = 31 * result + (tagIds != null ? tagIds.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "TagDto{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", timestamp=" + timestamp +
+                ", tagIds=" + tagIds +
+                '}';
     }
 }

@@ -69,8 +69,12 @@ public class CatalogTagService implements TagService {
 
     @Override
     public Tag addOrUpdateTag(Long tagId, Tag tag) {
-        tag.setId(tagId);
-        tag.setTimestamp(System.currentTimeMillis());
+        if (tag.getId() == null) {
+            tag.setId(tagId);
+        }
+        if (tag.getTimestamp() == null) {
+            tag.setTimestamp(System.currentTimeMillis());
+        }
         List<Tag> existingTags = getTags(tag);
         List<Tag> tagsToBeAdded = getTagsToBeAdded(existingTags, tag.getTags());
         List<Tag> tagsToBeRemoved = getTagsToBeRemoved(existingTags, tag.getTags());
