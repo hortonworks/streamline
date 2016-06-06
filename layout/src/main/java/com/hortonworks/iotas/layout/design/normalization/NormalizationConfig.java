@@ -13,7 +13,7 @@ import java.io.Serializable;
 /**
  * Base class for normalization processor configuration.
  */
-@JsonTypeInfo(use= JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY, property="class")
+@JsonTypeInfo(use= JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY, property="__type")
 public class NormalizationConfig extends Config {
 
     private Schema inputSchema;
