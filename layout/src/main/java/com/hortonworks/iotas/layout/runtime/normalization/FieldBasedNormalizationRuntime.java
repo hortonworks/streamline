@@ -18,6 +18,7 @@
 package com.hortonworks.iotas.layout.runtime.normalization;
 
 import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.layout.design.normalization.FieldBasedNormalizationConfig;
 import com.hortonworks.iotas.layout.design.normalization.FieldValueGenerator;
 import com.hortonworks.iotas.layout.design.normalization.Transformer;
@@ -43,12 +44,15 @@ public class FieldBasedNormalizationRuntime extends NormalizationRuntime {
     private final List<TransformerRuntime> transformerRuntimes;
     private final List<FieldValueGeneratorRuntime> fieldValueGeneratorRuntimes;
     private final FieldBasedNormalizationConfig normalizationConfig;
+    private final List<String> fieldsToBeFiltered;
 
     private FieldBasedNormalizationRuntime(Builder builder) {
         super(builder.normalizationConfig);
         this.transformerRuntimes = builder.transformerRuntimes;
         this.fieldValueGeneratorRuntimes = builder.fieldValueGeneratorRuntimes;
         this.normalizationConfig = builder.normalizationConfig;
+        final List<String> fieldsToBeFiltered = normalizationConfig.getFieldsToBeFiltered();
+        this.fieldsToBeFiltered = fieldsToBeFiltered == null || fieldsToBeFiltered.isEmpty() ? builder.fieldsTobeFiltered : fieldsToBeFiltered;
     }
 
     public Map<String, Object> normalize(IotasEvent iotasEvent) throws NormalizationException {
@@ -87,12 +91,6 @@ public class FieldBasedNormalizationRuntime extends NormalizationRuntime {
      * Executes filters which filters/removes the given fields from output field name/value pairs
      */
     private void executeFilters(Map<String, Object> outputFieldNameValuePairs) {
-        List<String> fieldsToBeFiltered = normalizationConfig.getFieldsToBeFiltered();
-
-        if (fieldsToBeFiltered == null) {
-            return;
-        }
-
         for (String filterField : fieldsToBeFiltered) {
             outputFieldNameValuePairs.remove(filterField);
             LOG.debug("Removed filter field [{}] in [{}]", filterField, normalizationConfig);
@@ -115,11 +113,14 @@ public class FieldBasedNormalizationRuntime extends NormalizationRuntime {
     public static class Builder {
 
         private final FieldBasedNormalizationConfig normalizationConfig;
+        private final Schema declaredOutputSchema;
         private List<TransformerRuntime> transformerRuntimes;
         private List<FieldValueGeneratorRuntime> fieldValueGeneratorRuntimes;
+        private List<String> fieldsTobeFiltered = new ArrayList<>();
 
-        public Builder(FieldBasedNormalizationConfig normalizationConfig) {
+        public Builder(FieldBasedNormalizationConfig normalizationConfig, Schema declaredOutputSchema) {
             this.normalizationConfig = normalizationConfig;
+            this.declaredOutputSchema = declaredOutputSchema;
         }
 
         private void buildTransformerRuntimes() {
@@ -146,9 +147,18 @@ public class FieldBasedNormalizationRuntime extends NormalizationRuntime {
             }
         }
 
+        private void buildFilters() {
+            for (Schema.Field inputField : normalizationConfig.getInputSchema().getFields()) {
+                if(!declaredOutputSchema.getFields().contains(inputField)) {
+                    fieldsTobeFiltered.add(inputField.getName());
+                }
+            }
+        }
+
         public FieldBasedNormalizationRuntime build() {
             buildTransformerRuntimes();
             buildValueGeneratorRuntimes();
+            buildFilters();
 
             return new FieldBasedNormalizationRuntime(this);
         }

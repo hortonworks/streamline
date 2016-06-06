@@ -22,7 +22,7 @@ public class NormalizationBoltFluxComponent extends AbstractFluxComponent {
         String normalizationProcessorBuilder = addNormalizationProcessorBuilder();
 
         String boltId = "normalizationBolt" + UUID_FOR_COMPONENTS;
-        String boltClassName = "com.hortonworks.iotas.bolt.rules.NormalizationBolt";
+        String boltClassName = "com.hortonworks.iotas.bolt.normalization.NormalizationBolt";
         List boltConstructorArgs = new ArrayList();
         Map ref = getRefYaml(normalizationProcessorBuilder);
         boltConstructorArgs.add(ref);
@@ -32,7 +32,7 @@ public class NormalizationBoltFluxComponent extends AbstractFluxComponent {
 
     private String addNormalizationProcessorBuilder() {
         String normalizationProcessorBuilderComponentId = "normalizationProcessorBuilder" + UUID_FOR_COMPONENTS;
-        String normalizationProcessorBuilderClassName = "com.hortonworks.iotas.layout.design.component.NormalizationProcessorJsonBuilder";
+        String normalizationProcessorBuilderClassName = "com.hortonworks.iotas.layout.design.normalization.NormalizationProcessorJsonBuilder";
         ObjectMapper mapper = new ObjectMapper();
         String normalizationProcessorJson = null;
         try {

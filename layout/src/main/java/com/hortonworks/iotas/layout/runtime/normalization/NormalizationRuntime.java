@@ -55,7 +55,7 @@ public abstract class NormalizationRuntime {
             NormalizationRuntime normalizationProcessorRuntime = null;
             switch(type) {
                 case fineGrained:
-                    normalizationProcessorRuntime = new FieldBasedNormalizationRuntime.Builder((FieldBasedNormalizationConfig) normalizationConfig).build();
+                    normalizationProcessorRuntime = new FieldBasedNormalizationRuntime.Builder((FieldBasedNormalizationConfig) normalizationConfig, declaredOutputSchema).build();
                     break;
                 case bulk:
                     normalizationProcessorRuntime = new BulkNormalizationRuntime((BulkNormalizationConfig) normalizationConfig, declaredOutputSchema);
