@@ -106,7 +106,7 @@ public class FileCatalogResource {
      *
      * @param inputStream actual file content as {@link InputStream}.
      * @param contentDispositionHeader {@link FormDataContentDisposition} instance of the received file
-     * @param file configuration of the file resource {@link FileInfo}
+     * @param fileInfo configuration of the file resource {@link FileInfo}
      * @return
      */
     @Timed
@@ -115,11 +115,11 @@ public class FileCatalogResource {
     @Path("/files")
     public Response addFile(@FormDataParam("file") final InputStream inputStream,
                             @FormDataParam("file") final FormDataContentDisposition contentDispositionHeader,
-                            @FormDataParam("fileInfo") final FileInfo file) {
+                            @FormDataParam("fileInfo") final FileInfo fileInfo) {
 
         try {
-            log.info("Received file: [{}]", file);
-            FileInfo updatedFile = addOrUpdateFile(inputStream, file);
+            log.info("Received fileInfo: [{}]", fileInfo);
+            FileInfo updatedFile = addOrUpdateFile(inputStream, fileInfo);
 
             return WSUtils.respond(CREATED, SUCCESS, updatedFile);
         } catch (Exception ex) {
@@ -135,7 +135,7 @@ public class FileCatalogResource {
      *
      * @param inputStream
      * @param contentDispositionHeader
-     * @param file
+     * @param fileInfo
      */
     @Timed
     @PUT
@@ -143,16 +143,16 @@ public class FileCatalogResource {
     @Path("/files")
     public Response updateFile(@FormDataParam("file") final InputStream inputStream,
                                @FormDataParam("file") final FormDataContentDisposition contentDispositionHeader,
-                               @FormDataParam("fileInfo") final FileInfo file) {
+                               @FormDataParam("fileInfo") final FileInfo fileInfo) {
         try {
-            log.info("Received file: [{}]", file);
+            log.info("Received fileInfo: [{}]", fileInfo);
             String oldFileStorageName = null;
-            final FileInfo existingFile = catalogService.getFile(file.getId());
+            final FileInfo existingFile = catalogService.getFile(fileInfo.getId());
             if(existingFile != null) {
                 oldFileStorageName = existingFile.getStoredFileName();
             }
 
-            final FileInfo updatedFile = addOrUpdateFile(inputStream, file);
+            final FileInfo updatedFile = addOrUpdateFile(inputStream, fileInfo);
 
             if(oldFileStorageName != null) {
                 final boolean deleted = catalogService.deleteFileFromStorage(oldFileStorageName);
@@ -165,14 +165,14 @@ public class FileCatalogResource {
         }
     }
 
-    protected FileInfo addOrUpdateFile(InputStream inputStream, FileInfo file) throws IOException {
-        final String updatedFileStorageName = getFileStorageName(file.getName());
-        file.setStoredFileName(updatedFileStorageName);
-        log.info("Uploading File [{}]", file);
+    protected FileInfo addOrUpdateFile(InputStream inputStream, FileInfo fileInfo) throws IOException {
+        final String updatedFileStorageName = getFileStorageName(fileInfo.getName());
+        fileInfo.setStoredFileName(updatedFileStorageName);
+        log.info("Uploading File with fileInfo [{}]", fileInfo);
         final String uploadedFileStoragePath = catalogService.uploadFileToStorage(inputStream, updatedFileStorageName);
-        log.info("Received File file is uploaded to [{}]", uploadedFileStoragePath);
-        file.setTimestamp(System.currentTimeMillis());
-        return catalogService.addOrUpdateFile(file);
+        log.info("Received File with fileInfo is uploaded to [{}]", uploadedFileStoragePath);
+        fileInfo.setTimestamp(System.currentTimeMillis());
+        return catalogService.addOrUpdateFile(fileInfo);
     }
 
     @GET
