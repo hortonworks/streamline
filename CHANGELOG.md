@@ -1,6 +1,7 @@
 ## 0.1.3
- * IOT-239 TP-3 release bug fixes
- * IOT-247 Add integration test for tagging
+ * IOT-269: Normalization processor runtime and UI integration
+ * IOT-239: TP-3 release bug fixes
+ * IOT-247: Add integration test for tagging
  * IOT-8: Sliding Time Windows
  * IOT-252: Add integration test for StreamInfo storage with JDBC provider
  * IOT-261: topology status API can't determine status of topology on Storm
