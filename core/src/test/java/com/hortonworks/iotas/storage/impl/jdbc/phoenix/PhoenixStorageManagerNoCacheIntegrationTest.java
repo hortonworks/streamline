@@ -11,7 +11,7 @@ import com.hortonworks.iotas.storage.impl.jdbc.connection.HikariCPConnectionBuil
 import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.JdbcClient;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
 import com.hortonworks.iotas.test.HBaseIntegrationTest;
-import com.hortonworks.iotas.topology.TopologyComponent;
+import com.hortonworks.iotas.topology.TopologyComponentDefinition;
 import com.zaxxer.hikari.HikariConfig;
 
 import org.junit.After;
@@ -58,7 +58,7 @@ public class PhoenixStorageManagerNoCacheIntegrationTest extends JdbcStorageMana
     @Test
     public void testNextId_AutoincrementColumn_IdPlusOne() throws Exception {
         final PhoenixExecutor phoenixExecutor = new PhoenixExecutor(new ExecutionConfig(-1), connectionBuilder);
-        String[] nameSpaces = {DataSource.NAME_SPACE, DataFeed.NAME_SPACE, ParserInfo.NAME_SPACE, Topology.NAME_SPACE, TopologyComponent.NAME_SPACE};
+        String[] nameSpaces = {DataSource.NAME_SPACE, DataFeed.NAME_SPACE, ParserInfo.NAME_SPACE, Topology.NAME_SPACE, TopologyComponentDefinition.NAME_SPACE};
         for (String nameSpace : nameSpaces) {
             log.info("Generating sequence-ids for namespace: [{}]", nameSpace);
             for (int x = 0; x < 100; x++) {

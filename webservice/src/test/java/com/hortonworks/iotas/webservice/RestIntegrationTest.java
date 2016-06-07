@@ -39,7 +39,7 @@ import com.hortonworks.iotas.processor.CustomProcessorInfo;
 import com.hortonworks.iotas.processor.examples.ConsoleCustomProcessor;
 import com.hortonworks.iotas.test.IntegrationTest;
 import com.hortonworks.iotas.topology.ConfigField;
-import com.hortonworks.iotas.topology.TopologyComponent;
+import com.hortonworks.iotas.topology.TopologyComponentDefinition;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import com.hortonworks.iotas.webservice.catalog.TopologyCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
@@ -189,10 +189,10 @@ public class RestIntegrationTest {
             new ResourceTestElement(createDataSourceDto(1l, "testDataSourceWithDataFeed:" + System.currentTimeMillis()), createDataSourceDto(1l, "testDataSourceWithDataFeedPut:" + System.currentTimeMillis()), "1", rootUrl + "datasources"),
             new ResourceTestElement(createTopology(1l, "iotasTopology"), createTopology(1l, "iotasTopologyPut"), "1", rootUrl + "topologies"),
             new ResourceTestElement(createTopologyEditorMetadata(1l, "{\"x\":5,\"y\":6}"), createTopologyEditorMetadata(1l, "{\"x\":6,\"y\":5}"), "1", rootUrl + "system/topologyeditormetadata"),
-            new ResourceTestElement(createTopologyComponent(1l, "kafkaSpoutComponent", TopologyComponent.TopologyComponentType.SOURCE, "KAFKA"), createTopologyComponent(1l, "kafkaSpoutComponentPut", TopologyComponent.TopologyComponentType.SOURCE, "KAFKA") , "1", rootUrl + "system/componentdefinitions/SOURCE"),
-            new ResourceTestElement(createTopologyComponent(2l, "parserProcessor", TopologyComponent .TopologyComponentType.PROCESSOR, "PARSER"), createTopologyComponent(2l, "parserProcessorPut", TopologyComponent.TopologyComponentType.PROCESSOR, "PARSER"), "2", rootUrl + "system/componentdefinitions/PROCESSOR"),
-            new ResourceTestElement(createTopologyComponent(3l, "hbaseSink", TopologyComponent.TopologyComponentType.SINK, "HBASE"), createTopologyComponent(3l, "hbaseSinkPut", TopologyComponent.TopologyComponentType.SINK, "HBASE"), "3", rootUrl + "system/componentdefinitions/SINK"),
-            new ResourceTestElement(createTopologyComponent(4l, "shuffleGroupingLink", TopologyComponent.TopologyComponentType.LINK, "SHUFFLE"), createTopologyComponent(4l, "shuffleGroupingLinkPut", TopologyComponent.TopologyComponentType.LINK, "SHUFFLE"), "4", rootUrl + "system/componentdefinitions/LINK"),
+            new ResourceTestElement(createTopologyComponent(1l, "kafkaSpoutComponent", TopologyComponentDefinition.TopologyComponentType.SOURCE, "KAFKA"), createTopologyComponent(1l, "kafkaSpoutComponentPut", TopologyComponentDefinition.TopologyComponentType.SOURCE, "KAFKA") , "1", rootUrl + "system/componentdefinitions/SOURCE"),
+            new ResourceTestElement(createTopologyComponent(2l, "parserProcessor", TopologyComponentDefinition.TopologyComponentType.PROCESSOR, "PARSER"), createTopologyComponent(2l, "parserProcessorPut", TopologyComponentDefinition.TopologyComponentType.PROCESSOR, "PARSER"), "2", rootUrl + "system/componentdefinitions/PROCESSOR"),
+            new ResourceTestElement(createTopologyComponent(3l, "hbaseSink", TopologyComponentDefinition.TopologyComponentType.SINK, "HBASE"), createTopologyComponent(3l, "hbaseSinkPut", TopologyComponentDefinition.TopologyComponentType.SINK, "HBASE"), "3", rootUrl + "system/componentdefinitions/SINK"),
+            new ResourceTestElement(createTopologyComponent(4l, "shuffleGroupingLink", TopologyComponentDefinition.TopologyComponentType.LINK, "SHUFFLE"), createTopologyComponent(4l, "shuffleGroupingLinkPut", TopologyComponentDefinition.TopologyComponentType.LINK, "SHUFFLE"), "4", rootUrl + "system/componentdefinitions/LINK"),
             // parser is commented as parser takes a jar as input along with the parserInfo instance and so it needs a multipart request.
             new ResourceTestElement(createParserInfo(1l, "testParser"), null, "1", rootUrl + "parsers")
                                     .withMultiPart().withEntitiyNameHeader("parserInfo").withFileNameHeader("parserJar")
@@ -430,8 +430,8 @@ public class RestIntegrationTest {
 
         String response = client.target(url).request().get(String.class);
         Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
-        Object expected = Arrays.asList(TopologyComponent.TopologyComponentType.values());
-        Object actual = getEntities(response, TopologyComponent.TopologyComponentType.class);
+        Object expected = Arrays.asList(TopologyComponentDefinition.TopologyComponentType.values());
+        Object actual = getEntities(response, TopologyComponentDefinition.TopologyComponentType.class);
         Assert.assertEquals(expected, actual);
     }
 
@@ -439,16 +439,16 @@ public class RestIntegrationTest {
     public void testTopologyComponentsForTypeWithFilters () throws Exception {
         String prefixUrl = rootUrl + "system/componentdefinitions/";
         String[] postUrls = {
-                prefixUrl + TopologyComponent.TopologyComponentType.SOURCE,
-                prefixUrl + TopologyComponent.TopologyComponentType.PROCESSOR,
-                prefixUrl + TopologyComponent.TopologyComponentType.SINK,
-                prefixUrl + TopologyComponent.TopologyComponentType.LINK
+                prefixUrl + TopologyComponentDefinition.TopologyComponentType.SOURCE,
+                prefixUrl + TopologyComponentDefinition.TopologyComponentType.PROCESSOR,
+                prefixUrl + TopologyComponentDefinition.TopologyComponentType.SINK,
+                prefixUrl + TopologyComponentDefinition.TopologyComponentType.LINK
         };
         List<List<Object>> resourcesToPost = new ArrayList<List<Object>>();
-        Object source = createTopologyComponent(1l, "kafkaSpoutComponent", TopologyComponent.TopologyComponentType.SOURCE, "KAFKA");
-        Object parser = createTopologyComponent(2l, "parserProcessor", TopologyComponent.TopologyComponentType.PROCESSOR, "PARSER");
-        Object sink = createTopologyComponent(3l, "hbaseSink", TopologyComponent.TopologyComponentType.SINK, "HBASE");
-        Object link = createTopologyComponent(4l, "shuffleGroupingLink", TopologyComponent.TopologyComponentType.LINK, "SHUFFLE");
+        Object source = createTopologyComponent(1l, "kafkaSpoutComponent", TopologyComponentDefinition.TopologyComponentType.SOURCE, "KAFKA");
+        Object parser = createTopologyComponent(2l, "parserProcessor", TopologyComponentDefinition.TopologyComponentType.PROCESSOR, "PARSER");
+        Object sink = createTopologyComponent(3l, "hbaseSink", TopologyComponentDefinition.TopologyComponentType.SINK, "HBASE");
+        Object link = createTopologyComponent(4l, "shuffleGroupingLink", TopologyComponentDefinition.TopologyComponentType.LINK, "SHUFFLE");
         List<Object> sourcesPosted = Arrays.asList(source);
         List<Object> processorsPosted = Arrays.asList(parser);
         List<Object> sinksPosted = Arrays.asList(sink);
@@ -838,19 +838,19 @@ public class RestIntegrationTest {
         return notifierInfo;
     }
 
-    private TopologyComponent createTopologyComponent (Long id, String name,
-                                                       TopologyComponent
+    private TopologyComponentDefinition createTopologyComponent (Long id, String name,
+                                                                 TopologyComponentDefinition
                                                                .TopologyComponentType topologyComponentType, String subType) {
-        TopologyComponent topologyComponent = new TopologyComponent();
-        topologyComponent.setId(id);
-        topologyComponent.setName(name);
-        topologyComponent.setType(topologyComponentType);
-        topologyComponent.setStreamingEngine("STORM");
-        topologyComponent.setConfig("{}");
-        topologyComponent.setSubType(subType);
-        topologyComponent.setTimestamp(System.currentTimeMillis());
-        topologyComponent.setTransformationClass("com.hortonworks.iotas.topology.storm.KafkaSpoutFluxComponent");
-        return topologyComponent;
+        TopologyComponentDefinition topologyComponentDefinition = new TopologyComponentDefinition();
+        topologyComponentDefinition.setId(id);
+        topologyComponentDefinition.setName(name);
+        topologyComponentDefinition.setType(topologyComponentType);
+        topologyComponentDefinition.setStreamingEngine("STORM");
+        topologyComponentDefinition.setConfig("{}");
+        topologyComponentDefinition.setSubType(subType);
+        topologyComponentDefinition.setTimestamp(System.currentTimeMillis());
+        topologyComponentDefinition.setTransformationClass("com.hortonworks.iotas.topology.storm.KafkaSpoutFluxComponent");
+        return topologyComponentDefinition;
 
     }
 

@@ -32,7 +32,7 @@ import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.query.SqlQuery;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.query.SqlSelectQuery;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
 import com.hortonworks.iotas.storage.impl.jdbc.util.Util;
-import com.hortonworks.iotas.topology.TopologyComponent;
+import com.hortonworks.iotas.topology.TopologyComponentDefinition;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -298,8 +298,8 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
                     return (T) new Device();
                 case(ParserInfo.NAME_SPACE):
                     return (T) new ParserInfo();
-                case (TopologyComponent.NAME_SPACE):
-                    return (T) new TopologyComponent();
+                case (TopologyComponentDefinition.NAME_SPACE):
+                    return (T) new TopologyComponentDefinition();
                 case (TopologyEditorMetadata.NAME_SPACE):
                     return (T) new TopologyEditorMetadata();
                 case (Topology.NAME_SPACE):

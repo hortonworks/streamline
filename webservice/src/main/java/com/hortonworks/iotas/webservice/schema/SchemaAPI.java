@@ -7,7 +7,7 @@ import com.hortonworks.iotas.topology.component.Stream;
 import com.hortonworks.iotas.layout.schema.CatalogServiceAware;
 import com.hortonworks.iotas.layout.schema.EvolvingSchema;
 import com.hortonworks.iotas.service.CatalogService;
-import com.hortonworks.iotas.topology.TopologyComponent;
+import com.hortonworks.iotas.topology.TopologyComponentDefinition;
 import com.hortonworks.iotas.webservice.util.WSUtils;
 
 import javax.ws.rs.GET;
@@ -56,12 +56,12 @@ public class SchemaAPI {
 
         try {
             if (!EVOLVING_SCHEMA_MAP.containsKey(componentId)) {
-                TopologyComponent topologyComponent = catalogService.getTopologyComponent(componentId);
-                if (topologyComponent == null) {
+                TopologyComponentDefinition topologyComponentDefinition = catalogService.getTopologyComponent(componentId);
+                if (topologyComponentDefinition == null) {
                     throw new NotFoundException("Component ID " + componentId + " not found in catalog");
                 }
 
-                String schemaClass = topologyComponent.getSchemaClass();
+                String schemaClass = topologyComponentDefinition.getSchemaClass();
                 if (schemaClass == null) {
                     throw new UnsupportedOperationException("This component doesn't support Schema Evolution");
                 }

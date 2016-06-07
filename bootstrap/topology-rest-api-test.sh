@@ -3,6 +3,11 @@
 # Creates and deploys a test topology using the topology REST APIs.
 # --
 
+function getId {
+  str=$1
+  echo $str | grep -o -E "\"id\":\d+" | head -n1 | cut -d : -f2
+}
+
 # --
 # Upload parser
 # --
@@ -36,37 +41,49 @@ curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -
 # Create a topology
 # --
 echo -e "\n------"
-curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
+out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
     "name": "test",
     "config": "{\"config\": {\"catalog.root.url\": \"http://localhost:8080/api/v1/catalog\", \"local.parser.jar.path\": \"/tmp\", \"local.notifier.jar.path\": \"/tmp\"}}"
-}' "${catalogurl}/topologies"
+}' "${catalogurl}/topologies")
+
+echo $out
+topologyid=$(getId $out)
 
 # --
 # Create streams
 # --
 echo -e "\n------"
-curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
+out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
     "streamId": "default",
     "fields": [{"name": "iotas.event", "type": "NESTED"} ]
-}' "${catalogurl}/topologies/1/streams"
+}' "${catalogurl}/topologies/$topologyid/streams")
+
+echo $out
+streamid1=$(getId $out)
 
 echo -e "\n------"
-curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
+out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
     "streamId": "parsedTuplesStream",
     "fields": [{"name": "iotas.event", "type": "NESTED"} ]
-}' "${catalogurl}/topologies/1/streams"
+}' "${catalogurl}/topologies/$topologyid/streams")
+
+echo $out
+streamid2=$(getId $out)
 
 echo -e "\n------"
-curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
+out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
     "streamId": "rule_processsor_1.rule_1.1.notificationsink",
     "fields": [{"name": "iotas.event", "type": "NESTED"} ]
-}' "${catalogurl}/topologies/1/streams"
+}' "${catalogurl}/topologies/$topologyid/streams")
+
+echo $out
+streamid3=$(getId $out)
 
 # --
 # Create kafka data source
 # --
 echo -e "\n------"
-curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
+out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
     "name": "kafkaDataSource",
     "config": {
         "properties": {
@@ -79,15 +96,18 @@ curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -
         }
     },
     "type": "KAFKA",
-    "outputStreamIds": [1]
-}' "${catalogurl}/topologies/1/sources"
+    "outputStreamIds": ['"$streamid1"']
+}' "${catalogurl}/topologies/$topologyid/sources")
+
+echo $out
+sourceid=$(getId $out)
 
 
 # --
 # Create parser processor
 # --
 echo -e "\n------"
-curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
+out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
     "name": "ParserProcessor",
     "config": {
         "properties": {
@@ -97,14 +117,17 @@ curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -
         }
     },
     "type": "PARSER",
-    "outputStreamIds": [2]
-}' "${catalogurl}/topologies/1/processors"
+    "outputStreamIds": ['$streamid2']
+}' "${catalogurl}/topologies/$topologyid/processors")
+
+echo $out
+parserid=$(getId $out)
 
 # --
 # Create Rule processor
 # --
 echo -e "\n------"
-curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
+out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
     "name": "RuleProcessor",
     "config": {
         "properties": {
@@ -173,14 +196,18 @@ curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -
         }
     },
     "type": "RULE",
-    "outputStreamIds": [3]
-}' "${catalogurl}/topologies/1/processors"
+    "outputStreamIds": ['$streamid3']
+}' "${catalogurl}/topologies/$topologyid/processors")
+
+
+echo $out
+ruleprocessorid=$(getId $out)
 
 # --
 # Create notification sink
 # --
 echo -e "\n------"
-curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
+out=$(curl -s  -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
         "name": "notificationsink",
         "type": "NOTIFICATION",
         "config": {
@@ -209,42 +236,46 @@ curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -
           "parallelism": 1
         }
         }
-      }' "${catalogurl}/topologies/1/sinks"
+      }' "${catalogurl}/topologies/$topologyid/sinks")
+
+echo $out
+notificationsinkid=$(getId $out)
 
 # --
 # Kafka -> Parser
 # --
 echo -e "\n------"
 curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
-    "fromId": 1,
-    "toId": 2,
-    "streamGroupings": [{"streamId": 1, "grouping": "SHUFFLE"}]
-}' "${catalogurl}/topologies/1/edges"
+    "fromId": '$sourceid',
+    "toId": '$parserid',
+    "streamGroupings": [{"streamId": '$streamid1', "grouping": "SHUFFLE"}]
+}' "${catalogurl}/topologies/$topologyid/edges"
 
 # --
 # Parser -> Rule processor
 # --
 echo -e "\n------"
 curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
-    "fromId": 2,
-    "toId": 3,
-    "streamGroupings": [{"streamId": 2, "grouping": "SHUFFLE"}]
-}' "${catalogurl}/topologies/1/edges"
+    "fromId": '$parserid',
+    "toId": '$ruleprocessorid',
+    "streamGroupings": [{"streamId": '$streamid2', "grouping": "SHUFFLE"}]
+}' "${catalogurl}/topologies/$topologyid/edges"
 
 # --
 # Rule processor -> Notification
 # --
 echo -e "\n------"
 curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
-    "fromId": 3,
-    "toId": 4,
-    "streamGroupings": [{"streamId": 3, "grouping": "SHUFFLE"}]
-}' "${catalogurl}/topologies/1/edges"
+    "fromId": '$ruleprocessorid',
+    "toId": '$notificationsinkid',
+    "streamGroupings": [{"streamId": '$streamid3', "grouping": "SHUFFLE"}]
+}' "${catalogurl}/topologies/$topologyid/edges"
 
 # --
 # Deploy
 # --
 echo -e "\n------"
-curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache" -d '' "${catalogurl}/topologies/1/actions/deploy"
+curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache" -d '' "${catalogurl}/topologies/$topologyid/actions/deploy"
 
 echo -e "\n------"
+

@@ -9,9 +9,9 @@ import com.hortonworks.iotas.storage.StorableKey;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TopologyComponent implements Storable {
+public class TopologyComponentDefinition implements Storable {
 
-    public static final String NAME_SPACE = "topology_components";
+    public static final String NAME_SPACE = "topology_component_definitions";
     public static final String ID = "id";
     public static final String NAME = "name";
     public static final String TYPE = "type";
@@ -221,7 +221,7 @@ public class TopologyComponent implements Storable {
 
     @Override
     public String toString () {
-        return "TopologyComponent{" +
+        return "TopologyComponentDefinition{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", type=" + type +
@@ -239,7 +239,7 @@ public class TopologyComponent implements Storable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        TopologyComponent that = (TopologyComponent) o;
+        TopologyComponentDefinition that = (TopologyComponentDefinition) o;
 
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null)
