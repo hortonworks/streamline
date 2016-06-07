@@ -14,6 +14,7 @@ import com.hortonworks.iotas.catalog.StreamInfo;
 import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.catalog.TagStorableMapping;
 import com.hortonworks.iotas.catalog.Topology;
+import com.hortonworks.iotas.catalog.TopologyComponent;
 import com.hortonworks.iotas.catalog.TopologyEdge;
 import com.hortonworks.iotas.catalog.TopologyEditorMetadata;
 import com.hortonworks.iotas.catalog.TopologyProcessor;
@@ -314,6 +315,8 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
                     return (T) new StreamInfo();
                 case (NotifierInfo.NAMESPACE):
                     return (T) new NotifierInfo();
+                case (TopologyComponent.NAMESPACE):
+                    return (T) new TopologyComponent();
                 case (TopologySource.NAMESPACE):
                     return (T) new TopologySource();
                 case (TopologySink.NAMESPACE):
