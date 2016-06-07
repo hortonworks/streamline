@@ -163,6 +163,7 @@ define(['utils/LangSupport',
         delete this.model.attributes.responseCode;
         delete this.model.attributes.responseMessage;
       }
+      attrs.tags = attrs.tags.toString();
       return this.model.set(attrs);
     },
 

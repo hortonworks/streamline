@@ -91,6 +91,7 @@ public class FieldBasedNormalizationRuntime extends NormalizationRuntime {
      * Executes filters which filters/removes the given fields from output field name/value pairs
      */
     private void executeFilters(Map<String, Object> outputFieldNameValuePairs) {
+        LOG.debug("Fields to be filtered: [{}] ", fieldsToBeFiltered);
         for (String filterField : fieldsToBeFiltered) {
             outputFieldNameValuePairs.remove(filterField);
             LOG.debug("Removed filter field [{}] in [{}]", filterField, normalizationConfig);
@@ -111,6 +112,7 @@ public class FieldBasedNormalizationRuntime extends NormalizationRuntime {
     }
 
     public static class Builder {
+        private static final Logger LOG = LoggerFactory.getLogger(Builder.class);
 
         private final FieldBasedNormalizationConfig normalizationConfig;
         private final Schema declaredOutputSchema;
@@ -153,6 +155,7 @@ public class FieldBasedNormalizationRuntime extends NormalizationRuntime {
                     fieldsTobeFiltered.add(inputField.getName());
                 }
             }
+            LOG.debug("Creating fields to be filtered: [{}]", fieldsTobeFiltered);
         }
 
         public FieldBasedNormalizationRuntime build() {
@@ -167,10 +170,11 @@ public class FieldBasedNormalizationRuntime extends NormalizationRuntime {
 
     @Override
     public String toString() {
-        return "NormalizationProcessorRuntime{" +
+        return "FieldBasedNormalizationRuntime{" +
                 "transformerRuntimes=" + transformerRuntimes +
-                ", valueGeneratorRuntimes=" + fieldValueGeneratorRuntimes +
-                ", normalizationProcessor=" + normalizationConfig +
+                ", fieldValueGeneratorRuntimes=" + fieldValueGeneratorRuntimes +
+                ", normalizationConfig=" + normalizationConfig +
+                ", fieldsToBeFiltered=" + fieldsToBeFiltered +
                 '}';
     }
 }

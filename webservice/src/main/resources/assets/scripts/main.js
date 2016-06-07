@@ -109,6 +109,9 @@ require.config({
     },
     'x-editable': {
       deps: ['bootstrap']
+    },
+    'bootstrap-switch': {
+      deps: ['jquery', 'bootstrap']
     }
   },
 
@@ -150,7 +153,8 @@ require.config({
     'codemirror':'../libs/other/codemirror/lib/codemirror',
     'sql':'../libs/other/codemirror/mode/sql',
     'x-editable':'../libs/bower/x-editable/js/bootstrap-editable',
-    'jsonlint': '../libs/other/codemirror/addone/jsonlint.min'
+    'jsonlint': '../libs/other/codemirror/addone/jsonlint.min',
+    'bootstrap-switch': '../libs/bower/bootstrap-switch/js/bootstrap-switch.min'
   },
 
   /**

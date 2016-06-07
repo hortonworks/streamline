@@ -208,10 +208,15 @@ define(['require',
       this.listenTo(this.vent, 'delete:topologyEdge', function(options){
         if (!_.isUndefined(options.resetRule)) {
           TopologyUtils.resetRule(self.processorArr, options);
-        } else if(!_.isUndefined(options.resetRuleAction)){
+        }
+        if(!_.isUndefined(options.resetRuleAction)){
           TopologyUtils.resetRuleAction(self.processorArr, options);
-        } else if(!_.isUndefined(options.resetCustomAction)){
+        }
+        if(!_.isUndefined(options.resetCustomAction)){
           TopologyUtils.resetCustomAction(self.processorArr, options);
+        }
+        if(!_.isUndefined(options.resetNormalization)){
+          TopologyUtils.resetNormalizationAction(self.processorArr, options);
         }
         options.callback();
       });
@@ -400,6 +405,58 @@ define(['require',
             }), obj);
           });
         break;
+        case 'NORMALIZATION':
+          require(['views/topology/NormalizationProcessorView'], function(NormalizationProcessorView){
+            var dsId;
+            var linkObj = self.linkArr.filter(function(o){
+                if(o.target.uiname === model.get('uiname'))
+                  return o.source.uiname;
+              });
+            var sourceNode = _.findWhere(self.processorArr, {uiname: linkObj[0].source.uiname}),
+              streamId = null;
+            if(linkObj[0].source.currentType == 'PARSER'){
+              var dsToParserObj = self.linkArr.filter(function(o){
+                return (o.target.currentType === 'PARSER' && o.target.uiname === linkObj[0].source.uiname);
+              });
+              if(dsToParserObj.length){
+                var deviceObj = self.dsArr.filter(function(o){ return o.uiname === dsToParserObj[0].source.uiname;});
+                if(deviceObj.length){
+                    dsId = deviceObj[0].dataSourceId ? deviceObj[0].dataSourceId : deviceObj[0]._selectedTable[0].datasourceId;
+                }
+              }
+              streamId = linkObj[0].target.streamId;
+            } else if(linkObj[0].source.currentType == 'RULE'){
+              var rules = sourceNode.newConfig ? sourceNode.newConfig.rulesProcessorConfig.rules : sourceNode.rulesProcessorConfig.rules;
+              var flag = false;
+              _.each(rules, function(rule){
+                if(!flag){
+                  _.each(rule.actions, function(action){
+                    if(action.name === linkObj[0].target.uiname){
+                      flag = true;
+                    }
+                  })
+                }
+              });
+              if(!flag){
+                Utils.notifyError("Please select a rule from "+linkObj[0].source.uiname+" processor.");
+                return;
+              }
+              streamId = "tempStream";
+            }
+            if(sourceNode.selectedStreams && sourceNode.selectedStreams.length === 0){
+              Utils.notifyError("Please select an output stream from "+linkObj[0].source.uiname+".");
+              return;
+            }
+            self.showModal(new NormalizationProcessorView({
+              model: model,
+              vent: self.vent,
+              sourceConfig: sourceNode,
+              streamId: streamId ? streamId : null,
+              editMode: self.editMode,
+              dsId: dsId
+            }), obj);
+          });
+        break;
       }
     },
 
@@ -582,7 +639,11 @@ define(['require',
                   tempData.links.push(o);
                 } else {
                   loopFlag = loopFlag || false;
-                  ruleName = ruleProcessor.name+'.'+obj.name+' is not associated to any sink. Please associate before saving the topology.';
+                  if(obj.actions.length){
+                    ruleName = 'No rules is asociated with '+targetObj.uiname+'. Please associate before saving the topology.';
+                  } else {
+                    ruleName = ruleProcessor.name+'.'+obj.name+' is not associated to any sink. Please associate before saving the topology.';
+                  }
                 }
               });
               if(!loopFlag){
@@ -610,6 +671,10 @@ define(['require',
                 $('#loading').hide();
                 Utils.notifyError("No output streams are selected from "+sourceObj.uiname);
               }
+            }
+            if(sourceObj.currentType === 'NORMALIZATION'){
+              tempObj.config.streamId = 'normalized-output';
+              tempData.links.push(tempObj);
             }
           }
         }

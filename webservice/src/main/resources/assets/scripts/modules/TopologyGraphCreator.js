@@ -695,7 +695,7 @@ define(['require',
 			case 'Processor':
 				if(_.isEqual(selectedNode.currentType, 'PARSER')){
 					Utils.notifyInfo('Parser can only be deleted if Source is deleted.');
-				} else if(_.isEqual(selectedNode.currentType, 'RULE') || _.isEqual(selectedNode.currentType, 'CUSTOM')){
+				} else if(_.isEqual(selectedNode.currentType, 'RULE') || _.isEqual(selectedNode.currentType, 'CUSTOM') || _.isEqual(selectedNode.currentType, 'NORMALIZATION')){
 					callback = function(){
 						thisGraph.nodes.splice(thisGraph.nodes.indexOf(selectedNode), 1);
 						thisGraph.spliceLinksForNode(selectedNode);
@@ -706,18 +706,40 @@ define(['require',
 						data: [selectedNode],
 						callback: callback
 					};
+					//delete target rule and remove actions of source rule
 					var ruleToRuleObj = _.find(thisGraph.edges, function(obj){
 						return (obj.target == selectedNode && obj.source.currentType === 'RULE');
 					});
 					if(ruleToRuleObj){
 						triggerData.resetRuleAction = ruleToRuleObj.source;
 					}
+
+					//delete source processor and unconfigure target rule
+					var ruleObj = _.find(thisGraph.edges, function(obj){
+						return (obj.source == selectedNode && obj.target.currentType === 'RULE');
+					});
+					if(ruleObj){
+						triggerData.resetRule = ruleObj.target;
+						ruleObj.target.isConfigured = false;
+					}
+
+					//delete target processor and remove actions of custom
 					var customToRuleObj = _.find(thisGraph.edges, function(obj){
 						return (obj.target == selectedNode && obj.source.currentType === 'CUSTOM');
 					});
 					if(customToRuleObj){
 						triggerData.resetCustomAction = customToRuleObj.source;
 					}
+
+					//delete target processor and unconfigure normalization
+					var normalizationObj = _.find(thisGraph.edges, function(obj){
+						return (obj.source == selectedNode && obj.target.currentType === 'NORMALIZATION');
+					});
+					if(normalizationObj){
+						triggerData.resetNormalization = normalizationObj.target;
+						normalizationObj.target.isConfigured = false;
+					}
+					
 					thisGraph.vent.trigger('delete:topologyNode', triggerData);
 				}
 			break;
@@ -766,15 +788,22 @@ define(['require',
 			if(selectedEdge.source.currentType === 'PARSER' && selectedEdge.target.currentType === 'RULE'){
 				selectedEdge.target.isConfigured = false;
 				triggerData.resetRule = selectedEdge.target;
-			} else if(selectedEdge.source.currentType === 'RULE' && selectedEdge.target.parentType === 'DataSink'){
+			}
+			if(selectedEdge.source.currentType === 'RULE'){
 				triggerData.resetRuleAction = selectedEdge.source;
 				triggerData.data = [selectedEdge.target];
-			} else if(selectedEdge.source.currentType === 'CUSTOM' && selectedEdge.target.currentType === 'RULE'){
+			}
+			if(selectedEdge.source.currentType === 'CUSTOM' && selectedEdge.target.currentType === 'RULE'){
 				selectedEdge.target.isConfigured = false;
 				triggerData.resetRule = selectedEdge.target;
-			} else if(selectedEdge.source.currentType === 'CUSTOM' && selectedEdge.target.parentType === 'DataSink'){
+			}
+			if(selectedEdge.source.currentType === 'CUSTOM' && selectedEdge.target.parentType === 'DataSink'){
 				triggerData.resetCustomAction = selectedEdge.source;
 				triggerData.data = [selectedEdge.target];
+			}
+			if(selectedEdge.target.currentType === 'NORMALIZATION'){
+				selectedEdge.target.isConfigured = false;
+				triggerData.resetNormalization = selectedEdge.target;
 			}
 			thisGraph.vent.trigger('delete:topologyEdge', triggerData);
 		}

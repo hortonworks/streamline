@@ -47,9 +47,10 @@ define(['require'], function (require) {
   ];
 
   Globals.Topology.Editor.Steps.Processor.Substeps = [
-    {value: 1, valStr: 'PARSER', imgUrl: 'images/iconf-parser.png', parentType: Globals.Topology.Editor.Steps.Processor.valStr, show: false, connectsTo: 'RULE,HDFS,HBASE,CUSTOM'},
-    {value: 2, valStr: 'RULE', imgUrl: 'images/iconf-rule.png', parentType: Globals.Topology.Editor.Steps.Processor.valStr, show: true, connectsTo: 'RULE,CUSTOM,HDFS,HBASE,NOTIFICATION'},
-    {value: 3, valStr: 'CUSTOM', imgUrl: 'images/icon-custom.png', parentType: Globals.Topology.Editor.Steps.Processor.valStr, show: true, connectsTo: 'RULE,HDFS,HBASE,NOTIFICATION'}
+    {value: 1, valStr: 'PARSER', imgUrl: 'images/iconf-parser.png', parentType: Globals.Topology.Editor.Steps.Processor.valStr, show: false, connectsTo: 'RULE,HDFS,HBASE,CUSTOM,NORMALIZATION'},
+    {value: 2, valStr: 'RULE', imgUrl: 'images/iconf-rule.png', parentType: Globals.Topology.Editor.Steps.Processor.valStr, show: true, connectsTo: 'RULE,CUSTOM,HDFS,HBASE,NOTIFICATION,NORMALIZATION'},
+    {value: 3, valStr: 'CUSTOM', imgUrl: 'images/icon-custom.png', parentType: Globals.Topology.Editor.Steps.Processor.valStr, show: true, connectsTo: 'RULE,HDFS,HBASE,NOTIFICATION,NORMALIZATION'},
+    {value: 4, valStr: 'NORMALIZATION', imgUrl: 'images/icon-fprocessor02.png', parentType: Globals.Topology.Editor.Steps.Processor.valStr, show: true, connectsTo: 'RULE,CUSTOM,HDFS,HBASE,NOTIFICATION'}
   ];
 
   Globals.Topology.Editor.Steps.DataSink.Substeps = [

@@ -1665,3 +1665,76 @@ li.active > a > span {
   border: 1px #e1e6ef solid;
   border-top: none;
 }
+
+/*normalization processor*/
+.section-heading {
+  text-align: center;
+}
+.section-heading span {
+  display: inline-block;
+  position: relative;
+}
+.section-heading span:before,
+.section-heading span:after {
+  content: "";
+  position: absolute;
+  height: 5px;
+  border-bottom: 1px solid #CCC;
+  border-top: 1px solid #CCC;
+  top: 7px;
+  width: 400px;
+}
+.section-heading span:before {
+  right: 100%;
+  margin-right: 10px;
+}
+.section-heading span:after {
+  left: 100%;
+  margin-left: 10px;
+}
+.field-list {
+  list-style: none;
+  padding: 0px;
+  margin: -10px;
+}
+.field-list li {
+  background: white;
+  color: #374767;
+  padding: 8px;
+  margin: 5px 0px;
+  border: 1px solid;
+  font-size: 12px;
+}
+.field-list li.mandatory {
+  border-color: #a94442;
+  background-color: #f2dede;
+}
+.field-list li.mandatory a {
+  color: #a94442;
+  text-decoration: underline;
+}
+.field-list li.optional {
+  border-color: #8a6d3b;
+  background-color: #fcf8e3;
+}
+.field-list li.optional a {
+  color: #8a6d3b;
+}
+
+.scrollable-body {
+  max-height: 500px;
+  overflow-y: auto;
+}
+.popover hr {
+  margin: 10px 0px;
+}
+
+.form-horizontal .editable {
+  padding-top: 0px;
+}
+.editableform .form-group {
+  margin: 0;
+}
+.field-list .label{
+  padding: .2em .6em .4em;
+}
