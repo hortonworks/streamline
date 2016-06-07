@@ -10,4 +10,5 @@ interface ExpressionVisitor {
     void visit(MapFieldExpression mapFieldExpression);
     void visit(Literal literal);
     void visit(FunctionExpression functionExpression);
+    void visit(AggregateFunctionExpression aggregateFunctionExpression);
 }

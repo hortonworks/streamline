@@ -22,7 +22,10 @@ import com.google.common.collect.ImmutableList;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.layout.design.rule.action.Action;
 import com.hortonworks.iotas.layout.design.rule.condition.Condition;
+import com.hortonworks.iotas.layout.design.rule.condition.GroupBy;
+import com.hortonworks.iotas.layout.design.rule.condition.Having;
 import com.hortonworks.iotas.layout.design.rule.condition.Projection;
+import com.hortonworks.iotas.layout.design.rule.condition.Window;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -42,6 +45,9 @@ public class Rule implements Serializable {
     private Set<String> streams;
     private Projection projection;
     private Condition condition;
+    private Having having;
+    private GroupBy groupBy;
+    private Window window;
     private List<Action> actions;
 
     public Rule() {     //TODO Check
@@ -120,6 +126,30 @@ public class Rule implements Serializable {
         return ruleProcessorName + "." + name + "." + id + "." + action.getName();
     }
 
+    public Having getHaving() {
+        return having;
+    }
+
+    public void setHaving(Having having) {
+        this.having = having;
+    }
+
+    public Window getWindow() {
+        return window;
+    }
+
+    public void setWindow(Window window) {
+        this.window = window;
+    }
+
+    public GroupBy getGroupBy() {
+        return groupBy;
+    }
+
+    public void setGroupBy(GroupBy groupBy) {
+        this.groupBy = groupBy;
+    }
+
     @Override
     public String toString() {
         return "Rule{" +
@@ -130,6 +160,9 @@ public class Rule implements Serializable {
                 ", streams=" + streams +
                 ", projection=" + projection +
                 ", condition=" + condition +
+                ", having=" + having +
+                ", groupBy=" + groupBy +
+                ", window=" + window +
                 ", actions=" + actions +
                 '}';
     }

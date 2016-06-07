@@ -99,6 +99,10 @@ public class StreamInfo extends AbstractStorable {
     // for internal storage, not part of JSON
     @JsonIgnore
     public void setFieldsData(String fieldsData) throws Exception {
+        if(fieldsData == null || fieldsData.isEmpty()) {
+            return;
+        }
+
         ObjectMapper mapper = new ObjectMapper();
         fields = mapper.readValue(fieldsData, new TypeReference<List<Field>>() {
         });

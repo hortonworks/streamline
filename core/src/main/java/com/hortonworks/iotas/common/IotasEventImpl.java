@@ -11,6 +11,9 @@ import java.util.UUID;
 public class IotasEventImpl implements IotasEvent {
     // Default value chosen to be blank and not the default used in storm since wanted to keep it independent of storm.
     public final static String DEFAULT_SOURCE_STREAM = "default";
+    // special event to trigger evaluation of group by
+    public static final IotasEvent GROUP_BY_TRIGGER_EVENT = new IotasEventImpl(null, null);
+
     private final Map<String, Object> header;
     private final String sourceStream;
     private final Map<String, Object> fieldsAndValues;
@@ -57,6 +60,14 @@ public class IotasEventImpl implements IotasEvent {
 
     /**
      * Creates an IotasEvent with given keyValues, dataSourceId, id and header, sourceStream and auxiliary fields.
+     * Creates an IotasEvent with given keyValues, dataSourceId, header and sourceStream.
+     */
+    public IotasEventImpl(Map<String, Object> keyValues, String dataSourceId, Map<String, Object> header, String sourceStream) {
+        this(keyValues, dataSourceId, UUID.randomUUID().toString(), header, sourceStream);
+    }
+
+    /**
+     * Creates an IotasEvent with given keyValues, dataSourceId, id, header and sourceStream.
      */
     public IotasEventImpl(Map<String, Object> keyValues, String dataSourceId, String id, Map<String, Object> header, String sourceStream, Map<String, Object> auxiliaryFieldsAndValues) {
         this.fieldsAndValues = keyValues;
@@ -95,6 +106,35 @@ public class IotasEventImpl implements IotasEvent {
     @Override
     public String getSourceStream() {
         return sourceStream;
+    }
+
+    /**
+     * Returns a new Iotas event with the given fieldsAndValues added to the existing fieldsAndValues
+     *
+     * @param fieldsAndValues the map of fieldsAndValues to add
+     * @return the new IotasEvent
+     */
+    @Override
+    public IotasEvent addFieldsAndValues(Map<String, Object> fieldsAndValues) {
+        Map<String, Object> kv = new HashMap<>();
+        kv.putAll(getFieldsAndValues());
+        kv.putAll(fieldsAndValues);
+        return new IotasEventImpl(kv, this.getDataSourceId(), this.getHeader(), this.getSourceStream());
+    }
+
+    /**
+     * Returns a new Iotas event with the given headers added to the existing headers.
+     * All the other fields are copied from this event.
+     *
+     * @param headers the map of fieldsAndValues to add or overwrite
+     * @return the new IotasEvent
+     */
+    @Override
+    public IotasEvent addHeaders(Map<String, Object> headers) {
+        Map<String, Object> kv = new HashMap<>();
+        kv.putAll(getHeader());
+        kv.putAll(headers);
+        return new IotasEventImpl(this.getFieldsAndValues(), this.getDataSourceId(), kv, this.getSourceStream());
     }
 
     @Override

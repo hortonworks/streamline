@@ -19,6 +19,7 @@
 package com.hortonworks.iotas.layout.runtime.processor;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.Result;
 import com.hortonworks.iotas.common.errors.ProcessingException;
@@ -35,6 +36,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.hortonworks.iotas.common.IotasEventImpl.GROUP_BY_TRIGGER_EVENT;
+
 /**
  * Represents a runtime rules processor
  */
@@ -44,6 +47,7 @@ public class RuleProcessorRuntime implements Serializable, ProcessorRuntime {
     protected RulesProcessor rulesProcessor;
     protected List<RuleRuntime> rulesRuntime;
     private Map<String, List<RuleRuntime>> streamToRuleRuntimes;
+    private List<RuleRuntime> allRuleRuntimes;
 
     public RuleProcessorRuntime(RuleProcessorRuntimeDependenciesBuilder builder) {
         this.rulesProcessor = builder.getRulesProcessor();
@@ -64,6 +68,12 @@ public class RuleProcessorRuntime implements Serializable, ProcessorRuntime {
             }
         }
         streamToRuleRuntimes = ImmutableMap.copyOf(map);
+        ImmutableSet.Builder<RuleRuntime> builder = ImmutableSet.<RuleRuntime>builder();
+        for(List<RuleRuntime> ruleRuntimes: streamToRuleRuntimes.values()) {
+            builder.addAll(ruleRuntimes);
+        }
+        allRuleRuntimes = builder.build().asList();
+
     }
 
     public RulesProcessor getRulesProcessor() {
@@ -92,7 +102,7 @@ public class RuleProcessorRuntime implements Serializable, ProcessorRuntime {
         List<Result> results = new ArrayList<>();
         try {
             IotasEvent result;
-            List<RuleRuntime> ruleRuntimes = getRulesRuntime(iotasEvent.getSourceStream());
+            List<RuleRuntime> ruleRuntimes = getRulesRuntime(iotasEvent);
             LOG.debug("Process event {}, rule runtimes {}", iotasEvent, ruleRuntimes);
             for (RuleRuntime rr : ruleRuntimes) {
                 if ((result = rr.evaluate(iotasEvent)) != null) {
@@ -108,7 +118,11 @@ public class RuleProcessorRuntime implements Serializable, ProcessorRuntime {
         return results;
     }
 
-    private List<RuleRuntime> getRulesRuntime(String inputStream) throws ProcessingException {
+    private List<RuleRuntime> getRulesRuntime(IotasEvent event) throws ProcessingException {
+        if (event == GROUP_BY_TRIGGER_EVENT) {
+            return allRuleRuntimes;
+        }
+        String inputStream = event.getSourceStream();
         if (StringUtils.isEmpty(inputStream)) {
             throw new ProcessingException("Event SourceStream is empty");
         }

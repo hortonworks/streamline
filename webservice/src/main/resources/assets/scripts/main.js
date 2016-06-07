@@ -77,6 +77,9 @@ require.config({
     'jquery-ui': {
       deps: ['jquery'],
     },
+    'jquery-nestable': {
+      deps: ['jquery']
+    },
     globalize: {
       exports: 'Globalize'
     },
@@ -106,6 +109,9 @@ require.config({
     },
     'x-editable': {
       deps: ['bootstrap']
+    },
+    'bootstrap-switch': {
+      deps: ['jquery', 'bootstrap']
     }
   },
 
@@ -130,6 +136,7 @@ require.config({
     'bootstrap-multiselect': '../libs/bower/bootstrap-multiselect/js/bootstrap-multiselect',
     'bootstrap-tag': '../libs/other/bootstrap-tag/js/bootstrap-tag',
     'jquery-ui': '../libs/bower/jquery-ui/js/jquery-ui-1.10.4.custom.min',
+    'jquery-nestable': '../libs/bower/jquery/js/jquery.nestable',
     'globalize': '../libs/bower/globalize/js/globalize',
     'gblMessages' : '../scripts/globalize',
     'requirejs.text': '../libs/bower/requirejs-text/js/text',
@@ -146,7 +153,8 @@ require.config({
     'codemirror':'../libs/other/codemirror/lib/codemirror',
     'sql':'../libs/other/codemirror/mode/sql',
     'x-editable':'../libs/bower/x-editable/js/bootstrap-editable',
-    'jsonlint': '../libs/other/codemirror/addone/jsonlint.min'
+    'jsonlint': '../libs/other/codemirror/addone/jsonlint.min',
+    'bootstrap-switch': '../libs/bower/bootstrap-switch/js/bootstrap-switch.min'
   },
 
   /**

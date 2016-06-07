@@ -1,0 +1,118 @@
+{
+  "rules": [
+    {
+      "name": "rule_1",
+      "id": 1,
+      "ruleProcessorName": "rule_processsor_1",
+      "actions": [
+        {
+          "name": "notificationsink",
+          "outputFieldsAndDefaults": {
+            "body": "min salary is ${MIN(salary)}, max salary is ${MAX(salary)}"
+          },
+          "notifierName": "email_notifier",
+          "__type": "com.hortonworks.iotas.layout.design.rule.action.NotifierAction"
+        }
+      ],
+      "description": "rule_1_desc",
+      "projection": {
+        "expressions": [
+          {
+            "class": "com.hortonworks.iotas.layout.design.rule.condition.AggregateFunctionExpression",
+            "function": {
+              "name": "MIN",
+              "className": null,
+              "udf": false
+            },
+            "operands": [
+              {
+                "class": "com.hortonworks.iotas.layout.design.rule.condition.FieldExpression",
+                "value": {
+                  "name": "salary",
+                  "type": "INTEGER",
+                  "optional": false
+                }
+              }
+            ]
+          },
+          {
+            "class": "com.hortonworks.iotas.layout.design.rule.condition.AggregateFunctionExpression",
+            "function": {
+              "name": "MAX",
+              "className": null,
+              "udf": false
+            },
+            "operands": [
+              {
+                "class": "com.hortonworks.iotas.layout.design.rule.condition.FieldExpression",
+                "value": {
+                  "name": "salary",
+                  "type": "INTEGER",
+                  "optional": false
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "condition": {
+        "expression": {
+          "class": "com.hortonworks.iotas.layout.design.rule.condition.BinaryExpression",
+          "operator": "GREATER_THAN",
+          "first": {
+            "class": "com.hortonworks.iotas.layout.design.rule.condition.FieldExpression",
+            "value": {
+              "name": "empid",
+              "type": "INTEGER",
+              "optional": false
+            }
+          },
+          "second": {
+            "class": "com.hortonworks.iotas.layout.design.rule.condition.Literal",
+            "value": "2"
+          }
+        }
+      },
+      "having": {
+        "expression": {
+          "class": "com.hortonworks.iotas.layout.design.rule.condition.BinaryExpression",
+          "operator": "GREATER_THAN",
+          "first": {
+            "class": "com.hortonworks.iotas.layout.design.rule.condition.AggregateFunctionExpression",
+            "function": {
+              "name": "MAX",
+              "className": null,
+              "udf": false
+            },
+            "operands": [
+              {
+                "class": "com.hortonworks.iotas.layout.design.rule.condition.FieldExpression",
+                "value": {
+                  "name": "salary",
+                  "type": "INTEGER",
+                  "optional": false
+                }
+              }
+            ]
+          },
+          "second": {
+            "class": "com.hortonworks.iotas.layout.design.rule.condition.Literal",
+            "value": "5"
+          }
+        }
+      },
+      "window": {
+        "windowLength": {
+          "class": ".Window$Count",
+          "count": 10
+        },
+        "slidingInterval": {
+          "class": ".Window$Count",
+          "count": 10
+        },
+        "tsField": null,
+        "lagMs": 0
+      }
+    }
+  ]
+}

@@ -7,6 +7,10 @@ public class MapFieldExpression extends Expression {
     private Expression expression;
     private String key;
 
+    // for jackson
+    private MapFieldExpression() {
+    }
+
     public MapFieldExpression(Expression expression, String key) {
         this.expression = expression;
         this.key = key;

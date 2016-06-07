@@ -126,6 +126,33 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
             if (currentType && currentType === 'DEVICE') {
                 model.set('_selectedTable', [{ dataSourceId: model.get('dataSourceId') }]);
             }
+            if(obj.type === 'NORMALIZATION'){
+                var isRuleSource = false;
+                _.each(linkArr, function(o){
+                    if(!isRuleSource){
+                        var config = o.config;
+                        if(config.to === obj.uiname){
+                            _.each(configArr, function(c){
+                                if(!isRuleSource){
+                                    if(c.uiname === config.from && c.config.rulesProcessorConfig){
+                                        isRuleSource = true;
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+                if(isRuleSource){
+                    var oldInputStream = obj.config.normalizationProcessorConfig.inputStreamsWithNormalizationConfig;
+                    var k = _.keys(oldInputStream);
+                    var duplicateObj = JSON.parse(JSON.stringify(oldInputStream[k[0]]));
+                    _.each(k, function(id){
+                        delete oldInputStream[id];
+                    })
+                    oldInputStream['tempStream'] = duplicateObj;
+                }
+                model.set('newConfig', obj.config);
+            }
             if(obj.type && obj.type === 'CUSTOM'){
                 var arr = [];
                 _.each(linkArr, function(o){
@@ -279,7 +306,52 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
         			}
         		});
         	}
+
+            obj = parent.linkArr.filter(function(obj){
+                return (obj.target.currentType === 'NORMALIZATION');
+            });
+            if(obj.length) {
+                _.each(obj, function(o) {
+                    if(o.source.currentType === 'CUSTOM') {
+                        var index = _.findIndex(parent.processorArr, {uiname: o.source.uiname}),
+                            customProcessor = parent.processorArr[index],
+                            streamNames = _.map(customProcessor.selectedStreams, function(obj) {
+                                return obj.streamName;
+                            });
+                        index = _.findIndex(parent.processorArr, {uiname: o.target.uiname});
+                        var normProcessor = parent.processorArr[index];
+                        if(normProcessor.hasOwnProperty('newConfig')) {
+                            normProcessor.newConfig.normalizationProcessorConfig.inputStreamsWithNormalizationConfig = _.pick(normProcessor.newConfig.normalizationProcessorConfig.inputStreamsWithNormalizationConfig, streamNames);
+                        }
+                    }
+                });
+            }
         } else if(nodeArr[i].currentType === 'RULE'){
+            var obj = parent.linkArr.filter(function(obj){
+                return (obj.target.currentType === 'NORMALIZATION');
+            });
+            if(obj.length) {
+                _.each(obj, function(o) {
+                     if (o.source.currentType === 'RULE'){
+                        var index = _.findIndex(parent.processorArr, {uiname: o.source.uiname}),
+                            ruleProcessor = parent.processorArr[index];
+                        
+                        index = _.findIndex(parent.processorArr, {uiname: o.target.uiname});
+                        var normProcessor = parent.processorArr[index];
+                        
+                        if(normProcessor.hasOwnProperty('newConfig')) {
+                            var oldInputStream = normProcessor.newConfig.normalizationProcessorConfig.inputStreamsWithNormalizationConfig;
+                            var k = _.keys(oldInputStream);
+                            var duplicateObj = JSON.parse(JSON.stringify(oldInputStream[k[0]]));
+                            _.each(k, function(id){
+                                delete oldInputStream[id];
+                            })
+                            oldInputStream['tempStream'] = duplicateObj;
+                        }
+                    }
+                });
+            }
+
         	var sinkObjs = _.where(parent.sinkArr, {currentType: 'NOTIFICATION'}), arr = [];
         	_.each(sinkObjs, function(o){
         		arr.push(o.uiname);
@@ -524,7 +596,8 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
             flag = true;
         _.each(processorArr, function(obj) {
             if (!obj.firstTime) {
-                if(linkArr.filter(function(o){ return o.target.uiname === obj.uiname;}).length){
+                var linkObjArr = linkArr.filter(function(o){ return o.target.uiname === obj.uiname;});
+                if(linkObjArr.length){
                     if (obj.hiddenFields.type === 'PARSER') {
                         var config = {
                             "parsedTuplesStream": "parsedTuplesStream",
@@ -563,6 +636,33 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
                         });
                         customObj.config = configObj;
                         processors.push(customObj);
+                    } else if(obj.hiddenFields.type === 'NORMALIZATION') {
+                        if(linkObjArr[0].source.currentType && linkObjArr[0].source.currentType === 'RULE'){
+                            var normConfig = obj.newConfig.normalizationProcessorConfig.inputStreamsWithNormalizationConfig;
+                            if(normConfig.tempStream){
+                                var duplicateObj = JSON.parse(JSON.stringify(normConfig.tempStream));
+                                delete normConfig.tempStream;
+                                var RP = arguments[2].filter(function(o){ return o.uiname === linkObjArr[0].source.uiname});
+                                if(RP.length){
+                                    var rConfig = RP[0].newConfig ? RP[0].newConfig.rulesProcessorConfig : RP[0].rulesProcessorConfig;
+                                    var rArr = rConfig.rules;
+                                    _.each(rArr, function(rule){
+                                        var index = _.findIndex(rule.actions, {name: obj.uiname});
+                                        if(index !== -1){
+                                            var streamId = rConfig.name+'.'+rule.name+'.'+rule.id+'.'+obj.uiname;
+                                            normConfig[streamId] = duplicateObj;
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                        var configObj = obj.newConfig;
+                        processors.push({
+                            "uiname": obj.uiname,
+                            "type": obj.hiddenFields ? obj.hiddenFields.type : '',
+                            "transformationClass": obj.hiddenFields ? obj.hiddenFields.transformationClass : '',
+                            "config": configObj
+                        });
                     }
                 } else {
                     flag = false;
@@ -616,11 +716,12 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
     			break;
     		case 'PARSER':
     		case 'RULE':
+            case 'NORMALIZATION':
             case 'CUSTOM':
     			index = _.findIndex(parent.processorArr, {uiname: oldName});
     			if(index !== -1){
     				parent.processorArr[index].uiname = newName;
-                    if(currentType === 'CUSTOM'){
+                    if(currentType === 'CUSTOM' || currentType === 'NORMALIZATION'){
                         _.each(parent.processorArr, function(obj){
                             if(obj.currentType === 'RULE'){
                                 var rules = obj.newConfig ? obj.newConfig.rulesProcessorConfig.rules : obj.rulesProcessorConfig.rules;
@@ -705,6 +806,19 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
             customProcessorObj.selectedStreams = newStreams;
         }
     };
+
+    TopologyUtils.resetNormalizationAction = function(processorArr, options){
+        var normIndex = _.findIndex(processorArr, {uiname: options.resetNormalization.uiname});
+        if(normIndex !== -1){
+            var t_obj = processorArr[normIndex];
+            if(t_obj.newConfig)
+                delete t_obj.newConfig;
+            if(t_obj.normalizationProcessorConfig)
+                delete t_obj.normalizationProcessorConfig;
+            if(t_obj.parallelism)
+                delete t_obj.parallelism;
+        }
+    }
 
     return TopologyUtils;
 });

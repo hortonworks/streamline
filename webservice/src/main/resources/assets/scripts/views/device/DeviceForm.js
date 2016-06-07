@@ -3,8 +3,9 @@ define(['utils/LangSupport',
   'utils/Utils',
   'hbs!tmpl/device/deviceForm',
   'collection/VParserList',
+  'collection/VTagList',
   'backbone.forms'
-  ], function (localization, Globals, Utils, tmpl, VParserList) {
+  ], function (localization, Globals, Utils, tmpl, VParserList, VTagList) {
   'use strict';
 
   var AddDeviceForm = Backbone.Form.extend({
@@ -13,13 +14,28 @@ define(['utils/LangSupport',
 
     initialize: function (options) {
       this.model = options.model;
+      if(this.model.id) {
+        this.model.set({
+          tags: this.model.get('tags').split(',')
+        });
+      }
       this.collection = new VParserList();
       this.getParsers();
+      this.getTags();
       Backbone.Form.prototype.initialize.call(this, options);
     },
 
     getParsers: function(){
       this.collection.fetch({reset: true, async: false});
+    },
+
+    getTags: function() {
+      this.tagCollection = new VTagList();
+      this.tagCollection.fetch({reset: true, async: false});
+      this.tagsArray = [];
+      _.each(this.tagCollection.models, function(model) {
+        this.tagsArray.push(model.get('name'));
+      }, this);
     },
 
     schema: function () {
@@ -69,7 +85,11 @@ define(['utils/LangSupport',
         //   validators: [{'type':'required','message':'Classname can not be blank.'}]
         // },
         tags: {
-          type: 'Tag',
+          type: 'Select2',
+          options: this.tagsArray,
+          pluginAttr: {
+            multiple: true,
+          },
           title: localization.tt('lbl.tags')+'*',
           editorClass: 'form-control',
           placeHolder: localization.tt('lbl.tags'),
@@ -77,16 +97,16 @@ define(['utils/LangSupport',
         },
         make: {
           type: 'Text',
-          title: localization.tt('lbl.deviceMake')+'*',
+          title: localization.tt('lbl.make')+'*',
           editorClass: 'form-control',
-          placeHolder: localization.tt('lbl.deviceMake'),
-          validators: [{'type':'required','message':'Device make can not be blank.'}]
+          placeHolder: localization.tt('lbl.make'),
+          validators: [{'type':'required','message':'Make can not be blank.'}]
         },
         model: {
           type: 'Text',
-          title: localization.tt('lbl.deviceModel')+'*',
+          title: localization.tt('lbl.model')+'*',
           editorClass: 'form-control',
-          placeHolder: localization.tt('lbl.deviceModel'),
+          placeHolder: localization.tt('lbl.model'),
           validators: [{'type':'required','message':'Model can not be blank.'}]
         },
         dataFeedName: {
@@ -143,6 +163,7 @@ define(['utils/LangSupport',
         delete this.model.attributes.responseCode;
         delete this.model.attributes.responseMessage;
       }
+      attrs.tags = attrs.tags.toString();
       return this.model.set(attrs);
     },
 

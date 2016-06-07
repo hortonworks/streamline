@@ -1,0 +1,60 @@
+<div class="form-horizontal">
+    <!-- <div class="form-group">
+        <label class="control-label col-md-2">Type</label>
+        <div class="col-md-6">
+            <label class="radio-inline normType">
+                <input type="radio" name="inlineRadioOptions" value="simple" checked> Simple
+            </label>
+            <label class="radio-inline normType">
+                <input type="radio" name="inlineRadioOptions" value="bulk"> Bulk
+            </label>
+            <label class="radio-inline normType">
+                <input type="radio" name="inlineRadioOptions" value="fineGrained"> Fine Grain
+            </label>
+        </div>
+    </div> -->
+    <!-- <div class="form-group">
+        <label class="control-label col-md-2">Parallelism</label>
+        <div class="col-md-6">
+            <input type="number" class="form-control parallelism" />
+        </div>
+    </div> -->
+    <div class="form-group stream-select">
+        <label class="control-label col-md-2">Select Stream</label>
+        <div class="col-md-4">
+            <select class="form-control input-stream-select">
+            </select>
+        </div>
+    </div>
+    <!-- <h4 class="section-heading"><span>Simple</span></h4>
+    <hr/> -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="box">
+                <div class="box-head">
+                    <h4>Input Schema</h4>
+                    {{#if editMode}}
+                    <div class="box-controls">
+                        <a href="javascript:void(0)" class="select-list"><i class="fa fa-check-square-o"></i></a>
+                    </div>
+                    {{/if}}
+                </div>
+                <div class="box-body scrollable-body">
+                    <ul class="field-list input-field-list">
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="box">
+                <div class="box-head">
+                    <h4>Output Schema</h4>
+                </div>
+                <div class="box-body scrollable-body">
+                    <ul class="field-list output-list">
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

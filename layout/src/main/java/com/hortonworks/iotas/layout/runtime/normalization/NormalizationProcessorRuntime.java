@@ -61,7 +61,7 @@ public class NormalizationProcessorRuntime implements ProcessorRuntime {
         if (normalizationRuntime != null) {
             try {
                 outputEvent =  normalizationRuntime.execute(iotasEvent);
-                schemaValidator.validate(iotasEvent.getFieldsAndValues());
+                schemaValidator.validate(outputEvent.getFieldsAndValues());
             } catch (NormalizationException e) {
                 throw new RuntimeException(e);
             }
@@ -97,18 +97,17 @@ public class NormalizationProcessorRuntime implements ProcessorRuntime {
 
 
     /**
-     * This class provides validation of given field/values against a schema.
+     * This class provides lenient validation of given field/values against a schema.
      */
     private static class SchemaValidator {
-        private Set<String> fieldNames;
-        private Set<Schema.Field> fields;
+        private static final Logger LOG = LoggerFactory.getLogger(SchemaValidator.class);
+
+        private Map<String, Schema.Field> fields;
 
         private SchemaValidator(Schema schema) {
-            fieldNames = new HashSet<>();
-            fields = new HashSet<>();
+            fields = new HashMap<>();
             for (Schema.Field field : schema.getFields()) {
-                fields.add(field);
-                fieldNames.add(field.getName());
+                fields.put(field.getName(), field);
             }
         }
 
@@ -123,9 +122,18 @@ public class NormalizationProcessorRuntime implements ProcessorRuntime {
 
             for (Map.Entry<String, Object> entry : fieldNameValuePairs.entrySet()) {
                 try {
-                    Object value = entry.getValue();
-                    if (value != null && fieldNames.contains(entry.getKey()) && !fields.contains(new Schema.Field(entry.getKey(), Schema.fromJavaType(value)))) {
+                    if(!fields.containsKey(entry.getKey())) {
+                        LOG.error("Schema does not contain field with name [{}]", entry.getKey());
                         throw new NormalizationException("Normalized payload does not conform to declared output schema.");
+                    }
+
+                    Object value = entry.getValue();
+                    if (value != null) {
+                        final Schema.Field field = new Schema.Field(entry.getKey(), Schema.fromJavaType(value));
+                        if (!fields.containsValue(field)) {
+                            LOG.error("Schema does not contain field with type [{}]", entry.getKey());
+                            throw new NormalizationException("Normalized payload does not conform to declared output schema.");
+                        }
                     }
                 } catch (ParserException e) {
                     throw new NormalizationException("Error occurred while validating normalized payload.", e);
