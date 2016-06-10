@@ -29,9 +29,11 @@ define(['require',
 
         onRender: function() {
             var self = this;
+            var data = this.model.toJSON();
+            var newModel = new Backbone.Model(JSON.parse(JSON.stringify(data)));
             require(['views/topology/NormalizationProcessorConfig'], function(NormalizationProcessorConfig) {
                 self.view = new NormalizationProcessorConfig({
-                    model: self.model,
+                    model: newModel,
                     vent: self.vent,
                     sourceConfig: self.sourceConfig,
                     uiname: self.model.get('uiname'),
