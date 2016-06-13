@@ -2,8 +2,10 @@ package com.hortonworks.iotas.topology.storm;
 
 import com.hortonworks.iotas.catalog.Topology;
 import com.hortonworks.iotas.common.errors.ConfigException;
+import com.hortonworks.iotas.metrics.TimeSeriesQuerier;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import com.hortonworks.iotas.topology.TopologyMetrics;
+import com.hortonworks.iotas.topology.TopologyTimeSeriesMetrics;
 import org.glassfish.jersey.client.ClientConfig;
 
 import javax.ws.rs.client.Client;
@@ -19,18 +21,26 @@ import java.util.Map;
 public class StormTopologyMetricsImpl implements TopologyMetrics {
     private Client client;
     private String stormApiRootUrl;
+    private TopologyTimeSeriesMetrics timeSeriesMetrics;
 
     public StormTopologyMetricsImpl() {
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void init(Map<String, String> conf) throws ConfigException {
         if (conf != null) {
             stormApiRootUrl = conf.get(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY);
         }
         client = ClientBuilder.newClient(new ClientConfig());
+        timeSeriesMetrics = new StormTopologyTimeSeriesMetricsImpl();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, ComponentMetric> getMetricsForTopology(Topology topology) {
         String stormTopologyName = getTopologyName(topology);
@@ -59,6 +69,46 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
         }
 
         return metricMap;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setTimeSeriesQuerier(TimeSeriesQuerier timeSeriesQuerier) {
+        timeSeriesMetrics.setTimeSeriesQuerier(timeSeriesQuerier);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public TimeSeriesQuerier getTimeSeriesQuerier() {
+        return timeSeriesMetrics.getTimeSeriesQuerier();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<Long, Double> getCompleteLatency(Topology topology, String sourceId, long from, long to) {
+        return timeSeriesMetrics.getCompleteLatency(topology, sourceId, from, to);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<String, Map<Long, Double>> getkafkaTopicOffsets(Topology topology, String sourceId, long from, long to) {
+        return timeSeriesMetrics.getkafkaTopicOffsets(topology, sourceId, from, to);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<String, Map<Long, Double>> getComponentStats(Topology topology, String componentId, long from, long to) {
+        return timeSeriesMetrics.getComponentStats(topology, componentId, from, to);
     }
 
     private ComponentMetric extractMetric(String componentName, Map<String, ?> componentMap) {

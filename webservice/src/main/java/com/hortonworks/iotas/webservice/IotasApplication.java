@@ -26,6 +26,7 @@ import com.hortonworks.iotas.cache.writer.StorageWriter;
 import com.hortonworks.iotas.common.CustomProcessorUploadHandler;
 import com.hortonworks.iotas.common.FileEventHandler;
 import com.hortonworks.iotas.common.errors.ConfigException;
+import com.hortonworks.iotas.metrics.TimeSeriesQuerier;
 import com.hortonworks.iotas.notification.service.NotificationServiceImpl;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.service.FileWatcher;
@@ -173,6 +174,12 @@ public class IotasApplication extends Application<IotasConfiguration> {
         Map<String, String> conf = new HashMap<>();
         conf.put(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY, configuration.getStormApiRootUrl());
         topologyMetrics.init(conf);
+
+        TimeSeriesQuerier timeSeriesQuerier = getTimeSeriesQuerier(configuration);
+        if (timeSeriesQuerier != null) {
+            topologyMetrics.setTimeSeriesQuerier(timeSeriesQuerier);
+        }
+
         return topologyMetrics;
     }
 
@@ -231,6 +238,20 @@ public class IotasApplication extends Application<IotasConfiguration> {
 
         environment.jersey().register(MultiPartFeature.class);
         watchFiles(iotasConfiguration, catalogService);
+    }
+
+    private TimeSeriesQuerier getTimeSeriesQuerier(IotasConfiguration iotasConfiguration) {
+        if (iotasConfiguration.getTimeSeriesDBConfiguration() == null) {
+            return null;
+        }
+
+        try {
+            TimeSeriesQuerier timeSeriesQuerier = ReflectionHelper.newInstance(iotasConfiguration.getTimeSeriesDBConfiguration().getClassName());
+            timeSeriesQuerier.init(iotasConfiguration.getTimeSeriesDBConfiguration().getProperties());
+            return timeSeriesQuerier;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void watchFiles (IotasConfiguration iotasConfiguration, CatalogService catalogService) {

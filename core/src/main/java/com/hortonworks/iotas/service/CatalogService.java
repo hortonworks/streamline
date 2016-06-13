@@ -650,7 +650,23 @@ public class CatalogService {
         return this.topologyMetrics.getMetricsForTopology(topology);
     }
 
-    public Collection<TopologyComponentDefinition.TopologyComponentType> listTopologyComponentTypes () {
+    public Map<Long, Double> getCompleteLatency (Topology topology, String sourceId, long from, long to) throws Exception {
+        return this.topologyMetrics.getCompleteLatency(topology, sourceId, from, to);
+    }
+
+    public Map<String, Map<Long, Double>> getComponentStats(Topology topology, String sourceId, Long from, Long to) {
+        return this.topologyMetrics.getComponentStats(topology, sourceId, from, to);
+    }
+
+    public Map<String, Map<Long, Double>> getKafkaTopicOffsets(Topology topology, String sourceId, Long from, Long to) {
+        return this.topologyMetrics.getkafkaTopicOffsets(topology, sourceId, from, to);
+    }
+
+    public Map<String, Map<Long, Double>> getMetrics(String metricName, String parameters, Long from, Long to) {
+        return this.topologyMetrics.getTimeSeriesQuerier().getRawMetrics(metricName, parameters, from, to);
+    }
+
+    public Collection<TopologyComponentDefinition.TopologyComponentType> listTopologyComponentTypes() {
         return Arrays.asList(TopologyComponentDefinition.TopologyComponentType.values());
     }
 
