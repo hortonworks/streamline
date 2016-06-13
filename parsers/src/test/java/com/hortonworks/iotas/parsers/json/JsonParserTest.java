@@ -81,46 +81,4 @@ public class JsonParserTest {
         assertEquals(Arrays.asList(obj1, obj2), res.get("objectarray"));
     }
 
-    @Test
-    public void testSchemaFromSimpleJson() throws Exception {
-        String json = loadJson("simple.json");
-        JsonParser jp = new JsonParser();
-        jp.setSchema(json);
-        //System.out.println(jp.schema());
-        assertEquals("field1", jp.schema().getFields().get(0).getName());
-        assertEquals(Schema.Type.STRING, jp.schema().getFields().get(0).getType());
-        assertEquals("field2", jp.schema().getFields().get(1).getName());
-        assertEquals(Schema.Type.STRING, jp.schema().getFields().get(1).getType());
-    }
-
-    @Test
-    public void testSchemaFromNestedJson() throws Exception {
-        String json = loadJson("nested.json");
-        JsonParser jp = new JsonParser();
-        jp.setSchema(json);
-        System.out.println(jp.schema());
-        assertEquals("str", jp.schema().getFields().get(0).getName());
-        assertEquals(Schema.Type.STRING, jp.schema().getFields().get(0).getType());
-        assertEquals("list", jp.schema().getFields().get(1).getName());
-        assertEquals(Schema.Type.ARRAY, jp.schema().getFields().get(1).getType());
-
-        Schema.ArrayField arrayField = (Schema.ArrayField)jp.schema().getFields().get(1);
-
-        assertEquals(Schema.Type.STRING, arrayField.getMembers().get(0).getType());
-        assertEquals(Schema.Type.STRING, arrayField.getMembers().get(0).getType());
-
-        Schema.NestedField nestedField = (Schema.NestedField)jp.schema().getFields().get(2);
-        assertEquals("object", nestedField.getName());
-        assertEquals(Schema.Type.NESTED, nestedField.getType());
-        Schema.Field f1 = nestedField.getFields().get(0);
-        Schema.Field f2 = nestedField.getFields().get(1);
-
-        assertEquals("f1", f1.getName());
-        assertEquals(Schema.Type.STRING, f1.getType());
-
-        assertEquals("f2", f2.getName());
-        assertEquals(Schema.Type.STRING, f2.getType());
-
-
-    }
 }

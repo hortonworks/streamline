@@ -135,6 +135,7 @@ public class CustomProcessorBolt extends BaseRichBolt {
      * @return
      */
     public CustomProcessorBolt config (String configJson) {
+        LOG.info("in config method: config json {} ", configJson);
         ObjectMapper mapper = new ObjectMapper();
         Map<String, Object> config;
         try {
@@ -153,6 +154,7 @@ public class CustomProcessorBolt extends BaseRichBolt {
      */
     public CustomProcessorBolt config (Map<String, Object> config) {
         this.config = config;
+        LOG.info("in config method: current config {} ", config);
         return this;
     }
 
@@ -178,6 +180,7 @@ public class CustomProcessorBolt extends BaseRichBolt {
         String catalogRootURL = stormConf.get(TopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL).toString();
         this.client = new CatalogRestClient(catalogRootURL);
         this.customProcessorProxyUtil = new ProxyUtil<>(CustomProcessor.class);
+        LOG.info("current config {} ", config);
         customProcessor = getCustomProcessor();
         customProcessor.initialize(config);
     }
@@ -185,6 +188,7 @@ public class CustomProcessorBolt extends BaseRichBolt {
     @Override
     public void execute (Tuple input) {
         try {
+            LOG.info("inside CustomProcessorBolt");
             final Object tupleField = input.getValueByField(IotasEvent.IOTAS_EVENT);
             if (tupleField instanceof IotasEvent) {
                 IotasEvent iotasEvent = (IotasEvent) tupleField;

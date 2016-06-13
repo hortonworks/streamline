@@ -527,12 +527,12 @@ public class CatalogService {
         Topology ds = new Topology();
         ds.setId(topologyId);
         Topology result = this.dao.get(ds.getStorableKey());
-        boolean isValidAsPerSchema;
+        boolean isValidAsPerSchema = true;
         if (result != null) {
             String json = result.getConfig();
             // first step is to validate against json schema provided
-            isValidAsPerSchema = JsonSchemaValidator
-                    .isValidJsonAsPerSchema(schema, json);
+            // isValidAsPerSchema = JsonSchemaValidator
+            //         .isValidJsonAsPerSchema(schema, json);
 
             if (!isValidAsPerSchema) {
                 throw new BadTopologyLayoutException("Topology with id "

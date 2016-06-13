@@ -37,7 +37,7 @@ public class ConsoleCustomProcessor implements CustomProcessor {
 
     @Override
     public List<Result> process(IotasEvent iotasEvent) throws ProcessingException {
-        LOG.debug("Processing {}", iotasEvent);
+        System.out.println("Processing {} " + iotasEvent);
         List<Result> results = new ArrayList<>();
         results.add(new Result("stream1",Arrays.asList(iotasEvent)));
         return results;
