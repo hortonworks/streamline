@@ -63,7 +63,7 @@ public class RegistryNotifierProcessor implements CustomProcessor {
             LOG.info("URL {} ", url);
             HttpResponse<JsonNode> jsonResponse = Unirest.patch(url)
                 .header("accept", "application/json")
-                .header("API-KEY", "11")
+                .header("API-KEY", apiKey)
                 .header("Cache-Control", "no-cache")
                 .asJson();
             LOG.info("Response {}", jsonResponse.getBody());
