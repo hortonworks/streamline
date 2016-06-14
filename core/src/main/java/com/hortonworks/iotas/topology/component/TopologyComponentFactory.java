@@ -3,6 +3,7 @@ package com.hortonworks.iotas.topology.component;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import com.hortonworks.iotas.catalog.RuleInfo;
 import com.hortonworks.iotas.catalog.StreamInfo;
 import com.hortonworks.iotas.catalog.TopologyComponent;
 import com.hortonworks.iotas.catalog.TopologyEdge;
@@ -21,6 +22,7 @@ import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
 import com.hortonworks.iotas.topology.component.rule.Rule;
 
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -169,8 +171,18 @@ public class TopologyComponentFactory {
                 RulesProcessor processor = new RulesProcessor();
                 ObjectMapper objectMapper = new ObjectMapper();
                 Object ruleList = component.getConfig().getAny(RulesProcessor.CONFIG_KEY_RULES);
-                List<Rule> rules = objectMapper.convertValue(ruleList, new TypeReference<List<Rule>>() {});
-                processor.setRules(rules);
+                List<Long> ruleIds = objectMapper.convertValue(ruleList, new TypeReference<List<Long>>() {
+                });
+                try {
+                    List<Rule> rules = new ArrayList<>();
+                    for (Long ruleId : ruleIds) {
+                        RuleInfo ruleInfo = catalogService.getRule(ruleId);
+                        rules.add(ruleInfo.getRule());
+                    }
+                    processor.setRules(rules);
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
                 return processor;
             }
         };

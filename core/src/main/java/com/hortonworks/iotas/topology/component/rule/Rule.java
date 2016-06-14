@@ -45,8 +45,8 @@ public class Rule implements Serializable {
     private Set<String> streams;
     private Projection projection;
     private Condition condition;
-    private Having having;
     private GroupBy groupBy;
+    private Having having;
     private Window window;
     private List<Action> actions;
 
@@ -111,7 +111,9 @@ public class Rule implements Serializable {
     }
 
     public void setActions(List<Action> actions) {
-        this.actions = ImmutableList.copyOf(actions);
+        if (actions != null) {
+            this.actions = ImmutableList.copyOf(actions);
+        }
     }
 
     public Set<String> getStreams() {

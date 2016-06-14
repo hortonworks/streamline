@@ -23,6 +23,7 @@ import com.hortonworks.iotas.cache.Cache;
 import com.hortonworks.iotas.cache.impl.GuavaCache;
 import com.hortonworks.iotas.cache.writer.StorageWriteThrough;
 import com.hortonworks.iotas.cache.writer.StorageWriter;
+import com.hortonworks.iotas.catalog.RuleInfo;
 import com.hortonworks.iotas.common.CustomProcessorUploadHandler;
 import com.hortonworks.iotas.common.FileEventHandler;
 import com.hortonworks.iotas.common.errors.ConfigException;
@@ -49,6 +50,7 @@ import com.hortonworks.iotas.webservice.catalog.FeedCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.FileCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.NotifierInfoCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.ParserInfoCatalogResource;
+import com.hortonworks.iotas.webservice.catalog.RuleCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.TopologyStreamCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.TagCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.TopologyCatalogResource;
@@ -57,6 +59,7 @@ import com.hortonworks.iotas.webservice.catalog.TopologyEditorMetadataResource;
 import com.hortonworks.iotas.webservice.catalog.TopologyProcessorCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.TopologySinkCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.TopologySourceCatalogResource;
+import com.hortonworks.iotas.webservice.catalog.UDFCatalogResource;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
@@ -215,11 +218,16 @@ public class IotasApplication extends Application<IotasConfiguration> {
         final TopologySinkCatalogResource topologySinkCatalogResource = new TopologySinkCatalogResource(catalogService);
         final TopologyProcessorCatalogResource topologyProcessorCatalogResource = new TopologyProcessorCatalogResource(catalogService);
         final TopologyEdgeCatalogResource topologyEdgeCatalogResource = new TopologyEdgeCatalogResource(catalogService);
+        final RuleCatalogResource ruleCatalogResource = new RuleCatalogResource(catalogService);
+
+        // UDF catalaog resource
+        final UDFCatalogResource udfCatalogResource = new UDFCatalogResource(catalogService, fileStorage);
 
         List<Object> resources = Lists.newArrayList(feedResource, parserResource, dataSourceResource, dataSourceWithDataFeedCatalogResource,
                 topologyCatalogResource, clusterCatalogResource, componentCatalogResource,
                 topologyEditorMetadataResource, tagCatalogResource, fileCatalogResource, metricsResource, topologyStreamCatalogResource,
-                topologySourceCatalogResource, topologySinkCatalogResource, topologyProcessorCatalogResource, topologyEdgeCatalogResource);
+                topologySourceCatalogResource, topologySinkCatalogResource, topologyProcessorCatalogResource, topologyEdgeCatalogResource,
+                ruleCatalogResource, udfCatalogResource);
         if (!iotasConfiguration.isNotificationsRestDisabled()) {
             resources.add(new NotifierInfoCatalogResource(catalogService));
             resources.add(new NotificationsResource(new NotificationServiceImpl()));

@@ -25,6 +25,7 @@ import com.hortonworks.iotas.topology.component.IotasProcessor;
 import com.hortonworks.iotas.topology.component.TopologyDagVisitor;
 import com.hortonworks.iotas.topology.component.rule.Rule;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -35,12 +36,21 @@ public class RulesProcessor extends IotasProcessor {     //TODO: Rename to RuleP
     public static final String CONFIG_KEY_RULES = "rules";
     private List<Rule> rules;
 
+    public RulesProcessor() {
+    }
+
+    public RulesProcessor(RulesProcessor other) {
+        super(other);
+        this.rules = new ArrayList<>(other.getRules());
+    }
+
     public List<Rule> getRules() {
         return rules;
     }
 
     public void setRules(List<Rule> rules) {
         this.rules = rules;
+        getConfig().setAny(CONFIG_KEY_RULES, rules);
     }
 
     @Override

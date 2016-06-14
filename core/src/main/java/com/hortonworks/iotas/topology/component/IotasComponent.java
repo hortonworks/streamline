@@ -33,6 +33,12 @@ public abstract class IotasComponent implements Component {
         config = new Config();
     }
 
+    public IotasComponent(IotasComponent other) {
+        this.id = other.id;
+        this.name = other.name;
+        this.config = new Config(other.getConfig());
+    }
+
     @Override
     public String getId() {
         return id;

@@ -12,6 +12,10 @@ public class Projection implements Serializable {
     public Projection() {
     }
 
+    public Projection(List<Expression> expressions) {
+        this.expressions = expressions;
+    }
+
     public List<Expression> getExpressions() {
         return expressions;
     }
