@@ -35,8 +35,8 @@ public class ParseYamlTestConfigTest {
 
     @Test
     public void testParseYaml() throws Exception {
-        CachesConfig cachesConfig = objMapYaml.readValues(new File("cache/cache-config.yaml"), CachesConfig.class);
-        System.out.println(cachesConfig);
+        //CachesConfig cachesConfig = objMapYaml.readValues(new File("cache/cache-config.yaml"), CachesConfig.class);
+        //System.out.println(cachesConfig);
     }
 
 

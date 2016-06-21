@@ -1,3 +1,5 @@
+## 0.1.4
+ * IOT-119: IOT Cache Requirements
 ## 0.1.3
  * IOT-269: Normalization processor runtime and UI integration
  * IOT-239: TP-3 release bug fixes
