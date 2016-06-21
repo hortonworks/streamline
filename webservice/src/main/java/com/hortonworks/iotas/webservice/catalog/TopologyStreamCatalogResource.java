@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package com.hortonworks.iotas.webservice.catalog;
 
 import com.codahale.metrics.annotation.Timed;
@@ -17,29 +35,37 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.*;
-import static javax.ws.rs.core.Response.Status.*;
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
+import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.SUCCESS;
+import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static javax.ws.rs.core.Response.Status.OK;
 
-@Path("/api/v1/catalog")
+/**
+ * Represents output stream from a source or a processor component
+ * in an IotasTopology
+ */
+@Path("/api/v1/catalog/topologies/{topologyId}/streams")
 @Produces(MediaType.APPLICATION_JSON)
-public class StreamCatalogResource {
+public class TopologyStreamCatalogResource {
     private CatalogService catalogService;
 
-    public StreamCatalogResource(CatalogService catalogService) {
+    public TopologyStreamCatalogResource(CatalogService catalogService) {
         this.catalogService = catalogService;
     }
 
     /**
      * <p>
-     * Lists all the streams in the system or the ones matching specific query params. For example to
-     * list all the streams in the system,
+     * Lists all the streams in the topology or the ones matching specific query params. For example to
+     * list all the streams in the topology,
      * </p>
-     * <b>GET /api/v1/catalog/streams</b>
+     * <b>GET /api/v1/catalog/topologies/:TOPOLOGY_ID/streams</b>
      * <p>
      * <pre>
      * {
@@ -48,6 +74,7 @@ public class StreamCatalogResource {
      *   "entities": [
      *     {
      *       "id": 1,
+     *       "topologyId": 1,
      *       "streamId": "default",
      *       "fields": [
      *         {"name": "f1", "type": "STRING", "optional": false},
@@ -64,10 +91,9 @@ public class StreamCatalogResource {
      * </pre>
      */
     @GET
-    @Path("/streams")
     @Timed
-    public Response listStreamInfos(@Context UriInfo uriInfo) {
-        List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>();
+    public Response listStreamInfos(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) {
+        List<CatalogService.QueryParam> queryParams = WSUtils.buildTopologyIdAwareQueryParams(topologyId, uriInfo);
         try {
             MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
             Collection<StreamInfo> streamInfos;
@@ -91,13 +117,14 @@ public class StreamCatalogResource {
      * <p>
      * Gets a specific stream by Id. For example,
      * </p>
-     * <b>GET /api/v1/catalog/streams/1</b>
+     * <b>GET /api/v1/catalog/topologies/:TOPOLOGY_ID/streams/:STREAM_ID</b>
      * <pre>
      * {
      *   "responseCode": 1000,
      *   "responseMessage": "Success",
      *   "entity": {
      *     "id": 1,
+     *     "topologyId": 1,
      *     "streamId": "a",
      *     "fields": [
      *       {"name": "f1", "type": "STRING", "optional": false},
@@ -112,14 +139,14 @@ public class StreamCatalogResource {
      * @return the response
      */
     @GET
-    @Path("/streams/{id}")
+    @Path("/{id}")
     @Timed
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getStreamInfoById(@PathParam("id") Long id) {
+    public Response getStreamInfoById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long id) {
         try {
-            StreamInfo result = catalogService.getStreamInfo(id);
-            if (result != null) {
-                return WSUtils.respond(OK, SUCCESS, result);
+            StreamInfo streamInfo = catalogService.getStreamInfo(id);
+            if (streamInfo != null && streamInfo.getTopologyId().equals(topologyId)) {
+                return WSUtils.respond(OK, SUCCESS, streamInfo);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -131,7 +158,7 @@ public class StreamCatalogResource {
      * <p>
      * Creates a stream. For example,
      * </p>
-     * <b>POST /api/v1/catalog/streams</b>
+     * <b>POST /api/v1/catalog/topologies/:TOPOLOGY_ID/streams</b>
      * <pre>
      * {
      *   "streamId": "default",
@@ -149,6 +176,7 @@ public class StreamCatalogResource {
      *   "entity": {
      *     "id": 1,
      *     "streamId": "default",
+     *     "topologyId": 1,
      *     "fields": [
      *       {
      *         "name": "f1",
@@ -167,11 +195,10 @@ public class StreamCatalogResource {
      * </pre>
      */
     @POST
-    @Path("/streams")
     @Timed
-    public Response addStreamInfo(StreamInfo streamInfo) {
+    public Response addStreamInfo(@PathParam("topologyId") Long topologyId, StreamInfo streamInfo) {
         try {
-            StreamInfo createdStream = catalogService.addStreamInfo(streamInfo);
+            StreamInfo createdStream = catalogService.addStreamInfo(topologyId, streamInfo);
             return WSUtils.respond(CREATED, SUCCESS, createdStream);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -179,12 +206,13 @@ public class StreamCatalogResource {
     }
 
     /**
-     * <p>Updates a stream in the system.</p>
+     * <p>Updates a stream in the topology.</p>
      * <p>
-     * <b>PUT /api/v1/catalog/streams/1</b>
+     * <b>PUT /api/v1/catalog/topologies/:TOPOLOGY_ID/streams/:STREAM_ID</b>
      * <pre>
      * {
      *   "streamId": "default",
+     *   "topologyId": 1,
      *   "fields": [
      *     {"name": "f1", "type": "STRING"},
      *     {"name": "f2", "type": "LONG"},
@@ -200,6 +228,7 @@ public class StreamCatalogResource {
      *   "entity": {
      *     "id": 1,
      *     "streamId": "default",
+     *     "topologyId": 1,
      *     "fields": [
      *       {
      *         "name": "f1",
@@ -227,11 +256,11 @@ public class StreamCatalogResource {
      * @return the response
      */
     @PUT
-    @Path("/streams/{id}")
+    @Path("/{id}")
     @Timed
-    public Response addOrUpdateStreamInfo(@PathParam("id") Long id, StreamInfo streamInfo) {
+    public Response addOrUpdateStreamInfo(@PathParam("topologyId") Long topologyId, @PathParam("id") Long id, StreamInfo streamInfo) {
         try {
-            StreamInfo newStreamInfo = catalogService.addOrUpdateStreamInfo(id, streamInfo);
+            StreamInfo newStreamInfo = catalogService.addOrUpdateStreamInfo(topologyId, id, streamInfo);
             return WSUtils.respond(OK, SUCCESS, newStreamInfo);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -242,7 +271,7 @@ public class StreamCatalogResource {
      * <p>
      * Removes a stream resource.
      * </p>
-     * <b>DELETE /api/v1/catalog/streams/1</b>
+     * <b>DELETE /api/v1/catalog/topologies/:TOPOLOGY_ID/streams/:STREAM_ID</b>
      * <pre>
      * {
      *   "responseCode": 1000,
@@ -250,6 +279,7 @@ public class StreamCatalogResource {
      *   "entity": {
      *     "id": 1,
      *     "streamId": "default",
+     *     "topologyId": 1,
      *     "fields": [
      *       {
      *         "name": "f1",
@@ -268,9 +298,9 @@ public class StreamCatalogResource {
      * </pre>
      */
     @DELETE
-    @Path("/streams/{id}")
+    @Path("/{id}")
     @Timed
-    public Response removeStreamInfo(@PathParam("id") Long id) {
+    public Response removeStreamInfo(@PathParam("topologyId") Long topologyId, @PathParam("id") Long id) {
         try {
             StreamInfo removedStream = catalogService.removeStreamInfo(id);
             if (removedStream != null) {
@@ -281,6 +311,6 @@ public class StreamCatalogResource {
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
-    }
 
+    }
 }
