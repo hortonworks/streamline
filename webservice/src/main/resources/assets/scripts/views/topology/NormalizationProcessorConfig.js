@@ -213,7 +213,15 @@ define(['utils/LangSupport',
                 }
                 this.renderInputFieldList(this.inputSchemaArr);
             }
+            var accordion = this.$('[data-toggle="collapse"]');
+            if(accordion.length){
+                accordion.on('click', function(e){
+                  $(e.currentTarget).children('i').toggleClass('fa-caret-right fa-caret-down');
+                });
+            }
+            this.$('#np-parallelism').val(this.model.has('newConfig') ? this.model.get('newConfig').parallelism : 1);
             this.renderOutputSchema();
+            this.$('[data-rel="tooltip"]').tooltip();
         },
 
         renderOutputSchema: function() {
@@ -453,6 +461,19 @@ define(['utils/LangSupport',
             }
             this.$('.mapExisting').off('click');
             this.$('.addNew').off('click');
+            var flag = true;
+            _.each(fieldsArr, function(obj){
+                if(flag){
+                    if(!obj.isAdded){
+                        flag = false;
+                    }
+                }
+            });
+            if(flag){
+                this.$('#selectAll').addClass('fa-check-square-o').removeClass('fa-square-o');
+            } else {
+                this.$('#selectAll').addClass('fa-square-o').removeClass('fa-check-square-o');
+            }
             if(this.editMode){
                 this.bindInputListEvents();
             }
@@ -461,7 +482,6 @@ define(['utils/LangSupport',
         evAddAllFields: function() {
             var self = this;
 
-            //Utils.ConfirmDialog('Add all fields to output?', 'Confirm', function() {
             var fields = self.inputSchemaArr ? self.inputSchemaArr : self.inputFieldsArr;
             for (var i = 0; i < fields.length; i++) {
 
@@ -489,7 +509,7 @@ define(['utils/LangSupport',
                 self.bindOutputListEvents();
                 self.evMapOutputField(null, field.name);
             }
-            //});
+            this.$('#selectAll').addClass('fa-check-square-o').removeClass('fa-square-o');
         },
 
         evMapOutputField: function(e, fieldName) {
@@ -506,6 +526,8 @@ define(['utils/LangSupport',
             var inputField = _.find(inputArr, function(field) {
                 return id == field.name
             });
+
+            inputField.isAdded = true;
 
             if(!this.mappedInputFieldIds[self.streamId]){
                 this.mappedInputFieldIds[self.streamId] = [];
@@ -652,7 +674,7 @@ define(['utils/LangSupport',
                 }
             }
             var config = {
-                parallelism: 1,
+                parallelism: this.$('#np-parallelism').val(),
                 normalizationProcessorConfig: {
                     type: "fineGrained",
                     outputStreams: [{

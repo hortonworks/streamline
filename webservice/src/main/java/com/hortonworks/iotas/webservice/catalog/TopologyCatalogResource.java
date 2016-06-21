@@ -94,10 +94,10 @@ public class TopologyCatalogResource {
     }
 
     @GET
-    @Path("/topologies/{id}")
+    @Path("/topologies/{topologyId}")
     @Timed
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTopologyById (@PathParam("id") Long topologyId) {
+    public Response getTopologyById (@PathParam("topologyId") Long topologyId) {
         try {
             Topology result = catalogService.getTopology(topologyId);
             if (result != null) {
@@ -132,9 +132,9 @@ public class TopologyCatalogResource {
     }
 
     @DELETE
-    @Path("/topologies/{id}")
+    @Path("/topologies/{topologyId}")
     @Timed
-    public Response removeTopology (@PathParam("id") Long topologyId) {
+    public Response removeTopology (@PathParam("topologyId") Long topologyId) {
         try {
             Topology removedTopology = catalogService.removeTopology
                     (topologyId);
@@ -150,9 +150,9 @@ public class TopologyCatalogResource {
     }
 
     @PUT
-    @Path("/topologies/{id}")
+    @Path("/topologies/{topologyId}")
     @Timed
-    public Response addOrUpdateTopology (@PathParam("id") Long topologyId,
+    public Response addOrUpdateTopology (@PathParam("topologyId") Long topologyId,
                                         Topology topology) {
         try {
             if (StringUtils.isEmpty(topology.getName())) {
@@ -172,9 +172,9 @@ public class TopologyCatalogResource {
     }
 
     @GET
-    @Path("/topologies/{id}/actions/status")
+    @Path("/topologies/{topologyId}/actions/status")
     @Timed
-    public Response topologyStatus (@PathParam("id") Long topologyId) {
+    public Response topologyStatus (@PathParam("topologyId") Long topologyId) {
         try {
             Topology result = catalogService.getTopology(topologyId);
             if (result != null) {
@@ -188,9 +188,9 @@ public class TopologyCatalogResource {
     }
 
     @POST
-    @Path("/topologies/{id}/actions/validate")
+    @Path("/topologies/{topologyId}/actions/validate")
     @Timed
-    public Response validateTopology (@PathParam("id") Long topologyId) {
+    public Response validateTopology (@PathParam("topologyId") Long topologyId) {
         try {
             Topology result = catalogService.getTopology(topologyId);
             if (result != null) {
@@ -204,9 +204,9 @@ public class TopologyCatalogResource {
     }
 
     @POST
-    @Path("/topologies/{id}/actions/deploy")
+    @Path("/topologies/{topologyId}/actions/deploy")
     @Timed
-    public Response deployTopology (@PathParam("id") Long topologyId) {
+    public Response deployTopology (@PathParam("topologyId") Long topologyId) {
         try {
             Topology result = catalogService.getTopology(topologyId);
             if (result != null) {
@@ -221,9 +221,9 @@ public class TopologyCatalogResource {
     }
 
     @POST
-    @Path("/topologies/{id}/actions/kill")
+    @Path("/topologies/{topologyId}/actions/kill")
     @Timed
-    public Response killTopology (@PathParam("id") Long topologyId) {
+    public Response killTopology (@PathParam("topologyId") Long topologyId) {
         try {
             Topology result = catalogService.getTopology(topologyId);
             if (result != null) {
@@ -237,9 +237,9 @@ public class TopologyCatalogResource {
     }
 
     @POST
-    @Path("/topologies/{id}/actions/suspend")
+    @Path("/topologies/{topologyId}/actions/suspend")
     @Timed
-    public Response suspendTopology (@PathParam("id") Long topologyId) {
+    public Response suspendTopology (@PathParam("topologyId") Long topologyId) {
         try {
             Topology result = catalogService.getTopology(topologyId);
             if (result != null) {
@@ -253,9 +253,9 @@ public class TopologyCatalogResource {
     }
 
     @POST
-    @Path("/topologies/{id}/actions/resume")
+    @Path("/topologies/{topologyId}/actions/resume")
     @Timed
-    public Response resumeTopology (@PathParam("id") Long topologyId) {
+    public Response resumeTopology (@PathParam("topologyId") Long topologyId) {
         try {
             Topology result = catalogService.getTopology(topologyId);
             if (result != null) {
@@ -365,14 +365,12 @@ public class TopologyCatalogResource {
             if (removedTopologyComponent != null) {
                 return WSUtils.respond(OK, SUCCESS, removedTopologyComponent);
             } else {
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND,
-                        id.toString());
+                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, id.toString());
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
     }
-
 
     @Timed
     @GET

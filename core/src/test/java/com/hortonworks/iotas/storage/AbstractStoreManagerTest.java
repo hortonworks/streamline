@@ -300,6 +300,7 @@ public abstract class AbstractStoreManagerTest {
         private StreamInfo createStreamInfo(long id, List<Schema.Field> fields) {
             StreamInfo streamInfo = new StreamInfo();
             streamInfo.setId(id);
+            streamInfo.setTopologyId(1L);
             streamInfo.setStreamId("Stream-" + id);
             streamInfo.setFields(fields);
             streamInfo.setTimestamp(System.currentTimeMillis());

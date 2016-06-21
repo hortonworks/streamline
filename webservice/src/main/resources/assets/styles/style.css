@@ -1711,6 +1711,9 @@ li.active > a > span {
 }
 .field-list li.mandatory a {
   color: #a94442;
+}
+.field-list li.mandatory a:hover {
+  font-weight: 600;
   text-decoration: underline;
 }
 .field-list li.optional {
@@ -1719,6 +1722,10 @@ li.active > a > span {
 }
 .field-list li.optional a {
   color: #8a6d3b;
+}
+.field-list li.optional a:hover {
+  font-weight: 600;
+  text-decoration: underline;
 }
 
 .scrollable-body {

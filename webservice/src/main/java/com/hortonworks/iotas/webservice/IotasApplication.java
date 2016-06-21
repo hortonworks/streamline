@@ -49,10 +49,14 @@ import com.hortonworks.iotas.webservice.catalog.FeedCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.FileCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.NotifierInfoCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.ParserInfoCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.StreamCatalogResource;
+import com.hortonworks.iotas.webservice.catalog.TopologyStreamCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.TagCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.TopologyCatalogResource;
+import com.hortonworks.iotas.webservice.catalog.TopologyEdgeCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.TopologyEditorMetadataResource;
+import com.hortonworks.iotas.webservice.catalog.TopologyProcessorCatalogResource;
+import com.hortonworks.iotas.webservice.catalog.TopologySinkCatalogResource;
+import com.hortonworks.iotas.webservice.catalog.TopologySourceCatalogResource;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
@@ -197,7 +201,7 @@ public class IotasApplication extends Application<IotasConfiguration> {
                 new DataSourceWithDataFeedCatalogResource(new DataSourceFacade(catalogService));
         final TopologyCatalogResource topologyCatalogResource = new TopologyCatalogResource(catalogService);
         final MetricsResource metricsResource = new MetricsResource(catalogService);
-        final StreamCatalogResource streamCatalogResource = new StreamCatalogResource(catalogService);
+        final TopologyStreamCatalogResource topologyStreamCatalogResource = new TopologyStreamCatalogResource(catalogService);
 
         // cluster related
         final ClusterCatalogResource clusterCatalogResource = new ClusterCatalogResource(catalogService, fileStorage);
@@ -206,10 +210,16 @@ public class IotasApplication extends Application<IotasConfiguration> {
         final TagCatalogResource tagCatalogResource = new TagCatalogResource(catalogService);
         final FileCatalogResource fileCatalogResource = new FileCatalogResource(catalogService);
 
+        // topology related
+        final TopologySourceCatalogResource topologySourceCatalogResource = new TopologySourceCatalogResource(catalogService);
+        final TopologySinkCatalogResource topologySinkCatalogResource = new TopologySinkCatalogResource(catalogService);
+        final TopologyProcessorCatalogResource topologyProcessorCatalogResource = new TopologyProcessorCatalogResource(catalogService);
+        final TopologyEdgeCatalogResource topologyEdgeCatalogResource = new TopologyEdgeCatalogResource(catalogService);
+
         List<Object> resources = Lists.newArrayList(feedResource, parserResource, dataSourceResource, dataSourceWithDataFeedCatalogResource,
                 topologyCatalogResource, clusterCatalogResource, componentCatalogResource,
-                topologyEditorMetadataResource, tagCatalogResource, fileCatalogResource, metricsResource,
-                streamCatalogResource);
+                topologyEditorMetadataResource, tagCatalogResource, fileCatalogResource, metricsResource, topologyStreamCatalogResource,
+                topologySourceCatalogResource, topologySinkCatalogResource, topologyProcessorCatalogResource, topologyEdgeCatalogResource);
         if (!iotasConfiguration.isNotificationsRestDisabled()) {
             resources.add(new NotifierInfoCatalogResource(catalogService));
             resources.add(new NotificationsResource(new NotificationServiceImpl()));

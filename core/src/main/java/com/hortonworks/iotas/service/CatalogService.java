@@ -20,6 +20,11 @@ package com.hortonworks.iotas.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.hortonworks.iotas.catalog.Cluster;
 import com.hortonworks.iotas.catalog.Component;
 import com.hortonworks.iotas.catalog.DataFeed;
@@ -32,7 +37,15 @@ import com.hortonworks.iotas.catalog.Device;
 import com.hortonworks.iotas.catalog.StreamInfo;
 import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.catalog.Topology;
+import com.hortonworks.iotas.catalog.TopologyEdge;
 import com.hortonworks.iotas.catalog.TopologyEditorMetadata;
+import com.google.common.base.Function;
+import com.hortonworks.iotas.catalog.TopologyOutputComponent;
+import com.hortonworks.iotas.catalog.TopologyProcessor;
+import com.hortonworks.iotas.catalog.TopologyProcessorStreamMapping;
+import com.hortonworks.iotas.catalog.TopologySink;
+import com.hortonworks.iotas.catalog.TopologySource;
+import com.hortonworks.iotas.catalog.TopologySourceStreamMapping;
 import com.hortonworks.iotas.processor.CustomProcessorInfo;
 import com.hortonworks.iotas.storage.DataSourceSubType;
 import com.hortonworks.iotas.storage.Storable;
@@ -67,8 +80,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import static com.hortonworks.iotas.catalog.TopologyEdge.StreamGrouping;
 
 /**
  * A service layer where we could put our business logic.
@@ -91,6 +107,13 @@ public class CatalogService {
     private static final String TOPOLOGY_NAMESPACE = new Topology().getNameSpace();
     private static final String FILE_NAMESPACE = FileInfo.NAME_SPACE;
     private static final String STREAMINFO_NAMESPACE = new StreamInfo().getNameSpace();
+    private static final String TOPOLOGY_COMPONENT_NAMESPACE = new com.hortonworks.iotas.catalog.TopologyComponent().getNameSpace();
+    private static final String TOPOLOGY_SOURCE_NAMESPACE = new TopologySource().getNameSpace();
+    private static final String TOPOLOGY_SOURCE_STREAM_MAPPING_NAMESPACE = new TopologySourceStreamMapping().getNameSpace();
+    private static final String TOPOLOGY_SINK_NAMESPACE = new TopologySink().getNameSpace();
+    private static final String TOPOLOGY_PROCESSOR_NAMESPACE = new TopologyProcessor().getNameSpace();
+    private static final String TOPOLOGY_PROCESSOR_STREAM_MAPPING_NAMESPACE = new TopologyProcessorStreamMapping().getNameSpace();
+    private static final String TOPOLOGY_EDGE_NAMESPACE = new TopologyEdge().getNameSpace();
 
     private StorageManager dao;
     private TopologyActions topologyActions;
@@ -922,27 +945,371 @@ public class CatalogService {
         return file;
     }
 
+    public TopologySource getTopologySource(Long id) {
+        TopologySource topologySource = new TopologySource();
+        topologySource.setId(id);
+        TopologySource source = dao.get(new StorableKey(TOPOLOGY_SOURCE_NAMESPACE, topologySource.getPrimaryKey()));
+        setOutputStreamIds(source);
+        return source;
+    }
+
+    /**
+     * Generate id from the {@link TopologyComponent} namespace
+     * so that its unique across source, sink and processors.
+     * Similar to Table per concrete class hibernate strategy.
+     */
+    private long getNextTopologyComponentId() {
+        com.hortonworks.iotas.catalog.TopologyComponent component = new com.hortonworks.iotas.catalog.TopologyComponent();
+        Long id = dao.nextId(TOPOLOGY_COMPONENT_NAMESPACE);
+        component.setId(id);
+        dao.add(component);
+        dao.remove(component.getStorableKey());
+        return id;
+    }
+
+    public TopologySource addTopologySource(Long topologyId, TopologySource topologySource) {
+        if (topologySource.getId() == null) {
+            topologySource.setId(getNextTopologyComponentId());
+        }
+        topologySource.setTopologyId(topologyId);
+        dao.add(topologySource);
+        addSourceStreamMapping(topologySource, topologySource.getOutputStreamIds());
+        return topologySource;
+    }
+
+    public TopologySource addOrUpdateTopologySource(Long topologyid, Long id, TopologySource topologySource) {
+        topologySource.setId(id);
+        topologySource.setTopologyId(topologyid);
+        dao.addOrUpdate(topologySource);
+        List<Long> newList = topologySource.getOutputStreamIds();
+        List<Long> existing = getOutputStreamIds(topologySource);
+        Sets.SetView<Long> streamIdsToRemove = Sets.difference(ImmutableSet.copyOf(existing), ImmutableSet.copyOf(newList));
+        Sets.SetView<Long> streamIdsToAdd = Sets.difference(ImmutableSet.copyOf(newList), ImmutableSet.copyOf(existing));
+        removeSourceStreamMapping(topologySource, Lists.newArrayList(streamIdsToRemove));
+        addSourceStreamMapping(topologySource, Lists.newArrayList(streamIdsToAdd));
+        return topologySource;
+    }
+
+    public TopologySource removeTopologySource(Long id) {
+        TopologySource topologySource = new TopologySource();
+        topologySource.setId(id);
+        TopologySource source = dao.<TopologySource>remove(new StorableKey(TOPOLOGY_SOURCE_NAMESPACE, topologySource.getPrimaryKey()));
+        removeSourceStreamMapping(source);
+        return source;
+    }
+
+    public Collection<TopologySource> listTopologySources() {
+        return fillSourceStreamIds(dao.<TopologySource>list(TOPOLOGY_SOURCE_NAMESPACE));
+    }
+
+    public Collection<TopologySource> listTopologySources(List<QueryParam> params) throws Exception {
+        return fillSourceStreamIds(dao.<TopologySource>find(TOPOLOGY_SOURCE_NAMESPACE, params));
+    }
+
+    private void addSourceStreamMapping(TopologySource topologySource, List<Long> streamIds) {
+        if (topologySource.getOutputStreamIds() != null) {
+            for (Long outputStreamId : streamIds) {
+                dao.<TopologySourceStreamMapping>add(new TopologySourceStreamMapping(topologySource.getId(), outputStreamId));
+            }
+        }
+    }
+
+    private void removeSourceStreamMapping(TopologySource topologySource) {
+        if (topologySource != null) {
+            removeSourceStreamMapping(topologySource, topologySource.getOutputStreamIds());
+        }
+    }
+    private void removeSourceStreamMapping(TopologySource topologySource, List<Long> streamIds) {
+        if (topologySource != null) {
+            for (Long outputStreamId: streamIds) {
+                TopologySourceStreamMapping mapping = new TopologySourceStreamMapping(topologySource.getId(), outputStreamId);
+                dao.<TopologySourceStreamMapping>remove(mapping.getStorableKey());
+            }
+        }
+    }
+
+    private void setOutputStreamIds(TopologySource source) {
+        if (source != null) {
+            source.setOutputStreamIds(getOutputStreamIds(source));
+        }
+    }
+
+    private List<Long> getOutputStreamIds(TopologySource topologySource) {
+        List<Long> streamIds = new ArrayList<>();
+        if (topologySource != null) {
+            QueryParam qp1 = new QueryParam(TopologySourceStreamMapping.FIELD_SOURCE_ID,
+                    String.valueOf(topologySource.getId()));
+            for (TopologySourceStreamMapping mapping : listTopologySourceStreamMapping(ImmutableList.of(qp1))) {
+                streamIds.add(mapping.getStreamId());
+            }
+        }
+        return streamIds;
+    }
+
+    private Collection<TopologySourceStreamMapping> listTopologySourceStreamMapping(List<QueryParam> params) {
+        try {
+            return dao.<TopologySourceStreamMapping>find(TOPOLOGY_SOURCE_STREAM_MAPPING_NAMESPACE, params);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private Collection<TopologySource> fillSourceStreamIds(Collection<TopologySource> sources) {
+        for(TopologySource source: sources) {
+            source.setOutputStreamIds(getOutputStreamIds(source));
+        }
+        return sources;
+    }
+
+    public TopologySink getTopologySink(Long id) {
+        TopologySink topologySink = new TopologySink();
+        topologySink.setId(id);
+        return dao.<TopologySink>get(new StorableKey(TOPOLOGY_SINK_NAMESPACE, topologySink.getPrimaryKey()));
+    }
+
+    public TopologySink addTopologySink(Long topologyId, TopologySink topologySink) {
+        if (topologySink.getId() == null) {
+            topologySink.setId(getNextTopologyComponentId());
+        }
+        topologySink.setTopologyId(topologyId);
+        dao.add(topologySink);
+        return topologySink;
+    }
+
+    public TopologySink addOrUpdateTopologySink(Long topologyid, Long id, TopologySink topologySink) {
+        topologySink.setId(id);
+        topologySink.setTopologyId(topologyid);
+        dao.addOrUpdate(topologySink);
+        return topologySink;
+    }
+
+    public TopologySink removeTopologySink(Long id) {
+        TopologySink topologySink = new TopologySink();
+        topologySink.setId(id);
+        return dao.<TopologySink>remove(new StorableKey(TOPOLOGY_SINK_NAMESPACE, topologySink.getPrimaryKey()));
+    }
+
+    public Collection<TopologySink> listTopologySinks() {
+        return dao.<TopologySink>list(TOPOLOGY_SINK_NAMESPACE);
+    }
+
+    public Collection<TopologySink> listTopologySinks(List<QueryParam> params) throws Exception {
+        return dao.<TopologySink>find(TOPOLOGY_SINK_NAMESPACE, params);
+    }
+
+    public TopologyProcessor getTopologyProcessor(Long id) {
+        TopologyProcessor topologyProcessor = new TopologyProcessor();
+        topologyProcessor.setId(id);
+        TopologyProcessor processor = dao.<TopologyProcessor>get(
+                new StorableKey(TOPOLOGY_PROCESSOR_NAMESPACE, topologyProcessor.getPrimaryKey()));
+        setOutputStreamIds(processor);
+        return processor;
+    }
+
+    public TopologyProcessor addTopologyProcessor(Long topologyId, TopologyProcessor topologyProcessor) {
+        if (topologyProcessor.getId() == null) {
+            topologyProcessor.setId(getNextTopologyComponentId());
+        }
+        topologyProcessor.setTopologyId(topologyId);
+        dao.add(topologyProcessor);
+        addProcessorStreamMapping(topologyProcessor, topologyProcessor.getOutputStreamIds());
+        return topologyProcessor;
+    }
+
+    public TopologyProcessor addOrUpdateTopologyProcessor(Long topologyid, Long id, TopologyProcessor topologyProcessor) {
+        topologyProcessor.setId(id);
+        topologyProcessor.setTopologyId(topologyid);
+        dao.addOrUpdate(topologyProcessor);
+        List<Long> newList = topologyProcessor.getOutputStreamIds();
+        List<Long> existing = getOutputStreamIds(topologyProcessor);
+        Sets.SetView<Long> streamIdsToRemove = Sets.difference(ImmutableSet.copyOf(existing), ImmutableSet.copyOf(newList));
+        Sets.SetView<Long> streamIdsToAdd = Sets.difference(ImmutableSet.copyOf(newList), ImmutableSet.copyOf(existing));
+        removeProcessorStreamMapping(topologyProcessor, Lists.newArrayList(streamIdsToRemove));
+        addProcessorStreamMapping(topologyProcessor, Lists.newArrayList(streamIdsToAdd));
+        return topologyProcessor;
+    }
+
+    public TopologyProcessor removeTopologyProcessor(Long id) {
+        TopologyProcessor topologyProcessor = new TopologyProcessor();
+        topologyProcessor.setId(id);
+        TopologyProcessor processor = dao.<TopologyProcessor>remove(
+                new StorableKey(TOPOLOGY_PROCESSOR_NAMESPACE, topologyProcessor.getPrimaryKey()));
+        removeProcessorStreamMapping(processor);
+        return processor;
+    }
+
+    public Collection<TopologyProcessor> listTopologyProcessors() {
+        return fillProcessorStreamIds(dao.<TopologyProcessor>list(TOPOLOGY_PROCESSOR_NAMESPACE));
+    }
+
+    public Collection<TopologyProcessor> listTopologyProcessors(List<QueryParam> params) throws Exception {
+        return fillProcessorStreamIds(dao.<TopologyProcessor>find(TOPOLOGY_PROCESSOR_NAMESPACE, params));
+    }
+
+    private void addProcessorStreamMapping(TopologyProcessor topologyProcessor, List<Long> streamIds) {
+        if (topologyProcessor.getOutputStreamIds() != null) {
+            for (Long outputStreamId : streamIds) {
+                dao.<TopologyProcessorStreamMapping>add(new TopologyProcessorStreamMapping(topologyProcessor.getId(), outputStreamId));
+            }
+        }
+    }
+
+    private void removeProcessorStreamMapping(TopologyProcessor topologyProcessor) {
+        if (topologyProcessor != null) {
+            removeProcessorStreamMapping(topologyProcessor, topologyProcessor.getOutputStreamIds());
+        }
+    }
+    private void removeProcessorStreamMapping(TopologyProcessor topologyProcessor, List<Long> streamIds) {
+        if (topologyProcessor != null) {
+            for (Long outputStreamId: streamIds) {
+                TopologyProcessorStreamMapping mapping = new TopologyProcessorStreamMapping(topologyProcessor.getId(), outputStreamId);
+                dao.<TopologyProcessorStreamMapping>remove(mapping.getStorableKey());
+            }
+        }
+    }
+
+    private void setOutputStreamIds(TopologyProcessor processor) {
+        if (processor != null) {
+            processor.setOutputStreamIds(getOutputStreamIds(processor));
+        }
+    }
+
+    private List<Long> getOutputStreamIds(TopologyProcessor topologyProcessor) {
+        List<Long> streamIds = new ArrayList<>();
+        if (topologyProcessor != null) {
+            QueryParam qp1 = new QueryParam(TopologyProcessorStreamMapping.FIELD_PROCESSOR_ID,
+                    String.valueOf(topologyProcessor.getId()));
+            for (TopologyProcessorStreamMapping mapping : listTopologyProcessorStreamMapping(ImmutableList.of(qp1))) {
+                streamIds.add(mapping.getStreamId());
+            }
+        }
+        return streamIds;
+    }
+
+    private Collection<TopologyProcessorStreamMapping> listTopologyProcessorStreamMapping(List<QueryParam> params) {
+        try {
+            return dao.<TopologyProcessorStreamMapping>find(TOPOLOGY_PROCESSOR_STREAM_MAPPING_NAMESPACE, params);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private Collection<TopologyProcessor> fillProcessorStreamIds(Collection<TopologyProcessor> processors) {
+        for (TopologyProcessor processor : processors) {
+            processor.setOutputStreamIds(getOutputStreamIds(processor));
+        }
+        return processors;
+    }
+
+
+    public TopologyEdge getTopologyEdge(Long id) {
+        TopologyEdge topologyEdge = new TopologyEdge();
+        topologyEdge.setId(id);
+        return dao.<TopologyEdge>get(new StorableKey(TOPOLOGY_EDGE_NAMESPACE, topologyEdge.getPrimaryKey()));
+    }
+
+    public TopologyEdge addTopologyEdge(Long topologyId, TopologyEdge topologyEdge) {
+        if (topologyEdge.getId() == null) {
+            topologyEdge.setId(dao.nextId(TOPOLOGY_EDGE_NAMESPACE));
+        }
+        topologyEdge.setTopologyId(topologyId);
+        validateEdge(topologyEdge);
+        checkDuplicateEdge(topologyEdge);
+        dao.add(topologyEdge);
+        return topologyEdge;
+    }
+
+    // validate from, to and stream ids of the edge
+    private void validateEdge(TopologyEdge edge) {
+        TopologySource source = getTopologySource(edge.getFromId());
+        TopologyProcessor processor = getTopologyProcessor(edge.getFromId());
+        if ((source == null || !source.getTopologyId().equals(edge.getTopologyId()))
+                && (processor == null || !processor.getTopologyId().equals(edge.getTopologyId()))) {
+            throw new IllegalArgumentException("Invalid source for edge " + edge);
+        }
+        TopologyOutputComponent outputComponent = source != null ? source : processor;
+        processor = getTopologyProcessor(edge.getToId());
+        TopologySink sink = getTopologySink(edge.getToId());
+        if ((processor == null || !processor.getTopologyId().equals(edge.getTopologyId()))
+                && (sink == null || !sink.getTopologyId().equals(edge.getTopologyId()))) {
+            throw new IllegalArgumentException("Invalid destination for edge " + edge);
+        }
+
+        Set<Long> outputStreamIds = new HashSet<>(outputComponent.getOutputStreamIds());
+        Collection<Long> edgeStreamIds = Collections2.transform(edge.getStreamGroupings(),
+                new Function<StreamGrouping, Long>() {
+                    public Long apply(StreamGrouping streamGrouping) {
+                        return streamGrouping.getStreamId();
+                    }
+                });
+        if (!outputStreamIds.containsAll(edgeStreamIds)) {
+            throw new IllegalArgumentException("Edge stream Ids " + edgeStreamIds +
+                    " must be a subset of outputStreamIds " + outputStreamIds);
+        }
+    }
+
+    // check if edge already exists for given topology between same source and dest
+    private void checkDuplicateEdge(TopologyEdge edge) {
+        List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>();
+        queryParams.add(new CatalogService.QueryParam("topologyId", edge.getTopologyId().toString()));
+        queryParams.add(new CatalogService.QueryParam("fromId", edge.getFromId().toString()));
+        queryParams.add(new CatalogService.QueryParam("toId", edge.getToId().toString()));
+
+        try {
+            Collection<TopologyEdge> existingEdges = listTopologyEdges(queryParams);
+            if (existingEdges != null && !existingEdges.isEmpty()) {
+                throw new IllegalArgumentException("Edge already exists between source and destination, use update api");
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    public TopologyEdge addOrUpdateTopologyEdge(Long topologyid, Long id, TopologyEdge topologyEdge) {
+        topologyEdge.setId(id);
+        topologyEdge.setTopologyId(topologyid);
+        validateEdge(topologyEdge);
+        dao.addOrUpdate(topologyEdge);
+        return topologyEdge;
+    }
+
+    public TopologyEdge removeTopologyEdge(Long id) {
+        TopologyEdge topologyEdge = new TopologyEdge();
+        topologyEdge.setId(id);
+        return dao.<TopologyEdge>remove(new StorableKey(TOPOLOGY_EDGE_NAMESPACE, topologyEdge.getPrimaryKey()));
+    }
+
+    public Collection<TopologyEdge> listTopologyEdges() {
+        return dao.<TopologyEdge>list(TOPOLOGY_EDGE_NAMESPACE);
+    }
+
+    public Collection<TopologyEdge> listTopologyEdges(List<QueryParam> params) throws Exception {
+        return dao.<TopologyEdge>find(TOPOLOGY_EDGE_NAMESPACE, params);
+    }
+
     public StreamInfo getStreamInfo(Long id) {
         StreamInfo streamInfo = new StreamInfo();
         streamInfo.setId(id);
-        return this.dao.<StreamInfo>get(new StorableKey(STREAMINFO_NAMESPACE, streamInfo.getPrimaryKey()));
+        return dao.<StreamInfo>get(new StorableKey(STREAMINFO_NAMESPACE, streamInfo.getPrimaryKey()));
     }
 
-    public StreamInfo addStreamInfo(StreamInfo streamInfo) {
+    public StreamInfo addStreamInfo(Long topologyId, StreamInfo streamInfo) {
         if (streamInfo.getId() == null) {
-            streamInfo.setId(this.dao.nextId(STREAMINFO_NAMESPACE));
+            streamInfo.setId(dao.nextId(STREAMINFO_NAMESPACE));
         }
         if (streamInfo.getTimestamp() == null) {
             streamInfo.setTimestamp(System.currentTimeMillis());
         }
-        this.dao.add(streamInfo);
+        streamInfo.setTopologyId(topologyId);
+        dao.add(streamInfo);
         return streamInfo;
     }
 
-    public StreamInfo addOrUpdateStreamInfo(Long id, StreamInfo stream) {
+    public StreamInfo addOrUpdateStreamInfo(Long topologyId, Long id, StreamInfo stream) {
         stream.setId(id);
+        stream.setTopologyId(topologyId);
         stream.setTimestamp(System.currentTimeMillis());
-        this.dao.addOrUpdate(stream);
+        dao.addOrUpdate(stream);
         return stream;
     }
 
@@ -953,11 +1320,10 @@ public class CatalogService {
     }
 
     public Collection<StreamInfo> listStreamInfos() {
-        return this.dao.<StreamInfo>list(STREAMINFO_NAMESPACE);
+        return dao.<StreamInfo>list(STREAMINFO_NAMESPACE);
     }
 
     public Collection<StreamInfo> listStreamInfos(List<QueryParam> params) throws Exception {
         return dao.<StreamInfo>find(STREAMINFO_NAMESPACE, params);
     }
-
 }

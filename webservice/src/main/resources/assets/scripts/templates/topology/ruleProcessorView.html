@@ -4,6 +4,35 @@
             <div class="formulaForm"></div>
         </div>
     </div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="panel-group" id="optionalFields" role="tablist" aria-multiselectable="true">
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="headingOne">
+                <a role="button" data-toggle="collapse" data-parent="#optionalFields" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne"><i class="fa fa-caret-right"></i> Optional Configurations</a>
+            </div>
+            <div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+              <div class="panel-body">
+                <div class="row">
+                  <div class="col-md-12">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Parallelism</label>
+                        <div class="col-sm-9">
+                            {{#if editMode}}
+                            <input type="number" class="form-control" id="rp-parallelism" min="1" step="1" />
+                            {{else}}
+                            <input type="number" class="form-control" id="rp-parallelism" min="1" step="1" disabled />
+                            {{/if}}
+                        </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 </div>
 <div class="modal-footer">
     <a href="javascript:void(0);" id="btnCancel" class="btn ok btn-default">Cancel</a>

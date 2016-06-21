@@ -13,6 +13,12 @@ define(['require',
 
     template: tmpl,
 
+    templateHelpers: function(){
+      return {
+          editMode: this.editMode
+      }
+    },
+
     events: {
       'click #btnCancel': 'evClose',
       'click #btnAdd': 'evAdd'
@@ -57,6 +63,13 @@ define(['require',
         });
         self.formulaForm.show(self.view);
       });
+      var accordion = this.$('[data-toggle="collapse"]');
+      if(accordion.length){
+          accordion.on('click', function(e){
+            $(e.currentTarget).children('i').toggleClass('fa-caret-right fa-caret-down');
+          });
+      }
+      this.$('#rp-parallelism').val(this.model.has('newConfig') ? this.model.get('newConfig').parallelism : (this.model.has('parallelism') ? this.model.get('parallelism') : 1));
       if(!self.editMode) {
         self.$("#btnAdd").toggleClass("displayNone");
       }
@@ -136,7 +149,7 @@ define(['require',
       }
 
         var config = {
-          parallelism: 1,
+          parallelism: this.$('#rp-parallelism').val(),
           rulesProcessorConfig: {
             rules: ruleArr,
             name: this.model.get('uiname'),

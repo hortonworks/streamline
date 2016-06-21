@@ -513,7 +513,15 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
                     if(fields){
                         model.set('declaredInput', fields);
                     } else {
-                        Utils.notifyError("No input fields found for rule");
+                        Utils.notifyError("No input fields found for rule.");
+                        return false;
+                    }
+                } else if(obj[0].source.currentType === 'NORMALIZATION'){
+                    var fields = sourceData[0].newConfig ? sourceData[0].newConfig.normalizationProcessorConfig.outputStreams[0].schema.fields : undefined;
+                    if(fields){
+                        model.set('declaredInput', fields);
+                    } else {
+                        Utils.notifyError("No input fields found for rule.");
                         return false;
                     }
                 } else if(obj[0].source.currentType === 'CUSTOM'){

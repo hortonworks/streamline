@@ -1,0 +1,57 @@
+---
+caches:
+  -
+    cache:
+      id: "redis-cache-1"
+      type: "redis"
+      entry:
+        key: "java.lang.String"
+        val: "java.lang.Integer"
+        codec: "com.hortonworks.iotas.cache.entries.MyCodec"
+      connection:
+        host: "localhost"
+        port: "6379"
+        pool:
+          max-idle: 5
+          max-active: 20
+      data-store:
+        id: "data-store-redis-1"
+        type: "phoenix"
+        namespace: "table-name"
+        connection:
+          host: "localhost"
+          port: "8888"
+        load: "async"
+        read: "through"
+        write: "sync"
+      expiry-policy:
+        ttl:
+          count: 10
+          unit: "seconds"
+        entries: 1000
+        size:
+          count: 10
+          unit: "megabytes"
+      views:
+        -
+          view:
+            id: "hashes-view-1"
+            type: "hashes"
+            key: "hashes-key-1"
+        -
+          view:
+            id: "hashes-view-2"
+            type: "hashes"
+            key: "hashes-key-2"
+            expiry-policy:
+              ttl:
+                count: 10
+                unit: "seconds"
+              entries: 1000
+              size:
+                count: 10
+                unit: "megabytes"
+        -
+          view:
+            id: "strings-view"
+            type: "strings"

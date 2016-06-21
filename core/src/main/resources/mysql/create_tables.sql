@@ -105,6 +105,7 @@ CREATE TABLE IF NOT EXISTS tag_storable_mapping (
 
 CREATE TABLE IF NOT EXISTS streaminfo (
     id BIGINT AUTO_INCREMENT NOT NULL,
+    topologyId BIGINT NOT NULL,
     streamId VARCHAR(256) NOT NULL,
     fieldsData TEXT NOT NULL,
     timestamp BIGINT,
@@ -121,4 +122,61 @@ CREATE TABLE IF NOT EXISTS notifierinfos (
      properties TEXT,
      fieldValues TEXT,
      PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS topology_components (
+    id BIGINT AUTO_INCREMENT NOT NULL,
+    topologyId BIGINT,
+    name VARCHAR(256),
+    type VARCHAR(256),
+    configData TEXT,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS topology_sources (
+    id BIGINT AUTO_INCREMENT NOT NULL,
+    topologyId BIGINT NOT NULL,
+    name VARCHAR(256) NOT NULL,
+    type VARCHAR(256) NOT NULL,
+    configData TEXT NOT NULL,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS topology_source_stream_mapping (
+    sourceId BIGINT NOT NULL,
+    streamId BIGINT NOT NULL,
+    PRIMARY KEY (sourceId, streamId)
+);
+
+CREATE TABLE IF NOT EXISTS topology_sinks (
+    id BIGINT AUTO_INCREMENT NOT NULL,
+    topologyId BIGINT NOT NULL,
+    name VARCHAR(256) NOT NULL,
+    type VARCHAR(256) NOT NULL,
+    configData TEXT NOT NULL,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS topology_processors (
+    id BIGINT AUTO_INCREMENT NOT NULL,
+    topologyId BIGINT NOT NULL,
+    name VARCHAR(256) NOT NULL,
+    type VARCHAR(256) NOT NULL,
+    configData TEXT NOT NULL,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS topology_processor_stream_mapping (
+    processorId BIGINT NOT NULL,
+    streamId BIGINT NOT NULL,
+    PRIMARY KEY (processorId, streamId)
+);
+
+CREATE TABLE IF NOT EXISTS topology_edges (
+    id BIGINT AUTO_INCREMENT NOT NULL,
+    topologyId BIGINT NOT NULL,
+    fromId BIGINT NOT NULL,
+    toId BIGINT NOT NULL,
+    streamGroupingsData TEXT NOT NULL,
+    PRIMARY KEY (id)
 );

@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package com.hortonworks.iotas.catalog;
 
 
@@ -23,12 +41,16 @@ public class StreamInfo extends AbstractStorable {
     public static final String FIELDSDATA = "fieldsData";
     public static final String TIMESTAMP = "timestamp";
     public static final String FIELDS = "fields";
+    public static final String TOPOLOGYID = "topologyId";
 
     // unique storage level id
     private Long id;
 
     // the stream identifier string
     private String streamId;
+
+    // the topology that this stream belongs to
+    private Long topologyId;
 
     // list of fields in the stream
     private List<Field> fields;
@@ -57,7 +79,8 @@ public class StreamInfo extends AbstractStorable {
                 Field.of(ID, Schema.Type.LONG),
                 Field.of(STREAMID, Schema.Type.STRING),
                 Field.of(FIELDSDATA, Schema.Type.STRING), // fields are serialized into fieldsdata
-                Field.of(TIMESTAMP, Schema.Type.LONG)
+                Field.of(TIMESTAMP, Schema.Type.LONG),
+                Field.of(TOPOLOGYID, Schema.Type.LONG)
         );
     }
 
@@ -116,6 +139,14 @@ public class StreamInfo extends AbstractStorable {
         this.timestamp = timestamp;
     }
 
+    public Long getTopologyId() {
+        return topologyId;
+    }
+
+    public void setTopologyId(Long topologyId) {
+        this.topologyId = topologyId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -125,6 +156,7 @@ public class StreamInfo extends AbstractStorable {
 
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (streamId != null ? !streamId.equals(that.streamId) : that.streamId != null) return false;
+        if (topologyId != null ? !topologyId.equals(that.topologyId) : that.topologyId != null) return false;
         if (fields != null ? !fields.equals(that.fields) : that.fields != null) return false;
         return timestamp != null ? timestamp.equals(that.timestamp) : that.timestamp == null;
 
@@ -134,6 +166,7 @@ public class StreamInfo extends AbstractStorable {
     public int hashCode() {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (streamId != null ? streamId.hashCode() : 0);
+        result = 31 * result + (topologyId != null ? topologyId.hashCode() : 0);
         result = 31 * result + (fields != null ? fields.hashCode() : 0);
         result = 31 * result + (timestamp != null ? timestamp.hashCode() : 0);
         return result;
@@ -144,9 +177,10 @@ public class StreamInfo extends AbstractStorable {
         return "StreamInfo{" +
                 "id=" + id +
                 ", streamId='" + streamId + '\'' +
+                ", topologyId=" + topologyId +
                 ", fields=" + fields +
                 ", timestamp=" + timestamp +
-                "} " + super.toString();
+                "}";
     }
 
     @Override
