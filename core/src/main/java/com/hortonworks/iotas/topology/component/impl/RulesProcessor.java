@@ -18,8 +18,6 @@
 
 package com.hortonworks.iotas.topology.component.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.topology.component.IotasProcessor;
 import com.hortonworks.iotas.topology.component.Stream;
@@ -27,8 +25,8 @@ import com.hortonworks.iotas.topology.component.TopologyDagVisitor;
 import com.hortonworks.iotas.topology.component.rule.Rule;
 import com.hortonworks.iotas.topology.component.rule.action.Action;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Represents a design time rules processor.
@@ -36,6 +34,14 @@ import java.util.Map;
 public class RulesProcessor extends IotasProcessor {     //TODO: Rename to RuleProcessor
     public static final String CONFIG_KEY_RULES = "rules";
     private List<Rule> rules;
+
+    public RulesProcessor() {
+    }
+
+    public RulesProcessor(RulesProcessor other) {
+        super(other);
+        this.rules = new ArrayList<>(other.getRules());
+    }
 
     public List<Rule> getRules() {
         return rules;
@@ -50,6 +56,7 @@ public class RulesProcessor extends IotasProcessor {     //TODO: Rename to RuleP
                 }
             }
         }
+        getConfig().setAny(CONFIG_KEY_RULES, rules);
     }
 
     @Override

@@ -14,6 +14,9 @@ import com.hortonworks.iotas.topology.component.impl.KafkaSource;
 import com.hortonworks.iotas.topology.component.impl.NotificationSink;
 import com.hortonworks.iotas.topology.component.impl.ParserProcessor;
 import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
+import com.hortonworks.iotas.topology.component.rule.Rule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -24,6 +27,8 @@ import java.util.Map;
 import java.util.UUID;
 
 public class StormTopologyFluxGenerator extends TopologyDagVisitor {
+    private static final Logger LOG = LoggerFactory.getLogger(StormTopologyFluxGenerator.class);
+
     private final List<Map.Entry<String, Map<String, Object>>> keysAndComponents = new ArrayList<>();
 
     @Override
@@ -59,6 +64,24 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
     @Override
     public void visit(RulesProcessor rulesProcessor) {
         rulesProcessor.getConfig().setAny("outputStreams", rulesProcessor.getOutputStreams());
+        List<Rule> rulesWithWindow = new ArrayList<>();
+        List<Rule> rulesWithoutWindow = new ArrayList<>();
+        for (Rule rule: rulesProcessor.getRules()) {
+            if (rule.getWindow() != null) {
+                rulesWithWindow.add(rule);
+            } else {
+                rulesWithoutWindow.add(rule);
+            }
+        }
+        // handle windowed rules with WindowRuleBoltFluxComponent
+        if (!rulesWithWindow.isEmpty()) {
+            RulesProcessor windowedRulesProcessor = new RulesProcessor(rulesProcessor);
+            rulesProcessor.setRules(rulesWithoutWindow);
+            windowedRulesProcessor.setRules(rulesWithWindow);
+            LOG.debug("Rules processor with window {}", windowedRulesProcessor);
+            keysAndComponents.add(makeEntry(TopologyLayoutConstants.YAML_KEY_BOLTS,
+                    getYamlComponents(new WindowRuleBoltFluxComponent(), windowedRulesProcessor)));
+        }
         keysAndComponents.add(makeEntry(TopologyLayoutConstants.YAML_KEY_BOLTS,
                 getYamlComponents(new RuleBoltFluxComponent(), rulesProcessor)));
     }

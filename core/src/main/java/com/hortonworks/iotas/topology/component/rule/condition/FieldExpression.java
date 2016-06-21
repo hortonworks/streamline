@@ -6,6 +6,8 @@ import com.hortonworks.iotas.common.Schema;
  * A variable (field) expression, e.g. x
  */
 public class FieldExpression extends Expression {
+    public static final FieldExpression STAR = new FieldExpression(Schema.Field.of("*", Schema.Type.STRING));
+    
     private Schema.Field value;
 
     // for jackson

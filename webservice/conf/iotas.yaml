@@ -57,6 +57,12 @@ storageProviderConfiguration:
 #customProcessorUploadFailPath: "/tmp/failed"
 #customProcessorUploadSuccessPath: "/tmp/uploaded"
 
+# Time series DB querier configuration
+#timeSeriesDBConfiguration:
+#  className: "com.hortonworks.iotas.metrics.storm.ambari.AmbariMetricsServiceWithStormQuerier"
+#  properties:
+#    - collectorApiUrl: "http://localhost:6188/ws/v1/timeline/metrics"
+
 #
 # Use this to turn on/off notifications rest api
 #

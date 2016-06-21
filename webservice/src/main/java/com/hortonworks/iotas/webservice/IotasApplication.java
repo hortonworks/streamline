@@ -23,9 +23,11 @@ import com.hortonworks.iotas.cache.Cache;
 import com.hortonworks.iotas.cache.impl.GuavaCache;
 import com.hortonworks.iotas.cache.writer.StorageWriteThrough;
 import com.hortonworks.iotas.cache.writer.StorageWriter;
+import com.hortonworks.iotas.catalog.RuleInfo;
 import com.hortonworks.iotas.common.CustomProcessorUploadHandler;
 import com.hortonworks.iotas.common.FileEventHandler;
 import com.hortonworks.iotas.common.errors.ConfigException;
+import com.hortonworks.iotas.metrics.TimeSeriesQuerier;
 import com.hortonworks.iotas.notification.service.NotificationServiceImpl;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.service.FileWatcher;
@@ -49,6 +51,7 @@ import com.hortonworks.iotas.webservice.catalog.FeedCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.FileCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.NotifierInfoCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.ParserInfoCatalogResource;
+import com.hortonworks.iotas.webservice.catalog.RuleCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.TopologyStreamCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.TagCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.TopologyCatalogResource;
@@ -57,6 +60,7 @@ import com.hortonworks.iotas.webservice.catalog.TopologyEditorMetadataResource;
 import com.hortonworks.iotas.webservice.catalog.TopologyProcessorCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.TopologySinkCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.TopologySourceCatalogResource;
+import com.hortonworks.iotas.webservice.catalog.UDFCatalogResource;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
@@ -173,6 +177,12 @@ public class IotasApplication extends Application<IotasConfiguration> {
         Map<String, String> conf = new HashMap<>();
         conf.put(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY, configuration.getStormApiRootUrl());
         topologyMetrics.init(conf);
+
+        TimeSeriesQuerier timeSeriesQuerier = getTimeSeriesQuerier(configuration);
+        if (timeSeriesQuerier != null) {
+            topologyMetrics.setTimeSeriesQuerier(timeSeriesQuerier);
+        }
+
         return topologyMetrics;
     }
 
@@ -215,11 +225,16 @@ public class IotasApplication extends Application<IotasConfiguration> {
         final TopologySinkCatalogResource topologySinkCatalogResource = new TopologySinkCatalogResource(catalogService);
         final TopologyProcessorCatalogResource topologyProcessorCatalogResource = new TopologyProcessorCatalogResource(catalogService);
         final TopologyEdgeCatalogResource topologyEdgeCatalogResource = new TopologyEdgeCatalogResource(catalogService);
+        final RuleCatalogResource ruleCatalogResource = new RuleCatalogResource(catalogService);
+
+        // UDF catalaog resource
+        final UDFCatalogResource udfCatalogResource = new UDFCatalogResource(catalogService, fileStorage);
 
         List<Object> resources = Lists.newArrayList(feedResource, parserResource, dataSourceResource, dataSourceWithDataFeedCatalogResource,
                 topologyCatalogResource, clusterCatalogResource, componentCatalogResource,
                 topologyEditorMetadataResource, tagCatalogResource, fileCatalogResource, metricsResource, topologyStreamCatalogResource,
-                topologySourceCatalogResource, topologySinkCatalogResource, topologyProcessorCatalogResource, topologyEdgeCatalogResource);
+                topologySourceCatalogResource, topologySinkCatalogResource, topologyProcessorCatalogResource, topologyEdgeCatalogResource,
+                ruleCatalogResource, udfCatalogResource);
         if (!iotasConfiguration.isNotificationsRestDisabled()) {
             resources.add(new NotifierInfoCatalogResource(catalogService));
             resources.add(new NotificationsResource(new NotificationServiceImpl()));
@@ -231,6 +246,20 @@ public class IotasApplication extends Application<IotasConfiguration> {
 
         environment.jersey().register(MultiPartFeature.class);
         watchFiles(iotasConfiguration, catalogService);
+    }
+
+    private TimeSeriesQuerier getTimeSeriesQuerier(IotasConfiguration iotasConfiguration) {
+        if (iotasConfiguration.getTimeSeriesDBConfiguration() == null) {
+            return null;
+        }
+
+        try {
+            TimeSeriesQuerier timeSeriesQuerier = ReflectionHelper.newInstance(iotasConfiguration.getTimeSeriesDBConfiguration().getClassName());
+            timeSeriesQuerier.init(iotasConfiguration.getTimeSeriesDBConfiguration().getProperties());
+            return timeSeriesQuerier;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void watchFiles (IotasConfiguration iotasConfiguration, CatalogService catalogService) {

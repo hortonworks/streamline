@@ -64,7 +64,7 @@ streamid1=$(getId $out)
 echo -e "\n------"
 out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
     "streamId": "parsedTuplesStream",
-    "fields": [{"name": "iotas.event", "type": "NESTED"} ]
+    "fields": [{"name": "temperature", "type": "LONG"}, {"name": "humidity", "type": "LONG"}]
 }' "${catalogurl}/topologies/$topologyid/streams")
 
 echo $out
@@ -124,6 +124,35 @@ echo $out
 parserid=$(getId $out)
 
 # --
+# Create a rule
+# --
+echo -e "\n------"
+out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache" -d '{
+    "name": "rule1",
+    "description": "rule test",
+    "sql": "select temperature, humidity from parsedTuplesStream where humidity > 90 AND temperature > 80",
+    "actions": [
+      {
+        "name": "hbasesink"
+      },
+      {
+        "name": "hdfssink"
+      },
+      {
+        "name": "notificationsink",
+        "outputFieldsAndDefaults": {
+          "body": "rule_1 fired"
+         },
+         "includeMeta": true,
+         "notifierName": "email_notifier"
+       }
+    ]
+}' "${catalogurl}/topologies/$topologyid/rules")
+
+echo $out
+ruleid=$(getId $out)
+
+# --
 # Create Rule processor
 # --
 echo -e "\n------"
@@ -131,68 +160,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
     "name": "RuleProcessor",
     "config": {
         "properties": {
-            "rules": [
-              {
-                "name": "rule_1",
-                "id": 1,
-                "ruleProcessorName": "rule_processsor_1",
-                "condition": {
-                  "expression": {
-                    "class": "com.hortonworks.iotas.topology.component.rule.condition.BinaryExpression",
-                    "operator": "AND",
-                    "first": {
-                      "class": "com.hortonworks.iotas.topology.component.rule.condition.BinaryExpression",
-                      "operator": "LESS_THAN",
-                      "first": {
-                        "class": "com.hortonworks.iotas.topology.component.rule.condition.FieldExpression",
-                        "value": {
-                          "name": "humidity",
-                          "type": "STRING",
-                          "optional": false
-                        }
-                      },
-                      "second": {
-                        "class": "com.hortonworks.iotas.topology.component.rule.condition.Literal",
-                        "value": "1000"
-                      }
-                    },
-                    "second": {
-                      "class": "com.hortonworks.iotas.topology.component.rule.condition.BinaryExpression",
-                      "operator": "GREATER_THAN",
-                      "first": {
-                        "class": "com.hortonworks.iotas.topology.component.rule.condition.FieldExpression",
-                        "value": {
-                          "name": "humidity",
-                          "type": "STRING",
-                          "optional": false
-                        }
-                      },
-                      "second": {
-                        "class": "com.hortonworks.iotas.topology.component.rule.condition.Literal",
-                        "value": "10"
-                      }
-                    }
-                  }
-                },
-                "actions": [
-                  {
-                    "name": "hbasesink"
-                  },
-                  {
-                    "name": "hdfssink"
-                  },
-                  {
-                    "name": "notificationsink",
-                    "outputFieldsAndDefaults": {
-                      "body": "rule_1 fired"
-                    },
-                    "includeMeta": true,
-                    "notifierName": "email_notifier"
-                  }
-                ],
-                "description": "rule_1_desc"
-              }
-              ]
+            "rules": ['$ruleid']
         }
     },
     "type": "RULE",

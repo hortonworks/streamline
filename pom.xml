@@ -18,6 +18,7 @@
         <module>notification-service</module>
         <module>notifiers</module>
         <module>layout</module>
+        <module>metrics</module>
     </modules>
 
     <properties>
@@ -45,6 +46,7 @@
         <kryo.version>2.21</kryo.version>
         <logback.version>1.1.3</logback.version>
         <phoenix.version>4.4.0-HBase-1.1</phoenix.version>
+        <calcite.version>1.4.0-incubating</calcite.version>
     </properties>
 
     <distributionManagement>

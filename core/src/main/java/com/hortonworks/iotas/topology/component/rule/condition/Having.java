@@ -12,6 +12,10 @@ public class Having implements Serializable {
     public Having() {
     }
 
+    public Having(Expression expression) {
+        this.expression = expression;
+    }
+
     public Expression getExpression() {
         return expression;
     }

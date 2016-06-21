@@ -18,6 +18,7 @@
  */
 package com.hortonworks.iotas.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Collections2;
@@ -34,6 +35,7 @@ import com.hortonworks.iotas.catalog.FileInfo;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.catalog.Device;
+import com.hortonworks.iotas.catalog.RuleInfo;
 import com.hortonworks.iotas.catalog.StreamInfo;
 import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.catalog.Topology;
@@ -47,9 +49,11 @@ import com.hortonworks.iotas.catalog.TopologyProcessorStreamMapping;
 import com.hortonworks.iotas.catalog.TopologySink;
 import com.hortonworks.iotas.catalog.TopologySource;
 import com.hortonworks.iotas.catalog.TopologySourceStreamMapping;
+import com.hortonworks.iotas.catalog.UDFInfo;
 import com.hortonworks.iotas.common.Config;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.processor.CustomProcessorInfo;
+import com.hortonworks.iotas.rule.RuleParser;
 import com.hortonworks.iotas.storage.DataSourceSubType;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
@@ -62,9 +66,11 @@ import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import com.hortonworks.iotas.topology.TopologyLayoutValidator;
 import com.hortonworks.iotas.topology.TopologyMetrics;
 import com.hortonworks.iotas.topology.component.InputComponent;
+import com.hortonworks.iotas.topology.component.Stream;
 import com.hortonworks.iotas.topology.component.TopologyDag;
 import com.hortonworks.iotas.topology.component.TopologyDagBuilder;
 import com.hortonworks.iotas.topology.component.impl.NotificationSink;
+import com.hortonworks.iotas.topology.component.rule.Rule;
 import com.hortonworks.iotas.util.CoreUtils;
 import com.hortonworks.iotas.util.FileStorage;
 import com.hortonworks.iotas.util.JsonSchemaValidator;
@@ -75,6 +81,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -121,6 +128,8 @@ public class CatalogService {
     private static final String TOPOLOGY_PROCESSOR_NAMESPACE = new TopologyProcessor().getNameSpace();
     private static final String TOPOLOGY_PROCESSOR_STREAM_MAPPING_NAMESPACE = new TopologyProcessorStreamMapping().getNameSpace();
     private static final String TOPOLOGY_EDGE_NAMESPACE = new TopologyEdge().getNameSpace();
+    private static final String TOPOLOGY_RULEINFO_NAMESPACE = new RuleInfo().getNameSpace();
+    private static final String UDF_NAMESPACE = new UDFInfo().getNameSpace();
 
     private StorageManager dao;
     private TopologyActions topologyActions;
@@ -650,7 +659,23 @@ public class CatalogService {
         return this.topologyMetrics.getMetricsForTopology(topology);
     }
 
-    public Collection<TopologyComponentDefinition.TopologyComponentType> listTopologyComponentTypes () {
+    public Map<Long, Double> getCompleteLatency (Topology topology, String sourceId, long from, long to) throws Exception {
+        return this.topologyMetrics.getCompleteLatency(topology, sourceId, from, to);
+    }
+
+    public Map<String, Map<Long, Double>> getComponentStats(Topology topology, String sourceId, Long from, Long to) {
+        return this.topologyMetrics.getComponentStats(topology, sourceId, from, to);
+    }
+
+    public Map<String, Map<Long, Double>> getKafkaTopicOffsets(Topology topology, String sourceId, Long from, Long to) {
+        return this.topologyMetrics.getkafkaTopicOffsets(topology, sourceId, from, to);
+    }
+
+    public Map<String, Map<Long, Double>> getMetrics(String metricName, String parameters, Long from, Long to) {
+        return this.topologyMetrics.getTimeSeriesQuerier().getRawMetrics(metricName, parameters, from, to);
+    }
+
+    public Collection<TopologyComponentDefinition.TopologyComponentType> listTopologyComponentTypes() {
         return Arrays.asList(TopologyComponentDefinition.TopologyComponentType.values());
     }
 
@@ -1342,4 +1367,107 @@ public class CatalogService {
     public Collection<StreamInfo> listStreamInfos(List<QueryParam> params) throws Exception {
         return dao.<StreamInfo>find(STREAMINFO_NAMESPACE, params);
     }
+
+    public Collection<RuleInfo> listRules() {
+        return dao.<RuleInfo>list(TOPOLOGY_RULEINFO_NAMESPACE);
+    }
+
+    public Collection<RuleInfo> listRules(List<QueryParam> params) throws Exception {
+        return dao.<RuleInfo>find(TOPOLOGY_RULEINFO_NAMESPACE, params);
+    }
+
+    public RuleInfo addRule(Long topologyId, RuleInfo ruleInfo) throws Exception {
+        if (ruleInfo.getId() == null) {
+            ruleInfo.setId(dao.nextId(TOPOLOGY_RULEINFO_NAMESPACE));
+        }
+        ruleInfo.setTopologyId(topologyId);
+        String parsedRuleStr = parseAndSerialize(ruleInfo);
+        LOG.debug("ParsedRuleStr {}", parsedRuleStr);
+        ruleInfo.setParsedRuleStr(parsedRuleStr);
+        dao.add(ruleInfo);
+        return ruleInfo;
+    }
+
+    public RuleInfo getRule(Long id) throws Exception {
+        RuleInfo ruleInfo = new RuleInfo();
+        ruleInfo.setId(id);
+        return dao.<RuleInfo>get(new StorableKey(TOPOLOGY_RULEINFO_NAMESPACE, ruleInfo.getPrimaryKey()));
+    }
+
+    public RuleInfo addOrUpdateRule(Long topologyid, Long ruleId, RuleInfo ruleInfo) throws Exception {
+        ruleInfo.setId(ruleId);
+        ruleInfo.setTopologyId(topologyid);
+        String parsedRuleStr = parseAndSerialize(ruleInfo);
+        LOG.debug("ParsedRuleStr {}", parsedRuleStr);
+        ruleInfo.setParsedRuleStr(parsedRuleStr);
+        dao.addOrUpdate(ruleInfo);
+        return ruleInfo;
+    }
+
+    public RuleInfo removeRule(Long id) {
+        RuleInfo ruleInfo = new RuleInfo();
+        ruleInfo.setId(id);
+        RuleInfo removedRuleInfo = dao.<RuleInfo>remove(
+                new StorableKey(TOPOLOGY_RULEINFO_NAMESPACE, ruleInfo.getPrimaryKey()));
+        return removedRuleInfo;
+    }
+
+    private String parseAndSerialize(RuleInfo ruleInfo) throws JsonProcessingException {
+        Rule rule = new Rule();
+        rule.setId(ruleInfo.getId());
+        rule.setName(ruleInfo.getName());
+        rule.setDescription(ruleInfo.getDescription());
+        rule.setWindow(ruleInfo.getWindow());
+        rule.setActions(ruleInfo.getActions());
+        // parse
+        RuleParser ruleParser = new RuleParser(this, ruleInfo);
+        ruleParser.parse();
+        rule.setStreams(new HashSet(Collections2.transform(ruleParser.getStreams(), new Function<Stream, String>() {
+            @Override
+            public String apply(Stream input) {
+                return input.getId();
+            }
+        })));
+        rule.setProjection(ruleParser.getProjection());
+        rule.setCondition(ruleParser.getCondition());
+        rule.setGroupBy(ruleParser.getGroupBy());
+        rule.setHaving(ruleParser.getHaving());
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(rule);
+    }
+
+    public Collection<UDFInfo> listUDFs() {
+        return this.dao.<UDFInfo>list(UDF_NAMESPACE);
+    }
+
+    public Collection<UDFInfo> listUDFs(List<QueryParam> queryParams) {
+        return dao.<UDFInfo>find(UDF_NAMESPACE, queryParams);
+    }
+
+    public UDFInfo getUDF(Long id) {
+        UDFInfo udfInfo = new UDFInfo();
+        udfInfo.setId(id);
+        return this.dao.<UDFInfo>get(new StorableKey(UDF_NAMESPACE, udfInfo.getPrimaryKey()));
+    }
+
+    public UDFInfo addUDF(UDFInfo udfInfo) {
+        if (udfInfo.getId() == null) {
+            udfInfo.setId(this.dao.nextId(UDF_NAMESPACE));
+        }
+        this.dao.add(udfInfo);
+        return udfInfo;
+    }
+
+    public UDFInfo removeUDF(Long id) {
+        UDFInfo udfInfo = new UDFInfo();
+        udfInfo.setId(id);
+        return dao.<UDFInfo>remove(new StorableKey(UDF_NAMESPACE, udfInfo.getPrimaryKey()));
+    }
+
+    public UDFInfo addOrUpdateUDF(Long udfId, UDFInfo udfInfo) {
+        udfInfo.setId(udfId);
+        this.dao.addOrUpdate(udfInfo);
+        return udfInfo;
+    }
+
 }
