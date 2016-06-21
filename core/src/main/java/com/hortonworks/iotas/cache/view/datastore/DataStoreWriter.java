@@ -16,34 +16,17 @@
  *   limitations under the License.
  */
 
-package com.hortonworks.iotas.cache;
-
-
-import com.hortonworks.iotas.cache.stats.CacheStats;
-import com.hortonworks.iotas.cache.view.config.ExpiryPolicy;
+package com.hortonworks.iotas.cache.view.datastore;
 
 import java.util.Collection;
 import java.util.Map;
 
+public interface DataStoreWriter<K,V> {
+    void write(K key, V val);
 
-public interface Cache<K, V> {
-    V get(K key);
+    void writeAll(Map<? extends K, ? extends V> entries);
 
-    Map<K, V> getAll(Collection<? extends K> keys);
+    void delete(K key);
 
-    void put(K key, V val);
-
-    void putAll(Map<? extends K,? extends V> entries);
-
-    void remove(K key);
-
-    void removeAll(Collection<? extends K> keys);
-
-    void clear();
-
-    long size();
-
-    CacheStats stats();
-
-    ExpiryPolicy getExpiryPolicy();
+    void deleteAll(Collection<? extends K> keys);
 }

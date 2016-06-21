@@ -16,34 +16,33 @@
  *   limitations under the License.
  */
 
-package com.hortonworks.iotas.cache;
+package com.hortonworks.iotas.cache.view.io.writer;
 
-
-import com.hortonworks.iotas.cache.stats.CacheStats;
-import com.hortonworks.iotas.cache.view.config.ExpiryPolicy;
+import com.hortonworks.iotas.cache.view.datastore.DataStoreWriter;
 
 import java.util.Collection;
 import java.util.Map;
 
+public class CacheWriterSync<K,V> implements CacheWriter<K,V> {
+    protected DataStoreWriter<K, V> dataStoreWriter;
 
-public interface Cache<K, V> {
-    V get(K key);
+    public CacheWriterSync(DataStoreWriter<K,V> dataStoreWriter) {
+        this.dataStoreWriter = dataStoreWriter;
+    }
 
-    Map<K, V> getAll(Collection<? extends K> keys);
+    public void write(K key, V val) {
+        dataStoreWriter.write(key, val);
+    }
 
-    void put(K key, V val);
+    public void writeAll(Map<? extends K, ? extends V> entries) {
+        dataStoreWriter.writeAll(entries);
+    }
 
-    void putAll(Map<? extends K,? extends V> entries);
+    public void delete(K key) {
+        dataStoreWriter.delete(key);
+    }
 
-    void remove(K key);
-
-    void removeAll(Collection<? extends K> keys);
-
-    void clear();
-
-    long size();
-
-    CacheStats stats();
-
-    ExpiryPolicy getExpiryPolicy();
+    public void deleteAll(Collection<? extends K> keys){
+        dataStoreWriter.deleteAll(keys);
+    }
 }

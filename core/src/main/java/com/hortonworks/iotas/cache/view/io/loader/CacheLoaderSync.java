@@ -16,34 +16,32 @@
  *   limitations under the License.
  */
 
-package com.hortonworks.iotas.cache;
+package com.hortonworks.iotas.cache.view.io.loader;
 
+import com.hortonworks.iotas.cache.Cache;
+import com.hortonworks.iotas.cache.view.datastore.DataStoreReader;
 
-import com.hortonworks.iotas.cache.stats.CacheStats;
-import com.hortonworks.iotas.cache.view.config.ExpiryPolicy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Map;
 
+public class CacheLoaderSync<K,V> extends CacheLoader<K,V> {
+    protected static final Logger LOG = LoggerFactory.getLogger(CacheLoaderSync.class);
 
-public interface Cache<K, V> {
-    V get(K key);
+    public CacheLoaderSync(Cache<K, V> cache, DataStoreReader<K,V> dataStoreReader) {
+        super(cache, dataStoreReader);
+    }
 
-    Map<K, V> getAll(Collection<? extends K> keys);
-
-    void put(K key, V val);
-
-    void putAll(Map<? extends K,? extends V> entries);
-
-    void remove(K key);
-
-    void removeAll(Collection<? extends K> keys);
-
-    void clear();
-
-    long size();
-
-    CacheStats stats();
-
-    ExpiryPolicy getExpiryPolicy();
+    public void loadAll(Collection<? extends K> keys, CacheLoaderCallback<K,V> callback) {
+        Map<K, V> entries;
+        try {
+            entries = dataStoreReader.readAll(keys);
+            cache.putAll(entries);
+            callback.onCacheLoaded(entries);
+        } catch (Exception e) {
+            handleException(keys, callback, e, LOG);
+        }
+    }
 }

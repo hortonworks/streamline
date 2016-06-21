@@ -16,34 +16,19 @@
  *   limitations under the License.
  */
 
-package com.hortonworks.iotas.cache;
+package com.hortonworks.iotas.cache.view.service;
 
+import com.hortonworks.iotas.cache.view.Factory;
 
-import com.hortonworks.iotas.cache.stats.CacheStats;
-import com.hortonworks.iotas.cache.view.config.ExpiryPolicy;
+public class CacheServiceJsonFactory<K,V> implements Factory<CacheService<K,V>> {
+    @Override
+    public CacheService<K, V> create() {
+//        return new CacheService.Builder<K,V>(null,null).setCacheLoader(null).build();
 
-import java.util.Collection;
-import java.util.Map;
+        return new CacheService.Builder<K, V>(null, null).setExpiryPolicy(null).build();
+//        return new CacheService<>(null, null);
+    }
 
+    class Bar {}
 
-public interface Cache<K, V> {
-    V get(K key);
-
-    Map<K, V> getAll(Collection<? extends K> keys);
-
-    void put(K key, V val);
-
-    void putAll(Map<? extends K,? extends V> entries);
-
-    void remove(K key);
-
-    void removeAll(Collection<? extends K> keys);
-
-    void clear();
-
-    long size();
-
-    CacheStats stats();
-
-    ExpiryPolicy getExpiryPolicy();
 }

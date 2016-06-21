@@ -16,34 +16,19 @@
  *   limitations under the License.
  */
 
-package com.hortonworks.iotas.cache;
+package com.hortonworks.iotas.cache.view.impl.redis.connection;
 
+import com.lambdaworks.redis.RedisClient;
+import com.lambdaworks.redis.RedisConnection;
+import com.lambdaworks.redis.codec.RedisCodec;
 
-import com.hortonworks.iotas.cache.stats.CacheStats;
-import com.hortonworks.iotas.cache.view.config.ExpiryPolicy;
+public class RedisConnectionFactory<K,V> extends AbstractRedisConnectionFactory<K,V> {
+    public RedisConnectionFactory(RedisClient redisClient, RedisCodec<K, V> codec) {
+        super(redisClient, codec);
+    }
 
-import java.util.Collection;
-import java.util.Map;
-
-
-public interface Cache<K, V> {
-    V get(K key);
-
-    Map<K, V> getAll(Collection<? extends K> keys);
-
-    void put(K key, V val);
-
-    void putAll(Map<? extends K,? extends V> entries);
-
-    void remove(K key);
-
-    void removeAll(Collection<? extends K> keys);
-
-    void clear();
-
-    long size();
-
-    CacheStats stats();
-
-    ExpiryPolicy getExpiryPolicy();
+    @Override
+    public RedisConnection<K, V> create() {
+        return redisClient.connect(codec);
+    }
 }
