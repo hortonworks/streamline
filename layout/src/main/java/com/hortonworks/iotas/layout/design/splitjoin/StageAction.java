@@ -18,7 +18,6 @@
  */
 package com.hortonworks.iotas.layout.design.splitjoin;
 
-import com.hortonworks.iotas.layout.design.rule.action.Action;
 import com.hortonworks.iotas.layout.design.rule.action.TransformAction;
 import com.hortonworks.iotas.layout.design.transform.EnrichmentTransform;
 import com.hortonworks.iotas.layout.design.transform.ProjectionTransform;
@@ -27,7 +26,7 @@ import com.hortonworks.iotas.layout.design.transform.Transform;
 import java.util.List;
 
 /**
- * {@link Action} for stage processor which is invoked by split or stage processors.
+ * {@link com.hortonworks.iotas.topology.component.rule.action.Action} for stage processor which is invoked by split or stage processors.
  *
  */
 public class StageAction extends TransformAction {

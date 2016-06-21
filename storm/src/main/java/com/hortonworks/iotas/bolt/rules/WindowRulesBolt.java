@@ -3,7 +3,7 @@ package com.hortonworks.iotas.bolt.rules;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.Result;
 import com.hortonworks.iotas.common.errors.ProcessingException;
-import com.hortonworks.iotas.layout.design.rule.condition.Window;
+import com.hortonworks.iotas.topology.component.rule.condition.Window;
 import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
 import org.apache.storm.task.OutputCollector;
@@ -28,9 +28,9 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static com.hortonworks.iotas.common.IotasEventImpl.GROUP_BY_TRIGGER_EVENT;
-import static com.hortonworks.iotas.layout.design.rule.condition.Window.WINDOW_ID;
 import static com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_DATASOURCE_IDS;
 import static com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_EVENT_IDS;
+import static com.hortonworks.iotas.topology.component.rule.condition.Window.WINDOW_ID;
 
 /**
  * A windowed rules bolt

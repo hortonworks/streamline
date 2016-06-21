@@ -20,20 +20,20 @@ package com.hortonworks.iotas.layout.runtime.rule.condition.expression;
 
 import com.google.common.base.Joiner;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.layout.design.rule.condition.Condition;
-import com.hortonworks.iotas.layout.design.rule.condition.Expression;
-import com.hortonworks.iotas.layout.design.rule.condition.ExpressionTranslator;
-import com.hortonworks.iotas.layout.design.rule.condition.FunctionExpression;
-import com.hortonworks.iotas.layout.design.rule.condition.GroupBy;
-import com.hortonworks.iotas.layout.design.rule.condition.Having;
-import com.hortonworks.iotas.layout.design.rule.condition.Operator;
-import com.hortonworks.iotas.layout.design.rule.condition.Projection;
+
+import com.hortonworks.iotas.topology.component.rule.condition.GroupBy;
+import com.hortonworks.iotas.topology.component.rule.condition.Having;
+import com.hortonworks.iotas.topology.component.rule.condition.Condition;
+import com.hortonworks.iotas.topology.component.rule.condition.Expression;
+import com.hortonworks.iotas.topology.component.rule.condition.ExpressionTranslator;
+import com.hortonworks.iotas.topology.component.rule.condition.FunctionExpression;
+import com.hortonworks.iotas.topology.component.rule.condition.Operator;
+import com.hortonworks.iotas.topology.component.rule.condition.Projection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;

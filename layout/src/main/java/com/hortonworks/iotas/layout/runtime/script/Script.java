@@ -20,7 +20,7 @@ package com.hortonworks.iotas.layout.runtime.script;
 
 
 import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.layout.design.rule.condition.Expression;
+import com.hortonworks.iotas.topology.component.rule.condition.Expression;
 import com.hortonworks.iotas.layout.runtime.script.engine.ScriptEngine;
 
 import javax.script.ScriptException;

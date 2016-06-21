@@ -19,7 +19,7 @@
 package com.hortonworks.iotas.layout.design.splitjoin;
 
 import com.hortonworks.iotas.layout.design.Utils;
-import com.hortonworks.iotas.layout.design.component.RulesProcessor;
+import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
 
 import java.util.Collections;
 

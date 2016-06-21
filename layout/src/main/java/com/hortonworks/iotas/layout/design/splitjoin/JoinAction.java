@@ -18,7 +18,8 @@
  */
 package com.hortonworks.iotas.layout.design.splitjoin;
 
-import com.hortonworks.iotas.layout.design.rule.action.Action;
+
+import com.hortonworks.iotas.topology.component.rule.action.Action;
 
 /**
  * {@link Action} configuration for joining the events split by a {@link SplitProcessor}.

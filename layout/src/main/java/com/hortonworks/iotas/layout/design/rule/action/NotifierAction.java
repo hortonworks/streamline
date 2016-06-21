@@ -18,6 +18,8 @@
 
 package com.hortonworks.iotas.layout.design.rule.action;
 
+import com.hortonworks.iotas.topology.component.rule.action.Action;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;

@@ -1,4 +1,5 @@
 ## 0.1.4
+ * IOT-155: Convert Topology UI JSON to Design time entities and construct DAG
  * IOT-161: REST api for source, sink, processor and edge
  * IOT-119: IOT Cache Requirements
  

@@ -1,9 +1,9 @@
 package com.hortonworks.iotas.webservice;
 
 import com.hortonworks.iotas.catalog.CatalogResponse;
-import com.hortonworks.iotas.layout.design.component.Stream;
+import com.hortonworks.iotas.topology.component.Stream;
 import com.hortonworks.iotas.service.CatalogService;
-import com.hortonworks.iotas.topology.TopologyComponent;
+import com.hortonworks.iotas.topology.TopologyComponentDefinition;
 import com.hortonworks.iotas.webservice.schema.MockEvolvingSchemaCatalogServiceAwareImpl;
 import com.hortonworks.iotas.webservice.schema.MockEvolvingSchemaImpl;
 import com.hortonworks.iotas.webservice.schema.SchemaAPI;
@@ -58,7 +58,7 @@ public class SchemaAPITest {
     @Test
     public void testEvolveForSupportedComponent() throws Exception {
         topologyComponentMap.put("schemaClass", "com.hortonworks.iotas.webservice.schema.MockEvolvingSchemaImpl");
-        final TopologyComponent component = (TopologyComponent) new TopologyComponent().fromMap(topologyComponentMap);
+        final TopologyComponentDefinition component = (TopologyComponentDefinition) new TopologyComponentDefinition().fromMap(topologyComponentMap);
 
         new Expectations() {
             {
@@ -85,7 +85,7 @@ public class SchemaAPITest {
         // assume schema class isn't defined to component definition
         topologyComponentMap.remove("schemaClass");
 
-        final TopologyComponent component = (TopologyComponent) new TopologyComponent().fromMap(topologyComponentMap);
+        final TopologyComponentDefinition component = (TopologyComponentDefinition) new TopologyComponentDefinition().fromMap(topologyComponentMap);
 
         new Expectations() {
             {
@@ -128,7 +128,7 @@ public class SchemaAPITest {
         topologyComponentMap = createDummyParserTopologyComponentMap();
         topologyComponentMap.put("schemaClass", "com.hortonworks.iotas.webservice.schema.MockEvolvingSchemaCatalogServiceAwareImpl");
 
-        final TopologyComponent component = (TopologyComponent) new TopologyComponent()
+        final TopologyComponentDefinition component = (TopologyComponentDefinition) new TopologyComponentDefinition()
                 .fromMap(topologyComponentMap);
 
         new Expectations() {

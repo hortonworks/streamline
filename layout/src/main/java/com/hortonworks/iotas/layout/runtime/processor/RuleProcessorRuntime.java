@@ -18,19 +18,25 @@
 
 package com.hortonworks.iotas.layout.runtime.processor;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.Result;
 import com.hortonworks.iotas.common.errors.ProcessingException;
-import com.hortonworks.iotas.layout.design.component.RulesProcessor;
+import com.hortonworks.iotas.topology.component.Stream;
+import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
 import com.hortonworks.iotas.layout.runtime.rule.RuleRuntime;
 import com.hortonworks.iotas.processor.ProcessorRuntime;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -85,11 +91,14 @@ public class RuleProcessorRuntime implements Serializable, ProcessorRuntime {
     }
 
     public List<String> getStreams() {
-        List<String> streams = new ArrayList<>();
-        for(RuleRuntime ruleRuntime: rulesRuntime) {
-            streams.addAll(ruleRuntime.getStreams());
-        }
-        return streams;
+        Collection<String> streams = Collections2.transform(rulesProcessor.getOutputStreams(), new Function<Stream, String>(){
+            @Override
+            public String apply(Stream input) {
+                return input.getId();
+            }
+        });
+        LOG.info("Rule processor output streams {}", streams);
+        return ImmutableList.copyOf(streams);
     }
 
     @Override

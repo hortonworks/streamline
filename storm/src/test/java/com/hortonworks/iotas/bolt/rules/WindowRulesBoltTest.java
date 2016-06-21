@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.layout.design.component.RulesProcessorJsonBuilder;
-import com.hortonworks.iotas.layout.design.rule.condition.Window;
+import com.hortonworks.iotas.topology.component.rule.condition.Window;
 import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
 import mockit.Expectations;
 import mockit.Mocked;

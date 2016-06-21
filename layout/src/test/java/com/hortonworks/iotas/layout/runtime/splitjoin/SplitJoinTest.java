@@ -24,8 +24,6 @@ import com.hortonworks.iotas.client.CatalogRestClient;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Result;
-import com.hortonworks.iotas.layout.design.rule.Rule;
-import com.hortonworks.iotas.layout.design.rule.action.Action;
 import com.hortonworks.iotas.layout.design.splitjoin.JoinAction;
 import com.hortonworks.iotas.layout.design.splitjoin.SplitAction;
 import com.hortonworks.iotas.layout.design.splitjoin.StageAction;
@@ -34,6 +32,8 @@ import com.hortonworks.iotas.layout.design.transform.InmemoryTransformDataProvid
 import com.hortonworks.iotas.layout.design.transform.ProjectionTransform;
 import com.hortonworks.iotas.layout.design.transform.Transform;
 import com.hortonworks.iotas.layout.runtime.rule.action.ActionRuntimeContext;
+import com.hortonworks.iotas.topology.component.rule.Rule;
+import com.hortonworks.iotas.topology.component.rule.action.Action;
 import com.hortonworks.iotas.util.CoreUtils;
 import mockit.Expectations;
 import mockit.Mocked;

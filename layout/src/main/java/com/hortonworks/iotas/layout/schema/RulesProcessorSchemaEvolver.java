@@ -5,12 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.exception.ParserException;
-import com.hortonworks.iotas.layout.design.component.RulesProcessor;
+import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
 import com.hortonworks.iotas.layout.design.component.RulesProcessorJsonBuilder;
-import com.hortonworks.iotas.layout.design.component.Stream;
-import com.hortonworks.iotas.layout.design.rule.Rule;
-import com.hortonworks.iotas.layout.design.rule.action.Action;
 import com.hortonworks.iotas.layout.design.rule.action.NotifierAction;
+import com.hortonworks.iotas.topology.component.Stream;
+import com.hortonworks.iotas.topology.component.rule.Rule;
+import com.hortonworks.iotas.topology.component.rule.action.Action;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 
 import java.util.List;

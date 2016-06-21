@@ -28,18 +28,14 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import static com.hortonworks.iotas.topology.component.Stream.Grouping;
 
 public class TopologyEdge extends AbstractStorable {
-
-    // restrict to predefined values
-    public enum Grouping {
-        SHUFFLE,
-        FIELDS
-    }
 
     public static class StreamGrouping {
         private Long streamId;
         private Grouping grouping;
+        private List<String> fields;
 
         // for jackson
         private StreamGrouping() {
@@ -53,11 +49,16 @@ public class TopologyEdge extends AbstractStorable {
             return grouping;
         }
 
+        public List<String> getFields() {
+            return fields;
+        }
+
         @Override
         public String toString() {
             return "StreamGrouping{" +
                     "streamId=" + streamId +
                     ", grouping=" + grouping +
+                    ", fields=" + fields +
                     '}';
         }
     }

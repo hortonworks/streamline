@@ -20,7 +20,6 @@ package com.hortonworks.iotas.layout.runtime.rule.topology;
 
 import com.hortonworks.iotas.bolt.rules.RulesBolt;
 import com.hortonworks.iotas.layout.design.component.ComponentBuilder;
-import com.hortonworks.iotas.layout.design.component.RulesProcessor;
 import com.hortonworks.iotas.layout.design.splitjoin.JoinAction;
 import com.hortonworks.iotas.layout.design.splitjoin.JoinProcessor;
 import com.hortonworks.iotas.layout.design.splitjoin.SplitAction;
@@ -31,6 +30,7 @@ import com.hortonworks.iotas.layout.design.transform.EnrichmentTransform;
 import com.hortonworks.iotas.layout.design.transform.InmemoryTransformDataProvider;
 import com.hortonworks.iotas.layout.design.transform.Transform;
 import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
+import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
 import org.apache.storm.Config;
 import org.apache.storm.ILocalCluster;
 import org.apache.storm.LocalCluster;

@@ -7,7 +7,9 @@ import com.hortonworks.iotas.catalog.Topology;
 import com.hortonworks.iotas.topology.StatusImpl;
 import com.hortonworks.iotas.topology.TopologyActions;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
-import com.hortonworks.iotas.util.ReflectionHelper;
+import com.hortonworks.iotas.topology.component.Component;
+import com.hortonworks.iotas.topology.component.Edge;
+import com.hortonworks.iotas.topology.component.TopologyDag;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -15,12 +17,9 @@ import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.file.Files;
@@ -29,7 +28,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -226,10 +224,9 @@ public class StormTopologyActionsImpl implements TopologyActions {
                     .getTopologyName(topology));
             addTopologyConfig(yamlMap, (Map<String, Object>) jsonMap.get
                     (TopologyLayoutConstants.JSON_KEY_CONFIG));
-            addToYamlTopLevelComponents(yamlMap, (List<Map<String, Object>>) jsonMap.get(TopologyLayoutConstants.JSON_KEY_DATA_SOURCES), TopologyLayoutConstants.YAML_KEY_SPOUTS);
-            addToYamlTopLevelComponents(yamlMap, (List<Map<String, Object>>) jsonMap.get(TopologyLayoutConstants.JSON_KEY_PROCESSORS), TopologyLayoutConstants.YAML_KEY_BOLTS);
-            addToYamlTopLevelComponents(yamlMap, (List<Map<String, Object>>) jsonMap.get(TopologyLayoutConstants.JSON_KEY_DATA_SINKS), TopologyLayoutConstants.YAML_KEY_BOLTS);
-            addToYamlTopLevelComponents(yamlMap, (List<Map<String, Object>>) jsonMap.get(TopologyLayoutConstants.JSON_KEY_LINKS), TopologyLayoutConstants.YAML_KEY_STREAMS);
+            for (Map.Entry<String, Map<String, Object>> entry: getYamlKeysAndComponents(topology.getTopologyDag())) {
+                addComponentToCollection(yamlMap, entry.getValue(), entry.getKey());
+            }
             DumperOptions options = new DumperOptions();
             options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
             //options.setDefaultScalarStyle(DumperOptions.ScalarStyle.PLAIN);
@@ -242,6 +239,12 @@ public class StormTopologyActionsImpl implements TopologyActions {
                 fileWriter.close();
             }
         }
+    }
+
+    private List<Map.Entry<String, Map<String, Object>>> getYamlKeysAndComponents(TopologyDag topologyDag) {
+        StormTopologyFluxGenerator fluxGenerator = new StormTopologyFluxGenerator();
+        topologyDag.traverse(fluxGenerator);
+        return fluxGenerator.getYamlKeysAndComponents();
     }
 
     private String getTopologyName (Topology topology) {
@@ -262,40 +265,6 @@ public class StormTopologyActionsImpl implements TopologyActions {
         config.putAll(topologyConfig);
         yamlMap.put(TopologyLayoutConstants.YAML_KEY_CONFIG, config);
     }
-
-    private void addToYamlTopLevelComponents (Map<String, Object> yamlMap, List<Map<String,
-            Object>> components, String collectionKey) throws Exception {
-        for (Map component: components) {
-            String transformationClass = (String) component.get
-                    (TopologyLayoutConstants.JSON_KEY_TRANSFORMATION_CLASS);
-            String uiname = (String) component.get
-                    (TopologyLayoutConstants.JSON_KEY_UINAME);
-            Map<String, Object> config = (Map<String, Object>) component.get
-                    (TopologyLayoutConstants.JSON_KEY_CONFIG);
-            FluxComponent fluxComponent = (FluxComponent) ReflectionHelper
-                    .newInstance(transformationClass);
-            fluxComponent.withConfig(config);
-            List<Map<String, Object>> referencedComponents = fluxComponent
-                    .getReferencedComponents();
-            // add all the components referenced by this yaml component
-            for (Map<String, Object> referencedComponent: referencedComponents) {
-                this.addComponentToCollection(yamlMap, referencedComponent,
-                        TopologyLayoutConstants.YAML_KEY_COMPONENTS);
-            }
-            Map<String, Object> yamlComponent = fluxComponent
-                    .getComponent();
-            // getComponent either returns a spouts/bolt or stream. Update
-            // the id or the name field to uiname to guarantee uniqueness in
-            // yaml file since uiname is presumed to be unique
-            String idField = yamlComponent.containsKey
-                    (TopologyLayoutConstants.YAML_KEY_ID) ? TopologyLayoutConstants.YAML_KEY_ID : TopologyLayoutConstants.YAML_KEY_NAME;
-            yamlComponent.put(idField, uiname);
-            // add the yaml component itself
-            this.addComponentToCollection(yamlMap, yamlComponent, collectionKey);
-        }
-        return;
-    }
-
 
     private void addComponentToCollection (Map<String, Object> yamlMap, Map<String, Object> yamlComponent, String collectionKey) {
         if (yamlComponent == null ) {

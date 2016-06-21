@@ -19,11 +19,9 @@
 package com.hortonworks.iotas.layout.design.splitjoin;
 
 import com.hortonworks.iotas.layout.design.Utils;
-import com.hortonworks.iotas.layout.design.component.RulesProcessor;
-import com.hortonworks.iotas.layout.design.transform.Transform;
+import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
 
 import java.util.Collections;
-import java.util.List;
 
 /**
  * Stage has a list of transforms to be applied and send the output to a given stream.

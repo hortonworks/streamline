@@ -18,7 +18,6 @@
  */
 package com.hortonworks.iotas.layout.runtime.transform;
 
-import com.hortonworks.iotas.layout.design.rule.action.Action;
 import com.hortonworks.iotas.layout.design.rule.action.NotifierAction;
 import com.hortonworks.iotas.layout.design.rule.action.TransformAction;
 import com.hortonworks.iotas.layout.design.splitjoin.JoinAction;
@@ -31,6 +30,7 @@ import com.hortonworks.iotas.layout.runtime.rule.action.NotifierActionRuntime;
 import com.hortonworks.iotas.layout.runtime.splitjoin.JoinActionRuntime;
 import com.hortonworks.iotas.layout.runtime.splitjoin.SplitActionRuntime;
 import com.hortonworks.iotas.layout.runtime.splitjoin.StageActionRuntime;
+import com.hortonworks.iotas.topology.component.rule.action.Action;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

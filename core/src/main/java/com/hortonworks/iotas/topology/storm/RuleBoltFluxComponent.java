@@ -51,8 +51,7 @@ public class RuleBoltFluxComponent extends AbstractFluxComponent {
         ObjectMapper mapper = new ObjectMapper();
         String rulesProcessorJson = null;
         try {
-            rulesProcessorJson = mapper.writeValueAsString(conf.get
-                    (TopologyLayoutConstants.JSON_KEY_RULES_PROCESSOR_CONFIG));
+            rulesProcessorJson = mapper.writeValueAsString(conf);
         } catch (JsonProcessingException e) {
             log.error("Error creating json config string for RulesProcessor",
                     e);

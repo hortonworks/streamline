@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS topologies (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS topology_components (
+CREATE TABLE IF NOT EXISTS topology_component_definitions (
     id BIGINT AUTO_INCREMENT NOT NULL,
     name VARCHAR(256) NOT NULL,
     type TEXT NOT NULL,

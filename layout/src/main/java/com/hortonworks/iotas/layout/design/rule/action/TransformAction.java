@@ -19,6 +19,7 @@
 package com.hortonworks.iotas.layout.design.rule.action;
 
 import com.hortonworks.iotas.layout.design.transform.Transform;
+import com.hortonworks.iotas.topology.component.rule.action.Action;
 
 import java.util.ArrayList;
 import java.util.Collection;

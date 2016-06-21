@@ -19,7 +19,6 @@
 package com.hortonworks.iotas.layout.design.normalization;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.iotas.layout.design.component.NormalizationProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

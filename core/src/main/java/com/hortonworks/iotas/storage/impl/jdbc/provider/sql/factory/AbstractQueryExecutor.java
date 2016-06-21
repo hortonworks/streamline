@@ -14,6 +14,7 @@ import com.hortonworks.iotas.catalog.StreamInfo;
 import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.catalog.TagStorableMapping;
 import com.hortonworks.iotas.catalog.Topology;
+import com.hortonworks.iotas.catalog.TopologyComponent;
 import com.hortonworks.iotas.catalog.TopologyEdge;
 import com.hortonworks.iotas.catalog.TopologyEditorMetadata;
 import com.hortonworks.iotas.catalog.TopologyProcessor;
@@ -32,7 +33,7 @@ import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.query.SqlQuery;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.query.SqlSelectQuery;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
 import com.hortonworks.iotas.storage.impl.jdbc.util.Util;
-import com.hortonworks.iotas.topology.TopologyComponent;
+import com.hortonworks.iotas.topology.TopologyComponentDefinition;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -298,8 +299,8 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
                     return (T) new Device();
                 case(ParserInfo.NAME_SPACE):
                     return (T) new ParserInfo();
-                case (TopologyComponent.NAME_SPACE):
-                    return (T) new TopologyComponent();
+                case (TopologyComponentDefinition.NAME_SPACE):
+                    return (T) new TopologyComponentDefinition();
                 case (TopologyEditorMetadata.NAME_SPACE):
                     return (T) new TopologyEditorMetadata();
                 case (Topology.NAME_SPACE):
@@ -314,6 +315,8 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
                     return (T) new StreamInfo();
                 case (NotifierInfo.NAMESPACE):
                     return (T) new NotifierInfo();
+                case (TopologyComponent.NAMESPACE):
+                    return (T) new TopologyComponent();
                 case (TopologySource.NAMESPACE):
                     return (T) new TopologySource();
                 case (TopologySink.NAMESPACE):

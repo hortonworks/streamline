@@ -18,8 +18,9 @@
  */
 package com.hortonworks.iotas.layout.design;
 
-import com.hortonworks.iotas.layout.design.rule.Rule;
-import com.hortonworks.iotas.layout.design.rule.action.Action;
+
+import com.hortonworks.iotas.topology.component.rule.Rule;
+import com.hortonworks.iotas.topology.component.rule.action.Action;
 
 import java.util.Collections;
 

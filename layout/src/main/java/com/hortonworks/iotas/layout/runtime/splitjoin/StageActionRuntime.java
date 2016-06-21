@@ -20,7 +20,6 @@ package com.hortonworks.iotas.layout.runtime.splitjoin;
 
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.Result;
-import com.hortonworks.iotas.layout.design.rule.action.Action;
 import com.hortonworks.iotas.layout.design.rule.action.TransformAction;
 import com.hortonworks.iotas.layout.design.splitjoin.StageAction;
 import com.hortonworks.iotas.layout.design.transform.Transform;
@@ -28,6 +27,7 @@ import com.hortonworks.iotas.layout.runtime.RuntimeService;
 import com.hortonworks.iotas.layout.runtime.TransformActionRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.action.ActionRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.action.ActionRuntimeContext;
+import com.hortonworks.iotas.topology.component.rule.action.Action;
 
 import java.util.List;
 import java.util.Set;
