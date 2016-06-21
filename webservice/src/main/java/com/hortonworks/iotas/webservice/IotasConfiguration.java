@@ -80,6 +80,8 @@ public class IotasConfiguration extends Configuration {
 
     private String customProcessorUploadSuccessPath;
 
+    private TimeSeriesDBConfiguration timeSeriesDBConfiguration;
+
     @JsonProperty
     public void setBrokerList(String brokerList){
         this.brokerList = brokerList;
@@ -189,5 +191,13 @@ public class IotasConfiguration extends Configuration {
 
     public void setStormApiRootUrl(String stormApiRootUrl) {
         this.stormApiRootUrl = stormApiRootUrl;
+    }
+
+    public TimeSeriesDBConfiguration getTimeSeriesDBConfiguration() {
+        return timeSeriesDBConfiguration;
+    }
+
+    public void setTimeSeriesDBConfiguration(TimeSeriesDBConfiguration timeSeriesDBConfiguration) {
+        this.timeSeriesDBConfiguration = timeSeriesDBConfiguration;
     }
 }

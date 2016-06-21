@@ -18,6 +18,7 @@
         <module>notification-service</module>
         <module>notifiers</module>
         <module>layout</module>
+        <module>metrics</module>
     </modules>
 
     <properties>

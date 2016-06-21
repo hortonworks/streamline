@@ -7,9 +7,12 @@ import java.util.Map;
 
 /**
  * Interface that shows metrics for IoTaS topology.
+ * <p/>
  * Each underlying streaming framework should provide implementations to integrate metrics of framework into IoTaS.
+ * <p/>
+ * Note that this interface also extends TopologyTimeSeriesMetrics, which is for querying topology metrics from time-series DB.
  */
-public interface TopologyMetrics {
+public interface TopologyMetrics extends TopologyTimeSeriesMetrics {
     /**
      * Initialize method. Any one time initialization is done here.
      *
