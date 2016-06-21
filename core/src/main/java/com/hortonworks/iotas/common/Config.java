@@ -18,6 +18,10 @@ public class Config extends AbstractConfig {
     public Config() {
     }
 
+    public Config(Config other) {
+        super(other);
+    }
+
     /**
      * Construct a Config object from a {@link Properties} file.
      *

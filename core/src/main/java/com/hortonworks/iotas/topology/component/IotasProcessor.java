@@ -36,6 +36,11 @@ public class IotasProcessor extends IotasComponent implements Processor {
         addOutputStreams(outputStreams);
     }
 
+    public IotasProcessor(IotasProcessor other) {
+        super(other);
+        addOutputStreams(other.getOutputStreams());
+    }
+
     @Override
     public Set<Stream> getOutputStreams() {
         return outputStreams;

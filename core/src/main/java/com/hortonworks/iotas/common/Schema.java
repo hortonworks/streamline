@@ -23,6 +23,9 @@ import com.hortonworks.iotas.exception.ParserException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -331,14 +334,15 @@ public class Schema implements Serializable {
         }
     }
 
-    private List<Field> fields;
+    private Map<String, Field> fields = new LinkedHashMap<>();
 
     // for jackson
     public Schema() {
     }
+
     // use the static factory or the builder
     private Schema(List<Field> fields){
-        this.fields = ImmutableList.copyOf(fields);
+        setFields(fields);
     }
 
     /**
@@ -364,11 +368,21 @@ public class Schema implements Serializable {
 
     // for jackson
     public void setFields(List<Field> fields) {
-        this.fields = ImmutableList.copyOf(fields);
+        for (Field field: fields) {
+            this.fields.put(field.getName().toUpperCase(), field);
+        }
     }
 
     public List<Field> getFields(){
-        return this.fields;
+        return new ArrayList<>(this.fields.values());
+    }
+
+    /**
+     * Returns a field in the schema with the given name or null
+     * if the schema does not contain the field with the name.
+     */
+    public Field getField(String name) {
+        return fields.get(name.toUpperCase());
     }
 
     //TODO: need to replace with actual ToJson from Json
@@ -378,7 +392,7 @@ public class Schema implements Serializable {
         if(fields.isEmpty()) return "{}";
         StringBuilder sb = new StringBuilder();
         sb.append("{");
-        for(Field field : fields) {
+        for(Field field : fields.values()) {
             sb.append(field.toString()).append(",");
         }
         sb.setLength(sb.length() -1 );  // remove last, orphan ','

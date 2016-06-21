@@ -4,24 +4,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
-import com.hortonworks.iotas.catalog.DataFeed;
-import com.hortonworks.iotas.catalog.DataSource;
-import com.hortonworks.iotas.catalog.Device;
-import com.hortonworks.iotas.catalog.FileInfo;
-import com.hortonworks.iotas.catalog.NotifierInfo;
-import com.hortonworks.iotas.catalog.ParserInfo;
-import com.hortonworks.iotas.catalog.StreamInfo;
-import com.hortonworks.iotas.catalog.Tag;
-import com.hortonworks.iotas.catalog.TagStorableMapping;
-import com.hortonworks.iotas.catalog.Topology;
-import com.hortonworks.iotas.catalog.TopologyComponent;
-import com.hortonworks.iotas.catalog.TopologyEdge;
-import com.hortonworks.iotas.catalog.TopologyEditorMetadata;
-import com.hortonworks.iotas.catalog.TopologyProcessor;
-import com.hortonworks.iotas.catalog.TopologyProcessorStreamMapping;
-import com.hortonworks.iotas.catalog.TopologySink;
-import com.hortonworks.iotas.catalog.TopologySource;
-import com.hortonworks.iotas.catalog.TopologySourceStreamMapping;
+import com.hortonworks.iotas.catalog.*;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.exception.StorageException;
@@ -329,6 +312,8 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
                     return (T) new TopologySourceStreamMapping();
                 case (TopologyProcessorStreamMapping.NAMESPACE):
                     return (T) new TopologyProcessorStreamMapping();
+                case (RuleInfo.NAMESPACE):
+                    return (T) new RuleInfo();
                 default:
                     log.error("Storable for namespace [{}] is not registered", nameSpace);
                     throw new RuntimeException("Unsupported Storable type: "+nameSpace);

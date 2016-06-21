@@ -30,6 +30,10 @@ public class Condition implements Serializable {
         // For JSON serializer
     }
 
+    public Condition(Expression expression) {
+        this.expression = expression;
+    }
+
     public Expression getExpression() {
         return expression;
     }
