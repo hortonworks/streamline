@@ -1,13 +1,13 @@
 package com.hortonworks.iotas.layout.runtime.rule.condition.expression;
 
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.layout.design.rule.condition.ArrayFieldExpression;
-import com.hortonworks.iotas.layout.design.rule.condition.BinaryExpression;
-import com.hortonworks.iotas.layout.design.rule.condition.Condition;
-import com.hortonworks.iotas.layout.design.rule.condition.Expression;
-import com.hortonworks.iotas.layout.design.rule.condition.FieldExpression;
-import com.hortonworks.iotas.layout.design.rule.condition.MapFieldExpression;
-import com.hortonworks.iotas.layout.design.rule.condition.Operator;
+import com.hortonworks.iotas.topology.component.rule.condition.ArrayFieldExpression;
+import com.hortonworks.iotas.topology.component.rule.condition.BinaryExpression;
+import com.hortonworks.iotas.topology.component.rule.condition.Condition;
+import com.hortonworks.iotas.topology.component.rule.condition.Expression;
+import com.hortonworks.iotas.topology.component.rule.condition.FieldExpression;
+import com.hortonworks.iotas.topology.component.rule.condition.MapFieldExpression;
+import com.hortonworks.iotas.topology.component.rule.condition.Operator;
 import org.junit.Assert;
 import org.junit.Test;
 

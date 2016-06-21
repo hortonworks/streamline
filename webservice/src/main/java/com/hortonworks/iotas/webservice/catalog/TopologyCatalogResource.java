@@ -24,7 +24,7 @@ import com.hortonworks.iotas.catalog.Topology;
 import com.hortonworks.iotas.processor.CustomProcessorInfo;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.topology.TopologyActions;
-import com.hortonworks.iotas.topology.TopologyComponent;
+import com.hortonworks.iotas.topology.TopologyComponentDefinition;
 import com.hortonworks.iotas.webservice.util.WSUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -210,7 +210,7 @@ public class TopologyCatalogResource {
         try {
             Topology result = catalogService.getTopology(topologyId);
             if (result != null) {
-                catalogService.validateTopology(SCHEMA, topologyId);
+//TODO: fix     catalogService.validateTopology(SCHEMA, topologyId);
                 catalogService.deployTopology(result);
                 return WSUtils.respond(OK, SUCCESS, result);
             }
@@ -272,7 +272,7 @@ public class TopologyCatalogResource {
     @Path("/system/componentdefinitions")
     @Timed
     public Response listTopologyComponentTypes () {
-        Collection<TopologyComponent.TopologyComponentType>
+        Collection<TopologyComponentDefinition.TopologyComponentType>
                 topologyComponents = catalogService.listTopologyComponentTypes();
         return WSUtils.respond(OK, SUCCESS, topologyComponents);
     }
@@ -285,15 +285,15 @@ public class TopologyCatalogResource {
     @Path("/system/componentdefinitions/{component}")
     @Timed
     public Response listTopologyComponentsForTypeWithFilter (@PathParam
-                                                                   ("component") TopologyComponent.TopologyComponentType componentType, @Context UriInfo uriInfo) {
+                                                                   ("component") TopologyComponentDefinition.TopologyComponentType componentType, @Context UriInfo uriInfo) {
         List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>();
         try {
             MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
             queryParams = WSUtils.buildQueryParameters(params);
-            Collection<TopologyComponent> topologyComponents = catalogService
+            Collection<TopologyComponentDefinition> topologyComponentDefinitions = catalogService
                     .listTopologyComponentsForTypeWithFilter(componentType, queryParams);
-            if (!topologyComponents.isEmpty()) {
-                return WSUtils.respond(OK, SUCCESS, topologyComponents);
+            if (!topologyComponentDefinitions.isEmpty()) {
+                return WSUtils.respond(OK, SUCCESS, topologyComponentDefinitions);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -305,9 +305,9 @@ public class TopologyCatalogResource {
     @Path("/system/componentdefinitions/{component}/{id}")
     @Timed
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTopologyById (@PathParam("component") TopologyComponent.TopologyComponentType componentType, @PathParam ("id") Long id) {
+    public Response getTopologyById (@PathParam("component") TopologyComponentDefinition.TopologyComponentType componentType, @PathParam ("id") Long id) {
         try {
-            TopologyComponent result = catalogService
+            TopologyComponentDefinition result = catalogService
                     .getTopologyComponent(id);
             if (result != null) {
                 return WSUtils.respond(OK, SUCCESS, result);
@@ -321,16 +321,16 @@ public class TopologyCatalogResource {
     @POST
     @Path("/system/componentdefinitions/{component}")
     @Timed
-    public Response addTopologyComponentConfig (@PathParam("component") TopologyComponent.TopologyComponentType componentType,
-                                                TopologyComponent topologyComponent) {
+    public Response addTopologyComponentConfig (@PathParam("component") TopologyComponentDefinition.TopologyComponentType componentType,
+                                                TopologyComponentDefinition topologyComponentDefinition) {
         try {
-            Response response = validateTopologyComponent(topologyComponent);
+            Response response = validateTopologyComponent(topologyComponentDefinition);
             if (response != null) {
                 return response;
             }
-            topologyComponent.setType(componentType);
-            TopologyComponent createdComponent = catalogService
-                    .addTopologyComponent(topologyComponent);
+            topologyComponentDefinition.setType(componentType);
+            TopologyComponentDefinition createdComponent = catalogService
+                    .addTopologyComponent(topologyComponentDefinition);
             return WSUtils.respond(CREATED, SUCCESS, createdComponent);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -341,15 +341,15 @@ public class TopologyCatalogResource {
     @Path("/system/componentdefinitions/{component}/{id}")
     @Timed
     public Response addOrUpdateTopologyComponentConfig (@PathParam("component")
-                                              TopologyComponent.TopologyComponentType componentType, @PathParam("id") Long id, TopologyComponent topologyComponent) {
+                                              TopologyComponentDefinition.TopologyComponentType componentType, @PathParam("id") Long id, TopologyComponentDefinition topologyComponentDefinition) {
         try {
-            Response response = validateTopologyComponent(topologyComponent);
+            Response response = validateTopologyComponent(topologyComponentDefinition);
             if (response != null) {
                 return response;
             }
-            topologyComponent.setType(componentType);
-            TopologyComponent result = catalogService.addOrUpdateTopologyComponent(id,
-                    topologyComponent);
+            topologyComponentDefinition.setType(componentType);
+            TopologyComponentDefinition result = catalogService.addOrUpdateTopologyComponent(id,
+                    topologyComponentDefinition);
             return WSUtils.respond(OK, SUCCESS, result);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -359,11 +359,11 @@ public class TopologyCatalogResource {
     @DELETE
     @Path("/system/componentdefinitions/{component}/{id}")
     @Timed
-    public Response removeTopologyComponentConfig (@PathParam("component") TopologyComponent.TopologyComponentType componentType, @PathParam ("id") Long id) {
+    public Response removeTopologyComponentConfig (@PathParam("component") TopologyComponentDefinition.TopologyComponentType componentType, @PathParam ("id") Long id) {
         try {
-            TopologyComponent removedTopologyComponent = catalogService.removeTopologyComponent(id);
-            if (removedTopologyComponent != null) {
-                return WSUtils.respond(OK, SUCCESS, removedTopologyComponent);
+            TopologyComponentDefinition removedTopologyComponentDefinition = catalogService.removeTopologyComponent(id);
+            if (removedTopologyComponentDefinition != null) {
+                return WSUtils.respond(OK, SUCCESS, removedTopologyComponentDefinition);
             } else {
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, id.toString());
             }
@@ -396,8 +396,8 @@ public class TopologyCatalogResource {
     @GET
     @Path("/system/componentdefinitions/{processor}/custom")
     @Timed
-    public Response listCustomProcessorsWithFilters (@PathParam("processor") TopologyComponent.TopologyComponentType componentType, @Context UriInfo uriInfo) {
-        if (!TopologyComponent.TopologyComponentType.PROCESSOR.equals(componentType)) {
+    public Response listCustomProcessorsWithFilters (@PathParam("processor") TopologyComponentDefinition.TopologyComponentType componentType, @Context UriInfo uriInfo) {
+        if (!TopologyComponentDefinition.TopologyComponentType.PROCESSOR.equals(componentType)) {
             return WSUtils.respond(NOT_FOUND, CUSTOM_PROCESSOR_ONLY);
         }
         List<CatalogService.QueryParam> queryParams;
@@ -420,8 +420,8 @@ public class TopologyCatalogResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/system/componentdefinitions/{processor}/custom")
     @Timed
-    public Response addCustomProcessor (@PathParam("processor") TopologyComponent.TopologyComponentType componentType, FormDataMultiPart form) {
-        if (!TopologyComponent.TopologyComponentType.PROCESSOR.equals(componentType)) {
+    public Response addCustomProcessor (@PathParam("processor") TopologyComponentDefinition.TopologyComponentType componentType, FormDataMultiPart form) {
+        if (!TopologyComponentDefinition.TopologyComponentType.PROCESSOR.equals(componentType)) {
            return  WSUtils.respond(NOT_FOUND, CUSTOM_PROCESSOR_ONLY);
         }
         InputStream imageFile = null, jarFile = null;
@@ -459,8 +459,8 @@ public class TopologyCatalogResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/system/componentdefinitions/{processor}/custom")
     @Timed
-    public Response updateCustomProcessor (@PathParam("processor") TopologyComponent.TopologyComponentType componentType, FormDataMultiPart form) {
-        if (!TopologyComponent.TopologyComponentType.PROCESSOR.equals(componentType)) {
+    public Response updateCustomProcessor (@PathParam("processor") TopologyComponentDefinition.TopologyComponentType componentType, FormDataMultiPart form) {
+        if (!TopologyComponentDefinition.TopologyComponentType.PROCESSOR.equals(componentType)) {
             return WSUtils.respond(NOT_FOUND, CUSTOM_PROCESSOR_ONLY);
         }
         InputStream imageFile = null, jarFile = null;
@@ -497,8 +497,8 @@ public class TopologyCatalogResource {
     @DELETE
     @Path("/system/componentdefinitions/{processor}/custom/{name}")
     @Timed
-    public Response removeCustomProcessorInfo (@PathParam("processor") TopologyComponent.TopologyComponentType componentType, @PathParam ("name") String name) {
-        if (!TopologyComponent.TopologyComponentType.PROCESSOR.equals(componentType)) {
+    public Response removeCustomProcessorInfo (@PathParam("processor") TopologyComponentDefinition.TopologyComponentType componentType, @PathParam ("name") String name) {
+        if (!TopologyComponentDefinition.TopologyComponentType.PROCESSOR.equals(componentType)) {
             return WSUtils.respond(NOT_FOUND, CUSTOM_PROCESSOR_ONLY);
         }
         try {
@@ -513,23 +513,23 @@ public class TopologyCatalogResource {
         }
     }
 
-    private Response validateTopologyComponent (TopologyComponent topologyComponent) {
+    private Response validateTopologyComponent (TopologyComponentDefinition topologyComponentDefinition) {
         Response response = null;
-        if (StringUtils.isEmpty(topologyComponent.getName())) {
+        if (StringUtils.isEmpty(topologyComponentDefinition.getName())) {
             response = WSUtils.respond(BAD_REQUEST,
-                    BAD_REQUEST_PARAM_MISSING, TopologyComponent.NAME);
+                    BAD_REQUEST_PARAM_MISSING, TopologyComponentDefinition.NAME);
         }
-        if (StringUtils.isEmpty(topologyComponent.getStreamingEngine())) {
+        if (StringUtils.isEmpty(topologyComponentDefinition.getStreamingEngine())) {
             response = WSUtils.respond(BAD_REQUEST,
-                    BAD_REQUEST_PARAM_MISSING, TopologyComponent.STREAMING_ENGINE);
+                    BAD_REQUEST_PARAM_MISSING, TopologyComponentDefinition.STREAMING_ENGINE);
         }
-        if (StringUtils.isEmpty(topologyComponent.getSubType())) {
+        if (StringUtils.isEmpty(topologyComponentDefinition.getSubType())) {
             response = WSUtils.respond(BAD_REQUEST,
-                    BAD_REQUEST_PARAM_MISSING, TopologyComponent.SUB_TYPE);
+                    BAD_REQUEST_PARAM_MISSING, TopologyComponentDefinition.SUB_TYPE);
         }
-        if (StringUtils.isEmpty(topologyComponent.getConfig())) {
+        if (StringUtils.isEmpty(topologyComponentDefinition.getConfig())) {
             response = WSUtils.respond(BAD_REQUEST,
-                    BAD_REQUEST_PARAM_MISSING, TopologyComponent.CONFIG);
+                    BAD_REQUEST_PARAM_MISSING, TopologyComponentDefinition.CONFIG);
         }
         return response;
     }

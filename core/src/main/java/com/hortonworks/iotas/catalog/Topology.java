@@ -5,6 +5,7 @@ import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.storage.PrimaryKey;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
+import com.hortonworks.iotas.topology.component.TopologyDag;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,6 +41,22 @@ public class Topology implements Storable {
      * Time at which this topology was created/updated.
      */
     private Long timestamp;
+
+    /**
+     * The topology DAG. This is internally generated and used for
+     * deployment.
+     */
+    private TopologyDag topologyDag;
+
+    @JsonIgnore
+    public TopologyDag getTopologyDag() {
+        return topologyDag;
+    }
+
+    @JsonIgnore
+    public void setTopologyDag(TopologyDag topologyDag) {
+        this.topologyDag = topologyDag;
+    }
 
     @JsonIgnore
     public String getNameSpace () {
@@ -120,12 +137,13 @@ public class Topology implements Storable {
     }
 
     @Override
-    public String toString () {
+    public String toString() {
         return "Topology{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", config='" + config + '\'' +
                 ", timestamp=" + timestamp +
+                ", topologyDag=" + topologyDag +
                 '}';
     }
 

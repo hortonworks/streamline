@@ -20,10 +20,10 @@ package com.hortonworks.iotas.layout.runtime.rule;
 
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.layout.design.rule.Rule;
-import com.hortonworks.iotas.layout.design.rule.condition.Expression;
-import com.hortonworks.iotas.layout.design.rule.condition.FieldExpression;
-import com.hortonworks.iotas.layout.design.rule.condition.GroupBy;
+import com.hortonworks.iotas.topology.component.rule.condition.Expression;
+import com.hortonworks.iotas.topology.component.rule.condition.FieldExpression;
+import com.hortonworks.iotas.topology.component.rule.condition.GroupBy;
+import com.hortonworks.iotas.topology.component.rule.Rule;
 import com.hortonworks.iotas.layout.runtime.rule.condition.expression.StormSqlExpression;
 import com.hortonworks.iotas.layout.runtime.rule.sql.StormSqlEngine;
 import com.hortonworks.iotas.layout.runtime.rule.sql.StormSqlScript;
@@ -31,7 +31,7 @@ import com.hortonworks.iotas.layout.runtime.rule.sql.StormSqlScript;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.hortonworks.iotas.layout.design.rule.condition.Window.WINDOW_ID;
+import static com.hortonworks.iotas.topology.component.rule.condition.Window.WINDOW_ID;
 
 public class StormSqlRuleRuntimeBuilder extends AbstractRuleRuntimeBuilder {
     private Rule rule;

@@ -19,6 +19,7 @@
 package com.hortonworks.iotas.layout.design.component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

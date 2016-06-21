@@ -37,6 +37,7 @@ import com.hortonworks.iotas.catalog.Device;
 import com.hortonworks.iotas.catalog.StreamInfo;
 import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.catalog.Topology;
+import com.hortonworks.iotas.catalog.TopologyComponent;
 import com.hortonworks.iotas.catalog.TopologyEdge;
 import com.hortonworks.iotas.catalog.TopologyEditorMetadata;
 import com.google.common.base.Function;
@@ -46,6 +47,8 @@ import com.hortonworks.iotas.catalog.TopologyProcessorStreamMapping;
 import com.hortonworks.iotas.catalog.TopologySink;
 import com.hortonworks.iotas.catalog.TopologySource;
 import com.hortonworks.iotas.catalog.TopologySourceStreamMapping;
+import com.hortonworks.iotas.common.Config;
+import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.processor.CustomProcessorInfo;
 import com.hortonworks.iotas.storage.DataSourceSubType;
 import com.hortonworks.iotas.storage.Storable;
@@ -54,10 +57,14 @@ import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.exception.StorageException;
 import com.hortonworks.iotas.topology.ConfigField;
 import com.hortonworks.iotas.topology.TopologyActions;
-import com.hortonworks.iotas.topology.TopologyComponent;
+import com.hortonworks.iotas.topology.TopologyComponentDefinition;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import com.hortonworks.iotas.topology.TopologyLayoutValidator;
 import com.hortonworks.iotas.topology.TopologyMetrics;
+import com.hortonworks.iotas.topology.component.InputComponent;
+import com.hortonworks.iotas.topology.component.TopologyDag;
+import com.hortonworks.iotas.topology.component.TopologyDagBuilder;
+import com.hortonworks.iotas.topology.component.impl.NotificationSink;
 import com.hortonworks.iotas.util.CoreUtils;
 import com.hortonworks.iotas.util.FileStorage;
 import com.hortonworks.iotas.util.JsonSchemaValidator;
@@ -107,7 +114,7 @@ public class CatalogService {
     private static final String TOPOLOGY_NAMESPACE = new Topology().getNameSpace();
     private static final String FILE_NAMESPACE = FileInfo.NAME_SPACE;
     private static final String STREAMINFO_NAMESPACE = new StreamInfo().getNameSpace();
-    private static final String TOPOLOGY_COMPONENT_NAMESPACE = new com.hortonworks.iotas.catalog.TopologyComponent().getNameSpace();
+    private static final String TOPOLOGY_COMPONENT_NAMESPACE = new TopologyComponent().getNameSpace();
     private static final String TOPOLOGY_SOURCE_NAMESPACE = new TopologySource().getNameSpace();
     private static final String TOPOLOGY_SOURCE_STREAM_MAPPING_NAMESPACE = new TopologySourceStreamMapping().getNameSpace();
     private static final String TOPOLOGY_SINK_NAMESPACE = new TopologySink().getNameSpace();
@@ -120,6 +127,7 @@ public class CatalogService {
     private TopologyMetrics topologyMetrics;
     private FileStorage fileStorage;
     private TagService tagService;
+    private TopologyDagBuilder topologyDagBuilder;
 
     public static class QueryParam {
 
@@ -172,6 +180,7 @@ public class CatalogService {
         this.topologyMetrics = topologyMetrics;
         this.fileStorage = fileStorage;
         this.tagService = new CatalogTagService(dao);
+        this.topologyDagBuilder = new TopologyDagBuilder(this);
     }
 
     private String getNamespaceForDataSourceType(DataSource.Type dataSourceType) {
@@ -574,6 +583,9 @@ public class CatalogService {
     }
 
     public void deployTopology(Topology topology) throws Exception {
+        TopologyDag dag = topologyDagBuilder.getDag(topology);
+        topology.setTopologyDag(dag);
+        LOG.debug("Deploying topology {}", topology);
         addUpdateNotifierInfoFromTopology(topology);
         setUpClusterArtifacts(topology);
         topologyActions.deploy(topology);
@@ -618,22 +630,19 @@ public class CatalogService {
         }
     }
 
-    public void killTopology (Topology topology) throws Exception {
-        this.topologyActions.kill(topology);
-        return;
+    public void killTopology(Topology topology) throws Exception {
+        topologyActions.kill(topology);
     }
 
-    public void suspendTopology (Topology topology) throws Exception {
-        this.topologyActions.suspend(topology);
-        return;
+    public void suspendTopology(Topology topology) throws Exception {
+        topologyActions.suspend(topology);
     }
 
-    public void resumeTopology (Topology topology) throws Exception {
-        this.topologyActions.resume(topology);
-        return;
+    public void resumeTopology(Topology topology) throws Exception {
+        topologyActions.resume(topology);
     }
 
-    public TopologyActions.Status topologyStatus (Topology topology) throws Exception {
+    public TopologyActions.Status topologyStatus(Topology topology) throws Exception {
         return this.topologyActions.status(topology);
     }
 
@@ -641,53 +650,53 @@ public class CatalogService {
         return this.topologyMetrics.getMetricsForTopology(topology);
     }
 
-    public Collection<TopologyComponent.TopologyComponentType> listTopologyComponentTypes () {
-        return Arrays.asList(TopologyComponent.TopologyComponentType.values());
+    public Collection<TopologyComponentDefinition.TopologyComponentType> listTopologyComponentTypes () {
+        return Arrays.asList(TopologyComponentDefinition.TopologyComponentType.values());
     }
 
-    public Collection<TopologyComponent> listTopologyComponentsForTypeWithFilter (TopologyComponent.TopologyComponentType componentType, List<QueryParam> params) {
-        List<TopologyComponent> topologyComponents = new
-                ArrayList<TopologyComponent>();
-        String ns = TopologyComponent.NAME_SPACE;
-        Collection<TopologyComponent> filtered = dao.<TopologyComponent>find(ns, params);
-        for (TopologyComponent tc: filtered) {
+    public Collection<TopologyComponentDefinition> listTopologyComponentsForTypeWithFilter (TopologyComponentDefinition.TopologyComponentType componentType, List<QueryParam> params) {
+        List<TopologyComponentDefinition> topologyComponentDefinitions = new
+                ArrayList<TopologyComponentDefinition>();
+        String ns = TopologyComponentDefinition.NAME_SPACE;
+        Collection<TopologyComponentDefinition> filtered = dao.<TopologyComponentDefinition>find(ns, params);
+        for (TopologyComponentDefinition tc: filtered) {
             if (tc.getType().equals(componentType)) {
-                topologyComponents.add(tc);
+                topologyComponentDefinitions.add(tc);
             }
         }
-        return topologyComponents;
+        return topologyComponentDefinitions;
     }
 
-    public TopologyComponent getTopologyComponent (Long topologyComponentId) {
-        TopologyComponent topologyComponent = new TopologyComponent();
-        topologyComponent.setId(topologyComponentId);
-        TopologyComponent result = this.dao.get(topologyComponent.getStorableKey());
+    public TopologyComponentDefinition getTopologyComponent (Long topologyComponentId) {
+        TopologyComponentDefinition topologyComponentDefinition = new TopologyComponentDefinition();
+        topologyComponentDefinition.setId(topologyComponentId);
+        TopologyComponentDefinition result = this.dao.get(topologyComponentDefinition.getStorableKey());
         return result;
     }
 
-    public TopologyComponent addTopologyComponent (TopologyComponent
-                                                   topologyComponent) {
-        if (topologyComponent.getId() == null) {
-            topologyComponent.setId(this.dao.nextId(TopologyComponent.NAME_SPACE));
+    public TopologyComponentDefinition addTopologyComponent (TopologyComponentDefinition
+                                                                     topologyComponentDefinition) {
+        if (topologyComponentDefinition.getId() == null) {
+            topologyComponentDefinition.setId(this.dao.nextId(TopologyComponentDefinition.NAME_SPACE));
         }
-        if (topologyComponent.getTimestamp() == null) {
-            topologyComponent.setTimestamp(System.currentTimeMillis());
+        if (topologyComponentDefinition.getTimestamp() == null) {
+            topologyComponentDefinition.setTimestamp(System.currentTimeMillis());
         }
-        this.dao.add(topologyComponent);
-        return topologyComponent;
+        this.dao.add(topologyComponentDefinition);
+        return topologyComponentDefinition;
     }
 
-    public TopologyComponent addOrUpdateTopologyComponent (Long id, TopologyComponent topologyComponent) {
-        topologyComponent.setId(id);
-        topologyComponent.setTimestamp(System.currentTimeMillis());
-        this.dao.addOrUpdate(topologyComponent);
-        return topologyComponent;
+    public TopologyComponentDefinition addOrUpdateTopologyComponent (Long id, TopologyComponentDefinition topologyComponentDefinition) {
+        topologyComponentDefinition.setId(id);
+        topologyComponentDefinition.setTimestamp(System.currentTimeMillis());
+        this.dao.addOrUpdate(topologyComponentDefinition);
+        return topologyComponentDefinition;
     }
 
-    public TopologyComponent removeTopologyComponent (Long id) {
-        TopologyComponent topologyComponent = new TopologyComponent();
-        topologyComponent.setId(id);
-        return dao.remove(new StorableKey(TopologyComponent.NAME_SPACE, topologyComponent.getPrimaryKey()));
+    public TopologyComponentDefinition removeTopologyComponent (Long id) {
+        TopologyComponentDefinition topologyComponentDefinition = new TopologyComponentDefinition();
+        topologyComponentDefinition.setId(id);
+        return dao.remove(new StorableKey(TopologyComponentDefinition.NAME_SPACE, topologyComponentDefinition.getPrimaryKey()));
     }
 
     public InputStream getFileFromJarStorage(String fileName) throws IOException {
@@ -695,9 +704,9 @@ public class CatalogService {
     }
 
     public Collection<CustomProcessorInfo> listCustomProcessorsWithFilter (List<QueryParam> params) throws IOException {
-        Collection<TopologyComponent> customProcessors = this.listCustomProcessorsComponentsWithFilter(params);
+        Collection<TopologyComponentDefinition> customProcessors = this.listCustomProcessorsComponentsWithFilter(params);
         Collection<CustomProcessorInfo> result = new ArrayList<>();
-        for (TopologyComponent cp: customProcessors) {
+        for (TopologyComponentDefinition cp: customProcessors) {
             CustomProcessorInfo customProcessorInfo = new CustomProcessorInfo();
             customProcessorInfo.fromTopologyComponent(cp);
             result.add(customProcessorInfo);
@@ -705,19 +714,19 @@ public class CatalogService {
         return result;
     }
 
-    private Collection<TopologyComponent> listCustomProcessorsComponentsWithFilter (List<QueryParam> params) throws IOException {
+    private Collection<TopologyComponentDefinition> listCustomProcessorsComponentsWithFilter (List<QueryParam> params) throws IOException {
         List<QueryParam> queryParamsForTopologyComponent = new ArrayList<>();
-        queryParamsForTopologyComponent.add(new QueryParam(TopologyComponent.SUB_TYPE, TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_SUB_TYPE));
+        queryParamsForTopologyComponent.add(new QueryParam(TopologyComponentDefinition.SUB_TYPE, TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_SUB_TYPE));
         for (QueryParam qp : params) {
-            if (qp.getName().equals(TopologyComponent.STREAMING_ENGINE)) {
+            if (qp.getName().equals(TopologyComponentDefinition.STREAMING_ENGINE)) {
                 queryParamsForTopologyComponent.add(qp);
             }
         }
-        Collection<TopologyComponent> customProcessors = this.listTopologyComponentsForTypeWithFilter(TopologyComponent.TopologyComponentType.PROCESSOR,
+        Collection<TopologyComponentDefinition> customProcessors = this.listTopologyComponentsForTypeWithFilter(TopologyComponentDefinition.TopologyComponentType.PROCESSOR,
                 queryParamsForTopologyComponent);
-        Collection<TopologyComponent> result = new ArrayList<>();
+        Collection<TopologyComponentDefinition> result = new ArrayList<>();
         ObjectMapper mapper = new ObjectMapper();
-        for (TopologyComponent cp: customProcessors) {
+        for (TopologyComponentDefinition cp: customProcessors) {
             List<ConfigField> configFields = mapper.readValue(cp.getConfig(), new TypeReference<List<ConfigField>>() { });
             Map<String, Object> config  = new HashMap<>();
             for (ConfigField configField: configFields) {
@@ -725,7 +734,7 @@ public class CatalogService {
             }
             boolean matches = true;
             for (QueryParam qp: params) {
-                if (!qp.getName().equals(TopologyComponent.STREAMING_ENGINE) && !qp.getValue().equals(config.get(qp.getName()))) {
+                if (!qp.getName().equals(TopologyComponentDefinition.STREAMING_ENGINE) && !qp.getValue().equals(config.get(qp.getName()))) {
                     matches = false;
                     break;
                 }
@@ -740,9 +749,9 @@ public class CatalogService {
     public CustomProcessorInfo addCustomProcessorInfo (CustomProcessorInfo customProcessorInfo, InputStream jarFile, InputStream imageFile) throws IOException {
         uploadFileToStorage(jarFile, customProcessorInfo.getJarFileName());
         uploadFileToStorage(imageFile, customProcessorInfo.getImageFileName());
-        TopologyComponent topologyComponent = customProcessorInfo.toTopologyComponent();
-        topologyComponent.setId(this.dao.nextId(TopologyComponent.NAME_SPACE));
-        this.dao.add(topologyComponent);
+        TopologyComponentDefinition topologyComponentDefinition = customProcessorInfo.toTopologyComponent();
+        topologyComponentDefinition.setId(this.dao.nextId(TopologyComponentDefinition.NAME_SPACE));
+        this.dao.add(topologyComponentDefinition);
         return customProcessorInfo;
     }
 
@@ -750,15 +759,15 @@ public class CatalogService {
             IOException {
         List<QueryParam> queryParams = new ArrayList<>();
         queryParams.add(new QueryParam(CustomProcessorInfo.NAME, customProcessorInfo.getName()));
-        Collection<TopologyComponent> result = this.listCustomProcessorsComponentsWithFilter(queryParams);
+        Collection<TopologyComponentDefinition> result = this.listCustomProcessorsComponentsWithFilter(queryParams);
         if (result.isEmpty() || result.size() != 1) {
             throw new IOException("Failed to update custom processor with name:" + customProcessorInfo.getName());
         }
 
         uploadFileToStorage(jarFile, customProcessorInfo.getJarFileName());
         uploadFileToStorage(imageFile, customProcessorInfo.getImageFileName());
-        TopologyComponent customProcessorComponent = result.iterator().next();
-        TopologyComponent newCustomProcessorComponent = customProcessorInfo.toTopologyComponent();
+        TopologyComponentDefinition customProcessorComponent = result.iterator().next();
+        TopologyComponentDefinition newCustomProcessorComponent = customProcessorInfo.toTopologyComponent();
         newCustomProcessorComponent.setId(customProcessorComponent.getId());
         this.dao.addOrUpdate(newCustomProcessorComponent);
 
@@ -780,11 +789,11 @@ public class CatalogService {
     public CustomProcessorInfo removeCustomProcessorInfo (String name) throws IOException {
         List<QueryParam> queryParams = new ArrayList<>();
         queryParams.add(new QueryParam(CustomProcessorInfo.NAME, name));
-        Collection<TopologyComponent> result = this.listCustomProcessorsComponentsWithFilter(queryParams);
+        Collection<TopologyComponentDefinition> result = this.listCustomProcessorsComponentsWithFilter(queryParams);
         if (result.isEmpty() || result.size() != 1) {
             throw new IOException("Failed to delete custom processor with name:" + name);
         }
-        TopologyComponent customProcessorComponent = result.iterator().next();
+        TopologyComponentDefinition customProcessorComponent = result.iterator().next();
         this.dao.remove(customProcessorComponent.getStorableKey());
         return new CustomProcessorInfo().fromTopologyComponent(customProcessorComponent);
     }
@@ -822,23 +831,16 @@ public class CatalogService {
         return dao.remove(topologyEditorMetadata.getStorableKey());
     }
 
-    // This method is present because currently NotificationBolt expects a notifier name and queries NotifierInfo rest endpoint to retrieve the information
-    // for that notifier. However, there is no UI present for NotifierInfo rest endpoint. As a result, in order for NotificationBolt to work as is, we need to
-    // add or update any notification sink components present in the topology json before we deploy the topology
+    /*
+     * This method is present because currently NotificationBolt expects a notifier name and queries NotifierInfo
+     * rest endpoint to retrieve the information for that notifier. However, there is no UI present for NotifierInfo
+     * rest endpoint. As a result, in order for NotificationBolt to work as is, we need to
+     * add or update any notification sink components present in the topology json before we deploy the topology
+     */
     private void addUpdateNotifierInfoFromTopology (Topology topology) throws Exception {
-        String config = topology.getConfig();
-        ObjectMapper objectMapper = new ObjectMapper();
-        Map jsonMap = objectMapper.readValue(config, Map.class);
-        List<Map> notificationSinks = new ArrayList();
-        if (jsonMap != null) {
-            List<Map> dataSinks = (List) jsonMap.get(TopologyLayoutConstants.JSON_KEY_DATA_SINKS);
-            for (Map dataSink: dataSinks) {
-                if (("NOTIFICATION").equals(dataSink.get(TopologyLayoutConstants.JSON_KEY_TYPE))) {
-                    notificationSinks.add(dataSink);
-                }
-            }
-            for (Map notificationSink: notificationSinks) {
-                NotifierInfo notifierInfo = populateNotifierInfo(notificationSink);
+        for (InputComponent inputComponent: topology.getTopologyDag().getInputComponents()) {
+            if (inputComponent instanceof NotificationSink) {
+                NotifierInfo notifierInfo = populateNotifierInfo((NotificationSink) inputComponent);
                 NotifierInfo existingNotifierInfo = this.getNotifierInfoByName(notifierInfo.getName());
                 if (existingNotifierInfo != null) {
                     this.addOrUpdateNotifierInfo(existingNotifierInfo.getId(), notifierInfo);
@@ -849,21 +851,18 @@ public class CatalogService {
         }
     }
 
-    private NotifierInfo populateNotifierInfo (Map notificationSinkConfig) {
+    private NotifierInfo populateNotifierInfo (NotificationSink notificationSink) {
         NotifierInfo notifierInfo = new NotifierInfo();
-        Map notifierInfoConfig = (Map) notificationSinkConfig.get(TopologyLayoutConstants.JSON_KEY_CONFIG);
-        notifierInfo.setName((String) notifierInfoConfig.get(TopologyLayoutConstants.JSON_KEY_NOTIFIER_NAME));
-        notifierInfo.setClassName((String) notifierInfoConfig.get(TopologyLayoutConstants.JSON_KEY_NOTIFIER_CLASSNAME));
-        notifierInfo.setJarFileName((String) notifierInfoConfig.get(TopologyLayoutConstants.JSON_KEY_NOTIFIER_JAR_FILENAME));
-        Map properties = (Map) notifierInfoConfig.get(TopologyLayoutConstants.JSON_KEY_NOTIFIER_PROPERTIES);
-        notifierInfo.setProperties(convertMapValuesToString(properties));
-        Map fieldValues = (Map) notifierInfoConfig.get(TopologyLayoutConstants.JSON_KEY_NOTIFIER_FIELD_VALUES);
-        notifierInfo.setFieldValues(convertMapValuesToString(fieldValues));
+        notifierInfo.setName(notificationSink.getNotifierName());
+        notifierInfo.setClassName(notificationSink.getNotifierClassName());
+        notifierInfo.setJarFileName(notificationSink.getNotifierJarFileName());
+        notifierInfo.setProperties(convertMapValuesToString(notificationSink.getNotifierProperties()));
+        notifierInfo.setFieldValues(convertMapValuesToString(notificationSink.getNotifierFieldValues()));
         return notifierInfo;
     }
 
     private Map<String, String> convertMapValuesToString (Map<String, Object> map) {
-        Map<String, String> result = new HashMap<String, String>();
+        Map<String, String> result = new HashMap<>();
         for (Map.Entry<String, Object> e : map.entrySet()) {
             Object val = e.getValue();
             if (val != null) {
@@ -959,7 +958,7 @@ public class CatalogService {
      * Similar to Table per concrete class hibernate strategy.
      */
     private long getNextTopologyComponentId() {
-        com.hortonworks.iotas.catalog.TopologyComponent component = new com.hortonworks.iotas.catalog.TopologyComponent();
+        TopologyComponent component = new TopologyComponent();
         Long id = dao.nextId(TOPOLOGY_COMPONENT_NAMESPACE);
         component.setId(id);
         dao.add(component);
@@ -1245,6 +1244,23 @@ public class CatalogService {
         if (!outputStreamIds.containsAll(edgeStreamIds)) {
             throw new IllegalArgumentException("Edge stream Ids " + edgeStreamIds +
                     " must be a subset of outputStreamIds " + outputStreamIds);
+        }
+        // check the fields specified in the fields grouping is a subset of the stream fields
+        for (StreamGrouping streamGrouping : edge.getStreamGroupings()) {
+            List<String> fields;
+            if ((fields = streamGrouping.getFields()) != null) {
+                Set<String> streamFields = new HashSet<>(
+                        Collections2.transform(getStreamInfo(streamGrouping.getStreamId()).getFields(),
+                                new Function<Schema.Field, String>() {
+                                    public String apply(Schema.Field field) {
+                                        return field.getName();
+                                    }
+                                }));
+                if (!streamFields.containsAll(fields)) {
+                    throw new IllegalArgumentException("Fields in the grouping " + fields +
+                            " must be a subset the stream fields " + streamFields);
+                }
+            }
         }
     }
 

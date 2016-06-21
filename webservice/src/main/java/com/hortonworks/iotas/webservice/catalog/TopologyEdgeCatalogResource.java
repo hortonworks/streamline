@@ -165,7 +165,8 @@ public class TopologyEdgeCatalogResource {
      *     "streamGroupings": [
      *       {
      *         "streamId": 1,
-     *         "grouping": "SHUFFLE"
+     *         "grouping": "SHUFFLE",
+     *         "fields": ["a", "b"]
      *       }
      *     ]
      *   }

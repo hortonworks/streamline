@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.topology.ConfigField;
-import com.hortonworks.iotas.topology.TopologyComponent;
+import com.hortonworks.iotas.topology.TopologyComponentDefinition;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import com.hortonworks.iotas.topology.storm.CustomProcessorBoltFluxComponent;
 import com.hortonworks.iotas.util.CoreUtils;
@@ -160,10 +160,10 @@ public class CustomProcessorInfo {
         this.customProcessorImpl = customProcessorImpl;
     }
 
-    public CustomProcessorInfo fromTopologyComponent (TopologyComponent topologyComponent) throws IOException {
-        if (topologyComponent != null) {
-            this.setStreamingEngine(topologyComponent.getStreamingEngine());
-            List<ConfigField> configFields = this.getListOfConfigFields(topologyComponent);
+    public CustomProcessorInfo fromTopologyComponent (TopologyComponentDefinition topologyComponentDefinition) throws IOException {
+        if (topologyComponentDefinition != null) {
+            this.setStreamingEngine(topologyComponentDefinition.getStreamingEngine());
+            List<ConfigField> configFields = this.getListOfConfigFields(topologyComponentDefinition);
             Map<String, Object> config = this.getProperties(configFields);
             this.setName((String) config.get(NAME));
             this.setDescription((String) config.get(DESCRIPTION));
@@ -183,10 +183,10 @@ public class CustomProcessorInfo {
         return this;
     }
 
-    public TopologyComponent toTopologyComponent () throws IOException {
-        TopologyComponent result = new TopologyComponent();
+    public TopologyComponentDefinition toTopologyComponent () throws IOException {
+        TopologyComponentDefinition result = new TopologyComponentDefinition();
         result.setTimestamp(System.currentTimeMillis());
-        result.setType(TopologyComponent.TopologyComponentType.PROCESSOR);
+        result.setType(TopologyComponentDefinition.TopologyComponentType.PROCESSOR);
         result.setSubType(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_SUB_TYPE);
         result.setStreamingEngine(this.streamingEngine);
         if (TopologyLayoutConstants.STORM_STREAMING_ENGINE.equals(this.streamingEngine)) {
@@ -241,9 +241,9 @@ public class CustomProcessorInfo {
         return result;
     }
 
-    private List<ConfigField> getListOfConfigFields (TopologyComponent topologyComponent) throws IOException {
+    private List<ConfigField> getListOfConfigFields (TopologyComponentDefinition topologyComponentDefinition) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        List<ConfigField> configFields = mapper.readValue(topologyComponent.getConfig(), new TypeReference<List<ConfigField>>() { });
+        List<ConfigField> configFields = mapper.readValue(topologyComponentDefinition.getConfig(), new TypeReference<List<ConfigField>>() { });
         return configFields;
     }
 

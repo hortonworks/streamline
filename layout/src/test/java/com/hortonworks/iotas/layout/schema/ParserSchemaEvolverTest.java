@@ -6,7 +6,7 @@ import com.google.common.collect.Maps;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.common.IotasEventImpl;
-import com.hortonworks.iotas.layout.design.component.Stream;
+import com.hortonworks.iotas.topology.component.Stream;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import mockit.Expectations;

@@ -66,7 +66,7 @@ public class DataSourceDto {
 
     /**
      * Where is the actual data for this feed being pushed. e.g. KAFKA, etc.
-     * this should correspond to the subType field of the TopologyComponent
+     * this should correspond to the subType field of the TopologyComponentDefinition
      * object
      */
     private String dataFeedType;

@@ -3,15 +3,12 @@ package com.hortonworks.iotas.webservice.schema;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.layout.design.component.Stream;
+import com.hortonworks.iotas.topology.component.Stream;
 import com.hortonworks.iotas.layout.schema.CatalogServiceAware;
 import com.hortonworks.iotas.layout.schema.EvolvingSchema;
 import com.hortonworks.iotas.service.CatalogService;
-import com.hortonworks.iotas.topology.TopologyComponent;
+import com.hortonworks.iotas.topology.TopologyComponentDefinition;
 import com.hortonworks.iotas.webservice.util.WSUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
@@ -22,7 +19,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -60,12 +56,12 @@ public class SchemaAPI {
 
         try {
             if (!EVOLVING_SCHEMA_MAP.containsKey(componentId)) {
-                TopologyComponent topologyComponent = catalogService.getTopologyComponent(componentId);
-                if (topologyComponent == null) {
+                TopologyComponentDefinition topologyComponentDefinition = catalogService.getTopologyComponent(componentId);
+                if (topologyComponentDefinition == null) {
                     throw new NotFoundException("Component ID " + componentId + " not found in catalog");
                 }
 
-                String schemaClass = topologyComponent.getSchemaClass();
+                String schemaClass = topologyComponentDefinition.getSchemaClass();
                 if (schemaClass == null) {
                     throw new UnsupportedOperationException("This component doesn't support Schema Evolution");
                 }

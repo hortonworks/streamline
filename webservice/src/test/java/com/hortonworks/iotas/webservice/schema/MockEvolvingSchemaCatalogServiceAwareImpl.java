@@ -2,14 +2,12 @@ package com.hortonworks.iotas.webservice.schema;
 
 import com.google.common.collect.Sets;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.layout.design.component.Stream;
+import com.hortonworks.iotas.topology.component.Stream;
 import com.hortonworks.iotas.layout.schema.BadComponentConfigException;
 import com.hortonworks.iotas.layout.schema.CatalogServiceAware;
 import com.hortonworks.iotas.layout.schema.EvolvingSchema;
 import com.hortonworks.iotas.service.CatalogService;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 public class MockEvolvingSchemaCatalogServiceAwareImpl implements EvolvingSchema, CatalogServiceAware {

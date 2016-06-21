@@ -18,7 +18,7 @@
       "projection": {
         "expressions": [
           {
-            "class": "com.hortonworks.iotas.layout.design.rule.condition.AggregateFunctionExpression",
+            "class": "com.hortonworks.iotas.topology.component.rule.condition.AggregateFunctionExpression",
             "function": {
               "name": "MIN",
               "className": null,
@@ -26,7 +26,7 @@
             },
             "operands": [
               {
-                "class": "com.hortonworks.iotas.layout.design.rule.condition.FieldExpression",
+                "class": "com.hortonworks.iotas.topology.component.rule.condition.FieldExpression",
                 "value": {
                   "name": "salary",
                   "type": "INTEGER",
@@ -36,7 +36,7 @@
             ]
           },
           {
-            "class": "com.hortonworks.iotas.layout.design.rule.condition.AggregateFunctionExpression",
+            "class": "com.hortonworks.iotas.topology.component.rule.condition.AggregateFunctionExpression",
             "function": {
               "name": "MAX",
               "className": null,
@@ -44,7 +44,7 @@
             },
             "operands": [
               {
-                "class": "com.hortonworks.iotas.layout.design.rule.condition.FieldExpression",
+                "class": "com.hortonworks.iotas.topology.component.rule.condition.FieldExpression",
                 "value": {
                   "name": "salary",
                   "type": "INTEGER",
@@ -57,10 +57,10 @@
       },
       "condition": {
         "expression": {
-          "class": "com.hortonworks.iotas.layout.design.rule.condition.BinaryExpression",
+          "class": "com.hortonworks.iotas.topology.component.rule.condition.BinaryExpression",
           "operator": "GREATER_THAN",
           "first": {
-            "class": "com.hortonworks.iotas.layout.design.rule.condition.FieldExpression",
+            "class": "com.hortonworks.iotas.topology.component.rule.condition.FieldExpression",
             "value": {
               "name": "empid",
               "type": "INTEGER",
@@ -68,17 +68,17 @@
             }
           },
           "second": {
-            "class": "com.hortonworks.iotas.layout.design.rule.condition.Literal",
+            "class": "com.hortonworks.iotas.topology.component.rule.condition.Literal",
             "value": "2"
           }
         }
       },
       "having": {
         "expression": {
-          "class": "com.hortonworks.iotas.layout.design.rule.condition.BinaryExpression",
+          "class": "com.hortonworks.iotas.topology.component.rule.condition.BinaryExpression",
           "operator": "GREATER_THAN",
           "first": {
-            "class": "com.hortonworks.iotas.layout.design.rule.condition.AggregateFunctionExpression",
+            "class": "com.hortonworks.iotas.topology.component.rule.condition.AggregateFunctionExpression",
             "function": {
               "name": "MAX",
               "className": null,
@@ -86,7 +86,7 @@
             },
             "operands": [
               {
-                "class": "com.hortonworks.iotas.layout.design.rule.condition.FieldExpression",
+                "class": "com.hortonworks.iotas.topology.component.rule.condition.FieldExpression",
                 "value": {
                   "name": "salary",
                   "type": "INTEGER",
@@ -96,7 +96,7 @@
             ]
           },
           "second": {
-            "class": "com.hortonworks.iotas.layout.design.rule.condition.Literal",
+            "class": "com.hortonworks.iotas.topology.component.rule.condition.Literal",
             "value": "5"
           }
         }
