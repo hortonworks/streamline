@@ -110,9 +110,14 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
                 String retrievedMetricName = (String) metric.get("metricname");
                 Map<String, Number> retrievedPoints = (Map<String, Number>) metric.get("metrics");
 
-                Map<Long, Double> pointsForOutput = new HashMap<>(retrievedPoints.size());
-                for (Map.Entry<String, Number> timestampToValue : retrievedPoints.entrySet()) {
-                    pointsForOutput.put(Long.valueOf(timestampToValue.getKey()), timestampToValue.getValue().doubleValue());
+                Map<Long, Double> pointsForOutput;
+                if (retrievedPoints == null || retrievedPoints.isEmpty()) {
+                    pointsForOutput = Collections.emptyMap();
+                } else {
+                    pointsForOutput = new HashMap<>(retrievedPoints.size());
+                    for (Map.Entry<String, Number> timestampToValue : retrievedPoints.entrySet()) {
+                        pointsForOutput.put(Long.valueOf(timestampToValue.getKey()), timestampToValue.getValue().doubleValue());
+                    }
                 }
 
                 ret.put(retrievedMetricName, pointsForOutput);
