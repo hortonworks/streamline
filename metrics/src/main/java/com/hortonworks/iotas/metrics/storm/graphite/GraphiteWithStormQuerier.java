@@ -79,7 +79,7 @@ public class GraphiteWithStormQuerier extends AbstractTimeSeriesQuerier {
         log.debug("Calling {} for querying metric", targetUri.toString());
 
         List<Map<String, ?>> responseList = client.target(targetUri).request(MediaType.APPLICATION_JSON_TYPE).get(List.class);
-        if (responseList.size() <= 0) {
+        if (responseList.isEmpty()) {
             return Collections.emptyMap();
         }
 

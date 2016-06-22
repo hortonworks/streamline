@@ -68,7 +68,7 @@ public class OpenTSDBWithStormQuerier extends AbstractTimeSeriesQuerier {
         log.debug("Calling {} for querying metric", targetUri.toString());
 
         List<Map<String, ?>> responseList = client.target(targetUri).request(MediaType.APPLICATION_JSON_TYPE).get(List.class);
-        if (responseList.size() <= 0) {
+        if (responseList.isEmpty()) {
             return Collections.emptyMap();
         }
 
@@ -77,9 +77,14 @@ public class OpenTSDBWithStormQuerier extends AbstractTimeSeriesQuerier {
             String retrievedMetricName = buildMetricNameFromResp(responseMap);
             Map<String, Number> retrievedPoints = (Map<String, Number>) responseMap.get("dps");
 
-            Map<Long, Double> pointsForOutput = new HashMap<>(retrievedPoints.size());
-            for (Map.Entry<String, Number> timestampToValue : retrievedPoints.entrySet()) {
-                pointsForOutput.put(Long.valueOf(timestampToValue.getKey()), timestampToValue.getValue().doubleValue());
+            Map<Long, Double> pointsForOutput;
+            if (retrievedPoints == null || retrievedPoints.isEmpty()) {
+                pointsForOutput = Collections.emptyMap();
+            } else {
+                pointsForOutput = new HashMap<>(retrievedPoints.size());
+                for (Map.Entry<String, Number> timestampToValue : retrievedPoints.entrySet()) {
+                    pointsForOutput.put(Long.valueOf(timestampToValue.getKey()), timestampToValue.getValue().doubleValue());
+                }
             }
 
             ret.put(retrievedMetricName, pointsForOutput);
@@ -103,7 +108,7 @@ public class OpenTSDBWithStormQuerier extends AbstractTimeSeriesQuerier {
     private String buildMetricNameFromResp(Map<String, ?> responseMap) {
         String metricName = (String) responseMap.get("metric");
         Map<String, ?> tags = (Map<String, ?>) responseMap.get("tags");
-        if (tags.size() <= 0) {
+        if (tags == null || tags.isEmpty()) {
             return metricName;
         }
 
