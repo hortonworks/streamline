@@ -19,6 +19,7 @@
         <module>notifiers</module>
         <module>layout</module>
         <module>metrics</module>
+        <module>streams</module>
     </modules>
 
     <properties>
