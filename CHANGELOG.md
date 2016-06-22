@@ -1,4 +1,5 @@
 ## 0.1.4
+ * IOT-299: Add 'null' check for OpenTSDBWithStormQuerier
  * IOT-188: Added split/join/stage implementation for runtime
  * IOT-274: Introduce REST API: Time-series DB querier
  * IOT-155: Convert Topology UI JSON to Design time entities and construct DAG
