@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>streams-notifier</artifactId>
+    <artifactId>streams-metrics</artifactId>
 
 
 </project>

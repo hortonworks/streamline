@@ -12,15 +12,15 @@
     <artifactId>streams</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>streams-common</module>
-        <module>streams-catalog</module>
-        <module>streams-layout</module>
-        <module>streams-metrics</module>
-        <module>streams-notification</module>
-        <module>streams-notifier</module>
-        <module>streams-runtime</module>
-        <module>streams-runtime-storm</module>
-        <module>streams-service</module>
+        <module>common</module>
+        <module>catalog</module>
+        <module>layout</module>
+        <module>metrics</module>
+        <module>notification</module>
+        <module>notifier</module>
+        <module>runtime</module>
+        <module>runtime-storm</module>
+        <module>service</module>
     </modules>
 
 
