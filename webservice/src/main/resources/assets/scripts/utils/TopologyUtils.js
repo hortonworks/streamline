@@ -163,6 +163,16 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
                 });
                 model.set('selectedStreams', arr);
             }
+            if(obj.type && obj.type === 'SPLIT'){
+                var arr = [];
+                _.each(linkArr, function(o){
+                    var config = o.config;
+                    if(config.from === obj.uiname){
+                        arr.push({name: config.to, streamName: config.streamId});
+                    }
+                });
+                model.set('selectedStreams', arr);
+            }
             nodeArr.push(model.toJSON());
             var t_obj = _.findWhere(globalObj, { valStr: model.get('currentType') });
             graphArr.push(_.extend(JSON.parse(JSON.stringify(t_obj)), { uiname: obj.uiname, currentType: model.get('currentType'), isConfigured: true }));
@@ -219,6 +229,14 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
 
                     case Globals.Topology.Editor.Steps.Processor.valStr:
                         processorArr.push({ uiname: uiname, firstTime: true, currentType: subType, customName: customName });
+                        if(subType === 'SPLIT') {
+                            var stageName = TopologyUtils.generateName('STAGE', nodeNamesList);
+                            obj.stageUiName = stageName;
+                            processorArr.push({ uiname: stageName, firstTime: true, currentType: 'STAGE', customName: customName });
+                            var joinName = TopologyUtils.generateName('JOIN', nodeNamesList);
+                            obj.joinUiName = joinName;
+                            processorArr.push({ uiname: joinName, firstTime: true, currentType: 'JOIN', customName: customName });
+                        }
                         break;
 
                     case Globals.Topology.Editor.Steps.DataSink.valStr:
@@ -335,10 +353,10 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
                      if (o.source.currentType === 'RULE'){
                         var index = _.findIndex(parent.processorArr, {uiname: o.source.uiname}),
                             ruleProcessor = parent.processorArr[index];
-                        
+
                         index = _.findIndex(parent.processorArr, {uiname: o.target.uiname});
                         var normProcessor = parent.processorArr[index];
-                        
+
                         if(normProcessor.hasOwnProperty('newConfig')) {
                             var oldInputStream = normProcessor.newConfig.normalizationProcessorConfig.inputStreamsWithNormalizationConfig;
                             var k = _.keys(oldInputStream);
@@ -573,6 +591,94 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
         }
     };
 
+    TopologyUtils.syncSplitData = function(model, linkArr, processorArr, dsArr) {
+        var obj = linkArr.filter(function(obj) {
+            return (obj.target.parentType === 'Processor' && obj.target.uiname === model.get('uiname'));
+        });
+        var flag = true;
+        if (obj.length) {
+            _.each(obj, function(o) {
+                if (flag && o.source.parentType === 'Processor') {
+                    var sourceData = processorArr.filter(function(o) {
+                        return o.uiname === obj[0].source.uiname;
+                    });
+                    if (!sourceData.length || sourceData[0].firstTime) {
+                        flag = false;
+                    } else {
+                        if(obj[0].source.currentType === 'PARSER') {
+                            var dsToParserObj = linkArr.filter(function(o){
+                                return (o.target.currentType === 'PARSER' && o.target.uiname === obj[0].source.uiname);
+                            });
+                            var dsId;
+                            if(dsToParserObj.length){
+                                var deviceObj = dsArr.filter(function(o){ return o.uiname === dsToParserObj[0].source.uiname;});
+                                if(deviceObj.length){
+                                    dsId = deviceObj[0].dataSourceId ? deviceObj[0].dataSourceId : deviceObj[0]._selectedTable[0].datasourceId;
+                                }
+                            }
+                            model.set('dataSourceId', dsId);
+                        }
+                    }
+                }
+            });
+            return flag;
+        }
+    };
+
+    TopologyUtils.syncStageData = function(model, linkArr, processorArr) {
+        var obj = linkArr.filter(function(obj) {
+            return (obj.target.currentType === 'STAGE' && obj.target.uiname === model.get('uiname'));
+        });
+        var flag = true;
+        if (obj.length) {
+            _.each(obj, function(o) {
+                if (flag && o.source.parentType === 'Processor') {
+                    if (o.source.isConfigured == false) {
+                        flag = false;
+                    }
+                }
+            });
+            return flag;
+        }
+    };
+
+    TopologyUtils.syncJoinData = function(model, linkArr, processorArr) {
+        var obj = linkArr.filter(function(obj) {
+            return (obj.target.currentType === 'JOIN' && obj.target.uiname === model.get('uiname'));
+        });
+        var flag = true;
+        if (obj.length) {
+            _.each(obj, function(o) {
+                if (flag && o.source.parentType === 'Processor') {
+                    if (o.source.isConfigured == false) {
+                        flag = false;
+                    }
+                }
+            });
+            return flag;
+        }
+    };
+
+    TopologyUtils.syncNormalizationData = function(model, linkArr, processorArr) {
+        var obj = linkArr.filter(function(obj) {
+            return (obj.target.parentType === 'Processor' && obj.target.uiname === model.get('uiname'));
+        });
+        var flag = true;
+        if (obj.length) {
+            _.each(obj, function(o) {
+                if (flag && o.source.parentType === 'Processor') {
+                    var sourceData = processorArr.filter(function(o) {
+                        return o.uiname === obj[0].source.uiname;
+                    });
+                    if (!sourceData.length || sourceData[0].firstTime) {
+                        flag = false;
+                    }
+                }
+            });
+            return flag;
+        }
+    };
+
     TopologyUtils.generateJSONForDataSource = function(dsArr) {
         var ds = [],msg,
             flag = true;
@@ -621,7 +727,20 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
                             "config": config
                         });
                     } else if (obj.hiddenFields.type === 'RULE') {
-
+                        var rules = obj.newConfig ? obj.newConfig.rulesProcessorConfig.rules : obj.rulesProcessorConfig.rules,
+                            actionType = "com.hortonworks.iotas.layout.design.rule.action.TransformAction";
+ 
+                        for(var i = 0;i < rules.length;i++) {
+                            var actions = rules[i].actions;
+                            for(var j = 0;j < actions.length;j++) {
+                                var actionObj = _.find(linkArr, function(o){
+                                    return (o.target.uiname == actions[j].name && o.source.uiname == obj.uiname);
+                                });
+                                if(actionObj.target.currentType === 'NOTIFICATION')
+                                    actions[j].__type = "com.hortonworks.iotas.layout.design.rule.action.NotificationAction";
+                                else actions[j].__type = actionType;
+                            }
+                        }
                         processors.push({
                             "uiname": obj.uiname,
                             "type": obj.hiddenFields ? obj.hiddenFields.type : '',
@@ -670,6 +789,28 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
                             "type": obj.hiddenFields ? obj.hiddenFields.type : '',
                             "transformationClass": obj.hiddenFields ? obj.hiddenFields.transformationClass : '',
                             "config": configObj
+                        });
+                    } else if(obj.hiddenFields.type === 'SPLIT') {
+                        processors.push({
+                            "uiname": obj.uiname,
+                            "type": obj.hiddenFields ? obj.hiddenFields.type : '',
+                            "transformationClass": obj.hiddenFields ? obj.hiddenFields.transformationClass : '',
+                            "config": obj.newConfig ? obj.newConfig : { parallelism: obj.parallelism, rulesProcessorConfig: obj.rulesProcessorConfig }
+                        });
+
+                    }else if(obj.hiddenFields.type === 'STAGE') {
+                        processors.push({
+                            "uiname": obj.uiname,
+                            "type": obj.hiddenFields ? obj.hiddenFields.type : '',
+                            "transformationClass": obj.hiddenFields ? obj.hiddenFields.transformationClass : '',
+                            "config": obj.newConfig ? obj.newConfig : { parallelism: obj.parallelism, rulesProcessorConfig: obj.rulesProcessorConfig }
+                        });
+                    }else if(obj.hiddenFields.type === 'JOIN') {
+                        processors.push({
+                            "uiname": obj.uiname,
+                            "type": obj.hiddenFields ? obj.hiddenFields.type : '',
+                            "transformationClass": obj.hiddenFields ? obj.hiddenFields.transformationClass : '',
+                            "config": obj.newConfig ? obj.newConfig : { parallelism: obj.parallelism, rulesProcessorConfig: obj.rulesProcessorConfig }
                         });
                     }
                 } else {
@@ -726,10 +867,13 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
     		case 'RULE':
             case 'NORMALIZATION':
             case 'CUSTOM':
+            case 'SPLIT':
+            case 'STAGE':
+            case 'JOIN':
     			index = _.findIndex(parent.processorArr, {uiname: oldName});
     			if(index !== -1){
     				parent.processorArr[index].uiname = newName;
-                    if(currentType === 'CUSTOM' || currentType === 'NORMALIZATION'){
+                    if(currentType === 'CUSTOM' || currentType === 'NORMALIZATION' || currentType === 'SPLIT'){
                         _.each(parent.processorArr, function(obj){
                             if(obj.currentType === 'RULE'){
                                 var rules = obj.newConfig ? obj.newConfig.rulesProcessorConfig.rules : obj.rulesProcessorConfig.rules;
@@ -741,10 +885,14 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
                                 });
                             } else if(obj.currentType === 'CUSTOM'){
                                 if(obj.selectedStreams){
-                                    var customIndex = _.findIndex(obj.selectedStreams, {name: oldName});
-                                    if(customIndex !== -1){
-                                        obj.selectedStreams[customIndex].name = newName;
-                                    }
+                                    var customStreams = _.where(obj.selectedStreams, {name: oldName});
+                                    _.each(customStreams, function(o) {
+                                        o.name = newName;
+                                    });
+                                    // var customIndex = _.findIndex(obj.selectedStreams, {name: oldName});
+                                    // if(customIndex !== -1){
+                                    //     obj.selectedStreams[customIndex].name = newName;
+                                    // }
                                 }
                             }
                         });
@@ -784,6 +932,7 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
             else if(t_obj.newConfig){
               delete t_obj.newConfig;
             }
+            t_obj.firstTime = true;
             t_obj.reset = true;
         }
     };
@@ -825,8 +974,52 @@ define(['require', 'utils/Globals', 'utils/Utils', 'modules/TopologyGraphCreator
                 delete t_obj.normalizationProcessorConfig;
             if(t_obj.parallelism)
                 delete t_obj.parallelism;
+            t_obj.firstTime = true;
         }
-    }
+    };
+
+    TopologyUtils.resetSplit = function(processorArr, linkArr, options){
+        var splitIndex = _.findIndex(processorArr, {uiname: options.resetSplit.uiname}),
+            stageObj = linkArr.filter(function(obj) {
+                return (obj.source.uiname === options.resetSplit.uiname);
+            }),
+            joinObj = linkArr.filter(function(obj) {
+                return (obj.source.uiname === stageObj[0].target.uiname);
+            }),
+            stageIndex = _.findIndex(processorArr, {uiname: stageObj[0].target.uiname}),
+            joinIndex = _.findIndex(processorArr, {uiname: joinObj[0].target.uiname}),
+            t_obj = {};
+        if(splitIndex !== -1){
+            t_obj = processorArr[splitIndex];
+            if(t_obj.newConfig)
+                delete t_obj.newConfig;
+            if(t_obj.rulesProcessorConfig)
+                delete t_obj.rulesProcessorConfig;
+            if(t_obj.parallelism)
+                delete t_obj.parallelism;
+            t_obj.firstTime = true;
+        }
+        if(stageIndex !== -1){
+            t_obj = processorArr[stageIndex];
+            if(t_obj.newConfig)
+                delete t_obj.newConfig;
+            if(t_obj.rulesProcessorConfig)
+                delete t_obj.rulesProcessorConfig;
+            if(t_obj.parallelism)
+                delete t_obj.parallelism;
+            t_obj.firstTime = true;
+        }
+        if(joinIndex !== -1){
+            t_obj = processorArr[joinIndex];
+            if(t_obj.newConfig)
+                delete t_obj.newConfig;
+            if(t_obj.rulesProcessorConfig)
+                delete t_obj.rulesProcessorConfig;
+            if(t_obj.parallelism)
+                delete t_obj.parallelism;
+            t_obj.firstTime = true;
+        }
+    };
 
     return TopologyUtils;
 });

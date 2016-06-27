@@ -155,13 +155,16 @@ define(['require','bootstrap.filestyle','backbone.forms', 'backgrid', 'bootstrap
     render: function() {
       this.$el.html(this.template);
       this.$(':file').filestyle();
+      if(this.model && this.model.has(this.key) && this.model.get(this.key) !== ''){
+        this.setValue(this.model.get(this.key));
+      }
       return this;
     },
     getValue: function() {
       return $('input[type="file"][id="'+this.id+'"]')[0].files[0];
     },
     setValue: function(value){
-      console.log(value);
+      this.$el.find('input[type="text"]').attr('value', value);
     }
   });
 

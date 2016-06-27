@@ -34,9 +34,21 @@ define(['require',
       if(this.model.has('declaredInput')){
           //For RULE-TO-RULE
         this.fieldsArr = this.model.get("declaredInput");
-      } else {
+      } else if(this.model.get('dataSourceId')){
         //For PARSER-TO-RULE
         this.fieldsArr = Utils.getParserSchema(this.model.get('dataSourceId'));
+      } else if(this.sourceConfig.currentType == 'JOIN'){
+        //For JOIN-TO-RULE
+        var streams,
+          streamName;
+        if(this.sourceConfig.newConfig) {
+          streams = this.sourceConfig.newConfig.rulesProcessorConfig.rules[0].actions[0].outputStreams;
+          streamName = _.keys(streams)[0];
+        } else {
+          streams = this.sourceConfig.rulesProcessorConfig.rules[0].actions[0].outputStreams;
+          streamName = _.keys(streams)[0];
+        }
+        this.fieldsArr = _.extend([], streams[streamName].fields);
       }
     },
 
@@ -59,7 +71,8 @@ define(['require',
           rulesArr: self.model.has('newConfig') ? self.model.attributes.newConfig.rulesProcessorConfig.rules : (self.model.has('rulesProcessorConfig') ? self.model.attributes.rulesProcessorConfig.rules : []),
           linkedToRule: self.linkedToRule,
           connectedSink: self.connectedSink,
-          editMode: self.editMode
+          editMode: self.editMode,
+          sourceConfig: self.sourceConfig
         });
         self.formulaForm.show(self.view);
       });

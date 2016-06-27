@@ -47,10 +47,13 @@ define(['require'], function (require) {
   ];
 
   Globals.Topology.Editor.Steps.Processor.Substeps = [
-    {value: 1, valStr: 'PARSER', imgUrl: 'images/iconf-parser.png', parentType: Globals.Topology.Editor.Steps.Processor.valStr, show: false, connectsTo: 'RULE,HDFS,HBASE,CUSTOM,NORMALIZATION'},
-    {value: 2, valStr: 'RULE', imgUrl: 'images/iconf-rule.png', parentType: Globals.Topology.Editor.Steps.Processor.valStr, show: true, connectsTo: 'RULE,CUSTOM,HDFS,HBASE,NOTIFICATION,NORMALIZATION'},
-    {value: 3, valStr: 'CUSTOM', imgUrl: 'images/icon-custom.png', parentType: Globals.Topology.Editor.Steps.Processor.valStr, show: true, connectsTo: 'RULE,HDFS,HBASE,NOTIFICATION,NORMALIZATION'},
-    {value: 4, valStr: 'NORMALIZATION', imgUrl: 'images/icon-fprocessor02.png', parentType: Globals.Topology.Editor.Steps.Processor.valStr, show: true, connectsTo: 'RULE,CUSTOM,HDFS,HBASE,NOTIFICATION'}
+    {value: 1, valStr: 'PARSER', imgUrl: 'images/iconf-parser.png', parentType: Globals.Topology.Editor.Steps.Processor.valStr, show: false, connectsTo: 'RULE,HDFS,HBASE,CUSTOM,NORMALIZATION,SPLIT'},
+    {value: 2, valStr: 'RULE', imgUrl: 'images/iconf-rule.png', parentType: Globals.Topology.Editor.Steps.Processor.valStr, show: true, connectsTo: 'RULE,CUSTOM,HDFS,HBASE,NOTIFICATION,NORMALIZATION,SPLIT'},
+    {value: 3, valStr: 'CUSTOM', imgUrl: 'images/icon-custom.png', parentType: Globals.Topology.Editor.Steps.Processor.valStr, show: true, connectsTo: 'RULE,HDFS,HBASE,NOTIFICATION,NORMALIZATION,SPLIT'},
+    {value: 4, valStr: 'NORMALIZATION', imgUrl: 'images/icon-fprocessor02.png', parentType: Globals.Topology.Editor.Steps.Processor.valStr, show: true, connectsTo: 'RULE,CUSTOM,HDFS,HBASE,NOTIFICATION,SPLIT'},
+    {value: 5, valStr: 'SPLIT', imgUrl: 'images/icon-split.png', parentType: Globals.Topology.Editor.Steps.Processor.valStr, show: true, connectsTo: 'STAGE'},
+    {value: 6, valStr: 'STAGE', imgUrl: 'images/icon-stage.png', parentType: Globals.Topology.Editor.Steps.Processor.valStr, show: true, connectsTo: 'STAGE,JOIN'},
+    {value: 7, valStr: 'JOIN', imgUrl: 'images/icon-join.png', parentType: Globals.Topology.Editor.Steps.Processor.valStr, show: true, connectsTo: 'RULE,CUSTOM,NORMALIZATION,HDFS,HBASE,NOTIFICATION'}
   ];
 
   Globals.Topology.Editor.Steps.DataSink.Substeps = [

@@ -1,4 +1,5 @@
 ## 0.1.4
+ * IOT-301: Integrate split - stage - join processor in topology editor
  * IOT-299: Add 'null' check for OpenTSDBWithStormQuerier
  * IOT-188: Added split/join/stage implementation for runtime
  * IOT-274: Introduce REST API: Time-series DB querier

@@ -11,12 +11,14 @@ define(['require',
         regions: {
             configTab: '#config',
             customTab: '#custom',
-            tagsTab  : '#hTags'
+            tagsTab  : '#hTags',
+            filesTab: '#files'
         },
         events: {
             'click #cluster-config': 'evShowClusterConfig',
             'click #custom-processor': 'showCustomProcessors',
             'click #tags': 'evShowTags',
+            'click #upload-files': 'evShowFileUploads',
             'click #add-btn': 'evAddProcessor',
             'click #editAction': 'evEditProcessor'
         },
@@ -98,6 +100,16 @@ define(['require',
             var self = this;
             require(['views/tag/TagView'], function(TagView) {
                 self.tagsTab.show(new TagView());
+            });
+        },
+
+        evShowFileUploads: function(e) {
+            if (!_.isUndefined(e) && $(e.currentTarget).parent().hasClass("active"))
+                return;
+            this.$("#files").tab('show');
+            var self = this;
+            require(['views/file/fileListingView'], function(FileListingView) {
+                self.filesTab.show(new FileListingView());
             });
         },
 
