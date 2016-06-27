@@ -25,6 +25,8 @@ import com.hortonworks.iotas.topology.component.Stream;
 import com.hortonworks.iotas.topology.component.TopologyDagVisitor;
 import com.hortonworks.iotas.topology.component.rule.Rule;
 import com.hortonworks.iotas.topology.component.rule.action.Action;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -36,6 +38,8 @@ import java.util.Set;
  * Represents a design time rules processor.
  */
 public class RulesProcessor extends IotasProcessor {     //TODO: Rename to RuleProcessor
+    private static final Logger log = LoggerFactory.getLogger(RulesProcessor.class);
+
     public static final String CONFIG_KEY_RULES = "rules";
     private List<Rule> rules;
 
@@ -66,7 +70,9 @@ public class RulesProcessor extends IotasProcessor {     //TODO: Rename to RuleP
             for (Action action : rule.getActions()) {
                 for (String stream : action.getOutputStreams()) {
                     if(!streamIds.contains(stream)) {
-                        throw new RuntimeException("Action's stream: "+stream+" does not exist in processor's output streams");
+                        String errorMsg = String.format("Action [%s] stream [%s] does not exist in processor [%s]'s output streams [%s]", action, stream, getName(), streamIds);
+                        log.error(errorMsg);
+                        throw new IllegalArgumentException(errorMsg);
                     }
                 }
             }
