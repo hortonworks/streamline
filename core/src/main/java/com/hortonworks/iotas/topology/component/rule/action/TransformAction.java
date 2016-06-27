@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-package com.hortonworks.iotas.layout.design.rule.action;
+package com.hortonworks.iotas.topology.component.rule.action;
 
-import com.hortonworks.iotas.layout.design.transform.Transform;
-import com.hortonworks.iotas.topology.component.rule.action.Action;
+
+import com.hortonworks.iotas.topology.component.rule.action.transform.Transform;
 
 import java.util.ArrayList;
 import java.util.Collection;

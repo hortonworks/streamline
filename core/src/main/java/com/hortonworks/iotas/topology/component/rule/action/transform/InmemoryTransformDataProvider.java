@@ -16,36 +16,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.hortonworks.iotas.layout.design.transform;
-
-import com.hortonworks.iotas.common.IotasEvent;
+package com.hortonworks.iotas.topology.component.rule.action.transform;
 
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Expands template variables in the IotasEvent values by looking up the variables in {@link IotasEvent#getFieldsAndValues()}.
+ * Inmemory data provider by taking the required data as a Map.
  */
-public class SubstituteTransform extends Transform {
-    private final Set<String> fields = new HashSet<>();
+public class InmemoryTransformDataProvider extends TransformDataProvider {
 
-    public SubstituteTransform() {
-        this(Collections.<String>emptySet());
+    private final Map<Object, Object> data = new HashMap<>();
+
+    private InmemoryTransformDataProvider() {
+        this(Collections.emptyMap());
     }
 
-    public SubstituteTransform(Set<String> fields) {
-        this.fields.addAll(fields);
+    public InmemoryTransformDataProvider(Map<Object, Object> data) {
+        super(null);
+        if(data == null) {
+            throw new IllegalArgumentException("data can not be null");
+        }
+
+        this.data.putAll(data);
     }
 
-    public Set<String> getFields() {
-        return Collections.unmodifiableSet(fields);
-    }
-
-    @Override
-    public String toString() {
-        return "SubstituteTransform{" +
-                "fields=" + fields +
-                '}'+super.toString();
+    public Map<Object, Object> getData() {
+        return Collections.unmodifiableMap(data);
     }
 }

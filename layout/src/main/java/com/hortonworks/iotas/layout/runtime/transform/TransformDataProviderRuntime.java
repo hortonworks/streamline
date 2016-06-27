@@ -18,7 +18,7 @@
  */
 package com.hortonworks.iotas.layout.runtime.transform;
 
-import com.hortonworks.iotas.layout.design.transform.Transform;
+import com.hortonworks.iotas.topology.component.rule.action.transform.Transform;
 
 /**
  * Data provider for {@link Transform} which can be used for lookups.

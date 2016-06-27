@@ -72,7 +72,7 @@ streamid2=$(getId $out)
 
 echo -e "\n------"
 out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
-    "streamId": "rule_processsor_1.rule_1.1.notificationsink",
+    "streamId": "sink-stream",
     "fields": [{"name": "iotas.event", "type": "NESTED"} ]
 }' "${catalogurl}/topologies/$topologyid/streams")
 
@@ -133,18 +133,23 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
     "sql": "select temperature, humidity from parsedTuplesStream where humidity > 90 AND temperature > 80",
     "actions": [
       {
-        "name": "hbasesink"
+        "name": "hbasesink",
+        "outputStreams": ["sink-stream"],
+        "__type": "com.hortonworks.iotas.topology.component.rule.action.TransformAction"
       },
       {
-        "name": "hdfssink"
+        "name": "hdfssink",
+        "outputStreams": ["sink-stream"],
+        "__type": "com.hortonworks.iotas.topology.component.rule.action.TransformAction"
       },
       {
         "name": "notificationsink",
         "outputFieldsAndDefaults": {
           "body": "rule_1 fired"
          },
-         "includeMeta": true,
-         "notifierName": "email_notifier"
+        "outputStreams": ["sink-stream"],
+         "notifierName": "email_notifier",
+          "__type": "com.hortonworks.iotas.topology.component.rule.action.NotifierAction"
        }
     ]
 }' "${catalogurl}/topologies/$topologyid/rules")

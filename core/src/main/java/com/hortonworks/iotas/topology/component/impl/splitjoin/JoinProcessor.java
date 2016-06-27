@@ -16,28 +16,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.hortonworks.iotas.layout.design.splitjoin;
+package com.hortonworks.iotas.topology.component.impl.splitjoin;
 
-import com.hortonworks.iotas.layout.design.Utils;
 import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
+import com.hortonworks.iotas.topology.component.impl.Utils;
 
 import java.util.Collections;
 
 /**
- * Splits the receiving input event and send those events based on the given {@link SplitAction} configuration.
+ * Joins incoming streams and generate a joined event.
  *
  */
-public class SplitProcessor extends RulesProcessor {
+public class JoinProcessor extends RulesProcessor {
 
-    public SplitProcessor() {
+    public static final String CONFIG_KEY_JOIN = "join-config";
+
+    public JoinProcessor() {
     }
 
-    public SplitProcessor(SplitAction splitAction) {
-        setRules(Collections.singletonList(Utils.createTrueRule(splitAction)));
+    public void setJoinAction(JoinAction joinAction) {
+        setRules(Collections.singletonList(Utils.createTrueRule(joinAction)));
     }
 
     @Override
     public String toString() {
-        return "SplitProcessor{}"+super.toString();
+        return "JoinProcessor{}"+super.toString();
     }
 }

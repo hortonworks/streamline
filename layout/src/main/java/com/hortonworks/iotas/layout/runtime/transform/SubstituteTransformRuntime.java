@@ -19,9 +19,9 @@ package com.hortonworks.iotas.layout.runtime.transform;
 
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
-import com.hortonworks.iotas.layout.design.transform.SubstituteTransform;
-import com.hortonworks.iotas.layout.design.transform.Transform;
 import com.hortonworks.iotas.layout.runtime.RuntimeService;
+import com.hortonworks.iotas.topology.component.rule.action.transform.SubstituteTransform;
+import com.hortonworks.iotas.topology.component.rule.action.transform.Transform;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

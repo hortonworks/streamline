@@ -19,6 +19,12 @@ import com.hortonworks.iotas.topology.component.impl.KafkaSource;
 import com.hortonworks.iotas.topology.component.impl.NotificationSink;
 import com.hortonworks.iotas.topology.component.impl.ParserProcessor;
 import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
+import com.hortonworks.iotas.topology.component.impl.splitjoin.JoinAction;
+import com.hortonworks.iotas.topology.component.impl.splitjoin.JoinProcessor;
+import com.hortonworks.iotas.topology.component.impl.splitjoin.SplitAction;
+import com.hortonworks.iotas.topology.component.impl.splitjoin.SplitProcessor;
+import com.hortonworks.iotas.topology.component.impl.splitjoin.StageAction;
+import com.hortonworks.iotas.topology.component.impl.splitjoin.StageProcessor;
 import com.hortonworks.iotas.topology.component.rule.Rule;
 
 import java.util.AbstractMap;
@@ -59,7 +65,9 @@ public class TopologyComponentFactory {
         processor.setId(topologyProcessor.getId().toString());
         processor.setName(topologyProcessor.getName());
         processor.setConfig(topologyProcessor.getConfig());
-        processor.addOutputStreams(createOutputStreams(topologyProcessor));
+        if(processor.getOutputStreams() == null || processor.getOutputStreams().isEmpty()) {
+            processor.addOutputStreams(createOutputStreams(topologyProcessor));
+        }
         return processor;
     }
 
@@ -122,6 +130,9 @@ public class TopologyComponentFactory {
     private Map<String, Provider<IotasProcessor>> createProcessorProviders() {
         ImmutableMap.Builder<String, Provider<IotasProcessor>> builder = ImmutableMap.builder();
         builder.put(rulesProcessorProvider());
+        builder.put(splitProcessorProvider());
+        builder.put(joinProcessorProvider());
+        builder.put(stageProcessorProvider());
         builder.put(parserProcessorProvider());
         builder.put(customProcessorProvider());
         return builder.build();
@@ -164,15 +175,65 @@ public class TopologyComponentFactory {
         return new AbstractMap.SimpleImmutableEntry<>("KAFKA", provider);
     }
 
+    private Map.Entry<String, Provider<IotasProcessor>> splitProcessorProvider() {
+        Provider<IotasProcessor> provider = new Provider<IotasProcessor>() {
+            @Override
+            public IotasProcessor create(TopologyComponent component) {
+                Object splitConfig = component.getConfig().getAny(SplitProcessor.CONFIG_KEY_SPLIT);
+                ObjectMapper objectMapper = new ObjectMapper();
+                SplitAction splitAction = objectMapper.convertValue(splitConfig, SplitAction.class);
+                SplitProcessor splitProcessor = new SplitProcessor();
+                splitProcessor.addOutputStreams(createOutputStreams((TopologyOutputComponent) component));
+                splitProcessor.setSplitAction(splitAction);
+                return splitProcessor;
+            }
+        };
+        return new AbstractMap.SimpleImmutableEntry<>("SPLIT", provider);
+    }
+
+    private Map.Entry<String, Provider<IotasProcessor>> joinProcessorProvider() {
+        Provider<IotasProcessor> provider = new Provider<IotasProcessor>() {
+            @Override
+            public IotasProcessor create(TopologyComponent component) {
+                Object joinConfig = component.getConfig().getAny(JoinProcessor.CONFIG_KEY_JOIN);
+                ObjectMapper objectMapper = new ObjectMapper();
+                JoinAction joinAction = objectMapper.convertValue(joinConfig, JoinAction.class);
+                JoinProcessor joinProcessor = new JoinProcessor();
+                joinProcessor.addOutputStreams(createOutputStreams((TopologyOutputComponent) component));
+                joinProcessor.setJoinAction(joinAction);
+                return joinProcessor;
+            }
+        };
+        return new AbstractMap.SimpleImmutableEntry<>("JOIN", provider);
+    }
+
+    private Map.Entry<String, Provider<IotasProcessor>> stageProcessorProvider() {
+        Provider<IotasProcessor> provider = new Provider<IotasProcessor>() {
+            @Override
+            public IotasProcessor create(TopologyComponent component) {
+                Object stageConfig = component.getConfig().getAny(StageProcessor.CONFIG_KEY_STAGE);
+                ObjectMapper objectMapper = new ObjectMapper();
+                StageAction stageAction = objectMapper.convertValue(stageConfig, StageAction.class);
+                StageProcessor stageProcessor = new StageProcessor();
+                stageProcessor.addOutputStreams(createOutputStreams((TopologyOutputComponent) component));
+                stageProcessor.setStageAction(stageAction);
+                return stageProcessor;
+            }
+        };
+        return new AbstractMap.SimpleImmutableEntry<>("STAGE", provider);
+    }
+
     private Map.Entry<String, Provider<IotasProcessor>> rulesProcessorProvider() {
         Provider<IotasProcessor> provider = new Provider<IotasProcessor>() {
             @Override
             public IotasProcessor create(TopologyComponent component) {
                 RulesProcessor processor = new RulesProcessor();
                 ObjectMapper objectMapper = new ObjectMapper();
+                Set<Stream> outputStreams = createOutputStreams((TopologyOutputComponent) component);
+                processor.addOutputStreams(outputStreams);
+
                 Object ruleList = component.getConfig().getAny(RulesProcessor.CONFIG_KEY_RULES);
-                List<Long> ruleIds = objectMapper.convertValue(ruleList, new TypeReference<List<Long>>() {
-                });
+                List<Long> ruleIds = objectMapper.convertValue(ruleList, new TypeReference<List<Long>>() {});
                 try {
                     List<Rule> rules = new ArrayList<>();
                     for (Long ruleId : ruleIds) {

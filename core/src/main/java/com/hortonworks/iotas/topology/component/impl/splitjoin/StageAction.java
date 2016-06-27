@@ -16,12 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.hortonworks.iotas.layout.design.splitjoin;
+package com.hortonworks.iotas.topology.component.impl.splitjoin;
 
-import com.hortonworks.iotas.layout.design.rule.action.TransformAction;
-import com.hortonworks.iotas.layout.design.transform.EnrichmentTransform;
-import com.hortonworks.iotas.layout.design.transform.ProjectionTransform;
-import com.hortonworks.iotas.layout.design.transform.Transform;
+
+import com.hortonworks.iotas.topology.component.rule.action.TransformAction;
+import com.hortonworks.iotas.topology.component.rule.action.transform.EnrichmentTransform;
+import com.hortonworks.iotas.topology.component.rule.action.transform.ProjectionTransform;
+import com.hortonworks.iotas.topology.component.rule.action.transform.Transform;
 
 import java.util.List;
 

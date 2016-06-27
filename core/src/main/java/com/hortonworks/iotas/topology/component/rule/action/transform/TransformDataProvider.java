@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.hortonworks.iotas.layout.design.transform;
+package com.hortonworks.iotas.topology.component.rule.action.transform;
 
 import com.hortonworks.iotas.common.Config;
 

@@ -34,6 +34,8 @@ import java.util.Map;
  */
 public class NormalizationProcessor extends IotasProcessor {
     public static final String DEFAULT_STREAM_ID = "default";
+    public static final String CONFIG_KEY_TYPE = "type";
+    public static final String CONFIG_KEY_NORMALIZATION = "normalization-config";
 
     /**
      * {@link NormalizationConfig} for each inbound stream for this component.

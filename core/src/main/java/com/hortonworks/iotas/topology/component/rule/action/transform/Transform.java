@@ -16,28 +16,36 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.hortonworks.iotas.layout.design.splitjoin;
+package com.hortonworks.iotas.topology.component.rule.action.transform;
 
-import com.hortonworks.iotas.layout.design.Utils;
-import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import java.util.Collections;
+import java.io.Serializable;
 
 /**
- * Joins incoming streams and generate a joined event.
- *
+ * Design time component of a basic transform.
  */
-public class JoinProcessor extends RulesProcessor {
+@JsonTypeInfo(use= JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY, property="__type")
+public class Transform implements Serializable {
 
-    public JoinProcessor() {
+    protected final String name;
+
+    protected Transform() {
+        this(null);
     }
 
-    public JoinProcessor(JoinAction joinAction) {
-        setRules(Collections.singletonList(Utils.createTrueRule(joinAction)));
+    public Transform(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
     }
 
     @Override
     public String toString() {
-        return "JoinProcessor{}"+super.toString();
+        return "Transform{" +
+                "name='" + name + '\'' +
+                '}';
     }
 }

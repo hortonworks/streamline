@@ -16,9 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.hortonworks.iotas.layout.design.transform;
-
-import com.hortonworks.iotas.layout.runtime.transform.TransformDataProviderRuntime;
+package com.hortonworks.iotas.topology.component.rule.action.transform;
 
 import java.util.Collections;
 import java.util.List;
@@ -58,7 +56,7 @@ public class EnrichmentTransform extends Transform {
     private long entryExpirationInterval = DEFAULT_ENTRY_EXPIRATION_INTERVAL;
 
     /**
-     * interval (in seconds) of an entry after which the entry should be loaded from {@link TransformDataProviderRuntime}.
+     * interval (in seconds) of an entry after which the entry should be loaded from {@link TransformDataProvider}.
      */
     private long entryRefreshInterval = DEFAULT_ENTRY_REFRESH_INTERVAL;
 
@@ -88,7 +86,7 @@ public class EnrichmentTransform extends Transform {
     }
 
     /**
-     * @param refreshInterval interval of an entry after which the entry should be loaded from {@link TransformDataProviderRuntime}.
+     * @param refreshInterval interval of an entry after which the entry should be loaded from {@link TransformDataProvider}.
      * @param timeUnit Unit of time
      */
     public void withEntryRefreshInterval(long refreshInterval, TimeUnit timeUnit) {

@@ -1,7 +1,6 @@
 package com.hortonworks.iotas.layout.runtime.transform;
 
 import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.layout.design.transform.Transform;
 
 import java.io.Serializable;
 import java.util.List;

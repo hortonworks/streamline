@@ -21,8 +21,6 @@ package com.hortonworks.iotas.layout.runtime;
 
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.Result;
-import com.hortonworks.iotas.layout.design.rule.action.TransformAction;
-import com.hortonworks.iotas.layout.design.transform.Transform;
 import com.hortonworks.iotas.layout.runtime.rule.action.AbstractActionRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.action.ActionRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.action.ActionRuntimeContext;
@@ -30,6 +28,8 @@ import com.hortonworks.iotas.layout.runtime.transform.IdentityTransformRuntime;
 import com.hortonworks.iotas.layout.runtime.transform.TransformRuntime;
 import com.hortonworks.iotas.layout.runtime.transform.TransformRuntimeService;
 import com.hortonworks.iotas.topology.component.rule.action.Action;
+import com.hortonworks.iotas.topology.component.rule.action.TransformAction;
+import com.hortonworks.iotas.topology.component.rule.action.transform.Transform;
 
 import java.util.ArrayList;
 import java.util.Collections;
