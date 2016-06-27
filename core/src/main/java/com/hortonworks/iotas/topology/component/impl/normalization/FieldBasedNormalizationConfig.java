@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hortonworks.iotas.layout.design.normalization;
+package com.hortonworks.iotas.topology.component.impl.normalization;
 
 import com.hortonworks.iotas.common.Schema;
 
@@ -67,20 +67,6 @@ public class FieldBasedNormalizationConfig extends NormalizationConfig {
 
     public void setNewFieldValueGenerators(List<FieldValueGenerator> newFieldValueGenerators) {
         this.newFieldValueGenerators = newFieldValueGenerators;
-    }
-
-    //todo this should be called when a topology/component is saved.
-    public void validate() {
-        Set<String> fields = new HashSet<>();
-        for (Schema.Field field : getInputSchema().getFields()) {
-            fields.add(field.getName());
-        }
-
-        for (String field : fieldsToBeFiltered) {
-            if (!fields.contains(field)) {
-                throw new RuntimeException("field [" + field + "] does not exist in input schema");
-            }
-        }
     }
 
     @Override

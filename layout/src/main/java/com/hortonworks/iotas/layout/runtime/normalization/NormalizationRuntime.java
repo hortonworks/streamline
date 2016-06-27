@@ -21,10 +21,11 @@ package com.hortonworks.iotas.layout.runtime.normalization;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.layout.design.normalization.NormalizationProcessor;
-import com.hortonworks.iotas.layout.design.normalization.BulkNormalizationConfig;
-import com.hortonworks.iotas.layout.design.normalization.FieldBasedNormalizationConfig;
-import com.hortonworks.iotas.layout.design.normalization.NormalizationConfig;
+import com.hortonworks.iotas.topology.component.Stream;
+import com.hortonworks.iotas.topology.component.impl.normalization.NormalizationProcessor;
+import com.hortonworks.iotas.topology.component.impl.normalization.BulkNormalizationConfig;
+import com.hortonworks.iotas.topology.component.impl.normalization.FieldBasedNormalizationConfig;
+import com.hortonworks.iotas.topology.component.impl.normalization.NormalizationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

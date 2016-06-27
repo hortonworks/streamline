@@ -1,7 +1,7 @@
 /**
  *
  */
-package com.hortonworks.iotas.layout.design.normalization;
+package com.hortonworks.iotas.topology.component.impl.normalization;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -29,4 +29,7 @@ public class NormalizationConfig extends Config {
         return inputSchema;
     }
 
+    public void setInputSchema(Schema inputSchema) {
+        this.inputSchema = inputSchema;
+    }
 }

@@ -15,11 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hortonworks.iotas.layout.design.normalization;
+package com.hortonworks.iotas.topology.component.impl.normalization;
 
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.topology.component.IotasProcessor;
 import com.hortonworks.iotas.topology.component.Stream;
+import com.hortonworks.iotas.topology.component.TopologyDagVisitor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,16 +36,15 @@ import java.util.Map;
 public class NormalizationProcessor extends IotasProcessor {
     public static final String DEFAULT_STREAM_ID = "default";
     public static final String CONFIG_KEY_TYPE = "type";
-    public static final String CONFIG_KEY_NORMALIZATION = "normalization-config";
+    public static final String CONFIG_KEY_NORMALIZATION = "normalizationConfig";
 
     /**
      * {@link NormalizationConfig} for each inbound stream for this component.
      */
-    private Map<String, NormalizationConfig> inputStreamsWithNormalizationConfig;
+    private Map<String, NormalizationConfig> inputStreamsWithNormalizationConfig = new HashMap<>();
     private Type type;
 
     private NormalizationProcessor() {
-        inputStreamsWithNormalizationConfig = new HashMap<>();
     }
 
     /**
@@ -65,6 +65,11 @@ public class NormalizationProcessor extends IotasProcessor {
 
     public Map<String, NormalizationConfig> getInputStreamsWithNormalizationConfig() {
         return inputStreamsWithNormalizationConfig;
+    }
+
+    @Override
+    public void accept(TopologyDagVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override

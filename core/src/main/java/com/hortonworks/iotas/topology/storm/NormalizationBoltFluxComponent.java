@@ -3,6 +3,7 @@ package com.hortonworks.iotas.topology.storm;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
+import com.hortonworks.iotas.topology.component.impl.normalization.NormalizationProcessor;
 import com.hortonworks.iotas.util.exception.BadTopologyLayoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,15 +17,20 @@ import java.util.Map;
  */
 public class NormalizationBoltFluxComponent extends AbstractFluxComponent {
     private final Logger log = LoggerFactory.getLogger(NormalizationBoltFluxComponent.class);
+    private NormalizationProcessor normalizationProcessor;
+
+    public NormalizationBoltFluxComponent(NormalizationProcessor normalizationProcessor) {
+        this.normalizationProcessor = normalizationProcessor;
+    }
 
     @Override
     protected void generateComponent() {
-        String normalizationProcessorBuilder = addNormalizationProcessorBuilder();
+        String normalizationProcessorId = addNormalizationProcessorBuilder();
 
         String boltId = "normalizationBolt" + UUID_FOR_COMPONENTS;
         String boltClassName = "com.hortonworks.iotas.bolt.normalization.NormalizationBolt";
         List boltConstructorArgs = new ArrayList();
-        Map ref = getRefYaml(normalizationProcessorBuilder);
+        Map ref = getRefYaml(normalizationProcessorId);
         boltConstructorArgs.add(ref);
         component = createComponent(boltId, boltClassName, null, boltConstructorArgs, null);
         addParallelismToComponent();
@@ -36,9 +42,10 @@ public class NormalizationBoltFluxComponent extends AbstractFluxComponent {
         ObjectMapper mapper = new ObjectMapper();
         String normalizationProcessorJson = null;
         try {
-            normalizationProcessorJson = mapper.writeValueAsString(conf.get(TopologyLayoutConstants.JSON_KEY_NORMALIZATION_PROCESSOR_CONFIG));
+            normalizationProcessorJson = mapper.writeValueAsString(normalizationProcessor);
         } catch (JsonProcessingException e) {
             log.error("Error creating json config string for NormalizationProcessor", e);
+            throw new RuntimeException(e);
         }
 
         //constructor args

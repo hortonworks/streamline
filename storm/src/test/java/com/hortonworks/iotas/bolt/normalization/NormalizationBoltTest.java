@@ -22,10 +22,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.layout.design.normalization.NormalizationProcessor;
+import com.hortonworks.iotas.topology.component.impl.normalization.BulkNormalizationConfig;
+import com.hortonworks.iotas.topology.component.impl.normalization.FieldBasedNormalizationConfig;
+import com.hortonworks.iotas.topology.component.impl.normalization.FieldValueGenerator;
+import com.hortonworks.iotas.topology.component.impl.normalization.NormalizationConfig;
+import com.hortonworks.iotas.topology.component.impl.normalization.NormalizationProcessor;
 import com.hortonworks.iotas.topology.component.Stream;
-import com.hortonworks.iotas.layout.design.normalization.*;
 import com.hortonworks.iotas.layout.runtime.normalization.NormalizationException;
+import com.hortonworks.iotas.topology.component.impl.normalization.Transformer;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import mockit.Expectations;
@@ -84,7 +88,7 @@ public class NormalizationBoltTest {
         put("humidity", "40");
     }}, "ds-" + System.currentTimeMillis(), "id-" + System.currentTimeMillis());
 
-    private static final Schema OUTPUT_SCHEMA_FIELDS = Schema.of(
+    public static final Schema OUTPUT_SCHEMA_FIELDS = Schema.of(
             new Schema.Field("temperature", Schema.Type.FLOAT),
             new Schema.Field("humidity", Schema.Type.STRING),
             new Schema.Field("illuminance", Schema.Type.INTEGER),
@@ -98,24 +102,25 @@ public class NormalizationBoltTest {
                 put("new-field", "new value");
             }}, INPUT_IOTAS_EVENT.getDataSourceId(), INPUT_IOTAS_EVENT.getId());
 
+    private static final String INPUT_STREAM_ID = "inputStream";
     @Test
     public void testFieldBasedNormalization() throws NormalizationException {
-        testNormalizationBolt(createNormalizationBolt(createFieldBasedNormalizationProcessorRuntime()));
+        testNormalizationBolt(createNormalizationBolt(createFieldBasedNormalizationProcessor("normalized-output")));
     }
 
     @Test
     public void testFieldBasedNormalizationFailure() throws NormalizationException {
-        testNormalizationBoltFailure(createNormalizationBolt(createFieldBasedNormalizationProcessorRuntime()));
+        testNormalizationBoltFailure(createNormalizationBolt(createFieldBasedNormalizationProcessor("normalized-output")));
     }
 
     @Test
     public void testBulkNormalization() throws NormalizationException, IOException {
-        testNormalizationBolt(createNormalizationBolt(createBulkNormalizationProcessorRuntime()));
+        testNormalizationBolt(createNormalizationBolt(createBulkNormalizationProcessor("normalized-output")));
     }
 
     @Test
     public void testBulkNormalizationFailure() throws NormalizationException, IOException {
-        testNormalizationBoltFailure(createNormalizationBolt(createBulkNormalizationProcessorRuntime()));
+        testNormalizationBoltFailure(createNormalizationBolt(createBulkNormalizationProcessor("normalized-output")));
     }
 
     private void testNormalizationBolt(NormalizationBolt normalizationBolt) {
@@ -137,6 +142,9 @@ public class NormalizationBoltTest {
         new Expectations() {{
             tuple.getValueByField(IotasEvent.IOTAS_EVENT);
             returns(INVALID_INPUT_IOTAS_EVENT);
+
+            tuple.getSourceStreamId();
+            returns(INPUT_STREAM_ID);
         }};
 
         normalizationBolt.execute(tuple);
@@ -156,27 +164,27 @@ public class NormalizationBoltTest {
         return normalizationBolt;
     }
 
-    private NormalizationProcessor createBulkNormalizationProcessorRuntime() throws NormalizationException, IOException {
+    public static NormalizationProcessor createBulkNormalizationProcessor(String outputStreamId) throws NormalizationException, IOException {
         Map<String, NormalizationConfig> inputStreamsWithConfig = new HashMap<>();
-        Schema.Field tempField = new Schema.Field("temp", Schema.Type.INTEGER);
-        Schema inputSchema = Schema.of(tempField, new Schema.Field("foo", Schema.Type.STRING));
+        Schema inputSchema = Schema.of(Schema.Field.of("temp", Schema.Type.INTEGER), Schema.Field.of("foo", Schema.Type.STRING));
 
         String bulkScriptText = getBulkScriptText();
         BulkNormalizationConfig bulkNormalizationConfig = new BulkNormalizationConfig(inputSchema, bulkScriptText);
-        inputStreamsWithConfig.put(NormalizationProcessor.DEFAULT_STREAM_ID, bulkNormalizationConfig);
+        inputStreamsWithConfig.put(INPUT_STREAM_ID, bulkNormalizationConfig);
 
-        NormalizationProcessor normalizationProcessor = new NormalizationProcessor(inputStreamsWithConfig, new Stream("normalized-output", OUTPUT_SCHEMA_FIELDS),  NormalizationProcessor.Type.bulk);
-
+        Stream declaredOutputStream = new Stream(outputStreamId, OUTPUT_SCHEMA_FIELDS);
+        NormalizationProcessor normalizationProcessor = new NormalizationProcessor(inputStreamsWithConfig, declaredOutputStream,  NormalizationProcessor.Type.bulk);
+        normalizationProcessor.addOutputStream(declaredOutputStream);
         return normalizationProcessor;
     }
 
-    private String getBulkScriptText() throws IOException {
-        try (InputStream is = this.getClass().getClassLoader().getResourceAsStream("normalization/bulkNormalizationScript.groovy")) {
-            return IOUtils.toString(is);
+    private static String getBulkScriptText() throws IOException {
+        try (InputStream is = NormalizationBoltTest.class.getClassLoader().getResourceAsStream("normalization/bulkNormalizationScript.groovy")) {
+            return IOUtils.toString(is, "UTF-8");
         }
     }
 
-    private NormalizationProcessor createFieldBasedNormalizationProcessorRuntime() throws NormalizationException {
+    public static NormalizationProcessor createFieldBasedNormalizationProcessor(String outputStreamId) throws NormalizationException {
         Map<String, NormalizationConfig> inputStreamsWithConfig = new HashMap<>();
         Schema.Field tempField = new Schema.Field("temp", Schema.Type.INTEGER);
         Schema inputSchema = Schema.of(tempField, new Schema.Field("foo", Schema.Type.STRING));
@@ -189,21 +197,23 @@ public class NormalizationBoltTest {
         List<FieldValueGenerator> fieldValueGenerators = Collections.singletonList(new FieldValueGenerator(new Schema.Field("new-field", Schema.Type.STRING), "new value"));
         FieldBasedNormalizationConfig fieldBasedNormalizationConfig = new FieldBasedNormalizationConfig(inputSchema, transformers, filters, fieldValueGenerators);
 
-        inputStreamsWithConfig.put(NormalizationProcessor.DEFAULT_STREAM_ID, fieldBasedNormalizationConfig);
+        inputStreamsWithConfig.put(INPUT_STREAM_ID, fieldBasedNormalizationConfig);
 
-        NormalizationProcessor normalizationProcessor = new NormalizationProcessor(inputStreamsWithConfig, new Stream("normalized-output", OUTPUT_SCHEMA_FIELDS), NormalizationProcessor.Type.fineGrained);
+        Stream declaredOutputStream = new Stream(outputStreamId, OUTPUT_SCHEMA_FIELDS);
+        NormalizationProcessor normalizationProcessor = new NormalizationProcessor(inputStreamsWithConfig, declaredOutputStream, NormalizationProcessor.Type.fineGrained);
+        normalizationProcessor.addOutputStream(declaredOutputStream);
         return normalizationProcessor;
     }
 
 
     @Test
     public void testBulkNormalizationProcessorJsons() throws Exception {
-        testNormalizationProcessorJson(createBulkNormalizationProcessorRuntime());
+        testNormalizationProcessorJson(createBulkNormalizationProcessor("normalized-output"));
     }
 
     @Test
     public void testFinegrainedNormalizationProcessorJsons() throws Exception {
-        testNormalizationProcessorJson(createFieldBasedNormalizationProcessorRuntime());
+        testNormalizationProcessorJson(createFieldBasedNormalizationProcessor("normalized-output"));
     }
 
     private void testNormalizationProcessorJson(NormalizationProcessor normalizationProcessor) throws IOException {
