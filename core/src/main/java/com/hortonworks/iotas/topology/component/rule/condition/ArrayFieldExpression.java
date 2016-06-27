@@ -38,6 +38,25 @@ public class ArrayFieldExpression extends Expression {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ArrayFieldExpression that = (ArrayFieldExpression) o;
+
+        if (index != that.index) return false;
+        return expression != null ? expression.equals(that.expression) : that.expression == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = expression != null ? expression.hashCode() : 0;
+        result = 31 * result + index;
+        return result;
+    }
+
+    @Override
     public String toString() {
         return "ArrayFieldExpression{" +
                 "expression=" + expression +

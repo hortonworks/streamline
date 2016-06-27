@@ -40,4 +40,27 @@ public class ExpressionList extends Expression {
     public List<Expression> getExpressions() {
         return expressions;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ExpressionList that = (ExpressionList) o;
+
+        return expressions != null ? expressions.equals(that.expressions) : that.expressions == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        return expressions != null ? expressions.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return "ExpressionList{" +
+                "expressions=" + expressions +
+                '}';
+    }
 }

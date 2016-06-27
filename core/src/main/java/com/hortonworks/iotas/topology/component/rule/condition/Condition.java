@@ -48,4 +48,20 @@ public class Condition implements Serializable {
                 "expression=" + expression +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Condition condition = (Condition) o;
+
+        return expression != null ? expression.equals(condition.expression) : condition.expression == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        return expression != null ? expression.hashCode() : 0;
+    }
 }

@@ -201,4 +201,16 @@ public class RuleParser {
                 .build());
     }
 
+    @Override
+    public String toString() {
+        return "RuleParser{" +
+                "streams=" + streams +
+                ", projection=" + projection +
+                ", condition=" + condition +
+                ", groupBy=" + groupBy +
+                ", having=" + having +
+                ", udfs=" + udfs +
+                ", ruleInfo=" + ruleInfo +
+                '}';
+    }
 }
