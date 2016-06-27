@@ -22,11 +22,11 @@ import com.google.common.collect.ImmutableSet;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Result;
-import com.hortonworks.iotas.layout.design.rule.action.TransformAction;
-import com.hortonworks.iotas.layout.design.transform.MergeTransform;
-import com.hortonworks.iotas.layout.design.transform.ProjectionTransform;
-import com.hortonworks.iotas.layout.design.transform.SubstituteTransform;
 import com.hortonworks.iotas.layout.runtime.rule.action.ActionRuntime;
+import com.hortonworks.iotas.topology.component.rule.action.TransformAction;
+import com.hortonworks.iotas.topology.component.rule.action.transform.MergeTransform;
+import com.hortonworks.iotas.topology.component.rule.action.transform.ProjectionTransform;
+import com.hortonworks.iotas.topology.component.rule.action.transform.SubstituteTransform;
 import org.junit.Test;
 
 import java.util.ArrayList;

@@ -16,9 +16,8 @@
  * limitations under the License.
  */
 
-package com.hortonworks.iotas.layout.design.rule.action;
+package com.hortonworks.iotas.topology.component.rule.action;
 
-import com.hortonworks.iotas.topology.component.rule.action.Action;
 
 import java.util.Collections;
 import java.util.HashMap;

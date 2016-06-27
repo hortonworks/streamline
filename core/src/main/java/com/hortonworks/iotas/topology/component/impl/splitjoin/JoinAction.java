@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.hortonworks.iotas.layout.design.splitjoin;
+package com.hortonworks.iotas.topology.component.impl.splitjoin;
 
 
 import com.hortonworks.iotas.topology.component.rule.action.Action;

@@ -19,7 +19,7 @@ package com.hortonworks.iotas.layout.runtime.transform;
 
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
-import com.hortonworks.iotas.layout.design.transform.MergeTransform;
+import com.hortonworks.iotas.topology.component.rule.action.transform.MergeTransform;
 import org.junit.Test;
 
 import java.util.HashMap;

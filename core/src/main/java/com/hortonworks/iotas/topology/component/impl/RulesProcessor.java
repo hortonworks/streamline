@@ -18,15 +18,19 @@
 
 package com.hortonworks.iotas.topology.component.impl;
 
-import com.hortonworks.iotas.common.Schema;
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import com.hortonworks.iotas.topology.component.IotasProcessor;
 import com.hortonworks.iotas.topology.component.Stream;
 import com.hortonworks.iotas.topology.component.TopologyDagVisitor;
 import com.hortonworks.iotas.topology.component.rule.Rule;
 import com.hortonworks.iotas.topology.component.rule.action.Action;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Represents a design time rules processor.
@@ -49,10 +53,21 @@ public class RulesProcessor extends IotasProcessor {     //TODO: Rename to RuleP
 
     public void setRules(List<Rule> rules) {
         this.rules = rules;
+
+        Set<String> streamIds = new HashSet<>(Collections2.transform(getOutputStreams(), new Function<Stream, String>() {
+            @Nullable
+            @Override
+            public String apply(@Nullable Stream input) {
+                return input.getId();
+            }
+        }));
+
         for (Rule rule : rules) {
             for (Action action : rule.getActions()) {
                 for (String stream : action.getOutputStreams()) {
-                    addOutputStream(new Stream(stream, (Schema) null));
+                    if(!streamIds.contains(stream)) {
+                        throw new RuntimeException("Action's stream: "+stream+" does not exist in processor's output streams");
+                    }
                 }
             }
         }

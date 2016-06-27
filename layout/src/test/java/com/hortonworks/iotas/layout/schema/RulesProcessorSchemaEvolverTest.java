@@ -22,13 +22,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.layout.design.rule.action.TransformAction;
-import com.hortonworks.iotas.layout.design.rule.action.NotifierAction;
-import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
+import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import com.hortonworks.iotas.topology.component.Stream;
+import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
 import com.hortonworks.iotas.topology.component.rule.Rule;
 import com.hortonworks.iotas.topology.component.rule.action.Action;
-import com.hortonworks.iotas.topology.TopologyLayoutConstants;
+import com.hortonworks.iotas.topology.component.rule.action.NotifierAction;
+import com.hortonworks.iotas.topology.component.rule.action.TransformAction;
 import org.junit.Test;
 
 import java.io.IOException;

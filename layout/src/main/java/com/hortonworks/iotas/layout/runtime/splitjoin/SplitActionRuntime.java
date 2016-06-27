@@ -20,9 +20,9 @@ package com.hortonworks.iotas.layout.runtime.splitjoin;
 
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.Result;
-import com.hortonworks.iotas.layout.design.splitjoin.SplitAction;
 import com.hortonworks.iotas.layout.runtime.RuntimeService;
 import com.hortonworks.iotas.layout.runtime.rule.action.ActionRuntime;
+import com.hortonworks.iotas.topology.component.impl.splitjoin.SplitAction;
 import com.hortonworks.iotas.topology.component.rule.action.Action;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

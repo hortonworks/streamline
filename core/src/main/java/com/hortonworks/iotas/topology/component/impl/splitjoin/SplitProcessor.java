@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -16,36 +16,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.hortonworks.iotas.layout.design.transform;
+package com.hortonworks.iotas.topology.component.impl.splitjoin;
 
-import com.google.common.base.Preconditions;
-import com.hortonworks.iotas.common.Config;
+import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
+import com.hortonworks.iotas.topology.component.impl.Utils;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
- * Inmemory data provider by taking the required data as a Map.
+ * Splits the receiving input event and send those events based on the given {@link SplitAction} configuration.
+ *
  */
-public class InmemoryTransformDataProvider extends TransformDataProvider {
+public class SplitProcessor extends RulesProcessor {
+    public static final String CONFIG_KEY_SPLIT = "split-config";
 
-    private final Map<Object, Object> data = new HashMap<>();
-
-    private InmemoryTransformDataProvider() {
-        this(Collections.emptyMap());
+    public SplitProcessor() {
     }
 
-    public InmemoryTransformDataProvider(Map<Object, Object> data) {
-        super(null);
-        if(data == null) {
-            throw new IllegalArgumentException("data can not be null");
-        }
-
-        this.data.putAll(data);
+    public void setSplitAction(SplitAction splitAction) {
+        setRules(Collections.singletonList(Utils.createTrueRule(splitAction)));
     }
 
-    public Map<Object, Object> getData() {
-        return Collections.unmodifiableMap(data);
+    @Override
+    public String toString() {
+        return "SplitProcessor{}"+super.toString();
     }
 }

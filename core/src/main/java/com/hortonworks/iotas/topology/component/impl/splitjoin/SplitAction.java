@@ -16,32 +16,44 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.hortonworks.iotas.layout.design.transform;
+package com.hortonworks.iotas.topology.component.impl.splitjoin;
 
-import java.util.Map;
+
+import com.hortonworks.iotas.topology.component.rule.action.Action;
 
 /**
- * Adds a fixed header to the input event
+ * {@link Action} configuration for splitting the events.
+ *
  */
-public class AddHeaderTransform extends Transform {
-    private final Map<String, Object> fixedHeader;
+public class SplitAction extends Action {
+    private Long jarId;
+    private String splitterClassName;
 
-    private AddHeaderTransform() {
-        this(null);
+    public SplitAction() {
     }
 
-    public AddHeaderTransform(Map<String, Object> fixedHeader) {
-        this.fixedHeader = fixedHeader;
+    public SplitAction(String splitterClassName) {
+        this(null, splitterClassName);
     }
 
-    public Map<String, Object> getFixedHeader() {
-        return fixedHeader;
+    public SplitAction(Long jarId, String splitterClassName) {
+        this.jarId = jarId;
+        this.splitterClassName = splitterClassName;
+    }
+
+    public Long getJarId() {
+        return jarId;
+    }
+
+    public String getSplitterClassName() {
+        return splitterClassName;
     }
 
     @Override
     public String toString() {
-        return "AddHeaderTransform{" +
-                "fixedHeader=" + fixedHeader +
-                '}'+super.toString();
+        return "SplitAction{" +
+                "jarId='" + jarId + '\'' +
+                ", splitterClassName='" + splitterClassName + '\'' +
+                '}' + super.toString();
     }
 }

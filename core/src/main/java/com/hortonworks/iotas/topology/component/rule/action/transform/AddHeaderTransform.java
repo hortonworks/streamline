@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * <p>
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -16,36 +16,32 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.hortonworks.iotas.layout.design.transform;
+package com.hortonworks.iotas.topology.component.rule.action.transform;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
-import java.io.Serializable;
+import java.util.Map;
 
 /**
- * Design time component of a basic transform.
+ * Adds a fixed header to the input event
  */
-@JsonTypeInfo(use= JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY, property="__type")
-public class Transform implements Serializable {
+public class AddHeaderTransform extends Transform {
+    private final Map<String, Object> fixedHeader;
 
-    protected final String name;
-
-    protected Transform() {
+    private AddHeaderTransform() {
         this(null);
     }
 
-    public Transform(String name) {
-        this.name = name;
+    public AddHeaderTransform(Map<String, Object> fixedHeader) {
+        this.fixedHeader = fixedHeader;
     }
 
-    public String getName() {
-        return name;
+    public Map<String, Object> getFixedHeader() {
+        return fixedHeader;
     }
 
     @Override
     public String toString() {
-        return "Transform{" +
-                "name='" + name + '\'' +
-                '}';
+        return "AddHeaderTransform{" +
+                "fixedHeader=" + fixedHeader +
+                '}'+super.toString();
     }
 }

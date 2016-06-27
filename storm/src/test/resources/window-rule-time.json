@@ -11,7 +11,7 @@
             "body": "min salary is ${MIN(salary)}, max salary is ${MAX(salary)}"
           },
           "notifierName": "email_notifier",
-          "__type": "com.hortonworks.iotas.layout.design.rule.action.NotifierAction"
+          "__type": "com.hortonworks.iotas.topology.component.rule.action.NotifierAction"
         }
       ],
       "description": "rule_1_desc",

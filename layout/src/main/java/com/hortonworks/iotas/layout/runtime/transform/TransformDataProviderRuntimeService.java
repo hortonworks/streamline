@@ -18,9 +18,9 @@
  */
 package com.hortonworks.iotas.layout.runtime.transform;
 
-import com.hortonworks.iotas.layout.design.transform.InmemoryTransformDataProvider;
-import com.hortonworks.iotas.layout.design.transform.TransformDataProvider;
 import com.hortonworks.iotas.layout.runtime.RuntimeService;
+import com.hortonworks.iotas.topology.component.rule.action.transform.InmemoryTransformDataProvider;
+import com.hortonworks.iotas.topology.component.rule.action.transform.TransformDataProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

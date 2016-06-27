@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -16,33 +16,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.hortonworks.iotas.layout.design.transform;
+package com.hortonworks.iotas.topology.component.impl.splitjoin;
 
-import java.util.Map;
+import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
+import com.hortonworks.iotas.topology.component.impl.Utils;
+
+import java.util.Collections;
 
 /**
- * Produces a new event whose fieldsAndValues is obtained by merging the event's fieldsAndValues with the defaults. The
- * event's fieldsAndValues takes precedence over the defaults.
+ * Stage has a list of transforms to be applied and send the output to a given stream.
  */
-public class MergeTransform extends Transform {
-    private final Map<String, ?> defaults;
+public class StageProcessor extends RulesProcessor {
 
-    private MergeTransform() {
-        this(null);
+    public static final String CONFIG_KEY_STAGE = "stage-config";
+
+    public StageProcessor() {
     }
 
-    public MergeTransform(Map<String, ?> defaults) {
-        this.defaults = defaults;
-    }
-
-    public Map<String, ?> getDefaults() {
-        return defaults;
+    public void setStageAction(StageAction stageAction) {
+        setRules(Collections.singletonList(Utils.createTrueRule(stageAction)));
     }
 
     @Override
     public String toString() {
-        return "MergeTransform{" +
-                "defaults=" + defaults +
-                '}'+super.toString();
+        return "StageProcessor{}"+super.toString();
     }
 }

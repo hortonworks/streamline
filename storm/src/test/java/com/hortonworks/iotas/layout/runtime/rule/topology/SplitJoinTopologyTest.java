@@ -19,18 +19,20 @@
 package com.hortonworks.iotas.layout.runtime.rule.topology;
 
 import com.hortonworks.iotas.bolt.rules.RulesBolt;
+import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.layout.design.component.ComponentBuilder;
-import com.hortonworks.iotas.layout.design.splitjoin.JoinAction;
-import com.hortonworks.iotas.layout.design.splitjoin.JoinProcessor;
-import com.hortonworks.iotas.layout.design.splitjoin.SplitAction;
-import com.hortonworks.iotas.layout.design.splitjoin.SplitProcessor;
-import com.hortonworks.iotas.layout.design.splitjoin.StageAction;
-import com.hortonworks.iotas.layout.design.splitjoin.StageProcessor;
-import com.hortonworks.iotas.layout.design.transform.EnrichmentTransform;
-import com.hortonworks.iotas.layout.design.transform.InmemoryTransformDataProvider;
-import com.hortonworks.iotas.layout.design.transform.Transform;
 import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
+import com.hortonworks.iotas.topology.component.Stream;
 import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
+import com.hortonworks.iotas.topology.component.impl.splitjoin.JoinAction;
+import com.hortonworks.iotas.topology.component.impl.splitjoin.JoinProcessor;
+import com.hortonworks.iotas.topology.component.impl.splitjoin.SplitAction;
+import com.hortonworks.iotas.topology.component.impl.splitjoin.SplitProcessor;
+import com.hortonworks.iotas.topology.component.impl.splitjoin.StageAction;
+import com.hortonworks.iotas.topology.component.impl.splitjoin.StageProcessor;
+import com.hortonworks.iotas.topology.component.rule.action.transform.EnrichmentTransform;
+import com.hortonworks.iotas.topology.component.rule.action.transform.InmemoryTransformDataProvider;
+import com.hortonworks.iotas.topology.component.rule.action.transform.Transform;
 import org.apache.storm.Config;
 import org.apache.storm.ILocalCluster;
 import org.apache.storm.LocalCluster;
@@ -56,9 +58,11 @@ public class SplitJoinTopologyTest {
     private static final String STAGE_BOLT = "stage-bolt";
     private static final String JOIN_BOLT = "join-bolt";
     private static final String SINK_BOLT = "sink-bolt";
-    private static final String JOIN_OUTPUT_STREAM_ID = "join-output-stream";
-    private static final String SPLIT_STREAM_ID = "split-stream";
-    private static final String STAGE_OUTPUT_STREAM_ID = "stage-output-stream";
+    private static final Schema SJ_SCHEMA = Schema.of(Schema.Field.of("event", Schema.Type.STRING));
+
+    private static final Stream JOIN_OUTPUT_STREAM = new Stream("join-output-stream", SJ_SCHEMA);
+    private static final Stream SPLIT_STREAM_ID = new Stream("split-stream", SJ_SCHEMA);
+    private static final Stream STAGE_OUTPUT_STREAM = new Stream("stage-output-stream", SJ_SCHEMA);
 
     @Test
     public void testSplitJoinTopology() throws Exception {
@@ -87,16 +91,16 @@ public class SplitJoinTopologyTest {
         TopologyBuilder builder = new TopologyBuilder();
         builder.setSpout(RULES_TEST_SPOUT, new RulesTestSpout(2000));
         builder.setBolt(SPLIT_BOLT, createSplitBolt()).shuffleGrouping(RULES_TEST_SPOUT);
-        builder.setBolt(STAGE_BOLT, createStageBolt()).shuffleGrouping(SPLIT_BOLT, SPLIT_STREAM_ID);
-        builder.setBolt(JOIN_BOLT, createJoinBolt()).shuffleGrouping(STAGE_BOLT, STAGE_OUTPUT_STREAM_ID);
-        builder.setBolt(SINK_BOLT, new RulesTestSinkBolt()).shuffleGrouping(JOIN_BOLT, JOIN_OUTPUT_STREAM_ID);
+        builder.setBolt(STAGE_BOLT, createStageBolt()).shuffleGrouping(SPLIT_BOLT, SPLIT_STREAM_ID.getId());
+        builder.setBolt(JOIN_BOLT, createJoinBolt()).shuffleGrouping(STAGE_BOLT, STAGE_OUTPUT_STREAM.getId());
+        builder.setBolt(SINK_BOLT, new RulesTestSinkBolt()).shuffleGrouping(JOIN_BOLT, JOIN_OUTPUT_STREAM.getId());
         return builder.createTopology();
     }
 
     private RulesBolt createSplitBolt() {
         SplitAction splitAction = new SplitAction();
-        splitAction.setOutputStreams(Collections.singleton(SPLIT_STREAM_ID));
-        SplitProcessorBuilder splitProcessorBuilder = new SplitProcessorBuilder(splitAction);
+        splitAction.setOutputStreams(Collections.singleton(SPLIT_STREAM_ID.getId()));
+        SplitProcessorBuilder splitProcessorBuilder = new SplitProcessorBuilder(SPLIT_STREAM_ID, splitAction);
 
         return new RulesBolt(new RulesBoltDependenciesFactory(splitProcessorBuilder, getScriptType()));
     }
@@ -115,15 +119,19 @@ public class SplitJoinTopologyTest {
 
     static class SplitProcessorBuilder implements ComponentBuilder<RulesProcessor> {
 
+        private Stream splitStream;
         private SplitAction splitAction;
 
-        public SplitProcessorBuilder(SplitAction splitAction) {
+        public SplitProcessorBuilder(Stream splitStream, SplitAction splitAction) {
+            this.splitStream = splitStream;
             this.splitAction = splitAction;
         }
 
         @Override
         public RulesProcessor build() {
-            final SplitProcessor splitProcessor = new SplitProcessor(splitAction);
+            final SplitProcessor splitProcessor = new SplitProcessor();
+            splitProcessor.addOutputStreams(Collections.singleton(splitStream));
+            splitProcessor.setSplitAction(splitAction);
             splitProcessor.setName("split-processor-"+System.currentTimeMillis());
             splitProcessor.setId(UUID.randomUUID().toString());
             return splitProcessor;
@@ -135,8 +143,10 @@ public class SplitJoinTopologyTest {
         @Override
         public RulesProcessor build() {
             JoinAction joinAction = new JoinAction();
-            joinAction.setOutputStreams(Collections.singleton(JOIN_OUTPUT_STREAM_ID));
-            JoinProcessor joinProcessor = new JoinProcessor(joinAction);
+            joinAction.setOutputStreams(Collections.singleton(JOIN_OUTPUT_STREAM.getId()));
+            JoinProcessor joinProcessor = new JoinProcessor();
+            joinProcessor.addOutputStreams(Collections.singleton(JOIN_OUTPUT_STREAM));
+            joinProcessor.setJoinAction(joinAction);
             joinProcessor.setName("join-processor-"+System.currentTimeMillis());
             joinProcessor.setId(UUID.randomUUID().toString());
             return joinProcessor;
@@ -159,9 +169,11 @@ public class SplitJoinTopologyTest {
             InmemoryTransformDataProvider transformDataProvider = new InmemoryTransformDataProvider(enrichmentsData);
             EnrichmentTransform enrichmentTransform = new EnrichmentTransform("enricher", Collections.singletonList(enrichFieldName), transformDataProvider);
             StageAction stageAction = new StageAction(Collections.<Transform>singletonList(enrichmentTransform));
-            stageAction.setOutputStreams(Collections.singleton(STAGE_OUTPUT_STREAM_ID));
+            stageAction.setOutputStreams(Collections.singleton(STAGE_OUTPUT_STREAM.getId()));
 
-            final StageProcessor stageProcessor = new StageProcessor(stageAction);
+            final StageProcessor stageProcessor = new StageProcessor();
+            stageProcessor.addOutputStreams(Collections.singleton(STAGE_OUTPUT_STREAM));
+            stageProcessor.setStageAction(stageAction);
             stageProcessor.setName("stage-processor-" + System.currentTimeMillis());
             stageProcessor.setId(UUID.randomUUID().toString());
             return stageProcessor;
