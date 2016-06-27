@@ -133,15 +133,15 @@ define(['require',
 
     bindEvents: function(){
       var self = this;
-      
+
       this.listenTo(this.vent, 'topologyEditor:SaveDeviceSource', function(data){
         TopologyUtils.saveNode(self.dsArr, data, self);
       });
-      
+
       this.listenTo(this.vent, 'topologyEditor:SaveProcessor', function(data){
         TopologyUtils.saveNode(self.processorArr, data, self);
       });
-      
+
       this.listenTo(this.vent, 'topologyEditor:SaveSink', function(data){
         TopologyUtils.saveNode(self.sinkArr, data, self);
       });
@@ -164,7 +164,7 @@ define(['require',
           break;
         }
       });
-      
+
       this.listenTo(this.vent, 'topologyEditor:SaveConfig', function(configData){
         self.topologyConfigModel = configData;
       });
@@ -218,6 +218,9 @@ define(['require',
         if(!_.isUndefined(options.resetNormalization)){
           TopologyUtils.resetNormalizationAction(self.processorArr, options);
         }
+        if(!_.isUndefined(options.resetSplit)){
+          TopologyUtils.resetSplit(self.processorArr, self.linkArr , options);
+        }
         options.callback();
       });
 
@@ -233,7 +236,7 @@ define(['require',
               vent: self.vent
             });
             var modal = new Modal({
-              title: (data.source.currentType === 'RULE') ? 'Select rules for '+data.target.uiname : 'Select streams for '+data.target.uiname,
+              title: (data.source.currentType === 'RULE') ? 'Select rules for '+data.target.uiname : (data.source.currentType === 'SPLIT' ? 'Select a stream for '+ data.target.uiname : 'Select streams for '+data.target.uiname),
               contentWithFooter: true,
               content: view,
               showFooter: false,
@@ -374,13 +377,19 @@ define(['require',
             _.each(linkObj, function(o){
               arr.push(o.target.uiname);
             });
+            var linkArr = self.linkArr.filter(function(o){
+                if(o.target.uiname === model.get('uiname'))
+                  return o.source.uiname;
+              }),
+              sourceNode = _.findWhere(self.processorArr, {uiname: linkArr[0].source.uiname});
             require(['views/topology/RuleProcessorView'], function(RuleProcessorView){
               self.showModal(new RuleProcessorView({
                 model: model,
                 vent: self.vent,
                 linkedToRule: linkObj,
                 connectedSink: arr,
-                editMode: self.editMode
+                editMode: self.editMode,
+                sourceConfig: sourceNode
               }), obj);
             });
           }
@@ -406,6 +415,10 @@ define(['require',
           });
         break;
         case 'NORMALIZATION':
+        if(TopologyUtils.syncNormalizationData(model, this.linkArr, this.processorArr) == false) {
+          Utils.notifyError("Configure the connected node first.");
+          break;
+        }
           require(['views/topology/NormalizationProcessorView'], function(NormalizationProcessorView){
             var dsId;
             var linkObj = self.linkArr.filter(function(o){
@@ -442,6 +455,8 @@ define(['require',
                 return;
               }
               streamId = "tempStream";
+            } else if (linkObj[0].source.currentType == 'JOIN') {
+              streamId = "tempStream";
             }
             if(sourceNode.selectedStreams && sourceNode.selectedStreams.length === 0){
               Utils.notifyError("Please select an output stream from "+linkObj[0].source.uiname+".");
@@ -456,6 +471,75 @@ define(['require',
               dsId: dsId
             }), obj);
           });
+        break;
+        case 'SPLIT':
+        if(TopologyUtils.syncSplitData(model, this.linkArr, this.processorArr, this.dsArr)) {
+        require(['views/topology/SplitProcessorView'], function(SplitProcessorView) {
+          var linkObj = self.linkArr.filter(function(o){
+                if(o.target.uiname === model.get('uiname'))
+                  return o.source.uiname;
+              }),
+              sourceNode = _.findWhere(self.processorArr, {uiname: linkObj[0].source.uiname}),
+              stageObj = self.linkArr.filter(function(o){
+                if(o.source.uiname === model.get('uiname'))
+                  return o.source.uiname;
+              });
+          var arr = [];
+          _.each(stageObj, function(o){
+            arr.push(o.target.uiname);
+          });
+          self.showModal(new SplitProcessorView({
+              model: model,
+              vent: self.vent,
+              sourceConfig: sourceNode,
+              editMode: self.editMode,
+              connectedNodes: arr,
+              showOutputLinks: arr.length ? true : false,
+            }), obj);
+        });
+        } else {
+          Utils.notifyError("Configure the connected node first.");
+        }
+        break;
+        case 'STAGE':
+        if(TopologyUtils.syncStageData(model, this.linkArr, this.processorArr)) {
+        require(['views/topology/StageProcessorView'], function(StageProcessorView) {
+          var linkObj = self.linkArr.filter(function(o){
+                if(o.target.uiname === model.get('uiname'))
+                  return o.source.uiname;
+              }),
+              sourceNode = _.findWhere(self.processorArr, {uiname: linkObj[0].source.uiname});
+          self.showModal(new StageProcessorView({
+              model: model,
+              vent: self.vent,
+              sourceConfig: sourceNode,
+              editMode: self.editMode
+            }), obj);
+        });
+        } else {
+          Utils.notifyError("Configure the connected node first.");
+        }
+        break;
+        case 'JOIN':
+        if(TopologyUtils.syncJoinData(model, this.linkArr, this.processorArr)) {
+        require(['views/topology/JoinProcessorView'], function(JoinProcessorView) {
+          var linkObj = self.linkArr.filter(function(o){
+                if(o.target.uiname === model.get('uiname'))
+                  return o.source.uiname;
+              }),
+              sourceNodes = [];
+          for(var i = 0;i < linkObj.length;i++)
+            sourceNodes.push(_.findWhere(self.processorArr, {uiname: linkObj[i].source.uiname}));
+          self.showModal(new JoinProcessorView({
+              model: model,
+              vent: self.vent,
+              sourceConfig: sourceNodes,
+              editMode: self.editMode
+            }), obj);
+        });
+        } else {
+          Utils.notifyError("Configure the connected node first.");
+        }
         break;
       }
     },
@@ -674,6 +758,32 @@ define(['require',
             }
             if(sourceObj.currentType === 'NORMALIZATION'){
               tempObj.config.streamId = 'normalized-output';
+              tempData.links.push(tempObj);
+            }
+            if(sourceObj.currentType === 'SPLIT') {
+              if(sourceObj.selectedStreams && sourceObj.selectedStreams.length){
+                var streamObj = _.where(sourceObj.selectedStreams, {name: targetObj.uiname});
+                if(streamObj.length){
+                  _.each(streamObj, function(s){
+                    var o = JSON.parse(JSON.stringify(tempObj));
+                    o.config.streamId = s.streamName;
+                    tempData.links.push(o);
+                  });
+                } else {
+                  flag = false;
+                  $('#loading').hide();
+                  Utils.notifyError("No output streams are selected for "+targetObj.uiname);
+                }
+              } else {
+                flag = false;
+                $('#loading').hide();
+                Utils.notifyError("No output streams are selected from "+sourceObj.uiname);
+              }
+            }
+            if(sourceObj.currentType === 'STAGE') {
+              tempData.links.push(tempObj);
+            }
+            if(sourceObj.currentType === 'JOIN') {
               tempData.links.push(tempObj);
             }
           }

@@ -469,7 +469,7 @@ define(['require',
 						} else {
 							newEdge.target.streamId = "parsedTuplesStream";
 						}
-					} else if(newEdge.source.currentType === 'RULE' || newEdge.source.currentType === 'CUSTOM'){
+					} else if(newEdge.source.currentType === 'RULE' || newEdge.source.currentType === 'CUSTOM' || newEdge.source.currentType === 'SPLIT'){
 						thisGraph.vent.trigger('topologyGraph:RuleToOtherNode', newEdge);
 					}
 					thisGraph.edges.push(newEdge);
@@ -550,7 +550,7 @@ define(['require',
 						} else {
 							newEdge.target.streamId = "parsedTuplesStream";
 						}
-					} else if(newEdge.source.currentType === 'RULE' || newEdge.source.currentType === 'CUSTOM'){
+					} else if(newEdge.source.currentType === 'RULE' || newEdge.source.currentType === 'CUSTOM' || newEdge.source.currentType === 'SPLIT'){
 						thisGraph.vent.trigger('topologyGraph:RuleToOtherNode', newEdge);
 					}
 					thisGraph.edges.push(newEdge);
@@ -618,6 +618,9 @@ define(['require',
 		if(d.currentType === Globals.Topology.Editor.Steps.Datasource.Substeps[0].valStr){
 			thisGraph.createParserNode(d);
 		}
+		if(d.currentType === Globals.Topology.Editor.Steps.Processor.Substeps[4].valStr) {
+			thisGraph.createStageJoinNodes(d);
+		}
 		thisGraph.updateGraph();
 		state.graphMouseDown = false;
 	};
@@ -632,6 +635,29 @@ define(['require',
 		newObject.imageURL = Globals.Topology.Editor.Steps.Processor.Substeps[0].imgUrl;
 		thisGraph.nodes.push(newObject);
 		thisGraph.edges.push({source: d, target: newObject});
+		thisGraph.vent.trigger('topologyLink', {edges: thisGraph.edges});
+	};
+
+	TopologyGraphCreator.prototype.createStageJoinNodes = function(d) {
+		var thisGraph = this,
+			stageNode = jQuery.extend(true, {}, d),
+			joinNode = jQuery.extend(true, {}, d);
+		stageNode.x += 200;
+		stageNode.uiname = thisGraph.nodeObject.stageUiName;
+		stageNode.parentType = Globals.Topology.Editor.Steps.Processor.Substeps[5].parentType;
+		stageNode.currentType = Globals.Topology.Editor.Steps.Processor.Substeps[5].valStr;
+		stageNode.imageURL = Globals.Topology.Editor.Steps.Processor.Substeps[5].imgUrl;
+		thisGraph.nodes.push(stageNode);
+		thisGraph.edges.push({source: d, target: stageNode});
+
+		joinNode.x += 400;
+		joinNode.uiname = thisGraph.nodeObject.joinUiName;
+		joinNode.parentType = Globals.Topology.Editor.Steps.Processor.Substeps[6].parentType;
+		joinNode.currentType = Globals.Topology.Editor.Steps.Processor.Substeps[6].valStr;
+		joinNode.imageURL = Globals.Topology.Editor.Steps.Processor.Substeps[6].imgUrl;
+		thisGraph.nodes.push(joinNode);
+		thisGraph.edges.push({source: stageNode, target: joinNode});
+
 		thisGraph.vent.trigger('topologyLink', {edges: thisGraph.edges});
 	};
 
@@ -688,6 +714,21 @@ define(['require',
 							parserToRuleObj.target.isConfigured = false;
 							triggerData.resetRule = parserToRuleObj.target;
 						}
+						var parserToSplitObj = _.find(thisGraph.edges, function(obj){
+							return (obj.source == deviceToParserObj.target && obj.target.currentType === 'SPLIT');
+						});
+						if(! _.isUndefined(parserToSplitObj)){
+							triggerData.resetSplit = parserToSplitObj.target;
+							parserToSplitObj.target.isConfigured = false;
+							var stageObj = _.find(thisGraph.edges, function(obj){
+								return (obj.source == parserToSplitObj.target && obj.target.currentType === 'STAGE');
+							});
+							stageObj.target.isConfigured = false;
+							var joinObj = _.find(thisGraph.edges, function(obj){
+								return (obj.source == stageObj.target && obj.target.currentType === 'JOIN');
+							});
+							joinObj.target.isConfigured = false;
+						}
 						thisGraph.vent.trigger('delete:topologyNode', triggerData);
 					}
 				}
@@ -695,7 +736,35 @@ define(['require',
 			case 'Processor':
 				if(_.isEqual(selectedNode.currentType, 'PARSER')){
 					Utils.notifyInfo('Parser can only be deleted if Source is deleted.');
-				} else if(_.isEqual(selectedNode.currentType, 'RULE') || _.isEqual(selectedNode.currentType, 'CUSTOM') || _.isEqual(selectedNode.currentType, 'NORMALIZATION')){
+				} else if(_.isEqual(selectedNode.currentType, 'STAGE')){
+					var stageObj = _.where(thisGraph.nodes, {currentType: 'STAGE'});
+					var splitObj = _.where(thisGraph.nodes, {currentType: 'SPLIT'});
+					if(stageObj.length == 1 && splitObj.length > 0)
+						Utils.notifyInfo('Stage can only be deleted if Split is deleted.');
+					else {
+						callback = function()	{
+							thisGraph.nodes.splice(thisGraph.nodes.indexOf(selectedNode), 1);
+							thisGraph.spliceLinksForNode(selectedNode);
+							state.selectedNode = null;
+							thisGraph.updateGraph();
+						};
+						triggerData = {
+							data: [selectedNode],
+							callback: callback
+						};
+						//delete stage processor
+						var stageToJoinObj = _.find(thisGraph.edges, function(obj) {
+							return (obj.source == selectedNode && obj.target.currentType == 'JOIN');
+						});
+						// if(stageToJoinObj) {
+						// 	triggerData.resetJoin = stageToJoinObj.target;
+						// 	stageToJoinObj.target.isConfigured = false;
+						// }
+						thisGraph.vent.trigger('delete:topologyNode', triggerData);
+					}
+				} else if(_.isEqual(selectedNode.currentType, 'JOIN')){
+					Utils.notifyInfo('Join can only be deleted if Split is deleted.');
+				} else if(_.isEqual(selectedNode.currentType, 'RULE') || _.isEqual(selectedNode.currentType, 'CUSTOM') || _.isEqual(selectedNode.currentType, 'NORMALIZATION')) {
 					callback = function(){
 						thisGraph.nodes.splice(thisGraph.nodes.indexOf(selectedNode), 1);
 						thisGraph.spliceLinksForNode(selectedNode);
@@ -739,9 +808,74 @@ define(['require',
 						triggerData.resetNormalization = normalizationObj.target;
 						normalizationObj.target.isConfigured = false;
 					}
-					
+
+					//delete source processor and unconfigure split
+					var splitObj =   _.find(thisGraph.edges, function(obj){
+						return (obj.source == selectedNode && obj.target.currentType === 'SPLIT');
+					});
+					if(splitObj){
+						triggerData.resetSplit = splitObj.target;
+						splitObj.target.isConfigured = false;
+						var stageObj = _.find(thisGraph.edges, function(obj){
+							return (obj.source == splitObj.target && obj.target.currentType === 'STAGE');
+						});
+						stageObj.target.isConfigured = false;
+						var joinObj = _.find(thisGraph.edges, function(obj){
+							return (obj.source == stageObj.target && obj.target.currentType === 'JOIN');
+						});
+						joinObj.target.isConfigured = false;
+						var joinTargetObj = _.find(thisGraph.edges, function(obj) {
+							return (obj.source == joinObj.target && obj.target.parentType === 'Processor');
+						});
+						if(joinTargetObj) {
+							if(joinTargetObj.target.currentType == 'RULE') {
+								joinTargetObj.target.isConfigured = false;
+								triggerData.resetRule = joinTargetObj.target;
+							} else if(joinTargetObj.target.currentType == 'NORMALIZATION') {
+								triggerData.resetNormalization = joinTargetObj.target;
+								joinTargetObj.target.isConfigured = false;
+							}
+						}
+					}
+
 					thisGraph.vent.trigger('delete:topologyNode', triggerData);
-				}
+				} else if(_.isEqual(selectedNode.currentType, 'SPLIT')) {
+					//delete split processor
+					var splitToStageObj = _.find(thisGraph.edges, function(obj){
+						return obj.source == selectedNode;
+					});
+
+					if(!_.isUndefined(splitToStageObj)){
+						var stageToJoinObj = _.find(thisGraph.edges, function(obj){
+							return (obj.source == splitToStageObj.target && obj.target.currentType === 'JOIN');
+						});
+						callback = function(){
+							thisGraph.nodes.splice(thisGraph.nodes.indexOf(splitToStageObj.source), 1);
+							thisGraph.spliceLinksForNode(splitToStageObj.source);
+							thisGraph.nodes.splice(thisGraph.nodes.indexOf(splitToStageObj.target), 1);
+							thisGraph.spliceLinksForNode(splitToStageObj.target);
+							state.selectedNode = null;
+							thisGraph.updateGraph();
+						};
+						triggerData = {
+							data: [splitToStageObj.source, splitToStageObj.target],
+							callback: callback
+						};
+						thisGraph.vent.trigger('delete:topologyNode', triggerData);
+						if(!_.isUndefined(stageToJoinObj)){
+						callback = function(){
+							thisGraph.nodes.splice(thisGraph.nodes.indexOf(stageToJoinObj.target), 1);
+							thisGraph.spliceLinksForNode(stageToJoinObj.target);
+							thisGraph.updateGraph();
+						};
+						triggerData = {
+							data: [stageToJoinObj.source, stageToJoinObj.target],
+							callback: callback
+						};
+						thisGraph.vent.trigger('delete:topologyNode', triggerData);
+						}
+					}
+			    }
 			break;
 			case 'DataSink':
 				callback = function(){

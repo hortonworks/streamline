@@ -27,6 +27,9 @@ define(['require',
 			} else if(this.currentType === 'CUSTOM'){
 				this.customProcessor = this.processorObj[0];
 				this.syncCustomData();
+			} else if(this.currentType === 'SPLIT') {
+				this.splitProcessor = this.processorObj[0];
+				this.syncSplitData();
 			}
 		},
 
@@ -92,11 +95,38 @@ define(['require',
 				}
 			}
 		},
+		syncSplitData: function() {
+			var self = this;
+			this.html = '';
+			var outputStreams = this.splitProcessor.newConfig ? this.splitProcessor.newConfig.rulesProcessorConfig.rules[0].actions[0].outputStreams : this.splitProcessor.rulesProcessorConfig.rules[0].actions[0].outputStreams,
+				selectedStreams = [];
+
+			_.each(this.splitProcessor.selectedStreams, function(o) {
+				selectedStreams.push(o.streamName);
+			});
+			if(outputStreams){
+				var keys = _.keys(outputStreams);
+				for(var i = 0; i < keys.length; i++){
+					if(!_.contains(selectedStreams, keys[i])) {
+						self.html += '<li data-id="' + keys[i] +
+		                '" class="check-rule list-group-item"><div class="row"><div class="col-sm-11"><b>' + keys[i] +
+		                ':  </b>' + JSON.stringify(outputStreams[keys[i]]) + '</div>'+
+		                '<div class="btn-group btn-group-sm col-sm-1"><i class="fa fa-check"></i></div></div></li>';
+		            }
+				}
+			}
+		},
 		onRender: function(){
-			this.$('.ruleList').append(this.html);
+			if(this.html == '')
+				this.$('.ruleList').html('No input streams found.');
+			else this.$('.ruleList').append(this.html);
 		},
 		evSelectRule: function(e){
 			var currentTarget = $(e.currentTarget);
+
+			if(this.currentType === 'SPLIT') {
+				this.$(".selected").removeClass("selected");
+			}
 			currentTarget.toggleClass('selected');
 			currentTarget.find('.fa-check').toggleClass('selected');
 		},
@@ -121,6 +151,15 @@ define(['require',
 						self.customProcessor.selectedStreams.push({name: self.sinkName, streamName: id});
 					} else {
 						self.customProcessor.selectedStreams = [{name: self.sinkName, streamName: id}];
+					}
+				});
+			} else if(this.currentType === 'SPLIT') {
+				_.each(selectedElem, function(e) {
+					var id = $(e).data().id;
+					if(_.isArray(self.splitProcessor.selectedStreams)){
+						self.splitProcessor.selectedStreams.push({name: self.sinkName, streamName: id});
+					} else {
+						self.splitProcessor.selectedStreams = [{name: self.sinkName, streamName: id}];
 					}
 				});
 			}

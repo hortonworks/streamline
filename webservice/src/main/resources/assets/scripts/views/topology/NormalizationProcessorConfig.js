@@ -122,6 +122,40 @@ define(['utils/LangSupport',
 
                     self.getStreamFields(streamIds[0]);
                     break;
+                case 'JOIN':
+                    if (self.model.has('newConfig')) {
+                        oldInputStream = this.model.get('newConfig').normalizationProcessorConfig.inputStreamsWithNormalizationConfig;
+                        if (!oldInputStream[self.streamId]) {
+                            var k = _.keys(oldInputStream);
+                            var duplicateObj = JSON.parse(JSON.stringify(oldInputStream[k[0]]));
+                            _.each(k, function(id) {
+                                delete oldInputStream[id];
+                            })
+                            oldInputStream[self.streamId] = duplicateObj;
+                        }
+                        self.inputFieldsArr = oldInputStream[self.streamId].inputSchema.fields;
+                    } else {
+                        var streams,
+                            streamName;
+                        if (this.sourceConfig.newConfig) {
+                            streams = this.sourceConfig.newConfig.rulesProcessorConfig.rules[0].actions[0].outputStreams;
+                            streamName = _.keys(streams)[0];
+                        } else {
+                            streams = this.sourceConfig.rulesProcessorConfig.rules[0].actions[0].outputStreams;
+                            streamName = _.keys(streams)[0];
+                        }
+                        this.inputFieldsArr = _.extend([], streams[streamName].fields);
+                    }
+                    self.inputSchemaConfigObject[self.streamId] = {
+                        "__type": "com.hortonworks.iotas.layout.design.normalization.FieldBasedNormalizationConfig",
+                        inputSchema: {
+                            fields: self.inputFieldsArr
+                        },
+                        transformers: [],
+                        fieldsToBeFiltered: [],
+                        newFieldValueGenerators: []
+                    };
+                    break;
             }
 
             var config;
@@ -203,7 +237,7 @@ define(['utils/LangSupport',
         onRender: function(options) {
             var sourceType = this.sourceConfig.currentType,
                 self = this;
-            if (sourceType == 'RULE' || sourceType == 'PARSER') {
+            if(sourceType == 'RULE' || sourceType == 'PARSER' || sourceType == 'JOIN'){
                 this.$('.stream-select').hide();
                 this.renderInputFieldList(this.inputFieldsArr);
             } else {
@@ -410,7 +444,7 @@ define(['utils/LangSupport',
                 var transformerObj = _.find(self.transformers, function(field) {
                     return outputField.name == field.outputField.name;
                 });
-                
+
                 var streamArr = _.keys(self.inputSchemaMappings);
                 for(var s = 0; s < streamArr.length; s++){
                     var v = _.values(self.inputSchemaMappings[streamArr[s]]);
@@ -544,7 +578,7 @@ define(['utils/LangSupport',
 
             this.transformers = _.filter(this.transformers, function(field) {
                 if(self.streamId === field.streamId){
-                    return field.inputField.name !== inputField.name && field.outputField.name !== oldValue;   
+                    return field.inputField.name !== inputField.name && field.outputField.name !== oldValue;
                 } else {
                     return true;
                 }
@@ -598,7 +632,7 @@ define(['utils/LangSupport',
             for(var dKey in deleteKey){
                 delete self.inputSchemaMappings[self.streamId][deleteKey[dKey]];
             }
-            
+
             var arr = _.filter(this.transformers, function(field) {
                 return outputField.name == field.outputField.name;
             });
