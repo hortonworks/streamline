@@ -1,0 +1,80 @@
+<div class="form-horizontal">
+    <div class="form-group">
+        <label class="col-sm-2 control-label">Jar</label>
+        <div class="col-sm-6 select-jar-holder">
+            <select class="form-control selectJar">
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">Joiner Classname</label>
+        <div class="col-sm-6 joiner-class-holder">
+            <input type="text" class="form-control joiner-class" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">Output Stream</label>
+        <div class="col-sm-9">
+            <div class="schema-tabs control-tab">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="schema-tab active" data-id="1"><a href="javascript:void(0);"><span data-id="1" class="active editable" tabindex="-1">Stream-1</span></a></li>
+                </ul>
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane active" id="tab-1">
+                        <div class="row">
+                            <div class="col-sm-7">
+                                <textarea data-id="1" rows="10" class="outputSource form-control">
+                                </textarea>
+                            </div>
+                            <div class="col-sm-5">
+                                {{#if editMode}}
+                                <button class="validateOutput btn btn-block btn-primary row-margin-bottom" id="outputBtn" data-id="1"><i class="fa fa-chevron-left"></i> Validate JSON</button>
+                                {{/if}}
+                                <div data-id="1" class="outputResult json-message" role="alert"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel-group" id="additional-config" role="tablist" aria-multiselectable="true">
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingOne">
+                                <a role="button" data-toggle="collapse" data-parent="#additional-config" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne"><i class="fa fa-caret-right"></i> Optional Configuration</a>
+                            </div>
+                            <div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Group Expiry Interval</label>
+                                            <div class="col-sm-6">
+                                                <input type="number" class="form-control group-expiry-interval" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Event Expiry Interval</label>
+                                            <div class="col-sm-6">
+                                                <input type="number" class="form-control event-expiry-interval" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Parallelism</label>
+                                            <div class="col-sm-6">
+                                                <input type="number" class="form-control parallelism" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
