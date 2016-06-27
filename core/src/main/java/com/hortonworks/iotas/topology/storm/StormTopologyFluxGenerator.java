@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 public class StormTopologyFluxGenerator extends TopologyDagVisitor {
     private static final Logger LOG = LoggerFactory.getLogger(StormTopologyFluxGenerator.class);
@@ -73,10 +72,10 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
                 rulesWithoutWindow.add(rule);
             }
         }
+        rulesProcessor.setRules(rulesWithoutWindow);
         // handle windowed rules with WindowRuleBoltFluxComponent
         if (!rulesWithWindow.isEmpty()) {
             RulesProcessor windowedRulesProcessor = new RulesProcessor(rulesProcessor);
-            rulesProcessor.setRules(rulesWithoutWindow);
             windowedRulesProcessor.setRules(rulesWithWindow);
             LOG.debug("Rules processor with window {}", windowedRulesProcessor);
             keysAndComponents.add(makeEntry(TopologyLayoutConstants.YAML_KEY_BOLTS,
