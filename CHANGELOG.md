@@ -1,4 +1,6 @@
 ## 0.1.4
+ * IOT-303: Notifications and existing action in rules should use new Action abstraction introduced as part of split/join implementation.
+ * IOT-302: split/join processor to be integrated with topology dag component APIs
  * IOT-301: Integrate split - stage - join processor in topology editor
  * IOT-299: Add 'null' check for OpenTSDBWithStormQuerier
  * IOT-188: Added split/join/stage implementation for runtime
