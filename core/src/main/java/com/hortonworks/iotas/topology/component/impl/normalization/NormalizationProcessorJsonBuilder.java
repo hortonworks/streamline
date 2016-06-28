@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.hortonworks.iotas.layout.design.normalization;
+package com.hortonworks.iotas.topology.component.impl.normalization;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;

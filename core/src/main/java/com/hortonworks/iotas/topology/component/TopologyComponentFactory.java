@@ -11,6 +11,7 @@ import com.hortonworks.iotas.catalog.TopologyOutputComponent;
 import com.hortonworks.iotas.catalog.TopologyProcessor;
 import com.hortonworks.iotas.catalog.TopologySink;
 import com.hortonworks.iotas.catalog.TopologySource;
+import com.hortonworks.iotas.common.Config;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.topology.component.impl.CustomProcessor;
 import com.hortonworks.iotas.topology.component.impl.HbaseSink;
@@ -19,6 +20,8 @@ import com.hortonworks.iotas.topology.component.impl.KafkaSource;
 import com.hortonworks.iotas.topology.component.impl.NotificationSink;
 import com.hortonworks.iotas.topology.component.impl.ParserProcessor;
 import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
+import com.hortonworks.iotas.topology.component.impl.normalization.NormalizationConfig;
+import com.hortonworks.iotas.topology.component.impl.normalization.NormalizationProcessor;
 import com.hortonworks.iotas.topology.component.impl.splitjoin.JoinAction;
 import com.hortonworks.iotas.topology.component.impl.splitjoin.JoinProcessor;
 import com.hortonworks.iotas.topology.component.impl.splitjoin.SplitAction;
@@ -29,6 +32,7 @@ import com.hortonworks.iotas.topology.component.rule.Rule;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -130,6 +134,7 @@ public class TopologyComponentFactory {
     private Map<String, Provider<IotasProcessor>> createProcessorProviders() {
         ImmutableMap.Builder<String, Provider<IotasProcessor>> builder = ImmutableMap.builder();
         builder.put(rulesProcessorProvider());
+        builder.put(normalizationProcessorProvider());
         builder.put(splitProcessorProvider());
         builder.put(joinProcessorProvider());
         builder.put(stageProcessorProvider());
@@ -173,6 +178,36 @@ public class TopologyComponentFactory {
             }
         };
         return new AbstractMap.SimpleImmutableEntry<>("KAFKA", provider);
+    }
+
+    private Map.Entry<String, Provider<IotasProcessor>> normalizationProcessorProvider() {
+        Provider<IotasProcessor> provider = new Provider<IotasProcessor>() {
+            @Override
+            public IotasProcessor create(TopologyComponent component) {
+                Config config = component.getConfig();
+                Object typeObj = config.getAny(NormalizationProcessor.CONFIG_KEY_TYPE);
+                Object normConfObj = config.getAny(NormalizationProcessor.CONFIG_KEY_NORMALIZATION);
+                ObjectMapper objectMapper = new ObjectMapper();
+                NormalizationProcessor.Type type = objectMapper.convertValue(typeObj, NormalizationProcessor.Type.class);
+                Map<String, NormalizationConfig> normConfig = objectMapper.convertValue(normConfObj, new TypeReference<Map<String, NormalizationConfig>>() {});
+                updateWithSchemas(normConfig);
+
+                Set<Stream> outputStreams = createOutputStreams((TopologyOutputComponent) component);
+                if (outputStreams.size() != 1) {
+                    throw new IllegalArgumentException("Normalization component ["+component+"] must have only one output stream");
+                }
+
+                return new NormalizationProcessor(normConfig, outputStreams.iterator().next(), type);
+            }
+        };
+        return new AbstractMap.SimpleImmutableEntry<>("NORMALIZATION", provider);
+    }
+
+    private void updateWithSchemas(Map<String, NormalizationConfig> normalizationConfigRead) {
+        for (Map.Entry<String, NormalizationConfig> entry : normalizationConfigRead.entrySet()) {
+            NormalizationConfig normalizationConfig = entry.getValue();
+            normalizationConfig.setInputSchema(catalogService.getStreamInfo(Long.parseLong(entry.getKey())).getSchema());
+        }
     }
 
     private Map.Entry<String, Provider<IotasProcessor>> splitProcessorProvider() {

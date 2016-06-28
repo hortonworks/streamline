@@ -68,7 +68,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
 }' "${catalogurl}/topologies/$topologyid/streams")
 
 echo $out
-streamid2=$(getId $out)
+parserStream=$(getId $out)
 
 echo -e "\n------"
 out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
@@ -78,6 +78,15 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
 
 echo $out
 streamid3=$(getId $out)
+
+echo -e "\n------Create normalization output stream"
+out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
+    "streamId": "norm-output-stream",
+    "fields": [{"name": "temperature", "type": "LONG"}, {"name": "humidity", "type": "LONG"}]
+}' "${catalogurl}/topologies/$topologyid/streams")
+
+echo $out
+normOutputStreamId=$(getId $out)
 
 # --
 # Create kafka data source
@@ -117,7 +126,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
         }
     },
     "type": "PARSER",
-    "outputStreamIds": ['$streamid2']
+    "outputStreamIds": ['$parserStream']
 }' "${catalogurl}/topologies/$topologyid/processors")
 
 echo $out
@@ -244,12 +253,87 @@ out=$(curl -s  -X POST -H "Content-Type: application/json" -H "Cache-Control: no
             "body": "default body"
           },
           "parallelism": 1
-        }
+         }
         }
       }' "${catalogurl}/topologies/$topologyid/sinks")
 
 echo $out
 notificationsinkid=$(getId $out)
+
+
+# ------------------------------------------------------------------------
+# Normalization
+# ------------------------------------------------------------------------
+echo -e "\n---- Create Fine grained normalization processor --"
+out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
+    "name": "FinegrainedNormalizationProcessor",
+    "config": {
+        "properties": {
+          "type": "fineGrained",
+          "normalizationConfig": {
+          "'$parserStream'": {
+          "__type": "com.hortonworks.iotas.topology.component.impl.normalization.FieldBasedNormalizationConfig",
+            "transformers": [
+              {
+                "inputField": {
+                  "name": "temp",
+                  "type": "INTEGER",
+                  "optional": false
+                },
+                "outputField": {
+                  "name": "temperature",
+                  "type": "FLOAT",
+                  "optional": false
+                },
+                "converterScript": "new Float((temp-32)*5/9f)"
+              }
+            ],
+            "fieldsToBeFiltered": [
+              "Input-schema-field-1",
+              "input-schema-field-2"
+            ],
+            "newFieldValueGenerators": [
+              {
+                "field": {
+                  "name": "new-field",
+                  "type": "STRING",
+                  "optional": false
+                },
+                "script": "new-value-generator-script"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "type": "NORMALIZATION",
+    "outputStreamIds": ["'$normOutputStreamId'"]
+}' "${catalogurl}/topologies/$topologyid/processors")
+
+echo $out
+fgNormProcId=$(getId $out)
+
+echo -e "\n------ Create Bulk normalization processor --------------"
+out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
+    "name": "BulkNormalizationProcessor",
+    "config": {
+        "properties": {
+          "type": "bulk",
+          "normalizationConfig": {
+            "'$parserStream'": {
+            "__type": "com.hortonworks.iotas.topology.component.impl.normalization.BulkNormalizationConfig",
+              "normalizationScript": "Map<String, Object> result = new HashMap<>();return result;"
+            }
+          }
+        }
+    },
+    "type": "NORMALIZATION",
+    "outputStreamIds": ["'$normOutputStreamId'"]
+}' "${catalogurl}/topologies/$topologyid/processors")
+
+echo $out
+bulkNormProcId=$(getId $out)
+
 
 # --
 # Kafka -> Parser
@@ -262,13 +346,33 @@ curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -
 }' "${catalogurl}/topologies/$topologyid/edges"
 
 # --
+# Parser -> Bulk Normalization processor
+# --
+echo -e "\n------ Parser -> Bulk Normalization processor"
+curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
+    "fromId": '$parserid',
+    "toId": '$bulkNormProcId',
+    "streamGroupings": [{"streamId": '$parserStream', "grouping": "SHUFFLE"}]
+}' "${catalogurl}/topologies/$topologyid/edges"
+
+# --
+# Parser -> Finegrained Normalization processor
+# --
+echo -e "\n------ Parser -> Finegrained Normalization processor"
+curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
+    "fromId": '$parserid',
+    "toId": '$fgNormProcId',
+    "streamGroupings": [{"streamId": '$parserStream', "grouping": "SHUFFLE"}]
+}' "${catalogurl}/topologies/$topologyid/edges"
+
+# --
 # Parser -> Rule processor
 # --
 echo -e "\n------"
 curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
     "fromId": '$parserid',
     "toId": '$ruleprocessorid',
-    "streamGroupings": [{"streamId": '$streamid2', "grouping": "SHUFFLE"}]
+    "streamGroupings": [{"streamId": '$parserStream', "grouping": "SHUFFLE"}]
 }' "${catalogurl}/topologies/$topologyid/edges"
 
 # --

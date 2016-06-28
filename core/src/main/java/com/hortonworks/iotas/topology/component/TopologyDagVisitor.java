@@ -7,6 +7,7 @@ import com.hortonworks.iotas.topology.component.impl.KafkaSource;
 import com.hortonworks.iotas.topology.component.impl.NotificationSink;
 import com.hortonworks.iotas.topology.component.impl.ParserProcessor;
 import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
+import com.hortonworks.iotas.topology.component.impl.normalization.NormalizationProcessor;
 
 public abstract class TopologyDagVisitor {
     public void visit(KafkaSource kafkaSource) {
@@ -16,6 +17,9 @@ public abstract class TopologyDagVisitor {
         throw new UnsupportedOperationException("Not Implemented");
     }
     public void visit(RulesProcessor rulesProcessor) {
+        throw new UnsupportedOperationException("Not Implemented");
+    }
+    public void visit(NormalizationProcessor normalizationProcessor) {
         throw new UnsupportedOperationException("Not Implemented");
     }
     public void visit(CustomProcessor customProcessor) {

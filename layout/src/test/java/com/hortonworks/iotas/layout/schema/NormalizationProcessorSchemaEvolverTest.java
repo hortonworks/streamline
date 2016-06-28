@@ -2,22 +2,25 @@ package com.hortonworks.iotas.layout.schema;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
+import com.hortonworks.iotas.common.Config;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.layout.design.normalization.NormalizationProcessor;
-import com.hortonworks.iotas.topology.component.Stream;
-import com.hortonworks.iotas.layout.design.normalization.BulkNormalizationConfig;
-import com.hortonworks.iotas.layout.design.normalization.FieldBasedNormalizationConfig;
-import com.hortonworks.iotas.layout.design.normalization.FieldValueGenerator;
-import com.hortonworks.iotas.layout.design.normalization.NormalizationConfig;
-import com.hortonworks.iotas.layout.design.normalization.Transformer;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
+import com.hortonworks.iotas.topology.component.Stream;
+import com.hortonworks.iotas.topology.component.impl.normalization.BulkNormalizationConfig;
+import com.hortonworks.iotas.topology.component.impl.normalization.FieldBasedNormalizationConfig;
+import com.hortonworks.iotas.topology.component.impl.normalization.FieldValueGenerator;
+import com.hortonworks.iotas.topology.component.impl.normalization.NormalizationConfig;
+import com.hortonworks.iotas.topology.component.impl.normalization.NormalizationProcessor;
+import com.hortonworks.iotas.topology.component.impl.normalization.Transformer;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 
@@ -89,7 +92,7 @@ public class NormalizationProcessorSchemaEvolverTest {
                 new Stream("outputstream", inputStream.getSchema()), NormalizationProcessor.Type.bulk);
 
         String normalizationProcessorJson = objectMapper.writeValueAsString(processor);
-        return buildComponentConfig(normalizationProcessorJson);
+        return normalizationProcessorJson;
     }
 
     private String buildFineGrainedModeNormalizationProcessorComponentConfig() throws IOException {
@@ -113,25 +116,7 @@ public class NormalizationProcessorSchemaEvolverTest {
                 new Stream("outputstream", inputStream.getSchema()), NormalizationProcessor.Type.fineGrained);
 
         String normalizationProcessorJson = objectMapper.writeValueAsString(processor);
-        return buildComponentConfig(normalizationProcessorJson);
+        return normalizationProcessorJson;
     }
 
-    private String buildComponentConfig(String normalizationProcessorJson) throws IOException {
-        return objectMapper.writeValueAsString(buildComponentConfigMap(normalizationProcessorJson));
-    }
-
-    private Map<String, Object> buildComponentConfigMap(String normalizationProcessorJson) throws IOException {
-        Map<String, Object> componentConfig = Maps.newHashMap();
-        componentConfig.put(TopologyLayoutConstants.JSON_KEY_UINAME, "NORMALIZATION1");
-        componentConfig.put(TopologyLayoutConstants.JSON_KEY_TYPE, "NORMALIZATION");
-        componentConfig.put(TopologyLayoutConstants.JSON_KEY_TRANSFORMATION_CLASS, "dummy");
-
-        Map<String, Object> configMap = Maps.newHashMap();
-        configMap.put(TopologyLayoutConstants.JSON_KEY_PARALLELISM, 1);
-        configMap.put(TopologyLayoutConstants.JSON_KEY_NORMALIZATION_PROCESSOR_CONFIG,
-                objectMapper.readValue(normalizationProcessorJson, Map.class));
-
-        componentConfig.put("config", configMap);
-        return componentConfig;
-    }
 }

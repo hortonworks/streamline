@@ -19,7 +19,7 @@ package com.hortonworks.iotas.layout.runtime.normalization;
 
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.layout.design.normalization.FieldValueGenerator;
+import com.hortonworks.iotas.topology.component.impl.normalization.FieldValueGenerator;
 import com.hortonworks.iotas.layout.runtime.script.GroovyScript;
 import com.hortonworks.iotas.layout.runtime.script.engine.GroovyScriptEngine;
 import com.hortonworks.iotas.exception.ParserException;
