@@ -2,19 +2,34 @@ package com.hortonworks.iotas.topology.storm;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
+import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
+import com.hortonworks.iotas.topology.component.rule.Rule;
+import com.hortonworks.iotas.topology.component.rule.condition.Window;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Handle rules with windowing
  */
 public class WindowRuleBoltFluxComponent extends RuleBoltFluxComponent {
     private final Logger log = LoggerFactory.getLogger(WindowRuleBoltFluxComponent.class);
+
+    public WindowRuleBoltFluxComponent() {
+    }
+
+    public WindowRuleBoltFluxComponent(RulesProcessor rulesProcessor) {
+        super(rulesProcessor);
+    }
 
     @Override
     protected void generateComponent() {
@@ -34,11 +49,20 @@ public class WindowRuleBoltFluxComponent extends RuleBoltFluxComponent {
 
     private String addWindowConfig() {
         String windowId = "window" + UUID_FOR_COMPONENTS;
-        String windowClassName = "com.hortonworks.iotas.layout.design.rule.condition.Window";
+        String windowClassName = "com.hortonworks.iotas.topology.component.rule.condition.Window";
         ObjectMapper mapper = new ObjectMapper();
         String windowJson = null;
         try {
-            windowJson = mapper.writeValueAsString(conf.get(TopologyLayoutConstants.JSON_KEY_RULE_WINDOW_CONFIG));
+            Set<Window> windows = new HashSet<>(Collections2.transform(rulesProcessor.getRules(), new Function<Rule, Window>() {
+                @Override
+                public Window apply(Rule input) {
+                    return input.getWindow();
+                }
+            }));
+            if (windows.size() != 1) {
+                throw new IllegalArgumentException("All the rules in a windowed rule bolt should have the same window config.");
+            }
+            windowJson = mapper.writeValueAsString(windows.iterator().next());
         } catch (JsonProcessingException e) {
             log.error("Error creating json config string for RulesProcessor", e);
         }

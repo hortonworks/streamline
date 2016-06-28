@@ -145,6 +145,31 @@ public class Window implements Serializable {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Window window = (Window) o;
+
+        if (lagMs != window.lagMs) return false;
+        if (windowLength != null ? !windowLength.equals(window.windowLength) : window.windowLength != null)
+            return false;
+        if (slidingInterval != null ? !slidingInterval.equals(window.slidingInterval) : window.slidingInterval != null)
+            return false;
+        return tsField != null ? tsField.equals(window.tsField) : window.tsField == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = windowLength != null ? windowLength.hashCode() : 0;
+        result = 31 * result + (slidingInterval != null ? slidingInterval.hashCode() : 0);
+        result = 31 * result + (tsField != null ? tsField.hashCode() : 0);
+        result = 31 * result + lagMs;
+        return result;
+    }
+
+    @Override
     public String toString() {
         return "Window{" +
                 "windowLength=" + windowLength +

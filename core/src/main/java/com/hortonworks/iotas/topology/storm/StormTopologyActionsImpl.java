@@ -229,6 +229,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
             }
             DumperOptions options = new DumperOptions();
             options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+            options.setSplitLines(false);
             //options.setDefaultScalarStyle(DumperOptions.ScalarStyle.PLAIN);
             Yaml yaml = new Yaml (options);
             fileWriter = new FileWriter(f);
@@ -242,7 +243,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
     }
 
     private List<Map.Entry<String, Map<String, Object>>> getYamlKeysAndComponents(TopologyDag topologyDag) {
-        StormTopologyFluxGenerator fluxGenerator = new StormTopologyFluxGenerator();
+        StormTopologyFluxGenerator fluxGenerator = new StormTopologyFluxGenerator(topologyDag);
         topologyDag.traverse(fluxGenerator);
         return fluxGenerator.getYamlKeysAndComponents();
     }

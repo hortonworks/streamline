@@ -77,7 +77,6 @@ public class RulesProcessor extends IotasProcessor {     //TODO: Rename to RuleP
                 }
             }
         }
-        getConfig().setAny(CONFIG_KEY_RULES, rules);
     }
 
     @Override

@@ -1,11 +1,14 @@
 package com.hortonworks.iotas.topology.storm;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import com.hortonworks.iotas.topology.component.Component;
 import com.hortonworks.iotas.topology.component.Edge;
 import com.hortonworks.iotas.topology.component.InputComponent;
 import com.hortonworks.iotas.topology.component.OutputComponent;
 import com.hortonworks.iotas.topology.component.StreamGrouping;
+import com.hortonworks.iotas.topology.component.TopologyDag;
 import com.hortonworks.iotas.topology.component.TopologyDagVisitor;
 import com.hortonworks.iotas.topology.component.impl.CustomProcessor;
 import com.hortonworks.iotas.topology.component.impl.HbaseSink;
@@ -15,21 +18,28 @@ import com.hortonworks.iotas.topology.component.impl.NotificationSink;
 import com.hortonworks.iotas.topology.component.impl.ParserProcessor;
 import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
 import com.hortonworks.iotas.topology.component.rule.Rule;
+import com.hortonworks.iotas.topology.component.rule.condition.Window;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 public class StormTopologyFluxGenerator extends TopologyDagVisitor {
     private static final Logger LOG = LoggerFactory.getLogger(StormTopologyFluxGenerator.class);
 
     private final List<Map.Entry<String, Map<String, Object>>> keysAndComponents = new ArrayList<>();
+
+    private TopologyDag topologyDag;
+
+    public StormTopologyFluxGenerator(TopologyDag topologyDag) {
+        this.topologyDag = topologyDag;
+    }
 
     @Override
     public void visit(KafkaSource kafkaSource) {
@@ -62,7 +72,7 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
     }
 
     @Override
-    public void visit(RulesProcessor rulesProcessor) {
+    public void visit(final RulesProcessor rulesProcessor) {
         rulesProcessor.getConfig().setAny("outputStreams", rulesProcessor.getOutputStreams());
         List<Rule> rulesWithWindow = new ArrayList<>();
         List<Rule> rulesWithoutWindow = new ArrayList<>();
@@ -73,17 +83,52 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
                 rulesWithoutWindow.add(rule);
             }
         }
+        rulesProcessor.setRules(rulesWithoutWindow);
         // handle windowed rules with WindowRuleBoltFluxComponent
         if (!rulesWithWindow.isEmpty()) {
-            RulesProcessor windowedRulesProcessor = new RulesProcessor(rulesProcessor);
-            rulesProcessor.setRules(rulesWithoutWindow);
-            windowedRulesProcessor.setRules(rulesWithWindow);
-            LOG.debug("Rules processor with window {}", windowedRulesProcessor);
-            keysAndComponents.add(makeEntry(TopologyLayoutConstants.YAML_KEY_BOLTS,
-                    getYamlComponents(new WindowRuleBoltFluxComponent(), windowedRulesProcessor)));
+            Multimap<Window, Rule> windowedRules = ArrayListMultimap.create();
+            for (Rule rule: rulesWithWindow) {
+                windowedRules.put(rule.getWindow(), rule);
+            }
+            int windowedRulesProcessorId = 0;
+            // create windowed bolt per unique window configuration
+            for (Collection<Rule> rules: windowedRules.asMap().values()) {
+                RulesProcessor windowedRulesProcessor = new RulesProcessor(rulesProcessor);
+                windowedRulesProcessor.setRules(new ArrayList<>(rules));
+                windowedRulesProcessor.setId(rulesProcessor.getId() + "." + ++windowedRulesProcessorId);
+                windowedRulesProcessor.setName("WindowedRulesProcessor");
+                LOG.debug("Rules processor with window {}", windowedRulesProcessor);
+                keysAndComponents.add(makeEntry(TopologyLayoutConstants.YAML_KEY_BOLTS,
+                        getYamlComponents(new WindowRuleBoltFluxComponent(windowedRulesProcessor), windowedRulesProcessor)));
+                // Wire the windowed bolt with the appropriate edges
+                wireWindowedRulesProcessor(windowedRulesProcessor, topologyDag.getEdgesTo(rulesProcessor),
+                        topologyDag.getEdgesFrom(rulesProcessor));
+            }
         }
         keysAndComponents.add(makeEntry(TopologyLayoutConstants.YAML_KEY_BOLTS,
-                getYamlComponents(new RuleBoltFluxComponent(), rulesProcessor)));
+                getYamlComponents(new RuleBoltFluxComponent(rulesProcessor), rulesProcessor)));
+    }
+
+    private void wireWindowedRulesProcessor(RulesProcessor windowedRulesProcessor, List<Edge> inEdges, List<Edge> outEdges) {
+        for (Edge edge : inEdges) {
+            for (StreamGrouping streamGrouping : edge.getStreamGroupings()) {
+                addEdge(edge.getFrom(),
+                        windowedRulesProcessor,
+                        streamGrouping.getStream().getId(),
+                        String.valueOf(streamGrouping.getGrouping()),
+                        streamGrouping.getFields());
+            }
+        }
+
+        for (Edge edge : outEdges) {
+            for (StreamGrouping streamGrouping : edge.getStreamGroupings()) {
+                addEdge(windowedRulesProcessor,
+                        edge.getTo(),
+                        streamGrouping.getStream().getId(),
+                        String.valueOf(streamGrouping.getGrouping()),
+                        streamGrouping.getFields());
+            }
+        }
     }
 
     @Override

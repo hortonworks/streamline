@@ -158,6 +158,43 @@ echo $out
 ruleid=$(getId $out)
 
 # --
+# Create a windowed rule
+# --
+echo -e "\n------"
+out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache" -d '{
+    "name": "rule1",
+    "description": "windowed rule test",
+    "sql": "select max(temperature) from parsedTuplesStream where humidity > 90",
+    "window": {
+        "windowLength": {
+          "class": ".Window$Duration",
+          "durationMs": 500
+        },
+        "slidingInterval": {
+          "class": ".Window$Duration",
+          "durationMs": 500
+        },
+        "tsField": null,
+        "lagMs": 0
+     },
+    "actions": [
+      {
+        "name": "hbasesink",
+        "outputStreams": ["sink-stream"],
+        "__type": "com.hortonworks.iotas.topology.component.rule.action.TransformAction"
+      },
+      {
+        "name": "hdfssink",
+        "outputStreams": ["sink-stream"],
+        "__type": "com.hortonworks.iotas.topology.component.rule.action.TransformAction"
+      }
+    ]
+}' "${catalogurl}/topologies/$topologyid/rules")
+
+echo $out
+windowruleid=$(getId $out)
+
+# --
 # Create Rule processor
 # --
 echo -e "\n------"
@@ -165,7 +202,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
     "name": "RuleProcessor",
     "config": {
         "properties": {
-            "rules": ['$ruleid']
+            "rules": ['$ruleid','$windowruleid']
         }
     },
     "type": "RULE",
