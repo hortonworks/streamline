@@ -3,6 +3,7 @@ package com.hortonworks.iotas.topology.storm;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
+import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
 import com.hortonworks.iotas.util.exception.BadTopologyLayoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +17,14 @@ import java.util.Map;
  */
 public class RuleBoltFluxComponent extends AbstractFluxComponent {
     private final Logger log = LoggerFactory.getLogger(RuleBoltFluxComponent.class);
+    protected RulesProcessor rulesProcessor;
+
+    public RuleBoltFluxComponent() {
+    }
+
+    public RuleBoltFluxComponent(RulesProcessor rulesProcessor) {
+        this.rulesProcessor = rulesProcessor;
+    }
 
     @Override
     protected void generateComponent () {
@@ -51,7 +60,7 @@ public class RuleBoltFluxComponent extends AbstractFluxComponent {
         ObjectMapper mapper = new ObjectMapper();
         String rulesProcessorJson = null;
         try {
-            rulesProcessorJson = mapper.writeValueAsString(conf);
+            rulesProcessorJson = mapper.writeValueAsString(rulesProcessor);
         } catch (JsonProcessingException e) {
             log.error("Error creating json config string for RulesProcessor",
                     e);
