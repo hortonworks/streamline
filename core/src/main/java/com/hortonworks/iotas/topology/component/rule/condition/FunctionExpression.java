@@ -56,6 +56,25 @@ public class FunctionExpression extends Expression {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        FunctionExpression that = (FunctionExpression) o;
+
+        if (function != null ? !function.equals(that.function) : that.function != null) return false;
+        return operands != null ? operands.equals(that.operands) : that.operands == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = function != null ? function.hashCode() : 0;
+        result = 31 * result + (operands != null ? operands.hashCode() : 0);
+        return result;
+    }
+
+    @Override
     public String toString() {
         return "FunctionExpression{" +
                 "function=" + function +
@@ -101,15 +120,6 @@ public class FunctionExpression extends Expression {
         }
 
         @Override
-        public String toString() {
-            return "Function{" +
-                    "name='" + name + '\'' +
-                    ", className='" + className + '\'' +
-                    ", udf=" + udf +
-                    '}';
-        }
-
-        @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
@@ -128,6 +138,15 @@ public class FunctionExpression extends Expression {
             result = 31 * result + (className != null ? className.hashCode() : 0);
             result = 31 * result + (udf ? 1 : 0);
             return result;
+        }
+
+        @Override
+        public String toString() {
+            return "Function{" +
+                    "name='" + name + '\'' +
+                    ", className='" + className + '\'' +
+                    ", udf=" + udf +
+                    '}';
         }
     }
 }

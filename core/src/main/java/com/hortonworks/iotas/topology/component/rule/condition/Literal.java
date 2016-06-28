@@ -28,6 +28,22 @@ public class Literal extends Expression {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Literal literal = (Literal) o;
+
+        return value != null ? value.equals(literal.value) : literal.value == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        return value != null ? value.hashCode() : 0;
+    }
+
+    @Override
     public String toString() {
         return "Literal{" +
                 "value='" + value + '\'' +
