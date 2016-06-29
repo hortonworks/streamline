@@ -18,6 +18,7 @@ import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.TupleImpl;
 import org.apache.storm.tuple.Values;
+import org.apache.storm.windowing.TupleWindow;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Unit test for {@link WindowRulesBolt}
@@ -42,7 +45,7 @@ public class WindowRulesBoltTest {
 
     @Test
     public void testCountBasedWindow() throws Exception {
-        doTest(readFile("/window-rule-count.json"), 0);
+        Assert.assertTrue(doTest(readFile("/window-rule-count.json"), 2));
         new Verifications() {
             {
                 String streamId;
@@ -60,7 +63,7 @@ public class WindowRulesBoltTest {
 
     @Test
     public void testCountBasedWindowWithGroupby() throws Exception {
-        doTest(readFile("/window-rule-count-withgroupby.json"), 0);
+        Assert.assertTrue(doTest(readFile("/window-rule-count-withgroupby.json"), 2));
         new Verifications() {
             {
                 String streamId;
@@ -86,7 +89,7 @@ public class WindowRulesBoltTest {
 
     @Test
     public void testTimeBasedWindow() throws Exception {
-        doTest(readFile("/window-rule-time.json"), 900);
+        Assert.assertTrue(doTest(readFile("/window-rule-time.json"), 1));
         new Verifications() {
             {
                 String streamId;
@@ -100,7 +103,7 @@ public class WindowRulesBoltTest {
         };
     }
 
-    private void doTest(String rulesJson, long sleepMs) throws Exception {
+    private boolean doTest(String rulesJson, int expectedExecuteCount) throws Exception {
         new Expectations() {{
             mockContext.getComponentOutputFields(anyString, anyString);
             result = new Fields(IotasEvent.IOTAS_EVENT);
@@ -110,7 +113,14 @@ public class WindowRulesBoltTest {
         RulesBoltDependenciesFactory factory = new RulesBoltDependenciesFactory(
                 new RulesProcessorJsonBuilder(rulesJson), RulesBoltDependenciesFactory.ScriptType.SQL);
         Window windowConfig = factory.createRuleProcessorRuntime().getRulesRuntime().get(0).getRule().getWindow();
-        WindowRulesBolt wb = new WindowRulesBolt(factory);
+        final CountDownLatch latch = new CountDownLatch(expectedExecuteCount);
+        WindowRulesBolt wb = new WindowRulesBolt(factory) {
+            @Override
+            public void execute(TupleWindow inputWindow) {
+                super.execute(inputWindow);
+                latch.countDown();
+            }
+        };
         wb.withWindowConfig(windowConfig);
         WindowedBoltExecutor wbe = new WindowedBoltExecutor(wb);
         Map<String, Object> conf = wb.getComponentConfiguration();
@@ -119,9 +129,8 @@ public class WindowRulesBoltTest {
         for (int i = 1; i <= 20; i++) {
             wbe.execute(getNextTuple(i));
         }
-        if (sleepMs > 0) {
-            Thread.sleep(sleepMs);
-        }
+        // wait for up to 5 secs for the bolt's execute to finish
+        return latch.await(5, TimeUnit.SECONDS);
     }
 
     private String readFile(String fn) throws IOException {

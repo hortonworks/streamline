@@ -104,11 +104,11 @@
       "window": {
         "windowLength": {
           "class": ".Window$Duration",
-          "durationMs": 500
+          "durationMs": 1000
         },
         "slidingInterval": {
           "class": ".Window$Duration",
-          "durationMs": 500
+          "durationMs": 1000
         },
         "tsField": null,
         "lagMs": 0
