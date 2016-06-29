@@ -1,4 +1,5 @@
 ## 0.1.4
+ * IOT-267: Intermittent Unit test failure in WindowRulesBoltTest
  * IOT-304: integrate normalization components with new topology DAG APIs
  * IOT-273: Iotas rule processor api sql support
  * IOT-303: Notifications and existing action in rules should use new Action abstraction introduced as part of split/join implementation.
