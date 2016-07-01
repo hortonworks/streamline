@@ -1,3 +1,21 @@
+/*
+ *   Licensed to the Apache Software Foundation (ASF) under one
+ *   or more contributor license agreements.  See the NOTICE file
+ *   distributed with this work for additional information
+ *   regarding copyright ownership.  The ASF licenses this file
+ *   to you under the Apache License, Version 2.0 (the
+ *   "License"); you may not use this file except in compliance
+ *   with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ */
+
 package com.hortonworks.iotas.bolt.notification;
 
 import org.apache.storm.task.OutputCollector;
@@ -8,13 +26,13 @@ import org.apache.storm.tuple.Tuple;
 import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.client.CatalogRestClient;
 import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.notification.common.Notification;
-import com.hortonworks.iotas.notification.common.Notifier;
-import com.hortonworks.iotas.notification.common.NotifierConfig;
-import com.hortonworks.iotas.notification.common.NotifierConfigImpl;
-import com.hortonworks.iotas.notification.service.NotificationService;
-import com.hortonworks.iotas.notification.service.NotificationServiceImpl;
-import com.hortonworks.iotas.notification.store.hbase.HBaseNotificationStore;
+import com.hortonworks.iotas.streams.notification.common.Notification;
+import com.hortonworks.iotas.streams.notification.common.Notifier;
+import com.hortonworks.iotas.streams.notification.common.NotifierConfig;
+import com.hortonworks.iotas.streams.notification.common.NotifierConfigImpl;
+import com.hortonworks.iotas.streams.notification.service.NotificationService;
+import com.hortonworks.iotas.streams.notification.service.NotificationServiceImpl;
+import com.hortonworks.iotas.streams.notification.store.hbase.HBaseNotificationStore;
 
 import java.io.File;
 import java.util.Collections;
@@ -29,10 +47,8 @@ public class NotificationBolt extends BaseRichBolt {
     private static final String CATALOG_ROOT_URL = "catalog.root.url";
     public static final String LOCAL_NOTIFIER_JAR_PATH = "local.notifier.jar.path";
 
-    private static final String IOTAS_NOTIFICATION = "iotas.notification";
     private static final String NOTIFICATION_SERVICE_CONFIG_KEY = "notification.conf";
     private NotificationService notificationService;
-    private Notifier notifier;
     private BoltNotificationContext notificationContext;
     private CatalogRestClient catalogRestClient;
     private String hbaseConfigKey = "hbase.conf";

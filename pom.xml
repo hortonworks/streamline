@@ -15,8 +15,6 @@
         <module>webservice</module>
         <module>storm</module>
         <module>parsers</module>
-        <module>notification-service</module>
-        <module>notifiers</module>
         <module>layout</module>
         <module>metrics</module>
         <module>streams</module>

@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.hortonworks.iotas.webservice;
 
 import com.google.common.cache.CacheBuilder;
@@ -28,7 +29,6 @@ import com.hortonworks.iotas.common.CustomProcessorUploadHandler;
 import com.hortonworks.iotas.common.FileEventHandler;
 import com.hortonworks.iotas.common.errors.ConfigException;
 import com.hortonworks.iotas.metrics.TimeSeriesQuerier;
-import com.hortonworks.iotas.notification.service.NotificationServiceImpl;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.service.FileWatcher;
 import com.hortonworks.iotas.storage.CacheBackedStorageManager;
@@ -37,6 +37,7 @@ import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManager;
 import com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager;
+import com.hortonworks.iotas.streams.notification.service.NotificationServiceImpl;
 import com.hortonworks.iotas.topology.TopologyActions;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import com.hortonworks.iotas.topology.TopologyMetrics;

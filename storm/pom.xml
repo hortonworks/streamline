@@ -46,7 +46,7 @@
         </dependency>
                 <dependency>
             <groupId>com.hortonworks.iotas</groupId>
-            <artifactId>notification-service</artifactId>
+            <artifactId>streams-notification</artifactId>
             <version>${project.version}</version>
             <exclusions>
                 <exclusion>
@@ -57,7 +57,7 @@
         </dependency>
         <dependency>
             <groupId>com.hortonworks.iotas</groupId>
-            <artifactId>notifiers</artifactId>
+            <artifactId>streams-notifier</artifactId>
             <version>${project.version}</version>
             <exclusions>
                 <exclusion>

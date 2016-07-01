@@ -233,7 +233,7 @@ out=$(curl -s  -X POST -H "Content-Type: application/json" -H "Cache-Control: no
             "properties" : {
           "notifierName": "email_notifier",
           "jarFileName": "notifiers.jar",
-          "className": "com.hortonworks.iotas.notification.notifiers.EmailNotifier",
+          "className": "com.hortonworks.iotas.streams.notifiers.EmailNotifier",
           "properties": {
             "username": "hwemailtest@gmail.com",
             "password": "testing12",

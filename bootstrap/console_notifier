@@ -1,7 +1,7 @@
 {
   "name":"console_notifier",
   "jarFileName": "notifiers.jar",
-  "className": "com.hortonworks.iotas.notification.notifiers.ConsoleNotifier",
+  "className": "com.hortonworks.iotas.streams.notifiers.ConsoleNotifier",
   "properties": {
       "console": "vt100"
   },
