@@ -126,6 +126,7 @@ public class WindowRulesBoltTest {
         Map<String, Object> conf = wb.getComponentConfiguration();
         conf.put("topology.message.timeout.secs", 30);
         wbe.prepare(conf, mockContext, mockCollector);
+        Thread.sleep(100);
         for (int i = 1; i <= 20; i++) {
             wbe.execute(getNextTuple(i));
         }
