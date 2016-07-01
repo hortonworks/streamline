@@ -14,6 +14,7 @@
     <modules>
         <module>layout</module>
         <module>runtime</module>
+        <module>metrics</module>
     </modules>
 
 

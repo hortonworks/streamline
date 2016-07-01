@@ -27,7 +27,8 @@ import com.hortonworks.iotas.storage.cache.writer.StorageWriter;
 import com.hortonworks.iotas.common.CustomProcessorUploadHandler;
 import com.hortonworks.iotas.common.FileEventHandler;
 import com.hortonworks.iotas.common.exception.ConfigException;
-import com.hortonworks.iotas.metrics.TimeSeriesQuerier;
+
+import com.hortonworks.iotas.streams.metrics.TimeSeriesQuerier;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.service.FileWatcher;
 import com.hortonworks.iotas.storage.CacheBackedStorageManager;
@@ -40,7 +41,7 @@ import com.hortonworks.iotas.streams.layout.storm.StormTopologyLayoutConstants;
 import com.hortonworks.iotas.streams.notification.service.NotificationServiceImpl;
 import com.hortonworks.iotas.streams.layout.component.TopologyActions;
 import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
-import com.hortonworks.iotas.topology.TopologyMetrics;
+import com.hortonworks.iotas.streams.metrics.topology.TopologyMetrics;
 import com.hortonworks.iotas.util.FileStorage;
 import com.hortonworks.iotas.common.util.ReflectionHelper;
 import com.hortonworks.iotas.webservice.catalog.ClusterCatalogResource;
