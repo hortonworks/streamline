@@ -19,6 +19,7 @@
 package com.hortonworks.iotas.streams.notification.service;
 
 import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.streams.notification.common.Notification;
 import com.hortonworks.iotas.streams.notification.common.NotificationContext;
 import com.hortonworks.iotas.streams.notification.common.Notifier;
@@ -132,10 +133,10 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public List<Notification> findNotifications(List<CatalogService.QueryParam> queryParams) {
+    public List<Notification> findNotifications(List<QueryParam> queryParams) {
         LOG.debug("findNotifications with queryParams {}", queryParams);
         CriteriaImpl<Notification> criteria = new CriteriaImpl<>(Notification.class);
-        for (CatalogService.QueryParam qp : queryParams) {
+        for (QueryParam qp : queryParams) {
             if (qp.name.equalsIgnoreCase(QUERY_PARAM_NUM_ROWS)) {
                 criteria.setNumRows(Integer.parseInt(qp.value));
             } else if (qp.name.equals(QUERY_PARAM_START_TS)) {

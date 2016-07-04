@@ -22,7 +22,7 @@ import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.Result;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.common.errors.ProcessingException;
-import com.hortonworks.iotas.exception.ParserException;
+import com.hortonworks.iotas.common.exception.ParserException;
 import com.hortonworks.iotas.topology.component.impl.normalization.NormalizationProcessor;
 import com.hortonworks.iotas.topology.component.Stream;
 import com.hortonworks.iotas.topology.component.impl.normalization.NormalizationConfig;

@@ -3,6 +3,7 @@ package com.hortonworks.iotas.webservice.catalog;
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.ParserInfo;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.util.WSUtils;
@@ -49,7 +50,7 @@ public class FeedCatalogResource {
     @Path("/feeds")
     @Timed
     public Response listDataFeeds(@Context UriInfo uriInfo) {
-        List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>();
+        List<QueryParam> queryParams = new ArrayList<QueryParam>();
         try {
             MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
             Collection<DataFeed> dataFeeds;

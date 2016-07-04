@@ -1,9 +1,10 @@
 package com.hortonworks.iotas.cache;
 
 import com.google.common.cache.CacheBuilder;
-import com.hortonworks.iotas.cache.impl.GuavaCache;
+import com.hortonworks.iotas.storage.cache.impl.GuavaCache;
 import com.hortonworks.iotas.catalog.Device;
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.common.cache.Cache;
 import com.hortonworks.iotas.storage.PrimaryKey;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;

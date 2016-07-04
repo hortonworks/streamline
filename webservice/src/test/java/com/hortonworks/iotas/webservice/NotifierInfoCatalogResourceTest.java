@@ -2,6 +2,7 @@ package com.hortonworks.iotas.webservice;
 
 import com.hortonworks.iotas.catalog.CatalogResponse;
 import com.hortonworks.iotas.catalog.NotifierInfo;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.catalog.NotifierInfoCatalogResource;
 import mockit.Expectations;
@@ -43,7 +44,7 @@ public class NotifierInfoCatalogResourceTest {
     @Test
     public void testListNotifiers() throws Exception {
         final NotifierInfo notifierInfo = new NotifierInfo();
-        final CatalogService.QueryParam expectedQp = new CatalogService.QueryParam("notifierName", "email_notifier_1");
+        final QueryParam expectedQp = new QueryParam("notifierName", "email_notifier_1");
         multiValuedMap.putSingle("notifierName", "email_notifier_1");
         new Expectations() {
             {

@@ -2,6 +2,7 @@ package com.hortonworks.iotas.webservice.catalog;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.catalog.NotifierInfo;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.util.WSUtils;
 import org.slf4j.Logger;
@@ -53,7 +54,7 @@ public class NotifierInfoCatalogResource {
     @Path("/notifiers")
     @Timed
     public Response listNotifiers(@Context UriInfo uriInfo) {
-        List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>();
+        List<QueryParam> queryParams = new ArrayList<QueryParam>();
         try {
             MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
             Collection<NotifierInfo> notifierInfos;

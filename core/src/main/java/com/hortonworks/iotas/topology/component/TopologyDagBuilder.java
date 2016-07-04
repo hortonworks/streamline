@@ -5,6 +5,7 @@ import com.hortonworks.iotas.catalog.TopologyEdge;
 import com.hortonworks.iotas.catalog.TopologyProcessor;
 import com.hortonworks.iotas.catalog.TopologySink;
 import com.hortonworks.iotas.catalog.TopologySource;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.service.CatalogService;
 
 import java.util.ArrayList;
@@ -56,9 +57,9 @@ public class TopologyDagBuilder {
         }
     }
 
-    private List<CatalogService.QueryParam> queryParam(Topology topology) {
-        List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>();
-        queryParams.add(new CatalogService.QueryParam("topologyId", topology.getId().toString()));
+    private List<QueryParam> queryParam(Topology topology) {
+        List<QueryParam> queryParams = new ArrayList<QueryParam>();
+        queryParams.add(new QueryParam("topologyId", topology.getId().toString()));
         return queryParams;
     }
 }

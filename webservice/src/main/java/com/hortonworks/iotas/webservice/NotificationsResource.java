@@ -24,6 +24,7 @@ package com.hortonworks.iotas.webservice;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.streams.notification.common.Notification;
 import com.hortonworks.iotas.streams.notification.service.NotificationService;
 import com.hortonworks.iotas.service.CatalogService;
@@ -87,7 +88,7 @@ public class NotificationsResource {
     @Path("/notifications/")
     @Timed
     public Response listNotifications(@Context UriInfo uriInfo) {
-        List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>();
+        List<QueryParam> queryParams = new ArrayList<QueryParam>();
         try {
             MultivaluedMap<String, String> uriInfoParams = uriInfo.getQueryParameters();
             Collection<Notification> notifications = null;

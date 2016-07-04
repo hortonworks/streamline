@@ -52,6 +52,7 @@ import com.hortonworks.iotas.catalog.TopologySourceStreamMapping;
 import com.hortonworks.iotas.catalog.UDFInfo;
 import com.hortonworks.iotas.common.Config;
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.processor.CustomProcessorInfo;
 import com.hortonworks.iotas.rule.RuleParser;
 import com.hortonworks.iotas.storage.DataSourceSubType;
@@ -138,50 +139,6 @@ public class CatalogService {
     private TagService tagService;
     private TopologyDagBuilder topologyDagBuilder;
 
-    public static class QueryParam {
-
-        public final String name;
-        public final String value;
-        public QueryParam(String name, String value) {
-            this.name = name;
-            this.value = value;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        @Override
-        public String toString() {
-            return "{" +
-                    "name='" + name + '\'' +
-                    ", value='" + value + '\'' +
-                    '}';
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            QueryParam that = (QueryParam) o;
-
-            if (name != null ? !name.equals(that.name) : that.name != null) return false;
-            return !(value != null ? !value.equals(that.value) : that.value != null);
-
-        }
-
-        @Override
-        public int hashCode() {
-            int result = name != null ? name.hashCode() : 0;
-            result = 31 * result + (value != null ? value.hashCode() : 0);
-            return result;
-        }
-    }
 
     public CatalogService(StorageManager dao, TopologyActions topologyActions, TopologyMetrics topologyMetrics, FileStorage fileStorage) {
         this.dao = dao;
@@ -1291,10 +1248,10 @@ public class CatalogService {
 
     // check if edge already exists for given topology between same source and dest
     private void checkDuplicateEdge(TopologyEdge edge) {
-        List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>();
-        queryParams.add(new CatalogService.QueryParam("topologyId", edge.getTopologyId().toString()));
-        queryParams.add(new CatalogService.QueryParam("fromId", edge.getFromId().toString()));
-        queryParams.add(new CatalogService.QueryParam("toId", edge.getToId().toString()));
+        List<QueryParam> queryParams = new ArrayList<QueryParam>();
+        queryParams.add(new QueryParam("topologyId", edge.getTopologyId().toString()));
+        queryParams.add(new QueryParam("fromId", edge.getFromId().toString()));
+        queryParams.add(new QueryParam("toId", edge.getToId().toString()));
 
         try {
             Collection<TopologyEdge> existingEdges = listTopologyEdges(queryParams);

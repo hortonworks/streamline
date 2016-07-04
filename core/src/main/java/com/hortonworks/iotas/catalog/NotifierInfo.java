@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.storage.PrimaryKey;
 import com.hortonworks.iotas.storage.Storable;
+import com.hortonworks.iotas.storage.catalog.AbstractStorable;
 
 import java.io.IOException;
 import java.util.ArrayList;

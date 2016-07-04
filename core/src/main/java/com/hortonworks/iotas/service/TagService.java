@@ -1,6 +1,7 @@
 package com.hortonworks.iotas.service;
 
 import com.hortonworks.iotas.catalog.Tag;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.storage.Storable;
 
 import java.util.Collection;
@@ -62,7 +63,7 @@ public interface TagService {
      * @param queryParams the query params
      * @return the tags matching the query params
      */
-    Collection<Tag> listTags(List<CatalogService.QueryParam> queryParams);
+    Collection<Tag> listTags(List<QueryParam> queryParams);
 
     /**
      * Tags the storable with the given tags

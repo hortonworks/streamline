@@ -20,6 +20,7 @@ package com.hortonworks.iotas.webservice.catalog;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.catalog.TopologySink;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.util.WSUtils;
 
@@ -86,7 +87,7 @@ public class TopologySinkCatalogResource {
     @GET
     @Timed
     public Response listTopologySinks(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) {
-        List<CatalogService.QueryParam> queryParams = WSUtils.buildTopologyIdAwareQueryParams(topologyId, uriInfo);
+        List<QueryParam> queryParams = WSUtils.buildTopologyIdAwareQueryParams(topologyId, uriInfo);
 
         try {
             Collection<TopologySink> sinks = catalogService.listTopologySinks(queryParams);

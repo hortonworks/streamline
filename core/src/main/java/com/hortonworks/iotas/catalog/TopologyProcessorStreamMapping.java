@@ -20,6 +20,7 @@ package com.hortonworks.iotas.catalog;
 
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.storage.PrimaryKey;
+import com.hortonworks.iotas.storage.catalog.AbstractStorable;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -20,7 +20,7 @@ package com.hortonworks.iotas.parser;
 
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.exception.DataValidationException;
-import com.hortonworks.iotas.exception.ParserException;
+import com.hortonworks.iotas.common.exception.ParserException;
 
 import java.util.List;
 import java.util.Map;

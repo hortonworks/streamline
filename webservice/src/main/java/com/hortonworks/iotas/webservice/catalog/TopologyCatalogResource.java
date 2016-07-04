@@ -21,6 +21,7 @@ package com.hortonworks.iotas.webservice.catalog;
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.catalog.Topology;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.processor.CustomProcessorInfo;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.topology.TopologyActions;
@@ -286,7 +287,7 @@ public class TopologyCatalogResource {
     @Timed
     public Response listTopologyComponentsForTypeWithFilter (@PathParam
                                                                    ("component") TopologyComponentDefinition.TopologyComponentType componentType, @Context UriInfo uriInfo) {
-        List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>();
+        List<QueryParam> queryParams = new ArrayList<QueryParam>();
         try {
             MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
             queryParams = WSUtils.buildQueryParameters(params);
@@ -400,7 +401,7 @@ public class TopologyCatalogResource {
         if (!TopologyComponentDefinition.TopologyComponentType.PROCESSOR.equals(componentType)) {
             return WSUtils.respond(NOT_FOUND, CUSTOM_PROCESSOR_ONLY);
         }
-        List<CatalogService.QueryParam> queryParams;
+        List<QueryParam> queryParams;
         try {
             MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
             queryParams = WSUtils.buildQueryParameters(params);

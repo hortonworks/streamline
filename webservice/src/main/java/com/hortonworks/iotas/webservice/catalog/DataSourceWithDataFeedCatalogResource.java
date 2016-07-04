@@ -2,6 +2,7 @@ package com.hortonworks.iotas.webservice.catalog;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.catalog.DataSource;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
 import com.hortonworks.iotas.webservice.util.WSUtils;
@@ -16,7 +17,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -86,7 +86,7 @@ public class DataSourceWithDataFeedCatalogResource {
     @GET
     @Path("/datasources")
     @Timed
-    public Response listDataSourcesWithDataFeed(@QueryParam("filter") List<String> filter) {
+    public Response listDataSourcesWithDataFeed(@javax.ws.rs.QueryParam("filter") List<String> filter) {
         try {
             List<DataSourceDto> dataSourceDtoList = dataSourceFacade.getAllDataSourceDtos();
 
@@ -104,7 +104,7 @@ public class DataSourceWithDataFeedCatalogResource {
     @Timed
     public Response listDataSourcesWithDataFeedForTypeWithFilter(@PathParam("type") DataSource.Type type,
                                                                  @Context UriInfo uriInfo) {
-        List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>();
+        List<QueryParam> queryParams = new ArrayList<QueryParam>();
         try {
             MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
             queryParams = WSUtils.buildQueryParameters(params);

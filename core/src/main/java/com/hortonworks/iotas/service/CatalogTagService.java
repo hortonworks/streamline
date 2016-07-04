@@ -6,11 +6,11 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.catalog.TagStorableMapping;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
 
-import static com.hortonworks.iotas.service.CatalogService.QueryParam;
 
 import java.util.ArrayList;
 import java.util.Collection;

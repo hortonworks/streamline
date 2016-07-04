@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.common.IotasEventImpl;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.topology.component.Stream;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
@@ -78,8 +79,8 @@ public class ParserSchemaEvolverTest {
 
     @Test
     public void testEvolveDataSourceIdProvided() throws Exception {
-        final List<CatalogService.QueryParam> queryParams = Lists.newArrayList(
-                new CatalogService.QueryParam("dataSourceId", "1"));
+        final List<QueryParam> queryParams = Lists.newArrayList(
+                new QueryParam("dataSourceId", "1"));
         final Collection<DataFeed> expectedDataFeeds = Lists.newArrayList(buildDataFeed());
         final ParserInfo parserInfo = buildParserInfo();
 
@@ -110,8 +111,8 @@ public class ParserSchemaEvolverTest {
 
     @Test(expected = BadComponentConfigException.class)
     public void testEvolveDataSourceIdProvidedButNonExistDataFeed() throws Exception {
-        final List<CatalogService.QueryParam> queryParams = Lists.newArrayList(
-                new CatalogService.QueryParam("dataSourceId", "1"));
+        final List<QueryParam> queryParams = Lists.newArrayList(
+                new QueryParam("dataSourceId", "1"));
         final Collection<DataFeed> expectedDataFeeds = Lists.newArrayList();
 
         new Expectations() {
@@ -134,8 +135,8 @@ public class ParserSchemaEvolverTest {
 
     @Test(expected = BadComponentConfigException.class)
     public void testEvolveDataSourceIdProvidedButNonExistParser() throws Exception {
-        final List<CatalogService.QueryParam> queryParams = Lists.newArrayList(
-                new CatalogService.QueryParam("dataSourceId", "1"));
+        final List<QueryParam> queryParams = Lists.newArrayList(
+                new QueryParam("dataSourceId", "1"));
         final Collection<DataFeed> expectedDataFeeds = Lists.newArrayList(buildDataFeed());
 
         new Expectations() {
