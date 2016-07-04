@@ -19,7 +19,6 @@
 package com.hortonworks.iotas.storage.impl.jdbc.mysql;
 
 import com.google.common.cache.CacheBuilder;
-import com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManager;
 import com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManagerIntegrationTest;
 import com.hortonworks.iotas.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.iotas.storage.impl.jdbc.config.HikariBasicConfig;
@@ -54,7 +53,7 @@ public class MySqlStorageManagerWithCacheIntegrationTest extends JdbcStorageMana
 
     private static void setFields(ConnectionBuilder connectionBuilder, Database db) {
         JdbcStorageManagerIntegrationTest.connectionBuilder = connectionBuilder;
-        jdbcStorageManager = new JdbcStorageManager(new MySqlExecutorForTest(newGuavaCacheBuilder(),
+        jdbcStorageManager =  createJdbcStorageManager(new MySqlExecutorForTest(newGuavaCacheBuilder(),
                 new ExecutionConfig(-1), connectionBuilder));
         database = db;
     }

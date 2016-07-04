@@ -11,10 +11,12 @@ import com.hortonworks.iotas.catalog.StreamInfo;
 import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.storage.exception.AlreadyExistsException;
 import com.hortonworks.iotas.storage.exception.StorageException;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TestName;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
@@ -22,16 +24,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Random;
-import java.util.Set;
-import java.util.Map;
-import java.util.List;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 public abstract class AbstractStoreManagerTest {
     protected static final Logger log = LoggerFactory.getLogger(AbstractStoreManagerTest.class);
@@ -70,7 +72,6 @@ public abstract class AbstractStoreManagerTest {
     // Test methods use the widely accepted naming convention  [UnitOfWork_StateUnderTest_ExpectedBehavior]
 
     @Test
-    @Ignore
     public void testCrud_AllStorableEntities_NoExceptions() {
         for (StorableTest test : storableTests) {
             try {
@@ -84,7 +85,6 @@ public abstract class AbstractStoreManagerTest {
 
     // UnequalExistingStorable => Storable that has the same StorableKey but does NOT verify .equals()
     @Test(expected = AlreadyExistsException.class)
-    @Ignore
     public void testAdd_UnequalExistingStorable_AlreadyExistsException() {
         for (StorableTest test : storableTests) {
             Storable storable1 = test.getStorableList().get(0);
@@ -98,7 +98,6 @@ public abstract class AbstractStoreManagerTest {
 
     // EqualExistingStorable => Storable that has the same StorableKey and verifies .equals()
     @Test
-    @Ignore
     public void testAdd_EqualExistingStorable_NoOperation() {
         for (StorableTest test : storableTests) {
             Storable storable1 = test.getStorableList().get(0);
@@ -122,7 +121,6 @@ public abstract class AbstractStoreManagerTest {
     }
 
     @Test
-    @Ignore
     public void testFind_NullQueryParams_AllEntries() {
         for (StorableTest test : storableTests) {
             test.addAllToStorage();

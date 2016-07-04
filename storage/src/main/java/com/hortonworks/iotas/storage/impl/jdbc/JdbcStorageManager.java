@@ -22,6 +22,7 @@ import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.storage.PrimaryKey;
 import com.hortonworks.iotas.storage.Storable;
+import com.hortonworks.iotas.storage.StorableFactory;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.exception.AlreadyExistsException;
@@ -47,10 +48,12 @@ public class JdbcStorageManager implements StorageManager {
     private static final Logger log = LoggerFactory.getLogger(StorageManager.class);
     public static final String DB_TYPE = "db.type";
 
+    private final StorableFactory storableFactory = new StorableFactory();
     private final QueryExecutor queryExecutor;
 
     public JdbcStorageManager(QueryExecutor queryExecutor) {
         this.queryExecutor = queryExecutor;
+        queryExecutor.setStorableFactory(storableFactory);
     }
 
     @Override
@@ -140,6 +143,11 @@ public class JdbcStorageManager implements StorageManager {
         // This only works if the table has auto-increment. The TABLE_SCHEMA part is implicitly specified in the Connection object
         // SELECT AUTO_INCREMENT FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'temp' AND TABLE_SCHEMA = 'test'
         return queryExecutor.nextId(namespace);
+    }
+
+    @Override
+    public void registerStorableClasses(Collection<String> classes) throws StorageException {
+        storableFactory.addStorableClasses(classes);
     }
 
     // private helper methods

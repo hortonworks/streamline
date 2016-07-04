@@ -19,6 +19,7 @@
 package com.hortonworks.iotas.storage.impl.jdbc.provider.sql.factory;
 
 import com.hortonworks.iotas.storage.Storable;
+import com.hortonworks.iotas.storage.StorableFactory;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.exception.NonIncrementalColumnException;
 import com.hortonworks.iotas.storage.impl.jdbc.config.ExecutionConfig;
@@ -79,4 +80,6 @@ public interface QueryExecutor {
     void cleanup();
 
     ExecutionConfig getConfig();
+
+    void setStorableFactory(StorableFactory storableFactory);
 }

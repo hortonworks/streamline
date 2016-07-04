@@ -1,9 +1,9 @@
 package com.hortonworks.iotas.storage;
 
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.common.cache.Cache;
 import com.hortonworks.iotas.storage.cache.impl.GuavaCache;
 import com.hortonworks.iotas.storage.cache.writer.StorageWriter;
-import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.storage.exception.StorageException;
 
 import java.util.Collection;
@@ -74,5 +74,10 @@ public class CacheBackedStorageManager implements StorageManager {
     @Override
     public Long nextId(String namespace) throws StorageException {
         return dao.nextId(namespace);
+    }
+
+    @Override
+    public void registerStorableClasses(Collection<String> classes) throws StorageException {
+        dao.registerStorableClasses(classes);
     }
 }

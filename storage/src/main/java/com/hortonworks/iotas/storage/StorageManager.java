@@ -1,11 +1,10 @@
 package com.hortonworks.iotas.storage;
 
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.storage.exception.StorageException;
 
 import java.util.Collection;
 import java.util.List;
-
-import  com.hortonworks.iotas.common.QueryParam;
 
 /**
  * TODO: All the methods are very restrictive and needs heavy synchronization to get right but my assumption is that
@@ -84,4 +83,13 @@ public interface StorageManager {
     void cleanup() throws StorageException;
 
     Long nextId(String namespace) throws StorageException;
+
+    /**
+     * Registers Map of namespace with {@link com.hortonworks.iotas.storage.Storable.Factory} to be used for creating
+     * {@link Storable} for a given namespace.
+     *
+     * @param classes
+     * @throws StorageException
+     */
+    public void registerStorableClasses(Collection<String> classes) throws StorageException;
 }

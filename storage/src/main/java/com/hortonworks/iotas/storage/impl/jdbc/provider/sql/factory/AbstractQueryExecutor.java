@@ -4,8 +4,8 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
-//import com.hortonworks.iotas.catalog.*;
 import com.hortonworks.iotas.storage.Storable;
+import com.hortonworks.iotas.storage.StorableFactory;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.exception.StorageException;
 import com.hortonworks.iotas.storage.impl.jdbc.config.ExecutionConfig;
@@ -16,7 +16,6 @@ import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.query.SqlQuery;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.query.SqlSelectQuery;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
 import com.hortonworks.iotas.storage.impl.jdbc.util.Util;
-//import com.hortonworks.iotas.topology.TopologyComponentDefinition;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -48,6 +47,7 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
     protected final List<Connection> activeConnections;
 
     private final Cache<SqlQuery, PreparedStatementBuilder> cache;
+    private StorableFactory storableFactory;
 
     public AbstractQueryExecutor(ExecutionConfig config, ConnectionBuilder connectionBuilder) {
         this(config, connectionBuilder, null);
@@ -150,6 +150,14 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
                 }
             }
         }).build();
+    }
+
+    public void setStorableFactory(StorableFactory storableFactory) {
+        if(this.storableFactory != null) {
+            throw new IllegalStateException("StorableFactory is already set");
+        }
+
+        this.storableFactory = storableFactory;
     }
 
 
@@ -273,54 +281,7 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
         }
 
         private <T extends Storable> T newStorableInstance(String nameSpace) {
-            /*
-            switch (nameSpace) {
-                case(DataFeed.NAME_SPACE):
-                    return (T) new DataFeed();
-                case(DataSource.NAME_SPACE):
-                    return (T) new DataSource();
-                case(Device.NAME_SPACE):
-                    return (T) new Device();
-                case(ParserInfo.NAME_SPACE):
-                    return (T) new ParserInfo();
-                case (TopologyComponentDefinition.NAME_SPACE):
-                    return (T) new TopologyComponentDefinition();
-                case (TopologyEditorMetadata.NAME_SPACE):
-                    return (T) new TopologyEditorMetadata();
-                case (Topology.NAME_SPACE):
-                    return (T) new Topology();
-                case (Tag.NAMESPACE):
-                    return (T) new Tag();
-                case (TagStorableMapping.NAMESPACE):
-                    return (T) new TagStorableMapping();
-                case (FileInfo.NAME_SPACE):
-                    return (T) new FileInfo();
-                case (StreamInfo.NAMESPACE):
-                    return (T) new StreamInfo();
-                case (NotifierInfo.NAMESPACE):
-                    return (T) new NotifierInfo();
-                case (TopologyComponent.NAMESPACE):
-                    return (T) new TopologyComponent();
-                case (TopologySource.NAMESPACE):
-                    return (T) new TopologySource();
-                case (TopologySink.NAMESPACE):
-                    return (T) new TopologySink();
-                case (TopologyProcessor.NAMESPACE):
-                    return (T) new TopologyProcessor();
-                case (TopologyEdge.NAMESPACE):
-                    return (T) new TopologyEdge();
-                case (TopologySourceStreamMapping.NAMESPACE):
-                    return (T) new TopologySourceStreamMapping();
-                case (TopologyProcessorStreamMapping.NAMESPACE):
-                    return (T) new TopologyProcessorStreamMapping();
-                case (RuleInfo.NAMESPACE):
-                    return (T) new RuleInfo();
-                default:
-                    log.error("Storable for namespace [{}] is not registered", nameSpace);
-                    throw new RuntimeException("Unsupported Storable type: "+nameSpace);
-            }
-            */
-            return null;
+            return (T) storableFactory.create(nameSpace);
         }
 
         private Map<String, Object> newMapWithRowContents(ResultSet resultSet, ResultSetMetaData rsMetadata) throws SQLException {

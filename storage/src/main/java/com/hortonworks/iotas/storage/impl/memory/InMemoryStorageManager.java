@@ -18,25 +18,24 @@
 package com.hortonworks.iotas.storage.impl.memory;
 
 
+import com.hortonworks.iotas.common.QueryParam;
+import com.hortonworks.iotas.common.util.ReflectionHelper;
 import com.hortonworks.iotas.storage.PrimaryKey;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.exception.AlreadyExistsException;
 import com.hortonworks.iotas.storage.exception.StorageException;
-import com.hortonworks.iotas.common.util.ReflectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import com.hortonworks.iotas.common.QueryParam;
 
 //TODO: The synchronization is broken right now, so all the methods don't guarantee the semantics as described in the interface.
 public class InMemoryStorageManager implements StorageManager {
@@ -150,6 +149,10 @@ public class InMemoryStorageManager implements StorageManager {
             id = 0l;
         }
         return id + 1;
+    }
+
+    @Override
+    public void registerStorableClasses(Collection<String> classes) throws StorageException {
     }
 
     private void incrementIdSequence(String namespace) {
