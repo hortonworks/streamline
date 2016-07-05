@@ -1,5 +1,8 @@
-com.hortonworks.iotas.catalog.DataFeed
+com.hortonworks.iotas.catalog.DataSet
+com.hortonworks.iotas.catalog.Component
+com.hortonworks.iotas.catalog.Cluster
 com.hortonworks.iotas.catalog.DataSource
+com.hortonworks.iotas.catalog.DataFeed
 com.hortonworks.iotas.catalog.Device
 com.hortonworks.iotas.catalog.ParserInfo
 com.hortonworks.iotas.topology.TopologyComponentDefinition
@@ -15,6 +18,7 @@ com.hortonworks.iotas.catalog.TopologySource
 com.hortonworks.iotas.catalog.TopologySink
 com.hortonworks.iotas.catalog.TopologyProcessor
 com.hortonworks.iotas.catalog.TopologySourceStreamMapping
-com.hortonworks.iotas.catalog.TopologySourceStreamMapping
 com.hortonworks.iotas.catalog.TopologyProcessorStreamMapping
+com.hortonworks.iotas.catalog.TopologyEdge
+com.hortonworks.iotas.catalog.UDFInfo
 com.hortonworks.iotas.catalog.RuleInfo

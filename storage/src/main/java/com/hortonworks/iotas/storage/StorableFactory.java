@@ -35,20 +35,19 @@ public class StorableFactory {
     public StorableFactory() {
     }
 
-    public void addStorableClasses(Collection<String> storableClasses) {
-        for (String storableClass : storableClasses) {
+    public void addStorableClasses(Collection<Class<? extends Storable>> storableClasses) {
+        for (Class<? extends Storable> clazz : storableClasses) {
             try {
-                Class<? extends Storable> clazz = (Class<? extends Storable>) Class.forName(storableClass);
                 String nameSpace = clazz.newInstance().getNameSpace();
 
-                LOG.info("Storable class [{}] is getting registered with namespace [{}]", storableClass, nameSpace);
+                LOG.info("Storable class [{}] is getting registered with namespace [{}]", clazz, nameSpace);
 
                 if(nameSpaceWithClass.containsKey(nameSpace)) {
                     throw new IllegalArgumentException("NameSpace ["+nameSpace+"] is already registered");
                 }
 
                 nameSpaceWithClass.put(nameSpace, clazz);
-            } catch (ClassNotFoundException |InstantiationException | IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
         }

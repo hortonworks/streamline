@@ -146,7 +146,7 @@ public class JdbcStorageManager implements StorageManager {
     }
 
     @Override
-    public void registerStorableClasses(Collection<String> classes) throws StorageException {
+    public void registerStorables(Collection<Class<? extends Storable>> classes) throws StorageException {
         storableFactory.addStorableClasses(classes);
     }
 

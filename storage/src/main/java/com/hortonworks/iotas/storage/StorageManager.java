@@ -85,11 +85,11 @@ public interface StorageManager {
     Long nextId(String namespace) throws StorageException;
 
     /**
-     * Registers Map of namespace with {@link com.hortonworks.iotas.storage.Storable.Factory} to be used for creating
-     * {@link Storable} for a given namespace.
+     * Registers a Collection of {@link Storable}} classes to be used in {@link StorableFactory} for creating instances
+     * of a given namespace.
      *
      * @param classes
      * @throws StorageException
      */
-    public void registerStorableClasses(Collection<String> classes) throws StorageException;
+    public void registerStorables(Collection<Class<? extends Storable>> classes) throws StorageException;
 }

@@ -19,6 +19,7 @@
 package com.hortonworks.iotas.storage.impl.jdbc;
 
 import com.google.common.cache.CacheBuilder;
+import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.storage.AbstractStoreManagerTest;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorageManager;
@@ -207,20 +208,9 @@ public abstract class JdbcStorageManagerIntegrationTest extends AbstractStoreMan
         return new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream(fileName));
     }
 
-    protected static Collection<String> getStorableClasses() {
-        InputStream resourceAsStream = MySqlStorageManagerNoCacheIntegrationTest.class.getClassLoader().getResourceAsStream("storables.props");
-        List<String> classNames = null;
-        try {
-            classNames = IOUtils.readLines(resourceAsStream);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return new HashSet<>(classNames);
-    }
-
     protected static JdbcStorageManager createJdbcStorageManager(QueryExecutor queryExecutor) {
         JdbcStorageManager jdbcStorageManager = new JdbcStorageManager(queryExecutor);
-        jdbcStorageManager.registerStorableClasses(getStorableClasses());
+        jdbcStorageManager.registerStorables(CatalogService.getStorableClasses());
         return jdbcStorageManager;
     }
 

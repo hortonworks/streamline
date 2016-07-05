@@ -1,5 +1,6 @@
 ## 0.1.4
- * IOT 296 - Refactor notifers and notification modules to move to the streams project
+ * IOT-306: Create new storage module for refactoring 
+ * IOT 296: Refactor notifers and notification modules to move to the streams project
  * IOT-289: Streams: create a top level streams and the mvn sub project skelton
  * IOT-267: Intermittent Unit test failure in WindowRulesBoltTest
  * IOT-304: integrate normalization components with new topology DAG APIs

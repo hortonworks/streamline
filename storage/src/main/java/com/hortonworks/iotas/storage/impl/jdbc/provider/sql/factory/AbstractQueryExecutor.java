@@ -152,6 +152,7 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
         }).build();
     }
 
+    @Override
     public void setStorableFactory(StorableFactory storableFactory) {
         if(this.storableFactory != null) {
             throw new IllegalStateException("StorableFactory is already set");

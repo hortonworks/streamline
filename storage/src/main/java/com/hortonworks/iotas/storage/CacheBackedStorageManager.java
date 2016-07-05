@@ -77,7 +77,7 @@ public class CacheBackedStorageManager implements StorageManager {
     }
 
     @Override
-    public void registerStorableClasses(Collection<String> classes) throws StorageException {
-        dao.registerStorableClasses(classes);
+    public void registerStorables(Collection<Class<? extends Storable>> classes) throws StorageException {
+        dao.registerStorables(classes);
     }
 }

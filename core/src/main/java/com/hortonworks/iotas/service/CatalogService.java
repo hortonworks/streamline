@@ -141,7 +141,7 @@ public class CatalogService {
 
     public CatalogService(StorageManager dao, TopologyActions topologyActions, TopologyMetrics topologyMetrics, FileStorage fileStorage) {
         this.dao = dao;
-        dao.registerStorableClasses(getStorableClasses());
+        dao.registerStorables(getStorableClasses());
         this.topologyActions = topologyActions;
         this.topologyMetrics = topologyMetrics;
         this.fileStorage = fileStorage;
@@ -149,15 +149,19 @@ public class CatalogService {
         this.topologyDagBuilder = new TopologyDagBuilder(this);
     }
 
-    private Collection<String> getStorableClasses() {
-        InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream("storables.props");
-        List<String> classNames = null;
+    public static Collection<Class<? extends Storable>> getStorableClasses() {
+        InputStream resourceAsStream = CatalogService.class.getClassLoader().getResourceAsStream("storables.props");
+        HashSet<Class<? extends Storable>> classes = new HashSet<>();
         try {
-            classNames = IOUtils.readLines(resourceAsStream);
-        } catch (IOException e) {
+            List<String> classNames = IOUtils.readLines(resourceAsStream);
+            for (String className : classNames) {
+                classes.add((Class<? extends Storable>) Class.forName(className));
+            }
+        } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
-        return new HashSet<>(classNames);
+
+        return classes;
     }
 
     private String getNamespaceForDataSourceType(DataSource.Type dataSourceType) {
