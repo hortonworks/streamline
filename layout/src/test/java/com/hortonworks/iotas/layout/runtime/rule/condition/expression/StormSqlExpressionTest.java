@@ -2,17 +2,17 @@ package com.hortonworks.iotas.layout.runtime.rule.condition.expression;
 
 import com.google.common.collect.ImmutableList;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.topology.component.rule.condition.AggregateFunctionExpression;
-import com.hortonworks.iotas.topology.component.rule.condition.GroupBy;
-import com.hortonworks.iotas.topology.component.rule.condition.Having;
-import com.hortonworks.iotas.topology.component.rule.condition.BinaryExpression;
-import com.hortonworks.iotas.topology.component.rule.condition.Condition;
-import com.hortonworks.iotas.topology.component.rule.condition.Expression;
-import com.hortonworks.iotas.topology.component.rule.condition.FieldExpression;
-import com.hortonworks.iotas.topology.component.rule.condition.FunctionExpression;
-import com.hortonworks.iotas.topology.component.rule.condition.Literal;
-import com.hortonworks.iotas.topology.component.rule.condition.Operator;
-import com.hortonworks.iotas.topology.component.rule.condition.Projection;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.AggregateFunctionExpression;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.GroupBy;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Having;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.BinaryExpression;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Condition;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Expression;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.FunctionExpression;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Literal;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Operator;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Projection;
 import org.junit.Test;
 
 import java.util.Arrays;

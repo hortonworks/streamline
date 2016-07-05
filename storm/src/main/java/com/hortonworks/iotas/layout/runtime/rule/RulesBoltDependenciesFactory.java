@@ -18,8 +18,8 @@
 
 package com.hortonworks.iotas.layout.runtime.rule;
 
-import com.hortonworks.iotas.layout.design.component.ComponentBuilder;
-import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
+import com.hortonworks.iotas.streams.layout.component.ComponentBuilder;
+import com.hortonworks.iotas.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntime;
 import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntimeDependenciesBuilder;
 

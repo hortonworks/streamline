@@ -23,24 +23,21 @@ import com.hortonworks.iotas.catalog.StreamInfo;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.service.CatalogService;
-import com.hortonworks.iotas.topology.component.Stream;
-import com.hortonworks.iotas.topology.component.rule.condition.BinaryExpression;
-import com.hortonworks.iotas.topology.component.rule.condition.Condition;
-import com.hortonworks.iotas.topology.component.rule.condition.FieldExpression;
-import com.hortonworks.iotas.topology.component.rule.condition.Literal;
-import com.hortonworks.iotas.topology.component.rule.condition.Operator;
-import com.hortonworks.iotas.topology.component.rule.condition.Projection;
+import com.hortonworks.iotas.streams.layout.component.Stream;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.BinaryExpression;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Condition;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Literal;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Operator;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Projection;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.annotation.security.RunAs;
-
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 
 import static org.junit.Assert.*;
 

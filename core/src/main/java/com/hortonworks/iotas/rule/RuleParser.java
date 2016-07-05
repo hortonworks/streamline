@@ -26,12 +26,14 @@ import com.hortonworks.iotas.catalog.StreamInfo;
 import com.hortonworks.iotas.catalog.UDFInfo;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.service.CatalogService;
-import com.hortonworks.iotas.topology.component.Stream;
-import com.hortonworks.iotas.topology.component.rule.condition.Condition;
-import com.hortonworks.iotas.topology.component.rule.condition.ExpressionList;
-import com.hortonworks.iotas.topology.component.rule.condition.GroupBy;
-import com.hortonworks.iotas.topology.component.rule.condition.Having;
-import com.hortonworks.iotas.topology.component.rule.condition.Projection;
+import com.hortonworks.iotas.streams.layout.component.Stream;
+import com.hortonworks.iotas.streams.layout.component.rule.sql.ExpressionGenerator;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Udf;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Condition;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.ExpressionList;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.GroupBy;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Having;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Projection;
 import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.sql.SqlIdentifier;
 import org.apache.calcite.sql.SqlJoin;
@@ -44,16 +46,13 @@ import org.apache.calcite.tools.Planner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import static com.hortonworks.iotas.topology.component.rule.condition.FieldExpression.STAR;
+import static com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression.STAR;
 
 public class RuleParser {
     private static final Logger LOG = LoggerFactory.getLogger(RuleParser.class);
@@ -65,13 +64,14 @@ public class RuleParser {
     private Condition condition;
     private GroupBy groupBy;
     private Having having;
-    private Map<String, UDFInfo> udfs = new HashMap<>();
+    private Map<String, Udf> udfs = new HashMap<>();
 
     public RuleParser(CatalogService catalogService, RuleInfo ruleInfo) {
         this.catalogService = catalogService;
         this.ruleInfo = ruleInfo;
         for (UDFInfo udfInfo: catalogService.listUDFs()) {
-            udfs.put(udfInfo.getName().toUpperCase(), udfInfo);
+            udfs.put(udfInfo.getName().toUpperCase(),
+                    new Udf(udfInfo.getName(), udfInfo.getClassName(), udfInfo.getType()));
         }
     }
 

@@ -18,7 +18,7 @@
 
 package com.hortonworks.iotas.layout.runtime.rule;
 
-import com.hortonworks.iotas.topology.component.rule.Rule;
+import com.hortonworks.iotas.streams.layout.component.rule.Rule;
 
 import java.io.Serializable;
 

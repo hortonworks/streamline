@@ -397,10 +397,10 @@
          <profile>
            <id>dist</id>
            <properties>
-             <exclude.unit.test.groups>com.hortonworks.iotas.test.IntegrationTest,com.hortonworks.iotas.test.HBaseIntegrationTest</exclude.unit.test.groups>
+             <exclude.unit.test.groups>com.hortonworks.iotas.common.test.IntegrationTest,com.hortonworks.iotas.common.test.HBaseIntegrationTest</exclude.unit.test.groups>
              <include.unit.test.groups></include.unit.test.groups>
-             <exclude.integration.test.groups>com.hortonworks.iotas.test.HBaseIntegrationTest</exclude.integration.test.groups>
-             <include.integration.test.groups>com.hortonworks.iotas.test.IntegrationTest</include.integration.test.groups>
+             <exclude.integration.test.groups>com.hortonworks.iotas.common.test.HBaseIntegrationTest</exclude.integration.test.groups>
+             <include.integration.test.groups>com.hortonworks.iotas.common.test.IntegrationTest</include.integration.test.groups>
            </properties>
            <modules>
              <module>iotas-dist</module>
@@ -412,20 +412,20 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <exclude.unit.test.groups>com.hortonworks.iotas.test.IntegrationTest,com.hortonworks.iotas.test.HBaseIntegrationTest</exclude.unit.test.groups>
+                <exclude.unit.test.groups>com.hortonworks.iotas.common.test.IntegrationTest,com.hortonworks.iotas.common.test.HBaseIntegrationTest</exclude.unit.test.groups>
                 <include.unit.test.groups></include.unit.test.groups>
-                <exclude.integration.test.groups>com.hortonworks.iotas.test.HBaseIntegrationTest</exclude.integration.test.groups>
-                <include.integration.test.groups>com.hortonworks.iotas.test.IntegrationTest</include.integration.test.groups>
+                <exclude.integration.test.groups>com.hortonworks.iotas.common.test.HBaseIntegrationTest</exclude.integration.test.groups>
+                <include.integration.test.groups>com.hortonworks.iotas.common.test.IntegrationTest</include.integration.test.groups>
             </properties>
         </profile>
 
         <profile>
             <id>dev-tests-including-external-env</id>
             <properties>
-                <exclude.unit.test.groups>com.hortonworks.iotas.test.IntegrationTest,com.hortonworks.iotas.test.HBaseIntegrationTest</exclude.unit.test.groups>
+                <exclude.unit.test.groups>com.hortonworks.iotas.common.test.IntegrationTest,com.hortonworks.iotas.common.test.HBaseIntegrationTest</exclude.unit.test.groups>
                 <include.unit.test.groups></include.unit.test.groups>
                 <exclude.integration.test.groups></exclude.integration.test.groups>
-                <include.integration.test.groups>com.hortonworks.iotas.test.IntegrationTest,com.hortonworks.iotas.test.HBaseIntegrationTest</include.integration.test.groups>
+                <include.integration.test.groups>com.hortonworks.iotas.common.test.IntegrationTest,com.hortonworks.iotas.common.test.HBaseIntegrationTest</include.integration.test.groups>
             </properties>
         </profile>
     </profiles>

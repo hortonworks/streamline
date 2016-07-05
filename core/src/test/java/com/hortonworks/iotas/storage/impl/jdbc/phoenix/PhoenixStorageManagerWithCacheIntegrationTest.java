@@ -3,7 +3,7 @@ package com.hortonworks.iotas.storage.impl.jdbc.phoenix;
 import com.google.common.cache.CacheBuilder;
 import com.hortonworks.iotas.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
-import com.hortonworks.iotas.test.HBaseIntegrationTest;
+import com.hortonworks.iotas.common.test.HBaseIntegrationTest;
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 

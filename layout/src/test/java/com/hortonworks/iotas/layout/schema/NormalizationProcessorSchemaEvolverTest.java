@@ -2,25 +2,21 @@ package com.hortonworks.iotas.layout.schema;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
-import com.hortonworks.iotas.common.Config;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.topology.TopologyLayoutConstants;
-import com.hortonworks.iotas.topology.component.Stream;
-import com.hortonworks.iotas.topology.component.impl.normalization.BulkNormalizationConfig;
-import com.hortonworks.iotas.topology.component.impl.normalization.FieldBasedNormalizationConfig;
-import com.hortonworks.iotas.topology.component.impl.normalization.FieldValueGenerator;
-import com.hortonworks.iotas.topology.component.impl.normalization.NormalizationConfig;
-import com.hortonworks.iotas.topology.component.impl.normalization.NormalizationProcessor;
-import com.hortonworks.iotas.topology.component.impl.normalization.Transformer;
+import com.hortonworks.iotas.streams.layout.component.Stream;
+import com.hortonworks.iotas.streams.layout.component.impl.normalization.BulkNormalizationConfig;
+import com.hortonworks.iotas.streams.layout.component.impl.normalization.FieldBasedNormalizationConfig;
+import com.hortonworks.iotas.streams.layout.component.impl.normalization.FieldValueGenerator;
+import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationConfig;
+import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationProcessor;
+import com.hortonworks.iotas.streams.layout.component.impl.normalization.Transformer;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 

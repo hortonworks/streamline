@@ -22,16 +22,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.storage.PrimaryKey;
 import com.hortonworks.iotas.storage.catalog.AbstractStorable;
+import static com.hortonworks.iotas.streams.layout.component.rule.expression.Udf.Type;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class UDFInfo extends AbstractStorable {
     private static final String NAMESPACE = "udfs";
-
-    enum Type {
-        FUNCTION, AGGREGATE
-    }
 
     private Long id;
     private String name;

@@ -9,7 +9,7 @@ import com.hortonworks.iotas.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.iotas.storage.impl.jdbc.connection.HikariCPConnectionBuilder;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.JdbcClient;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
-import com.hortonworks.iotas.test.HBaseIntegrationTest;
+import com.hortonworks.iotas.common.test.HBaseIntegrationTest;
 import com.hortonworks.iotas.topology.TopologyComponentDefinition;
 import com.zaxxer.hikari.HikariConfig;
 import org.junit.After;

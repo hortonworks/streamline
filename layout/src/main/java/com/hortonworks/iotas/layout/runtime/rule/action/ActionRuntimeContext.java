@@ -19,8 +19,8 @@
 package com.hortonworks.iotas.layout.runtime.rule.action;
 
 
-import com.hortonworks.iotas.topology.component.rule.Rule;
-import com.hortonworks.iotas.topology.component.rule.action.Action;
+import com.hortonworks.iotas.streams.layout.component.rule.Rule;
+import com.hortonworks.iotas.streams.layout.component.rule.action.Action;
 
 /**
  * This class contains the context information for an Action. This is passed in {@link ActionRuntime#setActionRuntimeContext(ActionRuntimeContext)}

@@ -3,7 +3,7 @@ package com.hortonworks.iotas.topology.storm;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
-import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
+import com.hortonworks.iotas.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.iotas.util.exception.BadTopologyLayoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

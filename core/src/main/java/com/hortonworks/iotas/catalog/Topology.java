@@ -5,7 +5,7 @@ import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.storage.PrimaryKey;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
-import com.hortonworks.iotas.topology.component.TopologyDag;
+import com.hortonworks.iotas.streams.layout.component.TopologyDag;
 
 import java.util.HashMap;
 import java.util.Map;

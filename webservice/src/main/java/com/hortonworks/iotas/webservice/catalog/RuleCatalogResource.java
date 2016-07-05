@@ -1,13 +1,10 @@
 package com.hortonworks.iotas.webservice.catalog;
 
 import com.codahale.metrics.annotation.Timed;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.catalog.RuleInfo;
-import com.hortonworks.iotas.catalog.TopologyProcessor;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.service.CatalogService;
-import com.hortonworks.iotas.topology.component.rule.Rule;
+import com.hortonworks.iotas.streams.layout.component.rule.Rule;
 import com.hortonworks.iotas.webservice.util.WSUtils;
 
 import javax.ws.rs.DELETE;

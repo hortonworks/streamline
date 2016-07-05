@@ -18,9 +18,9 @@
 
 package com.hortonworks.iotas.layout.runtime.rule.condition.expression;
 
-import com.hortonworks.iotas.topology.component.rule.condition.Condition;
-import com.hortonworks.iotas.topology.component.rule.condition.ExpressionTranslator;
-import com.hortonworks.iotas.topology.component.rule.condition.Operator;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Condition;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.ExpressionTranslator;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Operator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

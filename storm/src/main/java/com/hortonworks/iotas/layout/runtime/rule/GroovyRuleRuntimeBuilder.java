@@ -19,7 +19,7 @@
 package com.hortonworks.iotas.layout.runtime.rule;
 
 import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.topology.component.rule.Rule;
+import com.hortonworks.iotas.streams.layout.component.rule.Rule;
 import com.hortonworks.iotas.layout.runtime.rule.condition.expression.GroovyExpression;
 import com.hortonworks.iotas.layout.runtime.script.GroovyScript;
 import com.hortonworks.iotas.layout.runtime.script.engine.GroovyScriptEngine;

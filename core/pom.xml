@@ -37,11 +37,13 @@
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
+        <!-- TODO: This dependency should be added in streams-catalog after its is refactored -->
         <dependency>
-            <groupId>org.apache.calcite</groupId>
-            <artifactId>calcite-core</artifactId>
-            <version>${calcite.version}</version>
+            <groupId>com.hortonworks.iotas</groupId>
+            <artifactId>streams-layout</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
         </dependency>
+        <!-- End TODO -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>

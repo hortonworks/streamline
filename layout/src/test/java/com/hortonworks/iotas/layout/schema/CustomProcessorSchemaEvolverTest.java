@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.topology.component.Stream;
+import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import org.junit.Test;
 

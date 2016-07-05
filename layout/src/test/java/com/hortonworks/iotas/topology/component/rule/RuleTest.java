@@ -18,7 +18,7 @@
 
 package com.hortonworks.iotas.topology.component.rule;
 
-import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
+import com.hortonworks.iotas.streams.layout.component.impl.RulesProcessor;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig.Feature;
 import org.junit.Test;

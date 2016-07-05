@@ -27,9 +27,9 @@ import com.hortonworks.iotas.layout.runtime.rule.action.ActionRuntimeContext;
 import com.hortonworks.iotas.layout.runtime.transform.IdentityTransformRuntime;
 import com.hortonworks.iotas.layout.runtime.transform.TransformRuntime;
 import com.hortonworks.iotas.layout.runtime.transform.TransformRuntimeService;
-import com.hortonworks.iotas.topology.component.rule.action.Action;
-import com.hortonworks.iotas.topology.component.rule.action.TransformAction;
-import com.hortonworks.iotas.topology.component.rule.action.transform.Transform;
+import com.hortonworks.iotas.streams.layout.component.rule.action.Action;
+import com.hortonworks.iotas.streams.layout.component.rule.action.TransformAction;
+import com.hortonworks.iotas.streams.layout.component.rule.action.transform.Transform;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -4,14 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
-import com.hortonworks.iotas.topology.TopologyLayoutConstants;
-import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
-import com.hortonworks.iotas.topology.component.rule.Rule;
-import com.hortonworks.iotas.topology.component.rule.condition.Window;
+import com.hortonworks.iotas.streams.layout.component.impl.RulesProcessor;
+import com.hortonworks.iotas.streams.layout.component.rule.Rule;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Window;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -49,7 +47,7 @@ public class WindowRuleBoltFluxComponent extends RuleBoltFluxComponent {
 
     private String addWindowConfig() {
         String windowId = "window" + UUID_FOR_COMPONENTS;
-        String windowClassName = "com.hortonworks.iotas.topology.component.rule.condition.Window";
+        String windowClassName = "com.hortonworks.iotas.streams.layout.component.rule.condition.Window";
         ObjectMapper mapper = new ObjectMapper();
         String windowJson = null;
         try {
