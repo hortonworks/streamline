@@ -9,8 +9,8 @@ import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.catalog.StreamInfo;
 import com.hortonworks.iotas.catalog.Tag;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.storage.exception.AlreadyExistsException;
 import com.hortonworks.iotas.storage.exception.StorageException;
 import org.junit.Assert;
@@ -24,16 +24,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Random;
-import java.util.Set;
-import java.util.Map;
-import java.util.List;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 public abstract class AbstractStoreManagerTest {
     protected static final Logger log = LoggerFactory.getLogger(AbstractStoreManagerTest.class);
@@ -134,10 +134,10 @@ public abstract class AbstractStoreManagerTest {
     public void testFind_NonExistentQueryParams_EmptyList() {
         for (StorableTest test : storableTests) {
             test.addAllToStorage();
-            List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>() {
+            List<QueryParam> queryParams = new ArrayList<QueryParam>() {
                 {
-                    add(new CatalogService.QueryParam("NON_EXISTING_FIELD_1", "NON_EXISTING_VAL_1"));
-                    add(new CatalogService.QueryParam("NON_EXISTING_FIELD_2", "NON_EXISTING_VAL_2"));
+                    add(new QueryParam("NON_EXISTING_FIELD_1", "NON_EXISTING_VAL_1"));
+                    add(new QueryParam("NON_EXISTING_FIELD_2", "NON_EXISTING_VAL_2"));
                 }
             };
 
@@ -244,12 +244,12 @@ public abstract class AbstractStoreManagerTest {
             }
         }
 
-        protected List<CatalogService.QueryParam> buildQueryParamsForPrimaryKey(Storable storable) {
+        protected List<QueryParam> buildQueryParamsForPrimaryKey(Storable storable) {
             final Map<Schema.Field, Object> fieldsToVal = storable.getPrimaryKey().getFieldsToVal();
-            final List<CatalogService.QueryParam> queryParams = new ArrayList<>(fieldsToVal.size());
+            final List<QueryParam> queryParams = new ArrayList<>(fieldsToVal.size());
 
             for (Schema.Field field : fieldsToVal.keySet()) {
-                CatalogService.QueryParam qp = new CatalogService.QueryParam(field.getName(), fieldsToVal.get(field).toString());
+                QueryParam qp = new QueryParam(field.getName(), fieldsToVal.get(field).toString());
                 queryParams.add(qp);
             }
 

@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.hortonworks.iotas.common.Schema.Field;
+import com.hortonworks.iotas.storage.catalog.AbstractStorable;
 
 /**
  * Catalog db entity for mapping output stream information

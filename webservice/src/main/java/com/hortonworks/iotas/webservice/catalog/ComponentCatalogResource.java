@@ -2,6 +2,7 @@ package com.hortonworks.iotas.webservice.catalog;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.catalog.Component;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.util.WSUtils;
 
@@ -47,7 +48,7 @@ public class ComponentCatalogResource {
     @GET
     @Timed
     public Response listComponents(@PathParam("clusterId") Long clusterId, @Context UriInfo uriInfo) {
-        List<CatalogService.QueryParam> queryParams = buildClusterIdAwareQueryParams(clusterId, uriInfo);
+        List<QueryParam> queryParams = buildClusterIdAwareQueryParams(clusterId, uriInfo);
 
         try {
             Collection<Component> components = catalogService.listComponents(queryParams);
@@ -136,13 +137,13 @@ public class ComponentCatalogResource {
         }
     }
 
-    private List<CatalogService.QueryParam> buildClusterIdAwareQueryParams(Long clusterId) {
+    private List<QueryParam> buildClusterIdAwareQueryParams(Long clusterId) {
         return buildClusterIdAwareQueryParams(clusterId, null);
     }
 
-    private List<CatalogService.QueryParam> buildClusterIdAwareQueryParams(Long clusterId, UriInfo uriInfo) {
-        List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>();
-        queryParams.add(new CatalogService.QueryParam("clusterId", clusterId.toString()));
+    private List<QueryParam> buildClusterIdAwareQueryParams(Long clusterId, UriInfo uriInfo) {
+        List<QueryParam> queryParams = new ArrayList<QueryParam>();
+        queryParams.add(new QueryParam("clusterId", clusterId.toString()));
         if (uriInfo != null) {
             MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
             if (!params.isEmpty()) {

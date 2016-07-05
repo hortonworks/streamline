@@ -1,7 +1,6 @@
 package com.hortonworks.iotas.storage.impl.jdbc.phoenix;
 
 import com.google.common.cache.CacheBuilder;
-import com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManager;
 import com.hortonworks.iotas.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
 import com.hortonworks.iotas.test.HBaseIntegrationTest;
@@ -19,7 +18,7 @@ public class PhoenixStorageManagerWithCacheIntegrationTest extends PhoenixStorag
     public static void setUpClass() throws Exception {
         setConnectionBuilder();
         CacheBuilder  cacheBuilder = CacheBuilder.newBuilder().maximumSize(3);
-        jdbcStorageManager = new JdbcStorageManager(new PhoenixExecutor(new ExecutionConfig(-1), connectionBuilder, cacheBuilder));
+        jdbcStorageManager = createJdbcStorageManager(new PhoenixExecutor(new ExecutionConfig(-1), connectionBuilder, cacheBuilder));
     }
 
 }

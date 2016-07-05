@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.ParserInfo;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.topology.component.Stream;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
@@ -67,8 +68,8 @@ public class ParserSchemaEvolver implements EvolvingSchema, CatalogServiceAware 
     }
 
     private Long getAssociatedParserIdForDataSource(Long dataSourceId) throws Exception {
-        List<CatalogService.QueryParam> queryParams = Lists.newArrayList(
-                new CatalogService.QueryParam("dataSourceId", String.valueOf(dataSourceId)));
+        List<QueryParam> queryParams = Lists.newArrayList(
+                new QueryParam("dataSourceId", String.valueOf(dataSourceId)));
         Collection<DataFeed> dataFeeds = catalogService.listDataFeeds(queryParams);
         if (dataFeeds == null || dataFeeds.isEmpty()) {
             throw new RuntimeException("DataFeed for this data source id " + dataSourceId + " not found.");

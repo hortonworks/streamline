@@ -3,6 +3,7 @@ package com.hortonworks.iotas.webservice.catalog;
 import com.hortonworks.iotas.catalog.CatalogResponse;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.ParserInfo;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.service.CatalogService;
 import mockit.Expectations;
@@ -33,7 +34,7 @@ public class DataSourceCatalogResourceTest {
         DataSourceCatalogResource resource = new DataSourceCatalogResource(mockCatalogService);
         new Expectations() {
             {
-                mockCatalogService.listDataFeeds(withAny(new ArrayList<CatalogService.QueryParam>()));
+                mockCatalogService.listDataFeeds(withAny(new ArrayList<QueryParam>()));
                 times = 1;
                 result = null;
 
@@ -49,7 +50,7 @@ public class DataSourceCatalogResourceTest {
         DataSourceCatalogResource resource = new DataSourceCatalogResource(mockCatalogService);
         new Expectations() {
             {
-                mockCatalogService.listDataFeeds(withAny(new ArrayList<CatalogService.QueryParam>()));
+                mockCatalogService.listDataFeeds(withAny(new ArrayList<QueryParam>()));
                 times = 1;
                 result = new ArrayList<DataFeed>();
 
@@ -72,7 +73,7 @@ public class DataSourceCatalogResourceTest {
         Schema parserSchema = Schema.of(new Schema.Field("foo", Schema.Type.STRING),
                                         new Schema.Field("bar", Schema.Type.INTEGER));
         parserInfo.setParserSchema(parserSchema);
-        final List<CatalogService.QueryParam> queryParams = Arrays.asList(new CatalogService.QueryParam("dataSourceId", "2"));
+        final List<QueryParam> queryParams = Arrays.asList(new QueryParam("dataSourceId", "2"));
         new Expectations() {
             {
                 mockCatalogService.listDataFeeds(queryParams);
@@ -104,7 +105,7 @@ public class DataSourceCatalogResourceTest {
         Schema parserSchema = Schema.of(new Schema.Field("foo", Schema.Type.STRING),
                                         new Schema.Field("bar", Schema.Type.INTEGER));
         parserInfo.setParserSchema(parserSchema);
-        final List<CatalogService.QueryParam> queryParams = Arrays.asList(new CatalogService.QueryParam("dataSourceId", "2"));
+        final List<QueryParam> queryParams = Arrays.asList(new QueryParam("dataSourceId", "2"));
         new Expectations() {
             {
                 mockCatalogService.listDataFeeds(queryParams);

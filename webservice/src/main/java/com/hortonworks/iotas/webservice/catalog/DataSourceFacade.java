@@ -4,6 +4,7 @@ import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.catalog.Tag;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
 import org.apache.commons.lang.StringUtils;
@@ -123,7 +124,7 @@ public class DataSourceFacade {
     }
 
     public DataFeed getDataFeedByDataSourceId(Long dataSourceId) throws Exception {
-        List<CatalogService.QueryParam> params = Collections.singletonList(new CatalogService.QueryParam(DataFeed.DATASOURCE_ID, dataSourceId.toString()));
+        List<QueryParam> params = Collections.singletonList(new QueryParam(DataFeed.DATASOURCE_ID, dataSourceId.toString()));
         Collection<DataFeed> dataFeeds = catalogService.listDataFeeds(params);
 
         if (dataFeeds.size() == 0) {
@@ -150,7 +151,7 @@ public class DataSourceFacade {
         return new DataSourceDto(removedDataSource, removedDataFeed);
     }
 
-    public Collection<DataSourceDto> listDataSourcesForType(DataSource.Type type, List<CatalogService.QueryParam> queryParams) throws Exception {
+    public Collection<DataSourceDto> listDataSourcesForType(DataSource.Type type, List<QueryParam> queryParams) throws Exception {
         Collection<DataSource> dataSources = catalogService.listDataSourcesForType(type, queryParams);
         if (dataSources.isEmpty()) {
             return null;

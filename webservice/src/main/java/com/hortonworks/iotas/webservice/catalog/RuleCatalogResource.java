@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.catalog.RuleInfo;
 import com.hortonworks.iotas.catalog.TopologyProcessor;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.topology.component.rule.Rule;
 import com.hortonworks.iotas.webservice.util.WSUtils;
@@ -80,7 +81,7 @@ public class RuleCatalogResource {
     @GET
     @Timed
     public Response listTopologyRules(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) {
-        List<CatalogService.QueryParam> queryParams = WSUtils.buildTopologyIdAwareQueryParams(topologyId, uriInfo);
+        List<QueryParam> queryParams = WSUtils.buildTopologyIdAwareQueryParams(topologyId, uriInfo);
         try {
             Collection<RuleInfo> ruleInfos = catalogService.listRules(queryParams);
             if (ruleInfos != null && !ruleInfos.isEmpty()) {

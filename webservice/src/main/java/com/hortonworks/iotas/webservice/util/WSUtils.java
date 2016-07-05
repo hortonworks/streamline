@@ -20,6 +20,7 @@ package com.hortonworks.iotas.webservice.util;
 
 import com.google.common.io.ByteStreams;
 import com.hortonworks.iotas.catalog.CatalogResponse;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.service.CatalogService;
 
 import javax.ws.rs.WebApplicationException;
@@ -60,22 +61,22 @@ public class WSUtils {
                 .build();
     }
 
-    public static List<CatalogService.QueryParam> buildQueryParameters(MultivaluedMap<String, String> params) {
+    public static List<QueryParam> buildQueryParameters(MultivaluedMap<String, String> params) {
         if (params == null || params.isEmpty()) {
-            return Collections.<CatalogService.QueryParam>emptyList();
+            return Collections.<QueryParam>emptyList();
         }
 
-        List<CatalogService.QueryParam> queryParams = new ArrayList<>();
+        List<QueryParam> queryParams = new ArrayList<>();
         for (String param : params.keySet()) {
-            queryParams.add(new CatalogService.QueryParam(param, params.getFirst(param)));
+            queryParams.add(new QueryParam(param, params.getFirst(param)));
         }
         return queryParams;
     }
 
 
-    public static List<CatalogService.QueryParam> buildTopologyIdAwareQueryParams(Long topologyId, UriInfo uriInfo) {
-        List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>();
-        queryParams.add(new CatalogService.QueryParam("topologyId", topologyId.toString()));
+    public static List<QueryParam> buildTopologyIdAwareQueryParams(Long topologyId, UriInfo uriInfo) {
+        List<QueryParam> queryParams = new ArrayList<QueryParam>();
+        queryParams.add(new QueryParam("topologyId", topologyId.toString()));
         if (uriInfo != null) {
             MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
             if (!params.isEmpty()) {

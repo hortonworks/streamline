@@ -20,6 +20,7 @@ package com.hortonworks.iotas.rule;
 
 import com.hortonworks.iotas.catalog.RuleInfo;
 import com.hortonworks.iotas.catalog.StreamInfo;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.topology.component.Stream;
@@ -51,7 +52,7 @@ public class RuleParserTest {
     @Test
     public void testParseSimple() throws Exception {
         new Expectations() {{
-            mockCatalogService.listStreamInfos(withAny(new ArrayList<CatalogService.QueryParam>()));
+            mockCatalogService.listStreamInfos(withAny(new ArrayList<QueryParam>()));
             result=mockStreamInfo;
             mockStreamInfo.getStreamId();
             result="teststream";

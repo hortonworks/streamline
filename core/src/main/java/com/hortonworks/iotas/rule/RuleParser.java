@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableList;
 import com.hortonworks.iotas.catalog.RuleInfo;
 import com.hortonworks.iotas.catalog.StreamInfo;
 import com.hortonworks.iotas.catalog.UDFInfo;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.topology.component.Stream;
 import com.hortonworks.iotas.topology.component.rule.condition.Condition;
@@ -196,8 +197,8 @@ public class RuleParser {
     }
 
     private Collection<StreamInfo> getStreamInfos() throws Exception {
-        return catalogService.listStreamInfos(ImmutableList.<CatalogService.QueryParam>builder()
-                .add(new CatalogService.QueryParam(RuleInfo.TOPOLOGY_ID, ruleInfo.getTopologyId().toString()))
+        return catalogService.listStreamInfos(ImmutableList.<QueryParam>builder()
+                .add(new QueryParam(RuleInfo.TOPOLOGY_ID, ruleInfo.getTopologyId().toString()))
                 .build());
     }
 

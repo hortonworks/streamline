@@ -21,7 +21,7 @@ package com.hortonworks.iotas.streams.notification.store.hbase.mappers;
 import com.google.common.collect.Lists;
 import com.hortonworks.iotas.streams.notification.common.Notification;
 import com.hortonworks.iotas.streams.notification.util.NotificationTestObjectFactory;
-import com.hortonworks.iotas.util.ReflectionHelper;
+import com.hortonworks.iotas.common.util.ReflectionHelper;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

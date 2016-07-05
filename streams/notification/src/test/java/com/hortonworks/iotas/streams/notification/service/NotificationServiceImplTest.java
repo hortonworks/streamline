@@ -18,6 +18,7 @@
 
 package com.hortonworks.iotas.streams.notification.service;
 
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.streams.notification.common.Notification;
 import com.hortonworks.iotas.streams.notification.common.NotificationContext;
 import com.hortonworks.iotas.streams.notification.common.Notifier;
@@ -232,9 +233,9 @@ public class NotificationServiceImplTest {
         };
         notificationService.register("test_notifier", mockCtx);
 
-        CatalogService.QueryParam qp1 = new CatalogService.QueryParam("one", "1");
-        CatalogService.QueryParam qp2 = new CatalogService.QueryParam("two", "2");
-        CatalogService.QueryParam qp3 = new CatalogService.QueryParam("numRows", "5");
+        QueryParam qp1 = new QueryParam("one", "1");
+        QueryParam qp2 = new QueryParam("two", "2");
+        QueryParam qp3 = new QueryParam("numRows", "5");
 
         notificationService.findNotifications(Arrays.asList(qp1, qp2, qp3));
 

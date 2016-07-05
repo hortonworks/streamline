@@ -3,6 +3,7 @@ package com.hortonworks.iotas.webservice.catalog;
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.Tag;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.exception.StorageException;
@@ -108,7 +109,7 @@ public class TagCatalogResource {
     @Path("/tags")
     @Timed
     public Response listTags(@Context UriInfo uriInfo) {
-        List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>();
+        List<QueryParam> queryParams = new ArrayList<QueryParam>();
         try {
             MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
             Collection<Tag> tags;

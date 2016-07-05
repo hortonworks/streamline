@@ -4,7 +4,6 @@ import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.catalog.Topology;
-import com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManager;
 import com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManagerIntegrationTest;
 import com.hortonworks.iotas.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.iotas.storage.impl.jdbc.connection.HikariCPConnectionBuilder;
@@ -13,7 +12,6 @@ import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.factory.PhoenixE
 import com.hortonworks.iotas.test.HBaseIntegrationTest;
 import com.hortonworks.iotas.topology.TopologyComponentDefinition;
 import com.zaxxer.hikari.HikariConfig;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -44,7 +42,7 @@ public class PhoenixStorageManagerNoCacheIntegrationTest extends JdbcStorageMana
     @BeforeClass
     public static void setUpClass() throws Exception {
         setConnectionBuilder();
-        jdbcStorageManager = new JdbcStorageManager(new PhoenixExecutor(new ExecutionConfig(-1), connectionBuilder));
+        jdbcStorageManager = createJdbcStorageManager(new PhoenixExecutor(new ExecutionConfig(-1), connectionBuilder));
     }
 
     protected static void setConnectionBuilder() throws ClassNotFoundException {

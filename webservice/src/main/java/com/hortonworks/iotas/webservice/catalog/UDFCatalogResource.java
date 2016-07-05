@@ -3,6 +3,7 @@ package com.hortonworks.iotas.webservice.catalog;
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.catalog.CatalogResponse;
 import com.hortonworks.iotas.catalog.UDFInfo;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.util.FileStorage;
 import com.hortonworks.iotas.webservice.util.WSUtils;
@@ -64,7 +65,7 @@ public class UDFCatalogResource {
     @Path("/udfs")
     @Timed
     public Response listUDFs(@Context UriInfo uriInfo) {
-        List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>();
+        List<QueryParam> queryParams = new ArrayList<QueryParam>();
         try {
             MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
             Collection<UDFInfo> udfs;

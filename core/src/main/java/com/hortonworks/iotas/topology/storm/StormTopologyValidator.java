@@ -4,7 +4,7 @@ import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.topology.ConfigFieldValidation;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
 import com.hortonworks.iotas.util.CoreUtils;
-import com.hortonworks.iotas.util.ReflectionHelper;
+import com.hortonworks.iotas.common.util.ReflectionHelper;
 import com.hortonworks.iotas.util.exception.BadTopologyLayoutException;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;

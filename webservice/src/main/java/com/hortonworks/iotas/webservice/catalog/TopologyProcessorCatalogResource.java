@@ -20,6 +20,7 @@ package com.hortonworks.iotas.webservice.catalog;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.catalog.TopologyProcessor;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.util.WSUtils;
 
@@ -87,7 +88,7 @@ public class TopologyProcessorCatalogResource {
     @GET
     @Timed
     public Response listTopologyProcessors(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) {
-        List<CatalogService.QueryParam> queryParams = WSUtils.buildTopologyIdAwareQueryParams(topologyId, uriInfo);
+        List<QueryParam> queryParams = WSUtils.buildTopologyIdAwareQueryParams(topologyId, uriInfo);
 
         try {
             Collection<TopologyProcessor> processors = catalogService.listTopologyProcessors(queryParams);

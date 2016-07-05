@@ -1,7 +1,7 @@
 package com.hortonworks.iotas.parsers.json;
 
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.exception.ParserException;
+import com.hortonworks.iotas.common.exception.ParserException;
 import com.hortonworks.iotas.parser.Parser;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;

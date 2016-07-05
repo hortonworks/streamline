@@ -19,13 +19,12 @@
 package com.hortonworks.iotas.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.rule.RuleParser;
 import com.hortonworks.iotas.storage.PrimaryKey;
 import com.hortonworks.iotas.storage.Storable;
+import com.hortonworks.iotas.storage.catalog.AbstractStorable;
 import com.hortonworks.iotas.topology.component.rule.Rule;
 import com.hortonworks.iotas.topology.component.rule.action.Action;
 import com.hortonworks.iotas.topology.component.rule.condition.Window;

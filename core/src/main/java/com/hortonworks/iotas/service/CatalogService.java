@@ -21,6 +21,7 @@ package com.hortonworks.iotas.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -31,10 +32,10 @@ import com.hortonworks.iotas.catalog.Component;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSet;
 import com.hortonworks.iotas.catalog.DataSource;
-import com.hortonworks.iotas.catalog.FileInfo;
-import com.hortonworks.iotas.catalog.ParserInfo;
-import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.catalog.Device;
+import com.hortonworks.iotas.catalog.FileInfo;
+import com.hortonworks.iotas.catalog.NotifierInfo;
+import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.catalog.RuleInfo;
 import com.hortonworks.iotas.catalog.StreamInfo;
 import com.hortonworks.iotas.catalog.Tag;
@@ -42,7 +43,6 @@ import com.hortonworks.iotas.catalog.Topology;
 import com.hortonworks.iotas.catalog.TopologyComponent;
 import com.hortonworks.iotas.catalog.TopologyEdge;
 import com.hortonworks.iotas.catalog.TopologyEditorMetadata;
-import com.google.common.base.Function;
 import com.hortonworks.iotas.catalog.TopologyOutputComponent;
 import com.hortonworks.iotas.catalog.TopologyProcessor;
 import com.hortonworks.iotas.catalog.TopologyProcessorStreamMapping;
@@ -50,7 +50,7 @@ import com.hortonworks.iotas.catalog.TopologySink;
 import com.hortonworks.iotas.catalog.TopologySource;
 import com.hortonworks.iotas.catalog.TopologySourceStreamMapping;
 import com.hortonworks.iotas.catalog.UDFInfo;
-import com.hortonworks.iotas.common.Config;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.processor.CustomProcessorInfo;
 import com.hortonworks.iotas.rule.RuleParser;
@@ -81,7 +81,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -92,12 +91,13 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import static com.hortonworks.iotas.catalog.TopologyEdge.StreamGrouping;
 
 /**
@@ -138,58 +138,30 @@ public class CatalogService {
     private TagService tagService;
     private TopologyDagBuilder topologyDagBuilder;
 
-    public static class QueryParam {
-
-        public final String name;
-        public final String value;
-        public QueryParam(String name, String value) {
-            this.name = name;
-            this.value = value;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        @Override
-        public String toString() {
-            return "{" +
-                    "name='" + name + '\'' +
-                    ", value='" + value + '\'' +
-                    '}';
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            QueryParam that = (QueryParam) o;
-
-            if (name != null ? !name.equals(that.name) : that.name != null) return false;
-            return !(value != null ? !value.equals(that.value) : that.value != null);
-
-        }
-
-        @Override
-        public int hashCode() {
-            int result = name != null ? name.hashCode() : 0;
-            result = 31 * result + (value != null ? value.hashCode() : 0);
-            return result;
-        }
-    }
 
     public CatalogService(StorageManager dao, TopologyActions topologyActions, TopologyMetrics topologyMetrics, FileStorage fileStorage) {
         this.dao = dao;
+        dao.registerStorables(getStorableClasses());
         this.topologyActions = topologyActions;
         this.topologyMetrics = topologyMetrics;
         this.fileStorage = fileStorage;
         this.tagService = new CatalogTagService(dao);
         this.topologyDagBuilder = new TopologyDagBuilder(this);
+    }
+
+    public static Collection<Class<? extends Storable>> getStorableClasses() {
+        InputStream resourceAsStream = CatalogService.class.getClassLoader().getResourceAsStream("storables.props");
+        HashSet<Class<? extends Storable>> classes = new HashSet<>();
+        try {
+            List<String> classNames = IOUtils.readLines(resourceAsStream);
+            for (String className : classNames) {
+                classes.add((Class<? extends Storable>) Class.forName(className));
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        return classes;
     }
 
     private String getNamespaceForDataSourceType(DataSource.Type dataSourceType) {
@@ -1291,10 +1263,10 @@ public class CatalogService {
 
     // check if edge already exists for given topology between same source and dest
     private void checkDuplicateEdge(TopologyEdge edge) {
-        List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>();
-        queryParams.add(new CatalogService.QueryParam("topologyId", edge.getTopologyId().toString()));
-        queryParams.add(new CatalogService.QueryParam("fromId", edge.getFromId().toString()));
-        queryParams.add(new CatalogService.QueryParam("toId", edge.getToId().toString()));
+        List<QueryParam> queryParams = new ArrayList<QueryParam>();
+        queryParams.add(new QueryParam("topologyId", edge.getTopologyId().toString()));
+        queryParams.add(new QueryParam("fromId", edge.getFromId().toString()));
+        queryParams.add(new QueryParam("toId", edge.getToId().toString()));
 
         try {
             Collection<TopologyEdge> existingEdges = listTopologyEdges(queryParams);

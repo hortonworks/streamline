@@ -19,6 +19,7 @@
 package com.hortonworks.iotas.streams.notification.service;
 
 import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.streams.notification.common.Notification;
 import com.hortonworks.iotas.streams.notification.common.NotificationContext;
 import com.hortonworks.iotas.streams.notification.common.Notifier;
@@ -79,7 +80,7 @@ public interface NotificationService {
      * Returns a list of notifications matching the query params. This would typically use
      * secondary indexes (e.g. HBase index tables) of the underlying implementation.
      */
-    List<Notification> findNotifications(List<CatalogService.QueryParam> queryParams);
+    List<Notification> findNotifications(List<QueryParam> queryParams);
 
     /**
      * <p>

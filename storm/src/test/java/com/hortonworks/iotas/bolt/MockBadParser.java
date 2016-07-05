@@ -3,7 +3,7 @@ package com.hortonworks.iotas.bolt;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.exception.DataValidationException;
 import com.hortonworks.iotas.parser.BaseParser;
-import com.hortonworks.iotas.exception.ParserException;
+import com.hortonworks.iotas.common.exception.ParserException;
 
 import java.util.List;
 import java.util.Map;

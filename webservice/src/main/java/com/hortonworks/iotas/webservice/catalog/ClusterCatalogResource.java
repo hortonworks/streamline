@@ -2,6 +2,7 @@ package com.hortonworks.iotas.webservice.catalog;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.catalog.Cluster;
+import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.util.FileStorage;
 import com.hortonworks.iotas.webservice.util.WSUtils;
@@ -63,7 +64,7 @@ public class ClusterCatalogResource {
     @Path("/clusters")
     @Timed
     public Response listClusters(@Context UriInfo uriInfo) {
-        List<CatalogService.QueryParam> queryParams = new ArrayList<CatalogService.QueryParam>();
+        List<QueryParam> queryParams = new ArrayList<QueryParam>();
         try {
             MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
             Collection<Cluster> clusters;
