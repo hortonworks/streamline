@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.streams.layout.component.Stream;
-import com.hortonworks.iotas.topology.TopologyLayoutConstants;
+import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
 import org.junit.Test;
 
 import java.io.IOException;

@@ -20,7 +20,7 @@ package com.hortonworks.iotas.layout.runtime.rule;
 
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.Result;
-import com.hortonworks.iotas.common.errors.ProcessingException;
+import com.hortonworks.iotas.common.exception.ProcessingException;
 import com.hortonworks.iotas.layout.runtime.rule.action.ActionRuntime;
 import com.hortonworks.iotas.streams.layout.component.rule.Rule;
 import com.hortonworks.iotas.streams.layout.component.rule.exception.ConditionEvaluationException;

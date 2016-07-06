@@ -1,7 +1,7 @@
 package com.hortonworks.iotas.metrics.storm.opentsdb;
 
 import com.google.common.base.Joiner;
-import com.hortonworks.iotas.common.errors.ConfigException;
+import com.hortonworks.iotas.common.exception.ConfigException;
 import com.hortonworks.iotas.metrics.AbstractTimeSeriesQuerier;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.uri.internal.JerseyUriBuilder;

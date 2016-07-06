@@ -1,7 +1,8 @@
 package com.hortonworks.iotas.topology;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.iotas.util.exception.BadTopologyLayoutException;
+import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
+import com.hortonworks.iotas.streams.layout.exception.BadTopologyLayoutException;
 
 import java.util.HashSet;
 import java.util.List;

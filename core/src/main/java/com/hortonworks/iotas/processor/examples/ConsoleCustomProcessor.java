@@ -2,8 +2,8 @@ package com.hortonworks.iotas.processor.examples;
 
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.Result;
-import com.hortonworks.iotas.common.errors.ConfigException;
-import com.hortonworks.iotas.common.errors.ProcessingException;
+import com.hortonworks.iotas.common.exception.ConfigException;
+import com.hortonworks.iotas.common.exception.ProcessingException;
 import com.hortonworks.iotas.processor.CustomProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

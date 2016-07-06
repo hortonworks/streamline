@@ -3,11 +3,10 @@ package com.hortonworks.iotas.processor;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.common.util.Utils;
 import com.hortonworks.iotas.topology.ConfigField;
 import com.hortonworks.iotas.topology.TopologyComponentDefinition;
-import com.hortonworks.iotas.topology.TopologyLayoutConstants;
-import com.hortonworks.iotas.topology.storm.CustomProcessorBoltFluxComponent;
-import com.hortonworks.iotas.util.CoreUtils;
+import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -170,12 +169,12 @@ public class CustomProcessorInfo {
             this.setJarFileName((String) config.get(JAR_FILE_NAME));
             this.setImageFileName((String) config.get(IMAGE_FILE_NAME));
             this.setCustomProcessorImpl((String) config.get(CUSTOM_PROCESSOR_IMPL));
-            Schema inputSchema = CoreUtils.getSchemaFromConfig((Map) config.get(INPUT_SCHEMA));
+            Schema inputSchema = Utils.getSchemaFromConfig((Map) config.get(INPUT_SCHEMA));
             this.setInputSchema(inputSchema);
             Map<String, Schema> outputStreamToSchema = new HashMap<>();
             Map<String, Map> outputStreamToMap = (Map<String, Map>) config.get(OUTPUT_STREAM_TO_SCHEMA);
             for (Map.Entry<String, Map> entry: outputStreamToMap.entrySet()) {
-                outputStreamToSchema.put(entry.getKey(), CoreUtils.getSchemaFromConfig(entry.getValue()));
+                outputStreamToSchema.put(entry.getKey(), Utils.getSchemaFromConfig(entry.getValue()));
             }
             this.setOutputStreamToSchema(outputStreamToSchema);
             this.setConfigFields(this.getCustomProcessorConfigFields(configFields));
@@ -190,7 +189,6 @@ public class CustomProcessorInfo {
         result.setSubType(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_SUB_TYPE);
         result.setStreamingEngine(this.streamingEngine);
         if (TopologyLayoutConstants.STORM_STREAMING_ENGINE.equals(this.streamingEngine)) {
-            result.setTransformationClass(CustomProcessorBoltFluxComponent.class.getCanonicalName());
             result.setName("customProcessorBoltComponent");
         }
         List<ConfigField> configFields = new ArrayList<>();

@@ -1,6 +1,6 @@
 brokerList: localhost:9092
 zookeeperHost: localhost:2181
-topologyActionsImpl: com.hortonworks.iotas.topology.storm.StormTopologyActionsImpl
+topologyActionsImpl: com.hortonworks.iotas.streams.layout.storm.StormTopologyActionsImpl
 topologyMetricsImpl: com.hortonworks.iotas.topology.storm.StormTopologyMetricsImpl
 iotasStormJar: /tmp/storm-0.1.0-SNAPSHOT.jar
 catalogRootUrl: "http://localhost:8080/api/v1/catalog"

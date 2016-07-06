@@ -1,7 +1,7 @@
 package com.hortonworks.iotas.metrics.storm.ambari;
 
 import com.google.common.collect.Lists;
-import com.hortonworks.iotas.common.errors.ConfigException;
+import com.hortonworks.iotas.common.exception.ConfigException;
 import com.hortonworks.iotas.metrics.AbstractTimeSeriesQuerier;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.uri.internal.JerseyUriBuilder;

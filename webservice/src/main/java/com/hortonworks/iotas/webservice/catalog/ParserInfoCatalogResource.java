@@ -29,7 +29,7 @@ import com.hortonworks.iotas.parser.Parser;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.util.FileUtil;
 import com.hortonworks.iotas.util.JarReader;
-import com.hortonworks.iotas.util.ProxyUtil;
+import com.hortonworks.iotas.common.util.ProxyUtil;
 import com.hortonworks.iotas.webservice.util.WSUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;

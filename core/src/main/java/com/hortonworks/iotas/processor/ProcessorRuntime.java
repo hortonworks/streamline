@@ -2,7 +2,7 @@ package com.hortonworks.iotas.processor;
 
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.Result;
-import com.hortonworks.iotas.common.errors.ProcessingException;
+import com.hortonworks.iotas.common.exception.ProcessingException;
 
 import java.util.List;
 import java.util.Map;

@@ -3,7 +3,7 @@ package com.hortonworks.iotas.topology.storm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.catalog.Topology;
 import com.hortonworks.iotas.metrics.TimeSeriesQuerier;
-import com.hortonworks.iotas.topology.TopologyLayoutConstants;
+import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
 import mockit.Expectations;
 import mockit.Mocked;
 import org.junit.Before;

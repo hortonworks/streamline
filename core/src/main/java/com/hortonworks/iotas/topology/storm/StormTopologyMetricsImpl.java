@@ -1,9 +1,9 @@
 package com.hortonworks.iotas.topology.storm;
 
 import com.hortonworks.iotas.catalog.Topology;
-import com.hortonworks.iotas.common.errors.ConfigException;
+import com.hortonworks.iotas.common.exception.ConfigException;
 import com.hortonworks.iotas.metrics.TimeSeriesQuerier;
-import com.hortonworks.iotas.topology.TopologyLayoutConstants;
+import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.iotas.topology.TopologyMetrics;
 import com.hortonworks.iotas.topology.TopologyTimeSeriesMetrics;
 import org.glassfish.jersey.client.ClientConfig;

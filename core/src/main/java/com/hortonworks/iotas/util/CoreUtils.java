@@ -45,16 +45,4 @@ public final class CoreUtils {
         return storable != null ? new ObjectMapper().writeValueAsString(storable) : null;
     }
 
-    /**
-     * This method takes in a schema represented as a map and returns a {@link Schema}
-     * @param schemaConfig A map representing {@link Schema}
-     * @return schema generated from the map argument
-     * @throws IOException
-     */
-    public static Schema getSchemaFromConfig (Map schemaConfig) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        String inputSchemaStr = objectMapper.writeValueAsString(schemaConfig);
-        Schema schema = objectMapper.readValue(inputSchemaStr, Schema.class);
-        return schema;
-    }
 }

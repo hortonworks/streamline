@@ -60,9 +60,10 @@ import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.exception.StorageException;
 import com.hortonworks.iotas.topology.ConfigField;
-import com.hortonworks.iotas.topology.TopologyActions;
+import com.hortonworks.iotas.streams.layout.component.TopologyActions;
 import com.hortonworks.iotas.topology.TopologyComponentDefinition;
-import com.hortonworks.iotas.topology.TopologyLayoutConstants;
+import com.hortonworks.iotas.streams.layout.component.TopologyLayout;
+import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.iotas.topology.TopologyLayoutValidator;
 import com.hortonworks.iotas.topology.TopologyMetrics;
 import com.hortonworks.iotas.streams.layout.component.InputComponent;
@@ -74,7 +75,7 @@ import com.hortonworks.iotas.streams.layout.component.rule.Rule;
 import com.hortonworks.iotas.util.CoreUtils;
 import com.hortonworks.iotas.util.FileStorage;
 import com.hortonworks.iotas.util.JsonSchemaValidator;
-import com.hortonworks.iotas.util.exception.BadTopologyLayoutException;
+import com.hortonworks.iotas.streams.layout.exception.BadTopologyLayoutException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -558,7 +559,7 @@ public class CatalogService {
             validator.validate();
 
             // finally pass it on for streaming engine based config validations
-            this.topologyActions.validate(result);
+            this.topologyActions.validate(getTopologyLayout(result));
         }
         return result;
     }
@@ -569,7 +570,7 @@ public class CatalogService {
         LOG.debug("Deploying topology {}", topology);
         addUpdateNotifierInfoFromTopology(topology);
         setUpClusterArtifacts(topology);
-        topologyActions.deploy(topology);
+        topologyActions.deploy(getTopologyLayout(topology));
     }
 
     private void setUpClusterArtifacts(Topology topology) throws IOException {
@@ -582,7 +583,7 @@ public class CatalogService {
                 List<Cluster> clusters = objectMapper.readValue(objectMapper.writeValueAsString(clusterList),
                                                                 new TypeReference<List<Cluster>>() {
                                                                 });
-                Path artifactsDir = topologyActions.getArtifactsLocation(topology);
+                Path artifactsDir = topologyActions.getArtifactsLocation(getTopologyLayout(topology));
                 if (artifactsDir.toFile().exists()) {
                     if (artifactsDir.toFile().isDirectory()) {
                         FileUtils.cleanDirectory(artifactsDir.toFile());
@@ -612,19 +613,19 @@ public class CatalogService {
     }
 
     public void killTopology(Topology topology) throws Exception {
-        topologyActions.kill(topology);
+        topologyActions.kill(getTopologyLayout(topology));
     }
 
     public void suspendTopology(Topology topology) throws Exception {
-        topologyActions.suspend(topology);
+        topologyActions.suspend(getTopologyLayout(topology));
     }
 
     public void resumeTopology(Topology topology) throws Exception {
-        topologyActions.resume(topology);
+        topologyActions.resume(getTopologyLayout(topology));
     }
 
     public TopologyActions.Status topologyStatus(Topology topology) throws Exception {
-        return this.topologyActions.status(topology);
+        return this.topologyActions.status(getTopologyLayout(topology));
     }
 
     public Map<String, TopologyMetrics.ComponentMetric> getTopologyMetrics (Topology topology) throws Exception {
@@ -1442,4 +1443,8 @@ public class CatalogService {
         return udfInfo;
     }
 
+    private TopologyLayout getTopologyLayout(Topology topology) {
+        return new TopologyLayout(topology.getId(), topology.getName(),
+                topology.getConfig(), topology.getTopologyDag());
+    }
 }
