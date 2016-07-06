@@ -9,7 +9,7 @@ import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.service.CatalogService;
-import com.hortonworks.iotas.topology.TopologyLayoutConstants;
+import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.integration.junit4.JMockit;

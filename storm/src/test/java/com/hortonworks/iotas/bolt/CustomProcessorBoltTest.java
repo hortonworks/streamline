@@ -6,10 +6,10 @@ import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Result;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.processor.CustomProcessor;
-import com.hortonworks.iotas.common.errors.ProcessingException;
+import com.hortonworks.iotas.common.exception.ProcessingException;
 import com.hortonworks.iotas.processor.examples.ConsoleCustomProcessor;
-import com.hortonworks.iotas.topology.TopologyLayoutConstants;
-import com.hortonworks.iotas.util.ProxyUtil;
+import com.hortonworks.iotas.common.util.ProxyUtil;
+import com.hortonworks.iotas.streams.layout.storm.StormTopologyLayoutConstants;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Mocked;
@@ -126,7 +126,7 @@ public class CustomProcessorBoltTest {
         final Map<String, Object> config = new HashMap<>();
         customProcessorBolt.config(config);
         Map conf = new HashMap<>();
-        conf.put(TopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL, "http://localhost:8080/api/v1/catalog");
+        conf.put(StormTopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL, "http://localhost:8080/api/v1/catalog");
         customProcessorBolt.prepare(conf, null, null);
         new VerificationsInOrder(){{
             customProcessor.initialize(config);
@@ -184,7 +184,7 @@ public class CustomProcessorBoltTest {
             }};
         }
         Map conf = new HashMap<>();
-        conf.put(TopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL, "http://localhost:8080/api/v1/catalog");
+        conf.put(StormTopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL, "http://localhost:8080/api/v1/catalog");
         customProcessorBolt.prepare(conf, null, mockOutputCollector);
         customProcessorBolt.execute(tuple);
         if (!isSuccess) {

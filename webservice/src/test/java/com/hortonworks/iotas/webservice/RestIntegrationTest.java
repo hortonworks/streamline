@@ -40,7 +40,7 @@ import com.hortonworks.iotas.processor.examples.ConsoleCustomProcessor;
 import com.hortonworks.iotas.common.test.IntegrationTest;
 import com.hortonworks.iotas.topology.ConfigField;
 import com.hortonworks.iotas.topology.TopologyComponentDefinition;
-import com.hortonworks.iotas.topology.TopologyLayoutConstants;
+import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.iotas.webservice.catalog.TopologyCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
 import com.hortonworks.iotas.webservice.catalog.dto.TagDto;
@@ -849,7 +849,7 @@ public class RestIntegrationTest {
         topologyComponentDefinition.setConfig("{}");
         topologyComponentDefinition.setSubType(subType);
         topologyComponentDefinition.setTimestamp(System.currentTimeMillis());
-        topologyComponentDefinition.setTransformationClass("com.hortonworks.iotas.topology.storm.KafkaSpoutFluxComponent");
+        topologyComponentDefinition.setTransformationClass("com.hortonworks.iotas.streams.layout.storm.KafkaSpoutFluxComponent");
         return topologyComponentDefinition;
 
     }

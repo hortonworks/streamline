@@ -1,7 +1,7 @@
 package com.hortonworks.iotas.topology;
 
 import com.hortonworks.iotas.catalog.Topology;
-import com.hortonworks.iotas.common.errors.ConfigException;
+import com.hortonworks.iotas.common.exception.ConfigException;
 
 import java.util.Map;
 

@@ -26,8 +26,7 @@ import com.hortonworks.iotas.streams.notification.common.Notifier;
 import com.hortonworks.iotas.streams.notification.store.NotificationStore;
 import com.hortonworks.iotas.streams.notification.store.hbase.HBaseNotificationStore;
 import com.hortonworks.iotas.streams.notification.store.CriteriaImpl;
-import com.hortonworks.iotas.service.CatalogService;
-import com.hortonworks.iotas.util.ProxyUtil;
+import com.hortonworks.iotas.common.util.ProxyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

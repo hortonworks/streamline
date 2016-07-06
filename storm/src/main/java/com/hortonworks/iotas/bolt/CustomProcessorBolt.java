@@ -6,11 +6,11 @@ import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Result;
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.common.util.Utils;
 import com.hortonworks.iotas.processor.CustomProcessor;
-import com.hortonworks.iotas.common.errors.ProcessingException;
-import com.hortonworks.iotas.topology.TopologyLayoutConstants;
-import com.hortonworks.iotas.util.CoreUtils;
-import com.hortonworks.iotas.util.ProxyUtil;
+import com.hortonworks.iotas.common.exception.ProcessingException;
+import com.hortonworks.iotas.common.util.ProxyUtil;
+import com.hortonworks.iotas.streams.layout.storm.StormTopologyLayoutConstants;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.storm.task.OutputCollector;
@@ -83,7 +83,7 @@ public class CustomProcessorBolt extends BaseRichBolt {
         try {
             Map<String, Map> output = mapper.readValue(outputSchemaJson, Map.class);
             for (Map.Entry<String, Map> entry: output.entrySet()) {
-                outputSchema.put(entry.getKey(), CoreUtils.getSchemaFromConfig(entry.getValue()));
+                outputSchema.put(entry.getKey(), Utils.getSchemaFromConfig(entry.getValue()));
             }
         } catch (IOException e) {
             LOG.error("Error during deserialization of output schema JSON string: {}", outputSchemaJson, e);
@@ -175,7 +175,7 @@ public class CustomProcessorBolt extends BaseRichBolt {
             LOG.error(message);
             throw new IllegalArgumentException(message);
         }
-        String catalogRootURL = stormConf.get(TopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL).toString();
+        String catalogRootURL = stormConf.get(StormTopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL).toString();
         this.client = new CatalogRestClient(catalogRootURL);
         this.customProcessorProxyUtil = new ProxyUtil<>(CustomProcessor.class);
         customProcessor = getCustomProcessor();

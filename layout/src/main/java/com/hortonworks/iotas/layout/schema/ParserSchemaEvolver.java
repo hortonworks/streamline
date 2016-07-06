@@ -8,7 +8,7 @@ import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.service.CatalogService;
-import com.hortonworks.iotas.topology.TopologyLayoutConstants;
+import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
 
 import java.util.Collection;
 import java.util.List;

@@ -23,7 +23,7 @@ import com.hortonworks.iotas.layout.runtime.rule.action.AbstractActionRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.action.ActionRuntimeContext;
 import com.hortonworks.iotas.streams.layout.component.rule.action.Action;
 import com.hortonworks.iotas.util.CoreUtils;
-import com.hortonworks.iotas.util.ProxyUtil;
+import com.hortonworks.iotas.common.util.ProxyUtil;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

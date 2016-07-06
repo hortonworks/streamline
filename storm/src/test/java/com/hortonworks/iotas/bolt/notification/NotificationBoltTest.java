@@ -18,7 +18,7 @@
 
 package com.hortonworks.iotas.bolt.notification;
 
-import com.hortonworks.iotas.util.ProxyUtil;
+import com.hortonworks.iotas.common.util.ProxyUtil;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.tuple.Tuple;
 import com.hortonworks.iotas.client.CatalogRestClient;
@@ -39,7 +39,6 @@ import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

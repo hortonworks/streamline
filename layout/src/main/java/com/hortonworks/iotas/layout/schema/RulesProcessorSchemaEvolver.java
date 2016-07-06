@@ -6,7 +6,7 @@ import com.google.common.collect.Sets;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.common.exception.ParserException;
 import com.hortonworks.iotas.streams.layout.component.RulesProcessorJsonBuilder;
-import com.hortonworks.iotas.topology.TopologyLayoutConstants;
+import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.iotas.streams.layout.component.rule.Rule;

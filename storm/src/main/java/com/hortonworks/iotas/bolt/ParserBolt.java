@@ -27,7 +27,7 @@ import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.model.IotasMessage;
 import com.hortonworks.iotas.parser.Parser;
 import com.hortonworks.iotas.util.CoreUtils;
-import com.hortonworks.iotas.util.ProxyUtil;
+import com.hortonworks.iotas.common.util.ProxyUtil;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.storm.task.OutputCollector;

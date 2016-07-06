@@ -24,7 +24,7 @@ import com.hortonworks.iotas.catalog.Topology;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.processor.CustomProcessorInfo;
 import com.hortonworks.iotas.service.CatalogService;
-import com.hortonworks.iotas.topology.TopologyActions;
+import com.hortonworks.iotas.streams.layout.component.TopologyActions;
 import com.hortonworks.iotas.topology.TopologyComponentDefinition;
 import com.hortonworks.iotas.webservice.util.WSUtils;
 import org.apache.commons.lang3.StringUtils;

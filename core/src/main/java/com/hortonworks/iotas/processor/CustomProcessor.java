@@ -1,6 +1,6 @@
 package com.hortonworks.iotas.processor;
 
-import com.hortonworks.iotas.common.errors.ConfigException;
+import com.hortonworks.iotas.common.exception.ConfigException;
 
 import java.util.Map;
 

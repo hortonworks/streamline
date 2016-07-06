@@ -26,7 +26,7 @@ import com.hortonworks.iotas.storage.cache.writer.StorageWriteThrough;
 import com.hortonworks.iotas.storage.cache.writer.StorageWriter;
 import com.hortonworks.iotas.common.CustomProcessorUploadHandler;
 import com.hortonworks.iotas.common.FileEventHandler;
-import com.hortonworks.iotas.common.errors.ConfigException;
+import com.hortonworks.iotas.common.exception.ConfigException;
 import com.hortonworks.iotas.metrics.TimeSeriesQuerier;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.service.FileWatcher;
@@ -36,9 +36,10 @@ import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManager;
 import com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager;
+import com.hortonworks.iotas.streams.layout.storm.StormTopologyLayoutConstants;
 import com.hortonworks.iotas.streams.notification.service.NotificationServiceImpl;
-import com.hortonworks.iotas.topology.TopologyActions;
-import com.hortonworks.iotas.topology.TopologyLayoutConstants;
+import com.hortonworks.iotas.streams.layout.component.TopologyActions;
+import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.iotas.topology.TopologyMetrics;
 import com.hortonworks.iotas.util.FileStorage;
 import com.hortonworks.iotas.common.util.ReflectionHelper;
@@ -157,9 +158,9 @@ public class IotasApplication extends Application<IotasConfiguration> {
         }
         //pass any config info that might be needed in the constructor as a map
         Map<String, String> conf = new HashMap<>();
-        conf.put(TopologyLayoutConstants.STORM_JAR_LOCATION_KEY, jar);
-        conf.put(TopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL, configuration.getCatalogRootUrl());
-        conf.put(TopologyLayoutConstants.STORM_HOME_DIR, configuration.getStormHomeDir());
+        conf.put(StormTopologyLayoutConstants.STORM_JAR_LOCATION_KEY, jar);
+        conf.put(StormTopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL, configuration.getCatalogRootUrl());
+        conf.put(StormTopologyLayoutConstants.STORM_HOME_DIR, configuration.getStormHomeDir());
         conf.put(TopologyLayoutConstants.JAVA_JAR_COMMAND, configuration.getJavaJarCommand());
         topologyActions.init(conf);
         return topologyActions;

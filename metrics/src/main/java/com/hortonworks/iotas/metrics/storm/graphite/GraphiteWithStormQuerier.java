@@ -1,7 +1,7 @@
 package com.hortonworks.iotas.metrics.storm.graphite;
 
 import com.google.common.collect.Lists;
-import com.hortonworks.iotas.common.errors.ConfigException;
+import com.hortonworks.iotas.common.exception.ConfigException;
 import com.hortonworks.iotas.metrics.AbstractTimeSeriesQuerier;
 import org.apache.commons.lang.BooleanUtils;
 import org.glassfish.jersey.client.ClientConfig;
