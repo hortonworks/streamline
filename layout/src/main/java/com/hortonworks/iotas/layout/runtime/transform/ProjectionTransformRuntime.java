@@ -20,8 +20,8 @@ package com.hortonworks.iotas.layout.runtime.transform;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.layout.runtime.RuntimeService;
-import com.hortonworks.iotas.topology.component.rule.action.transform.ProjectionTransform;
-import com.hortonworks.iotas.topology.component.rule.action.transform.Transform;
+import com.hortonworks.iotas.streams.layout.component.rule.action.transform.ProjectionTransform;
+import com.hortonworks.iotas.streams.layout.component.rule.action.transform.Transform;
 
 import java.util.Collections;
 import java.util.HashMap;

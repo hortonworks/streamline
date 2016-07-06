@@ -21,14 +21,14 @@ package com.hortonworks.iotas.layout.runtime.rule.condition.expression;
 import com.google.common.base.Joiner;
 import com.hortonworks.iotas.common.Schema;
 
-import com.hortonworks.iotas.topology.component.rule.condition.GroupBy;
-import com.hortonworks.iotas.topology.component.rule.condition.Having;
-import com.hortonworks.iotas.topology.component.rule.condition.Condition;
-import com.hortonworks.iotas.topology.component.rule.condition.Expression;
-import com.hortonworks.iotas.topology.component.rule.condition.ExpressionTranslator;
-import com.hortonworks.iotas.topology.component.rule.condition.FunctionExpression;
-import com.hortonworks.iotas.topology.component.rule.condition.Operator;
-import com.hortonworks.iotas.topology.component.rule.condition.Projection;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.GroupBy;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Having;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Condition;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Expression;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.ExpressionTranslator;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.FunctionExpression;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Operator;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Projection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

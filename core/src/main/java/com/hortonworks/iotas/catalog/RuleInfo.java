@@ -25,9 +25,9 @@ import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.storage.PrimaryKey;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.catalog.AbstractStorable;
-import com.hortonworks.iotas.topology.component.rule.Rule;
-import com.hortonworks.iotas.topology.component.rule.action.Action;
-import com.hortonworks.iotas.topology.component.rule.condition.Window;
+import com.hortonworks.iotas.streams.layout.component.rule.Rule;
+import com.hortonworks.iotas.streams.layout.component.rule.action.Action;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Window;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;

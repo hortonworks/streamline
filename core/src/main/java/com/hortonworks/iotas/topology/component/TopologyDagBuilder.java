@@ -7,6 +7,7 @@ import com.hortonworks.iotas.catalog.TopologySink;
 import com.hortonworks.iotas.catalog.TopologySource;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.streams.layout.component.TopologyDag;
 
 import java.util.ArrayList;
 import java.util.List;

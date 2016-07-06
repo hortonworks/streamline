@@ -2,25 +2,24 @@ package com.hortonworks.iotas.topology.storm;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import com.hortonworks.iotas.common.Config;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
-import com.hortonworks.iotas.topology.component.Component;
-import com.hortonworks.iotas.topology.component.Edge;
-import com.hortonworks.iotas.topology.component.InputComponent;
-import com.hortonworks.iotas.topology.component.OutputComponent;
-import com.hortonworks.iotas.topology.component.StreamGrouping;
-import com.hortonworks.iotas.topology.component.TopologyDag;
-import com.hortonworks.iotas.topology.component.TopologyDagVisitor;
-import com.hortonworks.iotas.topology.component.impl.CustomProcessor;
-import com.hortonworks.iotas.topology.component.impl.HbaseSink;
-import com.hortonworks.iotas.topology.component.impl.HdfsSink;
-import com.hortonworks.iotas.topology.component.impl.KafkaSource;
-import com.hortonworks.iotas.topology.component.impl.NotificationSink;
-import com.hortonworks.iotas.topology.component.impl.ParserProcessor;
-import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
-import com.hortonworks.iotas.topology.component.impl.normalization.NormalizationProcessor;
-import com.hortonworks.iotas.topology.component.rule.Rule;
-import com.hortonworks.iotas.topology.component.rule.condition.Window;
+import com.hortonworks.iotas.streams.layout.component.Component;
+import com.hortonworks.iotas.streams.layout.component.Edge;
+import com.hortonworks.iotas.streams.layout.component.InputComponent;
+import com.hortonworks.iotas.streams.layout.component.OutputComponent;
+import com.hortonworks.iotas.streams.layout.component.StreamGrouping;
+import com.hortonworks.iotas.streams.layout.component.TopologyDag;
+import com.hortonworks.iotas.streams.layout.component.TopologyDagVisitor;
+import com.hortonworks.iotas.streams.layout.component.impl.CustomProcessor;
+import com.hortonworks.iotas.streams.layout.component.impl.HbaseSink;
+import com.hortonworks.iotas.streams.layout.component.impl.HdfsSink;
+import com.hortonworks.iotas.streams.layout.component.impl.KafkaSource;
+import com.hortonworks.iotas.streams.layout.component.impl.NotificationSink;
+import com.hortonworks.iotas.streams.layout.component.impl.ParserProcessor;
+import com.hortonworks.iotas.streams.layout.component.impl.RulesProcessor;
+import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationProcessor;
+import com.hortonworks.iotas.streams.layout.component.rule.Rule;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Window;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,9 +30,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.hortonworks.iotas.topology.component.impl.normalization.NormalizationProcessor.CONFIG_KEY_NORMALIZATION;
-import static com.hortonworks.iotas.topology.component.impl.normalization.NormalizationProcessor.CONFIG_KEY_TYPE;
 
 public class StormTopologyFluxGenerator extends TopologyDagVisitor {
     private static final Logger LOG = LoggerFactory.getLogger(StormTopologyFluxGenerator.class);

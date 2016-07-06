@@ -1,10 +1,10 @@
 package com.hortonworks.iotas.layout.design.rule.condition;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.iotas.topology.component.rule.condition.Window;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Window;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Unit tests for {@link Window}

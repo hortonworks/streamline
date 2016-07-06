@@ -11,14 +11,14 @@
             "body": "count is ${COUNT(salary)}, min salary is ${MIN(salary)}, max salary is ${MAX(salary)}"
           },
           "notifierName": "email_notifier",
-          "__type": "com.hortonworks.iotas.topology.component.rule.action.NotifierAction"
+          "__type": "com.hortonworks.iotas.streams.layout.component.rule.action.NotifierAction"
         }
       ],
       "description": "rule_1_desc",
       "projection": {
         "expressions": [
           {
-            "class": "com.hortonworks.iotas.topology.component.rule.condition.AggregateFunctionExpression",
+            "class": "com.hortonworks.iotas.streams.layout.component.rule.expression.AggregateFunctionExpression",
             "function": {
               "name": "COUNT",
               "className": null,
@@ -26,7 +26,7 @@
             },
             "operands": [
               {
-                "class": "com.hortonworks.iotas.topology.component.rule.condition.FieldExpression",
+                "class": "com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression",
                 "value": {
                   "name": "salary",
                   "type": "INTEGER",
@@ -36,7 +36,7 @@
             ]
           },
           {
-            "class": "com.hortonworks.iotas.topology.component.rule.condition.AggregateFunctionExpression",
+            "class": "com.hortonworks.iotas.streams.layout.component.rule.expression.AggregateFunctionExpression",
             "function": {
               "name": "MIN",
               "className": null,
@@ -44,7 +44,7 @@
             },
             "operands": [
               {
-                "class": "com.hortonworks.iotas.topology.component.rule.condition.FieldExpression",
+                "class": "com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression",
                 "value": {
                   "name": "salary",
                   "type": "INTEGER",
@@ -54,7 +54,7 @@
             ]
           },
           {
-            "class": "com.hortonworks.iotas.topology.component.rule.condition.AggregateFunctionExpression",
+            "class": "com.hortonworks.iotas.streams.layout.component.rule.expression.AggregateFunctionExpression",
             "function": {
               "name": "MAX",
               "className": null,
@@ -62,7 +62,7 @@
             },
             "operands": [
               {
-                "class": "com.hortonworks.iotas.topology.component.rule.condition.FieldExpression",
+                "class": "com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression",
                 "value": {
                   "name": "salary",
                   "type": "INTEGER",
@@ -75,10 +75,10 @@
       },
       "condition": {
         "expression": {
-          "class": "com.hortonworks.iotas.topology.component.rule.condition.BinaryExpression",
+          "class": "com.hortonworks.iotas.streams.layout.component.rule.expression.BinaryExpression",
           "operator": "GREATER_THAN",
           "first": {
-            "class": "com.hortonworks.iotas.topology.component.rule.condition.FieldExpression",
+            "class": "com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression",
             "value": {
               "name": "empid",
               "type": "INTEGER",
@@ -86,7 +86,7 @@
             }
           },
           "second": {
-            "class": "com.hortonworks.iotas.topology.component.rule.condition.Literal",
+            "class": "com.hortonworks.iotas.streams.layout.component.rule.expression.Literal",
             "value": "2"
           }
         }
@@ -94,7 +94,7 @@
       "groupBy": {
         "expressions": [
           {
-            "class": "com.hortonworks.iotas.topology.component.rule.condition.FieldExpression",
+            "class": "com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression",
             "value": {
               "name": "deptid",
               "type": "INTEGER",
@@ -105,10 +105,10 @@
       },
       "having": {
         "expression": {
-          "class": "com.hortonworks.iotas.topology.component.rule.condition.BinaryExpression",
+          "class": "com.hortonworks.iotas.streams.layout.component.rule.expression.BinaryExpression",
           "operator": "GREATER_THAN",
           "first": {
-            "class": "com.hortonworks.iotas.topology.component.rule.condition.AggregateFunctionExpression",
+            "class": "com.hortonworks.iotas.streams.layout.component.rule.expression.AggregateFunctionExpression",
             "function": {
               "name": "MAX",
               "className": null,
@@ -116,7 +116,7 @@
             },
             "operands": [
               {
-                "class": "com.hortonworks.iotas.topology.component.rule.condition.FieldExpression",
+                "class": "com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression",
                 "value": {
                   "name": "salary",
                   "type": "INTEGER",
@@ -126,7 +126,7 @@
             ]
           },
           "second": {
-            "class": "com.hortonworks.iotas.topology.component.rule.condition.Literal",
+            "class": "com.hortonworks.iotas.streams.layout.component.rule.expression.Literal",
             "value": "5"
           }
         }

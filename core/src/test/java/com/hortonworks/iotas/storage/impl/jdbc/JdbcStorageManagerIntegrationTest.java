@@ -26,14 +26,12 @@ import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.exception.NonIncrementalColumnException;
 import com.hortonworks.iotas.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.iotas.storage.impl.jdbc.connection.ConnectionBuilder;
-import com.hortonworks.iotas.storage.impl.jdbc.mysql.MySqlStorageManagerNoCacheIntegrationTest;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.mysql.factory.MySqlExecutor;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.mysql.query.MySqlQueryUtils;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.query.SqlQuery;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
-import com.hortonworks.iotas.test.IntegrationTest;
-import org.apache.commons.io.IOUtils;
+import com.hortonworks.iotas.common.test.IntegrationTest;
 import org.h2.tools.RunScript;
 import org.junit.After;
 import org.junit.Assert;
@@ -42,15 +40,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
 
 @Category(IntegrationTest.class)
 public abstract class JdbcStorageManagerIntegrationTest extends AbstractStoreManagerTest {

@@ -19,8 +19,8 @@
 package com.hortonworks.iotas.layout.runtime.transform;
 
 import com.hortonworks.iotas.layout.runtime.RuntimeService;
-import com.hortonworks.iotas.topology.component.rule.action.transform.InmemoryTransformDataProvider;
-import com.hortonworks.iotas.topology.component.rule.action.transform.TransformDataProvider;
+import com.hortonworks.iotas.streams.layout.component.rule.action.transform.InmemoryTransformDataProvider;
+import com.hortonworks.iotas.streams.layout.component.rule.action.transform.TransformDataProvider;
 
 /**
  *

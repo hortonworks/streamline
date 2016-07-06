@@ -20,8 +20,8 @@ package com.hortonworks.iotas.layout.runtime.normalization;
 
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.topology.component.Stream;
-import com.hortonworks.iotas.topology.component.impl.normalization.BulkNormalizationConfig;
+import com.hortonworks.iotas.streams.layout.component.Stream;
+import com.hortonworks.iotas.streams.layout.component.impl.normalization.BulkNormalizationConfig;
 import com.hortonworks.iotas.layout.runtime.script.GroovyScript;
 import com.hortonworks.iotas.layout.runtime.script.engine.GroovyScriptEngine;
 import org.slf4j.Logger;

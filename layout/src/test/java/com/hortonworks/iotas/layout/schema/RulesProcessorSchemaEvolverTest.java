@@ -23,12 +23,12 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;
-import com.hortonworks.iotas.topology.component.Stream;
-import com.hortonworks.iotas.topology.component.impl.RulesProcessor;
-import com.hortonworks.iotas.topology.component.rule.Rule;
-import com.hortonworks.iotas.topology.component.rule.action.Action;
-import com.hortonworks.iotas.topology.component.rule.action.NotifierAction;
-import com.hortonworks.iotas.topology.component.rule.action.TransformAction;
+import com.hortonworks.iotas.streams.layout.component.Stream;
+import com.hortonworks.iotas.streams.layout.component.impl.RulesProcessor;
+import com.hortonworks.iotas.streams.layout.component.rule.Rule;
+import com.hortonworks.iotas.streams.layout.component.rule.action.Action;
+import com.hortonworks.iotas.streams.layout.component.rule.action.NotifierAction;
+import com.hortonworks.iotas.streams.layout.component.rule.action.TransformAction;
 import org.junit.Test;
 
 import java.io.IOException;

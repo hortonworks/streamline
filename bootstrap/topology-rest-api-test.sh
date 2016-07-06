@@ -144,12 +144,12 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
       {
         "name": "hbasesink",
         "outputStreams": ["sink-stream"],
-        "__type": "com.hortonworks.iotas.topology.component.rule.action.TransformAction"
+        "__type": "com.hortonworks.iotas.streams.layout.component.rule.action.TransformAction"
       },
       {
         "name": "hdfssink",
         "outputStreams": ["sink-stream"],
-        "__type": "com.hortonworks.iotas.topology.component.rule.action.TransformAction"
+        "__type": "com.hortonworks.iotas.streams.layout.component.rule.action.TransformAction"
       },
       {
         "name": "notificationsink",
@@ -158,7 +158,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
          },
         "outputStreams": ["sink-stream"],
          "notifierName": "email_notifier",
-          "__type": "com.hortonworks.iotas.topology.component.rule.action.NotifierAction"
+          "__type": "com.hortonworks.iotas.streams.layout.component.rule.action.NotifierAction"
        }
     ]
 }' "${catalogurl}/topologies/$topologyid/rules")
@@ -190,12 +190,12 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
       {
         "name": "hbasesink",
         "outputStreams": ["sink-stream"],
-        "__type": "com.hortonworks.iotas.topology.component.rule.action.TransformAction"
+        "__type": "com.hortonworks.iotas.streams.layout.component.rule.action.TransformAction"
       },
       {
         "name": "hdfssink",
         "outputStreams": ["sink-stream"],
-        "__type": "com.hortonworks.iotas.topology.component.rule.action.TransformAction"
+        "__type": "com.hortonworks.iotas.streams.layout.component.rule.action.TransformAction"
       }
     ]
 }' "${catalogurl}/topologies/$topologyid/rules")
@@ -272,7 +272,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
           "type": "fineGrained",
           "normalizationConfig": {
           "'$parserStream'": {
-          "__type": "com.hortonworks.iotas.topology.component.impl.normalization.FieldBasedNormalizationConfig",
+          "__type": "com.hortonworks.iotas.streams.layout.component.impl.normalization.FieldBasedNormalizationConfig",
             "transformers": [
               {
                 "inputField": {
@@ -321,7 +321,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
           "type": "bulk",
           "normalizationConfig": {
             "'$parserStream'": {
-            "__type": "com.hortonworks.iotas.topology.component.impl.normalization.BulkNormalizationConfig",
+            "__type": "com.hortonworks.iotas.streams.layout.component.impl.normalization.BulkNormalizationConfig",
               "normalizationScript": "Map<String, Object> result = new HashMap<>();return result;"
             }
           }

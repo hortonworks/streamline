@@ -25,12 +25,12 @@ import com.hortonworks.iotas.layout.runtime.rule.action.NotifierActionRuntime;
 import com.hortonworks.iotas.layout.runtime.splitjoin.JoinActionRuntime;
 import com.hortonworks.iotas.layout.runtime.splitjoin.SplitActionRuntime;
 import com.hortonworks.iotas.layout.runtime.splitjoin.StageActionRuntime;
-import com.hortonworks.iotas.topology.component.impl.splitjoin.JoinAction;
-import com.hortonworks.iotas.topology.component.impl.splitjoin.SplitAction;
-import com.hortonworks.iotas.topology.component.impl.splitjoin.StageAction;
-import com.hortonworks.iotas.topology.component.rule.action.Action;
-import com.hortonworks.iotas.topology.component.rule.action.NotifierAction;
-import com.hortonworks.iotas.topology.component.rule.action.TransformAction;
+import com.hortonworks.iotas.streams.layout.component.impl.splitjoin.JoinAction;
+import com.hortonworks.iotas.streams.layout.component.impl.splitjoin.SplitAction;
+import com.hortonworks.iotas.streams.layout.component.impl.splitjoin.StageAction;
+import com.hortonworks.iotas.streams.layout.component.rule.action.Action;
+import com.hortonworks.iotas.streams.layout.component.rule.action.NotifierAction;
+import com.hortonworks.iotas.streams.layout.component.rule.action.TransformAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

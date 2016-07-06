@@ -3,7 +3,7 @@ package com.hortonworks.iotas.webservice.schema;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.iotas.topology.component.Stream;
+import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.layout.schema.CatalogServiceAware;
 import com.hortonworks.iotas.layout.schema.EvolvingSchema;
 import com.hortonworks.iotas.service.CatalogService;

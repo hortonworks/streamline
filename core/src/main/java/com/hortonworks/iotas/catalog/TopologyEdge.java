@@ -29,7 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import static com.hortonworks.iotas.topology.component.Stream.Grouping;
+import static com.hortonworks.iotas.streams.layout.component.Stream.Grouping;
 
 public class TopologyEdge extends AbstractStorable {
 

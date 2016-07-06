@@ -37,7 +37,7 @@ import com.hortonworks.iotas.catalog.TopologyEditorMetadata;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.processor.CustomProcessorInfo;
 import com.hortonworks.iotas.processor.examples.ConsoleCustomProcessor;
-import com.hortonworks.iotas.test.IntegrationTest;
+import com.hortonworks.iotas.common.test.IntegrationTest;
 import com.hortonworks.iotas.topology.ConfigField;
 import com.hortonworks.iotas.topology.TopologyComponentDefinition;
 import com.hortonworks.iotas.topology.TopologyLayoutConstants;

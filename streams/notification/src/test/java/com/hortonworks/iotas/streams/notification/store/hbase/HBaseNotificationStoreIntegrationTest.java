@@ -32,7 +32,7 @@ import com.hortonworks.iotas.streams.notification.store.hbase.mappers.RuleStatus
 import com.hortonworks.iotas.streams.notification.store.hbase.mappers.TableMutation;
 import com.hortonworks.iotas.streams.notification.store.hbase.mappers.TimestampNotificationMapper;
 import com.hortonworks.iotas.streams.notification.util.NotificationTestObjectFactory;
-import com.hortonworks.iotas.test.HBaseIntegrationTest;
+import com.hortonworks.iotas.common.test.HBaseIntegrationTest;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;

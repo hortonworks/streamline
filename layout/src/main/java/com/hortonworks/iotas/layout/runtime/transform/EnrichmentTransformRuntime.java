@@ -20,9 +20,9 @@ package com.hortonworks.iotas.layout.runtime.transform;
 
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.layout.runtime.RuntimeService;
-import com.hortonworks.iotas.topology.component.rule.action.transform.EnrichmentTransform;
-import com.hortonworks.iotas.topology.component.rule.action.transform.Transform;
-import com.hortonworks.iotas.topology.component.rule.action.transform.TransformDataProvider;
+import com.hortonworks.iotas.streams.layout.component.rule.action.transform.EnrichmentTransform;
+import com.hortonworks.iotas.streams.layout.component.rule.action.transform.Transform;
+import com.hortonworks.iotas.streams.layout.component.rule.action.transform.TransformDataProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
