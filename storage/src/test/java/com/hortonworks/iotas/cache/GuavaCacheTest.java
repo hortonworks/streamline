@@ -2,13 +2,13 @@ package com.hortonworks.iotas.cache;
 
 import com.google.common.cache.CacheBuilder;
 import com.hortonworks.iotas.storage.cache.impl.GuavaCache;
-import com.hortonworks.iotas.catalog.Device;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.common.cache.Cache;
 import com.hortonworks.iotas.storage.PrimaryKey;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
+import com.hortonworks.iotas.storage.catalog.AbstractStorable;
 import com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -53,7 +53,7 @@ public class GuavaCacheTest {
         try {
             Assert.assertNull(cache.get(storableKey));
 
-            final Storable putVal = new Device();
+            final Storable putVal = new TestStorable();
             cache.put(storableKey, putVal);
             Storable retrievedVal = cache.get(storableKey);
 
@@ -73,4 +73,45 @@ public class GuavaCacheTest {
         return CacheBuilder.newBuilder().maximumSize(maxSize);
     }
 
-}
+    private class TestStorable extends AbstractStorable {
+        private static final String NAMESPACE = "test";
+
+        private Long id;
+
+        @Override
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        @Override
+        public String getNameSpace() {
+            return NAMESPACE;
+        }
+
+        @Override
+        public PrimaryKey getPrimaryKey() {
+            return null;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            TestStorable that = (TestStorable) o;
+
+            return id != null ? id.equals(that.id) : that.id == null;
+
+        }
+
+        @Override
+        public int hashCode() {
+            return id != null ? id.hashCode() : 0;
+        }
+    }
+
+    }
