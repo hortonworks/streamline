@@ -22,11 +22,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.client.CatalogRestClient;
+import com.hortonworks.iotas.common.Constants;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.model.IotasMessage;
 import com.hortonworks.iotas.parser.Parser;
-import com.hortonworks.iotas.util.CoreUtils;
 import com.hortonworks.iotas.common.util.ProxyUtil;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -111,10 +111,10 @@ public class ParserBolt extends BaseRichBolt {
     }
 
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
-        if (!stormConf.containsKey(CoreUtils.CATALOG_ROOT_URL) || !stormConf.containsKey(LOCAL_PARSER_JAR_PATH)) {
-            throw new IllegalArgumentException("conf must contain " + CoreUtils.CATALOG_ROOT_URL + " and " + LOCAL_PARSER_JAR_PATH);
+        if (!stormConf.containsKey(Constants.CATALOG_ROOT_URL) || !stormConf.containsKey(LOCAL_PARSER_JAR_PATH)) {
+            throw new IllegalArgumentException("conf must contain " + Constants.CATALOG_ROOT_URL + " and " + LOCAL_PARSER_JAR_PATH);
         }
-        String catalogRootURL = stormConf.get(CoreUtils.CATALOG_ROOT_URL).toString();
+        String catalogRootURL = stormConf.get(Constants.CATALOG_ROOT_URL).toString();
         //We could also add the iotasMessage timestamp to calculate overall pipeline latency.
         this.collector = collector;
         this.localParserJarPath = stormConf.get(LOCAL_PARSER_JAR_PATH).toString();

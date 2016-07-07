@@ -1,6 +1,8 @@
 package com.hortonworks.iotas.layout.schema;
 
+
 import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
 
 /**
  * An interface that support injection CatalogService instance.
@@ -13,4 +15,12 @@ public interface CatalogServiceAware {
      * @param catalogService CatalogService instance
      */
     void setCatalogService(CatalogService catalogService);
+
+    /**
+     * Injection point. This method will be called after initializing EvolvingSchema instance.
+     *
+     * @param catalogService CatalogService instance
+     */
+    void setStreamCatalogService(StreamCatalogService catalogService);
+
 }

@@ -3,11 +3,12 @@ package com.hortonworks.iotas.webservice.schema;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.iotas.streams.catalog.topology.TopologyComponentDefinition;
 import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.layout.schema.CatalogServiceAware;
 import com.hortonworks.iotas.layout.schema.EvolvingSchema;
-import com.hortonworks.iotas.service.CatalogService;
-import com.hortonworks.iotas.topology.TopologyComponentDefinition;
 import com.hortonworks.iotas.webservice.util.WSUtils;
 
 import javax.ws.rs.GET;
@@ -22,9 +23,9 @@ import javax.ws.rs.core.UriInfo;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.SUCCESS;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -32,12 +33,15 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Path("/api/v1/schema")
 @Produces(MediaType.APPLICATION_JSON)
 public class SchemaAPI {
+    private final StreamCatalogService streamcatalogService;
     private final CatalogService catalogService;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final ConcurrentHashMap<Long, EvolvingSchema> EVOLVING_SCHEMA_MAP = new ConcurrentHashMap<>();
 
-    public SchemaAPI(CatalogService catalogService) {
+    public SchemaAPI(CatalogService catalogService, StreamCatalogService streamcatalogService) {
         this.catalogService = catalogService;
+        this.streamcatalogService = streamcatalogService;
     }
 
     /**
@@ -56,7 +60,7 @@ public class SchemaAPI {
 
         try {
             if (!EVOLVING_SCHEMA_MAP.containsKey(componentId)) {
-                TopologyComponentDefinition topologyComponentDefinition = catalogService.getTopologyComponent(componentId);
+                TopologyComponentDefinition topologyComponentDefinition = streamcatalogService.getTopologyComponent(componentId);
                 if (topologyComponentDefinition == null) {
                     throw new NotFoundException("Component ID " + componentId + " not found in catalog");
                 }
@@ -86,6 +90,8 @@ public class SchemaAPI {
         // inject CatalogService if needed
         if (evolvingSchemaInstance instanceof CatalogServiceAware) {
             ((CatalogServiceAware) evolvingSchemaInstance).setCatalogService(catalogService);
+            ((CatalogServiceAware) evolvingSchemaInstance).setStreamCatalogService(streamcatalogService);
+
         }
         EVOLVING_SCHEMA_MAP.putIfAbsent(componentId, evolvingSchemaInstance);
     }

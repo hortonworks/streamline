@@ -4,8 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.client.CatalogRestClient;
+import com.hortonworks.iotas.common.Constants;
 import com.hortonworks.iotas.model.IotasMessage;
-import com.hortonworks.iotas.util.CoreUtils;
+import com.hortonworks.iotas.storage.util.CoreUtils;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Mocked;
@@ -51,7 +52,7 @@ public class ParserBoltTest {
         parserBolt.withUnparsedTuplesStreamId(FAILED_TO_PARSE_TUPLES_STREAM);
 
         Config config = new Config();
-        config.put(CoreUtils.CATALOG_ROOT_URL, "test");
+        config.put(Constants.CATALOG_ROOT_URL, "test");
         config.put(ParserBolt.LOCAL_PARSER_JAR_PATH, "/tmp");
 
         parserBolt.prepare(config, null, mockOutputCollector);

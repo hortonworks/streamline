@@ -23,10 +23,10 @@ import com.hortonworks.iotas.common.Result;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.common.exception.ProcessingException;
 import com.hortonworks.iotas.common.exception.ParserException;
+import com.hortonworks.iotas.processor.ProcessorRuntime;
 import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationProcessor;
 import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationConfig;
-import com.hortonworks.iotas.processor.ProcessorRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

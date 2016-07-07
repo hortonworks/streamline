@@ -9,13 +9,13 @@ stormHomeDir: /usr/local/Cellar/storm/0.10.0/
 stormApiRootUrl: "http://localhost:8888/api/v1"
 # Filesystem based jar storage
 #fileStorageConfiguration:
-#  className: "com.hortonworks.iotas.util.LocalFileSystemStorage"
+#  className: "com.hortonworks.iotas.common.util.LocalFileSystemStorage"
 #  properties:
 #    directory: "/tmp"
 
 # HDFS based Jar storage
 fileStorageConfiguration:
-  className: "com.hortonworks.iotas.util.HdfsFileStorage"
+  className: "com.hortonworks.iotas.common.util.HdfsFileStorage"
   properties:
     fsUrl: "hdfs://localhost:9000"
     directory: "/tmp/test-hdfs"

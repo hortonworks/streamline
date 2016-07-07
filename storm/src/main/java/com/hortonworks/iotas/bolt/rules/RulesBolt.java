@@ -18,11 +18,11 @@
 
 package com.hortonworks.iotas.bolt.rules;
 
+import com.hortonworks.iotas.common.Constants;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.Result;
 import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
-import com.hortonworks.iotas.util.CoreUtils;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -59,8 +59,8 @@ public class RulesBolt extends BaseRichBolt {
         Map<String, Object> config = Collections.emptyMap();
         if (stormConf != null) {
             config = new HashMap<>();
-            config.put(CoreUtils.CATALOG_ROOT_URL, stormConf.get(CoreUtils.CATALOG_ROOT_URL));
-            config.put(CoreUtils.LOCAL_FILES_PATH, stormConf.get(CoreUtils.LOCAL_FILES_PATH));
+            config.put(Constants.CATALOG_ROOT_URL, stormConf.get(Constants.CATALOG_ROOT_URL));
+            config.put(Constants.LOCAL_FILES_PATH, stormConf.get(Constants.LOCAL_FILES_PATH));
         }
         ruleProcessorRuntime.initialize(config);
     }

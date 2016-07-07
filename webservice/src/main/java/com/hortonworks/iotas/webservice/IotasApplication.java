@@ -24,7 +24,6 @@ import com.hortonworks.iotas.common.cache.Cache;
 import com.hortonworks.iotas.storage.cache.impl.GuavaCache;
 import com.hortonworks.iotas.storage.cache.writer.StorageWriteThrough;
 import com.hortonworks.iotas.storage.cache.writer.StorageWriter;
-import com.hortonworks.iotas.common.CustomProcessorUploadHandler;
 import com.hortonworks.iotas.common.FileEventHandler;
 import com.hortonworks.iotas.common.exception.ConfigException;
 
@@ -37,12 +36,14 @@ import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManager;
 import com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager;
+import com.hortonworks.iotas.processor.CustomProcessorUploadHandler;
+import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.iotas.streams.layout.storm.StormTopologyLayoutConstants;
 import com.hortonworks.iotas.streams.notification.service.NotificationServiceImpl;
 import com.hortonworks.iotas.streams.layout.component.TopologyActions;
 import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.iotas.streams.metrics.topology.TopologyMetrics;
-import com.hortonworks.iotas.util.FileStorage;
+import com.hortonworks.iotas.common.util.FileStorage;
 import com.hortonworks.iotas.common.util.ReflectionHelper;
 import com.hortonworks.iotas.webservice.catalog.ClusterCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.ComponentCatalogResource;
@@ -205,32 +206,33 @@ public class IotasApplication extends Application<IotasConfiguration> {
         TopologyMetrics topologyMetrics = getTopologyMetricsImpl(iotasConfiguration);
         FileStorage fileStorage = this.getJarStorage(iotasConfiguration);
 
-        final CatalogService catalogService = new CatalogService(storageManager, topologyActions, topologyMetrics, fileStorage);
+        final StreamCatalogService streamcatalogService = new StreamCatalogService(storageManager, topologyActions, topologyMetrics, fileStorage);
+        final CatalogService catalogService = new CatalogService(storageManager, fileStorage);
         final FeedCatalogResource feedResource = new FeedCatalogResource(catalogService);
         final ParserInfoCatalogResource parserResource = new ParserInfoCatalogResource(catalogService);
         final DataSourceCatalogResource dataSourceResource = new DataSourceCatalogResource(catalogService);
         final DataSourceWithDataFeedCatalogResource dataSourceWithDataFeedCatalogResource =
                 new DataSourceWithDataFeedCatalogResource(new DataSourceFacade(catalogService));
-        final TopologyCatalogResource topologyCatalogResource = new TopologyCatalogResource(catalogService);
-        final MetricsResource metricsResource = new MetricsResource(catalogService);
-        final TopologyStreamCatalogResource topologyStreamCatalogResource = new TopologyStreamCatalogResource(catalogService);
+        final TopologyCatalogResource topologyCatalogResource = new TopologyCatalogResource(streamcatalogService);
+        final MetricsResource metricsResource = new MetricsResource(streamcatalogService);
+        final TopologyStreamCatalogResource topologyStreamCatalogResource = new TopologyStreamCatalogResource(streamcatalogService);
 
         // cluster related
-        final ClusterCatalogResource clusterCatalogResource = new ClusterCatalogResource(catalogService, fileStorage);
-        final ComponentCatalogResource componentCatalogResource = new ComponentCatalogResource(catalogService);
-        final TopologyEditorMetadataResource topologyEditorMetadataResource = new TopologyEditorMetadataResource(catalogService);
+        final ClusterCatalogResource clusterCatalogResource = new ClusterCatalogResource(streamcatalogService, fileStorage);
+        final ComponentCatalogResource componentCatalogResource = new ComponentCatalogResource(streamcatalogService);
+        final TopologyEditorMetadataResource topologyEditorMetadataResource = new TopologyEditorMetadataResource(streamcatalogService);
         final TagCatalogResource tagCatalogResource = new TagCatalogResource(catalogService);
         final FileCatalogResource fileCatalogResource = new FileCatalogResource(catalogService);
 
         // topology related
-        final TopologySourceCatalogResource topologySourceCatalogResource = new TopologySourceCatalogResource(catalogService);
-        final TopologySinkCatalogResource topologySinkCatalogResource = new TopologySinkCatalogResource(catalogService);
-        final TopologyProcessorCatalogResource topologyProcessorCatalogResource = new TopologyProcessorCatalogResource(catalogService);
-        final TopologyEdgeCatalogResource topologyEdgeCatalogResource = new TopologyEdgeCatalogResource(catalogService);
-        final RuleCatalogResource ruleCatalogResource = new RuleCatalogResource(catalogService);
+        final TopologySourceCatalogResource topologySourceCatalogResource = new TopologySourceCatalogResource(streamcatalogService);
+        final TopologySinkCatalogResource topologySinkCatalogResource = new TopologySinkCatalogResource(streamcatalogService);
+        final TopologyProcessorCatalogResource topologyProcessorCatalogResource = new TopologyProcessorCatalogResource(streamcatalogService);
+        final TopologyEdgeCatalogResource topologyEdgeCatalogResource = new TopologyEdgeCatalogResource(streamcatalogService);
+        final RuleCatalogResource ruleCatalogResource = new RuleCatalogResource(streamcatalogService);
 
         // UDF catalaog resource
-        final UDFCatalogResource udfCatalogResource = new UDFCatalogResource(catalogService, fileStorage);
+        final UDFCatalogResource udfCatalogResource = new UDFCatalogResource(streamcatalogService, fileStorage);
 
         List<Object> resources = Lists.newArrayList(feedResource, parserResource, dataSourceResource, dataSourceWithDataFeedCatalogResource,
                 topologyCatalogResource, clusterCatalogResource, componentCatalogResource,
@@ -238,7 +240,7 @@ public class IotasApplication extends Application<IotasConfiguration> {
                 topologySourceCatalogResource, topologySinkCatalogResource, topologyProcessorCatalogResource, topologyEdgeCatalogResource,
                 ruleCatalogResource, udfCatalogResource);
         if (!iotasConfiguration.isNotificationsRestDisabled()) {
-            resources.add(new NotifierInfoCatalogResource(catalogService));
+            resources.add(new NotifierInfoCatalogResource(streamcatalogService));
             resources.add(new NotificationsResource(new NotificationServiceImpl()));
         }
 
@@ -247,7 +249,7 @@ public class IotasApplication extends Application<IotasConfiguration> {
         }
 
         environment.jersey().register(MultiPartFeature.class);
-        watchFiles(iotasConfiguration, catalogService);
+        watchFiles(iotasConfiguration, streamcatalogService);
     }
 
     private TimeSeriesQuerier getTimeSeriesQuerier(IotasConfiguration iotasConfiguration) {
@@ -264,7 +266,7 @@ public class IotasApplication extends Application<IotasConfiguration> {
         }
     }
 
-    private void watchFiles (IotasConfiguration iotasConfiguration, CatalogService catalogService) {
+    private void watchFiles (IotasConfiguration iotasConfiguration, StreamCatalogService catalogService) {
         if (iotasConfiguration.getCustomProcessorWatchPath() == null || iotasConfiguration.getCustomProcessorUploadFailPath() == null || iotasConfiguration
                 .getCustomProcessorUploadSuccessPath() == null) {
             return;

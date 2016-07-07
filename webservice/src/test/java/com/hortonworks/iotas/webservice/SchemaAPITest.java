@@ -1,9 +1,10 @@
 package com.hortonworks.iotas.webservice;
 
-import com.hortonworks.iotas.catalog.CatalogResponse;
+import com.hortonworks.iotas.common.catalog.CatalogResponse;
+import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.iotas.streams.catalog.topology.TopologyComponentDefinition;
 import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.service.CatalogService;
-import com.hortonworks.iotas.topology.TopologyComponentDefinition;
 import com.hortonworks.iotas.webservice.schema.MockEvolvingSchemaCatalogServiceAwareImpl;
 import com.hortonworks.iotas.webservice.schema.MockEvolvingSchemaImpl;
 import com.hortonworks.iotas.webservice.schema.SchemaAPI;
@@ -35,6 +36,9 @@ public class SchemaAPITest {
     CatalogService mockCatalogService;
 
     @Injectable
+    StreamCatalogService mockstreamCatalogService;
+
+    @Injectable
     UriInfo mockUriInfo;
 
     MultivaluedMap<String, String> multiValuedMap;
@@ -42,7 +46,7 @@ public class SchemaAPITest {
 
     @Before
     public void setUp() throws Exception {
-        resource = new SchemaAPI(mockCatalogService);
+        resource = new SchemaAPI(mockCatalogService, mockstreamCatalogService);
         multiValuedMap = createDummyQueryParameters();
         topologyComponentMap = createDummyRuleTopologyComponentMap();
     }
@@ -65,7 +69,7 @@ public class SchemaAPITest {
                 mockUriInfo.getQueryParameters(); times = 1;
                 result = multiValuedMap;
 
-                mockCatalogService.getTopologyComponent(1L);
+                mockstreamCatalogService.getTopologyComponent(1L);
                 result = component;
             }
         };
@@ -92,7 +96,7 @@ public class SchemaAPITest {
                 mockUriInfo.getQueryParameters(); times = 1;
                 result = multiValuedMap;
 
-                mockCatalogService.getTopologyComponent(1L);
+                mockstreamCatalogService.getTopologyComponent(1L);
                 result = component;
             }
         };
@@ -111,7 +115,7 @@ public class SchemaAPITest {
                 mockUriInfo.getQueryParameters(); times = 1;
                 result = multiValuedMap;
 
-                mockCatalogService.getTopologyComponent(1L);
+                mockstreamCatalogService.getTopologyComponent(1L);
                 result = null;
             }
         };
@@ -136,7 +140,7 @@ public class SchemaAPITest {
                 mockUriInfo.getQueryParameters(); times = 1;
                 result = multiValuedMap;
 
-                mockCatalogService.getTopologyComponent(1L);
+                mockstreamCatalogService.getTopologyComponent(1L);
                 result = component;
             }
         };

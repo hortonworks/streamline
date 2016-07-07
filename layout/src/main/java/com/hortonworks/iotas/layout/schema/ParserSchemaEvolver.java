@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.common.QueryParam;
+import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
@@ -22,6 +23,8 @@ import java.util.Set;
 public class ParserSchemaEvolver implements EvolvingSchema, CatalogServiceAware {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private CatalogService catalogService;
+    private StreamCatalogService streamcatalogService;
+
 
     @Override
     public Set<Stream> apply(String config, Stream inputStream) throws BadComponentConfigException {
@@ -46,6 +49,11 @@ public class ParserSchemaEvolver implements EvolvingSchema, CatalogServiceAware 
     @Override
     public void setCatalogService(CatalogService catalogService) {
         this.catalogService = catalogService;
+    }
+
+    @Override
+    public void setStreamCatalogService(StreamCatalogService catalogService) {
+        this.streamcatalogService = catalogService;
     }
 
     private Long getParserId(Map<String, Object> parserConfig) throws Exception {
