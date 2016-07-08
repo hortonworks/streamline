@@ -1,4 +1,5 @@
 ## 0.1.4
+ * IOT-297: Move metrics to the streams project
  * IOT-307: Create streams-layout-storm
  * IOT-292: Create streams-layout
  * IOT-306: Create new storage module for refactoring 
