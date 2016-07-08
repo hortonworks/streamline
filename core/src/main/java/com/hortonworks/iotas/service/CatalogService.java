@@ -65,7 +65,7 @@ import com.hortonworks.iotas.topology.TopologyComponentDefinition;
 import com.hortonworks.iotas.streams.layout.component.TopologyLayout;
 import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.iotas.topology.TopologyLayoutValidator;
-import com.hortonworks.iotas.topology.TopologyMetrics;
+import com.hortonworks.iotas.streams.metrics.topology.TopologyMetrics;
 import com.hortonworks.iotas.streams.layout.component.InputComponent;
 import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.streams.layout.component.TopologyDag;
@@ -629,19 +629,19 @@ public class CatalogService {
     }
 
     public Map<String, TopologyMetrics.ComponentMetric> getTopologyMetrics (Topology topology) throws Exception {
-        return this.topologyMetrics.getMetricsForTopology(topology);
+        return this.topologyMetrics.getMetricsForTopology(getTopologyLayout(topology));
     }
 
     public Map<Long, Double> getCompleteLatency (Topology topology, String sourceId, long from, long to) throws Exception {
-        return this.topologyMetrics.getCompleteLatency(topology, sourceId, from, to);
+        return this.topologyMetrics.getCompleteLatency(getTopologyLayout(topology), sourceId, from, to);
     }
 
     public Map<String, Map<Long, Double>> getComponentStats(Topology topology, String sourceId, Long from, Long to) {
-        return this.topologyMetrics.getComponentStats(topology, sourceId, from, to);
+        return this.topologyMetrics.getComponentStats(getTopologyLayout(topology), sourceId, from, to);
     }
 
     public Map<String, Map<Long, Double>> getKafkaTopicOffsets(Topology topology, String sourceId, Long from, Long to) {
-        return this.topologyMetrics.getkafkaTopicOffsets(topology, sourceId, from, to);
+        return this.topologyMetrics.getkafkaTopicOffsets(getTopologyLayout(topology), sourceId, from, to);
     }
 
     public Map<String, Map<Long, Double>> getMetrics(String metricName, String parameters, Long from, Long to) {

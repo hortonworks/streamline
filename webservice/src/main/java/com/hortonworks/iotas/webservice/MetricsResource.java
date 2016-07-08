@@ -21,7 +21,7 @@ package com.hortonworks.iotas.webservice;
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.catalog.Topology;
 import com.hortonworks.iotas.service.CatalogService;
-import com.hortonworks.iotas.topology.TopologyMetrics;
+import com.hortonworks.iotas.streams.metrics.topology.TopologyMetrics;
 import com.hortonworks.iotas.webservice.util.WSUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

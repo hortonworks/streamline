@@ -57,7 +57,7 @@ storageProviderConfiguration:
 
 # Time series DB querier configuration
 #timeSeriesDBConfiguration:
-#  className: "com.hortonworks.iotas.metrics.storm.ambari.AmbariMetricsServiceWithStormQuerier"
+#  className: ""com.hortonworks.iotas.streams.metrics.storm.ambari.AmbariMetricsServiceWithStormQuerier"
 #  properties:
 #    - collectorApiUrl: "http://localhost:6188/ws/v1/timeline/metrics"
 
