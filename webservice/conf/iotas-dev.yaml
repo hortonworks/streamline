@@ -22,16 +22,9 @@ fileStorageConfiguration:
     fsUrl: "file:///"
     directory: "/tmp/test-hdfs"
 
-# storage provider configuration
-# type can be inmemory and jdbc.
-#
-# Example configuration for inmemory is:
-#storageProviderConfiguration:
-# type: "inmemory"
-#
 # Example configuration for phoenix based JDBC driver
 #storageProviderConfiguration:
-# type: "jdbc"
+# providerClass: "com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManager"
 # properties:
 #   db.type: "phoenix"
 #   jdbcDriverClass: "org.apache.phoenix.jdbc.PhoenixDriver"
@@ -40,15 +33,29 @@ fileStorageConfiguration:
 #
 # MySQL based jdbc provider configuration is:
 #storageProviderConfiguration:
-# type: "jdbc"
+# providerClass: "com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManager"
 # properties:
 #   db.type: "mysql"
 #   dataSourceClassName: "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
 #   dataSource.url: "jdbc:mysql://localhost/test"
 #   queryTimeoutInSecs: 30
+#
+# Atlas based provider configuration is:
+#storageProviderConfiguration:
+# providerClass: "com.hortonworks.iotas.storage.atlas.AtlasStoreManager"
+# properties:
+#   atlas.graph.storage.backend: "berkeleyje"
+#   atlas.graph.storage.directory: "/var/data/iotas/graph/berkley"
+#   atlas.graph.index.search.backend: "elasticsearch"
+#   atlas.graph.index.search.directory: "/var/data/iotas/graph/elasticsearch"
+#   atlas.graph.index.search.elasticsearch.client-only: false
+#   atlas.graph.index.search.elasticsearch.local-mode: true
+#   atlas.graph.index.search.elasticsearch.create.sleep: 4000
+#   atlas.DeleteHandler.impl: "org.apache.atlas.repository.graph.HardDeleteHandler"
+#   atlas.EntityAuditRepository.impl: "org.apache.atlas.repository.audit.NoopEntityAuditRepository"
 
 storageProviderConfiguration:
-  type: "inmemory"
+ providerClass: "com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager"
 
 #Custom processor upload configuration
 #customProcessorWatchPath: "/tmp"
@@ -69,9 +76,9 @@ notificationsRestDisable: true
 
 # use the simple server factory if you only want to run on a single port
 #server:
-#  type: simple
+#  providerClass: simple
 #  connector:
-#    type: http
+#    providerClass: http
 #    port: 8080
 
 server:

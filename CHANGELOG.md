@@ -1,4 +1,5 @@
 ## 0.1.4
+ * IOT-282: Atlas storage manager implementation
  * IOT-293: Streams: create streams-service
  * IOT-280: catalog refactoring
  * IOT-297: Move metrics to the streams project

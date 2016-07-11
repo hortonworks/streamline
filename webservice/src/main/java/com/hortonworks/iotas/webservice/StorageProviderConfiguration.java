@@ -24,18 +24,18 @@ import java.util.Map;
  * This class represents storage provider configuration.
  */
 public class StorageProviderConfiguration {
-    private String type;
+    private String providerClass;
 
     private Map<String, Object> properties;
 
     public StorageProviderConfiguration() {
     }
-    public String getType() {
-        return type;
+    public String getProviderClass() {
+        return providerClass;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setProviderClass(String providerClass) {
+        this.providerClass = providerClass;
     }
 
     public Map<String, Object> getProperties() {
