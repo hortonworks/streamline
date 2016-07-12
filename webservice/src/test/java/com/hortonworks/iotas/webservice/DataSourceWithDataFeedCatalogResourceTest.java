@@ -1,6 +1,6 @@
 package com.hortonworks.iotas.webservice;
 
-import com.hortonworks.iotas.catalog.CatalogResponse;
+import com.hortonworks.iotas.common.catalog.CatalogResponse;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.Tag;

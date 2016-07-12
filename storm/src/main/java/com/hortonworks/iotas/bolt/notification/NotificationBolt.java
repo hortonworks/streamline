@@ -18,16 +18,15 @@
 
 package com.hortonworks.iotas.bolt.notification;
 
+import com.hortonworks.iotas.streams.catalog.NotifierInfo;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.topology.base.BaseRichBolt;
 import org.apache.storm.tuple.Tuple;
-import com.hortonworks.iotas.catalog.NotifierInfo;
 import com.hortonworks.iotas.client.CatalogRestClient;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.streams.notification.common.Notification;
-import com.hortonworks.iotas.streams.notification.common.Notifier;
 import com.hortonworks.iotas.streams.notification.common.NotifierConfig;
 import com.hortonworks.iotas.streams.notification.common.NotifierConfigImpl;
 import com.hortonworks.iotas.streams.notification.service.NotificationService;

@@ -1,18 +1,16 @@
 package com.hortonworks.iotas.topology.storm;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.iotas.catalog.Topology;
-import com.hortonworks.iotas.client.CatalogRestClient;
-import com.hortonworks.iotas.processor.CustomProcessor;
-import com.hortonworks.iotas.processor.examples.ConsoleCustomProcessor;
 import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager;
+import com.hortonworks.iotas.streams.catalog.Topology;
+import com.hortonworks.iotas.processor.CustomProcessor;
+import com.hortonworks.iotas.streams.catalog.topology.TopologyLayoutValidator;
 import com.hortonworks.iotas.streams.layout.component.TopologyActions;
 import com.hortonworks.iotas.streams.layout.component.TopologyLayout;
 import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.iotas.streams.layout.storm.StormTopologyActionsImpl;
 import com.hortonworks.iotas.streams.layout.storm.StormTopologyLayoutConstants;
-import com.hortonworks.iotas.topology.TopologyLayoutValidator;
 import com.hortonworks.iotas.common.util.ProxyUtil;
 import mockit.Expectations;
 import mockit.Mocked;
@@ -25,7 +23,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -37,8 +34,8 @@ public class TopologyLayoutValidatorTest {
     private @Mocked
     ProxyUtil<CustomProcessor> customProcessorProxyUtil;
     private @Mocked
-    CatalogRestClient catalogRestClient;
-    private CustomProcessor customProcessor = new ConsoleCustomProcessor();
+    //CatalogRestClient catalogRestClient;
+    //private CustomProcessor customProcessor = new ConsoleCustomProcessor();
     StorageManager dao;
     ObjectMapper mapper;
     TopologyActions topologyActions = new StormTopologyActionsImpl();
@@ -114,7 +111,7 @@ public class TopologyLayoutValidatorTest {
         //String.format(TopologyLayoutConstants.ERR_MSG_INVALID_GROUPING_FIELDS, "ruleProcessor-rule1->hbasesink"),
         String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_IMPL),
         String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, TopologyLayoutConstants.JSON_KEY_INPUT_SCHEMA),
-//        String.format(TopologyLayoutConstants.ERR_MSG_CP_CONFIG_EXCEPTION, "com.hortonworks.iotas.processor.examples.ConsoleCustomProcessor") + " Message from " +
+//        String.format(TopologyLayoutConstants.ERR_MSG_CP_CONFIG_EXCEPTION, "com.hortonworks.iotas.streams.catalog.processor.examples.ConsoleCustomProcessor") + " Message from " +
 //                "implementation is: Missing config field: configField",
         String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, "consoleCustomProcessor->hbasesink"),
         String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, "consoleCustomProcessor->hbasesink"),

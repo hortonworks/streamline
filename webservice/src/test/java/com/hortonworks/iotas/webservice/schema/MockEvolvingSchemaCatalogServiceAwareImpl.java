@@ -2,6 +2,7 @@ package com.hortonworks.iotas.webservice.schema;
 
 import com.google.common.collect.Sets;
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.layout.schema.BadComponentConfigException;
 import com.hortonworks.iotas.layout.schema.CatalogServiceAware;
@@ -13,6 +14,7 @@ import java.util.Set;
 public class MockEvolvingSchemaCatalogServiceAwareImpl implements EvolvingSchema, CatalogServiceAware {
     private Set<Stream> streams;
     private CatalogService catalogService;
+    private StreamCatalogService streamcatalogService;
 
     public MockEvolvingSchemaCatalogServiceAwareImpl() {
         streams = Sets.newHashSet();
@@ -35,6 +37,12 @@ public class MockEvolvingSchemaCatalogServiceAwareImpl implements EvolvingSchema
     public void setCatalogService(CatalogService catalogService) {
         this.catalogService = catalogService;
     }
+
+    @Override
+    public void setStreamCatalogService(StreamCatalogService catalogService) {
+        this.streamcatalogService = catalogService;
+    }
+
 
     private void initializeAppliedResult() {
         Schema schema = new Schema.SchemaBuilder().field(new Schema.Field("field1", Schema.Type.STRING)).build();

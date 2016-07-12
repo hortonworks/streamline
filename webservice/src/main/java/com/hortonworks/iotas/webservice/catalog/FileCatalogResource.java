@@ -47,9 +47,9 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.UUID;
 
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.SUCCESS;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;

@@ -19,8 +19,8 @@
 package com.hortonworks.iotas.webservice;
 
 import com.codahale.metrics.annotation.Timed;
-import com.hortonworks.iotas.catalog.Topology;
-import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.streams.catalog.Topology;
+import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.iotas.streams.metrics.topology.TopologyMetrics;
 import com.hortonworks.iotas.webservice.util.WSUtils;
 import org.slf4j.Logger;
@@ -35,10 +35,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Map;
 
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.BAD_REQUEST_PARAM_MISSING;
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.SUCCESS;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.BAD_REQUEST_PARAM_MISSING;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
@@ -52,9 +52,9 @@ import static javax.ws.rs.core.Response.Status.OK;
 public class MetricsResource {
     private static final Logger LOG = LoggerFactory.getLogger(MetricsResource.class);
 
-    private CatalogService catalogService;
+    private StreamCatalogService catalogService;
 
-    public MetricsResource(CatalogService service) {
+    public MetricsResource(StreamCatalogService service) {
         this.catalogService = service;
     }
 

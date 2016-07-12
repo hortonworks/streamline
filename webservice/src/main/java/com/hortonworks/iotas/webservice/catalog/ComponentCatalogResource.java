@@ -1,9 +1,9 @@
 package com.hortonworks.iotas.webservice.catalog;
 
 import com.codahale.metrics.annotation.Timed;
-import com.hortonworks.iotas.catalog.Component;
+import com.hortonworks.iotas.streams.catalog.Component;
 import com.hortonworks.iotas.common.QueryParam;
-import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.iotas.webservice.util.WSUtils;
 
 import javax.ws.rs.DELETE;
@@ -22,10 +22,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.SUCCESS;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
@@ -36,9 +36,9 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Produces(MediaType.APPLICATION_JSON)
 
 public class ComponentCatalogResource {
-    private CatalogService catalogService;
+    private StreamCatalogService catalogService;
 
-    public ComponentCatalogResource(CatalogService catalogService) {
+    public ComponentCatalogResource(StreamCatalogService catalogService) {
         this.catalogService = catalogService;
     }
 

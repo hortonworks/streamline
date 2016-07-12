@@ -1,8 +1,6 @@
 package com.hortonworks.iotas.common;
 
-/**
- * Created by mkumar on 7/4/16.
- */
+
 public  class QueryParam {
 
     public final String name;

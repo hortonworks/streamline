@@ -19,9 +19,9 @@
 package com.hortonworks.iotas.webservice.catalog;
 
 import com.codahale.metrics.annotation.Timed;
-import com.hortonworks.iotas.catalog.TopologySink;
 import com.hortonworks.iotas.common.QueryParam;
-import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.streams.catalog.TopologySink;
+import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.iotas.webservice.util.WSUtils;
 
 import javax.ws.rs.DELETE;
@@ -38,10 +38,10 @@ import javax.ws.rs.core.UriInfo;
 import java.util.Collection;
 import java.util.List;
 
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.SUCCESS;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
@@ -53,9 +53,9 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Path("/api/v1/catalog/topologies/{topologyId}/sinks")
 @Produces(MediaType.APPLICATION_JSON)
 public class TopologySinkCatalogResource {
-    private CatalogService catalogService;
+    private StreamCatalogService catalogService;
 
-    public TopologySinkCatalogResource(CatalogService catalogService) {
+    public TopologySinkCatalogResource(StreamCatalogService catalogService) {
         this.catalogService = catalogService;
     }
 

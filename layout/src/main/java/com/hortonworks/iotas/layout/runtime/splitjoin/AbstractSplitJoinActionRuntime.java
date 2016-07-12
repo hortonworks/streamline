@@ -19,10 +19,10 @@
 package com.hortonworks.iotas.layout.runtime.splitjoin;
 
 import com.hortonworks.iotas.client.CatalogRestClient;
+import com.hortonworks.iotas.common.Constants;
 import com.hortonworks.iotas.layout.runtime.rule.action.AbstractActionRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.action.ActionRuntimeContext;
 import com.hortonworks.iotas.streams.layout.component.rule.action.Action;
-import com.hortonworks.iotas.util.CoreUtils;
 import com.hortonworks.iotas.common.util.ProxyUtil;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -54,10 +54,10 @@ public abstract class AbstractSplitJoinActionRuntime extends AbstractActionRunti
 
     protected String getJarPathFor(Long jarId) throws IOException {
 
-        checkProperty(config, CoreUtils.LOCAL_FILES_PATH);
-        checkProperty(config, CoreUtils.CATALOG_ROOT_URL);
+        checkProperty(config, Constants.LOCAL_FILES_PATH);
+        checkProperty(config, Constants.CATALOG_ROOT_URL);
 
-        File filesDir = new File(config.get(CoreUtils.LOCAL_FILES_PATH).toString());
+        File filesDir = new File(config.get(Constants.LOCAL_FILES_PATH).toString());
         ensureDirExists(filesDir);
         File localFile = null;
         do {
@@ -65,7 +65,7 @@ public abstract class AbstractSplitJoinActionRuntime extends AbstractActionRunti
         } while(localFile.exists());
         localFile.deleteOnExit();
 
-        final CatalogRestClient catalogRestClient = new CatalogRestClient(config.get(CoreUtils.CATALOG_ROOT_URL).toString());
+        final CatalogRestClient catalogRestClient = new CatalogRestClient(config.get(Constants.CATALOG_ROOT_URL).toString());
 
         try(final FileOutputStream output = new FileOutputStream(localFile);
             final InputStream inputStream = catalogRestClient.getFile(jarId)) {

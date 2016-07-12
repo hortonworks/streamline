@@ -20,12 +20,12 @@ package com.hortonworks.iotas.webservice.catalog;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.iotas.catalog.Topology;
+import com.hortonworks.iotas.streams.catalog.Topology;
 import com.hortonworks.iotas.common.QueryParam;
-import com.hortonworks.iotas.processor.CustomProcessorInfo;
-import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.streams.catalog.processor.CustomProcessorInfo;
+import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.iotas.streams.layout.component.TopologyActions;
-import com.hortonworks.iotas.topology.TopologyComponentDefinition;
+import com.hortonworks.iotas.streams.catalog.topology.TopologyComponentDefinition;
 import com.hortonworks.iotas.webservice.util.WSUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -54,12 +54,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.BAD_REQUEST_PARAM_MISSING;
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.CUSTOM_PROCESSOR_ONLY;
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
-import static com.hortonworks.iotas.catalog.CatalogResponse.ResponseMessage.SUCCESS;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.BAD_REQUEST_PARAM_MISSING;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.CUSTOM_PROCESSOR_ONLY;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
@@ -73,11 +73,11 @@ public class TopologyCatalogResource {
     public static final String IMAGE_FILE_PARAM_NAME = "imageFile";
     public static final String JAR_FILE_PARAM_NAME = "jarFile";
     public static final String CP_INFO_PARAM_NAME = "customProcessorInfo";
-    private CatalogService catalogService;
+    private StreamCatalogService catalogService;
     private final URL SCHEMA = Thread.currentThread().getContextClassLoader()
             .getResource("assets/schemas/topology.json");
 
-    public TopologyCatalogResource(CatalogService catalogService) {
+    public TopologyCatalogResource(StreamCatalogService catalogService) {
         this.catalogService = catalogService;
     }
 

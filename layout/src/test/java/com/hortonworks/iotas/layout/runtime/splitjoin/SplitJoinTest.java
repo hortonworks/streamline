@@ -21,6 +21,7 @@ package com.hortonworks.iotas.layout.runtime.splitjoin;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import com.hortonworks.iotas.client.CatalogRestClient;
+import com.hortonworks.iotas.common.Constants;
 import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Result;
@@ -34,7 +35,6 @@ import com.hortonworks.iotas.streams.layout.component.rule.action.transform.Enri
 import com.hortonworks.iotas.streams.layout.component.rule.action.transform.InmemoryTransformDataProvider;
 import com.hortonworks.iotas.streams.layout.component.rule.action.transform.ProjectionTransform;
 import com.hortonworks.iotas.streams.layout.component.rule.action.transform.Transform;
-import com.hortonworks.iotas.util.CoreUtils;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
@@ -303,10 +303,10 @@ public class SplitJoinTest {
             joinAction.setOutputStreams(Collections.singleton("output-stream"));
 
             Map<String, Object> config = new HashMap<>();
-            config.put(CoreUtils.CATALOG_ROOT_URL, "dummy-url");
+            config.put(Constants.CATALOG_ROOT_URL, "dummy-url");
             final Path tempDirectory = Files.createTempDirectory("sj-test");
             tempDirectory.toFile().deleteOnExit();
-            config.put(CoreUtils.LOCAL_FILES_PATH, tempDirectory);
+            config.put(Constants.LOCAL_FILES_PATH, tempDirectory);
 
             runSplitJoin(splitAction, joinAction, config);
         } finally {
