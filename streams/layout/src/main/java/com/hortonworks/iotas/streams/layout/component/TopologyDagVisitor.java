@@ -5,6 +5,7 @@ import com.hortonworks.iotas.streams.layout.component.impl.CustomProcessor;
 import com.hortonworks.iotas.streams.layout.component.impl.HbaseSink;
 import com.hortonworks.iotas.streams.layout.component.impl.KafkaSource;
 import com.hortonworks.iotas.streams.layout.component.impl.NotificationSink;
+import com.hortonworks.iotas.streams.layout.component.impl.OpenTsdbSink;
 import com.hortonworks.iotas.streams.layout.component.impl.ParserProcessor;
 import com.hortonworks.iotas.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationProcessor;
@@ -29,6 +30,9 @@ public abstract class TopologyDagVisitor {
         throw new UnsupportedOperationException("Not Implemented");
     }
     public void visit(HdfsSink hdfsSink) {
+        throw new UnsupportedOperationException("Not Implemented");
+    }
+    public void visit(OpenTsdbSink openTsdbSink) {
         throw new UnsupportedOperationException("Not Implemented");
     }
     public void visit(NotificationSink notificationSink) {

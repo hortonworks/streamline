@@ -62,6 +62,7 @@ post /system/componentdefinitions/PROCESSOR normalization-processor-topology-com
 post /system/componentdefinitions/SINK hdfs-topology-component
 post /system/componentdefinitions/SINK hbase-topology-component
 post /system/componentdefinitions/SINK notification-topology-component
+post /system/componentdefinitions/SINK opentsdb-sink-topology-component
 post /system/componentdefinitions/LINK all-grouping-link-topology-component
 post /system/componentdefinitions/LINK direct-grouping-link-topology-component
 post /system/componentdefinitions/LINK shuffle-grouping-link-topology-component
