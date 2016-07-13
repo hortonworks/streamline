@@ -9,7 +9,7 @@ import com.hortonworks.iotas.streams.catalog.topology.TopologyComponentDefinitio
 import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.layout.schema.CatalogServiceAware;
 import com.hortonworks.iotas.layout.schema.EvolvingSchema;
-import com.hortonworks.iotas.webservice.util.WSUtils;
+import com.hortonworks.iotas.common.util.WSUtils;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;

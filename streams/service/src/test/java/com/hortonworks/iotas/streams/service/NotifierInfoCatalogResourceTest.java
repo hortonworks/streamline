@@ -1,10 +1,9 @@
-package com.hortonworks.iotas.webservice;
+package com.hortonworks.iotas.streams.service;
 
 import com.hortonworks.iotas.common.catalog.CatalogResponse;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.streams.catalog.NotifierInfo;
 import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
-import com.hortonworks.iotas.webservice.catalog.NotifierInfoCatalogResource;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.integration.junit4.JMockit;
