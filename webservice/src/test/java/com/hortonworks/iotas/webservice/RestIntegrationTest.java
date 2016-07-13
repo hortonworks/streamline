@@ -37,7 +37,7 @@ import com.hortonworks.iotas.processor.examples.ConsoleCustomProcessor;
 import com.hortonworks.iotas.streams.catalog.topology.ConfigField;
 import com.hortonworks.iotas.streams.catalog.topology.TopologyComponentDefinition;
 import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
-import com.hortonworks.iotas.webservice.catalog.TopologyCatalogResource;
+import com.hortonworks.iotas.streams.service.TopologyCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
 import com.hortonworks.iotas.webservice.catalog.dto.TagDto;
 import io.dropwizard.testing.ResourceHelpers;

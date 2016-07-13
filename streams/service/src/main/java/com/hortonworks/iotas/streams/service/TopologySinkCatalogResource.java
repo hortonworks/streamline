@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.hortonworks.iotas.webservice.catalog;
+package com.hortonworks.iotas.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
-import com.hortonworks.iotas.streams.catalog.TopologyEdge;
 import com.hortonworks.iotas.common.QueryParam;
+import com.hortonworks.iotas.streams.catalog.TopologySink;
 import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
-import com.hortonworks.iotas.webservice.util.WSUtils;
+import com.hortonworks.iotas.common.util.WSUtils;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -48,23 +48,23 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 
 /**
- * An edge between two components in an IotasTopology
+ * Sink component within an IotasTopology
  */
-@Path("/api/v1/catalog/topologies/{topologyId}/edges")
+@Path("/api/v1/catalog/topologies/{topologyId}/sinks")
 @Produces(MediaType.APPLICATION_JSON)
-public class TopologyEdgeCatalogResource {
+public class TopologySinkCatalogResource {
     private StreamCatalogService catalogService;
 
-    public TopologyEdgeCatalogResource(StreamCatalogService catalogService) {
+    public TopologySinkCatalogResource(StreamCatalogService catalogService) {
         this.catalogService = catalogService;
     }
 
     /**
      * <p>
-     * Lists all the edges in the topology or the ones matching specific query params. For example to
-     * list all the edges in the topology,
+     * Lists all the sinks in the topology or the ones matching specific query params. For example to
+     * list all the sinks in the topology,
      * </p>
-     * <b>GET /api/v1/catalog/topologies/:TOPOLOGY_ID/edges</b>
+     * <b>GET /api/v1/catalog/topologies/:TOPOLOGY_ID/sinks</b>
      * <p>
      * <pre>
      * {
@@ -73,26 +73,26 @@ public class TopologyEdgeCatalogResource {
      *   "entities": [{
      *     "id": 1,
      *     "topologyId": 1,
-     *     "fromId": 1,
-     *     "toId": 1,
-     *     "streamGroupings": [
-     *       {
-     *         "streamId": 1,
-     *         "grouping": "SHUFFLE"
+     *     "name": "hbasesink",
+     *     "config": {
+     *       "properties": {
+     *         "fsUrl": "hdfs://localhost:9000"
      *       }
-     *     ]
+     *     },
+     *     "type": "HBASE"
      *   }]
      * }
      * </pre>
      */
     @GET
     @Timed
-    public Response listTopologyEdges(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) {
+    public Response listTopologySinks(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) {
         List<QueryParam> queryParams = WSUtils.buildTopologyIdAwareQueryParams(topologyId, uriInfo);
+
         try {
-            Collection<TopologyEdge> edges = catalogService.listTopologyEdges(queryParams);
-            if (edges != null && !edges.isEmpty()) {
-                return WSUtils.respond(OK, SUCCESS, edges);
+            Collection<TopologySink> sinks = catalogService.listTopologySinks(queryParams);
+            if (sinks != null && !sinks.isEmpty()) {
+                return WSUtils.respond(OK, SUCCESS, sinks);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -103,9 +103,9 @@ public class TopologyEdgeCatalogResource {
 
     /**
      * <p>
-     * Gets a specific topology edge by Id. For example,
+     * Gets a specific topology sink by Id. For example,
      * </p>
-     * <b>GET /api/v1/catalog/topologies/:TOPOLOGY_ID/edges/:EDGE_ID</b>
+     * <b>GET /api/v1/catalog/topologies/:TOPOLOGY_ID/sources/:SINK_ID</b>
      * <pre>
      * {
      *   "responseCode": 1000,
@@ -113,14 +113,13 @@ public class TopologyEdgeCatalogResource {
      *   "entity": {
      *     "id": 1,
      *     "topologyId": 1,
-     *     "fromId": 1,
-     *     "toId": 1,
-     *     "streamGroupings": [
-     *       {
-     *         "streamId": 1,
-     *         "grouping": "SHUFFLE"
+     *     "name": "hbasesink",
+     *     "config": {
+     *       "properties": {
+     *         "fsUrl": "hdfs://localhost:9000"
      *       }
-     *     ]
+     *     },
+     *     "type": "HBASE"
      *   }
      * }
      * </pre>
@@ -129,28 +128,32 @@ public class TopologyEdgeCatalogResource {
     @Path("/{id}")
     @Timed
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTopologyEdgeById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long edgeId) {
+    public Response getTopologySinkById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sinkId) {
         try {
-            TopologyEdge edge = catalogService.getTopologyEdge(edgeId);
-            if (edge != null && edge.getTopologyId().equals(topologyId)) {
-                return WSUtils.respond(OK, SUCCESS, edge);
+            TopologySink sink = catalogService.getTopologySink(sinkId);
+            if (sink != null && sink.getTopologyId().equals(topologyId)) {
+                return WSUtils.respond(OK, SUCCESS, sink);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, buildMessageForCompositeId(topologyId, edgeId));
+        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, buildMessageForCompositeId(topologyId, sinkId));
     }
 
     /**
      * <p>
-     * Creates a topology edge. For example,
+     * Creates a topology sink. For example,
      * </p>
-     * <b>POST /api/v1/catalog/topologies/:TOPOLOGY_ID/edges</b>
+     * <b>POST /api/v1/catalog/topologies/:TOPOLOGY_ID/sinks</b>
      * <pre>
      * {
-     *   "fromId": 1,
-     *   "toId": 1,
-     *   "streamGroupings": [{"streamId": 1, "grouping": "SHUFFLE"}]
+     *   "name": "hbasesink",
+     *   "config": {
+     *     "properties": {
+     *       "fsUrl": "hdfs://localhost:9000"
+     *     }
+     *   },
+     *   "type": "HBASE"
      * }
      * </pre>
      * <i>Sample success response: </i>
@@ -161,39 +164,41 @@ public class TopologyEdgeCatalogResource {
      *   "entity": {
      *     "id": 1,
      *     "topologyId": 1,
-     *     "fromId": 1,
-     *     "toId": 1,
-     *     "streamGroupings": [
-     *       {
-     *         "streamId": 1,
-     *         "grouping": "SHUFFLE",
-     *         "fields": ["a", "b"]
+     *     "name": "hbasesink",
+     *     "config": {
+     *       "properties": {
+     *         "fsUrl": "hdfs://localhost:9000"
      *       }
-     *     ]
+     *     },
+     *     "type": "HBASE"
      *   }
      * }
      * </pre>
      */
     @POST
     @Timed
-    public Response addTopologyEdge(@PathParam("topologyId") Long topologyId, TopologyEdge edge) {
+    public Response addTopologySink(@PathParam("topologyId") Long topologyId, TopologySink topologySink) {
         try {
-            TopologyEdge createdEdge = catalogService.addTopologyEdge(topologyId, edge);
-            return WSUtils.respond(CREATED, SUCCESS, createdEdge);
+            TopologySink createdSink = catalogService.addTopologySink(topologyId, topologySink);
+            return WSUtils.respond(CREATED, SUCCESS, createdSink);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
     }
 
     /**
-     * <p>Updates a topology edge.</p>
+     * <p>Updates a topology sink.</p>
      * <p>
-     * <b>PUT /api/v1/catalog/topologies/:TOPOLOGY_ID/edges/:EDGE_ID</b>
+     * <b>PUT /api/v1/catalog/topologies/:TOPOLOGY_ID/sources/:SINK_ID</b>
      * <pre>
      * {
-     *   "fromId": 1,
-     *   "toId": 2,
-     *   "streamGroupings": [{"streamId": 1, "grouping": "SHUFFLE"}]
+     *   "name": "hbasesinkTest",
+     *   "config": {
+     *     "properties": {
+     *       "fsUrl": "hdfs://localhost:9000"
+     *     }
+     *   },
+     *   "type": "HBASE"
      * }
      * </pre>
      * <i>Sample success response: </i>
@@ -204,14 +209,13 @@ public class TopologyEdgeCatalogResource {
      *   "entity": {
      *     "id": 1,
      *     "topologyId": 1,
-     *     "fromId": 1,
-     *     "toId": 2,
-     *     "streamGroupings": [
-     *       {
-     *         "streamId": 1,
-     *         "grouping": "SHUFFLE"
+     *     "name": "hbasesinkTest",
+     *     "config": {
+     *       "properties": {
+     *         "fsUrl": "hdfs://localhost:9000"
      *       }
-     *     ]
+     *     },
+     *     "type": "HBASE"
      *   }
      * }
      * </pre>
@@ -219,11 +223,11 @@ public class TopologyEdgeCatalogResource {
     @PUT
     @Path("/{id}")
     @Timed
-    public Response addOrUpdateTopologyEdge(@PathParam("topologyId") Long topologyId, @PathParam("id") Long edgeId,
-                                                 TopologyEdge edge) {
+    public Response addOrUpdateTopologySink(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sinkId,
+                                              TopologySink topologySink) {
         try {
-            TopologyEdge createdEdge = catalogService.addOrUpdateTopologyEdge(topologyId, edgeId, edge);
-            return WSUtils.respond(CREATED, SUCCESS, createdEdge);
+            TopologySink createdTopologySink = catalogService.addOrUpdateTopologySink(topologyId, sinkId, topologySink);
+            return WSUtils.respond(CREATED, SUCCESS, createdTopologySink);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -231,9 +235,9 @@ public class TopologyEdgeCatalogResource {
 
     /**
      * <p>
-     * Removes a topology edge.
+     * Removes a topology sink.
      * </p>
-     * <b>DELETE /api/v1/catalog/topologies/:TOPOLOGY_ID/edges/:EDGE_ID</b>
+     * <b>DELETE /api/v1/catalog/topologies/:TOPOLOGY_ID/sources/:SINK_ID</b>
      * <pre>
      * {
      *   "responseCode": 1000,
@@ -241,14 +245,13 @@ public class TopologyEdgeCatalogResource {
      *   "entity": {
      *     "id": 1,
      *     "topologyId": 1,
-     *     "fromId": 1,
-     *     "toId": 1,
-     *     "streamGroupings": [
-     *       {
-     *         "streamId": 1,
-     *         "grouping": "SHUFFLE"
+     *     "name": "hbasesink",
+     *     "config": {
+     *       "properties": {
+     *         "fsUrl": "hdfs://localhost:9000"
      *       }
-     *     ]
+     *     },
+     *     "type": "HBASE"
      *   }
      * }
      * </pre>
@@ -256,21 +259,20 @@ public class TopologyEdgeCatalogResource {
     @DELETE
     @Path("/{id}")
     @Timed
-    public Response removeTopologyEdge(@PathParam("topologyId") Long topologyId, @PathParam("id") Long edgeId) {
+    public Response removeTopologySink(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sinkId) {
         try {
-            TopologyEdge removedEdge = catalogService.removeTopologyEdge(edgeId);
-            if (removedEdge != null) {
-                return WSUtils.respond(OK, SUCCESS, removedEdge);
+            TopologySink topologySink = catalogService.removeTopologySink(sinkId);
+            if (topologySink != null) {
+                return WSUtils.respond(OK, SUCCESS, topologySink);
             } else {
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, edgeId.toString());
+                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, sinkId.toString());
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
     }
 
-    private String buildMessageForCompositeId(Long topologyId, Long edgeId) {
-        return String.format("topology id <%d>, edge id <%d>", topologyId, edgeId);
+    private String buildMessageForCompositeId(Long topologyId, Long sinkId) {
+        return String.format("topology id <%d>, sink id <%d>", topologyId, sinkId);
     }
-
 }

@@ -4,7 +4,7 @@ import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
-import com.hortonworks.iotas.webservice.util.WSUtils;
+import com.hortonworks.iotas.common.util.WSUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
