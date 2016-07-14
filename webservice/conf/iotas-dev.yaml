@@ -1,7 +1,7 @@
 brokerList: localhost:9092
 zookeeperHost: localhost:2181
 topologyActionsImpl: com.hortonworks.iotas.streams.layout.storm.StormTopologyActionsImpl
-topologyMetricsImpl: com.hortonworks.iotas.topology.storm.StormTopologyMetricsImpl
+topologyMetricsImpl: com.hortonworks.iotas.streams.metrics.storm.topology.StormTopologyMetricsImpl
 #change the below to the path on your local machine
 iotasStormJar: /tmp/storm-0.1.0-SNAPSHOT.jar
 # Optionally set this to path of the JAVA jar command
