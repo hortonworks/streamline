@@ -130,6 +130,9 @@ public class StormSqlEngine implements ScriptEngine<StormSqlEngine> {
 
         @Override
         public void flush(ChannelContext channelContext) { }
+
+        @Override
+        public void setSource(ChannelContext channelContext, Object o) { }
     }
 
     private class RulesDataSourcesProvider implements DataSourcesProvider {
