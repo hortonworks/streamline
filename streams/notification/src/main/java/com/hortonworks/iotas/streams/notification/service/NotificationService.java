@@ -18,13 +18,12 @@
 
 package com.hortonworks.iotas.streams.notification.service;
 
-import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.common.QueryParam;
-import com.hortonworks.iotas.streams.notification.common.Notification;
-import com.hortonworks.iotas.streams.notification.common.NotificationContext;
-import com.hortonworks.iotas.streams.notification.common.Notifier;
-import com.hortonworks.iotas.streams.notification.common.NotifierConfig;
-import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.streams.notification.Notification;
+import com.hortonworks.iotas.streams.notification.NotificationContext;
+import com.hortonworks.iotas.streams.notification.Notifier;
+import com.hortonworks.iotas.streams.notification.NotifierConfig;
 
 import java.util.List;
 

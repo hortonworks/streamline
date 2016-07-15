@@ -1,4 +1,4 @@
-package com.hortonworks.iotas.streams.notification.common;
+package com.hortonworks.iotas.streams.notification;
 
 import java.util.Map;
 import java.util.Properties;

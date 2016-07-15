@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import com.hortonworks.iotas.streams.IotasEvent;
+
 /**
  * A default implementation of IotasEvent.
  */

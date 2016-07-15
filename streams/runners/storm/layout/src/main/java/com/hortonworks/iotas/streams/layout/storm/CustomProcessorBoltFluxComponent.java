@@ -3,19 +3,13 @@ package com.hortonworks.iotas.streams.layout.storm;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.common.exception.ConfigException;
 import com.hortonworks.iotas.common.util.Utils;
 import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
-import com.hortonworks.iotas.common.util.ProxyUtil;
 import com.hortonworks.iotas.streams.layout.exception.BadTopologyLayoutException;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -115,8 +109,8 @@ public class CustomProcessorBoltFluxComponent extends AbstractFluxComponent {
 //            String jarPath = String.format("/tmp%s%s", File.separator, jarFileName);
 //            String customProcessorImpl = conf.get(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_IMPL).toString();
 //            IOUtils.copy(customProcessorJar, new FileOutputStream(new File(jarPath)));
-//            ProxyUtil<CustomProcessor> customProcessorProxyUtil = new ProxyUtil<>(CustomProcessor.class);
-//            CustomProcessor customProcessor = customProcessorProxyUtil.loadClassFromJar(jarPath, customProcessorImpl);
+//            ProxyUtil<CustomProcessorRuntime> customProcessorProxyUtil = new ProxyUtil<>(CustomProcessorRuntime.class);
+//            CustomProcessorRuntime customProcessor = customProcessorProxyUtil.loadClassFromJar(jarPath, customProcessorImpl);
 //            customProcessor.validateConfig(getCustomConfig());
 //        }
 //        catch (ClassNotFoundException|InstantiationException|IllegalAccessException|IOException e) {

@@ -1,4 +1,4 @@
-package com.hortonworks.iotas.common;
+package com.hortonworks.iotas.streams;
 
 import java.util.Map;
 
@@ -8,6 +8,9 @@ import java.util.Map;
  * the notification.
  */
 public interface IotasEvent {
+
+    // Default value chosen to be blank and not the default used in storm since wanted to keep it independent of storm.
+    String DEFAULT_SOURCE_STREAM = "default";// Default value chosen to be blank and not the default used in storm since wanted to keep it independent of storm.
 
     String IOTAS_EVENT = "iotas.event";
 

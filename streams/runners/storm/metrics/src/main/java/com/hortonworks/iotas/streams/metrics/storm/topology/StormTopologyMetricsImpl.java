@@ -1,7 +1,7 @@
 package com.hortonworks.iotas.streams.metrics.storm.topology;
 
 import com.hortonworks.iotas.streams.layout.component.TopologyLayout;
-import com.hortonworks.iotas.common.exception.ConfigException;
+import com.hortonworks.iotas.streams.exception.ConfigException;
 import com.hortonworks.iotas.streams.metrics.TimeSeriesQuerier;
 import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.iotas.streams.metrics.topology.TopologyMetrics;

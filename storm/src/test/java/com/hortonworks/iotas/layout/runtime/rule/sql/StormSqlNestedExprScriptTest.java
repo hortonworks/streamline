@@ -1,14 +1,14 @@
 package com.hortonworks.iotas.layout.runtime.rule.sql;
 
-import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Expression;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Literal;
+import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.ArrayFieldExpression;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.BinaryExpression;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.Condition;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.Expression;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.Literal;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.MapFieldExpression;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.Operator;
 import com.hortonworks.iotas.layout.runtime.rule.condition.expression.StormSqlExpression;

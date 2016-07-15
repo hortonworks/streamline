@@ -1,4 +1,4 @@
-package com.hortonworks.iotas.common;
+package com.hortonworks.iotas.streams;
 
 import java.util.List;
 

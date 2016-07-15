@@ -18,9 +18,9 @@
 
 package com.hortonworks.iotas.streams.notification.service;
 
-import com.hortonworks.iotas.streams.notification.common.Notification;
-import com.hortonworks.iotas.streams.notification.common.NotificationContext;
-import com.hortonworks.iotas.streams.notification.common.NotifierConfig;
+import com.hortonworks.iotas.streams.notification.Notification;
+import com.hortonworks.iotas.streams.notification.NotificationContext;
+import com.hortonworks.iotas.streams.notification.NotifierConfig;
 import com.hortonworks.iotas.streams.notification.store.NotificationStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

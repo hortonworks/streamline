@@ -20,7 +20,7 @@ package com.hortonworks.iotas.layout.runtime.splitjoin;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.streams.IotasEvent;
 
 import java.util.Collections;
 import java.util.Map;

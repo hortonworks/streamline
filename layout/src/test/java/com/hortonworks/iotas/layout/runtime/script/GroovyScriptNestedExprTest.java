@@ -1,6 +1,6 @@
 package com.hortonworks.iotas.layout.runtime.script;
 
-import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.layout.runtime.script.engine.GroovyScriptEngine;
 import org.junit.Before;
@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.Assert.*;
 
 /**
  * Unit tests to validate groovy conditions with nested expressions.

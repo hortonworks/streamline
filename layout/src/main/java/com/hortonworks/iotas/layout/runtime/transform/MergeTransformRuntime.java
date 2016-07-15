@@ -17,11 +17,13 @@
  */
 package com.hortonworks.iotas.layout.runtime.transform;
 
-import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.streams.layout.Transform;
+import com.hortonworks.iotas.streams.layout.component.rule.action.transform.MergeTransform;
+import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.layout.runtime.RuntimeService;
-import com.hortonworks.iotas.streams.layout.component.rule.action.transform.MergeTransform;
-import com.hortonworks.iotas.streams.layout.component.rule.action.transform.Transform;
+import com.hortonworks.iotas.streams.runtime.TransformRuntime;
+
 
 import java.util.Collections;
 import java.util.HashMap;

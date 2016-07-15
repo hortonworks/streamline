@@ -19,7 +19,7 @@
 package com.hortonworks.iotas.streams.layout.component.rule;
 
 import com.google.common.collect.ImmutableList;
-import com.hortonworks.iotas.common.IotasEventImpl;
+import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.layout.component.rule.action.Action;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.Condition;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.GroupBy;
@@ -37,7 +37,7 @@ import java.util.Set;
  * A rule as represented in the UI layout
  */
 public class Rule implements Serializable {
-    private static final Set<String> DEFAULT_STREAM = Collections.singleton(IotasEventImpl.DEFAULT_SOURCE_STREAM);
+    private static final Set<String> DEFAULT_STREAM = Collections.singleton(IotasEvent.DEFAULT_SOURCE_STREAM);
     private Long id;
     private String name;
     private String description;

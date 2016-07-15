@@ -16,7 +16,7 @@
  *   limitations under the License.
  */
 
-package com.hortonworks.iotas.streams.notification.common;
+package com.hortonworks.iotas.streams.notification;
 
 import java.util.List;
 import java.util.Map;

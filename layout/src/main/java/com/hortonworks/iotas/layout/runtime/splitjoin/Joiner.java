@@ -3,7 +3,7 @@
  */
 package com.hortonworks.iotas.layout.runtime.splitjoin;
 
-import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.streams.IotasEvent;
 
 /**
  * Joins the received {@link EventGroup} and generates a resultant {@link IotasEvent}

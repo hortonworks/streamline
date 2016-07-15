@@ -1,10 +1,10 @@
 package com.hortonworks.iotas.processor.examples;
 
-import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.common.Result;
-import com.hortonworks.iotas.common.exception.ConfigException;
-import com.hortonworks.iotas.common.exception.ProcessingException;
-import com.hortonworks.iotas.processor.CustomProcessor;
+import com.hortonworks.iotas.streams.IotasEvent;
+import com.hortonworks.iotas.streams.Result;
+import com.hortonworks.iotas.streams.exception.ConfigException;
+import com.hortonworks.iotas.streams.exception.ProcessingException;
+import com.hortonworks.iotas.streams.runtime.CustomProcessorRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,8 +16,8 @@ import java.util.Map;
 /**
  * Console Custom Processor is a sample custom processor to test the storm topology with custom processor bolt
  */
-public class ConsoleCustomProcessor implements CustomProcessor {
-    protected static final Logger LOG = LoggerFactory.getLogger(ConsoleCustomProcessor.class);
+public class ConsoleCustomProcessorRuntime implements CustomProcessorRuntime {
+    protected static final Logger LOG = LoggerFactory.getLogger(ConsoleCustomProcessorRuntime.class);
     public static final String CONFIG_FIELD_NAME = "configField";
     Map<String, Object> config;
     @Override

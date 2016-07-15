@@ -5,6 +5,7 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.hortonworks.iotas.streams.notification.Notification;
 import static org.junit.Assert.*;
 
 /**
