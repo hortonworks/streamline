@@ -29,7 +29,6 @@ import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.exception.AlreadyExistsException;
 import com.hortonworks.iotas.storage.exception.StorageException;
 import org.apache.atlas.AtlasException;
-import org.apache.atlas.typesystem.ITypedReferenceableInstance;
 import org.apache.atlas.typesystem.Referenceable;
 import org.apache.atlas.typesystem.exception.EntityExistsException;
 import org.apache.atlas.typesystem.types.AttributeDefinition;
@@ -96,9 +95,7 @@ public class AtlasStorageManager implements StorageManager {
             } catch (Exception e) {
                 throw new StorageException(e);
             }
-        } else if (existing.equals(storable)) {
-            return;
-        } else {
+        } else if (!existing.equals(storable)) {
             throw new AlreadyExistsException("Another instance with same id = " + storable.getPrimaryKey()
                     + " exists with different value in namespace " + storable.getNameSpace()
                     + " Consider using addOrUpdate method if you always want to overwrite.");
@@ -113,7 +110,6 @@ public class AtlasStorageManager implements StorageManager {
                 values.put(entry.getKey(), entry.getValue());
             }
         }
-
         return new Referenceable(storable.getNameSpace(), values);
     }
 
@@ -121,23 +117,24 @@ public class AtlasStorageManager implements StorageManager {
     public <T extends Storable> T remove(StorableKey key) throws StorageException {
         Preconditions.checkNotNull(key, "StorableKey argument can not be null");
 
+        Collection<Referenceable> instances = null;
         try {
             // returned instances does not have actual entity info, Atlas should fix this!!
-            Collection<Referenceable> instances = atlasMetadataService.remove(key.getNameSpace(),
-                    atlasMetadataService.createAttributes(key.getPrimaryKey().getFieldsToVal()));
-
-            if (instances == null || instances.isEmpty()) {
-                return null;
-            }
-
-            if (instances.size() > 1) {
-                LOG.warn("Expected one entity with the given key: [{}] but returning first entry.", key);
-            }
-
-            return (T) storableFactory.create(key.getNameSpace()).fromMap(instances.iterator().next().getValuesMap());
+            instances = atlasMetadataService.remove(key.getNameSpace(),
+                                            atlasMetadataService.createAttributes(key.getPrimaryKey().getFieldsToVal()));
         } catch (AtlasException e) {
             throw new StorageException(e);
         }
+
+        T removedEntity = null;
+        if (instances != null && !instances.isEmpty()) {
+            if (instances.size() > 1) {
+                LOG.warn("Expected one entity with the given key: [{}] but returning first entry.", key);
+            }
+            removedEntity = (T) storableFactory.create(key.getNameSpace()).fromMap(instances.iterator().next().getValuesMap());
+        }
+
+        return removedEntity;
     }
 
     @Override
@@ -157,29 +154,21 @@ public class AtlasStorageManager implements StorageManager {
 
         String nameSpace = key.getNameSpace();
         Map<Schema.Field, Object> fieldsToVal = key.getPrimaryKey().getFieldsToVal();
-
         Collection<Referenceable> entities = null;
         try {
             entities = atlasMetadataService.getEntities(nameSpace, atlasMetadataService.createAttributes(fieldsToVal));
         } catch (AtlasException e) {
             throw new StorageException(e);
         }
-        if (entities.isEmpty()) {
-            return null;
-        }
+        LOG.debug("Number of entities found [{}] for key [{}]", entities.size(), key);
 
-        return storableOf(nameSpace, entities.iterator().next());
+        return entities != null && !entities.isEmpty() ? (T) storableOf(nameSpace, entities.iterator().next()) : null;
     }
 
     private <T extends Storable> T storableOf(String nameSpace, Referenceable referenceable) {
         Preconditions.checkArgument(nameSpace != null, "nameSpace can not be null");
 
-        if (referenceable == null) {
-            return null;
-        }
-
-        Storable storable = storableFactory.create(nameSpace);
-        return (T) storable.fromMap(referenceable.getValuesMap());
+        return referenceable != null ? (T) storableFactory.create(nameSpace).fromMap(referenceable.getValuesMap()) : null;
     }
 
     @Override

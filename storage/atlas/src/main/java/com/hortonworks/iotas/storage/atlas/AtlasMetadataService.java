@@ -58,7 +58,7 @@ public class AtlasMetadataService {
     private static final String ATLAS_CONFIG_DIR = "atlas.config.dir";
     private static final String ATLAS_CONF = "ATLAS_CONF";
 
-    private static Logger log = LoggerFactory.getLogger(AtlasMetadataService.class);
+    private static Logger LOG = LoggerFactory.getLogger(AtlasMetadataService.class);
 
     private Injector metadataModuleInjector;
     private final MetadataService metadataService;
@@ -83,7 +83,7 @@ public class AtlasMetadataService {
         }
 
         String atlasConfigDir = (String) properties.get(ATLAS_CONFIG_DIR);
-        log.info("Atlas config dir is configured with: [{}] ", atlasConfigDir);
+        LOG.info("Atlas config dir is configured with: [{}] ", atlasConfigDir);
         try {
             File file = Files.createFile(Paths.get(atlasConfigDir, "atlas-application.properties")).toFile();
             file.deleteOnExit();
@@ -91,7 +91,7 @@ public class AtlasMetadataService {
                 for (Map.Entry<String, Object> entry : properties.entrySet()) {
                     String key = entry.getKey();
                     Object value = entry.getValue();
-                    log.info("Atlas property key:[{}] value:[{}]", key, value);
+                    LOG.info("Atlas property key:[{}] value:[{}]", key, value);
                     bufferedWriter.write(key);
                     bufferedWriter.write("=");
                     bufferedWriter.write(value.toString());
@@ -102,21 +102,20 @@ public class AtlasMetadataService {
             throw new RuntimeException(e);
         }
         System.setProperty(ATLAS_CONF, atlasConfigDir);
-        log.info("System property [{}] is set as [{}]", ATLAS_CONF, atlasConfigDir);
+        LOG.info("System property [{}] is set as [{}]", ATLAS_CONF, atlasConfigDir);
     }
 
     public void registerType(HierarchicalTypeDefinition<?> typeDef) throws Exception {
-
         if (metadataService.getTypeNamesList().contains(typeDef.typeName)) {
-            log.info("Given type: [{}] is already registered.", typeDef.typeName);
-            return;
-        }
+            LOG.info("Given type: [{}] is already registered.", typeDef.typeName);
+        } else {
+            final String typeDefJson = TypesSerialization.toJson(typeDef, false);
+            final JSONObject type = metadataService.createType(typeDefJson);
+            LOG.info("####### registered type [{}] ", type);
 
-        final String typeDefJson = TypesSerialization.toJson(typeDef, false);
-        final JSONObject type = metadataService.createType(typeDefJson);
-        log.info("####### registered type [{}] ", type);
-        final List<String> typeNamesList = metadataService.getTypeNamesList();
-        log.debug("####### registered typeNames [{}] ", typeNamesList);
+            final List<String> typeNamesList = metadataService.getTypeNamesList();
+            LOG.debug("####### registered typeNames [{}] ", typeNamesList);
+        }
     }
 
     public Referenceable getEntity(String entityGuid) throws AtlasException {
@@ -126,60 +125,63 @@ public class AtlasMetadataService {
 
     public String addOrUpdateEntity(Referenceable referenceable, String uniqueAttrId) throws AtlasException {
 
-        log.debug("Updating new entity [{}]", referenceable);
+        LOG.debug("Updating new entity [{}]", referenceable);
 
         Object attrValue = referenceable.getValuesMap().get(uniqueAttrId);
         Collection<Referenceable> entities = getEntities(referenceable.getTypeName(), Collections.singletonMap(uniqueAttrId, attrValue));
-
+        String result = null;
         if (entities.isEmpty()) {
             Referenceable newEntity = new Referenceable(referenceable.getTypeName(), referenceable.getValuesMap());
-            return createEntity(newEntity);
-        }
-
-        Referenceable entity = entities.iterator().next();
-        entity.getValuesMap().clear();
-        entity.getValuesMap().putAll(referenceable.getValuesMap());
-
-        String entityJSON = InstanceSerialization.toJson(entity, true);
-        AtlasClient.EntityResult entityResult = _updateEntities(entityJSON);
-        log.debug("Updated instance for type [{}]", referenceable.getTypeName() + ", guids: " + entityResult.getUpdateEntities());
-
-        List<String> result = null;
-        List<String> createdEntities = entityResult.getCreatedEntities();
-        if(createdEntities != null && !createdEntities.isEmpty()) {
-            result = createdEntities;
+            result = createEntity(newEntity);
         } else {
-            result = entityResult.getUpdateEntities();
+            Referenceable entity = entities.iterator().next();
+            entity.getValuesMap().clear();
+            entity.getValuesMap().putAll(referenceable.getValuesMap());
+
+            String entityJSON = InstanceSerialization.toJson(entity, true);
+            AtlasClient.EntityResult entityResult = _updateEntities(entityJSON);
+            LOG.debug("Updated instance for type [{}]", referenceable.getTypeName() + ", guids: " + entityResult.getUpdateEntities());
+
+            List<String> entityIds = null;
+            List<String> createdEntities = entityResult.getCreatedEntities();
+            if (createdEntities != null && !createdEntities.isEmpty()) {
+                entityIds = createdEntities;
+            } else {
+                entityIds = entityResult.getUpdateEntities();
+            }
+
+            if (entityIds != null && !entityIds.isEmpty()) {
+                result = entityIds.get(0);
+            }
         }
 
-        return result!= null && !result.isEmpty() ? result.get(0) : null;
+        return result;
     }
 
     public String addOrUpdateEntity(Referenceable referenceable) throws AtlasException {
 
         String entityJSON = InstanceSerialization.toJson(referenceable, true);
-        log.debug("Updating new entity [{}]", entityJSON);
+        LOG.debug("Updating new entity [{}]", entityJSON);
 
         AtlasClient.EntityResult entityResult = _updateEntities(entityJSON);
-        log.debug("Updated instance for type [{}]", referenceable.getTypeName() + ", guids: " + entityResult.getUpdateEntities());
+        List<String> updateEntityGuids = entityResult.getUpdateEntities();
+        LOG.debug("Updated instance for type [{}]", referenceable.getTypeName() + ", guids: " + updateEntityGuids);
 
-        // return the Id for created instance with guids
-        return entityResult.getUpdateEntities().get(0);
+        // Atlas API returns List of entities updated in a session. This session has only one invocation of update, so,
+        // there will be only one element in the result.
+        return updateEntityGuids != null && !updateEntityGuids.isEmpty() ? updateEntityGuids.get(0) : null;
     }
 
     public String createEntity(Referenceable referenceable) throws AtlasException {
         String entityJSON = InstanceSerialization.toJson(referenceable, true);
-        log.debug("Creating new entity [{}]", entityJSON);
+        LOG.debug("Creating new entity [{}]", entityJSON);
 
         List<String> guids = _createEntities(entityJSON);
-        log.debug("Created instance for type [{}]", referenceable.getTypeName() + ", guids: " + guids);
+        LOG.debug("Created instance for type [{}]", referenceable.getTypeName() + ", guids: " + guids);
 
-        if(guids == null || guids.isEmpty()) {
-            return null;
-        }
-
-        // return the Id for created instance with guids
-        return guids.get(0);
+        // Atlas API returns List of entities created in a session. This session has only one invocation of create, so,
+        // there will be only one element in the result.
+        return guids != null && !guids.isEmpty() ? guids.get(0) : null;
     }
 
     private List<String> _createEntities(String entityJSON) throws AtlasException {
@@ -234,22 +236,23 @@ public class AtlasMetadataService {
 
     public Collection<Referenceable> getEntities(String type, Map<String, Object> attributes) throws AtlasException {
         // currently atlas supports only finding by a single unique attribute.
-        log.debug("Getting entity with type [{}] and attributes [{}]", type, attributes);
+        LOG.debug("Getting entity with type [{}] and attributes [{}]", type, attributes);
         checkAttributes(attributes);
 
+        Collection<Referenceable> referenceables = null;
         if (attributes.isEmpty()) {
-            return getEntities(type);
-        }
+            referenceables = getEntities(type);
+        } else {
+            referenceables = new ArrayList<>();
+            List<String> entityGuids = metadataService.getEntityList(type);
+            Set<Map.Entry<String, Object>> attributesSet = attributes.entrySet();
+            for (String entityGuid : entityGuids) {
+                Referenceable entity = getEntity(entityGuid);
+                Set<Map.Entry<String, Object>> entityValuesSet = entity.getValuesMap().entrySet();
 
-        List<Referenceable> referenceables = new ArrayList<>();
-        List<String> entityGuids = metadataService.getEntityList(type);
-        Set<Map.Entry<String, Object>> attributesSet = attributes.entrySet();
-        for (String entityGuid : entityGuids) {
-            Referenceable entity = getEntity(entityGuid);
-            Set<Map.Entry<String, Object>> entityValuesSet = entity.getValuesMap().entrySet();
-
-            if (containsAll(attributesSet, entityValuesSet)) {
-                referenceables.add(entity);
+                if (containsAll(attributesSet, entityValuesSet)) {
+                    referenceables.add(entity);
+                }
             }
         }
 
@@ -258,22 +261,23 @@ public class AtlasMetadataService {
 
     public Collection<String> getEntityIds(String type, Map<String, Object> attributes) throws AtlasException {
         // currently atlas supports only finding by a single unique attribute.
-        log.debug("Getting entity with type [{}] and attributes [{}]", type, attributes);
+        LOG.debug("Getting entity with type [{}] and attributes [{}]", type, attributes);
         checkAttributes(attributes);
 
+        Collection<String> resultantIds = null;
         if (attributes.isEmpty()) {
-            return metadataService.getEntityList(type);
-        }
+            resultantIds = metadataService.getEntityList(type);
+        } else {
+            resultantIds = new ArrayList<>();
+            List<String> entityGuids = metadataService.getEntityList(type);
+            Set<Map.Entry<String, Object>> attributesSet = attributes.entrySet();
+            for (String entityGuid : entityGuids) {
+                Referenceable entity = getEntity(entityGuid);
+                Set<Map.Entry<String, Object>> entityValuesSet = entity.getValuesMap().entrySet();
 
-        List<String> resultantIds = new ArrayList<>();
-        List<String> entityGuids = metadataService.getEntityList(type);
-        Set<Map.Entry<String, Object>> attributesSet = attributes.entrySet();
-        for (String entityGuid : entityGuids) {
-            Referenceable entity = getEntity(entityGuid);
-            Set<Map.Entry<String, Object>> entityValuesSet = entity.getValuesMap().entrySet();
-
-            if (containsAll(attributesSet, entityValuesSet)) {
-                resultantIds.add(entityGuid);
+                if (containsAll(attributesSet, entityValuesSet)) {
+                    resultantIds.add(entityGuid);
+                }
             }
         }
 
@@ -282,24 +286,18 @@ public class AtlasMetadataService {
 
     public Collection<Referenceable> remove(String type, Map<String, Object> attributes) throws AtlasException {
         // currently atlas supports only deleting by a single unique attribute.
-        log.debug("Deleting entities with type [{}] and attributes [{}]", type, attributes);
+        LOG.debug("Deleting entities with type [{}] and attributes [{}]", type, attributes);
         checkAttributes(attributes);
 
         Collection<Referenceable> entities = getEntities(type, attributes);
-        log.debug("Number of entities with type[{}] and attributes[{}]: [{}] ", type, attributes, entities.size());
+        LOG.debug("Number of entities with type[{}] and attributes[{}]: [{}] ", type, attributes, entities.size());
 
-        if (entities.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        Collection<Referenceable> deletedEntities = _deleteEntities(entities);
-
-        return deletedEntities;
+        return entities != null && !entities.isEmpty() ? _deleteEntities(entities) : Collections.<Referenceable>emptyList();
     }
 
     private void checkAttributes(Map<String, Object> attributes) {
         if (attributes == null) {
-            throw new IllegalArgumentException("Attributes must be non null");
+            throw new IllegalArgumentException("Attributes must be not null");
         }
     }
 
