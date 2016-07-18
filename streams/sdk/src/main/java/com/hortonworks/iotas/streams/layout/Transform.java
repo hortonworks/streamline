@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.hortonworks.iotas.streams.layout.component.rule.action.transform;
+package com.hortonworks.iotas.streams.layout;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 

@@ -1,14 +1,14 @@
 package com.hortonworks.iotas.bolt;
 
 import com.hortonworks.iotas.client.CatalogRestClient;
-import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.processor.examples.ConsoleCustomProcessorRuntime;
+import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
-import com.hortonworks.iotas.common.Result;
+import com.hortonworks.iotas.streams.Result;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.common.exception.ProcessingException;
+import com.hortonworks.iotas.streams.runtime.CustomProcessorRuntime;
+import com.hortonworks.iotas.streams.exception.ProcessingException;
 import com.hortonworks.iotas.common.util.ProxyUtil;
-import com.hortonworks.iotas.processor.CustomProcessor;
-import com.hortonworks.iotas.processor.examples.ConsoleCustomProcessor;
 import com.hortonworks.iotas.streams.layout.storm.StormTopologyLayoutConstants;
 import mockit.Expectations;
 import mockit.Injectable;
@@ -56,7 +56,7 @@ public class CustomProcessorBoltTest {
     private @Injectable
     Tuple mockTuple;
     private @Injectable
-    CustomProcessor customProcessor;
+    CustomProcessorRuntime customProcessorRuntime;
     private @Injectable
     OutputFieldsDeclarer mockOutputDeclarer;
     private @Injectable
@@ -64,7 +64,7 @@ public class CustomProcessorBoltTest {
     private @Mocked
     CatalogRestClient catalogRestClient;
     private @Mocked
-    ProxyUtil<CustomProcessor> customProcessorProxyUtil;
+    ProxyUtil<CustomProcessorRuntime> customProcessorProxyUtil;
 
     @Before
     public void setup() throws Exception {
@@ -102,26 +102,26 @@ public class CustomProcessorBoltTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testNoLocalJarPathPrepare () throws Exception {
-        customProcessorBolt.customProcessorImpl(ConsoleCustomProcessor.class.getCanonicalName());
+        customProcessorBolt.customProcessorImpl(ConsoleCustomProcessorRuntime.class.getCanonicalName());
         customProcessorBolt.prepare(new HashMap(), null, null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testNoJarFileName () throws Exception {
-        customProcessorBolt.customProcessorImpl(ConsoleCustomProcessor.class.getCanonicalName());
+        customProcessorBolt.customProcessorImpl(ConsoleCustomProcessorRuntime.class.getCanonicalName());
         customProcessorBolt.localJarPath("/tmp");
         customProcessorBolt.prepare(new HashMap(), null, null);
     }
 
     @Test
     public void testPrepare () throws ClassNotFoundException, MalformedURLException, InstantiationException, IllegalAccessException {
-        customProcessorBolt.customProcessorImpl(ConsoleCustomProcessor.class.getCanonicalName());
+        customProcessorBolt.customProcessorImpl(ConsoleCustomProcessorRuntime.class.getCanonicalName());
         customProcessorBolt.localJarPath(localJarPath);
         customProcessorBolt.jarFileName(jarFileName);
         new Expectations() {{
             catalogRestClient.getCustomProcessorJar((jarFileName)); result = new ByteArrayInputStream("some-stream".getBytes()); minTimes=0; maxTimes=1;
-            customProcessorProxyUtil.loadClassFromJar(withEqual(localJarPath + File.separator + jarFileName), ConsoleCustomProcessor.class.getCanonicalName()
-            ); result = customProcessor;  minTimes=0; maxTimes=1;
+            customProcessorProxyUtil.loadClassFromJar(withEqual(localJarPath + File.separator + jarFileName), ConsoleCustomProcessorRuntime.class.getCanonicalName()
+            ); result = customProcessorRuntime;  minTimes=0; maxTimes=1;
         }};
         final Map<String, Object> config = new HashMap<>();
         customProcessorBolt.config(config);
@@ -129,7 +129,7 @@ public class CustomProcessorBoltTest {
         conf.put(StormTopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL, "http://localhost:8080/api/v1/catalog");
         customProcessorBolt.prepare(conf, null, null);
         new VerificationsInOrder(){{
-            customProcessor.initialize(config);
+            customProcessorRuntime.initialize(config);
             times = 1;
         }};
     }
@@ -146,7 +146,7 @@ public class CustomProcessorBoltTest {
     }
 
     private void testExecute (boolean isSuccess) throws ProcessingException, ClassNotFoundException, MalformedURLException, InstantiationException, IllegalAccessException {
-                customProcessorBolt.customProcessorImpl(ConsoleCustomProcessor.class.getCanonicalName());
+                customProcessorBolt.customProcessorImpl(ConsoleCustomProcessorRuntime.class.getCanonicalName());
         customProcessorBolt.localJarPath(localJarPath);
         customProcessorBolt.jarFileName(jarFileName);
         customProcessorBolt.outputSchema(outputStreamToSchema);
@@ -167,19 +167,19 @@ public class CustomProcessorBoltTest {
             result = new ByteArrayInputStream("some-stream".getBytes());
             minTimes = 0;
             maxTimes = 1;
-            customProcessorProxyUtil.loadClassFromJar(withEqual(localJarPath + File.separator + jarFileName), ConsoleCustomProcessor.class.getCanonicalName()
+            customProcessorProxyUtil.loadClassFromJar(withEqual(localJarPath + File.separator + jarFileName), ConsoleCustomProcessorRuntime.class.getCanonicalName()
             );
-            result = customProcessor;
+            result = customProcessorRuntime;
             minTimes = 0;
             maxTimes = 1;
         }};
         if (!isSuccess) {
             new Expectations() {{
-                customProcessor.process(iotasEvent); result = pe;
+                customProcessorRuntime.process(iotasEvent); result = pe;
             }};
         } else {
             new Expectations() {{
-                customProcessor.process(iotasEvent);
+                customProcessorRuntime.process(iotasEvent);
                 returns(results);
             }};
         }
@@ -189,7 +189,7 @@ public class CustomProcessorBoltTest {
         customProcessorBolt.execute(tuple);
         if (!isSuccess) {
             new VerificationsInOrder(){{
-                customProcessor.process(iotasEvent);
+                customProcessorRuntime.process(iotasEvent);
                 times = 1;
                 mockOutputCollector.fail(tuple);
                 times = 1;
@@ -200,7 +200,7 @@ public class CustomProcessorBoltTest {
                 tuple.getSourceStreamId();
                 times = 1;
                 IotasEvent actual;
-                customProcessor.process(actual = withCapture());
+                customProcessorRuntime.process(actual = withCapture());
                 times = 1;
                 Assert.assertEquals(actual.getSourceStream(), stream);
                 Assert.assertEquals(actual, iotasEvent);

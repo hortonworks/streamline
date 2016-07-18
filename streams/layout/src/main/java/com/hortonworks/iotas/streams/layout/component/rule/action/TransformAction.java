@@ -19,7 +19,7 @@
 package com.hortonworks.iotas.streams.layout.component.rule.action;
 
 
-import com.hortonworks.iotas.streams.layout.component.rule.action.transform.Transform;
+import com.hortonworks.iotas.streams.layout.Transform;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -1,4 +1,4 @@
-package com.hortonworks.iotas.common.exception;
+package com.hortonworks.iotas.streams.exception;
 
 /**
  * Exception class representing an error while processing a message

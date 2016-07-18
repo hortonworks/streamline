@@ -18,7 +18,7 @@
  */
 package com.hortonworks.iotas.layout.runtime.splitjoin;
 
-import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.streams.IotasEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -19,7 +19,6 @@
 package com.hortonworks.iotas.streams.layout.component.rule.action;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.hortonworks.iotas.streams.layout.component.Stream;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -38,7 +37,6 @@ public class Action implements Serializable {
 
     /**
      * Each {@link Action} can have its own output streams to which events should be sent to.
-     * todo this should be changed to to List of {@link Stream}s once Stream abstraction is integrated.
      */
     protected Set<String> outputStreams = new HashSet<>();
 

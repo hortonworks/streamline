@@ -21,6 +21,8 @@ package com.hortonworks.iotas.streams.notification.common;
 import java.util.Map;
 import java.util.Properties;
 
+import com.hortonworks.iotas.streams.notification.NotifierConfig;
+
 /**
  * The notifier config implementation.
  */

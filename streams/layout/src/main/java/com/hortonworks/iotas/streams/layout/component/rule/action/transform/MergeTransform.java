@@ -20,6 +20,8 @@ package com.hortonworks.iotas.streams.layout.component.rule.action.transform;
 
 import java.util.Map;
 
+import com.hortonworks.iotas.streams.layout.Transform;
+
 /**
  * Produces a new event whose fieldsAndValues is obtained by merging the event's fieldsAndValues with the defaults. The
  * event's fieldsAndValues takes precedence over the defaults.

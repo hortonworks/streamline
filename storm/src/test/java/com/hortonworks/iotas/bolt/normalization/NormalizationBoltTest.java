@@ -19,7 +19,7 @@
 package com.hortonworks.iotas.bolt.normalization;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.streams.layout.component.impl.normalization.BulkNormalizationConfig;

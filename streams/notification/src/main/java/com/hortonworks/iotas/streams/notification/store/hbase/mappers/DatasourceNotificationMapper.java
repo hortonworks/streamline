@@ -18,7 +18,7 @@
 
 package com.hortonworks.iotas.streams.notification.store.hbase.mappers;
 
-import com.hortonworks.iotas.streams.notification.common.Notification;
+import com.hortonworks.iotas.streams.notification.Notification;
 
 import java.util.ArrayList;
 import java.util.Arrays;

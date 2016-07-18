@@ -1,10 +1,11 @@
 package com.hortonworks.iotas.topology.storm;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import com.hortonworks.iotas.streams.runtime.CustomProcessorRuntime;
 import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager;
 import com.hortonworks.iotas.streams.catalog.Topology;
-import com.hortonworks.iotas.processor.CustomProcessor;
 import com.hortonworks.iotas.streams.catalog.topology.TopologyLayoutValidator;
 import com.hortonworks.iotas.streams.layout.component.TopologyActions;
 import com.hortonworks.iotas.streams.layout.component.TopologyLayout;
@@ -32,10 +33,10 @@ import java.util.Map;
 @RunWith(JMockit.class)
 public class TopologyLayoutValidatorTest {
     private @Mocked
-    ProxyUtil<CustomProcessor> customProcessorProxyUtil;
+    ProxyUtil<CustomProcessorRuntime> customProcessorProxyUtil;
     private @Mocked
     //CatalogRestClient catalogRestClient;
-    //private CustomProcessor customProcessor = new ConsoleCustomProcessor();
+    //private CustomProcessorRuntime customProcessor = new ConsoleCustomProcessorRuntime();
     StorageManager dao;
     ObjectMapper mapper;
     TopologyActions topologyActions = new StormTopologyActionsImpl();
@@ -111,7 +112,7 @@ public class TopologyLayoutValidatorTest {
         //String.format(TopologyLayoutConstants.ERR_MSG_INVALID_GROUPING_FIELDS, "ruleProcessor-rule1->hbasesink"),
         String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_IMPL),
         String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, TopologyLayoutConstants.JSON_KEY_INPUT_SCHEMA),
-//        String.format(TopologyLayoutConstants.ERR_MSG_CP_CONFIG_EXCEPTION, "com.hortonworks.iotas.streams.catalog.processor.examples.ConsoleCustomProcessor") + " Message from " +
+//        String.format(TopologyLayoutConstants.ERR_MSG_CP_CONFIG_EXCEPTION, "com.hortonworks.iotas.streams.catalog.processor.examples.ConsoleCustomProcessorRuntime") + " Message from " +
 //                "implementation is: Missing config field: configField",
         String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, "consoleCustomProcessor->hbasesink"),
         String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, "consoleCustomProcessor->hbasesink"),
@@ -127,7 +128,7 @@ public class TopologyLayoutValidatorTest {
         topologyActions.init(conf);
         new Expectations() {{
 //            catalogRestClient.getCustomProcessorJar(withAny("")); result = new ByteArrayInputStream("some-stream".getBytes());
-//            customProcessorProxyUtil.loadClassFromJar(withAny(""), ConsoleCustomProcessor.class.getCanonicalName()); result = customProcessor;
+//            customProcessorProxyUtil.loadClassFromJar(withAny(""), ConsoleCustomProcessorRuntime.class.getCanonicalName()); result = customProcessor;
         }};
     }
 

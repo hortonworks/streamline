@@ -18,7 +18,7 @@
 
 package com.hortonworks.iotas.streams.notification.store.hbase;
 
-import com.hortonworks.iotas.streams.notification.common.Notification;
+import com.hortonworks.iotas.streams.notification.Notification;
 import com.hortonworks.iotas.streams.notification.common.NotificationImpl;
 import com.hortonworks.iotas.streams.notification.store.Criteria;
 import com.hortonworks.iotas.streams.notification.store.CriteriaImpl;

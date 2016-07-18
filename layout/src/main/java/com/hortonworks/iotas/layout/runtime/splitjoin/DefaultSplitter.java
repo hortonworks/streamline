@@ -18,9 +18,9 @@
  */
 package com.hortonworks.iotas.layout.runtime.splitjoin;
 
-import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
-import com.hortonworks.iotas.common.Result;
+import com.hortonworks.iotas.streams.IotasEvent;
+import com.hortonworks.iotas.streams.Result;
 
 import java.util.ArrayList;
 import java.util.Collections;

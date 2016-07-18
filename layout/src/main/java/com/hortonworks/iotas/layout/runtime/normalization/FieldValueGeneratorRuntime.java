@@ -17,11 +17,11 @@
  */
 package com.hortonworks.iotas.layout.runtime.normalization;
 
-import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.streams.layout.component.impl.normalization.FieldValueGenerator;
 import com.hortonworks.iotas.layout.runtime.script.GroovyScript;
 import com.hortonworks.iotas.layout.runtime.script.engine.GroovyScriptEngine;
+import com.hortonworks.iotas.streams.IotasEvent;
+import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.streams.layout.component.impl.normalization.FieldValueGenerator;
 import com.hortonworks.iotas.common.exception.ParserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

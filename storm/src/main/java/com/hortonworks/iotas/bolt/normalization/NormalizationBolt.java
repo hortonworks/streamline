@@ -18,9 +18,9 @@
 package com.hortonworks.iotas.bolt.normalization;
 
 import com.hortonworks.iotas.bolt.AbstractProcessorBolt;
-import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
-import com.hortonworks.iotas.common.Result;
+import com.hortonworks.iotas.streams.Result;
 import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationProcessor;
 import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationProcessorJsonBuilder;

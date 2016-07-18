@@ -23,9 +23,9 @@ package com.hortonworks.iotas.webservice;
  */
 
 import com.codahale.metrics.annotation.Timed;
-import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.common.QueryParam;
-import com.hortonworks.iotas.streams.notification.common.Notification;
+import com.hortonworks.iotas.streams.notification.Notification;
 import com.hortonworks.iotas.streams.notification.service.NotificationService;
 import com.hortonworks.iotas.common.util.WSUtils;
 import org.slf4j.Logger;

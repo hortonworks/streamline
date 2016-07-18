@@ -1,8 +1,8 @@
-package com.hortonworks.iotas.processor;
+package com.hortonworks.iotas.streams.runtime;
 
-import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.common.Result;
-import com.hortonworks.iotas.common.exception.ProcessingException;
+import com.hortonworks.iotas.streams.IotasEvent;
+import com.hortonworks.iotas.streams.Result;
+import com.hortonworks.iotas.streams.exception.ProcessingException;
 
 import java.util.List;
 import java.util.Map;

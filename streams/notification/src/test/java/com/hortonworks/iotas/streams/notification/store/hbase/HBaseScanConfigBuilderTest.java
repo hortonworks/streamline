@@ -18,8 +18,8 @@
 
 package com.hortonworks.iotas.streams.notification.store.hbase;
 
-import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.streams.notification.common.Notification;
+import com.hortonworks.iotas.streams.IotasEvent;
+import com.hortonworks.iotas.streams.notification.Notification;
 import com.hortonworks.iotas.streams.notification.store.Criteria;
 import com.hortonworks.iotas.streams.notification.store.CriteriaImpl;
 import com.hortonworks.iotas.streams.notification.store.hbase.mappers.IndexMapper;
@@ -29,7 +29,6 @@ import mockit.integration.junit4.JMockit;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.PageFilter;
 import org.apache.hadoop.hbase.filter.SingleColumnValueFilter;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

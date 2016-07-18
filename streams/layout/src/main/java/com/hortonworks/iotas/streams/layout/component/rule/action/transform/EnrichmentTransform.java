@@ -22,8 +22,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import com.hortonworks.iotas.streams.layout.Transform;
+
 /**
- * This class can be used to configure enrichment transform which can be used in any {@link com.hortonworks.iotas.layout.design.rule.action.Action}
+ * This class can be used to configure enrichment transform which can be used in any {@link com.hortonworks.iotas.streams.layout.component.rule.action.Action}
  * of a rule based processor.
  *
  */

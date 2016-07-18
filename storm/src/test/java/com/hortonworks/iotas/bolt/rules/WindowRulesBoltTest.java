@@ -1,7 +1,7 @@
 package com.hortonworks.iotas.bolt.rules;
 
 import com.google.common.collect.ImmutableMap;
-import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.streams.layout.component.RulesProcessorJsonBuilder;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.Window;

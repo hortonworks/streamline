@@ -18,7 +18,8 @@
  */
 package com.hortonworks.iotas.streams.layout.component.rule.action.transform;
 
-import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.streams.layout.Transform;
+import com.hortonworks.iotas.streams.IotasEvent;
 
 import java.util.Collections;
 import java.util.HashSet;

@@ -1,5 +1,6 @@
 package com.hortonworks.iotas.common;
 
+import com.hortonworks.iotas.streams.IotasEvent;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 
@@ -7,7 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Created by aiyer on 9/23/15.
@@ -33,7 +35,7 @@ public class IotasEventImplTest {
         map.put("b", "bval");
 
 
-        IotasEvent event = new IotasEventImpl(map, StringUtils.EMPTY);
+        IotasEvent event = new IotasEventImpl(map, org.apache.commons.lang.StringUtils.EMPTY);
 
         assertNotNull(UUID.fromString(event.getId()));
     }
