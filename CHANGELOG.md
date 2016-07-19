@@ -1,4 +1,5 @@
 ## 0.1.4
+ * IOT-315: RulesChannelHandler does not override abstract method setSource
  * IOT-317: Create streams-sdk
  * IOT-282: Atlas storage manager implementation
  * IOT-293: Streams: create streams-service
