@@ -20,7 +20,7 @@ package com.hortonworks.iotas.webservice;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
-import com.hortonworks.iotas.common.cache.Cache;
+import com.hortonworks.iotas.cache.Cache;
 import com.hortonworks.iotas.storage.cache.impl.GuavaCache;
 import com.hortonworks.iotas.storage.cache.writer.StorageWriteThrough;
 import com.hortonworks.iotas.storage.cache.writer.StorageWriter;
