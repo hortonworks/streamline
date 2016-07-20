@@ -1,7 +1,7 @@
 package com.hortonworks.iotas.storage;
 
 import com.hortonworks.iotas.common.QueryParam;
-import com.hortonworks.iotas.common.cache.Cache;
+import com.hortonworks.iotas.cache.Cache;
 import com.hortonworks.iotas.storage.cache.impl.GuavaCache;
 import com.hortonworks.iotas.storage.cache.writer.StorageWriter;
 import com.hortonworks.iotas.storage.exception.StorageException;
