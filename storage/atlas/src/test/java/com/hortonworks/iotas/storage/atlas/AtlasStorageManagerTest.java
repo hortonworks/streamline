@@ -25,6 +25,7 @@ import com.hortonworks.iotas.storage.StorageManager;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -38,6 +39,7 @@ import static com.hortonworks.iotas.storage.atlas.AtlasMetadataServiceTest.clean
  *
  */
 @Category(IntegrationTest.class)
+@Ignore
 public class AtlasStorageManagerTest extends AbstractStoreManagerTest {
     private static AtlasStorageManager atlasStorageManager;
 
