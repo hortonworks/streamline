@@ -18,8 +18,8 @@
 
 package com.hortonworks.iotas.layout.runtime.script;
 
-import com.hortonworks.iotas.common.IotasEvent;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.Expression;
+import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.layout.runtime.script.engine.ScriptEngine;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
@@ -44,13 +44,11 @@ public class GroovyScript<O> extends Script<IotasEvent, O, javax.script.ScriptEn
     private transient volatile ThreadLocal<groovy.lang.Script> parsedScript;
     private final Map<String, Object> initialBindings;
 
-    public GroovyScript(String expression,
-                        ScriptEngine<javax.script.ScriptEngine> scriptEngine) {
+    public GroovyScript(String expression, ScriptEngine<javax.script.ScriptEngine> scriptEngine) {
         this(expression, scriptEngine, Collections.<String, Object>emptyMap());
     }
 
-    public GroovyScript(String expression,
-                        ScriptEngine<javax.script.ScriptEngine> scriptEngine, Map<String, Object> initialBindings) {
+    public GroovyScript(String expression, ScriptEngine<javax.script.ScriptEngine> scriptEngine, Map<String, Object> initialBindings) {
         super(expression, scriptEngine);
         this.initialBindings = initialBindings;
     }

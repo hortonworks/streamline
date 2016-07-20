@@ -18,8 +18,8 @@
 
 package com.hortonworks.iotas.streams.notification.store;
 
-import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.streams.notification.common.Notification;
+import com.hortonworks.iotas.streams.IotasEvent;
+import com.hortonworks.iotas.streams.notification.Notification;
 
 import java.util.List;
 

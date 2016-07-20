@@ -23,7 +23,7 @@ import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.client.CatalogRestClient;
 import com.hortonworks.iotas.common.Constants;
-import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.model.IotasMessage;
 import com.hortonworks.iotas.parser.Parser;

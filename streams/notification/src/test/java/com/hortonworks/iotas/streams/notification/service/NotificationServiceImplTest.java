@@ -19,10 +19,10 @@
 package com.hortonworks.iotas.streams.notification.service;
 
 import com.hortonworks.iotas.common.QueryParam;
-import com.hortonworks.iotas.streams.notification.common.Notification;
-import com.hortonworks.iotas.streams.notification.common.NotificationContext;
-import com.hortonworks.iotas.streams.notification.common.Notifier;
-import com.hortonworks.iotas.streams.notification.common.NotifierConfig;
+import com.hortonworks.iotas.streams.notification.Notification;
+import com.hortonworks.iotas.streams.notification.NotificationContext;
+import com.hortonworks.iotas.streams.notification.Notifier;
+import com.hortonworks.iotas.streams.notification.NotifierConfig;
 import com.hortonworks.iotas.streams.notification.store.Criteria;
 import com.hortonworks.iotas.streams.notification.store.NotificationStore;
 import com.hortonworks.iotas.common.util.ProxyUtil;

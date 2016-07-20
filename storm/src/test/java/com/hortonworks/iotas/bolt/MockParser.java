@@ -1,7 +1,7 @@
 package com.hortonworks.iotas.bolt;
 
 import com.google.common.collect.Lists;
-import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.exception.DataValidationException;

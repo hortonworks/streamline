@@ -3,6 +3,8 @@ package com.hortonworks.iotas.streams.notification.common;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hortonworks.iotas.streams.notification.NotificationContext;
+import com.hortonworks.iotas.streams.notification.NotifierConfig;
 /**
  * A default notification context that can be overridden to provide custom
  * ack and fail behavior.

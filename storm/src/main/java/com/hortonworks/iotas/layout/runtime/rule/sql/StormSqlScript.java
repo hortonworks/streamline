@@ -20,13 +20,13 @@ package com.hortonworks.iotas.layout.runtime.rule.sql;
 
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.streams.layout.component.rule.exception.ConditionEvaluationException;
 import com.hortonworks.iotas.layout.runtime.rule.condition.expression.ExpressionRuntime;
+import com.hortonworks.iotas.layout.runtime.script.engine.ScriptEngine;
+import com.hortonworks.iotas.streams.layout.component.rule.exception.ConditionEvaluationException;
 import org.apache.storm.tuple.Values;
-import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.layout.runtime.rule.condition.expression.StormSqlExpression;
 import com.hortonworks.iotas.layout.runtime.script.Script;
-import com.hortonworks.iotas.layout.runtime.script.engine.ScriptEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

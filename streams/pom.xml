@@ -19,6 +19,7 @@
         <module>notification</module>
         <module>notifier</module>
         <module>runtime</module>
+        <module>sdk</module>
         <module>service</module>
         <module>runners</module>
     </modules>

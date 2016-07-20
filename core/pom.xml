@@ -33,9 +33,8 @@
         </dependency>
         <dependency>
             <groupId>com.hortonworks.iotas</groupId>
-            <artifactId>storage</artifactId>
+            <artifactId>storage-core</artifactId>
             <version>${project.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.hortonworks.iotas</groupId>
@@ -194,7 +193,7 @@
         </dependency>
         <dependency>
             <groupId>com.hortonworks.iotas</groupId>
-            <artifactId>storage</artifactId>
+            <artifactId>storage-core</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
@@ -203,11 +202,18 @@
 
     <build>
         <plugins>
+            <!-- Test plugins -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
-            <!-- Test plugins -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>

@@ -18,19 +18,19 @@
  */
 package com.hortonworks.iotas.layout.runtime.rule.action;
 
-import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.common.Result;
-import com.hortonworks.iotas.layout.runtime.RuntimeService;
-import com.hortonworks.iotas.layout.runtime.TransformActionRuntime;
-import com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransformRuntime;
-import com.hortonworks.iotas.streams.layout.component.rule.action.Action;
+import com.hortonworks.iotas.streams.layout.Transform;
 import com.hortonworks.iotas.streams.layout.component.rule.action.NotifierAction;
 import com.hortonworks.iotas.streams.layout.component.rule.action.TransformAction;
 import com.hortonworks.iotas.streams.layout.component.rule.action.transform.AddHeaderTransform;
 import com.hortonworks.iotas.streams.layout.component.rule.action.transform.MergeTransform;
 import com.hortonworks.iotas.streams.layout.component.rule.action.transform.ProjectionTransform;
+import com.hortonworks.iotas.streams.layout.component.rule.action.Action;
 import com.hortonworks.iotas.streams.layout.component.rule.action.transform.SubstituteTransform;
-import com.hortonworks.iotas.streams.layout.component.rule.action.transform.Transform;
+import com.hortonworks.iotas.layout.runtime.RuntimeService;
+import com.hortonworks.iotas.layout.runtime.TransformActionRuntime;
+import com.hortonworks.iotas.streams.IotasEvent;
+import com.hortonworks.iotas.streams.Result;
+import com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransformRuntime;
 
 import java.util.ArrayList;
 import java.util.Collections;

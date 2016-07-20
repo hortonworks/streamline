@@ -18,7 +18,8 @@
 
 package com.hortonworks.iotas.layout.runtime.transform;
 
-import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.streams.IotasEvent;
+import com.hortonworks.iotas.streams.runtime.TransformRuntime;
 
 import java.util.Collections;
 import java.util.List;

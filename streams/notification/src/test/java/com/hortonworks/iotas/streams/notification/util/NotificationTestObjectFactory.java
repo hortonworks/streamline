@@ -19,7 +19,7 @@
 package com.hortonworks.iotas.streams.notification.util;
 
 import com.google.common.collect.Lists;
-import com.hortonworks.iotas.streams.notification.common.Notification;
+import com.hortonworks.iotas.streams.notification.Notification;
 import com.hortonworks.iotas.streams.notification.common.NotificationImpl;
 
 import java.util.Arrays;

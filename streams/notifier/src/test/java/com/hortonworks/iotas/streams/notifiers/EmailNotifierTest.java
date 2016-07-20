@@ -1,8 +1,8 @@
 package com.hortonworks.iotas.streams.notifiers;
 
-import com.hortonworks.iotas.streams.notification.common.Notification;
-import com.hortonworks.iotas.streams.notification.common.NotificationContext;
-import com.hortonworks.iotas.streams.notification.common.NotifierConfig;
+import com.hortonworks.iotas.streams.notification.Notification;
+import com.hortonworks.iotas.streams.notification.NotificationContext;
+import com.hortonworks.iotas.streams.notification.NotifierConfig;
 import com.sun.mail.smtp.SMTPTransport;
 import mockit.Expectations;
 import mockit.Mocked;

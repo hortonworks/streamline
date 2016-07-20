@@ -2,10 +2,10 @@ package com.hortonworks.iotas.layout.runtime.processor;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.common.exception.ProcessingException;
 import com.hortonworks.iotas.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.iotas.streams.layout.component.rule.Rule;
+import com.hortonworks.iotas.streams.IotasEvent;
+import com.hortonworks.iotas.streams.exception.ProcessingException;
 import com.hortonworks.iotas.layout.runtime.rule.RuleRuntime;
 import mockit.Expectations;
 import mockit.Mocked;

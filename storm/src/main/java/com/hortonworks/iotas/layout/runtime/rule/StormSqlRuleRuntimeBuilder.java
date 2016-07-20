@@ -18,7 +18,7 @@
 
 package com.hortonworks.iotas.layout.runtime.rule;
 
-import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.Expression;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression;

@@ -2,14 +2,14 @@ package com.hortonworks.iotas.bolt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.client.CatalogRestClient;
-import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
-import com.hortonworks.iotas.common.Result;
+import com.hortonworks.iotas.streams.Result;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.common.util.Utils;
-import com.hortonworks.iotas.common.exception.ProcessingException;
+import com.hortonworks.iotas.streams.runtime.CustomProcessorRuntime;
+import com.hortonworks.iotas.streams.exception.ProcessingException;
 import com.hortonworks.iotas.common.util.ProxyUtil;
-import com.hortonworks.iotas.processor.CustomProcessor;
 import com.hortonworks.iotas.streams.layout.storm.StormTopologyLayoutConstants;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -37,10 +37,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CustomProcessorBolt extends BaseRichBolt {
     private static final Logger LOG = LoggerFactory.getLogger(CustomProcessorBolt.class);
     private CatalogRestClient client;
-    private ProxyUtil<CustomProcessor> customProcessorProxyUtil;
-    private static ConcurrentHashMap<String, CustomProcessor> customProcessorConcurrentHashMap = new ConcurrentHashMap<String, CustomProcessor>();
+    private ProxyUtil<CustomProcessorRuntime> customProcessorProxyUtil;
+    private static ConcurrentHashMap<String, CustomProcessorRuntime> customProcessorConcurrentHashMap = new ConcurrentHashMap<String, CustomProcessorRuntime>();
     private OutputCollector collector;
-    private CustomProcessor customProcessor;
+    private CustomProcessorRuntime customProcessorRuntime;
     private String customProcessorImpl;
     private Map<String, Object> config;
     private Schema inputSchema;
@@ -177,9 +177,9 @@ public class CustomProcessorBolt extends BaseRichBolt {
         }
         String catalogRootURL = stormConf.get(StormTopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL).toString();
         this.client = new CatalogRestClient(catalogRootURL);
-        this.customProcessorProxyUtil = new ProxyUtil<>(CustomProcessor.class);
-        customProcessor = getCustomProcessor();
-        customProcessor.initialize(config);
+        this.customProcessorProxyUtil = new ProxyUtil<>(CustomProcessorRuntime.class);
+        customProcessorRuntime = getCustomProcessorRuntime();
+        customProcessorRuntime.initialize(config);
     }
 
     @Override
@@ -188,7 +188,7 @@ public class CustomProcessorBolt extends BaseRichBolt {
             final Object tupleField = input.getValueByField(IotasEvent.IOTAS_EVENT);
             if (tupleField instanceof IotasEvent) {
                 IotasEvent iotasEvent = (IotasEvent) tupleField;
-                for (Result result: customProcessor.process(new IotasEventImpl(iotasEvent.getFieldsAndValues(), iotasEvent.getDataSourceId(), iotasEvent
+                for (Result result: customProcessorRuntime.process(new IotasEventImpl(iotasEvent.getFieldsAndValues(), iotasEvent.getDataSourceId(), iotasEvent
                         .getId(), iotasEvent.getHeader(), input.getSourceStreamId()))) {
                     for (IotasEvent event: result.events) {
                         collector.emit(result.stream, input, new Values(event));
@@ -223,23 +223,23 @@ public class CustomProcessorBolt extends BaseRichBolt {
 
     @Override
     public void cleanup () {
-        customProcessor.cleanup();
+        customProcessorRuntime.cleanup();
     }
 
-    private CustomProcessor getCustomProcessor () {
+    private CustomProcessorRuntime getCustomProcessorRuntime() {
         String key = jarFileName + customProcessorImpl;
-        CustomProcessor customProcessor = customProcessorConcurrentHashMap.get(key);
-        if (customProcessor == null) {
+        CustomProcessorRuntime customProcessorRuntime = customProcessorConcurrentHashMap.get(key);
+        if (customProcessorRuntime == null) {
             InputStream customProcessorJar = client.getCustomProcessorJar(jarFileName);
             String jarPath = String.format("%s%s%s", localJarPath, File.separator, jarFileName);
             try {
                 IOUtils.copy(customProcessorJar, new FileOutputStream(new File(jarPath)));
-                customProcessor = customProcessorProxyUtil.loadClassFromJar(jarPath, customProcessorImpl);
-                customProcessorConcurrentHashMap.put(key, customProcessor);
+                customProcessorRuntime = customProcessorProxyUtil.loadClassFromJar(jarPath, customProcessorImpl);
+                customProcessorConcurrentHashMap.put(key, customProcessorRuntime);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to load custom processor: " + customProcessorImpl, e);
             }
         }
-        return customProcessor;
+        return customProcessorRuntime;
     }
 }

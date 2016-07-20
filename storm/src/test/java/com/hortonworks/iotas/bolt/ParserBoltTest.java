@@ -6,7 +6,6 @@ import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.client.CatalogRestClient;
 import com.hortonworks.iotas.common.Constants;
 import com.hortonworks.iotas.model.IotasMessage;
-import com.hortonworks.iotas.storage.util.CoreUtils;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Mocked;

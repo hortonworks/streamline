@@ -2,7 +2,7 @@ package com.hortonworks.iotas.hbase;
 
 import org.apache.storm.tuple.Tuple;
 import com.google.common.base.Charsets;
-import com.hortonworks.iotas.common.IotasEvent;
+import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import mockit.Expectations;
 import mockit.Mocked;

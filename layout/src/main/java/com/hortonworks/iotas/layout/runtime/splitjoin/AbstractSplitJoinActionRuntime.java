@@ -24,6 +24,7 @@ import com.hortonworks.iotas.layout.runtime.rule.action.AbstractActionRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.action.ActionRuntimeContext;
 import com.hortonworks.iotas.streams.layout.component.rule.action.Action;
 import com.hortonworks.iotas.common.util.ProxyUtil;
+import com.hortonworks.iotas.layout.runtime.rule.action.ActionRuntime;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +37,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Abstract class for Split/Join {@link com.hortonworks.iotas.layout.runtime.rule.action.ActionRuntime} classes
+ * Abstract class for Split/Join {@link ActionRuntime} classes
  */
 public abstract class AbstractSplitJoinActionRuntime extends AbstractActionRuntime {
     private static final Logger log = LoggerFactory.getLogger(AbstractSplitJoinActionRuntime.class);

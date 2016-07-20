@@ -1,7 +1,7 @@
 package com.hortonworks.iotas.streams.metrics.storm.graphite;
 
 import com.google.common.collect.Lists;
-import com.hortonworks.iotas.common.exception.ConfigException;
+import com.hortonworks.iotas.streams.exception.ConfigException;
 import com.hortonworks.iotas.streams.metrics.AbstractTimeSeriesQuerier;
 import org.apache.commons.lang.BooleanUtils;
 import org.glassfish.jersey.client.ClientConfig;
@@ -18,7 +18,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import static com.hortonworks.iotas.streams.metrics.TimeSeriesQuerier.AggregateFunction;
 
 /**
  * Implementation of TimeSeriesQuerier for Graphite with Storm.

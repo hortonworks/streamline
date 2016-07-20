@@ -9,7 +9,7 @@ import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.exception.StorageException;
 import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
 import com.hortonworks.iotas.webservice.catalog.dto.TagDto;
-import com.hortonworks.iotas.webservice.util.WSUtils;
+import com.hortonworks.iotas.common.util.WSUtils;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;

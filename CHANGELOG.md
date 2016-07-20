@@ -1,4 +1,9 @@
 ## 0.1.4
+ * IOT-340: Move Cache to a separate module
+ * IOT-315: RulesChannelHandler does not override abstract method setSource
+ * IOT-317: Create streams-sdk
+ * IOT-282: Atlas storage manager implementation
+ * IOT-293: Streams: create streams-service
  * IOT-280: catalog refactoring
  * IOT-297: Move metrics to the streams project
  * IOT-307: Create streams-layout-storm

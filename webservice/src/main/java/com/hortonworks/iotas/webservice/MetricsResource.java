@@ -22,7 +22,7 @@ import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.streams.catalog.Topology;
 import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.iotas.streams.metrics.topology.TopologyMetrics;
-import com.hortonworks.iotas.webservice.util.WSUtils;
+import com.hortonworks.iotas.common.util.WSUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

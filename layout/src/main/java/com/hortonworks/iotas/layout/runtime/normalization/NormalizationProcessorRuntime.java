@@ -18,15 +18,15 @@
  */
 package com.hortonworks.iotas.layout.runtime.normalization;
 
-import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.common.Result;
-import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.common.exception.ProcessingException;
-import com.hortonworks.iotas.common.exception.ParserException;
-import com.hortonworks.iotas.processor.ProcessorRuntime;
-import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationProcessor;
 import com.hortonworks.iotas.streams.layout.component.Stream;
+import com.hortonworks.iotas.streams.IotasEvent;
+import com.hortonworks.iotas.streams.Result;
+import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.streams.exception.ProcessingException;
+import com.hortonworks.iotas.common.exception.ParserException;
+import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationProcessor;
 import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationConfig;
+import com.hortonworks.iotas.streams.runtime.ProcessorRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

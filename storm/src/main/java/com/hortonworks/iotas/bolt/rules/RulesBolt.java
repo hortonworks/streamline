@@ -19,8 +19,8 @@
 package com.hortonworks.iotas.bolt.rules;
 
 import com.hortonworks.iotas.common.Constants;
-import com.hortonworks.iotas.common.IotasEvent;
-import com.hortonworks.iotas.common.Result;
+import com.hortonworks.iotas.streams.IotasEvent;
+import com.hortonworks.iotas.streams.Result;
 import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntime;
 import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
 import org.apache.storm.task.OutputCollector;

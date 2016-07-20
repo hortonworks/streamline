@@ -20,8 +20,8 @@ package com.hortonworks.iotas.bolt.notification;
 
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.tuple.Tuple;
+import com.hortonworks.iotas.streams.notification.NotifierConfig;
 import com.hortonworks.iotas.streams.notification.common.DefaultNotificationContext;
-import com.hortonworks.iotas.streams.notification.common.NotifierConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -31,13 +31,13 @@ import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.common.test.IntegrationTest;
+import com.hortonworks.iotas.processor.examples.ConsoleCustomProcessorRuntime;
 import com.hortonworks.iotas.streams.catalog.*;
 import com.hortonworks.iotas.streams.catalog.processor.CustomProcessorInfo;
-import com.hortonworks.iotas.processor.examples.ConsoleCustomProcessor;
 import com.hortonworks.iotas.streams.catalog.topology.ConfigField;
 import com.hortonworks.iotas.streams.catalog.topology.TopologyComponentDefinition;
 import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
-import com.hortonworks.iotas.webservice.catalog.TopologyCatalogResource;
+import com.hortonworks.iotas.streams.service.TopologyCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
 import com.hortonworks.iotas.webservice.catalog.dto.TagDto;
 import io.dropwizard.testing.ResourceHelpers;
@@ -486,10 +486,10 @@ public class RestIntegrationTest {
         CustomProcessorInfo customProcessorInfo = createCustomProcessorInfo();
         String prefixQueryParam = "?streamingEngine=STORM";
         List<String> getUrlQueryParms = new ArrayList<String>();
-        getUrlQueryParms.add(prefixQueryParam + "&name=ConsoleCustomProcessor");
+        getUrlQueryParms.add(prefixQueryParam + "&name=ConsoleCustomProcessorRuntime");
         getUrlQueryParms.add(prefixQueryParam + "&imageFileName=image.gif");
         getUrlQueryParms.add(prefixQueryParam + "&jarFileName=iotas-core.jar");
-        getUrlQueryParms.add(prefixQueryParam + "&customProcessorImpl=" + ConsoleCustomProcessor.class.getCanonicalName());
+        getUrlQueryParms.add(prefixQueryParam + "&customProcessorImpl=" + ConsoleCustomProcessorRuntime.class.getCanonicalName());
         List<List<CustomProcessorInfo>> getResults = new ArrayList<List<CustomProcessorInfo>>();
         getResults.add(Arrays.asList(customProcessorInfo));
         getResults.add(Arrays.asList(customProcessorInfo));
@@ -869,11 +869,11 @@ public class RestIntegrationTest {
 
     private CustomProcessorInfo createCustomProcessorInfo () {
         CustomProcessorInfo customProcessorInfo = new CustomProcessorInfo();
-        customProcessorInfo.setName("ConsoleCustomProcessor");
+        customProcessorInfo.setName("ConsoleCustomProcessorRuntime");
         customProcessorInfo.setDescription("Console Custom Processor");
         customProcessorInfo.setImageFileName("image.gif");
         customProcessorInfo.setJarFileName("iotas-core.jar");
-        customProcessorInfo.setCustomProcessorImpl(ConsoleCustomProcessor.class.getCanonicalName());
+        customProcessorInfo.setCustomProcessorImpl(ConsoleCustomProcessorRuntime.class.getCanonicalName());
         customProcessorInfo.setStreamingEngine(TopologyLayoutConstants.STORM_STREAMING_ENGINE);
         customProcessorInfo.setConfigFields(getConfigFields());
         customProcessorInfo.setInputSchema(getSchema());

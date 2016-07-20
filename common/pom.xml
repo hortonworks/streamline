@@ -11,11 +11,6 @@
 
     <artifactId>common</artifactId>
 
-    <properties>
-        <!--currently using lettuce version 3 because version 4 depends on jdk8. Upgrade to version 4 when upgrading to jdk8 -->
-        <redis.lettuce.version>3.4.2.Final</redis.lettuce.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -69,26 +64,15 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-multipart</artifactId>
+        </dependency>
         <!--test-->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>biz.paluch.redis</groupId>
-            <artifactId>lettuce</artifactId>
-            <version>${redis.lettuce.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
     </dependencies>
 </project>

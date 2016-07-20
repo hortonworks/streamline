@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.streams.catalog.processor.CustomProcessorInfo;
 import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.iotas.common.util.FileUtil;
+import com.hortonworks.iotas.streams.runtime.CustomProcessorRuntime;
 import com.hortonworks.iotas.common.util.ProxyUtil;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -60,20 +61,20 @@ public class CustomProcessorUploadHandler implements FileEventHandler {
                 LOG.info("Processing file at " + path);
                 CustomProcessorInfo customProcessorInfo = this.getCustomProcessorInfo(createdFile);
                 if (customProcessorInfo == null) {
-                    LOG.warn("No information found for CustomProcessor in " + createdFile);
+                    LOG.warn("No information found for CustomProcessorRuntime in " + createdFile);
                     return;
                 }
                 InputStream jarFile = this.getJarFile(customProcessorInfo, createdFile);
                 if (jarFile == null) {
-                    LOG.warn("No jar file found for CustomProcessor in " + createdFile);
+                    LOG.warn("No jar file found for CustomProcessorRuntime in " + createdFile);
                     return;
                 }
                 File tempJarFile = FileUtil.writeInputStreamToTempFile(jarFile, ".jar");
-                ProxyUtil<CustomProcessor> customProcessorProxyUtil = new ProxyUtil<>(CustomProcessor.class);
-                CustomProcessor customProcessor = customProcessorProxyUtil.loadClassFromJar(tempJarFile.getAbsolutePath(), customProcessorInfo.getCustomProcessorImpl());
+                ProxyUtil<CustomProcessorRuntime> customProcessorProxyUtil = new ProxyUtil<>(CustomProcessorRuntime.class);
+                CustomProcessorRuntime customProcessorRuntime = customProcessorProxyUtil.loadClassFromJar(tempJarFile.getAbsolutePath(), customProcessorInfo.getCustomProcessorImpl());
                 InputStream imageFile = this.getImageFile(customProcessorInfo, createdFile);
                 if (imageFile == null) {
-                    LOG.warn("No image file found for CustomProcessor in " + createdFile);
+                    LOG.warn("No image file found for CustomProcessorRuntime in " + createdFile);
                     return;
                 }
                 jarFile.reset();
@@ -85,14 +86,14 @@ public class CustomProcessorUploadHandler implements FileEventHandler {
         } catch (IOException e) {
             LOG.warn("Exception occured while processing tar file: " + createdFile, e);
         } catch (ClassNotFoundException|InstantiationException|IllegalAccessException e) {
-            LOG.warn("Could not load a class from jar file implementing CustomProcessor interface from " + createdFile, e);
+            LOG.warn("Could not load a class from jar file implementing CustomProcessorRuntime interface from " + createdFile, e);
         } finally {
             try {
                 if (succeeded) {
-                    LOG.info("CustomProcessor uploaded successfully from  " + createdFile + " Moving file to " + uploadSuccessPath);
+                    LOG.info("CustomProcessorRuntime uploaded successfully from  " + createdFile + " Moving file to " + uploadSuccessPath);
                     moveFileToSuccessDirectory(createdFile);
                 } else {
-                    LOG.warn("CustomProcessor failed to upload from " + createdFile + " Moving file to " + uploadFailPath);
+                    LOG.warn("CustomProcessorRuntime failed to upload from " + createdFile + " Moving file to " + uploadFailPath);
                     moveFileToFailDirectory(createdFile);
                 }
             } catch (IOException e1) {

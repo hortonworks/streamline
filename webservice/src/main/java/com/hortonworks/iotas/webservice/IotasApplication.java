@@ -20,13 +20,12 @@ package com.hortonworks.iotas.webservice;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
-import com.hortonworks.iotas.common.cache.Cache;
+import com.hortonworks.iotas.cache.Cache;
 import com.hortonworks.iotas.storage.cache.impl.GuavaCache;
 import com.hortonworks.iotas.storage.cache.writer.StorageWriteThrough;
 import com.hortonworks.iotas.storage.cache.writer.StorageWriter;
 import com.hortonworks.iotas.common.FileEventHandler;
-import com.hortonworks.iotas.common.exception.ConfigException;
-
+import com.hortonworks.iotas.streams.exception.ConfigException;
 import com.hortonworks.iotas.streams.metrics.TimeSeriesQuerier;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.service.FileWatcher;
@@ -34,8 +33,6 @@ import com.hortonworks.iotas.storage.CacheBackedStorageManager;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
-import com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManager;
-import com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager;
 import com.hortonworks.iotas.processor.CustomProcessorUploadHandler;
 import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.iotas.streams.layout.storm.StormTopologyLayoutConstants;
@@ -45,25 +42,25 @@ import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.iotas.streams.metrics.topology.TopologyMetrics;
 import com.hortonworks.iotas.common.util.FileStorage;
 import com.hortonworks.iotas.common.util.ReflectionHelper;
-import com.hortonworks.iotas.webservice.catalog.ClusterCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.ComponentCatalogResource;
+import com.hortonworks.iotas.streams.service.ClusterCatalogResource;
+import com.hortonworks.iotas.streams.service.ComponentCatalogResource;
+import com.hortonworks.iotas.streams.service.NotifierInfoCatalogResource;
+import com.hortonworks.iotas.streams.service.RuleCatalogResource;
+import com.hortonworks.iotas.streams.service.TopologyCatalogResource;
+import com.hortonworks.iotas.streams.service.TopologyEdgeCatalogResource;
+import com.hortonworks.iotas.streams.service.TopologyEditorMetadataResource;
+import com.hortonworks.iotas.streams.service.TopologyProcessorCatalogResource;
+import com.hortonworks.iotas.streams.service.TopologySinkCatalogResource;
+import com.hortonworks.iotas.streams.service.TopologySourceCatalogResource;
+import com.hortonworks.iotas.streams.service.TopologyStreamCatalogResource;
+import com.hortonworks.iotas.streams.service.UDFCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.DataSourceCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.DataSourceFacade;
 import com.hortonworks.iotas.webservice.catalog.DataSourceWithDataFeedCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.FeedCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.FileCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.NotifierInfoCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.ParserInfoCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.RuleCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.TopologyStreamCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.TagCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.TopologyCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.TopologyEdgeCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.TopologyEditorMetadataResource;
-import com.hortonworks.iotas.webservice.catalog.TopologyProcessorCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.TopologySinkCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.TopologySourceCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.UDFCatalogResource;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
@@ -113,14 +110,25 @@ public class IotasApplication extends Application<IotasConfiguration> {
 
     private StorageManager getCacheBackedDao(IotasConfiguration iotasConfiguration) {
         StorageProviderConfiguration storageProviderConfiguration = iotasConfiguration.getStorageProviderConfiguration();
-        final String providerType = storageProviderConfiguration.getType();
-        final StorageManager dao = providerType.equalsIgnoreCase(JDBC) ?
-                JdbcStorageManager.createStorageManager(storageProviderConfiguration.getProperties()) : new InMemoryStorageManager();
+        final StorageManager dao = getStorageManager(storageProviderConfiguration);
         final CacheBuilder cacheBuilder = getGuavaCacheBuilder();
         final Cache<StorableKey, Storable> cache = getCache(dao, cacheBuilder);
         final StorageWriter storageWriter = getStorageWriter(dao);
 
         return doGetCacheBackedDao(cache, storageWriter);
+    }
+
+    private StorageManager getStorageManager(StorageProviderConfiguration storageProviderConfiguration) {
+        final String providerClass = storageProviderConfiguration.getProviderClass();
+        StorageManager storageManager = null;
+        try {
+            storageManager = (StorageManager) Class.forName(providerClass).newInstance();
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        storageManager.init(storageProviderConfiguration.getProperties());
+
+        return storageManager;
     }
 
     private StorageWriter getStorageWriter(StorageManager dao) {

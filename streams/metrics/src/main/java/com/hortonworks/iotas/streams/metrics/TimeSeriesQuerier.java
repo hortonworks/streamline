@@ -1,6 +1,6 @@
 package com.hortonworks.iotas.streams.metrics;
 
-import com.hortonworks.iotas.common.exception.ConfigException;
+import com.hortonworks.iotas.streams.exception.ConfigException;
 
 import java.util.Map;
 
