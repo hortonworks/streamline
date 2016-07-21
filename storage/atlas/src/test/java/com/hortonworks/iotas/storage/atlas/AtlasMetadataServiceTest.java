@@ -46,7 +46,6 @@ import java.util.Random;
 /**
  *
  */
-@Ignore
 public class AtlasMetadataServiceTest {
 
     @BeforeClass
