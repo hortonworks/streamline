@@ -1,6 +1,6 @@
 package com.hortonworks.iotas.testing;
 
-import com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransformRuntime;
+import com.hortonworks.iotas.streams.runtime.transform.AddHeaderTransformRuntime;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;

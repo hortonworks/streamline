@@ -28,7 +28,7 @@ import com.hortonworks.iotas.streams.layout.component.impl.normalization.FieldVa
 import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationConfig;
 import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationProcessor;
 import com.hortonworks.iotas.streams.layout.component.Stream;
-import com.hortonworks.iotas.layout.runtime.normalization.NormalizationException;
+import com.hortonworks.iotas.streams.runtime.normalization.NormalizationException;
 import com.hortonworks.iotas.streams.layout.component.impl.normalization.Transformer;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;

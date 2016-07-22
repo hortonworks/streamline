@@ -20,10 +20,10 @@ package com.hortonworks.iotas.bolt.rules;
 
 import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
-import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntime;
-import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
+import com.hortonworks.iotas.streams.runtime.rule.RulesDependenciesFactory;
 import com.hortonworks.iotas.layout.runtime.rule.topology.RuleProcessorMockBuilder;
 import com.hortonworks.iotas.layout.runtime.rule.topology.RulesTopologyTest;
+import com.hortonworks.iotas.streams.runtime.processor.RuleProcessorRuntime;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Tested;
@@ -90,12 +90,12 @@ public abstract class RulesBoltTest extends RulesTopologyTest {
 
     @Before
     public void setup() throws Exception {
-        RulesBoltDependenciesFactory dependenciesBuilderFactory = createDependenciesBuilderFactory(createRulesProcessorBuilder(), getScriptType());
+        RulesDependenciesFactory dependenciesBuilderFactory = createDependenciesBuilderFactory(createRulesProcessorBuilder(), getScriptType());
         ruleProcessorRuntime = dependenciesBuilderFactory.createRuleProcessorRuntime();
         createAndPrepareRulesBolt(dependenciesBuilderFactory);
     }
 
-    private void createAndPrepareRulesBolt(RulesBoltDependenciesFactory dependenciesBuilderFactory) {
+    private void createAndPrepareRulesBolt(RulesDependenciesFactory dependenciesBuilderFactory) {
         rulesBolt = (RulesBolt)createRulesBolt(dependenciesBuilderFactory);
         rulesBolt.prepare(null, null, mockOutputCollector);
     }

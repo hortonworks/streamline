@@ -5,7 +5,7 @@ import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.streams.layout.component.RulesProcessorJsonBuilder;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.Window;
-import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
+import com.hortonworks.iotas.streams.runtime.rule.RulesDependenciesFactory;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;
@@ -110,8 +110,8 @@ public class WindowRulesBoltTest {
             mockContext.getComponentId(anyInt);
             result = "componentid";
         }};
-        RulesBoltDependenciesFactory factory = new RulesBoltDependenciesFactory(
-                new RulesProcessorJsonBuilder(rulesJson), RulesBoltDependenciesFactory.ScriptType.SQL);
+        RulesDependenciesFactory factory = new RulesDependenciesFactory(
+                new RulesProcessorJsonBuilder(rulesJson), RulesDependenciesFactory.ScriptType.SQL);
         Window windowConfig = factory.createRuleProcessorRuntime().getRulesRuntime().get(0).getRule().getWindow();
         final CountDownLatch latch = new CountDownLatch(expectedExecuteCount);
         WindowRulesBolt wb = new WindowRulesBolt(factory) {

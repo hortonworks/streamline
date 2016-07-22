@@ -21,8 +21,8 @@ package com.hortonworks.iotas.layout.runtime.rule.topology;
 import com.hortonworks.iotas.bolt.rules.RulesBolt;
 import com.hortonworks.iotas.streams.layout.component.ComponentBuilder;
 import com.hortonworks.iotas.streams.layout.component.impl.RulesProcessor;
-import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntime;
-import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
+import com.hortonworks.iotas.streams.runtime.processor.RuleProcessorRuntime;
+import com.hortonworks.iotas.streams.runtime.rule.RulesDependenciesFactory;
 import org.apache.storm.Config;
 import org.apache.storm.ILocalCluster;
 import org.apache.storm.LocalCluster;
@@ -39,7 +39,7 @@ public abstract class RulesTopologyTest {
     protected static final String RULES_TEST_SINK_BOLT_1 = RULES_TEST_SINK_BOLT + "_1";
     protected static final String RULES_TEST_SINK_BOLT_2 = RULES_TEST_SINK_BOLT + "_2";
     private RuleProcessorRuntime ruleProcessorRuntime;
-    private RulesBoltDependenciesFactory rulesBoltDependenciesFactory;
+    private RulesDependenciesFactory rulesDependenciesFactory;
 
     protected void submitTopology() throws AlreadyAliveException, InvalidTopologyException {
         final Config config = getConfig();
@@ -67,13 +67,13 @@ public abstract class RulesTopologyTest {
         return ruleProcessorRuntime.getRulesRuntime().get(i).getStreams().iterator().next();
     }
 
-    protected RulesBoltDependenciesFactory createDependenciesBuilderFactory(ComponentBuilder<RulesProcessor> rulesProcessorBuilder,
-                                                                            RulesBoltDependenciesFactory.ScriptType scriptType) {
-        rulesBoltDependenciesFactory = new RulesBoltDependenciesFactory(rulesProcessorBuilder, scriptType);
-        return rulesBoltDependenciesFactory;
+    protected RulesDependenciesFactory createDependenciesBuilderFactory(ComponentBuilder<RulesProcessor> rulesProcessorBuilder,
+                                                                        RulesDependenciesFactory.ScriptType scriptType) {
+        rulesDependenciesFactory = new RulesDependenciesFactory(rulesProcessorBuilder, scriptType);
+        return rulesDependenciesFactory;
     }
 
-    protected IRichBolt createRulesBolt(RulesBoltDependenciesFactory dependenciesBuilder) {
+    protected IRichBolt createRulesBolt(RulesDependenciesFactory dependenciesBuilder) {
         return new RulesBolt(dependenciesBuilder);
     }
 
@@ -81,7 +81,7 @@ public abstract class RulesTopologyTest {
         return new RuleProcessorMockBuilder(1,2,2);
     }
 
-    protected abstract RulesBoltDependenciesFactory.ScriptType getScriptType();
+    protected abstract RulesDependenciesFactory.ScriptType getScriptType();
 
     public static class RulesTopologyTestGroovy extends RulesTopologyTest {
         public static void main(String[] args) throws AlreadyAliveException, InvalidTopologyException {
@@ -89,8 +89,8 @@ public abstract class RulesTopologyTest {
             rulesTopologyTest.submitTopology();
         }
 
-        protected RulesBoltDependenciesFactory.ScriptType getScriptType() {
-            return RulesBoltDependenciesFactory.ScriptType.GROOVY;
+        protected RulesDependenciesFactory.ScriptType getScriptType() {
+            return RulesDependenciesFactory.ScriptType.GROOVY;
         }
     }
 
@@ -99,8 +99,8 @@ public abstract class RulesTopologyTest {
             RulesTopologyTest rulesTopologyTest = new RulesTopologyTestSql();
             rulesTopologyTest.submitTopology();
         }
-        protected RulesBoltDependenciesFactory.ScriptType getScriptType() {
-            return RulesBoltDependenciesFactory.ScriptType.SQL;
+        protected RulesDependenciesFactory.ScriptType getScriptType() {
+            return RulesDependenciesFactory.ScriptType.SQL;
         }
     }
 }

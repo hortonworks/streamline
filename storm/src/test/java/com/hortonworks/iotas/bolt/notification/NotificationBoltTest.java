@@ -20,6 +20,7 @@ package com.hortonworks.iotas.bolt.notification;
 
 import com.hortonworks.iotas.common.util.ProxyUtil;
 import com.hortonworks.iotas.streams.catalog.NotifierInfo;
+import com.hortonworks.iotas.streams.runtime.notification.IotasEventAdapter;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.tuple.Tuple;
 import com.hortonworks.iotas.client.CatalogRestClient;

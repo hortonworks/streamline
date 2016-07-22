@@ -21,8 +21,8 @@ package com.hortonworks.iotas.bolt.rules;
 import com.hortonworks.iotas.common.Constants;
 import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.Result;
-import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntime;
-import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
+import com.hortonworks.iotas.streams.runtime.processor.RuleProcessorRuntime;
+import com.hortonworks.iotas.streams.runtime.rule.RulesDependenciesFactory;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -43,11 +43,11 @@ public class RulesBolt extends BaseRichBolt {
 
     private RuleProcessorRuntime ruleProcessorRuntime;
 
-    private final RulesBoltDependenciesFactory boltDependenciesFactory;
+    private final RulesDependenciesFactory boltDependenciesFactory;
 
     private OutputCollector collector;
 
-    public RulesBolt(RulesBoltDependenciesFactory boltDependenciesFactory) {
+    public RulesBolt(RulesDependenciesFactory boltDependenciesFactory) {
         this.boltDependenciesFactory = boltDependenciesFactory;
     }
 

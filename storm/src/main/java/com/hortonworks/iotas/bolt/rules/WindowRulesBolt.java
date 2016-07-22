@@ -4,8 +4,8 @@ import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.Result;
 import com.hortonworks.iotas.streams.exception.ProcessingException;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.Window;
-import com.hortonworks.iotas.layout.runtime.processor.RuleProcessorRuntime;
-import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
+import com.hortonworks.iotas.streams.runtime.processor.RuleProcessorRuntime;
+import com.hortonworks.iotas.streams.runtime.rule.RulesDependenciesFactory;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -28,8 +28,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static com.hortonworks.iotas.common.IotasEventImpl.GROUP_BY_TRIGGER_EVENT;
-import static com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_DATASOURCE_IDS;
-import static com.hortonworks.iotas.layout.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_EVENT_IDS;
+import static com.hortonworks.iotas.streams.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_DATASOURCE_IDS;
+import static com.hortonworks.iotas.streams.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_EVENT_IDS;
 import static com.hortonworks.iotas.streams.layout.component.rule.expression.Window.WINDOW_ID;
 
 /**
@@ -40,13 +40,13 @@ public class WindowRulesBolt extends BaseWindowedBolt {
 
     private RuleProcessorRuntime ruleProcessorRuntime;
 
-    private final RulesBoltDependenciesFactory boltDependenciesFactory;
+    private final RulesDependenciesFactory boltDependenciesFactory;
 
     private OutputCollector collector;
 
     private long windowId = 0;
 
-    public WindowRulesBolt(RulesBoltDependenciesFactory boltDependenciesFactory) {
+    public WindowRulesBolt(RulesDependenciesFactory boltDependenciesFactory) {
         this.boltDependenciesFactory = boltDependenciesFactory;
     }
 

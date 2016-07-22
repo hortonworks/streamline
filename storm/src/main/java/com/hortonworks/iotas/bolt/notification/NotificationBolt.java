@@ -19,6 +19,7 @@
 package com.hortonworks.iotas.bolt.notification;
 
 import com.hortonworks.iotas.streams.catalog.NotifierInfo;
+import com.hortonworks.iotas.streams.runtime.notification.IotasEventAdapter;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;

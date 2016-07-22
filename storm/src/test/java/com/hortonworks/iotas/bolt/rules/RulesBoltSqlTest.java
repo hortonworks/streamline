@@ -19,7 +19,7 @@ package com.hortonworks.iotas.bolt.rules;
 
 import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
-import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
+import com.hortonworks.iotas.streams.runtime.rule.RulesDependenciesFactory;
 import mockit.Expectations;
 import mockit.VerificationsInOrder;
 import mockit.integration.junit4.JMockit;
@@ -47,8 +47,8 @@ public class RulesBoltSqlTest extends RulesBoltTest {
 
     private static final Values IOTAS_EVENT_VALUES = new Values(IOTAS_EVENT);
 
-    protected RulesBoltDependenciesFactory.ScriptType getScriptType() {
-        return RulesBoltDependenciesFactory.ScriptType.SQL;
+    protected RulesDependenciesFactory.ScriptType getScriptType() {
+        return RulesDependenciesFactory.ScriptType.SQL;
     }
 
     @Test
