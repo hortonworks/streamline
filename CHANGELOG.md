@@ -1,4 +1,5 @@
 ## 0.1.4
+ * IOT-294: Refactor classes from layout to streams-runtime
  * IOT-341 Build failing due to unit test failures in storage-atlas module
  * IOT-340: Move Cache to a separate module
  * IOT-315: RulesChannelHandler does not override abstract method setSource
