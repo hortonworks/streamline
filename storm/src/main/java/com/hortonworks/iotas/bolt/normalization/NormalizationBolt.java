@@ -24,7 +24,7 @@ import com.hortonworks.iotas.streams.Result;
 import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationProcessor;
 import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationProcessorJsonBuilder;
-import com.hortonworks.iotas.layout.runtime.normalization.NormalizationProcessorRuntime;
+import com.hortonworks.iotas.streams.runtime.normalization.NormalizationProcessorRuntime;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;

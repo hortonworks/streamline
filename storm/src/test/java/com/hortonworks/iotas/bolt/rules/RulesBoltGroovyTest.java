@@ -18,14 +18,13 @@
 
 package com.hortonworks.iotas.bolt.rules;
 
-import com.hortonworks.iotas.bolt.rules.RulesBoltTest;
-import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
+import com.hortonworks.iotas.streams.runtime.rule.RulesDependenciesFactory;
 import mockit.integration.junit4.JMockit;
 import org.junit.runner.RunWith;
 
 @RunWith(JMockit.class)
 public class RulesBoltGroovyTest extends RulesBoltTest {
-    protected RulesBoltDependenciesFactory.ScriptType getScriptType() {
-        return RulesBoltDependenciesFactory.ScriptType.GROOVY;
+    protected RulesDependenciesFactory.ScriptType getScriptType() {
+        return RulesDependenciesFactory.ScriptType.GROOVY;
     }
 }

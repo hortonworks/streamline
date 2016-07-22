@@ -22,7 +22,7 @@ import com.hortonworks.iotas.bolt.rules.RulesBolt;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.streams.layout.component.ComponentBuilder;
 import com.hortonworks.iotas.streams.layout.Transform;
-import com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory;
+import com.hortonworks.iotas.streams.runtime.rule.RulesDependenciesFactory;
 import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.iotas.streams.layout.component.impl.splitjoin.JoinAction;
@@ -103,19 +103,19 @@ public class SplitJoinTopologyTest {
         splitAction.setOutputStreams(Collections.singleton(SPLIT_STREAM_ID.getId()));
         SplitProcessorBuilder splitProcessorBuilder = new SplitProcessorBuilder(SPLIT_STREAM_ID, splitAction);
 
-        return new RulesBolt(new RulesBoltDependenciesFactory(splitProcessorBuilder, getScriptType()));
+        return new RulesBolt(new RulesDependenciesFactory(splitProcessorBuilder, getScriptType()));
     }
 
     private RulesBolt createStageBolt() {
-        return new RulesBolt(new RulesBoltDependenciesFactory(new StageProcessorBuilder(), getScriptType()));
+        return new RulesBolt(new RulesDependenciesFactory(new StageProcessorBuilder(), getScriptType()));
     }
 
     private RulesBolt createJoinBolt() {
-        return new RulesBolt(new RulesBoltDependenciesFactory(new JoinProcessorBuilder(), getScriptType()));
+        return new RulesBolt(new RulesDependenciesFactory(new JoinProcessorBuilder(), getScriptType()));
     }
 
-    public RulesBoltDependenciesFactory.ScriptType getScriptType() {
-        return RulesBoltDependenciesFactory.ScriptType.SQL;
+    public RulesDependenciesFactory.ScriptType getScriptType() {
+        return RulesDependenciesFactory.ScriptType.SQL;
     }
 
     static class SplitProcessorBuilder implements ComponentBuilder<RulesProcessor> {
