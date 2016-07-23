@@ -10,7 +10,7 @@ public class NotificationBoltFluxComponent extends AbstractFluxComponent {
     @Override
     protected void generateComponent() {
         String boltId = "notificationBolt" + UUID_FOR_COMPONENTS;
-        String boltClassName = "com.hortonworks.iotas.bolt.notification" +
+        String boltClassName = "com.hortonworks.iotas.streams.runtime.storm.bolt.notification" +
                 ".NotificationBolt";
         String[] constructorArgNames =  {
                 TopologyLayoutConstants.JSON_KEY_NOTIFIER_NAME
@@ -31,7 +31,7 @@ public class NotificationBoltFluxComponent extends AbstractFluxComponent {
         // IoTaS frameworks supports email notifiers by default. However there is support for custom notifiers as well. Here, we handle validation for fields
         // necessary for email notifiers only. Otherwise we pass. For other custom notifiers we could add validate method to Notifier interface and call it
         // here or we could let the custom notifier handle it at runtime after submitting the topology
-        if ("com.hortonworks.iotas.notification.notifiers.EmailNotifier".equals(className)) {
+        if ("com.hortonworks.iotas.streams.notifiers.EmailNotifier".equals(className)) {
             validateStringFields();
             validateProperties();
             validateFieldValues();
