@@ -24,7 +24,7 @@ public class CustomProcessorBoltFluxComponent extends AbstractFluxComponent {
     @Override
     protected void generateComponent () {
         String boltId = "customProcessorBolt" + UUID_FOR_COMPONENTS;
-        String boltClassName = "com.hortonworks.iotas.bolt.CustomProcessorBolt";
+        String boltClassName = "com.hortonworks.iotas.streams.runtime.storm.bolt.CustomProcessorBolt";
         String[] configMethodNames = {"customProcessorImpl", "outputSchema", "inputSchema", "config", "jarFileName", "localJarPath"};
         Object[] values = new Object[configMethodNames.length];
         values[0] = conf.get(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_IMPL);

@@ -33,7 +33,7 @@ public class WindowRuleBoltFluxComponent extends RuleBoltFluxComponent {
     protected void generateComponent() {
         String rulesBoltDependenciesFactory = addRulesBoltDependenciesFactory();
         String boltId = "windowruleBolt" + UUID_FOR_COMPONENTS;
-        String boltClassName = "com.hortonworks.iotas.bolt.rules.WindowRulesBolt";
+        String boltClassName = "com.hortonworks.iotas.streams.runtime.storm.bolt.rules.WindowRulesBolt";
         List boltConstructorArgs = new ArrayList();
         Map ref = getRefYaml(rulesBoltDependenciesFactory);
         boltConstructorArgs.add(ref);
@@ -47,7 +47,7 @@ public class WindowRuleBoltFluxComponent extends RuleBoltFluxComponent {
 
     private String addWindowConfig() {
         String windowId = "window" + UUID_FOR_COMPONENTS;
-        String windowClassName = "com.hortonworks.iotas.streams.layout.component.rule.condition.Window";
+        String windowClassName = "com.hortonworks.iotas.streams.layout.component.rule.expression.Window";
         ObjectMapper mapper = new ObjectMapper();
         String windowJson = null;
         try {

@@ -30,7 +30,7 @@ public class RuleBoltFluxComponent extends AbstractFluxComponent {
     protected void generateComponent () {
         String rulesBoltDependenciesFactory = addRulesBoltDependenciesFactory();
         String boltId = "ruleBolt" + UUID_FOR_COMPONENTS;
-        String boltClassName = "com.hortonworks.iotas.bolt.rules.RulesBolt";
+        String boltClassName = "com.hortonworks.iotas.streams.runtime.storm.bolt.rules.RulesBolt";
         List boltConstructorArgs = new ArrayList();
         Map ref = getRefYaml(rulesBoltDependenciesFactory);
         boltConstructorArgs.add(ref);
@@ -41,7 +41,7 @@ public class RuleBoltFluxComponent extends AbstractFluxComponent {
     protected String addRulesBoltDependenciesFactory () {
         String rulesProcessorBuilderRef = addRulesProcessorBuilder();
         String dependenciesFactoryId = "dependenciesFactory" + UUID_FOR_COMPONENTS;
-        String dependenciesFactoryClassName = "com.hortonworks.iotas.layout.runtime.rule.RulesBoltDependenciesFactory";
+        String dependenciesFactoryClassName = "com.hortonworks.iotas.streams.runtime.rule.RulesDependenciesFactory";
         //constructor args
         List constructorArgs = new ArrayList();
         Map ref = getRefYaml(rulesProcessorBuilderRef);
@@ -55,8 +55,8 @@ public class RuleBoltFluxComponent extends AbstractFluxComponent {
     private String addRulesProcessorBuilder () {
         String rulesProcessorBuilderComponentId = "rulesProcessorBuilder" +
                 UUID_FOR_COMPONENTS;
-        String rulesProcessorBuilderClassName = "com.hortonworks.iotas.layout" +
-                ".design.component.RulesProcessorJsonBuilder";
+        String rulesProcessorBuilderClassName = "com.hortonworks.iotas.streams" +
+                "layout.component.RulesProcessorJsonBuilder";
         ObjectMapper mapper = new ObjectMapper();
         String rulesProcessorJson = null;
         try {

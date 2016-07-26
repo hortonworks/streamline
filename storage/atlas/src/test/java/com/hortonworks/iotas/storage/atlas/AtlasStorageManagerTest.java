@@ -39,7 +39,6 @@ import static com.hortonworks.iotas.storage.atlas.AtlasMetadataServiceTest.clean
  *
  */
 @Category(IntegrationTest.class)
-@Ignore
 public class AtlasStorageManagerTest extends AbstractStoreManagerTest {
     private static AtlasStorageManager atlasStorageManager;
 
