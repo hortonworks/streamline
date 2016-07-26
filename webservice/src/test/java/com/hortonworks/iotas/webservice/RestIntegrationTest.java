@@ -28,10 +28,11 @@ import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.FileInfo;
 import com.hortonworks.iotas.catalog.ParserInfo;
-import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.common.test.IntegrationTest;
 import com.hortonworks.iotas.processor.examples.ConsoleCustomProcessorRuntime;
+import com.hortonworks.iotas.registries.tag.TaggedEntity;
+import com.hortonworks.iotas.registries.tag.Tag;
 import com.hortonworks.iotas.streams.catalog.*;
 import com.hortonworks.iotas.streams.catalog.processor.CustomProcessorInfo;
 import com.hortonworks.iotas.streams.catalog.topology.ConfigField;
@@ -39,7 +40,7 @@ import com.hortonworks.iotas.streams.catalog.topology.TopologyComponentDefinitio
 import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.iotas.streams.service.TopologyCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
-import com.hortonworks.iotas.webservice.catalog.dto.TagDto;
+import com.hortonworks.iotas.registries.tag.dto.TagDto;
 import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import org.apache.commons.io.IOUtils;
@@ -368,7 +369,7 @@ public class RestIntegrationTest {
     }
 
     @Test
-    public void testHeirarchicalTags() throws Exception {
+    public void testHierarchicalTags() throws Exception {
         Client client = ClientBuilder.newClient(new ClientConfig());
         String tagUrl = rootUrl + "tags";
         String dsUrl = rootUrl + "datasources";
@@ -403,7 +404,8 @@ public class RestIntegrationTest {
         String tagEntitiesUrl = String.format("%s/%s/entities", tagUrl, parentTagId);
         response = client.target(tagEntitiesUrl).request().get(String.class);
         Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
-        Assert.assertEquals(Lists.newArrayList(dataSourceDto), getEntities(response, DataSourceDto.class));
+        List<TaggedEntity> entityId = getEntities(response, TaggedEntity.class);
+        Assert.assertTrue(entityId.get(0).getId() == 12L);
 
         /*
          * data source should also be listed under "child-tag"
@@ -411,7 +413,8 @@ public class RestIntegrationTest {
         tagEntitiesUrl = String.format("%s/%s/entities", tagUrl, childTagId);
         response = client.target(tagEntitiesUrl).request().get(String.class);
         Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
-        Assert.assertEquals(Lists.newArrayList(dataSourceDto), getEntities(response, DataSourceDto.class));
+        entityId = getEntities(response, TaggedEntity.class);
+        Assert.assertTrue(entityId.get(0).getId() == 12L);
     }
 
     /*

@@ -3,7 +3,9 @@ package com.hortonworks.iotas.webservice;
 import com.hortonworks.iotas.common.catalog.CatalogResponse;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
-import com.hortonworks.iotas.catalog.Tag;
+import com.hortonworks.iotas.registries.tag.Tag;
+import com.hortonworks.iotas.registries.tag.client.TagRestClient;
+import com.hortonworks.iotas.registries.tag.service.TagService;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.catalog.DataSourceFacade;
 import com.hortonworks.iotas.webservice.catalog.DataSourceWithDataFeedCatalogResource;
@@ -32,9 +34,13 @@ public class DataSourceWithDataFeedCatalogResourceTest {
     @Mocked
     CatalogService mockCatalogService;
 
+    @Mocked
+    TagRestClient mockTagService;
+
+
     @Before
     public void setup() {
-        dataSourceWithDataFeedCatalogResource = new DataSourceWithDataFeedCatalogResource(new DataSourceFacade(mockCatalogService));
+        dataSourceWithDataFeedCatalogResource = new DataSourceWithDataFeedCatalogResource(new DataSourceFacade(mockCatalogService, mockTagService));
     }
 
     @Test

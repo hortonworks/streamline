@@ -30,12 +30,12 @@
         <dependency>
             <groupId>com.hortonworks.iotas</groupId>
             <artifactId>streams-layout</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.hortonworks.iotas</groupId>
             <artifactId>streams-layout-storm</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -43,6 +43,17 @@
             <artifactId>streams-metrics</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hortonworks.iotas</groupId>
+            <artifactId>streams-layout</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hortonworks.iotas</groupId>
+            <artifactId>streams-layout-storm</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>

@@ -3,8 +3,11 @@ package com.hortonworks.iotas.webservice.catalog;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.ParserInfo;
-import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.common.QueryParam;
+import com.hortonworks.iotas.registries.tag.Tag;
+import com.hortonworks.iotas.registries.tag.TaggedEntity;
+import com.hortonworks.iotas.registries.tag.client.TagRestClient;
+import com.hortonworks.iotas.registries.tag.dto.TagDto;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
 import org.apache.commons.lang.StringUtils;
@@ -24,9 +27,13 @@ public class DataSourceFacade {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceFacade.class);
 
     private final CatalogService catalogService;
+    private TagRestClient tagRestClient;
 
-    public DataSourceFacade(CatalogService catalogService) {
+
+    public DataSourceFacade(CatalogService catalogService, TagRestClient tagRestClient) {
         this.catalogService = catalogService;
+        this.tagRestClient = tagRestClient;
+
     }
 
     public DataSourceDto addOrUpdateDataSourceWithDataFeed(Long dataSourceId, DataSourceDto dataSourceDto) throws Exception {
@@ -174,7 +181,7 @@ public class DataSourceFacade {
         if (dataSourceDto.getTags() != null) {
             String[] tags = dataSourceDto.getTags().split(",");
             for (String tagString: tags) {
-                Collection<Tag> existingTags = catalogService.listTags();
+                Collection<Tag> existingTags = tagRestClient.listTags();
                 boolean found = false;
                 for (Tag tag: existingTags) {
                     if (tag.getName().equals(tagString)) {
@@ -187,7 +194,7 @@ public class DataSourceFacade {
                     newTag.setName(tagString);
                     newTag.setDescription(tagString);
                     newTag.setTags(new ArrayList<Tag>());
-                    catalogService.addTag(newTag);
+                    tagRestClient.addTag(newTag);
                 }
             }
         }
@@ -196,7 +203,7 @@ public class DataSourceFacade {
     private List<Tag> getTagsForDataSourceDto (DataSourceDto dataSourceDto) {
         List<Tag> result = new ArrayList<>();
         if (!StringUtils.isEmpty(dataSourceDto.getTags())) {
-            Collection<Tag> existingTags = catalogService.listTags();
+            Collection<Tag> existingTags = tagRestClient.listTags();
             for (String tagString: dataSourceDto.getTags().split(",")) {
                 for (Tag tag: existingTags) {
                     if (tag.getName().equals(tagString)) {
