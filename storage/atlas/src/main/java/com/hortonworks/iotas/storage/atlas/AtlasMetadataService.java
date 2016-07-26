@@ -31,6 +31,7 @@ import org.apache.atlas.typesystem.Referenceable;
 import org.apache.atlas.typesystem.json.InstanceSerialization;
 import org.apache.atlas.typesystem.json.TypesSerialization;
 import org.apache.atlas.typesystem.types.HierarchicalTypeDefinition;
+import org.apache.atlas.typesystem.types.cache.TypeCache;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
@@ -106,15 +107,15 @@ public class AtlasMetadataService {
     }
 
     public void registerType(HierarchicalTypeDefinition<?> typeDef) throws Exception {
-        if (metadataService.getTypeNamesList().contains(typeDef.typeName)) {
+        if (metadataService.getTypeNames(Collections.<TypeCache.TYPE_FILTER, String>emptyMap()).contains(typeDef.typeName)) {
             LOG.info("Given type: [{}] is already registered.", typeDef.typeName);
         } else {
             final String typeDefJson = TypesSerialization.toJson(typeDef, false);
             final JSONObject type = metadataService.createType(typeDefJson);
             LOG.info("####### registered type [{}] ", type);
 
-            final List<String> typeNamesList = metadataService.getTypeNamesList();
-            LOG.debug("####### registered typeNames [{}] ", typeNamesList);
+            final List<String> typeNames = metadataService.getTypeNames(Collections.<TypeCache.TYPE_FILTER, String>emptyMap());
+            LOG.debug("####### registered typeNames [{}] ", typeNames);
         }
     }
 
