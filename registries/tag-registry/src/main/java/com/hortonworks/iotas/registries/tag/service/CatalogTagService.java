@@ -1,20 +1,24 @@
-package com.hortonworks.iotas.service;
+package com.hortonworks.iotas.registries.tag.service;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.hortonworks.iotas.catalog.Tag;
-import com.hortonworks.iotas.catalog.TagStorableMapping;
 import com.hortonworks.iotas.common.QueryParam;
+import com.hortonworks.iotas.registries.tag.catalog.Tag;
+import com.hortonworks.iotas.registries.tag.catalog.TagStorableMapping;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
+import org.apache.commons.io.IOUtils;
 
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -29,6 +33,23 @@ public class CatalogTagService implements TagService {
 
     public CatalogTagService(StorageManager dao) {
         this.dao = dao;
+        dao.registerStorables(getStorableClasses());
+
+    }
+
+    public static Collection<Class<? extends Storable>> getStorableClasses() {
+        InputStream resourceAsStream = CatalogTagService.class.getClassLoader().getResourceAsStream("tagstorables.props");
+        HashSet<Class<? extends Storable>> classes = new HashSet<>();
+        try {
+            List<String> classNames = IOUtils.readLines(resourceAsStream);
+            for (String className : classNames) {
+                classes.add((Class<? extends Storable>) Class.forName(className));
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        return classes;
     }
 
     @Override

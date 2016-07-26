@@ -3,8 +3,8 @@ package com.hortonworks.iotas.webservice.catalog;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.ParserInfo;
-import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.common.QueryParam;
+import com.hortonworks.iotas.registries.tag.catalog.Tag;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
 import org.apache.commons.lang.StringUtils;
@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
