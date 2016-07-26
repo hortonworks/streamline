@@ -1,7 +1,7 @@
-package com.hortonworks.iotas.service;
+package com.hortonworks.iotas.registries.tag.service;
 
-import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.common.QueryParam;
+import com.hortonworks.iotas.registries.tag.catalog.Tag;
 import com.hortonworks.iotas.storage.Storable;
 
 import java.util.Collection;

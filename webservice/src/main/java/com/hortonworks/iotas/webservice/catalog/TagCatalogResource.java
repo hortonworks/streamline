@@ -2,13 +2,13 @@ package com.hortonworks.iotas.webservice.catalog;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.catalog.DataSource;
-import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.common.QueryParam;
+import com.hortonworks.iotas.registries.tag.catalog.Tag;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.exception.StorageException;
 import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
-import com.hortonworks.iotas.webservice.catalog.dto.TagDto;
+import com.hortonworks.iotas.registries.tag.catalog.dto.TagDto;
 import com.hortonworks.iotas.common.util.WSUtils;
 
 import javax.ws.rs.DELETE;

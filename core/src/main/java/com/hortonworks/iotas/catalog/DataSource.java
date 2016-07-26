@@ -3,6 +3,7 @@ package com.hortonworks.iotas.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.registries.tag.catalog.Tag;
 import com.hortonworks.iotas.storage.PrimaryKey;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.catalog.AbstractStorable;
