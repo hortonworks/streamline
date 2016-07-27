@@ -11,7 +11,7 @@
 
     <artifactId>streams-runtime</artifactId>
     <properties>
-        <storm.version>1.0.1.2.5.0.0-1036</storm.version>
+        <storm.version>1.0.1.2.5.0.0-1079</storm.version>
     </properties>
 
     <dependencies>
