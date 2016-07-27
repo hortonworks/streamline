@@ -55,24 +55,25 @@ while getopts 'hv' flag; do
   esac
 done
 
-post /system/componentdefinitions/SOURCE kafka-topology-component
-post /system/componentdefinitions/PROCESSOR rule-topology-component
-post /system/componentdefinitions/PROCESSOR parser-topology-component
-post /system/componentdefinitions/PROCESSOR normalization-processor-topology-component
-post /system/componentdefinitions/SINK hdfs-topology-component
-post /system/componentdefinitions/SINK hbase-topology-component
-post /system/componentdefinitions/SINK notification-topology-component
-post /system/componentdefinitions/SINK opentsdb-sink-topology-component
-post /system/componentdefinitions/LINK all-grouping-link-topology-component
-post /system/componentdefinitions/LINK direct-grouping-link-topology-component
-post /system/componentdefinitions/LINK shuffle-grouping-link-topology-component
-post /system/componentdefinitions/LINK local-or-shuffle-grouping-link-topology-component
-post /system/componentdefinitions/LINK fields-grouping-link-topology-component
-post /system/componentdefinitions/LINK global-grouping-link-topology-component
-post /system/componentdefinitions/LINK none-grouping-link-topology-component
-post /system/componentdefinitions/PROCESSOR split-topology-component
-post /system/componentdefinitions/PROCESSOR join-topology-component
-post /system/componentdefinitions/PROCESSOR stage-topology-component
-post /system/componentdefinitions/ACTION transform-action-topology-component
-post /system/componentdefinitions/TRANSFORM projection-transform-topology-component
-post /system/componentdefinitions/TRANSFORM enrichment-transform-topology-component
+base_dir=$(dirname $0)
+post /system/componentdefinitions/SOURCE $base_dir/kafka-topology-component
+post /system/componentdefinitions/PROCESSOR $base_dir/rule-topology-component
+post /system/componentdefinitions/PROCESSOR $base_dir/parser-topology-component
+post /system/componentdefinitions/PROCESSOR $base_dir/normalization-processor-topology-component
+post /system/componentdefinitions/SINK $base_dir/hdfs-topology-component
+post /system/componentdefinitions/SINK $base_dir/hbase-topology-component
+post /system/componentdefinitions/SINK $base_dir/notification-topology-component
+post /system/componentdefinitions/SINK $base_dir/opentsdb-sink-topology-component
+post /system/componentdefinitions/LINK $base_dir/all-grouping-link-topology-component
+post /system/componentdefinitions/LINK $base_dir/direct-grouping-link-topology-component
+post /system/componentdefinitions/LINK $base_dir/shuffle-grouping-link-topology-component
+post /system/componentdefinitions/LINK $base_dir/local-or-shuffle-grouping-link-topology-component
+post /system/componentdefinitions/LINK $base_dir/fields-grouping-link-topology-component
+post /system/componentdefinitions/LINK $base_dir/global-grouping-link-topology-component
+post /system/componentdefinitions/LINK $base_dir/none-grouping-link-topology-component
+post /system/componentdefinitions/PROCESSOR $base_dir/split-topology-component
+post /system/componentdefinitions/PROCESSOR $base_dir/join-topology-component
+post /system/componentdefinitions/PROCESSOR $base_dir/stage-topology-component
+post /system/componentdefinitions/ACTION $base_dir/transform-action-topology-component
+post /system/componentdefinitions/TRANSFORM $base_dir/projection-transform-topology-component
+post /system/componentdefinitions/TRANSFORM $base_dir/enrichment-transform-topology-component
