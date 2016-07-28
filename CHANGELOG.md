@@ -1,4 +1,5 @@
 ## 0.1.4
+ * IOT-311: Support specifying output stream within source/processor apis
  * IOT-342: Rename strings in streams-layout-storm module
  * IOT-295: Move classes to streams-runtime-storm
  * IOT-294: Refactor classes from layout to streams-runtime
