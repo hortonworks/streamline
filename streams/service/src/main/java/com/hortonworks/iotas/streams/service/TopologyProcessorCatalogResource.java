@@ -80,7 +80,7 @@ public class TopologyProcessorCatalogResource {
      *       }
      *     },
      *     "type": "PARSER",
-     *     "outputStreamIds": [1]
+     *     "outputStreams": [{stream1 data..}, {stream2 data..}]
      *   }]
      * }
      * </pre>
@@ -121,7 +121,7 @@ public class TopologyProcessorCatalogResource {
      *       }
      *     },
      *     "type": "PARSER",
-     *     "outputStreamIds": [1]
+     *     "outputStreams": [{stream1 data..}, {stream2 data..}]
      *   }
      * }
      * </pre>
@@ -157,6 +157,8 @@ public class TopologyProcessorCatalogResource {
      *   },
      *   "type": "PARSER",
      *   "outputStreamIds": [1]
+     *   OR
+     *   "outputStreams" : [{stream1 data..}, {stream2 data..}]
      * }
      * </pre>
      * <i>Sample success response: </i>
@@ -174,7 +176,7 @@ public class TopologyProcessorCatalogResource {
      *       }
      *     },
      *     "type": "PARSER",
-     *     "outputStreamIds": [1]
+     *     "outputStreams": [{stream1 data..}, {stream2 data..}]
      *   }
      * }
      * </pre>

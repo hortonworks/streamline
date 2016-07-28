@@ -82,7 +82,7 @@ public class TopologySourceCatalogResource {
      *       }
      *     },
      *     "type": "KAFKA",
-     *     "outputStreamIds": [1]
+     *     "outputStreams": [{stream1 data..}, {stream2 data..}]
      *   }]
      * }
      * </pre>
@@ -125,7 +125,7 @@ public class TopologySourceCatalogResource {
      *       }
      *     },
      *     "type": "KAFKA",
-     *     "outputStreamIds": [1]
+     *     "outputStreams": [{stream1 data..}, {stream2 data..}]
      *   }
      * }
      * </pre>
@@ -162,7 +162,10 @@ public class TopologySourceCatalogResource {
      *     }
      *   },
      *   "type": "KAFKA",
+     *
      *   "outputStreamIds": [1]
+     *   OR
+     *   "outputStreams" : [{stream1 data..}, {stream2 data..}]
      * }
      * </pre>
      * <i>Sample success response: </i>
@@ -182,7 +185,7 @@ public class TopologySourceCatalogResource {
      *       }
      *     },
      *     "type": "KAFKA",
-     *     "outputStreamIds": [1]
+     *     "outputStreamIds": [1] OR "outputStreams" : {..}
      *   }
      * }
      * </pre>
@@ -272,7 +275,7 @@ public class TopologySourceCatalogResource {
      *       }
      *     },
      *     "type": "KAFKA",
-     *     "outputStreamIds": [1]
+     *     "outputStreams": [{stream1 data..}, {stream2 data..}]
      *   }
      * }
      * </pre>
