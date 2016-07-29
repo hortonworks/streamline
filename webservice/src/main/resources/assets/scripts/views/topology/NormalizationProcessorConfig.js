@@ -674,7 +674,7 @@ define(['utils/LangSupport',
                 }
             }
             var config = {
-                parallelism: this.$('#np-parallelism').val(),
+                parallelism: parseInt(this.$('#np-parallelism').val()),
                 normalizationProcessorConfig: {
                     type: "fineGrained",
                     outputStreams: [{
