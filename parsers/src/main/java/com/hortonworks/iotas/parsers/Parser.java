@@ -15,12 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hortonworks.iotas.parser;
+package com.hortonworks.iotas.parsers;
 
 
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.exception.DataValidationException;
 import com.hortonworks.iotas.common.exception.ParserException;
+import com.hortonworks.iotas.parsers.exception.DataValidationException;
 
 import java.util.List;
 import java.util.Map;
