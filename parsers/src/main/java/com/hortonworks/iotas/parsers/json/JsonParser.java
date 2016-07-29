@@ -3,7 +3,7 @@ package com.hortonworks.iotas.parsers.json;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.parser.BaseParser;
+import com.hortonworks.iotas.parsers.BaseParser;
 import com.hortonworks.iotas.common.exception.ParserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

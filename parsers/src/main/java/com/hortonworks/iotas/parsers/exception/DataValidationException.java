@@ -1,6 +1,4 @@
-package com.hortonworks.iotas.exception;
-
-import org.apache.phoenix.schema.tuple.Tuple;
+package com.hortonworks.iotas.parsers.exception;
 
 import java.util.Arrays;
 import java.util.Map;

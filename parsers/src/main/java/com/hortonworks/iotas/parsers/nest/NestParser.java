@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.parser.BaseParser;
+import com.hortonworks.iotas.parsers.BaseParser;
 import com.hortonworks.iotas.common.exception.ParserException;
 import com.hortonworks.iotas.common.util.ReflectionHelper;
 import org.slf4j.Logger;

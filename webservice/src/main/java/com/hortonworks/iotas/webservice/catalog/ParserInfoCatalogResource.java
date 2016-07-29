@@ -25,7 +25,7 @@ import com.google.common.collect.Collections2;
 import com.google.common.io.ByteStreams;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.parser.Parser;
+import com.hortonworks.iotas.parsers.Parser;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.common.util.FileUtil;
 import com.hortonworks.iotas.common.util.JarReader;
