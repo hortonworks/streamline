@@ -422,10 +422,9 @@ public class StreamCatalogService {
     }
 
     public Collection<TopologyComponentDefinition> listTopologyComponentsForTypeWithFilter(TopologyComponentDefinition.TopologyComponentType componentType, List<QueryParam> params) {
-        List<TopologyComponentDefinition> topologyComponentDefinitions = new
-                ArrayList<TopologyComponentDefinition>();
+        List<TopologyComponentDefinition> topologyComponentDefinitions = new ArrayList<>();
         String ns = TopologyComponentDefinition.NAME_SPACE;
-        Collection<TopologyComponentDefinition> filtered = dao.<TopologyComponentDefinition>find(ns, params);
+        Collection<TopologyComponentDefinition> filtered = dao.find(ns, params);
         for (TopologyComponentDefinition tc : filtered) {
             if (tc.getType().equals(componentType)) {
                 topologyComponentDefinitions.add(tc);
@@ -514,12 +513,25 @@ public class StreamCatalogService {
         return result;
     }
 
-    public CustomProcessorInfo addCustomProcessorInfo(CustomProcessorInfo customProcessorInfo, InputStream jarFile, InputStream imageFile) throws IOException {
-        uploadFileToStorage(jarFile, customProcessorInfo.getJarFileName());
-        uploadFileToStorage(imageFile, customProcessorInfo.getImageFileName());
-        TopologyComponentDefinition topologyComponentDefinition = customProcessorInfo.toTopologyComponent();
-        topologyComponentDefinition.setId(this.dao.nextId(TopologyComponentDefinition.NAME_SPACE));
-        this.dao.add(topologyComponentDefinition);
+    public CustomProcessorInfo addCustomProcessorInfo (CustomProcessorInfo customProcessorInfo, InputStream jarFile, InputStream imageFile) throws IOException {
+        try {
+            uploadFileToStorage(jarFile, customProcessorInfo.getJarFileName());
+            uploadFileToStorage(imageFile, customProcessorInfo.getImageFileName());
+            TopologyComponentDefinition topologyComponentDefinition = customProcessorInfo.toTopologyComponent();
+            topologyComponentDefinition.setId(this.dao.nextId(TopologyComponentDefinition.NAME_SPACE));
+            this.dao.add(topologyComponentDefinition);
+        } catch (StorageException|IOException e) {
+            LOG.error("Unexpected exception thrown while adding custom processor info %s", customProcessorInfo.getName());
+            throw e;
+        } finally {
+            try {
+                deleteFileFromStorage(customProcessorInfo.getJarFileName());
+                deleteFileFromStorage(customProcessorInfo.getImageFileName());
+            } catch (IOException e) {
+                LOG.error("Unexpected exception thrown while cleaning up custom processor info %s", customProcessorInfo.getName());
+                throw e;
+            }
+        }
         return customProcessorInfo;
     }
 
