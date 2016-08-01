@@ -12,7 +12,7 @@
     <artifactId>streams-runtime-storm</artifactId>
 
     <properties>
-        <storm.version>1.0.1.2.5.0.0-1079</storm.version>
+        <storm.version>1.0.1.2.5.0.0-1118</storm.version>
         <calcite.version>1.4.0-incubating</calcite.version>     <!--StormSQL dependency-->
     </properties>
 
