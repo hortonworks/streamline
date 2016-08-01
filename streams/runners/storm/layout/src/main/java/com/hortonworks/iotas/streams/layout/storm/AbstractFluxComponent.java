@@ -17,6 +17,10 @@ import java.util.UUID;
  * components and component variables
  */
 public abstract class AbstractFluxComponent implements FluxComponent {
+    protected enum ArgsType {
+        NONE
+    }
+
     // conf is the map representing the configuration parameters for this
     // storm component picked by the user. For eg kafka component will have
     // zkUrl, topic, etc.
@@ -155,7 +159,10 @@ public abstract class AbstractFluxComponent implements FluxComponent {
                 Map configMethod = new LinkedHashMap();
                 configMethod.put(StormTopologyLayoutConstants.YAML_KEY_NAME, configMethodNames[i]);
                 List methodArgs = new ArrayList();
-                methodArgs.add(values[i]);
+                Object value = values[i];
+                if(value != ArgsType.NONE) {
+                    methodArgs.add(value);
+                }
                 configMethod.put(StormTopologyLayoutConstants.YAML_KEY_ARGS, methodArgs);
                 configMethods.add(configMethod);
             }
