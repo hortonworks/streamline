@@ -637,6 +637,7 @@ public class RestIntegrationTest {
             // all gets first should return no entities
             for (String getUrl: qpte.getUrls) {
                 try {
+                    System.out.println("priyank getUrl is " + getUrl);
                     client.target(getUrl).request().get(String.class);
                     Assert.fail("Should have thrown NotFoundException.");
                 } catch (NotFoundException e) {

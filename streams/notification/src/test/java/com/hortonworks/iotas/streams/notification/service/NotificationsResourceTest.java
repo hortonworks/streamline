@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-package com.hortonworks.iotas.webservice;
+package com.hortonworks.iotas.streams.notification.service;
 
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.streams.notification.service.NotificationService;
-import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.streams.notification.service.NotificationsResource;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;

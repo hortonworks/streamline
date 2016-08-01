@@ -7,6 +7,7 @@ import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.service.CatalogService;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.exception.StorageException;
+import com.hortonworks.iotas.streams.service.DataSourceFacade;
 import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
 import com.hortonworks.iotas.webservice.catalog.dto.TagDto;
 import com.hortonworks.iotas.common.util.WSUtils;

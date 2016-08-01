@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.hortonworks.iotas.webservice;
+package com.hortonworks.iotas.streams.notification.service;
 
 /**
  * Created by aiyer on 10/4/15.
@@ -26,7 +26,6 @@ import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.streams.notification.Notification;
-import com.hortonworks.iotas.streams.notification.service.NotificationService;
 import com.hortonworks.iotas.common.util.WSUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +62,7 @@ public class NotificationsResource {
 
     private NotificationService notificationService;
 
-    NotificationsResource(NotificationService service) {
+    public NotificationsResource(NotificationService service) {
         this.notificationService = service;
     }
 
