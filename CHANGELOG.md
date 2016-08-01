@@ -1,4 +1,5 @@
-## 0.1.4 
+## 0.1.4
+ * IOT-279: Add clean up logic if any part of custom processor upload fails.
  * IOT-346: Remove metrics dependency from webservice.
  * IOT-343: UI Sets Parallelism Property to Type String Which Causes Topology Deployment Failure.
  * IOT-266: Added OpenTsdb sink implementation using Storm's OpenTsdb bolt.
