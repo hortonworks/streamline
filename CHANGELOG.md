@@ -1,4 +1,5 @@
 ## 0.1.4
+ * IOT-343: UI Sets Parallelism Property to Type String Which Causes Topology Deployment Failure.
  * IOT-266: Added OpenTsdb sink implementation using Storm's OpenTsdb bolt.
  * IOT-311: Support specifying output stream within source/processor apis
  * IOT-342: Rename strings in streams-layout-storm module
