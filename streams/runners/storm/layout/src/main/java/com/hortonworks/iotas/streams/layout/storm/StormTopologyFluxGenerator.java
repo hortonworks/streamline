@@ -14,6 +14,7 @@ import com.hortonworks.iotas.streams.layout.component.impl.HbaseSink;
 import com.hortonworks.iotas.streams.layout.component.impl.HdfsSink;
 import com.hortonworks.iotas.streams.layout.component.impl.KafkaSource;
 import com.hortonworks.iotas.streams.layout.component.impl.NotificationSink;
+import com.hortonworks.iotas.streams.layout.component.impl.OpenTsdbSink;
 import com.hortonworks.iotas.streams.layout.component.impl.ParserProcessor;
 import com.hortonworks.iotas.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationProcessor;
@@ -57,6 +58,13 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
     public void visit(HdfsSink hdfsSink) {
         keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_BOLTS,
                 getYamlComponents(new HdfsBoltFluxComponent(), hdfsSink)));
+    }
+
+
+    @Override
+    public void visit(OpenTsdbSink openTsdbSink) {
+        keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_BOLTS,
+                getYamlComponents(new OpenTsdbBoltFluxComponent(), openTsdbSink)));
     }
 
     @Override

@@ -19,7 +19,9 @@
 package com.hortonworks.iotas.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class TopologySource extends TopologyOutputComponent {
     public static final String NAMESPACE = "topology_sources";
 

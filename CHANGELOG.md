@@ -1,6 +1,11 @@
 
 ## 0.1.4
  * IOT_344: Iotas build fails at storage-atlas with error
+ * IOT-279: Add clean up logic if any part of custom processor upload fails.
+ * IOT-346: Remove metrics dependency from webservice.
+ * IOT-343: UI Sets Parallelism Property to Type String Which Causes Topology Deployment Failure.
+ * IOT-266: Added OpenTsdb sink implementation using Storm's OpenTsdb bolt.
+ * IOT-311: Support specifying output stream within source/processor apis
  * IOT-342: Rename strings in streams-layout-storm module
  * IOT-295: Move classes to streams-runtime-storm
  * IOT-294: Refactor classes from layout to streams-runtime

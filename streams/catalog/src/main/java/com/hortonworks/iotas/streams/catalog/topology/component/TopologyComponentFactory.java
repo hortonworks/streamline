@@ -27,6 +27,7 @@ import com.hortonworks.iotas.streams.layout.component.impl.HbaseSink;
 import com.hortonworks.iotas.streams.layout.component.impl.HdfsSink;
 import com.hortonworks.iotas.streams.layout.component.impl.KafkaSource;
 import com.hortonworks.iotas.streams.layout.component.impl.NotificationSink;
+import com.hortonworks.iotas.streams.layout.component.impl.OpenTsdbSink;
 import com.hortonworks.iotas.streams.layout.component.impl.ParserProcessor;
 import com.hortonworks.iotas.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationConfig;
@@ -155,6 +156,7 @@ public class TopologyComponentFactory {
         ImmutableMap.Builder<String, Provider<IotasSink>> builder = ImmutableMap.builder();
         builder.put(hbaseSinkProvider());
         builder.put(hdfsSinkProvider());
+        builder.put(openTsdbSinkProvider());
         builder.put(notificationSinkProvider());
         return builder.build();
     }
@@ -313,6 +315,15 @@ public class TopologyComponentFactory {
         return new AbstractMap.SimpleImmutableEntry<>("CUSTOM", provider);
     }
 
+    private Map.Entry<String, Provider<IotasSink>> openTsdbSinkProvider() {
+        Provider<IotasSink> provider = new Provider<IotasSink>() {
+            @Override
+            public IotasSink create(TopologyComponent component) {
+                return new OpenTsdbSink();
+            }
+        };
+        return new AbstractMap.SimpleImmutableEntry<>("OPENTSDB", provider);
+    }
 
     private Map.Entry<String, Provider<IotasSink>> hbaseSinkProvider() {
         Provider<IotasSink> provider = new Provider<IotasSink>() {
