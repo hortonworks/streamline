@@ -3,14 +3,12 @@ package com.hortonworks.iotas.webservice;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.iotas.model.IotasMessage;
+import com.hortonworks.iotas.streams.common.IotasMessage;
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
-import kafka.utils.ZkUtils;
 import org.I0Itec.zkclient.ZkClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.collection.JavaConversions;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;

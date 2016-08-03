@@ -20,7 +20,7 @@ package com.hortonworks.iotas.simulator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
-import com.hortonworks.iotas.model.IotasMessage;
+import com.hortonworks.iotas.streams.common.IotasMessage;
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;

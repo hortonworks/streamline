@@ -5,7 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.ParserInfo;
-import com.hortonworks.iotas.common.IotasEventImpl;
+import com.hortonworks.iotas.streams.common.IotasEventImpl;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.service.CatalogService;

@@ -1,4 +1,4 @@
-package com.hortonworks.iotas.common;
+package com.hortonworks.iotas.streams.common;
 
 import java.util.Collections;
 import java.util.HashMap;
