@@ -25,7 +25,7 @@ import com.hortonworks.iotas.streams.layout.component.rule.action.transform.Subs
 import com.hortonworks.iotas.streams.runtime.rule.action.ActionRuntime;
 import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.Result;
-import com.hortonworks.iotas.common.IotasEventImpl;
+import com.hortonworks.iotas.streams.common.IotasEventImpl;
 import com.hortonworks.iotas.streams.layout.component.rule.action.transform.ProjectionTransform;
 import org.junit.Test;
 

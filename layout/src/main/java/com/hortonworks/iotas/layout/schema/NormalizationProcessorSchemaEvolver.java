@@ -3,7 +3,7 @@ package com.hortonworks.iotas.layout.schema;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
-import com.hortonworks.iotas.common.IotasEventImpl;
+import com.hortonworks.iotas.streams.common.IotasEventImpl;
 import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationProcessor;
 import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationConfig;
