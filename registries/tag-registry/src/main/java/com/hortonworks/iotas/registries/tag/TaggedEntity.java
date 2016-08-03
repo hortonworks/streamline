@@ -18,6 +18,8 @@
 
 package com.hortonworks.iotas.registries.tag;
 
+import com.hortonworks.iotas.storage.Storable;
+
 public class TaggedEntity {
     private String namespace;
     private Long id;
@@ -25,6 +27,11 @@ public class TaggedEntity {
     public TaggedEntity(String namespace, Long id) {
         this.namespace = namespace;
         this.id = id;
+    }
+
+    public TaggedEntity(Storable storable) {
+        this.namespace = storable.getNameSpace();
+        this.id = storable.getId();
     }
 
     // for jackson

@@ -27,7 +27,7 @@ import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.common.util.FileStorage;
 import com.hortonworks.iotas.registries.tag.TaggedEntity;
-import com.hortonworks.iotas.registries.tag.client.TagRestClient;
+import com.hortonworks.iotas.registries.tag.client.TagClient;
 import com.hortonworks.iotas.storage.DataSourceSubType;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
@@ -68,14 +68,14 @@ public class CatalogService {
 
     private StorageManager dao;
     private FileStorage fileStorage;
-    private TagRestClient tagRestClient;
+    private TagClient tagClient;
 
 
-    public CatalogService(StorageManager dao, FileStorage fileStorage, TagRestClient tagRestClient) {
+    public CatalogService(StorageManager dao, FileStorage fileStorage, TagClient tagClient) {
         this.dao = dao;
         dao.registerStorables(getStorableClasses());
         this.fileStorage = fileStorage;
-        this.tagRestClient = tagRestClient;
+        this.tagClient = tagClient;
     }
 
     public static Collection<Class<? extends Storable>> getStorableClasses() {
@@ -126,7 +126,7 @@ public class CatalogService {
             for (DataSource ds : dataSources) {
                 DataSourceSubType dataSourcesubType = getSubtypeFromDataSource(ds);
                 ds.setTypeConfig(CoreUtils.storableToJson(dataSourcesubType));
-                ds.setTags(tagRestClient.getTags(new TaggedEntity(ds.getNameSpace(), ds.getId())));
+                ds.setTags(tagClient.getTags(new TaggedEntity(ds)));
             }
         }
         return dataSources;
@@ -149,7 +149,7 @@ public class CatalogService {
         if (result != null) {
             DataSourceSubType subType = getSubtypeFromDataSource(result);
             result.setTypeConfig(CoreUtils.storableToJson(subType));
-            result.setTags(tagRestClient.getTags(new TaggedEntity(result.getNameSpace(), result.getId())));
+            result.setTags(tagClient.getTags(new TaggedEntity(result)));
         }
         return result;
     }
@@ -166,7 +166,7 @@ public class CatalogService {
         subType.setDataSourceId(dataSource.getId());
         this.dao.add(dataSource);
         this.dao.add(subType);
-        tagRestClient.addTagsForEntity(new TaggedEntity(dataSource.getNameSpace(), dataSource.getId()), dataSource.getTags());
+        tagClient.addTagsForEntity(new TaggedEntity(dataSource), dataSource.getTags());
         return dataSource;
     }
 
@@ -179,7 +179,7 @@ public class CatalogService {
             String ns = getNamespaceForDataSourceType(dataSource.getType());
             this.dao.remove(new StorableKey(ns, dataSource.getPrimaryKey()));
             dao.<DataSource>remove(new StorableKey(DATA_SOURCE_NAMESPACE, dataSource.getPrimaryKey()));
-            tagRestClient.removeTagForEntity(new TaggedEntity(dataSource.getNameSpace(), dataSource.getId()), dataSource.getTags());
+            tagClient.removeTagsForEntity(new TaggedEntity(dataSource), dataSource.getTags());
         }
         return dataSource;
     }
@@ -192,7 +192,7 @@ public class CatalogService {
         subType.setDataSourceId(dataSource.getId());
         this.dao.addOrUpdate(dataSource);
         this.dao.addOrUpdate(subType);
-        tagRestClient.addOrUpdateTagsForEntity(new TaggedEntity(dataSource.getNameSpace(), dataSource.getId()), dataSource.getTags());
+        tagClient.addOrUpdateTagsForEntity(new TaggedEntity(dataSource), dataSource.getTags());
         return dataSource;
     }
 

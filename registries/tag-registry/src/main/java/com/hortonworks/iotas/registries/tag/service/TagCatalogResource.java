@@ -26,6 +26,7 @@ import java.util.List;
 
 import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.*;
 import static javax.ws.rs.core.Response.Status.*;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 /**
  * REST resource for managing hierarchical tags in the Iotas system.
@@ -346,7 +347,7 @@ public class TagCatalogResource {
                 return WSUtils.respond(CREATED, SUCCESS);
             }
             else {
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, tagId.toString());
+                return WSUtils.respond(BAD_REQUEST, ENTITY_NOT_FOUND, tagId.toString());
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -382,7 +383,7 @@ public class TagCatalogResource {
                 return WSUtils.respond(CREATED, SUCCESS);
             }
             else {
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, tagId.toString());
+                return WSUtils.respond(BAD_REQUEST, ENTITY_NOT_FOUND, tagId.toString());
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
