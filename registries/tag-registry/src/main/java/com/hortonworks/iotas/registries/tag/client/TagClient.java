@@ -58,7 +58,6 @@ public class TagClient {
         client = ClientBuilder.newClient(clientConfig);
         client.register(MultiPartFeature.class);
     }
-
     /**
      * Add a given {@link Tag} into the system. This should
      * also handle nested tags.
@@ -228,7 +227,6 @@ public class TagClient {
         List<Tag> existingTags = getTags(taggedEntity);
         updateTags(taggedEntity, getTagsToBeAdded(existingTags, tags), getTagsToBeRemoved(existingTags, tags));
     }
-
 
     private List<Tag> getTagsToBeRemoved(List<Tag> existing, List<Tag> newList) {
         return Lists.newArrayList(
