@@ -1,17 +1,17 @@
-package com.hortonworks.iotas.processor;
+package com.hortonworks.iotas.streams.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hortonworks.iotas.common.util.FileUtil;
+import com.hortonworks.iotas.common.FileEventHandler;
+import com.hortonworks.iotas.common.util.ProxyUtil;
 import com.hortonworks.iotas.streams.catalog.processor.CustomProcessorInfo;
 import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
-import com.hortonworks.iotas.common.util.FileUtil;
 import com.hortonworks.iotas.streams.runtime.CustomProcessorRuntime;
-import com.hortonworks.iotas.common.util.ProxyUtil;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.hortonworks.iotas.common.FileEventHandler;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
