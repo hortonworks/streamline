@@ -26,7 +26,7 @@ import com.hortonworks.iotas.common.Constants;
 import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.common.IotasEventImpl;
 import com.hortonworks.iotas.streams.common.IotasMessage;
-import com.hortonworks.iotas.parser.Parser;
+import com.hortonworks.iotas.parsers.Parser;
 import com.hortonworks.iotas.common.util.ProxyUtil;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;

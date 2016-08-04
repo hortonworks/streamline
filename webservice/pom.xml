@@ -63,6 +63,11 @@
         </dependency>
         <dependency>
             <groupId>com.hortonworks.iotas</groupId>
+            <artifactId>parsers</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hortonworks.iotas</groupId>
             <artifactId>streams-service</artifactId>
             <version>${project.version}</version>
         </dependency>
