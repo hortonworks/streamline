@@ -42,6 +42,7 @@ import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.iotas.streams.metrics.topology.TopologyMetrics;
 import com.hortonworks.iotas.common.util.FileStorage;
 import com.hortonworks.iotas.common.util.ReflectionHelper;
+import com.hortonworks.iotas.streams.notification.service.NotificationsResource;
 import com.hortonworks.iotas.streams.service.ClusterCatalogResource;
 import com.hortonworks.iotas.streams.service.ComponentCatalogResource;
 import com.hortonworks.iotas.streams.service.NotifierInfoCatalogResource;
@@ -54,10 +55,10 @@ import com.hortonworks.iotas.streams.service.TopologySinkCatalogResource;
 import com.hortonworks.iotas.streams.service.TopologySourceCatalogResource;
 import com.hortonworks.iotas.streams.service.TopologyStreamCatalogResource;
 import com.hortonworks.iotas.streams.service.UDFCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.DataSourceCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.DataSourceFacade;
-import com.hortonworks.iotas.webservice.catalog.DataSourceWithDataFeedCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.FeedCatalogResource;
+import com.hortonworks.iotas.streams.service.DataSourceCatalogResource;
+import com.hortonworks.iotas.streams.service.DataSourceFacade;
+import com.hortonworks.iotas.streams.service.DataSourceWithDataFeedCatalogResource;
+import com.hortonworks.iotas.streams.service.FeedCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.FileCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.ParserInfoCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.TagCatalogResource;
@@ -96,15 +97,6 @@ public class IotasApplication extends Application<IotasConfiguration> {
 
     @Override
     public void run(IotasConfiguration iotasConfiguration, Environment environment) throws Exception {
-        // kafka producer shouldn't be starting as part of REST api.
-        // KafkaProducerManager kafkaProducerManager = new KafkaProducerManager(iotasConfiguration);
-        // environment.lifecycle().manage(kafkaProducerManager);
-
-        // ZkClient zkClient = new ZkClient(iotasConfiguration.getZookeeperHost());
-
-        // final FeedResource feedResource = new FeedResource(kafkaProducerManager.getProducer(), zkClient);
-        // environment.jersey().register(feedResource);
-
         registerResources(iotasConfiguration, environment);
     }
 

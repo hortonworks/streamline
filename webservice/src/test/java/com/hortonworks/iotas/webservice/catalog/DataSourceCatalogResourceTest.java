@@ -6,6 +6,7 @@ import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.streams.service.DataSourceCatalogResource;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;

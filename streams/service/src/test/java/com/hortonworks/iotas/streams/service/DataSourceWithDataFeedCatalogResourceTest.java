@@ -1,16 +1,17 @@
-package com.hortonworks.iotas.webservice;
+package com.hortonworks.iotas.streams.service;
 
 import com.hortonworks.iotas.common.catalog.CatalogResponse;
 import com.hortonworks.iotas.catalog.DataFeed;
 import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.service.CatalogService;
-import com.hortonworks.iotas.webservice.catalog.DataSourceFacade;
-import com.hortonworks.iotas.webservice.catalog.DataSourceWithDataFeedCatalogResource;
+import com.hortonworks.iotas.streams.service.DataSourceFacade;
+import com.hortonworks.iotas.streams.service.DataSourceWithDataFeedCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,7 +56,7 @@ public class DataSourceWithDataFeedCatalogResourceTest {
 
         CatalogResponse catalogResponse = (CatalogResponse) dataSourceWithDataFeedCatalogResource.addDataSourceWithDataFeed(dataSourceDto).getEntity();
         assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), catalogResponse.getResponseCode());
-        assertEquals(dataSourceDto, catalogResponse.getEntity());
+        Assert.assertEquals(dataSourceDto, catalogResponse.getEntity());
     }
 
     @Test
