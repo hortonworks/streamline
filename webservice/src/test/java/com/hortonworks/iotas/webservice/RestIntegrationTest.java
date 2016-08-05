@@ -24,6 +24,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.hortonworks.iotas.common.catalog.CatalogResponse;
+import com.hortonworks.iotas.registries.tag.Tag;
+import com.hortonworks.iotas.registries.tag.TaggedEntity;
 import com.hortonworks.iotas.streams.catalog.DataFeed;
 import com.hortonworks.iotas.streams.catalog.DataSource;
 import com.hortonworks.iotas.streams.catalog.FileInfo;
