@@ -24,9 +24,10 @@ import com.hortonworks.iotas.catalog.DataSource;
 import com.hortonworks.iotas.catalog.Device;
 import com.hortonworks.iotas.catalog.FileInfo;
 import com.hortonworks.iotas.catalog.ParserInfo;
-import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.common.util.FileStorage;
+import com.hortonworks.iotas.registries.tag.TaggedEntity;
+import com.hortonworks.iotas.registries.tag.client.TagClient;
 import com.hortonworks.iotas.storage.DataSourceSubType;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
@@ -67,14 +68,14 @@ public class CatalogService {
 
     private StorageManager dao;
     private FileStorage fileStorage;
-    private TagService tagService;
+    private TagClient tagClient;
 
 
-    public CatalogService(StorageManager dao, FileStorage fileStorage) {
+    public CatalogService(StorageManager dao, FileStorage fileStorage, TagClient tagClient) {
         this.dao = dao;
         dao.registerStorables(getStorableClasses());
         this.fileStorage = fileStorage;
-        this.tagService = new CatalogTagService(dao);
+        this.tagClient = tagClient;
     }
 
     public static Collection<Class<? extends Storable>> getStorableClasses() {
@@ -125,7 +126,7 @@ public class CatalogService {
             for (DataSource ds : dataSources) {
                 DataSourceSubType dataSourcesubType = getSubtypeFromDataSource(ds);
                 ds.setTypeConfig(CoreUtils.storableToJson(dataSourcesubType));
-                ds.setTags(tagService.getTags(ds));
+                ds.setTags(tagClient.getTags(new TaggedEntity(ds)));
             }
         }
         return dataSources;
@@ -148,7 +149,7 @@ public class CatalogService {
         if (result != null) {
             DataSourceSubType subType = getSubtypeFromDataSource(result);
             result.setTypeConfig(CoreUtils.storableToJson(subType));
-            result.setTags(tagService.getTags(result));
+            result.setTags(tagClient.getTags(new TaggedEntity(result)));
         }
         return result;
     }
@@ -165,7 +166,7 @@ public class CatalogService {
         subType.setDataSourceId(dataSource.getId());
         this.dao.add(dataSource);
         this.dao.add(subType);
-        tagService.addTagsForStorable(dataSource, dataSource.getTags());
+        tagClient.addTagsForEntity(new TaggedEntity(dataSource), dataSource.getTags());
         return dataSource;
     }
 
@@ -178,7 +179,7 @@ public class CatalogService {
             String ns = getNamespaceForDataSourceType(dataSource.getType());
             this.dao.remove(new StorableKey(ns, dataSource.getPrimaryKey()));
             dao.<DataSource>remove(new StorableKey(DATA_SOURCE_NAMESPACE, dataSource.getPrimaryKey()));
-            tagService.removeTagsFromStorable(dataSource, dataSource.getTags());
+            tagClient.removeTagsForEntity(new TaggedEntity(dataSource), dataSource.getTags());
         }
         return dataSource;
     }
@@ -191,7 +192,7 @@ public class CatalogService {
         subType.setDataSourceId(dataSource.getId());
         this.dao.addOrUpdate(dataSource);
         this.dao.addOrUpdate(subType);
-        tagService.addOrUpdateTagsForStorable(dataSource, dataSource.getTags());
+        tagClient.addOrUpdateTagsForEntity(new TaggedEntity(dataSource), dataSource.getTags());
         return dataSource;
     }
 
@@ -320,34 +321,6 @@ public class CatalogService {
             }
         }
         return result;
-    }
-
-    public Tag addTag(Tag tag) {
-        return tagService.addTag(tag);
-    }
-
-    public Tag getTag(Long tagId) {
-        return tagService.getTag(tagId);
-    }
-
-    public Tag removeTag(Long tagId) {
-        return tagService.removeTag(tagId);
-    }
-
-    public Tag addOrUpdateTag(Long tagId, Tag tag) {
-        return tagService.addOrUpdateTag(tagId, tag);
-    }
-    
-    public Collection<Tag> listTags() {
-        return tagService.listTags();
-    }
-
-    public Collection<Tag> listTags(List<QueryParam> queryParams) {
-        return tagService.listTags(queryParams);
-    }
-
-    public List<Storable> getEntities(Long tagId) {
-        return tagService.getEntities(tagId, true);
     }
 
     public Collection<FileInfo> listFiles() {

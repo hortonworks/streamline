@@ -21,6 +21,10 @@ package com.hortonworks.iotas.webservice;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.hortonworks.iotas.cache.Cache;
+import com.hortonworks.iotas.registries.tag.client.TagClient;
+import com.hortonworks.iotas.registries.tag.service.CatalogTagService;
+import com.hortonworks.iotas.registries.tag.service.TagCatalogResource;
+import com.hortonworks.iotas.registries.tag.service.TagService;
 import com.hortonworks.iotas.storage.cache.impl.GuavaCache;
 import com.hortonworks.iotas.storage.cache.writer.StorageWriteThrough;
 import com.hortonworks.iotas.storage.cache.writer.StorageWriter;
@@ -60,9 +64,10 @@ import com.hortonworks.iotas.webservice.catalog.DataSourceWithDataFeedCatalogRes
 import com.hortonworks.iotas.webservice.catalog.FeedCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.FileCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.ParserInfoCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.TagCatalogResource;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
+import io.dropwizard.jetty.HttpConnectorFactory;
+import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
@@ -214,13 +219,19 @@ public class IotasApplication extends Application<IotasConfiguration> {
         TopologyMetrics topologyMetrics = getTopologyMetricsImpl(iotasConfiguration);
         FileStorage fileStorage = this.getJarStorage(iotasConfiguration);
 
+
         final StreamCatalogService streamcatalogService = new StreamCatalogService(storageManager, topologyActions, topologyMetrics, fileStorage);
-        final CatalogService catalogService = new CatalogService(storageManager, fileStorage);
+        int appPort = ((HttpConnectorFactory) ((DefaultServerFactory) iotasConfiguration.getServerFactory()).getApplicationConnectors().get(0)).getPort();
+        TagClient tagClient = new TagClient(iotasConfiguration.getCatalogRootUrl().replaceFirst("8080", appPort +""));
+        final CatalogService catalogService = new CatalogService(storageManager, fileStorage, tagClient);
+
         final FeedCatalogResource feedResource = new FeedCatalogResource(catalogService);
         final ParserInfoCatalogResource parserResource = new ParserInfoCatalogResource(catalogService);
         final DataSourceCatalogResource dataSourceResource = new DataSourceCatalogResource(catalogService);
+
+
         final DataSourceWithDataFeedCatalogResource dataSourceWithDataFeedCatalogResource =
-                new DataSourceWithDataFeedCatalogResource(new DataSourceFacade(catalogService));
+                new DataSourceWithDataFeedCatalogResource(new DataSourceFacade(catalogService, tagClient));
         final TopologyCatalogResource topologyCatalogResource = new TopologyCatalogResource(streamcatalogService);
         final MetricsResource metricsResource = new MetricsResource(streamcatalogService);
         final TopologyStreamCatalogResource topologyStreamCatalogResource = new TopologyStreamCatalogResource(streamcatalogService);
@@ -229,7 +240,8 @@ public class IotasApplication extends Application<IotasConfiguration> {
         final ClusterCatalogResource clusterCatalogResource = new ClusterCatalogResource(streamcatalogService, fileStorage);
         final ComponentCatalogResource componentCatalogResource = new ComponentCatalogResource(streamcatalogService);
         final TopologyEditorMetadataResource topologyEditorMetadataResource = new TopologyEditorMetadataResource(streamcatalogService);
-        final TagCatalogResource tagCatalogResource = new TagCatalogResource(catalogService);
+        final TagService tagService = new CatalogTagService(storageManager);
+        final TagCatalogResource tagCatalogResource = new TagCatalogResource(tagService);
         final FileCatalogResource fileCatalogResource = new FileCatalogResource(catalogService);
 
         // topology related

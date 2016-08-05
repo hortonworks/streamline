@@ -1,6 +1,7 @@
-package com.hortonworks.iotas.webservice.catalog.dto;
+package com.hortonworks.iotas.registries.tag.dto;
 
-import com.hortonworks.iotas.catalog.Tag;
+
+import com.hortonworks.iotas.registries.tag.Tag;
 
 import java.util.ArrayList;
 import java.util.List;

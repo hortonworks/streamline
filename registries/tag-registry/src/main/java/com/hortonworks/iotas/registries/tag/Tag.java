@@ -1,4 +1,4 @@
-package com.hortonworks.iotas.catalog;
+package com.hortonworks.iotas.registries.tag;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.iotas.common.Schema;

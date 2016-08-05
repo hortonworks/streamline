@@ -2,6 +2,7 @@ package com.hortonworks.iotas.storage;
 
 import com.hortonworks.iotas.catalog.*;
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.registries.tag.Tag;
 
 import java.util.ArrayList;
 import java.util.Arrays;
