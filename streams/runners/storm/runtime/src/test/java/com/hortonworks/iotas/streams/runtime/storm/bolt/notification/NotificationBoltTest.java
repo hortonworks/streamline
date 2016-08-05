@@ -23,7 +23,7 @@ import com.hortonworks.iotas.streams.catalog.NotifierInfo;
 import com.hortonworks.iotas.streams.runtime.notification.IotasEventAdapter;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.tuple.Tuple;
-import com.hortonworks.iotas.client.CatalogRestClient;
+import com.hortonworks.iotas.streams.catalog.CatalogRestClient;
 import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.common.IotasEventImpl;
 import com.hortonworks.iotas.streams.notification.Notification;

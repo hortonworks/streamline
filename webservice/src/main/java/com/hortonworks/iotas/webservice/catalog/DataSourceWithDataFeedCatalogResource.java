@@ -1,7 +1,7 @@
 package com.hortonworks.iotas.webservice.catalog;
 
 import com.codahale.metrics.annotation.Timed;
-import com.hortonworks.iotas.catalog.DataSource;
+import com.hortonworks.iotas.streams.catalog.DataSource;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
 import com.hortonworks.iotas.common.util.WSUtils;

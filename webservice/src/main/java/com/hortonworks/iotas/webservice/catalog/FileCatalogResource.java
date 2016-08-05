@@ -19,8 +19,8 @@
 package com.hortonworks.iotas.webservice.catalog;
 
 import com.codahale.metrics.annotation.Timed;
-import com.hortonworks.iotas.catalog.FileInfo;
-import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.streams.catalog.FileInfo;
+import com.hortonworks.iotas.streams.catalog.service.CatalogService;
 import com.hortonworks.iotas.common.util.WSUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;

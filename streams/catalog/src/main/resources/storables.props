@@ -1,0 +1,6 @@
+com.hortonworks.iotas.streams.catalog.DataSet
+com.hortonworks.iotas.streams.catalog.DataSource
+com.hortonworks.iotas.streams.catalog.DataFeed
+com.hortonworks.iotas.streams.catalog.Device
+com.hortonworks.iotas.streams.catalog.ParserInfo
+com.hortonworks.iotas.streams.catalog.FileInfo

@@ -1,8 +1,14 @@
-package com.hortonworks.iotas.storage;
+package com.hortonworks.iotas.streams.catalog.storage;
 
-import com.hortonworks.iotas.catalog.*;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.registries.tag.Tag;
+import com.hortonworks.iotas.storage.Storable;
+import com.hortonworks.iotas.storage.StorableTest;
+import com.hortonworks.iotas.streams.catalog.DataFeed;
+import com.hortonworks.iotas.streams.catalog.DataSource;
+import com.hortonworks.iotas.streams.catalog.Device;
+import com.hortonworks.iotas.streams.catalog.FileInfo;
+import com.hortonworks.iotas.streams.catalog.ParserInfo;
 
 import java.util.ArrayList;
 import java.util.Arrays;

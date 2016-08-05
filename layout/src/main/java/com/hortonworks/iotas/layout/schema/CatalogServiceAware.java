@@ -1,7 +1,7 @@
 package com.hortonworks.iotas.layout.schema;
 
 
-import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.streams.catalog.service.CatalogService;
 import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
 
 /**

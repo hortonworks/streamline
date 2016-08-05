@@ -15,17 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hortonworks.iotas.storage;
+package com.hortonworks.iotas.streams.catalog.storage;
 
-import com.hortonworks.iotas.catalog.*;
-import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManagerTest;
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 
 public class CoreInMemoryStorageManagerTest extends InMemoryStorageManagerTest {
 

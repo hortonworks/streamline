@@ -20,7 +20,6 @@ package com.hortonworks.iotas.webservice;
 
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.streams.notification.service.NotificationService;
-import com.hortonworks.iotas.service.CatalogService;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;

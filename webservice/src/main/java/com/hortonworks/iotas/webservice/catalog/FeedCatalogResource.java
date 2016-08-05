@@ -1,11 +1,11 @@
 package com.hortonworks.iotas.webservice.catalog;
 
 import com.codahale.metrics.annotation.Timed;
-import com.hortonworks.iotas.catalog.DataFeed;
-import com.hortonworks.iotas.catalog.ParserInfo;
+import com.hortonworks.iotas.streams.catalog.DataFeed;
+import com.hortonworks.iotas.streams.catalog.ParserInfo;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.streams.catalog.service.CatalogService;
 import com.hortonworks.iotas.common.util.WSUtils;
 
 import javax.ws.rs.DELETE;

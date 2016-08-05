@@ -4,7 +4,7 @@ import com.hortonworks.iotas.common.catalog.CatalogResponse;
 import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.iotas.streams.catalog.topology.TopologyComponentDefinition;
 import com.hortonworks.iotas.streams.layout.component.Stream;
-import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.streams.catalog.service.CatalogService;
 import com.hortonworks.iotas.webservice.schema.MockEvolvingSchemaCatalogServiceAwareImpl;
 import com.hortonworks.iotas.webservice.schema.MockEvolvingSchemaImpl;
 import com.hortonworks.iotas.webservice.schema.SchemaAPI;

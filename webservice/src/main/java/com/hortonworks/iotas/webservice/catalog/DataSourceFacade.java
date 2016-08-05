@@ -1,12 +1,12 @@
 package com.hortonworks.iotas.webservice.catalog;
 
-import com.hortonworks.iotas.catalog.DataFeed;
-import com.hortonworks.iotas.catalog.DataSource;
-import com.hortonworks.iotas.catalog.ParserInfo;
+import com.hortonworks.iotas.streams.catalog.DataFeed;
+import com.hortonworks.iotas.streams.catalog.DataSource;
+import com.hortonworks.iotas.streams.catalog.ParserInfo;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.registries.tag.Tag;
 import com.hortonworks.iotas.registries.tag.client.TagClient;
-import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.streams.catalog.service.CatalogService;
 import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;

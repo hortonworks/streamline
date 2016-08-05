@@ -18,7 +18,7 @@
  */
 package com.hortonworks.iotas.streams.runtime.splitjoin;
 
-import com.hortonworks.iotas.client.CatalogRestClient;
+import com.hortonworks.iotas.streams.catalog.CatalogRestClient;
 import com.hortonworks.iotas.common.Constants;
 import com.hortonworks.iotas.streams.runtime.rule.action.AbstractActionRuntime;
 import com.hortonworks.iotas.streams.runtime.rule.action.ActionRuntimeContext;

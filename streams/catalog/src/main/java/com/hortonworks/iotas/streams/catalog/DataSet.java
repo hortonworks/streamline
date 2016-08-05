@@ -1,15 +1,9 @@
-package com.hortonworks.iotas.catalog;
+package com.hortonworks.iotas.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.iotas.common.Config;
-import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.storage.DataSourceSubType;
-import com.hortonworks.iotas.storage.PrimaryKey;
-import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * DataSet entity enables support for non-device datasources. E.g. Twitter, weather etc.

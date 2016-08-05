@@ -16,15 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.hortonworks.iotas.client;
+package com.hortonworks.iotas.streams.catalog;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.iotas.catalog.DataFeed;
-import com.hortonworks.iotas.catalog.DataSource;
-import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.storage.Storable;
-import com.hortonworks.iotas.streams.catalog.NotifierInfo;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
@@ -44,7 +40,6 @@ public class CatalogRestClient {
 
     private Client client;
 
-    private static final String DEVICE_URL = "devices";
     private static final String DATASOURCE_URL = "deprecated/datasources";
     private static final String FEED_URL = "feeds";
     private static final String PARSER_URL = "parsers";

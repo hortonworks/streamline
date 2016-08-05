@@ -7,7 +7,7 @@ import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.layout.schema.BadComponentConfigException;
 import com.hortonworks.iotas.layout.schema.CatalogServiceAware;
 import com.hortonworks.iotas.layout.schema.EvolvingSchema;
-import com.hortonworks.iotas.service.CatalogService;
+import com.hortonworks.iotas.streams.catalog.service.CatalogService;
 
 import java.util.Set;
 

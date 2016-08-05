@@ -1,6 +1,5 @@
-package com.hortonworks.iotas.service;
+package com.hortonworks.iotas.common;
 
-import com.hortonworks.iotas.common.FileEventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

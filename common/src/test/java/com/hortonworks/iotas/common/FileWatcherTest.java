@@ -1,6 +1,5 @@
-package com.hortonworks.iotas.service;
+package com.hortonworks.iotas.common;
 
-import com.hortonworks.iotas.common.FileEventHandler;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Tested;

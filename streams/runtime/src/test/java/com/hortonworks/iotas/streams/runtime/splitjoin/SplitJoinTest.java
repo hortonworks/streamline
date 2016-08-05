@@ -20,7 +20,7 @@ package com.hortonworks.iotas.streams.runtime.splitjoin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
-import com.hortonworks.iotas.client.CatalogRestClient;
+import com.hortonworks.iotas.streams.catalog.CatalogRestClient;
 import com.hortonworks.iotas.common.Constants;
 import com.hortonworks.iotas.streams.layout.component.rule.Rule;
 import com.hortonworks.iotas.streams.layout.component.rule.action.transform.ProjectionTransform;
