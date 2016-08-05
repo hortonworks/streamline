@@ -57,7 +57,7 @@ import com.hortonworks.iotas.streams.service.TopologySinkCatalogResource;
 import com.hortonworks.iotas.streams.service.TopologySourceCatalogResource;
 import com.hortonworks.iotas.streams.service.TopologyStreamCatalogResource;
 import com.hortonworks.iotas.streams.service.UDFCatalogResource;
-import com.hortonworks.iotas.streams.runtime.processor.CustomProcessorUploadHandler;
+import com.hortonworks.iotas.streams.service.CustomProcessorUploadHandler;
 import com.hortonworks.iotas.webservice.catalog.DataSourceCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.DataSourceFacade;
 import com.hortonworks.iotas.webservice.catalog.DataSourceWithDataFeedCatalogResource;
