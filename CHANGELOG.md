@@ -1,4 +1,5 @@
 ## 0.1.4
+ * IOT-285: Hierarchical tagging system should be independent registry service
  * IOT-279: Add clean up logic if any part of custom processor upload fails.
  * IOT-346: Remove metrics dependency from webservice.
  * IOT-343: UI Sets Parallelism Property to Type String Which Causes Topology Deployment Failure.
