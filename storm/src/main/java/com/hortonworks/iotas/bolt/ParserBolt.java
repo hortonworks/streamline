@@ -126,6 +126,7 @@ public class ParserBolt extends BaseRichBolt {
     }
 
     public void execute(Tuple input) {
+        LOG.info("SALIL KANETKAR - PARSER BOLT!!!!!!!!!!");
         byte[] inputBytes = input.getBinaryByField(BYTES_FIELD);
         byte[] failedBytes = inputBytes;
         Parser parser = null;
