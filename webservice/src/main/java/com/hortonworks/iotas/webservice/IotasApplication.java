@@ -63,7 +63,7 @@ import com.hortonworks.iotas.streams.service.DataSourceCatalogResource;
 import com.hortonworks.iotas.streams.catalog.DataSourceFacade;
 import com.hortonworks.iotas.streams.service.DataSourceWithDataFeedCatalogResource;
 import com.hortonworks.iotas.streams.service.FeedCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.FileCatalogResource;
+import com.hortonworks.iotas.streams.service.FileCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.ParserInfoCatalogResource;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;

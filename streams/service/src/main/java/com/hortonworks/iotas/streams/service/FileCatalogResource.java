@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.hortonworks.iotas.webservice.catalog;
+package com.hortonworks.iotas.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.streams.catalog.FileInfo;

@@ -13,7 +13,7 @@
     <dependencies>
         <dependency>
             <groupId>com.hortonworks.iotas</groupId>
-            <artifactId>core</artifactId>
+            <artifactId>common</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
             <exclusions>
