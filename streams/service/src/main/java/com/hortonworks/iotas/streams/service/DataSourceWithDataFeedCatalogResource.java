@@ -1,10 +1,11 @@
-package com.hortonworks.iotas.webservice.catalog;
+package com.hortonworks.iotas.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.streams.catalog.DataSource;
 import com.hortonworks.iotas.common.QueryParam;
-import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
+import com.hortonworks.iotas.streams.catalog.DataSourceDto;
 import com.hortonworks.iotas.common.util.WSUtils;
+import com.hortonworks.iotas.streams.catalog.DataSourceFacade;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

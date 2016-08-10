@@ -1,4 +1,4 @@
-package com.hortonworks.iotas.webservice.catalog;
+package com.hortonworks.iotas.streams.service;
 
 import com.hortonworks.iotas.common.catalog.CatalogResponse;
 import com.hortonworks.iotas.streams.catalog.DataFeed;
@@ -6,6 +6,7 @@ import com.hortonworks.iotas.streams.catalog.ParserInfo;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.streams.catalog.service.CatalogService;
+import com.hortonworks.iotas.streams.service.DataSourceCatalogResource;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;

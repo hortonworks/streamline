@@ -40,7 +40,7 @@ public class CatalogRestClient {
 
     private Client client;
 
-    private static final String DATASOURCE_URL = "deprecated/datasources";
+    private static final String DATASOURCE_URL = "datasources";
     private static final String FEED_URL = "feeds";
     private static final String PARSER_URL = "parsers";
     private static final String NOTIFIER_URL = "notifiers";
@@ -69,7 +69,7 @@ public class CatalogRestClient {
         parserTarget = rootTarget.path(PARSER_URL);
     }
 
-    private <T extends Storable> List<T> getEntities(WebTarget target, Class<T> clazz) {
+    private <T> List<T> getEntities(WebTarget target, Class<T> clazz) {
         List<T> entities = new ArrayList<T>();
         String response = target.request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
         try {
@@ -106,10 +106,10 @@ public class CatalogRestClient {
                             NotifierInfo.class).get(0);
     }
 
-    public DataSource getDataSource(String deviceId, String version) {
+    public DataSourceDto getDataSource(String deviceId, String version) {
         return getEntities(client.target(String.format("%s/%s/type/DEVICE/?make=%s&model=%s",
                                             rootCatalogURL, DATASOURCE_URL, deviceId, version)),
-                            DataSource.class).get(0);
+                            DataSourceDto.class).get(0);
     }
 
     public ParserInfo getParserInfo(String deviceId, String version) {

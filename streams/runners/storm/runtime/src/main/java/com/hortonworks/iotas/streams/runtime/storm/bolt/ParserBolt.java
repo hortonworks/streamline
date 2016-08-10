@@ -19,7 +19,7 @@
 package com.hortonworks.iotas.streams.runtime.storm.bolt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.iotas.streams.catalog.DataSource;
+import com.hortonworks.iotas.streams.catalog.DataSourceDto;
 import com.hortonworks.iotas.streams.catalog.ParserInfo;
 import com.hortonworks.iotas.streams.catalog.CatalogRestClient;
 import com.hortonworks.iotas.common.Constants;
@@ -62,7 +62,8 @@ public class ParserBolt extends BaseRichBolt {
     private static final Random RANDOM = new Random();
 
     private static ConcurrentHashMap<Object, Parser> dataSrcIdfToParser = new ConcurrentHashMap<>();      //TODO why is this field static ? It makes the class really hard to test and takes away from the thread safety of storm bolts
-    private static ConcurrentHashMap<Object, DataSource> dataSrcIdfToDataSrc = new ConcurrentHashMap<>(); //TODO why is this field static ? It makes the class really hard to test and takes away from the thread safety of storm bolts
+    private static ConcurrentHashMap<Object, DataSourceDto> dataSrcIdfToDataSrc = new ConcurrentHashMap<>(); //TODO why is this field static ? It makes the
+    // class really hard to test and takes away from the thread safety of storm bolts
 
     private CatalogRestClient client;
     private String localParserJarPath;
@@ -136,7 +137,7 @@ public class ParserBolt extends BaseRichBolt {
                 final IotasMessage iotasMessage = objectMapper.readValue(new String(inputBytes, StandardCharsets.UTF_8), IotasMessage.class);
                 parser = getParser(iotasMessage);
                 if(dataSourceId == null) {
-                    dataSourceId = getDataSource(iotasMessage).getId();
+                    dataSourceId = getDataSourceId(iotasMessage);
                 }
                 // override inputBytes with the data in IotasMessage
                 inputBytes = iotasMessage.getData();
@@ -213,17 +214,17 @@ public class ParserBolt extends BaseRichBolt {
         }
     }
 
-    private DataSource getDataSource(IotasMessage iotasMessage) {
+    private Long getDataSourceId (IotasMessage iotasMessage) {
         DataSourceIdentifier dataSrcIdf = new DataSourceIdentifier(iotasMessage.getMake(), iotasMessage.getModel());
-        DataSource dataSource = dataSrcIdfToDataSrc.get(dataSrcIdf);
-        if(dataSource == null) {
-            dataSource = client.getDataSource(dataSrcIdf.getId(), dataSrcIdf.getVersion());
-            DataSource existing = dataSrcIdfToDataSrc.putIfAbsent(dataSrcIdf, dataSource);
+        DataSourceDto dataSourceDto = dataSrcIdfToDataSrc.get(dataSrcIdf);
+        if(dataSourceDto == null) {
+            dataSourceDto = client.getDataSource(dataSrcIdf.getId(), dataSrcIdf.getVersion());
+            DataSourceDto existing = dataSrcIdfToDataSrc.putIfAbsent(dataSrcIdf, dataSourceDto);
             if(existing != null) {
-                dataSource = existing;
+                dataSourceDto = existing;
             }
         }
-        return dataSource;
+        return dataSourceDto.getDataSourceId();
     }
 
     private Parser getParser(IotasMessage iotasMessage) {

@@ -1,4 +1,4 @@
-package com.hortonworks.iotas.webservice.catalog;
+package com.hortonworks.iotas.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.streams.catalog.DataFeed;
