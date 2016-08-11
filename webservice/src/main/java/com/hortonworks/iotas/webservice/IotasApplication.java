@@ -48,6 +48,7 @@ import com.hortonworks.iotas.common.util.ReflectionHelper;
 import com.hortonworks.iotas.streams.notification.service.NotificationsResource;
 import com.hortonworks.iotas.streams.service.ClusterCatalogResource;
 import com.hortonworks.iotas.streams.service.ComponentCatalogResource;
+import com.hortonworks.iotas.streams.service.MetricsResource;
 import com.hortonworks.iotas.streams.service.NotifierInfoCatalogResource;
 import com.hortonworks.iotas.streams.service.RuleCatalogResource;
 import com.hortonworks.iotas.streams.service.TopologyCatalogResource;

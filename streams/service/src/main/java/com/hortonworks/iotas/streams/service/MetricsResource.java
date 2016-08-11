@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.hortonworks.iotas.webservice;
+package com.hortonworks.iotas.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.streams.catalog.Topology;
