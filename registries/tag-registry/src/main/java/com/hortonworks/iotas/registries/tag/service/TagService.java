@@ -1,15 +1,15 @@
-package com.hortonworks.iotas.service;
+package com.hortonworks.iotas.registries.tag.service;
 
-import com.hortonworks.iotas.catalog.Tag;
 import com.hortonworks.iotas.common.QueryParam;
-import com.hortonworks.iotas.storage.Storable;
+import com.hortonworks.iotas.registries.tag.TaggedEntity;
+import com.hortonworks.iotas.registries.tag.Tag;
 
 import java.util.Collection;
 import java.util.List;
 
 /**
- * Interface for managing tags in the Iotas system. A storable entity in
- * Iotas can be tagged with one or more tags and the tags can be nested.
+ * Interface for managing tags in the system. A storable entity in
+ * the system can be tagged with one or more tags and the tags can be nested.
  * The implementation for this could be based on catalog db,
  * or managed by external system like Atlas.
  */
@@ -66,36 +66,52 @@ public interface TagService {
     Collection<Tag> listTags(List<QueryParam> queryParams);
 
     /**
-     * Tags the storable with the given tags
+     * Tags the entity with the given tags
      *
-     * @param storable the storable that should be tagged
-     * @param tags     the tags to be added
+     * @param entityId
+     * @param tags
      */
-    void addTagsForStorable(Storable storable, List<Tag> tags);
+    void addTagsForStorable(TaggedEntity entityId, List<Tag> tags);
 
     /**
      * Updates the tags for the given storable with the new set of tags
-     *
-     * @param storable the storable
-     * @param tags     the new set of tags
+     * @param storableId
+     * @param nameSpace
+     * @param tags
      */
-    void addOrUpdateTagsForStorable(Storable storable, List<Tag> tags);
 
     /**
-     * Removes the given tags from the storable.
+     * Updates the tags for the given entity with the new set of tags
      *
-     * @param storable the storable
-     * @param tags     the tags to be removed
+     * @param entityId
+     * @param tags
      */
-    void removeTagsFromStorable(Storable storable, List<Tag> tags);
+    void addOrUpdateTagsForStorable(TaggedEntity entityId, List<Tag> tags);
 
     /**
-     * Return the list of all the tags associated with the given storable.
+     *  Removes the given tags from the storable.
      *
-     * @param storable the storable entity
-     * @return the list of tags associated with the storable.
+     * @param storableId
+     * @param nameSpace
+     * @param tags
      */
-    List<Tag> getTags(Storable storable);
+
+    /**
+     * Removes the given tags from the entity.
+     *
+     * @param entityId
+     * @param tags
+     */
+    void removeTagsFromStorable(TaggedEntity entityId, List<Tag> tags);
+
+    /**
+     * Return the list of all the tags associated with the given entity.
+     *
+     * @param entityId
+     * @return
+     */
+    List<Tag> getTags(TaggedEntity entityId);
+
 
     /**
      * Gets all the entities under the given tag id
@@ -103,5 +119,5 @@ public interface TagService {
      * @param tagId   the tag id
      * @param recurse recursively traverse nested tags or not
      */
-    List<Storable> getEntities(Long tagId, boolean recurse);
+    List<TaggedEntity> getEntities(Long tagId, boolean recurse);
 }
