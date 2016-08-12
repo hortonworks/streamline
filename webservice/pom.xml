@@ -78,16 +78,6 @@
         </dependency>
         <dependency>
             <groupId>com.hortonworks.iotas</groupId>
-            <artifactId>layout</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.hortonworks.iotas</groupId>
-            <artifactId>layout</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.hortonworks.iotas</groupId>
             <artifactId>streams-notification</artifactId>
             <version>${project.version}</version>
             <exclusions>
@@ -142,6 +132,11 @@
         <dependency>
             <groupId>com.hortonworks.iotas</groupId>
             <artifactId>streams-metrics-storm</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hortonworks.iotas</groupId>
+            <artifactId>streams-schema-evolver</artifactId>
             <version>${project.version}</version>
         </dependency>
         <!-- test dependency -->

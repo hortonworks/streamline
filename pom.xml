@@ -16,7 +16,6 @@
         <module>simulator</module>
         <module>webservice</module>
         <module>parsers</module>
-        <module>layout</module>
         <module>streams</module>
         <module>registries</module>
     </modules>
