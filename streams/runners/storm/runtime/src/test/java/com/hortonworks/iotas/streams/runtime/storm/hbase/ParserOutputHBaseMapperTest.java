@@ -3,7 +3,7 @@ package com.hortonworks.iotas.streams.runtime.storm.hbase;
 import org.apache.storm.tuple.Tuple;
 import com.google.common.base.Charsets;
 import com.hortonworks.iotas.streams.IotasEvent;
-import com.hortonworks.iotas.common.IotasEventImpl;
+import com.hortonworks.iotas.streams.common.IotasEventImpl;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;

@@ -18,7 +18,7 @@
  */
 package com.hortonworks.iotas.streams.runtime.normalization;
 
-import com.hortonworks.iotas.common.IotasEventImpl;
+import com.hortonworks.iotas.streams.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationProcessor;

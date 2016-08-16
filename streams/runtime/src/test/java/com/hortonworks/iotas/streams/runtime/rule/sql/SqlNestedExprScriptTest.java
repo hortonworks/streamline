@@ -3,7 +3,7 @@ package com.hortonworks.iotas.streams.runtime.rule.sql;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.Expression;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.Literal;
 import com.hortonworks.iotas.streams.IotasEvent;
-import com.hortonworks.iotas.common.IotasEventImpl;
+import com.hortonworks.iotas.streams.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.ArrayFieldExpression;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.BinaryExpression;

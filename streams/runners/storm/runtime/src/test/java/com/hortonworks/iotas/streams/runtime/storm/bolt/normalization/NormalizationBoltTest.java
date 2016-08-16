@@ -20,7 +20,7 @@ package com.hortonworks.iotas.streams.runtime.storm.bolt.normalization;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.streams.IotasEvent;
-import com.hortonworks.iotas.common.IotasEventImpl;
+import com.hortonworks.iotas.streams.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.streams.layout.component.impl.normalization.BulkNormalizationConfig;
 import com.hortonworks.iotas.streams.layout.component.impl.normalization.FieldBasedNormalizationConfig;

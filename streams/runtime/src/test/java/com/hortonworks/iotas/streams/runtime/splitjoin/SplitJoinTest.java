@@ -26,7 +26,7 @@ import com.hortonworks.iotas.streams.layout.component.rule.Rule;
 import com.hortonworks.iotas.streams.layout.component.rule.action.transform.ProjectionTransform;
 import com.hortonworks.iotas.streams.runtime.rule.action.ActionRuntimeContext;
 import com.hortonworks.iotas.streams.IotasEvent;
-import com.hortonworks.iotas.common.IotasEventImpl;
+import com.hortonworks.iotas.streams.common.IotasEventImpl;
 import com.hortonworks.iotas.streams.Result;
 import com.hortonworks.iotas.streams.layout.component.impl.splitjoin.JoinAction;
 import com.hortonworks.iotas.streams.layout.component.impl.splitjoin.SplitAction;

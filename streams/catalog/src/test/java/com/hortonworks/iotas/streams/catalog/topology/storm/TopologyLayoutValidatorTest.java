@@ -1,4 +1,4 @@
-package com.hortonworks.iotas.topology.storm;
+package com.hortonworks.iotas.streams.catalog.topology.storm;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
