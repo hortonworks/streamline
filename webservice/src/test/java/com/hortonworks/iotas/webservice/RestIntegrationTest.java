@@ -30,7 +30,6 @@ import com.hortonworks.iotas.catalog.FileInfo;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.common.test.IntegrationTest;
-import com.hortonworks.iotas.processor.examples.ConsoleCustomProcessorRuntime;
 import com.hortonworks.iotas.registries.tag.TaggedEntity;
 import com.hortonworks.iotas.registries.tag.Tag;
 import com.hortonworks.iotas.streams.catalog.*;
@@ -38,6 +37,7 @@ import com.hortonworks.iotas.streams.catalog.processor.CustomProcessorInfo;
 import com.hortonworks.iotas.streams.catalog.topology.ConfigField;
 import com.hortonworks.iotas.streams.catalog.topology.TopologyComponentDefinition;
 import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
+import com.hortonworks.iotas.streams.runtime.CustomProcessorRuntime;
 import com.hortonworks.iotas.streams.service.TopologyCatalogResource;
 import com.hortonworks.iotas.webservice.catalog.dto.DataSourceDto;
 import com.hortonworks.iotas.registries.tag.dto.TagDto;
@@ -492,7 +492,10 @@ public class RestIntegrationTest {
         getUrlQueryParms.add(prefixQueryParam + "&name=ConsoleCustomProcessorRuntime");
         getUrlQueryParms.add(prefixQueryParam + "&imageFileName=image.gif");
         getUrlQueryParms.add(prefixQueryParam + "&jarFileName=iotas-core.jar");
-        getUrlQueryParms.add(prefixQueryParam + "&customProcessorImpl=" + ConsoleCustomProcessorRuntime.class.getCanonicalName());
+
+        //Hack: Fix this to use an actual CustomProcessorRuntime implementation instead of the base class. This might
+        // incur an additional dependency.
+        getUrlQueryParms.add(prefixQueryParam + "&customProcessorImpl=" + CustomProcessorRuntime.class.getCanonicalName());
         List<List<CustomProcessorInfo>> getResults = new ArrayList<List<CustomProcessorInfo>>();
         getResults.add(Arrays.asList(customProcessorInfo));
         getResults.add(Arrays.asList(customProcessorInfo));
@@ -876,7 +879,9 @@ public class RestIntegrationTest {
         customProcessorInfo.setDescription("Console Custom Processor");
         customProcessorInfo.setImageFileName("image.gif");
         customProcessorInfo.setJarFileName("iotas-core.jar");
-        customProcessorInfo.setCustomProcessorImpl(ConsoleCustomProcessorRuntime.class.getCanonicalName());
+        //Hack: Fix this to use an actual CustomProcessorRuntime implementation instead of the base class. This might
+        // incur an additional dependency.
+        customProcessorInfo.setCustomProcessorImpl(CustomProcessorRuntime.class.getCanonicalName());
         customProcessorInfo.setStreamingEngine(TopologyLayoutConstants.STORM_STREAMING_ENGINE);
         customProcessorInfo.setConfigFields(getConfigFields());
         customProcessorInfo.setInputSchema(getSchema());
