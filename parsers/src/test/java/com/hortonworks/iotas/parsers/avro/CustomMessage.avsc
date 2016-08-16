@@ -1,0 +1,8 @@
+{"namespace": "com.hortonworks.iotas.parsers.avro",
+ "type": "record",
+ "name": "CustomMessage",
+ "fields": [
+     {"name": "id", "type": "string"},
+     {"name": "payload",  "type": "string"}
+ ]
+}

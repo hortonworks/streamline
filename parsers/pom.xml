@@ -12,6 +12,11 @@
     <description>Built in IoTaS parsers</description>
     <dependencies>
         <dependency>
+  			<groupId>org.apache.avro</groupId>
+  			<artifactId>avro</artifactId>
+  			<version>1.7.7</version>
+		</dependency>
+        <dependency>
             <groupId>com.hortonworks.iotas</groupId>
             <artifactId>core</artifactId>
             <version>${project.version}</version>
