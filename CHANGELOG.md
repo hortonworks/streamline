@@ -1,5 +1,6 @@
 
 ## 0.1.4
+ * IOT-352: Move custom processor code to streams-runtime
  * IOT_344: Iotas build fails at storage-atlas with error
  * IOT-285: Hierarchical tagging system should be independent registry service
  * IOT-279: Add clean up logic if any part of custom processor upload fails.
