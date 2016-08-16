@@ -26,12 +26,6 @@ import javax.validation.constraints.NotNull;
 public class IotasConfiguration extends Configuration {
 
     @NotEmpty
-    private String brokerList;
-
-    @NotEmpty
-    private String zookeeperHost;
-
-    @NotEmpty
     private String topologyActionsImpl;
 
     @NotEmpty
@@ -69,11 +63,6 @@ public class IotasConfiguration extends Configuration {
     @NotEmpty
     private String stormApiRootUrl;
 
-    @JsonProperty
-    public String getBrokerList(){
-        return this.brokerList;
-    }
-
     private String customProcessorWatchPath;
 
     private String customProcessorUploadFailPath;
@@ -81,19 +70,6 @@ public class IotasConfiguration extends Configuration {
     private String customProcessorUploadSuccessPath;
 
     private TimeSeriesDBConfiguration timeSeriesDBConfiguration;
-
-    @JsonProperty
-    public void setBrokerList(String brokerList){
-        this.brokerList = brokerList;
-    }
-
-    public String getZookeeperHost() {
-        return zookeeperHost;
-    }
-
-    public void setZookeeperHost(String zookeeperHost) {
-        this.zookeeperHost = zookeeperHost;
-    }
 
     public String getTopologyActionsImpl() {
         return topologyActionsImpl;
