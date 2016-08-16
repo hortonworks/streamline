@@ -18,12 +18,13 @@
  */
 package com.hortonworks.iotas.streams.catalog.service;
 
+import com.hortonworks.iotas.registries.parser.ParserInfo;
+import com.hortonworks.iotas.registries.parser.client.ParserClient;
 import com.hortonworks.iotas.streams.catalog.DataFeed;
 import com.hortonworks.iotas.streams.catalog.DataSet;
 import com.hortonworks.iotas.streams.catalog.DataSource;
 import com.hortonworks.iotas.streams.catalog.Device;
 import com.hortonworks.iotas.streams.catalog.FileInfo;
-import com.hortonworks.iotas.streams.catalog.ParserInfo;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.common.util.FileStorage;
 import com.hortonworks.iotas.registries.tag.TaggedEntity;
@@ -63,19 +64,20 @@ public class CatalogService {
     private static final String DEVICE_NAMESPACE = new Device().getNameSpace();
     private static final String DATASET_NAMESPACE = new DataSet().getNameSpace();
     private static final String DATA_FEED_NAMESPACE = new DataFeed().getNameSpace();
-    private static final String PARSER_INFO_NAMESPACE = new ParserInfo().getNameSpace();
     private static final String FILE_NAMESPACE = FileInfo.NAME_SPACE;
 
     private StorageManager dao;
     private FileStorage fileStorage;
     private TagClient tagClient;
+    private ParserClient parserClient;
 
 
-    public CatalogService(StorageManager dao, FileStorage fileStorage, TagClient tagClient) {
+    public CatalogService(StorageManager dao, FileStorage fileStorage, TagClient tagClient, ParserClient parserClient) {
         this.dao = dao;
         dao.registerStorables(getStorableClasses());
         this.fileStorage = fileStorage;
         this.tagClient = tagClient;
+        this.parserClient = parserClient;
     }
 
     public static Collection<Class<? extends Storable>> getStorableClasses() {
@@ -260,44 +262,9 @@ public class CatalogService {
         return feed;
     }
 
-
-    public Collection<ParserInfo> listParsers() {
-        return dao.<ParserInfo>list(PARSER_INFO_NAMESPACE);
-    }
-
-    public Collection<ParserInfo> listParsers(List<QueryParam> queryParams) {
-        return dao.<ParserInfo>find(PARSER_INFO_NAMESPACE, queryParams);
-    }
-
-    public ParserInfo getParserInfo(Long parserId) {
-        ParserInfo parserInfo = new ParserInfo();
-        parserInfo.setId(parserId);
-        return dao.<ParserInfo>get(new StorableKey(PARSER_INFO_NAMESPACE, parserInfo.getPrimaryKey()));
-    }
-
-    public ParserInfo removeParser(Long parserId) {
-        ParserInfo parserInfo = new ParserInfo();
-        parserInfo.setId(parserId);
-        return this.dao.<ParserInfo>remove(new StorableKey(PARSER_INFO_NAMESPACE, parserInfo.getPrimaryKey()));
-    }
-
-    public ParserInfo addParserInfo(ParserInfo parserInfo) {
-        if (parserInfo.getId() == null) {
-            parserInfo.setId(this.dao.nextId(PARSER_INFO_NAMESPACE));
-        }
-        if (parserInfo.getTimestamp() == null) {
-            parserInfo.setTimestamp(System.currentTimeMillis());
-        }
-        this.dao.add(parserInfo);
-        return parserInfo;
-    }
-
-
     public InputStream getFileFromJarStorage(String fileName) throws IOException {
         return this.fileStorage.downloadFile(fileName);
     }
-
-
 
     public String uploadFileToStorage(InputStream inputStream, String jarFileName) throws IOException {
         return fileStorage.uploadFile(inputStream, jarFileName);
@@ -353,5 +320,9 @@ public class CatalogService {
         dao.addOrUpdate(file);
 
         return file;
+    }
+
+    public ParserInfo getParserInfo (Long parserId) {
+        return parserClient.getParserInfo(parserId);
     }
 }

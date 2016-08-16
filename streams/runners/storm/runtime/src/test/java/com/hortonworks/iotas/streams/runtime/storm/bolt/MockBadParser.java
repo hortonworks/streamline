@@ -1,9 +1,9 @@
 package com.hortonworks.iotas.streams.runtime.storm.bolt;
 
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.parsers.exception.DataValidationException;
-import com.hortonworks.iotas.parsers.BaseParser;
 import com.hortonworks.iotas.common.exception.ParserException;
+import com.hortonworks.iotas.registries.parser.BaseParser;
+import com.hortonworks.iotas.registries.parser.exception.DataValidationException;
 
 import java.util.List;
 import java.util.Map;

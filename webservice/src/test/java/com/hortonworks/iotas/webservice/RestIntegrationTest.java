@@ -24,12 +24,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.hortonworks.iotas.common.catalog.CatalogResponse;
+import com.hortonworks.iotas.registries.parser.ParserInfo;
 import com.hortonworks.iotas.registries.tag.Tag;
 import com.hortonworks.iotas.registries.tag.TaggedEntity;
 import com.hortonworks.iotas.streams.catalog.DataFeed;
 import com.hortonworks.iotas.streams.catalog.DataSource;
 import com.hortonworks.iotas.streams.catalog.FileInfo;
-import com.hortonworks.iotas.streams.catalog.ParserInfo;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.common.test.IntegrationTest;
 import com.hortonworks.iotas.streams.runtime.processor.ConsoleCustomProcessorRuntime;
@@ -780,7 +780,7 @@ public class RestIntegrationTest {
         ParserInfo pi = new ParserInfo();
         pi.setId(id);
         pi.setName(name);
-        pi.setClassName("com.hortonworks.iotas.parsers.nest.NestParser");
+        pi.setClassName("com.hortonworks.iotas.registries.parser.nest.NestParser");
         pi.setJarStoragePath("/tmp/parser.jar");
         pi.setParserSchema(new Schema.SchemaBuilder().fields(new Schema.Field("deviceId", Schema.Type.LONG),
                 new Schema.Field("deviceName", Schema.Type.STRING)).build());

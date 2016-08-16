@@ -1,8 +1,8 @@
 package com.hortonworks.iotas.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
+import com.hortonworks.iotas.registries.parser.ParserInfo;
 import com.hortonworks.iotas.streams.catalog.DataFeed;
-import com.hortonworks.iotas.streams.catalog.ParserInfo;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.streams.catalog.service.CatalogService;

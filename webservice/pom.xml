@@ -63,7 +63,7 @@
         </dependency>
         <dependency>
             <groupId>com.hortonworks.iotas</groupId>
-            <artifactId>parsers</artifactId>
+            <artifactId>parser-registry</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -133,6 +133,12 @@
             <groupId>com.hortonworks.iotas</groupId>
             <artifactId>streams-metrics-storm</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                    <artifactId>jackson-jaxrs-base</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.hortonworks.iotas</groupId>

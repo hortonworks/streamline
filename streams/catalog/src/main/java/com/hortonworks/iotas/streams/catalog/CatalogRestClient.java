@@ -20,6 +20,8 @@ package com.hortonworks.iotas.streams.catalog;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hortonworks.iotas.registries.parser.ParserInfo;
+import com.hortonworks.iotas.registries.parser.client.ParserClient;
 import com.hortonworks.iotas.storage.Storable;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
@@ -42,9 +44,7 @@ public class CatalogRestClient {
 
     private static final String DATASOURCE_URL = "datasources";
     private static final String FEED_URL = "feeds";
-    private static final String PARSER_URL = "parsers";
     private static final String NOTIFIER_URL = "notifiers";
-    private static final String PARSER_DOWNLOAD_URL = PARSER_URL + "/download";
     private static final String CUSTOM_PROCESSOR_JAR_DOWNLOAD_URL = "system/componentdefinitions/PROCESSOR/custom";
     private static final String FILE_DOWNLOAD_URL = "files/download/";
 
@@ -52,7 +52,7 @@ public class CatalogRestClient {
     private WebTarget rootTarget;
     private WebTarget dataSourceTarget;
     private WebTarget feedTarget;
-    private WebTarget parserTarget;
+    private ParserClient parserClient;
 
     //TODO: timeouts should come from a config so probably make them constructor args.
     public CatalogRestClient(String rootCatalogURL) {
@@ -66,7 +66,7 @@ public class CatalogRestClient {
         rootTarget = client.target(rootCatalogURL);
         dataSourceTarget = rootTarget.path(DATASOURCE_URL);
         feedTarget = rootTarget.path(FEED_URL);
-        parserTarget = rootTarget.path(PARSER_URL);
+        parserClient = new ParserClient(rootCatalogURL);
     }
 
     private <T> List<T> getEntities(WebTarget target, Class<T> clazz) {
@@ -98,7 +98,7 @@ public class CatalogRestClient {
     }
 
     public ParserInfo getParserInfo(Long parserId) {
-        return getEntity(parserTarget.path(parserId.toString()), ParserInfo.class);
+        return parserClient.getParserInfo(parserId);
     }
 
     public NotifierInfo getNotifierInfo(String notifierName) {
@@ -132,7 +132,7 @@ public class CatalogRestClient {
     }
 
     public InputStream getParserJar(Long parserId) {
-        return getInputStream(parserId.toString(), PARSER_DOWNLOAD_URL);
+        return parserClient.getParserJar(parserId);
     }
 
     public InputStream getFile(Long jarId) {

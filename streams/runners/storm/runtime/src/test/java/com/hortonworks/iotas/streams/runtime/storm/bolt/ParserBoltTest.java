@@ -2,7 +2,7 @@ package com.hortonworks.iotas.streams.runtime.storm.bolt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
-import com.hortonworks.iotas.streams.catalog.ParserInfo;
+import com.hortonworks.iotas.registries.parser.ParserInfo;
 import com.hortonworks.iotas.streams.catalog.CatalogRestClient;
 import com.hortonworks.iotas.common.Constants;
 import com.hortonworks.iotas.streams.common.IotasMessage;

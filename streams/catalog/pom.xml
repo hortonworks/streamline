@@ -51,6 +51,12 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>com.hortonworks.iotas</groupId>
+            <artifactId>parser-registry</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.1</version>

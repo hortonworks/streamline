@@ -1,9 +1,9 @@
 package com.hortonworks.iotas.streams.catalog.storage;
 
+import com.hortonworks.iotas.registries.parser.ParserInfo;
 import com.hortonworks.iotas.storage.StorableTest;
 import com.hortonworks.iotas.streams.catalog.DataFeed;
 import com.hortonworks.iotas.streams.catalog.DataSource;
-import com.hortonworks.iotas.streams.catalog.ParserInfo;
 import com.hortonworks.iotas.common.test.HBaseIntegrationTest;
 import com.hortonworks.iotas.storage.exception.NonIncrementalColumnException;
 import com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManager;
