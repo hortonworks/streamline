@@ -1,6 +1,4 @@
-package com.hortonworks.iotas.webservice;
-
-import org.hibernate.validator.constraints.NotEmpty;
+package com.hortonworks.iotas.common;
 
 import java.util.Map;
 
@@ -10,7 +8,6 @@ import java.util.Map;
  */
 public class TimeSeriesDBConfiguration {
 
-    @NotEmpty
     private String className;
 
     private Map<String, String> properties;
