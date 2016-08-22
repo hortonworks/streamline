@@ -26,6 +26,7 @@ customProcessorImpl| String| Fully qualified class name implementing the interfa
 inputSchema| Schema| Input schema that this custom processor expects
 outputStreamToSchema| Map<String,Schema>| Output schema per stream that it emits
 configFields| List<ConfigField>| List of config fields needed from user. Used by UI in topology editor
+schemaClass| String | Fully qualified class name to support schema evolution 
 
 
 ## Rest API
@@ -99,7 +100,8 @@ configFields| List<ConfigField>| List of config fields needed from user. Used by
                     ]
                 }
             },
-            "customProcessorImpl":"com.hortonworks.iotas.processor.examples.ConsoleCustomProcessor"
+            "customProcessorImpl":"com.hortonworks.iotas.streams.runtime.processor.ConsoleCustomProcessorRuntime",
+            "schemaClass":"com.hortonworks.iotas.streams.schema.CustomProcessorSchemaEvolver"
         }
     ]
 }
@@ -184,7 +186,7 @@ starting IoTaS. Any files other than tar will be ignored and moved to customProc
 The tar file is expected to have 3 files in it. The main file is info.json. This is the json file 
 containing json representing CustomProcessorInfo. A sample json is shown below. The name of the file
 has to be info.json. Otherwise it will fail to upload. The other two files are the jar file and image file.
-As mentioned above jar file should contain the class implementing the CustomProcessor interface. Name of
+As mentioned above jar file should contain the class implementing the CustomProcessorRuntime interface. Name of
 the class should be the same as the value of the property customProcessorImpl in info.json. The jar
 and image files in the tar should have the same name as the jarFileName and imageFileName properties
 respectively in info.json
@@ -199,6 +201,7 @@ respectively in info.json
   "configFields": [{"name":"configField", "isOptional":false, "type":"string", "defaultValue":null,"isUserInput":true,"tooltip":"Config field"}],
   "inputSchema": {"fields":[{"name":"childField1","type":"INTEGER"},{"name":"childField2","type":"BOOLEAN"},{"name":"topLevelStringField","type":"STRING"}]},
   "outputStreamToSchema": {"stream1":{"fields":[{"name":"childField1","type":"INTEGER"},{"name":"childField2","type":"BOOLEAN"},{"name":"topLevelStringField","type":"STRING"}]}},
-  "customProcessorImpl": "com.hortonworks.iotas.processor.examples.ConsoleCustomProcessor"
+  "customProcessorImpl": "com.hortonworks.iotas.streams.runtime.processor.ConsoleCustomProcessorRuntime",
+  "schemaClass":"com.hortonworks.iotas.streams.schema.CustomProcessorSchemaEvolver"
 }
 ```
