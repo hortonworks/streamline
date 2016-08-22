@@ -23,9 +23,11 @@ import com.hortonworks.iotas.streams.layout.component.OutputComponent;
 import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.streams.layout.component.StreamGrouping;
 import com.hortonworks.iotas.streams.layout.component.impl.CustomProcessor;
+import com.hortonworks.iotas.streams.layout.component.impl.EventHubSource;
 import com.hortonworks.iotas.streams.layout.component.impl.HbaseSink;
 import com.hortonworks.iotas.streams.layout.component.impl.HdfsSink;
 import com.hortonworks.iotas.streams.layout.component.impl.KafkaSource;
+import com.hortonworks.iotas.streams.layout.component.impl.KinesisSource;
 import com.hortonworks.iotas.streams.layout.component.impl.NotificationSink;
 import com.hortonworks.iotas.streams.layout.component.impl.OpenTsdbSink;
 import com.hortonworks.iotas.streams.layout.component.impl.ParserProcessor;
@@ -137,6 +139,8 @@ public class TopologyComponentFactory {
     private Map<String, Provider<IotasSource>> createSourceProviders() {
         ImmutableMap.Builder<String, Provider<IotasSource>> builder = ImmutableMap.builder();
         builder.put(kafkaSourceProvider());
+        builder.put(kinesisSourceProvider());
+        builder.put(eventHubSourceProvider());
         return builder.build();
     }
 
@@ -188,6 +192,24 @@ public class TopologyComponentFactory {
             }
         };
         return new AbstractMap.SimpleImmutableEntry<>("KAFKA", provider);
+    }
+
+    private Map.Entry<String, Provider<IotasSource>> kinesisSourceProvider() {
+        return new AbstractMap.SimpleImmutableEntry<String, Provider<IotasSource>>("KINESIS", new Provider<IotasSource>() {
+            @Override
+            public IotasSource create(TopologyComponent component) {
+                return new KinesisSource();
+            }
+        });
+    }
+
+    private Map.Entry<String, Provider<IotasSource>> eventHubSourceProvider() {
+        return new AbstractMap.SimpleImmutableEntry<String, Provider<IotasSource>>("EVENTHUB", new Provider<IotasSource>() {
+            @Override
+            public IotasSource create(TopologyComponent component) {
+                return new EventHubSource();
+            }
+        });
     }
 
     private Map.Entry<String, Provider<IotasProcessor>> normalizationProcessorProvider() {

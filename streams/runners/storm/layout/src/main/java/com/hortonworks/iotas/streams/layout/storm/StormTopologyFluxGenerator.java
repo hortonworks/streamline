@@ -10,9 +10,11 @@ import com.hortonworks.iotas.streams.layout.component.StreamGrouping;
 import com.hortonworks.iotas.streams.layout.component.TopologyDag;
 import com.hortonworks.iotas.streams.layout.component.TopologyDagVisitor;
 import com.hortonworks.iotas.streams.layout.component.impl.CustomProcessor;
+import com.hortonworks.iotas.streams.layout.component.impl.EventHubSource;
 import com.hortonworks.iotas.streams.layout.component.impl.HbaseSink;
 import com.hortonworks.iotas.streams.layout.component.impl.HdfsSink;
 import com.hortonworks.iotas.streams.layout.component.impl.KafkaSource;
+import com.hortonworks.iotas.streams.layout.component.impl.KinesisSource;
 import com.hortonworks.iotas.streams.layout.component.impl.NotificationSink;
 import com.hortonworks.iotas.streams.layout.component.impl.OpenTsdbSink;
 import com.hortonworks.iotas.streams.layout.component.impl.ParserProcessor;
@@ -46,6 +48,18 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
     public void visit(KafkaSource kafkaSource) {
         keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_SPOUTS,
                 getYamlComponents(new KafkaSpoutFluxComponent(), kafkaSource)));
+    }
+
+    @Override
+    public void visit(KinesisSource kinesisSource) {
+        keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_SPOUTS,
+                getYamlComponents(new KinesisSpoutFluxComponent(), kinesisSource)));
+    }
+
+    @Override
+    public void visit(EventHubSource eventHubSource) {
+        keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_SPOUTS,
+                getYamlComponents(new KafkaSpoutFluxComponent(), eventHubSource)));
     }
 
     @Override

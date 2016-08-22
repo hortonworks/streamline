@@ -111,6 +111,41 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
 echo $out
 sourceid=$(getId $out)
 
+# --
+# Create kinesis stream
+# --
+echo -e "\n------"
+out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
+    "streamId": "default",
+    "fields": [{"name": "iotas.event", "type": "NESTED"} ]
+}' "${catalogurl}/topologies/$topologyid/streams")
+
+echo $out
+kinesisstream=$(getId $out)
+
+
+# --
+# Create kinesis data source
+# --
+echo -e "\n------"
+out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
+    "name": "kinesisDataSource",
+    "config": {
+        "properties": {
+            "streamName": "teststream",
+            "shardIteratorType": "TRIM_HORIZON",
+            "zkUrl": "localhost:2181",
+            "zkPath": "/brokers",
+            "region": "US_WEST_2"
+        }
+    },
+    "type": "KINESIS",
+    "outputStreamIds": ['"$kinesisstream"']
+}' "${catalogurl}/topologies/$topologyid/sources")
+
+echo $out
+kinesisid=$(getId $out)
+
 
 # --
 # Create parser processor
@@ -383,6 +418,16 @@ curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -
     "fromId": '$ruleprocessorid',
     "toId": '$notificationsinkid',
     "streamGroupings": [{"streamId": '$streamid3', "grouping": "SHUFFLE"}]
+}' "${catalogurl}/topologies/$topologyid/edges"
+
+# --
+# Kinesis -> Rule processor
+# --
+echo -e "\n------ Kinesis -> Rule processor"
+curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
+    "fromId": '$kinesisid',
+    "toId": '$ruleprocessorid',
+    "streamGroupings": [{"streamId": '$kinesisstream', "grouping": "SHUFFLE"}]
 }' "${catalogurl}/topologies/$topologyid/edges"
 
 # --
