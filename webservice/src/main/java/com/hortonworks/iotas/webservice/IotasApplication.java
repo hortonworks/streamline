@@ -139,7 +139,7 @@ public class IotasApplication extends Application<IotasConfiguration> {
             moduleConfiguration.getConfig().put("timeSeriesDBConfiguration", iotasConfiguration.getTimeSeriesDBConfiguration());
             moduleConfiguration.getConfig().put("catalogRootUrl", catalogRootUrl);
             moduleRegistration.init(moduleConfiguration.getConfig(), fileStorage);
-            StorageManagerAware storageManagerAware = (StorageManagerAware) moduleConfiguration;
+            StorageManagerAware storageManagerAware = (StorageManagerAware) moduleRegistration;
             storageManagerAware.setStorageManager(storageManager);
             resourcesToRegister.addAll(moduleRegistration.getResources());
         }

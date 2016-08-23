@@ -13,7 +13,7 @@ modules:
       stormHomeDir: /usr/local/Cellar/storm/0.10.0/
       stormApiRootUrl: "http://localhost:8888/api/v1"
       # Use this to turn on/off notifications rest api
-      notificationsRestDisable: true
+      #notificationsRestDisable: true
       #Custom processor upload configuration
       #customProcessorWatchPath: "/tmp"
       #customProcessorUploadFailPath: "/tmp/failed"
