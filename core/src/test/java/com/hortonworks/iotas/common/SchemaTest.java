@@ -20,6 +20,7 @@ package com.hortonworks.iotas.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import com.hortonworks.iotas.catalog.ParserInfo;
 import org.junit.Test;
 
 import java.util.Collections;

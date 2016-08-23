@@ -1,4 +1,4 @@
-package com.hortonworks.iotas.streams.service;
+package com.hortonworks.iotas.processor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.streams.catalog.processor.CustomProcessorInfo;

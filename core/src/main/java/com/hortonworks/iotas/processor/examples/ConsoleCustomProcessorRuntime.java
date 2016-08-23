@@ -1,4 +1,4 @@
-package com.hortonworks.iotas.streams.runtime.processor;
+package com.hortonworks.iotas.processor.examples;
 
 import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.Result;
