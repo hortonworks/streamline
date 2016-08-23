@@ -20,7 +20,7 @@ package com.hortonworks.iotas.streams.runtime.splitjoin;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.hortonworks.iotas.streams.common.IotasEventImpl;
+import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.Result;
 import com.hortonworks.iotas.streams.runtime.RuntimeService;

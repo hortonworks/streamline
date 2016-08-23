@@ -19,7 +19,7 @@
 package com.hortonworks.iotas.streams.notification.store.hbase.mappers;
 
 import com.hortonworks.iotas.streams.IotasEvent;
-import com.hortonworks.iotas.streams.common.IotasEventImpl;
+import com.hortonworks.iotas.common.IotasEventImpl;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 

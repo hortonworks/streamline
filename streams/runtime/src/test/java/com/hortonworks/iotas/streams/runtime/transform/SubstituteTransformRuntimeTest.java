@@ -18,7 +18,7 @@
 package com.hortonworks.iotas.streams.runtime.transform;
 
 import com.hortonworks.iotas.streams.IotasEvent;
-import com.hortonworks.iotas.streams.common.IotasEventImpl;
+import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.streams.layout.component.rule.action.transform.SubstituteTransform;
 import com.hortonworks.iotas.streams.runtime.TransformRuntime;
 import org.junit.Test;

@@ -18,7 +18,7 @@
 package com.hortonworks.iotas.streams.runtime.storm.bolt.rules;
 
 import com.hortonworks.iotas.streams.IotasEvent;
-import com.hortonworks.iotas.streams.common.IotasEventImpl;
+import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.streams.runtime.rule.RulesDependenciesFactory;
 import mockit.Expectations;
 import mockit.VerificationsInOrder;

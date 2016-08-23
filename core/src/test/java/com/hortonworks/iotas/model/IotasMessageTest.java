@@ -1,7 +1,6 @@
-package com.hortonworks.iotas.streams.common;
+package com.hortonworks.iotas.model;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.iotas.streams.common.IotasMessage;
 import org.junit.Test;
 
 import java.io.IOException;

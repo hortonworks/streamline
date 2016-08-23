@@ -21,7 +21,7 @@
     <dependencies>
         <dependency>
             <groupId>com.hortonworks.iotas</groupId>
-            <artifactId>streams-common</artifactId>
+            <artifactId>core</artifactId>
             <version>${project.version}</version>
             <exclusions>
                 <exclusion>

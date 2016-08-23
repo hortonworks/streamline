@@ -2,7 +2,7 @@ package com.hortonworks.iotas.streams.runtime.storm.bolt.rules;
 
 import com.google.common.collect.ImmutableMap;
 import com.hortonworks.iotas.streams.IotasEvent;
-import com.hortonworks.iotas.streams.common.IotasEventImpl;
+import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.streams.layout.component.RulesProcessorJsonBuilder;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.Window;
 import com.hortonworks.iotas.streams.runtime.rule.RulesDependenciesFactory;

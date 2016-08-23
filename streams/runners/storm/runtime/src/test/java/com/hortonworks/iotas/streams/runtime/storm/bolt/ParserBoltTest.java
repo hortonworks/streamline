@@ -5,7 +5,7 @@ import com.google.common.base.Charsets;
 import com.hortonworks.iotas.catalog.ParserInfo;
 import com.hortonworks.iotas.client.CatalogRestClient;
 import com.hortonworks.iotas.common.Constants;
-import com.hortonworks.iotas.streams.common.IotasMessage;
+import com.hortonworks.iotas.model.IotasMessage;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Mocked;
