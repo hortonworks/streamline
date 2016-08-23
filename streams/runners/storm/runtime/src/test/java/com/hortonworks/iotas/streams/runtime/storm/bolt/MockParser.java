@@ -4,8 +4,8 @@ import com.google.common.collect.Lists;
 import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.exception.DataValidationException;
-import com.hortonworks.iotas.parser.BaseParser;
+import com.hortonworks.iotas.parsers.exception.DataValidationException;
+import com.hortonworks.iotas.parsers.BaseParser;
 import com.hortonworks.iotas.common.exception.ParserException;
 
 import java.util.HashMap;
