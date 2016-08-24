@@ -1,5 +1,6 @@
 package com.hortonworks.iotas.streams.service;
 
+import com.hortonworks.iotas.common.Constants;
 import com.hortonworks.iotas.common.FileEventHandler;
 import com.hortonworks.iotas.common.FileWatcher;
 import com.hortonworks.iotas.common.ModuleRegistration;
@@ -50,50 +51,18 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         } catch (ConfigException e) {
             throw new RuntimeException(e);
         }
-        String catalogRootUrl = (String) config.get("catalogRootUrl");
+        String catalogRootUrl = (String) config.get(Constants.CONFIG_CATALOG_ROOT_URL);
         TagClient tagClient = new TagClient(catalogRootUrl);
         ParserClient parserClient = new ParserClient(catalogRootUrl);
         final CatalogService catalogService = new CatalogService(storageManager, fileStorage, tagClient, parserClient);
-
-        final FeedCatalogResource feedResource = new FeedCatalogResource(catalogService);
-        result.add(feedResource);
-        final DataSourceWithDataFeedCatalogResource dataSourceWithDataFeedCatalogResource =
-                new DataSourceWithDataFeedCatalogResource(new DataSourceFacade(catalogService, tagClient));
-        result.add(dataSourceWithDataFeedCatalogResource);
-        final TopologyCatalogResource topologyCatalogResource = new TopologyCatalogResource(streamcatalogService);
-        result.add(topologyCatalogResource);
-        final MetricsResource metricsResource = new MetricsResource(streamcatalogService);
-        result.add(metricsResource);
-        final TopologyStreamCatalogResource topologyStreamCatalogResource = new TopologyStreamCatalogResource(streamcatalogService);
-        result.add(topologyStreamCatalogResource);
-        // cluster related
-        final ClusterCatalogResource clusterCatalogResource = new ClusterCatalogResource(streamcatalogService, fileStorage);
-        result.add(clusterCatalogResource);
-        final ComponentCatalogResource componentCatalogResource = new ComponentCatalogResource(streamcatalogService);
-        result.add(componentCatalogResource);
-        final TopologyEditorMetadataResource topologyEditorMetadataResource = new TopologyEditorMetadataResource(streamcatalogService);
-        result.add(topologyEditorMetadataResource);
-        final FileCatalogResource fileCatalogResource = new FileCatalogResource(catalogService);
-        result.add(fileCatalogResource);
-        // topology related
-        final TopologySourceCatalogResource topologySourceCatalogResource = new TopologySourceCatalogResource(streamcatalogService);
-        result.add(topologySourceCatalogResource);
-        final TopologySinkCatalogResource topologySinkCatalogResource = new TopologySinkCatalogResource(streamcatalogService);
-        result.add(topologySinkCatalogResource);
-        final TopologyProcessorCatalogResource topologyProcessorCatalogResource = new TopologyProcessorCatalogResource(streamcatalogService);
-        result.add(topologyProcessorCatalogResource);
-        final TopologyEdgeCatalogResource topologyEdgeCatalogResource = new TopologyEdgeCatalogResource(streamcatalogService);
-        result.add(topologyEdgeCatalogResource);
-        final RuleCatalogResource ruleCatalogResource = new RuleCatalogResource(streamcatalogService);
-        result.add(ruleCatalogResource);
-        // UDF catalaog resource
-        final UDFCatalogResource udfCatalogResource = new UDFCatalogResource(streamcatalogService, fileStorage);
-        result.add(udfCatalogResource);
-        Boolean isNotificationsRestDisabled = (Boolean) config.get("notificationsRestDisable");
-        if (isNotificationsRestDisabled == null || !isNotificationsRestDisabled) {
-            result.add(new NotifierInfoCatalogResource(streamcatalogService));
-            result.add(new NotificationsResource(new NotificationServiceImpl()));
-        }
+        result.addAll(getDataSourceRelatedResources(catalogService, tagClient));
+        result.add(new MetricsResource(streamcatalogService));
+        result.addAll(getClusterRelatedResources(streamcatalogService));
+        result.add(new FileCatalogResource(catalogService));
+        result.addAll(getTopologyRelatedResources(streamcatalogService));
+        result.add(new RuleCatalogResource(streamcatalogService));
+        result.add(new UDFCatalogResource(streamcatalogService, fileStorage));
+        result.addAll(getNotificationsRelatedResources(streamcatalogService));
         watchFiles(streamcatalogService);
         return result;
     }
@@ -103,8 +72,56 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         this.storageManager = storageManager;
     }
 
+    private List<Object> getDataSourceRelatedResources (CatalogService catalogService, TagClient tagClient) {
+        List<Object> result = new ArrayList<>();
+        final FeedCatalogResource feedResource = new FeedCatalogResource(catalogService);
+        result.add(feedResource);
+        final DataSourceWithDataFeedCatalogResource dataSourceWithDataFeedCatalogResource =
+                new DataSourceWithDataFeedCatalogResource(new DataSourceFacade(catalogService, tagClient));
+        result.add(dataSourceWithDataFeedCatalogResource);
+        return result;
+    }
+
+    private List<Object> getTopologyRelatedResources (StreamCatalogService streamcatalogService) {
+        List<Object> result = new ArrayList<>();
+        final TopologyCatalogResource topologyCatalogResource = new TopologyCatalogResource(streamcatalogService);
+        result.add(topologyCatalogResource);
+        final TopologyStreamCatalogResource topologyStreamCatalogResource = new TopologyStreamCatalogResource(streamcatalogService);
+        result.add(topologyStreamCatalogResource);
+        final TopologyEditorMetadataResource topologyEditorMetadataResource = new TopologyEditorMetadataResource(streamcatalogService);
+        result.add(topologyEditorMetadataResource);
+        final TopologySourceCatalogResource topologySourceCatalogResource = new TopologySourceCatalogResource(streamcatalogService);
+        result.add(topologySourceCatalogResource);
+        final TopologySinkCatalogResource topologySinkCatalogResource = new TopologySinkCatalogResource(streamcatalogService);
+        result.add(topologySinkCatalogResource);
+        final TopologyProcessorCatalogResource topologyProcessorCatalogResource = new TopologyProcessorCatalogResource(streamcatalogService);
+        result.add(topologyProcessorCatalogResource);
+        final TopologyEdgeCatalogResource topologyEdgeCatalogResource = new TopologyEdgeCatalogResource(streamcatalogService);
+        result.add(topologyEdgeCatalogResource);
+        return result;
+    }
+
+    private List<Object> getClusterRelatedResources (StreamCatalogService streamcatalogService) {
+        List<Object> result = new ArrayList<>();
+        final ClusterCatalogResource clusterCatalogResource = new ClusterCatalogResource(streamcatalogService, fileStorage);
+        result.add(clusterCatalogResource);
+        final ComponentCatalogResource componentCatalogResource = new ComponentCatalogResource(streamcatalogService);
+        result.add(componentCatalogResource);
+        return result;
+    }
+
+    private List<Object> getNotificationsRelatedResources (StreamCatalogService streamcatalogService) {
+        List<Object> result = new ArrayList<>();
+        Boolean isNotificationsRestDisabled = (Boolean) config.get(com.hortonworks.iotas.streams.common.Constants.CONFIG_NOTIFICATIONS_REST_FLAG);
+        if (isNotificationsRestDisabled == null || !isNotificationsRestDisabled) {
+            result.add(new NotifierInfoCatalogResource(streamcatalogService));
+            result.add(new NotificationsResource(new NotificationServiceImpl()));
+        }
+        return result;
+    }
+
     private TopologyActions getTopologyActionsImpl () {
-        String className = (String) config.get("topologyActionsImpl");
+        String className = (String) config.get(com.hortonworks.iotas.streams.common.Constants.CONFIG_TOPOLOGY_ACTIONS_IMPL);
         // Note that iotasStormJar value needs to be changed in iotas.yaml
         // based on the location of the storm module jar of iotas project.
         // Reason for doing it this way is storm ui right now does not
@@ -114,7 +131,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         // class. This also adds a security vulnerability. We will change
         // this later on using our cluster entity when its handled right in
         // storm.
-        String jar = (String) config.get("iotasStormJar");
+        String jar = (String) config.get(StormTopologyLayoutConstants.STORM_JAR_LOCATION_KEY);
         TopologyActions topologyActions;
         try {
             topologyActions = ReflectionHelper.newInstance(className);
@@ -124,15 +141,15 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         //pass any config info that might be needed in the constructor as a map
         Map<String, String> conf = new HashMap<>();
         conf.put(StormTopologyLayoutConstants.STORM_JAR_LOCATION_KEY, jar);
-        conf.put(StormTopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL, (String) config.get("catalogRootUrl"));
-        conf.put(StormTopologyLayoutConstants.STORM_HOME_DIR, (String) config.get("stormHomeDir"));
-        conf.put(TopologyLayoutConstants.JAVA_JAR_COMMAND, (String) config.get("javaJarCommand"));
+        conf.put(StormTopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL, (String) config.get(Constants.CONFIG_CATALOG_ROOT_URL));
+        conf.put(StormTopologyLayoutConstants.STORM_HOME_DIR, (String) config.get(StormTopologyLayoutConstants.STORM_HOME_DIR));
+        conf.put(TopologyLayoutConstants.JAVA_JAR_COMMAND, (String) config.get(TopologyLayoutConstants.JAVA_JAR_COMMAND));
         topologyActions.init(conf);
         return topologyActions;
     }
 
     private TopologyMetrics getTopologyMetricsImpl () throws ConfigException {
-        String className = (String) config.get("topologyMetricsImpl");
+        String className = (String) config.get(com.hortonworks.iotas.streams.common.Constants.CONFIG_TOPOLOGY_METRICS_IMPL);
         TopologyMetrics topologyMetrics;
         try {
             topologyMetrics = ReflectionHelper.newInstance(className);
@@ -141,7 +158,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         }
         //pass any config info that might be needed in the constructor as a map
         Map<String, String> conf = new HashMap<>();
-        conf.put(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY, (String) config.get("stormApiRootUrl"));
+        conf.put(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY, (String) config.get(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY));
         topologyMetrics.init(conf);
 
         TimeSeriesQuerier timeSeriesQuerier = getTimeSeriesQuerier();
@@ -153,12 +170,12 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
     }
 
     private TimeSeriesQuerier getTimeSeriesQuerier() {
-        if (config.get("timeSeriesDBConfiguration") == null) {
+        if (config.get(Constants.CONFIG_TIME_SERIES_DB) == null) {
             return null;
         }
 
         try {
-            TimeSeriesDBConfiguration timeSeriesDBConfiguration = (TimeSeriesDBConfiguration) config.get("timeSeriesDBConfiguration");
+            TimeSeriesDBConfiguration timeSeriesDBConfiguration = (TimeSeriesDBConfiguration) config.get(Constants.CONFIG_TIME_SERIES_DB);
             TimeSeriesQuerier timeSeriesQuerier = ReflectionHelper.newInstance(timeSeriesDBConfiguration.getClassName());
             timeSeriesQuerier.init(timeSeriesDBConfiguration.getProperties());
             return timeSeriesQuerier;
@@ -168,9 +185,9 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
     }
 
     private void watchFiles (StreamCatalogService catalogService) {
-        String customProcessorWatchPath = (String) config.get("customProcessorWatchPath");
-        String customProcessorUploadFailPath = (String) config.get("customProcessorUploadFailPath");
-        String customProcessorUploadSuccessPath = (String) config.get("customProcessorUploadSuccessPath");
+        String customProcessorWatchPath = (String) config.get(com.hortonworks.iotas.streams.common.Constants.CONFIG_CP_WATCH_PATH);
+        String customProcessorUploadFailPath = (String) config.get(com.hortonworks.iotas.streams.common.Constants.CONFIG_CP_UPLOAD_FAIL_PATH);
+        String customProcessorUploadSuccessPath = (String) config.get(com.hortonworks.iotas.streams.common.Constants.CONFIG_CP_UPLOAD_SUCCESS_PATH);
         if (customProcessorWatchPath == null || customProcessorUploadFailPath == null || customProcessorUploadSuccessPath == null) {
             return;
         }

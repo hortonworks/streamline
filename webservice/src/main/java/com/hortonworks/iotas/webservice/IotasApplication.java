@@ -20,6 +20,7 @@ package com.hortonworks.iotas.webservice;
 
 import com.google.common.cache.CacheBuilder;
 import com.hortonworks.iotas.cache.Cache;
+import com.hortonworks.iotas.common.Constants;
 import com.hortonworks.iotas.common.ModuleRegistration;
 import com.hortonworks.iotas.storage.StorageManagerAware;
 import com.hortonworks.iotas.storage.cache.impl.GuavaCache;
@@ -136,8 +137,8 @@ public class IotasApplication extends Application<IotasConfiguration> {
             if (moduleConfiguration.getConfig() == null) {
                 moduleConfiguration.setConfig(new HashMap<String, Object>());
             }
-            moduleConfiguration.getConfig().put("timeSeriesDBConfiguration", iotasConfiguration.getTimeSeriesDBConfiguration());
-            moduleConfiguration.getConfig().put("catalogRootUrl", catalogRootUrl);
+            moduleConfiguration.getConfig().put(Constants.CONFIG_TIME_SERIES_DB, iotasConfiguration.getTimeSeriesDBConfiguration());
+            moduleConfiguration.getConfig().put(Constants.CONFIG_CATALOG_ROOT_URL, catalogRootUrl);
             moduleRegistration.init(moduleConfiguration.getConfig(), fileStorage);
             StorageManagerAware storageManagerAware = (StorageManagerAware) moduleRegistration;
             storageManagerAware.setStorageManager(storageManager);
