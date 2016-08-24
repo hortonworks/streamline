@@ -59,7 +59,7 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
     @Override
     public void visit(EventHubSource eventHubSource) {
         keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_SPOUTS,
-                getYamlComponents(new KafkaSpoutFluxComponent(), eventHubSource)));
+                getYamlComponents(new EventHubSpoutFluxComponent(), eventHubSource)));
     }
 
     @Override
