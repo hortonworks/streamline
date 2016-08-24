@@ -35,14 +35,14 @@ import java.util.Map;
  */
 public class NormalizationProcessor extends IotasProcessor {
     public static final String DEFAULT_STREAM_ID = "default";
-    public static final String CONFIG_KEY_TYPE = "type";
+    public static final String CONFIG_KEY_TYPE = "normalizationProcessorType";
     public static final String CONFIG_KEY_NORMALIZATION = "normalizationConfig";
 
     /**
      * {@link NormalizationConfig} for each inbound stream for this component.
      */
     private Map<String, NormalizationConfig> inputStreamsWithNormalizationConfig = new HashMap<>();
-    private Type type;
+    private Type normalizationProcessorType;
 
     private NormalizationProcessor() {
     }
@@ -55,12 +55,12 @@ public class NormalizationProcessor extends IotasProcessor {
      */
     public NormalizationProcessor(Map<String, NormalizationConfig> inputStreamsWithNormalizationConfig, Stream declaredOutputStream, Type type) {
         this.inputStreamsWithNormalizationConfig = inputStreamsWithNormalizationConfig;
-        this.type = type;
+        this.normalizationProcessorType = type;
         addOutputStream(declaredOutputStream);
     }
 
-    public Type getType() {
-        return type;
+    public Type getNormalizationProcessorType() {
+        return normalizationProcessorType;
     }
 
     public Map<String, NormalizationConfig> getInputStreamsWithNormalizationConfig() {
@@ -76,7 +76,7 @@ public class NormalizationProcessor extends IotasProcessor {
     public String toString() {
         return "NormalizationProcessor{" +
                 "inputStreamsWithNormalizationConfig=" + inputStreamsWithNormalizationConfig +
-                ", type=" + type +
+                ", normalizationProcessorType=" + normalizationProcessorType +
                 '}'+super.toString();
     }
 
