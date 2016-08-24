@@ -148,7 +148,7 @@ public class ParserInfoCatalogResource {
     @Path("/parsers/upload-verify")
     public Response verifyParserUpload(@FormDataParam("parserJar") final InputStream inputStream) {
         try {
-            return WSUtils.respond(Response.Status.OK, SUCCESS, verifyParserUpload(inputStream));
+            return WSUtils.respond(Response.Status.OK, SUCCESS, parserInfoCatalogService.verifyParserUpload(inputStream));
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         } finally {
