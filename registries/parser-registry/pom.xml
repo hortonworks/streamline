@@ -15,14 +15,7 @@
             <groupId>com.hortonworks.iotas</groupId>
             <artifactId>common</artifactId>
             <version>${project.version}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.hadoop</groupId>
-                    <artifactId>hadoop-client</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+       </dependency>
         <dependency>
             <groupId>com.hortonworks.iotas</groupId>
             <artifactId>storage-core</artifactId>

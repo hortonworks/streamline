@@ -35,11 +35,6 @@
             <artifactId>webservice</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.hortonworks.iotas</groupId>
-            <artifactId>storm</artifactId>
-            <version>${project.version}</version>
-        </dependency>
     </dependencies>
 
     <properties>
