@@ -96,21 +96,13 @@ public class TopologyStreamCatalogResource {
     public Response listStreamInfos(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) {
         List<QueryParam> queryParams = WSUtils.buildTopologyIdAwareQueryParams(topologyId, uriInfo);
         try {
-            MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
-            Collection<StreamInfo> streamInfos;
-            if (params.isEmpty()) {
-                streamInfos = catalogService.listStreamInfos();
-            } else {
-                queryParams = WSUtils.buildQueryParameters(params);
-                streamInfos = catalogService.listStreamInfos(queryParams);
-            }
-            if (streamInfos != null && !streamInfos.isEmpty()) {
+            Collection<StreamInfo> streamInfos = catalogService.listStreamInfos(queryParams);
+            if (streamInfos != null) {
                 return WSUtils.respond(OK, SUCCESS, streamInfos);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
-
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, queryParams.toString());
     }
 

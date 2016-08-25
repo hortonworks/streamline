@@ -92,7 +92,7 @@ public class TopologyProcessorCatalogResource {
 
         try {
             Collection<TopologyProcessor> processors = catalogService.listTopologyProcessors(queryParams);
-            if (processors != null && !processors.isEmpty()) {
+            if (processors != null) {
                 return WSUtils.respond(OK, SUCCESS, processors);
             }
         } catch (Exception ex) {

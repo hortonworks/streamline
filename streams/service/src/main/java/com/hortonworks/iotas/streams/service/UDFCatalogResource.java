@@ -75,7 +75,7 @@ public class UDFCatalogResource {
                 queryParams = WSUtils.buildQueryParameters(params);
                 udfs = catalogService.listUDFs(queryParams);
             }
-            if (udfs != null && !udfs.isEmpty()) {
+            if (udfs != null) {
                 return WSUtils.respond(OK, SUCCESS, udfs);
             }
         } catch (Exception ex) {

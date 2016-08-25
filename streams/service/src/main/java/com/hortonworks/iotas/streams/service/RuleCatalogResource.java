@@ -81,7 +81,7 @@ public class RuleCatalogResource {
         List<QueryParam> queryParams = WSUtils.buildTopologyIdAwareQueryParams(topologyId, uriInfo);
         try {
             Collection<RuleInfo> ruleInfos = catalogService.listRules(queryParams);
-            if (ruleInfos != null && !ruleInfos.isEmpty()) {
+            if (ruleInfos != null) {
                 return WSUtils.respond(OK, SUCCESS, ruleInfos);
             }
         } catch (Exception ex) {

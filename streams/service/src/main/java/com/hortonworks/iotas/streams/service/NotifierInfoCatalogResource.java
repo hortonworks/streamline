@@ -64,7 +64,7 @@ public class NotifierInfoCatalogResource {
                 queryParams = WSUtils.buildQueryParameters(params);
                 notifierInfos = catalogService.listNotifierInfos(queryParams);
             }
-            if (notifierInfos != null && !notifierInfos.isEmpty()) {
+            if (notifierInfos != null) {
                 return WSUtils.respond(OK, SUCCESS, notifierInfos);
             }
         } catch (Exception ex) {

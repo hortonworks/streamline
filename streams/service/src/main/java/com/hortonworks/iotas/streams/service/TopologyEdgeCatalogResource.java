@@ -91,7 +91,7 @@ public class TopologyEdgeCatalogResource {
         List<QueryParam> queryParams = WSUtils.buildTopologyIdAwareQueryParams(topologyId, uriInfo);
         try {
             Collection<TopologyEdge> edges = catalogService.listTopologyEdges(queryParams);
-            if (edges != null && !edges.isEmpty()) {
+            if (edges != null) {
                 return WSUtils.respond(OK, SUCCESS, edges);
             }
         } catch (Exception ex) {

@@ -52,6 +52,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.BAD_REQUEST_PARAM_MISSING;
@@ -88,12 +89,14 @@ public class TopologyCatalogResource {
     @Timed
     public Response listTopologies () {
         try {
-            Collection<Topology> topologies = catalogService
-                    .listTopologies();
-            return WSUtils.respond(OK, SUCCESS, topologies);
+            Collection<Topology> topologies = catalogService.listTopologies();
+            if (topologies != null) {
+                return WSUtils.respond(OK, SUCCESS, topologies);
+            }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
+        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, Collections.emptyList());
     }
 
     @GET
@@ -275,9 +278,16 @@ public class TopologyCatalogResource {
     @Path("/system/componentdefinitions")
     @Timed
     public Response listTopologyComponentTypes () {
-        Collection<TopologyComponentDefinition.TopologyComponentType>
-                topologyComponents = catalogService.listTopologyComponentTypes();
-        return WSUtils.respond(OK, SUCCESS, topologyComponents);
+        try {
+            Collection<TopologyComponentDefinition.TopologyComponentType>
+                    topologyComponents = catalogService.listTopologyComponentTypes();
+            if (topologyComponents != null) {
+                return WSUtils.respond(OK, SUCCESS, topologyComponents);
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, Collections.emptyList());
     }
 
     /**
@@ -295,7 +305,7 @@ public class TopologyCatalogResource {
             queryParams = WSUtils.buildQueryParameters(params);
             Collection<TopologyComponentDefinition> topologyComponentDefinitions = catalogService
                     .listTopologyComponentsForTypeWithFilter(componentType, queryParams);
-            if (!topologyComponentDefinitions.isEmpty()) {
+            if (topologyComponentDefinitions != null) {
                 return WSUtils.respond(OK, SUCCESS, topologyComponentDefinitions);
             }
         } catch (Exception ex) {
@@ -408,7 +418,7 @@ public class TopologyCatalogResource {
             MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
             queryParams = WSUtils.buildQueryParameters(params);
             Collection<CustomProcessorInfo> customProcessorInfos = catalogService.listCustomProcessorsWithFilter(queryParams);
-            if (!customProcessorInfos.isEmpty()) {
+            if (customProcessorInfos != null) {
                 return WSUtils.respond(OK, SUCCESS, customProcessorInfos);
             }
         } catch (Exception ex) {
