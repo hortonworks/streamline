@@ -1,5 +1,6 @@
 
 ## 0.1.4
+ * IOT-352: Remove core module and a couple other JIRAs
  * IOT-347: Fix bootstrap.sh so it can be run from anywhere
  * IOT-352: Refactor core module to move components into streams and other modules
  * IOT_344: Iotas build fails at storage-atlas with error
