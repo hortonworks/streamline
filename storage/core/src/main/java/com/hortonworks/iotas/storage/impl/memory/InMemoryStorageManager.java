@@ -36,13 +36,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 //TODO: The synchronization is broken right now, so all the methods don't guarantee the semantics as described in the interface.
 public class InMemoryStorageManager implements StorageManager {
     private static final Logger LOG = LoggerFactory.getLogger(InMemoryStorageManager.class);
 
     private ConcurrentHashMap<String, ConcurrentHashMap<PrimaryKey, Storable>> storageMap = new ConcurrentHashMap<String, ConcurrentHashMap<PrimaryKey, Storable>>();
-    private ConcurrentHashMap<String, Long> sequenceMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, AtomicLong> sequenceMap = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Class<?>> nameSpaceClassMap = new ConcurrentHashMap<String, Class<?>>();
 
     @Override
@@ -80,9 +81,6 @@ public class InMemoryStorageManager implements StorageManager {
         if (!storageMap.containsKey(namespace)) {
             storageMap.putIfAbsent(namespace, new ConcurrentHashMap<PrimaryKey, Storable>());
             nameSpaceClassMap.putIfAbsent(namespace, storable.getClass());
-        }
-        if (!storageMap.get(namespace).containsKey(id)) {
-            incrementIdSequence(namespace);
         }
         storageMap.get(namespace).put(id, storable);
     }
@@ -147,24 +145,24 @@ public class InMemoryStorageManager implements StorageManager {
         //no-op
     }
 
+    /**
+     * atomically increment and return the next id for the given namespace
+     */
     @Override
     public Long nextId(String namespace) {
-        Long id = this.sequenceMap.get(namespace);
-        if (id == null) {
-            id = 0l;
+        AtomicLong cur = sequenceMap.get(namespace);
+        if (cur == null) {
+            AtomicLong zero = new AtomicLong();
+            cur = sequenceMap.putIfAbsent(namespace, zero);
+            if (cur == null) {
+                cur = zero;
+            }
         }
-        return id + 1;
+        return cur.incrementAndGet();
     }
 
     @Override
     public void registerStorables(Collection<Class<? extends Storable>> classes) throws StorageException {
     }
 
-    private void incrementIdSequence(String namespace) {
-        Long id = sequenceMap.get(namespace);
-        if (id == null) {
-            id = 0l;
-        }
-        this.sequenceMap.put(namespace, ++id);
-    }
 }
