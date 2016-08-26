@@ -13,7 +13,7 @@ public class DeviceRegistryProcessorMockBuilder  implements ComponentBuilder<Dev
     public static final String MODEL = "model";
     public static final String NAME = "name";
     public static final String DESCRIPTION = "description";
-    public static final String BROKER = "tcp://iot.eclipse.org:1883";
+    public static final String BROKER = "tcp://10.22.9.209:1883";
     public static final String TOPIC = "topic";
     public static final String OPERATION = "operation";
     public static final String ATTRIBUTE = "attribute";
@@ -57,7 +57,7 @@ public class DeviceRegistryProcessorMockBuilder  implements ComponentBuilder<Dev
         deviceRegistry.setModel(MODEL + deviceId);
         deviceRegistry.setProtocol(DeviceRegistry.Protocol.MQTT);
         deviceRegistry.setMqttBroker(BROKER);
-        deviceRegistry.setTopic(TOPIC + deviceId);
+        deviceRegistry.setTopic(TOPIC);
         deviceRegistry.setDeviceAttributesList(buildDeviceAttributesList());
         deviceRegistry.setDeviceOperationsList(buildDeviceOperationsList());
         return deviceRegistry;
