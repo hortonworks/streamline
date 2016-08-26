@@ -13,11 +13,8 @@
         <module>common</module>
         <module>cache</module>
         <module>storage</module>
-        <module>core</module>
         <module>simulator</module>
         <module>webservice</module>
-        <module>parsers</module>
-        <module>layout</module>
         <module>streams</module>
         <module>registries</module>
     </modules>
@@ -42,7 +39,7 @@
         <maven-jar-plugin.version>2.6</maven-jar-plugin.version>
         <maven-surefire.version>2.18.1</maven-surefire.version>
         <maven-shade-plugin.version>2.4.1</maven-shade-plugin.version>
-        <hbase.version>1.1.2.2.3.98.0-44</hbase.version>
+        <hbase.version>1.1.2.2.3.98.0-63</hbase.version>
         <jsonschemavalidator.version>2.2.6</jsonschemavalidator.version>
         <kryo.version>2.21</kryo.version>
         <logback.version>1.1.3</logback.version>

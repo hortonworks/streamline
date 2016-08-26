@@ -1,9 +1,9 @@
 package com.hortonworks.iotas.streams.runtime.storm.bolt;
 
-import com.hortonworks.iotas.client.CatalogRestClient;
-import com.hortonworks.iotas.processor.examples.ConsoleCustomProcessorRuntime;
+import com.hortonworks.iotas.streams.catalog.CatalogRestClient;
+import com.hortonworks.iotas.streams.runtime.processor.ConsoleCustomProcessorRuntime;
 import com.hortonworks.iotas.streams.IotasEvent;
-import com.hortonworks.iotas.common.IotasEventImpl;
+import com.hortonworks.iotas.streams.common.IotasEventImpl;
 import com.hortonworks.iotas.streams.Result;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.streams.runtime.CustomProcessorRuntime;

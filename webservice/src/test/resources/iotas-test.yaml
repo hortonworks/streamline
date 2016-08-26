@@ -1,21 +1,30 @@
-brokerList: localhost:9092
-zookeeperHost: localhost:2181
-topologyActionsImpl: com.hortonworks.iotas.streams.layout.storm.StormTopologyActionsImpl
-topologyMetricsImpl: com.hortonworks.iotas.streams.metrics.storm.topology.StormTopologyMetricsImpl
-iotasStormJar: /tmp/storm-0.1.0-SNAPSHOT.jar
+modules:
+  - name: parser-registry
+    className: com.hortonworks.iotas.registries.parser.service.ParserRegistryModule
+  - name: tag-registry
+    className: com.hortonworks.iotas.registries.tag.service.TagRegistryModule
+  - name: streams
+    className: com.hortonworks.iotas.streams.service.StreamsModule
+    config:
+      topologyActionsImpl: com.hortonworks.iotas.streams.layout.storm.StormTopologyActionsImpl
+      topologyMetricsImpl: com.hortonworks.iotas.streams.metrics.storm.topology.StormTopologyMetricsImpl
+      #change the below to the path on your local machine
+      iotasStormJar: /tmp/storm-0.1.0-SNAPSHOT.jar
+      stormHomeDir: /usr/local/Cellar/storm/0.10.0/
+      stormApiRootUrl: "http://localhost:8888/api/v1"
+      # Use this to turn on/off notifications rest api
+      #notificationsRestDisable: true
+      #Custom processor upload configuration
+      #customProcessorWatchPath: "/tmp"
+      #customProcessorUploadFailPath: "/tmp/failed"
+      #customProcessorUploadSuccessPath: "/tmp/uploaded"
+
 catalogRootUrl: "http://localhost:8080/api/v1/catalog"
-stormHomeDir: /usr/local/Cellar/storm/0.10.0/
-stormApiRootUrl: "http://localhost:8888/api/v1"
 # Filesystem based jar storage
 fileStorageConfiguration:
   className: "com.hortonworks.iotas.common.util.LocalFileSystemStorage"
   properties:
     directory: "/tmp"
-
-#Custom processor upload configuration
-#customProcessorWatchPath: "/tmp"
-#customProcessorUploadFailPath: "/tmp/failed"
-#customProcessorUploadSuccessPath: "/tmp/uploaded"
 
 # HDFS based Jar storage
 #fileStorageConfiguration:

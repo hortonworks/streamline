@@ -25,7 +25,7 @@ import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.topology.base.BaseRichBolt;
 import org.apache.storm.tuple.Tuple;
-import com.hortonworks.iotas.client.CatalogRestClient;
+import com.hortonworks.iotas.streams.catalog.CatalogRestClient;
 import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.notification.Notification;
 import com.hortonworks.iotas.streams.notification.NotifierConfig;

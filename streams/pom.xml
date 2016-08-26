@@ -22,6 +22,7 @@
         <module>sdk</module>
         <module>service</module>
         <module>runners</module>
+        <module>schemaevolver</module>
     </modules>
 
 

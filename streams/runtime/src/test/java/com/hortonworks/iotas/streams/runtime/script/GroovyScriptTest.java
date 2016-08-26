@@ -18,7 +18,7 @@
 
 package com.hortonworks.iotas.streams.runtime.script;
 
-import com.hortonworks.iotas.common.IotasEventImpl;
+import com.hortonworks.iotas.streams.common.IotasEventImpl;
 import com.hortonworks.iotas.streams.runtime.script.engine.GroovyScriptEngine;
 import org.junit.Assert;
 import org.junit.Test;

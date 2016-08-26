@@ -19,51 +19,20 @@
 package com.hortonworks.iotas.webservice;
 
 import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.Lists;
 import com.hortonworks.iotas.cache.Cache;
-import com.hortonworks.iotas.registries.tag.client.TagClient;
-import com.hortonworks.iotas.registries.tag.service.CatalogTagService;
-import com.hortonworks.iotas.registries.tag.service.TagCatalogResource;
-import com.hortonworks.iotas.registries.tag.service.TagService;
+import com.hortonworks.iotas.common.Constants;
+import com.hortonworks.iotas.common.ModuleRegistration;
+import com.hortonworks.iotas.storage.StorageManagerAware;
 import com.hortonworks.iotas.storage.cache.impl.GuavaCache;
 import com.hortonworks.iotas.storage.cache.writer.StorageWriteThrough;
 import com.hortonworks.iotas.storage.cache.writer.StorageWriter;
-import com.hortonworks.iotas.common.FileEventHandler;
 import com.hortonworks.iotas.streams.exception.ConfigException;
-import com.hortonworks.iotas.streams.metrics.TimeSeriesQuerier;
-import com.hortonworks.iotas.service.CatalogService;
-import com.hortonworks.iotas.service.FileWatcher;
 import com.hortonworks.iotas.storage.CacheBackedStorageManager;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
-import com.hortonworks.iotas.processor.CustomProcessorUploadHandler;
-import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
-import com.hortonworks.iotas.streams.layout.storm.StormTopologyLayoutConstants;
-import com.hortonworks.iotas.streams.notification.service.NotificationServiceImpl;
-import com.hortonworks.iotas.streams.layout.component.TopologyActions;
-import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
-import com.hortonworks.iotas.streams.metrics.topology.TopologyMetrics;
 import com.hortonworks.iotas.common.util.FileStorage;
 import com.hortonworks.iotas.common.util.ReflectionHelper;
-import com.hortonworks.iotas.streams.service.ClusterCatalogResource;
-import com.hortonworks.iotas.streams.service.ComponentCatalogResource;
-import com.hortonworks.iotas.streams.service.NotifierInfoCatalogResource;
-import com.hortonworks.iotas.streams.service.RuleCatalogResource;
-import com.hortonworks.iotas.streams.service.TopologyCatalogResource;
-import com.hortonworks.iotas.streams.service.TopologyEdgeCatalogResource;
-import com.hortonworks.iotas.streams.service.TopologyEditorMetadataResource;
-import com.hortonworks.iotas.streams.service.TopologyProcessorCatalogResource;
-import com.hortonworks.iotas.streams.service.TopologySinkCatalogResource;
-import com.hortonworks.iotas.streams.service.TopologySourceCatalogResource;
-import com.hortonworks.iotas.streams.service.TopologyStreamCatalogResource;
-import com.hortonworks.iotas.streams.service.UDFCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.DataSourceCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.DataSourceFacade;
-import com.hortonworks.iotas.webservice.catalog.DataSourceWithDataFeedCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.FeedCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.FileCatalogResource;
-import com.hortonworks.iotas.webservice.catalog.ParserInfoCatalogResource;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.jetty.HttpConnectorFactory;
@@ -77,7 +46,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class IotasApplication extends Application<IotasConfiguration> {
 
@@ -101,15 +69,6 @@ public class IotasApplication extends Application<IotasConfiguration> {
 
     @Override
     public void run(IotasConfiguration iotasConfiguration, Environment environment) throws Exception {
-        // kafka producer shouldn't be starting as part of REST api.
-        // KafkaProducerManager kafkaProducerManager = new KafkaProducerManager(iotasConfiguration);
-        // environment.lifecycle().manage(kafkaProducerManager);
-
-        // ZkClient zkClient = new ZkClient(iotasConfiguration.getZookeeperHost());
-
-        // final FeedResource feedResource = new FeedResource(kafkaProducerManager.getProducer(), zkClient);
-        // environment.jersey().register(feedResource);
-
         registerResources(iotasConfiguration, environment);
     }
 
@@ -153,54 +112,7 @@ public class IotasApplication extends Application<IotasConfiguration> {
         return CacheBuilder.newBuilder().maximumSize(maxSize);
     }
 
-    private TopologyActions getTopologyActionsImpl (IotasConfiguration configuration) {
-        String className = configuration.getTopologyActionsImpl();
-        // Note that iotasStormJar value needs to be changed in iotas.yaml
-        // based on the location of the storm module jar of iotas project.
-        // Reason for doing it this way is storm ui right now does not
-        // support submitting a jar because of security vulnerability. Hence
-        // for now, we just run the storm jar command in a shell on machine
-        // where IoTaS is deployed. It is run in StormTopologyActionsImpl
-        // class. This also adds a security vulnerability. We will change
-        // this later on using our cluster entity when its handled right in
-        // storm.
-        String jar = configuration.getIotasStormJar();
-        TopologyActions topologyActions;
-        try {
-            topologyActions = ReflectionHelper.newInstance(className);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-        //pass any config info that might be needed in the constructor as a map
-        Map<String, String> conf = new HashMap<>();
-        conf.put(StormTopologyLayoutConstants.STORM_JAR_LOCATION_KEY, jar);
-        conf.put(StormTopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL, configuration.getCatalogRootUrl());
-        conf.put(StormTopologyLayoutConstants.STORM_HOME_DIR, configuration.getStormHomeDir());
-        conf.put(TopologyLayoutConstants.JAVA_JAR_COMMAND, configuration.getJavaJarCommand());
-        topologyActions.init(conf);
-        return topologyActions;
-    }
 
-    private TopologyMetrics getTopologyMetricsImpl(IotasConfiguration configuration) throws ConfigException {
-        String className = configuration.getTopologyMetricsImpl();
-        TopologyMetrics topologyMetrics;
-        try {
-            topologyMetrics = ReflectionHelper.newInstance(className);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-        //pass any config info that might be needed in the constructor as a map
-        Map<String, String> conf = new HashMap<>();
-        conf.put(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY, configuration.getStormApiRootUrl());
-        topologyMetrics.init(conf);
-
-        TimeSeriesQuerier timeSeriesQuerier = getTimeSeriesQuerier(configuration);
-        if (timeSeriesQuerier != null) {
-            topologyMetrics.setTimeSeriesQuerier(timeSeriesQuerier);
-        }
-
-        return topologyMetrics;
-    }
 
     private FileStorage getJarStorage (IotasConfiguration configuration) {
         FileStorage fileStorage = null;
@@ -213,99 +125,28 @@ public class IotasApplication extends Application<IotasConfiguration> {
         return fileStorage;
     }
 
-    private void registerResources(IotasConfiguration iotasConfiguration, Environment environment) throws ConfigException {
+    private void registerResources(IotasConfiguration iotasConfiguration, Environment environment) throws ConfigException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         StorageManager storageManager = getCacheBackedDao(iotasConfiguration);
-        TopologyActions topologyActions = getTopologyActionsImpl(iotasConfiguration);
-        TopologyMetrics topologyMetrics = getTopologyMetricsImpl(iotasConfiguration);
         FileStorage fileStorage = this.getJarStorage(iotasConfiguration);
-
-
-        final StreamCatalogService streamcatalogService = new StreamCatalogService(storageManager, topologyActions, topologyMetrics, fileStorage);
         int appPort = ((HttpConnectorFactory) ((DefaultServerFactory) iotasConfiguration.getServerFactory()).getApplicationConnectors().get(0)).getPort();
-        TagClient tagClient = new TagClient(iotasConfiguration.getCatalogRootUrl().replaceFirst("8080", appPort +""));
-        final CatalogService catalogService = new CatalogService(storageManager, fileStorage, tagClient);
-
-        final FeedCatalogResource feedResource = new FeedCatalogResource(catalogService);
-        final ParserInfoCatalogResource parserResource = new ParserInfoCatalogResource(catalogService);
-        final DataSourceCatalogResource dataSourceResource = new DataSourceCatalogResource(catalogService);
-
-
-        final DataSourceWithDataFeedCatalogResource dataSourceWithDataFeedCatalogResource =
-                new DataSourceWithDataFeedCatalogResource(new DataSourceFacade(catalogService, tagClient));
-        final TopologyCatalogResource topologyCatalogResource = new TopologyCatalogResource(streamcatalogService);
-        final MetricsResource metricsResource = new MetricsResource(streamcatalogService);
-        final TopologyStreamCatalogResource topologyStreamCatalogResource = new TopologyStreamCatalogResource(streamcatalogService);
-
-        // cluster related
-        final ClusterCatalogResource clusterCatalogResource = new ClusterCatalogResource(streamcatalogService, fileStorage);
-        final ComponentCatalogResource componentCatalogResource = new ComponentCatalogResource(streamcatalogService);
-        final TopologyEditorMetadataResource topologyEditorMetadataResource = new TopologyEditorMetadataResource(streamcatalogService);
-        final TagService tagService = new CatalogTagService(storageManager);
-        final TagCatalogResource tagCatalogResource = new TagCatalogResource(tagService);
-        final FileCatalogResource fileCatalogResource = new FileCatalogResource(catalogService);
-
-        // topology related
-        final TopologySourceCatalogResource topologySourceCatalogResource = new TopologySourceCatalogResource(streamcatalogService);
-        final TopologySinkCatalogResource topologySinkCatalogResource = new TopologySinkCatalogResource(streamcatalogService);
-        final TopologyProcessorCatalogResource topologyProcessorCatalogResource = new TopologyProcessorCatalogResource(streamcatalogService);
-        final TopologyEdgeCatalogResource topologyEdgeCatalogResource = new TopologyEdgeCatalogResource(streamcatalogService);
-        final RuleCatalogResource ruleCatalogResource = new RuleCatalogResource(streamcatalogService);
-
-        // UDF catalaog resource
-        final UDFCatalogResource udfCatalogResource = new UDFCatalogResource(streamcatalogService, fileStorage);
-
-        List<Object> resources = Lists.newArrayList(feedResource, parserResource, dataSourceResource, dataSourceWithDataFeedCatalogResource,
-                topologyCatalogResource, clusterCatalogResource, componentCatalogResource,
-                topologyEditorMetadataResource, tagCatalogResource, fileCatalogResource, metricsResource, topologyStreamCatalogResource,
-                topologySourceCatalogResource, topologySinkCatalogResource, topologyProcessorCatalogResource, topologyEdgeCatalogResource,
-                ruleCatalogResource, udfCatalogResource);
-        if (!iotasConfiguration.isNotificationsRestDisabled()) {
-            resources.add(new NotifierInfoCatalogResource(streamcatalogService));
-            resources.add(new NotificationsResource(new NotificationServiceImpl()));
+        String catalogRootUrl = iotasConfiguration.getCatalogRootUrl().replaceFirst("8080", appPort +"");
+        List<ModuleConfiguration> modules = iotasConfiguration.getModules();
+        List<Object> resourcesToRegister = new ArrayList<>();
+        for (ModuleConfiguration moduleConfiguration: modules) {
+            ModuleRegistration moduleRegistration = (ModuleRegistration) Class.forName(moduleConfiguration.getClassName()).newInstance();
+            if (moduleConfiguration.getConfig() == null) {
+                moduleConfiguration.setConfig(new HashMap<String, Object>());
+            }
+            moduleConfiguration.getConfig().put(Constants.CONFIG_TIME_SERIES_DB, iotasConfiguration.getTimeSeriesDBConfiguration());
+            moduleConfiguration.getConfig().put(Constants.CONFIG_CATALOG_ROOT_URL, catalogRootUrl);
+            moduleRegistration.init(moduleConfiguration.getConfig(), fileStorage);
+            StorageManagerAware storageManagerAware = (StorageManagerAware) moduleRegistration;
+            storageManagerAware.setStorageManager(storageManager);
+            resourcesToRegister.addAll(moduleRegistration.getResources());
         }
-
-        for(Object resource : resources) {
+        for(Object resource : resourcesToRegister) {
             environment.jersey().register(resource);
         }
-
         environment.jersey().register(MultiPartFeature.class);
-        watchFiles(iotasConfiguration, streamcatalogService);
     }
-
-    private TimeSeriesQuerier getTimeSeriesQuerier(IotasConfiguration iotasConfiguration) {
-        if (iotasConfiguration.getTimeSeriesDBConfiguration() == null) {
-            return null;
-        }
-
-        try {
-            TimeSeriesQuerier timeSeriesQuerier = ReflectionHelper.newInstance(iotasConfiguration.getTimeSeriesDBConfiguration().getClassName());
-            timeSeriesQuerier.init(iotasConfiguration.getTimeSeriesDBConfiguration().getProperties());
-            return timeSeriesQuerier;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void watchFiles (IotasConfiguration iotasConfiguration, StreamCatalogService catalogService) {
-        if (iotasConfiguration.getCustomProcessorWatchPath() == null || iotasConfiguration.getCustomProcessorUploadFailPath() == null || iotasConfiguration
-                .getCustomProcessorUploadSuccessPath() == null) {
-            return;
-        }
-        FileEventHandler customProcessorUploadHandler = new CustomProcessorUploadHandler(iotasConfiguration.getCustomProcessorWatchPath(), iotasConfiguration
-                .getCustomProcessorUploadFailPath(), iotasConfiguration.getCustomProcessorUploadSuccessPath(), catalogService);
-        List<FileEventHandler> fileEventHandlers = new ArrayList<>();
-        fileEventHandlers.add(customProcessorUploadHandler);
-        final FileWatcher fileWatcher = new FileWatcher(fileEventHandlers);
-        fileWatcher.register();
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (fileWatcher.processEvents()) {
-
-                }
-            }
-        });
-        thread.start();
-    }
-
 }

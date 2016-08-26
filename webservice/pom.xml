@@ -19,7 +19,7 @@
     <dependencies>
         <dependency>
             <groupId>com.hortonworks.iotas</groupId>
-            <artifactId>core</artifactId>
+            <artifactId>common</artifactId>
             <version>${project.version}</version>
             <exclusions>
                 <exclusion>
@@ -63,24 +63,18 @@
         </dependency>
         <dependency>
             <groupId>com.hortonworks.iotas</groupId>
+            <artifactId>parser-registry</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hortonworks.iotas</groupId>
+            <artifactId>tag-registry</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hortonworks.iotas</groupId>
             <artifactId>streams-service</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.hortonworks.iotas</groupId>
-            <artifactId>layout</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.hortonworks.iotas</groupId>
-            <artifactId>streams-notification</artifactId>
-            <version>${project.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
@@ -119,21 +113,17 @@
             <groupId>org.jmockit</groupId>
             <artifactId>jmockit</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.hortonworks.iotas</groupId>
-            <artifactId>streams-layout-storm</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.hortonworks.iotas</groupId>
-            <artifactId>streams-metrics-storm</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         <!-- test dependency -->
         <dependency>
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-testing</artifactId>
             <version>${dropwizard.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hortonworks.iotas</groupId>
+            <artifactId>streams-runtime</artifactId>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

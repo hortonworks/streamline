@@ -26,5 +26,7 @@ public class Constants {
     }
     public static final String CATALOG_ROOT_URL = "catalog.root.url";
     public static final String LOCAL_FILES_PATH = "local.files.path";
+    public static final String CONFIG_CATALOG_ROOT_URL = "catalogRootUrl";
+    public static final String CONFIG_TIME_SERIES_DB = "timeSeriesDBConfiguration";
 
 }

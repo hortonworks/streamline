@@ -46,10 +46,10 @@
             <fileMode>0755</fileMode>
         </fileSet>
         <fileSet>
-            <directory>${project.basedir}./parsers/target</directory>
+            <directory>${project.basedir}./registries/parser-registry/target</directory>
             <outputDirectory>/examples/topology/parsers</outputDirectory>
             <includes>
-                <include>parsers*jar</include>
+                <include>parser*jar</include>
             </includes>
         </fileSet>
         <fileSet>

@@ -18,40 +18,23 @@
 package com.hortonworks.iotas.webservice;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.hortonworks.iotas.common.TimeSeriesDBConfiguration;
 import io.dropwizard.Configuration;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 public class IotasConfiguration extends Configuration {
 
     @NotEmpty
-    private String brokerList;
-
-    @NotEmpty
-    private String zookeeperHost;
-
-    @NotEmpty
-    private String topologyActionsImpl;
-
-    @NotEmpty
-    private String topologyMetricsImpl;
-
-    @NotEmpty
-    private String iotasStormJar;
-
-    private Boolean notificationsRestDisable;
-
-    private String javaJarCommand;
+    private List<ModuleConfiguration> modules;
 
     @NotEmpty
     private String catalogRootUrl;
 
     @NotNull
     private FileStorageConfiguration fileStorageConfiguration;
-
-    @NotEmpty
-    private String stormHomeDir;
 
     @NotNull
     private StorageProviderConfiguration storageProviderConfiguration;
@@ -66,50 +49,8 @@ public class IotasConfiguration extends Configuration {
         this.storageProviderConfiguration = storageProviderConfiguration;
     }
 
-    @NotEmpty
-    private String stormApiRootUrl;
-
-    @JsonProperty
-    public String getBrokerList(){
-        return this.brokerList;
-    }
-
-    private String customProcessorWatchPath;
-
-    private String customProcessorUploadFailPath;
-
-    private String customProcessorUploadSuccessPath;
 
     private TimeSeriesDBConfiguration timeSeriesDBConfiguration;
-
-    @JsonProperty
-    public void setBrokerList(String brokerList){
-        this.brokerList = brokerList;
-    }
-
-    public String getZookeeperHost() {
-        return zookeeperHost;
-    }
-
-    public void setZookeeperHost(String zookeeperHost) {
-        this.zookeeperHost = zookeeperHost;
-    }
-
-    public String getTopologyActionsImpl() {
-        return topologyActionsImpl;
-    }
-
-    public void setTopologyActionsImpl(String topologyActionsImpl) {
-        this.topologyActionsImpl = topologyActionsImpl;
-    }
-
-    public String getIotasStormJar () {
-        return iotasStormJar;
-    }
-
-    public void setIotasStormJar (String iotasStormJar) {
-        this.iotasStormJar = iotasStormJar;
-    }
 
     public String getCatalogRootUrl () {
         return catalogRootUrl;
@@ -117,14 +58,6 @@ public class IotasConfiguration extends Configuration {
 
     public void setCatalogRootUrl (String catalogRootUrl) {
         this.catalogRootUrl = catalogRootUrl;
-    }
-
-    public String getJavaJarCommand() {
-        return javaJarCommand;
-    }
-
-    public void setJavaJarCommand(String javaJarCommand) {
-        this.javaJarCommand = javaJarCommand;
     }
 
     public FileStorageConfiguration getFileStorageConfiguration() {
@@ -135,69 +68,19 @@ public class IotasConfiguration extends Configuration {
         this.fileStorageConfiguration = configuration;
     }
 
-    @JsonProperty("notificationsRestDisable")
-    public Boolean isNotificationsRestDisabled() {
-        return notificationsRestDisable != null ? notificationsRestDisable : false;
-    }
-
-    @JsonProperty("notificationsRestDisable")
-    public void setNotificationsRestDisabled(Boolean notificationsRestDisable) {
-        this.notificationsRestDisable = notificationsRestDisable;
-    }
-
-    public String getStormHomeDir () {
-        return stormHomeDir;
-    }
-
-    public void setStormHomeDir (String stormHomeDir) {
-        this.stormHomeDir = stormHomeDir;
-    }
-
-    public String getCustomProcessorWatchPath () {
-        return customProcessorWatchPath;
-    }
-
-    public void setCustomProcessorWatchPath (String customProcessorWatchPath) {
-        this.customProcessorWatchPath = customProcessorWatchPath;
-    }
-
-    public String getCustomProcessorUploadFailPath () {
-        return customProcessorUploadFailPath;
-    }
-
-    public void setCustomProcessorUploadFailPath (String customProcessorUploadFailPath) {
-        this.customProcessorUploadFailPath = customProcessorUploadFailPath;
-    }
-
-    public String getCustomProcessorUploadSuccessPath () {
-        return customProcessorUploadSuccessPath;
-    }
-
-    public void setCustomProcessorUploadSuccessPath (String customProcessorUploadSuccessPath) {
-        this.customProcessorUploadSuccessPath = customProcessorUploadSuccessPath;
-    }
-
-    public String getTopologyMetricsImpl() {
-        return topologyMetricsImpl;
-    }
-
-    public void setTopologyMetricsImpl(String topologyMetricsImpl) {
-        this.topologyMetricsImpl = topologyMetricsImpl;
-    }
-
-    public String getStormApiRootUrl() {
-        return stormApiRootUrl;
-    }
-
-    public void setStormApiRootUrl(String stormApiRootUrl) {
-        this.stormApiRootUrl = stormApiRootUrl;
-    }
-
     public TimeSeriesDBConfiguration getTimeSeriesDBConfiguration() {
         return timeSeriesDBConfiguration;
     }
 
     public void setTimeSeriesDBConfiguration(TimeSeriesDBConfiguration timeSeriesDBConfiguration) {
         this.timeSeriesDBConfiguration = timeSeriesDBConfiguration;
+    }
+
+    public List<ModuleConfiguration> getModules() {
+        return modules;
+    }
+
+    public void setModules(List<ModuleConfiguration> modules) {
+        this.modules = modules;
     }
 }
