@@ -1,7 +1,7 @@
 package com.hortonworks.iotas.notification.notifiers.device;
 
 public class DeviceIdentificationField {
-    private Long id;
+    private String id;
     private String make;
     private String model;
     private String name;
@@ -11,7 +11,7 @@ public class DeviceIdentificationField {
     public DeviceIdentificationField(){
     }
 
-    public DeviceIdentificationField(Long id, String make, String model, String name, String description) {
+    public DeviceIdentificationField(String id, String make, String model, String name, String description) {
         this.id = id;
         this.make = make;
         this.model = model;
@@ -19,11 +19,11 @@ public class DeviceIdentificationField {
         this.description = description;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -87,7 +87,7 @@ public class DeviceIdentificationField {
     @Override
     public String toString() {
         return "DeviceIdentificationField{" +
-                "id=" + id +
+                "id='" + id + '\'' +
                 ", make='" + make + '\'' +
                 ", model='" + model + '\'' +
                 ", name='" + name + '\'' +

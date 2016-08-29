@@ -2,13 +2,13 @@ package com.hortonworks.iotas.notification.notifiers.device;
 
 import com.hortonworks.iotas.common.Schema;
 
-public class DeviceAttributes {
+public class DeviceAttribute {
     private Schema.Field field;
 
-    public DeviceAttributes() {
+    public DeviceAttribute() {
     }
 
-    public DeviceAttributes(Schema.Field field) {
+    public DeviceAttribute(Schema.Field field) {
         this.field = field;
     }
 
@@ -23,9 +23,9 @@ public class DeviceAttributes {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof DeviceAttributes)) return false;
+        if (!(o instanceof DeviceAttribute)) return false;
 
-        DeviceAttributes that = (DeviceAttributes) o;
+        DeviceAttribute that = (DeviceAttribute) o;
 
         return field != null ? field.equals(that.field) : that.field == null;
 

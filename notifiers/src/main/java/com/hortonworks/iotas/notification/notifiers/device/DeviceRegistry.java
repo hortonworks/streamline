@@ -15,8 +15,8 @@ public class DeviceRegistry {
     private Protocol protocol;
     private String topic;
     private String mqttBroker;
-    private List<DeviceOperations> deviceOperationsList;
-    private List<DeviceAttributes> deviceAttributesList;
+    private List<DeviceOperation> deviceOperationList;
+    private List<DeviceAttribute> deviceAttributeList;
 
     public Long getId() {
         return id;
@@ -82,20 +82,20 @@ public class DeviceRegistry {
         this.mqttBroker = mqttBroker;
     }
 
-    public List<DeviceOperations> getDeviceOperationsList() {
-        return deviceOperationsList;
+    public List<DeviceOperation> getDeviceOperationList() {
+        return deviceOperationList;
     }
 
-    public void setDeviceOperationsList(List<DeviceOperations> deviceOperationsList) {
-        this.deviceOperationsList = deviceOperationsList;
+    public void setDeviceOperationList(List<DeviceOperation> deviceOperationList) {
+        this.deviceOperationList = deviceOperationList;
     }
 
-    public List<DeviceAttributes> getDeviceAttributesList() {
-        return deviceAttributesList;
+    public List<DeviceAttribute> getDeviceAttributeList() {
+        return deviceAttributeList;
     }
 
-    public void setDeviceAttributesList(List<DeviceAttributes> deviceAttributesList) {
-        this.deviceAttributesList = deviceAttributesList;
+    public void setDeviceAttributeList(List<DeviceAttribute> deviceAttributeList) {
+        this.deviceAttributeList = deviceAttributeList;
     }
 
     @Override
@@ -113,9 +113,9 @@ public class DeviceRegistry {
         if (protocol != that.protocol) return false;
         if (topic != null ? !topic.equals(that.topic) : that.topic != null) return false;
         if (mqttBroker != null ? !mqttBroker.equals(that.mqttBroker) : that.mqttBroker != null) return false;
-        if (deviceOperationsList != null ? !deviceOperationsList.equals(that.deviceOperationsList) : that.deviceOperationsList != null)
+        if (deviceOperationList != null ? !deviceOperationList.equals(that.deviceOperationList) : that.deviceOperationList != null)
             return false;
-        return deviceAttributesList != null ? deviceAttributesList.equals(that.deviceAttributesList) : that.deviceAttributesList == null;
+        return deviceAttributeList != null ? deviceAttributeList.equals(that.deviceAttributeList) : that.deviceAttributeList == null;
 
     }
 
@@ -129,8 +129,8 @@ public class DeviceRegistry {
         result = 31 * result + (protocol != null ? protocol.hashCode() : 0);
         result = 31 * result + (topic != null ? topic.hashCode() : 0);
         result = 31 * result + (mqttBroker != null ? mqttBroker.hashCode() : 0);
-        result = 31 * result + (deviceOperationsList != null ? deviceOperationsList.hashCode() : 0);
-        result = 31 * result + (deviceAttributesList != null ? deviceAttributesList.hashCode() : 0);
+        result = 31 * result + (deviceOperationList != null ? deviceOperationList.hashCode() : 0);
+        result = 31 * result + (deviceAttributeList != null ? deviceAttributeList.hashCode() : 0);
         return result;
     }
 
@@ -145,8 +145,8 @@ public class DeviceRegistry {
                 ", protocol=" + protocol +
                 ", topic='" + topic + '\'' +
                 ", mqttBroker='" + mqttBroker + '\'' +
-                ", deviceOperationsList=" + deviceOperationsList +
-                ", deviceAttributesList=" + deviceAttributesList +
+                ", deviceOperationsList=" + deviceOperationList +
+                ", deviceAttributesList=" + deviceAttributeList +
                 '}';
     }
 }

@@ -10,19 +10,19 @@ public class DeviceIdentity {
     private DeviceIdentificationField deviceIdentificationField;
     private Protocol protocolName;
     private ProtocolField protocolField;
-    private List<DeviceOperations> deviceOperationsList;
-    private List<DeviceAttributes> deviceAttributesList;
+    private List<DeviceOperation> deviceOperationList;
+    private List<DeviceAttribute> deviceAttributeList;
 
     //for jackson
     public DeviceIdentity() {
     }
 
-    public DeviceIdentity(DeviceIdentificationField deviceIdentificationField, Protocol protocolName, ProtocolField protocolField, List<DeviceOperations> deviceOperationsList, List<DeviceAttributes> deviceAttributesList) {
+    public DeviceIdentity(DeviceIdentificationField deviceIdentificationField, Protocol protocolName, ProtocolField protocolField, List<DeviceOperation> deviceOperationList, List<DeviceAttribute> deviceAttributeList) {
         this.deviceIdentificationField = deviceIdentificationField;
         this.protocolName = protocolName;
         this.protocolField = protocolField;
-        this.deviceOperationsList = deviceOperationsList;
-        this.deviceAttributesList = deviceAttributesList;
+        this.deviceOperationList = deviceOperationList;
+        this.deviceAttributeList = deviceAttributeList;
     }
 
     public DeviceIdentificationField getDeviceIdentificationField() {
@@ -49,20 +49,20 @@ public class DeviceIdentity {
         this.protocolField = protocolField;
     }
 
-    public List<DeviceOperations> getDeviceOperationsList() {
-        return deviceOperationsList;
+    public List<DeviceOperation> getDeviceOperationList() {
+        return deviceOperationList;
     }
 
-    public void setDeviceOperationsList(List<DeviceOperations> deviceOperationsList) {
-        this.deviceOperationsList = deviceOperationsList;
+    public void setDeviceOperationList(List<DeviceOperation> deviceOperationList) {
+        this.deviceOperationList = deviceOperationList;
     }
 
-    public List<DeviceAttributes> getDeviceAttributesList() {
-        return deviceAttributesList;
+    public List<DeviceAttribute> getDeviceAttributeList() {
+        return deviceAttributeList;
     }
 
-    public void setDeviceAttributesList(List<DeviceAttributes> deviceAttributesList) {
-        this.deviceAttributesList = deviceAttributesList;
+    public void setDeviceAttributeList(List<DeviceAttribute> deviceAttributeList) {
+        this.deviceAttributeList = deviceAttributeList;
     }
 
     @Override
@@ -77,9 +77,9 @@ public class DeviceIdentity {
         if (protocolName != that.protocolName) return false;
         if (protocolField != null ? !protocolField.equals(that.protocolField) : that.protocolField != null)
             return false;
-        if (deviceOperationsList != null ? !deviceOperationsList.equals(that.deviceOperationsList) : that.deviceOperationsList != null)
+        if (deviceOperationList != null ? !deviceOperationList.equals(that.deviceOperationList) : that.deviceOperationList != null)
             return false;
-        return deviceAttributesList != null ? deviceAttributesList.equals(that.deviceAttributesList) : that.deviceAttributesList == null;
+        return deviceAttributeList != null ? deviceAttributeList.equals(that.deviceAttributeList) : that.deviceAttributeList == null;
 
     }
 
@@ -88,8 +88,8 @@ public class DeviceIdentity {
         int result = deviceIdentificationField != null ? deviceIdentificationField.hashCode() : 0;
         result = 31 * result + (protocolName != null ? protocolName.hashCode() : 0);
         result = 31 * result + (protocolField != null ? protocolField.hashCode() : 0);
-        result = 31 * result + (deviceOperationsList != null ? deviceOperationsList.hashCode() : 0);
-        result = 31 * result + (deviceAttributesList != null ? deviceAttributesList.hashCode() : 0);
+        result = 31 * result + (deviceOperationList != null ? deviceOperationList.hashCode() : 0);
+        result = 31 * result + (deviceAttributeList != null ? deviceAttributeList.hashCode() : 0);
         return result;
     }
 
@@ -99,8 +99,8 @@ public class DeviceIdentity {
                 "deviceIdentificationField=" + deviceIdentificationField +
                 ", protocolName=" + protocolName +
                 ", protocolField=" + protocolField +
-                ", deviceOperationsList=" + deviceOperationsList +
-                ", deviceAttributesList=" + deviceAttributesList +
+                ", deviceOperationsList=" + deviceOperationList +
+                ", deviceAttributesList=" + deviceAttributeList +
                 '}';
     }
 }

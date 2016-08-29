@@ -44,12 +44,17 @@ public class MQTTDeviceNotifier implements Notifier{
     private static final Field PROP_QoS = Field("QoS","1");
     private static final Field PROP_DUP_FLAG = Field("dupFlag", "false");
 
+    //DeviceRegistryFields
+    private static final String REGISTRY_PROTOCOL_FIELD = "protocolField";
+    private static final String REGISTRY_MQTT_TOPIC = "mqttTopic";
+    private static final String REGISTRY_MQTT_BROKER_URL = "mqttBrokerURL";
+
     MqttClient mqttClient;
     MqttConnectOptions options;
     private NotificationContext ctx;
     private String clientId;
-    private String broker;
-    private String topic;
+    private String mqttBrokerURL;
+    private String mqttTopic;
     private Map <String, Object> fieldsFromDeviceRegistry;
 
     @Override
@@ -59,11 +64,11 @@ public class MQTTDeviceNotifier implements Notifier{
         getDeviceRegistryDataWrap();
         this.ctx = ctx;
         try {
-            LOG.debug("Connecting to broker {}", broker);
-            mqttClient = new MqttClient(broker,clientId);
+            LOG.debug("Connecting to broker {}", mqttBrokerURL);
+            mqttClient = new MqttClient(mqttBrokerURL,clientId);
             options = getMqttConnectOptions(ctx.getConfig().getProperties());
             mqttClient.connect(options);
-            LOG.debug("Connected to broker {}", broker);
+            LOG.debug("Connected to broker {}", mqttBrokerURL);
         } catch(MqttException | IllegalArgumentException ex) {
             LOG.error("Got exception "+ ex);
             throw new NotifierRuntimeException(ex);
@@ -78,7 +83,7 @@ public class MQTTDeviceNotifier implements Notifier{
                 throw new NotifierRuntimeException("Id is null for notification " + notification);
             }
             MqttMessage mqttMessage = getMqttMessage(ctx.getConfig().getProperties());
-            mqttClient.publish(topic, mqttMessage);
+            mqttClient.publish(mqttTopic, mqttMessage);
             LOG.debug("MQTT message published");
         } catch(MqttException | NullPointerException | IllegalStateException ex) {
             LOG.error("Got exception "+ ex);
@@ -90,7 +95,7 @@ public class MQTTDeviceNotifier implements Notifier{
     public void close() {
         try {
             mqttClient.disconnect();
-            LOG.debug("Disconnected from broker {}", broker);
+            LOG.debug("Disconnected from broker {}", mqttBrokerURL);
         } catch (MqttException ex) {
             LOG.error("Got exception "+ ex);
             throw new NotifierRuntimeException(ex);
@@ -159,22 +164,19 @@ public class MQTTDeviceNotifier implements Notifier{
     }
 
     public Map<String,Object> getPayloadMap() {
-        Map<String, Object> payloadMap = new LinkedHashMap<>();
-        payloadMap.put("deviceId",fieldsFromDeviceRegistry.get("id"));
-        payloadMap.put("deviceName",fieldsFromDeviceRegistry.get("name"));
-        payloadMap.put("deviceModel",fieldsFromDeviceRegistry.get("model"));
-        payloadMap.put("deviceMake",fieldsFromDeviceRegistry.get("make"));
-        payloadMap.put("operation",getOperationField());
+        Map<String,Object> payloadOperationMap = getPayloadOperationMap();
+        MQTTMessagePayloadFactory mqttMessagePayloadFactory = new MQTTMessagePayloadFactoryTypeOne(payloadOperationMap);
+        Map<String, Object> payloadMap = mqttMessagePayloadFactory.createPayloadMap(fieldsFromDeviceRegistry);
         return payloadMap;
     }
 
-    public Object getOperationField() {
-        Map<String, Object> operationMap = new LinkedHashMap<>();
-        operationMap.put("name","setTemperature");
-        operationMap.put("param","temperature");
+    private Map<String,Object> getPayloadOperationMap() {
+        Map<String,Object> payloadOperationMap = new LinkedHashMap<>();
+        payloadOperationMap.put("name","setTemperature");
+        payloadOperationMap.put("param","temperature");
         Random randomTemperature = new Random();
-        operationMap.put("value",randomTemperature.nextInt(100));
-        return operationMap;
+        payloadOperationMap.put("value",randomTemperature.nextInt(100));
+        return payloadOperationMap;
     }
 
     public void getDeviceRegistryDataWrap() {
@@ -188,14 +190,14 @@ public class MQTTDeviceNotifier implements Notifier{
 
     public void getDeviceRegistryData() throws Exception{
         LOG.debug("Retrieving metadata from devie registry");
-        DeviceRegistryProcessor mockDeviceRegistryProcessor = new DeviceRegistryProcessorMockBuilder(1, 1, 1, 1).build();
+        MQTTDeviceIdentityMockBuilder mqttDeviceIdentityMockBuilder = new MQTTDeviceIdentityMockBuilder(2, 2);
+        mqttDeviceIdentityMockBuilder.build();
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false);
-        String mockDeviceRegistryProcessorJson = mapper.writeValueAsString(mockDeviceRegistryProcessor);
-        Map<String,Object> deviceRegistryData = mapper.readValue(mockDeviceRegistryProcessorJson, Map.class);
-        List<Object> listDeviceRegistry = (List<Object>) deviceRegistryData.get("devices");
-        fieldsFromDeviceRegistry = (Map<String, Object>) listDeviceRegistry.get(0);
-        topic = (String) fieldsFromDeviceRegistry.get("topic");
-        broker = (String) fieldsFromDeviceRegistry.get("mqttBroker");
+        String mqttDeviceIdentityMockJson = mapper.writeValueAsString(mqttDeviceIdentityMockBuilder.getDeviceIdentity());
+        fieldsFromDeviceRegistry = mapper.readValue(mqttDeviceIdentityMockJson, Map.class);
+        Map<String,Object> protocolFields = (Map<String,Object>) fieldsFromDeviceRegistry.get(REGISTRY_PROTOCOL_FIELD);
+        mqttTopic = (String) protocolFields.get(REGISTRY_MQTT_TOPIC);
+        mqttBrokerURL = (String) protocolFields.get(REGISTRY_MQTT_BROKER_URL);
     }
 }

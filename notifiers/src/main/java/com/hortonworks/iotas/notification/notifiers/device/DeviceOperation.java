@@ -4,15 +4,15 @@ import com.hortonworks.iotas.common.Schema;
 
 import java.util.List;
 
-public class DeviceOperations {
+public class DeviceOperation {
     private String name;
     private int numParameters;
     private List<Schema.Field> params;
 
-    public DeviceOperations() {
+    public DeviceOperation() {
     }
 
-    public DeviceOperations(String name, int numParameters, List<Schema.Field> params) {
+    public DeviceOperation(String name, int numParameters, List<Schema.Field> params) {
         this.name = name;
         this.numParameters = numParameters;
         this.params = params;
@@ -45,9 +45,9 @@ public class DeviceOperations {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof DeviceOperations)) return false;
+        if (!(o instanceof DeviceOperation)) return false;
 
-        DeviceOperations that = (DeviceOperations) o;
+        DeviceOperation that = (DeviceOperation) o;
 
         if (numParameters != that.numParameters) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
