@@ -415,4 +415,33 @@ public abstract class AbstractFluxComponent implements FluxComponent {
             }
         }
     }
+
+    protected List<Object> makeConstructorArgs(String... keys) {
+        List<Object> args = new ArrayList<>();
+        for (String key : keys) {
+            addArg(args, key);
+        }
+        return args;
+    }
+
+    protected void addArg(final List<Object> args, String key) {
+        Object value = conf.get(key);
+        if (value == null) {
+            throw new IllegalArgumentException("Value for key '" + key + "' not found in config");
+        }
+        args.add(value);
+    }
+
+    protected void addArg(final List<Object> args, String key, Object defaultValue) {
+        Object value = conf.get(key);
+        if (value != null) {
+            args.add(value);
+        } else {
+            args.add(defaultValue);
+        }
+    }
+
+    protected void addArg(List<Object> args, Map ref) {
+        args.add(ref);
+    }
 }
