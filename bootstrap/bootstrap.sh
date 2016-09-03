@@ -69,4 +69,3 @@ post /system/componentdefinitions/LINK local-or-shuffle-grouping-link-topology-c
 post /system/componentdefinitions/LINK fields-grouping-link-topology-component
 post /system/componentdefinitions/LINK global-grouping-link-topology-component
 post /system/componentdefinitions/LINK none-grouping-link-topology-component
-

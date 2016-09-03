@@ -39,7 +39,7 @@ public class ConsoleCustomProcessor implements CustomProcessor {
     public List<Result> process(IotasEvent iotasEvent) throws ProcessingException {
         LOG.debug("Processing {}", iotasEvent);
         List<Result> results = new ArrayList<>();
-        results.add(new Result("stream1",Arrays.asList(iotasEvent)));
+        results.add(new Result("stream1", Arrays.asList(iotasEvent)));
         return results;
     }
 
