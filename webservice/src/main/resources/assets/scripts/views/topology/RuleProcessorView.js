@@ -149,7 +149,7 @@ define(['require',
       }
 
         var config = {
-          parallelism: this.$('#rp-parallelism').val(),
+          parallelism: parseInt(this.$('#rp-parallelism').val()),
           rulesProcessorConfig: {
             rules: ruleArr,
             name: this.model.get('uiname'),

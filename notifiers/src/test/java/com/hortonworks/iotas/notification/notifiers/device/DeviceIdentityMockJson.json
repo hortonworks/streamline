@@ -1,0 +1,59 @@
+{
+  "attributes": [
+    {
+      "field": {
+        "name": "attribute1",
+        "type": "INTEGER",
+        "optional": false
+      }
+    },
+    {
+      "field": {
+        "name": "attribute2",
+        "type": "INTEGER",
+        "optional": false
+      }
+    }
+  ],
+
+  "protocol": {
+    "name": "MQTT",
+    "properties": {
+      "mqttBrokerURL": "tcp://iot.eclipse.org:1883",
+      "mqttTopic": "topic"
+    }
+  },
+
+  "deviceInfo": {
+    "name": "name",
+    "id": "fbebc3b5-beea-495b-837c-623ff5be53e3",
+    "description": "description",
+    "make": "make",
+    "model": "model"
+  },
+
+  "operations": [
+    {
+      "name": "operation1",
+      "numParameters": 1,
+      "params": [
+        {
+          "name": "param1",
+          "type": "INTEGER",
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "operation2",
+      "numParameters": 1,
+      "params": [
+        {
+          "name": "param1",
+          "type": "INTEGER",
+          "optional": false
+        }
+      ]
+    }
+  ]
+}
