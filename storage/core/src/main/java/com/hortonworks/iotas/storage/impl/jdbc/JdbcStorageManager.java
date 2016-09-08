@@ -220,24 +220,26 @@ public class JdbcStorageManager implements StorageManager {
             throw new IllegalArgumentException("Unknown jdbc storage provider type: "+type);
         }
         log.info("jdbc provider type: [{}]", type);
+        Map<String, Object> dbProperties = (Map<String, Object>) properties.get("db.properties");
 
-        QueryExecutor queryExecutor = null;
+        QueryExecutor queryExecutor;
         switch (type) {
             case "phoenix":
                 try {
-                    queryExecutor = PhoenixExecutor.createExecutor(properties);
+                    queryExecutor = PhoenixExecutor.createExecutor(dbProperties);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
                 break;
             case "mysql":
-                queryExecutor = MySqlExecutor.createExecutor(properties);
+                queryExecutor = MySqlExecutor.createExecutor(dbProperties);
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported storage provider type: "+type);
         }
 
         this.queryExecutor = queryExecutor;
+        this.queryExecutor.setStorableFactory(storableFactory);
     }
 
 }

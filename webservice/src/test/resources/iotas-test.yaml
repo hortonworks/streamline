@@ -33,23 +33,31 @@ fileStorageConfiguration:
 #    fsUrl: "file:///"
 #    directory: "/tmp/test-hdfs"
 
+# storage provider configuration
+#
+# Example configuration for inmemory is:
+#storageProviderConfiguration:
+# providerClass: "com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager"
+#
 # Example configuration for phoenix based JDBC driver
 #storageProviderConfiguration:
 # providerClass: "com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManager"
 # properties:
 #   db.type: "phoenix"
-#   jdbcDriverClass: "org.apache.phoenix.jdbc.PhoenixDriver"
-#   jdbcUrl: "jdbc:phoenix:localhost:2181"
 #   queryTimeoutInSecs: 30
+#   db.properties:
+#     jdbcDriverClass: "org.apache.phoenix.jdbc.PhoenixDriver"
+#     jdbcUrl: "jdbc:phoenix:localhost:2181"
 #
 # MySQL based jdbc provider configuration is:
 #storageProviderConfiguration:
 # providerClass: "com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManager"
 # properties:
 #   db.type: "mysql"
-#   dataSourceClassName: "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
-#   dataSource.url: "jdbc:mysql://localhost/test"
 #   queryTimeoutInSecs: 30
+#   db.properties:
+#     dataSourceClassName: "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
+#     dataSource.url: "jdbc:mysql://localhost/test"
 #
 # Atlas based provider configuration is:
 #storageProviderConfiguration:
