@@ -1,11 +1,11 @@
 package com.hortonworks.iotas.notification.notifiers.device;
 
 public class DeviceInfo {
-    public static final String DEVICE_ID = "id";
-    public static final String DEVICE_MAKE = "make";
-    public static final String DEVICE_MODEL = "model";
-    public static final String DEVICE_NAME = "name";
-    public static final String DEVICE_DESCRIPTION = "description";
+    public static final String ID = "id";
+    public static final String MAKE = "make";
+    public static final String MODEL = "model";
+    public static final String NAME = "name";
+    public static final String DESCRIPTION = "description";
 
     /**
      * A unique alphanumeric id to uniquely identify a device.
@@ -82,31 +82,6 @@ public class DeviceInfo {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof DeviceInfo)) return false;
-
-        DeviceInfo that = (DeviceInfo) o;
-
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (make != null ? !make.equals(that.make) : that.make != null) return false;
-        if (model != null ? !model.equals(that.model) : that.model != null) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        return description != null ? description.equals(that.description) : that.description == null;
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (make != null ? make.hashCode() : 0);
-        result = 31 * result + (model != null ? model.hashCode() : 0);
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (description != null ? description.hashCode() : 0);
-        return result;
     }
 
     @Override

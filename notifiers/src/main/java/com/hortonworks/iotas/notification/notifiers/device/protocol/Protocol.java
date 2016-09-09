@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class Protocol {
-    public static final String PROTOCOL_NAME = "name";
+    public static final String NAME = "name";
 
     public enum Name {
         MQTT,

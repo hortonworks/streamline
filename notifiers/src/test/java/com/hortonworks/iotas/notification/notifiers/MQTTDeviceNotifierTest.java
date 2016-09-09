@@ -43,10 +43,10 @@ public class MQTTDeviceNotifierTest {
 
     @Test
     public void testMQTTDeviceNotifier() throws MqttException {
-        final Map<String, String> callbackOperations = new HashMap();
-        callbackOperations.put("operationName", "setTemperature");
-        callbackOperations.put("parameter", "temperature");
-        callbackOperations.put("value", "80");
+        final Map<String, String> callbackOperation = new HashMap();
+        callbackOperation.put("operationName", "setTemperature");
+        callbackOperation.put("parameter", "temperature");
+        callbackOperation.put("value", "80");
 
         final Properties properties = new Properties() {
             {
@@ -64,9 +64,9 @@ public class MQTTDeviceNotifierTest {
                 result = new Properties();
 
                 mockNotifierConfig.getDefaultFieldValues();
-                result = callbackOperations;
+                result = callbackOperation;
 
-                mockNotifierConfig.getDeviceMetaData();
+                mockNotifierConfig.getDeviceInstance();
                 result = deviceInstance;
 
                 deviceInstance.getProtocol().getProperties();
@@ -84,10 +84,10 @@ public class MQTTDeviceNotifierTest {
 
     @Test(expected = NotifierRuntimeException.class)
     public void testMqttDeviceNotifierBrokerURL() {
-        final Map<String, String> callbackOperations = new HashMap();
-        callbackOperations.put("operationName", "setTemperature");
-        callbackOperations.put("parameter", "temperature");
-        callbackOperations.put("value", "80");
+        final Map<String, String> callbackOperation = new HashMap();
+        callbackOperation.put("operationName", "setTemperature");
+        callbackOperation.put("parameter", "temperature");
+        callbackOperation.put("value", "80");
 
         final Properties properties = new Properties() {
             {
@@ -105,9 +105,9 @@ public class MQTTDeviceNotifierTest {
                 result = new Properties();
 
                 mockNotifierConfig.getDefaultFieldValues();
-                result = callbackOperations;
+                result = callbackOperation;
 
-                mockNotifierConfig.getDeviceMetaData();
+                mockNotifierConfig.getDeviceInstance();
                 result = deviceInstance;
 
                 deviceInstance.getProtocol().getProperties();

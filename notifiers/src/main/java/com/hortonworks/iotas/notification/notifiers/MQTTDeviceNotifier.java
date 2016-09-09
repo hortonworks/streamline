@@ -24,11 +24,11 @@ public class MQTTDeviceNotifier implements Notifier {
     private static final Logger LOG = LoggerFactory.getLogger(MQTTDeviceNotifier.class);
 
     //Configuration properties
-    private static final Field PROP_CLEAN_SESSION = new Field("cleanSession", "true");
-    private static final Field PROP_KEEP_ALIVE = new Field("keepAlive", "60");
-    private static final Field PROP_RETAIN_FLAG = new Field("retainFlag", "false");
-    private static final Field PROP_QoS = new Field("QoS","1");
-    private static final Field PROP_DUP_FLAG = new Field("dupFlag", "false");
+    private static final Field CLEAN_SESSION = new Field("cleanSession", "true");
+    private static final Field KEEP_ALIVE = new Field("keepAlive", "60");
+    private static final Field RETAIN_FLAG = new Field("retainFlag", "false");
+    private static final Field QoS = new Field("QoS","1");
+    private static final Field DUP_FLAG = new Field("dupFlag", "false"); //The eclipse library for MQTT doesn't have the method to set this property
 
     /**
      * A wrapper class to hold a key and its default value
@@ -44,24 +44,37 @@ public class MQTTDeviceNotifier implements Notifier {
 
     private NotificationContext context;
     private Properties configProperties;
-    private Map<String,String> callbackOperations;
+
+    /**
+     The callbackOperation map becomes the payload. It would look something like this -
+     {
+     "operationName" : "setTemperature",
+     "parameter" : "temperature",
+     "value" : "80"
+     }
+     */
+    private Map<String,String> callbackOperation;
     private DeviceInstance deviceInstance;
-    private String mqttClientId;
+    private String mqttClientId; //The unique ID used to identify a a MQTT client with the MQTT broker
     private String mqttBrokerURL;
-    private String mqttTopic;
+    private String mqttTopic; //The topic to which the data will be written to, is retrived from deviceInstance
     private int mqttQoS;
     private MqttClient mqttClient;
-    private MqttConnectOptions mqttOptions;
+    private MqttConnectOptions mqttOptions; //This object is used to set the various configuration properties of the MQTT Client
 
+    /**
+     * In this method, all the variables are initialized and the MQTT client is connected with the MQTT broker
+     * @param context
+     */
     @Override
     public void open(NotificationContext context) {
         LOG.debug("MQTTDeviceNotifier open called with context {}", context);
         try {
             this.context = context;
-            mqttClientId = UUID.randomUUID().toString();
+            mqttClientId = UUID.randomUUID().toString(); //As of now the client id is generated randomly, but in the future we need to think of scenarios where we would obtain it from the context
             configProperties = context.getConfig().getProperties();
-            callbackOperations = context.getConfig().getDefaultFieldValues();
-            deviceInstance = ((DeviceNotifierConfig)context.getConfig()).getDeviceMetaData();
+            callbackOperation = context.getConfig().getDefaultFieldValues();
+            deviceInstance = ((DeviceNotifierConfig)context.getConfig()).getDeviceInstance();
             mqttBrokerURL = setBrokerUrl();
             mqttQoS = setQoS();
             mqttTopic = (String) deviceInstance.getProtocol().getProperties().get(MQTTProtocol.MQTT_TOPIC);
@@ -72,6 +85,10 @@ public class MQTTDeviceNotifier implements Notifier {
         }
     }
 
+    /**
+     * The payload is constructed using the callbackOperation map and this message is published to the broker
+     * @param notification the Notification object
+     */
     @Override
     public void notify(Notification notification) {
         try {
@@ -127,9 +144,9 @@ public class MQTTDeviceNotifier implements Notifier {
     }
 
     private int setQoS() {
-        int QoS = Integer.parseInt(getProperty(configProperties, PROP_QoS));
+        int qos = Integer.parseInt(getProperty(configProperties, QoS));
         validateQoS();
-        return QoS;
+        return qos;
     }
 
     private void validateQoS() {
@@ -148,8 +165,8 @@ public class MQTTDeviceNotifier implements Notifier {
    */
     private MqttConnectOptions getMqttConnectOptions() {
         MqttConnectOptions options = new MqttConnectOptions();
-        options.setCleanSession(Boolean.valueOf(getProperty(configProperties,PROP_CLEAN_SESSION)));
-        int keepAliveInterval = Integer.parseInt(getProperty(configProperties,PROP_KEEP_ALIVE));
+        options.setCleanSession(Boolean.valueOf(getProperty(configProperties, CLEAN_SESSION)));
+        int keepAliveInterval = Integer.parseInt(getProperty(configProperties, KEEP_ALIVE));
         if(keepAliveInterval < 0 || keepAliveInterval > 65535) {
             throw new NotifierRuntimeException("Keep alive interval should be between 0 and 65535, both inclusive");
         }
@@ -176,8 +193,8 @@ public class MQTTDeviceNotifier implements Notifier {
     public MqttMessage getMqttMessage(){
         try {
             MqttMessage mqttMessage = new MqttMessage();
-            mqttMessage.setRetained(Boolean.valueOf(getProperty(configProperties,PROP_RETAIN_FLAG)));
-            int qos = Integer.parseInt(getProperty(configProperties,PROP_QoS));
+            mqttMessage.setRetained(Boolean.valueOf(getProperty(configProperties, RETAIN_FLAG)));
+            int qos = Integer.parseInt(getProperty(configProperties, QoS));
             if(qos < 0 || qos > 2) {
                 throw new NotifierRuntimeException("QoS value should be 0,1 or 2");
             }
@@ -209,7 +226,7 @@ public class MQTTDeviceNotifier implements Notifier {
         LOG.debug("Generating the payload for MQTT packet");
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
-        objectOutputStream.writeObject(callbackOperations);
+        objectOutputStream.writeObject(callbackOperation);
         payload = byteArrayOutputStream.toByteArray();
         return payload;
     }

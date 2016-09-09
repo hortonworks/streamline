@@ -22,7 +22,7 @@ public class SmartThingsSwitchCallback {
     /*
     This method is a GET call to obtain the different fields of the SmartThings switch.
      */
-    public String getSmartThingsSwitchInformation(){
+    public String getSwitchInfo(){
         String body = new String();
         try {
             String get_url = smartThingsURL + "/switches";
@@ -42,8 +42,8 @@ public class SmartThingsSwitchCallback {
         return body;
     }
 
-    public String getSmartThingsSwitchStatus() throws IOException{
-        String body = getSmartThingsSwitchInformation();
+    public String getSwitchStatus() throws IOException{
+        String body = getSwitchInfo();
         ObjectMapper mapper = new ObjectMapper();
         ArrayList<Object> switchList = mapper.readValue(body, ArrayList.class);
         /*
@@ -59,7 +59,7 @@ public class SmartThingsSwitchCallback {
     /*
     This method is a PUT call to the SmartThings API to change the state of the switch.
      */
-    public void putSmartThingsSwitch(String changeSwitchTo){
+    public void setSwitch(String changeSwitchTo){
         try {
             String put_url = smartThingsURL + "/switches/" + changeSwitchTo;
             URL url = new URL(put_url);

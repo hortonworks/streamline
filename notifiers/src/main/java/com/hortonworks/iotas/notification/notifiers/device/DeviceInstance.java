@@ -72,29 +72,6 @@ public class DeviceInstance {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof DeviceInstance)) return false;
-
-        DeviceInstance that = (DeviceInstance) o;
-
-        if (deviceInfo != null ? !deviceInfo.equals(that.deviceInfo) : that.deviceInfo != null) return false;
-        if (protocol != null ? !protocol.equals(that.protocol) : that.protocol != null) return false;
-        if (operations != null ? !operations.equals(that.operations) : that.operations != null) return false;
-        return attributes != null ? attributes.equals(that.attributes) : that.attributes == null;
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = deviceInfo != null ? deviceInfo.hashCode() : 0;
-        result = 31 * result + (protocol != null ? protocol.hashCode() : 0);
-        result = 31 * result + (operations != null ? operations.hashCode() : 0);
-        result = 31 * result + (attributes != null ? attributes.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "DeviceInstance{" +
                 "deviceInfo=" + deviceInfo +

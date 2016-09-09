@@ -45,7 +45,7 @@ public class NestThermostatCallback {
     /*
      This method retrieves the NEST thermostat ID
     */
-    public String getNestThermostatID() throws IOException {
+    public String getID() throws IOException {
         Map<String, Object> nestStructure = getNestInformation();
         Map<String, Object> nestData = null;
         for (String name : nestStructure.keySet()) {
@@ -67,7 +67,7 @@ public class NestThermostatCallback {
     /*
       This method retrieves the NEST thermostats temperature in Degree F
     */
-    public int getNestThermostatTargetTemperatureF() throws IOException{
+    public int getTemperatureF() throws IOException{
         Map<String, Object> thermostatStructure = getNestInformation();
         int temperature = (int) thermostatStructure.get("target_temperature_f");
         return temperature;
@@ -77,7 +77,7 @@ public class NestThermostatCallback {
     /*
       This method sets the NEST thermostats temperature using a PUT request to the NEST API.
     */
-    public void putNestThermostatTargetTemperatureF(String temperature) {
+    public void setTemperatureF(String temperature) {
         try {
             URL url = new URL(nestURL);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();

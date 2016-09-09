@@ -43,7 +43,18 @@ public class DeviceNotifierConfigImpl implements DeviceNotifierConfig {
     }
 
     @Override
-    public DeviceInstance getDeviceMetaData() {
+    public DeviceInstance getDeviceInstance() {
         return deviceInstance;
+    }
+
+    @Override
+    public String toString() {
+        return "DeviceNotifierConfigImpl{" +
+                "properties=" + properties +
+                ", defaultFieldValues=" + defaultFieldValues +
+                ", className='" + className + '\'' +
+                ", jarPath='" + jarPath + '\'' +
+                ", deviceInstance=" + deviceInstance +
+                '}';
     }
 }

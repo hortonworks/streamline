@@ -1,7 +1,7 @@
 package com.hortonworks.iotas.notification.notifiers.store.hbase;
 
 /**
- * This testsalil can be merged with 'HBaseNotificationStoreIntegrationTest' as both the tests do the same thing,
+ * This test can be merged with 'HBaseNotificationStoreIntegrationTest' as both the tests do the same thing,
  * just for different set of HBase tables.
  */
 import com.google.common.base.Function;

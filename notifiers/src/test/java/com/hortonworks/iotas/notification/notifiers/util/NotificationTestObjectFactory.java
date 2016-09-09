@@ -9,7 +9,6 @@ import java.util.*;
 public class NotificationTestObjectFactory {
 
     private NotificationTestObjectFactory() {
-
     }
 
     public static Notification getOne() {
@@ -23,7 +22,7 @@ public class NotificationTestObjectFactory {
         NotificationImpl.Builder builder = new NotificationImpl.Builder(fieldAndValues)
                 .dataSourceIds(Arrays.asList("dsrcid-1"))
                 .eventIds(Arrays.asList("eventid-1"))
-                .notifierName("testsalil-notifier")
+                .notifierName("test-notifier")
                 .ruleId("rule-1")
                 .status(Notification.Status.DELIVERED);
 

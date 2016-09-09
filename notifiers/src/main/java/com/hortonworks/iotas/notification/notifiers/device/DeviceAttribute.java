@@ -28,22 +28,6 @@ public class DeviceAttribute {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof DeviceAttribute)) return false;
-
-        DeviceAttribute that = (DeviceAttribute) o;
-
-        return field != null ? field.equals(that.field) : that.field == null;
-
-    }
-
-    @Override
-    public int hashCode() {
-        return field != null ? field.hashCode() : 0;
-    }
-
-    @Override
     public String toString() {
         return "DeviceAttribute{" +
                 "field=" + field +
