@@ -197,7 +197,7 @@ public class TopologyCatalogResource {
         try {
             Topology result = catalogService.getTopology(topologyId);
             if (result != null) {
-                catalogService.validateTopology(SCHEMA, topologyId);
+                //catalogService.validateTopology(SCHEMA, topologyId);
                 return WSUtils.respond(OK, SUCCESS, result);
             }
         } catch (Exception ex) {
