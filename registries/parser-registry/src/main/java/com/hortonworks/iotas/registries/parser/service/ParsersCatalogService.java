@@ -56,7 +56,7 @@ public class ParsersCatalogService {
     }
 
     public static Collection<Class<? extends Storable>> getStorableClasses() {
-        InputStream resourceAsStream = ParsersCatalogService.class.getClassLoader().getResourceAsStream("storables.props");
+        InputStream resourceAsStream = ParsersCatalogService.class.getClassLoader().getResourceAsStream("parserregistrystorables.props");
         HashSet<Class<? extends Storable>> classes = new HashSet<>();
         try {
             List<String> classNames = IOUtils.readLines(resourceAsStream);
