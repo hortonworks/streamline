@@ -150,7 +150,7 @@ define([
                 });
             } else {
                 this.tabIdCount++;
-                self.renderTab('Stream-1', 1);
+                self.renderTab('stream1', 1);
                 this.$('.outputSource[data-id="1"]').val(JSON.stringify(self.sampleSchema, null, "  "));
             }
         },
@@ -236,7 +236,7 @@ define([
                 $(".schema-tabs .nav-tabs li").children('a').not('#add-tab').siblings().show();
             }
             var id = this.tabIdCount++,
-                name = 'Stream ' + id;
+                name = 'stream' + id;
             this.renderTab(name, id);
             $('.cancelSchema').hide();
             this.$('.schema-tab[data-id="'+id+'"]').children('i').show();
