@@ -1,7 +1,0 @@
-{
-    "name": "*",
-    "version": "*",
-    "compilers": {
-        "text": "./text-compiler"
-    }
-}

@@ -1,7 +1,0 @@
-.publish
-*.log
-bower.json
-example/dist
-gulpfile.js
-logs
-src/__tests__
