@@ -186,7 +186,7 @@ CREATE TABLE IF NOT EXISTS ruleinfos (
     topologyId BIGINT NOT NULL,
     name VARCHAR(256) NOT NULL,
     description VARCHAR(256) NOT NULL,
-    sqlStr  TEXT NOT NULL,
+    `sql` TEXT NOT NULL,
     parsedRuleStr TEXT NOT NULL,
     window TEXT NOT NULL,
     actions TEXT NOT NULL,
