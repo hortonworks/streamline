@@ -1,0 +1,18 @@
+{
+  "name": "React-Twitter-Typeahead",
+  "version": "0.0.0",
+  "maintainers": [
+    {
+      "name": "Erik Schlegel",
+      "email": "erik.schlegel@gmail.com",
+      "web": "erikschlegel.com"
+    }
+  ],
+  "moduleType": [
+    "globals"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "typeahead.js": "~0.11.1"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "app": {
+    "rootPath": "/",
+    "apiPath": "/",
+    "storageKey": "user_session",
+    "sessionKey": "authentication_token"
+  }
+}

@@ -1,0 +1,255 @@
+import React, {Component, PropTypes}from 'react';
+import ReactDOM from 'react-dom';
+import _ from 'lodash';
+import Select from 'react-select';
+import {Tabs, Tab} from 'react-bootstrap';
+import { Table, Thead, Th, Tr, Td, unsafe } from 'reactable';
+import Modal, {Confirm} from '../../../components/FSModal';
+import FSReactToastr from '../../../components/FSReactToastr';
+import TopologyREST from '../../../rest/TopologyREST';
+import OutputSchema from '../../../components/OutputSchemaComponent';
+import {BtnDelete, BtnEdit} from '../../../components/ActionButtons';
+import RulesForm from './RulesForm';
+import {pageSize} from '../../../utils/Constants';
+
+export default class RulesNodeForm extends Component {
+	static propTypes = {
+		nodeData: PropTypes.object.isRequired,
+		configData: PropTypes.object.isRequired,
+		editMode: PropTypes.bool.isRequired,
+		nodeType: PropTypes.string.isRequired,
+		topologyId: PropTypes.string.isRequired,
+		sourceNode: PropTypes.array.isRequired,
+		targetNodes: PropTypes.array.isRequired,
+		linkShuffleOptions: PropTypes.array.isRequired
+	};
+
+	constructor(props) {
+		super(props);
+		let {editMode} = props;
+		this.state = {
+			parallelism: 1,
+			editMode: editMode,
+			rules: [],
+			ruleObj: {},
+			modalTitle: ''
+		};
+		this.fetchData();
+	}
+
+	fetchData() {
+		let {topologyId, nodeType, nodeData} = this.props;
+		let promiseArr = [
+			TopologyREST.getNode(topologyId, nodeType, nodeData.nodeId),
+			TopologyREST.getAllNodes(topologyId, 'edges')
+		];
+
+		Promise.all(promiseArr)
+			.then((results)=>{
+				this.nodeData = results[0].entity;
+				let configFields = results[0].entity.config.properties;
+				let {rules = [], parallelism = 1} = configFields;
+				
+				let promise = [];
+				rules.map(id=>{
+					promise.push(TopologyREST.getNode(topologyId, 'rules', id));
+				})
+
+				Promise.all(promise)
+					.then(results=>{
+						let ruleArr = [];
+						results.map(result=>{
+							ruleArr.push(result.entity);
+						})
+						this.setState({rules: ruleArr});
+					})
+				
+				let stateObj = {
+					parallelism: parallelism ? parallelism : 1
+				};
+
+				//Found all target edges connected from current node
+				let allEdges = results[1].entities;
+				this.nodeToOtherEdges = allEdges.filter((e)=>{return e.fromId === nodeData.nodeId});
+
+				this.setState(stateObj);
+			})
+			.catch((err)=>{
+				console.error(err);
+			})
+	}
+
+	validateData(){
+		return true;
+	}
+
+	handleSave(){
+		//Everything happens on the fly so no operations on this click
+		return Promise.resolve({responseCode: 1000});
+	}
+
+	handleAddRule(id){
+		if(this.props.editMode){
+			let ruleId = null;
+			let ruleObj = {};
+			let modalTitle = 'Add New Rule';
+			if(typeof id === 'number' || typeof id === 'string'){
+				ruleId = id;
+				ruleObj = this.state.rules.filter((r)=>{ return r.id === id})[0];
+				modalTitle = 'Edit Rule';
+			}
+			this.setState({ruleObj, modalTitle},()=>{
+				this.refs.RuleModal.show();
+			})
+		}
+	}
+
+	handleDeleteRule(id){
+		let {topologyId, nodeType, nodeData} = this.props;
+		this.refs.Confirm.show({
+			title: 'Are you sure you want to delete rule ?'
+		}).then((confirmBox)=>{
+			let promiseArr = [TopologyREST.deleteNode(topologyId, 'rules', id)];
+			
+			let rules = this.nodeData.config.properties.rules;
+			rules.splice(rules.indexOf(id), 1);
+			
+			promiseArr.push(TopologyREST.updateNode(topologyId, nodeType, nodeData.nodeId, {body: JSON.stringify(this.nodeData)}));
+			
+			Promise.all(promiseArr)
+				.then(result=>{
+					FSReactToastr.success(<strong>Rule deleted successfully</strong>);
+					this.fetchData();
+					let arr = this.refs.schema.currentRulesArr;
+					let index;
+					this.refs.schema.currentRulesArr.map((rule,i)=>{
+						if(rule.id === id){
+							index = i;
+						}
+					})
+					this.refs.schema.currentRulesArr.splice(index, 1);
+
+					let rules = this.refs.schema.nodeData.config.properties.rules;
+					rules.splice(rules.indexOf(id), 1);
+					this.refs.schema.nodeData.config.properties.rules = rules;
+
+					let streams = this.refs.schema.state.outputStreams;
+					if(streams && streams.length){
+						streams.map(obj=>{
+							let index = obj.forRule.indexOf(id);
+							if(index !== -1){
+								obj.forRule.splice(index, 1);
+							}
+						})
+					}
+					this.refs.schema.setState({outputStreams: streams});
+				})
+			confirmBox.cancel();
+		},()=>{})
+	}
+
+	handleSaveRule(){
+		if(this.refs.RuleForm.validateData()){
+			this.refs.RuleForm.handleSave().then((results)=>{
+				if(results){
+					this.fetchData();
+					let arr = this.refs.schema.currentRulesArr;
+					let index = null;
+					this.refs.schema.currentRulesArr.map((rule,i)=>{
+						if(rule.id === results.id){
+							index = i;
+						}
+					})
+					if(index !== null){
+						this.refs.schema.currentRulesArr[index] = results;
+					} else {
+						this.refs.schema.currentRulesArr.push(results);
+					}
+					let rules = this.refs.schema.nodeData.config.properties.rules;
+					if(!rules){
+						rules = [results.id];
+					} else {
+						if(rules.indexOf(results.id) === -1){
+							rules.push(results.id);
+						}
+					}
+					this.refs.schema.nodeData.config.properties.rules = rules;
+					this.refs.schema.forceUpdate();
+					this.refs.RuleModal.hide();
+				}
+			})
+		}
+	}
+
+	render() {
+		let {topologyId, editMode, nodeType, nodeData, targetNodes, linkShuffleOptions} = this.props;
+		let {rules} = this.state;
+		return (
+			<div>
+				<Tabs id="RulesForm" defaultActiveKey={1} className="schema-tabs">
+					<Tab eventKey={1} title="Configuration">
+						{editMode ? 
+							<div className="clearfix row-margin-bottom">
+								<button type="button" onClick={this.handleAddRule.bind(this)} className="btn btn-success pull-left">
+									<i className="fa fa-plus"></i> Add New Rules
+								</button>
+							</div>
+						: null}
+						<div className="row">
+							<div className="col-sm-12">
+								<Table
+									className="table table-hover table-bordered"
+									noDataText="No records found."
+									currentPage={0}
+									itemsPerPage={rules.length > pageSize ? pageSize : 0}
+									pageButtonLimit={5}
+								>
+									<Thead>
+										<Th column="name">Rule Name</Th>
+										<Th column="sql">SQL Query</Th>
+										<Th column="action" className={!editMode ? 'displayNone' : null}>Actions</Th>
+									</Thead>
+									{rules.map((rule, i)=>{
+										return(
+											<Tr key={i}>
+												<Td column="name">{rule.name}</Td>
+												<Td column="sql">{rule.sql}</Td>
+												<Td column="action" className={!editMode ? 'displayNone' : null}>
+													<div className="btn-action">
+														<BtnEdit callback={this.handleAddRule.bind(this, rule.id)}/>
+														<BtnDelete callback={this.handleDeleteRule.bind(this, rule.id)}/>
+													</div>
+												</Td> 
+											</Tr>
+										)
+									})}
+								</Table>
+							</div>
+						</div>
+					</Tab>
+					<Tab eventKey={2} title="Output Streams">
+						<OutputSchema 
+							ref="schema"
+							topologyId={topologyId} 
+							editMode={editMode}
+							nodeId={nodeData.nodeId}
+							nodeType={nodeType}
+							targetNodes={targetNodes}
+							linkShuffleOptions={linkShuffleOptions}
+						/>
+					</Tab>
+				</Tabs>
+				<Modal ref="RuleModal" bsSize="large" data-title={this.state.modalTitle} data-resolve={this.handleSaveRule.bind(this)}>
+					<RulesForm
+						ref="RuleForm"
+						topologyId={topologyId}
+						ruleObj={this.state.ruleObj}
+						nodeData={this.nodeData}
+						nodeType={nodeType}
+					/>
+				</Modal>
+				<Confirm ref="Confirm"/>
+			</div>
+		)
+	}
+}

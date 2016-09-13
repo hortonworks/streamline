@@ -1,0 +1,72 @@
+.tt-custom-row{
+  font-family: Arial, Helvetica, sans-serif;
+  font-stretch: normal;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  max-height: 70px!important;
+  min-height: 2.143em;
+  line-height: 2.143em;
+  border-width: 1px;
+  border-style: solid;
+  color: #444;
+  background-color: #ebebeb;
+  border-color: #e5e5e5;
+}
+
+.tt-custom-thumbnail{
+  width: 77px;
+  border-left-width: 0;
+  display: inline!important;
+  padding: .6em 0 0 0;
+}
+
+.tt-custom-thumbnail img{
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+}
+
+.tt-custom-cell h3{
+  min-height: 80px;
+  border-width: 0 0 1px 0;
+  font-size: 1.2em;
+  display:inline;
+  vertical-align: top;
+}
+
+.tt-custom-cell p{
+  margin: 0;
+  padding: 0;
+  display: block;
+  line-height: 1.8em;
+  font-size: 12px;
+}
+
+.tt-custom-cell{
+  min-height: 80px;
+  border-width: 0 0 1px 0;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  display: inline-block;
+  vertical-align: top;
+  min-height: 95px;
+  width: 79%;
+  padding: .6em 0 0 .6em;
+}
+
+.tt-custom-header{
+  background-image: none;
+  width: 50%;
+  background-position: 50% 50%;
+  background-color: #343C37;
+  color: #fff;
+  font-size: 0.9em; 
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 500;
+  box-sizing: border-box;
+  text-align: left;
+  display: inline-block;
+  padding: .3em .6em;
+}

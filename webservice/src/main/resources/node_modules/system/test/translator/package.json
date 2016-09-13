@@ -1,0 +1,6 @@
+{
+    "name": "laden-test-translator",
+    "translators": {
+        "text": "./translate-text"
+    }
+}

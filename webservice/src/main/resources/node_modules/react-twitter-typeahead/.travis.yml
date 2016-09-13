@@ -1,0 +1,27 @@
+language: node_js
+
+node_js:
+  - "0.10"
+  - "0.12"
+  - "iojs"
+
+notifications:
+  email:
+    recipients:
+      - "erik.schlegel@gmail.com"
+    on_success: never
+    on_failure: always
+    template:
+      - "Build by %{author} has failed:"
+      - "Git Info: %{branch} - %{commit}"
+      - "Travis states: %{message}"
+      - "Build Details: %{build_url}"
+      - "Change View: %{compare_url}"
+    skip_join: true
+
+branches:
+  only:
+    - master
+
+matrix:
+  fast_finish: true

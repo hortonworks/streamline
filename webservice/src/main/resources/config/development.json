@@ -1,0 +1,11 @@
+{
+  "app": {
+    "rootPath": "/",
+    "storageKey": "user_session",
+    "sessionKey": "authentication_token",
+    "target": "http://localhost:8000",
+    "path": "",
+    "host": "localhost",
+    "port": 8001
+  }
+}
