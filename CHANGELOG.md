@@ -1,4 +1,5 @@
 ## 0.1.4
+ * IOT-368: Send empty array response in GET ALL requests.
  * IOT-389: Added missing ruleinfo and udf tables.
  * IOT-387: Misc fixes including Harsha's fixes to be able to deploy topologies.
  * IOT-287: UI Refactoring
