@@ -1,4 +1,6 @@
 ## 0.1.4
+ * IOT-387: Misc fixes including Harsha's fixes to be able to deploy topologies.
+ * IOT-287: UI Refactoring
  * IOT-356: Add Kafka, Kinesis, EventHubSpout as sources
  * IOT-369: Make InMemoryStorageManager getNextId thread safe
  * IOT-352: Remove core module and a couple other JIRAs
