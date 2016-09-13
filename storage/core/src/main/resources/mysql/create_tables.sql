@@ -15,8 +15,8 @@
  );
 
 CREATE TABLE IF NOT EXISTS devices (
-    make VARCHAR(256) NOT NULL,
-    model VARCHAR(256) NOT NULL,
+    make VARCHAR(255) NOT NULL,
+    model VARCHAR(255) NOT NULL,
     dataSourceId BIGINT NOT NULL,
     PRIMARY KEY (dataSourceId),
     UNIQUE KEY `UK_id_version` (make, model),
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS devices (
 
 CREATE TABLE IF NOT EXISTS parser_info (
     id BIGINT AUTO_INCREMENT NOT NULL,
-    name VARCHAR(256) NOT NULL,
+    name VARCHAR(255) NOT NULL,
     version BIGINT,                             -- TODO: NOT NULL ???
     className TEXT NOT NULL,
     jarStoragePath TEXT NOT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS parser_info (
 
 CREATE TABLE IF NOT EXISTS files (
     id BIGINT AUTO_INCREMENT NOT NULL,
-    name VARCHAR(256) NOT NULL,
+    name VARCHAR(255) NOT NULL,
     version BIGINT NOT NULL,
     storedFileName TEXT NOT NULL,
     auxiliaryInfo TEXT,
@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS topology_editor_metadata (
 
 CREATE TABLE IF NOT EXISTS tag (
     id BIGINT AUTO_INCREMENT NOT NULL,
-    name VARCHAR(256) NOT NULL,
+    name VARCHAR(255) NOT NULL,
     description VARCHAR(256) NOT NULL,
     timestamp BIGINT,
     UNIQUE KEY `UK_name` (name),
@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS tag_storable_mapping (
 CREATE TABLE IF NOT EXISTS streaminfo (
     id BIGINT AUTO_INCREMENT NOT NULL,
     topologyId BIGINT NOT NULL,
-    streamId VARCHAR(256) NOT NULL,
+    streamId VARCHAR(255) NOT NULL,
     fieldsData TEXT NOT NULL,
     timestamp BIGINT,
     UNIQUE KEY `UK_streamId` (streamId),

@@ -171,7 +171,8 @@ public class RuleInfo extends AbstractStorable {
         Map<String, Object> map = super.toMap();
         try {
             map.put(WINDOW, window != null ? mapper.writeValueAsString(window) : "");
-            map.put(ACTIONS, actions != null ? mapper.writeValueAsString(actions) : "");
+            map.put(ACTIONS, actions != null ? mapper.writerFor(new TypeReference<List<Action>>() {
+            }).writeValueAsString(actions) : "");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
