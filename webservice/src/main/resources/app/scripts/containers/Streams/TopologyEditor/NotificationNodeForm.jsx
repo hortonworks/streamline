@@ -152,19 +152,22 @@ export default class NotificationNodeForm extends Component {
 		return validDataFlag;
 	}
 
-	handleSave(){
+	handleSave(name){
 		let {topologyId, nodeType} = this.props;
 		let nodeId = this.nodeData.id;
 		this.nodeData.config.properties = this.state.configFields;
+		let nodeName = this.nodeData.name;
+		this.nodeData.name = name;
 		let promiseArr = [TopologyREST.updateNode(topologyId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)})]
 		if(this.rulesArr.length){
 			this.rulesArr.map(rule=>{
 				if(rule.actions){
 					let updateFlag = false;
 					rule.actions.map((a,i)=>{
-						if(a.name === this.nodeData.name){
+						if(a.name === nodeName){
 							a.notifierName = this.state.configFields.notifierName;
-							a.outputFieldsAndDefaults = this.state.configFields.fieldValues
+							a.outputFieldsAndDefaults = this.state.configFields.fieldValues;
+							a.name = name;
 							updateFlag = true;
 						}
 					})

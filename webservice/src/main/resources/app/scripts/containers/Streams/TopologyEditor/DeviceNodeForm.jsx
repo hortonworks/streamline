@@ -172,11 +172,12 @@ export default class DeviceNodeForm extends Component {
 		return validDataFlag;
 	}
 
-	handleSave(){
+	handleSave(name){
 		let {topologyId, nodeType} = this.props;
 		let nodeId = this.nodeData.id;
 		let data = this.getData();
 		this.nodeData.config.properties = data;
+		this.nodeData.name = name;
 		return TopologyREST.updateNode(topologyId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)})
 	}
 

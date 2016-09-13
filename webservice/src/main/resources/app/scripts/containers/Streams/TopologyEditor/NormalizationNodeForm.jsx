@@ -393,14 +393,16 @@ export default class NormalizationNodeForm extends Component {
 		return validDataFlag;
 	}
 
-	handleSave(){
+	handleSave(name){
 		let {topologyId, nodeType} = this.props;
 		let data = this.getData();
 		let nodeId = this.nodeData.id;
+
 		return TopologyREST.getNode(topologyId, nodeType, nodeId)
 			.then(result=>{
 				let newData = result.entity;
 				newData.config.properties = data;
+				newData.name = name;
 				return TopologyREST.updateNode(topologyId, nodeType, nodeId, {body: JSON.stringify(newData)})
 			})
 	}

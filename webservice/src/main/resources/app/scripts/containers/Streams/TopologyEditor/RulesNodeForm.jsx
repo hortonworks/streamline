@@ -41,7 +41,8 @@ export default class RulesNodeForm extends Component {
 		let {topologyId, nodeType, nodeData} = this.props;
 		let promiseArr = [
 			TopologyREST.getNode(topologyId, nodeType, nodeData.nodeId),
-			TopologyREST.getAllNodes(topologyId, 'edges')
+			TopologyREST.getAllNodes(topologyId, 'edges'),
+			TopologyREST.getAllNodes(topologyId, 'streams')
 		];
 
 		Promise.all(promiseArr)
@@ -72,6 +73,9 @@ export default class RulesNodeForm extends Component {
 				let allEdges = results[1].entities;
 				this.nodeToOtherEdges = allEdges.filter((e)=>{return e.fromId === nodeData.nodeId});
 
+				let allStreams = results[2].entities;
+				this.parsedStreams = allStreams.filter(e=>{return e.streamId === 'parsedTuplesStream'});
+
 				this.setState(stateObj);
 			})
 			.catch((err)=>{
@@ -83,9 +87,11 @@ export default class RulesNodeForm extends Component {
 		return true;
 	}
 
-	handleSave(){
-		//Everything happens on the fly so no operations on this click
-		return Promise.resolve({responseCode: 1000});
+	handleSave(name){
+		let {topologyId, nodeType} = this.props;
+		let nodeId = this.nodeData.id;
+		this.nodeData.name = name;
+		return TopologyREST.updateNode(topologyId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)});
 	}
 
 	handleAddRule(id){
@@ -246,6 +252,7 @@ export default class RulesNodeForm extends Component {
 						ruleObj={this.state.ruleObj}
 						nodeData={this.nodeData}
 						nodeType={nodeType}
+						parsedStreams={this.parsedStreams}
 					/>
 				</Modal>
 				<Confirm ref="Confirm"/>

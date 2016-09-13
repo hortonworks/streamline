@@ -5,7 +5,7 @@ import DashboardContainer from '../containers/Dashboard/DashboardContainer'
 import ParserRegContainer from '../containers/Registry-Services/ParserRegistry/ParserRegistryContainer'
 import SchemaRegContainer from '../containers/Registry-Services/SchemaRegistry/SchemaRegistryContainer'
 import DeviceRegContainer from '../containers/Registry-Services/DeviceRegistry/DeviceRegistryContainer'
-import RulesRegContainer from '../containers/Registry-Services/RulesRegistry/RulesRegistryContainer'
+
 import MetricsContainer from '../containers/Streams/Metrics/MetricsContainer'
 import TopologyListContainer from '../containers/Streams/TopologyListing/TopologyListingContainer'
 import TopologyEditorContainer from '../containers/Streams/TopologyEditor/TopologyEditorContainer'
@@ -28,14 +28,12 @@ export default (
 	<Route path="/" component={null} name="Home" onEnter={onEnter}>
 		<IndexRoute name="Dashboard" component={DashboardContainer} onEnter={onEnter} />
 		<Route path="dashboard" name="Dashboard" component={DashboardContainer} onEnter={onEnter}/>
-		<Route path="parser-registry" name="Parser Registry" onEnter={onEnter}>
+		<Route path="schema-registry" name="Schema Registry" onEnter={onEnter}>
 			<IndexRoute component={ParserRegContainer} onEnter={onEnter} />
 		</Route>
-		<Route path="schema-registry" name="Schema Registry" component={SchemaRegContainer} onEnter={onEnter}/>
 		<Route path="device-registry" name="Device Registry" component={DeviceRegContainer} onEnter={onEnter}/>
-		<Route path="rules-registry" name="Rules Registry" component={RulesRegContainer} onEnter={onEnter}/>
 		<Route path="metrics" name="Metrics" component={MetricsContainer} onEnter={onEnter}/>
-		<Route path="topology-listing" name="Topology Listing" onEnter={onEnter}>
+		<Route path="streams-builder" name="Streams Builder" onEnter={onEnter}>
 			<IndexRoute component={TopologyListContainer} onEnter={onEnter} />
 			<Route path=":id" name="Topology Editor" component={TopologyEditorContainer} onEnter={onEnter}/>
 		</Route>

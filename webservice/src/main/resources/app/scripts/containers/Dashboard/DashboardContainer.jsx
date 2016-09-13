@@ -17,10 +17,6 @@ export default class DashboardContainer extends Component {
             	<h1 className="landing-title">Registry Services</h1>
 			    <div className="row row-margin-bottom">
 			        <div className="col-sm-offset-2 col-sm-2 fa-icon-effect animated zoomIn">
-			            <Link to="/parser-registry" className="fa-icon fa-cubes" />
-			            <span className="fa-label">Parser Registry</span>
-			        </div>
-			        <div className="col-sm-2 fa-icon-effect animated zoomIn">
 			            <Link to="/schema-registry" className="fa-icon fa-file-code-o"/>
 			            <span className="fa-label">Schema Registry</span>
 			        </div>
@@ -36,8 +32,8 @@ export default class DashboardContainer extends Component {
 			            <span className="fa-label">Metrics</span>
 			        </div>
 			        <div className="col-sm-2 fa-icon-effect animated zoomIn">
-			            <Link to="/topology-listing" className="fa-icon fa-sitemap"/>
-			            <span className="fa-label">Topology Listing</span>
+			            <Link to="/streams-builder" className="fa-icon fa-sitemap"/>
+			            <span className="fa-label">Streams Builder</span>
 			        </div>
 			    </div>
             </div>

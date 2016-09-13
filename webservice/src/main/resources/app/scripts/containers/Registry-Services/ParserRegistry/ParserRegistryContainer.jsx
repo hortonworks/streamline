@@ -17,10 +17,10 @@ export default class ParserRegistryContainer extends Component {
 	constructor(props){
 		super();
 		this.breadcrumbData = {
-			title: 'Parser Registry',
+			title: 'Schema Registry',
 			linkArr: [
 				{title: 'Registry Service'},
-				{title: 'Parser Registry'}
+				{title: 'Schema Registry'}
 			]
 		};
 		this.fetchData();
@@ -30,7 +30,7 @@ export default class ParserRegistryContainer extends Component {
 	}
 
 	fetchData(){
-		ParserREST.getAllParsers()
+		ParserREST.getAllParsersForRegistry()
 			.then((parsers)=>{
 				if(parsers.responseCode !== 1000){
 					FSReactToastr.error(<strong>{parsers.responseMessage}</strong>);

@@ -1,11 +1,13 @@
 import fetch from 'isomorphic-fetch';
 import {baseUrl} from '../utils/Constants';
 
+import { CustomFetch } from '../utils/Overrides';
+
 const TopologyREST = {
 	getAllTopology(options) {
 		options = options || {};
 		options.method = options.method || 'GET';
-		return fetch(baseUrl+'topologies', options)
+		return CustomFetch(baseUrl+'topologies', options)
 			.then( (response) => {
 		  		return response.json();
 		  	})

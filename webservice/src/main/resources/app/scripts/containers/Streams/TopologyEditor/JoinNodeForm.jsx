@@ -104,7 +104,7 @@ export default class JoinNodeForm extends Component {
 		return true;
 	}
 
-	handleSave(){
+	handleSave(name){
 		let {topologyId, nodeType} = this.props;
 		let {fileId, joinerClassName, parallelism, eventExpiryInterval, groupExpiryInterval} = this.state;
 		let nodeId = this.nodeData.id;
@@ -125,6 +125,7 @@ export default class JoinNodeForm extends Component {
 
 				data.entity.config.properties["join-config"] = joinConfigData;
 				data.entity.config.properties.parallelism = parallelism;
+				data.entity.name = name;
 
 				return TopologyREST.updateNode(topologyId, nodeType, nodeId, {body: JSON.stringify(data.entity)})
 			})
