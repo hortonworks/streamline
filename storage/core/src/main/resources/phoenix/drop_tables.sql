@@ -17,6 +17,8 @@ DROP TABLE IF EXISTS topology_processor_stream_mapping
 DROP TABLE IF EXISTS topology_edges
 DROP TABLE IF EXISTS streaminfo
 DROP TABLE IF EXISTS notifierinfos
+DROP TABLE IF EXISTS ruleinfos
+DROP TABLE IF EXISTS udfs
 DROP SEQUENCE IF EXISTS datasources_sequence
 DROP SEQUENCE IF EXISTS datafeeds_sequence
 DROP SEQUENCE IF EXISTS parser_info_sequence
@@ -31,3 +33,5 @@ DROP SEQUENCE IF EXISTS topology_sources_sequence
 DROP SEQUENCE IF EXISTS topology_sinks_sequence
 DROP SEQUENCE IF EXISTS topology_processors_sequence
 DROP SEQUENCE IF EXISTS topology_edges_sequence
+DROP SEQUENCE IF EXISTS ruleinfos_sequence
+DROP SEQUENCE IF EXISTS udfs_sequence
