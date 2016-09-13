@@ -45,7 +45,7 @@ public class RuleInfo extends AbstractStorable {
     public static final String TOPOLOGY_ID = "topologyId";
     public static final String NAME = "name";
     public static final String DESCRIPTION = "description";
-    public static final String SQL = "sqlStr";
+    public static final String SQL = "sql";
     public static final String PARSED_RULE_STR = "parsedRuleStr";
     public static final String WINDOW = "window";
     public static final String ACTIONS = "actions";
