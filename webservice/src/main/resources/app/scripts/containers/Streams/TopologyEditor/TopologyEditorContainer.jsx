@@ -191,7 +191,7 @@ export default class TopologyEditorContainer extends Component {
 		this.viewMode = !this.viewMode;
 	}
 	showConfig(){
-		this.refs.ConfigModal.show();
+		this.refs.TopologyConfigModal.show();
 	}
 	handleNameChange(e){
 		let name = e.target.value;
@@ -240,7 +240,7 @@ export default class TopologyEditorContainer extends Component {
 		if(this.refs.topologyConfig.validate()){
 			this.refs.topologyConfig.handleSave()
 				.then(config=>{
-					this.refs.ConfigModal.hide();
+					this.refs.TopologyConfigModal.hide();
 					if(config.responseCode !== 1000){
 						FSReactToastr.error(<strong>{config.responseMessage}</strong>);
 					} else {
@@ -474,7 +474,7 @@ export default class TopologyEditorContainer extends Component {
 	            		</div>
 	            	</div>
 	            </div>
-	            <Modal ref="ConfigModal" data-title="Topology Configuration" data-resolve={this.handleSaveConfig.bind(this)}>
+	            <Modal ref="TopologyConfigModal" data-title="Topology Configuration" data-resolve={this.handleSaveConfig.bind(this)}>
 					<TopologyConfig ref="topologyConfig" topologyId={this.topologyId} data={this.topologyConfig} topologyName={this.state.topologyName}/>
 				</Modal>
 	            <Modal ref="NodeModal"
