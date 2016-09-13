@@ -14,3 +14,5 @@ DROP TABLE IF EXISTS topology_sinks;
 DROP TABLE IF EXISTS topology_processors;
 DROP TABLE IF EXISTS topology_processor_stream_mapping;
 DROP TABLE IF EXISTS topology_edges;
+DROP TABLE IF EXISTS ruleinfos;
+DROP TABLE IF EXISTS udfs;
