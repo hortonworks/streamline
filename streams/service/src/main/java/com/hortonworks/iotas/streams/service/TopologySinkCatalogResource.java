@@ -91,7 +91,7 @@ public class TopologySinkCatalogResource {
 
         try {
             Collection<TopologySink> sinks = catalogService.listTopologySinks(queryParams);
-            if (sinks != null && !sinks.isEmpty()) {
+            if (sinks != null) {
                 return WSUtils.respond(OK, SUCCESS, sinks);
             }
         } catch (Exception ex) {

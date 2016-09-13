@@ -74,7 +74,7 @@ public class ClusterCatalogResource {
                 queryParams = WSUtils.buildQueryParameters(params);
                 clusters = catalogService.listClusters(queryParams);
             }
-            if (clusters != null && !clusters.isEmpty()) {
+            if (clusters != null) {
                 return WSUtils.respond(OK, SUCCESS, clusters);
             }
         } catch (Exception ex) {

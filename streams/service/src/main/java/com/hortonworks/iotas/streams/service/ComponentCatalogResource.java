@@ -52,7 +52,7 @@ public class ComponentCatalogResource {
 
         try {
             Collection<Component> components = catalogService.listComponents(queryParams);
-            if (components != null && !components.isEmpty()) {
+            if (components != null) {
                 return WSUtils.respond(OK, SUCCESS, components);
             }
         } catch (Exception ex) {

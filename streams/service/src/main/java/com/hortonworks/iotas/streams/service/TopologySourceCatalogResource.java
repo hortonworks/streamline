@@ -94,7 +94,7 @@ public class TopologySourceCatalogResource {
 
         try {
             Collection<TopologySource> sources = catalogService.listTopologySources(queryParams);
-            if (sources != null && !sources.isEmpty()) {
+            if (sources != null) {
                 return WSUtils.respond(OK, SUCCESS, sources);
             }
         } catch (Exception ex) {
