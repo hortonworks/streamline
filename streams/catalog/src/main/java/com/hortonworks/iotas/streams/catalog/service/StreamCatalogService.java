@@ -22,6 +22,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -29,6 +30,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.hortonworks.iotas.common.util.FileStorage;
 import com.hortonworks.iotas.common.util.JsonSchemaValidator;
+import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.catalog.*;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.common.Schema;
@@ -513,7 +515,7 @@ public class StreamCatalogService {
         return result;
     }
 
-    public CustomProcessorInfo addCustomProcessorInfo (CustomProcessorInfo customProcessorInfo, InputStream jarFile) throws IOException {
+    public CustomProcessorInfo addCustomProcessorInfo(CustomProcessorInfo customProcessorInfo, InputStream jarFile) throws IOException {
         try {
             uploadFileToStorage(jarFile, customProcessorInfo.getJarFileName());
             TopologyComponentDefinition topologyComponentDefinition = customProcessorInfo.toTopologyComponent();
@@ -1244,10 +1246,32 @@ public class StreamCatalogService {
         rule.setDescription(ruleInfo.getDescription());
         rule.setWindow(ruleInfo.getWindow());
         rule.setActions(ruleInfo.getActions());
+        if (ruleInfo.getCondition() != null) {
+            ruleInfo.setSql(getSqlString(ruleInfo.getStreams(), ruleInfo.getCondition()));
+        }
+        parseSql(rule, ruleInfo);
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(rule);
+    }
+
+    private String getSqlString(List<String> streams, String condition) {
+        String table;
+        if (streams == null || streams.isEmpty()) {
+            LOG.warn("Rule condition is specified without input stream, will use default stream");
+            table = IotasEvent.DEFAULT_SOURCE_STREAM;
+        } else if (streams.size() == 1) {
+            table = streams.iterator().next();
+        } else {
+            throw new UnsupportedOperationException("Joining multiple streams");
+        }
+        return "SELECT * FROM " + table + " WHERE " + condition;
+    }
+
+    private void parseSql(Rule rule, RuleInfo ruleInfo) {
         // parse
         RuleParser ruleParser = new RuleParser(this, ruleInfo);
         ruleParser.parse();
-        rule.setStreams(new HashSet(Collections2.transform(ruleParser.getStreams(), new Function<Stream, String>() {
+        rule.setStreams(new HashSet<>(Collections2.transform(ruleParser.getStreams(), new Function<Stream, String>() {
             @Override
             public String apply(Stream input) {
                 return input.getId();
@@ -1257,8 +1281,6 @@ public class StreamCatalogService {
         rule.setCondition(ruleParser.getCondition());
         rule.setGroupBy(ruleParser.getGroupBy());
         rule.setHaving(ruleParser.getHaving());
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(rule);
     }
 
     public Collection<UDFInfo> listUDFs() {
