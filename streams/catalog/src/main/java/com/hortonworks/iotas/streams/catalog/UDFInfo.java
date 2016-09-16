@@ -19,16 +19,28 @@
 package com.hortonworks.iotas.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.storage.PrimaryKey;
+import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.catalog.AbstractStorable;
-import static com.hortonworks.iotas.streams.layout.component.rule.expression.Udf.Type;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.hortonworks.iotas.streams.layout.component.rule.expression.Udf.Type;
+
 public class UDFInfo extends AbstractStorable {
     private static final String NAMESPACE = "udfs";
+
+    public static final String ID = "id";
+    public static final String NAME = "name";
+    public static final String DESCRIPTION = "description";
+    public static final String CLASSNAME = "className";
+    public static final String JARSTORAGEPATH = "jarStoragePath";
+    public static final String TYPE = "type";
+    public static final String DIGEST = "digest";
 
     private Long id;
     private String name;
@@ -36,6 +48,12 @@ public class UDFInfo extends AbstractStorable {
     private Type type;
     private String className;
     private String jarStoragePath;
+    /**
+     * The jar file digest which can be used to de-dup jar files.
+     * If a newly submitted jar's digest matches with that of an already
+     * existing jar, we just use that jar file path rather than storing a copy.
+     */
+    private String digest;
 
     @Override
     public Long getId() {
@@ -105,6 +123,61 @@ public class UDFInfo extends AbstractStorable {
         return type == Type.AGGREGATE;
     }
 
+    /**
+     * The jar file digest which can be used to de-dup jar files.
+     * If a newly submitted jar's digest matches with that of an already
+     * existing jar, we just use that jar file path rather than storing a copy.
+     */
+    @JsonIgnore
+    public String getDigest() {
+        return digest;
+    }
+
+    @JsonIgnore
+    public void setDigest(String digest) {
+        this.digest = digest;
+    }
+
+    @JsonIgnore
+    @Override
+    public Schema getSchema() {
+        return Schema.of(
+                Schema.Field.of(ID, Schema.Type.LONG),
+                Schema.Field.of(NAME, Schema.Type.STRING),
+                Schema.Field.of(DESCRIPTION, Schema.Type.STRING),
+                Schema.Field.of(TYPE, Schema.Type.STRING),
+                Schema.Field.of(CLASSNAME, Schema.Type.STRING),
+                Schema.Field.of(JARSTORAGEPATH, Schema.Type.STRING),
+                Schema.Field.of(DIGEST, Schema.Type.STRING)
+        );
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = super.toMap();
+        try {
+            map.put("type", type != null ? type.toString() : "");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return map;
+    }
+
+    @Override
+    public Storable fromMap(Map<String, Object> map) {
+        setId((Long) map.get(ID));
+        setName((String) map.get(NAME));
+        setDescription((String) map.get(DESCRIPTION));
+        setClassName((String) map.get(CLASSNAME));
+        setJarStoragePath((String) map.get(JARSTORAGEPATH));
+        setDigest((String) map.get(DIGEST));
+        String typeStr = (String) map.get(TYPE);
+        if (!StringUtils.isEmpty(typeStr)) {
+            setType(Enum.valueOf(Type.class, typeStr));
+        }
+        return this;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -112,24 +185,13 @@ public class UDFInfo extends AbstractStorable {
 
         UDFInfo udfInfo = (UDFInfo) o;
 
-        if (id != null ? !id.equals(udfInfo.id) : udfInfo.id != null) return false;
-        if (name != null ? !name.equals(udfInfo.name) : udfInfo.name != null) return false;
-        if (description != null ? !description.equals(udfInfo.description) : udfInfo.description != null) return false;
-        if (type != udfInfo.type) return false;
-        if (className != null ? !className.equals(udfInfo.className) : udfInfo.className != null) return false;
-        return jarStoragePath != null ? jarStoragePath.equals(udfInfo.jarStoragePath) : udfInfo.jarStoragePath == null;
+        return id != null ? id.equals(udfInfo.id) : udfInfo.id == null;
 
     }
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (description != null ? description.hashCode() : 0);
-        result = 31 * result + (type != null ? type.hashCode() : 0);
-        result = 31 * result + (className != null ? className.hashCode() : 0);
-        result = 31 * result + (jarStoragePath != null ? jarStoragePath.hashCode() : 0);
-        return result;
+        return id != null ? id.hashCode() : 0;
     }
 
     @Override
@@ -141,6 +203,7 @@ public class UDFInfo extends AbstractStorable {
                 ", type=" + type +
                 ", className='" + className + '\'' +
                 ", jarStoragePath='" + jarStoragePath + '\'' +
-                '}';
+                ", digest='" + digest + '\'' +
+                "}";
     }
 }

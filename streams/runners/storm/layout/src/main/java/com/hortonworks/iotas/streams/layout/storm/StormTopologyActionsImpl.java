@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -81,6 +82,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
         commands.add(stormCliPath);
         commands.add("jar");
         commands.add(jarToDeploy.toString());
+        commands.addAll(getExtraJarsArg(topology));
         commands.add("org.apache.storm.flux.Flux");
         commands.add("--remote");
         commands.add(fileName);
@@ -91,17 +93,40 @@ public class StormTopologyActionsImpl implements TopologyActions {
         }
     }
 
+    private List<String> getExtraJarsArg(TopologyLayout topology) {
+        List<String> args = new ArrayList<>();
+        List<String> jars = new ArrayList<>();
+        Path extraJarsPath = getExtraJarsLocation(topology);
+        if (extraJarsPath.toFile().isDirectory()) {
+            File[] jarFiles = extraJarsPath.toFile().listFiles();
+            if (jarFiles != null && jarFiles.length > 0) {
+                for (File jarFile : jarFiles) {
+                    jars.add(jarFile.getAbsolutePath());
+                }
+            }
+        } else {
+            LOG.debug("Extra jars directory {} does not exist, not adding any extra jars", extraJarsPath);
+        }
+        if (!jars.isEmpty()) {
+            args.add("--jars");
+            args.add(Joiner.on(",").join(jars));
+        }
+        return args;
+    }
+
     private Path addArtifactsToJar(Path artifactsLocation) throws Exception {
         Path jarFile = Paths.get(stormJarLocation);
         if (artifactsLocation.toFile().isDirectory()) {
             File[] artifacts = artifactsLocation.toFile().listFiles();
-            if (artifacts.length > 0) {
+            if (artifacts != null && artifacts.length > 0) {
                 Path newJar = Files.copy(jarFile, artifactsLocation.resolve(jarFile.getFileName()));
                 for (File artifact : artifacts) {
-                    executeShellProcess(
-                            ImmutableList.of(javaJarCommand, "uf", newJar.toString(),
-                                             "-C", artifactsLocation.toString(), artifact.getName()));
-                    LOG.debug("Added file {} to jar {}", artifact, jarFile);
+                    if (artifact.isFile()) {
+                        executeShellProcess(
+                                ImmutableList.of(javaJarCommand, "uf", newJar.toString(),
+                                        "-C", artifactsLocation.toString(), artifact.getName()));
+                        LOG.debug("Added file {} to jar {}", artifact, jarFile);
+                    }
                 }
                 return newJar;
             }
@@ -197,6 +222,11 @@ public class StormTopologyActionsImpl implements TopologyActions {
     @Override
     public Path getArtifactsLocation(TopologyLayout topology) {
         return Paths.get(stormArtifactsLocation, getTopologyName(topology));
+    }
+
+    @Override
+    public Path getExtraJarsLocation(TopologyLayout topology) {
+        return Paths.get(getArtifactsLocation(topology).toString(), "jars");
     }
 
     private String createYamlFile (TopologyLayout topology) throws

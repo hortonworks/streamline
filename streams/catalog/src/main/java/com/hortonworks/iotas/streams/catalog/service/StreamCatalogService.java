@@ -33,6 +33,7 @@ import com.google.common.collect.Sets;
 import com.hortonworks.iotas.common.util.FileStorage;
 import com.hortonworks.iotas.common.util.JsonSchemaValidator;
 import com.hortonworks.iotas.streams.IotasEvent;
+import com.hortonworks.iotas.common.util.ProxyUtil;
 import com.hortonworks.iotas.streams.catalog.*;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.common.Schema;
@@ -57,6 +58,8 @@ import com.hortonworks.iotas.streams.layout.component.TopologyDag;
 import com.hortonworks.iotas.streams.layout.component.impl.NotificationSink;
 import com.hortonworks.iotas.streams.layout.component.rule.Rule;
 import com.hortonworks.iotas.streams.layout.exception.BadTopologyLayoutException;
+import com.hortonworks.iotas.streams.rule.UDAF;
+import com.hortonworks.iotas.streams.rule.UDAF2;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -68,6 +71,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -342,7 +346,39 @@ public class StreamCatalogService {
         LOG.debug("Deploying topology {}", topology);
         addUpdateNotifierInfoFromTopology(topology);
         setUpClusterArtifacts(topology);
+        setUpUdfJars(topology);
         topologyActions.deploy(getTopologyLayout(topology));
+    }
+
+    private void setUpUdfJars(Topology topology) throws IOException {
+        StormTopologyUdfJarHandler udfHandler = new StormTopologyUdfJarHandler();
+        topology.getTopologyDag().traverse(udfHandler);
+        Set<String> udfs = udfHandler.getUdfs();
+        Path udfJarsDir = topologyActions.getExtraJarsLocation(getTopologyLayout(topology));
+        Set<UDFInfo> udfsToShip = new HashSet<>();
+        makeEmptyDir(udfJarsDir);
+        for (String udf: udfs) {
+            Collection<UDFInfo> udfInfos = listUDFs(Collections.singletonList(new QueryParam(UDFInfo.NAME, udf)));
+            if(udfInfos.size() > 1) {
+                throw new IllegalArgumentException("Multiple UDF definitions with name:" + udf);
+            } else if (udfInfos.size() == 1) {
+                udfsToShip.add(udfInfos.iterator().next());
+            }
+        }
+        Set<String> copiedJars = new HashSet<>();
+        for (UDFInfo udf : udfsToShip) {
+            String jarPath = udf.getJarStoragePath();
+            if (!copiedJars.contains(jarPath)) {
+                File destPath = Paths.get(udfJarsDir.toString(), Paths.get(jarPath).getFileName().toString()).toFile();
+                try (InputStream src = fileStorage.downloadFile(jarPath);
+                     FileOutputStream dest = new FileOutputStream(destPath)
+                ) {
+                    IOUtils.copy(src, dest);
+                    copiedJars.add(jarPath);
+                    LOG.debug("Jar {} copied to {}", jarPath, destPath);
+                }
+            }
+        }
     }
 
     private void setUpClusterArtifacts(Topology topology) throws IOException {
@@ -356,18 +392,7 @@ public class StreamCatalogService {
                         new TypeReference<List<Cluster>>() {
                         });
                 Path artifactsDir = topologyActions.getArtifactsLocation(getTopologyLayout(topology));
-                if (artifactsDir.toFile().exists()) {
-                    if (artifactsDir.toFile().isDirectory()) {
-                        FileUtils.cleanDirectory(artifactsDir.toFile());
-                    } else {
-                        final String errorMessage = String.format("Artifacts location '%s' must be a directory.", artifactsDir);
-                        LOG.error(errorMessage);
-                        throw new IOException(errorMessage);
-                    }
-                } else if (!artifactsDir.toFile().mkdirs()) {
-                    LOG.error("Could not create artifacts dir {}", artifactsDir);
-                    throw new IOException("Could not create artifacts dir: " + artifactsDir);
-                }
+                makeEmptyDir(artifactsDir);
                 for (Cluster c : clusters) {
                     Cluster cluster = getCluster(c.getId());
                     String resource = cluster.getClusterConfigStorageName();
@@ -381,6 +406,21 @@ public class StreamCatalogService {
                     }
                 }
             }
+        }
+    }
+
+    private void makeEmptyDir(Path path) throws IOException {
+        if (path.toFile().exists()) {
+            if (path.toFile().isDirectory()) {
+                FileUtils.cleanDirectory(path.toFile());
+            } else {
+                final String errorMessage = String.format("Location '%s' must be a directory.", path);
+                LOG.error(errorMessage);
+                throw new IOException(errorMessage);
+            }
+        } else if (!path.toFile().mkdirs()) {
+            LOG.error("Could not create dir {}", path);
+            throw new IOException("Could not create dir: " + path);
         }
     }
 
@@ -1321,6 +1361,7 @@ public class StreamCatalogService {
         rule.setCondition(ruleParser.getCondition());
         rule.setGroupBy(ruleParser.getGroupBy());
         rule.setHaving(ruleParser.getHaving());
+        rule.setReferredUdfs(ruleParser.getReferredUdfs());
     }
 
     public Collection<UDFInfo> listUDFs() {
@@ -1341,8 +1382,16 @@ public class StreamCatalogService {
         if (udfInfo.getId() == null) {
             udfInfo.setId(this.dao.nextId(UDF_NAMESPACE));
         }
+        udfInfo.setName(udfInfo.getName().toUpperCase());
         this.dao.add(udfInfo);
         return udfInfo;
+    }
+
+    public Set<String> loadUdafsFromJar(File jarFile) throws IOException {
+        Set<String> udafs = new HashSet<>();
+        udafs.addAll(ProxyUtil.loadAllClassesFromJar(jarFile, UDAF.class));
+        udafs.addAll(ProxyUtil.loadAllClassesFromJar(jarFile, UDAF2.class));
+        return udafs;
     }
 
     public UDFInfo removeUDF(Long id) {
@@ -1353,6 +1402,7 @@ public class StreamCatalogService {
 
     public UDFInfo addOrUpdateUDF(Long udfId, UDFInfo udfInfo) {
         udfInfo.setId(udfId);
+        udfInfo.setName(udfInfo.getName().toUpperCase());
         this.dao.addOrUpdate(udfInfo);
         return udfInfo;
     }

@@ -120,19 +120,7 @@ public class ParsersCatalogService {
 
     public Collection<String> verifyParserUpload (InputStream inputStream) throws IOException {
         final File tmpFile = FileUtil.writeInputStreamToTempFile(inputStream, ".jar");
-        List<String> parserClasses = JarReader.findSubtypeOfClasses(tmpFile, Parser.class);
-        return Collections2.filter(parserClasses, new Predicate<String>() {
-            @Override
-            public boolean apply(@Nullable String s) {
-                try {
-                    parserProxyUtil.loadClassFromJar(tmpFile.getAbsolutePath(), s);
-                    return true;
-                } catch (Throwable ex) {
-                    LOG.warn("class {} is subtype of Parser, but it can't be initialized.", s);
-                    return false;
-                }
-            }
-        });
+        return ProxyUtil.loadAllClassesFromJar(tmpFile, Parser.class);
     }
 
     /**

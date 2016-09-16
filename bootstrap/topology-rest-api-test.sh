@@ -248,7 +248,7 @@ echo -e "\n------"
 out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache" -d '{
     "name": "rule1",
     "description": "windowed rule test",
-    "sql": "select max(temperature) from parsedTuplesStream where humidity > 90",
+    "sql": "select max(temperature), stddev(temperature) from parsedTuplesStream where humidity > 90",
     "window": {
         "windowLength": {
           "class": ".Window$Duration",

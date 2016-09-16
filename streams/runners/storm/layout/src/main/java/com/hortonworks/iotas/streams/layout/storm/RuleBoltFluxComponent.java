@@ -56,7 +56,7 @@ public class RuleBoltFluxComponent extends AbstractFluxComponent {
         String rulesProcessorBuilderComponentId = "rulesProcessorBuilder" +
                 UUID_FOR_COMPONENTS;
         String rulesProcessorBuilderClassName = "com.hortonworks.iotas.streams" +
-                "layout.component.RulesProcessorJsonBuilder";
+                ".layout.component.RulesProcessorJsonBuilder";
         ObjectMapper mapper = new ObjectMapper();
         String rulesProcessorJson = null;
         try {

@@ -22,6 +22,7 @@ import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.streams.catalog.RuleInfo;
 import com.hortonworks.iotas.streams.catalog.StreamInfo;
+import com.hortonworks.iotas.streams.catalog.UDFInfo;
 import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.AsExpression;
@@ -31,6 +32,7 @@ import com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpre
 import com.hortonworks.iotas.streams.layout.component.rule.expression.Literal;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.Operator;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.Projection;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Udf;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
@@ -39,6 +41,7 @@ import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 import static org.junit.Assert.*;
 
@@ -80,4 +83,40 @@ public class RuleParserTest {
         assertNull(ruleParser.getHaving());
     }
 
+    @Test
+    public void testParseAgg() throws Exception {
+        final UDFInfo stddevp = new UDFInfo();
+        stddevp.setClassName("foo.class.name");
+        stddevp.setDescription("stddev p");
+        stddevp.setId(100L);
+        stddevp.setJarStoragePath("jarstoragepath");
+        stddevp.setName("stddevp");
+        stddevp.setType(Udf.Type.AGGREGATE);
+        new Expectations() {{
+            mockCatalogService.listStreamInfos(withAny(new ArrayList<QueryParam>()));
+            result=mockStreamInfo;
+            mockCatalogService.listUDFs();
+            result= Collections.singleton(stddevp);
+            mockStreamInfo.getStreamId();
+            result="teststream";
+            mockStreamInfo.getFields();
+            result= Arrays.asList(Schema.Field.of("temperature", Schema.Type.LONG),
+                    Schema.Field.of("humidity", Schema.Type.LONG));
+        }};
+        RuleInfo ruleInfo = new RuleInfo();
+        ruleInfo.setId(1L);
+        ruleInfo.setName("Test");
+        ruleInfo.setDescription("test rule");
+        ruleInfo.setTopologyId(1L);
+        ruleInfo.setSql("select stddevp(temperature) from teststream");
+        RuleParser ruleParser = new RuleParser(mockCatalogService, ruleInfo);
+        ruleParser.parse();
+        System.out.println(ruleParser.getProjection());
+        assertEquals(1, ruleParser.getStreams().size());
+        assertEquals(new Stream("teststream", Arrays.asList(Schema.Field.of("temperature", Schema.Type.LONG),
+                Schema.Field.of("humidity", Schema.Type.LONG))),
+                ruleParser.getStreams().get(0));
+        assertNull(ruleParser.getGroupBy());
+        assertNull(ruleParser.getHaving());
+    }
 }

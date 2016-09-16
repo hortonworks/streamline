@@ -18,6 +18,7 @@
 
 package com.hortonworks.iotas.streams.layout.component.rule;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.layout.component.rule.action.Action;
@@ -29,6 +30,7 @@ import com.hortonworks.iotas.streams.layout.component.rule.expression.Window;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -49,6 +51,8 @@ public class Rule implements Serializable {
     private Having having;
     private Window window;
     private List<Action> actions;
+    // quick access to user defined functions used in this rule
+    private Set<String> referredUdfs = Collections.emptySet();
 
     public Rule() {     //TODO Check
         // For JSON serializer
@@ -152,6 +156,14 @@ public class Rule implements Serializable {
         this.groupBy = groupBy;
     }
 
+    public void setReferredUdfs(Set<String> referredUdfs) {
+        this.referredUdfs = new HashSet<>(referredUdfs);
+    }
+
+    public Set<String> getReferredUdfs() {
+        return referredUdfs;
+    }
+
     @Override
     public String toString() {
         return "Rule{" +
@@ -162,10 +174,11 @@ public class Rule implements Serializable {
                 ", streams=" + streams +
                 ", projection=" + projection +
                 ", condition=" + condition +
-                ", having=" + having +
                 ", groupBy=" + groupBy +
+                ", having=" + having +
                 ", window=" + window +
                 ", actions=" + actions +
+                ", referredUdfs=" + referredUdfs +
                 '}';
     }
 }

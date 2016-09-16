@@ -49,23 +49,25 @@ import org.apache.calcite.sql.util.SqlBasicVisitor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression.STAR;
 
 public class ExpressionGenerator extends SqlBasicVisitor<Expression> {
     private final Map<String, Schema> streamIdToSchema = new HashMap<>();
-    private final Map<String, Udf> udfs;
-
-    public ExpressionGenerator(List<Stream> streams, Map<String, Udf> udfs) {
+    private final Map<String, Udf> catalogUdfs;
+    private final Set<String> referredUdfs = new HashSet<>();
+    public ExpressionGenerator(List<Stream> streams, Map<String, Udf> catalogUdfs) {
         if (streams.isEmpty()) {
             throw new IllegalArgumentException("Empty stream");
         }
         for (Stream stream : streams) {
             streamIdToSchema.put(stream.getId(), stream.getSchema());
         }
-        this.udfs = udfs;
+        this.catalogUdfs = catalogUdfs;
     }
 
     @Override
@@ -109,8 +111,8 @@ public class ExpressionGenerator extends SqlBasicVisitor<Expression> {
                 return visitAggregateFunction(sqlFunction.getName(), call.getOperandList());
             } else if (sqlFunction instanceof SqlUnresolvedFunction) {
                 String udfName = sqlFunction.getName().toUpperCase();
-                if (udfs.containsKey(udfName)) {
-                    Udf udfInfo = udfs.get(udfName);
+                if (catalogUdfs.containsKey(udfName)) {
+                    Udf udfInfo = catalogUdfs.get(udfName);
                     String className = udfInfo.getClassName();
                     if (udfInfo.isAggregate()) {
                         return visitUserDefinedAggregateFunction(udfName, className, call.getOperandList());
@@ -128,12 +130,16 @@ public class ExpressionGenerator extends SqlBasicVisitor<Expression> {
         }
     }
 
+    public Set<String> getReferredUdfs() {
+        return referredUdfs;
+    }
 
     private Expression visitFunction(String functionName, List<SqlNode> operands) {
         return new FunctionExpression(functionName, getOperandExprs(operands));
     }
 
     private Expression visitUserDefinedFunction(String functionName, String className, List<SqlNode> operands) {
+        referredUdfs.add(functionName);
         return new FunctionExpression(functionName, className, getOperandExprs(operands));
     }
 
@@ -142,6 +148,7 @@ public class ExpressionGenerator extends SqlBasicVisitor<Expression> {
     }
 
     private Expression visitUserDefinedAggregateFunction(String functionName, String className, List<SqlNode> operands) {
+        referredUdfs.add(functionName);
         return new AggregateFunctionExpression(functionName, className, getOperandExprs(operands));
     }
 

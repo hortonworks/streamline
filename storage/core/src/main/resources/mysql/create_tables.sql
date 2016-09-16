@@ -204,5 +204,6 @@ CREATE TABLE IF NOT EXISTS udfs (
     type  VARCHAR(256) NOT NULL,
     className  VARCHAR(256) NOT NULL,
     jarStoragePath  VARCHAR(256) NOT NULL,
+    digest VARCHAR(256) NOT NULL,
     PRIMARY KEY (id)
 );

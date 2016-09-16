@@ -49,8 +49,10 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression.STAR;
 
@@ -64,13 +66,15 @@ public class RuleParser {
     private Condition condition;
     private GroupBy groupBy;
     private Having having;
-    private Map<String, Udf> udfs = new HashMap<>();
+    private final Map<String, Udf> catalogUdfs = new HashMap<>();
+    // the udfs used in the rule
+    private final Set<String> referredUdfs = new HashSet<>();
 
     public RuleParser(StreamCatalogService catalogService, RuleInfo ruleInfo) {
         this.catalogService = catalogService;
         this.ruleInfo = ruleInfo;
         for (UDFInfo udfInfo: catalogService.listUDFs()) {
-            udfs.put(udfInfo.getName().toUpperCase(),
+            catalogUdfs.put(udfInfo.getName().toUpperCase(),
                     new Udf(udfInfo.getName(), udfInfo.getClassName(), udfInfo.getType()));
         }
     }
@@ -132,13 +136,14 @@ public class RuleParser {
 
     private Projection parseProjection(SqlSelect sqlSelect) {
         Projection projection;
-        ExpressionGenerator exprGenerator = new ExpressionGenerator(streams, udfs);
+        ExpressionGenerator exprGenerator = new ExpressionGenerator(streams, catalogUdfs);
         ExpressionList exprList = (ExpressionList) sqlSelect.getSelectList().accept(exprGenerator);
         if (exprList.getExpressions().size() == 1 && exprList.getExpressions().get(0) == STAR) {
             projection = null;
         } else {
             projection = new Projection(exprList.getExpressions());
         }
+        referredUdfs.addAll(exprGenerator.getReferredUdfs());
         LOG.debug("Projection {}", projection);
         return projection;
     }
@@ -147,8 +152,9 @@ public class RuleParser {
         Condition condition = null;
         SqlNode where = sqlSelect.getWhere();
         if (where != null) {
-            ExpressionGenerator exprGenerator = new ExpressionGenerator(streams, udfs);
+            ExpressionGenerator exprGenerator = new ExpressionGenerator(streams, catalogUdfs);
             condition = new Condition(where.accept(exprGenerator));
+            referredUdfs.addAll(exprGenerator.getReferredUdfs());
         }
         LOG.debug("Condition {}", condition);
         return condition;
@@ -158,9 +164,10 @@ public class RuleParser {
         GroupBy groupBy = null;
         SqlNodeList sqlGroupBy = sqlSelect.getGroup();
         if (sqlGroupBy != null) {
-            ExpressionGenerator exprGenerator = new ExpressionGenerator(streams, udfs);
+            ExpressionGenerator exprGenerator = new ExpressionGenerator(streams, catalogUdfs);
             ExpressionList exprList = (ExpressionList) sqlGroupBy.accept(exprGenerator);
             groupBy = new GroupBy(exprList.getExpressions());
+            referredUdfs.addAll(exprGenerator.getReferredUdfs());
         }
         LOG.debug("GroupBy {}", groupBy);
         return groupBy;
@@ -170,8 +177,9 @@ public class RuleParser {
         Having having = null;
         SqlNode sqlHaving = sqlSelect.getHaving();
         if (sqlHaving != null) {
-            ExpressionGenerator exprGenerator = new ExpressionGenerator(streams, udfs);
+            ExpressionGenerator exprGenerator = new ExpressionGenerator(streams, catalogUdfs);
             having = new Having(sqlHaving.accept(exprGenerator));
+            referredUdfs.addAll(exprGenerator.getReferredUdfs());
         }
         LOG.debug("Having {}", having);
         return having;
@@ -202,6 +210,10 @@ public class RuleParser {
                 .build());
     }
 
+    public Set<String> getReferredUdfs() {
+        return referredUdfs;
+    }
+
     @Override
     public String toString() {
         return "RuleParser{" +
@@ -210,7 +222,7 @@ public class RuleParser {
                 ", condition=" + condition +
                 ", groupBy=" + groupBy +
                 ", having=" + having +
-                ", udfs=" + udfs +
+                ", referredUdfs=" + referredUdfs +
                 ", ruleInfo=" + ruleInfo +
                 '}';
     }

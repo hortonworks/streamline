@@ -38,6 +38,11 @@ public interface TopologyActions {
      */
     Path getArtifactsLocation(TopologyLayout topology);
 
+    /**
+     * the Path where extra jars to be deployed are kept
+     */
+    Path getExtraJarsLocation(TopologyLayout topology);
+
     interface Status {
         String getStatus();
         Map<String, String> getExtra();
