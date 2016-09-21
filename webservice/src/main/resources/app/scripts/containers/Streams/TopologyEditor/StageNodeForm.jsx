@@ -162,7 +162,7 @@ export default class StageFormNode extends Component{
 		return false
 	}
 
-	handleSave(){
+	handleSave(name){
 		let {topologyId, nodeType} = this.props;
 		let {parallelism, transformFields, transform, entryExpirationInterval, entryRefreshInterval, maxCacheSize} = this.state;
 		let nodeId = this.nodeData.id;
@@ -199,6 +199,7 @@ export default class StageFormNode extends Component{
 
 				data.entity.config.properties["stage-config"] = stageConfigData;
 				data.entity.config.properties.parallelism = parallelism;
+				data.entity.name = name;
 
 				return TopologyREST.updateNode(topologyId, nodeType, nodeId, {body: JSON.stringify(data.entity)});
 			})

@@ -189,11 +189,12 @@ export default class ParserNodeForm extends Component {
 		return validDataFlag;
 	}
 
-	handleSave(){
+	handleSave(name){
 		let {topologyId, nodeType} = this.props;
 		let data = this.getData();
 		let nodeId = this.nodeData.id;
 		this.nodeData.config.properties = data;
+		this.nodeData.name = name;
 
 		return TopologyREST.updateNode(topologyId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)})
 	}

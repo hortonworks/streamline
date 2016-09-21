@@ -29,13 +29,13 @@ export default class ConfigurationContainer extends Component {
 						<div className="box">
 							<div className="box-body">
 								<Tabs defaultActiveKey={1} id="configurationTabs" className="schema-tabs">
-									<Tab eventKey={2} title="Custom Processor">
+									<Tab eventKey={1} title="Custom Processor">
 										<CustomProcessorContainer callbackHandler={this.callbackHandler.bind(this)}/>
 									</Tab>
-									<Tab eventKey={3} title="Tags">
+									<Tab eventKey={2} title="Tags">
 										<TagsContainer callbackHandler={this.callbackHandler.bind(this)}/>
 									</Tab>
-									<Tab eventKey={4} title="Files">
+									<Tab eventKey={3} title="Files">
 										<FilesContainer callbackHandler={this.callbackHandler.bind(this)}/>
 									</Tab>
 								</Tabs>
