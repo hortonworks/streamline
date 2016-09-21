@@ -350,13 +350,9 @@ public class RestIntegrationTest {
 
         componentBaseUrl = rootUrl + String.format("clusters/%d/components", anotherClusterId);
 
-        try {
-            client.target(componentBaseUrl).request().get(String.class);
-            Assert.fail("Should have thrown NotFoundException.");
-        } catch (NotFoundException e) {
-            response = e.getResponse().readEntity(String.class);
-            Assert.assertEquals(CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER.getCode(), getResponseCode(response));
-        }
+        response = client.target(componentBaseUrl).request().get(String.class);
+        List<Object> res = getEntities(response, Object.class);
+        Assert.assertTrue(res.isEmpty());
 
         componentEntityUrl = componentBaseUrl + "/" + 1;
         try {
@@ -638,14 +634,10 @@ public class RestIntegrationTest {
         String response;
         for (QueryParamsResourceTestElement qpte: queryParamsResources) {
             // all gets first should return no entities
-            for (String getUrl: qpte.getUrls) {
-                try {
-                    client.target(getUrl).request().get(String.class);
-                    Assert.fail("Should have thrown NotFoundException.");
-                } catch (NotFoundException e) {
-                    response = e.getResponse().readEntity(String.class);
-                    Assert.assertEquals(CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER.getCode(), getResponseCode(response));
-                }
+            for (String getUrl : qpte.getUrls) {
+                response = client.target(getUrl).request().get(String.class);
+                List<Object> res = getEntities(response, Object.class);
+                Assert.assertTrue(res.isEmpty());
             }
             // post the resources now
             for (Object resource: qpte.resourcesToPost) {
