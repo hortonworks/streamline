@@ -238,7 +238,9 @@ public class EmailNotifier implements Notifier, TransportListener {
         try {
             Transport transport = session.getTransport();
             transport.addTransportListener(listener);
-            transport.connect();
+            if (!transport.isConnected()) {
+                transport.connect();
+            }
             LOG.debug("Email transport {}, transport listener {}", transport, listener);
             return transport;
         } catch (MessagingException ex) {
