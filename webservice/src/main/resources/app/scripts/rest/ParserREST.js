@@ -1,7 +1,16 @@
 import fetch from 'isomorphic-fetch';
 import {baseUrl} from '../utils/Constants';
+import {CustomFetch} from '../utils/Overrides';
 
 const ParserREST = {
+	getAllParsersForRegistry(options) {
+		options = options || {};
+		options.method = options.method || 'GET';
+		return CustomFetch(baseUrl+'parsers', options)
+			.then( (response) => {
+		  		return response.json();
+		  	})
+	},
 	getAllParsers(options) {
 		options = options || {};
 		options.method = options.method || 'GET';
@@ -45,7 +54,7 @@ const ParserREST = {
 	getParserClass(options) {
 		options = options || {};
 		options.method = options.method || 'POST';
-		return fetch(baseUrl+'parsers/upload-verify', options)
+		return CustomFetch(baseUrl+'parsers/upload-verify', options)
 			.then( (response) => {
 		  		return response.json();
 		  	})

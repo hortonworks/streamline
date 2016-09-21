@@ -120,11 +120,12 @@ export default class HdfsNodeForm extends Component {
 		return validDataFlag;
 	}
 
-	handleSave(){
+	handleSave(name){
 		let {topologyId, nodeType} = this.props;
 		let nodeId = this.nodeData.id;
 		let data = this.getData();
 		this.nodeData.config.properties = data;
+		this.nodeData.name = name;
 		return TopologyREST.updateNode(topologyId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)})
 	}
 
@@ -146,7 +147,7 @@ export default class HdfsNodeForm extends Component {
 						inputMode={o.type === "number" ? "numeric" : null}
 						/>
 					</div>
-					{this.state.editMode && this.state.configFields[o.name] === '' ?
+					{requiredFlag && this.state.editMode && this.state.configFields[o.name] === '' ?
 					<div className="col-sm-3">
 						<p className="form-control-static error-note">{o.name} cannot be blank.</p>
 					</div>

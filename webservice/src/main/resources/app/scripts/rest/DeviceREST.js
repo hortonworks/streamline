@@ -1,7 +1,16 @@
 import fetch from 'isomorphic-fetch';
 import {baseUrl} from '../utils/Constants';
+import {CustomFetch} from '../utils/Overrides';
 
 const DeviceREST = {
+	getAllDevicesForRegistry(options) {
+		options = options || {};
+		options.method = options.method || 'GET';
+		return CustomFetch(baseUrl+'datasources', options)
+			.then( (response) => {
+		  		return response.json();
+		  	})
+	},
 	getAllDevices(options) {
 		options = options || {};
 		options.method = options.method || 'GET';

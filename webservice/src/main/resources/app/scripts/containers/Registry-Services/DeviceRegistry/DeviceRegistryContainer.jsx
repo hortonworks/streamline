@@ -32,7 +32,7 @@ export default class DeviceRegistryContainer extends Component {
 	}
 
 	fetchData(){
-		DeviceREST.getAllDevices()
+		DeviceREST.getAllDevicesForRegistry()
 			.then((datasources)=>{
 				if(datasources.responseCode !== 1000){
 					FSReactToastr.error(<strong>{datasources.responseMessage}</strong>);

@@ -191,7 +191,7 @@ export default class TopologyEditorContainer extends Component {
 		this.viewMode = !this.viewMode;
 	}
 	showConfig(){
-		this.refs.ConfigModal.show();
+		this.refs.TopologyConfigModal.show();
 	}
 	handleNameChange(e){
 		let name = e.target.value;
@@ -240,7 +240,7 @@ export default class TopologyEditorContainer extends Component {
 		if(this.refs.topologyConfig.validate()){
 			this.refs.topologyConfig.handleSave()
 				.then(config=>{
-					this.refs.ConfigModal.hide();
+					this.refs.TopologyConfigModal.hide();
 					if(config.responseCode !== 1000){
 						FSReactToastr.error(<strong>{config.responseMessage}</strong>);
 					} else {
@@ -304,7 +304,7 @@ export default class TopologyEditorContainer extends Component {
 					if(result.responseCode !== 1000){
 						FSReactToastr.error(<strong>{result.responseMessage}</strong>);
 					} else {
-						TopologyREST.deleteTopology(this.topologyId)
+						TopologyREST.deployTopology(this.topologyId)
 							.then(topology=>{
 								if(topology.responseCode !== 1000){
 									FSReactToastr.error(<strong>{topology.responseMessage}</strong>);
@@ -340,14 +340,43 @@ export default class TopologyEditorContainer extends Component {
 				this.modalTitle = this.node.uiname;
 				this.refs.NodeModal.show();
 				this.updateGraphMethod = updateGraphMethod;
-			})
+			});
+		}
+	}
+	handleSaveNodeName(editable) {
+		if(this.validateNodeName(this.modalTitle))
+			editable.hideEditor();
+	}
+	handleRejectNodeName(editable) {
+		this.modalTitle = this.node.uiname;
+		editable.hideEditor();
+	}
+	handleNodeNameChange(e) {
+		let isValid = this.validateNodeName(e.target.value);
+		this.modalTitle = e.target.value;
+	}
+	validateNodeName(name) {
+		let nodeNamesList = this.graphData.uinamesList;
+		if(name === ''){
+			this.refs.editableNodeName.setState({errorMsg: "Node name cannot be blank"});
+			return false;
+		} else if(name.search(' ') !== -1){
+			this.refs.editableNodeName.setState({errorMsg: "Node name cannot have space in between"});
+			return false;
+		} else if(nodeNamesList.indexOf(name) !== -1){
+			this.refs.editableNodeName.setState({errorMsg: "Node name is already present. Please use some other name."});
+			this.validateFlag = false;
+			return false;
+		} else {
+			this.refs.editableNodeName.setState({errorMsg: ""});
+			return true;
 		}
 	}
 	handleSaveNodeModal(){
 		if(!this.viewMode){
 			if(this.refs.ConfigModal.validateData()){
 				//Make the save request
-				this.refs.ConfigModal.handleSave().then((savedNode)=>{
+				this.refs.ConfigModal.handleSave(this.modalTitle).then((savedNode)=>{
 					if(savedNode instanceof Array){
 						savedNode = savedNode[0];
 					}
@@ -355,6 +384,11 @@ export default class TopologyEditorContainer extends Component {
 						FSReactToastr.error(<strong>{savedNode.responseMessage}</strong>);
 					} else {
 						this.node.isConfigured = true;
+						let i = this.graphData.uinamesList.indexOf(this.node.uiname);
+						this.node.uiname = savedNode.entity.name;
+						if(i > -1)
+							this.graphData.uinamesList[i] = this.node.uiname;
+
 						//Show notifications from the view
 						FSReactToastr.success(<strong>{this.node.uiname} updated successfully.</strong>);
 						//render graph again
@@ -371,6 +405,7 @@ export default class TopologyEditorContainer extends Component {
 		return this.processorConfigArr.filter((o)=>{ return o.subType === 'CUSTOM'});
 	}
  	render() {
+ 		let nodeType = this.node ? this.node.currentType : '';
 	    return (
 	        <BaseContainer ref="BaseContainer" routes={this.props.routes} onLandingPage="false" breadcrumbData={this.breadcrumbData}>
 	            <div className="row">
@@ -439,10 +474,25 @@ export default class TopologyEditorContainer extends Component {
 	            		</div>
 	            	</div>
 	            </div>
-	            <Modal ref="ConfigModal" data-title="Topology Configuration" data-resolve={this.handleSaveConfig.bind(this)}>
+	            <Modal ref="TopologyConfigModal" data-title="Topology Configuration" data-resolve={this.handleSaveConfig.bind(this)}>
 					<TopologyConfig ref="topologyConfig" topologyId={this.topologyId} data={this.topologyConfig} topologyName={this.state.topologyName}/>
 				</Modal>
-	            <Modal ref="NodeModal" bsSize="large" data-title={this.modalTitle} data-resolve={this.handleSaveNodeModal.bind(this)}>
+	            <Modal ref="NodeModal"
+						bsSize="large"
+						data-title={
+						this.viewMode?
+						this.modalTitle
+						: (nodeType === "Custom" ? this.modalTitle : (<Editable
+								ref="editableNodeName"
+								inline={true}
+								resolve={this.handleSaveNodeName.bind(this)}
+								reject={this.handleRejectNodeName.bind(this)}
+								>
+									<input defaultValue={this.modalTitle} onChange={this.handleNodeNameChange.bind(this)}/>
+							</Editable>)
+						)
+					}
+					data-resolve={this.handleSaveNodeModal.bind(this)}>
 	            	{this.modalContent()}
 	            </Modal>
 	        </BaseContainer>

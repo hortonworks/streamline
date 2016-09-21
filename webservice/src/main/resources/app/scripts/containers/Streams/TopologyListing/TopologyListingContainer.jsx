@@ -34,6 +34,9 @@ class AddingTopology extends Component {
 		} else if(nameList.indexOf(this.state.name) !== -1){
 			this.setState({errorMsg: 'Topology name is already present. Please use some other name.'})
 			return false
+		} else if(this.state.name.search(' ') !== -1){
+			this.setState({errorMsg: 'Topology name cannot have space in it.'})
+			return false
 		}
 		return true;
 	}
@@ -70,10 +73,10 @@ export default class TopologyListingContainer extends Component {
 	constructor(props){
 		super();
 		this.breadcrumbData = {
-			title: 'Topology Listing',
+			title: 'Streams Builder',
 			linkArr: [
 				{title: 'Streams'},
-				{title: 'Topology Listing'}
+				{title: 'Streams Builder'}
 			]
 		};
 		this.fetchData();
@@ -148,7 +151,7 @@ export default class TopologyListingContainer extends Component {
 							.then(()=>{
 								FSReactToastr.success(<strong>Topology added successfully</strong>)
 								this.refs.Modal.hide();
-								this._reactInternalInstance._context.router.push('topology-listing/'+topology.entity.id);
+								this._reactInternalInstance._context.router.push('streams-builder/'+topology.entity.id);
 							})
 					}
 				})
@@ -203,7 +206,7 @@ export default class TopologyListingContainer extends Component {
 							                return (
 							                  <Tr key={i}>
 							                    <Td column="name">
-							                    	<Link to={"topology-listing/"+obj.id}>{obj.name}</Link>
+							                    	<Link to={"streams-builder/"+obj.id}>{obj.name}</Link>
 							                    </Td>
 							                    <Td column="timestamp">
 							                    	<small>{new Date(obj.timestamp).toLocaleString()}</small>
