@@ -1,4 +1,5 @@
 ## 0.1.4
+ * IOT-398: Fix topology dag generation issue due to processor output streams not being populated
  * IOT-326: TopologyDagVisitor to have visit methods for IotasSource/IotasSink/IotasProcessor
  * IOT-368: Send empty array response in GET ALL requests.
  * IOT-389: Added missing ruleinfo and udf tables.
