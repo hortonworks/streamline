@@ -829,7 +829,15 @@ public class StreamCatalogService {
     private Collection<TopologyProcessor> fillProcessorStreams(Collection<TopologyProcessor> processors) {
         if (processors != null) {
             for (TopologyProcessor processor : processors) {
-                processor.setOutputStreams(getOutputStreams(processor));
+                List<StreamInfo> streamInfos = getOutputStreams(processor);
+                processor.setOutputStreams(streamInfos);
+                processor.setOutputStreamIds(new ArrayList<Long>(Collections2.transform(streamInfos, new Function<StreamInfo, Long>() {
+                    @Nullable
+                    @Override
+                    public Long apply(@Nullable StreamInfo input) {
+                        return input.getId();
+                    }
+                })));
             }
         }
         return processors;
