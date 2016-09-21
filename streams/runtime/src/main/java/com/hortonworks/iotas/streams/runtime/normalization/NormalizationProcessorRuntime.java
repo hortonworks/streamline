@@ -84,7 +84,7 @@ public class NormalizationProcessorRuntime implements ProcessorRuntime {
         NormalizationRuntime.Factory factory = new NormalizationRuntime.Factory();
         Map<String, NormalizationRuntime> schemaRuntimes = new HashMap<>();
         for (Map.Entry<String, ? extends NormalizationConfig> entry : normalizationProcessor.getInputStreamsWithNormalizationConfig().entrySet()) {
-            schemaRuntimes.put(entry.getKey(), factory.create(entry.getValue(), outputStream.getSchema(), normalizationProcessor.getType()));
+            schemaRuntimes.put(entry.getKey(), factory.create(entry.getValue(), outputStream.getSchema(), normalizationProcessor.getNormalizationProcessorType()));
         }
         schemasWithNormalizationRuntime = schemaRuntimes;
         schemaValidator = new SchemaValidator(outputStream.getSchema());

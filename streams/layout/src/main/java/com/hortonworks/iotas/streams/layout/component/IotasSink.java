@@ -22,6 +22,11 @@ package com.hortonworks.iotas.streams.layout.component;
  */
 public class IotasSink extends IotasComponent implements Sink {
     @Override
+    public void accept(TopologyDagVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
     public String toString() {
         return "IotasSink{} " + super.toString();
     }

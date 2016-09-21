@@ -5,21 +5,14 @@ import com.google.common.collect.Multimap;
 import com.hortonworks.iotas.streams.layout.component.Component;
 import com.hortonworks.iotas.streams.layout.component.Edge;
 import com.hortonworks.iotas.streams.layout.component.InputComponent;
+import com.hortonworks.iotas.streams.layout.component.IotasProcessor;
+import com.hortonworks.iotas.streams.layout.component.IotasSink;
+import com.hortonworks.iotas.streams.layout.component.IotasSource;
 import com.hortonworks.iotas.streams.layout.component.OutputComponent;
 import com.hortonworks.iotas.streams.layout.component.StreamGrouping;
 import com.hortonworks.iotas.streams.layout.component.TopologyDag;
 import com.hortonworks.iotas.streams.layout.component.TopologyDagVisitor;
-import com.hortonworks.iotas.streams.layout.component.impl.CustomProcessor;
-import com.hortonworks.iotas.streams.layout.component.impl.EventHubSource;
-import com.hortonworks.iotas.streams.layout.component.impl.HbaseSink;
-import com.hortonworks.iotas.streams.layout.component.impl.HdfsSink;
-import com.hortonworks.iotas.streams.layout.component.impl.KafkaSource;
-import com.hortonworks.iotas.streams.layout.component.impl.KinesisSource;
-import com.hortonworks.iotas.streams.layout.component.impl.NotificationSink;
-import com.hortonworks.iotas.streams.layout.component.impl.OpenTsdbSink;
-import com.hortonworks.iotas.streams.layout.component.impl.ParserProcessor;
 import com.hortonworks.iotas.streams.layout.component.impl.RulesProcessor;
-import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationProcessor;
 import com.hortonworks.iotas.streams.layout.component.rule.Rule;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.Window;
 import org.slf4j.Logger;
@@ -40,57 +33,28 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
 
     private TopologyDag topologyDag;
 
+    private FluxComponentFactory fluxComponentFactory = new FluxComponentFactory();
+
     public StormTopologyFluxGenerator(TopologyDag topologyDag) {
         this.topologyDag = topologyDag;
     }
 
     @Override
-    public void visit(KafkaSource kafkaSource) {
+    public void visit(IotasSource iotasSource) {
         keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_SPOUTS,
-                getYamlComponents(new KafkaSpoutFluxComponent(), kafkaSource)));
+                getYamlComponents(fluxComponentFactory.getFluxComponent(iotasSource), iotasSource)));
     }
 
     @Override
-    public void visit(KinesisSource kinesisSource) {
-        keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_SPOUTS,
-                getYamlComponents(new KinesisSpoutFluxComponent(), kinesisSource)));
-    }
-
-    @Override
-    public void visit(EventHubSource eventHubSource) {
-        keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_SPOUTS,
-                getYamlComponents(new EventHubSpoutFluxComponent(), eventHubSource)));
-    }
-
-    @Override
-    public void visit(HbaseSink hbaseSink) {
+    public void visit(IotasSink iotasSink) {
         keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_BOLTS,
-                getYamlComponents(new HbaseBoltFluxComponent(), hbaseSink)));
+                getYamlComponents(fluxComponentFactory.getFluxComponent(iotasSink), iotasSink)));
     }
 
     @Override
-    public void visit(HdfsSink hdfsSink) {
+    public void visit(IotasProcessor iotasProcessor) {
         keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_BOLTS,
-                getYamlComponents(new HdfsBoltFluxComponent(), hdfsSink)));
-    }
-
-
-    @Override
-    public void visit(OpenTsdbSink openTsdbSink) {
-        keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_BOLTS,
-                getYamlComponents(new OpenTsdbBoltFluxComponent(), openTsdbSink)));
-    }
-
-    @Override
-    public void visit(NotificationSink notificationSink) {
-        keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_BOLTS,
-                getYamlComponents(new NotificationBoltFluxComponent(), notificationSink)));
-    }
-
-    @Override
-    public void visit(ParserProcessor parserProcessor) {
-        keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_BOLTS,
-                getYamlComponents(new ParserBoltFluxComponent(), parserProcessor)));
+                getYamlComponents(fluxComponentFactory.getFluxComponent(iotasProcessor), iotasProcessor)));
     }
 
     @Override
@@ -98,7 +62,7 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
         rulesProcessor.getConfig().setAny("outputStreams", rulesProcessor.getOutputStreams());
         List<Rule> rulesWithWindow = new ArrayList<>();
         List<Rule> rulesWithoutWindow = new ArrayList<>();
-        for (Rule rule: rulesProcessor.getRules()) {
+        for (Rule rule : rulesProcessor.getRules()) {
             if (rule.getWindow() != null) {
                 rulesWithWindow.add(rule);
             } else {
@@ -109,12 +73,12 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
         // handle windowed rules with WindowRuleBoltFluxComponent
         if (!rulesWithWindow.isEmpty()) {
             Multimap<Window, Rule> windowedRules = ArrayListMultimap.create();
-            for (Rule rule: rulesWithWindow) {
+            for (Rule rule : rulesWithWindow) {
                 windowedRules.put(rule.getWindow(), rule);
             }
             int windowedRulesProcessorId = 0;
             // create windowed bolt per unique window configuration
-            for (Collection<Rule> rules: windowedRules.asMap().values()) {
+            for (Collection<Rule> rules : windowedRules.asMap().values()) {
                 RulesProcessor windowedRulesProcessor = new RulesProcessor(rulesProcessor);
                 windowedRulesProcessor.setRules(new ArrayList<>(rules));
                 windowedRulesProcessor.setId(rulesProcessor.getId() + "." + ++windowedRulesProcessorId);
@@ -154,18 +118,6 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
     }
 
     @Override
-    public void visit(NormalizationProcessor normalizationProcessor) {
-        keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_BOLTS,
-                getYamlComponents(new NormalizationBoltFluxComponent(normalizationProcessor), normalizationProcessor)));
-    }
-
-    @Override
-    public void visit(CustomProcessor customProcessor) {
-        keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_BOLTS,
-                getYamlComponents(new CustomProcessorBoltFluxComponent(), customProcessor)));
-    }
-
-    @Override
     public void visit(Edge edge) {
         for (StreamGrouping streamGrouping : edge.getStreamGroupings()) {
             addEdge(edge.getFrom(),
@@ -182,7 +134,7 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
 
     private Map<String, Object> getYamlComponents(FluxComponent fluxComponent, Component topologyComponent) {
         fluxComponent.withConfig(topologyComponent.getConfig().getProperties());
-        for (Map<String, Object> referencedComponent: fluxComponent.getReferencedComponents()) {
+        for (Map<String, Object> referencedComponent : fluxComponent.getReferencedComponents()) {
             keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_COMPONENTS, referencedComponent));
         }
         Map<String, Object> yamlComponent = fluxComponent.getComponent();

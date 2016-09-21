@@ -27,8 +27,7 @@ import java.util.Set;
 public class IotasSource extends IotasComponent implements Source {
     private final Set<Stream> outputStreams = new HashSet<>();
 
-    // for serialization
-    protected IotasSource() {
+    public IotasSource() {
         this(Collections.EMPTY_SET);
     }
 
@@ -76,6 +75,11 @@ public class IotasSource extends IotasComponent implements Source {
             }
         }
         throw new IllegalArgumentException("Invalid streamId " + streamId);
+    }
+
+    @Override
+    public void accept(TopologyDagVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override

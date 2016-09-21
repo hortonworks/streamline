@@ -23,14 +23,8 @@ import com.hortonworks.iotas.streams.layout.component.OutputComponent;
 import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.streams.layout.component.StreamGrouping;
 import com.hortonworks.iotas.streams.layout.component.impl.CustomProcessor;
-import com.hortonworks.iotas.streams.layout.component.impl.EventHubSource;
-import com.hortonworks.iotas.streams.layout.component.impl.HbaseSink;
-import com.hortonworks.iotas.streams.layout.component.impl.HdfsSink;
 import com.hortonworks.iotas.streams.layout.component.impl.KafkaSource;
-import com.hortonworks.iotas.streams.layout.component.impl.KinesisSource;
 import com.hortonworks.iotas.streams.layout.component.impl.NotificationSink;
-import com.hortonworks.iotas.streams.layout.component.impl.OpenTsdbSink;
-import com.hortonworks.iotas.streams.layout.component.impl.ParserProcessor;
 import com.hortonworks.iotas.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationConfig;
 import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationProcessor;
@@ -41,19 +35,32 @@ import com.hortonworks.iotas.streams.layout.component.impl.splitjoin.SplitProces
 import com.hortonworks.iotas.streams.layout.component.impl.splitjoin.StageAction;
 import com.hortonworks.iotas.streams.layout.component.impl.splitjoin.StageProcessor;
 import com.hortonworks.iotas.streams.layout.component.rule.Rule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.hortonworks.iotas.common.ComponentTypes.CUSTOM;
+import static com.hortonworks.iotas.common.ComponentTypes.JOIN;
+import static com.hortonworks.iotas.common.ComponentTypes.KAFKA;
+import static com.hortonworks.iotas.common.ComponentTypes.NORMALIZATION;
+import static com.hortonworks.iotas.common.ComponentTypes.NOTIFICATION;
+import static com.hortonworks.iotas.common.ComponentTypes.RULE;
+import static com.hortonworks.iotas.common.ComponentTypes.SPLIT;
+import static com.hortonworks.iotas.common.ComponentTypes.STAGE;
+import static java.util.AbstractMap.SimpleImmutableEntry;
+
 /**
  * Constructs various topology components based on the
  * TopologyComponent catalog entities
  */
 public class TopologyComponentFactory {
+    private static final Logger LOG = LoggerFactory.getLogger(TopologyComponentFactory.class);
+
     private final Map<Class<?>, Map<String, ?>> providerMap;
     private final StreamCatalogService catalogService;
 
@@ -71,6 +78,7 @@ public class TopologyComponentFactory {
         source.setId(topologySource.getId().toString());
         source.setName(topologySource.getName());
         source.setConfig(topologySource.getConfig());
+        source.setType(topologySource.getType());
         source.addOutputStreams(createOutputStreams(topologySource));
         return source;
     }
@@ -80,7 +88,8 @@ public class TopologyComponentFactory {
         processor.setId(topologyProcessor.getId().toString());
         processor.setName(topologyProcessor.getName());
         processor.setConfig(topologyProcessor.getConfig());
-        if(processor.getOutputStreams() == null || processor.getOutputStreams().isEmpty()) {
+        processor.setType(topologyProcessor.getType());
+        if (processor.getOutputStreams() == null || processor.getOutputStreams().isEmpty()) {
             processor.addOutputStreams(createOutputStreams(topologyProcessor));
         }
         return processor;
@@ -91,6 +100,7 @@ public class TopologyComponentFactory {
         sink.setId(topologySink.getId().toString());
         sink.setName(topologySink.getName());
         sink.setConfig(topologySink.getConfig());
+        sink.setType(topologySink.getType());
         return sink;
     }
 
@@ -99,7 +109,7 @@ public class TopologyComponentFactory {
         edge.setFrom(getOutputComponent(topologyEdge));
         edge.setTo(getInputComponent(topologyEdge));
         Set<StreamGrouping> streamGroupings = new HashSet<>();
-        for (TopologyEdge.StreamGrouping streamGrouping: topologyEdge.getStreamGroupings()) {
+        for (TopologyEdge.StreamGrouping streamGrouping : topologyEdge.getStreamGroupings()) {
             Stream stream = getStream(catalogService.getStreamInfo(streamGrouping.getStreamId()));
             Stream.Grouping grouping = Stream.Grouping.valueOf(streamGrouping.getGrouping().name());
             streamGroupings.add(new StreamGrouping(stream, grouping, streamGrouping.getFields()));
@@ -136,14 +146,24 @@ public class TopologyComponentFactory {
         return new Stream(streamInfo.getStreamId(), streamInfo.getFields());
     }
 
+    /*
+     * Its optional to register the specific child providers. Its needed only if
+     * the specific child component exists and needs to be passed in the runtime.
+     * In that case the specific child component would be added to the topology dag vertex.
+     * Otherwise an instance of IotasSource is used.
+     */
     private Map<String, Provider<IotasSource>> createSourceProviders() {
         ImmutableMap.Builder<String, Provider<IotasSource>> builder = ImmutableMap.builder();
         builder.put(kafkaSourceProvider());
-        builder.put(kinesisSourceProvider());
-        builder.put(eventHubSourceProvider());
         return builder.build();
     }
 
+    /*
+     * Its optional to register the specific child providers. Its needed only if
+     * the specific child component exists and needs to be passed in the runtime.
+     * In that case the specific child component would be added to the topology dag vertex.
+     * Otherwise an instance of IotasProcessor is used.
+     */
     private Map<String, Provider<IotasProcessor>> createProcessorProviders() {
         ImmutableMap.Builder<String, Provider<IotasProcessor>> builder = ImmutableMap.builder();
         builder.put(rulesProcessorProvider());
@@ -151,16 +171,18 @@ public class TopologyComponentFactory {
         builder.put(splitProcessorProvider());
         builder.put(joinProcessorProvider());
         builder.put(stageProcessorProvider());
-        builder.put(parserProcessorProvider());
         builder.put(customProcessorProvider());
         return builder.build();
     }
 
+    /*
+     * Its optional to register the specific child providers. Its needed only if
+     * the specific child component exists and needs to be passed in the runtime.
+     * In that case the specific child component would be added to the topology dag vertex.
+     * Otherwise an instance of IotasSink is used.
+     */
     private Map<String, Provider<IotasSink>> createSinkProviders() {
         ImmutableMap.Builder<String, Provider<IotasSink>> builder = ImmutableMap.builder();
-        builder.put(hbaseSinkProvider());
-        builder.put(hdfsSinkProvider());
-        builder.put(openTsdbSinkProvider());
         builder.put(notificationSinkProvider());
         return builder.build();
     }
@@ -173,11 +195,23 @@ public class TopologyComponentFactory {
         return outputStreams;
     }
 
-    private <T extends IotasComponent> Provider<T> getProvider(Class<T> clazz, String type) {
+    private <T extends IotasComponent> Provider<T> getProvider(final Class<T> clazz, String type) {
         if (providerMap.get(clazz).containsKey(type)) {
             return (Provider<T>) providerMap.get(clazz).get(type);
+        } else {
+            LOG.warn("Type {} not found in provider map, returning an instance of {}", type, clazz.getName());
+            return new Provider<T>() {
+                @Override
+                public T create(TopologyComponent component) {
+                    try {
+                        return clazz.newInstance();
+                    } catch (InstantiationException | IllegalAccessException e) {
+                        LOG.error("Got exception ", e);
+                        throw new RuntimeException(e);
+                    }
+                }
+            };
         }
-        throw new UnsupportedOperationException("Unknown type " + type);
     }
 
     private interface Provider<T extends IotasComponent> {
@@ -191,25 +225,7 @@ public class TopologyComponentFactory {
                 return new KafkaSource();
             }
         };
-        return new AbstractMap.SimpleImmutableEntry<>("KAFKA", provider);
-    }
-
-    private Map.Entry<String, Provider<IotasSource>> kinesisSourceProvider() {
-        return new AbstractMap.SimpleImmutableEntry<String, Provider<IotasSource>>("KINESIS", new Provider<IotasSource>() {
-            @Override
-            public IotasSource create(TopologyComponent component) {
-                return new KinesisSource();
-            }
-        });
-    }
-
-    private Map.Entry<String, Provider<IotasSource>> eventHubSourceProvider() {
-        return new AbstractMap.SimpleImmutableEntry<String, Provider<IotasSource>>("EVENTHUB", new Provider<IotasSource>() {
-            @Override
-            public IotasSource create(TopologyComponent component) {
-                return new EventHubSource();
-            }
-        });
+        return new SimpleImmutableEntry<>(KAFKA, provider);
     }
 
     private Map.Entry<String, Provider<IotasProcessor>> normalizationProcessorProvider() {
@@ -221,18 +237,19 @@ public class TopologyComponentFactory {
                 Object normConfObj = config.getAny(NormalizationProcessor.CONFIG_KEY_NORMALIZATION);
                 ObjectMapper objectMapper = new ObjectMapper();
                 NormalizationProcessor.Type type = objectMapper.convertValue(typeObj, NormalizationProcessor.Type.class);
-                Map<String, NormalizationConfig> normConfig = objectMapper.convertValue(normConfObj, new TypeReference<Map<String, NormalizationConfig>>() {});
+                Map<String, NormalizationConfig> normConfig = objectMapper.convertValue(normConfObj, new TypeReference<Map<String, NormalizationConfig>>() {
+                });
                 updateWithSchemas(normConfig);
 
                 Set<Stream> outputStreams = createOutputStreams((TopologyOutputComponent) component);
                 if (outputStreams.size() != 1) {
-                    throw new IllegalArgumentException("Normalization component ["+component+"] must have only one output stream");
+                    throw new IllegalArgumentException("Normalization component [" + component + "] must have only one output stream");
                 }
 
                 return new NormalizationProcessor(normConfig, outputStreams.iterator().next(), type);
             }
         };
-        return new AbstractMap.SimpleImmutableEntry<>("NORMALIZATION", provider);
+        return new SimpleImmutableEntry<>(NORMALIZATION, provider);
     }
 
     private void updateWithSchemas(Map<String, NormalizationConfig> normalizationConfigRead) {
@@ -255,7 +272,7 @@ public class TopologyComponentFactory {
                 return splitProcessor;
             }
         };
-        return new AbstractMap.SimpleImmutableEntry<>("SPLIT", provider);
+        return new SimpleImmutableEntry<>(SPLIT, provider);
     }
 
     private Map.Entry<String, Provider<IotasProcessor>> joinProcessorProvider() {
@@ -271,7 +288,7 @@ public class TopologyComponentFactory {
                 return joinProcessor;
             }
         };
-        return new AbstractMap.SimpleImmutableEntry<>("JOIN", provider);
+        return new SimpleImmutableEntry<>(JOIN, provider);
     }
 
     private Map.Entry<String, Provider<IotasProcessor>> stageProcessorProvider() {
@@ -287,7 +304,7 @@ public class TopologyComponentFactory {
                 return stageProcessor;
             }
         };
-        return new AbstractMap.SimpleImmutableEntry<>("STAGE", provider);
+        return new SimpleImmutableEntry<>(STAGE, provider);
     }
 
     private Map.Entry<String, Provider<IotasProcessor>> rulesProcessorProvider() {
@@ -300,7 +317,8 @@ public class TopologyComponentFactory {
                 processor.addOutputStreams(outputStreams);
 
                 Object ruleList = component.getConfig().getAny(RulesProcessor.CONFIG_KEY_RULES);
-                List<Long> ruleIds = objectMapper.convertValue(ruleList, new TypeReference<List<Long>>() {});
+                List<Long> ruleIds = objectMapper.convertValue(ruleList, new TypeReference<List<Long>>() {
+                });
                 try {
                     List<Rule> rules = new ArrayList<>();
                     for (Long ruleId : ruleIds) {
@@ -314,17 +332,7 @@ public class TopologyComponentFactory {
                 return processor;
             }
         };
-        return new AbstractMap.SimpleImmutableEntry<>("RULE", provider);
-    }
-
-    private Map.Entry<String, Provider<IotasProcessor>> parserProcessorProvider() {
-        Provider<IotasProcessor> provider = new Provider<IotasProcessor>() {
-            @Override
-            public IotasProcessor create(TopologyComponent component) {
-                return new ParserProcessor();
-            }
-        };
-        return new AbstractMap.SimpleImmutableEntry<>("PARSER", provider);
+        return new SimpleImmutableEntry<>(RULE, provider);
     }
 
     private Map.Entry<String, Provider<IotasProcessor>> customProcessorProvider() {
@@ -334,37 +342,7 @@ public class TopologyComponentFactory {
                 return new CustomProcessor();
             }
         };
-        return new AbstractMap.SimpleImmutableEntry<>("CUSTOM", provider);
-    }
-
-    private Map.Entry<String, Provider<IotasSink>> openTsdbSinkProvider() {
-        Provider<IotasSink> provider = new Provider<IotasSink>() {
-            @Override
-            public IotasSink create(TopologyComponent component) {
-                return new OpenTsdbSink();
-            }
-        };
-        return new AbstractMap.SimpleImmutableEntry<>("OPENTSDB", provider);
-    }
-
-    private Map.Entry<String, Provider<IotasSink>> hbaseSinkProvider() {
-        Provider<IotasSink> provider = new Provider<IotasSink>() {
-            @Override
-            public IotasSink create(TopologyComponent component) {
-                return new HbaseSink();
-            }
-        };
-        return new AbstractMap.SimpleImmutableEntry<>("HBASE", provider);
-    }
-
-    private Map.Entry<String, Provider<IotasSink>> hdfsSinkProvider() {
-        Provider<IotasSink> provider = new Provider<IotasSink>() {
-            @Override
-            public IotasSink create(TopologyComponent component) {
-                return new HdfsSink();
-            }
-        };
-        return new AbstractMap.SimpleImmutableEntry<>("HDFS", provider);
+        return new SimpleImmutableEntry<>(CUSTOM, provider);
     }
 
     private Map.Entry<String, Provider<IotasSink>> notificationSinkProvider() {
@@ -374,6 +352,6 @@ public class TopologyComponentFactory {
                 return new NotificationSink();
             }
         };
-        return new AbstractMap.SimpleImmutableEntry<>("NOTIFICATION", provider);
+        return new SimpleImmutableEntry<>(NOTIFICATION, provider);
     }
 }

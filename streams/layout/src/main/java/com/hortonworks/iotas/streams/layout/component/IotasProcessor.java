@@ -27,8 +27,7 @@ import java.util.Set;
 public class IotasProcessor extends IotasComponent implements Processor {
     private final Set<Stream> outputStreams = new HashSet<>();
 
-    // for serialization
-    protected IotasProcessor() {
+    public IotasProcessor() {
         this(Collections.EMPTY_SET);
     }
 
@@ -84,10 +83,14 @@ public class IotasProcessor extends IotasComponent implements Processor {
     }
 
     @Override
+    public void accept(TopologyDagVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
     public String toString() {
         return "IotasProcessor{" +
                 "outputStreams=" + outputStreams +
                 '}'+super.toString();
     }
-
 }

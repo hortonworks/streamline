@@ -1,63 +1,21 @@
 package com.hortonworks.iotas.streams.layout.component;
 
-import com.hortonworks.iotas.streams.layout.component.impl.EventHubSource;
-import com.hortonworks.iotas.streams.layout.component.impl.HdfsSink;
-import com.hortonworks.iotas.streams.layout.component.impl.CustomProcessor;
-import com.hortonworks.iotas.streams.layout.component.impl.HbaseSink;
-import com.hortonworks.iotas.streams.layout.component.impl.KafkaSource;
-import com.hortonworks.iotas.streams.layout.component.impl.KinesisSource;
-import com.hortonworks.iotas.streams.layout.component.impl.NotificationSink;
-import com.hortonworks.iotas.streams.layout.component.impl.OpenTsdbSink;
-import com.hortonworks.iotas.streams.layout.component.impl.ParserProcessor;
 import com.hortonworks.iotas.streams.layout.component.impl.RulesProcessor;
-import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationProcessor;
 
 public abstract class TopologyDagVisitor {
-    public void visit(KafkaSource kafkaSource) {
-        throw new UnsupportedOperationException("Not Implemented");
-    }
-
-    public void visit(KinesisSource kinesisSource) {
-        throw new UnsupportedOperationException("Not Implemented");
-    }
-
-    public void visit(EventHubSource eventHubSource) {
-        throw new UnsupportedOperationException("Not Implemented");
-    }
-
-    public void visit(ParserProcessor parserProcessor) {
-        throw new UnsupportedOperationException("Not Implemented");
-    }
-
     public void visit(RulesProcessor rulesProcessor) {
         throw new UnsupportedOperationException("Not Implemented");
     }
 
-    public void visit(NormalizationProcessor normalizationProcessor) {
+    public void visit(IotasSource iotasSource) {
         throw new UnsupportedOperationException("Not Implemented");
     }
 
-    public void visit(CustomProcessor customProcessor) {
+    public void visit(IotasSink iotasSink) {
         throw new UnsupportedOperationException("Not Implemented");
     }
 
-    public void visit(HbaseSink hbaseSink) {
-        throw new UnsupportedOperationException("Not Implemented");
-    }
-
-    public void visit(HdfsSink hdfsSink) {
-        throw new UnsupportedOperationException("Not Implemented");
-    }
-
-    public void visit(OpenTsdbSink openTsdbSink) {
-        throw new UnsupportedOperationException("Not Implemented");
-    }
-
-    public void visit(NotificationSink notificationSink) {
-        throw new UnsupportedOperationException("Not Implemented");
-    }
-
-    public void visit(IotasComponent iotasComponent) {
+    public void visit(IotasProcessor iotasProcessor) {
         throw new UnsupportedOperationException("Not Implemented");
     }
 

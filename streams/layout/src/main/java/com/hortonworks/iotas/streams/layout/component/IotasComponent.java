@@ -28,6 +28,7 @@ public abstract class IotasComponent implements Component {
     private String id;
     private String name;
     private Config config;
+    private String type;
 
     public IotasComponent() {
         config = new Config();
@@ -66,6 +67,14 @@ public abstract class IotasComponent implements Component {
         this.config = config;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -91,7 +100,4 @@ public abstract class IotasComponent implements Component {
                 '}';
     }
 
-    public void accept(TopologyDagVisitor visitor) {
-        visitor.visit(this);
-    }
 }
