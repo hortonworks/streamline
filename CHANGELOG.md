@@ -1,4 +1,5 @@
 ## 0.1.4
+ * IOT-391: Add Eventhub source example in topology rest api script
  * IOT-397: UI bug fixes and changes for module refactoring 
  * IOT-398: Fix topology dag generation issue due to processor output streams not being populated
  * IOT-326: TopologyDagVisitor to have visit methods for IotasSource/IotasSink/IotasProcessor
