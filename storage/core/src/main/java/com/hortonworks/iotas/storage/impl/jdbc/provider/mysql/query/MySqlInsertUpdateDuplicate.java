@@ -31,9 +31,9 @@ public class MySqlInsertUpdateDuplicate extends AbstractStorableSqlQuery {
     @Override
     protected void setParameterizedSql() {
         sql = "INSERT INTO " + tableName + " ("
-                + join(getColumnNames(columns, null), ", ")
+                + join(getColumnNames(columns, "`%s`"), ", ")
                 + ") VALUES(" + getBindVariables("?,", columns.size()) + ")"
-                + " ON DUPLICATE KEY UPDATE " + join(getColumnNames(columns, "%s = ?"), ", ");
+                + " ON DUPLICATE KEY UPDATE " + join(getColumnNames(columns, "`%s` = ?"), ", ");
         log.debug(sql);
     }
 }

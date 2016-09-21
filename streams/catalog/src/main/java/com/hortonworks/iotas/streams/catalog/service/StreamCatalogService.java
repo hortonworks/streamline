@@ -679,7 +679,12 @@ public class StreamCatalogService {
      * Similar to Table per concrete class hibernate strategy.
      */
     private long getNextTopologyComponentId() {
-        return dao.nextId(TOPOLOGY_COMPONENT_NAMESPACE);
+        TopologyComponent component = new TopologyComponent();
+        Long id = dao.nextId(TOPOLOGY_COMPONENT_NAMESPACE);
+        component.setId(id);
+        dao.add(component);
+        dao.remove(component.getStorableKey());
+        return id;
     }
 
     public TopologySource addTopologySource(Long topologyId, TopologySource topologySource) {

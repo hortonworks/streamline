@@ -19,7 +19,7 @@ catalogurl="http://$host:$port/api/v1/catalog"
 echo "Catalog url: $catalogurl"
 
 echo -e "\n------"
-curl -X POST -i -F parserJar=@parsers/target/parsers-0.1.0-SNAPSHOT.jar -F parserInfo='{"name":"Nest","className":"com.hortonworks.iotas.parsers.nest.NestParser","version":1}' ${catalogurl}/parsers
+curl -X POST -i -F parserJar=@parsers/target/parsers-0.1.0-SNAPSHOT.jar -F'schemaFromParserJar=true' -F parserInfo='{"name":"Nest","className":"com.hortonworks.iotas.registries.parser.nest.NestParser","version":1}' ${catalogurl}/parsers
 
 # --
 # Create a device 
@@ -91,7 +91,7 @@ normOutputStreamId=$(getId $out)
 # --
 # Create kafka data source
 # --
-echo -e "\n------"
+echo -e "\n------ create kafka data source"
 out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
     "name": "kafkaDataSource",
     "config": {
