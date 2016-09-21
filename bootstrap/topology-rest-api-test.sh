@@ -148,6 +148,46 @@ kinesisid=$(getId $out)
 
 
 # --
+# Create eventhub stream
+# --
+echo -e "\n------"
+out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
+    "streamId": "default",
+    "fields": [{"name": "iotas.event", "type": "NESTED"} ]
+}' "${catalogurl}/topologies/$topologyid/streams")
+
+echo $out
+eventhubstream=$(getId $out)
+
+# --
+# Create eventhub data source
+# --
+echo -e "\n------"
+out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
+    "name": "eventhubDataSource",
+    "config": {
+        "properties": {
+            "username": "test",
+            "password": "test",
+            "namespace": "testNamespace",
+            "entityPath": "foo",
+            "partitionCount": 1,
+            "zkConnectionString": "localhost:2181",
+            "checkpointIntervalInSeconds": 60,
+            "receiverCredits": 100,
+            "maxPendingMsgsPerPartition": 100,
+            "enqueueTimeFilter": 1000,
+            "consumerGroupName": "group1"
+        }
+    },
+    "type": "EVENTHUB",
+    "outputStreamIds": ['"$eventhubstream"']
+}' "${catalogurl}/topologies/$topologyid/sources")
+
+echo $out
+eventhubid=$(getId $out)
+
+# --
 # Create parser processor
 # --
 echo -e "\n------"
@@ -428,6 +468,16 @@ curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -
     "fromId": '$kinesisid',
     "toId": '$ruleprocessorid',
     "streamGroupings": [{"streamId": '$kinesisstream', "grouping": "SHUFFLE"}]
+}' "${catalogurl}/topologies/$topologyid/edges"
+
+# --
+# Eventhub -> Rule processor
+# --
+echo -e "\n------ Evenhub -> Rule processor"
+curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
+    "fromId": '$eventhubid',
+    "toId": '$ruleprocessorid',
+    "streamGroupings": [{"streamId": '$eventhubstream', "grouping": "SHUFFLE"}]
 }' "${catalogurl}/topologies/$topologyid/edges"
 
 # --
