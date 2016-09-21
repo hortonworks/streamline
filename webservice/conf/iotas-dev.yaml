@@ -21,23 +21,25 @@ modules:
 
 catalogRootUrl: "http://localhost:8080/api/v1/catalog"
 # Filesystem based jar storage
-#fileStorageConfiguration:
-#  className: "com.hortonworks.iotas.common.util.LocalFileSystemStorage"
-#  properties:
-#    directory: "/tmp"
+fileStorageConfiguration:
+ className: "com.hortonworks.iotas.common.util.LocalFileSystemStorage"
+ properties:
+   directory: "/tmp"
 
 # HDFS based Jar storage
-fileStorageConfiguration:
-  className: "com.hortonworks.iotas.common.util.HdfsFileStorage"
-  properties:
-    fsUrl: "file:///"
-    directory: "/tmp/test-hdfs"
+# fileStorageConfiguration:
+#   className: "com.hortonworks.iotas.common.util.HdfsFileStorage"
+#   properties:
+#     fsUrl: "file:///"
+#     directory: "/tmp/test-hdfs"
 
 # storage provider configuration
 #
 # Example configuration for inmemory is:
-#storageProviderConfiguration:
-# providerClass: "com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager"
+
+storageProviderConfiguration:
+  providerClass: "com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager"
+
 #
 # Example configuration for phoenix based JDBC driver
 #storageProviderConfiguration:
