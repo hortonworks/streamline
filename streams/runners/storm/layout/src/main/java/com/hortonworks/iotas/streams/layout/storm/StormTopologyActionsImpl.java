@@ -203,7 +203,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
             Exception {
         String configJson = topology.getConfig();
         Map<String, Object> yamlMap;
-        Map jsonMap;
+        Map<String, Object> jsonMap;
         ObjectMapper objectMapper = new ObjectMapper();
         File f;
         FileWriter fileWriter = null;
@@ -215,13 +215,11 @@ public class StormTopologyActionsImpl implements TopologyActions {
                             "artifact for topology id " + topology.getId());
                 }
             }
-
             jsonMap = objectMapper.readValue(configJson, Map.class);
             yamlMap = new LinkedHashMap<String, Object>();
             yamlMap.put(StormTopologyLayoutConstants.YAML_KEY_NAME, this
                     .getTopologyName(topology));
-            addTopologyConfig(yamlMap, (Map<String, Object>) jsonMap.get
-                    (TopologyLayoutConstants.JSON_KEY_CONFIG));
+            addTopologyConfig(yamlMap, jsonMap);
             for (Map.Entry<String, Map<String, Object>> entry: getYamlKeysAndComponents(topology.getTopologyDag())) {
                 addComponentToCollection(yamlMap, entry.getValue(), entry.getKey());
             }
@@ -261,7 +259,9 @@ public class StormTopologyActionsImpl implements TopologyActions {
             Object> topologyConfig) {
         Map<String, Object> config = new LinkedHashMap<String, Object>();
         config.put(StormTopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL, catalogRootUrl);
-        config.putAll(topologyConfig);
+        if (topologyConfig != null) {
+            config.putAll(topologyConfig);
+        }
         yamlMap.put(StormTopologyLayoutConstants.YAML_KEY_CONFIG, config);
     }
 
