@@ -72,13 +72,8 @@ public class CustomProcessorUploadHandler implements FileEventHandler {
                 File tempJarFile = FileUtil.writeInputStreamToTempFile(jarFile, ".jar");
                 ProxyUtil<CustomProcessorRuntime> customProcessorProxyUtil = new ProxyUtil<>(CustomProcessorRuntime.class);
                 CustomProcessorRuntime customProcessorRuntime = customProcessorProxyUtil.loadClassFromJar(tempJarFile.getAbsolutePath(), customProcessorInfo.getCustomProcessorImpl());
-                InputStream imageFile = this.getImageFile(customProcessorInfo, createdFile);
-                if (imageFile == null) {
-                    LOG.warn("No image file found for CustomProcessorRuntime in " + createdFile);
-                    return;
-                }
                 jarFile.reset();
-                this.catalogService.addCustomProcessorInfo(customProcessorInfo, jarFile, imageFile);
+                this.catalogService.addCustomProcessorInfo(customProcessorInfo, jarFile);
                 succeeded = true;
             } else {
                 LOG.info("Failing unsupported file that was received: " + path);
@@ -126,17 +121,6 @@ public class CustomProcessorUploadHandler implements FileEventHandler {
             LOG.warn(jsonInfoFile + " not present in tar file: " + tarFile);
         }
         return customProcessorInfo;
-    }
-
-    private InputStream getImageFile (CustomProcessorInfo customProcessorInfo, File tarFile) {
-        InputStream is = null;
-        byte[] imageFileBytes = getFileAsByteArray(tarFile, customProcessorInfo.getImageFileName());
-        if (imageFileBytes != null && imageFileBytes.length > 0) {
-            is = new ByteArrayInputStream(imageFileBytes);
-        } else {
-            LOG.warn(customProcessorInfo.getImageFileName() + " not present in tar file: " + tarFile);
-        }
-        return is;
     }
 
     private InputStream getJarFile (CustomProcessorInfo customProcessorInfo, File tarFile) {

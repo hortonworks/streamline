@@ -96,7 +96,6 @@ public class RestIntegrationTest {
     public static final DropwizardAppRule<IotasConfiguration> RULE = new DropwizardAppRule<>(IotasApplication.class, ResourceHelpers.resourceFilePath("iotas-test.yaml"));
 
     private String rootUrl = String.format("http://localhost:%d/api/v1/catalog/", RULE.getLocalPort());
-    private final InputStream IMAGE_FILE_STREAM = new ByteArrayInputStream("some gif gibberish".getBytes());
     private final InputStream JAR_FILE_STREAM = new ByteArrayInputStream("some jar gibberish".getBytes());
     /**
      * A Test element holder class
@@ -485,7 +484,6 @@ public class RestIntegrationTest {
         String prefixQueryParam = "?streamingEngine=STORM";
         List<String> getUrlQueryParms = new ArrayList<String>();
         getUrlQueryParms.add(prefixQueryParam + "&name=ConsoleCustomProcessorRuntime");
-        getUrlQueryParms.add(prefixQueryParam + "&imageFileName=image.gif");
         getUrlQueryParms.add(prefixQueryParam + "&jarFileName=iotas-core.jar");
         getUrlQueryParms.add(prefixQueryParam + "&customProcessorImpl=" + ConsoleCustomProcessorRuntime.class.getCanonicalName());
         List<List<CustomProcessorInfo>> getResults = new ArrayList<List<CustomProcessorInfo>>();
@@ -514,7 +512,6 @@ public class RestIntegrationTest {
         FileDataBodyPart jarFileBodyPart = new FileDataBodyPart(TopologyCatalogResource.JAR_FILE_PARAM_NAME, getCpJarFile(), MediaType
                 .APPLICATION_OCTET_STREAM_TYPE);*/
         MultiPart multiPart = new MultiPart(MediaType.MULTIPART_FORM_DATA_TYPE);
-        multiPart.bodyPart(new StreamDataBodyPart(TopologyCatalogResource.IMAGE_FILE_PARAM_NAME, IMAGE_FILE_STREAM));
         multiPart.bodyPart(new StreamDataBodyPart(TopologyCatalogResource.JAR_FILE_PARAM_NAME, JAR_FILE_STREAM));
         multiPart.bodyPart(new FormDataBodyPart(TopologyCatalogResource.CP_INFO_PARAM_NAME, customProcessorInfo, MediaType.APPLICATION_JSON_TYPE));
         client.target(prefixUrl).request(MediaType.MULTIPART_FORM_DATA_TYPE).post(Entity.entity(multiPart, multiPart.getMediaType()));
@@ -866,7 +863,6 @@ public class RestIntegrationTest {
         CustomProcessorInfo customProcessorInfo = new CustomProcessorInfo();
         customProcessorInfo.setName("ConsoleCustomProcessorRuntime");
         customProcessorInfo.setDescription("Console Custom Processor");
-        customProcessorInfo.setImageFileName("image.gif");
         customProcessorInfo.setJarFileName("iotas-core.jar");
         customProcessorInfo.setCustomProcessorImpl(ConsoleCustomProcessorRuntime.class.getCanonicalName());
         customProcessorInfo.setStreamingEngine(TopologyLayoutConstants.STORM_STREAMING_ENGINE);
@@ -898,12 +894,6 @@ public class RestIntegrationTest {
         Map<String, Schema> outputStreamToSchema = new HashMap<>();
         outputStreamToSchema.put("outputStream", getSchema());
         return outputStreamToSchema;
-    }
-
-    private java.io.File getCpImageFile () throws IOException {
-        java.io.File imageFile = new java.io.File("/tmp/image.gif");
-        IOUtils.copy(IMAGE_FILE_STREAM, new FileOutputStream(imageFile));
-        return imageFile;
     }
 
     private java.io.File getCpJarFile () throws IOException {

@@ -73,7 +73,6 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Produces(MediaType.APPLICATION_JSON)
 public class TopologyCatalogResource {
     private static final Logger LOG = LoggerFactory.getLogger(TopologyCatalogResource.class);
-    public static final String IMAGE_FILE_PARAM_NAME = "imageFile";
     public static final String JAR_FILE_PARAM_NAME = "jarFile";
     public static final String CP_INFO_PARAM_NAME = "customProcessorInfo";
     private StreamCatalogService catalogService;
@@ -389,8 +388,12 @@ public class TopologyCatalogResource {
     @GET
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @Path("/system/componentdefinitions/{processor}/custom/{fileName}")
-    public Response downloadCustomProcessorFile (@PathParam("fileName") String fileName) {
+    public Response downloadCustomProcessorFile (@PathParam("processor") TopologyComponentDefinition.TopologyComponentType componentType, @PathParam
+            ("fileName") String fileName) {
         try {
+            if (!TopologyComponentDefinition.TopologyComponentType.PROCESSOR.equals(componentType)) {
+                return WSUtils.respond(NOT_FOUND, CUSTOM_PROCESSOR_ONLY);
+            }
             final InputStream inputStream = catalogService.getFileFromJarStorage(fileName);
             if (inputStream != null) {
                 StreamingOutput streamOutput = WSUtils.wrapWithStreamingOutput(inputStream);
@@ -437,29 +440,22 @@ public class TopologyCatalogResource {
         if (!TopologyComponentDefinition.TopologyComponentType.PROCESSOR.equals(componentType)) {
            return  WSUtils.respond(NOT_FOUND, CUSTOM_PROCESSOR_ONLY);
         }
-        InputStream imageFile = null, jarFile = null;
+        InputStream jarFile = null;
         try {
-            imageFile = this.getFormDataFromMultiPartRequestAs(InputStream.class, form, IMAGE_FILE_PARAM_NAME);
             jarFile = this.getFormDataFromMultiPartRequestAs(InputStream.class, form, JAR_FILE_PARAM_NAME);
             String customProcessorInfoStr = this.getFormDataFromMultiPartRequestAs(String.class, form, CP_INFO_PARAM_NAME);
-            String missingParam = imageFile == null ? IMAGE_FILE_PARAM_NAME : (jarFile == null ? JAR_FILE_PARAM_NAME : (customProcessorInfoStr == null ?
-                    CP_INFO_PARAM_NAME : null));
+            String missingParam = (jarFile == null ? JAR_FILE_PARAM_NAME : (customProcessorInfoStr == null ? CP_INFO_PARAM_NAME : null));
             if (missingParam != null) {
                 LOG.debug(missingParam + " is missing or invalid while adding custom processor");
                 return WSUtils.respond(BAD_REQUEST, BAD_REQUEST_PARAM_MISSING, missingParam);
             }
             CustomProcessorInfo customProcessorInfo = new ObjectMapper().readValue(customProcessorInfoStr, CustomProcessorInfo.class);
-            CustomProcessorInfo createdCustomProcessor = catalogService.addCustomProcessorInfo(customProcessorInfo, jarFile, imageFile);
+            CustomProcessorInfo createdCustomProcessor = catalogService.addCustomProcessorInfo(customProcessorInfo, jarFile);
             return WSUtils.respond(CREATED, SUCCESS, createdCustomProcessor);
         } catch (Exception e) {
             LOG.debug("Exception thrown while trying to add a custom processor", e);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, e.getMessage());
         } finally {
-            try {
-                imageFile.close();
-            } catch (IOException e) {
-                LOG.debug("Error while closing image file stream", e);
-            }
             try {
                 jarFile.close();
             } catch (IOException e) {
@@ -476,29 +472,22 @@ public class TopologyCatalogResource {
         if (!TopologyComponentDefinition.TopologyComponentType.PROCESSOR.equals(componentType)) {
             return WSUtils.respond(NOT_FOUND, CUSTOM_PROCESSOR_ONLY);
         }
-        InputStream imageFile = null, jarFile = null;
+        InputStream jarFile = null;
         try {
-            imageFile = this.getFormDataFromMultiPartRequestAs(InputStream.class, form, IMAGE_FILE_PARAM_NAME);
             jarFile = this.getFormDataFromMultiPartRequestAs(InputStream.class, form, JAR_FILE_PARAM_NAME);
             String customProcessorInfoStr = this.getFormDataFromMultiPartRequestAs(String.class, form, CP_INFO_PARAM_NAME);
-            String missingParam = imageFile == null ? IMAGE_FILE_PARAM_NAME : (jarFile == null ? JAR_FILE_PARAM_NAME : (customProcessorInfoStr == null ?
-                    CP_INFO_PARAM_NAME : null));
+            String missingParam = (jarFile == null ? JAR_FILE_PARAM_NAME : (customProcessorInfoStr == null ? CP_INFO_PARAM_NAME : null));
             if (missingParam != null) {
                 LOG.debug(missingParam + " is missing or invalid while adding/updating custom processor");
                 return WSUtils.respond(BAD_REQUEST, BAD_REQUEST_PARAM_MISSING, missingParam);
             }
             CustomProcessorInfo customProcessorInfo = new ObjectMapper().readValue(customProcessorInfoStr, CustomProcessorInfo.class);
-            CustomProcessorInfo updatedCustomProcessor = catalogService.updateCustomProcessorInfo(customProcessorInfo, jarFile, imageFile);
+            CustomProcessorInfo updatedCustomProcessor = catalogService.updateCustomProcessorInfo(customProcessorInfo, jarFile);
             return WSUtils.respond(OK, SUCCESS, updatedCustomProcessor);
         } catch (Exception e) {
             LOG.debug("Exception thrown while trying to add/update a custom processor", e);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, e.getMessage());
         } finally {
-            try {
-                imageFile.close();
-            } catch (IOException e) {
-                LOG.debug("Error while closing image file stream", e);
-            }
             try {
                 jarFile.close();
             } catch (IOException e) {

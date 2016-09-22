@@ -133,7 +133,7 @@ export default class DeviceNodeForm extends Component {
 
 	handleValueChange(e) {
 		let obj = this.state.configFields;
-		obj[e.target.name] = e.target.value === '' ? '' : e.target.type === "number" ? parseInt(e.target.value, 10) : e.target.value;
+		obj[e.target.name] = e.target.type === "number" ? Math.abs(e.target.value) : e.target.value;
 		this.setState({configFields: obj});
 	}
 

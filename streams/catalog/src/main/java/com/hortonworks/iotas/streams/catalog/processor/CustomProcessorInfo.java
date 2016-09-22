@@ -22,7 +22,6 @@ import java.util.Set;
 public class CustomProcessorInfo {
     public static final String NAME = "name";
     public static final String DESCRIPTION = "description";
-    public static final String IMAGE_FILE_NAME = "imageFileName";
     public static final String JAR_FILE_NAME = "jarFileName";
     public static final String CONFIG_FIELDS = "configFields";
     public static final String INPUT_SCHEMA = "inputSchema";
@@ -32,7 +31,6 @@ public class CustomProcessorInfo {
     private String streamingEngine;
     private String name;
     private String description;
-    private String imageFileName;
     private String jarFileName;
     private List<ConfigField> configFields;
     private Schema inputSchema;
@@ -45,7 +43,6 @@ public class CustomProcessorInfo {
                 "streamingEngine='" + streamingEngine + '\'' +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
-                ", imageFileName='" + imageFileName + '\'' +
                 ", jarFileName='" + jarFileName + '\'' +
                 ", configFields=" + configFields +
                 ", inputSchema=" + inputSchema +
@@ -64,7 +61,6 @@ public class CustomProcessorInfo {
         if (streamingEngine != null ? !streamingEngine.equals(that.streamingEngine) : that.streamingEngine != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
-        if (imageFileName != null ? !imageFileName.equals(that.imageFileName) : that.imageFileName != null) return false;
         if (jarFileName != null ? !jarFileName.equals(that.jarFileName) : that.jarFileName != null) return false;
         if (configFields != null ? !configFields.equals(that.configFields) : that.configFields != null) return false;
         if (inputSchema != null ? !inputSchema.equals(that.inputSchema) : that.inputSchema != null) return false;
@@ -78,7 +74,6 @@ public class CustomProcessorInfo {
         int result = streamingEngine != null ? streamingEngine.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
-        result = 31 * result + (imageFileName != null ? imageFileName.hashCode() : 0);
         result = 31 * result + (jarFileName != null ? jarFileName.hashCode() : 0);
         result = 31 * result + (configFields != null ? configFields.hashCode() : 0);
         result = 31 * result + (inputSchema != null ? inputSchema.hashCode() : 0);
@@ -117,14 +112,6 @@ public class CustomProcessorInfo {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getImageFileName() {
-        return imageFileName;
-    }
-
-    public void setImageFileName(String imageFileName) {
-        this.imageFileName = imageFileName;
     }
 
     public String getJarFileName() {
@@ -167,7 +154,6 @@ public class CustomProcessorInfo {
             this.setName((String) config.get(NAME));
             this.setDescription((String) config.get(DESCRIPTION));
             this.setJarFileName((String) config.get(JAR_FILE_NAME));
-            this.setImageFileName((String) config.get(IMAGE_FILE_NAME));
             this.setCustomProcessorImpl((String) config.get(CUSTOM_PROCESSOR_IMPL));
             Schema inputSchema = Utils.getSchemaFromConfig((Map) config.get(INPUT_SCHEMA));
             this.setInputSchema(inputSchema);
@@ -199,7 +185,6 @@ public class CustomProcessorInfo {
                 .JSON_KEY_LOCAL_JAR_PATH_TOOLTIP, ConfigField.Type.STRING, null));
         configFields.add(this.createConfigField(NAME, false, false, "Custom processor name", ConfigField.Type.STRING, this.name));
         configFields.add(this.createConfigField(DESCRIPTION, false, false, "Custom processor description", ConfigField.Type.STRING, this.description));
-        configFields.add(this.createConfigField(IMAGE_FILE_NAME, false, false, "Custom processor image file", ConfigField.Type.STRING, this.imageFileName));
         configFields.add(this.createConfigField(JAR_FILE_NAME, false, false, "Custom processor jar file", ConfigField.Type.STRING, this.jarFileName));
         configFields.add(this.createConfigField(CUSTOM_PROCESSOR_IMPL, false, false, "Custom processor interface implementation class", ConfigField.Type
                 .STRING, this.customProcessorImpl));
@@ -261,7 +246,6 @@ public class CustomProcessorInfo {
         Set<String> result = new HashSet<>();
         result.add(NAME);
         result.add(DESCRIPTION);
-        result.add(IMAGE_FILE_NAME);
         result.add(JAR_FILE_NAME);
         result.add(CONFIG_FIELDS);
         result.add(INPUT_SCHEMA);

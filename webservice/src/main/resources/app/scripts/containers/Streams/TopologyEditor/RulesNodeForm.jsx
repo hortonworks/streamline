@@ -89,9 +89,16 @@ export default class RulesNodeForm extends Component {
 
 	handleSave(name){
 		let {topologyId, nodeType} = this.props;
-		let nodeId = this.nodeData.id;
-		this.nodeData.name = name;
-		return TopologyREST.updateNode(topologyId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)});
+		let promiseArr = [
+			TopologyREST.getNode(topologyId, nodeType, this.nodeData.id)
+		];
+		return Promise.all(promiseArr)
+			.then(results=>{
+				this.nodeData = results[0].entity;
+				this.nodeData.name = name;
+				//Update rule processor
+				return TopologyREST.updateNode(topologyId, nodeType, this.nodeData.id, {body: JSON.stringify(this.nodeData)});
+			})
 	}
 
 	handleAddRule(id){

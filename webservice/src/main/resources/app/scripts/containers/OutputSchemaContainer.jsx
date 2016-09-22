@@ -3,6 +3,7 @@ import ReactDOM, {findDOMNode} from 'react-dom';
 import _ from 'lodash';
 import {Tabs, Tab, Row, Nav, NavItem} from 'react-bootstrap';
 import ReactCodemirror from 'react-codemirror';
+import '../utils/Overrides';
 import CodeMirror from 'codemirror';
 import 'codemirror/mode/javascript/javascript';
 import jsonlint from 'jsonlint';

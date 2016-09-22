@@ -9,6 +9,7 @@ import OutputSchemaContainer from '../OutputSchemaContainer';
 import {pageSize} from '../../utils/Constants';
 import FSReactToastr from '../../components/FSReactToastr';
 import ReactCodemirror from 'react-codemirror';
+import '../../utils/Overrides';
 import CodeMirror from 'codemirror';
 import 'codemirror/mode/javascript/javascript';
 import jsonlint from 'jsonlint';
@@ -36,7 +37,6 @@ export default class CustomProcessorForm extends Component {
 		name: '',
 		description: '',
 		customProcessorImpl: '',
-		imageFileName: '',
 		jarFileName: '',
 		inputSchema: '',
 		outputStreamToSchema: [],
@@ -60,7 +60,7 @@ export default class CustomProcessorForm extends Component {
 				if(processor.responseCode !== 1000){
 					FSReactToastr.error(<strong>{processor.responseMessage}</strong>);
 				} else {
-					let {streamingEngine, name, description, customProcessorImpl, imageFileName, jarFileName, inputSchema, outputStreamToSchema, configFields} = processor.entities[0];
+					let {streamingEngine, name, description, customProcessorImpl, jarFileName, inputSchema, outputStreamToSchema, configFields} = processor.entities[0];
 					inputSchema = JSON.stringify(inputSchema.fields, null, "  ");
 					let arr = [],
 						streamIds = _.keys(outputStreamToSchema);
@@ -71,7 +71,8 @@ export default class CustomProcessorForm extends Component {
 						})
 					});
 					outputStreamToSchema = arr;
-					let obj = {streamingEngine, name, description, customProcessorImpl, imageFileName, jarFileName, inputSchema, outputStreamToSchema, configFields};
+					configFields.map((o)=>{ o.id = this.idCount++; });
+					let obj = {streamingEngine, name, description, customProcessorImpl, jarFileName, inputSchema, outputStreamToSchema, configFields};
 					this.setState(obj);
 				}
 			})
@@ -82,17 +83,6 @@ export default class CustomProcessorForm extends Component {
 		let obj = {};
 		obj[e.target.name] = e.target.value;
 		this.setState(obj);
-	}
-
-	handleImageUpload(event) {
-		if(!event.target.files.length){
-			this.setState(JSON.parse(JSON.stringify(this.defaultObj)));
-			return;
-		}
-		let fileObj = event.target.files[0];
-        this.setState({
-			imageFileName: fileObj
-        });
 	}
 
 	handleJarUpload(event) {
@@ -156,19 +146,19 @@ export default class CustomProcessorForm extends Component {
 
 	validateData() {
 		let validDataFlag = true;
-		let {streamingEngine, name, description, customProcessorImpl, imageFileName, jarFileName,
+		let {streamingEngine, name, description, customProcessorImpl, jarFileName,
 			configFields, inputSchema} = this.state;
 		let outputStreams = this.refs.OutputSchemaContainer.getOutputStreams();
 
 		if(streamingEngine === '' || name === '' || description === '' || customProcessorImpl === '' ||
-			imageFileName === '' || jarFileName === '' || inputSchema === '' || outputStreams.length === 0 || configFields.length === 0)
+			jarFileName === '' || inputSchema === '' || outputStreams.length === 0 || configFields.length === 0)
 			validDataFlag = false;
 		return validDataFlag;
 	}
 
 	handleSave() {
 		if(this.validateData()) {
-			let {streamingEngine, name, description, customProcessorImpl, imageFileName, jarFileName, configFields} = this.state;
+			let {streamingEngine, name, description, customProcessorImpl, jarFileName, configFields} = this.state;
 			let inputSchema = {
 				fields: JSON.parse(this.state.inputSchema)
 			};
@@ -185,10 +175,9 @@ export default class CustomProcessorForm extends Component {
 				let {name, isOptional, type, defaultValue, isUserInput, tooltip} = o;
 				return {name, isOptional, type,	defaultValue, isUserInput, tooltip};
 			});
-	        let customProcessorInfo = {streamingEngine, name, description, customProcessorImpl, inputSchema, outputStreamToSchema, configFields: configFieldsArr, imageFileName: imageFileName.name, jarFileName: jarFileName.name};
+	        let customProcessorInfo = {streamingEngine, name, description, customProcessorImpl, inputSchema, outputStreamToSchema, configFields: configFieldsArr, jarFileName: jarFileName.name};
 
 			var formData = new FormData();
-			formData.append('imageFile', imageFileName);
 			formData.append('jarFile', jarFileName);
 			formData.append('customProcessorInfo', JSON.stringify(customProcessorInfo));
 
@@ -291,26 +280,6 @@ export default class CustomProcessorForm extends Component {
 					{this.state.customProcessorImpl === '' ?
 						<div className="col-sm-4">
 							<p className="form-control-static error-note">Please Enter Classname</p>
-						</div>
-					: null}
-				</div>
-				<div className="form-group">
-					<label className="col-sm-2 control-label">Upload Image*</label>
-					<div className="col-sm-5">
-						<input
-							type="file"
-							name="imageFileName"
-							placeholder="Select Image"
-							accept=".png"
-							className="form-control"
-							ref="imageFileName"
-							onChange={(event)=>{this.handleImageUpload.call(this, event)}}
-						    required={true}
-						/>
-					</div>
-					{this.state.imageFileName === '' ?
-						<div className="col-sm-4">
-							<p className="form-control-static error-note">Please Select an Image</p>
 						</div>
 					: null}
 				</div>

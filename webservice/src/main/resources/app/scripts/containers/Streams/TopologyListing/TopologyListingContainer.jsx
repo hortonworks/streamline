@@ -92,7 +92,10 @@ export default class TopologyListingContainer extends Component {
 				if(topology.responseCode !== 1000){
 					FSReactToastr.error(<strong>{topology.responseMessage}</strong>);
 				} else {
-					this._fullData = topology.entities;
+					var result = topology.entities.sort(function(x, y) {
+						return y.timestamp - x.timestamp;
+					});
+					this._fullData = result;
 					this.setState({entities: this._fullData});
 				}
 			})
