@@ -13,8 +13,8 @@ import java.util.concurrent.Executors;
  */
 public class StorageWriteBehind implements StorageWriter {
     private static final int NUM_THREADS = 5;
-    private StorageManager dao;
-    private ExecutorService executorService;
+    private final StorageManager dao;
+    private final ExecutorService executorService;
 
     public StorageWriteBehind(StorageManager dao) {
         this(dao, Executors.newFixedThreadPool(NUM_THREADS));

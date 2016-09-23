@@ -27,7 +27,6 @@ import com.hortonworks.iotas.storage.impl.jdbc.connection.HikariCPConnectionBuil
 import com.hortonworks.iotas.common.test.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 
 @Category(IntegrationTest.class)

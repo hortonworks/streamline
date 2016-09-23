@@ -26,7 +26,7 @@ import com.lambdaworks.redis.RedisConnection;
 import java.util.Collection;
 
 public abstract class RedisAbstractCache<K, V> extends AbstractCache<K, V> implements Cache<K, V> {
-    public static final String REDIS_MAX_MEMORY = "maxmemory";;
+    public static final String REDIS_MAX_MEMORY = "maxmemory";
     public static final String REDIS_MAX_MEMORY_POLICY = "maxmemory-policy";
     public static final String REDIS_MAX_MEMORY_POLICY_ALL_KEYS_LRU = "allkeys-lru";
 

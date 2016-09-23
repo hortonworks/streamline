@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.Map;
 
 public abstract class AbstractDataStore<K,V> implements DataStoreReader<K,V>, DataStoreWriter<K,V> {
-    private String nameSpace;
+    private final String nameSpace;
 
     public AbstractDataStore(String nameSpace) {
         this.nameSpace = nameSpace;

@@ -8,7 +8,7 @@ import com.hortonworks.iotas.storage.StorageManager;
  * Created by hlouro on 8/7/15.
  */
 public class StorageWriteThrough implements StorageWriter {
-    private StorageManager dao;
+    private final StorageManager dao;
 
     public StorageWriteThrough(StorageManager dao) {
         this.dao = dao;

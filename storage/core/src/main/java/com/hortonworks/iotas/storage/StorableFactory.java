@@ -30,7 +30,7 @@ import java.util.Map;
 public class StorableFactory {
     private static final Logger LOG = LoggerFactory.getLogger(StorableFactory.class);
 
-    private Map<String, Class<? extends Storable>> nameSpaceWithClass = new HashMap<>();
+    private final Map<String, Class<? extends Storable>> nameSpaceWithClass = new HashMap<>();
 
     public StorableFactory() {
     }

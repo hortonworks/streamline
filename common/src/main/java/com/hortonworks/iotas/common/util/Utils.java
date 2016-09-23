@@ -16,7 +16,6 @@ public class Utils {
     public static Schema getSchemaFromConfig (Map schemaConfig) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         String inputSchemaStr = objectMapper.writeValueAsString(schemaConfig);
-        Schema schema = objectMapper.readValue(inputSchemaStr, Schema.class);
-        return schema;
+        return objectMapper.readValue(inputSchemaStr, Schema.class);
     }
 }

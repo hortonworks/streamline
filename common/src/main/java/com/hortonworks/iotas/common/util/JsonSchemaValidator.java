@@ -20,7 +20,7 @@ public class JsonSchemaValidator {
 
     public static boolean isValidJsonAsPerSchema (URL jsonSchema,
                                                   String jsonData) throws IOException, ProcessingException {
-        boolean result = false;
+        boolean result;
         final JsonNode schemaNode = JsonLoader.fromURL(jsonSchema);
         final JsonNode dataNode = JsonLoader.fromString(jsonData);
         final JsonSchemaFactory factory = JsonSchemaFactory.byDefault();

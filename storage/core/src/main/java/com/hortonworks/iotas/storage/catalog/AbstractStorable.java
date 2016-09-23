@@ -87,7 +87,7 @@ public abstract class AbstractStorable implements Storable {
         for(Map.Entry<String, Class> entry : fieldNamesToTypes.entrySet()) {
             try {
                 Object val = ReflectionHelper.invokeGetter(entry.getKey(), this);
-                Schema.Type type = null;
+                Schema.Type type;
                 if(val != null) {
                     type = Schema.fromJavaType(val);
                 } else {

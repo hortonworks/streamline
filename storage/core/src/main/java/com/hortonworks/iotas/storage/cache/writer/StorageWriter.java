@@ -2,7 +2,6 @@ package com.hortonworks.iotas.storage.cache.writer;
 
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableKey;
-import com.hortonworks.iotas.storage.StorageManager;
 
 /**
  * Created by hlouro on 8/7/15.

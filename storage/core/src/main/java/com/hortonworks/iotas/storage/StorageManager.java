@@ -12,7 +12,6 @@ import java.util.Map;
  * Writes are infrequent and the best place to achieve these guarantees, if we ever need it, is going to be at storage
  * layer implementation it self.
  *
- * I am still not done thinking through the semantics so don't assume this to be concrete APIs.
  */
 public interface StorageManager {
 
@@ -21,7 +20,7 @@ public interface StorageManager {
      *
      * @param properties
      */
-    public void init(Map<String, Object> properties);
+    void init(Map<String, Object> properties);
     
     /**
      * TODO: update this javadoc
@@ -53,7 +52,6 @@ public interface StorageManager {
      */
     void addOrUpdate(Storable storable) throws StorageException;
 
-    //TODO I need a 101 on java generics right no to ensure this is how I want to deal with these things.
     /**
      * Gets the storable entity by using {@code Storable.getPrimaryKey()} as lookup key, return null if no storable entity with
      * the supplied key is found.
@@ -88,7 +86,11 @@ public interface StorageManager {
      */
     <T extends Storable> Collection<T> list(String namespace) throws StorageException;
 
-    //TODO: What is the purpose of this cleanup method? Wipe out the DB?
+    /**
+     * This can be used to cleanup resources held by this instance.
+     *
+     * @throws StorageException
+     */
     void cleanup() throws StorageException;
 
     Long nextId(String namespace) throws StorageException;
@@ -100,5 +102,5 @@ public interface StorageManager {
      * @param classes
      * @throws StorageException
      */
-    public void registerStorables(Collection<Class<? extends Storable>> classes) throws StorageException;
+    void registerStorables(Collection<Class<? extends Storable>> classes) throws StorageException;
 }

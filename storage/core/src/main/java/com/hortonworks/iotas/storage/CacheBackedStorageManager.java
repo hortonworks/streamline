@@ -49,7 +49,7 @@ public class CacheBackedStorageManager implements StorageManager {
     }
 
     @Override
-    public void addOrUpdate(Storable storable) throws StorageException {;
+    public void addOrUpdate(Storable storable) throws StorageException {
         writer.addOrUpdate(storable);
         cache.put(storable.getStorableKey(), storable);
     }

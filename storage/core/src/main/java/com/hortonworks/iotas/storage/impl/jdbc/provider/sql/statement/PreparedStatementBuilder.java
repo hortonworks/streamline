@@ -99,7 +99,7 @@ public class PreparedStatementBuilder {
     // Used to assert that data passed in is valid
     private void assertIsNumColumnsMultipleOfNumParameters(SqlQuery sqlBuilder, int groupCount) {
         final List<Schema.Field> columns = sqlBuilder.getColumns();
-        boolean isMultiple = false;
+        boolean isMultiple;
 
         if (columns == null || columns.size() == 0) {
             isMultiple = groupCount == 0;

@@ -41,7 +41,7 @@ public class CacheLoaderAsync<K,V> extends CacheLoader<K,V> {
     private static final int DEFAULT_NUM_THREADS = 5;
     private static final Logger LOG = LoggerFactory.getLogger(CacheLoaderAsync.class);
 
-    private ListeningExecutorService executorService;
+    private final ListeningExecutorService executorService;
 
     public CacheLoaderAsync(Cache<K, V> cache, DataStoreReader<K,V> dataStoreReader) {
         this(cache, dataStoreReader, Executors.newFixedThreadPool(DEFAULT_NUM_THREADS));

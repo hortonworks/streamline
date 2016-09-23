@@ -19,11 +19,9 @@
 package com.hortonworks.iotas.storage.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.storage.Storable;
 
 import java.io.IOException;
-import java.util.Map;
 
 /**
  * Utility methods for the core package.

@@ -23,11 +23,10 @@ import com.hortonworks.iotas.storage.StorageManager;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.Collection;
 
 public abstract class InMemoryStorageManagerTest extends AbstractStoreManagerTest {
-    private StorageManager storageManager = new InMemoryStorageManager();
+    private final StorageManager storageManager = new InMemoryStorageManager();
 
     @Override
     public StorageManager getStorageManager() {

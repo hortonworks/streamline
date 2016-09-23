@@ -35,7 +35,7 @@ import java.util.Map;
 public class RedisHashesCache<K, V> extends RedisAbstractCache<K, V> implements Cache<K, V> {
     private static   final Logger LOG = LoggerFactory.getLogger(RedisHashesCache.class);
 
-    private K key;
+    private final K key;
 
     public RedisHashesCache(RedisConnection<K, V> redisConnection, K key) {
         this(redisConnection, key, null);
