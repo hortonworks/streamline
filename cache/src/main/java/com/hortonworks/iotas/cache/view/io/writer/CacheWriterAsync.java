@@ -29,7 +29,7 @@ public class CacheWriterAsync<K, V> implements CacheWriter<K, V> {
     private static final int DEFAULT_NUM_THREADS = 5;
 
     private final DataStoreWriter<K, V> dataStoreWriter;
-    private ExecutorService executorService;
+    private final ExecutorService executorService;
 
     public CacheWriterAsync(DataStoreWriter<K, V> dataStoreWriter) {
         this(dataStoreWriter, Executors.newFixedThreadPool(DEFAULT_NUM_THREADS));

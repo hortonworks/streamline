@@ -34,12 +34,12 @@ public class JdbcClient {
         }
 
         try (BufferedReader reader =
-                     new BufferedReader(new InputStreamReader(resourceAsStream));
+                     new BufferedReader(new InputStreamReader(resourceAsStream))
         ) {
             Connection connection = DriverManager.getConnection(url);
             connection.setAutoCommit(true);
 
-            String line = null;
+            String line;
             while ((line = reader.readLine()) != null) {
                 if (!line.trim().isEmpty()) {
                     connection.createStatement().execute(line);

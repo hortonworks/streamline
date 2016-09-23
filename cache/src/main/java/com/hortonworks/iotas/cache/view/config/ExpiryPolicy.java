@@ -60,9 +60,9 @@ public class ExpiryPolicy {
     }
 
     public class Size {
-        private long count;
-        private long bytes;
-        private BytesUnit unit;
+        private final long count;
+        private final long bytes;
+        private final BytesUnit unit;
 
         @JsonCreator
         public Size(long count, BytesUnit unit) {

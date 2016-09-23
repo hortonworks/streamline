@@ -27,10 +27,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class CacheService<K,V> {
-    protected ConcurrentMap<String, Cache<K,V>> caches = new ConcurrentHashMap<>();
+    protected final ConcurrentMap<String, Cache<K,V>> caches = new ConcurrentHashMap<>();
 
-    protected String id;
-    protected TypeConfig.Cache cacheType;
+    protected final String id;
+    protected final TypeConfig.Cache cacheType;
     protected ExpiryPolicy expiryPolicy;  // ExpiryPolicy used by all the caches registered in this service, if not overridden for a particular cache
 
     public CacheService(String id, TypeConfig.Cache cacheType) {

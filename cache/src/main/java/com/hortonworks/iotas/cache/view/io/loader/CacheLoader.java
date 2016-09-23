@@ -26,8 +26,8 @@ import org.slf4j.Logger;
 import java.util.Collection;
 
 public abstract class CacheLoader<K,V> {
-    protected Cache<K,V> cache;
-    protected DataStoreReader<K, V> dataStoreReader;
+    protected final Cache<K,V> cache;
+    protected final DataStoreReader<K, V> dataStoreReader;
 
     public CacheLoader(Cache<K, V> cache, DataStoreReader<K,V> dataStoreReader) {
         this.cache = cache;

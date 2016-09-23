@@ -23,6 +23,7 @@ import com.hortonworks.iotas.common.exception.ParserException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -187,9 +188,7 @@ public class Schema implements Serializable {
             return this;
         }
         public SchemaBuilder fields(Field... fields) {
-            for(Field field : fields){
-                this.fields.add(field);
-            }
+            Collections.addAll(this.fields, fields);
             return this;
         }
 
@@ -332,7 +331,7 @@ public class Schema implements Serializable {
         }
     }
 
-    private Map<String, Field> fields = new LinkedHashMap<>();
+    private final Map<String, Field> fields = new LinkedHashMap<>();
 
     // for jackson
     public Schema() {

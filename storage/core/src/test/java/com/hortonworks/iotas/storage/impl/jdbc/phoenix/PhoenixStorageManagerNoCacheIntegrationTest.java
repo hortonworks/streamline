@@ -9,7 +9,6 @@ import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.factory.PhoenixE
 import com.zaxxer.hikari.HikariConfig;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 
 /**

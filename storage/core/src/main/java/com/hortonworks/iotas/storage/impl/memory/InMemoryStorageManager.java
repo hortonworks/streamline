@@ -57,9 +57,7 @@ public class InMemoryStorageManager implements StorageManager {
 
         if (existing == null) {
             addOrUpdate(storable);
-        } else if (existing.equals(storable)) {
-            return;
-        } else {
+        } else if (!existing.equals(storable)) {
             throw new AlreadyExistsException("Another instance with same id = " + storable.getPrimaryKey()
                     + " exists with different value in namespace " + storable.getNameSpace()
                     + " Consider using addOrUpdate method if you always want to overwrite.");
@@ -81,6 +79,9 @@ public class InMemoryStorageManager implements StorageManager {
         if (!storageMap.containsKey(namespace)) {
             storageMap.putIfAbsent(namespace, new ConcurrentHashMap<PrimaryKey, Storable>());
             nameSpaceClassMap.putIfAbsent(namespace, storable.getClass());
+        }
+        if (!storageMap.get(namespace).containsKey(id)) {
+            nextId(namespace);
         }
         storageMap.get(namespace).put(id, storable);
     }

@@ -25,8 +25,8 @@ import org.slf4j.LoggerFactory;
 
 public class RedisClients {
 //    protected static final Logger LOG = LoggerFactory.getLogger(RedisClients.class);
-    private static RedisConnection<String, String> connection = RedisCacheTestMain.getConnection();
-    private static RedisConnection<String, String> connection1 = RedisCacheTestMain.getConnection();
+    private static final RedisConnection<String, String> connection = RedisCacheTestMain.getConnection();
+    private static final RedisConnection<String, String> connection1 = RedisCacheTestMain.getConnection();
 
     public RedisClients() {
     }

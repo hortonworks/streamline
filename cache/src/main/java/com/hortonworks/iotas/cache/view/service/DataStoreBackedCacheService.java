@@ -31,11 +31,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class DataStoreBackedCacheService<K,V> extends CacheService<K,V> {
-    protected CacheLoaderFactory<K, V> cacheLoaderFactory;              // used to load cache sync or async
-    protected CacheWriter<K, V> cacheWriter;                            // used to write to db sync or async
-    protected DataStoreReader<K, V> dataStoreReader;                    // used for read through
+    protected final CacheLoaderFactory<K, V> cacheLoaderFactory;              // used to load cache sync or async
+    protected final CacheWriter<K, V> cacheWriter;                            // used to write to db sync or async
+    protected final DataStoreReader<K, V> dataStoreReader;                    // used for read through
 
-    protected ConcurrentMap<String, CacheLoader<K,V>> cacheLoaders = new ConcurrentHashMap<>();
+    protected final ConcurrentMap<String, CacheLoader<K,V>> cacheLoaders = new ConcurrentHashMap<>();
 
     protected DataStoreBackedCacheService(Builder<K, V> builder) {
         super(builder);

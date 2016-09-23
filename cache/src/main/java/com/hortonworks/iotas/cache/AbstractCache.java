@@ -21,7 +21,7 @@ package com.hortonworks.iotas.cache;
 import com.hortonworks.iotas.cache.view.config.ExpiryPolicy;
 
 public abstract class AbstractCache<K, V> implements Cache<K, V> {
-    protected ExpiryPolicy expiryPolicy;
+    protected final ExpiryPolicy expiryPolicy;
 
     public AbstractCache() {
         this(null);

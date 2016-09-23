@@ -45,7 +45,7 @@ import com.lambdaworks.redis.codec.Utf8StringCodec;
 import java.util.Arrays;
 
 public class RedisCacheServiceBuilder {
-    private CacheConfig cacheConfig;
+    private final CacheConfig cacheConfig;
 
     public RedisCacheServiceBuilder(CacheConfig cacheConfig) {
         this.cacheConfig = cacheConfig;

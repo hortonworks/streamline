@@ -24,7 +24,7 @@ public class PrimaryKey {
      * represents that employeeId is the primary key with type String and the value is actually referring to the row with
      * employeeId = 1.
      */
-    private Map<Schema.Field, Object> fieldsToVal;
+    private final Map<Schema.Field, Object> fieldsToVal;
 
     public PrimaryKey(Map<Schema.Field, Object> fieldsToVal) {
         this.fieldsToVal = fieldsToVal;

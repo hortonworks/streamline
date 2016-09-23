@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.Map;
 
 public class CacheWriterSync<K,V> implements CacheWriter<K,V> {
-    protected DataStoreWriter<K, V> dataStoreWriter;
+    protected final DataStoreWriter<K, V> dataStoreWriter;
 
     public CacheWriterSync(DataStoreWriter<K,V> dataStoreWriter) {
         this.dataStoreWriter = dataStoreWriter;

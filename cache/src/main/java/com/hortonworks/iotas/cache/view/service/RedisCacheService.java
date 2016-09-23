@@ -31,7 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class RedisCacheService<K,V> extends DataStoreBackedCacheService<K, V> {
-    private Factory<RedisConnection<K,V>> connFactory;
+    private final Factory<RedisConnection<K,V>> connFactory;
 
     private RedisCacheService(Builder<K,V> builder) {
         super(builder);
@@ -39,7 +39,7 @@ public class RedisCacheService<K,V> extends DataStoreBackedCacheService<K, V> {
     }
 
     public static class Builder<K,V> extends DataStoreBackedCacheService.Builder<K,V> {
-        private Factory<RedisConnection<K,V>> connFactory;
+        private final Factory<RedisConnection<K,V>> connFactory;
 
         public Builder(String id, TypeConfig.Cache cacheType, Factory<RedisConnection<K,V>> connFactory) {
             super(id, cacheType);

@@ -146,7 +146,7 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
                 log.debug("Removing entry from cache and closing connection [key:{}, val: {}]", notification.getKey(), val);
                 log.debug("Cache size: {}", cache.size());
                 if (val != null) {
-                    closeConnection(val.getConnection());;
+                    closeConnection(val.getConnection());
                 }
             }
         }).build();

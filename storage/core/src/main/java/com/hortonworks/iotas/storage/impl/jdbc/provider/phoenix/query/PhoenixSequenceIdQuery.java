@@ -39,7 +39,7 @@ public class PhoenixSequenceIdQuery {
     private static final String ID = "id";
     private static final String VALUE = "value";
     private static final String SEQUENCE_TABLE = "sequence_table";
-    private String namespace;
+    private final String namespace;
     private final ConnectionBuilder connectionBuilder;
     private final int queryTimeoutSecs;
 

@@ -4,8 +4,8 @@ package com.hortonworks.iotas.storage;
  * Created by hlouro on 8/6/15.
  */
 public class StorableKey {
-    private PrimaryKey primaryKey;
-    private String nameSpace;
+    private final PrimaryKey primaryKey;
+    private final String nameSpace;
 
     public StorableKey(String nameSpace, PrimaryKey primaryKey) {
         this.primaryKey = primaryKey;
