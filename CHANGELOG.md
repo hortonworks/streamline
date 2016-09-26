@@ -1,4 +1,5 @@
 ## 0.1.4
+ * IOT-407: Remove imageFile field for custom processors.
  * IOT-389: A few fixes for issues found while running with mysql db
  * IOT-373: Email Notifier throws IllegalStateException
  * IOT-391: Add Eventhub source example in topology rest api script
