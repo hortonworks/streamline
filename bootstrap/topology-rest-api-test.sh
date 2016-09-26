@@ -43,7 +43,7 @@ curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -
 echo -e "\n------"
 out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
     "name": "test",
-    "config": "{\"config\": {\"catalog.root.url\": \"http://localhost:8080/api/v1/catalog\", \"local.parser.jar.path\": \"/tmp\", \"local.notifier.jar.path\": \"/tmp\"}}"
+    "config": "{\"local.parser.jar.path\": \"/tmp\", \"local.notifier.jar.path\": \"/tmp\"}"
 }' "${catalogurl}/topologies")
 
 echo $out
