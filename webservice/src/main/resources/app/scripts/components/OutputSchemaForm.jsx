@@ -37,15 +37,19 @@ export default class OutputSchema extends Component {
 
 	constructor(props){
 		super(props);
-		let {streamId = '', fields = [], grouping = '', connectsTo = [], forRule = []} = props.streamObj;
+		let {streamId = '', fields = [], grouping = '', connectsTo = [], forRule = [], groupingFields} = props.streamObj;
 		let targetNodesArr = [];
 		let rulesArr = [];
+		let groupingFieldsArr = [];
 		this.fetchNodes();
 		this.props.connectedTargetNodes.map((n)=>{
 			targetNodesArr.push({
 				value: n.id,
 				label: n.name
 			});
+		});
+		fields.map((f)=>{
+			groupingFieldsArr.push({value: f.name, label: f.name});
 		});
 		if(props.ruleProcessor){
 			this.props.currentRulesArr.map(r=>{
@@ -60,13 +64,15 @@ export default class OutputSchema extends Component {
 			streamId, 
 			grouping,
 			// groupingArray: this.props.linkShuffleOptions,
-			// groupingArray: [{value: "SHUFFLE", label: "SHUFFLE"},{value: "FIELDS", label: "FIELDS"}],
-			groupingArray: [{value: "SHUFFLE", label: "SHUFFLE"}],
+			groupingArray: [{value: "SHUFFLE", label: "SHUFFLE"},{value: "FIELDS", label: "FIELDS"}],
+			//groupingArray: [{value: "SHUFFLE", label: "SHUFFLE"}],
 			fields: JSON.stringify(fields, null, "  "),
 			connectsTo,
 			targetNodesArr,
 			rulesArr,
-			forRule
+			forRule,
+			groupingFieldsArr: groupingFieldsArr,
+			groupingFields: groupingFields ? groupingFields : []
 		};
 	}
 
@@ -93,12 +99,41 @@ export default class OutputSchema extends Component {
 	}
 
 	handleJSONChange(json){
-		this.setState({fields: json});
+		let fields = this.getFieldsForGrouping(json);
+		this.setState({
+				fields: json,
+				groupingFieldsArr: fields
+		});
+	}
+
+	getFieldsForGrouping(json) {
+		let arr = [],
+			isValid = this.validateJSON(json);
+		if(isValid) {
+			let fields = JSON.parse(json);
+			if(_.isArray(fields)) {
+				fields.map((f)=>{
+				if(f.name && f.name !== '')
+					arr.push({value: f.name, label: f.name});
+			})
+			}
+		}
+		return arr;
+	}
+
+	validateJSON(json) {
+		let isValid = true;
+		try {
+			JSON.parse(json);
+		}
+		catch(e) {isValid = false;}
+		return isValid;
 	}
 
 	handleGroupingChange(obj) {
 		if(obj){
-			this.setState({grouping: obj.value});
+			let fields = this.getFieldsForGrouping(this.state.fields);
+			this.setState({grouping: obj.value, groupingFieldsArr: fields});
 		} else {
 			this.setState({grouping: ''});
 		}
@@ -112,7 +147,7 @@ export default class OutputSchema extends Component {
 			}
 			this.setState({connectsTo: nodes});
 		} else {
-			this.setState({connectsTo: ''});
+			this.setState({connectsTo: []});
 		}
 	}
 
@@ -124,22 +159,38 @@ export default class OutputSchema extends Component {
 			}
 			this.setState({forRule: rules});
 		} else {
-			this.setState({forRule: ''});
+			this.setState({forRule: []});
+		}
+	}
+
+	handleGroupingFieldsChange(arr) {
+		let groupingFields = [];
+		if(arr && arr.length) {
+			arr.map((f)=>{
+				groupingFields.push(f.value);
+			});
+			this.setState({groupingFields: groupingFields});
+		} else {
+			this.setState({groupingFields: ''});
 		}
 	}
 
 	validateData(){
 		let {streamId, fields} = this.state;
-		if( streamId === '' || fields === ''){
+		if( streamId.trim() === '' || !this.validateJSON(fields) || !_.isArray(JSON.parse(fields))){
 			return false;
 		}
-		if(this.props.connectedTargetNodes.length > 0 && this.state.connectsTo.length === 0 ){
-			return false;
-		} else if(!this.state.grouping || this.state.grouping === ''){
-			return false;
-		}
-		if(this.props.ruleProcessor && this.state.forRule.length === 0){
-			return false
+		if(this.props.connectedTargetNodes.length > 0){
+			if(this.state.connectsTo.length === 0 ){
+				return false;
+			}
+			else if(!this.state.grouping || this.state.grouping === ''){
+				return false;
+			} else if(this.props.ruleProcessor && this.state.forRule.length === 0) {
+				return false;
+			} else if(this.state.grouping === 'FIELDS' && this.state.groupingFields.length === 0) {
+				return false;
+			}
 		}
 		return true;
 	}
@@ -148,6 +199,7 @@ export default class OutputSchema extends Component {
 		let {topologyId, streamObj, connectedTargetNodes, nodeToOtherEdges} = this.props;
 		let {streamId, fields, grouping, connectsTo} = this.state;
 		let streamData = {streamId: streamId, fields: JSON.parse(fields)};
+
 		let edgeGroupingData = {streamId: streamObj.id, grouping: grouping};
 		let promiseArr = [];
 		
@@ -171,7 +223,7 @@ export default class OutputSchema extends Component {
 
 	updateEdges(id, streamName){
 		let {topologyId, nodeToOtherEdges, streamObj, nodeData, nodeType, ruleProcessor, connectedTargetNodes}  = this.props;
-		let {grouping, connectsTo, forRule} = this.state;
+		let {grouping, connectsTo, forRule, groupingFields} = this.state;
 		let oldForRule = forRule;
 		if(streamObj.forRule && streamObj.forRule.length){
 			streamObj.forRule.map(id=>{
@@ -182,6 +234,8 @@ export default class OutputSchema extends Component {
 		}
 		oldForRule.sort();
 		let edgeGroupingData = {streamId: id, grouping: grouping};
+		if(grouping === "FIELDS")
+			edgeGroupingData.fields = groupingFields;
 		let promiseArr = [];
 		//Add into node if its newly created stream
 		if(!streamObj.id){
@@ -299,6 +353,9 @@ export default class OutputSchema extends Component {
 						} else {
 							//Update stream into edge
 							existingStream.grouping = grouping;
+							if(grouping === "FIELDS")
+								existingStream.fields = groupingFields;
+							else delete existingStream.fields
 						}
 					} else if(removeFlag){
 						//Remove stream from edge
@@ -324,7 +381,7 @@ export default class OutputSchema extends Component {
         }
         let {streamId, fields, grouping, groupingArray,
 				connectsTo, targetNodesArr, rulesArr,
-				forRule } = this.state;
+				forRule, groupingFields, groupingFieldsArr } = this.state;
 		return (
 			<form className="form-horizontal">
 				<div className="form-group">
@@ -341,7 +398,7 @@ export default class OutputSchema extends Component {
 						    disabled={!canAdd}
 						/>
 					</div>
-					{streamId === '' ?
+					{streamId.trim() === '' ?
 						<div className="col-sm-4">
 							<p className="form-control-static error-note">Please Enter Stream ID</p>
 						</div>
@@ -352,6 +409,11 @@ export default class OutputSchema extends Component {
 					<div className="col-sm-5">
 						<ReactCodemirror ref="JSONCodemirror" value={fields} onChange={this.handleJSONChange.bind(this)} options={jsonoptions} />
 					</div>
+					{!this.validateJSON(fields) || !_.isArray(JSON.parse(fields)) ?
+						<div className="col-sm-4">
+							<p className="form-control-static error-note">Please Enter Valid JSON</p>
+						</div>
+					: null}
 				</div>
 				<div className="form-group">
 					<label className="col-sm-3 control-label">Grouping</label>
@@ -361,17 +423,38 @@ export default class OutputSchema extends Component {
 							options={groupingArray}
 							onChange={this.handleGroupingChange.bind(this)}
 						    required={true}
+						    disabled={!targetNodesArr.length}
 						/>
 					</div>
-					{grouping === '' ?
+					{targetNodesArr.length !== 0 && grouping === '' ?
 						<div className="col-sm-4">
 							<p className="form-control-static error-note">Please Select any one type of grouping</p>
 						</div>
 					: null}
 				</div>
+				{grouping === 'FIELDS' ?
+				<div className="form-group">
+					<label className="col-sm-3 control-label">Select Fields</label>
+					<div className="col-sm-5">
+						<Select
+							value={groupingFields}
+							options={groupingFieldsArr}
+							onChange={this.handleGroupingFieldsChange.bind(this)}
+							multi={true}
+							required={true}
+						/>
+					</div>
+					{groupingFields.length === 0 ?
+					(<div className="col-sm-4">
+						<p className="form-control-static error-note">Please add grouping fields</p>
+					</div>)
+					: null}
+				</div>
+				: null
+				}
 				{ruleProcessor ? 
 					<div className="form-group">
-						<label className="col-sm-3 control-label">For Rule*</label>
+						<label className="col-sm-3 control-label">For Rule</label>
 						<div className="col-sm-5">
 							<Select
 								value={forRule}
@@ -381,9 +464,10 @@ export default class OutputSchema extends Component {
 								clearable={false}
 								joinValues={true}
 								required={true}
+								disabled={!targetNodesArr.length}
 							/>
 						</div>
-						{forRule === '' ?
+						{targetNodesArr.length > 0 && forRule.length === 0 ?
 							<div className="col-sm-4">
 								<p className="form-control-static error-note">Please Select atleast one rule for this stream</p>
 							</div>
@@ -403,7 +487,7 @@ export default class OutputSchema extends Component {
 							required={true}
 						/>
 					</div>
-					{connectsTo === '' ?
+					{targetNodesArr.length > 0 && connectsTo.length === 0 ?
 						<div className="col-sm-4">
 							<p className="form-control-static error-note">Please Select any one of the target nodes</p>
 						</div>

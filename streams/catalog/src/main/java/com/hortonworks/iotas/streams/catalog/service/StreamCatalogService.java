@@ -513,29 +513,29 @@ public class StreamCatalogService {
         return result;
     }
 
-    public CustomProcessorInfo addCustomProcessorInfo (CustomProcessorInfo customProcessorInfo, InputStream jarFile, InputStream imageFile) throws IOException {
+    public CustomProcessorInfo addCustomProcessorInfo (CustomProcessorInfo customProcessorInfo, InputStream jarFile) throws IOException {
         try {
             uploadFileToStorage(jarFile, customProcessorInfo.getJarFileName());
-            uploadFileToStorage(imageFile, customProcessorInfo.getImageFileName());
             TopologyComponentDefinition topologyComponentDefinition = customProcessorInfo.toTopologyComponent();
             topologyComponentDefinition.setId(this.dao.nextId(TopologyComponentDefinition.NAME_SPACE));
             this.dao.add(topologyComponentDefinition);
-        } catch (StorageException|IOException e) {
-            LOG.error("Unexpected exception thrown while adding custom processor info %s", customProcessorInfo.getName());
+        } catch (IOException e) {
+            LOG.error("IOException thrown while trying to upload jar for %s", customProcessorInfo.getName());
             throw e;
-        } finally {
+        } catch (StorageException se) {
+            LOG.error("StorageException thrown while adding custom processor info %s", customProcessorInfo.getName());
             try {
                 deleteFileFromStorage(customProcessorInfo.getJarFileName());
-                deleteFileFromStorage(customProcessorInfo.getImageFileName());
             } catch (IOException e) {
                 LOG.error("Unexpected exception thrown while cleaning up custom processor info %s", customProcessorInfo.getName());
                 throw e;
             }
+            throw se;
         }
         return customProcessorInfo;
     }
 
-    public CustomProcessorInfo updateCustomProcessorInfo(CustomProcessorInfo customProcessorInfo, InputStream jarFile, InputStream imageFile) throws
+    public CustomProcessorInfo updateCustomProcessorInfo(CustomProcessorInfo customProcessorInfo, InputStream jarFile) throws
             IOException {
         List<QueryParam> queryParams = new ArrayList<>();
         queryParams.add(new QueryParam(CustomProcessorInfo.NAME, customProcessorInfo.getName()));
@@ -545,7 +545,6 @@ public class StreamCatalogService {
         }
 
         uploadFileToStorage(jarFile, customProcessorInfo.getJarFileName());
-        uploadFileToStorage(imageFile, customProcessorInfo.getImageFileName());
         TopologyComponentDefinition customProcessorComponent = result.iterator().next();
         TopologyComponentDefinition newCustomProcessorComponent = customProcessorInfo.toTopologyComponent();
         newCustomProcessorComponent.setId(customProcessorComponent.getId());
@@ -574,8 +573,11 @@ public class StreamCatalogService {
             throw new IOException("Failed to delete custom processor with name:" + name);
         }
         TopologyComponentDefinition customProcessorComponent = result.iterator().next();
+        CustomProcessorInfo customProcessorInfo = new CustomProcessorInfo();
+        customProcessorInfo.fromTopologyComponent(customProcessorComponent);
+        deleteFileFromStorage(customProcessorInfo.getJarFileName());
         this.dao.remove(customProcessorComponent.getStorableKey());
-        return new CustomProcessorInfo().fromTopologyComponent(customProcessorComponent);
+        return customProcessorInfo;
     }
 
     public Collection<TopologyEditorMetadata> listTopologyEditorMetadata() {

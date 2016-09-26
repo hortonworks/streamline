@@ -93,6 +93,7 @@ export default class OutputSchema extends Component {
 				let grouping = g.grouping;
 				let streamObj = outputStreams.filter((o)=>{return o.id === streamId})[0];
 				streamObj.grouping = grouping;
+				streamObj.groupingFields = g.fields;
 				streamObj.connectsTo.push(e.toId);
 				if(stateObj.ruleProcessor){
 					//Add forRule array for rules action part containing stream name

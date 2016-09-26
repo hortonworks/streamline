@@ -30,7 +30,7 @@ public class CustomProcessorUploadHandlerTest {
     private final String notTarFileName = "someFile.txt";
     private final String notTarFilePath = uploadWatchDirectory + File.separator + notTarFileName;
     private final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-    private InputStream imageFile, jarFile;
+    private InputStream jarFile;
     private final String resourceDirectoryPrefix = "customprocessorupload/";
     CustomProcessorInfo customProcessorInfo;
     @Injectable private StreamCatalogService catalogService;
@@ -46,7 +46,6 @@ public class CustomProcessorUploadHandlerTest {
         f.mkdir();
         f = new File(successfulUploadMoveDirectory);
         f.mkdir();
-        imageFile = new FileInputStream(new File(classLoader.getResource(resourceDirectoryPrefix + "image.png").getFile()));
         jarFile = new FileInputStream(new File(classLoader.getResource(resourceDirectoryPrefix + "iotas-core.jar").getFile()));
         byte[] data = new byte[1024];
         ObjectMapper mapper = new ObjectMapper();
@@ -71,7 +70,7 @@ public class CustomProcessorUploadHandlerTest {
 
     @Test
     public void testFailures () throws IOException {
-        final String[] fileNames = {"nocustomprocessorinfo.tar", "nojarfile.tar", "nocustomprocessorimpl.tar", "noimagefile.tar"};
+        final String[] fileNames = {"nocustomprocessorinfo.tar", "nojarfile.tar", "nocustomprocessorimpl.tar"};
         for (String fileName: fileNames) {
             URL url = classLoader.getResource(resourceDirectoryPrefix + fileName);
             String consoleCustomProcessorTarString = url.getFile();
@@ -92,11 +91,10 @@ public class CustomProcessorUploadHandlerTest {
         FileUtils.copyFileToDirectory(consoleCustomProcessorTar, new File(uploadWatchDirectory), false);
         this.customProcessorUploadHandler.created(Paths.get(uploadWatchDirectory).resolve(fileName));
         new VerificationsInOrder() {{
-            InputStream jarFileActual, imageFileActual;
-            catalogService.addCustomProcessorInfo(withEqual(customProcessorInfo), jarFileActual = withCapture(), imageFileActual = withCapture());
+            InputStream jarFileActual;
+            catalogService.addCustomProcessorInfo(withEqual(customProcessorInfo), jarFileActual = withCapture());
             times = 1;
             Assert.assertTrue(IOUtils.contentEquals(jarFileActual, jarFile));
-            Assert.assertTrue(IOUtils.contentEquals(imageFileActual, imageFile));
         }};
     }
 
@@ -104,9 +102,6 @@ public class CustomProcessorUploadHandlerTest {
     public void cleanup () throws IOException {
         File f = new File(uploadWatchDirectory);
         FileUtils.deleteDirectory(f);
-        if (imageFile != null) {
-            imageFile.close();
-        }
         if (jarFile != null) {
             jarFile.close();
         }

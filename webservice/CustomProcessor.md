@@ -10,9 +10,8 @@ updating, deleting and getting custom processors is
 /api/v1/catalog/system/componentdefinitions/PROCESSOR/custom 
 
 Following are the properties in the json needed to register a custom processor.
-Note that along with the json, the request also takes two files for each custom
-processor. One is the image file that will be used in the topology editor UI
-and other is the jar file that will contain the implementation of the
+Note that along with the json, the request also takes a file for each custom
+processor. This file is the jar file that will contain the implementation of the
 CustomProcessor interface
 
 Field| Type | Comment
@@ -20,7 +19,6 @@ Field| Type | Comment
 streamingEngine| String| Streaming Engine for this custom processor - e.g. STORM
 name| String| Name of the custom processor. This should uniquely identify the custom processor 
 description| String| Description of the custom processor
-imageFileName| String| Unique name of the file that will be used to upload/download the image
 jarFileName| String| Unique name of the jar file that will be used to upload/download the jar
 customProcessorImpl| String| Fully qualified class name implementing the interface
 inputSchema| Schema| Input schema that this custom processor expects
@@ -49,7 +47,6 @@ schemaClass| String | Fully qualified class name to support schema evolution
             "streamingEngine":"STORM",
             "name":"Console Custom Processor",
             "description":"Console Custom Processor",
-            "imageFileName":"image.gif",
             "jarFileName":"iotas-core.jar",
             "configFields":[
                 {
@@ -111,11 +108,11 @@ schemaClass| String | Fully qualified class name to support schema evolution
 
 `POST /api/v1/catalog/system/componentdefinitions/PROCESSOR/custom`
 
-This request takes two files as well. A curl request below shows how to add a custom processor
-along with its image and jar file. console_custom_processor is a file containing the json described
+This request takes jar file as well. A curl request below shows how to add a custom processor
+along with its jar file. console_custom_processor is a file containing the json described
 above.
 
-`curl -sS -X POST -i -F jarFile=@../core/target/core-0.1.0-SNAPSHOT.jar -F imageFile=@../webservice/src/main/resources/assets/libs/bower/jquery-ui/css/images/animated-overlay.gif http://localhost:8080/api/v1/catalog/system/componentdefinitions/PROCESSOR/custom -F customProcessorInfo=@console_custom_processor`
+`curl -sS -X POST -i -F jarFile=@../core/target/core-0.1.0-SNAPSHOT.jar  http://localhost:8080/api/v1/catalog/system/componentdefinitions/PROCESSOR/custom -F customProcessorInfo=@console_custom_processor`
    
 **Success Response**
 
@@ -157,13 +154,12 @@ operation. The property entity is the object added, updated or deleted.
 }
 ```
 
-### Get image and jar files
+### Get jar file
 
-To download the files associated with the custom processor use the GET requests below.
+To download the jar file associated with the custom processor use the GET requests below.
 Note that the get URL ends with the name of the file. This has to be the same name that
-was used to assign the property imageFileName and jarFileName in custom processor post/put.
+was used to assign the property jarFileName in custom processor post/put.
 
-`GET /api/v1/catalog/system/componentdefinitions/PROCESSOR/custom/image.gif`
 `GET /api/v1/catalog/system/componentdefinitions/PROCESSOR/custom/iotas-core.jar`
 
 ## Auto upload for Custom Processors
@@ -183,20 +179,18 @@ will automatically be tried for upload as CustomProcessor implementations. If th
 tar file will be moved to customProcessorUploadSuccessPath location and customProcessorUploadFailPath
 otherwise. Note that these 3 directories are expected to be created with right permissions before
 starting IoTaS. Any files other than tar will be ignored and moved to customProcessorUploadFailPath.
-The tar file is expected to have 3 files in it. The main file is info.json. This is the json file 
+The tar file is expected to have 2 files in it. The main file is info.json. This is the json file 
 containing json representing CustomProcessorInfo. A sample json is shown below. The name of the file
-has to be info.json. Otherwise it will fail to upload. The other two files are the jar file and image file.
+has to be info.json. Otherwise it will fail to upload. The other file is the jar file.
 As mentioned above jar file should contain the class implementing the CustomProcessorRuntime interface. Name of
 the class should be the same as the value of the property customProcessorImpl in info.json. The jar
-and image files in the tar should have the same name as the jarFileName and imageFileName properties
-respectively in info.json
+file in the tar should have the same name as the jarFileName property in info.json
 
 ```json
 {
   "streamingEngine": "STORM",
   "name": "Console Custom Processor",
   "description": "Console Custom Processor",
-  "imageFileName": "image.png",
   "jarFileName": "iotas-core.jar",
   "configFields": [{"name":"configField", "isOptional":false, "type":"string", "defaultValue":null,"isUserInput":true,"tooltip":"Config field"}],
   "inputSchema": {"fields":[{"name":"childField1","type":"INTEGER"},{"name":"childField2","type":"BOOLEAN"},{"name":"topLevelStringField","type":"STRING"}]},
