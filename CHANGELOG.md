@@ -1,4 +1,5 @@
 ## 0.1.4
+ * IOT-425: Topology Editor Improvements.
  * IOT-408: Remove the extra config property in topology level config json.
  * IOT-407: Remove imageFile field for custom processors.
  * IOT-389: A few fixes for issues found while running with mysql db
