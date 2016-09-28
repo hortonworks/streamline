@@ -5,6 +5,7 @@ import TopologyREST from '../rest/TopologyREST';
 import FSReactToastr from '../components/FSReactToastr';
 //Sources
 import DeviceNodeForm from '../containers/Streams/TopologyEditor/DeviceNodeForm';
+import KafkaNodeForm from '../containers/Streams/TopologyEditor/KafkaNodeForm';
 //Processors
 import ParserNodeForm from '../containers/Streams/TopologyEditor/ParserNodeForm';
 import RulesNodeForm from '../containers/Streams/TopologyEditor/RulesNodeForm';
@@ -317,13 +318,6 @@ const deleteNode = function(topologyId, currentNode, nodes, edges, internalFlags
 						}
 					})
 				}
-
-				//Delete data from metadata
-				let metaData = {
-					topologyId: topologyId,
-					data: JSON.stringify(metaInfo)
-				};
-				promiseArr.push(TopologyREST.putMetaInfo(topologyId, {body: JSON.stringify(metaData)}));
 				
 				//Delete Links
 				let edgeArr = this.getEdges(edges, currentNode);
@@ -340,8 +334,15 @@ const deleteNode = function(topologyId, currentNode, nodes, edges, internalFlags
 					promiseArr.push(TopologyREST.deleteNode(topologyId, 'edges', o.edgeId));
 				});
 
-				//Delete current node and it's metadata
+				//Delete data from metadata
 				metaInfo = this.removeNodeFromMeta(metaInfo, currentNode);
+				let metaData = {
+					topologyId: topologyId,
+					data: JSON.stringify(metaInfo)
+				};
+				promiseArr.push(TopologyREST.putMetaInfo(topologyId, {body: JSON.stringify(metaData)}));
+				
+				//Delete current node 
 				promiseArr.push(TopologyREST.deleteNode(topologyId, this.getNodeType(currentNode.parentType), currentNode.nodeId));
 
 				//If needed to reset any processor on delete - it comes here or in callback
@@ -448,7 +449,7 @@ const replaceSelectNode = function(d3Node, nodeData, constants, internalFlags, r
 
 const removeSelectFromNode = function(rectangles, constants, internalFlags){
 	rectangles.filter(function(cd) {
-		return cd.id === internalFlags.selectedNode.id;
+		return cd.nodeId === internalFlags.selectedNode.nodeId;
 	}).classed(constants.selectedClass, false);
 	internalFlags.selectedNode = null;
 }
@@ -500,27 +501,6 @@ const defineLinePath = function(p1, p2, flag){
 	return segments.join(' ');
 }
 
-// insert svg line breaks
-const insertTitleLinebreaks = function(gEl, title, constants){
-	let words = title.split(/\s+/g),
-		nwords = words.length,
-		nodeTitle = '';
-	var el = gEl.append("text")
-		.attr("text-anchor", "middle")
-		.attr("class", "node-title")
-		.attr("dx", function(d){
-			return (constants.rectangleWidth / 2);
-		})
-		.attr("dy", function(d){
-			return (constants.rectangleHeight) + 4;
-		});
-
-	for (var i = 0; i < words.length; i++) {
-		nodeTitle += words[i]+' ';
-	}
-	el.text(nodeTitle.trim());
-}
-
 const showNodeModal = function(ModalScope, setModalContent, node, updateGraphMethod, allNodes, edges, linkShuffleOptions){
 	let currentEdges = this.getEdges(edges, node);
 	let scope = ModalScope(node);
@@ -549,6 +529,20 @@ const getConfigContainer = function(node, configData, editMode, topologyId, curr
 					editMode={editMode}
 					nodeType={nodeType}
 					topologyId={topologyId}
+				/>;
+		}
+		break;
+		case Components.Datasources[1].name: //Kafka
+		return () => {
+			return <KafkaNodeForm
+					ref="ConfigModal"
+					nodeData={node}
+					configData={configData}
+					editMode={editMode}
+					nodeType={nodeType}
+					topologyId={topologyId}
+					targetNodes={targetNodes}
+					linkShuffleOptions={linkShuffleOptions}
 				/>;
 		}
 		break;
@@ -704,11 +698,11 @@ const MouseUpAction = function(topologyId, d3node, d, metaInfo, internalFlags, c
 
 	var mouseDownNode = internalFlags.mouseDownNode;
 
-	if (!mouseDownNode) return;
+	// if (!mouseDownNode) return;
 
 	dragLine.classed("hidden", true);
 
-	if (mouseDownNode !== d) {
+	if (mouseDownNode && mouseDownNode !== d) {
 		// we're in a different node: create new edge for mousedown edge and add to graph
 		this.createEdge(mouseDownNode, d, paths, edges, internalFlags, updateGraphMethod, topologyId);
 		this.updateMetaInfo(topologyId, d, metaInfo);
@@ -720,7 +714,21 @@ const MouseUpAction = function(topologyId, d3node, d, metaInfo, internalFlags, c
 				internalFlags.justDragged = false;
 			} else {
 				// clicked, not dragged
-				this.showNodeModal(getModalScope, setModalContent, d, updateGraphMethod, allNodes, edges, linkShuffleOptions);
+				if(d3.event && d3.event.type === 'dblclick'){
+					this.showNodeModal(getModalScope, setModalContent, d, updateGraphMethod, allNodes, edges, linkShuffleOptions);
+				} else {
+					// we're in the same node
+					if (internalFlags.selectedEdge) {
+						this.removeSelectFromEdge(d3, paths, constants, internalFlags);
+					}
+					var prevNode = internalFlags.selectedNode;
+
+					if (!prevNode || prevNode.nodeId !== d.nodeId) {
+						this.replaceSelectNode(d3node, d, constants, internalFlags, rectangles);
+					} else {
+						this.removeSelectFromNode(rectangles, constants, internalFlags);
+					}
+				}
 			}
 		} else if(elementType === 'circle'){
 			// we're in the same node
@@ -767,7 +775,6 @@ const capitalizeFirstLetter = function(string){
 const generateNodeData = function(nodes, constantsArr, parentType, metadata, resultArr){
 	for(let i = 0; i < nodes.length; i++){
 		let currentType = this.capitalizeFirstLetter(nodes[i].type);
-		currentType = (currentType === 'Kafka' ? 'Device' : currentType);
 		let constObj = constantsArr.filter((o)=>{return o.name === currentType});
 		let configuredFlag = _.keys(nodes[i].config.properties).length > 0 ? true : false;
 		if(constObj.length === 0){
@@ -828,7 +835,7 @@ const createLineOnUI = function(edge, constants){
 	let arr = [],
 		isFailedTupleflag = false;
 	if(edge.target.streamId === "failedTuplesStream"){
-		arr.push({x: (edge.source.x + constants.rectangleWidth / 2),y: (edge.source.y + constants.rectangleHeight + 10)},
+		arr.push({x: (edge.source.x + constants.rectangleWidth / 2),y: (edge.source.y + constants.rectangleHeight)},
 				 {x: edge.target.x, y: (edge.target.y + constants.rectangleHeight / 2)});
 		isFailedTupleflag = true;
 	} else {
@@ -836,6 +843,26 @@ const createLineOnUI = function(edge, constants){
 				 {x: edge.target.x, y: (edge.target.y + constants.rectangleHeight / 2)});
 	}
 	return this.defineLinePath(arr[0], arr[1], isFailedTupleflag);
+}
+
+const getNodeRectClass = function(data){
+	if(data.parentType === Components.Datasource.value){
+		return 'source';
+	} else if(data.parentType === Components.Processor.value){
+		return 'processor';
+	} else if(data.parentType === Components.Sink.value){
+		return 'datasink';
+	}
+}
+
+const getNodeImgRectClass = function(data){
+	if(data.parentType === Components.Datasource.value){
+		return 'source-img';
+	} else if(data.parentType === Components.Processor.value){
+		return 'processor-img';
+	} else if(data.parentType === Components.Sink.value){
+		return 'datasink-img';
+	}
 }
 
 export default {
@@ -856,7 +883,6 @@ export default {
 	replaceSelectEdge,
 	removeSelectFromEdge,
 	defineLinePath,
-	insertTitleLinebreaks,
 	showNodeModal,
 	getConfigContainer,
 	MouseUpAction,
@@ -865,5 +891,7 @@ export default {
 	capitalizeFirstLetter,
 	generateNodeData,
 	syncEdgeData,
-	createLineOnUI
+	createLineOnUI,
+	getNodeRectClass,
+	getNodeImgRectClass
 };

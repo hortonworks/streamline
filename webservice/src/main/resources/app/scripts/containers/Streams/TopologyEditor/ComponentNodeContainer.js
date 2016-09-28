@@ -1,6 +1,6 @@
 import React, {Component, PropTypes}from 'react';
 import ReactDOM, { findDOMNode } from 'react-dom';
-import {OverlayTrigger, Tooltip, Accordion, Panel} from 'react-bootstrap';
+import {OverlayTrigger, Tooltip, Accordion, Panel, PanelGroup} from 'react-bootstrap';
 import { ItemTypes, Components } from '../../../utils/Constants';
 import { DragSource } from 'react-dnd';
 import NodeContainer from './NodeContainer';
@@ -37,8 +37,9 @@ export default class ComponentNodeContainer extends Component {
 		this.state = {
 			componentsBox: true,
 			sourceBox: true,
-			processorBox: true,
-			sinkBox: true
+			processorBox: false,
+			sinkBox: false,
+			activeKey: '1'
 		};
 	}
 
@@ -47,15 +48,15 @@ export default class ComponentNodeContainer extends Component {
 	}
 
 	showHideSourceBox() {
-		this.setState({ sourceBox: !this.state.sourceBox });
+		this.setState({ sourceBox: true, processorBox: false, sinkBox: false });
 	}
 
 	showHideProcessorBox() {
-		this.setState({ processorBox: !this.state.processorBox });
+		this.setState({ processorBox: true, sourceBox: false, sinkBox: false });
 	}
 
 	showHideSinkBox() {
-		this.setState({ sinkBox: !this.state.sinkBox });
+		this.setState({ sinkBox: true, sourceBox: false, processorBox: false });
 	}
 
 	getComponentHeader(){
@@ -73,31 +74,29 @@ export default class ComponentNodeContainer extends Component {
 	}
 	getSinkHeader(){
 		let iconClass = this.state.sinkBox ? "fa fa-caret-down" : "fa fa-caret-right";
-		return (<div> <i className={iconClass}></i> Sink </div>)
+		return (<div><i className={iconClass}></i> Sink </div>)
 	}
 	hide(e){
 		e.stopPropagation()
 		state.showComponentNodeContainer = false;
 	}
+	handleSelectPanel(activeKey){
+		this.setState({ activeKey });
+	}
 	render(){
-		const { hideSourceOnDrag, left, top, connectDragSource, isDragging, children } = this.props;
+		const { hideSourceOnDrag, left, top, isDragging, children } = this.props;
 	    if (isDragging && hideSourceOnDrag) {
 	      return null;
 	    }
-		return connectDragSource(
-			<div className="nodes-list-container" style={{ left, top }}>
-					<Panel 
-						header={ [<strong key="1">Components</strong>, <i key="2"className="fa fa-close pull-right" style={{cursor: 'pointer'}} onClick={this.hide.bind(this)}></i> ]} 
-						onSelect={this.showHideComponentsBox.bind(this)}
-						collapsible={true}
-						defaultExpanded={this.state.componentsBox}
-					>
-						<Panel 
+		return (
+			<div className="component-panel">
+					<PanelGroup activeKey={this.state.activeKey} onSelect={this.handleSelectPanel.bind(this)} id="component-accordion" accordion>
+						<Panel
+							eventKey="1"
 							header={this.getSourceHeader()}
 							onSelect={this.showHideSourceBox.bind(this)}
-							collapsible={true}
-							defaultExpanded={this.state.sourceBox}
 						>
+							<ul className="list-group">
 							{Components.Datasources.map((source, i)=>{
 								if(source.hideOnUI === 'true'){
 									return null;
@@ -106,20 +105,21 @@ export default class ComponentNodeContainer extends Component {
 									<NodeContainer
 										key={i}
 										imgPath={source.imgPath}
-										name={source.name}
+										name={source.label}
 										type={Components.Datasource.value}
 										nodeType={source.name}
 										hideSourceOnDrag={false}
 									/>
 								)
 							})}
+							</ul>
 						</Panel>
-						<Panel 
+						<Panel
+							eventKey="2"
 							header={this.getProcessorHeader()}
 							onSelect={this.showHideProcessorBox.bind(this)}
-							collapsible={true}
-							defaultExpanded={this.state.processorBox}
 						>
+							<ul className="list-group">
 							{Components.Processors.map((processor, i)=>{
 								if(processor.hideOnUI === 'true' || processor.name === 'Custom'){
 									return null;
@@ -128,7 +128,7 @@ export default class ComponentNodeContainer extends Component {
 									<NodeContainer
 										key={i}
 										imgPath={processor.imgPath}
-										name={processor.name}
+										name={processor.label}
 										type={Components.Processor.value}
 										nodeType={processor.name}
 										hideSourceOnDrag={false}
@@ -152,12 +152,12 @@ export default class ComponentNodeContainer extends Component {
 									/>
 								)
 							})}
+							</ul>
 						</Panel>
-						<Panel 
+						<Panel
+							eventKey="3"
 							header={this.getSinkHeader()}
 							onSelect={this.showHideSinkBox.bind(this)}
-							collapsible={true}
-							defaultExpanded={this.state.sinkBox}
 						>
 							{Components.Sinks.map((sink, i)=>{
 								if(sink.hideOnUI === 'true'){
@@ -167,7 +167,7 @@ export default class ComponentNodeContainer extends Component {
 									<NodeContainer
 										key={i}
 										imgPath={sink.imgPath}
-										name={sink.name}
+										name={sink.label}
 										type={Components.Sink.value}
 										nodeType={sink.name}
 										hideSourceOnDrag={false}
@@ -175,7 +175,7 @@ export default class ComponentNodeContainer extends Component {
 								)
 							})}
 						</Panel>
-					</Panel>
+					</PanelGroup>
 			</div>
 		)
 	}

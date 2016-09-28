@@ -31,7 +31,8 @@ export default class OutputSchema extends Component {
 			canDelete: typeof props.canDelete === 'boolean' ? props.canDelete : true,
 			modalTitle: '',
 			streamObj: {},
-			ruleProcessor: false
+			ruleProcessor: false,
+			connectedTargetNodes: []
 		}
 		this.currentRulesArr = [];
 		this.fetchNode();

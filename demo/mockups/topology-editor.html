@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, shrink-to-fit=no, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="">
+<title>IOTAS</title>
+
+<link href='https://fonts.googleapis.com/css?family=Lato:400,400italic,700,700italic,300italic,300' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" type="text/css" href="css/font-awesome.min.css" />
+<link rel="stylesheet" type="text/css" href="css/animate.css" />
+<link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
+<link rel="stylesheet" type="text/css" href="css/select2.css" />
+<link rel="stylesheet" type="text/css" href="../../webservice/src/main/resources/app/styles/css/style.css" />
+
+<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-2">
+                <ul class="nav navbar-nav">
+                    <li><a href="javascript:void(0)" class="left-bar-toggle"><i class="fa fa-lg fa-th-large"></i></a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" aria-haspopup="true" aria-expanded="false"><i class="fa fa-lg fa-newspaper-o"></i></a>
+                        <ul class="dropdown-menu notification-dropdown">
+                            <li>
+                                <a href="#">User 1</a> added <a href="#">Schema 1</a> in <a href="#">Schema Registry</a>
+                            </li>
+                            <li>
+                                <a href="#">User 2</a> added <a href="#">Nest Datasource</a> in <a href="#">Device Registry</a>
+                            </li>
+                            <li>
+                                <a href="#">Admin</a> updated <a href="#">Topology 1</a> in <a href="#">Topology Editor</a>
+                            </li>
+                            <li>
+                                <a href="#">Admin</a> deployed <a href="#">Topology 1</a>
+                            </li>
+                            <li><a href="#">View All News <i class="fa fa-arrow-right"></i></a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-sm-8" align="center">
+                <a href="index.html" class="navbar-logo"><img src="../../webservice/src/main/resources/app/styles/img/logo.png" height="30" /></a>
+            </div>
+            <div class="col-sm-2">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="configuration.html"><i class="fa fa-lg fa-gear"></i></a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-lg fa-user"></i></a>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li><a href="#">Change Password</a></li>
+                            <li><a href="#">Edit Profile</a></li>
+                            <li><a href="#">View Profile</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="#">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="page-title-box">
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+                <h4 class="page-title pull-left">Topology Listing</h4>
+                <ol class="breadcrumb pull-right">
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Topology Listing</a></li>
+                    <li class="active">Topology Editor</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid wrapper animated fadeIn">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="box success">
+                <div class="box-head">
+                    <h4>Topology Name</h4>
+                    <div class="box-controls">
+                        <a href="javascript:void(0);" title="Run" data-toggle="tooltip"><i class="fa fa-play"></i></a>
+                        <a href="javascript:void(0);" title="Kill" data-toggle="tooltip"><i class="fa fa-times"></i></a>
+                    </div>
+                    <div class="box-controls">
+                        <a href="javascript:void(0);" title="Save" data-toggle="tooltip"><i class="fa fa-save"></i></a>
+                        <a href="javascript:void(0);" title="Configuration" data-toggle="tooltip"><i class="fa fa-gear"></i></a>
+                    </div>
+                    <div class="box-controls">
+                        <a href="javascript:void(0);" title="Zoom Out" data-toggle="tooltip"><i class="fa fa-search-minus"></i></a>
+                        <a href="javascript:void(0);" title="Zoom In" data-toggle="tooltip"><i class="fa fa-search-plus"></i></a>
+                    </div>
+                </div>
+                <div class="box-body graph-bg">
+                    <div id="windowSlider">
+                        <h3 class="slider-title">Windowing Aggregate</h3>
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Keys *</label>
+                                <div class="col-sm-8">
+                                    <select class="form-control select-two" multiple="">
+                                        <option>input_field1</option>
+                                        <option>input_field2</option>
+                                        <option>input_field3</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Window Interval Type</label>
+                                <div class="col-sm-4">
+                                    <select class="form-control" id="intervalType">
+                                        <option value="time">Time</option>
+                                        <option value="count">Count</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Window Interval *</label>
+                                <div class="col-sm-4">
+                                    <input type="number" class="form-control" id="windowInterval" />
+                                </div>
+                                <div class="col-sm-4">
+                                    <select class="form-control timeFrame">
+                                        <option>Seconds</option>
+                                        <option>Minutes</option>
+                                        <option>Hours</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Sliding Interval</label>
+                                <div class="col-sm-4">
+                                    <input type="number" class="form-control" id="slidingInterval" />
+                                </div>
+                                <div class="col-sm-4">
+                                    <select class="form-control timeFrame">
+                                        <option>Seconds</option>
+                                        <option>Minutes</option>
+                                        <option>Hours</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <fieldset class="fieldset-default">
+                                <legend>Output Fields</legend>
+                                <button class="btn btn-success btn-sm"><i class="fa fa-plus-circle"></i> Add Output Field</button>
+                                <div class="clearfix row-margin-bottom"></div>
+                                <div class="form-group">
+                                    <div class="col-sm-4">
+                                        <select class="form-control">
+                                            <option>input_field1</option>
+                                            <option>input_field2</option>
+                                            <option>input_field3</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <select class="form-control">
+                                            <option>Avg</option>
+                                            <option>Count</option>
+                                            <option>Sum</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <input type="text" class="form-control" value="input_field1_Avg" />
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <button class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button>
+                                    </div>
+                                </div>
+                            </fieldset>
+                            <div class="form-group">
+                                <div class="col-sm-12" align="right">
+                                    <button type="button" class="btn btn-danger">Cancel</button>
+                                    <button type="button" class="btn btn-success">Ok</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="kafkaSlider">
+                        <h3 class="slider-title">Kafka</h3>
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Select Device Name *</label>
+                                <div class="col-sm-6">
+                                    <input type="text" name="zkUrl" value="" class="form-control" required disabled="">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">zkUrl*</label>
+                                <div class="col-sm-6">
+                                    <input type="text" name="topic" value="" class="form-control" required disabled="">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">topic*</label>
+                                <div class="col-sm-6">
+                                    <input type="text" name="zkRoot" value="" class="form-control" required disabled="">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">zkRoot*</label>
+                                <div class="col-sm-6">
+                                    <input type="text" name="spoutConfigId" value="" class="form-control" required disabled="">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">spoutConfigId*</label>
+                                <div class="col-sm-6">
+                                    <input type="text" name="spoutConfigId" value="" class="form-control" required disabled="">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                            <div class="panel panel-default">
+                                <div class="panel-heading" role="tab" id="headingTwo">
+                                    <h4 class="panel-title">
+                                        <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">Optional Configurations</a>
+                                    </h4>
+                                </div>
+                                <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                                    <div class="panel-body">
+                                        <div class="row form-group">
+                                            <div class="col-sm-6">
+                                                <label class="control-label">zkPath</label>
+                                                <input type="text" value="/brokers" class="form-control">
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <label class="control-label">refreshFreqSecs</label>
+                                                <input type="number" value="60" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="row form-group">
+                                            <div class="col-sm-6">
+                                                <label class="control-label">fetchSizeBytes</label>
+                                                <input type="number" value="1048576" class="form-control" />
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <label class="control-label">socketTimeoutMs</label>
+                                                <input type="number" value="10000" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="row form-group">
+                                            <div class="col-sm-6">
+                                                <label class="control-label">fetchMaxWait</label>
+                                                <input type="number" value="10000" class="form-control" />
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <label class="control-label">bufferSizeBytes</label>
+                                                <input type="number" value="1048576" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="row form-group">
+                                            <div class="col-sm-6">
+                                                <label class="control-label">ignoreZkOffsets</label>
+                                                <div>
+                                                    <label class="radio-inline"><input type="radio" name="inlineRadioOptions" value="option1"> True</label>
+                                                    <label class="radio-inline"><input type="radio" name="inlineRadioOptions" value="option2"> False</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <label class="control-label">maxOffsetBehind</label>
+                                                <input type="number" value="9223372036854776000" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="row form-group">
+                                            <div class="col-sm-6">
+                                                <label class="control-label">useStartOffsetTimeIfOffsetOutOfRange</label>
+                                                <div>
+                                                    <label class="radio-inline"><input type="radio" name="inlineRadioOptions" value="option1"> True</label>
+                                                    <label class="radio-inline"><input type="radio" name="inlineRadioOptions" value="option2"> False</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <label class="control-label">metricsTimeBucketSizeInSecs</label>
+                                                <input type="number" value="60" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="row form-group">
+                                            <div class="col-sm-6">
+                                                <label>zkServers</label>
+                                                <input type="text" value="" class="form-control">
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <label>zkPort</label>
+                                                <input type="number" value="2181" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="row form-group">
+                                            <div class="col-sm-6">
+                                                <label>stateUpdateIntervalMs</label>
+                                                <input type="number" value="2000" class="form-control" />
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <label>retryInitialDelayMs</label>
+                                                <input type="number" value="0" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="row form-group">
+                                            <div class="col-sm-6">
+                                                <label>retryDelayMultiplier</label>
+                                                <input type="number" value="1" class="form-control" />
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <label>retryDelayMaxMs</label>
+                                                <input type="number" value="60000" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="row form-group">
+                                            <div class="col-sm-6">
+                                                <label>parallelism</label>
+                                                <input type="number" value="1" class="form-control" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12" align="right">
+                                <button type="button" class="btn btn-danger">Cancel</button>
+                                <button type="button" class="btn btn-success">Ok</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="component-panel">
+                        <div class="panel-group" id="component-accordion" role="tablist" aria-multiselectable="true">
+                            <div class="panel panel-default">
+                                <div class="panel-heading" role="tab" id="souceHeading">
+                                    <a class="panel-title" role="button" data-toggle="collapse" data-parent="#component-accordion" href="#source" aria-expanded="true" aria-controls="source">Source</a>
+                                </div>
+                                <div id="source" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="souceHeading">
+                                    <ul class="list-group">
+                                        <li class="list-group-item"><img src="../../webservice/src/main/resources/app/styles/img/color-icon-device.png" class="component-icon" /> Device</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading" role="tab" id="processorHeading">
+                                    <a class="panel-title collapsed" role="button" data-toggle="collapse" data-parent="#component-accordion" href="#processor" aria-expanded="false" aria-controls="processor">Processor</a>
+                                </div>
+                                <div id="processor" class="panel-collapse collapse" role="tabpanel" aria-labelledby="processorHeading">
+                                    <ul class="list-group">
+                                        <li class="list-group-item"><img src="../../webservice/src/main/resources/app/styles/img/color-icon-rule.png" class="component-icon" /> Rule</li>
+                                        <li class="list-group-item"><img src="../../webservice/src/main/resources/app/styles/img/color-icon-normalization.png" class="component-icon" /> Normalization</li>
+                                        <li class="list-group-item"><img src="../../webservice/src/main/resources/app/styles/img/color-icon-split.png" class="component-icon" /> Split</li>
+                                        <li class="list-group-item"><img src="../../webservice/src/main/resources/app/styles/img/color-icon-stage.png" class="component-icon" /> Stage</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading" role="tab" id="sinkHeading">
+                                    <a class="panel-title collapsed" role="button" data-toggle="collapse" data-parent="#component-accordion" href="#sink" aria-expanded="false" aria-controls="sink">Sink</a>
+                                </div>
+                                <div id="sink" class="panel-collapse collapse" role="tabpanel" aria-labelledby="sinkHeading">
+                                    <ul class="list-group">
+                                        <li class="list-group-item"><img src="../../webservice/src/main/resources/app/styles/img/color-icon-hdfs.png" class="component-icon" /> HDFS</li>
+                                        <li class="list-group-item"><img src="../../webservice/src/main/resources/app/styles/img/color-icon-hbase.png" class="component-icon" /> HBase</li>
+                                        <li class="list-group-item"><img src="../../webservice/src/main/resources/app/styles/img/color-icon-notification.png" class="component-icon" /> Notification</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--<button class="btn btn-primary btn-sm" id="triggerSlider">Device Name</button>
+                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#myModal">Parser Name</button>-->
+                    <img src="images/topology-graph.png" width="1000" usemap="#Kafka" />
+                    <map name="Kafka">
+                        <area shape="rect" coords="37,54,245,109" href="javascript:void(0);" id="kafkaTrigger">
+                        <area shape="rect" coords="745,177,954,233" href="javascript:void(0);" id="windowTrigger">
+                    </map>
+                    <!-- <div class="clearfix"></div>
+                    <div class="node processor"><img src="../../webservice/src/main/resources/app/styles/img/icon-kafka.png" class="node-icon" /> Kafka</div> -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="left-sidebar">
+    <h4 class="sidebar-title">Streams</h4>
+    <ul class="sibebar-nav">
+        <li><a href="schema-details.html"><i class="fa fa-file-code-o"></i> Schema Registry</a></li>
+        <li><a href="topology-editor.html" class="active"><i class="fa fa-sitemap"></i> Streams Builder</a></li>
+        <li><a href="#"><i class="fa fa-tachometer"></i> Metrics</a></li>
+    </ul>
+</div>
+
+<!-- Modal -->
+<!-- <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Rules:</label>
+                        <div class="col-sm-3">
+                            <select class="form-control">
+                                <option>Field 1</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-3">
+                            <select class="form-control">
+                                <option>Operator</option>
+                                <option>=</option>
+                                <option>==</option>
+                                <option>!=</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-3">
+                            <select class="form-control">
+                                <option>Field 2</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-1">
+                            <button class="btn btn-success btn-sm"><i class="fa fa-plus"></i></button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-2">
+                            <select class="form-control">
+                                <option>AND</option>
+                                <option>OR</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-3">
+                            <select class="form-control">
+                                <option>Field 1</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-3">
+                            <select class="form-control">
+                                <option>Operator</option>
+                                <option>=</option>
+                                <option>==</option>
+                                <option>!=</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-3">
+                            <select class="form-control">
+                                <option>Field 2</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-1">
+                            <button class="btn btn-danger btn-sm"><i class="fa fa-times"></i></button>
+                        </div>
+                    </div>
+                    <div class="hr-line-dashed"></div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <h5 class="no-margin-top"><strong>Query:</strong></h5>
+                            <pre>
+Select * from <span class="text-success">parsedTuplesStream</span>
+<span class="text-danger">where</span> <span class="text-primary">field1</span> <span class="text-danger">=</span> <span class="text-primary">field2</span>
+<span class="text-danger">and</span> <span class="text-primary">field3</span> <span class="text-danger"><</span> 10
+                            </pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div> -->
+
+<!-- Window Slider -->
+<div class="modal fade" id="winModal" tabindex="-1" role="dialog" aria-labelledby="winModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="winModalLabel">Windowing Aggregate</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Keys *</label>
+                        <div class="col-sm-4">
+                            <select class="form-control">
+                                <option>input_field1</option>
+                                <option>input_field2</option>
+                                <option>input_field3</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Window Interval Type</label>
+                        <div class="col-sm-4">
+                            <select class="form-control" id="intervalType">
+                                <option value="time">Time</option>
+                                <option value="count">Count</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Window Interval *</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" />
+                        </div>
+                        <div class="col-sm-4">
+                            <select class="form-control timeFrame">
+                                <option>Seconds</option>
+                                <option>Minutes</option>
+                                <option>Hours</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Sliding Interval</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" />
+                        </div>
+                        <div class="col-sm-4">
+                            <select class="form-control timeFrame">
+                                <option>Seconds</option>
+                                <option>Minutes</option>
+                                <option>Hours</option>
+                            </select>
+                        </div>
+                    </div>
+                    <fieldset class="fieldset-default">
+                        <legend>Output Fields</legend>
+                        <button class="btn btn-success btn-sm"><i class="fa fa-plus-circle"></i> Add Output Field</button>
+                        <div class="clearfix row-margin-bottom"></div>
+                        <div class="form-group">
+                            <div class="col-sm-4">
+                                <select class="form-control">
+                                    <option>input_field1</option>
+                                    <option>input_field2</option>
+                                    <option>input_field3</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-2">
+                                <select class="form-control">
+                                    <option>Avg</option>
+                                    <option>Count</option>
+                                    <option>Sum</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" value="input_field1_Avg" />
+                            </div>
+                            <div class="col-sm-2">
+                                <button class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- jQuery --> 
+<script type="text/javascript" src="js/jquery.js"></script> 
+<script type="text/javascript" src="js/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/select2.min.js"></script>
+<script type="text/javascript">
+$( document ).ready(function() {
+    //Left Sidebar
+    $('.left-bar-toggle').on('click', function(e){
+        e.preventDefault();
+        $('.left-sidebar').toggleClass('enabled');
+    });
+
+    //Topology Slider
+    $("#kafkaTrigger").on("click", function() {
+        $("#kafkaSlider").addClass("active");
+    });
+    $("#kafkaSlider").find("button.btn-danger").on("click", function() { 
+        $("#kafkaSlider").removeClass("active");
+    });
+
+    $("#windowTrigger").on("click", function() {
+        $("#windowSlider").addClass("active");
+    });
+    $("#windowSlider").find("button.btn-danger").on("click", function() { 
+        $("#windowSlider").removeClass("active");
+    });
+
+    $("#intervalType").on("change", function() {
+        var value = $(this).val();
+        if(value == "time") {
+            $(".timeFrame").show();
+        }
+        else {
+            $(".timeFrame").hide();
+        }
+    });
+
+    //Interval
+    $("#windowInterval").on("keyup", function() {
+        $("#slidingInterval").val($(this).val());
+    });
+
+    //Tooltip
+    $('[data-toggle="tooltip"]').tooltip();
+
+    //Select 2
+    $(".select-two").select2();
+});
+</script>
+
+</body>
+</html>

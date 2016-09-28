@@ -67,8 +67,8 @@ class EditorGraph extends Component{
 	}
 	render(){
 		const actualHeight = (window.innerHeight - 185)+'px';
-    	const { connectDropTarget , viewMode, topologyId, graphData, getModalScope, setModalContent} = this.props;
-    	const { boxes } = this.state;
+		const { connectDropTarget , viewMode, topologyId, graphData, getModalScope, setModalContent} = this.props;
+		const { boxes } = this.state;
 		return connectDropTarget(
 			<div>
 				<div className="graph-bg" style={{height: actualHeight}}>
@@ -80,16 +80,16 @@ class EditorGraph extends Component{
 						getModalScope={getModalScope}
 						setModalContent={setModalContent}
 					/>
+					{!viewMode && state.showComponentNodeContainer ?
+						<ComponentNodeContainer
+							left={boxes.left}
+							top={boxes.top}
+							hideSourceOnDrag={true}
+							viewMode={viewMode}
+							customProcessors={this.props.customProcessors}
+						/>
+					: null}
 				</div>
-				{!viewMode && state.showComponentNodeContainer ? 
-					<ComponentNodeContainer 
-			        	left={boxes.left}
-		                top={boxes.top}
-		                hideSourceOnDrag={true}
-		                viewMode={viewMode}
-		                customProcessors={this.props.customProcessors}
-					/>
-				: null}
 			</div>
 		)
 	}
@@ -107,7 +107,11 @@ export default class TopologyEditorContainer extends Component {
 			]
 		};
 		this.topologyId = this.props.params.id;
+		this.customProcessors = [];
 		this.fetchData();
+	}
+	componentWillMount(){
+		state.showComponentNodeContainer = true;
 	}
 
 	@observable viewMode = true;
@@ -167,9 +171,11 @@ export default class TopologyEditorContainer extends Component {
 				
 				this.setState({topologyName: this.topologyName});
 				this.customProcessors = this.getCustomProcessors();
-			})
-			.catch((err)=>{
-				console.error(err);
+				//If topology's timestamp is less then 20 seconds, changing view mode to edit mode
+				let timeElapsedForTopology = ((new Date().getTime() - data.timestamp)  / 1000 );
+				if(timeElapsedForTopology < 20){
+					this.viewMode = false;
+				}
 			});
 		this.graphData = { 
 			nodes: [], 
@@ -188,7 +194,7 @@ export default class TopologyEditorContainer extends Component {
 		};
 	}
 	handleModeChange(value){
-		this.viewMode = !this.viewMode;
+		this.viewMode = value;
 	}
 	showConfig(){
 		this.refs.TopologyConfigModal.show();
@@ -406,12 +412,12 @@ export default class TopologyEditorContainer extends Component {
 	}
  	render() {
  		let nodeType = this.node ? this.node.currentType : '';
-	    return (
-	        <BaseContainer ref="BaseContainer" routes={this.props.routes} onLandingPage="false" breadcrumbData={this.breadcrumbData}>
-	            <div className="row">
-	            	<div className="col-sm-12">
-	            		<div className="box">
-	            			<div className="box-head">
+		return (
+			<BaseContainer ref="BaseContainer" routes={this.props.routes} onLandingPage="false" breadcrumbData={this.breadcrumbData}>
+				<div className="row">
+					<div className="col-sm-12">
+						<div className="box">
+							<div className="box-head">
 								{!this.viewMode ? 
 									<Editable id="topologyName" 
 										ref="topologyNameEditable" 
@@ -424,78 +430,72 @@ export default class TopologyEditorContainer extends Component {
 								: 
 									<span style={{color: "#43a047"}}>{this.state.topologyName}</span>
 								}
-				                {!this.viewMode ?
-				                    <div className="box-controls">
-				                        <OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Run</Tooltip>}>
+								{!this.viewMode ?
+									<div className="box-controls">
+										<OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Run</Tooltip>}>
 											<a href="javascript:void(0);" className="play" onClick={this.deployTopology.bind(this)}><i className="fa fa-play"></i></a>
-				                        </OverlayTrigger>
+										</OverlayTrigger>
 
-				                        <OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Kill</Tooltip>}>
+										<OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Kill</Tooltip>}>
 											<a href="javascript:void(0);" className="remove" onClick={this.killTopology.bind(this)}><i className="fa fa-times"></i></a>
-				                        </OverlayTrigger>
-				                    </div>
-	            				: null}
-	            				{!this.viewMode ? 
-	            					<div className="box-controls">
+										</OverlayTrigger>
+									</div>
+								: null}
+								{!this.viewMode ? 
+									<div className="box-controls">
 										{!this.viewMode && !state.showComponentNodeContainer ? 
 											<OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Components</Tooltip>}>
 												<a href="javascript:void(0);" className="show-node-list" onClick={this.showHideComponentNodeContainer.bind(this)}><i className="fa fa-th-list"></i></a>
 											</OverlayTrigger>
 										: null}
-				                        
-				                        <OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Configure</Tooltip>}>
-				                        	<a href="javascript:void(0);" className="config" onClick={this.showConfig.bind(this)}><i className="fa fa-gear"></i></a>
-				                        </OverlayTrigger>
-				                    </div>
-				                : null}
-			                    <div className="box-controls">
-					                <OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Switch to Edit Mode</Tooltip>}>
-						                <Switch
-						                	onText="View Mode"
-						                	offText="Edit Mode"
-						                	offColor="success"
-						                	onColor="default"
-						                	state={this.viewMode}
-						                	onChange={this.handleModeChange.bind(this)}
-						                	size="mini"
-						                	handleWidth={70}
-						                />
-						            </OverlayTrigger>
-					            </div>
-	            			</div>
-	            			<EditorGraph 
-	            				graphData={this.graphData}
-	            				viewMode={this.viewMode}
-	            				topologyId={this.topologyId}
-	            				getModalScope={this.getModalScope.bind(this)}
-	            				setModalContent={this.setModalContent.bind(this)}
-	            				customProcessors={this.customProcessors}
-	            			/>
-	            		</div>
-	            	</div>
-	            </div>
-	            <Modal ref="TopologyConfigModal" data-title="Topology Configuration" data-resolve={this.handleSaveConfig.bind(this)}>
+									
+										<OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Configure</Tooltip>}>
+											<a href="javascript:void(0);" className="config" onClick={this.showConfig.bind(this)}><i className="fa fa-gear"></i></a>
+										</OverlayTrigger>
+									</div>
+								: null}
+								<div className="box-controls">
+									{this.viewMode ? 
+										<OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Edit</Tooltip>}>
+											<a href="javascript:void(0);" className="show-node-list" onClick={this.handleModeChange.bind(this, false)}><i className="fa fa-pencil"></i></a>
+										</OverlayTrigger>
+									: 
+										<OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Save</Tooltip>}>
+											<a href="javascript:void(0);" className="config" onClick={this.handleModeChange.bind(this, true)}><i className="fa fa-save"></i></a>
+										</OverlayTrigger>
+									}
+								</div>
+							</div>
+							<EditorGraph 
+								graphData={this.graphData}
+								viewMode={this.viewMode}
+								topologyId={this.topologyId}
+								getModalScope={this.getModalScope.bind(this)}
+								setModalContent={this.setModalContent.bind(this)}
+								customProcessors={this.customProcessors}
+							/>
+						</div>
+					</div>
+				</div>
+				<Modal ref="TopologyConfigModal" data-title="Topology Configuration" data-resolve={this.handleSaveConfig.bind(this)}>
 					<TopologyConfig ref="topologyConfig" topologyId={this.topologyId} data={this.topologyConfig} topologyName={this.state.topologyName}/>
 				</Modal>
-	            <Modal ref="NodeModal"
-						bsSize="large"
-						data-title={
-						this.viewMode?
-						this.modalTitle
-						: (nodeType === "Custom" ? this.modalTitle : (<Editable
-								ref="editableNodeName"
-								inline={true}
-								resolve={this.handleSaveNodeName.bind(this)}
-								reject={this.handleRejectNodeName.bind(this)}
-								>
-									<input defaultValue={this.modalTitle} onChange={this.handleNodeNameChange.bind(this)}/>
-							</Editable>)
-						)
-					}
+				<Modal ref="NodeModal"
+					bsSize="large"
+					data-title={ this.viewMode ? this.modalTitle : (nodeType === "Custom" ? this.modalTitle : 
+						(<Editable
+							ref="editableNodeName"
+							inline={true}
+							resolve={this.handleSaveNodeName.bind(this)}
+							reject={this.handleRejectNodeName.bind(this)}
+							>
+							<input defaultValue={this.modalTitle} onChange={this.handleNodeNameChange.bind(this)}/>
+						</Editable>)
+					)}
 					data-resolve={this.handleSaveNodeModal.bind(this)}>
-	            	{this.modalContent()}
-	            </Modal>
-	        </BaseContainer>
-	    )
+					{this.modalContent()}
+				</Modal>
+			</BaseContainer>
+		)
 	}
 }

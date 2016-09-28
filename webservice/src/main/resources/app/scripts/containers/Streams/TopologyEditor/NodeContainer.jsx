@@ -32,12 +32,12 @@ export default class NodeContainer extends Component {
 	};
 
 	getDragableNode(connectDragSource){
-		const {imgPath} = this.props;
+		const {imgPath, nodeType, type, name} = this.props;
+		//TODO add img paths to Constants
 		return connectDragSource(
-			<img 
-				src={imgPath}
-				className="topology-icon"
-			/>
+			<div>
+			<img src={"styles/img/color-icon-"+nodeType.toLowerCase()+".png"} className="component-icon" /> {name}
+			</div>
 		)
 	}
 
@@ -47,11 +47,9 @@ export default class NodeContainer extends Component {
 	      return null;
 	    }
 		return (
-			<div style={{display: 'inline'}}>
-				<OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip">{name}</Tooltip>}>
-					{this.getDragableNode(connectDragSource)}
-				</OverlayTrigger>
-			</div>
+			<li className="list-group-item">
+				{this.getDragableNode(connectDragSource)}
+			</li>
 		)
 	}
 }
