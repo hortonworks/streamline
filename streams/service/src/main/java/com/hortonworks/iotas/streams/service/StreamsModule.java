@@ -63,6 +63,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         result.add(new RuleCatalogResource(streamcatalogService));
         result.add(new UDFCatalogResource(streamcatalogService, fileStorage));
         result.addAll(getNotificationsRelatedResources(streamcatalogService));
+        result.add(new WindowCatalogResource(streamcatalogService));
         watchFiles(streamcatalogService);
         return result;
     }

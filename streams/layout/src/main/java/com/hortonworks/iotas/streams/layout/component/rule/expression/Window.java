@@ -105,7 +105,7 @@ public class Window implements Serializable {
     }
 
     // copy ctor
-    private Window(Window other) {
+    public Window(Window other) {
         this.windowLength = other.getWindowLength();
         this.slidingInterval = other.getSlidingInterval();
         this.tsField = other.getTsField();

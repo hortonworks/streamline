@@ -1,7 +1,10 @@
 package com.hortonworks.iotas.streams.layout.storm;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Multimap;
+import com.hortonworks.iotas.common.Config;
 import com.hortonworks.iotas.streams.layout.component.Component;
 import com.hortonworks.iotas.streams.layout.component.Edge;
 import com.hortonworks.iotas.streams.layout.component.InputComponent;
@@ -18,6 +21,7 @@ import com.hortonworks.iotas.streams.layout.component.rule.expression.Window;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -70,6 +74,12 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
             }
         }
         rulesProcessor.setRules(rulesWithoutWindow);
+        rulesProcessor.getConfig().setAny(RulesProcessor.CONFIG_KEY_RULES, Collections2.transform(rulesWithoutWindow, new Function<Rule, Long>() {
+            @Override
+            public Long apply(Rule input) {
+                return input.getId();
+            }
+        }));
         // handle windowed rules with WindowRuleBoltFluxComponent
         if (!rulesWithWindow.isEmpty()) {
             Multimap<Window, Rule> windowedRules = ArrayListMultimap.create();
@@ -83,6 +93,12 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
                 windowedRulesProcessor.setRules(new ArrayList<>(rules));
                 windowedRulesProcessor.setId(rulesProcessor.getId() + "." + ++windowedRulesProcessorId);
                 windowedRulesProcessor.setName("WindowedRulesProcessor");
+                windowedRulesProcessor.getConfig().setAny(RulesProcessor.CONFIG_KEY_RULES, Collections2.transform(rules, new Function<Rule, Long>() {
+                    @Override
+                    public Long apply(Rule input) {
+                        return input.getId();
+                    }
+                }));
                 LOG.debug("Rules processor with window {}", windowedRulesProcessor);
                 keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_BOLTS,
                         getYamlComponents(new WindowRuleBoltFluxComponent(windowedRulesProcessor), windowedRulesProcessor)));

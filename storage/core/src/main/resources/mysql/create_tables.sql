@@ -192,6 +192,8 @@ CREATE TABLE IF NOT EXISTS ruleinfos (
     parsedRuleStr TEXT NOT NULL,
     window TEXT NOT NULL,
     actions TEXT NOT NULL,
+    projections TEXT NULL,
+    groupbykeys TEXT NULL,
     PRIMARY KEY (id)
 );
 
