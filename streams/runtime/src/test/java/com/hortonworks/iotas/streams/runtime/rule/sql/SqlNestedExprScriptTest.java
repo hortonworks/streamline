@@ -34,7 +34,7 @@ public class SqlNestedExprScriptTest {
     @Test
     public void testBasic() throws Exception {
         Condition condition = new Condition();
-        Expression x = new FieldExpression(Schema.Field.of("x", Schema.Type.INTEGER));;
+        Expression x = new FieldExpression(Schema.Field.of("x", Schema.Type.INTEGER));
         condition.setExpression(new BinaryExpression(Operator.NOT_EQUAL, x, new Literal("100")));
         sqlScript = new SqlScript<Boolean>(new StormSqlExpression(condition), new SqlEngine(),
                                                      new SqlScript.ValuesToBooleanConverter());

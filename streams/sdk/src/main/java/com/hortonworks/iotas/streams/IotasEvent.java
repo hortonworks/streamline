@@ -46,7 +46,7 @@ public interface IotasEvent {
     /**
      * Adds given {@code field} and {@code value} to auxiliary Map.
      */
-    public void addAuxiliaryFieldAndValue(String field, Object value);
+    void addAuxiliaryFieldAndValue(String field, Object value);
 
     /**
      * The event header that represents some meta data about

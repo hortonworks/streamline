@@ -11,5 +11,5 @@ import com.hortonworks.iotas.streams.IotasEvent;
  */
 public interface Joiner {
 
-    public IotasEvent join(EventGroup eventGroup);
+    IotasEvent join(EventGroup eventGroup);
 }

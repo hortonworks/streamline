@@ -226,8 +226,7 @@ public class CustomProcessorInfo {
 
     private List<ConfigField> getListOfConfigFields (TopologyComponentDefinition topologyComponentDefinition) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        List<ConfigField> configFields = mapper.readValue(topologyComponentDefinition.getConfig(), new TypeReference<List<ConfigField>>() { });
-        return configFields;
+        return mapper.readValue(topologyComponentDefinition.getConfig(), new TypeReference<List<ConfigField>>() { });
     }
 
 

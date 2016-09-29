@@ -35,7 +35,7 @@ public class HBaseScanConfig<T> {
     private IndexMapper<T> mapper;
     private String indexedFieldValue;
     private final FilterList filterList = new FilterList();
-    private long startTs = 0;
+    private long startTs;
     private long endTs = Long.MAX_VALUE;
 
     public void setMapper(IndexMapper<T> mapper) {

@@ -749,9 +749,8 @@ public class RestIntegrationTest {
 
         DataSource ds = createDataSource(dataSourceId, dataSourceName);
         DataFeed df = createDataFeedWithDataSourceId(dataSourceId, "feed:" + dataSourceName);
-        DataSourceDto dataSourceDto = new DataSourceDto(ds, df);
 
-        return dataSourceDto;
+        return new DataSourceDto(ds, df);
     }
 
     private DataFeed createDataFeedWithDataSourceId(long datasourceId, String feedName) {
@@ -886,8 +885,7 @@ public class RestIntegrationTest {
     }
 
     private Schema getSchema () {
-        Schema schema = new Schema.SchemaBuilder().field(new Schema.Field("field1", Schema.Type.INTEGER)).build();
-        return schema;
+        return new Schema.SchemaBuilder().field(new Schema.Field("field1", Schema.Type.INTEGER)).build();
     }
 
     private Map<String, Schema> getOutputStreamsToSchema() {

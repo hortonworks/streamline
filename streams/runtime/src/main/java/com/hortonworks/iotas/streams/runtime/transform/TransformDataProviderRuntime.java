@@ -28,18 +28,18 @@ public interface TransformDataProviderRuntime {
     /**
      * Prepare resources which can be used in retrieving values from data store.
      */
-    public void prepare();
+    void prepare();
 
     /**
      * Retrieves a value for a given key from a data store.
      *
      * @param key
      */
-    public Object get(Object key);
+    Object get(Object key);
 
     /**
      * cleanup any resources held by this instance.
      */
-    public void cleanup();
+    void cleanup();
 
 }

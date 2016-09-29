@@ -60,9 +60,8 @@ public class DefaultSplitter implements Splitter {
         headers.put(SplitActionRuntime.SPLIT_GROUP_ID, groupId);
         headers.put(SplitActionRuntime.SPLIT_PARTITION_ID, partNo);
         headers.put(SplitActionRuntime.SPLIT_TOTAL_PARTITIONS_ID, totalParts);
-        IotasEventImpl partitionEvent = new IotasEventImpl(iotasEvent.getFieldsAndValues(), iotasEvent.getDataSourceId(),
+        return new IotasEventImpl(iotasEvent.getFieldsAndValues(), iotasEvent.getDataSourceId(),
                 UUID.randomUUID().toString(), headers, stream, iotasEvent.getAuxiliaryFieldsAndValues());
-        return partitionEvent;
     }
 
     /**

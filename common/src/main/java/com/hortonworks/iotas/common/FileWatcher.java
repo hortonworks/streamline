@@ -24,7 +24,7 @@ import java.util.Map;
 public class FileWatcher {
 
     private static final Logger LOG = LoggerFactory.getLogger(FileWatcher.class);
-    private WatchService watchService = null;
+    private WatchService watchService;
     private final List<FileEventHandler> fileEventHandlers;
     private Map<WatchKey, FileEventHandler> watchKeyFileEventHandlerMap = new HashMap<>();
     private Map<WatchKey, Path> watchKeyPathMap = new HashMap<>();

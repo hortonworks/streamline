@@ -43,7 +43,7 @@ public class WindowRulesBolt extends BaseWindowedBolt {
 
     private OutputCollector collector;
 
-    private long windowId = 0;
+    private long windowId;
 
     public WindowRulesBolt(RulesDependenciesFactory boltDependenciesFactory) {
         this.boltDependenciesFactory = boltDependenciesFactory;

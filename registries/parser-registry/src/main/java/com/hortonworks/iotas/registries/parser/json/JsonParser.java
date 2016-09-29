@@ -19,7 +19,7 @@ public class JsonParser extends BaseParser {
     private static final String VERSION = "1.0";
     private static final Logger LOG = LoggerFactory.getLogger(JsonParser.class);
 
-    private Schema schema = null;
+    private Schema schema;
     private final ObjectMapper mapper = new ObjectMapper();
 
     public void setSchema(Schema schema) {

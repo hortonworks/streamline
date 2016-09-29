@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 public class MyJoiner extends DefaultJoiner {
     private static final Logger log = LoggerFactory.getLogger(MyJoiner.class);
 
-    public static int invocationCount = 0;
+    public static int invocationCount;
 
     public MyJoiner() {
     }
