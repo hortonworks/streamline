@@ -9,19 +9,20 @@ const Components = {
 	Datasource: { value: "Datasource"},
 	Datasources: [
 		{ name:"Device", label:"Device", imgPath: "styles/img/device.png", connectsTo: ["Parser"], hideOnUI:"true" },
-		{ name:"Kafka", label:"Kafka", imgPath: "styles/img/kafka.png", connectsTo: ["Rule", "Custom", "Normalization", "Split", "Hdfs", "Hbase"] },
+		{ name:"Kafka", label:"Kafka", imgPath: "styles/img/kafka.png", connectsTo: ["Rule", "Custom", "Normalization", "Split", "Hdfs", "Hbase", "Windowing"] },
 		{ name:"Kinesis", label:"Kinesis", imgPath: "styles/img/kinesis.png", connectsTo: ["Parser"], hideOnUI:"true" },
 		{ name:"Event", label:"Event", imgPath: "styles/img/event.png", connectsTo: ["Parser"], hideOnUI:"true" }
 	],
 	Processor: { value: "Processor"},
 	Processors: [
-		{ name: "Parser", label:"Parser", imgPath: "styles/img/parser.png", connectsTo: ["Rule", "Custom", "Normalization", "Split", "Hdfs", "Hbase"], hideOnUI:"true" },
-		{ name: "Rule", label:"Rule", imgPath: "styles/img/rule.png", connectsTo: ["Rule", "Custom", "Normalization", "Split", "Hdfs", "Hbase", "Notification"] },
-		{ name: "Custom", label:"Custom", imgPath: "styles/img/custom.png", connectsTo: ["Rule", "Custom", "Normalization", "Split", "Hdfs", "Hbase", "Notification"] },
-		{ name: "Normalization", label:"Normalization", imgPath: "styles/img/normalization.png", connectsTo: ["Rule", "Custom", "Normalization", "Split", "Hdfs", "Hbase", "Notification"] },
+		{ name: "Parser", label:"Parser", imgPath: "styles/img/parser.png", connectsTo: ["Rule", "Custom", "Normalization", "Split", "Hdfs", "Hbase", "Windowing"], hideOnUI:"true" },
+		{ name: "Rule", label:"Rule", imgPath: "styles/img/rule.png", connectsTo: ["Rule", "Custom", "Normalization", "Split", "Hdfs", "Hbase", "Notification", "Windowing"] },
+		{ name: "Custom", label:"Custom", imgPath: "styles/img/custom.png", connectsTo: ["Rule", "Custom", "Normalization", "Split", "Hdfs", "Hbase", "Notification", "Windowing"] },
+		{ name: "Normalization", label:"Normalization", imgPath: "styles/img/normalization.png", connectsTo: ["Rule", "Custom", "Normalization", "Split", "Hdfs", "Hbase", "Notification", "Windowing"] },
 		{ name: "Split", label:"Split", imgPath: "styles/img/split.png", connectsTo: ["Stage"] },
 		{ name: "Stage", label:"Stage", imgPath: "styles/img/stage.png", connectsTo: ["Stage", "Join"] },
-		{ name: "Join", label:"Join", imgPath: "styles/img/join.png", connectsTo: ["Rule", "Custom", "Normalization", "Hdfs", "Hbase", "Notification"], hideOnUI:"true" }
+		{ name: "Join", label:"Join", imgPath: "styles/img/join.png", connectsTo: ["Rule", "Custom", "Normalization", "Hdfs", "Hbase", "Notification", "Windowing"], hideOnUI:"true" },
+		{ name: "Windowing", label:"Aggregate", imgPath: "styles/img/windowing.png", connectsTo: ["Rule", "Custom", "Normalization", "Split", "Hdfs", "Hbase", "Notification", "Windowing"] }
 	],
 	Sink: { value: "Sink"},
 	Sinks: [

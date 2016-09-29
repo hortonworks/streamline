@@ -46,6 +46,21 @@ const searchFilter = function(fullData, filterArr){
 	}
 }
 
+const sortArray = function(sortingArr, keyName, ascendingFlag){
+		if (ascendingFlag)
+			return sortingArr.sort(function(a, b) {
+						if(a[keyName] < b[keyName]) return -1;
+						if(a[keyName] > b[keyName]) return 1;
+							return 0;
+					});
+		else return sortingArr.sort(function(a, b) {
+						if(b[keyName] < a[keyName]) return -1;
+						if(b[keyName] > a[keyName]) return 1;
+							return 0;
+					});
+}
+
 export default {
-	searchFilter
+	searchFilter,
+	sortArray
 };

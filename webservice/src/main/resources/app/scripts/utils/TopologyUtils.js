@@ -14,6 +14,7 @@ import StageNodeForm from '../containers/Streams/TopologyEditor/StageNodeForm';
 import JoinNodeForm from '../containers/Streams/TopologyEditor/JoinNodeForm';
 import CustomNodeForm from '../containers/Streams/TopologyEditor/CustomNodeForm';
 import NormalizationNodeForm from '../containers/Streams/TopologyEditor/NormalizationNodeForm';
+import WindowingAggregateNodeForm from '../containers/Streams/TopologyEditor/WindowingAggregateNodeForm';
 //Sinks
 import HdfsNodeForm from '../containers/Streams/TopologyEditor/HdfsNodeForm';
 import HbaseNodeForm from '../containers/Streams/TopologyEditor/HbaseNodeForm'
@@ -26,7 +27,7 @@ const defineMarkers = function(svg){
 	defs.append('svg:marker')
 		.attr('id', 'end-arrow')
 		.attr('viewBox', '0 -5 10 10')
-		.attr('refX', "10")
+		.attr('refX', "14")
 		.attr('markerWidth', 6.5)
 		.attr('markerHeight', 7.5)
 		.attr('orient', 'auto')
@@ -116,9 +117,6 @@ const createNode = function(topologyId, data, callback, metaInfo, paths, edges, 
 
 			this.saveMetaInfo(topologyId, data, metaInfo, callback);
 		})
-		.catch((err)=>{
-			console.error(err);
-		})
 
 }
 
@@ -141,9 +139,6 @@ const saveMetaInfo = function(topologyId, nodes, metaInfo, callback){
 		.then(()=>{
 			//call the callback to update the graph
 			callback();
-		})
-		.catch((err)=>{
-			console.error(err);
 		})
 }
 
@@ -207,9 +202,6 @@ const createEdge = function(mouseDownNode, d, paths, edges, internalFlags, callb
 					edges.push(newEdge);
 					//call the callback to update the graph
 					callback();
-				})
-				.catch((err)=>{
-					console.error(err);
 				})
 		}
 	} else {
@@ -651,6 +643,21 @@ const getConfigContainer = function(node, configData, editMode, topologyId, curr
 				/>;
 			}
 		break;
+		case Components.Processors[7].name: //Windowing
+			return ()=>{
+				return <WindowingAggregateNodeForm
+					ref="ConfigModal"
+					nodeData={node}
+					configData={configData}
+					editMode={editMode}
+					nodeType={nodeType}
+					topologyId={topologyId}
+					sourceNode={sourceNodes[0]}
+					targetNodes={targetNodes}
+					linkShuffleOptions={linkShuffleOptions}
+				/>;
+			}
+		break;
 		case Components.Sinks[0].name: //Hdfs
 			return ()=>{
 				return <HdfsNodeForm
@@ -798,7 +805,8 @@ const generateNodeData = function(nodes, constantsArr, parentType, metadata, res
 			currentType: currentType,
 			uiname: nodes[i].name,
 			imageURL: constObj.imgPath,
-			isConfigured: configuredFlag
+			isConfigured: configuredFlag,
+			parallelismCount: nodes[i].config.properties.parallelism || 1
 		}
 		if(currentMetaObj.streamId){
 			obj.streamId = currentMetaObj.streamId;
@@ -865,6 +873,17 @@ const getNodeImgRectClass = function(data){
 	}
 }
 
+const updateParallelismCount = function(topologyId, nodeData){
+	let currentType = this.getNodeType(nodeData.parentType);
+	TopologyREST.getNode(topologyId, currentType, nodeData.nodeId)
+		.then((result)=>{
+			let data = result.entity;
+			data.config.properties.parallelism = nodeData.parallelismCount;
+			TopologyREST.updateNode(topologyId, currentType, nodeData.nodeId, {body: JSON.stringify(data)})
+				.then((newNodeData)=>{console.log("Updated Parallelism Count For "+newNodeData.entity.name);})
+		})
+}
+
 export default {
 	defineMarkers,
 	isValidConnection,
@@ -893,5 +912,6 @@ export default {
 	syncEdgeData,
 	createLineOnUI,
 	getNodeRectClass,
-	getNodeImgRectClass
+	getNodeImgRectClass,
+	updateParallelismCount
 };

@@ -392,6 +392,7 @@ export default class TopologyEditorContainer extends Component {
 						this.node.isConfigured = true;
 						let i = this.graphData.uinamesList.indexOf(this.node.uiname);
 						this.node.uiname = savedNode.entity.name;
+						this.node.parallelismCount = savedNode.entity.config.properties.parallelism || 1;
 						if(i > -1)
 							this.graphData.uinamesList[i] = this.node.uiname;
 
