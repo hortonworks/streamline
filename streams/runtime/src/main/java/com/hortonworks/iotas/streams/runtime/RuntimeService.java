@@ -61,6 +61,6 @@ public class RuntimeService<R, D> {
      * @param <D>
      */
     public interface Factory<R, D> {
-        public R create(D d);
+        R create(D d);
     }
 }

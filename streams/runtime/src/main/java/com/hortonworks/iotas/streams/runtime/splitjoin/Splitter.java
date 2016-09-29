@@ -37,5 +37,5 @@ public interface Splitter {
      * @param outputStreams
      * @return List of Results which contain split events for the given input event.
      */
-    public List<Result> splitEvent(IotasEvent inputEvent, Set<String> outputStreams);
+    List<Result> splitEvent(IotasEvent inputEvent, Set<String> outputStreams);
 }

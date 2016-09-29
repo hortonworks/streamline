@@ -121,7 +121,7 @@ public class ParsersCatalogService {
     public Collection<String> verifyParserUpload (InputStream inputStream) throws IOException {
         final File tmpFile = FileUtil.writeInputStreamToTempFile(inputStream, ".jar");
         List<String> parserClasses = JarReader.findSubtypeOfClasses(tmpFile, Parser.class);
-        Collection<String> availableParserClasses = Collections2.filter(parserClasses, new Predicate<String>() {
+        return Collections2.filter(parserClasses, new Predicate<String>() {
             @Override
             public boolean apply(@Nullable String s) {
                 try {
@@ -133,7 +133,6 @@ public class ParsersCatalogService {
                 }
             }
         });
-        return availableParserClasses;
     }
 
     /**

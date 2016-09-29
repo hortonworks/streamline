@@ -88,8 +88,7 @@ public class NormalizationProcessorSchemaEvolverTest {
         NormalizationProcessor processor = new NormalizationProcessor(normalizationProcessorConfig,
                 new Stream("outputstream", inputStream.getSchema()), NormalizationProcessor.Type.bulk);
 
-        String normalizationProcessorJson = objectMapper.writeValueAsString(processor);
-        return normalizationProcessorJson;
+        return objectMapper.writeValueAsString(processor);
     }
 
     private String buildFineGrainedModeNormalizationProcessorComponentConfig() throws IOException {
@@ -112,8 +111,7 @@ public class NormalizationProcessorSchemaEvolverTest {
         NormalizationProcessor processor = new NormalizationProcessor(normalizationProcessorConfig,
                 new Stream("outputstream", inputStream.getSchema()), NormalizationProcessor.Type.fineGrained);
 
-        String normalizationProcessorJson = objectMapper.writeValueAsString(processor);
-        return normalizationProcessorJson;
+        return objectMapper.writeValueAsString(processor);
     }
 
 }

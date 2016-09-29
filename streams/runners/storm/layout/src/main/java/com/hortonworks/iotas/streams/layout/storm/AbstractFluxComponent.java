@@ -25,7 +25,7 @@ public abstract class AbstractFluxComponent implements FluxComponent {
     // storm component picked by the user. For eg kafka component will have
     // zkUrl, topic, etc.
     protected Map<String, Object> conf;
-    private boolean isGenerated = false;
+    private boolean isGenerated;
     protected List<Map<String, Object>> referencedComponents = new
             ArrayList<Map<String, Object>>();
     protected Map<String, Object> component = new LinkedHashMap<String, Object>();

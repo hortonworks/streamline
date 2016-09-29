@@ -84,12 +84,11 @@ public class CLI {
     }
 
     private static Option option(int argCount, String shortName, String longName, String argName, String description){
-        Option option = OptionBuilder.hasArgs(argCount)
+        return OptionBuilder.hasArgs(argCount)
                 .withArgName(argName)
                 .withLongOpt(longName)
                 .withDescription(description)
                 .create(shortName);
-        return option;
     }
 
     private static void usage(Options options) {

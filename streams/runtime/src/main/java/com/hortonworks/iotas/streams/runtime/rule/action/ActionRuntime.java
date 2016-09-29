@@ -38,7 +38,7 @@ public interface ActionRuntime extends Serializable {
      *
      * @param actionRuntimeContext contextual information of {@link ActionRuntime}
      */
-    public void setActionRuntimeContext(ActionRuntimeContext actionRuntimeContext);
+    void setActionRuntimeContext(ActionRuntimeContext actionRuntimeContext);
 
     /**
      * This is invoked before {@link #execute(IotasEvent)} method is invoked. Any resources can be initialized which are used in
@@ -46,7 +46,7 @@ public interface ActionRuntime extends Serializable {
      *
      * @param config configuration key/values which could have been configured at action/processor/topology level.
      */
-    public void initialize(Map<String, Object> config);
+    void initialize(Map<String, Object> config);
 
     /**
      * Execute the current action and return a {@link List} of {@link Result}s.

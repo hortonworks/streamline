@@ -88,7 +88,7 @@ public class AtlasMetadataService {
         try {
             File file = Files.createFile(Paths.get(atlasConfigDir, "atlas-application.properties")).toFile();
             file.deleteOnExit();
-            try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file));) {
+            try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file))) {
                 for (Map.Entry<String, Object> entry : properties.entrySet()) {
                     String key = entry.getKey();
                     Object value = entry.getValue();
@@ -143,7 +143,7 @@ public class AtlasMetadataService {
             AtlasClient.EntityResult entityResult = _updateEntities(entityJSON);
             LOG.debug("Updated instance for type [{}]", referenceable.getTypeName() + ", guids: " + entityResult.getUpdateEntities());
 
-            List<String> entityIds = null;
+            List<String> entityIds;
             List<String> createdEntities = entityResult.getCreatedEntities();
             if (createdEntities != null && !createdEntities.isEmpty()) {
                 entityIds = createdEntities;
@@ -303,11 +303,7 @@ public class AtlasMetadataService {
     }
 
     /**
-     * Returns true if {@code subSet} is sub set of {@code superSet}
-     *
-     * @param subSet
-     * @param superSet
-     * @return
+     * @return true if {@code subSet} is sub set of {@code superSet}
      */
     private <T> boolean containsAll(Set<T> subSet, Set<T> superSet) {
         for (Object elem : subSet) {

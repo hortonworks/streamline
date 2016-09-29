@@ -268,15 +268,13 @@ public class StreamCatalogService {
 
 
     public Collection<Topology> listTopologies() {
-        Collection<Topology> topologies = this.dao.list(TOPOLOGY_NAMESPACE);
-        return topologies;
+        return this.dao.list(TOPOLOGY_NAMESPACE);
     }
 
     public Topology getTopology(Long topologyId) {
         Topology topology = new Topology();
         topology.setId(topologyId);
-        Topology result = this.dao.get(topology.getStorableKey());
-        return result;
+        return this.dao.get(topology.getStorableKey());
     }
 
     public Topology addTopology(Topology topology) {
@@ -371,7 +369,7 @@ public class StreamCatalogService {
                     File destPath = Paths.get(artifactsDir.toString(), cluster.getClusterConfigFileName()).toFile();
                     try (
                             InputStream src = fileStorage.downloadFile(resource);
-                            FileOutputStream dest = new FileOutputStream(destPath);
+                            FileOutputStream dest = new FileOutputStream(destPath)
                     ) {
                         IOUtils.copy(src, dest);
                         LOG.debug("Resource {} copied to {}", resource, destPath);
@@ -436,8 +434,7 @@ public class StreamCatalogService {
     public TopologyComponentDefinition getTopologyComponent(Long topologyComponentId) {
         TopologyComponentDefinition topologyComponentDefinition = new TopologyComponentDefinition();
         topologyComponentDefinition.setId(topologyComponentId);
-        TopologyComponentDefinition result = this.dao.get(topologyComponentDefinition.getStorableKey());
-        return result;
+        return this.dao.get(topologyComponentDefinition.getStorableKey());
     }
 
     public TopologyComponentDefinition addTopologyComponent(TopologyComponentDefinition
@@ -581,15 +578,13 @@ public class StreamCatalogService {
     }
 
     public Collection<TopologyEditorMetadata> listTopologyEditorMetadata() {
-        Collection<TopologyEditorMetadata> topologyEditorMetadatas = this.dao.list(TopologyEditorMetadata.NAME_SPACE);
-        return topologyEditorMetadatas;
+        return this.dao.list(TopologyEditorMetadata.NAME_SPACE);
     }
 
     public TopologyEditorMetadata getTopologyEditorMetadata(Long topologyId) {
         TopologyEditorMetadata topologyEditorMetadata = new TopologyEditorMetadata();
         topologyEditorMetadata.setTopologyId(topologyId);
-        TopologyEditorMetadata result = this.dao.get(topologyEditorMetadata.getStorableKey());
-        return result;
+        return this.dao.get(topologyEditorMetadata.getStorableKey());
     }
 
     public TopologyEditorMetadata addTopologyEditorMetadata(TopologyEditorMetadata topologyEditorMetadata) {
@@ -1232,9 +1227,8 @@ public class StreamCatalogService {
     public RuleInfo removeRule(Long id) {
         RuleInfo ruleInfo = new RuleInfo();
         ruleInfo.setId(id);
-        RuleInfo removedRuleInfo = dao.<RuleInfo>remove(
+        return dao.<RuleInfo>remove(
                 new StorableKey(TOPOLOGY_RULEINFO_NAMESPACE, ruleInfo.getPrimaryKey()));
-        return removedRuleInfo;
     }
 
     private String parseAndSerialize(RuleInfo ruleInfo) throws JsonProcessingException {

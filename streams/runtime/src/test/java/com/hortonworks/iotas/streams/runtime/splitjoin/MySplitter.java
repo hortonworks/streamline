@@ -32,7 +32,7 @@ import java.util.Set;
 public class MySplitter extends DefaultSplitter {
     private static final Logger log = LoggerFactory.getLogger(MySplitter.class);
 
-    public static int invocationCount = 0;
+    public static int invocationCount;
 
     public MySplitter() {
     }

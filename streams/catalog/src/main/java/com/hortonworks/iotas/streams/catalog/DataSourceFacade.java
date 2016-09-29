@@ -58,8 +58,7 @@ public class DataSourceFacade {
         } else {
             LOGGER.warn("Not creating datafeed. Name and type must be present");
         }
-        DataSourceDto createdDataSourceDto = createDataSourceDto(createdDataSource, createdDataFeed);
-        return createdDataSourceDto;
+        return createDataSourceDto(createdDataSource, createdDataFeed);
     }
 
     private DataSourceDto createDataSourceDto(DataSource dataSource, DataFeed dataFeed) {

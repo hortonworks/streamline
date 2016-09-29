@@ -62,7 +62,7 @@ public class PhoenixSequenceIdQuery {
         PhoenixSqlQuery selectQuery = new PhoenixSqlQuery("SELECT \"" + namespace + "\" FROM " + SEQUENCE_TABLE + " WHERE \"" + ID + "\"='" + uuid + "'");
         PhoenixSqlQuery deleteQuery = new PhoenixSqlQuery("DELETE FROM " + SEQUENCE_TABLE + " WHERE \"id\"='" + uuid + "'");
 
-        try (Connection connection = connectionBuilder.getConnection();) {
+        try (Connection connection = connectionBuilder.getConnection()) {
             int upsertResult = new PreparedStatementBuilder(connection, new ExecutionConfig(queryTimeoutSecs), updateQuery).getPreparedStatement(updateQuery).executeUpdate();
             log.debug("Query [{}] is executed and returns result with [{}]", updateQuery, upsertResult);
 

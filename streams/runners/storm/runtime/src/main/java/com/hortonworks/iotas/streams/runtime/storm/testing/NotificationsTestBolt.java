@@ -26,7 +26,7 @@ public class NotificationsTestBolt extends BaseRichBolt {
 
     private OutputCollector collector;
 
-    private int count = 0;
+    private int count;
     private String emailNotificationStream = "";
     private String consoleNotificationStream = "";
 

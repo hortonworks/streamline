@@ -49,7 +49,7 @@ public class SplitActionRuntime extends AbstractSplitJoinActionRuntime {
     public static final String SPLIT_TOTAL_PARTITIONS_ID = "com.hortonworks.iotas.split.partition.total.count";
 
     private final SplitAction splitAction;
-    private Splitter splitter = null;
+    private Splitter splitter;
 
     public SplitActionRuntime(SplitAction splitAction) {
         this.splitAction = splitAction;

@@ -130,8 +130,7 @@ public class RuleInfo extends AbstractStorable {
     @JsonIgnore
     public Rule getRule() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        Rule rule = mapper.readValue(getParsedRuleStr(), Rule.class);
-        return rule;
+        return mapper.readValue(getParsedRuleStr(), Rule.class);
     }
 
     public Window getWindow() {

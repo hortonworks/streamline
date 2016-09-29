@@ -115,8 +115,7 @@ public class RuleProcessorMockBuilder implements ComponentBuilder<RulesProcessor
     }
 
     private TransformAction buildAction(List<Sink> sinks) {
-        final TransformAction transformAction = new TransformAction();
-        return transformAction;
+        return new TransformAction();
     }
 
     private List<Sink> buildSinks() {
