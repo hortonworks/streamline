@@ -1,1 +1,21 @@
-{"type":"PROCESSOR","name":"windowBoltComponent","subType":"WINDOW","streamingEngine":"STORM","config":"[{\"name\": \"parallelism\",\"isOptional\": true,\"type\": \"number\",\"defaultValue\": 1}]","schemaClass":"org.apache.streamline.streams.schema.RulesProcessorSchemaEvolver","transformationClass":"org.apache.streamline.streams.layout.storm.RuleBoltFluxComponent","timestamp":1440118796994}
+{
+  "type": "PROCESSOR",
+  "name": "Aggregate processor",
+  "subType": "WINDOW",
+  "builtin": true,
+  "streamingEngine": "STORM",
+  "schemaClass": "org.apache.streamline.streams.schema.RulesProcessorSchemaEvolver",
+  "transformationClass": "org.apache.streamline.streams.layout.storm.WindowRuleBoltFluxComponent",
+  "topologyComponentUISpecification": {
+    "fields": [
+      {
+        "uiName": "Parallelism",
+        "fieldName": "parallelism",
+        "isOptional": true,
+        "tooltip": "Parallelism hint for aggregate processor",
+        "type": "number",
+        "defaultValue": 1
+      }
+    ]
+  }
+}

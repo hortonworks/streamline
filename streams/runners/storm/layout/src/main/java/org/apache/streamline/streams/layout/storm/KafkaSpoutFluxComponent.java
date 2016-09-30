@@ -4,9 +4,9 @@ import com.google.common.collect.Lists;
 import org.apache.streamline.streams.layout.ConfigFieldValidation;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
 import org.apache.streamline.streams.layout.component.impl.KafkaSource;
-import org.apache.streamline.streams.layout.exception.BadTopologyLayoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.streamline.streams.layout.exception.ComponentConfigException;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -138,7 +138,7 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
     }
 
     @Override
-    public void validateConfig () throws BadTopologyLayoutException {
+    public void validateConfig () throws ComponentConfigException {
         super.validateConfig();
         validateBooleanFields();
         validateStringFields();
@@ -149,19 +149,19 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
         Object value = conf.get(fieldName);
         if (value != null) {
             if (!ConfigFieldValidation.isList(value)) {
-                throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
+                throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
             }
             List zkServers = (List) value;
             int listLength = zkServers.size();
             for (Object zkServer : zkServers) {
                 if (!ConfigFieldValidation.isStringAndNotEmpty(zkServer)) {
-                    throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
+                    throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
                 }
             }
         }
     }
 
-    private void validateBooleanFields () throws BadTopologyLayoutException {
+    private void validateBooleanFields () throws ComponentConfigException {
         String[] optionalBooleanFields = {
             TopologyLayoutConstants.JSON_KEY_IGNORE_ZK_OFFSETS,
             TopologyLayoutConstants.JSON_KEY_USE_START_OFFSET_IF_OFFSET_OUT_OF_RANGE
@@ -169,7 +169,7 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
         validateBooleanFields(optionalBooleanFields, false);
     }
 
-    private void validateStringFields () throws BadTopologyLayoutException {
+    private void validateStringFields () throws ComponentConfigException {
         String[] requiredStringFields = {
             TopologyLayoutConstants.JSON_KEY_ZK_URL,
             TopologyLayoutConstants.JSON_KEY_TOPIC,
@@ -183,7 +183,7 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
         validateStringFields(optionalStringFields, false);
     }
 
-    private void validateIntegerFields () throws BadTopologyLayoutException {
+    private void validateIntegerFields () throws ComponentConfigException {
         String[] optionalIntegerFields = {
             TopologyLayoutConstants.JSON_KEY_REFRESH_FREQ_SECS,
             TopologyLayoutConstants.JSON_KEY_FETCH_SIZE_BYTES,
@@ -203,7 +203,7 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
         validateIntegerFields(optionalIntegerFields, false, mins, maxes);
     }
 
-    private void validateLongFields () throws BadTopologyLayoutException {
+    private void validateLongFields () throws ComponentConfigException {
         String[] optionalLongFields = {
             TopologyLayoutConstants.JSON_KEY_MAX_OFFSET_BEHIND,
             TopologyLayoutConstants.JSON_KEY_STATE_UPDATE_INTERVAL_MS,
@@ -219,7 +219,7 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
         validateLongFields(optionalLongFields, false, mins, maxes);
     }
 
-    private void validateFloatOrDoubleFields () throws BadTopologyLayoutException {
+    private void validateFloatOrDoubleFields () throws ComponentConfigException {
         String[] optionalFields = {
             TopologyLayoutConstants.JSON_KEY_RETRY_DELAY_MULTIPLIER
         };

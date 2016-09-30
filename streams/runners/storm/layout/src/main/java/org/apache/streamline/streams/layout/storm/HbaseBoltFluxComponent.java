@@ -1,7 +1,7 @@
 package org.apache.streamline.streams.layout.storm;
 
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.streamline.streams.layout.exception.BadTopologyLayoutException;
+import org.apache.streamline.streams.layout.exception.ComponentConfigException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,20 +58,20 @@ public class HbaseBoltFluxComponent extends AbstractFluxComponent {
     }
 
     @Override
-    public void validateConfig () throws BadTopologyLayoutException {
+    public void validateConfig () throws ComponentConfigException {
         super.validateConfig();
         validateBooleanFields();
         validateStringFields();
     }
 
-    private void validateBooleanFields () throws BadTopologyLayoutException {
+    private void validateBooleanFields () throws ComponentConfigException {
         String[] optionalBooleanFields = {
             TopologyLayoutConstants.JSON_KEY_WRITE_TO_WAL
         };
         validateBooleanFields(optionalBooleanFields, false);
     }
 
-    private void validateStringFields () throws BadTopologyLayoutException {
+    private void validateStringFields () throws ComponentConfigException {
         String[] requiredStringFields = {
             TopologyLayoutConstants.JSON_KEY_TABLE,
             TopologyLayoutConstants.JSON_KEY_COLUMN_FAMILY

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.common.util.Utils;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.streamline.streams.layout.exception.BadTopologyLayoutException;
+import org.apache.streamline.streams.layout.exception.ComponentConfigException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +45,7 @@ public class CustomProcessorBoltFluxComponent extends AbstractFluxComponent {
     }
 
     @Override
-    public void validateConfig () throws BadTopologyLayoutException {
+    public void validateConfig () throws ComponentConfigException {
         super.validateConfig();
         validateStringFields();
         String fieldToValidate = TopologyLayoutConstants.JSON_KEY_INPUT_SCHEMA;
@@ -55,18 +55,18 @@ public class CustomProcessorBoltFluxComponent extends AbstractFluxComponent {
             fieldToValidate = TopologyLayoutConstants.JSON_KEY_OUTPUT_STREAMS_SCHEMA;
             Map<String, Map> outputSchema = (Map) conf.get(fieldToValidate);
             if (outputSchema == null || outputSchema.keySet().isEmpty()) {
-                throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldToValidate));
+                throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldToValidate));
             }
             for (Map.Entry<String, Map> entry: outputSchema.entrySet()) {
                 Utils.getSchemaFromConfig(entry.getValue());
             }
             this.validateCustomConfigFields();
         } catch (ClassCastException|IOException e) {
-            throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldToValidate));
+            throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldToValidate));
         }
     }
 
-    private void validateStringFields () throws BadTopologyLayoutException {
+    private void validateStringFields () throws ComponentConfigException {
         String[] requiredStringFields = {
             TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_IMPL,
             TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_JAR_FILENAME,
@@ -101,7 +101,7 @@ public class CustomProcessorBoltFluxComponent extends AbstractFluxComponent {
         return objectMapper.writeValueAsString(arg);
     }
 
-    private void validateCustomConfigFields () throws BadTopologyLayoutException {
+    private void validateCustomConfigFields () throws ComponentConfigException {
 //  TODO: to be fixed after catalog rest client is refactored
 //        try {
 //            String jarFileName = conf.get(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_JAR_FILENAME).toString();
@@ -114,10 +114,10 @@ public class CustomProcessorBoltFluxComponent extends AbstractFluxComponent {
 //            customProcessor.validateConfig(getCustomConfig());
 //        }
 //        catch (ClassNotFoundException|InstantiationException|IllegalAccessException|IOException e) {
-//            throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_CP_IMPL_INSTANTIATION, (String) conf.get
+//            throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_CP_IMPL_INSTANTIATION, (String) conf.get
 //                    (TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_IMPL)));
 //        } catch (ConfigException e) {
-//            throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_CP_CONFIG_EXCEPTION, (String) conf.get
+//            throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_CP_CONFIG_EXCEPTION, (String) conf.get
 //                    (TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_IMPL)) + " Message from implementation is: " + e.getMessage(), e);
 //        }
     }

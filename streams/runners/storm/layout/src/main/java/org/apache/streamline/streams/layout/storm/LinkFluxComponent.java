@@ -1,7 +1,7 @@
 package org.apache.streamline.streams.layout.storm;
 
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.streamline.streams.layout.exception.BadTopologyLayoutException;
+import org.apache.streamline.streams.layout.exception.ComponentConfigException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -37,11 +37,11 @@ public class LinkFluxComponent extends AbstractFluxComponent {
     }
 
     @Override
-    public void validateConfig () throws BadTopologyLayoutException {
+    public void validateConfig () throws ComponentConfigException {
         validateStringFields();
     }
 
-    private void validateStringFields () throws BadTopologyLayoutException {
+    private void validateStringFields () throws ComponentConfigException {
         String[] requiredStringFields = {
             TopologyLayoutConstants.JSON_KEY_FROM,
             TopologyLayoutConstants.JSON_KEY_TO

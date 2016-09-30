@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
 import org.apache.streamline.streams.layout.component.impl.normalization.NormalizationProcessor;
-import org.apache.streamline.streams.layout.exception.BadTopologyLayoutException;
+import org.apache.streamline.streams.layout.exception.ComponentConfigException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +17,9 @@ import java.util.Map;
  */
 public class NormalizationBoltFluxComponent extends AbstractFluxComponent {
     private final Logger log = LoggerFactory.getLogger(NormalizationBoltFluxComponent.class);
-    private final NormalizationProcessor normalizationProcessor;
+    private NormalizationProcessor normalizationProcessor;
+
+    public NormalizationBoltFluxComponent () {}
 
     public NormalizationBoltFluxComponent(NormalizationProcessor normalizationProcessor) {
         this.normalizationProcessor = normalizationProcessor;
@@ -56,12 +58,12 @@ public class NormalizationBoltFluxComponent extends AbstractFluxComponent {
     }
 
     @Override
-    public void validateConfig() throws BadTopologyLayoutException {
+    public void validateConfig() throws ComponentConfigException {
         super.validateConfig();
         String fieldName = TopologyLayoutConstants.JSON_KEY_NORMALIZATION_PROCESSOR_CONFIG;
         Map normalizationProcessorConfig = (Map) conf.get(fieldName);
         if (normalizationProcessorConfig == null) {
-            throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
+            throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
         }
     }
 }

@@ -7,6 +7,7 @@ import org.apache.streamline.common.util.ProxyUtil;
 import org.apache.streamline.streams.catalog.processor.CustomProcessorInfo;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.runtime.CustomProcessorRuntime;
+import org.apache.streamline.streams.layout.exception.ComponentConfigException;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.io.FileUtils;
@@ -73,7 +74,7 @@ public class CustomProcessorUploadHandler implements FileEventHandler {
                 ProxyUtil<CustomProcessorRuntime> customProcessorProxyUtil = new ProxyUtil<>(CustomProcessorRuntime.class);
                 CustomProcessorRuntime customProcessorRuntime = customProcessorProxyUtil.loadClassFromJar(tempJarFile.getAbsolutePath(), customProcessorInfo.getCustomProcessorImpl());
                 jarFile.reset();
-                this.catalogService.addCustomProcessorInfo(customProcessorInfo, jarFile);
+                this.catalogService.addCustomProcessorInfoAsBundle(customProcessorInfo, jarFile);
                 succeeded = true;
             } else {
                 LOG.info("Failing unsupported file that was received: " + path);
@@ -82,6 +83,8 @@ public class CustomProcessorUploadHandler implements FileEventHandler {
             LOG.warn("Exception occured while processing tar file: " + createdFile, e);
         } catch (ClassNotFoundException|InstantiationException|IllegalAccessException e) {
             LOG.warn("Could not load a class from jar file implementing CustomProcessorRuntime interface from " + createdFile, e);
+        } catch (ComponentConfigException e) {
+            LOG.warn("UI specification for custom processor incorrect for custom processor file: " + createdFile, e);
         } finally {
             try {
                 if (succeeded) {

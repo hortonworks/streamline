@@ -2,7 +2,7 @@ package org.apache.streamline.streams.layout.storm;
 
 import org.apache.streamline.streams.layout.ConfigFieldValidation;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.streamline.streams.layout.exception.BadTopologyLayoutException;
+import org.apache.streamline.streams.layout.exception.ComponentConfigException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,7 +61,7 @@ public abstract class AbstractFluxComponent implements FluxComponent {
     }
 
     @Override
-    public void validateConfig () throws BadTopologyLayoutException {
+    public void validateConfig () throws ComponentConfigException {
         String[] fieldNames = {TopologyLayoutConstants.JSON_KEY_PARALLELISM};
         Long[] mins = {1L};
         Long[] maxes = {Long.MAX_VALUE};
@@ -196,12 +196,12 @@ public abstract class AbstractFluxComponent implements FluxComponent {
 
     // validate boolean fields based on if they are required or not. Meant to
     // be called from base classes that need to validate
-    protected void validateBooleanFields (String[] fieldNames, boolean areRequiredFields) throws BadTopologyLayoutException {
+    protected void validateBooleanFields (String[] fieldNames, boolean areRequiredFields) throws ComponentConfigException {
         this.validateBooleanFields(fieldNames, areRequiredFields, conf);
     }
 
     // Overloaded version of above method since we need it for NotificationBolt and perhaps other components in future
-    protected void validateBooleanFields (String[] fieldNames, boolean areRequiredFields, Map<String, Object> conf) throws BadTopologyLayoutException {
+    protected void validateBooleanFields (String[] fieldNames, boolean areRequiredFields, Map<String, Object> conf) throws ComponentConfigException {
         for (String fieldName : fieldNames) {
             Object value = conf.get(fieldName);
             boolean isValid = true;
@@ -218,19 +218,19 @@ public abstract class AbstractFluxComponent implements FluxComponent {
                 }
             }
             if (!isValid) {
-                throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
+                throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
             }
         }
     }
 
     // validate string fields based on if they are required or not. Meant to
     // be called from base classes that need to validate
-    protected void validateStringFields (String[] fieldNames, boolean areRequiredFields) throws BadTopologyLayoutException {
+    protected void validateStringFields (String[] fieldNames, boolean areRequiredFields) throws ComponentConfigException {
         this.validateStringFields(fieldNames, areRequiredFields, conf);
     }
 
     // Overloaded version of above method since we need it for NotificationBolt and perhaps other components in future
-    protected void validateStringFields (String[] fieldNames, boolean areRequiredFields, Map<String, Object> conf) throws BadTopologyLayoutException {
+    protected void validateStringFields (String[] fieldNames, boolean areRequiredFields, Map<String, Object> conf) throws ComponentConfigException {
         for (String fieldName: fieldNames) {
             Object value = conf.get(fieldName);
             boolean isValid = true;
@@ -247,7 +247,7 @@ public abstract class AbstractFluxComponent implements FluxComponent {
                 }
             }
             if (!isValid) {
-                throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
+                throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
             }
         }
     }
@@ -256,7 +256,7 @@ public abstract class AbstractFluxComponent implements FluxComponent {
     // valid range. Meant to // be called from base classes that need to validate
     protected void validateByteFields (String[] fieldNames, boolean
             areRequiredFields, Byte[] mins, Byte[] maxes) throws
-            BadTopologyLayoutException {
+            ComponentConfigException {
         if ((fieldNames == null) || (fieldNames.length != mins.length) ||
                 (fieldNames.length != maxes.length)) {
             return;
@@ -280,7 +280,7 @@ public abstract class AbstractFluxComponent implements FluxComponent {
                 }
             }
             if (!isValid) {
-                throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
+                throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
             }
         }
     }
@@ -289,7 +289,7 @@ public abstract class AbstractFluxComponent implements FluxComponent {
     // valid range. Meant to // be called from base classes that need to validate
     protected void validateShortFields (String[] fieldNames, boolean
             areRequiredFields, Short[] mins, Short[] maxes) throws
-            BadTopologyLayoutException {
+            ComponentConfigException {
         if ((fieldNames == null) || (fieldNames.length != mins.length) ||
                 (fieldNames.length != maxes.length)) {
             return;
@@ -313,20 +313,20 @@ public abstract class AbstractFluxComponent implements FluxComponent {
                 }
             }
             if (!isValid) {
-                throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
+                throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
             }
         }
     }
 
     // validate integer fields based on if they are required or not and their
     // valid range. Meant to // be called from base classes that need to validate
-    protected void validateIntegerFields (String[] fieldNames, boolean areRequiredFields, Integer[] mins, Integer[] maxes) throws BadTopologyLayoutException {
+    protected void validateIntegerFields (String[] fieldNames, boolean areRequiredFields, Integer[] mins, Integer[] maxes) throws ComponentConfigException {
         this.validateIntegerFields(fieldNames, areRequiredFields, mins, maxes, conf);
     }
 
     // Overloaded version of above method since we need it for NotificationBolt and perhaps other components in future
     protected void validateIntegerFields (String[] fieldNames, boolean areRequiredFields, Integer[] mins, Integer[] maxes, Map<String, Object> conf) throws
-            BadTopologyLayoutException {
+            ComponentConfigException {
         if ((fieldNames == null) || (fieldNames.length != mins.length) ||
                 (fieldNames.length != maxes.length)) {
             return;
@@ -350,7 +350,7 @@ public abstract class AbstractFluxComponent implements FluxComponent {
                 }
             }
             if (!isValid) {
-                throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
+                throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
             }
         }
     }
@@ -359,7 +359,7 @@ public abstract class AbstractFluxComponent implements FluxComponent {
     // valid range. Meant to // be called from base classes that need to validate
     protected void validateLongFields (String[] fieldNames, boolean
             areRequiredFields, Long[] mins, Long[] maxes) throws
-            BadTopologyLayoutException {
+            ComponentConfigException {
         if ((fieldNames == null) || (fieldNames.length != mins.length) ||
                 (fieldNames.length != maxes.length)) {
             return;
@@ -383,13 +383,13 @@ public abstract class AbstractFluxComponent implements FluxComponent {
                 }
             }
             if (!isValid) {
-                throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
+                throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
             }
         }
     }
 
     protected void validateFloatOrDoubleFields (String[] fieldNames, boolean
-            areRequiredFields) throws BadTopologyLayoutException {
+            areRequiredFields) throws ComponentConfigException {
         for (String fieldName : fieldNames) {
             Object value = conf.get(fieldName);
             boolean isValid = true;
@@ -406,7 +406,7 @@ public abstract class AbstractFluxComponent implements FluxComponent {
                 }
             }
             if (!isValid) {
-                throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
+                throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
             }
         }
     }

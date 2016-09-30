@@ -28,7 +28,6 @@
       "parallelism": 1
     }
   },
-  "type": null,
   "outputStreams": [
     {
       "id": "outputstream",

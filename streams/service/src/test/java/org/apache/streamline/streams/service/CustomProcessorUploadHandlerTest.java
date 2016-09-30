@@ -3,6 +3,7 @@ package org.apache.streamline.streams.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.streamline.streams.catalog.processor.CustomProcessorInfo;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import org.apache.streamline.streams.layout.exception.ComponentConfigException;
 import mockit.Injectable;
 import mockit.Tested;
 import mockit.VerificationsInOrder;
@@ -86,7 +87,7 @@ public class CustomProcessorUploadHandlerTest {
     }
 
     @Test
-    public void testSuccessfulUpload () throws IOException {
+    public void testSuccessfulUpload () throws IOException, ComponentConfigException {
         String fileName = "consolecustomprocessor.tar";
         URL url  = classLoader.getResource(resourceDirectoryPrefix + fileName);
         String consoleCustomProcessorTarString = url.getFile();
@@ -95,7 +96,7 @@ public class CustomProcessorUploadHandlerTest {
         this.customProcessorUploadHandler.created(Paths.get(uploadWatchDirectory).resolve(fileName));
         new VerificationsInOrder() {{
             InputStream jarFileActual;
-            catalogService.addCustomProcessorInfo(withEqual(customProcessorInfo), jarFileActual = withCapture());
+            catalogService.addCustomProcessorInfoAsBundle(withEqual(customProcessorInfo), jarFileActual = withCapture());
             times = 1;
             Assert.assertTrue(IOUtils.contentEquals(jarFileActual, jarFile));
         }};

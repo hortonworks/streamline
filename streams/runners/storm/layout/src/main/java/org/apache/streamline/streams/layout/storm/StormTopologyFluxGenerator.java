@@ -22,7 +22,7 @@ import org.apache.streamline.streams.layout.component.rule.expression.Window;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import java.nio.file.Path;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,17 +41,18 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
 
     private static final int DELTA = 5;
 
-    private final FluxComponentFactory fluxComponentFactory = new FluxComponentFactory();
+    private final FluxComponentFactory fluxComponentFactory;
 
     private final List<Map.Entry<String, Map<String, Object>>> keysAndComponents = new ArrayList<>();
     private final TopologyDag topologyDag;
     private final Map<String, String> config;
     private final Config topologyConfig;
 
-    public StormTopologyFluxGenerator(TopologyLayout topologyLayout, Map<String, String> config) throws IOException {
+    public StormTopologyFluxGenerator(TopologyLayout topologyLayout, Map<String, String> config, Path extraJarsLocation) {
         this.topologyDag = topologyLayout.getTopologyDag();
         this.topologyConfig = topologyLayout.getConfig();
         this.config = config;
+        fluxComponentFactory = new FluxComponentFactory(extraJarsLocation);
     }
 
     @Override
@@ -105,7 +106,7 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
                 }));
                 LOG.debug("Rules processor with window {}", windowedRulesProcessor);
                 keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_BOLTS,
-                        getYamlComponents(new WindowRuleBoltFluxComponent(windowedRulesProcessor), windowedRulesProcessor)));
+                        getYamlComponents(fluxComponentFactory.getFluxComponent(windowedRulesProcessor), windowedRulesProcessor)));
                 // Wire the windowed bolt with the appropriate edges
                 wireWindowedRulesProcessor(windowedRulesProcessor, topologyDag.getEdgesTo(rulesProcessor),
                         topologyDag.getEdgesFrom(rulesProcessor));
@@ -123,7 +124,7 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
                 }
             }));
             keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_BOLTS,
-                    getYamlComponents(new RuleBoltFluxComponent(rulesProcessor), rulesProcessor)));
+                    getYamlComponents(fluxComponentFactory.getFluxComponent(rulesProcessor), rulesProcessor)));
         }
     }
 

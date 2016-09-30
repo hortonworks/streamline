@@ -1,1 +1,42 @@
-{"type": "SINK", "name": "hbaseBoltComponent", "subType": "HBASE", "streamingEngine": "STORM", "config":"[{\"name\":\"writeToWAL\",\"isOptional\":true,\"type\":\"boolean\",\"defaultValue\":true},{\"name\":\"table\",\"isOptional\":false,\"type\":\"string\",\"defaultValue\":null},{\"name\":\"columnFamily\",\"isOptional\":false,\"type\":\"string\",\"defaultValue\":null},{\"name\":\"parallelism\",\"isOptional\":true,\"type\":\"number\",\"defaultValue\":1}]", "transformationClass": "org.apache.streamline.streams.layout.storm.HbaseBoltFluxComponent", "timestamp": 1440118796994}
+{
+  "type": "SINK",
+  "name": "Hbase Bolt",
+  "subType": "HBASE",
+  "builtin": true,
+  "streamingEngine": "STORM",
+  "transformationClass": "org.apache.streamline.streams.layout.storm.HbaseBoltFluxComponent",
+  "topologyComponentUISpecification": {
+    "fields": [
+      {
+        "uiName": "Write to WAL?",
+        "fieldName": "writeToWAL",
+        "isOptional": true,
+        "tooltip": "Flag to indicate whether to write to write ahead log",
+        "type": "boolean",
+        "defaultValue": true
+      },
+      {
+        "uiName": "Hbase table",
+        "fieldName": "table",
+        "isOptional": false,
+        "tooltip": "Hbase table to write to",
+        "type": "string"
+      },
+      {
+        "uiName": "Column family",
+        "fieldName": "columnFamily",
+        "isOptional": false,
+        "tooltip": "Hbase table column family",
+        "type": "string"
+      },
+      {
+        "uiName": "Parallelism",
+        "fieldName": "parallelism",
+        "isOptional": true,
+        "tooltip": "Parallelism hint for hbase bolt",
+        "type": "number",
+        "defaultValue": 1
+      }
+    ]
+  }
+}
