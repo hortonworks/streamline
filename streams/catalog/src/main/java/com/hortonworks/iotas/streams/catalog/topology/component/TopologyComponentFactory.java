@@ -52,6 +52,7 @@ import static com.hortonworks.iotas.common.ComponentTypes.NOTIFICATION;
 import static com.hortonworks.iotas.common.ComponentTypes.RULE;
 import static com.hortonworks.iotas.common.ComponentTypes.SPLIT;
 import static com.hortonworks.iotas.common.ComponentTypes.STAGE;
+import static com.hortonworks.iotas.common.ComponentTypes.WINDOW;
 import static java.util.AbstractMap.SimpleImmutableEntry;
 
 /**
@@ -167,6 +168,7 @@ public class TopologyComponentFactory {
     private Map<String, Provider<IotasProcessor>> createProcessorProviders() {
         ImmutableMap.Builder<String, Provider<IotasProcessor>> builder = ImmutableMap.builder();
         builder.put(rulesProcessorProvider());
+        builder.put(windowProcessorProvider());
         builder.put(normalizationProcessorProvider());
         builder.put(splitProcessorProvider());
         builder.put(joinProcessorProvider());
@@ -308,7 +310,15 @@ public class TopologyComponentFactory {
     }
 
     private Map.Entry<String, Provider<IotasProcessor>> rulesProcessorProvider() {
-        Provider<IotasProcessor> provider = new Provider<IotasProcessor>() {
+        return new SimpleImmutableEntry<>(RULE, createRulesProcessorProvider());
+    }
+
+    private Map.Entry<String, Provider<IotasProcessor>> windowProcessorProvider() {
+        return new SimpleImmutableEntry<>(WINDOW, createRulesProcessorProvider());
+    }
+
+    private Provider<IotasProcessor> createRulesProcessorProvider() {
+        return new Provider<IotasProcessor>() {
             @Override
             public IotasProcessor create(TopologyComponent component) {
                 RulesProcessor processor = new RulesProcessor();
@@ -332,7 +342,6 @@ public class TopologyComponentFactory {
                 return processor;
             }
         };
-        return new SimpleImmutableEntry<>(RULE, provider);
     }
 
     private Map.Entry<String, Provider<IotasProcessor>> customProcessorProvider() {
