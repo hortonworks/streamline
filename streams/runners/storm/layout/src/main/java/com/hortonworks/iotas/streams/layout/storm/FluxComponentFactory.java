@@ -10,16 +10,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
-import static com.hortonworks.iotas.common.ComponentTypes.CUSTOM;
-import static com.hortonworks.iotas.common.ComponentTypes.EVENTHUB;
-import static com.hortonworks.iotas.common.ComponentTypes.HBASE;
-import static com.hortonworks.iotas.common.ComponentTypes.HDFS;
-import static com.hortonworks.iotas.common.ComponentTypes.KAFKA;
-import static com.hortonworks.iotas.common.ComponentTypes.KINESIS;
-import static com.hortonworks.iotas.common.ComponentTypes.NORMALIZATION;
-import static com.hortonworks.iotas.common.ComponentTypes.NOTIFICATION;
-import static com.hortonworks.iotas.common.ComponentTypes.OPENTSDB;
-import static com.hortonworks.iotas.common.ComponentTypes.PARSER;
+import static com.hortonworks.iotas.common.ComponentTypes.*;
 
 class FluxComponentFactory {
     private static final Logger LOG = LoggerFactory.getLogger(FluxComponentFactory.class);
@@ -46,6 +37,7 @@ class FluxComponentFactory {
         builder.put(EVENTHUB, provider(EventHubSpoutFluxComponent.class));
         builder.put(HBASE, provider(HbaseBoltFluxComponent.class));
         builder.put(HDFS, provider(HdfsBoltFluxComponent.class));
+        builder.put(HDFS_SOURCE, provider(HdfsSpoutFluxComponent.class));
         builder.put(OPENTSDB, provider(OpenTsdbBoltFluxComponent.class));
         builder.put(NOTIFICATION, provider(NotificationBoltFluxComponent.class));
         builder.put(CUSTOM, provider(CustomProcessorBoltFluxComponent.class));

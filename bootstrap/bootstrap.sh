@@ -59,6 +59,7 @@ while getopts 'hvd:' flag; do
 done
 
 post /system/componentdefinitions/SOURCE $bootstrap_dir/kafka-topology-component
+post /system/componentdefinitions/SOURCE $bootstrap_dir/hdfs-spout-topology-component
 post /system/componentdefinitions/PROCESSOR $bootstrap_dir/rule-topology-component
 post /system/componentdefinitions/PROCESSOR $bootstrap_dir/parser-topology-component
 post /system/componentdefinitions/PROCESSOR $bootstrap_dir/normalization-processor-topology-component

@@ -21,6 +21,7 @@ public abstract class AbstractFluxComponent implements FluxComponent {
         NONE
     }
 
+
     // conf is the map representing the configuration parameters for this
     // storm component picked by the user. For eg kafka component will have
     // zkUrl, topic, etc.
@@ -104,69 +105,77 @@ public abstract class AbstractFluxComponent implements FluxComponent {
     }
 
     protected List getPropertiesYaml (String[] propertyNames) {
+        checkNotEmpty(propertyNames);
         List properties = new ArrayList();
-        if ((propertyNames != null) && (propertyNames.length > 0)) {
-            for (int i = 0; i < propertyNames.length; ++i) {
-                Object value = conf.get(propertyNames[i]);
-                if (value != null) {
-                    Map propertyMap = new LinkedHashMap();
-                    propertyMap.put(StormTopologyLayoutConstants.YAML_KEY_NAME,
-                            propertyNames[i]);
-                    propertyMap.put(StormTopologyLayoutConstants.YAML_KEY_VALUE,
-                              value);
-                    properties.add(propertyMap);
-                }
+        for (int i = 0; i < propertyNames.length; ++i) {
+            Object value = conf.get(propertyNames[i]);
+            if (value != null) {
+                Map propertyMap = new LinkedHashMap();
+                propertyMap.put(StormTopologyLayoutConstants.YAML_KEY_NAME,
+                        propertyNames[i]);
+                propertyMap.put(StormTopologyLayoutConstants.YAML_KEY_VALUE,
+                          value);
+                properties.add(propertyMap);
             }
         }
         return properties;
     }
 
     protected List getConstructorArgsYaml (String[] constructorArgNames) {
+        checkNotEmpty(constructorArgNames);
         List constructorArgs = new ArrayList();
-        if ((constructorArgNames != null) && (constructorArgNames.length > 0)) {
-            for (int i = 0; i < constructorArgNames.length; ++i) {
-                Object value = conf.get(constructorArgNames[i]);
-                if (value != null) {
-                    constructorArgs.add(value);
-                }
+        for (int i = 0; i < constructorArgNames.length; ++i) {
+            Object value = conf.get(constructorArgNames[i]);
+            if (value != null) {
+                constructorArgs.add(value);
             }
         }
         return constructorArgs;
     }
 
     protected List getConfigMethodsYaml (String[] configMethodNames, String[] configKeys) {
-        List configMethods = new ArrayList();
+        checkNotEmptyAndSize(configMethodNames, configKeys);
+
         List<String> nonNullConfigMethodNames = new ArrayList<String>();
         List values = new ArrayList();
-        if ((configMethodNames != null) && (configKeys != null) &&
-                (configMethodNames.length == configKeys.length) && (configKeys.length > 0)) {
-            for (int i = 0; i < configKeys.length; ++i) {
-                if (conf.get(configKeys[i]) != null) {
-                    nonNullConfigMethodNames.add(configMethodNames[i]);
-                    values.add(conf.get(configKeys[i]));
-                }
+
+        for (int i = 0; i < configKeys.length; ++i) {
+            if (conf.get(configKeys[i]) != null) {
+                nonNullConfigMethodNames.add(configMethodNames[i]);
+                values.add(conf.get(configKeys[i]));
             }
-            configMethods = getConfigMethodsYaml(nonNullConfigMethodNames.toArray(new String[0]), values.toArray());
         }
+        List configMethods = getConfigMethodsYaml(nonNullConfigMethodNames.toArray(new String[0]), values.toArray());
         return configMethods;
     }
 
-    protected List getConfigMethodsYaml (String[] configMethodNames, Object[] values) {
-        List configMethods = new ArrayList();
-        if ((configMethodNames != null) && (values != null) &&
-                (configMethodNames.length == values.length) && (values.length > 0)) {
-            for (int i = 0; i < values.length; ++i) {
-                Map configMethod = new LinkedHashMap();
-                configMethod.put(StormTopologyLayoutConstants.YAML_KEY_NAME, configMethodNames[i]);
-                List methodArgs = new ArrayList();
-                Object value = values[i];
-                if(value != ArgsType.NONE) {
-                    methodArgs.add(value);
-                }
-                configMethod.put(StormTopologyLayoutConstants.YAML_KEY_ARGS, methodArgs);
-                configMethods.add(configMethod);
-            }
+    private void checkNotEmptyAndSize(Object[] arg1, Object[] arg2) {
+        checkNotEmpty(arg1);
+        checkNotEmpty(arg2);
+        if ( arg1.length != arg2.length ) {
+            throw new IllegalArgumentException("Argument arrays of unequal length");
+        }
+    }
 
+    private void checkNotEmpty(Object[] arg1) {
+        if ( arg1.length==0 ) {
+            throw new IllegalArgumentException("Argument array cannot be empty");
+        }
+    }
+
+    protected List getConfigMethodsYaml (String[] configMethodNames, Object[] values) {
+        checkNotEmptyAndSize(configMethodNames, values);
+        List configMethods = new ArrayList();
+        for (int i = 0; i < values.length; ++i) {
+            Map configMethod = new LinkedHashMap();
+            configMethod.put(StormTopologyLayoutConstants.YAML_KEY_NAME, configMethodNames[i]);
+            List methodArgs = new ArrayList();
+            Object value = values[i];
+            if(value != ArgsType.NONE) {
+                methodArgs.add(value);
+            }
+            configMethod.put(StormTopologyLayoutConstants.YAML_KEY_ARGS, methodArgs);
+            configMethods.add(configMethod);
         }
         return configMethods;
     }
@@ -179,21 +188,20 @@ public abstract class AbstractFluxComponent implements FluxComponent {
 
     protected List getConfigMethodWithRefArg (String[] configMethodNames,
                                              String[] refIds) {
+        checkNotEmptyAndSize(configMethodNames, refIds);
         List configMethods = new ArrayList();
-        if ((configMethodNames != null) && (refIds != null) &&
-                (configMethodNames.length == refIds.length) && (refIds.length > 0)) {
-            for (int i = 0; i < refIds.length; ++i) {
-                Map configMethod = new LinkedHashMap();
-                configMethod.put(StormTopologyLayoutConstants.YAML_KEY_NAME,
-                        configMethodNames[i]);
-                List methodArgs = new ArrayList();
-                Map refMap = new HashMap();
-                refMap.put(StormTopologyLayoutConstants.YAML_KEY_REF, refIds[i]);
-                methodArgs.add(refMap);
-                configMethod.put(StormTopologyLayoutConstants.YAML_KEY_ARGS, methodArgs);
-                configMethods.add(configMethod);
-            }
+        for (int i = 0; i < refIds.length; ++i) {
+            Map configMethod = new LinkedHashMap();
+            configMethod.put(StormTopologyLayoutConstants.YAML_KEY_NAME,
+                    configMethodNames[i]);
+            List methodArgs = new ArrayList();
+            Map refMap = new HashMap();
+            refMap.put(StormTopologyLayoutConstants.YAML_KEY_REF, refIds[i]);
+            methodArgs.add(refMap);
+            configMethod.put(StormTopologyLayoutConstants.YAML_KEY_ARGS, methodArgs);
+            configMethods.add(configMethod);
         }
+
         return configMethods;
     }
 

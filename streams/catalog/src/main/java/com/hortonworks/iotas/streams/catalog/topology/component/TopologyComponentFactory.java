@@ -23,6 +23,7 @@ import com.hortonworks.iotas.streams.layout.component.OutputComponent;
 import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.streams.layout.component.StreamGrouping;
 import com.hortonworks.iotas.streams.layout.component.impl.CustomProcessor;
+import com.hortonworks.iotas.streams.layout.component.impl.HdfsSpoutSource;
 import com.hortonworks.iotas.streams.layout.component.impl.KafkaSource;
 import com.hortonworks.iotas.streams.layout.component.impl.NotificationSink;
 import com.hortonworks.iotas.streams.layout.component.impl.RulesProcessor;
@@ -44,14 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.hortonworks.iotas.common.ComponentTypes.CUSTOM;
-import static com.hortonworks.iotas.common.ComponentTypes.JOIN;
-import static com.hortonworks.iotas.common.ComponentTypes.KAFKA;
-import static com.hortonworks.iotas.common.ComponentTypes.NORMALIZATION;
-import static com.hortonworks.iotas.common.ComponentTypes.NOTIFICATION;
-import static com.hortonworks.iotas.common.ComponentTypes.RULE;
-import static com.hortonworks.iotas.common.ComponentTypes.SPLIT;
-import static com.hortonworks.iotas.common.ComponentTypes.STAGE;
+import static com.hortonworks.iotas.common.ComponentTypes.*;
 import static java.util.AbstractMap.SimpleImmutableEntry;
 
 /**
@@ -155,6 +149,7 @@ public class TopologyComponentFactory {
     private Map<String, Provider<IotasSource>> createSourceProviders() {
         ImmutableMap.Builder<String, Provider<IotasSource>> builder = ImmutableMap.builder();
         builder.put(kafkaSourceProvider());
+        builder.put(hdfsSourceProvider());
         return builder.build();
     }
 
@@ -227,6 +222,17 @@ public class TopologyComponentFactory {
         };
         return new SimpleImmutableEntry<>(KAFKA, provider);
     }
+
+    private Map.Entry<String, Provider<IotasSource>> hdfsSourceProvider() {
+        Provider<IotasSource> provider = new Provider<IotasSource>() {
+            @Override
+            public IotasSource create(TopologyComponent component) {
+                return new HdfsSpoutSource();
+            }
+        };
+        return new SimpleImmutableEntry<>(HDFS_SOURCE, provider);
+    }
+
 
     private Map.Entry<String, Provider<IotasProcessor>> normalizationProcessorProvider() {
         Provider<IotasProcessor> provider = new Provider<IotasProcessor>() {
