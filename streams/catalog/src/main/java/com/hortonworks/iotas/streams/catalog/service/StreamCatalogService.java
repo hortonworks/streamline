@@ -1265,14 +1265,26 @@ public class StreamCatalogService {
     }
 
     private String getSqlString(List<String> streams,
-                                List<String> projections,
+                                List<WindowDto.Projection> projections,
                                 String condition,
                                 List<String> groupByKeys) {
-        String SQL = join("SELECT ", projections).or("SELECT * ");
+        String SQL = select(projections).or("SELECT * ");
         SQL += join(" FROM ", getTable(streams)).get();
         SQL += join(" WHERE ", condition).or("");
         SQL += join(" GROUP BY ", groupByKeys).or("");
         return SQL;
+    }
+
+    private Optional<String> select(List<WindowDto.Projection> projections) {
+        if (projections != null) {
+            return join("SELECT ", Collections2.transform(projections, new Function<WindowDto.Projection, String>() {
+                @Override
+                public String apply(WindowDto.Projection input) {
+                    return input.toString();
+                }
+            }));
+        }
+        return Optional.absent();
     }
 
     private Optional<String> join(String keyword, String part) {
@@ -1281,7 +1293,8 @@ public class StreamCatalogService {
         }
         return Optional.absent();
     }
-    private Optional<String> join(String keyword, List<String> parts) {
+
+    private Optional<String> join(String keyword, Collection<String> parts) {
         if (parts != null && !parts.isEmpty()) {
             return Optional.of(keyword + Joiner.on(",").join(parts));
         }

@@ -8,7 +8,7 @@
         {
           "name": "notificationsink",
           "outputFieldsAndDefaults": {
-            "body": "min salary is ${MIN(salary)}, max salary is ${MAX(salary)}"
+            "body": "min salary is ${MINSAL}, max salary is ${MAX(salary)}"
           },
           "notifierName": "email_notifier",
           "__type": "com.hortonworks.iotas.streams.layout.component.rule.action.NotifierAction"
@@ -18,22 +18,26 @@
       "projection": {
         "expressions": [
           {
-            "class": "com.hortonworks.iotas.streams.layout.component.rule.expression.AggregateFunctionExpression",
-            "function": {
-              "name": "MIN",
-              "className": null,
-              "udf": false
-            },
-            "operands": [
-              {
-                "class": "com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression",
-                "value": {
-                  "name": "salary",
-                  "type": "INTEGER",
-                  "optional": false
+            "class": "com.hortonworks.iotas.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.iotas.streams.layout.component.rule.expression.AggregateFunctionExpression",
+              "function": {
+                "name": "MIN",
+                "className": null,
+                "udf": false
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "salary",
+                    "type": "INTEGER",
+                    "optional": false
+                  }
                 }
-              }
-            ]
+              ]
+            },
+            "alias": "MINSAL"
           },
           {
             "class": "com.hortonworks.iotas.streams.layout.component.rule.expression.AggregateFunctionExpression",

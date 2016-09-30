@@ -28,6 +28,7 @@ import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.catalog.AbstractStorable;
 import com.hortonworks.iotas.streams.layout.component.rule.Rule;
 import com.hortonworks.iotas.streams.layout.component.rule.action.Action;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Projection;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.Window;
 import org.apache.commons.lang3.StringUtils;
 
@@ -72,7 +73,7 @@ public class RuleInfo extends AbstractStorable {
     private String parsedRuleStr;
     private Window window;
     private List<Action> actions;
-    private List<String> projections;
+    private List<WindowDto.Projection> projections;
     private List<String> groupbykeys;
 
     // for jackson
@@ -181,11 +182,11 @@ public class RuleInfo extends AbstractStorable {
         this.actions = actions;
     }
 
-    public List<String> getProjections() {
+    public List<WindowDto.Projection> getProjections() {
         return projections;
     }
 
-    public void setProjections(List<String> projections) {
+    public void setProjections(List<WindowDto.Projection> projections) {
         this.projections = projections;
     }
 
@@ -262,7 +263,7 @@ public class RuleInfo extends AbstractStorable {
             }
             String projectionsStr = (String) map.get(PROJECTIONS);
             if (!StringUtils.isEmpty(projectionsStr)) {
-                List<String> projections = mapper.readValue(projectionsStr, new TypeReference<List<String>>() {
+                List<WindowDto.Projection> projections = mapper.readValue(projectionsStr, new TypeReference<List<WindowDto.Projection>>() {
                 });
                 setProjections(projections);
             }

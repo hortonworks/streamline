@@ -59,6 +59,7 @@ public class StormSqlExpression extends ExpressionRuntime {
     private final LinkedHashSet<FunctionExpression.Function> functions = new LinkedHashSet<>();
     private final LinkedHashSet<FunctionExpression.Function> aggregateFunctions = new LinkedHashSet<>();
     private final List<String> projectedFields = new ArrayList<>();
+    private final List<String> outputFieldNames = new ArrayList<>();
 
     public StormSqlExpression(Condition condition) {
         this(condition, null);
@@ -84,6 +85,11 @@ public class StormSqlExpression extends ExpressionRuntime {
                 functions.addAll(translator.getFunctions());
                 aggregateFunctions.addAll(translator.getAggregateFunctions());
                 projectedFields.add(translator.getTranslatedExpression());
+                if (!translator.getAliases().isEmpty()) {
+                    outputFieldNames.add(translator.getAliases().get(0));
+                } else {
+                    outputFieldNames.add(translator.getTranslatedExpression());
+                }
             }
         }
     }
@@ -245,6 +251,10 @@ public class StormSqlExpression extends ExpressionRuntime {
 
     public List<String> getProjectedFields() {
         return projectedFields;
+    }
+
+    public List<String> getOutputFieldNames() {
+        return outputFieldNames;
     }
 
     @Override

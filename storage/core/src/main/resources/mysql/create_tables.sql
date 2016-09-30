@@ -109,7 +109,7 @@ CREATE TABLE IF NOT EXISTS streaminfo (
     streamId VARCHAR(255) NOT NULL,
     fieldsData TEXT NOT NULL,
     timestamp BIGINT,
-    UNIQUE KEY `UK_streamId` (streamId),
+    UNIQUE KEY `UK_streamId` (topologyId, streamId),
     PRIMARY KEY (id)
 );
 

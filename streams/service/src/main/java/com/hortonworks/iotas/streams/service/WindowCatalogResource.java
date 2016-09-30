@@ -95,7 +95,7 @@ public class WindowCatalogResource {
     public Response addTopologyWindow(@PathParam("topologyId") Long topologyId, WindowDto windowDto) {
         try {
             RuleInfo createdRuleInfo = catalogService.addRule(topologyId, getRuleInfo(windowDto));
-            return WSUtils.respond(CREATED, SUCCESS, createdRuleInfo);
+            return WSUtils.respond(CREATED, SUCCESS, new WindowDto(createdRuleInfo));
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -108,7 +108,7 @@ public class WindowCatalogResource {
                                     WindowDto windowDto) {
         try {
             RuleInfo createdRuleInfo = catalogService.addOrUpdateRule(topologyId, ruleId, getRuleInfo(windowDto));
-            return WSUtils.respond(CREATED, SUCCESS, createdRuleInfo);
+            return WSUtils.respond(CREATED, SUCCESS, new WindowDto(createdRuleInfo));
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }

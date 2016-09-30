@@ -320,7 +320,10 @@ echo -e "\n------"
 out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache" -d '{
     "name": "rule3",
     "description": "windowed rule test",
-    "projections": ["humidity", "max(temperature)"],
+    "projections": [
+        {"name": "humidity"},
+        {"name": "temperature", "functionName": "max", "outputFieldName": "maxtemp"}
+    ],
     "streams": ["parsedTuplesStream"],
     "groupbykeys": ["humidity"],
     "window": {
