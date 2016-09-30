@@ -30,7 +30,9 @@ public class CatalogResponse {
         DATASOURCE_SCHEMA_NOT_UNIQUE(1107, "Datasource has [%s] datafeeds and cannot be mapped to a unique schema.", 1),
         CUSTOM_PROCESSOR_ONLY(1108, "Custom endpoint supported only for processors.", 0),
         UNSUPPORTED_MEDIA_TYPE(1109, "Unsupported Media Type", 0),
-        BAD_REQUEST(1110, "Bad Request", 0);
+        BAD_REQUEST(1110, "Bad Request", 0),
+        IMPORT_ALREADY_IN_PROGRESS(1111, "Cluster [%s] is already in progress of import.", 1),
+        ENTITY_BY_NAME_NOT_FOUND(1102, "Entity with name [%s] not found.", 1);
 
         private final int code;
         private final String msg;

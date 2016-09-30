@@ -17,3 +17,7 @@ DROP TABLE IF EXISTS topology_edges;
 DROP TABLE IF EXISTS ruleinfos;
 DROP TABLE IF EXISTS windowinfos;
 DROP TABLE IF EXISTS udfs;
+DROP TABLE IF EXISTS clusters;
+DROP TABLE IF EXISTS services;
+DROP TABLE IF EXISTS service_configurations;
+DROP TABLE IF EXISTS components;

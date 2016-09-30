@@ -20,6 +20,10 @@ DROP TABLE IF EXISTS notifierinfos
 DROP TABLE IF EXISTS ruleinfos
 DROP TABLE IF EXISTS windowinfos
 DROP TABLE IF EXISTS udfs
+DROP TABLE IF EXISTS clusters
+DROP TABLE IF EXISTS services
+DROP TABLE IF EXISTS service_configurations
+DROP TABLE IF EXISTS components
 DROP SEQUENCE IF EXISTS datasources_sequence
 DROP SEQUENCE IF EXISTS datafeeds_sequence
 DROP SEQUENCE IF EXISTS parser_info_sequence
@@ -37,3 +41,7 @@ DROP SEQUENCE IF EXISTS topology_edges_sequence
 DROP SEQUENCE IF EXISTS ruleinfos_sequence
 DROP SEQUENCE IF EXISTS windowinfos_sequence
 DROP SEQUENCE IF EXISTS udfs_sequence
+DROP SEQUENCE IF EXISTS clusters_sequence
+DROP SEQUENCE IF EXISTS services_sequence
+DROP SEQUENCE IF EXISTS service_configurations_sequence
+DROP SEQUENCE IF EXISTS components_sequence

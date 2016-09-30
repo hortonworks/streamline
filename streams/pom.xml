@@ -24,6 +24,7 @@
         <module>runners</module>
         <module>schemaevolver</module>
         <module>functions</module>
+        <module>cluster</module>
     </modules>
 
 

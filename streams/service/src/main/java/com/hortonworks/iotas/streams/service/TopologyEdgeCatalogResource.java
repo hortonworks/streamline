@@ -128,7 +128,6 @@ public class TopologyEdgeCatalogResource {
     @GET
     @Path("/{id}")
     @Timed
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getTopologyEdgeById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long edgeId) {
         try {
             TopologyEdge edge = catalogService.getTopologyEdge(edgeId);

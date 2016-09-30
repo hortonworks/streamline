@@ -3,7 +3,10 @@ package com.hortonworks.iotas.streams.service;
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.common.util.WSUtils;
+import com.hortonworks.iotas.storage.exception.AlreadyExistsException;
+import com.hortonworks.iotas.streams.catalog.Cluster;
 import com.hortonworks.iotas.streams.catalog.Component;
+import com.hortonworks.iotas.streams.catalog.Service;
 import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
 
 import javax.ws.rs.DELETE;
@@ -22,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.ENTITY_BY_NAME_NOT_FOUND;
 import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
 import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
 import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
@@ -32,7 +36,7 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 
 
-@Path("/api/v1/catalog/clusters/{clusterId}/components")
+@Path("/api/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 
 public class ComponentCatalogResource {
@@ -46,9 +50,42 @@ public class ComponentCatalogResource {
      * List ALL components or the ones matching specific query params.
      */
     @GET
+    @Path("/services/{serviceId}/components")
     @Timed
-    public Response listComponents(@PathParam("clusterId") Long clusterId, @Context UriInfo uriInfo) {
-        List<QueryParam> queryParams = buildClusterIdAwareQueryParams(clusterId, uriInfo);
+    public Response listComponents(@PathParam("serviceId") Long serviceId, @Context UriInfo uriInfo) {
+        List<QueryParam> queryParams = buildServiceIdAwareQueryParams(serviceId, uriInfo);
+
+        try {
+            Collection<Component> components = catalogService.listComponents(queryParams);
+            if (components != null) {
+                return WSUtils.respond(components, OK, SUCCESS);
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+
+        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, queryParams.toString());
+    }
+
+    /**
+     * List ALL components or the ones matching specific query params.
+     */
+    @GET
+    @Path("/clusters/name/{clusterName}/services/name/{serviceName}/components")
+    @Timed
+    public Response listComponentsByName(@PathParam("clusterName") String clusterName,
+        @PathParam("serviceName") String serviceName, @Context UriInfo uriInfo) {
+        Cluster cluster = catalogService.getClusterByName(clusterName);
+        if (cluster == null) {
+            return WSUtils.respond(NOT_FOUND, ENTITY_BY_NAME_NOT_FOUND, "cluster name " + clusterName);
+        }
+
+        Service service = catalogService.getServiceByName(cluster.getId(), serviceName);
+        if (service == null) {
+            return WSUtils.respond(NOT_FOUND, ENTITY_BY_NAME_NOT_FOUND, "service name " + serviceName);
+        }
+
+        List<QueryParam> queryParams = buildServiceIdAwareQueryParams(service.getId(), uriInfo);
 
         try {
             Collection<Component> components = catalogService.listComponents(queryParams);
@@ -63,53 +100,98 @@ public class ComponentCatalogResource {
     }
 
     @GET
-    @Path("/{id}")
+    @Path("/services/{serviceId}/components/{id}")
     @Timed
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getComponentById(@PathParam("clusterId") Long clusterId, @PathParam("id") Long componentId) {
+    public Response getComponentById(@PathParam("serviceId") Long serviceId, @PathParam("id") Long componentId) {
         try {
             Component component = catalogService.getComponent(componentId);
-            if (component != null && component.getClusterId().equals(clusterId)) {
+            if (component != null) {
+                if (component.getServiceId() == null || !component.getServiceId().equals(serviceId)) {
+                    return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, "service: " + serviceId.toString());
+                }
                 return WSUtils.respond(component, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, buildMessageForCompositeId(clusterId, componentId));
+        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, buildMessageForCompositeId(serviceId, componentId));
+    }
+
+    @GET
+    @Path("/clusters/name/{clusterName}/services/name/{serviceName}/components/name/{componentName}")
+    @Timed
+    public Response getComponentByName(@PathParam("clusterName") String clusterName,
+        @PathParam("serviceName") String serviceName, @PathParam("componentName") String componentName) {
+        Cluster cluster = catalogService.getClusterByName(clusterName);
+        if (cluster == null) {
+            return WSUtils.respond(NOT_FOUND, ENTITY_BY_NAME_NOT_FOUND, "cluster name " + clusterName);
+        }
+
+        Service service = catalogService.getServiceByName(cluster.getId(), serviceName);
+        if (service == null) {
+            return WSUtils.respond(NOT_FOUND, ENTITY_BY_NAME_NOT_FOUND, "service name " + serviceName);
+        }
+
+        try {
+            Component component = catalogService.getComponentByName(service.getId(), componentName);
+            if (component != null) {
+                return WSUtils.respond(component, OK, SUCCESS);
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, buildMessageForCompositeName(clusterName, serviceName, componentName));
     }
 
     @POST
+    @Path("/services/{serviceId}/components")
     @Timed
-    public Response addComponents(@PathParam("clusterId") Long clusterId, List<Component> components) {
+    public Response addComponent(@PathParam("serviceId") Long serviceId, Component component) {
+        // overwrite service id to given path param
+        component.setServiceId(serviceId);
+
         try {
-            List<Component> createdComponents = new ArrayList<>();
-            for (Component component : components) {
-                Component createdComponent = catalogService.addComponent(clusterId, component);
-                createdComponents.add(createdComponent);
+            Service service = catalogService.getService(serviceId);
+            if (service == null) {
+                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, "service: " + serviceId.toString());
             }
-            return WSUtils.respond(createdComponents, CREATED, SUCCESS);
+
+            String componentName = component.getName();
+            Component result = catalogService.getComponentByName(serviceId, componentName);
+            if (result != null) {
+                throw new AlreadyExistsException("Component entity already exists with service id " +
+                    serviceId + " and component name " + componentName);
+            }
+
+            Component createdComponent = catalogService.addComponent(component);
+            return WSUtils.respond(createdComponent, CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
     }
 
     @PUT
+    @Path("/services/{serviceId}/components")
     @Timed
-    public Response addOrUpdateComponents(@PathParam("clusterId") Long clusterId, List<Component> components) {
+    public Response addOrUpdateComponent(@PathParam("serviceId") Long serviceId, Component component) {
+        // overwrite service id to given path param
+        component.setServiceId(serviceId);
+
+        Service service = catalogService.getService(serviceId);
+        if (service == null) {
+            return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, "service: " + serviceId.toString());
+        }
+
         try {
-            List<Component> createdComponents = new ArrayList<>();
-            for (Component component : components) {
-                Component createdComponent = catalogService.addOrUpdateComponent(clusterId, component);
-                createdComponents.add(createdComponent);
-            }
-            return WSUtils.respond(createdComponents, CREATED, SUCCESS);
+            Component createdComponent = catalogService.addOrUpdateComponent(serviceId, component);
+            return WSUtils.respond(createdComponent, CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
     }
 
     @DELETE
-    @Path("/{id}")
+    @Path("/services/{serviceId}/components/{id}")
     @Timed
     public Response removeComponent(@PathParam("id") Long componentId) {
         try {
@@ -125,25 +207,24 @@ public class ComponentCatalogResource {
     }
 
     @PUT
-    @Path("/{id}")
+    @Path("/services/{serviceId}/components/{id}")
     @Timed
-    public Response addOrUpdateComponent(@PathParam("clusterId") Long clusterId,
+    public Response addOrUpdateComponent(@PathParam("serviceId") Long serviceId,
                                          @PathParam("id") Long componentId, Component component) {
+        // overwrite service id to given path param
+        component.setServiceId(serviceId);
+
         try {
-            Component newComponent = catalogService.addOrUpdateComponent(clusterId, componentId, component);
+            Component newComponent = catalogService.addOrUpdateComponent(serviceId, componentId, component);
             return WSUtils.respond(newComponent, OK, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
     }
 
-    private List<QueryParam> buildClusterIdAwareQueryParams(Long clusterId) {
-        return buildClusterIdAwareQueryParams(clusterId, null);
-    }
-
-    private List<QueryParam> buildClusterIdAwareQueryParams(Long clusterId, UriInfo uriInfo) {
+    private List<QueryParam> buildServiceIdAwareQueryParams(Long serviceId, UriInfo uriInfo) {
         List<QueryParam> queryParams = new ArrayList<>();
-        queryParams.add(new QueryParam("clusterId", clusterId.toString()));
+        queryParams.add(new QueryParam("serviceId", serviceId.toString()));
         if (uriInfo != null) {
             MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
             if (!params.isEmpty()) {
@@ -154,9 +235,15 @@ public class ComponentCatalogResource {
         return queryParams;
     }
 
-    private String buildMessageForCompositeId(@PathParam("clusterId") Long clusterId, @PathParam("id") Long componentId) {
-        return String.format("cluster id <%d>, id <%d>",
-                clusterId, componentId);
+    private String buildMessageForCompositeId(Long serviceId, Long componentId) {
+        return String.format("service id <%d>, component id <%d>",
+                serviceId, componentId);
+    }
+
+    private String buildMessageForCompositeName(String clusterName, String serviceName,
+        String componentName) {
+        return String.format("cluster name <%s>, service name <%s>, component name <%s>",
+            clusterName, serviceName, componentName);
     }
 
 }

@@ -78,7 +78,6 @@ public class NotifierInfoCatalogResource {
     @GET
     @Path("/notifiers/{id}")
     @Timed
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getNotifierById(@PathParam("id") Long id) {
         try {
             NotifierInfo result = catalogService.getNotifierInfo(id);

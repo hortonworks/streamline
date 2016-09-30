@@ -73,7 +73,6 @@ public class FeedCatalogResource {
     @GET
     @Path("/feeds/{id}")
     @Timed
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getDataFeedById(@PathParam("id") Long dataFeedId) {
         try {
             DataFeed result = catalogService.getDataFeed(dataFeedId);
@@ -89,7 +88,6 @@ public class FeedCatalogResource {
     @GET
     @Path("/feeds/{id}/schema")
     @Timed
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getParserSchemaForDatafeed(@PathParam("id") Long dataFeedId) {
         try {
             DataFeed dataFeed = catalogService.getDataFeed(dataFeedId);

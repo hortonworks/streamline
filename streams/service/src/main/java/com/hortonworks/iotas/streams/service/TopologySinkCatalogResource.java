@@ -127,7 +127,6 @@ public class TopologySinkCatalogResource {
     @GET
     @Path("/{id}")
     @Timed
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getTopologySinkById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sinkId) {
         try {
             TopologySink sink = catalogService.getTopologySink(sinkId);

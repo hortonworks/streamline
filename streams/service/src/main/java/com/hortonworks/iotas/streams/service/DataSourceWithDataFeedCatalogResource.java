@@ -122,7 +122,6 @@ public class DataSourceWithDataFeedCatalogResource {
     @GET
     @Path("/datasources/{id}")
     @Timed
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getDataSourceWithDataFeedById(@PathParam("id") Long dataSourceId) {
         try {
             DataSourceDto dataSource = dataSourceFacade.getDataSource(dataSourceId);

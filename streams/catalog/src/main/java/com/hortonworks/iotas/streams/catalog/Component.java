@@ -6,27 +6,25 @@ import com.hortonworks.iotas.storage.PrimaryKey;
 import com.hortonworks.iotas.storage.catalog.AbstractStorable;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+/**
+ * Component represents an indivial component of Service. For example, NIMBUS, BROKER, etc.
+ */
 public class Component extends AbstractStorable {
-    private static final String NAMESPACE = "component";
-
-    /**
-     * The component types
-     * to ensure that we are dealing with known types
-     */
-    public enum ComponentType {
-        NIMBUS, SUPERVISOR, UI, ZOOKEEPER, BROKER, NAMENODE, DATANODE
-    }
+    private static final String NAMESPACE = "components";
 
     private Long id;
-    private Long clusterId;
+    private Long serviceId;
     private String name;
-    private ComponentType type;
-    private String description = "";
-    private String config = "";
-    private String hosts;
-    private int port;
+    private List<String> hosts;
+
+    // The protocol for communicating with this port.
+    // Its representation is up to component.
+    // For example. protocols for KAFKA are PLAINTEXT, SSL, etc.
+    private String protocol;
+    private Integer port;
     private Long timestamp;
 
     /**
@@ -41,14 +39,14 @@ public class Component extends AbstractStorable {
     }
 
     /**
-     * The foreign key reference to the cluster id.
+     * The foreign key reference to the service id.
      */
-    public Long getClusterId() {
-        return clusterId;
+    public Long getServiceId() {
+        return serviceId;
     }
 
-    public void setClusterId(Long clusterId) {
-        this.clusterId = clusterId;
+    public void setServiceId(Long serviceId) {
+        this.serviceId = serviceId;
     }
 
     /**
@@ -63,57 +61,35 @@ public class Component extends AbstractStorable {
     }
 
     /**
-     * The type of the component (Nimbus, Broker etc).
-     */
-    public ComponentType getType() {
-        return type;
-    }
-
-    public void setType(ComponentType type) {
-        this.type = type;
-    }
-
-    /**
-     * Component description.
-     */
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    /**
-     * Component specific config.
-     */
-    public String getConfig() {
-        return config;
-    }
-
-    public void setConfig(String config) {
-        this.config = config;
-    }
-
-    /**
      * The set of hosts where the component runs.
      */
-    public String getHosts() {
+    public List<String> getHosts() {
         return hosts;
     }
 
-    public void setHosts(String hosts) {
+    public void setHosts(List<String> hosts) {
         this.hosts = hosts;
     }
 
     /**
-     * The port where the component listens.
+     * The protocol where the component communicates. (optional)
      */
-    public int getPort() {
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
+
+    /**
+     * The port where the component listens. (optional)
+     */
+    public Integer getPort() {
         return port;
     }
 
-    public void setPort(int port) {
+    public void setPort(Integer port) {
         this.port = port;
     }
 
@@ -144,43 +120,46 @@ public class Component extends AbstractStorable {
 
         Component component = (Component) o;
 
-        if (port != component.port) return false;
-        if (id != null ? !id.equals(component.id) : component.id != null) return false;
-        if (clusterId != null ? !clusterId.equals(component.clusterId) : component.clusterId != null) return false;
-        if (name != null ? !name.equals(component.name) : component.name != null) return false;
-        if (type != component.type) return false;
-        if (description != null ? !description.equals(component.description) : component.description != null)
+        if (getId() != null ? !getId().equals(component.getId()) : component.getId() != null)
             return false;
-        if (config != null ? !config.equals(component.config) : component.config != null) return false;
-        return !(hosts != null ? !hosts.equals(component.hosts) : component.hosts != null);
+        if (getServiceId() != null ?
+            !getServiceId().equals(component.getServiceId()) :
+            component.getServiceId() != null) return false;
+        if (getName() != null ?
+            !getName().equals(component.getName()) :
+            component.getName() != null) return false;
+        if (getHosts() != null ?
+            !getHosts().equals(component.getHosts()) :
+            component.getHosts() != null) return false;
+        if (getPort() != null ?
+            !getPort().equals(component.getPort()) :
+            component.getPort() != null) return false;
+        return getTimestamp() != null ?
+            getTimestamp().equals(component.getTimestamp()) :
+            component.getTimestamp() == null;
 
     }
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (clusterId != null ? clusterId.hashCode() : 0);
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (type != null ? type.hashCode() : 0);
-        result = 31 * result + (description != null ? description.hashCode() : 0);
-        result = 31 * result + (config != null ? config.hashCode() : 0);
-        result = 31 * result + (hosts != null ? hosts.hashCode() : 0);
-        result = 31 * result + port;
+        int result = getId() != null ? getId().hashCode() : 0;
+        result = 31 * result + (getServiceId() != null ? getServiceId().hashCode() : 0);
+        result = 31 * result + (getName() != null ? getName().hashCode() : 0);
+        result = 31 * result + (getHosts() != null ? getHosts().hashCode() : 0);
+        result = 31 * result + (getPort() != null ? getPort().hashCode() : 0);
+        result = 31 * result + (getTimestamp() != null ? getTimestamp().hashCode() : 0);
         return result;
     }
 
     @Override
     public String toString() {
         return "Component{" +
-                "id=" + id +
-                ", clusterId=" + clusterId +
-                ", name='" + name + '\'' +
-                ", type=" + type +
-                ", description='" + description + '\'' +
-                ", config='" + config + '\'' +
-                ", hosts='" + hosts + '\'' +
-                ", port=" + port +
-                ", timestamp=" + timestamp +
-                '}';
+            "id=" + id +
+            ", serviceId=" + serviceId +
+            ", name='" + name + '\'' +
+            ", hosts=" + hosts +
+            ", port=" + port +
+            ", timestamp=" + timestamp +
+            '}';
     }
 }

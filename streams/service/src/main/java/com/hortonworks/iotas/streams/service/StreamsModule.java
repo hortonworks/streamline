@@ -112,8 +112,12 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
 
     private List<Object> getClusterRelatedResources (StreamCatalogService streamcatalogService) {
         List<Object> result = new ArrayList<>();
-        final ClusterCatalogResource clusterCatalogResource = new ClusterCatalogResource(streamcatalogService, fileStorage);
+        final ClusterCatalogResource clusterCatalogResource = new ClusterCatalogResource(streamcatalogService);
         result.add(clusterCatalogResource);
+        final ServiceCatalogResource serviceCatalogResource = new ServiceCatalogResource(streamcatalogService);
+        result.add(serviceCatalogResource);
+        final ServiceConfigurationCatalogResource serviceConfigurationCatalogResource = new ServiceConfigurationCatalogResource(streamcatalogService);
+        result.add(serviceConfigurationCatalogResource);
         final ComponentCatalogResource componentCatalogResource = new ComponentCatalogResource(streamcatalogService);
         result.add(componentCatalogResource);
         return result;

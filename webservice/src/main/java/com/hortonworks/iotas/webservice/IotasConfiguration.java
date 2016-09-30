@@ -39,6 +39,8 @@ public class IotasConfiguration extends Configuration {
     @NotNull
     private StorageProviderConfiguration storageProviderConfiguration;
 
+    private TimeSeriesDBConfiguration timeSeriesDBConfiguration;
+
     @JsonProperty
     public StorageProviderConfiguration getStorageProviderConfiguration() {
         return storageProviderConfiguration;
@@ -49,8 +51,6 @@ public class IotasConfiguration extends Configuration {
         this.storageProviderConfiguration = storageProviderConfiguration;
     }
 
-
-    private TimeSeriesDBConfiguration timeSeriesDBConfiguration;
 
     public String getCatalogRootUrl () {
         return catalogRootUrl;
