@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.hortonworks.iotas.webservice;
+package com.hortonworks.streams.webservice;
 
 import java.util.Map;
 

@@ -1,4 +1,4 @@
-package com.hortonworks.iotas.webservice;
+package com.hortonworks.streams.webservice;
 
 import java.util.Map;
 

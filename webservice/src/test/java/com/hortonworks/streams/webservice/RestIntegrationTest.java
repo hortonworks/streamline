@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.hortonworks.iotas.webservice;
+package com.hortonworks.streams.webservice;
 
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -93,7 +93,7 @@ public class RestIntegrationTest {
      * See https://dropwizard.github.io/dropwizard/manual/testing.html#integration-testing
      */
     @ClassRule
-    public static final DropwizardAppRule<IotasConfiguration> RULE = new DropwizardAppRule<>(IotasApplication.class, ResourceHelpers.resourceFilePath("iotas-test.yaml"));
+    public static final DropwizardAppRule<StreamsConfiguration> RULE = new DropwizardAppRule<>(StreamsApplication.class, ResourceHelpers.resourceFilePath("streams-test.yaml"));
 
     private String rootUrl = String.format("http://localhost:%d/api/v1/catalog/", RULE.getLocalPort());
     private final InputStream JAR_FILE_STREAM = new ByteArrayInputStream("some jar gibberish".getBytes());

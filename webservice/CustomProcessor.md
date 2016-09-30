@@ -166,7 +166,7 @@ was used to assign the property jarFileName in custom processor post/put.
 
 IoTaS also provides a way to drop and upload custom processors to the system so that they can be used
 in topology editor, just as if they were uploaded using a POST request using REST endpoint. For this,
-IoTaS server needs to be started with three configuration parameters set in iotas.yaml. They are
+IoTaS server needs to be started with three configuration parameters set in streams.yaml. They are
 
 customProcessorWatchPath: "/tmp"
 

@@ -80,14 +80,14 @@
             $IOTAS_HOME/conf
         -->
         <file>
-            <source>${project.basedir}./webservice/conf/iotas-dev.yaml</source>
+            <source>${project.basedir}./webservice/conf/streams-dev.yaml</source>
             <outputDirectory>/conf</outputDirectory>
-            <destName>iotas-dev.yaml</destName>
+            <destName>streams-dev.yaml</destName>
         </file>
         <file>
-            <source>${project.basedir}./webservice/conf/iotas.yaml</source>
+            <source>${project.basedir}./webservice/conf/streams.yaml</source>
             <outputDirectory>/conf</outputDirectory>
-            <destName>iotas.yaml</destName>
+            <destName>streams.yaml</destName>
         </file>
         <file>
             <source>${project.basedir}./simulator/src/main/resources/nest-iotas-messages</source>
@@ -95,9 +95,9 @@
             <destName>nest-iotas-messages</destName>
         </file>
         <file>
-            <source>${project.basedir}./webservice/conf/iotas-env.sh</source>
+            <source>${project.basedir}./webservice/conf/streams-env.sh</source>
             <outputDirectory>/conf</outputDirectory>
-            <destName>iotas-env.sh</destName>
+            <destName>streams-env.sh</destName>
         </file>
         <file>
             <source>${project.basedir}/LICENSE</source>

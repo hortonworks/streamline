@@ -34,7 +34,7 @@ fi
 [ -z $MAX_WAIT_TIME ] && MAX_WAIT_TIME=120
 
 # Iotas env script
-. $IOTAS_HOME/conf/iotas-env.sh
+. $IOTAS_HOME/conf/streams-env.sh
 
 #Iotas PID
 PID=0
@@ -49,7 +49,7 @@ IOTAS_LAUNCH_COMMAND=$1
 #App name
 APP_NAME=iotas
 
-IOTAS_START_CMD="$IOTAS_HOME/bin/iotas-server-start.sh $IOTAS_HOME/conf/iotas.yaml"
+IOTAS_START_CMD="$IOTAS_HOME/bin/iotas-server-start.sh $IOTAS_HOME/conf/streams.yaml"
 
 #Name of PID file
 [ -z $PID_DIR ] && PID_DIR="/var/run/$APP_NAME"
