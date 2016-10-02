@@ -19,6 +19,7 @@
 package com.hortonworks.iotas.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.common.Schema;
@@ -34,10 +35,12 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A rule as represented in the UI layout
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class RuleInfo extends AbstractStorable {
     public static final String NAMESPACE = "ruleinfos";
 
@@ -45,6 +48,8 @@ public class RuleInfo extends AbstractStorable {
     public static final String TOPOLOGY_ID = "topologyId";
     public static final String NAME = "name";
     public static final String DESCRIPTION = "description";
+    public static final String STREAMS = "streams";
+    public static final String CONDITION = "condition";
     public static final String SQL = "sql";
     public static final String PARSED_RULE_STR = "parsedRuleStr";
     public static final String WINDOW = "window";
@@ -54,6 +59,14 @@ public class RuleInfo extends AbstractStorable {
     private Long topologyId;
     private String name;
     private String description;
+    /*
+     * A rule info object can have either
+     * 1. the full sql string or
+     * 2. the streams and condition string, in which case
+     *    its translated into a select * from <stream> where <condition>
+     */
+    private List<String> streams;
+    private String condition;
     private String sql;
     private String parsedRuleStr;
     private Window window;
@@ -117,6 +130,22 @@ public class RuleInfo extends AbstractStorable {
         this.topologyId = topologyId;
     }
 
+    public String getCondition() {
+        return condition;
+    }
+
+    public void setCondition(String condition) {
+        this.condition = condition;
+    }
+
+    public List<String> getStreams() {
+        return streams;
+    }
+
+    public void setStreams(List<String> streams) {
+        this.streams = streams;
+    }
+
     @JsonIgnore
     public String getParsedRuleStr() {
         return parsedRuleStr;
@@ -157,6 +186,8 @@ public class RuleInfo extends AbstractStorable {
                 Schema.Field.of(TOPOLOGY_ID, Schema.Type.LONG),
                 Schema.Field.of(NAME, Schema.Type.STRING),
                 Schema.Field.of(DESCRIPTION, Schema.Type.STRING),
+                Schema.Field.of(STREAMS, Schema.Type.STRING),
+                Schema.Field.of(CONDITION, Schema.Type.STRING),
                 Schema.Field.of(SQL, Schema.Type.STRING),
                 Schema.Field.of(PARSED_RULE_STR, Schema.Type.STRING),
                 Schema.Field.of(WINDOW, Schema.Type.STRING),
@@ -169,6 +200,7 @@ public class RuleInfo extends AbstractStorable {
         ObjectMapper mapper = new ObjectMapper();
         Map<String, Object> map = super.toMap();
         try {
+            map.put(STREAMS, streams != null ? mapper.writeValueAsString(streams) : "");
             map.put(WINDOW, window != null ? mapper.writeValueAsString(window) : "");
             map.put(ACTIONS, actions != null ? mapper.writerFor(new TypeReference<List<Action>>() {
             }).writeValueAsString(actions) : "");
@@ -188,6 +220,12 @@ public class RuleInfo extends AbstractStorable {
         setParsedRuleStr((String) map.get(PARSED_RULE_STR));
         try {
             ObjectMapper mapper = new ObjectMapper();
+            String streamsStr = (String) map.get(STREAMS);
+            if (!StringUtils.isEmpty(streamsStr)) {
+                List<String> streams = mapper.readValue(streamsStr, new TypeReference<Set<String>>() {
+                });
+                setStreams(streams);
+            }
             String windowStr = (String) map.get(WINDOW);
             if (!StringUtils.isEmpty(windowStr)) {
                 Window window = mapper.readValue(windowStr, Window.class);
@@ -231,10 +269,12 @@ public class RuleInfo extends AbstractStorable {
                 ", topologyId=" + topologyId +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
+                ", streams=" + streams +
+                ", condition=" + condition +
                 ", sql='" + sql + '\'' +
                 ", parsedRuleStr='" + parsedRuleStr + '\'' +
                 ", window=" + window +
                 ", actions=" + actions +
-                '}';
+                "}";
     }
 }

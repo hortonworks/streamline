@@ -278,6 +278,41 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
 echo $out
 windowruleid=$(getId $out)
 
+#--
+# Create a rule by directly specifying the condition and input stream
+# --
+echo -e "\n------"
+out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache" -d '{
+    "name": "rule1",
+    "description": "rule test",
+    "streams": ["parsedTuplesStream"],
+    "condition": "humidity < 10",
+    "actions": [
+      {
+        "name": "hbasesink",
+        "outputStreams": ["sink-stream"],
+        "__type": "com.hortonworks.iotas.streams.layout.component.rule.action.TransformAction"
+      },
+      {
+        "name": "hdfssink",
+        "outputStreams": ["sink-stream"],
+        "__type": "com.hortonworks.iotas.streams.layout.component.rule.action.TransformAction"
+      },
+      {
+        "name": "notificationsink",
+        "outputFieldsAndDefaults": {
+          "body": "rule_1 fired"
+         },
+        "outputStreams": ["sink-stream"],
+         "notifierName": "email_notifier",
+          "__type": "com.hortonworks.iotas.streams.layout.component.rule.action.NotifierAction"
+       }
+    ]
+}' "${catalogurl}/topologies/$topologyid/rules")
+
+echo "$out"
+rulid2=$(getId $out)
+
 # --
 # Create Rule processor
 # --
@@ -286,7 +321,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
     "name": "RuleProcessor",
     "config": {
         "properties": {
-            "rules": ['$ruleid','$windowruleid']
+            "rules": ['$ruleid','$windowruleid','$rulid2']
         }
     },
     "type": "RULE",

@@ -157,7 +157,7 @@ public class RuleParser {
     private GroupBy parseGroupBy(SqlSelect sqlSelect) {
         GroupBy groupBy = null;
         SqlNodeList sqlGroupBy = sqlSelect.getGroup();
-        if (groupBy != null) {
+        if (sqlGroupBy != null) {
             ExpressionGenerator exprGenerator = new ExpressionGenerator(streams, udfs);
             ExpressionList exprList = (ExpressionList) sqlGroupBy.accept(exprGenerator);
             groupBy = new GroupBy(exprList.getExpressions());
