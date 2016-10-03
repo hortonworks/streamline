@@ -10,6 +10,8 @@ import com.hortonworks.iotas.streams.catalog.RuleInfo;
 import com.hortonworks.iotas.streams.catalog.WindowDto;
 import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.ws.rs.DELETE;
@@ -45,6 +47,8 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Path("/api/v1/catalog/topologies/{topologyId}/windows")
 @Produces(MediaType.APPLICATION_JSON)
 public class WindowCatalogResource {
+    private static final Logger LOG = LoggerFactory.getLogger(WindowCatalogResource.class);
+
     private final StreamCatalogService catalogService;
 
     public WindowCatalogResource(StreamCatalogService catalogService) {
@@ -69,6 +73,7 @@ public class WindowCatalogResource {
                 return WSUtils.respond(OK, SUCCESS, windowDtos);
             }
         } catch (Exception ex) {
+            LOG.error("Got exception", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, queryParams.toString());
@@ -85,6 +90,7 @@ public class WindowCatalogResource {
                 return WSUtils.respond(OK, SUCCESS, new WindowDto(ruleInfo));
             }
         } catch (Exception ex) {
+            LOG.error("Got exception", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, buildMessageForCompositeId(topologyId, windowId));
@@ -97,6 +103,7 @@ public class WindowCatalogResource {
             RuleInfo createdRuleInfo = catalogService.addRule(topologyId, getRuleInfo(windowDto));
             return WSUtils.respond(CREATED, SUCCESS, new WindowDto(createdRuleInfo));
         } catch (Exception ex) {
+            LOG.error("Got exception", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
     }
@@ -110,6 +117,7 @@ public class WindowCatalogResource {
             RuleInfo createdRuleInfo = catalogService.addOrUpdateRule(topologyId, ruleId, getRuleInfo(windowDto));
             return WSUtils.respond(CREATED, SUCCESS, new WindowDto(createdRuleInfo));
         } catch (Exception ex) {
+            LOG.error("Got exception", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
     }
@@ -129,6 +137,7 @@ public class WindowCatalogResource {
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, windowId.toString());
             }
         } catch (Exception ex) {
+            LOG.error("Got exception", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
     }
