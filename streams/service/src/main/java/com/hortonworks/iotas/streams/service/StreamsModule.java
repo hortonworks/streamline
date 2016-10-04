@@ -1,6 +1,10 @@
 package com.hortonworks.iotas.streams.service;
 
-import com.hortonworks.iotas.common.*;
+import com.hortonworks.iotas.common.Constants;
+import com.hortonworks.iotas.common.FileEventHandler;
+import com.hortonworks.iotas.common.FileWatcher;
+import com.hortonworks.iotas.common.ModuleRegistration;
+import com.hortonworks.iotas.common.TimeSeriesDBConfiguration;
 import com.hortonworks.iotas.common.util.FileStorage;
 import com.hortonworks.iotas.common.util.ReflectionHelper;
 import com.hortonworks.iotas.registries.parser.client.ParserClient;

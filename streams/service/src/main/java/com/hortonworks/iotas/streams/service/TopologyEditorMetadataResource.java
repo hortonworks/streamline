@@ -5,13 +5,24 @@ import com.hortonworks.iotas.common.util.WSUtils;
 import com.hortonworks.iotas.streams.catalog.TopologyEditorMetadata;
 import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
 
-import javax.ws.rs.*;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Collection;
 
-import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.*;
-import static javax.ws.rs.core.Response.Status.*;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
+import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static javax.ws.rs.core.Response.Status.OK;
 
 @Path("/api/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)

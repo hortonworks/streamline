@@ -27,17 +27,32 @@ import com.hortonworks.iotas.streams.catalog.StreamInfo;
 import com.hortonworks.iotas.streams.catalog.UDFInfo;
 import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.iotas.streams.layout.component.Stream;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.*;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Condition;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.ExpressionList;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.GroupBy;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Having;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Projection;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Udf;
 import com.hortonworks.iotas.streams.layout.component.rule.sql.ExpressionGenerator;
 import org.apache.calcite.schema.SchemaPlus;
-import org.apache.calcite.sql.*;
+import org.apache.calcite.sql.SqlIdentifier;
+import org.apache.calcite.sql.SqlJoin;
+import org.apache.calcite.sql.SqlNode;
+import org.apache.calcite.sql.SqlNodeList;
+import org.apache.calcite.sql.SqlSelect;
 import org.apache.calcite.tools.FrameworkConfig;
 import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.tools.Planner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression.STAR;
 

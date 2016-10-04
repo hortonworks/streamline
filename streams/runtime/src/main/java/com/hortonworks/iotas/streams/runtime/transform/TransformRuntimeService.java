@@ -19,7 +19,11 @@
 package com.hortonworks.iotas.streams.runtime.transform;
 
 import com.hortonworks.iotas.streams.layout.Transform;
-import com.hortonworks.iotas.streams.layout.component.rule.action.transform.*;
+import com.hortonworks.iotas.streams.layout.component.rule.action.transform.AddHeaderTransform;
+import com.hortonworks.iotas.streams.layout.component.rule.action.transform.EnrichmentTransform;
+import com.hortonworks.iotas.streams.layout.component.rule.action.transform.MergeTransform;
+import com.hortonworks.iotas.streams.layout.component.rule.action.transform.ProjectionTransform;
+import com.hortonworks.iotas.streams.layout.component.rule.action.transform.SubstituteTransform;
 import com.hortonworks.iotas.streams.runtime.RuntimeService;
 import com.hortonworks.iotas.streams.runtime.TransformRuntime;
 import org.slf4j.Logger;

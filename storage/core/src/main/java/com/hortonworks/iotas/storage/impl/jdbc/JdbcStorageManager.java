@@ -20,7 +20,11 @@ package com.hortonworks.iotas.storage.impl.jdbc;
 
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.storage.*;
+import com.hortonworks.iotas.storage.PrimaryKey;
+import com.hortonworks.iotas.storage.Storable;
+import com.hortonworks.iotas.storage.StorableFactory;
+import com.hortonworks.iotas.storage.StorableKey;
+import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.exception.AlreadyExistsException;
 import com.hortonworks.iotas.storage.exception.IllegalQueryParameterException;
 import com.hortonworks.iotas.storage.exception.StorageException;
@@ -33,7 +37,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 //Use unique constraints on respective columns of a table for handling concurrent inserts etc.
 public class JdbcStorageManager implements StorageManager {
