@@ -1,0 +1,7 @@
+{
+  "hive.metastore.metrics.enabled": "false",
+  "hive.service.metrics.file.location": "/var/log/hive/hivemetastore-report.json",
+  "hive.service.metrics.hadoop2.component": "hivemetastore",
+  "hive.service.metrics.reporter": "JSON_FILE, JMX, HADOOP2",
+  "datanucleus.schema.autoCreateTables": "true"
+}

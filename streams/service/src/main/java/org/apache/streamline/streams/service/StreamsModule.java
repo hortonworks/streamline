@@ -23,6 +23,10 @@ import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
 import org.apache.streamline.streams.notification.service.NotificationServiceImpl;
 import org.apache.streamline.streams.notification.service.NotificationsResource;
 import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
+import org.apache.streamline.streams.service.metadata.HBaseMetadataResource;
+import org.apache.streamline.streams.service.metadata.HiveMetadataResource;
+import org.apache.streamline.streams.service.metadata.KafkaMetadataResource;
+import org.apache.streamline.streams.service.metadata.StormMetadataResource;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -67,6 +71,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         result.addAll(getNotificationsRelatedResources(streamcatalogService));
         result.add(new WindowCatalogResource(streamcatalogService));
         result.add(new SchemaResource(createSchemaRegistryClient()));
+        result.addAll(getServiceMetadataResources(streamcatalogService));
         watchFiles(streamcatalogService);
         return result;
     }
@@ -120,6 +125,19 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         result.add(serviceConfigurationCatalogResource);
         final ComponentCatalogResource componentCatalogResource = new ComponentCatalogResource(streamcatalogService);
         result.add(componentCatalogResource);
+        return result;
+    }
+
+    private List<Object> getServiceMetadataResources(StreamCatalogService streamcatalogService) {
+        final List<Object> result = new ArrayList<>();
+        final KafkaMetadataResource kafkaMetadataResource = new KafkaMetadataResource(streamcatalogService);
+        result.add(kafkaMetadataResource);
+        final StormMetadataResource stormMetadataResource = new StormMetadataResource(streamcatalogService);
+        result.add(stormMetadataResource);
+        final HiveMetadataResource hiveMetadataResource = new HiveMetadataResource(streamcatalogService);
+        result.add(hiveMetadataResource);
+        final HBaseMetadataResource hbaseMetadataResource = new HBaseMetadataResource(streamcatalogService);
+        result.add(hbaseMetadataResource);
         return result;
     }
 
