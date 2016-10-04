@@ -255,6 +255,11 @@ public class StreamCatalogService {
         return this.dao.get(new StorableKey(SERVICE_NAMESPACE, service.getPrimaryKey()));
     }
 
+    public Long getServiceIdByName(Long clusterId, String serviceName) {
+        final Service service = getServiceByName(clusterId, serviceName);
+        return service == null ? null : service.getId();
+    }
+
     public Service getServiceByName(Long clusterId, String serviceName) {
         Collection<Service> services = listServices(
             Lists.newArrayList(new QueryParam("clusterId", String.valueOf(clusterId)), new QueryParam("name", serviceName)));

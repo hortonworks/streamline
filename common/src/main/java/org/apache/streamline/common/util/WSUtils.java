@@ -77,14 +77,31 @@ public class WSUtils {
     public static List<QueryParam> buildTopologyIdAwareQueryParams(Long topologyId, UriInfo uriInfo) {
         List<QueryParam> queryParams = new ArrayList<>();
         queryParams.add(new QueryParam("topologyId", topologyId.toString()));
+        addQueryParams(uriInfo, queryParams);
+        return queryParams;
+    }
+
+    /**
+     * @param uriInfo {@link UriInfo} from where to extract query parameters
+     * @param queryParams {@link List<QueryParam>} to  where add the query parameters extracted from {@link UriInfo}
+     * @return the updated  {@link List<QueryParam>} passed in the queryParams parameter
+     * @throws NullPointerException if queryParams is null
+     */
+    public static List<QueryParam> addQueryParams(UriInfo uriInfo, List<QueryParam> queryParams) {
         if (uriInfo != null) {
             MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
             if (!params.isEmpty()) {
                 queryParams.addAll(WSUtils.buildQueryParameters(params));
             }
         }
-
         return queryParams;
+    }
+
+    /**
+     * @return A {@link List<QueryParam>} extracted from {@link UriInfo} or an empty list if no query parameters defined
+     */
+    public static List<QueryParam> buildQueryParams(UriInfo uriInfo) {
+        return addQueryParams(uriInfo, new ArrayList<QueryParam>());
     }
 
     public static StreamingOutput wrapWithStreamingOutput(final InputStream inputStream) {
