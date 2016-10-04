@@ -1,12 +1,13 @@
 package com.hortonworks.iotas.streams.notification.common;
 
+import com.hortonworks.iotas.streams.notification.Notification;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import com.hortonworks.iotas.streams.notification.Notification;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Created by aiyer on 9/24/15.

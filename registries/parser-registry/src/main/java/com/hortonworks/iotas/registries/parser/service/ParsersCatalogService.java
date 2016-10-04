@@ -1,13 +1,10 @@
 package com.hortonworks.iotas.registries.parser.service;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
 import com.google.common.io.ByteStreams;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.common.util.FileStorage;
 import com.hortonworks.iotas.common.util.FileUtil;
-import com.hortonworks.iotas.common.util.JarReader;
 import com.hortonworks.iotas.common.util.ProxyUtil;
 import com.hortonworks.iotas.registries.parser.Parser;
 import com.hortonworks.iotas.registries.parser.ParserInfo;
@@ -18,12 +15,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;

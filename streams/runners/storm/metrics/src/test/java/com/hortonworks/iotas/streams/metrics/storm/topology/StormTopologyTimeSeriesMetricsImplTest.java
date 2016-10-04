@@ -1,9 +1,9 @@
 package com.hortonworks.iotas.streams.metrics.storm.topology;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.iotas.streams.metrics.TimeSeriesQuerier;
-import com.hortonworks.iotas.streams.layout.component.TopologyLayout;
 import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
+import com.hortonworks.iotas.streams.layout.component.TopologyLayout;
+import com.hortonworks.iotas.streams.metrics.TimeSeriesQuerier;
 import mockit.Expectations;
 import mockit.Mocked;
 import org.junit.Before;

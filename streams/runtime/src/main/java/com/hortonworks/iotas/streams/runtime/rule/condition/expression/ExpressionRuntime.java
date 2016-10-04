@@ -19,9 +19,9 @@
 package com.hortonworks.iotas.streams.runtime.rule.condition.expression;
 
 import com.hortonworks.iotas.common.Schema.Field;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Condition;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.GroupBy;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.Having;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.Condition;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.Projection;
 
 import java.io.Serializable;

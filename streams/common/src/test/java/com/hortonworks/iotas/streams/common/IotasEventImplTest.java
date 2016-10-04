@@ -1,7 +1,6 @@
 package com.hortonworks.iotas.streams.common;
 
 import com.hortonworks.iotas.streams.IotasEvent;
-import com.hortonworks.iotas.streams.common.IotasEventImpl;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 

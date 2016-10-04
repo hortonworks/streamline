@@ -20,10 +20,10 @@ package com.hortonworks.iotas.streams.runtime.storm.bolt.rules;
 
 import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.common.IotasEventImpl;
+import com.hortonworks.iotas.streams.runtime.processor.RuleProcessorRuntime;
 import com.hortonworks.iotas.streams.runtime.rule.RulesDependenciesFactory;
 import com.hortonworks.iotas.streams.runtime.storm.layout.runtime.rule.topology.RuleProcessorMockBuilder;
 import com.hortonworks.iotas.streams.runtime.storm.layout.runtime.rule.topology.RulesTopologyTest;
-import com.hortonworks.iotas.streams.runtime.processor.RuleProcessorRuntime;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Tested;

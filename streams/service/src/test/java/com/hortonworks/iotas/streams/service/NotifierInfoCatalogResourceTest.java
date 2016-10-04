@@ -1,7 +1,7 @@
 package com.hortonworks.iotas.streams.service;
 
-import com.hortonworks.iotas.common.catalog.CatalogResponse;
 import com.hortonworks.iotas.common.QueryParam;
+import com.hortonworks.iotas.common.catalog.CatalogResponse;
 import com.hortonworks.iotas.streams.catalog.NotifierInfo;
 import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
 import mockit.Expectations;

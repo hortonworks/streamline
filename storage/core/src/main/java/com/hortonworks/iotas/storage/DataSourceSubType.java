@@ -1,8 +1,8 @@
 package com.hortonworks.iotas.storage;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.hortonworks.iotas.storage.catalog.AbstractStorable;
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.storage.catalog.AbstractStorable;
 
 import java.util.HashMap;
 import java.util.Map;

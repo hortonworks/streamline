@@ -18,12 +18,12 @@
  */
 package com.hortonworks.iotas.streams.runtime.splitjoin;
 
+import com.hortonworks.iotas.streams.IotasEvent;
+import com.hortonworks.iotas.streams.Result;
 import com.hortonworks.iotas.streams.layout.component.impl.splitjoin.SplitAction;
 import com.hortonworks.iotas.streams.layout.component.rule.action.Action;
 import com.hortonworks.iotas.streams.runtime.RuntimeService;
 import com.hortonworks.iotas.streams.runtime.rule.action.ActionRuntime;
-import com.hortonworks.iotas.streams.IotasEvent;
-import com.hortonworks.iotas.streams.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

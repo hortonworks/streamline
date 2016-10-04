@@ -18,13 +18,13 @@
  */
 package com.hortonworks.iotas.streams.runtime.splitjoin;
 
-import com.hortonworks.iotas.streams.catalog.CatalogRestClient;
 import com.hortonworks.iotas.common.Constants;
-import com.hortonworks.iotas.streams.runtime.rule.action.AbstractActionRuntime;
-import com.hortonworks.iotas.streams.runtime.rule.action.ActionRuntimeContext;
-import com.hortonworks.iotas.streams.layout.component.rule.action.Action;
 import com.hortonworks.iotas.common.util.ProxyUtil;
+import com.hortonworks.iotas.streams.catalog.CatalogRestClient;
+import com.hortonworks.iotas.streams.layout.component.rule.action.Action;
+import com.hortonworks.iotas.streams.runtime.rule.action.AbstractActionRuntime;
 import com.hortonworks.iotas.streams.runtime.rule.action.ActionRuntime;
+import com.hortonworks.iotas.streams.runtime.rule.action.ActionRuntimeContext;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

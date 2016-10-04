@@ -1,8 +1,8 @@
 package com.hortonworks.iotas.streams.runtime.storm.bolt.normalization;
 
+import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationProcessor;
 import com.hortonworks.iotas.streams.runtime.storm.layout.runtime.rule.topology.RulesTestSinkBolt;
 import com.hortonworks.iotas.streams.runtime.storm.layout.runtime.rule.topology.RulesTestSpout;
-import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationProcessor;
 import org.apache.storm.Config;
 import org.apache.storm.ILocalCluster;
 import org.apache.storm.LocalCluster;

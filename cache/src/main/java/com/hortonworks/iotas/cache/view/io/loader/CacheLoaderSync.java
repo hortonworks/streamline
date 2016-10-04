@@ -20,7 +20,6 @@ package com.hortonworks.iotas.cache.view.io.loader;
 
 import com.hortonworks.iotas.cache.Cache;
 import com.hortonworks.iotas.cache.view.datastore.DataStoreReader;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -25,11 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static com.hortonworks.iotas.streams.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_EVENT_IDS;
-import static com.hortonworks.iotas.streams.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_DATASOURCE_IDS;
-import static com.hortonworks.iotas.streams.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_RULE_ID;
-import static com.hortonworks.iotas.streams.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_NOTIFIER_NAME;
-import static com.hortonworks.iotas.streams.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_TIMESTAMP;
+import static com.hortonworks.iotas.streams.runtime.transform.AddHeaderTransformRuntime.*;
 
 /**
  * Adapts {@link IotasEvent} to {@link com.hortonworks.iotas.streams.notification.Notification}

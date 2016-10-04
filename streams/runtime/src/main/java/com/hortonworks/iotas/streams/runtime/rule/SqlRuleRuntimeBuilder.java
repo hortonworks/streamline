@@ -18,12 +18,12 @@
 
 package com.hortonworks.iotas.streams.runtime.rule;
 
-import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.streams.IotasEvent;
+import com.hortonworks.iotas.streams.layout.component.rule.Rule;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.Expression;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.GroupBy;
-import com.hortonworks.iotas.streams.layout.component.rule.Rule;
 import com.hortonworks.iotas.streams.runtime.rule.condition.expression.StormSqlExpression;
 import com.hortonworks.iotas.streams.runtime.rule.sql.SqlEngine;
 import com.hortonworks.iotas.streams.runtime.rule.sql.SqlScript;

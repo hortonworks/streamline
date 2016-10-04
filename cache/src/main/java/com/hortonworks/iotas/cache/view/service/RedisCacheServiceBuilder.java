@@ -19,11 +19,7 @@
 package com.hortonworks.iotas.cache.view.service;
 
 import com.hortonworks.iotas.cache.view.Factory;
-import com.hortonworks.iotas.cache.view.config.CacheConfig;
-import com.hortonworks.iotas.cache.view.config.ConnectionConfig;
-import com.hortonworks.iotas.cache.view.config.DataStoreConfig;
-import com.hortonworks.iotas.cache.view.config.ExpiryPolicy;
-import com.hortonworks.iotas.cache.view.config.TypeConfig;
+import com.hortonworks.iotas.cache.view.config.*;
 import com.hortonworks.iotas.cache.view.datastore.DataStoreReader;
 import com.hortonworks.iotas.cache.view.datastore.DataStoreWriter;
 import com.hortonworks.iotas.cache.view.datastore.phoenix.PhoenixDataStore;

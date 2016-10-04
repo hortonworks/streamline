@@ -19,6 +19,7 @@
 package com.hortonworks.iotas.storage.impl.jdbc;
 
 import com.google.common.cache.CacheBuilder;
+import com.hortonworks.iotas.common.test.IntegrationTest;
 import com.hortonworks.iotas.storage.AbstractStoreManagerTest;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableTest;
@@ -30,7 +31,6 @@ import com.hortonworks.iotas.storage.impl.jdbc.provider.mysql.query.MySqlQueryUt
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.query.SqlQuery;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
-import com.hortonworks.iotas.common.test.IntegrationTest;
 import org.h2.tools.RunScript;
 import org.junit.After;
 import org.junit.Assert;

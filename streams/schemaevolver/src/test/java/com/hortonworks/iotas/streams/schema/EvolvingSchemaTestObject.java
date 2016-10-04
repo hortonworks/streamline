@@ -1,7 +1,7 @@
 package com.hortonworks.iotas.streams.schema;
 
-import com.hortonworks.iotas.streams.common.IotasEventImpl;
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.streams.common.IotasEventImpl;
 import com.hortonworks.iotas.streams.layout.component.Stream;
 
 /**

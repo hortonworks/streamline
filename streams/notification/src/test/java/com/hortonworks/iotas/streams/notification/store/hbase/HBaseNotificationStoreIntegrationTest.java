@@ -21,30 +21,15 @@ package com.hortonworks.iotas.streams.notification.store.hbase;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.hortonworks.iotas.common.test.HBaseIntegrationTest;
 import com.hortonworks.iotas.streams.notification.Notification;
 import com.hortonworks.iotas.streams.notification.store.CriteriaImpl;
-import com.hortonworks.iotas.streams.notification.store.hbase.mappers.DatasourceNotificationMapper;
-import com.hortonworks.iotas.streams.notification.store.hbase.mappers.DatasourceStatusNotificationMapper;
-import com.hortonworks.iotas.streams.notification.store.hbase.mappers.NotificationMapper;
-import com.hortonworks.iotas.streams.notification.store.hbase.mappers.NotifierStatusNotificationMapper;
-import com.hortonworks.iotas.streams.notification.store.hbase.mappers.RuleNotificationMapper;
-import com.hortonworks.iotas.streams.notification.store.hbase.mappers.RuleStatusNotificationMapper;
-import com.hortonworks.iotas.streams.notification.store.hbase.mappers.TableMutation;
-import com.hortonworks.iotas.streams.notification.store.hbase.mappers.TimestampNotificationMapper;
+import com.hortonworks.iotas.streams.notification.store.hbase.mappers.*;
 import com.hortonworks.iotas.streams.notification.util.NotificationTestObjectFactory;
-import com.hortonworks.iotas.common.test.HBaseIntegrationTest;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.Admin;
-import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hbase.client.ConnectionFactory;
-import org.apache.hadoop.hbase.client.Delete;
-import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.client.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -59,9 +44,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @Category(HBaseIntegrationTest.class)
 public class HBaseNotificationStoreIntegrationTest {

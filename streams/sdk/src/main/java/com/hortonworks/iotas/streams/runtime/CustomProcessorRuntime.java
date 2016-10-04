@@ -1,7 +1,6 @@
 package com.hortonworks.iotas.streams.runtime;
 
 import com.hortonworks.iotas.streams.exception.ConfigException;
-import com.hortonworks.iotas.streams.runtime.ProcessorRuntime;
 
 import java.util.Map;
 

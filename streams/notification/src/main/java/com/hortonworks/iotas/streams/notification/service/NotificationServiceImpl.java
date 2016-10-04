@@ -18,15 +18,15 @@
 
 package com.hortonworks.iotas.streams.notification.service;
 
-import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.common.QueryParam;
+import com.hortonworks.iotas.common.util.ProxyUtil;
+import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.notification.Notification;
 import com.hortonworks.iotas.streams.notification.NotificationContext;
 import com.hortonworks.iotas.streams.notification.Notifier;
+import com.hortonworks.iotas.streams.notification.store.CriteriaImpl;
 import com.hortonworks.iotas.streams.notification.store.NotificationStore;
 import com.hortonworks.iotas.streams.notification.store.hbase.HBaseNotificationStore;
-import com.hortonworks.iotas.streams.notification.store.CriteriaImpl;
-import com.hortonworks.iotas.common.util.ProxyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

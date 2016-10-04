@@ -19,11 +19,11 @@
 
 package com.hortonworks.iotas.streams.runtime.rule;
 
+import com.hortonworks.iotas.streams.layout.component.rule.Rule;
+import com.hortonworks.iotas.streams.layout.component.rule.action.Action;
 import com.hortonworks.iotas.streams.runtime.rule.action.ActionRuntime;
 import com.hortonworks.iotas.streams.runtime.rule.action.ActionRuntimeContext;
 import com.hortonworks.iotas.streams.runtime.transform.ActionRuntimeService;
-import com.hortonworks.iotas.streams.layout.component.rule.Rule;
-import com.hortonworks.iotas.streams.layout.component.rule.action.Action;
 
 import java.util.ArrayList;
 import java.util.List;

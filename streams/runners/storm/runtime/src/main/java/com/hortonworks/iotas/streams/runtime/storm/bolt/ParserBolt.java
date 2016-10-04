@@ -19,15 +19,15 @@
 package com.hortonworks.iotas.streams.runtime.storm.bolt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hortonworks.iotas.common.Constants;
+import com.hortonworks.iotas.common.util.ProxyUtil;
 import com.hortonworks.iotas.registries.parser.Parser;
 import com.hortonworks.iotas.registries.parser.ParserInfo;
-import com.hortonworks.iotas.streams.catalog.DataSourceDto;
-import com.hortonworks.iotas.streams.catalog.CatalogRestClient;
-import com.hortonworks.iotas.common.Constants;
 import com.hortonworks.iotas.streams.IotasEvent;
+import com.hortonworks.iotas.streams.catalog.CatalogRestClient;
+import com.hortonworks.iotas.streams.catalog.DataSourceDto;
 import com.hortonworks.iotas.streams.common.IotasEventImpl;
 import com.hortonworks.iotas.streams.common.IotasMessage;
-import com.hortonworks.iotas.common.util.ProxyUtil;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.storm.task.OutputCollector;

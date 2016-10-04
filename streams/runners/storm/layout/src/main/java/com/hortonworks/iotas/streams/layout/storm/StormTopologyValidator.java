@@ -1,22 +1,17 @@
 package com.hortonworks.iotas.streams.layout.storm;
 
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.common.util.ReflectionHelper;
 import com.hortonworks.iotas.common.util.Utils;
 import com.hortonworks.iotas.streams.layout.ConfigFieldValidation;
 import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
-import com.hortonworks.iotas.common.util.ReflectionHelper;
 import com.hortonworks.iotas.streams.layout.exception.BadTopologyLayoutException;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A storm topology validator that takes a topology json created by the UI

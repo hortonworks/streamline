@@ -1,16 +1,16 @@
 package com.hortonworks.iotas.streams.catalog.storage;
 
+import com.hortonworks.iotas.common.test.HBaseIntegrationTest;
 import com.hortonworks.iotas.registries.parser.ParserInfo;
 import com.hortonworks.iotas.storage.StorableTest;
-import com.hortonworks.iotas.streams.catalog.DataFeed;
-import com.hortonworks.iotas.streams.catalog.DataSource;
-import com.hortonworks.iotas.common.test.HBaseIntegrationTest;
 import com.hortonworks.iotas.storage.exception.NonIncrementalColumnException;
 import com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManager;
 import com.hortonworks.iotas.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.iotas.storage.impl.jdbc.phoenix.PhoenixStorageManagerNoCacheIntegrationTest;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
+import com.hortonworks.iotas.streams.catalog.DataFeed;
+import com.hortonworks.iotas.streams.catalog.DataSource;
 import com.hortonworks.iotas.streams.catalog.service.CatalogService;
 import org.junit.Assert;
 import org.junit.Test;

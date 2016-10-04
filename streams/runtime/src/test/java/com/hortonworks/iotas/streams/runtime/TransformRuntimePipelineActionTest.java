@@ -19,14 +19,14 @@ package com.hortonworks.iotas.streams.runtime;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.hortonworks.iotas.streams.layout.component.rule.action.TransformAction;
-import com.hortonworks.iotas.streams.layout.component.rule.action.transform.MergeTransform;
-import com.hortonworks.iotas.streams.layout.component.rule.action.transform.SubstituteTransform;
-import com.hortonworks.iotas.streams.runtime.rule.action.ActionRuntime;
 import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.Result;
 import com.hortonworks.iotas.streams.common.IotasEventImpl;
+import com.hortonworks.iotas.streams.layout.component.rule.action.TransformAction;
+import com.hortonworks.iotas.streams.layout.component.rule.action.transform.MergeTransform;
 import com.hortonworks.iotas.streams.layout.component.rule.action.transform.ProjectionTransform;
+import com.hortonworks.iotas.streams.layout.component.rule.action.transform.SubstituteTransform;
+import com.hortonworks.iotas.streams.runtime.rule.action.ActionRuntime;
 import org.junit.Test;
 
 import java.util.ArrayList;

@@ -18,22 +18,16 @@
  */
 package com.hortonworks.iotas.streams.runtime.storm.layout.runtime.rule.topology;
 
-import com.hortonworks.iotas.streams.runtime.storm.bolt.rules.RulesBolt;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.streams.layout.component.ComponentBuilder;
 import com.hortonworks.iotas.streams.layout.Transform;
-import com.hortonworks.iotas.streams.runtime.rule.RulesDependenciesFactory;
+import com.hortonworks.iotas.streams.layout.component.ComponentBuilder;
 import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.streams.layout.component.impl.RulesProcessor;
-import com.hortonworks.iotas.streams.layout.component.impl.splitjoin.JoinAction;
-import com.hortonworks.iotas.streams.layout.component.impl.splitjoin.JoinProcessor;
-import com.hortonworks.iotas.streams.layout.component.impl.splitjoin.SplitAction;
-import com.hortonworks.iotas.streams.layout.component.impl.splitjoin.SplitProcessor;
-import com.hortonworks.iotas.streams.layout.component.impl.splitjoin.StageAction;
-import com.hortonworks.iotas.streams.layout.component.impl.splitjoin.StageProcessor;
+import com.hortonworks.iotas.streams.layout.component.impl.splitjoin.*;
 import com.hortonworks.iotas.streams.layout.component.rule.action.transform.EnrichmentTransform;
 import com.hortonworks.iotas.streams.layout.component.rule.action.transform.InmemoryTransformDataProvider;
-
+import com.hortonworks.iotas.streams.runtime.rule.RulesDependenciesFactory;
+import com.hortonworks.iotas.streams.runtime.storm.bolt.rules.RulesBolt;
 import org.apache.storm.Config;
 import org.apache.storm.ILocalCluster;
 import org.apache.storm.LocalCluster;

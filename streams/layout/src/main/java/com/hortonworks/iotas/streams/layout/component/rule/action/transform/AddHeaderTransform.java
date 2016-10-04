@@ -18,9 +18,9 @@
  */
 package com.hortonworks.iotas.streams.layout.component.rule.action.transform;
 
-import java.util.Map;
-
 import com.hortonworks.iotas.streams.layout.Transform;
+
+import java.util.Map;
 
 /**
  * Adds a fixed header to the input event

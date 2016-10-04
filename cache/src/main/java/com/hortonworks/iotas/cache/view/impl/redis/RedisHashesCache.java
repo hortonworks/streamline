@@ -19,11 +19,10 @@
 package com.hortonworks.iotas.cache.view.impl.redis;
 
 import com.hortonworks.iotas.cache.Cache;
+import com.hortonworks.iotas.cache.exception.CacheException;
 import com.hortonworks.iotas.cache.stats.CacheStats;
 import com.hortonworks.iotas.cache.view.config.ExpiryPolicy;
-import com.hortonworks.iotas.cache.exception.CacheException;
 import com.lambdaworks.redis.RedisConnection;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

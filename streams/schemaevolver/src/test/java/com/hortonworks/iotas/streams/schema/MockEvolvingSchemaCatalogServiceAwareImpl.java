@@ -2,10 +2,10 @@ package com.hortonworks.iotas.streams.schema;
 
 import com.google.common.collect.Sets;
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.streams.catalog.service.CatalogService;
 import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.streams.schema.exception.BadComponentConfigException;
-import com.hortonworks.iotas.streams.catalog.service.CatalogService;
 
 import java.util.Set;
 

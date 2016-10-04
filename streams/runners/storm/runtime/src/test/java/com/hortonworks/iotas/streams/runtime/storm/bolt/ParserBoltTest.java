@@ -2,15 +2,11 @@ package com.hortonworks.iotas.streams.runtime.storm.bolt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
+import com.hortonworks.iotas.common.Constants;
 import com.hortonworks.iotas.registries.parser.ParserInfo;
 import com.hortonworks.iotas.streams.catalog.CatalogRestClient;
-import com.hortonworks.iotas.common.Constants;
 import com.hortonworks.iotas.streams.common.IotasMessage;
-import mockit.Expectations;
-import mockit.Injectable;
-import mockit.Mocked;
-import mockit.Tested;
-import mockit.VerificationsInOrder;
+import mockit.*;
 import mockit.integration.junit4.JMockit;
 import org.apache.storm.Config;
 import org.apache.storm.task.OutputCollector;

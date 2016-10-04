@@ -19,8 +19,6 @@
 package com.hortonworks.iotas.streams.notification.service;
 
 import com.hortonworks.iotas.common.QueryParam;
-import com.hortonworks.iotas.streams.notification.service.NotificationService;
-import com.hortonworks.iotas.streams.notification.service.NotificationsResource;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;
@@ -32,10 +30,9 @@ import org.junit.runner.RunWith;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
-
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 @RunWith(JMockit.class)
 public class NotificationsResourceTest {

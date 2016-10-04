@@ -2,7 +2,6 @@ package com.hortonworks.iotas.streams.catalog.storage;
 
 import com.google.common.collect.Lists;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.storage.AbstractStoreManagerTest;
 import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.StorableTest;
 import com.hortonworks.iotas.streams.catalog.NotifierInfo;

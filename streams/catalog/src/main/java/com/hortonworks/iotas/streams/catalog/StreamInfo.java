@@ -23,14 +23,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.common.Schema.Field;
 import com.hortonworks.iotas.storage.PrimaryKey;
+import com.hortonworks.iotas.storage.catalog.AbstractStorable;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.hortonworks.iotas.common.Schema.Field;
-import com.hortonworks.iotas.storage.catalog.AbstractStorable;
 
 /**
  * Catalog db entity for mapping output stream information

@@ -18,8 +18,8 @@
  */
 package com.hortonworks.iotas.streams.layout.component.impl.splitjoin;
 
-import com.hortonworks.iotas.streams.layout.component.impl.Utils;
 import com.hortonworks.iotas.streams.layout.component.impl.RulesProcessor;
+import com.hortonworks.iotas.streams.layout.component.impl.Utils;
 
 import java.util.Collections;
 

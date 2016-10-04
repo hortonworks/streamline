@@ -20,23 +20,11 @@ package com.hortonworks.iotas.streams.runtime.rule.condition.expression;
 
 import com.google.common.base.Joiner;
 import com.hortonworks.iotas.common.Schema;
-
-import com.hortonworks.iotas.streams.layout.component.rule.expression.GroupBy;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.Having;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.Condition;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.Expression;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.ExpressionTranslator;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.FunctionExpression;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.Operator;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.Projection;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Represents the expression of this {@link Condition} in Storm SQL language syntax

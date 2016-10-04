@@ -19,17 +19,12 @@
 package com.hortonworks.iotas.streams.runtime.storm.bolt.normalization;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.common.IotasEventImpl;
-import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.streams.layout.component.impl.normalization.BulkNormalizationConfig;
-import com.hortonworks.iotas.streams.layout.component.impl.normalization.FieldBasedNormalizationConfig;
-import com.hortonworks.iotas.streams.layout.component.impl.normalization.FieldValueGenerator;
-import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationConfig;
-import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationProcessor;
 import com.hortonworks.iotas.streams.layout.component.Stream;
+import com.hortonworks.iotas.streams.layout.component.impl.normalization.*;
 import com.hortonworks.iotas.streams.runtime.normalization.NormalizationException;
-import com.hortonworks.iotas.streams.layout.component.impl.normalization.Transformer;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import mockit.Expectations;

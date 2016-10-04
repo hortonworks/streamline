@@ -1,13 +1,13 @@
 package com.hortonworks.iotas.streams.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.iotas.streams.common.IotasMessage;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  * Created by aiyer on 9/24/15.

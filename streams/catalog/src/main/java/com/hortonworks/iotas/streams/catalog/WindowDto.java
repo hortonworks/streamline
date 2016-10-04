@@ -6,7 +6,6 @@ import com.hortonworks.iotas.streams.layout.component.rule.expression.Window;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**

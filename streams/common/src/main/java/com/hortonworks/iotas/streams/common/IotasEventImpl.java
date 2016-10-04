@@ -1,11 +1,11 @@
 package com.hortonworks.iotas.streams.common;
 
+import com.hortonworks.iotas.streams.IotasEvent;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-
-import com.hortonworks.iotas.streams.IotasEvent;
 
 /**
  * A default implementation of IotasEvent.

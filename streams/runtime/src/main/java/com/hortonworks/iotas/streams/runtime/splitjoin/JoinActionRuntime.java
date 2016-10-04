@@ -20,19 +20,15 @@ package com.hortonworks.iotas.streams.runtime.splitjoin;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.hortonworks.iotas.streams.common.IotasEventImpl;
 import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.Result;
-import com.hortonworks.iotas.streams.runtime.RuntimeService;
-import com.hortonworks.iotas.streams.runtime.rule.action.ActionRuntime;
+import com.hortonworks.iotas.streams.common.IotasEventImpl;
 import com.hortonworks.iotas.streams.layout.component.impl.splitjoin.JoinAction;
 import com.hortonworks.iotas.streams.layout.component.rule.action.Action;
+import com.hortonworks.iotas.streams.runtime.RuntimeService;
+import com.hortonworks.iotas.streams.runtime.rule.action.ActionRuntime;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**

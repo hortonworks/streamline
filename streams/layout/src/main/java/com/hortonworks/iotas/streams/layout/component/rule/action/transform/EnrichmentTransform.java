@@ -18,11 +18,11 @@
  */
 package com.hortonworks.iotas.streams.layout.component.rule.action.transform;
 
+import com.hortonworks.iotas.streams.layout.Transform;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import com.hortonworks.iotas.streams.layout.Transform;
 
 /**
  * This class can be used to configure enrichment transform which can be used in any {@link com.hortonworks.iotas.streams.layout.component.rule.action.Action}

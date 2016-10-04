@@ -18,11 +18,11 @@
 
 package com.hortonworks.iotas.streams.notification.common;
 
+import com.hortonworks.iotas.streams.notification.Notification;
+
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import com.hortonworks.iotas.streams.notification.Notification;
 
 /**
  * A notification object that carries the necessary info from rule engine to the notifier
