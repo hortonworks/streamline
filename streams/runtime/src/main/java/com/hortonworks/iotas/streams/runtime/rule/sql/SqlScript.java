@@ -48,6 +48,7 @@ public class SqlScript<O> extends Script<IotasEvent, O, SqlEngine> {
     private ValuesConverter<O> valuesConverter;
     private final List<Schema.Field> fieldsToEmit;
     private final List<String> projectedFields;
+    private final List<String> outputFieldNames;
     public SqlScript(ExpressionRuntime expressionRuntime, ScriptEngine<SqlEngine> scriptEngine) {
         this(expressionRuntime, scriptEngine, null);
     }
@@ -62,6 +63,7 @@ public class SqlScript<O> extends Script<IotasEvent, O, SqlEngine> {
         ((SqlEngine)scriptEngine).compileQuery(createQuery((StormSqlExpression) expressionRuntime));
         fieldsToEmit = ((StormSqlExpression) expressionRuntime).getFieldsToEmit();
         projectedFields = ((StormSqlExpression) expressionRuntime).getProjectedFields();
+        outputFieldNames = ((StormSqlExpression) expressionRuntime).getOutputFieldNames();
     }
 
     public void setValuesConverter(ValuesConverter<O> valuesConverter) {
@@ -121,6 +123,10 @@ public class SqlScript<O> extends Script<IotasEvent, O, SqlEngine> {
 
     public List<String> getProjectedFields() {
         return projectedFields;
+    }
+
+    public List<String> getOutputFieldNames() {
+        return outputFieldNames;
     }
 
     public interface ValuesConverter<O> {

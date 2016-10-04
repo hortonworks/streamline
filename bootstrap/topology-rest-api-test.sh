@@ -313,6 +313,48 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
 echo "$out"
 rulid2=$(getId $out)
 
+#--
+# Create a windowed rule by directly specifying the input stream and groupby keys
+# --
+echo -e "\n------"
+out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache" -d '{
+    "name": "rule3",
+    "description": "windowed rule test",
+    "projections": [
+        {"name": "humidity"},
+        {"name": "temperature", "functionName": "max", "outputFieldName": "maxtemp"}
+    ],
+    "streams": ["parsedTuplesStream"],
+    "groupbykeys": ["humidity"],
+    "window": {
+        "windowLength": {
+          "class": ".Window$Duration",
+          "durationMs": 500
+        },
+        "slidingInterval": {
+          "class": ".Window$Duration",
+          "durationMs": 500
+        },
+        "tsField": null,
+        "lagMs": 0
+     },
+    "actions": [
+      {
+        "name": "hbasesink",
+        "outputStreams": ["sink-stream"],
+        "__type": "com.hortonworks.iotas.streams.layout.component.rule.action.TransformAction"
+      },
+      {
+        "name": "hdfssink",
+        "outputStreams": ["sink-stream"],
+        "__type": "com.hortonworks.iotas.streams.layout.component.rule.action.TransformAction"
+      }
+    ]
+}' "${catalogurl}/topologies/$topologyid/windows")
+
+echo "$out"
+rulid3=$(getId $out)
+
 # --
 # Create Rule processor
 # --
@@ -321,7 +363,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
     "name": "RuleProcessor",
     "config": {
         "properties": {
-            "rules": ['$ruleid','$windowruleid','$rulid2']
+            "rules": ['$ruleid','$windowruleid','$rulid2','$rulid3']
         }
     },
     "type": "RULE",

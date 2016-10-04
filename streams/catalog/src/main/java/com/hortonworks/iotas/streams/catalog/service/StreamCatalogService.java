@@ -23,9 +23,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+import com.google.common.base.Optional;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.hortonworks.iotas.common.util.FileStorage;
@@ -47,6 +49,7 @@ import com.hortonworks.iotas.streams.catalog.topology.component.TopologyDagBuild
 import com.hortonworks.iotas.streams.layout.component.TopologyActions;
 import com.hortonworks.iotas.streams.layout.component.TopologyLayout;
 import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Window;
 import com.hortonworks.iotas.streams.metrics.topology.TopologyMetrics;
 import com.hortonworks.iotas.streams.layout.component.InputComponent;
 import com.hortonworks.iotas.streams.layout.component.Stream;
@@ -1240,26 +1243,69 @@ public class StreamCatalogService {
         rule.setDescription(ruleInfo.getDescription());
         rule.setWindow(ruleInfo.getWindow());
         rule.setActions(ruleInfo.getActions());
-        if (ruleInfo.getCondition() != null) {
-            ruleInfo.setSql(getSqlString(ruleInfo.getStreams(), ruleInfo.getCondition()));
+        if (ruleInfo.getStreams() != null && !ruleInfo.getStreams().isEmpty()) {
+            ruleInfo.setSql(
+                    getSqlString(
+                            ruleInfo.getStreams(),
+                            ruleInfo.getProjections(),
+                            ruleInfo.getCondition(),
+                            ruleInfo.getGroupbykeys()));
+        } else if (StringUtils.isEmpty(ruleInfo.getSql())) {
+            throw new IllegalArgumentException("Either streams or sql string should be specified.");
         }
         parseSql(rule, ruleInfo);
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(rule);
     }
 
-    private String getSqlString(List<String> streams, String condition) {
-        String table;
+    private String getSqlString(List<String> streams,
+                                List<WindowDto.Projection> projections,
+                                String condition,
+                                List<String> groupByKeys) {
+        String SQL = select(projections).or("SELECT * ");
+        SQL += join(" FROM ", getTable(streams)).get();
+        SQL += join(" WHERE ", condition).or("");
+        SQL += join(" GROUP BY ", groupByKeys).or("");
+        return SQL;
+    }
+
+    private Optional<String> select(List<WindowDto.Projection> projections) {
+        if (projections != null) {
+            return join("SELECT ", Collections2.transform(projections, new Function<WindowDto.Projection, String>() {
+                @Override
+                public String apply(WindowDto.Projection input) {
+                    return input.toString();
+                }
+            }));
+        }
+        return Optional.absent();
+    }
+
+    private Optional<String> join(String keyword, String part) {
+        if (part != null) {
+            return join(keyword, Collections.singletonList(part));
+        }
+        return Optional.absent();
+    }
+
+    private Optional<String> join(String keyword, Collection<String> parts) {
+        if (parts != null && !parts.isEmpty()) {
+            return Optional.of(keyword + Joiner.on(",").join(parts));
+        }
+        return Optional.absent();
+    }
+
+    private String getTable(List<String> streams) {
         if (streams == null || streams.isEmpty()) {
             LOG.warn("Rule condition is specified without input stream, will use default stream");
-            table = IotasEvent.DEFAULT_SOURCE_STREAM;
+            return IotasEvent.DEFAULT_SOURCE_STREAM;
         } else if (streams.size() == 1) {
-            table = streams.iterator().next();
+            return streams.iterator().next();
         } else {
             throw new UnsupportedOperationException("Joining multiple streams");
         }
-        return "SELECT * FROM " + table + " WHERE " + condition;
     }
+
 
     private void parseSql(Rule rule, RuleInfo ruleInfo) {
         // parse

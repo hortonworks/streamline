@@ -2,6 +2,7 @@ package com.hortonworks.iotas.streams.layout.component.rule.expression;
 import com.hortonworks.iotas.common.Schema;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -12,6 +13,7 @@ public abstract class ExpressionTranslator implements ExpressionVisitor {
     private final List<Schema.Field> fields = new ArrayList<>();
     private final List<FunctionExpression.Function> functions = new ArrayList<>();
     private final List<FunctionExpression.Function> aggregateFunctions = new ArrayList<>();
+    private final List<String> aliases = new ArrayList<>();
 
     @Override
     public void visit(BinaryExpression binaryExpression) {
@@ -38,6 +40,11 @@ public abstract class ExpressionTranslator implements ExpressionVisitor {
         builder.append("['").append(mapFieldExpression.getKey()).append("']");
     }
 
+    @Override
+    public void visit(AsExpression asExpression) {
+        aliases.add(asExpression.getAlias());
+        asExpression.getExpression().accept(this);
+    }
 
     @Override
     public void visit(Literal literal) {
@@ -70,6 +77,10 @@ public abstract class ExpressionTranslator implements ExpressionVisitor {
 
     public List<FunctionExpression.Function> getAggregateFunctions() {
         return aggregateFunctions;
+    }
+
+    public List<String> getAliases() {
+        return Collections.unmodifiableList(aliases);
     }
 
     private void buildFunctionExpression(FunctionExpression functionExpression) {

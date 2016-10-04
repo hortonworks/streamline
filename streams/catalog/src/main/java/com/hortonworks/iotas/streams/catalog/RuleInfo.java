@@ -28,6 +28,7 @@ import com.hortonworks.iotas.storage.Storable;
 import com.hortonworks.iotas.storage.catalog.AbstractStorable;
 import com.hortonworks.iotas.streams.layout.component.rule.Rule;
 import com.hortonworks.iotas.streams.layout.component.rule.action.Action;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Projection;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.Window;
 import org.apache.commons.lang3.StringUtils;
 
@@ -35,7 +36,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * A rule as represented in the UI layout
@@ -54,6 +54,8 @@ public class RuleInfo extends AbstractStorable {
     public static final String PARSED_RULE_STR = "parsedRuleStr";
     public static final String WINDOW = "window";
     public static final String ACTIONS = "actions";
+    public static final String PROJECTIONS = "projections";
+    public static final String GROUPBYKEYS = "groupbykeys";
 
     private Long id;
     private Long topologyId;
@@ -71,6 +73,8 @@ public class RuleInfo extends AbstractStorable {
     private String parsedRuleStr;
     private Window window;
     private List<Action> actions;
+    private List<WindowDto.Projection> projections;
+    private List<String> groupbykeys;
 
     // for jackson
     public RuleInfo() {
@@ -178,6 +182,22 @@ public class RuleInfo extends AbstractStorable {
         this.actions = actions;
     }
 
+    public List<WindowDto.Projection> getProjections() {
+        return projections;
+    }
+
+    public void setProjections(List<WindowDto.Projection> projections) {
+        this.projections = projections;
+    }
+
+    public List<String> getGroupbykeys() {
+        return groupbykeys;
+    }
+
+    public void setGroupbykeys(List<String> groupbykeys) {
+        this.groupbykeys = groupbykeys;
+    }
+
     @JsonIgnore
     @Override
     public Schema getSchema() {
@@ -191,7 +211,9 @@ public class RuleInfo extends AbstractStorable {
                 Schema.Field.of(SQL, Schema.Type.STRING),
                 Schema.Field.of(PARSED_RULE_STR, Schema.Type.STRING),
                 Schema.Field.of(WINDOW, Schema.Type.STRING),
-                Schema.Field.of(ACTIONS, Schema.Type.STRING)
+                Schema.Field.of(ACTIONS, Schema.Type.STRING),
+                Schema.Field.of(PROJECTIONS, Schema.Type.STRING),
+                Schema.Field.of(GROUPBYKEYS, Schema.Type.STRING)
         );
     }
 
@@ -204,6 +226,8 @@ public class RuleInfo extends AbstractStorable {
             map.put(WINDOW, window != null ? mapper.writeValueAsString(window) : "");
             map.put(ACTIONS, actions != null ? mapper.writerFor(new TypeReference<List<Action>>() {
             }).writeValueAsString(actions) : "");
+            map.put(PROJECTIONS, projections != null ? mapper.writeValueAsString(projections) : "");
+            map.put(GROUPBYKEYS, groupbykeys != null ? mapper.writeValueAsString(groupbykeys) : "");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -222,7 +246,7 @@ public class RuleInfo extends AbstractStorable {
             ObjectMapper mapper = new ObjectMapper();
             String streamsStr = (String) map.get(STREAMS);
             if (!StringUtils.isEmpty(streamsStr)) {
-                List<String> streams = mapper.readValue(streamsStr, new TypeReference<Set<String>>() {
+                List<String> streams = mapper.readValue(streamsStr, new TypeReference<List<String>>() {
                 });
                 setStreams(streams);
             }
@@ -236,6 +260,18 @@ public class RuleInfo extends AbstractStorable {
                 List<Action> actions = mapper.readValue(actionsStr, new TypeReference<List<Action>>() {
                 });
                 setActions(actions);
+            }
+            String projectionsStr = (String) map.get(PROJECTIONS);
+            if (!StringUtils.isEmpty(projectionsStr)) {
+                List<WindowDto.Projection> projections = mapper.readValue(projectionsStr, new TypeReference<List<WindowDto.Projection>>() {
+                });
+                setProjections(projections);
+            }
+            String groupbykeysStr = (String) map.get(GROUPBYKEYS);
+            if (!StringUtils.isEmpty(groupbykeysStr)) {
+                List<String> groupbykeys = mapper.readValue(groupbykeysStr, new TypeReference<List<String>>() {
+                });
+                setGroupbykeys(groupbykeys);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

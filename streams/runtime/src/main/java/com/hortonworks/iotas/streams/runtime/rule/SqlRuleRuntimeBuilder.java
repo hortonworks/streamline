@@ -67,7 +67,7 @@ public class SqlRuleRuntimeBuilder extends AbstractRuleRuntimeBuilder {
     @Override
     public void buildScript() {
         sqlScript = new SqlScript<>(stormSqlExpression, sqlEngine);
-        sqlScript.setValuesConverter(new SqlScript.ValuesToIotasEventConverter(sqlScript.getProjectedFields()));
+        sqlScript.setValuesConverter(new SqlScript.ValuesToIotasEventConverter(sqlScript.getOutputFieldNames()));
     }
 
     @Override

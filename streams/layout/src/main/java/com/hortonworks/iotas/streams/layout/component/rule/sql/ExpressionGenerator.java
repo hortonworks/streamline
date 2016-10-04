@@ -22,6 +22,7 @@ import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.AggregateFunctionExpression;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.ArrayFieldExpression;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.AsExpression;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.BinaryExpression;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.Expression;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.ExpressionList;
@@ -174,6 +175,10 @@ public class ExpressionGenerator extends SqlBasicVisitor<Expression> {
                 throw new IllegalArgumentException("Item right operand '" + right
                         + "' must be numeric or character type");
             }
+        } else if (specialOperator.getName().equalsIgnoreCase("AS")) {
+            Expression left = operands.get(0).accept(this);
+            String alias = operands.get(1).toString();
+            return new AsExpression(left, alias);
         } else {
             throw new UnsupportedOperationException("Operator " + specialOperator + " not implemented");
         }

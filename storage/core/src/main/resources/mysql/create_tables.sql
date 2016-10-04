@@ -109,7 +109,7 @@ CREATE TABLE IF NOT EXISTS streaminfo (
     streamId VARCHAR(255) NOT NULL,
     fieldsData TEXT NOT NULL,
     timestamp BIGINT,
-    UNIQUE KEY `UK_streamId` (streamId),
+    UNIQUE KEY `UK_streamId` (topologyId, streamId),
     PRIMARY KEY (id)
 );
 
@@ -192,6 +192,8 @@ CREATE TABLE IF NOT EXISTS ruleinfos (
     parsedRuleStr TEXT NOT NULL,
     window TEXT NOT NULL,
     actions TEXT NOT NULL,
+    projections TEXT NULL,
+    groupbykeys TEXT NULL,
     PRIMARY KEY (id)
 );
 
