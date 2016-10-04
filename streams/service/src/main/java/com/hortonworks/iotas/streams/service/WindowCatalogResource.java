@@ -1,19 +1,13 @@
 package com.hortonworks.iotas.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.common.util.WSUtils;
-import com.hortonworks.iotas.streams.catalog.RuleInfo;
-import com.hortonworks.iotas.streams.catalog.WindowDto;
+import com.hortonworks.iotas.streams.catalog.WindowInfo;
 import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -26,7 +20,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
@@ -60,17 +53,9 @@ public class WindowCatalogResource {
     public Response listTopologyWindows(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) {
         List<QueryParam> queryParams = WSUtils.buildTopologyIdAwareQueryParams(topologyId, uriInfo);
         try {
-            Collection<RuleInfo> ruleInfos = catalogService.listRules(queryParams);
-            if (ruleInfos != null) {
-                Collection<RuleInfo> windowRules = getWindows(ruleInfos);
-                Collection<WindowDto> windowDtos = Collections2.transform(windowRules, new Function<RuleInfo, WindowDto>() {
-                    @Nullable
-                    @Override
-                    public WindowDto apply(@Nullable RuleInfo ruleInfo) {
-                        return new WindowDto(ruleInfo);
-                    }
-                });
-                return WSUtils.respond(OK, SUCCESS, windowDtos);
+            Collection<WindowInfo> windowInfos = catalogService.listWindows(queryParams);
+            if (windowInfos != null) {
+                return WSUtils.respond(OK, SUCCESS, windowInfos);
             }
         } catch (Exception ex) {
             LOG.error("Got exception", ex);
@@ -85,9 +70,9 @@ public class WindowCatalogResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTopologyWindowById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long windowId) {
         try {
-            RuleInfo ruleInfo = getWindow(catalogService.getRule(windowId));
-            if (ruleInfo != null && ruleInfo.getTopologyId().equals(topologyId)) {
-                return WSUtils.respond(OK, SUCCESS, new WindowDto(ruleInfo));
+            WindowInfo windowInfo = catalogService.getWindow(windowId);
+            if (windowInfo != null && windowInfo.getTopologyId().equals(topologyId)) {
+                return WSUtils.respond(OK, SUCCESS, windowInfo);
             }
         } catch (Exception ex) {
             LOG.error("Got exception", ex);
@@ -98,10 +83,10 @@ public class WindowCatalogResource {
 
     @POST
     @Timed
-    public Response addTopologyWindow(@PathParam("topologyId") Long topologyId, WindowDto windowDto) {
+    public Response addTopologyWindow(@PathParam("topologyId") Long topologyId, WindowInfo windowInfo) {
         try {
-            RuleInfo createdRuleInfo = catalogService.addRule(topologyId, getRuleInfo(windowDto));
-            return WSUtils.respond(CREATED, SUCCESS, new WindowDto(createdRuleInfo));
+            WindowInfo createdWindowInfo = catalogService.addWindow(topologyId, windowInfo);
+            return WSUtils.respond(CREATED, SUCCESS, createdWindowInfo);
         } catch (Exception ex) {
             LOG.error("Got exception", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -111,11 +96,11 @@ public class WindowCatalogResource {
     @PUT
     @Path("/{id}")
     @Timed
-    public Response addOrUpdateRule(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId,
-                                    WindowDto windowDto) {
+    public Response addOrUpdateWindow(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId,
+                                    WindowInfo windowInfo) {
         try {
-            RuleInfo createdRuleInfo = catalogService.addOrUpdateRule(topologyId, ruleId, getRuleInfo(windowDto));
-            return WSUtils.respond(CREATED, SUCCESS, new WindowDto(createdRuleInfo));
+            WindowInfo createdWindowInfo = catalogService.addOrUpdateWindow(topologyId, ruleId, windowInfo);
+            return WSUtils.respond(CREATED, SUCCESS, createdWindowInfo);
         } catch (Exception ex) {
             LOG.error("Got exception", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -127,17 +112,13 @@ public class WindowCatalogResource {
     @Timed
     public Response removeWindowById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long windowId) {
         try {
-            RuleInfo ruleInfo = null;
-            if (getWindow(catalogService.getRule(windowId)) != null) {
-                ruleInfo = catalogService.removeRule(windowId);
-            }
-            if (ruleInfo != null) {
-                return WSUtils.respond(OK, SUCCESS, new WindowDto(ruleInfo));
+            WindowInfo windowInfo = catalogService.removeWindow(windowId);
+            if (windowInfo != null) {
+                return WSUtils.respond(OK, SUCCESS, windowInfo);
             } else {
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, windowId.toString());
             }
         } catch (Exception ex) {
-            LOG.error("Got exception", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
     }
@@ -146,39 +127,4 @@ public class WindowCatalogResource {
         return String.format("topology id <%d>, window id <%d>", topologyId, ruleId);
     }
 
-    private RuleInfo getRuleInfo(WindowDto windowDto) {
-        RuleInfo ruleInfo = new RuleInfo();
-        ruleInfo.setId(windowDto.getId());
-        ruleInfo.setName(windowDto.getName());
-        ruleInfo.setDescription(windowDto.getDescription());
-        ruleInfo.setStreams(windowDto.getStreams());
-        ruleInfo.setProjections(windowDto.getProjections());
-        ruleInfo.setGroupbykeys(windowDto.getGroupbykeys());
-        ruleInfo.setWindow(windowDto.getWindow());
-        ruleInfo.setActions(windowDto.getActions());
-        return ruleInfo;
-    }
-
-    private RuleInfo getWindow(RuleInfo ruleInfo) {
-        if (ruleInfo != null) {
-            Collection<RuleInfo> res = getWindows(Collections.singletonList(ruleInfo));
-            if (!res.isEmpty()) {
-                return res.iterator().next();
-            }
-        }
-        return null;
-    }
-    private Collection<RuleInfo> getWindows(Collection<RuleInfo> ruleInfos) {
-        return Collections2.filter(ruleInfos,
-                new Predicate<RuleInfo>() {
-                    @Override
-                    public boolean apply(@Nullable RuleInfo ruleInfo) {
-                        return ruleInfo != null
-                                && StringUtils.isEmpty(ruleInfo.getCondition())
-                                && ruleInfo.getStreams() != null
-                                && !ruleInfo.getStreams().isEmpty()
-                                && ruleInfo.getWindow() != null;
-                    }
-                });
-    }
 }

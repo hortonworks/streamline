@@ -60,7 +60,6 @@ public class RuleParser {
     private static final Logger LOG = LoggerFactory.getLogger(RuleParser.class);
 
     private final StreamCatalogService catalogService;
-    private final RuleInfo ruleInfo;
     private List<Stream> streams;
     private Projection projection;
     private Condition condition;
@@ -69,10 +68,13 @@ public class RuleParser {
     private final Map<String, Udf> catalogUdfs = new HashMap<>();
     // the udfs used in the rule
     private final Set<String> referredUdfs = new HashSet<>();
+    private final String sql;
+    private final long topologyId;
 
-    public RuleParser(StreamCatalogService catalogService, RuleInfo ruleInfo) {
+    public RuleParser(StreamCatalogService catalogService, String sql, long topologyId) {
         this.catalogService = catalogService;
-        this.ruleInfo = ruleInfo;
+        this.sql = sql;
+        this.topologyId = topologyId;
         for (UDFInfo udfInfo: catalogService.listUDFs()) {
             catalogUdfs.put(udfInfo.getName().toUpperCase(),
                     new Udf(udfInfo.getName(), udfInfo.getClassName(), udfInfo.getType()));
@@ -84,7 +86,7 @@ public class RuleParser {
             SchemaPlus schema = Frameworks.createRootSchema(true);
             FrameworkConfig config = Frameworks.newConfigBuilder().defaultSchema(schema).build();
             Planner planner = Frameworks.getPlanner(config);
-            SqlSelect sqlSelect = (SqlSelect) planner.parse(ruleInfo.getSql());
+            SqlSelect sqlSelect = (SqlSelect) planner.parse(sql);
             // FROM
             streams = parseStreams(sqlSelect);
             // SELECT
@@ -96,7 +98,7 @@ public class RuleParser {
             // HAVING
             having = parseHaving(sqlSelect);
         } catch (Exception ex) {
-            LOG.error("Got Exception while parsing rule {}", ruleInfo.getSql());
+            LOG.error("Got Exception while parsing rule {}", sql);
             throw new RuntimeException(ex);
         }
     }
@@ -206,7 +208,7 @@ public class RuleParser {
 
     private Collection<StreamInfo> getStreamInfos() throws Exception {
         return catalogService.listStreamInfos(ImmutableList.<QueryParam>builder()
-                .add(new QueryParam(RuleInfo.TOPOLOGY_ID, ruleInfo.getTopologyId().toString()))
+                .add(new QueryParam(RuleInfo.TOPOLOGY_ID, String.valueOf(topologyId)))
                 .build());
     }
 
@@ -217,13 +219,16 @@ public class RuleParser {
     @Override
     public String toString() {
         return "RuleParser{" +
-                "streams=" + streams +
+                "catalogService=" + catalogService +
+                ", streams=" + streams +
                 ", projection=" + projection +
                 ", condition=" + condition +
                 ", groupBy=" + groupBy +
                 ", having=" + having +
+                ", catalogUdfs=" + catalogUdfs +
                 ", referredUdfs=" + referredUdfs +
-                ", ruleInfo=" + ruleInfo +
+                ", sql='" + sql + '\'' +
+                ", topologyId=" + topologyId +
                 '}';
     }
 }
