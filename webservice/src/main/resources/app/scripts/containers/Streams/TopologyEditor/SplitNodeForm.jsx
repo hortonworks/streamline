@@ -38,7 +38,10 @@ export default class SplitNodeForm extends Component {
 			fileArr: [],
 			fileName: '',
 			fileId:'',
-			splitterClassName: ''
+			splitterClassName: '',
+			showError: false,
+			showErrorLabel: false,
+			changedFields: []
 		};
 		this.state = obj;
 	}
@@ -79,24 +82,39 @@ export default class SplitNodeForm extends Component {
 	}
 
 	handleFileChange(obj) {
+		let changedFields = this.state.changedFields;
+		if(changedFields.indexOf("fileId") === -1)
+			changedFields.push("fileId");
 		if(obj){
-			this.setState({fileName: obj.label, fileId: obj.id});
+			this.setState({fileName: obj.label, fileId: obj.id, changedFields: changedFields, showError: true, showErrorLabel: false});
 		} else {
-			this.setState({fileName: '', fileId: ''});
+			this.setState({fileName: '', fileId: '', changedFields: changedFields, showError: true, showErrorLabel: false});
 		}
 	}
 
 	handleValueChange(e) {
-		let obj = {};
-		obj[e.target.name] = e.target.value === '' ? '' : e.target.type === "number" ? parseInt(e.target.value, 10) : e.target.value;
+		let obj = {
+			changedFields: this.state.changedFields,
+			showError: true,
+			showErrorLabel: false
+		};
+		obj[e.target.name] = e.target.value === '' ? '' : e.target.type === "number" ? Math.abs(e.target.value) : e.target.value;
+		if(obj.changedFields.indexOf(e.target.name) === -1)
+			obj.changedFields.push(e.target.name);
 		this.setState(obj);
 	}
 
 	validateData(){
-		let {fileId, splitterClassName, parallelism} = this.state;
+		let {fileId, splitterClassName, parallelism, changedFields} = this.state;
 		if(splitterClassName === '' || fileId === '' ){
+			if(splitterClassName === '' && changedFields.indexOf("splitterClassName") === -1)
+				changedFields.push("splitterClassName");
+			else if(changedFields.indexOf("fileId") === -1)
+				changedFields.push("fileId");
+			this.setState({showError: true, showErrorLabel: true, changedFields: changedFields});
 			return false;
 		}
+		this.setState({showErrorLabel: false});
 		return true;
 	}
 
@@ -127,6 +145,7 @@ export default class SplitNodeForm extends Component {
 
 	render() {
 		let {topologyId, editMode, nodeType, nodeData, targetNodes, linkShuffleOptions} = this.props;
+		let {showError, changedFields} = this.state;
 		return (
 			<div>
 				<Tabs id="splitForm" defaultActiveKey={1} className="schema-tabs">
@@ -143,11 +162,6 @@ export default class SplitNodeForm extends Component {
 										disabled={!this.state.editMode}
 									/>
 								</div>
-								{this.state.editMode && this.state.fileId === '' ?
-									<div className="col-sm-3">
-										<p className="form-control-static error-note">Select a jar.</p>
-									</div>
-								: null}
 							</div>
 							<div className="form-group">
 								<label className="col-sm-3 control-label">Splitter Class*</label>
@@ -157,16 +171,11 @@ export default class SplitNodeForm extends Component {
 										value={this.state.splitterClassName}
 										onChange={this.handleValueChange.bind(this)}
 										type="text"
-										className="form-control"
+										className={editMode && showError && changedFields.indexOf("splitterClassName") !== -1 && this.state.splitterClassName === '' ? "form-control invalidInput" : "form-control"}
 										required={true}
 										disabled={!this.state.editMode}
 									/>
 								</div>
-								{this.state.editMode && this.state.splitterClassName === '' ?
-									<div className="col-sm-3">
-										<p className="form-control-static error-note">Splitter class cannot be blank.</p>
-									</div>
-								: null}
 							</div>
 							<div className="form-group">
 								<label className="col-sm-3 control-label">Parallelism</label>

@@ -31,7 +31,9 @@ export default class CustomNodeForm extends Component {
 		var obj = {
 			editMode: editMode,
 			showSchema: true,
-			userInputs: []
+			userInputs: [],
+			showError: false,
+			showErrorLabel: false
 		};
 
 		this.customConfig.map((o)=>{
@@ -122,9 +124,16 @@ export default class CustomNodeForm extends Component {
 			})
 	}
 
-	handleValueChange(e) {
-		let obj = {};
-		obj[e.target.name] = e.target.type === "number" && e.target.value !== '' ? parseInt(e.target.value, 10) : e.target.value;
+	handleValueChange(fieldObj, e) {
+		let obj = {
+			showError: true,
+			showErrorLabel: false
+		};
+		obj[e.target.name] = e.target.type === "number" && e.target.value !== '' ? Math.abs(e.target.value) : e.target.value;
+		if(!fieldObj.isOptional) {
+			if(e.target.value === '') fieldObj.isInvalid = true;
+			else delete fieldObj.isInvalid;
+		}
 		this.setState(obj);
 	}
 
@@ -148,10 +157,14 @@ export default class CustomNodeForm extends Component {
 		let validDataFlag = true;
 
 		this.state.userInputs.map((o)=>{
-			if(!o.isOptional && this.state[o.name] === '')
+			if(!o.isOptional && this.state[o.name] === '') {
 				validDataFlag = false;
+				o.isInvalid = true;
+			}
 		});
-		return validDataFlag;
+		if(!validDataFlag)
+			this.setState({showError: true, showErrorLabel: true});
+		else this.setState({showErrorLabel: false}); validDataFlag;
 	}
 
 	handleSave(name){
@@ -166,7 +179,7 @@ export default class CustomNodeForm extends Component {
 
 	render() {
 		let {topologyId, editMode, nodeType, nodeData, targetNodes, linkShuffleOptions} = this.props;
-		let {showSchema} = this.state;
+		let {showSchema, showError, showErrorLabel} = this.state;
 		return (
 			<div>
 				<Tabs id="customForm" defaultActiveKey={1} className="schema-tabs">
@@ -204,9 +217,9 @@ export default class CustomNodeForm extends Component {
 										<input
 											name={f.name}
 											value={this.state[f.name]}
-											onChange={this.handleValueChange.bind(this)}
+											onChange={this.handleValueChange.bind(this, f)}
 											type={f.type}
-											className="form-control"
+											className={!f.isOptional && showError && f.isInvalid ? "form-control invalidInput" : "form-control"}
 									    	required={f.isOptional ? false : true}
 									    	disabled={!this.state.editMode}
 									    	min={f.type === "number" ? "0" : null}
@@ -214,11 +227,6 @@ export default class CustomNodeForm extends Component {
 										/>
 										}
 										</div>
-										{this.state.editMode && !f.isOptional && this.state[f.name] === '' && f.type !== "boolean" ?
-											<div className="col-sm-3">
-											<p className="form-control-static error-note">{f.name} cannot be blank.</p>
-											</div>
-										: null}
 										</div>
 										);
 								})

@@ -60,7 +60,34 @@ const sortArray = function(sortingArr, keyName, ascendingFlag){
 					});
 }
 
+const numberToMilliseconds = function(number, type){
+	if(type === 'Seconds'){
+		return number * 1000;
+	} else if(type === 'Minutes'){
+		return number * 60000
+	} else if(type === 'Hours'){
+		return number * 3600000
+	}
+}
+
+const millisecondsToNumber = function(number){
+	let hours = (number/(1000*60*60))%24;
+	let minutes = (number/(1000*60))%60;
+	let seconds = (number/(1000))%60;
+	if(hours % 1 === 0){
+		return {number: (number/(1000*60*60)), type: 'Hours'};
+	} else if(minutes % 1 === 0){
+		return {number: (number/(1000*60)), type: 'Minutes'};
+	} else if(seconds % 1 === 0){
+		return {number: (number/(1000)), type: 'Seconds'};
+	} else {
+		console.error("Something went wrong in converting millseconds to proper format");
+	}
+}
+
 export default {
 	searchFilter,
-	sortArray
+	sortArray,
+	numberToMilliseconds,
+	millisecondsToNumber
 };

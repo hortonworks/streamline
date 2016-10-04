@@ -43,7 +43,10 @@ export default class StageFormNode extends Component{
 			parallelism: 1,
 			entryExpirationInterval: '',
 			entryRefreshInterval: '',
-			maxCacheSize: ''
+			maxCacheSize: '',
+			showError: false,
+			showErrorLabel: false,
+			changedFields: []
 		};
 		this.state = obj;
 	}
@@ -124,42 +127,66 @@ export default class StageFormNode extends Component{
 	}
 
 	handleTransformChange(obj) {
+		let changedFields = this.state.changedFields;
+		if(changedFields.indexOf("transform") === -1)
+			changedFields.push("transform");
 		if(obj){
-			this.setState({transform: obj.value});
+			this.setState({transform: obj.value, changedFields: changedFields, showError: true,	showErrorLabel: false});
 		} else {
-			this.setState({transform: ''});
+			this.setState({transform: '', changedFields: changedFields, showError: true, showErrorLabel: false});
 		}
 	}
 
 	handleValueChange(e) {
-		let obj = {};
-		obj[e.target.name] = e.target.value === '' ? '' : e.target.type === "number" ? parseInt(e.target.value, 10) : e.target.value;
+		let obj = {
+			changedFields: this.state.changedFields,
+			showError: true,
+			showErrorLabel: false
+		};
+		obj[e.target.name] = e.target.value === '' ? '' : e.target.type === "number" ? Math.abs(e.target.value) : e.target.value;
+		if(obj.changedFields.indexOf(e.target.name) === -1)
+			obj.changedFields.push(e.target.name);
 		this.setState(obj);
 	}
 
 	handleFields(arr) {
 		let fields = [];
+		let changedFields = this.state.changedFields;
+		if(changedFields.indexOf("transformFields") === -1)
+			changedFields.push("transformFields");
 		if(arr && arr.length){
 			for(let f of arr){
 				fields.push(f.value);
 			}
-			this.setState({transformFields: fields});
+			this.setState({transformFields: fields, changedFields: changedFields, showError: true, showError: false});
 		} else {
-			this.setState({transformFields: []});
+			this.setState({transformFields: [], changedFields: changedFields, showError: true, showError: false});
 		}
 	}
 
 	validateData(){
-		let {transformFields, transform, entryExpirationInterval, entryRefreshInterval, maxCacheSize} = this.state;
-		if(transform !== '' && transformFields.length > 0){
+		let {transformFields, transform, entryExpirationInterval, entryRefreshInterval, maxCacheSize, changedFields} = this.state;
+		let validateDataFlag = true;
+
+		if(transform !== ''){
 			if(transform === 'enrichment'){
 				if(entryExpirationInterval === '' || entryRefreshInterval === '' || maxCacheSize === ''){
-					return false;
+					validateDataFlag = false;
 				}
+				if(entryExpirationInterval === '' && changedFields.indexOf("entryExpirationInterval") === -1)
+					changedFields.push("entryExpirationInterval");
+				if(entryRefreshInterval === '' && changedFields.indexOf("entryRefreshInterval") === -1)
+					changedFields.push("entryRefreshInterval");
+				if(maxCacheSize === '' && changedFields.indexOf("maxCacheSize") === -1)
+					changedFields.push("maxCacheSize");
 			}
-			return true;
+			if(transformFields.length == 0)
+				validateDataFlag = false;
+			validateDataFlag = true;
 		}
-		return false
+		validateDataFlag = false;
+		this.setState({showError: true, showErrorLabel: true, changedFields: changedFields});
+		return validateDataFlag;
 	}
 
 	handleSave(name){
@@ -208,7 +235,7 @@ export default class StageFormNode extends Component{
 	render() {
 		let {topologyId, editMode, nodeType, nodeData, targetNodes, linkShuffleOptions} = this.props;
 		let {transformTypesArr, transformFieldsArr, transformFields, transform, parallelism,
-			entryExpirationInterval, entryRefreshInterval, maxCacheSize} = this.state;
+			entryExpirationInterval, entryRefreshInterval, maxCacheSize, showError, showErrorLabel, changedFields} = this.state;
 		return (
 			<div>
 				<Tabs id="stageForm" defaultActiveKey={1} className="schema-tabs">
@@ -226,11 +253,6 @@ export default class StageFormNode extends Component{
 										disabled={!editMode}
 									/>
 								</div>
-								{editMode && transform === '' ?
-										<div className="col-sm-3">
-											<p className="form-control-static error-note">Select a transform.</p>
-										</div>
-								: null}
 							</div>
 							<div className="form-group">
 								<label className="col-sm-3 control-label">Fields*</label>
@@ -246,11 +268,6 @@ export default class StageFormNode extends Component{
 										disabled={!editMode}
 									/>
 								</div>
-								{editMode && transformFields.length === 0 ?
-									<div className="col-sm-3">
-										<p className="form-control-static error-note">Fields cannot be blank.</p>
-									</div>
-								: null}
 							</div>
 							{transform === 'enrichment' ?
 								[<div key="1" className="form-group">
@@ -261,17 +278,12 @@ export default class StageFormNode extends Component{
 											value={entryExpirationInterval}
 											onChange={this.handleValueChange.bind(this)}
 											type="number"
-											className="form-control"
+											className={editMode && showError && changedFields.indexOf("entryExpirationInterval") !== -1 && entryExpirationInterval === '' ? "form-control invalidInput" : "form-control"}
 										    disabled={!editMode}
 										    min="0"
 											inputMode="numeric"
 										/>
 									</div>
-									{editMode && entryExpirationInterval === '' ?
-										<div className="col-sm-3">
-											<p className="form-control-static error-note">Expiration interval cannot be blank.</p>
-										</div>
-									: null}
 								</div>,
 								<div key="2" className="form-group">
 									<label className="col-sm-3 control-label">Entry Refresh Interval *</label>
@@ -281,17 +293,12 @@ export default class StageFormNode extends Component{
 											value={entryRefreshInterval}
 											onChange={this.handleValueChange.bind(this)}
 											type="number"
-											className="form-control"
+											className={editMode && showError && changedFields.indexOf("entryRefreshInterval") !== -1 && entryRefreshInterval === '' ? "form-control invalidInput" : "form-control"}
 										    disabled={!editMode}
 										    min="0"
 											inputMode="numeric"
 										/>
 									</div>
-									{editMode && entryRefreshInterval === '' ?
-										<div className="col-sm-3">
-											<p className="form-control-static error-note">Refresh interval cannot be blank.</p>
-										</div>
-									: null}
 								</div>,
 								<div key="3" className="form-group">
 									<label className="col-sm-3 control-label">Max Cache Size *</label>
@@ -301,17 +308,12 @@ export default class StageFormNode extends Component{
 											value={maxCacheSize}
 											onChange={this.handleValueChange.bind(this)}
 											type="number"
-											className="form-control"
+											className={editMode && showError && changedFields.indexOf("maxCacheSize") !== -1 && maxCacheSize === '' ? "form-control invalidInput" : "form-control"}
 										    disabled={!editMode}
 										    min="0"
 											inputMode="numeric"
 										/>
 									</div>
-									{editMode && maxCacheSize === '' ?
-										<div className="col-sm-3">
-											<p className="form-control-static error-note">Max cache size cannot be blank.</p>
-										</div>
-									: null}
 								</div>]
 							: null}
 							<div className="form-group">

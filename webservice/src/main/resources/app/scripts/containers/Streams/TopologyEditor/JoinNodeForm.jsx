@@ -40,7 +40,10 @@ export default class JoinNodeForm extends Component {
 			fileId:'',
 			joinerClassName: '',
 			groupExpiryInterval: '',
-			eventExpiryInterval: ''
+			eventExpiryInterval: '',
+			showError: false,
+			showErrorLabel: false,
+			changedFields: []
 		};
 		this.state = obj;
 	}
@@ -83,25 +86,44 @@ export default class JoinNodeForm extends Component {
 	}
 
 	handleFileChange(obj) {
+		let changedFields = this.state.changedFields;
+		if(changedFields.indexOf("fileId") === -1)
+			changedFields.push("fileId");
 		if(obj){
-			this.setState({fileName: obj.label, fileId: obj.id});
+			this.setState({fileName: obj.label, fileId: obj.id, changedFields: changedFields, showError: true, showErrorLabel: false});
 		} else {
-			this.setState({fileName: '', fileId: ''});
+			this.setState({fileName: '', fileId: '', changedFields: changedFields, showError: true,	showErrorLabel: false});
 		}
 	}
 
 	handleValueChange(e) {
-		let obj = {};
-		obj[e.target.name] = e.target.value === '' ? '' : e.target.type === "number" ? parseInt(e.target.value, 10) : e.target.value;
+		let obj = {
+			changedFields: this.state.changedFields,
+			showError: true,
+			showErrorLabel: false
+		};
+		obj[e.target.name] = e.target.value === '' ? '' : e.target.type === "number" ? Math.abs(e.target.value) : e.target.value;
+		if(obj.changedFields.indexOf(e.target.name) === -1)
+			obj.changedFields.push(e.target.name);
 		this.setState(obj);
 	}
 
 	validateData(){
-		let {fileId, joinerClassName, eventExpiryInterval, groupExpiryInterval} = this.state;
+		let {fileId, joinerClassName, eventExpiryInterval, groupExpiryInterval, changedFields} = this.state;
+		let validateDataFlag = true;
 		if(joinerClassName === '' || fileId === '' || eventExpiryInterval === '' || groupExpiryInterval === ''){
-			return false;
+			validateDataFlag = false;
 		}
-		return true;
+		if(joinerClassName === '' && changedFields.indexOf("joinerClassName") === -1)
+				changedFields.push("joinerClassName");
+		if(fileId === '' && changedFields.indexOf("fileId") === -1)
+				changedFields.push("fileId");
+		if(eventExpiryInterval === '' && changedFields.indexOf("eventExpiryInterval") === -1)
+				changedFields.push("eventExpiryInterval");
+		if(groupExpiryInterval === '' && changedFields.indexOf("groupExpiryInterval") === -1)
+				changedFields.push("groupExpiryInterval");
+		this.setState({showError: true, showErrorLabel: true, changedFields: changedFields});
+		return validateDataFlag;
 	}
 
 	handleSave(name){
@@ -133,7 +155,7 @@ export default class JoinNodeForm extends Component {
 
 	render() {
 		let {topologyId, nodeType, nodeData, targetNodes, linkShuffleOptions} = this.props;
-		let {fileId, fileArr, joinerClassName, editMode, eventExpiryInterval, groupExpiryInterval, parallelism} = this.state;
+		let {fileId, fileArr, joinerClassName, editMode, eventExpiryInterval, groupExpiryInterval, parallelism, showError, changedFields} = this.state;
 		return (
 			<div>
 				<Tabs id="joinForm" defaultActiveKey={1} className="schema-tabs">
@@ -150,11 +172,6 @@ export default class JoinNodeForm extends Component {
 										disabled={!editMode}
 									/>
 								</div>
-								{editMode && fileId === '' ?
-									<div className="col-sm-3">
-										<p className="form-control-static error-note">Select a jar.</p>
-									</div>
-								: null}
 							</div>
 							<div className="form-group">
 								<label className="col-sm-3 control-label">Joiner Class*</label>
@@ -164,16 +181,11 @@ export default class JoinNodeForm extends Component {
 										value={joinerClassName}
 										onChange={this.handleValueChange.bind(this)}
 										type="text"
-										className="form-control"
+										className={editMode && showError && changedFields.indexOf("joinerClassName") !== -1 && this.state.joinerClassName === '' ? "form-control invalidInput" : "form-control"}
 										required={true}
 										disabled={!editMode}
 									/>
 								</div>
-								{editMode && joinerClassName === '' ?
-								<div className="col-sm-3">
-									<p className="form-control-static error-note">Splitter class cannot be blank.</p>
-								</div>
-								: null}
 							</div>
 							<div className="form-group">
 								<label className="col-sm-3 control-label">Group Expiry Interval*</label>
@@ -183,17 +195,12 @@ export default class JoinNodeForm extends Component {
 										value={groupExpiryInterval}
 										onChange={this.handleValueChange.bind(this)}
 										type="number"
-										className="form-control"
+										className={editMode && showError && changedFields.indexOf("groupExpiryInterval") !== -1 && this.state.groupExpiryInterval === '' ? "form-control invalidInput" : "form-control"}
 										disabled={!editMode}
 										min="0"
 										inputMode="numeric"
 									/>
 								</div>
-								{editMode && joinerClassName === '' ?
-								<div className="col-sm-3">
-									<p className="form-control-static error-note">Group Expiry Interval cannot be blank.</p>
-								</div>
-								: null}
 							</div>
 							<div className="form-group">
 								<label className="col-sm-3 control-label">Event Expiry Interval*</label>
@@ -203,17 +210,12 @@ export default class JoinNodeForm extends Component {
 										value={eventExpiryInterval}
 										onChange={this.handleValueChange.bind(this)}
 										type="number"
-										className="form-control"
+										className={editMode && showError && changedFields.indexOf("eventExpiryInterval") !== -1 && this.state.eventExpiryInterval === '' ? "form-control invalidInput" : "form-control"}
 										disabled={!editMode}
 										min="0"
 										inputMode="numeric"
 									/>
 								</div>
-								{editMode && joinerClassName === '' ?
-								<div className="col-sm-3">
-									<p className="form-control-static error-note">Event Expiry Interval cannot be blank.</p>
-								</div>
-								: null}
 							</div>
 							<div className="form-group">
 								<label className="col-sm-3 control-label">Parallelism</label>

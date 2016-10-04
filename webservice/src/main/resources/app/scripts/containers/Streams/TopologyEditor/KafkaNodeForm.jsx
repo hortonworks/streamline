@@ -32,7 +32,9 @@ export default class KafkaNodeForm extends Component {
 			fieldRowArr: configObj.fieldRowArr,
 			showOptionalFields: false,
 			editMode: editMode,
-			showSchema: true
+			showSchema: true,
+			showError: false,
+			showErrorLabel: false
 		};
 		configData.config.map(o => {
 			obj.configFields[o.name] = o.defaultValue === null ? '' : o.defaultValue;
@@ -162,10 +164,12 @@ export default class KafkaNodeForm extends Component {
 		return (<div> <i className={iconClass}></i> Optional Configurations </div>)
 	}
 
-	handleValueChange(e) {
+	handleValueChange(fieldObj, e) {
 		let obj = this.state.configFields;
 		obj[e.target.name] = e.target.type === "number" ? Math.abs(e.target.value) : e.target.value;
-		this.setState({configFields: obj});
+		if(e.target.value === '') fieldObj.isInvalid = true;
+		else delete fieldObj.isInvalid;
+		this.setState({configFields: obj, showError: true, showErrorLabel: false});
 	}
 
 	handleRadioBtn(e) {
@@ -192,9 +196,14 @@ export default class KafkaNodeForm extends Component {
 		let validDataFlag = true;
 
 		reqFieldArr.map((o)=>{
-			if(configFields[o.name] === '') validDataFlag = false;
+			if(configFields[o.name] === '') {
+				validDataFlag = false;
+				o.isInvalid = true;
+			}
 		});
-
+		if(!validDataFlag)
+			this.setState({showError: true, showErrorLabel: true});
+		else this.setState({showErrorLabel: false});
 		return validDataFlag;
 	}
 
@@ -222,20 +231,15 @@ export default class KafkaNodeForm extends Component {
 									<input
 									name={o.name}
 									value={this.state.configFields[o.name]}
-									onChange={this.handleValueChange.bind(this)}
+									onChange={this.handleValueChange.bind(this, o)}
 									type={o.type}
-									className="form-control"
+									className={this.state.showError && o.isInvalid ? "form-control invalidInput" : "form-control"}
 								    required={true}
 								    disabled={!editMode}
 								    min={o.type === "number" ? "0" : null}
 									inputMode={o.type === "number" ? "numeric" : null}
 									/>
 								</div>
-								{editMode && this.state.configFields[o.name] === '' ?
-								<div className="col-sm-3">
-									<p className="form-control-static error-note">{o.name} cannot be blank.</p>
-								</div>
-								: null}
 							</div>
 						)
 					})

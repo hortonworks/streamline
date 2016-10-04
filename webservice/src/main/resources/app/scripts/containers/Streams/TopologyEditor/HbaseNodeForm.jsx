@@ -26,7 +26,9 @@ export default class HbaseNodeForm extends Component {
 			configFields: {},
 			reqFieldArr: configObj.reqFieldArr,
 			fieldRowArr: configObj.fieldRowArr,
-			editMode: editMode
+			editMode: editMode,
+			showError: false,
+			showErrorLabel: false
 		};
 		configData.config.map(o => {
 			obj.configFields[o.name] = o.defaultValue === null ? '' : o.defaultValue;
@@ -88,11 +90,13 @@ export default class HbaseNodeForm extends Component {
 		};
 	}
 
-	handleValueChange(e) {
+	handleValueChange(fieldObj, e) {
 		let obj = this.state.configFields;
 		let value = e.target.value;
-		obj[e.target.name] = value === '' ? '' : (e.target.type === "number" ? parseInt(value, 10) : value)
-		this.setState({configFields: obj});
+		obj[e.target.name] = value === '' ? '' : (e.target.type === "number" ? Math.abs(value) : value)
+		if(value === '') fieldObj.isInvalid = true;
+		else delete fieldObj.isInvalid;
+		this.setState({configFields: obj, showError: true, showErrorLabel: false});
 	}
 
 	handleRadioBtn(e) {
@@ -119,11 +123,16 @@ export default class HbaseNodeForm extends Component {
 	validateData(){
 		let {reqFieldArr, configFields} = this.state;
 		let validDataFlag = true;
-		
+
 		reqFieldArr.map((o)=>{
-			if(configFields[o.name] === '') validDataFlag = false;
+			if(configFields[o.name] === '') {
+				validDataFlag = false;
+				o.isInvalid = true;
+			}
 		});
-		
+		if(!validDataFlag)
+			this.setState({showError: true, showErrorLabel: true});
+		else this.setState({showErrorLabel: false});
 		return validDataFlag;
 	}
 
@@ -144,31 +153,31 @@ export default class HbaseNodeForm extends Component {
 					<label className="col-sm-3 control-label">{o.name}{requiredFlag ? '*' : null}</label>
 					<div className="col-sm-6">
 						{o.type === "radio" ?
-							[<Radio 
+							[<Radio
 								key="1"
-								inline={true} 
-								data-label="true" 
-								data-name={o.name} 
-								onChange={this.handleRadioBtn.bind(this)} 
+								inline={true}
+								data-label="true"
+								data-name={o.name}
+								onChange={this.handleRadioBtn.bind(this)}
 								checked={value ? true: false}
 								disabled={!this.state.editMode}>true
 							</Radio>,
 							<Radio
 								key="2"
-								inline={true} 
-								data-label="false" 
-								data-name={o.name} 
-								onChange={this.handleRadioBtn.bind(this)} 
+								inline={true}
+								data-label="false"
+								data-name={o.name}
+								onChange={this.handleRadioBtn.bind(this)}
 								checked={value ? false : true}
 								disabled={!this.state.editMode}>false
 							</Radio>]
-						 : 
+						 :
 							<input
 							name={o.name}
 							value={this.state.configFields[o.name]}
-							onChange={this.handleValueChange.bind(this)}
+							onChange={this.handleValueChange.bind(this, o)}
 							type={o.type}
-							className="form-control"
+							className={requiredFlag && this.state.showError && o.isInvalid ? "form-control invalidInput" : "form-control"}
 						    required={requiredFlag}
 						    disabled={!this.state.editMode}
 						    min={o.type === "number" ? "0" : null}
@@ -176,11 +185,6 @@ export default class HbaseNodeForm extends Component {
 							/>
 						}
 					</div>
-					{requiredFlag && this.state.editMode && this.state.configFields[o.name] === '' ?
-					<div className="col-sm-3">
-						<p className="form-control-static error-note">{o.name} cannot be blank.</p>
-					</div>
-					: null}
 				</div>
 			)
 		})

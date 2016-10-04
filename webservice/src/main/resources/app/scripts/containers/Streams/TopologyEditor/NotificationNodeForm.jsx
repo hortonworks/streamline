@@ -25,7 +25,10 @@ export default class NotificationNodeForm extends Component {
 		let obj = {
 			configData: configData,
 			configFields: {},
-			editMode: editMode
+			editMode: editMode,
+			showError: false,
+			showErrorLabel: false,
+			changedFields: []
 		};
 		configData.config.map(o => {
 			if(o.type.search('array') !== -1){
@@ -118,10 +121,11 @@ export default class NotificationNodeForm extends Component {
 		let value = e.target.value;
 		let parentObjKey = e.target.dataset.parentobjkey;
 		let result = null;
+		let changedFields = [...this.state.changedFields, e.target.name];
 		if(value === ''){
 			result = '';
 		} else if(e.target.type === "number"){
-			result = parseInt(value, 10);
+			result = Math.abs(value);
 		} else if(e.target.dataset.label === "true" || e.target.dataset.label === "true"){
 			result = JSON.parse(e.target.dataset.label);
 		} else {
@@ -132,23 +136,36 @@ export default class NotificationNodeForm extends Component {
 		} else {
 			obj[e.target.name] = result
 		}
-		this.setState({configFields: obj});
+		if(changedFields.indexOf(e.target.name) === -1)
+			changedFields.push(e.target.name);
+		this.setState({configFields: obj, showError: true, showErrorLabel: false, changedFields: changedFields});
 	}
 
 	validateData(){
-		let {configFields} = this.state;
+		let {configFields, changedFields} = this.state;
 		let validDataFlag = true;
 		let configKeys = _.keys(configFields);
 		configKeys.map((c)=>{
 			if(typeof configFields[c] !== 'object'){
-				if(configFields[c] === '') validDataFlag = false; 
+				if(configFields[c] === '') {
+					if(changedFields.indexOf(c) === -1)
+						changedFields.push(c);
+					validDataFlag = false;
+				}
 			} else {
 				let internalKey = _.keys(configFields[c]);
 				internalKey.map((i)=>{
-					if(configFields[c][i] === '') validDataFlag = false;
+					if(configFields[c][i] === '') {
+						if(changedFields.indexOf(i) === -1)
+							changedFields.push(i);
+						validDataFlag = false;
+					}
 				})
 			}
 		})
+		if(!validDataFlag)
+			this.setState({showError: true, showErrorLabel: true, changedFields: changedFields});
+		else this.setState({showErrorLabel: false});
 		return validDataFlag;
 	}
 
@@ -181,6 +198,7 @@ export default class NotificationNodeForm extends Component {
 	}
 
 	render() {
+		let {editMode, showError, changedFields, showErrorLabel, configFields} = this.state;
 		return (
 			<div>
 				<form className="form-horizontal">
@@ -279,16 +297,11 @@ export default class NotificationNodeForm extends Component {
 												value={this.state.configFields.properties.username}
 												onChange={this.handleValueChange.bind(this)}
 												type="text"
-												className="form-control"
+												className={editMode && showError && changedFields.indexOf("username") !== -1 && configFields.properties.username === '' ? "form-control invalidInput" : "form-control"}
 											    required={true}
 								    			disabled={!this.state.editMode}
 												/>
 											</div>
-											{this.state.editMode && this.state.configFields.properties.username === '' ?
-												<div className="col-sm-8 col-sm-offset-4">
-													<p className="form-control-static error-note">Username cannot be blank.</p>
-												</div>
-											: null}
 										</div>
 									</div>
 									<div className="col-sm-6">
@@ -301,16 +314,11 @@ export default class NotificationNodeForm extends Component {
 												value={this.state.configFields.properties.password}
 												onChange={this.handleValueChange.bind(this)}
 												type="password"
-												className="form-control"
+												className={editMode && showError && changedFields.indexOf("password") !== -1 && configFields.properties.password === '' ? "form-control invalidInput" : "form-control"}
 											    required={true}
 								    			disabled={!this.state.editMode}
 												/>
 											</div>
-											{this.state.editMode && this.state.configFields.properties.password === '' ?
-												<div className="col-sm-8 col-sm-offset-4">
-													<p className="form-control-static error-note">Password cannot be blank.</p>
-												</div>
-											: null}
 										</div>
 									</div>
 								</div>
@@ -325,16 +333,11 @@ export default class NotificationNodeForm extends Component {
 												value={this.state.configFields.properties.host}
 												onChange={this.handleValueChange.bind(this)}
 												type="text"
-												className="form-control"
+												className={editMode && showError && changedFields.indexOf("host") !== -1 && configFields.properties.host === '' ? "form-control invalidInput" : "form-control"}
 											    required={true}
 								    			disabled={!this.state.editMode}
 												/>
 											</div>
-											{this.state.editMode && this.state.configFields.properties.host === '' ?
-												<div className="col-sm-8 col-sm-offset-4">
-													<p className="form-control-static error-note">Host cannot be blank.</p>
-												</div>
-											: null}
 										</div>
 									</div>
 									<div className="col-sm-6">
@@ -347,18 +350,13 @@ export default class NotificationNodeForm extends Component {
 												value={this.state.configFields.properties.port}
 												onChange={this.handleValueChange.bind(this)}
 												type="number"
-												className="form-control"
+												className={editMode && showError && changedFields.indexOf("port") !== -1 && configFields.properties.port === '' ? "form-control invalidInput" : "form-control"}
 											    required={true}
 								    			disabled={!this.state.editMode}
 								    			min="0"
 									    		inputMode="numeric"
 												/>
 											</div>
-											{this.state.editMode && this.state.configFields.properties.port === '' ?
-												<div className="col-sm-8 col-sm-offset-4">
-													<p className="form-control-static error-note">Port cannot be blank.</p>
-												</div>
-											: null}
 										</div>
 									</div>
 								</div>
@@ -503,16 +501,11 @@ export default class NotificationNodeForm extends Component {
 												value={this.state.configFields.fieldValues.from}
 												onChange={this.handleValueChange.bind(this)}
 												type="text"
-												className="form-control"
+												className={editMode && showError && changedFields.indexOf("from") !== -1 && configFields.fieldValues.from === '' ? "form-control invalidInput" : "form-control"}
 											    required={true}
 								    			disabled={!this.state.editMode}
 												/>
 											</div>
-											{this.state.editMode && this.state.configFields.fieldValues.from === '' ?
-												<div className="col-sm-8 col-sm-offset-4">
-													<p className="form-control-static error-note">From cannot be blank.</p>
-												</div>
-											: null}
 										</div>
 									</div>
 									<div className="col-sm-6">
@@ -525,16 +518,11 @@ export default class NotificationNodeForm extends Component {
 												value={this.state.configFields.fieldValues.to}
 												onChange={this.handleValueChange.bind(this)}
 												type="text"
-												className="form-control"
+												className={editMode && showError && changedFields.indexOf("to") !== -1 && configFields.fieldValues.to === '' ? "form-control invalidInput" : "form-control"}
 											    required={true}
 								    			disabled={!this.state.editMode}
 												/>
 											</div>
-											{this.state.editMode && this.state.configFields.fieldValues.to === '' ?
-												<div className="col-sm-8 col-sm-offset-4">
-													<p className="form-control-static error-note">To cannot be blank.</p>
-												</div>
-											: null}
 										</div>
 									</div>
 								</div>
@@ -549,16 +537,11 @@ export default class NotificationNodeForm extends Component {
 												value={this.state.configFields.fieldValues.subject}
 												onChange={this.handleValueChange.bind(this)}
 												type="text"
-												className="form-control"
+												className={editMode && showError && changedFields.indexOf("subject") !== -1 && configFields.fieldValues.subject === '' ? "form-control invalidInput" : "form-control"}
 											    required={true}
 								    			disabled={!this.state.editMode}
 												/>
 											</div>
-											{this.state.editMode && this.state.configFields.fieldValues.subject === '' ?
-												<div className="col-sm-8 col-sm-offset-4">
-													<p className="form-control-static error-note">Subject cannot be blank.</p>
-												</div>
-											: null}
 										</div>
 									</div>
 									<div className="col-sm-6">
@@ -575,11 +558,6 @@ export default class NotificationNodeForm extends Component {
 								    			disabled={!this.state.editMode}
 												/>
 											</div>
-											{this.state.editMode && this.state.configFields.fieldValues.contentType === '' ?
-												<div className="col-sm-8 col-sm-offset-4">
-													<p className="form-control-static error-note">Content type cannot be blank.</p>
-												</div>
-											: null}
 										</div>
 									</div>
 								</div>
@@ -588,21 +566,16 @@ export default class NotificationNodeForm extends Component {
 										<div className="form-group">
 											<label className="col-sm-4 control-label">Body *</label>
 											<div className="col-sm-8">
-												<textarea 
+												<textarea
 													name="body"
 													data-parentObjKey="fieldValues"
 													value={this.state.configFields.fieldValues.body}
 													onChange={this.handleValueChange.bind(this)}
-													className="form-control"
+													className={editMode && showError && changedFields.indexOf("body") !== -1 && configFields.fieldValues.body === '' ? "form-control invalidInput" : "form-control"}
 													required={true}
 								    				disabled={!this.state.editMode}
 												/>
 											</div>
-											{this.state.editMode && this.state.configFields.fieldValues.body === '' ?
-												<div className="col-sm-8 col-sm-offset-4">
-													<p className="form-control-static error-note">Body cannot be blank.</p>
-												</div>
-											: null}
 										</div>
 									</div>
 								</div>

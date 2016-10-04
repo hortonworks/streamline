@@ -655,6 +655,7 @@ const getConfigContainer = function(node, configData, editMode, topologyId, curr
 					sourceNode={sourceNodes[0]}
 					targetNodes={targetNodes}
 					linkShuffleOptions={linkShuffleOptions}
+					currentEdges={currentEdges}
 				/>;
 			}
 		break;

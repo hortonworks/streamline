@@ -1251,3 +1251,6 @@ span.user {
   height: 24px;
   margin-right: 10px;
 }
+.invalidInput {
+  border-color: #d81010;
+}

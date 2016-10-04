@@ -37,7 +37,7 @@ export default class OutputSchema extends Component {
 
 	constructor(props){
 		super(props);
-		let {streamId = '', fields = [], grouping = '', connectsTo = [], forRule = [], groupingFields} = props.streamObj;
+		let {streamId = '', fields = [], grouping = 'SHUFFLE', connectsTo = [], forRule = [], groupingFields} = props.streamObj;
 		let targetNodesArr = [];
 		let rulesArr = [];
 		let groupingFieldsArr = [];
@@ -72,7 +72,10 @@ export default class OutputSchema extends Component {
 			rulesArr,
 			forRule,
 			groupingFieldsArr: groupingFieldsArr,
-			groupingFields: groupingFields ? groupingFields : []
+			groupingFields: groupingFields ? groupingFields : [],
+			showError: false,
+			showErrorLabel: false,
+			changedFields: []
 		};
 	}
 
@@ -176,23 +179,29 @@ export default class OutputSchema extends Component {
 	}
 
 	validateData(){
-		let {streamId, fields} = this.state;
+		let {streamId, fields, changedFields} = this.state;
+		let validDataFlag = true;
 		if( streamId.trim() === '' || !this.validateJSON(fields) || !_.isArray(JSON.parse(fields))){
-			return false;
+			validDataFlag = false;
+			if(streamId.trim() === '' && changedFields.indexOf("streamId") === -1)
+				changedFields.push('streamId');
 		}
 		if(this.props.connectedTargetNodes.length > 0){
 			if(this.state.connectsTo.length === 0 ){
-				return false;
+				validDataFlag = false;
 			}
 			else if(!this.state.grouping || this.state.grouping === ''){
-				return false;
+				validDataFlag = false;
 			} else if(this.props.ruleProcessor && this.state.forRule.length === 0) {
-				return false;
+				validDataFlag = false;
 			} else if(this.state.grouping === 'FIELDS' && this.state.groupingFields.length === 0) {
-				return false;
+				validDataFlag = false;
 			}
 		}
-		return true;
+		if(!validDataFlag)
+			this.setState({showError: true, showErrorLabel: true, changedFields: changedFields});
+		else this.setState({showErrorLabel: false});
+		return validDataFlag;
 	}
 
 	handleSave(){
@@ -392,28 +401,18 @@ export default class OutputSchema extends Component {
 							placeholder="Stream ID"
 							onChange={this.handleValueChange.bind(this)}
 							type="text"
-							className="form-control"
+							className={this.state.showError && this.state.changedFields.indexOf("streamId") !== -1 && streamId === '' ? "form-control invalidInput" : "form-control"}
 							value={streamId}
 						    required={true}
 						    disabled={!canAdd}
 						/>
 					</div>
-					{streamId.trim() === '' ?
-						<div className="col-sm-4">
-							<p className="form-control-static error-note">Please Enter Stream ID</p>
-						</div>
-					: null}
 				</div>
 				<div className="form-group">
 					<label className="col-sm-3 control-label">JSON*</label>
 					<div className="col-sm-5">
 						<ReactCodemirror ref="JSONCodemirror" value={fields} onChange={this.handleJSONChange.bind(this)} options={jsonoptions} />
 					</div>
-					{!this.validateJSON(fields) || !_.isArray(JSON.parse(fields)) ?
-						<div className="col-sm-4">
-							<p className="form-control-static error-note">Please Enter Valid JSON</p>
-						</div>
-					: null}
 				</div>
 				<div className="form-group">
 					<label className="col-sm-3 control-label">Grouping</label>
@@ -426,11 +425,6 @@ export default class OutputSchema extends Component {
 						    disabled={!targetNodesArr.length}
 						/>
 					</div>
-					{targetNodesArr.length !== 0 && grouping === '' ?
-						<div className="col-sm-4">
-							<p className="form-control-static error-note">Please Select any one type of grouping</p>
-						</div>
-					: null}
 				</div>
 				{grouping === 'FIELDS' ?
 				<div className="form-group">
@@ -444,11 +438,6 @@ export default class OutputSchema extends Component {
 							required={true}
 						/>
 					</div>
-					{groupingFields.length === 0 ?
-					(<div className="col-sm-4">
-						<p className="form-control-static error-note">Please add grouping fields</p>
-					</div>)
-					: null}
 				</div>
 				: null
 				}
@@ -467,11 +456,6 @@ export default class OutputSchema extends Component {
 								disabled={!targetNodesArr.length}
 							/>
 						</div>
-						{targetNodesArr.length > 0 && forRule.length === 0 ?
-							<div className="col-sm-4">
-								<p className="form-control-static error-note">Please Select atleast one rule for this stream</p>
-							</div>
-						: null}
 					</div>
 				: null}
 				<div className="form-group">
@@ -487,11 +471,6 @@ export default class OutputSchema extends Component {
 							required={true}
 						/>
 					</div>
-					{targetNodesArr.length > 0 && connectsTo.length === 0 ?
-						<div className="col-sm-4">
-							<p className="form-control-static error-note">Please Select any one of the target nodes</p>
-						</div>
-					: null}
 				</div>
 			</form>
 		)
