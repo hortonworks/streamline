@@ -16,7 +16,7 @@
 
 if [ $# -lt 1 ];
 then
-	echo "USAGE: $0 [-daemon] iotas.yaml"
+	echo "USAGE: $0 [-daemon] streams.yaml"
 	exit 1
 fi
 base_dir=$(dirname $0)/..
@@ -72,7 +72,7 @@ fi
 
 # Launch mode
 if [ "x$DAEMON_MODE" = "xtrue" ]; then
-  nohup $JAVA $IOTAS_HEAP_OPTS $IOTAS_JVM_PERFORMANCE_OPTS -cp $CLASSPATH $IOTAS_OPTS "com.hortonworks.iotas.webservice.IotasApplication" "server" "$@" > "$CONSOLE_OUTPUT_FILE" 2>&1 < /dev/null &
+  nohup $JAVA $IOTAS_HEAP_OPTS $IOTAS_JVM_PERFORMANCE_OPTS -cp $CLASSPATH $IOTAS_OPTS "com.hortonworks.streams.webservice.StreamsApplication" "server" "$@" > "$CONSOLE_OUTPUT_FILE" 2>&1 < /dev/null &
 else
-  exec $JAVA $IOTAS_HEAP_OPTS $IOTAS_JVM_PERFORMANCE_OPTS -cp $CLASSPATH $IOTAS_OPTS "com.hortonworks.iotas.webservice.IotasApplication" "server" "$@"
+  exec $JAVA $IOTAS_HEAP_OPTS $IOTAS_JVM_PERFORMANCE_OPTS -cp $CLASSPATH $IOTAS_OPTS "com.hortonworks.streams.webservice.StreamsApplication" "server" "$@"
 fi

@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hortonworks.iotas.webservice;
+package com.hortonworks.streams.webservice;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.hortonworks.iotas.common.TimeSeriesDBConfiguration;
@@ -25,7 +25,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
-public class IotasConfiguration extends Configuration {
+public class StreamsConfiguration extends Configuration {
 
     @NotEmpty
     private List<ModuleConfiguration> modules;

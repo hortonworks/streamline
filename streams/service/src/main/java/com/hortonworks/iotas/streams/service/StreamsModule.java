@@ -123,7 +123,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
 
     private TopologyActions getTopologyActionsImpl () {
         String className = (String) config.get(com.hortonworks.iotas.streams.common.Constants.CONFIG_TOPOLOGY_ACTIONS_IMPL);
-        // Note that iotasStormJar value needs to be changed in iotas.yaml
+        // Note that iotasStormJar value needs to be changed in streams.yaml
         // based on the location of the storm module jar of iotas project.
         // Reason for doing it this way is storm ui right now does not
         // support submitting a jar because of security vulnerability. Hence

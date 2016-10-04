@@ -1,4 +1,4 @@
-package com.hortonworks.iotas.webservice;
+package com.hortonworks.streams.webservice;
 
 import org.hibernate.validator.constraints.NotEmpty;
 

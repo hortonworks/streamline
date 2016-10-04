@@ -1,25 +1,25 @@
-# IoTaS
-Internet of Things at Scale.
+# Streams
+Platform for easy design and deployment of distributed streaming applications
 
 ##How to run locally
 From command line execute the following commands:
 
-`cd $IOTAS-HOME`  
+`cd STREAMS-HOME`  
 `mvn clean install`  
 `cd webservice`  
 `mvn package`  
-`java -cp target/webservice-0.1.0-SNAPSHOT.jar com.hortonworks.iotas.webservice.IotasApplication server conf/iotas-dev.yaml`
+`java -cp target/webservice-0.1.0-SNAPSHOT.jar com.hortonworks.streams.webservice.StreamsApplication server conf/streams-dev.yaml`
 
 This should start the webserver on localhost port 8080. If you are running storm on the same host you may get 
-`java.net.BindException: Address already in use` in which case you should modify `server` section of iotas.yaml.
+`java.net.BindException: Address already in use` in which case you should modify `server` section of streams.yaml.
 
 ##Intellij
-`Run -> Edit Configuration -> Application -> IotasApplication` in the `Program argument section` add `server $IOTAS-HOME/webservice/conf/iotas.yaml`
+`Run -> Edit Configuration -> Application -> StreamsApplication` in the `Program argument section` add `server $STREAMS-HOME/webservice/conf/streams.yaml`
 
 Same config can be used to start debugging.
 
 ##Bootstrapping webserver with test data
-`cd $IOTAS-HOME\bootstrap`
+`cd $STREAMS-HOME\bootstrap`
 `./bootstrap.sh`
 
 Please see `bootstrap.sh` which is just bunch of curl commands in case you want to add some other objects to webservice's in memory store.
@@ -29,7 +29,7 @@ First you need to populate your kafka topic, if you have not done so create your
 `kafka-topics.sh --create --topic nest-topic --zookeeper localhost:2181 --replication-factor 1 --partitions 3`  
 
 Then run the device simulator CLI to post some sample `IotasMessage` containing nest data to your kafka topic.  
-`cd $IOTAS-HOME`  
+`cd $STREAMS-HOME`  
 `java -cp simulator/target/simulator-0.1.0-SNAPSHOT.jar com.hortonworks.iotas.simulator.CLI -b localhost:9092 -t nest-topic -f simulator/src/main/resources/nest-iotas-messages`
 
 Sometimes the command fails with following exceptions:
@@ -94,7 +94,7 @@ UI can be used to create/generate a topology and run that on a storm cluster.
 
 #Accounting for bad tuples in a topology
 A mechanism has been added so that when messages are being played from a 
-spout in an IotaS topology and they can't successfully be parsed then such 
+spout in an streaming topology and they can't successfully be parsed then such 
 messages end up in some persistent storage. The way it works is ParserBolt 
 needs to be supplied with two stream ids using builder methods 
 withParsedTuplesStreamId and withUnparsedTuplesStreamId. The former stream id

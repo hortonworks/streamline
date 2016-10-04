@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.hortonworks.iotas.webservice;
+package com.hortonworks.streams.webservice;
 
 import com.google.common.cache.CacheBuilder;
 import com.hortonworks.iotas.cache.Cache;
@@ -47,13 +47,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class IotasApplication extends Application<IotasConfiguration> {
+public class StreamsApplication extends Application<StreamsConfiguration> {
 
-    private static final Logger log = LoggerFactory.getLogger(IotasApplication.class);
+    private static final Logger log = LoggerFactory.getLogger(StreamsApplication.class);
     private static final String JDBC = "jdbc";
 
     public static void main(String[] args) throws Exception {
-        new IotasApplication().run(args);
+        new StreamsApplication().run(args);
     }
 
     @Override
@@ -62,18 +62,18 @@ public class IotasApplication extends Application<IotasConfiguration> {
     }
 
     @Override
-    public void initialize(Bootstrap<IotasConfiguration> bootstrap) {
+    public void initialize(Bootstrap<StreamsConfiguration> bootstrap) {
         bootstrap.addBundle(new AssetsBundle("/assets", "/ui", "index.html", "static"));
         super.initialize(bootstrap);
     }
 
     @Override
-    public void run(IotasConfiguration iotasConfiguration, Environment environment) throws Exception {
-        registerResources(iotasConfiguration, environment);
+    public void run(StreamsConfiguration streamsConfiguration, Environment environment) throws Exception {
+        registerResources(streamsConfiguration, environment);
     }
 
-    private StorageManager getCacheBackedDao(IotasConfiguration iotasConfiguration) {
-        StorageProviderConfiguration storageProviderConfiguration = iotasConfiguration.getStorageProviderConfiguration();
+    private StorageManager getCacheBackedDao(StreamsConfiguration streamsConfiguration) {
+        StorageProviderConfiguration storageProviderConfiguration = streamsConfiguration.getStorageProviderConfiguration();
         final StorageManager dao = getStorageManager(storageProviderConfiguration);
         final CacheBuilder cacheBuilder = getGuavaCacheBuilder();
         final Cache<StorableKey, Storable> cache = getCache(dao, cacheBuilder);
@@ -114,7 +114,7 @@ public class IotasApplication extends Application<IotasConfiguration> {
 
 
 
-    private FileStorage getJarStorage (IotasConfiguration configuration) {
+    private FileStorage getJarStorage (StreamsConfiguration configuration) {
         FileStorage fileStorage = null;
         try {
             fileStorage = ReflectionHelper.newInstance(configuration.getFileStorageConfiguration().getClassName());
@@ -125,19 +125,19 @@ public class IotasApplication extends Application<IotasConfiguration> {
         return fileStorage;
     }
 
-    private void registerResources(IotasConfiguration iotasConfiguration, Environment environment) throws ConfigException, ClassNotFoundException, IllegalAccessException, InstantiationException {
-        StorageManager storageManager = getCacheBackedDao(iotasConfiguration);
-        FileStorage fileStorage = this.getJarStorage(iotasConfiguration);
-        int appPort = ((HttpConnectorFactory) ((DefaultServerFactory) iotasConfiguration.getServerFactory()).getApplicationConnectors().get(0)).getPort();
-        String catalogRootUrl = iotasConfiguration.getCatalogRootUrl().replaceFirst("8080", appPort +"");
-        List<ModuleConfiguration> modules = iotasConfiguration.getModules();
+    private void registerResources(StreamsConfiguration streamsConfiguration, Environment environment) throws ConfigException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+        StorageManager storageManager = getCacheBackedDao(streamsConfiguration);
+        FileStorage fileStorage = this.getJarStorage(streamsConfiguration);
+        int appPort = ((HttpConnectorFactory) ((DefaultServerFactory) streamsConfiguration.getServerFactory()).getApplicationConnectors().get(0)).getPort();
+        String catalogRootUrl = streamsConfiguration.getCatalogRootUrl().replaceFirst("8080", appPort +"");
+        List<ModuleConfiguration> modules = streamsConfiguration.getModules();
         List<Object> resourcesToRegister = new ArrayList<>();
         for (ModuleConfiguration moduleConfiguration: modules) {
             ModuleRegistration moduleRegistration = (ModuleRegistration) Class.forName(moduleConfiguration.getClassName()).newInstance();
             if (moduleConfiguration.getConfig() == null) {
                 moduleConfiguration.setConfig(new HashMap<String, Object>());
             }
-            moduleConfiguration.getConfig().put(Constants.CONFIG_TIME_SERIES_DB, iotasConfiguration.getTimeSeriesDBConfiguration());
+            moduleConfiguration.getConfig().put(Constants.CONFIG_TIME_SERIES_DB, streamsConfiguration.getTimeSeriesDBConfiguration());
             moduleConfiguration.getConfig().put(Constants.CONFIG_CATALOG_ROOT_URL, catalogRootUrl);
             moduleRegistration.init(moduleConfiguration.getConfig(), fileStorage);
             StorageManagerAware storageManagerAware = (StorageManagerAware) moduleRegistration;
