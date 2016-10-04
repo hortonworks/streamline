@@ -2,7 +2,17 @@ package com.hortonworks.iotas.streams.runtime.rule.condition.expression;
 
 import com.google.common.collect.ImmutableList;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.*;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.AggregateFunctionExpression;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.BinaryExpression;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Condition;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Expression;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.FunctionExpression;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.GroupBy;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Having;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Literal;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Operator;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Projection;
 import org.junit.Test;
 
 import java.util.Arrays;

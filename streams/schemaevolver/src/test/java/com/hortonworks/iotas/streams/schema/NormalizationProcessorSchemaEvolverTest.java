@@ -5,7 +5,12 @@ import com.google.common.collect.Maps;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.streams.common.IotasEventImpl;
 import com.hortonworks.iotas.streams.layout.component.Stream;
-import com.hortonworks.iotas.streams.layout.component.impl.normalization.*;
+import com.hortonworks.iotas.streams.layout.component.impl.normalization.BulkNormalizationConfig;
+import com.hortonworks.iotas.streams.layout.component.impl.normalization.FieldBasedNormalizationConfig;
+import com.hortonworks.iotas.streams.layout.component.impl.normalization.FieldValueGenerator;
+import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationConfig;
+import com.hortonworks.iotas.streams.layout.component.impl.normalization.NormalizationProcessor;
+import com.hortonworks.iotas.streams.layout.component.impl.normalization.Transformer;
 import com.hortonworks.iotas.streams.schema.exception.BadComponentConfigException;
 import org.junit.Test;
 

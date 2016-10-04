@@ -22,7 +22,11 @@ import com.google.common.collect.Lists;
 import com.hortonworks.iotas.streams.notification.Notification;
 import com.hortonworks.iotas.streams.notification.common.NotificationImpl;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 public class NotificationTestObjectFactory {
     private NotificationTestObjectFactory() {

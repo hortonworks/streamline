@@ -10,7 +10,11 @@ import com.hortonworks.iotas.streams.exception.ProcessingException;
 import com.hortonworks.iotas.streams.layout.storm.StormTopologyLayoutConstants;
 import com.hortonworks.iotas.streams.runtime.CustomProcessorRuntime;
 import com.hortonworks.iotas.streams.runtime.processor.ConsoleCustomProcessorRuntime;
-import mockit.*;
+import mockit.Expectations;
+import mockit.Injectable;
+import mockit.Mocked;
+import mockit.Tested;
+import mockit.VerificationsInOrder;
 import mockit.integration.junit4.JMockit;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -25,7 +29,11 @@ import org.junit.runner.RunWith;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.net.MalformedURLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RunWith(JMockit.class)
 public class CustomProcessorBoltTest {

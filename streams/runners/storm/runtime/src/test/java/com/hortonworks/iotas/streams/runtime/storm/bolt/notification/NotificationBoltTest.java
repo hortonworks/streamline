@@ -30,7 +30,11 @@ import com.hortonworks.iotas.streams.notification.service.NotificationQueueHandl
 import com.hortonworks.iotas.streams.notification.store.hbase.HBaseNotificationStore;
 import com.hortonworks.iotas.streams.notifiers.ConsoleNotifier;
 import com.hortonworks.iotas.streams.runtime.notification.IotasEventAdapter;
-import mockit.*;
+import mockit.Expectations;
+import mockit.Mock;
+import mockit.MockUp;
+import mockit.Mocked;
+import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.tuple.Tuple;
@@ -39,7 +43,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  *

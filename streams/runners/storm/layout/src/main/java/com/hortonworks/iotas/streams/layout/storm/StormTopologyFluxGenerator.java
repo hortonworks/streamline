@@ -4,14 +4,29 @@ import com.google.common.base.Function;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Multimap;
-import com.hortonworks.iotas.streams.layout.component.*;
+import com.hortonworks.iotas.streams.layout.component.Component;
+import com.hortonworks.iotas.streams.layout.component.Edge;
+import com.hortonworks.iotas.streams.layout.component.InputComponent;
+import com.hortonworks.iotas.streams.layout.component.IotasProcessor;
+import com.hortonworks.iotas.streams.layout.component.IotasSink;
+import com.hortonworks.iotas.streams.layout.component.IotasSource;
+import com.hortonworks.iotas.streams.layout.component.OutputComponent;
+import com.hortonworks.iotas.streams.layout.component.StreamGrouping;
+import com.hortonworks.iotas.streams.layout.component.TopologyDag;
+import com.hortonworks.iotas.streams.layout.component.TopologyDagVisitor;
 import com.hortonworks.iotas.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.iotas.streams.layout.component.rule.Rule;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.Window;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class StormTopologyFluxGenerator extends TopologyDagVisitor {
     private static final Logger LOG = LoggerFactory.getLogger(StormTopologyFluxGenerator.class);

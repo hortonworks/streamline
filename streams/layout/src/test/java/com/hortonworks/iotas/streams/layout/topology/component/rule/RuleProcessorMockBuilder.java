@@ -27,7 +27,12 @@ import com.hortonworks.iotas.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.iotas.streams.layout.component.rule.Rule;
 import com.hortonworks.iotas.streams.layout.component.rule.action.Action;
 import com.hortonworks.iotas.streams.layout.component.rule.action.TransformAction;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.*;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.BinaryExpression;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Condition;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Expression;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Literal;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Operator;
 
 import java.util.ArrayList;
 import java.util.Collections;

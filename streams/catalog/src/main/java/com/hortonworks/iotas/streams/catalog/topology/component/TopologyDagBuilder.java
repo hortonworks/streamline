@@ -2,7 +2,11 @@ package com.hortonworks.iotas.streams.catalog.topology.component;
 
 
 import com.hortonworks.iotas.common.QueryParam;
-import com.hortonworks.iotas.streams.catalog.*;
+import com.hortonworks.iotas.streams.catalog.Topology;
+import com.hortonworks.iotas.streams.catalog.TopologyEdge;
+import com.hortonworks.iotas.streams.catalog.TopologyProcessor;
+import com.hortonworks.iotas.streams.catalog.TopologySink;
+import com.hortonworks.iotas.streams.catalog.TopologySource;
 import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.iotas.streams.layout.component.TopologyDag;
 

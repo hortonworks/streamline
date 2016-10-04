@@ -33,7 +33,11 @@ import java.util.Map;
 
 import static com.hortonworks.iotas.streams.notification.store.hbase.mappers.AbstractNotificationMapper.CHARSET;
 import static com.hortonworks.iotas.streams.notification.store.hbase.mappers.Mapper.ROWKEY_SEP;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class NotificationIndexMappersTest {
     private static final Logger LOG = LoggerFactory.getLogger(NotificationIndexMappersTest.class);

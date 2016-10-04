@@ -21,7 +21,11 @@ package com.hortonworks.iotas.streams.layout.component.rule;
 import com.google.common.collect.ImmutableList;
 import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.layout.component.rule.action.Action;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.*;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Condition;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.GroupBy;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Having;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Projection;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Window;
 
 import java.io.Serializable;
 import java.util.Collections;
