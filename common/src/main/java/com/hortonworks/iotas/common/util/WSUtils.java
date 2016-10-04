@@ -19,8 +19,8 @@
 package com.hortonworks.iotas.common.util;
 
 import com.google.common.io.ByteStreams;
-import com.hortonworks.iotas.common.catalog.CatalogResponse;
 import com.hortonworks.iotas.common.QueryParam;
+import com.hortonworks.iotas.common.catalog.CatalogResponse;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;

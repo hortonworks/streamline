@@ -18,21 +18,21 @@
 
 package com.hortonworks.iotas.streams.runtime.storm.bolt.notification;
 
-import com.hortonworks.iotas.streams.catalog.NotifierInfo;
-import com.hortonworks.iotas.streams.runtime.notification.IotasEventAdapter;
-import org.apache.storm.task.OutputCollector;
-import org.apache.storm.task.TopologyContext;
-import org.apache.storm.topology.OutputFieldsDeclarer;
-import org.apache.storm.topology.base.BaseRichBolt;
-import org.apache.storm.tuple.Tuple;
-import com.hortonworks.iotas.streams.catalog.CatalogRestClient;
 import com.hortonworks.iotas.streams.IotasEvent;
+import com.hortonworks.iotas.streams.catalog.CatalogRestClient;
+import com.hortonworks.iotas.streams.catalog.NotifierInfo;
 import com.hortonworks.iotas.streams.notification.Notification;
 import com.hortonworks.iotas.streams.notification.NotifierConfig;
 import com.hortonworks.iotas.streams.notification.common.NotifierConfigImpl;
 import com.hortonworks.iotas.streams.notification.service.NotificationService;
 import com.hortonworks.iotas.streams.notification.service.NotificationServiceImpl;
 import com.hortonworks.iotas.streams.notification.store.hbase.HBaseNotificationStore;
+import com.hortonworks.iotas.streams.runtime.notification.IotasEventAdapter;
+import org.apache.storm.task.OutputCollector;
+import org.apache.storm.task.TopologyContext;
+import org.apache.storm.topology.OutputFieldsDeclarer;
+import org.apache.storm.topology.base.BaseRichBolt;
+import org.apache.storm.tuple.Tuple;
 
 import java.io.File;
 import java.util.Collections;

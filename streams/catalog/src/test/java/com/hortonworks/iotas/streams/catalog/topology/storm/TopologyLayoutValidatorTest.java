@@ -1,18 +1,17 @@
 package com.hortonworks.iotas.streams.catalog.topology.storm;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import com.hortonworks.iotas.streams.runtime.CustomProcessorRuntime;
+import com.hortonworks.iotas.common.util.ProxyUtil;
 import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager;
 import com.hortonworks.iotas.streams.catalog.Topology;
 import com.hortonworks.iotas.streams.catalog.topology.TopologyLayoutValidator;
+import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.iotas.streams.layout.component.TopologyActions;
 import com.hortonworks.iotas.streams.layout.component.TopologyLayout;
-import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.iotas.streams.layout.storm.StormTopologyActionsImpl;
 import com.hortonworks.iotas.streams.layout.storm.StormTopologyLayoutConstants;
-import com.hortonworks.iotas.common.util.ProxyUtil;
+import com.hortonworks.iotas.streams.runtime.CustomProcessorRuntime;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;

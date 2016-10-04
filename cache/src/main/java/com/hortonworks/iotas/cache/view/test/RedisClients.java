@@ -19,7 +19,6 @@
 package com.hortonworks.iotas.cache.view.test;
 
 import com.lambdaworks.redis.RedisConnection;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

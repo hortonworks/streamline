@@ -23,24 +23,19 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.hortonworks.iotas.streams.layout.component.Stream;
-import com.hortonworks.iotas.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.Result;
 import com.hortonworks.iotas.streams.exception.ProcessingException;
-import com.hortonworks.iotas.streams.runtime.rule.RuleRuntime;
+import com.hortonworks.iotas.streams.layout.component.Stream;
+import com.hortonworks.iotas.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.iotas.streams.runtime.ProcessorRuntime;
+import com.hortonworks.iotas.streams.runtime.rule.RuleRuntime;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.hortonworks.iotas.streams.common.IotasEventImpl.GROUP_BY_TRIGGER_EVENT;
 

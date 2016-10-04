@@ -18,11 +18,11 @@
 
 package com.hortonworks.iotas.streams.runtime.storm.layout.runtime.rule.topology;
 
-import com.hortonworks.iotas.streams.runtime.storm.bolt.rules.RulesBolt;
 import com.hortonworks.iotas.streams.layout.component.ComponentBuilder;
 import com.hortonworks.iotas.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.iotas.streams.runtime.processor.RuleProcessorRuntime;
 import com.hortonworks.iotas.streams.runtime.rule.RulesDependenciesFactory;
+import com.hortonworks.iotas.streams.runtime.storm.bolt.rules.RulesBolt;
 import org.apache.storm.Config;
 import org.apache.storm.ILocalCluster;
 import org.apache.storm.LocalCluster;

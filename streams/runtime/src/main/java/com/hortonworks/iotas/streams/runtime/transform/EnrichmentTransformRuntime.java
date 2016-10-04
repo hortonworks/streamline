@@ -18,11 +18,11 @@
  */
 package com.hortonworks.iotas.streams.runtime.transform;
 
-import com.hortonworks.iotas.streams.layout.Transform;
 import com.hortonworks.iotas.streams.IotasEvent;
-import com.hortonworks.iotas.streams.runtime.RuntimeService;
+import com.hortonworks.iotas.streams.layout.Transform;
 import com.hortonworks.iotas.streams.layout.component.rule.action.transform.EnrichmentTransform;
 import com.hortonworks.iotas.streams.layout.component.rule.action.transform.TransformDataProvider;
+import com.hortonworks.iotas.streams.runtime.RuntimeService;
 import com.hortonworks.iotas.streams.runtime.TransformRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

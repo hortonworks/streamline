@@ -25,14 +25,7 @@ import com.hortonworks.iotas.streams.catalog.StreamInfo;
 import com.hortonworks.iotas.streams.catalog.UDFInfo;
 import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.iotas.streams.layout.component.Stream;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.AsExpression;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.BinaryExpression;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.Condition;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.Literal;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.Operator;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.Projection;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.Udf;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.*;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
@@ -43,7 +36,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 @RunWith(JMockit.class)
 public class RuleParserTest {

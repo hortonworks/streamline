@@ -19,9 +19,9 @@
 package com.hortonworks.iotas.streams.notification.store.hbase.mappers;
 
 import com.google.common.collect.Lists;
+import com.hortonworks.iotas.common.util.ReflectionHelper;
 import com.hortonworks.iotas.streams.notification.Notification;
 import com.hortonworks.iotas.streams.notification.util.NotificationTestObjectFactory;
-import com.hortonworks.iotas.common.util.ReflectionHelper;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,11 +33,7 @@ import java.util.Map;
 
 import static com.hortonworks.iotas.streams.notification.store.hbase.mappers.AbstractNotificationMapper.CHARSET;
 import static com.hortonworks.iotas.streams.notification.store.hbase.mappers.Mapper.ROWKEY_SEP;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class NotificationIndexMappersTest {
     private static final Logger LOG = LoggerFactory.getLogger(NotificationIndexMappersTest.class);

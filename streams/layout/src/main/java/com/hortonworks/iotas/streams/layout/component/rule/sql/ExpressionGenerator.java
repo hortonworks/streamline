@@ -20,39 +20,11 @@ package com.hortonworks.iotas.streams.layout.component.rule.sql;
 
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.streams.layout.component.Stream;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.AggregateFunctionExpression;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.ArrayFieldExpression;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.AsExpression;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.BinaryExpression;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.Expression;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.ExpressionList;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.FunctionExpression;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.Literal;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.MapFieldExpression;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.Operator;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.Udf;
-import org.apache.calcite.sql.SqlAggFunction;
-import org.apache.calcite.sql.SqlBinaryOperator;
-import org.apache.calcite.sql.SqlCall;
-import org.apache.calcite.sql.SqlCharStringLiteral;
-import org.apache.calcite.sql.SqlFunction;
-import org.apache.calcite.sql.SqlIdentifier;
-import org.apache.calcite.sql.SqlLiteral;
-import org.apache.calcite.sql.SqlNode;
-import org.apache.calcite.sql.SqlNodeList;
-import org.apache.calcite.sql.SqlNumericLiteral;
-import org.apache.calcite.sql.SqlOperator;
-import org.apache.calcite.sql.SqlSpecialOperator;
-import org.apache.calcite.sql.SqlUnresolvedFunction;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.*;
+import org.apache.calcite.sql.*;
 import org.apache.calcite.sql.util.SqlBasicVisitor;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression.STAR;
 

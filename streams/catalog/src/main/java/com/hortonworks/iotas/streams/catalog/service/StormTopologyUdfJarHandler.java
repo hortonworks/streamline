@@ -1,10 +1,6 @@
 package com.hortonworks.iotas.streams.catalog.service;
 
-import com.hortonworks.iotas.streams.layout.component.Edge;
-import com.hortonworks.iotas.streams.layout.component.IotasProcessor;
-import com.hortonworks.iotas.streams.layout.component.IotasSink;
-import com.hortonworks.iotas.streams.layout.component.IotasSource;
-import com.hortonworks.iotas.streams.layout.component.TopologyDagVisitor;
+import com.hortonworks.iotas.streams.layout.component.*;
 import com.hortonworks.iotas.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.iotas.streams.layout.component.rule.Rule;
 

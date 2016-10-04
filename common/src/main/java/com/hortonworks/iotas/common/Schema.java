@@ -21,12 +21,7 @@ import com.google.common.collect.ImmutableList;
 import com.hortonworks.iotas.common.exception.ParserException;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 //TODO Make this class Jackson Compatible.
 public class Schema implements Serializable {

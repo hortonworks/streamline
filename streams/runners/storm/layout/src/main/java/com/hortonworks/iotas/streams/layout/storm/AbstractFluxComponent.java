@@ -4,12 +4,7 @@ import com.hortonworks.iotas.streams.layout.ConfigFieldValidation;
 import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.iotas.streams.layout.exception.BadTopologyLayoutException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Abstract implementation of FluxComponent interface. Child classes just

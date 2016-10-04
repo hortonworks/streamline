@@ -1,7 +1,7 @@
 package com.hortonworks.iotas.streams.layout.component.impl;
 
-import com.hortonworks.iotas.streams.layout.component.TopologyDagVisitor;
 import com.hortonworks.iotas.streams.layout.component.IotasSink;
+import com.hortonworks.iotas.streams.layout.component.TopologyDagVisitor;
 
 import java.util.Map;
 

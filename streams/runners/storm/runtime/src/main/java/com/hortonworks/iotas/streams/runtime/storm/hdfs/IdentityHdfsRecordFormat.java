@@ -1,9 +1,8 @@
 package com.hortonworks.iotas.streams.runtime.storm.hdfs;
 
 import com.hortonworks.iotas.streams.runtime.storm.bolt.ParserBolt;
-
-import org.apache.storm.tuple.Tuple;
 import org.apache.storm.hdfs.bolt.format.RecordFormat;
+import org.apache.storm.tuple.Tuple;
 
 /**
  * Implementation of RecordFormat for unparsed tuples that need to be written

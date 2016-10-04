@@ -1,16 +1,16 @@
 package com.hortonworks.iotas.streams.runtime.storm.bolt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.iotas.streams.catalog.CatalogRestClient;
-import com.hortonworks.iotas.streams.IotasEvent;
-import com.hortonworks.iotas.streams.common.IotasEventImpl;
-import com.hortonworks.iotas.streams.Result;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.common.util.Utils;
-import com.hortonworks.iotas.streams.runtime.CustomProcessorRuntime;
-import com.hortonworks.iotas.streams.exception.ProcessingException;
 import com.hortonworks.iotas.common.util.ProxyUtil;
+import com.hortonworks.iotas.common.util.Utils;
+import com.hortonworks.iotas.streams.IotasEvent;
+import com.hortonworks.iotas.streams.Result;
+import com.hortonworks.iotas.streams.catalog.CatalogRestClient;
+import com.hortonworks.iotas.streams.common.IotasEventImpl;
+import com.hortonworks.iotas.streams.exception.ProcessingException;
 import com.hortonworks.iotas.streams.layout.storm.StormTopologyLayoutConstants;
+import com.hortonworks.iotas.streams.runtime.CustomProcessorRuntime;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.storm.task.OutputCollector;

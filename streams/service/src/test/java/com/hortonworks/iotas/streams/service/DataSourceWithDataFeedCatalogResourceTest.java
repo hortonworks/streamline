@@ -1,14 +1,13 @@
 package com.hortonworks.iotas.streams.service;
 
 import com.hortonworks.iotas.common.catalog.CatalogResponse;
-import com.hortonworks.iotas.streams.catalog.DataFeed;
-import com.hortonworks.iotas.streams.catalog.DataSource;
 import com.hortonworks.iotas.registries.tag.Tag;
 import com.hortonworks.iotas.registries.tag.client.TagClient;
-import com.hortonworks.iotas.streams.catalog.service.CatalogService;
-import com.hortonworks.iotas.streams.catalog.DataSourceFacade;
-import com.hortonworks.iotas.streams.service.DataSourceWithDataFeedCatalogResource;
+import com.hortonworks.iotas.streams.catalog.DataFeed;
+import com.hortonworks.iotas.streams.catalog.DataSource;
 import com.hortonworks.iotas.streams.catalog.DataSourceDto;
+import com.hortonworks.iotas.streams.catalog.DataSourceFacade;
+import com.hortonworks.iotas.streams.catalog.service.CatalogService;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;

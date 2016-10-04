@@ -21,14 +21,13 @@ package com.hortonworks.iotas.cache.view;
 import com.hortonworks.iotas.cache.AbstractCache;
 import com.hortonworks.iotas.cache.Cache;
 import com.hortonworks.iotas.cache.LoadableCache;
+import com.hortonworks.iotas.cache.exception.CacheException;
 import com.hortonworks.iotas.cache.stats.CacheStats;
 import com.hortonworks.iotas.cache.view.datastore.DataStoreReader;
 import com.hortonworks.iotas.cache.view.datastore.DataStoreWriter;
 import com.hortonworks.iotas.cache.view.io.loader.CacheLoader;
 import com.hortonworks.iotas.cache.view.io.loader.CacheLoaderCallback;
 import com.hortonworks.iotas.cache.view.io.writer.CacheWriter;
-import com.hortonworks.iotas.cache.exception.CacheException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

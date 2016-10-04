@@ -1,20 +1,16 @@
 package com.hortonworks.iotas.streams.runtime.storm.bolt;
 
-import com.hortonworks.iotas.streams.catalog.CatalogRestClient;
-import com.hortonworks.iotas.streams.runtime.processor.ConsoleCustomProcessorRuntime;
-import com.hortonworks.iotas.streams.IotasEvent;
-import com.hortonworks.iotas.streams.common.IotasEventImpl;
-import com.hortonworks.iotas.streams.Result;
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.streams.runtime.CustomProcessorRuntime;
-import com.hortonworks.iotas.streams.exception.ProcessingException;
 import com.hortonworks.iotas.common.util.ProxyUtil;
+import com.hortonworks.iotas.streams.IotasEvent;
+import com.hortonworks.iotas.streams.Result;
+import com.hortonworks.iotas.streams.catalog.CatalogRestClient;
+import com.hortonworks.iotas.streams.common.IotasEventImpl;
+import com.hortonworks.iotas.streams.exception.ProcessingException;
 import com.hortonworks.iotas.streams.layout.storm.StormTopologyLayoutConstants;
-import mockit.Expectations;
-import mockit.Injectable;
-import mockit.Mocked;
-import mockit.Tested;
-import mockit.VerificationsInOrder;
+import com.hortonworks.iotas.streams.runtime.CustomProcessorRuntime;
+import com.hortonworks.iotas.streams.runtime.processor.ConsoleCustomProcessorRuntime;
+import mockit.*;
 import mockit.integration.junit4.JMockit;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -29,11 +25,7 @@ import org.junit.runner.RunWith;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RunWith(JMockit.class)
 public class CustomProcessorBoltTest {

@@ -18,15 +18,10 @@
  */
 package com.hortonworks.iotas.streams.catalog.service;
 
-import com.hortonworks.iotas.registries.parser.ParserInfo;
-import com.hortonworks.iotas.registries.parser.client.ParserClient;
-import com.hortonworks.iotas.streams.catalog.DataFeed;
-import com.hortonworks.iotas.streams.catalog.DataSet;
-import com.hortonworks.iotas.streams.catalog.DataSource;
-import com.hortonworks.iotas.streams.catalog.Device;
-import com.hortonworks.iotas.streams.catalog.FileInfo;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.common.util.FileStorage;
+import com.hortonworks.iotas.registries.parser.ParserInfo;
+import com.hortonworks.iotas.registries.parser.client.ParserClient;
 import com.hortonworks.iotas.registries.tag.TaggedEntity;
 import com.hortonworks.iotas.registries.tag.client.TagClient;
 import com.hortonworks.iotas.storage.DataSourceSubType;
@@ -35,19 +30,14 @@ import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.StorageManager;
 import com.hortonworks.iotas.storage.exception.StorageException;
 import com.hortonworks.iotas.storage.util.CoreUtils;
+import com.hortonworks.iotas.streams.catalog.*;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**

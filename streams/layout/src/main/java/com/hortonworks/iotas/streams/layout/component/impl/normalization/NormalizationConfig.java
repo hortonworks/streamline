@@ -3,12 +3,9 @@
  */
 package com.hortonworks.iotas.streams.layout.component.impl.normalization;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.hortonworks.iotas.common.Config;
 import com.hortonworks.iotas.common.Schema;
-
-import java.io.Serializable;
 
 /**
  * Base class for normalization processor configuration.

@@ -18,8 +18,8 @@
 
 package com.hortonworks.iotas.streams.notification.service;
 
-import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.common.QueryParam;
+import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.notification.Notification;
 import com.hortonworks.iotas.streams.notification.NotificationContext;
 import com.hortonworks.iotas.streams.notification.Notifier;

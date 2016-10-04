@@ -18,6 +18,9 @@
 
 package com.hortonworks.iotas.streams.runtime.storm.layout.runtime.rule.topology;
 
+import com.google.common.collect.Lists;
+import com.hortonworks.iotas.streams.IotasEvent;
+import com.hortonworks.iotas.streams.common.IotasEventImpl;
 import org.apache.storm.spout.SpoutOutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -25,9 +28,6 @@ import org.apache.storm.topology.base.BaseRichSpout;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Values;
 import org.apache.storm.utils.Utils;
-import com.google.common.collect.Lists;
-import com.hortonworks.iotas.streams.IotasEvent;
-import com.hortonworks.iotas.streams.common.IotasEventImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

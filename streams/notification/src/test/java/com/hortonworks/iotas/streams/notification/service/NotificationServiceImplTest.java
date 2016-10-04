@@ -19,13 +19,13 @@
 package com.hortonworks.iotas.streams.notification.service;
 
 import com.hortonworks.iotas.common.QueryParam;
+import com.hortonworks.iotas.common.util.ProxyUtil;
 import com.hortonworks.iotas.streams.notification.Notification;
 import com.hortonworks.iotas.streams.notification.NotificationContext;
 import com.hortonworks.iotas.streams.notification.Notifier;
 import com.hortonworks.iotas.streams.notification.NotifierConfig;
 import com.hortonworks.iotas.streams.notification.store.Criteria;
 import com.hortonworks.iotas.streams.notification.store.NotificationStore;
-import com.hortonworks.iotas.common.util.ProxyUtil;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;

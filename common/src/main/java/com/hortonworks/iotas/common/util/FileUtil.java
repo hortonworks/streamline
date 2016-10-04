@@ -2,11 +2,7 @@ package com.hortonworks.iotas.common.util;
 
 import com.google.common.io.ByteStreams;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.UUID;
 
 public class FileUtil {

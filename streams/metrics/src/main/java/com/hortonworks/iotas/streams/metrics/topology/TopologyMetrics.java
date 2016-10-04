@@ -1,7 +1,7 @@
 package com.hortonworks.iotas.streams.metrics.topology;
 
-import com.hortonworks.iotas.streams.layout.component.TopologyLayout;
 import com.hortonworks.iotas.streams.exception.ConfigException;
+import com.hortonworks.iotas.streams.layout.component.TopologyLayout;
 
 import java.util.Map;
 

@@ -1,5 +1,7 @@
 package com.hortonworks.iotas.streams.runtime.storm.testing;
 
+import com.hortonworks.iotas.streams.IotasEvent;
+import com.hortonworks.iotas.streams.common.IotasEventImpl;
 import com.hortonworks.iotas.streams.runtime.transform.AddHeaderTransformRuntime;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
@@ -8,8 +10,6 @@ import org.apache.storm.topology.base.BaseRichBolt;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
-import com.hortonworks.iotas.streams.IotasEvent;
-import com.hortonworks.iotas.streams.common.IotasEventImpl;
 
 import java.util.Arrays;
 import java.util.HashMap;

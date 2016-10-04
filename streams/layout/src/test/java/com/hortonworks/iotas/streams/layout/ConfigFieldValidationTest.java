@@ -1,6 +1,5 @@
 package com.hortonworks.iotas.streams.layout;
 
-import com.hortonworks.iotas.streams.layout.ConfigFieldValidation;
 import org.junit.Assert;
 import org.junit.Test;
 

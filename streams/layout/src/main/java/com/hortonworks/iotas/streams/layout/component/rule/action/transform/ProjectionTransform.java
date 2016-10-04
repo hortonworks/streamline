@@ -18,11 +18,11 @@
  */
 package com.hortonworks.iotas.streams.layout.component.rule.action.transform;
 
+import com.hortonworks.iotas.streams.IotasEvent;
+import com.hortonworks.iotas.streams.layout.Transform;
+
 import java.util.Collections;
 import java.util.Set;
-
-import com.hortonworks.iotas.streams.layout.Transform;
-import com.hortonworks.iotas.streams.IotasEvent;
 
 /**
  * This class can be used to configure projection transform which can be used in any {@link com.hortonworks.iotas.streams.layout.component.rule.action.Action}

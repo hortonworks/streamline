@@ -18,8 +18,8 @@
 
 package com.hortonworks.iotas.streams.runtime.script;
 
-import com.hortonworks.iotas.streams.layout.component.rule.expression.Expression;
 import com.hortonworks.iotas.streams.IotasEvent;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Expression;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import org.slf4j.Logger;

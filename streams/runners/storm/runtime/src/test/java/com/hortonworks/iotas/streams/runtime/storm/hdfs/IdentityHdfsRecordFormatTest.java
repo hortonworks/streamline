@@ -1,10 +1,10 @@
 package com.hortonworks.iotas.streams.runtime.storm.hdfs;
 
-import org.apache.storm.tuple.Tuple;
 import com.hortonworks.iotas.streams.runtime.storm.bolt.ParserBolt;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
+import org.apache.storm.tuple.Tuple;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

@@ -18,26 +18,20 @@
 
 package com.hortonworks.iotas.streams.runtime.rule;
 
-import com.hortonworks.iotas.streams.layout.component.rule.Rule;
-import com.hortonworks.iotas.streams.layout.component.rule.exception.ConditionEvaluationException;
-import com.hortonworks.iotas.streams.runtime.rule.action.ActionRuntime;
-import com.hortonworks.iotas.streams.runtime.script.Script;
 import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.Result;
-
 import com.hortonworks.iotas.streams.exception.ProcessingException;
+import com.hortonworks.iotas.streams.layout.component.rule.Rule;
+import com.hortonworks.iotas.streams.layout.component.rule.exception.ConditionEvaluationException;
 import com.hortonworks.iotas.streams.runtime.ProcessorRuntime;
+import com.hortonworks.iotas.streams.runtime.rule.action.ActionRuntime;
+import com.hortonworks.iotas.streams.runtime.script.Script;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Represents a rule runtime

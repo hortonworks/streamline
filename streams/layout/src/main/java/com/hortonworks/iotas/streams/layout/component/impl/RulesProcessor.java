@@ -23,8 +23,8 @@ import com.google.common.collect.Collections2;
 import com.hortonworks.iotas.streams.layout.component.IotasProcessor;
 import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.streams.layout.component.TopologyDagVisitor;
-import com.hortonworks.iotas.streams.layout.component.rule.action.Action;
 import com.hortonworks.iotas.streams.layout.component.rule.Rule;
+import com.hortonworks.iotas.streams.layout.component.rule.action.Action;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

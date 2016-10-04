@@ -19,12 +19,12 @@
 package com.hortonworks.iotas.storage.impl.jdbc.mysql;
 
 import com.google.common.cache.CacheBuilder;
+import com.hortonworks.iotas.common.test.IntegrationTest;
 import com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManagerIntegrationTest;
 import com.hortonworks.iotas.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.iotas.storage.impl.jdbc.config.HikariBasicConfig;
 import com.hortonworks.iotas.storage.impl.jdbc.connection.ConnectionBuilder;
 import com.hortonworks.iotas.storage.impl.jdbc.connection.HikariCPConnectionBuilder;
-import com.hortonworks.iotas.common.test.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;

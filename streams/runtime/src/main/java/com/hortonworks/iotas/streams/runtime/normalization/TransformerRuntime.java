@@ -17,12 +17,12 @@
  */
 package com.hortonworks.iotas.streams.runtime.normalization;
 
-import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.common.Schema;
+import com.hortonworks.iotas.common.exception.ParserException;
+import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.layout.component.impl.normalization.Transformer;
 import com.hortonworks.iotas.streams.runtime.script.GroovyScript;
 import com.hortonworks.iotas.streams.runtime.script.engine.GroovyScriptEngine;
-import com.hortonworks.iotas.common.exception.ParserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

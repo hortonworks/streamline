@@ -19,18 +19,13 @@
 package com.hortonworks.iotas.streams.runtime.rule.sql;
 
 
-import org.apache.storm.task.OutputCollector;
-import org.apache.storm.tuple.Tuple;
-import org.apache.storm.tuple.Values;
 import com.hortonworks.iotas.streams.runtime.rule.condition.expression.StormSqlExpression;
 import com.hortonworks.iotas.streams.runtime.script.engine.ScriptEngine;
 import org.apache.storm.sql.StormSql;
-import org.apache.storm.sql.runtime.ChannelContext;
-import org.apache.storm.sql.runtime.ChannelHandler;
-import org.apache.storm.sql.runtime.DataSource;
-import org.apache.storm.sql.runtime.DataSourcesProvider;
-import org.apache.storm.sql.runtime.FieldInfo;
-import org.apache.storm.sql.runtime.ISqlTridentDataSource;
+import org.apache.storm.sql.runtime.*;
+import org.apache.storm.task.OutputCollector;
+import org.apache.storm.tuple.Tuple;
+import org.apache.storm.tuple.Values;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

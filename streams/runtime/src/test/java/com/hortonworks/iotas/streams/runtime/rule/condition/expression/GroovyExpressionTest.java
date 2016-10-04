@@ -1,13 +1,7 @@
 package com.hortonworks.iotas.streams.runtime.rule.condition.expression;
 
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.ArrayFieldExpression;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.BinaryExpression;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.Condition;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.Expression;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.MapFieldExpression;
-import com.hortonworks.iotas.streams.layout.component.rule.expression.Operator;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.*;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -19,8 +19,8 @@
 package com.hortonworks.iotas.streams.runtime.script;
 
 
-import com.hortonworks.iotas.streams.layout.component.rule.expression.Expression;
 import com.hortonworks.iotas.streams.IotasEvent;
+import com.hortonworks.iotas.streams.layout.component.rule.expression.Expression;
 import com.hortonworks.iotas.streams.runtime.script.engine.ScriptEngine;
 
 import javax.script.ScriptException;
