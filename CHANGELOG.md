@@ -1,4 +1,5 @@
 ## 0.1.4
+ * IOT-396: Enhance UDF support in rules engine.
  * IOT-359: Move Windowing its own component.
  * IOT-390: Added option to directly specify conditions in rule api.
  * IOT-429: Topology Editor component panel changes.
