@@ -43,11 +43,12 @@ export default class NotificationNodeForm extends Component {
 		});
 
 		this.rulesArr = [];
+		this.windowsArr = [];
 		this.state = obj;
-		this.fetchRules();
+		this.fetchRulesAndWindows();
 	}
 
-	fetchRules(){
+	fetchRulesAndWindows(){
 		let {topologyId, sourceNodes} = this.props;
 		let promiseArr = [];
 		//Get all source nodes of notification and find rule processor
@@ -59,6 +60,7 @@ export default class NotificationNodeForm extends Component {
 		Promise.all(promiseArr)
 			.then(results=>{
 				let rulePromises = [];
+				let windowPromises = [];
 				results.map(result=>{
 					let data = result.entity;
 					if(data.type === 'RULE'){
@@ -67,12 +69,24 @@ export default class NotificationNodeForm extends Component {
 								rulePromises.push(TopologyREST.getNode(topologyId, 'rules', ruleId));
 							})
 						}
+					} else if(data.type === 'WINDOW'){
+						if(data.config.properties.rules){
+							data.config.properties.rules.map(ruleId=>{
+								windowPromises.push(TopologyREST.getNode(topologyId, 'windows', ruleId));
+							})
+						}
 					}
 				})
 				Promise.all(rulePromises)
 					.then(ruleResults=>{
 						ruleResults.map((rule, i)=>{
 							this.rulesArr.push(rule.entity);
+						})
+					})
+				Promise.all(windowPromises)
+					.then(windowResults=>{
+						windowResults.map((window, i)=>{
+							this.windowsArr.push(window.entity);
 						})
 					})
 			})
@@ -169,6 +183,24 @@ export default class NotificationNodeForm extends Component {
 		return validDataFlag;
 	}
 
+	updateActions(obj, nodeName, name, type, promiseArr){
+		let {topologyId} = this.props;
+		if(obj && obj.actions){
+			let updateFlag = false;
+			obj.actions.map((a,i)=>{
+				if(a.name === nodeName){
+					a.notifierName = this.state.configFields.notifierName;
+					a.outputFieldsAndDefaults = this.state.configFields.fieldValues;
+					a.name = name;
+					updateFlag = true;
+				}
+			});
+			if(updateFlag){
+				promiseArr.push(TopologyREST.updateNode(topologyId, type, obj.id, {body: JSON.stringify(obj)}))
+			}
+		}
+	}
+
 	handleSave(name){
 		let {topologyId, nodeType} = this.props;
 		let nodeId = this.nodeData.id;
@@ -178,20 +210,12 @@ export default class NotificationNodeForm extends Component {
 		let promiseArr = [TopologyREST.updateNode(topologyId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)})]
 		if(this.rulesArr.length){
 			this.rulesArr.map(rule=>{
-				if(rule.actions){
-					let updateFlag = false;
-					rule.actions.map((a,i)=>{
-						if(a.name === nodeName){
-							a.notifierName = this.state.configFields.notifierName;
-							a.outputFieldsAndDefaults = this.state.configFields.fieldValues;
-							a.name = name;
-							updateFlag = true;
-						}
-					})
-					if(updateFlag){
-						promiseArr.push(TopologyREST.updateNode(topologyId, 'rules', rule.id, {body: JSON.stringify(rule)}))
-					}
-				}
+				this.updateActions(rule, nodeName, name, 'rules', promiseArr);
+			})
+		}
+		if(this.windowsArr.length){
+			this.windowsArr.map(windowObj=>{
+				this.updateActions(windowObj, nodeName, name, 'windows', promiseArr);
 			})
 		}
 		return Promise.all(promiseArr);

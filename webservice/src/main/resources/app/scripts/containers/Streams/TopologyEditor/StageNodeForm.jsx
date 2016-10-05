@@ -180,11 +180,11 @@ export default class StageFormNode extends Component{
 				if(maxCacheSize === '' && changedFields.indexOf("maxCacheSize") === -1)
 					changedFields.push("maxCacheSize");
 			}
-			if(transformFields.length == 0)
-				validateDataFlag = false;
-			validateDataFlag = true;
-		}
-		validateDataFlag = false;
+		} else if(transform === '')
+			validateDataFlag = false;
+		if(transformFields.length == 0)
+			validateDataFlag = false;
+		
 		this.setState({showError: true, showErrorLabel: true, changedFields: changedFields});
 		return validateDataFlag;
 	}

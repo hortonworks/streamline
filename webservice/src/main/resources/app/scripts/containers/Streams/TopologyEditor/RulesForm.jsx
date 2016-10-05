@@ -27,23 +27,36 @@ class RuleFormula extends Component {
 			operator: null,
 			field2: null
 		}];
+                let fields = [];
+                props.fields.map((f)=>{
+                        fields = [...fields, ...f.fields];
+                });
 		this.state = {
 			data: data,
-			fields: props.fields[0].fields,
-			fields2Arr: JSON.parse(JSON.stringify(props.fields[0].fields)),
+                        fields: fields,
+                        fields2Arr: JSON.parse(JSON.stringify(fields)),
 			sqlStr: props.sql,
 			show: false
 		};
 	}
 	componentDidMount(){
 		if(this.props.sql){
-			this.prepareFormula(this.props.sql);
+                        this.prepareFormula(this.props.sql, this.props.condition);
 		}
 	}
-	prepareFormula(sqlStr){
-		let arr = sqlStr.split(' ');
-		let index = arr.findIndex(function(d){return d.indexOf('where') !== -1});
-		let t = [];
+        prepareFormula(sqlStr, conditionStr){
+        let arr = [];
+        let t = [];
+        if(conditionStr) {
+                arr = conditionStr.split(' ');
+                arr.map((d)=>{
+                        if(d !== ''){
+                                t.push(d);
+                        }
+                })
+        } else {
+                arr = sqlStr.split(' ');
+                let index = arr.findIndex(function(d){return d.toLowerCase().indexOf('where') !== -1});
 		arr.map((d,i)=>{
 			if(i > index){
 				if(d !== ''){
@@ -51,6 +64,7 @@ class RuleFormula extends Component {
 				}
 			}
 		})
+        }
 		let dummyArr = ['field1', 'operator','field2','logicalOp'];
 		let j = 0;
 		let result = [];
@@ -206,6 +220,7 @@ class RuleFormula extends Component {
 	previewQuery(){
 		let {data} = this.state;
 		this.sqlStrQuery = "select * from parsedTuplesStream where ";
+                this.conditionStr = '';
 		this.validSQL = true;
 		return(
 			<pre className="query-preview" key={1}>
@@ -213,6 +228,7 @@ class RuleFormula extends Component {
 				{data.map((d,i)=>{
 					if(d.hasOwnProperty('logicalOp')){
 						this.sqlStrQuery += ' ' + d.logicalOp + ' ' + d.field1 + ' ' + d.operator + ' ' + d.field2;
+                                                this.conditionStr += ' ' + d.logicalOp + ' ' + d.field1 + ' ' + d.operator + ' ' + d.field2;
 						return[
 							this.renderOperator(d.logicalOp, i+'.1'),
 							this.renderFieldName(d.field1, i),
@@ -221,6 +237,7 @@ class RuleFormula extends Component {
 						]
 					} else {
 						this.sqlStrQuery += d.field1 + ' ' + d.operator + ' ' + d.field2;
+                                                this.conditionStr += d.field1 + ' ' + d.operator + ' ' + d.field2;
 						return[
 							this.renderFieldName(d.field1, i),
 							this.renderOperator(d.operator, i),
@@ -283,8 +300,8 @@ class RuleFormula extends Component {
 export default class RulesForm extends Component {
 	constructor(props){
 		super(props);
-		let {name = '', description = '', sql = '', actions = []} = props.ruleObj;
-		this.state = { name, description, sql, actions, 
+                let {name = '', description = '', sql = '', actions = [], condition = ''} = props.ruleObj;
+                this.state = { name, description, sql, actions, condition,
 			showOptionalFields: false, ruleType: true, showNameError: false, showDescriptionError: false};
 		if(this.props.ruleObj.id){
 			this.getNode(this.props.ruleObj.id);
@@ -335,13 +352,34 @@ export default class RulesForm extends Component {
 		}
 	}
 	handleSave(){
-		let {topologyId, ruleObj, nodeData, nodeType} = this.props;
+                let {topologyId, ruleObj, nodeData, nodeType, parsedStreams} = this.props;
 		let {name, description, ruleType, sql, actions} = this.state;
+                let ruleData = {}, condition = "", streams = [], selectedFields = [];
 		if(ruleType){
 			//if general rule, than take from RuleFormula
-			sql = this.refs.RuleFormula.sqlStrQuery;
+                        condition = this.refs.RuleFormula.conditionStr;
+                        //get selected fields
+                        let conditionData = this.refs.RuleFormula.state.data;
+                        conditionData.map((o)=>{
+                                if(selectedFields.indexOf(o.field1) === -1)
+                                        selectedFields.push(o.field1);
+                                if(selectedFields.indexOf(o.field2) === -1)
+                                        selectedFields.push(o.field2);
+                        });
+                        //Adding stream names
+                        parsedStreams.map((stream)=>{
+                                stream.fields.map((field)=>{
+                                        if(selectedFields.indexOf(field.name) !== -1){
+                                                if(streams.indexOf(stream.streamId) === -1){
+                                                        streams.push(stream.streamId);
+                                                }
+                                        }
+                                })
+                        })
+                        ruleData = {name, description, streams, condition, actions};
+                } else {
+                        ruleData = {name, description, sql, actions};
 		}
-		let ruleData = {name, description, sql, actions};
 		let promiseArr = [];
 		if(ruleObj.id){
 			//update rule
@@ -433,7 +471,7 @@ export default class RulesForm extends Component {
 						</div>
 					</div>
 					{this.state.ruleType ? 
-						<RuleFormula ref="RuleFormula" fields={this.props.parsedStreams} sql={this.state.sql}/>
+                                                <RuleFormula ref="RuleFormula" fields={this.props.parsedStreams} sql={this.state.sql} condition={this.state.condition}/>
 						:
 						<div className="form-group">
 							<label className="col-sm-2 control-label">SQL Query*</label>

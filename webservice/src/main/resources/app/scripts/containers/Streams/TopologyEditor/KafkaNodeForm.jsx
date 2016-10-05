@@ -167,7 +167,8 @@ export default class KafkaNodeForm extends Component {
 	handleValueChange(fieldObj, e) {
 		let obj = this.state.configFields;
 		obj[e.target.name] = e.target.type === "number" ? Math.abs(e.target.value) : e.target.value;
-		if(e.target.value === '') fieldObj.isInvalid = true;
+		let requiredField = _.find(this.state.reqFieldArr, (f)=>{return f.name === e.target.name});
+		if(requiredField && e.target.value === '') fieldObj.isInvalid = true;
 		else delete fieldObj.isInvalid;
 		this.setState({configFields: obj, showError: true, showErrorLabel: false});
 	}
@@ -184,7 +185,11 @@ export default class KafkaNodeForm extends Component {
 			newFieldsObj = this.state.configFields;
 		//Find the updated values from default ones
 		configArr.map((o)=>{
-			if(newFieldsObj[o.name] !== o.defaultValue){
+			if(o.defaultValue !== null) {
+				if(newFieldsObj[o.name] !== o.defaultValue){
+					data[o.name] = newFieldsObj[o.name];
+				}
+			} else if(newFieldsObj[o.name] !== '') {
 				data[o.name] = newFieldsObj[o.name];
 			}
 		})
@@ -282,7 +287,7 @@ export default class KafkaNodeForm extends Component {
 																<input
 																	name={o.name}
 																	value={this.state.configFields[o.name]}
-																	onChange={this.handleValueChange.bind(this)}
+																	onChange={this.handleValueChange.bind(this, o)}
 																	type={o.type}
 																	className="form-control"
 																	disabled={!this.state.editMode}

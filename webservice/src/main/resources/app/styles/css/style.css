@@ -1254,3 +1254,6 @@ span.user {
 .invalidInput {
   border-color: #d81010;
 }
+.table-stream > tbody > tr > td {
+  word-break: break-all;
+}

@@ -199,7 +199,7 @@ export default class TopologyListingContainer extends Component {
 							              itemsPerPage={entities.length > pageSize ? pageSize : 0} pageButtonLimit={5}>
 							                <Thead>
 							                  <Th column="name">Topology Name</Th>
-							                  <Th column="timestamp">Last Updated On</Th>
+							                  <Th column="timestamp">Created On</Th>
 							                  <Th column="action">Actions</Th>
 							                </Thead>
 							              {entities.map((obj, i) => {

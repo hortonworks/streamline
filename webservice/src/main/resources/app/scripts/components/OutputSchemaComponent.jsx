@@ -35,6 +35,7 @@ export default class OutputSchema extends Component {
 			connectedTargetNodes: []
 		}
 		this.currentRulesArr = [];
+		this.currentWindowsArr = [];
 		this.fetchNode();
 	}
 
@@ -43,7 +44,8 @@ export default class OutputSchema extends Component {
 		let promiseArr = [
 			TopologyREST.getNode(topologyId, nodeType, nodeId),
 			TopologyREST.getAllNodes(topologyId, 'edges'),
-			TopologyREST.getAllNodes(topologyId, 'rules')
+			TopologyREST.getAllNodes(topologyId, 'rules'),
+			TopologyREST.getAllNodes(topologyId, 'windows'),
 		];
 
 		Promise.all(promiseArr)
@@ -65,6 +67,13 @@ export default class OutputSchema extends Component {
 					let allRules = results[2].entities;
 					let ruleIdArr = this.nodeData.config.properties.rules || [];
 					this.currentRulesArr = allRules.filter(r=>{return ruleIdArr.indexOf(r.id) !== -1});
+				}
+
+				//Find all windows of current node
+				if(this.nodeData.type === 'WINDOW'){
+					let allRules = results[3].entities;
+					let ruleIdArr = this.nodeData.config.properties.rules || [];
+					this.currentWindowsArr = allRules.filter(r=>{return ruleIdArr.indexOf(r.id) !== -1});
 				}
 
 				this.generateData(this.nodeData);
@@ -190,6 +199,24 @@ export default class OutputSchema extends Component {
 			})
 		}
 
+		//Remove window actions association with the stream
+		if(this.nodeData.type === 'WINDOW'){
+			this.currentWindowsArr.map(windowObj=>{
+				if(windowObj.actions && windowObj.actions.length > 0){
+					let indexArr = [];
+					windowObj.actions.map((r,i)=>{
+						if(r.outputStreams.indexOf(streamsObj.streamId) !== -1){
+							indexArr.push(i);
+						}
+					})
+					indexArr.reverse().map(num=>{
+						windowObj.actions.splice(num, 1);
+					})
+					promiseArr.push(TopologyREST.updateNode(topologyId, 'windows', windowObj.id, {body: JSON.stringify(windowObj)}));
+				}
+			})
+		}
+
 		//Removing stream
 		promiseArr.push(TopologyREST.deleteNode(topologyId, 'streams', streamId));
 		
@@ -265,7 +292,7 @@ export default class OutputSchema extends Component {
 			<div className="row">
 				<div className="col-sm-12">
 					<Table 
-		              className="table table-hover table-bordered"
+		              className="table table-hover table-bordered table-stream"
 		              noDataText="No records found."
 		              currentPage={0}
 		              itemsPerPage={outputStreams.length > pageSize ? pageSize : 0} pageButtonLimit={5}>

@@ -164,7 +164,8 @@ export default class CustomNodeForm extends Component {
 		});
 		if(!validDataFlag)
 			this.setState({showError: true, showErrorLabel: true});
-		else this.setState({showErrorLabel: false}); validDataFlag;
+		else this.setState({showErrorLabel: false});
+		return validDataFlag;
 	}
 
 	handleSave(name){

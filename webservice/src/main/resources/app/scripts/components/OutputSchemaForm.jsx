@@ -270,12 +270,21 @@ export default class OutputSchema extends Component {
 			}
 			promiseArr.push(TopologyREST.updateNode(topologyId, nodeType, nodeData.id, {body: JSON.stringify(nodeData)}));
 		}
-		//If rule processor, update rules with actions
-		if(ruleProcessor){
+		//If rule/window processor, update rules with actions
+		if(ruleProcessor || nodeData.type === 'WINDOW'){
 			let promise = [];
-			oldForRule.map(id=>{
-				promise.push(TopologyREST.getNode(topologyId, 'rules', id));
-			})
+			if(ruleProcessor){
+				oldForRule.map(id=>{
+					promise.push(TopologyREST.getNode(topologyId, 'rules', id));
+				})
+			} else {
+				let windowId = nodeData.config.properties.rules && nodeData.config.properties.rules.length !== 0 ? nodeData.config.properties.rules[0] : null
+				if(windowId){
+					promise.push(TopologyREST.getNode(topologyId, 'windows', windowId))
+				} else {
+					FSReactToastr.error("Save window processor before saving output streams.");
+				}
+			}
 			Promise.all(promise)
 				.then(results=>{
 					let rulesPromiseArr = [];
@@ -294,7 +303,7 @@ export default class OutputSchema extends Component {
 							actions.splice(index, 1);
 						})
 
-						if(forRule.indexOf(result.entity.id) !== -1){
+						if(nodeData.type === 'WINDOW' || forRule.indexOf(result.entity.id) !== -1){
 							//Add actions to only those who needs to be connected
 							connectsTo.map(id=>{
 								let targetObj = connectedTargetNodes.filter((n)=>{return n.id === id})[0];
@@ -315,7 +324,7 @@ export default class OutputSchema extends Component {
 								} else {
 									let index = null;
 									actions.map((a,i)=>{
-										if(a.name === targetName && a.outputStreams.indexOf(streamName)){
+										if(a.name === targetName && a.outputStreams.indexOf(streamName) !== -1){
 											index = i;
 										}
 									})
@@ -328,7 +337,11 @@ export default class OutputSchema extends Component {
 							})
 						}
 						result.entity.actions = actions;
-						rulesPromiseArr.push(TopologyREST.updateNode(topologyId, 'rules', result.entity.id, {body: JSON.stringify(result.entity)} ));
+						if(nodeData.type === 'WINDOW'){
+							rulesPromiseArr.push(TopologyREST.updateNode(topologyId, 'windows', result.entity.id, {body: JSON.stringify(result.entity)} ));
+						} else {
+							rulesPromiseArr.push(TopologyREST.updateNode(topologyId, 'rules', result.entity.id, {body: JSON.stringify(result.entity)} ));
+						}
 					})
 					Promise.all(rulesPromiseArr)
 				})
@@ -401,7 +414,7 @@ export default class OutputSchema extends Component {
 							placeholder="Stream ID"
 							onChange={this.handleValueChange.bind(this)}
 							type="text"
-							className={this.state.showError && this.state.changedFields.indexOf("streamId") !== -1 && streamId === '' ? "form-control invalidInput" : "form-control"}
+							className={this.state.showError && this.state.changedFields.indexOf("streamId") !== -1 && streamId.trim() === '' ? "form-control invalidInput" : "form-control"}
 							value={streamId}
 						    required={true}
 						    disabled={!canAdd}

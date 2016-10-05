@@ -175,10 +175,10 @@ export default class NormalizationNodeForm extends Component {
 				};
 				transformObj = {
 					streamId: this.state.currentStream,
-					inputField: f,
-					outputField: f
+					inputField: _.assignIn({}, f),
+					outputField: _.assignIn({}, f)
 				};
-				outputSchemaArr.push(f);
+				outputSchemaArr.push(_.assignIn({}, f));
 				mappingsArr.push(optionObj);
 				transformArr.push(transformObj);
 			}
@@ -210,11 +210,11 @@ export default class NormalizationNodeForm extends Component {
 			};
 			transformObj = {
 				streamId: this.state.currentStream,
-				inputField: obj,
-				outputField: obj
+				inputField: _.assignIn({}, obj),
+				outputField: _.assignIn({}, obj)
 			}
 
-			arr = [...this.state.outputSchemaFields, obj];
+			arr = [...this.state.outputSchemaFields, _.assignIn({}, obj)];
 			if(!_.find(this.state.outputFieldsMappingArr, {value: optionObj.value}))
 				optionsArr = [...this.state.outputFieldsMappingArr, optionObj];
 			else optionsArr = [...this.state.outputFieldsMappingArr];

@@ -5,6 +5,7 @@ import Select from 'react-select';
 import {Tabs, Tab} from 'react-bootstrap';
 import FSReactToastr from '../../../components/FSReactToastr';
 import TopologyREST from '../../../rest/TopologyREST';
+import AggregateUdfREST from '../../../rest/AggregateUdfREST';
 import OutputSchema from '../../../components/OutputSchemaComponent';
 import Utils from '../../../utils/Utils';
 
@@ -37,8 +38,8 @@ export default class WindowingAggregateNodeForm extends Component {
 				{value: ".Window$Duration", label: "Time"},
 				{value: ".Window$Count", label: "Count"}
 			],
-			windowNum: "",
-			slidingNum: "",
+			windowNum: '',
+			slidingNum: '',
 			durationType: "Seconds",
 			slidingDurationType: "Seconds",
 			durationTypeArr: [
@@ -46,20 +47,8 @@ export default class WindowingAggregateNodeForm extends Component {
 				{value: "Minutes", label: "Minutes"},
 				{value: "Hours", label: "Hours"},
 			],
-			outputFieldsArr: [{name: '', functionName: '', outputFieldName: ''}],
-			functionListArr: [
-				{name: 'MIN'},
-				{name: 'MAX'},
-				{name: 'AVG'},
-				{name: 'SUM'},
-				{name: 'COUNT'},
-				{name: 'UPPER'},
-				{name: 'LOWER'},
-				{name: 'INITCAP'},
-				{name: 'SUBSTRING'},
-				{name: 'CHAR_LENGTH'},
-				{name: 'CONCAT'}
-			]
+			outputFieldsArr: [{inputFieldName: '', functionName: '', outputFieldName: ''}],
+			functionListArr: []
 		};
 		this.state = obj;
 	}
@@ -75,7 +64,8 @@ export default class WindowingAggregateNodeForm extends Component {
 		Promise.all(edgePromiseArr)
 			.then(edgeResults=>{
 				let promiseArr = [
-					TopologyREST.getNode(topologyId, nodeType, nodeData.nodeId)
+					TopologyREST.getNode(topologyId, nodeType, nodeData.nodeId),
+					AggregateUdfREST.getAllUdfs()
 				];
 				let streamIdArr = []
 				edgeResults.map(result=>{
@@ -95,8 +85,9 @@ export default class WindowingAggregateNodeForm extends Component {
 						this.windowId = configFields.rules ? configFields.rules[0] : null;
 						let fields = [];
 						let streamsList = [];
+						let udfList = results[1].entities;
 						results.map((result,i)=>{
-							if(i > 0){
+							if(i > 1){
 								streamsList.push(result.entity);
 								fields.push(...result.entity.fields);
 							}
@@ -104,7 +95,8 @@ export default class WindowingAggregateNodeForm extends Component {
 						let stateObj = {
 							streamsList: streamsList,
 							keysList: fields,
-							parallelism: configFields.parallelism
+							parallelism: configFields.parallelism || 1,
+							functionListArr: udfList
 						}
 						if(this.windowId){
 							TopologyREST.getNode(topologyId, 'windows', this.windowId)
@@ -193,8 +185,8 @@ export default class WindowingAggregateNodeForm extends Component {
 			fieldsArr[index][name] = this.refs.outputFieldName.value;
 		} else {
 			fieldsArr[index][name] = obj.name;
-			if(fieldsArr[index].name !== '' && fieldsArr[index].functionName!== ''){
-				fieldsArr[index].outputFieldName = fieldsArr[index].name+'_'+fieldsArr[index].functionName;
+			if(fieldsArr[index].inputFieldName !== '' && fieldsArr[index].functionName!== ''){
+				fieldsArr[index].outputFieldName = fieldsArr[index].inputFieldName+'_'+fieldsArr[index].functionName;
 			}
 		}
 		this.setState({outputFieldsArr: fieldsArr});
@@ -202,7 +194,7 @@ export default class WindowingAggregateNodeForm extends Component {
 	addOutputFields(){
 		if(this.state.editMode){
 			let fieldsArr = this.state.outputFieldsArr;
-			fieldsArr.push({name: '', functionName: '', outputFieldName: ''});
+			fieldsArr.push({inputFieldName: '', functionName: '', outputFieldName: ''});
 			this.setState({outputFieldsArr: fieldsArr});
 		}
 	}
@@ -221,7 +213,7 @@ export default class WindowingAggregateNodeForm extends Component {
 			validData = false;
 		}
 		outputFieldsArr.map((obj)=>{
-			if(obj.name === '' || obj.functionName === '' || obj.outputFieldName === ''){
+			if(obj.inputFieldName === '' || obj.functionName === '' || obj.outputFieldName === ''){
 				validData = false;
 			}
 		})
@@ -259,7 +251,7 @@ export default class WindowingAggregateNodeForm extends Component {
 		//Adding projections aka output fields into data
 		outputFieldsArr.map((obj)=>{
 			windowObj.projections.push({
-				name: obj.name,
+				inputFieldName: obj.inputFieldName,
 				functionName: obj.functionName,
 				outputFieldName: obj.outputFieldName
 			})
@@ -282,18 +274,37 @@ export default class WindowingAggregateNodeForm extends Component {
 				};
 			}
 		}
-		let promiseArr = [];
 		if(this.windowId){
-			promiseArr.push(TopologyREST.updateNode(topologyId, 'windows', this.windowId, {body: JSON.stringify(windowObj)}));
+			return TopologyREST.getNode(topologyId, 'windows', this.windowId)
+					.then((result)=>{
+						let data = result.entity;
+						windowObj.actions = result.entity.actions || [];
+						return TopologyREST.updateNode(topologyId, 'windows', this.windowId, {body: JSON.stringify(windowObj)})
+								.then(windowResult=>{
+									return this.updateNode(windowResult);
+								})
+					})
 		} else {
-			promiseArr.push(TopologyREST.createNode(topologyId, 'windows', {body: JSON.stringify(windowObj)}));
+			return TopologyREST.createNode(topologyId, 'windows', {body: JSON.stringify(windowObj)})
+				.then(windowResult=>{
+					return this.updateNode(windowResult);
+				})
 		}
-		return Promise.all(promiseArr)
-				.then((results)=>{
-					let windowData = results[0].entity;
-					this.nodeData.config.properties.parallelism = parallelism;
-					this.nodeData.config.properties.rules = [windowData.id];
-					return TopologyREST.updateNode(topologyId, nodeType, nodeData.nodeId, {body: JSON.stringify(this.nodeData)});
+	}
+	updateNode(windowObj){
+		let {parallelism} = this.state;
+		let {topologyId, nodeType, nodeData} = this.props;
+		return TopologyREST.getNode(topologyId, nodeType, nodeData.nodeId)
+				.then(result=>{
+					let data = result.entity;
+					if(windowObj && windowObj.responseCode === 1000){
+						let windowData = windowObj.entity;
+						data.config.properties.parallelism = parallelism;
+						data.config.properties.rules = [windowData.id];
+						return TopologyREST.updateNode(topologyId, nodeType, nodeData.nodeId, {body: JSON.stringify(data)});
+					} else {
+						FSReactToastr.error(<strong>{windowObj.responseMessage}</strong>);
+					}
 				})
 	}
 
@@ -420,9 +431,9 @@ export default class WindowingAggregateNodeForm extends Component {
 											<div className="col-sm-4">
 												{i === 0 ? <label>Input</label>: null}
 												<Select
-													value={obj.name}
+													value={obj.inputFieldName}
 													options={keysList}
-													onChange={this.handleFieldChange.bind(this, 'name', i)}
+													onChange={this.handleFieldChange.bind(this, 'inputFieldName', i)}
 													required={true}
 													disabled={!editMode}
 													valueKey="name"

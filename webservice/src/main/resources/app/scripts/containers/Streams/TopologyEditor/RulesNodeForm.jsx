@@ -74,7 +74,15 @@ export default class RulesNodeForm extends Component {
 				this.nodeToOtherEdges = allEdges.filter((e)=>{return e.fromId === nodeData.nodeId});
 
 				let allStreams = results[2].entities;
-				this.parsedStreams = allStreams.filter(e=>{return e.streamId === 'parsedTuplesStream'});
+
+                                //find all input streams from connected edges
+                                this.allEdgesToNode = allEdges.filter((e)=>{return e.toId === nodeData.nodeId});
+                                this.parsedStreams = [];
+                                this.allEdgesToNode.map((e)=>{
+                                        e.streamGroupings.map((g)=>{
+                                                this.parsedStreams.push(_.find(allStreams, {id: g.streamId}));
+                                        });
+                                });
 
 				this.setState(stateObj);
 			})

@@ -263,6 +263,16 @@ const deleteNode = function(topologyId, currentNode, nodes, edges, internalFlags
 			})
 		}
 
+		//TODO
+		//Find out if the source of the current node is rules/windows
+		//then update those processor by removing actions from it.
+		// let connectingNodes = edges.filter((obj)=>{ return obj.target == currentNode; });
+		// connectingNodes.map((o,i)=>{
+		// 	if(o.source.currentType === 'Rule' || o.source.currentType === 'Window'){
+		// 		console.warn("Update actions here ");
+		// 	}
+		// })
+
 		Promise.all(nodePromiseArr)
 			.then(results=>{
 				let nodeData = results[0].entity;
@@ -284,6 +294,15 @@ const deleteNode = function(topologyId, currentNode, nodes, edges, internalFlags
 					if(nodeData.config.properties.rules){
 						nodeData.config.properties.rules.map(ruleId=>{
 							promiseArr.push(TopologyREST.deleteNode(topologyId, 'rules', ruleId));
+						})
+					}
+				}
+
+				//Delete Window incase of Rule Processor
+				if(nodeData.type === 'WINDOW'){
+					if(nodeData.config.properties.rules){
+						nodeData.config.properties.rules.map(ruleId=>{
+							promiseArr.push(TopologyREST.deleteNode(topologyId, 'windows', ruleId));
 						})
 					}
 				}
@@ -381,18 +400,19 @@ const deleteEdge = function(selectedEdge, topologyId, internalFlags, edges, upda
 		FSReactToastr.warning(<strong>Link between Device and Parser cannot be deleted.</strong>);
 	} else {
 		let promiseArr = [TopologyREST.deleteNode(topologyId, 'edges', selectedEdge.edgeId)];
-		if(selectedEdge.source.currentType === 'Rule'){
+		if(selectedEdge.source.currentType === 'Rule' || selectedEdge.source.currentType === 'Window'){
 			promiseArr.push(TopologyREST.getNode(topologyId, 'processors', selectedEdge.source.nodeId));
 		}
 		Promise.all(promiseArr)
 			.then((results)=>{
 				if(results.length === 2){
-					//Find the connected source rule
+					//Find the connected source rule/window
 					let rulePromises = [];
 					let ruleProcessorNode = results[1].entity;
+					let type = ruleProcessorNode.type === 'WINDOW' ? 'windows' : 'rules';
 					if(ruleProcessorNode.config.properties.rules){
 						ruleProcessorNode.config.properties.rules.map(ruleId=>{
-							rulePromises.push(TopologyREST.getNode(topologyId, 'rules', ruleId));
+							rulePromises.push(TopologyREST.getNode(topologyId, type, ruleId));
 						})
 					}
 					Promise.all(rulePromises)
@@ -401,7 +421,7 @@ const deleteEdge = function(selectedEdge, topologyId, internalFlags, edges, upda
 								let rule = ruleEntity.entity;
 								if(rule.actions){
 									//If source rule has target notification inside rule action,
-									//then remove and update the rules.
+									//then remove and update the rules/window.
 									let index = null;
 									rule.actions.map((a, i)=>{
 										if(a.name === selectedEdge.target.uiname){
@@ -410,7 +430,7 @@ const deleteEdge = function(selectedEdge, topologyId, internalFlags, edges, upda
 									})
 									if(index !== null){
 										rule.actions.splice(index, 1);
-										TopologyREST.updateNode(topologyId, 'rules', rule.id, {body: JSON.stringify(rule)});
+										TopologyREST.updateNode(topologyId, type, rule.id, {body: JSON.stringify(rule)});
 									}
 								}
 							})

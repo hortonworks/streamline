@@ -38,6 +38,7 @@ const Components = {
 
 export {
 	baseUrl,
+	pageSize,
 	ItemTypes,
 	Components
 };
