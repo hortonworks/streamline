@@ -23,7 +23,6 @@ import com.hortonworks.iotas.streams.layout.component.OutputComponent;
 import com.hortonworks.iotas.streams.layout.component.Stream;
 import com.hortonworks.iotas.streams.layout.component.StreamGrouping;
 import com.hortonworks.iotas.streams.layout.component.impl.CustomProcessor;
-import com.hortonworks.iotas.streams.layout.component.impl.HdfsSpoutSource;
 import com.hortonworks.iotas.streams.layout.component.impl.KafkaSource;
 import com.hortonworks.iotas.streams.layout.component.impl.NotificationSink;
 import com.hortonworks.iotas.streams.layout.component.impl.RulesProcessor;
@@ -222,17 +221,6 @@ public class TopologyComponentFactory {
         };
         return new SimpleImmutableEntry<>(KAFKA, provider);
     }
-
-    private Map.Entry<String, Provider<IotasSource>> hdfsSourceProvider() {
-        Provider<IotasSource> provider = new Provider<IotasSource>() {
-            @Override
-            public IotasSource create(TopologyComponent component) {
-                return new HdfsSpoutSource();
-            }
-        };
-        return new SimpleImmutableEntry<>(HDFS_SOURCE, provider);
-    }
-
 
     private Map.Entry<String, Provider<IotasProcessor>> normalizationProcessorProvider() {
         Provider<IotasProcessor> provider = new Provider<IotasProcessor>() {
