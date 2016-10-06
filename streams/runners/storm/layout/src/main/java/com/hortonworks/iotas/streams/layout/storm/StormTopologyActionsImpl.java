@@ -220,12 +220,12 @@ public class StormTopologyActionsImpl implements TopologyActions {
      */
     @Override
     public Path getArtifactsLocation(TopologyLayout topology) {
-        return Paths.get(stormArtifactsLocation, getTopologyName(topology));
+        return Paths.get(stormArtifactsLocation, getTopologyName(topology), "artifacts");
     }
 
     @Override
     public Path getExtraJarsLocation(TopologyLayout topology) {
-        return Paths.get(getArtifactsLocation(topology).toString(), "jars");
+        return Paths.get(stormArtifactsLocation, getTopologyName(topology), "jars");
     }
 
     private String createYamlFile (TopologyLayout topology) throws

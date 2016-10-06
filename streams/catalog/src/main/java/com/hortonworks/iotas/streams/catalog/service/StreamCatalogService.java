@@ -399,14 +399,14 @@ public class StreamCatalogService {
         String config = topology.getConfig();
         ObjectMapper objectMapper = new ObjectMapper();
         Map jsonMap = objectMapper.readValue(config, Map.class);
+        Path artifactsDir = topologyActions.getArtifactsLocation(getTopologyLayout(topology));
+        makeEmptyDir(artifactsDir);
         if (jsonMap != null) {
             List<Object> clusterList = (List<Object>) jsonMap.get(TopologyLayoutConstants.JSON_KEY_CLUSTERS);
             if (clusterList != null) {
                 List<Cluster> clusters = objectMapper.readValue(objectMapper.writeValueAsString(clusterList),
                         new TypeReference<List<Cluster>>() {
                         });
-                Path artifactsDir = topologyActions.getArtifactsLocation(getTopologyLayout(topology));
-                makeEmptyDir(artifactsDir);
                 for (Cluster c : clusters) {
                     Cluster cluster = getCluster(c.getId());
                     String resource = cluster.getClusterConfigStorageName();

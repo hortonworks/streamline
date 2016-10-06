@@ -47,7 +47,7 @@ public class RuleBoltFluxComponent extends AbstractFluxComponent {
         Map ref = getRefYaml(rulesProcessorBuilderRef);
         constructorArgs.add(ref);
         // hardcode script type enum for now. SQL also supported. For future this should be taken as input from UI
-        constructorArgs.add("GROOVY");
+        constructorArgs.add("SQL");
         this.addToComponents(this.createComponent(dependenciesFactoryId, dependenciesFactoryClassName, null, constructorArgs, null));
         return dependenciesFactoryId;
     }
