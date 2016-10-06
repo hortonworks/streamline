@@ -61,7 +61,7 @@ public class CacheLoaderAsync<K,V> extends CacheLoader<K,V> {
     }
 
     private class DataStoreCallable implements Callable<Map<K,V>> {
-        private Collection<? extends K> keys;
+        private final Collection<? extends K> keys;
 
         public DataStoreCallable(Collection<? extends K> keys) {
             this.keys = keys;
@@ -77,7 +77,7 @@ public class CacheLoaderAsync<K,V> extends CacheLoader<K,V> {
 
     public class CacheLoaderAsyncFutureCallback implements FutureCallback<Map<K,V>> {
         private final Collection<? extends K> keys;
-        private CacheLoaderCallback<K,V> callback;
+        private final CacheLoaderCallback<K,V> callback;
 
         public CacheLoaderAsyncFutureCallback(Collection<? extends K> keys, CacheLoaderCallback<K, V> callback) {
             this.keys = keys;

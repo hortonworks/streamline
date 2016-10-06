@@ -78,7 +78,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
     public void deploy (TopologyLayout topology) throws Exception {
         Path jarToDeploy = addArtifactsToJar(getArtifactsLocation(topology));
         String fileName = this.createYamlFile(topology);
-        List<String> commands = new ArrayList<String>();
+        List<String> commands = new ArrayList<>();
         commands.add(stormCliPath);
         commands.add("jar");
         commands.add(jarToDeploy.toString());
@@ -138,7 +138,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
     @Override
     public void kill (TopologyLayout topology) throws Exception {
-        List<String> commands = new ArrayList<String>();
+        List<String> commands = new ArrayList<>();
         commands.add(stormCliPath);
         commands.add("kill");
         commands.add(getTopologyName(topology));
@@ -164,7 +164,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
     @Override
     public void suspend (TopologyLayout topology) throws Exception {
-        List<String> commands = new ArrayList<String>();
+        List<String> commands = new ArrayList<>();
         commands.add(stormCliPath);
         commands.add("deactivate");
         commands.add(getTopologyName(topology));
@@ -177,7 +177,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
     @Override
     public void resume (TopologyLayout topology) throws Exception {
-        List<String> commands = new ArrayList<String>();
+        List<String> commands = new ArrayList<>();
         commands.add(stormCliPath);
         commands.add("activate");
         commands.add(getTopologyName(topology));
@@ -191,7 +191,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
     @Override
     public Status status(TopologyLayout topology) throws Exception {
         StatusImpl status = new StatusImpl();
-        List<String> commands = new ArrayList<String>();
+        List<String> commands = new ArrayList<>();
         commands.add(stormCliPath);
         commands.add("list");
         String topologyName = getTopologyName(topology);
@@ -246,7 +246,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
                 }
             }
             jsonMap = objectMapper.readValue(configJson, Map.class);
-            yamlMap = new LinkedHashMap<String, Object>();
+            yamlMap = new LinkedHashMap<>();
             yamlMap.put(StormTopologyLayoutConstants.YAML_KEY_NAME, this
                     .getTopologyName(topology));
             addTopologyConfig(yamlMap, jsonMap);
@@ -287,7 +287,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
     // numWorkers, etc.
     private void addTopologyConfig (Map<String, Object> yamlMap, Map<String,
             Object> topologyConfig) {
-        Map<String, Object> config = new LinkedHashMap<String, Object>();
+        Map<String, Object> config = new LinkedHashMap<>();
         config.put(StormTopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL, catalogRootUrl);
         if (topologyConfig != null) {
             config.putAll(topologyConfig);
@@ -302,7 +302,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
         List<Map<String, Object>> components = (ArrayList) yamlMap.get
                 (collectionKey);
         if (components == null) {
-            components = new ArrayList<Map<String, Object>>();
+            components = new ArrayList<>();
             yamlMap.put(collectionKey, components);
         }
         components.add(yamlComponent);

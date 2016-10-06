@@ -50,7 +50,7 @@ public class HBaseScanConfigBuilder {
      * A mapping of the entity class to a map of indexed field name and corresponding mapper.
      * E.g. {Notification.class -> {[dataSourceId] -> DataSourceNotificationMapper()}}
      */
-    private Map<Class<?>, Map<List<String>, IndexMapper<?>>> mappers = new HashMap<>();
+    private final Map<Class<?>, Map<List<String>, IndexMapper<?>>> mappers = new HashMap<>();
 
     private static final Comparator<IndexMapper<?>> reverseIndexFieldsLengthComparator =
             new Comparator<IndexMapper<?>>() {

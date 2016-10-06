@@ -128,7 +128,7 @@ public class NotifierInfo extends AbstractStorable {
     @JsonIgnore
     @Override
     public PrimaryKey getPrimaryKey() {
-        Map<Schema.Field, Object> fieldToObjectMap = new HashMap<Schema.Field, Object>();
+        Map<Schema.Field, Object> fieldToObjectMap = new HashMap<>();
         fieldToObjectMap.put(new Schema.Field("id", Schema.Type.LONG), this.id);
         return new PrimaryKey(fieldToObjectMap);
     }

@@ -107,7 +107,7 @@ public class TopologyComponentDefinition implements Storable {
     @Override
     @JsonIgnore
     public PrimaryKey getPrimaryKey () {
-        Map<Schema.Field, Object> fieldToObjectMap = new HashMap<Schema.Field, Object>();
+        Map<Schema.Field, Object> fieldToObjectMap = new HashMap<>();
         fieldToObjectMap.put(new Schema.Field(ID, Schema.Type.LONG),
                 this.id);
         return new PrimaryKey(fieldToObjectMap);
@@ -121,7 +121,7 @@ public class TopologyComponentDefinition implements Storable {
 
     @Override
     public Map toMap () {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         map.put(ID, id);
         map.put(NAME, name);
         map.put(TYPE, type.name());

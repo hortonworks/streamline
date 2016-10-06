@@ -36,7 +36,7 @@ public class AtlasSequence {
     private static final String ID = "id";
 
     private final AtlasMetadataService atlasMetadataService;
-    private AtomicLong currentId = new AtomicLong(0);
+    private final AtomicLong currentId = new AtomicLong(0);
 
     public AtlasSequence(AtlasMetadataService atlasMetadataService) {
         this.atlasMetadataService = atlasMetadataService;

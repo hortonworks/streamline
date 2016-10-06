@@ -16,12 +16,12 @@ import java.util.Set;
 public class TopologyLayoutValidator {
     private final String json;
     private Map jsonMap;
-    private Set<String> componentKeys = new HashSet<String>();
-    private Set<String> dataSourceComponentKeys = new HashSet<String>();
-    private Set<String> dataSinkComponentKeys = new HashSet<String>();
-    private Set<String> processorComponentKeys = new HashSet<String>();
-    private Set<String> linkFromComponentKeys = new HashSet<String>();
-    private Set<String> linkToComponentKeys = new HashSet<String>();
+    private final Set<String> componentKeys = new HashSet<>();
+    private final Set<String> dataSourceComponentKeys = new HashSet<>();
+    private final Set<String> dataSinkComponentKeys = new HashSet<>();
+    private final Set<String> processorComponentKeys = new HashSet<>();
+    private final Set<String> linkFromComponentKeys = new HashSet<>();
+    private final Set<String> linkToComponentKeys = new HashSet<>();
 
     // Constructor to initialize the object with json to be validated where
     // json is the string representation of an iotas topology created using UI

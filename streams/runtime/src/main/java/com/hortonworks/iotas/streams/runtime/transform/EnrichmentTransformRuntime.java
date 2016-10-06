@@ -40,7 +40,7 @@ public class EnrichmentTransformRuntime implements TransformRuntime {
 
     private final EnrichmentTransform enrichmentTransform;
 
-    private CachedTransformDataProviderRuntime cachedDataProvider;
+    private final CachedTransformDataProviderRuntime cachedDataProvider;
 
     public EnrichmentTransformRuntime(EnrichmentTransform enrichmentTransform) {
         this.enrichmentTransform = enrichmentTransform;

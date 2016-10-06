@@ -30,7 +30,7 @@ public abstract class RedisAbstractCache<K, V> extends AbstractCache<K, V> imple
     public static final String REDIS_MAX_MEMORY_POLICY = "maxmemory-policy";
     public static final String REDIS_MAX_MEMORY_POLICY_ALL_KEYS_LRU = "allkeys-lru";
 
-    protected RedisConnection<K, V> redisConnection;
+    protected final RedisConnection<K, V> redisConnection;
 
     public RedisAbstractCache(RedisConnection<K, V> redisConnection) {
         this(redisConnection, null);

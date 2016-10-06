@@ -36,7 +36,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Produces(MediaType.APPLICATION_JSON)
 
 public class ComponentCatalogResource {
-    private StreamCatalogService catalogService;
+    private final StreamCatalogService catalogService;
 
     public ComponentCatalogResource(StreamCatalogService catalogService) {
         this.catalogService = catalogService;
@@ -142,7 +142,7 @@ public class ComponentCatalogResource {
     }
 
     private List<QueryParam> buildClusterIdAwareQueryParams(Long clusterId, UriInfo uriInfo) {
-        List<QueryParam> queryParams = new ArrayList<QueryParam>();
+        List<QueryParam> queryParams = new ArrayList<>();
         queryParams.add(new QueryParam("clusterId", clusterId.toString()));
         if (uriInfo != null) {
             MultivaluedMap<String, String> params = uriInfo.getQueryParameters();

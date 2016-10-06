@@ -44,7 +44,7 @@ public class Schema implements Serializable {
         NESTED(Map.class),  // nested field
         ARRAY(List.class);    // array field
 
-        private Class javaType;
+        private final Class javaType;
 
         Type(Class javaType) {
             this.javaType = javaType;
@@ -182,7 +182,7 @@ public class Schema implements Serializable {
      * A builder for constructing the schema from fields.
      */
     public static class SchemaBuilder {
-        private List<Field> fields = new ArrayList<Field>();
+        private final List<Field> fields = new ArrayList<>();
         public SchemaBuilder field(Field field) {
             fields.add(field);
             return this;
@@ -412,7 +412,7 @@ public class Schema implements Serializable {
         str = str.replace("}}", "");    // remove }} at the end of the String
 
         String[] split = str.split("},");
-        List<Field> fields = new ArrayList<Field>();
+        List<Field> fields = new ArrayList<>();
         for(String fieldStr : split) {
             fields.add(Field.fromString(fieldStr));
         }
@@ -433,7 +433,7 @@ public class Schema implements Serializable {
     }
 
     private static List<Field> parseFields(Map<String, Object> fieldMap) throws ParserException {
-        List<Field> fields = new ArrayList<Field>();
+        List<Field> fields = new ArrayList<>();
         for(Map.Entry<String, Object> entry: fieldMap.entrySet()) {
             fields.add(parseField(entry.getKey(), entry.getValue()));
         }
@@ -454,7 +454,7 @@ public class Schema implements Serializable {
     }
 
     private static List<Field> parseArray(List<Object> array) throws ParserException {
-        List<Field> arrayMembers = new ArrayList<Field>();
+        List<Field> arrayMembers = new ArrayList<>();
         for(Object member: array) {
             arrayMembers.add(parseField(null, member));
         }

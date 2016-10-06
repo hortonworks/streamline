@@ -36,10 +36,10 @@ import java.util.Set;
  * the different stream-groupings.
  */
 public class TopologyDag implements Serializable {
-    private Set<OutputComponent> outputComponents = new HashSet<>();
-    private Set<InputComponent> inputComponents = new HashSet<>();
+    private final Set<OutputComponent> outputComponents = new HashSet<>();
+    private final Set<InputComponent> inputComponents = new HashSet<>();
 
-    private Map<OutputComponent, List<Edge>> dag = new LinkedHashMap<>();
+    private final Map<OutputComponent, List<Edge>> dag = new LinkedHashMap<>();
 
     public TopologyDag add(OutputComponent component) {
         outputComponents.add(component);

@@ -29,7 +29,7 @@ import java.util.Map;
  */
 public class NotifierAction extends Action {
     private String notifierName = "dummy";
-    protected Map<String, Object> outputFieldsAndDefaults = new HashMap<>();
+    protected final Map<String, Object> outputFieldsAndDefaults = new HashMap<>();
 
     public NotifierAction() { }
 

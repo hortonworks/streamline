@@ -24,7 +24,7 @@ import static com.hortonworks.iotas.common.ComponentTypes.PARSER;
 class FluxComponentFactory {
     private static final Logger LOG = LoggerFactory.getLogger(FluxComponentFactory.class);
 
-    Map<String, Provider<FluxComponent>> providerMap;
+    final Map<String, Provider<FluxComponent>> providerMap;
 
     FluxComponentFactory() {
         ImmutableMap.Builder<String, Provider<FluxComponent>> builder = ImmutableMap.builder();

@@ -173,7 +173,7 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
     }
 
     protected class QueryExecution {
-        private SqlQuery sqlBuilder;
+        private final SqlQuery sqlBuilder;
         private Connection connection;
 
         public QueryExecution(SqlQuery sqlBuilder) {

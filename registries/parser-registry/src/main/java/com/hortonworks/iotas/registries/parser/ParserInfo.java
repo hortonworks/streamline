@@ -66,7 +66,7 @@ public class ParserInfo extends AbstractStorable {
 
     @JsonIgnore
     public PrimaryKey getPrimaryKey() {
-        Map<Schema.Field, Object> fieldObjectMap = new HashMap<Schema.Field, Object>();
+        Map<Schema.Field, Object> fieldObjectMap = new HashMap<>();
         fieldObjectMap.put(new Schema.Field(PARSER_ID, Schema.Type.LONG), this.id);
         return new PrimaryKey(fieldObjectMap);
     }

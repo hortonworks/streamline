@@ -37,7 +37,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Path("/api/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class FeedCatalogResource {
-    private CatalogService catalogService;
+    private final CatalogService catalogService;
 
     public FeedCatalogResource(CatalogService service) {
         this.catalogService = service;
@@ -50,7 +50,7 @@ public class FeedCatalogResource {
     @Path("/feeds")
     @Timed
     public Response listDataFeeds(@Context UriInfo uriInfo) {
-        List<QueryParam> queryParams = new ArrayList<QueryParam>();
+        List<QueryParam> queryParams = new ArrayList<>();
         try {
             MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
             Collection<DataFeed> dataFeeds;

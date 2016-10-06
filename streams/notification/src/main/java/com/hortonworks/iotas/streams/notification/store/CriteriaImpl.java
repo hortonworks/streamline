@@ -27,7 +27,7 @@ import java.util.List;
  */
 public class CriteriaImpl<T> implements Criteria<T> {
     private final Class<T> clazz;
-    private List<Field> fieldRestrictions = new ArrayList<>();
+    private final List<Field> fieldRestrictions = new ArrayList<>();
     private int numRows;
     private long startTs;
     private long endTs;

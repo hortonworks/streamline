@@ -46,10 +46,10 @@ public class SqlEngine implements ScriptEngine<SqlEngine> {
         return this;
     }
 
-    private DataSource dataSource;                      // step 1
+    private final DataSource dataSource;                      // step 1
     private ChannelContext channelContext;              // step 2 - Data Source sets context
-    private ChannelHandler channelHandler;              // step 3
-    private DataSourcesProvider dataSourceProvider;     // step 4
+    private final ChannelHandler channelHandler;              // step 3
+    private final DataSourcesProvider dataSourceProvider;     // step 4
     private Values result;
 
     /*

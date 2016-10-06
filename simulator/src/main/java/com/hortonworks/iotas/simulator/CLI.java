@@ -71,7 +71,7 @@ public class CLI {
         props.put("metadata.broker.list", cmd.getOptionValue(OPTION_BROKER_HOSTS));
         props.put("serializer.class", "kafka.serializer.StringEncoder");
         ProducerConfig config = new ProducerConfig(props);
-        Producer<String, String> producer = new Producer<String, String>(config);
+        Producer<String, String> producer = new Producer<>(config);
         System.out.println("Connected to kafka for producing.");
 
         if(cmd.hasOption(OPTION_INTERACTIVE)) {

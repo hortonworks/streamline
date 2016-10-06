@@ -36,8 +36,8 @@ public class ParsersCatalogService {
     private static final String PARSER_INFO_NAMESPACE = new ParserInfo().getNameSpace();
 
     private final ProxyUtil<Parser> parserProxyUtil;
-    private StorageManager dao;
-    private FileStorage fileStorage;
+    private final StorageManager dao;
+    private final FileStorage fileStorage;
 
 
     public ParsersCatalogService (StorageManager dao, FileStorage fileStorage) {

@@ -29,7 +29,7 @@ import java.util.Map;
 public class RuntimeService<R, D> {
     private static final Logger log = LoggerFactory.getLogger(RuntimeService.class);
 
-    protected Map<Class<? extends D>, Factory<R, D>> factories;
+    protected final Map<Class<? extends D>, Factory<R, D>> factories;
 
     /**
      *

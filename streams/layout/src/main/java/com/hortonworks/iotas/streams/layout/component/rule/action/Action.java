@@ -38,7 +38,7 @@ public class Action implements Serializable {
     /**
      * Each {@link Action} can have its own output streams to which events should be sent to.
      */
-    protected Set<String> outputStreams = new HashSet<>();
+    protected final Set<String> outputStreams = new HashSet<>();
 
     public String getName() {
         return name;

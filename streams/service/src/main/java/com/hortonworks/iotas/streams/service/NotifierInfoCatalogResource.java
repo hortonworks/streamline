@@ -41,7 +41,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 public class NotifierInfoCatalogResource {
     private static final Logger LOG = LoggerFactory.getLogger(NotifierInfoCatalogResource.class);
 
-    private StreamCatalogService catalogService;
+    private final StreamCatalogService catalogService;
 
     public NotifierInfoCatalogResource(StreamCatalogService catalogService) {
         this.catalogService = catalogService;
@@ -54,7 +54,7 @@ public class NotifierInfoCatalogResource {
     @Path("/notifiers")
     @Timed
     public Response listNotifiers(@Context UriInfo uriInfo) {
-        List<QueryParam> queryParams = new ArrayList<QueryParam>();
+        List<QueryParam> queryParams = new ArrayList<>();
         try {
             MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
             Collection<NotifierInfo> notifierInfos;

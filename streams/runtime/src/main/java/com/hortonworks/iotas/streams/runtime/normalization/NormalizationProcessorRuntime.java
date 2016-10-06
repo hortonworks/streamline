@@ -106,7 +106,7 @@ public class NormalizationProcessorRuntime implements ProcessorRuntime {
     private static class SchemaValidator {
         private static final Logger LOG = LoggerFactory.getLogger(SchemaValidator.class);
 
-        private Map<String, Schema.Field> fields;
+        private final Map<String, Schema.Field> fields;
 
         private SchemaValidator(Schema schema) {
             fields = new HashMap<>();

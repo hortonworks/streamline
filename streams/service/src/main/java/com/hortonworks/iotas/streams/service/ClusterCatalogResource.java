@@ -64,7 +64,7 @@ public class ClusterCatalogResource {
     @Path("/clusters")
     @Timed
     public Response listClusters(@Context UriInfo uriInfo) {
-        List<QueryParam> queryParams = new ArrayList<QueryParam>();
+        List<QueryParam> queryParams = new ArrayList<>();
         try {
             MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
             Collection<Cluster> clusters;

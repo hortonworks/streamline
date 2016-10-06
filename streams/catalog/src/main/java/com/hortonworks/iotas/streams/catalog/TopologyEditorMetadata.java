@@ -48,7 +48,7 @@ public class TopologyEditorMetadata extends AbstractStorable {
     @Override
     @JsonIgnore
     public PrimaryKey getPrimaryKey() {
-        Map<Schema.Field, Object> fieldToObjectMap = new HashMap<Schema.Field, Object>();
+        Map<Schema.Field, Object> fieldToObjectMap = new HashMap<>();
         fieldToObjectMap.put(new Schema.Field(TOPOLOGY_ID, Schema.Type.LONG), this.topologyId);
         return new PrimaryKey(fieldToObjectMap);
     }
