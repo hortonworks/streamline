@@ -220,6 +220,7 @@ public class TopologyCatalogResource {
                 return WSUtils.respond(OK, SUCCESS, result);
             }
         } catch (Exception ex) {
+            LOG.error("Failed to deploy the topology ", topologyId, ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, topologyId.toString());

@@ -36,6 +36,7 @@ export default class OutputSchema extends Component {
 		}
 		this.currentRulesArr = [];
 		this.currentWindowsArr = [];
+		this.nodeData = {};
 		this.fetchNode();
 	}
 
@@ -78,6 +79,11 @@ export default class OutputSchema extends Component {
 
 				this.generateData(this.nodeData);
 			})
+	}
+	componentWillReceiveProps(props){
+		if(props.windowId && this.nodeData && this.nodeData.config && this.nodeData.config.properties){
+			this.nodeData.config.properties.rules = [props.windowId];
+		}
 	}
 
 	generateData(nodeData){

@@ -47,7 +47,7 @@ export default class WindowingAggregateNodeForm extends Component {
 				{value: "Minutes", label: "Minutes"},
 				{value: "Hours", label: "Hours"},
 			],
-			outputFieldsArr: [{inputFieldName: '', functionName: '', outputFieldName: ''}],
+			outputFieldsArr: [{args: '', functionName: '', outputFieldName: ''}],
 			functionListArr: []
 		};
 		this.state = obj;
@@ -102,30 +102,62 @@ export default class WindowingAggregateNodeForm extends Component {
 							TopologyREST.getNode(topologyId, 'windows', this.windowId)
 								.then((windowResult)=>{
 									let windowData = windowResult.entity;
-									stateObj.outputFieldsArr = windowData.projections;
+									if(windowData.projections.length === 0){
+										stateObj.outputFieldsArr = [{args:'', functionName: '', outputFieldName: ''}];
+									} else {
+										stateObj.outputFieldsArr = [];
+										windowData.projections.map(o=>{
+											if(o.expr){
+												o.args = o.expr;
+												delete o.expr;
+											} else {
+												o.args = o.args[0];
+											}
+											stateObj.outputFieldsArr.push(o);
+										})
+										
+									}
 									stateObj.selectedKeys = windowData.groupbykeys;
 									this.windowAction = windowData.actions;
-									if(windowData.window.windowLength.class === '.Window$Duration'){
-										stateObj.intervalType = '.Window$Duration';
-										let obj = Utils.millisecondsToNumber(windowData.window.windowLength.durationMs);
-										stateObj.windowNum = obj.number;
-										stateObj.durationType = obj.type;
-										if(windowData.window.slidingInterval){
-											let obj = Utils.millisecondsToNumber(windowData.window.slidingInterval.durationMs);
-											stateObj.slidingNum = obj.number;
-											stateObj.slidingDurationType = obj.type;
-										}
-									} else if(windowData.window.windowLength.class === '.Window$Count'){
-										stateObj.intervalType = '.Window$Count';
-										stateObj.windowNum = windowData.window.windowLength.count;
-										if(windowData.window.slidingInterval){
-											stateObj.slidingNum = windowData.window.slidingInterval.count;
+									if(windowData.window){
+										if(windowData.window.windowLength.class === '.Window$Duration'){
+											stateObj.intervalType = '.Window$Duration';
+											let obj = Utils.millisecondsToNumber(windowData.window.windowLength.durationMs);
+											stateObj.windowNum = obj.number;
+											stateObj.durationType = obj.type;
+											if(windowData.window.slidingInterval){
+												let obj = Utils.millisecondsToNumber(windowData.window.slidingInterval.durationMs);
+												stateObj.slidingNum = obj.number;
+												stateObj.slidingDurationType = obj.type;
+											}
+										} else if(windowData.window.windowLength.class === '.Window$Count'){
+											stateObj.intervalType = '.Window$Count';
+											stateObj.windowNum = windowData.window.windowLength.count;
+											if(windowData.window.slidingInterval){
+												stateObj.slidingNum = windowData.window.slidingInterval.count;
+											}
 										}
 									}
 									this.setState(stateObj);
 								})
 						} else {
-							this.setState(stateObj);
+							//Creating window object so output streams can get it
+							let dummyWindowObj = {
+								name: 'window_auto_generated',
+								description: 'window description auto generated',
+								projections:[],
+								streams: [],
+								actions: [],
+								groupbykeys:[]
+							}
+							TopologyREST.createNode(topologyId, 'windows', {body: JSON.stringify(dummyWindowObj)})
+								.then((windowResult)=>{
+									this.windowId = windowResult.entity.id;
+									this.nodeData.config.properties.parallelism = 1;
+									this.nodeData.config.properties.rules = [this.windowId];
+									TopologyREST.updateNode(topologyId, nodeType, nodeData.nodeId, {body: JSON.stringify(this.nodeData)});
+									this.setState(stateObj);
+								})
 						}
 					})
 			})
@@ -184,9 +216,13 @@ export default class WindowingAggregateNodeForm extends Component {
 		if(name === 'outputFieldName'){
 			fieldsArr[index][name] = this.refs.outputFieldName.value;
 		} else {
-			fieldsArr[index][name] = obj.name;
-			if(fieldsArr[index].inputFieldName !== '' && fieldsArr[index].functionName!== ''){
-				fieldsArr[index].outputFieldName = fieldsArr[index].inputFieldName+'_'+fieldsArr[index].functionName;
+			if(obj){
+				fieldsArr[index][name] = obj.name;
+			} else {
+				fieldsArr[index][name] = '';
+			}
+			if(fieldsArr[index].args !== ''){
+				fieldsArr[index].outputFieldName = fieldsArr[index].args+( fieldsArr[index].functionName !== '' ? '_'+fieldsArr[index].functionName : '');
 			}
 		}
 		this.setState({outputFieldsArr: fieldsArr});
@@ -194,7 +230,7 @@ export default class WindowingAggregateNodeForm extends Component {
 	addOutputFields(){
 		if(this.state.editMode){
 			let fieldsArr = this.state.outputFieldsArr;
-			fieldsArr.push({inputFieldName: '', functionName: '', outputFieldName: ''});
+			fieldsArr.push({args: '', functionName: '', outputFieldName: ''});
 			this.setState({outputFieldsArr: fieldsArr});
 		}
 	}
@@ -213,7 +249,7 @@ export default class WindowingAggregateNodeForm extends Component {
 			validData = false;
 		}
 		outputFieldsArr.map((obj)=>{
-			if(obj.inputFieldName === '' || obj.functionName === '' || obj.outputFieldName === ''){
+			if(obj.args === '' || obj.outputFieldName === ''){
 				validData = false;
 			}
 		})
@@ -250,11 +286,15 @@ export default class WindowingAggregateNodeForm extends Component {
 		})
 		//Adding projections aka output fields into data
 		outputFieldsArr.map((obj)=>{
-			windowObj.projections.push({
-				inputFieldName: obj.inputFieldName,
-				functionName: obj.functionName,
-				outputFieldName: obj.outputFieldName
-			})
+			let o = {};
+			if(!obj.functionName || obj.functionName === ''){
+				o.expr = obj.args;
+			} else {
+				o.args=[obj.args];
+				o.functionName=obj.functionName;
+			}
+			o.outputFieldName = obj.outputFieldName;
+			windowObj.projections.push(o);
 		})
 		//Syncing window object into data
 		if(intervalType === '.Window$Duration'){
@@ -284,11 +324,6 @@ export default class WindowingAggregateNodeForm extends Component {
 									return this.updateNode(windowResult);
 								})
 					})
-		} else {
-			return TopologyREST.createNode(topologyId, 'windows', {body: JSON.stringify(windowObj)})
-				.then(windowResult=>{
-					return this.updateNode(windowResult);
-				})
 		}
 	}
 	updateNode(windowObj){
@@ -431,9 +466,9 @@ export default class WindowingAggregateNodeForm extends Component {
 											<div className="col-sm-4">
 												{i === 0 ? <label>Input</label>: null}
 												<Select
-													value={obj.inputFieldName}
+													value={obj.args}
 													options={keysList}
-													onChange={this.handleFieldChange.bind(this, 'inputFieldName', i)}
+													onChange={this.handleFieldChange.bind(this, 'args', i)}
 													required={true}
 													disabled={!editMode}
 													valueKey="name"
@@ -451,7 +486,6 @@ export default class WindowingAggregateNodeForm extends Component {
 													disabled={!editMode}
 													valueKey="name"
 													labelKey="name"
-													clearable={false}
 												/>
 											</div>
 											<div className="col-sm-4">
@@ -490,6 +524,7 @@ export default class WindowingAggregateNodeForm extends Component {
 						nodeType={nodeType}
 						targetNodes={targetNodes}
 						linkShuffleOptions={linkShuffleOptions}
+						windowId={this.windowId}
 					/>
 				</Tab>
 			</Tabs>
