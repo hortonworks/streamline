@@ -22,28 +22,29 @@ import java.util.Map;
  * Implementation of TimeSeriesQuerier for Ambari Metric Service (AMS) with Storm.
  * <p/>
  * This class assumes that metrics for Storm is pushed to AMS via Ambari Storm Metrics Sink.
- * appId is 'topology name', and metric name is composed to '[component name].[task id].[metric name](.[key of the value map])'.
+ * appId is user specific (default is 'nimbus'), and metric name is composed to 'topology.[topology name].[component name].[task id].[metric name](.[key of the value map])'.
  * <p/>
  * Please note that this class requires Ambari 2.4 or above.
- * <p/>
- * TODO: confirm AMBARI-16946 is merged and included to Ambari 2.4.0 since this rule will be introduced as these issues. <br/>
- * TODO: also confirm AMBARI-16949 and AMBARI-17027, and AMBARI-17133 are included to Ambari 2.4.0 as well. <br/>
- * TODO: if any of them cannot be included as Ambari 2.4, we should modify compatible version. <br/>
  */
 public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuerier {
     private static final Logger log = LoggerFactory.getLogger(AmbariMetricsServiceWithStormQuerier.class);
 
+    public static final String METRIC_NAME_PREFIX_KAFKA_OFFSET = "kafkaOffset.";
+
     // the configuration keys
     static final String COLLECTOR_API_URL = "collectorApiUrl";
+    static final String APP_ID = "appId";
 
     // these metrics need '.%' as postfix to aggregate values for each stream
     private static final List<String> METRICS_NEED_AGGREGATION_ON_STREAMS = Lists.newArrayList(
             "__complete-latency", "__emit-count", "__ack-count", "__fail-count",
             "__process-latency", "__execute-count", "__execute-latency"
     );
+    public static final String DEFAULT_APP_ID = "nimbus";
 
     private Client client;
     private URI collectorApiUri;
+    private String appId;
 
     public AmbariMetricsServiceWithStormQuerier() {
     }
@@ -56,6 +57,10 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
         if (conf != null) {
             try {
                 collectorApiUri = new URI(conf.get(COLLECTOR_API_URL));
+                appId = conf.get(APP_ID);
+                if (appId == null) {
+                    appId = DEFAULT_APP_ID;
+                }
             } catch (URISyntaxException e) {
                 throw new ConfigException(e);
             }
@@ -144,10 +149,10 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
 
     private URI composeQueryParameters(String topologyName, String componentId, String metricName, AggregateFunction aggrFunction,
                                        long from, long to) {
-        String actualMetricName = buildMetricName(componentId, metricName);
+        String actualMetricName = buildMetricName(topologyName, componentId, metricName);
         JerseyUriBuilder uriBuilder = new JerseyUriBuilder();
         return uriBuilder.uri(collectorApiUri)
-                .queryParam("appId", topologyName)
+                .queryParam("appId", DEFAULT_APP_ID)
                 .queryParam("hostname", "")
                 .queryParam("metricNames", actualMetricName)
                 .queryParam("startTime", String.valueOf(from))
@@ -157,13 +162,45 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
                 .build();
     }
 
-    private String buildMetricName(String componentId, String metricName) {
-        String actualMetricName = componentId + ".%." + metricName;
+    private String buildMetricName(String topologyName, String componentId, String metricName) {
+        String actualMetricName;
+
+        if (metricName.startsWith(METRIC_NAME_PREFIX_KAFKA_OFFSET)) {
+            actualMetricName = createKafkaOffsetMetricName(topologyName, metricName);
+        } else {
+            actualMetricName = "topology." + topologyName + "." + componentId + ".%." + metricName;
+        }
 
         if (METRICS_NEED_AGGREGATION_ON_STREAMS.contains(metricName)) {
             actualMetricName = actualMetricName + ".%";
         }
 
+        // since '._' is treat as special character (separator) so it should be replaced
         return actualMetricName.replace('_', '-');
+    }
+
+    private String createKafkaOffsetMetricName(String topologyName, String kafkaOffsetMetricName) {
+        // get rid of "kafkaOffset."
+        // <topic>/<metric name (starts with total)> or <topic>/partition_<partition_num>/<metricName>
+        String tempMetricName = kafkaOffsetMetricName.substring(METRIC_NAME_PREFIX_KAFKA_OFFSET.length());
+
+        String[] slashSplittedNames = tempMetricName.split("/");
+
+        if (slashSplittedNames.length == 1) {
+            // unknown metrics
+            throw new IllegalArgumentException("Unknown metrics for kafka offset metric: " + kafkaOffsetMetricName);
+        }
+
+        String topic = slashSplittedNames[0];
+        String metricName = "topology." + topologyName + ".kafka-topic." + topic;
+        if (slashSplittedNames.length > 2) {
+            // partition level
+            metricName = metricName + "." + slashSplittedNames[1] + "." + slashSplittedNames[2];
+        } else {
+            // topic level
+            metricName = metricName + "." + slashSplittedNames[1];
+        }
+
+        return metricName;
     }
 }

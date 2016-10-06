@@ -18,6 +18,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static com.hortonworks.iotas.streams.metrics.storm.ambari.AmbariMetricsServiceWithStormQuerier.COLLECTOR_API_URL;
+import static com.hortonworks.iotas.streams.metrics.storm.ambari.AmbariMetricsServiceWithStormQuerier.DEFAULT_APP_ID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -58,9 +59,9 @@ public class AmbariMetricsServiceWithStormQuerierTest {
         assertResult(metrics);
 
         verify(getRequestedFor(urlPathEqualTo(TEST_COLLECTOR_API_PATH))
-                .withQueryParam("appId", equalTo("testTopology"))
+                .withQueryParam("appId", equalTo(DEFAULT_APP_ID))
                 .withQueryParam("hostname", equalTo(""))
-                .withQueryParam("metricNames", equalTo("testComponent.%.--test.metric.name"))
+                .withQueryParam("metricNames", equalTo("topology.testTopology.testComponent.%.--test.metric.name"))
                 .withQueryParam("startTime", equalTo("1234"))
                 .withQueryParam("precision", equalTo("seconds"))
                 .withQueryParam("endTime", equalTo("5678"))
@@ -83,9 +84,9 @@ public class AmbariMetricsServiceWithStormQuerierTest {
         assertResult(metrics);
 
         verify(getRequestedFor(urlPathEqualTo(TEST_COLLECTOR_API_PATH))
-                .withQueryParam("appId", equalTo("testTopology"))
+                .withQueryParam("appId", equalTo(DEFAULT_APP_ID))
                 .withQueryParam("hostname", equalTo(""))
-                .withQueryParam("metricNames", equalTo("testComponent.%.--complete-latency.%"))
+                .withQueryParam("metricNames", equalTo("topology.testTopology.testComponent.%.--complete-latency.%"))
                 .withQueryParam("startTime", equalTo("1234"))
                 .withQueryParam("precision", equalTo("seconds"))
                 .withQueryParam("endTime", equalTo("5678"))
@@ -97,7 +98,7 @@ public class AmbariMetricsServiceWithStormQuerierTest {
         stubMetricUrl();
 
         String metricName = "metric";
-        String parameters = "precision=seconds,appId=testTopology";
+        String parameters = "precision=seconds,appId=appId";
         long from = 1234L;
         long to = 5678L;
 
@@ -105,7 +106,7 @@ public class AmbariMetricsServiceWithStormQuerierTest {
         assertResult(metrics.get("metric"));
 
         verify(getRequestedFor(urlPathEqualTo(TEST_COLLECTOR_API_PATH))
-                .withQueryParam("appId", equalTo("testTopology"))
+                .withQueryParam("appId", equalTo("appId"))
                 .withQueryParam("metricNames", equalTo("metric"))
                 .withQueryParam("startTime", equalTo("1234"))
                 .withQueryParam("endTime", equalTo("5678"))
