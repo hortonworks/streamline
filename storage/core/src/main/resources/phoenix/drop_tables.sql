@@ -18,6 +18,7 @@ DROP TABLE IF EXISTS topology_edges
 DROP TABLE IF EXISTS streaminfo
 DROP TABLE IF EXISTS notifierinfos
 DROP TABLE IF EXISTS ruleinfos
+DROP TABLE IF EXISTS windowinfos
 DROP TABLE IF EXISTS udfs
 DROP SEQUENCE IF EXISTS datasources_sequence
 DROP SEQUENCE IF EXISTS datafeeds_sequence
@@ -34,4 +35,5 @@ DROP SEQUENCE IF EXISTS topology_sinks_sequence
 DROP SEQUENCE IF EXISTS topology_processors_sequence
 DROP SEQUENCE IF EXISTS topology_edges_sequence
 DROP SEQUENCE IF EXISTS ruleinfos_sequence
+DROP SEQUENCE IF EXISTS windowinfos_sequence
 DROP SEQUENCE IF EXISTS udfs_sequence

@@ -71,13 +71,6 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
                 rulesWithoutWindow.add(rule);
             }
         }
-        rulesProcessor.setRules(rulesWithoutWindow);
-        rulesProcessor.getConfig().setAny(RulesProcessor.CONFIG_KEY_RULES, Collections2.transform(rulesWithoutWindow, new Function<Rule, Long>() {
-            @Override
-            public Long apply(Rule input) {
-                return input.getId();
-            }
-        }));
         // handle windowed rules with WindowRuleBoltFluxComponent
         if (!rulesWithWindow.isEmpty()) {
             Multimap<Window, Rule> windowedRules = ArrayListMultimap.create();
@@ -105,8 +98,17 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
                         topologyDag.getEdgesFrom(rulesProcessor));
             }
         }
-        keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_BOLTS,
-                getYamlComponents(new RuleBoltFluxComponent(rulesProcessor), rulesProcessor)));
+        if (!rulesWithoutWindow.isEmpty()) {
+            rulesProcessor.setRules(rulesWithoutWindow);
+            rulesProcessor.getConfig().setAny(RulesProcessor.CONFIG_KEY_RULES, Collections2.transform(rulesWithoutWindow, new Function<Rule, Long>() {
+                @Override
+                public Long apply(Rule input) {
+                    return input.getId();
+                }
+            }));
+            keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_BOLTS,
+                    getYamlComponents(new RuleBoltFluxComponent(rulesProcessor), rulesProcessor)));
+        }
     }
 
     private void wireWindowedRulesProcessor(RulesProcessor windowedRulesProcessor, List<Edge> inEdges, List<Edge> outEdges) {

@@ -17,9 +17,10 @@ CREATE TABLE IF NOT EXISTS topology_sinks ("id" BIGINT NOT NULL, "topologyId" BI
 CREATE TABLE IF NOT EXISTS topology_processors ("id" BIGINT NOT NULL, "topologyId" BIGINT, "name" VARCHAR, "type" VARCHAR, "configData" VARCHAR, CONSTRAINT pk PRIMARY KEY ("id"))
 CREATE TABLE IF NOT EXISTS topology_processor_stream_mapping ("processorId" BIGINT NOT NULL, "streamId" BIGINT NOT NULL, CONSTRAINT pk PRIMARY KEY ("processorId", "streamId"))
 CREATE TABLE IF NOT EXISTS topology_edges ("id" BIGINT NOT NULL, "topologyId" BIGINT, "fromId" BIGINT, "toId" BIGINT, "streamGroupingsData" VARCHAR, CONSTRAINT pk PRIMARY KEY ("id"))
-CREATE TABLE IF NOT EXISTS ruleinfos ("id" BIGINT NOT NULL, "topologyId" BIGINT, "name" VARCHAR, "description" VARCHAR, "streams" VARCHAR, "condition" VARCHAR, "sql" VARCHAR, "parsedRuleStr" VARCHAR, "window" VARCHAR, "actions" VARCHAR, "projections" VARCHAR, "groupbykeys" VARCHAR, CONSTRAINT pk PRIMARY KEY ("id"))
+CREATE TABLE IF NOT EXISTS ruleinfos ("id" BIGINT NOT NULL, "topologyId" BIGINT, "name" VARCHAR, "description" VARCHAR, "streams" VARCHAR, "condition" VARCHAR, "sql" VARCHAR, "parsedRuleStr" VARCHAR, "window" VARCHAR, "actions" VARCHAR, CONSTRAINT pk PRIMARY KEY ("id"))
+CREATE TABLE IF NOT EXISTS windowinfos ("id" BIGINT NOT NULL, "topologyId" BIGINT, "name" VARCHAR, "description" VARCHAR, "streams" VARCHAR, "condition" VARCHAR, "parsedRuleStr" VARCHAR, "window" VARCHAR, "actions" VARCHAR, "projections" VARCHAR, "groupbykeys" VARCHAR, CONSTRAINT pk PRIMARY KEY ("id"))
 CREATE TABLE IF NOT EXISTS udfs ("id" BIGINT NOT NULL, "name" VARCHAR, "description" VARCHAR, "type" VARCHAR, "className" VARCHAR, "jarStoragePath" VARCHAR, "digest" VARCHAR, CONSTRAINT pk PRIMARY KEY ("id"))
-CREATE TABLE IF NOT EXISTS sequence_table ("id" VARCHAR, "datasources" BIGINT, "datafeeds" BIGINT, "parser_info" BIGINT, "files" BIGINT, "topologies" BIGINT, "topology_component_definitions" BIGINT, "topology_components" BIGINT, "tag" BIGINT,  "streaminfo" BIGINT, "notifierinfos" BIGINT, "topology_sources" BIGINT, "topology_sinks" BIGINT, "topology_processors" BIGINT, "topology_edges" BIGINT, "ruleinfos" BIGINT, "udfs" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
+CREATE TABLE IF NOT EXISTS sequence_table ("id" VARCHAR, "datasources" BIGINT, "datafeeds" BIGINT, "parser_info" BIGINT, "files" BIGINT, "topologies" BIGINT, "topology_component_definitions" BIGINT, "topology_components" BIGINT, "tag" BIGINT,  "streaminfo" BIGINT, "notifierinfos" BIGINT, "topology_sources" BIGINT, "topology_sinks" BIGINT, "topology_processors" BIGINT, "topology_edges" BIGINT, "ruleinfos" BIGINT, "windowinfos" BIGINT, "udfs" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
 CREATE SEQUENCE IF NOT EXISTS datasources_sequence
 CREATE SEQUENCE IF NOT EXISTS datafeeds_sequence
 CREATE SEQUENCE IF NOT EXISTS parser_info_sequence
@@ -35,4 +36,5 @@ CREATE SEQUENCE IF NOT EXISTS topology_sinks_sequence
 CREATE SEQUENCE IF NOT EXISTS topology_processors_sequence
 CREATE SEQUENCE IF NOT EXISTS topology_edges_sequence
 CREATE SEQUENCE IF NOT EXISTS ruleinfos_sequence
+CREATE SEQUENCE IF NOT EXISTS windowinfos_sequence
 CREATE SEQUENCE IF NOT EXISTS udfs_sequence

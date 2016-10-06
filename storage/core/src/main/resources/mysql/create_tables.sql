@@ -192,10 +192,24 @@ CREATE TABLE IF NOT EXISTS ruleinfos (
     parsedRuleStr TEXT NOT NULL,
     window TEXT NOT NULL,
     actions TEXT NOT NULL,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS windowinfos (
+    id BIGINT AUTO_INCREMENT NOT NULL,
+    topologyId BIGINT NOT NULL,
+    name VARCHAR(256) NOT NULL,
+    description VARCHAR(256) NOT NULL,
+    streams TEXT NULL,
+    `condition` TEXT NULL,
+    parsedRuleStr TEXT NOT NULL,
+    window TEXT NOT NULL,
+    actions TEXT NOT NULL,
     projections TEXT NULL,
     groupbykeys TEXT NULL,
     PRIMARY KEY (id)
 );
+
 
 CREATE TABLE IF NOT EXISTS udfs (
     id BIGINT AUTO_INCREMENT NOT NULL,

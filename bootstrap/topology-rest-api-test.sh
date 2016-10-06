@@ -116,7 +116,7 @@ sourceid=$(getId $out)
 # --
 echo -e "\n------"
 out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
-    "streamId": "default",
+    "streamId": "kinesis",
     "fields": [{"name": "iotas.event", "type": "NESTED"} ]
 }' "${catalogurl}/topologies/$topologyid/streams")
 
@@ -152,7 +152,7 @@ kinesisid=$(getId $out)
 # --
 echo -e "\n------"
 out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
-    "streamId": "default",
+    "streamId": "eventhub",
     "fields": [{"name": "iotas.event", "type": "NESTED"} ]
 }' "${catalogurl}/topologies/$topologyid/streams")
 
@@ -321,8 +321,9 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
     "name": "rule3",
     "description": "windowed rule test",
     "projections": [
-        {"name": "humidity"},
-        {"name": "temperature", "functionName": "max", "outputFieldName": "maxtemp"}
+        {"expr": "humidity"},
+        {"functionName": "max", "args": ["temperature"], "outputFieldName": "maxtemp"},
+        {"functionName": "topN", "args": ["5", "temperature"], "outputFieldName": "toptwotemp"}
     ],
     "streams": ["parsedTuplesStream"],
     "groupbykeys": ["humidity"],
@@ -363,16 +364,33 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
     "name": "RuleProcessor",
     "config": {
         "properties": {
-            "rules": ['$ruleid','$windowruleid','$rulid2','$rulid3']
+            "rules": ['$ruleid','$windowruleid','$rulid2']
         }
     },
     "type": "RULE",
     "outputStreamIds": ['$streamid3']
 }' "${catalogurl}/topologies/$topologyid/processors")
 
-
 echo $out
 ruleprocessorid=$(getId $out)
+
+# --
+# Create Windowed processor
+# --
+echo -e "\n------"
+out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
+    "name": "Windowed processor",
+    "config": {
+        "properties": {
+            "rules": ['$rulid3']
+        }
+    },
+    "type": "WINDOW",
+    "outputStreamIds": ['$streamid3']
+}' "${catalogurl}/topologies/$topologyid/processors")
+
+echo $out
+windowedruleprocessorid=$(getId $out)
 
 # --
 # Create notification sink
@@ -524,6 +542,16 @@ echo -e "\n------"
 curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
     "fromId": '$parserid',
     "toId": '$ruleprocessorid',
+    "streamGroupings": [{"streamId": '$parserStream', "grouping": "SHUFFLE"}]
+}' "${catalogurl}/topologies/$topologyid/edges"
+
+# --
+# Parser -> Window processor
+# --
+echo -e "\n------"
+curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
+    "fromId": '$parserid',
+    "toId": '$windowedruleprocessorid',
     "streamGroupings": [{"streamId": '$parserStream', "grouping": "SHUFFLE"}]
 }' "${catalogurl}/topologies/$topologyid/edges"
 

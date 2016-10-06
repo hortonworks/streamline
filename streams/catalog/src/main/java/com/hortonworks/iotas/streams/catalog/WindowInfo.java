@@ -1,27 +1,10 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package com.hortonworks.iotas.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Joiner;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.storage.PrimaryKey;
 import com.hortonworks.iotas.storage.Storable;
@@ -32,16 +15,14 @@ import com.hortonworks.iotas.streams.layout.component.rule.expression.Window;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * A rule as represented in the UI layout
- */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class RuleInfo extends AbstractStorable {
-    public static final String NAMESPACE = "ruleinfos";
+public class WindowInfo extends AbstractStorable {
+    public static final String NAMESPACE = "windowinfos";
 
     public static final String ID = "id";
     public static final String TOPOLOGY_ID = "topologyId";
@@ -49,30 +30,76 @@ public class RuleInfo extends AbstractStorable {
     public static final String DESCRIPTION = "description";
     public static final String STREAMS = "streams";
     public static final String CONDITION = "condition";
-    public static final String SQL = "sql";
     public static final String PARSED_RULE_STR = "parsedRuleStr";
     public static final String WINDOW = "window";
     public static final String ACTIONS = "actions";
+    public static final String PROJECTIONS = "projections";
+    public static final String GROUPBYKEYS = "groupbykeys";
 
     private Long id;
     private Long topologyId;
-    private String name;
-    private String description;
-    /*
-     * A rule info object can have either
-     * 1. the full sql string or
-     * 2. the streams and condition string, in which case
-     *    its translated into a select * from <stream> where <condition>
-     */
+    private String name = StringUtils.EMPTY;
+    private String description = StringUtils.EMPTY;
     private List<String> streams;
     private String condition;
-    private String sql;
     private String parsedRuleStr;
     private Window window;
     private List<Action> actions;
+    private List<Projection> projections;
+    private List<String> groupbykeys;
 
-    // for jackson
-    public RuleInfo() {
+    /**
+     * A Projection can be either an expression or a function with zero or more args.
+     * <ol>
+     * <li> Expression - an expression can be
+     *    <ul>
+     *    <li> A simple one that selects the input field itself. <br/>
+     *        E.g. {@code {"expr": "temperature"}}
+     *    <li> An expression involving one or more input fields or functions. <br/>
+     *        E.g. {@code {"expr": "temperature*9/5 + 32"}}
+     *    </ul>
+     * <li> A function with zero or more args <br/>
+     *    E.g. {@code {"functionName":"topN", "args":["5", "temperature"]}}
+     * </ol>
+     * In both of the above cases an optional output field name can be specified so the
+     * result would be emitted with that field name. For E.g. <br/>
+     *  <ul> <li> {@code {"expr": "temperature*9/5 + 32", "outputFieldName": "temp_farenhiet"}} <br/>
+     *       <li> {@code {"functionName":"topN", "args":["5", "temperature"], "outputFieldName": "top_5_temp"}}
+     *  </ul>
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class Projection {
+        public String expr;
+        public String functionName;
+        public List<String> args;
+        public String outputFieldName;
+
+        // for jackson
+        public Projection() {
+        }
+
+        public Projection(String expr, String functionName, List<String> args, String outputFieldName) {
+            this.expr = expr;
+            this.functionName = functionName;
+            this.args = new ArrayList<>(args);
+            this.outputFieldName = outputFieldName;
+        }
+
+        @Override
+        public String toString() {
+            String str;
+            if (!StringUtils.isEmpty(functionName)) {
+                str = functionName + "(" + Joiner.on(",").join(args) + ")";
+            } else if (!StringUtils.isEmpty(expr)) {
+                str = expr;
+            } else {
+                throw new IllegalArgumentException("expr or functionName should be specified");
+            }
+            if (!StringUtils.isEmpty(outputFieldName)) {
+                str += " AS " + outputFieldName;
+            }
+            return str;
+        }
     }
 
     @JsonIgnore
@@ -111,14 +138,6 @@ public class RuleInfo extends AbstractStorable {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getSql() {
-        return sql;
-    }
-
-    public void setSql(String sql) {
-        this.sql = sql;
     }
 
     public Long getTopologyId() {
@@ -177,6 +196,22 @@ public class RuleInfo extends AbstractStorable {
         this.actions = actions;
     }
 
+    public List<Projection> getProjections() {
+        return projections;
+    }
+
+    public void setProjections(List<Projection> projections) {
+        this.projections = projections;
+    }
+
+    public List<String> getGroupbykeys() {
+        return groupbykeys;
+    }
+
+    public void setGroupbykeys(List<String> groupbykeys) {
+        this.groupbykeys = groupbykeys;
+    }
+
     @JsonIgnore
     @Override
     public Schema getSchema() {
@@ -187,10 +222,11 @@ public class RuleInfo extends AbstractStorable {
                 Schema.Field.of(DESCRIPTION, Schema.Type.STRING),
                 Schema.Field.of(STREAMS, Schema.Type.STRING),
                 Schema.Field.of(CONDITION, Schema.Type.STRING),
-                Schema.Field.of(SQL, Schema.Type.STRING),
                 Schema.Field.of(PARSED_RULE_STR, Schema.Type.STRING),
                 Schema.Field.of(WINDOW, Schema.Type.STRING),
-                Schema.Field.of(ACTIONS, Schema.Type.STRING)
+                Schema.Field.of(ACTIONS, Schema.Type.STRING),
+                Schema.Field.of(PROJECTIONS, Schema.Type.STRING),
+                Schema.Field.of(GROUPBYKEYS, Schema.Type.STRING)
         );
     }
 
@@ -203,6 +239,8 @@ public class RuleInfo extends AbstractStorable {
             map.put(WINDOW, window != null ? mapper.writeValueAsString(window) : "");
             map.put(ACTIONS, actions != null ? mapper.writerFor(new TypeReference<List<Action>>() {
             }).writeValueAsString(actions) : "");
+            map.put(PROJECTIONS, projections != null ? mapper.writeValueAsString(projections) : "");
+            map.put(GROUPBYKEYS, groupbykeys != null ? mapper.writeValueAsString(groupbykeys) : "");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -215,7 +253,6 @@ public class RuleInfo extends AbstractStorable {
         setTopologyId((Long) map.get(TOPOLOGY_ID));
         setName((String) map.get(NAME));
         setDescription((String) map.get(DESCRIPTION));
-        setSql((String) map.get(SQL));
         setParsedRuleStr((String) map.get(PARSED_RULE_STR));
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -236,44 +273,21 @@ public class RuleInfo extends AbstractStorable {
                 });
                 setActions(actions);
             }
+            String projectionsStr = (String) map.get(PROJECTIONS);
+            if (!StringUtils.isEmpty(projectionsStr)) {
+                List<Projection> projections = mapper.readValue(projectionsStr, new TypeReference<List<Projection>>() {
+                });
+                setProjections(projections);
+            }
+            String groupbykeysStr = (String) map.get(GROUPBYKEYS);
+            if (!StringUtils.isEmpty(groupbykeysStr)) {
+                List<String> groupbykeys = mapper.readValue(groupbykeysStr, new TypeReference<List<String>>() {
+                });
+                setGroupbykeys(groupbykeys);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         return this;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        RuleInfo ruleInfo = (RuleInfo) o;
-
-        if (id != null ? !id.equals(ruleInfo.id) : ruleInfo.id != null) return false;
-        return topologyId != null ? topologyId.equals(ruleInfo.topologyId) : ruleInfo.topologyId == null;
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (topologyId != null ? topologyId.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return "RuleInfo{" +
-                "id=" + id +
-                ", topologyId=" + topologyId +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", streams=" + streams +
-                ", condition=" + condition +
-                ", sql='" + sql + '\'' +
-                ", parsedRuleStr='" + parsedRuleStr + '\'' +
-                ", window=" + window +
-                ", actions=" + actions +
-                "}";
     }
 }

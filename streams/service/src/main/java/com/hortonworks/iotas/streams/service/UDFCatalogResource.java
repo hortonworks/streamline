@@ -317,17 +317,17 @@ public class UDFCatalogResource {
     }
 
     private String uploadJar(InputStream is, String udfName) throws IOException {
-        String uploadedPath;
+        String jarFileName;
         if (is != null) {
-            String jarFileName = UUID.randomUUID().toString() + ".jar";
-            uploadedPath = this.fileStorage.uploadFile(is, jarFileName);
+            jarFileName = UUID.randomUUID().toString() + ".jar";
+            String uploadedPath = this.fileStorage.uploadFile(is, jarFileName);
             LOG.debug("Jar uploaded to {}", uploadedPath);
         } else {
             String message = String.format("Udf %s jar content is missing.", udfName);
             LOG.error(message);
             throw new IllegalArgumentException(message);
         }
-        return uploadedPath;
+        return jarFileName;
     }
 
     private void validateUDF(Set<String> udfs, UDFInfo udfInfo, boolean checkDuplicate) {

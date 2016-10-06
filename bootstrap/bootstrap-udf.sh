@@ -21,7 +21,7 @@ curl -s -X POST 'http://localhost:8080/api/v1/catalog/streams/udfs' -F udfJarFil
 echo
 
 echo "collectlist"
-curl -s -X POST 'http://localhost:8080/api/v1/catalog/streams/udfs' -F udfJarFile=@${dir}/streams/functions/target/streams-functions-0.1.0-SNAPSHOT.jar -F udfConfig='{"name":"COLLECTLIST", "description": "Collect", "type":"AGGREGATE", "className":"com.hortonworks.iotas.streams.udaf.Collectlist"};type=application/json'
+curl -s -X POST 'http://localhost:8080/api/v1/catalog/streams/udfs' -F udfJarFile=@${dir}/streams/functions/target/streams-functions-0.1.0-SNAPSHOT.jar -F udfConfig='{"name":"COLLECTLIST", "description": "Collect", "type":"AGGREGATE", "className":"com.hortonworks.iotas.streams.udaf.CollectList"};type=application/json'
 echo
 
 echo "topn"
