@@ -49,7 +49,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         List<Object> result = new ArrayList<>();
         final StreamCatalogService streamcatalogService;
         try {
-            streamcatalogService = new StreamCatalogService(storageManager, getTopologyActionsImpl(), getTopologyMetricsImpl(), fileStorage, createSchemaRegistryClient());
+            streamcatalogService = new StreamCatalogService(storageManager, getTopologyActionsImpl(), getTopologyMetricsImpl(), fileStorage);
         } catch (ConfigException e) {
             throw new RuntimeException(e);
         }
@@ -66,6 +66,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         result.add(new UDFCatalogResource(streamcatalogService, fileStorage));
         result.addAll(getNotificationsRelatedResources(streamcatalogService));
         result.add(new WindowCatalogResource(streamcatalogService));
+        result.add(new SchemaResource(createSchemaRegistryClient()));
         watchFiles(streamcatalogService);
         return result;
     }

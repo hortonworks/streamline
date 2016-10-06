@@ -133,16 +133,16 @@ public class StreamCatalogService {
     private static final String UDF_NAMESPACE = new UDFInfo().getNameSpace();
 
     private StorageManager dao;
-    private final SchemaRegistryClient schemaRegistryClient;
     private TopologyActions topologyActions;
     private TopologyMetrics topologyMetrics;
     private FileStorage fileStorage;
     private TopologyDagBuilder topologyDagBuilder;
 
-    public StreamCatalogService(StorageManager dao, TopologyActions topologyActions, TopologyMetrics topologyMetrics,
-                                FileStorage fileStorage, SchemaRegistryClient schemaRegistryClient) {
+    public StreamCatalogService(StorageManager dao,
+                                TopologyActions topologyActions,
+                                TopologyMetrics topologyMetrics,
+                                FileStorage fileStorage) {
         this.dao = dao;
-        this.schemaRegistryClient = schemaRegistryClient;
         dao.registerStorables(getStorableClasses());
         this.topologyActions = topologyActions;
         this.topologyMetrics = topologyMetrics;
@@ -736,18 +736,6 @@ public class StreamCatalogService {
         fillSourceStreams(source);
         return source;
     }
-
-    public String getSchema(Long sourceId) throws SchemaNotFoundException {
-        TopologySource topologySource = getTopologySource(sourceId);
-        String topicName = (String) topologySource.getConfig().getProperties().get("topic");
-        return getSchemaForTopic(topicName);
-    }
-
-    private String getSchemaForTopic(String topic) throws SchemaNotFoundException {
-        SchemaVersionInfo latestSchemaVersionInfo = schemaRegistryClient.getLatestSchemaVersionInfo(topic);
-        return latestSchemaVersionInfo != null ? latestSchemaVersionInfo.getSchemaText() : null;
-    }
-
 
     /**
      * Generate id from the {@link TopologyComponent} namespace

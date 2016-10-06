@@ -154,24 +154,6 @@ public class TopologySourceCatalogResource {
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, buildMessageForCompositeId(topologyId, sourceId));
     }
 
-    @GET
-    @Path("/{id}/schema")
-    @Timed
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response getTopologySourceSchema(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sourceId) {
-        String schema = null;
-        try {
-            schema = catalogService.getSchema(sourceId);
-            return WSUtils.respond(OK, SUCCESS, schema);
-        } catch (SchemaNotFoundException e) {
-            // ignore and log error
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
-        }
-
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, buildMessageForCompositeId(topologyId, sourceId));
-    }
-
     /**
      * <p>
      * Creates a topology source. For example,
