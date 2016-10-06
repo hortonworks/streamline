@@ -51,7 +51,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     private final ConcurrentHashMap<String, Notifier> notifiers = new ConcurrentHashMap<>();
 
-    private NotificationQueueHandler queueHandler;
+    private final NotificationQueueHandler queueHandler;
 
     private final ProxyUtil<Notifier> notifierProxyUtil;
 

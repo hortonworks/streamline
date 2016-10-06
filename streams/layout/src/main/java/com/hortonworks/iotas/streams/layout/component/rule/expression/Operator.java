@@ -9,7 +9,7 @@ public enum Operator {
     AND(3),
     OR(4);
 
-    private int precedence;
+    private final int precedence;
 
     Operator(int precedence) {
         this.precedence = precedence;

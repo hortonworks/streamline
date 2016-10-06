@@ -61,8 +61,8 @@ public class ParserBolt extends BaseRichBolt {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final Random RANDOM = new Random();
 
-    private static ConcurrentHashMap<Object, Parser> dataSrcIdfToParser = new ConcurrentHashMap<>();      //TODO why is this field static ? It makes the class really hard to test and takes away from the thread safety of storm bolts
-    private static ConcurrentHashMap<Object, DataSourceDto> dataSrcIdfToDataSrc = new ConcurrentHashMap<>(); //TODO why is this field static ? It makes the
+    private static final ConcurrentHashMap<Object, Parser> dataSrcIdfToParser = new ConcurrentHashMap<>();      //TODO why is this field static ? It makes the class really hard to test and takes away from the thread safety of storm bolts
+    private static final ConcurrentHashMap<Object, DataSourceDto> dataSrcIdfToDataSrc = new ConcurrentHashMap<>(); //TODO why is this field static ? It makes the
     // class really hard to test and takes away from the thread safety of storm bolts
 
     private CatalogRestClient client;
@@ -267,8 +267,8 @@ public class ParserBolt extends BaseRichBolt {
      * this message is associated with. This class is just a composite structure to represent that unique datasource identifier.
      */
     private static class DataSourceIdentifier {
-        private String id;
-        private String version;
+        private final String id;
+        private final String version;
 
         private DataSourceIdentifier(String id, String version) {
             this.id = id;

@@ -86,7 +86,7 @@ public class DataSource extends AbstractStorable {
 
     @JsonIgnore
     public PrimaryKey getPrimaryKey() {
-        Map<Schema.Field, Object> fieldToObjectMap = new HashMap<Schema.Field, Object>();
+        Map<Schema.Field, Object> fieldToObjectMap = new HashMap<>();
         fieldToObjectMap.put(new Schema.Field(DATA_SOURCE_ID, Schema.Type.LONG), this.id);
         return new PrimaryKey(fieldToObjectMap);
     }

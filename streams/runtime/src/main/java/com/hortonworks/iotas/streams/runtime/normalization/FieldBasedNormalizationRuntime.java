@@ -39,7 +39,7 @@ import java.util.Map;
  */
 public class FieldBasedNormalizationRuntime extends NormalizationRuntime {
 
-    private static Logger LOG = LoggerFactory.getLogger(FieldBasedNormalizationRuntime.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FieldBasedNormalizationRuntime.class);
 
     private final List<TransformerRuntime> transformerRuntimes;
     private final List<FieldValueGeneratorRuntime> fieldValueGeneratorRuntimes;
@@ -118,7 +118,7 @@ public class FieldBasedNormalizationRuntime extends NormalizationRuntime {
         private final Schema declaredOutputSchema;
         private List<TransformerRuntime> transformerRuntimes;
         private List<FieldValueGeneratorRuntime> fieldValueGeneratorRuntimes;
-        private List<String> fieldsTobeFiltered = new ArrayList<>();
+        private final List<String> fieldsTobeFiltered = new ArrayList<>();
 
         public Builder(FieldBasedNormalizationConfig normalizationConfig, Schema declaredOutputSchema) {
             this.normalizationConfig = normalizationConfig;

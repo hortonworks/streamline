@@ -40,7 +40,7 @@ import java.util.List;
  */
 public class CatalogRestClient {
 
-    private Client client;
+    private final Client client;
 
     private static final String DATASOURCE_URL = "datasources";
     private static final String FEED_URL = "feeds";
@@ -48,11 +48,11 @@ public class CatalogRestClient {
     private static final String CUSTOM_PROCESSOR_JAR_DOWNLOAD_URL = "system/componentdefinitions/PROCESSOR/custom";
     private static final String FILE_DOWNLOAD_URL = "files/download/";
 
-    private String rootCatalogURL;
-    private WebTarget rootTarget;
-    private WebTarget dataSourceTarget;
-    private WebTarget feedTarget;
-    private ParserClient parserClient;
+    private final String rootCatalogURL;
+    private final WebTarget rootTarget;
+    private final WebTarget dataSourceTarget;
+    private final WebTarget feedTarget;
+    private final ParserClient parserClient;
 
     //TODO: timeouts should come from a config so probably make them constructor args.
     public CatalogRestClient(String rootCatalogURL) {
@@ -70,7 +70,7 @@ public class CatalogRestClient {
     }
 
     private <T> List<T> getEntities(WebTarget target, Class<T> clazz) {
-        List<T> entities = new ArrayList<T>();
+        List<T> entities = new ArrayList<>();
         String response = target.request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
         try {
             ObjectMapper mapper = new ObjectMapper();

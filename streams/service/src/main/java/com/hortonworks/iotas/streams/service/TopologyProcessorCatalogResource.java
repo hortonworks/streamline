@@ -53,7 +53,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Path("/api/v1/catalog/topologies/{topologyId}/processors")
 @Produces(MediaType.APPLICATION_JSON)
 public class TopologyProcessorCatalogResource {
-    private StreamCatalogService catalogService;
+    private final StreamCatalogService catalogService;
 
     public TopologyProcessorCatalogResource(StreamCatalogService catalogService) {
         this.catalogService = catalogService;

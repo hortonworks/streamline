@@ -14,8 +14,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class ParserClient {
-    private Client client;
-    private String parserRootUrl;
+    private final Client client;
+    private final String parserRootUrl;
 
     public ParserClient (String catalogRootUrl) {
         this(catalogRootUrl, new ClientConfig());

@@ -54,7 +54,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Path("/api/v1/catalog/topologies/{topologyId}/streams")
 @Produces(MediaType.APPLICATION_JSON)
 public class TopologyStreamCatalogResource {
-    private StreamCatalogService catalogService;
+    private final StreamCatalogService catalogService;
 
     public TopologyStreamCatalogResource(StreamCatalogService catalogService) {
         this.catalogService = catalogService;

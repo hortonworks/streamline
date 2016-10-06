@@ -21,7 +21,7 @@ import java.util.Random;
 public class NestParser extends BaseParser {
     private static final Logger log = LoggerFactory.getLogger(NestParser.class);
 
-    private static ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper = new ObjectMapper();
     private final String BATTERY_STATE = "battery_state";
     public String version() {
         return "1";

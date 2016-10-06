@@ -53,7 +53,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Path("/api/v1/catalog/topologies/{topologyId}/sinks")
 @Produces(MediaType.APPLICATION_JSON)
 public class TopologySinkCatalogResource {
-    private StreamCatalogService catalogService;
+    private final StreamCatalogService catalogService;
 
     public TopologySinkCatalogResource(StreamCatalogService catalogService) {
         this.catalogService = catalogService;

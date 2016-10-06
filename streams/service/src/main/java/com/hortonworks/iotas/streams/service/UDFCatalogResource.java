@@ -98,7 +98,7 @@ public class UDFCatalogResource {
     @Path("/udfs")
     @Timed
     public Response listUDFs(@Context UriInfo uriInfo) {
-        List<QueryParam> queryParams = new ArrayList<QueryParam>();
+        List<QueryParam> queryParams = new ArrayList<>();
         try {
             MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
             Collection<UDFInfo> udfs;

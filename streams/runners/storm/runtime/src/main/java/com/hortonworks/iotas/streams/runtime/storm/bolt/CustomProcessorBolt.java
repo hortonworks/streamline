@@ -38,7 +38,7 @@ public class CustomProcessorBolt extends BaseRichBolt {
     private static final Logger LOG = LoggerFactory.getLogger(CustomProcessorBolt.class);
     private CatalogRestClient client;
     private ProxyUtil<CustomProcessorRuntime> customProcessorProxyUtil;
-    private static ConcurrentHashMap<String, CustomProcessorRuntime> customProcessorConcurrentHashMap = new ConcurrentHashMap<String, CustomProcessorRuntime>();
+    private static final ConcurrentHashMap<String, CustomProcessorRuntime> customProcessorConcurrentHashMap = new ConcurrentHashMap<>();
     private OutputCollector collector;
     private CustomProcessorRuntime customProcessorRuntime;
     private String customProcessorImpl;

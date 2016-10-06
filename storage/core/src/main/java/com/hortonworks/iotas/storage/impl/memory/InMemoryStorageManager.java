@@ -42,9 +42,9 @@ import java.util.concurrent.atomic.AtomicLong;
 public class InMemoryStorageManager implements StorageManager {
     private static final Logger LOG = LoggerFactory.getLogger(InMemoryStorageManager.class);
 
-    private ConcurrentHashMap<String, ConcurrentHashMap<PrimaryKey, Storable>> storageMap = new ConcurrentHashMap<String, ConcurrentHashMap<PrimaryKey, Storable>>();
-    private ConcurrentHashMap<String, AtomicLong> sequenceMap = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<String, Class<?>> nameSpaceClassMap = new ConcurrentHashMap<String, Class<?>>();
+    private final ConcurrentHashMap<String, ConcurrentHashMap<PrimaryKey, Storable>> storageMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, AtomicLong> sequenceMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Class<?>> nameSpaceClassMap = new ConcurrentHashMap<>();
 
     @Override
     public void init(Map<String, Object> properties) {

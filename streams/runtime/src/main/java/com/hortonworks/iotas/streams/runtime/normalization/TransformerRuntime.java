@@ -37,7 +37,7 @@ public class TransformerRuntime {
     private static final Logger LOG = LoggerFactory.getLogger(TransformerRuntime.class);
 
     private final Transformer transformer;
-    private GroovyScript<Object> groovyScript;
+    private final GroovyScript<Object> groovyScript;
 
     private TransformerRuntime(Transformer transformer, GroovyScript groovyScript) {
         this.transformer = transformer;
@@ -79,7 +79,7 @@ public class TransformerRuntime {
     }
 
     public static class Builder {
-        private Transformer transformer;
+        private final Transformer transformer;
 
         public Builder(Transformer transformer) {
             this.transformer = transformer;

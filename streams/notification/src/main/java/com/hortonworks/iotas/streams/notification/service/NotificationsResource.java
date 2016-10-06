@@ -60,7 +60,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 public class NotificationsResource {
     private static final Logger LOG = LoggerFactory.getLogger(NotificationsResource.class);
 
-    private NotificationService notificationService;
+    private final NotificationService notificationService;
 
     public NotificationsResource(NotificationService service) {
         this.notificationService = service;
@@ -86,7 +86,7 @@ public class NotificationsResource {
     @Path("/notifications/")
     @Timed
     public Response listNotifications(@Context UriInfo uriInfo) {
-        List<QueryParam> queryParams = new ArrayList<QueryParam>();
+        List<QueryParam> queryParams = new ArrayList<>();
         try {
             MultivaluedMap<String, String> uriInfoParams = uriInfo.getQueryParameters();
             Collection<Notification> notifications = null;

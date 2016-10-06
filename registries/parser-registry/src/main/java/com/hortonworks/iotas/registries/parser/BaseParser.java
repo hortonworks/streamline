@@ -23,7 +23,7 @@ public abstract class BaseParser implements Parser {
 
     public List<?> parseFields(byte[] data) throws ParserException {
         Map<String, Object> parsedData = parse(data);
-        List<Object> fields = new ArrayList<Object>();
+        List<Object> fields = new ArrayList<>();
         for (Field f : schema().getFields()) {
             fields.add(parsedData.get(f.getName()));
         }
