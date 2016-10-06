@@ -8,6 +8,8 @@ public final class TopologyLayoutConstants {
     // metric
     public static final String STORM_API_ROOT_URL_KEY = "stormApiRootUrl";
 
+    public static final String SCHEMA_REGISTRY_URL = "schemaRegistryUrl";
+
     // json keys
     public final static String JSON_KEY_TRANSFORMATION_CLASS =
             "transformationClass";
@@ -40,8 +42,7 @@ public final class TopologyLayoutConstants {
     public final static String JSON_KEY_ROTATION_POLICY_IMPL =
             "rotationPolicyImpl";
     public final static String JSON_KEY_ROTATION_INTERVAL = "rotationInterval";
-    public final static String JSON_KEY_ROTATION_INTERVAL_UNIT =
-            "rotationIntervalUnit";
+    public final static String JSON_KEY_ROTATION_INTERVAL_UNIT = "rotationIntervalUnit";
     public final static String JSON_KEY_ROTATION_ACTIONS = "rotationActions";
     public final static String JSON_KEY_LINKS = "links";
     public final static String JSON_KEY_FROM = "from";
@@ -56,7 +57,7 @@ public final class TopologyLayoutConstants {
     public final static String JSON_KEY_SOCKET_TIMEOUT_MS = "socketTimeoutMs";
     public final static String JSON_KEY_FETCH_MAX_WAIT = "fetchMaxWait";
     public final static String JSON_KEY_BUFFER_SIZE_BYTES = "bufferSizeBytes";
-    public final static String JSON_KEY_MULTI_SCHEME_IMPL = "multiSchemeImpl";
+    public final static String JSON_KEY_MULTI_SCHEME_IMPL = "schemeImpl";
     public final static String JSON_KEY_IGNORE_ZK_OFFSETS = "ignoreZkOffsets";
     public final static String JSON_KEY_MAX_OFFSET_BEHIND = "maxOffsetBehind";
     public final static String
@@ -68,18 +69,12 @@ public final class TopologyLayoutConstants {
     public final static String JSON_KEY_RETRY_INITIAL_DELAY_MS = "retryInitialDelayMs";
     public final static String JSON_KEY_RETRY_DELAY_MULTIPLIER = "retryDelayMultiplier";
     public final static String JSON_KEY_RETRY_DELAY_MAX_MS = "retryDelayMaxMs";
-    public final static String JSON_KEY_PARSED_TUPLES_STREAM =
-            "parsedTuplesStream";
-    public final static String JSON_KEY_FAILED_TUPLES_STREAM =
-            "failedTuplesStream";
-    public final static String JSON_KEY_PARSER_JAR_PATH =
-            "parserJarPath";
-    public final static String JSON_KEY_PARSER_ID =
-            "parserId";
-    public final static String JSON_KEY_DATA_SOURCE_ID =
-            "dataSourceId";
-    public final static String JSON_KEY_STREAM_ID =
-            "streamId";
+    public final static String JSON_KEY_PARSED_TUPLES_STREAM = "parsedTuplesStream";
+    public final static String JSON_KEY_FAILED_TUPLES_STREAM = "failedTuplesStream";
+    public final static String JSON_KEY_PARSER_JAR_PATH = "parserJarPath";
+    public final static String JSON_KEY_PARSER_ID = "parserId";
+    public final static String JSON_KEY_DATA_SOURCE_ID = "dataSourceId";
+    public final static String JSON_KEY_STREAM_ID = "streamId";
     public final static String JSON_KEY_NOTIFIER_NAME = "notifierName";
     public final static String JSON_KEY_NOTIFIER_JAR_FILENAME = "jarFileName";
     public final static String JSON_KEY_NOTIFIER_CLASSNAME = "className";

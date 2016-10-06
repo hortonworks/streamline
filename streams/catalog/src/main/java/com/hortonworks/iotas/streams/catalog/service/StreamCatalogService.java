@@ -74,13 +74,19 @@ import com.hortonworks.iotas.streams.layout.exception.BadTopologyLayoutException
 import com.hortonworks.iotas.streams.metrics.topology.TopologyMetrics;
 import com.hortonworks.iotas.streams.rule.UDAF;
 import com.hortonworks.iotas.streams.rule.UDAF2;
+import com.hortonworks.registries.schemaregistry.SchemaNotFoundException;
+import com.hortonworks.registries.schemaregistry.SchemaVersionInfo;
+import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -127,13 +133,16 @@ public class StreamCatalogService {
     private static final String UDF_NAMESPACE = new UDFInfo().getNameSpace();
 
     private StorageManager dao;
+    private final SchemaRegistryClient schemaRegistryClient;
     private TopologyActions topologyActions;
     private TopologyMetrics topologyMetrics;
     private FileStorage fileStorage;
     private TopologyDagBuilder topologyDagBuilder;
 
-    public StreamCatalogService(StorageManager dao, TopologyActions topologyActions, TopologyMetrics topologyMetrics, FileStorage fileStorage) {
+    public StreamCatalogService(StorageManager dao, TopologyActions topologyActions, TopologyMetrics topologyMetrics,
+                                FileStorage fileStorage, SchemaRegistryClient schemaRegistryClient) {
         this.dao = dao;
+        this.schemaRegistryClient = schemaRegistryClient;
         dao.registerStorables(getStorableClasses());
         this.topologyActions = topologyActions;
         this.topologyMetrics = topologyMetrics;
@@ -720,7 +729,6 @@ public class StreamCatalogService {
         return notifierInfo;
     }
 
-
     public TopologySource getTopologySource(Long id) {
         TopologySource topologySource = new TopologySource();
         topologySource.setId(id);
@@ -728,6 +736,18 @@ public class StreamCatalogService {
         fillSourceStreams(source);
         return source;
     }
+
+    public String getSchema(Long sourceId) throws SchemaNotFoundException {
+        TopologySource topologySource = getTopologySource(sourceId);
+        String topicName = (String) topologySource.getConfig().getProperties().get("topic");
+        return getSchemaForTopic(topicName);
+    }
+
+    private String getSchemaForTopic(String topic) throws SchemaNotFoundException {
+        SchemaVersionInfo latestSchemaVersionInfo = schemaRegistryClient.getLatestSchemaVersionInfo(topic);
+        return latestSchemaVersionInfo != null ? latestSchemaVersionInfo.getSchemaText() : null;
+    }
+
 
     /**
      * Generate id from the {@link TopologyComponent} namespace

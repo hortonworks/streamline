@@ -6,8 +6,7 @@ public final class StormTopologyLayoutConstants {
     }
 
     // artifact
-    public static final String STORM_ARTIFACTS_LOCATION_KEY =
-            "stormArtifactsDirectory";
+    public static final String STORM_ARTIFACTS_LOCATION_KEY = "stormArtifactsDirectory";
     public static final String STORM_JAR_LOCATION_KEY = "iotasStormJar";
     public static final String STORM_HOME_DIR = "stormHomeDir";
     // yaml key constants

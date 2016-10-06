@@ -2,7 +2,10 @@ package com.hortonworks.iotas.streams.layout.storm;
 
 import com.hortonworks.iotas.streams.layout.ConfigFieldValidation;
 import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
+import com.hortonworks.iotas.streams.layout.component.impl.KafkaSource;
 import com.hortonworks.iotas.streams.layout.exception.BadTopologyLayoutException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +15,16 @@ import java.util.Map;
  * Implementation for KafkaSpout
  */
 public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
+    private static final Logger LOG = LoggerFactory.getLogger(KafkaSpoutFluxComponent.class);
+
+    private KafkaSource kafkaSource;
+
+    public KafkaSpoutFluxComponent() {
+    }
+
+    public KafkaSpoutFluxComponent(KafkaSource kafkaSource) {
+        this.kafkaSource = kafkaSource;
+    }
 
     @Override
     protected void generateComponent () {
@@ -21,13 +34,13 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
         List spoutConstructorArgs = new ArrayList();
         Map ref = getRefYaml(spoutConfigRef);
         spoutConstructorArgs.add(ref);
-        component = createComponent(spoutId, spoutClassName, null,
-                spoutConstructorArgs, null);
+        component = createComponent(spoutId, spoutClassName, null, spoutConstructorArgs, null);
         addParallelismToComponent();
     }
 
     private String addSpoutConfigComponent () {
         String zkHostsRef = addBrokerHostsComponent();
+        String schemeRef = addSchemeComponent();
         String spoutConfigComponentId = "spoutConfig" + UUID_FOR_COMPONENTS;
         String spoutConfigClassName = "org.apache.storm.kafka.SpoutConfig";
         String[] properties = {
@@ -37,7 +50,7 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
                 TopologyLayoutConstants.JSON_KEY_BUFFER_SIZE_BYTES,
                 //ignore multi scheme impl for now. always use default
                 // RawScheme. add check in validation
-                //TopologyLayoutConstants.JSON_KEY_MULTI_SCHEME_IMPL,
+                TopologyLayoutConstants.JSON_KEY_MULTI_SCHEME_IMPL,
                 TopologyLayoutConstants.JSON_KEY_IGNORE_ZK_OFFSETS,
                 TopologyLayoutConstants.JSON_KEY_MAX_OFFSET_BEHIND,
                 TopologyLayoutConstants.JSON_KEY_USE_START_OFFSET_IF_OFFSET_OUT_OF_RANGE,
@@ -49,6 +62,7 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
                 TopologyLayoutConstants.JSON_KEY_RETRY_DELAY_MULTIPLIER,
                 TopologyLayoutConstants.JSON_KEY_RETRY_DELAY_MAX_MS
         };
+
         List propertiesYaml = getPropertiesYaml(properties);
         List spoutConfigConstructorArgs = new ArrayList();
         Map ref = getRefYaml(zkHostsRef);
@@ -58,11 +72,22 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
             TopologyLayoutConstants.JSON_KEY_ZK_ROOT,
             TopologyLayoutConstants.JSON_KEY_SPOUT_CONFIG_ID
         };
-        spoutConfigConstructorArgs.addAll(getConstructorArgsYaml
-                (constructorArgNames));
-        this.addToComponents(createComponent(spoutConfigComponentId, spoutConfigClassName,
+        spoutConfigConstructorArgs.addAll(getConstructorArgsYaml(constructorArgNames));
+        addToComponents(createComponent(spoutConfigComponentId, spoutConfigClassName,
                 propertiesYaml, spoutConfigConstructorArgs, null));
+
         return spoutConfigComponentId;
+    }
+
+    private String addSchemeComponent() {
+        String streamsSchemeId = "streamsScheme" + UUID_FOR_COMPONENTS;
+        String schemeClassName = "com.hortonworks.iotas.streams.runtime.storm.spout.StreamsKafkaSpoutScheme";
+        String schemaName = (String) conf.get("topic");
+        String[] constructorArgNames = {(kafkaSource != null ? kafkaSource.getId() : ""), schemaName};
+        List constructorArgs = getConstructorArgsYaml(constructorArgNames);
+        addToComponents(createComponent(streamsSchemeId, schemeClassName, null, constructorArgs, null));
+
+        return streamsSchemeId;
     }
 
     // Add BrokerHosts yaml component and return its yaml id to further use

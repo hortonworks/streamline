@@ -22,8 +22,10 @@ import com.hortonworks.iotas.streams.metrics.TimeSeriesQuerier;
 import com.hortonworks.iotas.streams.metrics.topology.TopologyMetrics;
 import com.hortonworks.iotas.streams.notification.service.NotificationServiceImpl;
 import com.hortonworks.iotas.streams.notification.service.NotificationsResource;
+import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +49,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         List<Object> result = new ArrayList<>();
         final StreamCatalogService streamcatalogService;
         try {
-            streamcatalogService = new StreamCatalogService(storageManager, getTopologyActionsImpl(), getTopologyMetricsImpl(), fileStorage);
+            streamcatalogService = new StreamCatalogService(storageManager, getTopologyActionsImpl(), getTopologyMetricsImpl(), fileStorage, createSchemaRegistryClient());
         } catch (ConfigException e) {
             throw new RuntimeException(e);
         }
@@ -66,6 +68,11 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         result.add(new WindowCatalogResource(streamcatalogService));
         watchFiles(streamcatalogService);
         return result;
+    }
+
+    private SchemaRegistryClient createSchemaRegistryClient() {
+        Map<String, ?> conf = Collections.singletonMap(SchemaRegistryClient.Options.SCHEMA_REGISTRY_URL, config.get("schemaRegistryUrl"));
+        return new SchemaRegistryClient(conf);
     }
 
     @Override
@@ -145,6 +152,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         conf.put(StormTopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL, (String) config.get(Constants.CONFIG_CATALOG_ROOT_URL));
         conf.put(StormTopologyLayoutConstants.STORM_HOME_DIR, (String) config.get(StormTopologyLayoutConstants.STORM_HOME_DIR));
         conf.put(TopologyLayoutConstants.JAVA_JAR_COMMAND, (String) config.get(TopologyLayoutConstants.JAVA_JAR_COMMAND));
+        conf.put(TopologyLayoutConstants.SCHEMA_REGISTRY_URL, (String) config.get(TopologyLayoutConstants.SCHEMA_REGISTRY_URL));
         topologyActions.init(conf);
         return topologyActions;
     }

@@ -34,11 +34,13 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
     private final List<Map.Entry<String, Map<String, Object>>> keysAndComponents = new ArrayList<>();
 
     private TopologyDag topologyDag;
+    private final Map<String, String> config;
 
     private FluxComponentFactory fluxComponentFactory = new FluxComponentFactory();
 
-    public StormTopologyFluxGenerator(TopologyDag topologyDag) {
+    public StormTopologyFluxGenerator(TopologyDag topologyDag, Map<String, String> config) {
         this.topologyDag = topologyDag;
+        this.config = config;
     }
 
     @Override
@@ -149,12 +151,18 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
     }
 
     private Map<String, Object> getYamlComponents(FluxComponent fluxComponent, Component topologyComponent) {
-        fluxComponent.withConfig(topologyComponent.getConfig().getProperties());
+        Map<String, Object> props = new HashMap<>();
+        props.putAll(config);
+        props.putAll(topologyComponent.getConfig().getProperties());
+        fluxComponent.withConfig(props);
+
         for (Map<String, Object> referencedComponent : fluxComponent.getReferencedComponents()) {
             keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_COMPONENTS, referencedComponent));
         }
+
         Map<String, Object> yamlComponent = fluxComponent.getComponent();
         yamlComponent.put(StormTopologyLayoutConstants.YAML_KEY_ID, getFluxId(topologyComponent));
+
         return yamlComponent;
     }
 

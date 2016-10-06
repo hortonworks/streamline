@@ -20,9 +20,13 @@ package com.hortonworks.iotas.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.common.QueryParam;
+import com.hortonworks.iotas.common.catalog.CatalogResponse;
 import com.hortonworks.iotas.common.util.WSUtils;
+import com.hortonworks.iotas.streams.catalog.CatalogRestClient;
 import com.hortonworks.iotas.streams.catalog.TopologySource;
 import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.registries.schemaregistry.SchemaNotFoundException;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -31,6 +35,8 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -42,9 +48,11 @@ import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessa
 import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
 import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
 import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static javax.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
 import static javax.ws.rs.core.Response.Status.OK;
 
 /**
@@ -143,6 +151,24 @@ public class TopologySourceCatalogResource {
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
+        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, buildMessageForCompositeId(topologyId, sourceId));
+    }
+
+    @GET
+    @Path("/{id}/schema")
+    @Timed
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response getTopologySourceSchema(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sourceId) {
+        String schema = null;
+        try {
+            schema = catalogService.getSchema(sourceId);
+            return WSUtils.respond(OK, SUCCESS, schema);
+        } catch (SchemaNotFoundException e) {
+            // ignore and log error
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, buildMessageForCompositeId(topologyId, sourceId));
     }
 
@@ -245,7 +271,7 @@ public class TopologySourceCatalogResource {
     @Path("/{id}")
     @Timed
     public Response addOrUpdateTopologySource(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sourceId,
-                                      TopologySource topologySource) {
+                                              TopologySource topologySource) {
         try {
             TopologySource createdTopologySource = catalogService.addOrUpdateTopologySource(topologyId, sourceId, topologySource);
             return WSUtils.respond(CREATED, SUCCESS, createdTopologySource);

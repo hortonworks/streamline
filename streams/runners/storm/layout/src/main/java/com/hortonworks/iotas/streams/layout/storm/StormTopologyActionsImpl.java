@@ -40,14 +40,14 @@ public class StormTopologyActionsImpl implements TopologyActions {
     private String stormJarLocation;
     private String catalogRootUrl;
     private String javaJarCommand;
-
-    private Map<String, String> jsonUiNameToStormName = new HashMap<>();
+    private Map<String, String> conf;
 
     public StormTopologyActionsImpl() {
     }
 
     @Override
     public void init (Map<String, String> conf) {
+        this.conf = conf;
         if (conf != null) {
             if (conf.containsKey(StormTopologyLayoutConstants.STORM_ARTIFACTS_LOCATION_KEY)) {
                 stormArtifactsLocation = conf.get(StormTopologyLayoutConstants.STORM_ARTIFACTS_LOCATION_KEY);
@@ -76,7 +76,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
     @Override
     public void deploy (TopologyLayout topology) throws Exception {
         Path jarToDeploy = addArtifactsToJar(getArtifactsLocation(topology));
-        String fileName = this.createYamlFile(topology);
+        String fileName = createYamlFile(topology);
         List<String> commands = new ArrayList<String>();
         commands.add(stormCliPath);
         commands.add("jar");
@@ -228,8 +228,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
         return Paths.get(getArtifactsLocation(topology).toString(), "jars");
     }
 
-    private String createYamlFile (TopologyLayout topology) throws
-            Exception {
+    private String createYamlFile (TopologyLayout topology) throws Exception {
         String configJson = topology.getConfig();
         Map<String, Object> yamlMap;
         Map<String, Object> jsonMap;
@@ -245,13 +244,13 @@ public class StormTopologyActionsImpl implements TopologyActions {
                 }
             }
             jsonMap = objectMapper.readValue(configJson, Map.class);
-            yamlMap = new LinkedHashMap<String, Object>();
-            yamlMap.put(StormTopologyLayoutConstants.YAML_KEY_NAME, this
-                    .getTopologyName(topology));
+            yamlMap = new LinkedHashMap<>();
+            yamlMap.put(StormTopologyLayoutConstants.YAML_KEY_NAME, getTopologyName(topology));
             addTopologyConfig(yamlMap, jsonMap);
             for (Map.Entry<String, Map<String, Object>> entry: getYamlKeysAndComponents(topology.getTopologyDag())) {
                 addComponentToCollection(yamlMap, entry.getValue(), entry.getKey());
             }
+
             DumperOptions options = new DumperOptions();
             options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
             options.setSplitLines(false);
@@ -268,7 +267,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
     }
 
     private List<Map.Entry<String, Map<String, Object>>> getYamlKeysAndComponents(TopologyDag topologyDag) {
-        StormTopologyFluxGenerator fluxGenerator = new StormTopologyFluxGenerator(topologyDag);
+        StormTopologyFluxGenerator fluxGenerator = new StormTopologyFluxGenerator(topologyDag, conf);
         topologyDag.traverse(fluxGenerator);
         return fluxGenerator.getYamlKeysAndComponents();
     }
@@ -278,15 +277,13 @@ public class StormTopologyActionsImpl implements TopologyActions {
     }
 
     private String getFilePath (TopologyLayout topology) {
-        return this.stormArtifactsLocation + getTopologyName(topology) + "" +
-                ".yaml";
+        return this.stormArtifactsLocation + getTopologyName(topology) + ".yaml";
     }
 
     // Add topology level configs. catalogRootUrl, hbaseConf, hdfsConf,
     // numWorkers, etc.
-    private void addTopologyConfig (Map<String, Object> yamlMap, Map<String,
-            Object> topologyConfig) {
-        Map<String, Object> config = new LinkedHashMap<String, Object>();
+    private void addTopologyConfig (Map<String, Object> yamlMap, Map<String, Object> topologyConfig) {
+        Map<String, Object> config = new LinkedHashMap<>();
         config.put(StormTopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL, catalogRootUrl);
         if (topologyConfig != null) {
             config.putAll(topologyConfig);
@@ -298,10 +295,10 @@ public class StormTopologyActionsImpl implements TopologyActions {
         if (yamlComponent == null ) {
             return;
         }
-        List<Map<String, Object>> components = (ArrayList) yamlMap.get
-                (collectionKey);
+
+        List<Map<String, Object>> components = (List) yamlMap.get(collectionKey);
         if (components == null) {
-            components = new ArrayList<Map<String, Object>>();
+            components = new ArrayList<>();
             yamlMap.put(collectionKey, components);
         }
         components.add(yamlComponent);
