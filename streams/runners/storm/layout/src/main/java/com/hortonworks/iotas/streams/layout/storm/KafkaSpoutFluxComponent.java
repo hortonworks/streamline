@@ -19,11 +19,11 @@ import java.util.Map;
 public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
     private static final Logger LOG = LoggerFactory.getLogger(KafkaSpoutFluxComponent.class);
 
-    private KafkaSource kafkaSource;
-
+    private final KafkaSource kafkaSource;
+    // for unit tests
     public KafkaSpoutFluxComponent() {
+        kafkaSource = null;
     }
-
     public KafkaSpoutFluxComponent(KafkaSource kafkaSource) {
         this.kafkaSource = kafkaSource;
     }
@@ -62,9 +62,18 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
                 TopologyLayoutConstants.JSON_KEY_STATE_UPDATE_INTERVAL_MS,
                 TopologyLayoutConstants.JSON_KEY_RETRY_INITIAL_DELAY_MS,
                 TopologyLayoutConstants.JSON_KEY_RETRY_DELAY_MULTIPLIER,
-                TopologyLayoutConstants.JSON_KEY_RETRY_DELAY_MAX_MS
+                TopologyLayoutConstants.JSON_KEY_RETRY_DELAY_MAX_MS,
+                TopologyLayoutConstants.JSON_KEY_OUTPUT_STREAM_ID
         };
-
+        // add the output stream to conf so that the kafka spout declares output stream properly
+        if (kafkaSource != null && kafkaSource.getOutputStreams().size() == 1) {
+            conf.put(TopologyLayoutConstants.JSON_KEY_OUTPUT_STREAM_ID,
+                    kafkaSource.getOutputStreams().iterator().next().getId());
+        } else {
+            String msg = "Kafka source component [" + kafkaSource + "] should define exactly one output stream for Storm";
+            LOG.error(msg, kafkaSource);
+            throw new IllegalArgumentException(msg);
+        }
         List propertiesYaml = getPropertiesYaml(properties);
 
         propertiesYaml.add(getSchemeRefEntry(schemeRef));

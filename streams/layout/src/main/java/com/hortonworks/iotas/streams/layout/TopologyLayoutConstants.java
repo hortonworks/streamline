@@ -69,6 +69,7 @@ public final class TopologyLayoutConstants {
     public final static String JSON_KEY_RETRY_INITIAL_DELAY_MS = "retryInitialDelayMs";
     public final static String JSON_KEY_RETRY_DELAY_MULTIPLIER = "retryDelayMultiplier";
     public final static String JSON_KEY_RETRY_DELAY_MAX_MS = "retryDelayMaxMs";
+    public final static String JSON_KEY_OUTPUT_STREAM_ID = "outputStreamId";
     public final static String JSON_KEY_PARSED_TUPLES_STREAM = "parsedTuplesStream";
     public final static String JSON_KEY_FAILED_TUPLES_STREAM = "failedTuplesStream";
     public final static String JSON_KEY_PARSER_JAR_PATH = "parserJarPath";

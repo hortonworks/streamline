@@ -24,9 +24,14 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.hortonworks.iotas.streams.layout.storm.StormTopologyLayoutConstants.YAML_KEY_ID;
+import static com.hortonworks.iotas.streams.layout.storm.StormTopologyLayoutConstants.YAML_KEY_STREAMS;
+import static com.hortonworks.iotas.streams.layout.storm.StormTopologyLayoutConstants.YAML_KEY_TO;
 
 public class StormTopologyFluxGenerator extends TopologyDagVisitor {
     private static final Logger LOG = LoggerFactory.getLogger(StormTopologyFluxGenerator.class);
@@ -100,7 +105,9 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
                         topologyDag.getEdgesFrom(rulesProcessor));
             }
         }
-        if (!rulesWithoutWindow.isEmpty()) {
+        if (rulesWithoutWindow.isEmpty()) {
+            removeFluxStreamsTo(getFluxId(rulesProcessor));
+        } else {
             rulesProcessor.setRules(rulesWithoutWindow);
             rulesProcessor.getConfig().setAny(RulesProcessor.CONFIG_KEY_RULES, Collections2.transform(rulesWithoutWindow, new Function<Rule, Long>() {
                 @Override
@@ -110,6 +117,18 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
             }));
             keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_BOLTS,
                     getYamlComponents(new RuleBoltFluxComponent(rulesProcessor), rulesProcessor)));
+        }
+    }
+
+    private void removeFluxStreamsTo(String componentId) {
+        Iterator<Map.Entry<String, Map<String, Object>>> it = keysAndComponents.iterator();
+        while (it.hasNext()) {
+            Map.Entry<String, Map<String, Object>> entry = it.next();
+            if (entry.getKey().equals(YAML_KEY_STREAMS)
+                    && entry.getValue().get(YAML_KEY_TO).equals(componentId)) {
+                LOG.debug("Removing entry {} from yaml keys and components", entry);
+                it.remove();
+            }
         }
     }
 
@@ -137,13 +156,25 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
 
     @Override
     public void visit(Edge edge) {
-        for (StreamGrouping streamGrouping : edge.getStreamGroupings()) {
-            addEdge(edge.getFrom(),
-                    edge.getTo(),
-                    streamGrouping.getStream().getId(),
-                    String.valueOf(streamGrouping.getGrouping()),
-                    streamGrouping.getFields());
+        if (sourceYamlComponentExists(edge)) {
+            for (StreamGrouping streamGrouping : edge.getStreamGroupings()) {
+                addEdge(edge.getFrom(),
+                        edge.getTo(),
+                        streamGrouping.getStream().getId(),
+                        String.valueOf(streamGrouping.getGrouping()),
+                        streamGrouping.getFields());
+            }
         }
+    }
+
+    private boolean sourceYamlComponentExists(Edge edge) {
+        for (Map.Entry<String, Map<String, Object>> entry : keysAndComponents) {
+            String id = (String) entry.getValue().get(YAML_KEY_ID);
+            if (getFluxId(edge.getFrom()).equals(id)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public List<Map.Entry<String, Map<String, Object>>> getYamlKeysAndComponents() {
@@ -162,7 +193,6 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
 
         Map<String, Object> yamlComponent = fluxComponent.getComponent();
         yamlComponent.put(StormTopologyLayoutConstants.YAML_KEY_ID, getFluxId(topologyComponent));
-
         return yamlComponent;
     }
 
