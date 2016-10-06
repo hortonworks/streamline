@@ -17,7 +17,6 @@ import org.junit.experimental.categories.Category;
  */
 @Category(HBaseIntegrationTest.class)
 public abstract class PhoenixStorageManagerNoCacheIntegrationTest extends JdbcStorageManagerIntegrationTest {
-
     public PhoenixStorageManagerNoCacheIntegrationTest() {
         // setConnectionBuilder();
         jdbcStorageManager = createJdbcStorageManager(new PhoenixExecutor(new ExecutionConfig(-1), connectionBuilder));
