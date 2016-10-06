@@ -39,7 +39,7 @@ public abstract class NotificationIndexMapper extends AbstractNotificationMapper
     @Override
     protected void addColumns(Put put, Notification notification) {
         super.addColumns(put, notification);
-        put.add(CF_NOTIFICATION_ID, notification.getId().getBytes(CHARSET), CV_DEFAULT);
+        put.addColumn(CF_NOTIFICATION_ID, notification.getId().getBytes(CHARSET), CV_DEFAULT);
     }
 
     @Override

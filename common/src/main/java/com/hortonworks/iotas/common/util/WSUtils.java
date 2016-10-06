@@ -43,7 +43,7 @@ public class WSUtils {
     private WSUtils() {
     }
 
-    public static Response respond(Response.Status status, CatalogResponse.ResponseMessage msg, Collection<? extends Object> entities, String... formatArgs) {
+    public static Response respond(Response.Status status, CatalogResponse.ResponseMessage msg, Collection<?> entities, String... formatArgs) {
         return Response.status(status)
                 .entity(CatalogResponse.newResponse(msg).entities(entities).format(formatArgs))
                 .build();
