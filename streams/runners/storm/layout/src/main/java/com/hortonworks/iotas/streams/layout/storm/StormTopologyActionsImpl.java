@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -314,7 +315,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
         processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();
         StringWriter sw = new StringWriter();
-        IOUtils.copy(process.getInputStream(), sw);
+        IOUtils.copy(process.getInputStream(), sw, Charset.defaultCharset());
         String stdout = sw.toString();
         process.waitFor();
         int exitValue = process.exitValue();
