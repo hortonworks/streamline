@@ -168,21 +168,10 @@ export default class KafkaNodeForm extends Component {
 					} else {
 						document.querySelector("input[name=topic]").className = "form-control";
 						this.validTopicName = true;
-						let fields = result.entity;
-						//Hack Starts
-						fields = fields.slice(1,-1);
-						let fieldsArr = fields.split('},');
-						fieldsArr.map((field)=>{
-							let o = {};
-							field = field.replace(/{|\'|}| /g,'');
-							let tempArr = field.split(',');
-							tempArr.map((t)=>{
-								let k = t.split(':');
-								o[k[0]] = k[1];
-							})
-							resultArr.push(o);
-						})
-						//Hack ends
+						resultArr = result.entity;
+						if(typeof resultArr === 'string'){
+							resultArr = JSON.parse(resultArr);
+						}
 					}
 					this.showStreams(resultArr);
 				})
