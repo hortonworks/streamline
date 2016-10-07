@@ -81,8 +81,12 @@ export default class OutputSchema extends Component {
 			})
 	}
 	componentWillReceiveProps(props){
-		if(props.windowId && this.nodeData && this.nodeData.config && this.nodeData.config.properties){
-			this.nodeData.config.properties.rules = [props.windowId];
+		if(props.windowOutputStreams !== undefined){
+			this.nodeData.outputStreams = [props.windowOutputStreams];
+			this.generateData(this.nodeData);
+       	} else if(props.rulesOutputStreams !== undefined){
+            this.nodeData.outputStreams = props.rulesOutputStreams;
+            this.generateData(this.nodeData);
 		}
 	}
 

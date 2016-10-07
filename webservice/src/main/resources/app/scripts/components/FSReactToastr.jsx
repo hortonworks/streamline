@@ -13,7 +13,7 @@ body.appendChild(container);
 const FSReactToastr = render(
 	<ToastContainer 
 		toastMessageFactory={ToastMessageFactory}
-		className="toast-top-full-width" />, container
+		className="toast-top-right" />, container
 )
 
 export default FSReactToastr

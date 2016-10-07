@@ -219,12 +219,13 @@ class RuleFormula extends Component {
 	}
 	previewQuery(){
 		let {data} = this.state;
-		this.sqlStrQuery = "select * from parsedTuplesStream where ";
+		let streamName = this.props.fields[0].streamId;
+		this.sqlStrQuery = "select * from "+streamName+" where ";
                 this.conditionStr = '';
 		this.validSQL = true;
 		return(
 			<pre className="query-preview" key={1}>
-				select * from {this.renderTableName('parsedTuplesStream')} <span className="text-danger">where</span>
+				select * from {this.renderTableName(streamName)} <span className="text-danger">where</span>
 				{data.map((d,i)=>{
 					if(d.hasOwnProperty('logicalOp')){
 						this.sqlStrQuery += ' ' + d.logicalOp + ' ' + d.field1 + ' ' + d.operator + ' ' + d.field2;

@@ -50,7 +50,7 @@ export default class RulesNodeForm extends Component {
 				this.nodeData = results[0].entity;
 				let configFields = results[0].entity.config.properties;
 				let {rules = [], parallelism = 1} = configFields;
-				
+
 				let promise = [];
 				rules.map(id=>{
 					promise.push(TopologyREST.getNode(topologyId, 'rules', id));
@@ -64,7 +64,7 @@ export default class RulesNodeForm extends Component {
 						})
 						this.setState({rules: ruleArr});
 					})
-				
+
 				let stateObj = {
 					parallelism: parallelism ? parallelism : 1
 				};
@@ -83,6 +83,9 @@ export default class RulesNodeForm extends Component {
                                                 this.parsedStreams.push(_.find(allStreams, {id: g.streamId}));
                                         });
                                 });
+				if(this.nodeData.outputStreams.length === 0 || this.nodeData.outputStreams.length < this.parsedStreams.length) {
+					this.saveStreams();
+				}
 
 				this.setState(stateObj);
 			})
@@ -90,6 +93,32 @@ export default class RulesNodeForm extends Component {
 				console.error(err);
 			})
 	}
+
+        saveStreams() {
+                let {topologyId, nodeType} = this.props;
+                let promiseForStreams = [];
+                this.parsedStreams.map((s, i)=>{
+			let streamData = {
+					streamId: 'rule_processor_'+(this.nodeData.id)+'_stream_'+(i+1),
+					fields: s.fields
+				};
+			//TODO - Need to find out exact streams that needs to be created and save only those
+			if((i+1) > this.nodeData.outputStreams.length)
+				promiseForStreams.push(TopologyREST.createNode(topologyId, 'streams', {body: JSON.stringify(streamData)}));
+		});
+                Promise.all(promiseForStreams)
+                .then(results=>{
+                                this.nodeData.outputStreamIds = this.nodeData.outputStreams.map((s)=>{return s.id;}) || [];
+                                results.map((s)=>{
+                                        this.nodeData.outputStreamIds.push(s.entity.id);
+                                });
+                                TopologyREST.updateNode(topologyId, nodeType, this.nodeData.id, {body: JSON.stringify(this.nodeData)})
+                                        .then((node)=>{
+                                                this.nodeData = node.entity;
+                                                this.setState({outputStreams: node.entity.outputStreams});
+                                        })
+                })
+        }
 
 	validateData(){
 		return true;
@@ -257,6 +286,9 @@ export default class RulesNodeForm extends Component {
 							nodeType={nodeType}
 							targetNodes={targetNodes}
 							linkShuffleOptions={linkShuffleOptions}
+                                                        canAdd={false}
+                                                        canDelete={false}
+                                                        rulesOutputStreams={this.state.outputStreams}
 						/>
 					</Tab>
 				</Tabs>

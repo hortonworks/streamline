@@ -55,7 +55,7 @@ const TopologyREST = {
 	deployTopology(id, options) {
 		options = options || {};
 		options.method = options.method || 'POST';
-		return fetch(baseUrl+'topologies/'+id+'/actions/deploy', options)
+		return CustomFetch(baseUrl+'topologies/'+id+'/actions/deploy', options)
 			.then( (response) => {
 		  		return response.json();
 		  	})
@@ -63,7 +63,7 @@ const TopologyREST = {
 	killTopology(id, options) {
 		options = options || {};
 		options.method = options.method || 'POST';
-		return fetch(baseUrl+'topologies/'+id+'/actions/kill', options)
+		return CustomFetch(baseUrl+'topologies/'+id+'/actions/kill', options)
 			.then( (response) => {
 		  		return response.json();
 		  	})
@@ -194,7 +194,15 @@ const TopologyREST = {
 		return fetch(baseUrl+'topologies/'+id+'/'+nodeType, options)
 			.then( (response) => {
 		  		return response.json();
-		  	})	
+		  	})
+	},
+	getSchemaForKafka(topicName, options){
+		options = options || {};
+		options.method = options.method || 'GET';
+		return fetch('/api/v1/schemas/'+topicName, options)
+			.then( (response) => {
+		  		return response.json();
+		  	})
 	}
 }
 

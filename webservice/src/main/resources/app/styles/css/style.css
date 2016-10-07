@@ -44,6 +44,9 @@ ol {
   border: none;
   font-size: 16px;
 }
+.position-relative {
+  position: relative;
+}
 
 
 /* Loader */
@@ -966,6 +969,20 @@ svg > foreignObject > p {
 }
 .field-json{
   max-height: 250px;
+}
+.stream-id {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 10;
+  display: block;
+  padding: 5px 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #767676;
+  background-color: #fff;
+  border: 1px solid #e1e1e8;
+  border-radius: 0 4px 0 4px;
 }
 
 .reactable-pagination a {

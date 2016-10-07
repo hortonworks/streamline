@@ -20,7 +20,6 @@ export default class KafkaNodeForm extends Component {
 	constructor(props) {
 		super(props);
 		let {configData, editMode} = props;
-		this.fetchData();
 		if(typeof configData.config === 'string'){
 			configData.config = JSON.parse(configData.config)
 		}
@@ -40,7 +39,12 @@ export default class KafkaNodeForm extends Component {
 			obj.configFields[o.name] = o.defaultValue === null ? '' : o.defaultValue;
 		});
 
+		this.validTopicName = true;
+
 		this.state = obj;
+	}
+	componentDidMount(){
+		this.fetchData();
 	}
 
 	fetchData(){
@@ -58,6 +62,7 @@ export default class KafkaNodeForm extends Component {
 				if(this.nodeData.outputStreams.length === 0) {
 					this.saveStream();
 				} else {
+					this.streamObj = this.nodeData.outputStreams[0];
 					showSchema = true;
 				}
 
@@ -109,40 +114,7 @@ export default class KafkaNodeForm extends Component {
 	saveStream(){
 		let self = this;
 		let {topologyId, nodeType} = this.props;
-		let passStreamData = { streamId: 'parsedTuplesStream', fields: [
-			{"name": "device_id", "type": "STRING", "optional": false },
-			{"name": "locale","type": "STRING","optional": false},
-			{"name": "software_version","type": "STRING","optional": false},
-			{"name": "structure_id","type": "STRING","optional": false},
-			{"name": "name","type": "STRING","optional": false},
-			{"name": "name_long","type": "STRING","optional": false},
-			{"name": "last_connection","type": "STRING","optional": false},
-			{"name": "is_online","type": "STRING","optional": false},
-			{"name": "can_cool","type": "STRING","optional": false},
-			{"name": "can_heat","type": "STRING","optional": false},
-			{"name": "is_using_emergency_heat","type": "STRING","optional": false},
-			{"name": "has_fan","type": "STRING","optional": false},
-			{"name": "fan_timer_active","type": "STRING","optional": false},
-			{"name": "fan_timer_timeout","type": "STRING","optional": false},
-			{"name": "has_leaf","type": "STRING","optional": false},
-			{"name": "temperature_scale","type": "STRING","optional": false},
-			{"name": "target_temperature_f","type": "STRING","optional": false},
-			{"name": "target_temperature_c","type": "STRING","optional": false},
-			{"name": "target_temperature_high_f","type": "STRING","optional": false},
-			{"name": "target_temperature_high_c","type": "STRING","optional": false},
-			{"name": "target_temperature_low_f","type": "STRING","optional": false},
-			{"name": "target_temperature_low_c","type": "STRING","optional": false},
-			{"name": "away_temperature_high_f","type": "STRING","optional": false},
-			{"name": "away_temperature_high_c","type": "STRING","optional": false},
-			{"name": "away_temperature_low_f","type": "STRING","optional": false},
-			{"name": "away_temperature_low_c","type": "STRING","optional": false},
-			{"name": "hvac_mode","type": "STRING","optional": false},
-			{"name": "ambient_temperature_f","type": "STRING","optional": false},
-			{"name": "ambient_temperature_c","type": "STRING","optional": false},
-			{"name": "humidity","type": "STRING","optional": false},
-			{"name": "hvac_state","type": "STRING","optional": false},
-			{"name": "battery_state","type": "INTEGER","optional": false}
-		]};
+		let passStreamData = { streamId: 'kafka_stream_'+this.nodeData.id, fields: []};
 		TopologyREST.createNode(topologyId, 'streams', {body: JSON.stringify(passStreamData)})
 			.then(result=>{
 				self.nodeData.outputStreamIds = [];
@@ -170,7 +142,62 @@ export default class KafkaNodeForm extends Component {
 		let requiredField = _.find(this.state.reqFieldArr, (f)=>{return f.name === e.target.name});
 		if(requiredField && e.target.value === '') fieldObj.isInvalid = true;
 		else delete fieldObj.isInvalid;
+		if(e.target.name === 'topic'){
+			let topicName = e.target.value;
+			clearTimeout(this.topicNameTimeout);
+			this.topicNameTimeout = setTimeout(()=>{
+				this.getSchemaFromTopic(topicName);
+			}, 1000);
+		}
 		this.setState({configFields: obj, showError: true, showErrorLabel: false});
+	}
+
+	getSchemaFromTopic(topicName){
+		let {topologyId} = this.props;
+		let resultArr = [];
+		if(topicName === ''){
+			document.querySelector("input[name=topic]").className = "form-control invalidInput";
+			this.validTopicName = false;
+			this.showStreams(resultArr);
+		} else {
+			TopologyREST.getSchemaForKafka(topicName)
+				.then(result=>{
+					if(result.responseCode !== 1000){
+						document.querySelector("input[name=topic]").className = "form-control invalidInput";
+						this.validTopicName = false;
+					} else {
+						document.querySelector("input[name=topic]").className = "form-control";
+						this.validTopicName = true;
+						let fields = result.entity;
+						//Hack Starts
+						fields = fields.slice(1,-1);
+						let fieldsArr = fields.split('},');
+						fieldsArr.map((field)=>{
+							let o = {};
+							field = field.replace(/{|\'|}| /g,'');
+							let tempArr = field.split(',');
+							tempArr.map((t)=>{
+								let k = t.split(':');
+								o[k[0]] = k[1];
+							})
+							resultArr.push(o);
+						})
+						//Hack ends
+					}
+					this.showStreams(resultArr);
+				})
+		}
+	}
+
+	showStreams(resultArr){
+		this.streamObj = {
+			streamId: 'kafka_stream_'+this.nodeData.id,
+			fields: resultArr,
+			id: this.nodeData.outputStreams[0].id
+		};
+
+		this.refs.schema.nodeData.outputStreams = [JSON.parse(JSON.stringify(this.streamObj))];
+		this.refs.schema.generateData(this.refs.schema.nodeData);
 	}
 
 	handleRadioBtn(e) {
@@ -206,6 +233,9 @@ export default class KafkaNodeForm extends Component {
 				o.isInvalid = true;
 			}
 		});
+		if(!this.validTopicName){
+			validDataFlag = false;
+		}
 		if(!validDataFlag)
 			this.setState({showError: true, showErrorLabel: true});
 		else this.setState({showErrorLabel: false});
@@ -218,7 +248,18 @@ export default class KafkaNodeForm extends Component {
 		let data = this.getData();
 		this.nodeData.config.properties = data;
 		this.nodeData.name = name;
-		return TopologyREST.updateNode(topologyId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)})
+		let o = {
+			fields: this.streamObj.fields,
+			streamId: this.streamObj.streamId,
+			id: this.nodeData.outputStreams[0].id,
+			topologyId: topologyId
+		}
+		this.nodeData.outputStreams = [o];
+		let promiseArr = [
+			TopologyREST.updateNode(topologyId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)}),
+			TopologyREST.updateNode(topologyId, 'streams', this.nodeData.outputStreams[0].id, {body: JSON.stringify(this.streamObj)})
+		];
+		return Promise.all(promiseArr);
 	}
 
 	render() {

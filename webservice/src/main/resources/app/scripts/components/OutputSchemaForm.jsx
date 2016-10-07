@@ -466,7 +466,6 @@ export default class OutputSchema extends Component {
 								clearable={false}
 								joinValues={true}
 								required={true}
-								disabled={!targetNodesArr.length}
 							/>
 						</div>
 					</div>
