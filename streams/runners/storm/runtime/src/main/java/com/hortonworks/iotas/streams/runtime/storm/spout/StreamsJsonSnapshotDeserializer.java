@@ -40,6 +40,12 @@ public class StreamsJsonSnapshotDeserializer extends AbstractSnapshotDeserialize
     }
 
     @Override
+    public Map<String, Object> deserialize(InputStream payloadInputStream, SchemaMetadata schemaMetadata, Integer readerSchemaVersion) throws SerDesException {
+        // no writer version coming here for now.
+        return doDeserialize(payloadInputStream, schemaMetadata, null, readerSchemaVersion);
+    }
+
+    @Override
     protected Map<String, Object> doDeserialize(InputStream payloadInputStream,
                                                 SchemaMetadata schemaMetadata,
                                                 Integer writerSchemaVersion,
