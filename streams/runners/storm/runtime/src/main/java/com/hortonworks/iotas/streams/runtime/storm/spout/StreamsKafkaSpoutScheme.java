@@ -17,6 +17,7 @@
  */
 package com.hortonworks.iotas.streams.runtime.storm.spout;
 
+import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.common.IotasEventImpl;
 import com.hortonworks.registries.schemaregistry.SchemaMetadata;
 import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
@@ -71,6 +72,6 @@ public class StreamsKafkaSpoutScheme implements MultiScheme {
 
     @Override
     public Fields getOutputFields() {
-        return new Fields("bytes");
+        return new Fields(IotasEvent.IOTAS_EVENT);
     }
 }
