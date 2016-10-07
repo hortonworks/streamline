@@ -77,7 +77,6 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
         List propertiesYaml = getPropertiesYaml(properties);
 
         propertiesYaml.add(getSchemeRefEntry(schemeRef));
-        propertiesYaml.add(getOutputStreamIdEntry());
 
         List spoutConfigConstructorArgs = new ArrayList();
         Map ref = getRefYaml(zkHostsRef);
@@ -98,14 +97,6 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
         LinkedHashMap<String, Object> pair = new LinkedHashMap<>();
         pair.put(StormTopologyLayoutConstants.YAML_KEY_NAME, TopologyLayoutConstants.JSON_KEY_MULTI_SCHEME_IMPL);
         pair.put(StormTopologyLayoutConstants.YAML_KEY_REF, schemeRef);
-        return pair;
-    }
-
-    private Map<String, Object> getOutputStreamIdEntry() {
-        LinkedHashMap<String, Object> pair = new LinkedHashMap<>();
-        pair.put(StormTopologyLayoutConstants.YAML_KEY_NAME, "outputStreamId");
-        pair.put(StormTopologyLayoutConstants.YAML_KEY_VALUE, TopologyLayoutConstants.JSON_KEY_PARSED_TUPLES_STREAM);
-
         return pair;
     }
 
