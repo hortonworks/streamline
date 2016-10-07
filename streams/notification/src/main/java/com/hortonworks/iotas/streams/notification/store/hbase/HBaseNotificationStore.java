@@ -37,13 +37,13 @@ import com.hortonworks.iotas.streams.notification.store.hbase.mappers.TimestampN
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.HConnection;
-import org.apache.hadoop.hbase.client.HConnectionManager;
-import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.client.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,13 +62,13 @@ public class HBaseNotificationStore implements NotificationStore {
     private static final Logger LOG = LoggerFactory.getLogger(HBaseNotificationStore.class);
 
     private Configuration configuration;
-    private HConnection connection;
+    private Connection connection;
     /**
      * A map of table name to the HBase HTable instances.
      * Since the HTable instances are not thread safe, its wrapped
      * in {@link ThreadLocal}
      */
-    private final Map<String, ThreadLocal<HTableInterface>> tables = new HashMap<>();
+    private final Map<String, ThreadLocal<Table>> tables = new HashMap<>();
 
     /**
      * The mapper for converting notifications
@@ -104,7 +104,7 @@ public class HBaseNotificationStore implements NotificationStore {
                     configuration.set(entry.getKey(), entry.getValue());
                 }
             }
-            connection = HConnectionManager.createConnection(configuration);
+            connection = ConnectionFactory.createConnection(configuration);
             notificationIndexMappers.add(new NotifierNotificationMapper());
             notificationIndexMappers.add(new NotifierStatusNotificationMapper());
             notificationIndexMappers.add(new RuleNotificationMapper());
@@ -142,7 +142,7 @@ public class HBaseNotificationStore implements NotificationStore {
         for (TableMutation tm : tableMutations) {
             LOG.debug("Insert/Update {} row(s), Delete {} row(s) in table {}",
                       tm.updates().size(), tm.deletes().size(), tm.tableName());
-            HTableInterface table = tables.get(tm.tableName()).get();
+            Table table = tables.get(tm.tableName()).get();
             if (!tm.updates().isEmpty()) {
                 table.put(tm.updates());
             }
@@ -230,7 +230,7 @@ public class HBaseNotificationStore implements NotificationStore {
     @Override
     public void close() {
         try {
-            for (ThreadLocal<HTableInterface> table : tables.values()) {
+            for (ThreadLocal<Table> table : tables.values()) {
                 LOG.debug("Closing table {}", table);
                 table.get().close();
             }
@@ -254,9 +254,9 @@ public class HBaseNotificationStore implements NotificationStore {
     /**
      * Return a {@link ThreadLocal} wrapped HTable
      */
-    private ThreadLocal<HTableInterface> tlHTable(final String tableName) {
-        return new ThreadLocal<HTableInterface>() {
-            @Override protected HTableInterface initialValue() {
+    private ThreadLocal<Table> tlHTable(final String tableName) {
+        return new ThreadLocal<Table>() {
+            @Override protected Table initialValue() {
                 try {
                     return connection.getTable(TableName.valueOf(tableName));
                 } catch (IOException ex) {
