@@ -12,6 +12,7 @@ import com.hortonworks.iotas.streams.catalog.TopologyOutputComponent;
 import com.hortonworks.iotas.streams.catalog.TopologyProcessor;
 import com.hortonworks.iotas.streams.catalog.TopologySink;
 import com.hortonworks.iotas.streams.catalog.TopologySource;
+import com.hortonworks.iotas.streams.catalog.WindowInfo;
 import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.iotas.streams.layout.component.Edge;
 import com.hortonworks.iotas.streams.layout.component.InputComponent;
@@ -309,15 +310,37 @@ public class TopologyComponentFactory {
         return new SimpleImmutableEntry<>(STAGE, provider);
     }
 
+    private interface RuleExtractor {
+        Rule getRule(Long ruleId) throws Exception;
+    }
+
     private Map.Entry<String, Provider<IotasProcessor>> rulesProcessorProvider() {
-        return new SimpleImmutableEntry<>(RULE, createRulesProcessorProvider());
+        return new SimpleImmutableEntry<>(RULE, createRulesProcessorProvider(new RuleExtractor() {
+            @Override
+            public Rule getRule(Long ruleId) throws Exception {
+                RuleInfo ruleInfo = catalogService.getRule(ruleId);
+                if (ruleInfo == null) {
+                    throw new IllegalArgumentException("Cannot find rule with id " + ruleId);
+                }
+                return ruleInfo.getRule();
+            }
+        }));
     }
 
     private Map.Entry<String, Provider<IotasProcessor>> windowProcessorProvider() {
-        return new SimpleImmutableEntry<>(WINDOW, createRulesProcessorProvider());
+        return new SimpleImmutableEntry<>(WINDOW, createRulesProcessorProvider(new RuleExtractor() {
+            @Override
+            public Rule getRule(Long ruleId) throws Exception {
+                WindowInfo windowInfo = catalogService.getWindow(ruleId);
+                if (windowInfo == null) {
+                    throw new IllegalArgumentException("Cannot find rule with id " + ruleId);
+                }
+                return windowInfo.getRule();
+            }
+        }));
     }
 
-    private Provider<IotasProcessor> createRulesProcessorProvider() {
+    private Provider<IotasProcessor> createRulesProcessorProvider(final RuleExtractor ruleExtractor) {
         return new Provider<IotasProcessor>() {
             @Override
             public IotasProcessor create(TopologyComponent component) {
@@ -332,8 +355,7 @@ public class TopologyComponentFactory {
                 try {
                     List<Rule> rules = new ArrayList<>();
                     for (Long ruleId : ruleIds) {
-                        RuleInfo ruleInfo = catalogService.getRule(ruleId);
-                        rules.add(ruleInfo.getRule());
+                        rules.add(ruleExtractor.getRule(ruleId));
                     }
                     processor.setRules(rules);
                 } catch (Exception ex) {

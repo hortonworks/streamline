@@ -14,3 +14,4 @@ com.hortonworks.iotas.streams.catalog.TopologyProcessorStreamMapping
 com.hortonworks.iotas.streams.catalog.TopologyEdge
 com.hortonworks.iotas.streams.catalog.UDFInfo
 com.hortonworks.iotas.streams.catalog.RuleInfo
+com.hortonworks.iotas.streams.catalog.WindowInfo

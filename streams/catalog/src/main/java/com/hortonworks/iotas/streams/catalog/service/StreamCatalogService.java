@@ -55,7 +55,7 @@ import com.hortonworks.iotas.streams.catalog.TopologySink;
 import com.hortonworks.iotas.streams.catalog.TopologySource;
 import com.hortonworks.iotas.streams.catalog.TopologySourceStreamMapping;
 import com.hortonworks.iotas.streams.catalog.UDFInfo;
-import com.hortonworks.iotas.streams.catalog.WindowDto;
+import com.hortonworks.iotas.streams.catalog.WindowInfo;
 import com.hortonworks.iotas.streams.catalog.processor.CustomProcessorInfo;
 import com.hortonworks.iotas.streams.catalog.rule.RuleParser;
 import com.hortonworks.iotas.streams.catalog.topology.ConfigField;
@@ -123,6 +123,7 @@ public class StreamCatalogService {
     private static final String TOPOLOGY_PROCESSOR_STREAM_MAPPING_NAMESPACE = new TopologyProcessorStreamMapping().getNameSpace();
     private static final String TOPOLOGY_EDGE_NAMESPACE = new TopologyEdge().getNameSpace();
     private static final String TOPOLOGY_RULEINFO_NAMESPACE = new RuleInfo().getNameSpace();
+    private static final String TOPOLOGY_WINDOWINFO_NAMESPACE = new WindowInfo().getNameSpace();
     private static final String UDF_NAMESPACE = new UDFInfo().getNameSpace();
 
     private final StorageManager dao;
@@ -398,14 +399,14 @@ public class StreamCatalogService {
         String config = topology.getConfig();
         ObjectMapper objectMapper = new ObjectMapper();
         Map jsonMap = objectMapper.readValue(config, Map.class);
+        Path artifactsDir = topologyActions.getArtifactsLocation(getTopologyLayout(topology));
+        makeEmptyDir(artifactsDir);
         if (jsonMap != null) {
             List<Object> clusterList = (List<Object>) jsonMap.get(TopologyLayoutConstants.JSON_KEY_CLUSTERS);
             if (clusterList != null) {
                 List<Cluster> clusters = objectMapper.readValue(objectMapper.writeValueAsString(clusterList),
                         new TypeReference<List<Cluster>>() {
                         });
-                Path artifactsDir = topologyActions.getArtifactsLocation(getTopologyLayout(topology));
-                makeEmptyDir(artifactsDir);
                 for (Cluster c : clusters) {
                     Cluster cluster = getCluster(c.getId());
                     String resource = cluster.getClusterConfigStorageName();
@@ -1289,6 +1290,49 @@ public class StreamCatalogService {
                 new StorableKey(TOPOLOGY_RULEINFO_NAMESPACE, ruleInfo.getPrimaryKey()));
     }
 
+    public Collection<WindowInfo> listWindows() {
+        return dao.<WindowInfo>list(TOPOLOGY_WINDOWINFO_NAMESPACE);
+    }
+
+    public Collection<WindowInfo> listWindows(List<QueryParam> params) throws Exception {
+        return dao.<WindowInfo>find(TOPOLOGY_WINDOWINFO_NAMESPACE, params);
+    }
+
+    public WindowInfo addWindow(Long topologyId, WindowInfo windowInfo) throws Exception {
+        if (windowInfo.getId() == null) {
+            windowInfo.setId(dao.nextId(TOPOLOGY_WINDOWINFO_NAMESPACE));
+        }
+        windowInfo.setTopologyId(topologyId);
+        String parsedRuleStr = parseAndSerialize(windowInfo);
+        LOG.debug("ParsedRuleStr {}", parsedRuleStr);
+        windowInfo.setParsedRuleStr(parsedRuleStr);
+        dao.add(windowInfo);
+        return windowInfo;
+    }
+
+    public WindowInfo getWindow(Long id) throws Exception {
+        WindowInfo windowInfo = new WindowInfo();
+        windowInfo.setId(id);
+        return dao.<WindowInfo>get(new StorableKey(TOPOLOGY_WINDOWINFO_NAMESPACE, windowInfo.getPrimaryKey()));
+    }
+
+    public WindowInfo addOrUpdateWindow(Long topologyid, Long ruleId, WindowInfo windowInfo) throws Exception {
+        windowInfo.setId(ruleId);
+        windowInfo.setTopologyId(topologyid);
+        String parsedRuleStr = parseAndSerialize(windowInfo);
+        LOG.debug("ParsedRuleStr {}", parsedRuleStr);
+        windowInfo.setParsedRuleStr(parsedRuleStr);
+        dao.addOrUpdate(windowInfo);
+        return windowInfo;
+    }
+
+    public WindowInfo removeWindow(Long id) {
+        WindowInfo ruleInfo = new WindowInfo();
+        ruleInfo.setId(id);
+        return dao.<WindowInfo>remove(
+                new StorableKey(TOPOLOGY_WINDOWINFO_NAMESPACE, ruleInfo.getPrimaryKey()));
+    }
+
     private String parseAndSerialize(RuleInfo ruleInfo) throws JsonProcessingException {
         Rule rule = new Rule();
         rule.setId(ruleInfo.getId());
@@ -1298,21 +1342,37 @@ public class StreamCatalogService {
         rule.setActions(ruleInfo.getActions());
         if (ruleInfo.getStreams() != null && !ruleInfo.getStreams().isEmpty()) {
             ruleInfo.setSql(
-                    getSqlString(
-                            ruleInfo.getStreams(),
-                            ruleInfo.getProjections(),
-                            ruleInfo.getCondition(),
-                            ruleInfo.getGroupbykeys()));
+                    getSqlString(ruleInfo.getStreams(), null, ruleInfo.getCondition(), null));
         } else if (StringUtils.isEmpty(ruleInfo.getSql())) {
             throw new IllegalArgumentException("Either streams or sql string should be specified.");
         }
-        parseSql(rule, ruleInfo);
+        parseSql(rule, ruleInfo.getSql(), ruleInfo.getTopologyId());
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(rule);
+    }
+
+    private String parseAndSerialize(WindowInfo windowInfo) throws JsonProcessingException {
+        if (windowInfo.getStreams() == null || windowInfo.getStreams().isEmpty()) {
+            LOG.error("Streams should be specified.");
+            return StringUtils.EMPTY;
+        }
+        Rule rule = new Rule();
+        rule.setId(windowInfo.getId());
+        rule.setName(windowInfo.getName());
+        rule.setDescription(windowInfo.getDescription());
+        rule.setWindow(windowInfo.getWindow());
+        rule.setActions(windowInfo.getActions());
+        String sql = getSqlString(windowInfo.getStreams(),
+                windowInfo.getProjections(),
+                windowInfo.getCondition(),
+                windowInfo.getGroupbykeys());
+        parseSql(rule, sql, windowInfo.getTopologyId());
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(rule);
     }
 
     private String getSqlString(List<String> streams,
-                                List<WindowDto.Projection> projections,
+                                List<WindowInfo.Projection> projections,
                                 String condition,
                                 List<String> groupByKeys) {
         String SQL = select(projections).or("SELECT * ");
@@ -1322,11 +1382,11 @@ public class StreamCatalogService {
         return SQL;
     }
 
-    private Optional<String> select(List<WindowDto.Projection> projections) {
+    private Optional<String> select(List<WindowInfo.Projection> projections) {
         if (projections != null) {
-            return join("SELECT ", Collections2.transform(projections, new Function<WindowDto.Projection, String>() {
+            return join("SELECT ", Collections2.transform(projections, new Function<WindowInfo.Projection, String>() {
                 @Override
-                public String apply(WindowDto.Projection input) {
+                public String apply(WindowInfo.Projection input) {
                     return input.toString();
                 }
             }));
@@ -1360,9 +1420,9 @@ public class StreamCatalogService {
     }
 
 
-    private void parseSql(Rule rule, RuleInfo ruleInfo) {
+    private void parseSql(Rule rule, String sql, long topologyId) {
         // parse
-        RuleParser ruleParser = new RuleParser(this, ruleInfo);
+        RuleParser ruleParser = new RuleParser(this, sql, topologyId);
         ruleParser.parse();
         rule.setStreams(new HashSet<>(Collections2.transform(ruleParser.getStreams(), new Function<Stream, String>() {
             @Override
