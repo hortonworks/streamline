@@ -1696,10 +1696,14 @@ public class StreamCatalogService {
         return udfInfo;
     }
 
-    public Set<String> loadUdafsFromJar(File jarFile) throws IOException {
-        Set<String> udafs = new HashSet<>();
-        udafs.addAll(ProxyUtil.loadAllClassesFromJar(jarFile, UDAF.class));
-        udafs.addAll(ProxyUtil.loadAllClassesFromJar(jarFile, UDAF2.class));
+    public Map<String, Class<?>> loadUdafsFromJar(File jarFile) throws IOException {
+        Map<String, Class<?>> udafs = new HashMap<>();
+        for (Class<?> clazz : ProxyUtil.loadAllClassesFromJar(jarFile, UDAF.class)) {
+            udafs.put(clazz.getCanonicalName(), clazz);
+        }
+        for (Class<?> clazz : ProxyUtil.loadAllClassesFromJar(jarFile, UDAF2.class)) {
+            udafs.put(clazz.getCanonicalName(), clazz);
+        }
         return udafs;
     }
 

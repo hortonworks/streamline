@@ -9,11 +9,11 @@ public class StddevOnline {
     private double mean;
     private double aggregate;
 
-    StddevOnline add(double val) {
+    StddevOnline add(Number val) {
         ++n;
-        double delta = val - mean;
+        double delta = val.doubleValue() - mean;
         mean += delta / n;
-        aggregate += (delta * (val - mean));
+        aggregate += (delta * (val.doubleValue() - mean));
         return this;
     }
 
@@ -31,5 +31,9 @@ public class StddevOnline {
 
     double variance() {
         return aggregate / (n - 1);
+    }
+
+    double mean() {
+        return mean;
     }
 }

@@ -214,11 +214,14 @@ CREATE TABLE IF NOT EXISTS windowinfos (
 CREATE TABLE IF NOT EXISTS udfs (
     id BIGINT AUTO_INCREMENT NOT NULL,
     name VARCHAR(256) NOT NULL,
+    displayName VARCHAR(256) NOT NULL,
     description VARCHAR(256) NOT NULL,
     type  VARCHAR(256) NOT NULL,
     className  VARCHAR(256) NOT NULL,
     jarStoragePath  VARCHAR(256) NOT NULL,
     digest VARCHAR(256) NOT NULL,
+    argTypes VARCHAR(256) NOT NULL,
+    returnType VARCHAR(256) NOT NULL,
     PRIMARY KEY (id)
 );
 
@@ -228,7 +231,7 @@ CREATE TABLE IF NOT EXISTS clusters (
   description VARCHAR(256),
   timestamp BIGINT,
   PRIMARY KEY (id)
-)
+);
 
 CREATE TABLE IF NOT EXISTS services (
   id BIGINT AUTO_INCREMENT NOT NULL,
@@ -237,7 +240,7 @@ CREATE TABLE IF NOT EXISTS services (
   description VARCHAR(256),
   timestamp BIGINT,
   PRIMARY KEY (id)
-)
+);
 
 CREATE TABLE IF NOT EXISTS service_configurations (
   id BIGINT AUTO_INCREMENT NOT NULL,
@@ -248,7 +251,7 @@ CREATE TABLE IF NOT EXISTS service_configurations (
   filename VARCHAR(256),
   timestamp BIGINT,
   PRIMARY KEY (id)
-)
+);
 
 CREATE TABLE IF NOT EXISTS components (
   id BIGINT AUTO_INCREMENT NOT NULL,
@@ -259,4 +262,4 @@ CREATE TABLE IF NOT EXISTS components (
   port BIGINT,
   timestamp BIGINT,
   PRIMARY KEY (id)
-)
+);

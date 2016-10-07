@@ -1,5 +1,6 @@
 package org.apache.streamline.common.util;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import org.slf4j.Logger;
@@ -49,19 +50,29 @@ public class ProxyUtil<O> {
         return createClassLoaderAwareProxyInstance(classLoader, actualObject);
     }
 
-    public static Collection<String> loadAllClassesFromJar(final File jarFile, final Class<?> superTypeClass) throws IOException {
-        List<String> classes = JarReader.findSubtypeOfClasses(jarFile, superTypeClass);
+    public static Collection<Class<?>> loadAllClassesFromJar(final File jarFile, final Class<?> superTypeClass) throws IOException {
+        List<Class<?>> classes = JarReader.findSubtypeOfClasses(jarFile, superTypeClass);
         final ProxyUtil<?> proxyUtil = new ProxyUtil<>(superTypeClass);
-        return Collections2.filter(classes, new Predicate<String>() {
+        return Collections2.filter(classes, new Predicate<Class<?>>() {
             @Override
-            public boolean apply(@Nullable String s) {
+            public boolean apply(@Nullable Class<?> s) {
                 try {
-                    proxyUtil.loadClassFromJar(jarFile.getAbsolutePath(), s);
+                    proxyUtil.loadClassFromJar(jarFile.getAbsolutePath(), s.getCanonicalName());
                     return true;
                 } catch (Throwable ex) {
                     LOG.warn("class {} is subtype of {}, but it can't be initialized.", s, superTypeClass);
                     return false;
                 }
+            }
+        });
+    }
+
+    public static Collection<String> canonicalNames(Collection<Class<?>> classes) {
+        return Collections2.transform(classes, new Function<Class<?>, String>() {
+            @Nullable
+            @Override
+            public String apply(@Nullable Class<?> input) {
+                return input.getCanonicalName();
             }
         });
     }

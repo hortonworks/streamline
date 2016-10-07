@@ -1,8 +1,8 @@
-package org.apache.streamline.streams.udaf;
+package com.hortonworks.iotas.streams.udaf;
 
-import org.apache.streamline.streams.rule.UDAF;
+import com.hortonworks.iotas.streams.rule.UDAF;
 
-public class Variancep implements UDAF<StddevOnline, Number, Double> {
+public class Mean implements UDAF<StddevOnline, Number, Double> {
     @Override
     public StddevOnline init() {
         return new StddevOnline();
@@ -15,6 +15,6 @@ public class Variancep implements UDAF<StddevOnline, Number, Double> {
 
     @Override
     public Double result(StddevOnline aggregate) {
-        return aggregate.variancep();
+        return aggregate.mean();
     }
 }

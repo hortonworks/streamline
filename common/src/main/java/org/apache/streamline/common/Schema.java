@@ -44,13 +44,13 @@ public class Schema implements Serializable {
         NESTED(Map.class),  // nested field
         ARRAY(List.class);    // array field
 
-        private final Class javaType;
+        private final Class<?> javaType;
 
-        Type(Class javaType) {
+        Type(Class<?> javaType) {
             this.javaType = javaType;
         }
 
-        public Class getJavaType() {
+        public Class<?> getJavaType() {
             return javaType;
         }
 
@@ -488,7 +488,7 @@ public class Schema implements Serializable {
         throw new ParserException("Unknown type " + value.getClass());
     }
 
-    public static Type fromJavaType(Class clazz) throws ParserException {
+    public static Type fromJavaType(Class<?> clazz) throws ParserException {
         if(clazz.equals(String.class)) {
             return Type.STRING;
         } else if (clazz.equals(Short.class)) {
