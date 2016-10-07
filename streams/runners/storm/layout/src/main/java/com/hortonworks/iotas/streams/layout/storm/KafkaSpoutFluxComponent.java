@@ -1,5 +1,6 @@
 package com.hortonworks.iotas.streams.layout.storm;
 
+import com.google.common.collect.Lists;
 import com.hortonworks.iotas.streams.layout.ConfigFieldValidation;
 import com.hortonworks.iotas.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.iotas.streams.layout.component.impl.KafkaSource;
@@ -8,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -50,7 +52,7 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
                 TopologyLayoutConstants.JSON_KEY_BUFFER_SIZE_BYTES,
                 //ignore multi scheme impl for now. always use default
                 // RawScheme. add check in validation
-                TopologyLayoutConstants.JSON_KEY_MULTI_SCHEME_IMPL,
+//                TopologyLayoutConstants.JSON_KEY_MULTI_SCHEME_IMPL,
                 TopologyLayoutConstants.JSON_KEY_IGNORE_ZK_OFFSETS,
                 TopologyLayoutConstants.JSON_KEY_MAX_OFFSET_BEHIND,
                 TopologyLayoutConstants.JSON_KEY_USE_START_OFFSET_IF_OFFSET_OUT_OF_RANGE,
@@ -64,6 +66,11 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
         };
 
         List propertiesYaml = getPropertiesYaml(properties);
+        LinkedHashMap<Object, Object> pair = new LinkedHashMap<>();
+        pair.put(StormTopologyLayoutConstants.YAML_KEY_NAME, TopologyLayoutConstants.JSON_KEY_MULTI_SCHEME_IMPL);
+        pair.put(StormTopologyLayoutConstants.YAML_KEY_VALUE, schemeRef);
+        propertiesYaml.add(pair);
+
         List spoutConfigConstructorArgs = new ArrayList();
         Map ref = getRefYaml(zkHostsRef);
         spoutConfigConstructorArgs.add(ref);
@@ -83,8 +90,7 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
         String streamsSchemeId = "streamsScheme" + UUID_FOR_COMPONENTS;
         String schemeClassName = "com.hortonworks.iotas.streams.runtime.storm.spout.StreamsKafkaSpoutScheme";
         String schemaName = (String) conf.get("topic");
-        String[] constructorArgNames = {(kafkaSource != null ? kafkaSource.getId() : ""), schemaName};
-        List constructorArgs = getConstructorArgsYaml(constructorArgNames);
+        List<String> constructorArgs = Lists.newArrayList((kafkaSource != null ? kafkaSource.getId() : ""), schemaName);
         addToComponents(createComponent(streamsSchemeId, schemeClassName, null, constructorArgs, null));
 
         return streamsSchemeId;

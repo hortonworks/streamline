@@ -81,7 +81,7 @@ public class RuleCatalogResource {
         try {
             Collection<RuleInfo> ruleInfos = catalogService.listRules(queryParams);
             if (ruleInfos != null) {
-                return WSUtils.respond(OK, SUCCESS, ruleInfos);
+                return WSUtils.respond(ruleInfos, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -118,7 +118,7 @@ public class RuleCatalogResource {
         try {
             RuleInfo ruleInfo = catalogService.getRule(ruleId);
             if (ruleInfo != null && ruleInfo.getTopologyId().equals(topologyId)) {
-                return WSUtils.respond(OK, SUCCESS, ruleInfo);
+                return WSUtils.respond(ruleInfo, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -169,7 +169,7 @@ public class RuleCatalogResource {
     public Response addTopologyRule(@PathParam("topologyId") Long topologyId, RuleInfo ruleInfo) {
         try {
             RuleInfo createdRuleInfo = catalogService.addRule(topologyId, ruleInfo);
-            return WSUtils.respond(CREATED, SUCCESS, createdRuleInfo);
+            return WSUtils.respond(createdRuleInfo, CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -211,7 +211,7 @@ public class RuleCatalogResource {
                                                  RuleInfo ruleInfo) {
         try {
             RuleInfo createdRuleInfo = catalogService.addOrUpdateRule(topologyId, ruleId, ruleInfo);
-            return WSUtils.respond(CREATED, SUCCESS, createdRuleInfo);
+            return WSUtils.respond(createdRuleInfo, CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -246,7 +246,7 @@ public class RuleCatalogResource {
         try {
             RuleInfo ruleInfo = catalogService.removeRule(ruleId);
             if (ruleInfo != null) {
-                return WSUtils.respond(OK, SUCCESS, ruleInfo);
+                return WSUtils.respond(ruleInfo, OK, SUCCESS);
             } else {
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, ruleId.toString());
             }

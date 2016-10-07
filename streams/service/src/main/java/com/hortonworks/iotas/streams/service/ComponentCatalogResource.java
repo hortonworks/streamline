@@ -53,7 +53,7 @@ public class ComponentCatalogResource {
         try {
             Collection<Component> components = catalogService.listComponents(queryParams);
             if (components != null) {
-                return WSUtils.respond(OK, SUCCESS, components);
+                return WSUtils.respond(components, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -70,7 +70,7 @@ public class ComponentCatalogResource {
         try {
             Component component = catalogService.getComponent(componentId);
             if (component != null && component.getClusterId().equals(clusterId)) {
-                return WSUtils.respond(OK, SUCCESS, component);
+                return WSUtils.respond(component, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -87,7 +87,7 @@ public class ComponentCatalogResource {
                 Component createdComponent = catalogService.addComponent(clusterId, component);
                 createdComponents.add(createdComponent);
             }
-            return WSUtils.respond(CREATED, SUCCESS, createdComponents);
+            return WSUtils.respond(createdComponents, CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -102,7 +102,7 @@ public class ComponentCatalogResource {
                 Component createdComponent = catalogService.addOrUpdateComponent(clusterId, component);
                 createdComponents.add(createdComponent);
             }
-            return WSUtils.respond(CREATED, SUCCESS, createdComponents);
+            return WSUtils.respond(createdComponents, CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -115,7 +115,7 @@ public class ComponentCatalogResource {
         try {
             Component removeComponent = catalogService.removeComponent(componentId);
             if (removeComponent != null) {
-                return WSUtils.respond(OK, SUCCESS, removeComponent);
+                return WSUtils.respond(removeComponent, OK, SUCCESS);
             } else {
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, componentId.toString());
             }
@@ -131,7 +131,7 @@ public class ComponentCatalogResource {
                                          @PathParam("id") Long componentId, Component component) {
         try {
             Component newComponent = catalogService.addOrUpdateComponent(clusterId, componentId, component);
-            return WSUtils.respond(OK, SUCCESS, newComponent);
+            return WSUtils.respond(newComponent, OK, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }

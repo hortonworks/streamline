@@ -92,7 +92,7 @@ public class TopologySinkCatalogResource {
         try {
             Collection<TopologySink> sinks = catalogService.listTopologySinks(queryParams);
             if (sinks != null) {
-                return WSUtils.respond(OK, SUCCESS, sinks);
+                return WSUtils.respond(sinks, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -132,7 +132,7 @@ public class TopologySinkCatalogResource {
         try {
             TopologySink sink = catalogService.getTopologySink(sinkId);
             if (sink != null && sink.getTopologyId().equals(topologyId)) {
-                return WSUtils.respond(OK, SUCCESS, sink);
+                return WSUtils.respond(sink, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -180,7 +180,7 @@ public class TopologySinkCatalogResource {
     public Response addTopologySink(@PathParam("topologyId") Long topologyId, TopologySink topologySink) {
         try {
             TopologySink createdSink = catalogService.addTopologySink(topologyId, topologySink);
-            return WSUtils.respond(CREATED, SUCCESS, createdSink);
+            return WSUtils.respond(createdSink, CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -227,7 +227,7 @@ public class TopologySinkCatalogResource {
                                               TopologySink topologySink) {
         try {
             TopologySink createdTopologySink = catalogService.addOrUpdateTopologySink(topologyId, sinkId, topologySink);
-            return WSUtils.respond(CREATED, SUCCESS, createdTopologySink);
+            return WSUtils.respond(createdTopologySink, CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -263,7 +263,7 @@ public class TopologySinkCatalogResource {
         try {
             TopologySink topologySink = catalogService.removeTopologySink(sinkId);
             if (topologySink != null) {
-                return WSUtils.respond(OK, SUCCESS, topologySink);
+                return WSUtils.respond(topologySink, OK, SUCCESS);
             } else {
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, sinkId.toString());
             }

@@ -92,7 +92,7 @@ public class TopologyEdgeCatalogResource {
         try {
             Collection<TopologyEdge> edges = catalogService.listTopologyEdges(queryParams);
             if (edges != null) {
-                return WSUtils.respond(OK, SUCCESS, edges);
+                return WSUtils.respond(edges, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -133,7 +133,7 @@ public class TopologyEdgeCatalogResource {
         try {
             TopologyEdge edge = catalogService.getTopologyEdge(edgeId);
             if (edge != null && edge.getTopologyId().equals(topologyId)) {
-                return WSUtils.respond(OK, SUCCESS, edge);
+                return WSUtils.respond(edge, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -179,7 +179,7 @@ public class TopologyEdgeCatalogResource {
     public Response addTopologyEdge(@PathParam("topologyId") Long topologyId, TopologyEdge edge) {
         try {
             TopologyEdge createdEdge = catalogService.addTopologyEdge(topologyId, edge);
-            return WSUtils.respond(CREATED, SUCCESS, createdEdge);
+            return WSUtils.respond(createdEdge, CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -223,7 +223,7 @@ public class TopologyEdgeCatalogResource {
                                                  TopologyEdge edge) {
         try {
             TopologyEdge createdEdge = catalogService.addOrUpdateTopologyEdge(topologyId, edgeId, edge);
-            return WSUtils.respond(CREATED, SUCCESS, createdEdge);
+            return WSUtils.respond(createdEdge, CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -260,7 +260,7 @@ public class TopologyEdgeCatalogResource {
         try {
             TopologyEdge removedEdge = catalogService.removeTopologyEdge(edgeId);
             if (removedEdge != null) {
-                return WSUtils.respond(OK, SUCCESS, removedEdge);
+                return WSUtils.respond(removedEdge, OK, SUCCESS);
             } else {
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, edgeId.toString());
             }

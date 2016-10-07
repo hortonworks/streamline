@@ -109,7 +109,7 @@ public class UDFCatalogResource {
                 udfs = catalogService.listUDFs(queryParams);
             }
             if (udfs != null) {
-                return WSUtils.respond(OK, SUCCESS, udfs);
+                return WSUtils.respond(udfs, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -146,7 +146,7 @@ public class UDFCatalogResource {
         try {
             UDFInfo result = catalogService.getUDF(id);
             if (result != null) {
-                return WSUtils.respond(OK, SUCCESS, result);
+                return WSUtils.respond(result, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -177,7 +177,7 @@ public class UDFCatalogResource {
             UDFInfo udfInfo = udfConfig.getValueAs(UDFInfo.class);
             processUdf(inputStream, udfInfo, true, builtin);
             UDFInfo createdUdfInfo = catalogService.addUDF(udfInfo);
-            return WSUtils.respond(CREATED, SUCCESS, createdUdfInfo);
+            return WSUtils.respond(createdUdfInfo, CREATED, SUCCESS);
         } catch (ProcessingException ex) {
             return WSUtils.respond(BAD_REQUEST, CatalogResponse.ResponseMessage.BAD_REQUEST);
         } catch (Exception ex) {
@@ -212,7 +212,7 @@ public class UDFCatalogResource {
         try {
             UDFInfo removedUDF = catalogService.removeUDF(id);
             if (removedUDF != null) {
-                return WSUtils.respond(OK, SUCCESS, removedUDF);
+                return WSUtils.respond(removedUDF, OK, SUCCESS);
             } else {
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, id.toString());
             }
@@ -260,7 +260,7 @@ public class UDFCatalogResource {
             UDFInfo udfInfo = udfConfig.getValueAs(UDFInfo.class);
             processUdf(inputStream, udfInfo, false, builtin);
             UDFInfo newUdfInfo = catalogService.addOrUpdateUDF(udfId, udfInfo);
-            return WSUtils.respond(OK, SUCCESS, newUdfInfo);
+            return WSUtils.respond(newUdfInfo, OK, SUCCESS);
         } catch (ProcessingException ex) {
             return WSUtils.respond(BAD_REQUEST, CatalogResponse.ResponseMessage.BAD_REQUEST);
         } catch (Exception ex) {

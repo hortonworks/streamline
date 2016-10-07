@@ -55,7 +55,7 @@ public class WindowCatalogResource {
         try {
             Collection<WindowInfo> windowInfos = catalogService.listWindows(queryParams);
             if (windowInfos != null) {
-                return WSUtils.respond(OK, SUCCESS, windowInfos);
+                return WSUtils.respond(windowInfos, OK, SUCCESS);
             }
         } catch (Exception ex) {
             LOG.error("Got exception", ex);
@@ -72,7 +72,7 @@ public class WindowCatalogResource {
         try {
             WindowInfo windowInfo = catalogService.getWindow(windowId);
             if (windowInfo != null && windowInfo.getTopologyId().equals(topologyId)) {
-                return WSUtils.respond(OK, SUCCESS, windowInfo);
+                return WSUtils.respond(windowInfo, OK, SUCCESS);
             }
         } catch (Exception ex) {
             LOG.error("Got exception", ex);
@@ -86,7 +86,7 @@ public class WindowCatalogResource {
     public Response addTopologyWindow(@PathParam("topologyId") Long topologyId, WindowInfo windowInfo) {
         try {
             WindowInfo createdWindowInfo = catalogService.addWindow(topologyId, windowInfo);
-            return WSUtils.respond(CREATED, SUCCESS, createdWindowInfo);
+            return WSUtils.respond(createdWindowInfo, CREATED, SUCCESS);
         } catch (Exception ex) {
             LOG.error("Got exception", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -100,7 +100,7 @@ public class WindowCatalogResource {
                                     WindowInfo windowInfo) {
         try {
             WindowInfo createdWindowInfo = catalogService.addOrUpdateWindow(topologyId, ruleId, windowInfo);
-            return WSUtils.respond(CREATED, SUCCESS, createdWindowInfo);
+            return WSUtils.respond(createdWindowInfo, CREATED, SUCCESS);
         } catch (Exception ex) {
             LOG.error("Got exception", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -114,7 +114,7 @@ public class WindowCatalogResource {
         try {
             WindowInfo windowInfo = catalogService.removeWindow(windowId);
             if (windowInfo != null) {
-                return WSUtils.respond(OK, SUCCESS, windowInfo);
+                return WSUtils.respond(windowInfo, OK, SUCCESS);
             } else {
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, windowId.toString());
             }

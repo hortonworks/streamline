@@ -81,7 +81,7 @@ public class FileCatalogResource {
             } else {
                 files = catalogService.listFiles(WSUtils.buildQueryParameters(params));
             }
-            return WSUtils.respond(OK, SUCCESS, files);
+            return WSUtils.respond(files, OK, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -121,7 +121,7 @@ public class FileCatalogResource {
             log.info("Received fileInfo: [{}]", fileInfo);
             FileInfo updatedFile = addOrUpdateFile(inputStream, fileInfo);
 
-            return WSUtils.respond(CREATED, SUCCESS, updatedFile);
+            return WSUtils.respond(updatedFile, CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -159,7 +159,7 @@ public class FileCatalogResource {
                 logDeletionMessage(oldFileStorageName, deleted);
             }
 
-            return WSUtils.respond(CREATED, SUCCESS, updatedFile);
+            return WSUtils.respond(updatedFile, CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -182,7 +182,7 @@ public class FileCatalogResource {
         try {
             FileInfo result = catalogService.getFile(fileId);
             if (result != null) {
-                return WSUtils.respond(OK, SUCCESS, result);
+                return WSUtils.respond(result, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -206,7 +206,7 @@ public class FileCatalogResource {
             if (removedFile != null) {
                 boolean removed = catalogService.deleteFileFromStorage(removedFile.getStoredFileName());
                 logDeletionMessage(removedFile.getStoredFileName(), removed);
-                return WSUtils.respond(OK, SUCCESS, removedFile);
+                return WSUtils.respond(removedFile, OK, SUCCESS);
             } else {
                 log.info("File entry with id [{}] is not found", fileId);
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, fileId.toString());

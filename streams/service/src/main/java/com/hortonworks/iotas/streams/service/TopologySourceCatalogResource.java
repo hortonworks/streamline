@@ -20,13 +20,9 @@ package com.hortonworks.iotas.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.common.QueryParam;
-import com.hortonworks.iotas.common.catalog.CatalogResponse;
 import com.hortonworks.iotas.common.util.WSUtils;
-import com.hortonworks.iotas.streams.catalog.CatalogRestClient;
 import com.hortonworks.iotas.streams.catalog.TopologySource;
 import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
-import com.hortonworks.registries.schemaregistry.SchemaNotFoundException;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -35,8 +31,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -48,11 +42,9 @@ import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessa
 import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
 import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
 import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static javax.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
 import static javax.ws.rs.core.Response.Status.OK;
 
 /**
@@ -103,7 +95,7 @@ public class TopologySourceCatalogResource {
         try {
             Collection<TopologySource> sources = catalogService.listTopologySources(queryParams);
             if (sources != null) {
-                return WSUtils.respond(OK, SUCCESS, sources);
+                return WSUtils.respond(sources, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -146,7 +138,7 @@ public class TopologySourceCatalogResource {
         try {
             TopologySource source = catalogService.getTopologySource(sourceId);
             if (source != null && source.getTopologyId().equals(topologyId)) {
-                return WSUtils.respond(OK, SUCCESS, source);
+                return WSUtils.respond(source, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -203,7 +195,7 @@ public class TopologySourceCatalogResource {
     public Response addTopologySource(@PathParam("topologyId") Long topologyId, TopologySource topologySource) {
         try {
             TopologySource createdSource = catalogService.addTopologySource(topologyId, topologySource);
-            return WSUtils.respond(CREATED, SUCCESS, createdSource);
+            return WSUtils.respond(createdSource, CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -256,7 +248,7 @@ public class TopologySourceCatalogResource {
                                               TopologySource topologySource) {
         try {
             TopologySource createdTopologySource = catalogService.addOrUpdateTopologySource(topologyId, sourceId, topologySource);
-            return WSUtils.respond(CREATED, SUCCESS, createdTopologySource);
+            return WSUtils.respond(createdTopologySource, CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -295,7 +287,7 @@ public class TopologySourceCatalogResource {
         try {
             TopologySource topologySource = catalogService.removeTopologySource(sourceId);
             if (topologySource != null) {
-                return WSUtils.respond(OK, SUCCESS, topologySource);
+                return WSUtils.respond(topologySource, OK, SUCCESS);
             } else {
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, sourceId.toString());
             }

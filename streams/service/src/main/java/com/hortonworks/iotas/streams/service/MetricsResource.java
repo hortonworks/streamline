@@ -66,7 +66,7 @@ public class MetricsResource {
             Topology topology = catalogService.getTopology(id);
             if (topology != null) {
                 Map<String, TopologyMetrics.ComponentMetric> topologyMetrics = catalogService.getTopologyMetrics(topology);
-                return WSUtils.respond(OK, SUCCESS, topologyMetrics);
+                return WSUtils.respond(topologyMetrics, OK, SUCCESS);
             }
         } catch (Exception ex) {
             LOG.error("Got exception", ex);
@@ -93,7 +93,7 @@ public class MetricsResource {
             Topology topology = catalogService.getTopology(id);
             if (topology != null) {
                 Map<Long, Double> metrics = catalogService.getCompleteLatency(topology, sourceId, from, to);
-                return WSUtils.respond(OK, SUCCESS, metrics);
+                return WSUtils.respond(metrics, OK, SUCCESS);
             }
         } catch (Exception ex) {
             LOG.error("Got exception", ex);
@@ -120,7 +120,7 @@ public class MetricsResource {
             Topology topology = catalogService.getTopology(id);
             if (topology != null) {
                 Map<String, Map<Long, Double>> metrics = catalogService.getComponentStats(topology, sourceId, from, to);
-                return WSUtils.respond(OK, SUCCESS, metrics);
+                return WSUtils.respond(metrics, OK, SUCCESS);
             }
         } catch (Exception ex) {
             LOG.error("Got exception", ex);
@@ -147,7 +147,7 @@ public class MetricsResource {
             Topology topology = catalogService.getTopology(id);
             if (topology != null) {
                 Map<String, Map<Long, Double>> metrics = catalogService.getKafkaTopicOffsets(topology, sourceId, from, to);
-                return WSUtils.respond(OK, SUCCESS, metrics);
+                return WSUtils.respond(metrics, OK, SUCCESS);
             }
         } catch (Exception ex) {
             LOG.error("Got exception", ex);
@@ -175,7 +175,7 @@ public class MetricsResource {
 
         try {
             Map<String, Map<Long, Double>> metrics = catalogService.getMetrics(metricName, parameters, from, to);
-            return WSUtils.respond(OK, SUCCESS, metrics);
+            return WSUtils.respond(metrics, OK, SUCCESS);
         } catch (Exception ex) {
             LOG.error("Got exception", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());

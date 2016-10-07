@@ -65,7 +65,7 @@ public class NotifierInfoCatalogResource {
                 notifierInfos = catalogService.listNotifierInfos(queryParams);
             }
             if (notifierInfos != null) {
-                return WSUtils.respond(OK, SUCCESS, notifierInfos);
+                return WSUtils.respond(notifierInfos, OK, SUCCESS);
             }
         } catch (Exception ex) {
             LOG.error("Got exception", ex);
@@ -83,7 +83,7 @@ public class NotifierInfoCatalogResource {
         try {
             NotifierInfo result = catalogService.getNotifierInfo(id);
             if (result != null) {
-                return WSUtils.respond(OK, SUCCESS, result);
+                return WSUtils.respond(result, OK, SUCCESS);
             }
         } catch (Exception ex) {
             LOG.error("Got exception", ex);
@@ -98,7 +98,7 @@ public class NotifierInfoCatalogResource {
     public Response addNotifier(NotifierInfo notifierInfo) {
         try {
             NotifierInfo created = catalogService.addNotifierInfo(notifierInfo);
-            return WSUtils.respond(CREATED, SUCCESS, created);
+            return WSUtils.respond(created, CREATED, SUCCESS);
         } catch (Exception ex) {
             LOG.error("Got exception", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -112,7 +112,7 @@ public class NotifierInfoCatalogResource {
         try {
             NotifierInfo removedNotifierInfo = catalogService.removeNotifierInfo(id);
             if (removedNotifierInfo != null) {
-                return WSUtils.respond(OK, SUCCESS, removedNotifierInfo);
+                return WSUtils.respond(removedNotifierInfo, OK, SUCCESS);
             } else {
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, id.toString());
             }
@@ -128,7 +128,7 @@ public class NotifierInfoCatalogResource {
     public Response addOrUpdateNotifierInfo(@PathParam("id") Long id, NotifierInfo notifierInfo) {
         try {
             NotifierInfo newNotifierInfo = catalogService.addOrUpdateNotifierInfo(id, notifierInfo);
-            return WSUtils.respond(OK, SUCCESS, newNotifierInfo);
+            return WSUtils.respond(newNotifierInfo, OK, SUCCESS);
         } catch (Exception ex) {
             LOG.error("Got exception", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());

@@ -41,7 +41,7 @@ public class TopologyEditorMetadataResource {
         try {
             Collection<TopologyEditorMetadata> result = catalogService.listTopologyEditorMetadata();
             if (result != null) {
-                return WSUtils.respond(OK, SUCCESS, result);
+                return WSUtils.respond(result, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -57,7 +57,7 @@ public class TopologyEditorMetadataResource {
         try {
             TopologyEditorMetadata result = catalogService.getTopologyEditorMetadata(topologyId);
             if (result != null) {
-                return WSUtils.respond(OK, SUCCESS, result);
+                return WSUtils.respond(result, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -71,7 +71,7 @@ public class TopologyEditorMetadataResource {
     public Response addTopologyEditorMetadata (TopologyEditorMetadata topologyEditorMetadata) {
         try {
             TopologyEditorMetadata addedTopologyEditorMetadata = catalogService.addTopologyEditorMetadata(topologyEditorMetadata);
-            return WSUtils.respond(CREATED, SUCCESS, addedTopologyEditorMetadata);
+            return WSUtils.respond(addedTopologyEditorMetadata, CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -84,7 +84,7 @@ public class TopologyEditorMetadataResource {
         try {
             TopologyEditorMetadata removedTopologyEditorMetadata = catalogService.removeTopologyEditorMetadata(topologyId);
             if (removedTopologyEditorMetadata != null) {
-                return WSUtils.respond(OK, SUCCESS, removedTopologyEditorMetadata);
+                return WSUtils.respond(removedTopologyEditorMetadata, OK, SUCCESS);
             } else {
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, topologyId.toString());
             }
@@ -99,7 +99,7 @@ public class TopologyEditorMetadataResource {
     public Response addOrUpdateTopologyEditorMetadata (@PathParam("id") Long topologyId, TopologyEditorMetadata topologyEditorMetadata) {
         try {
             TopologyEditorMetadata newTopologyEditorMetadata = catalogService.addOrUpdateTopologyEditorMetadata(topologyId, topologyEditorMetadata);
-            return WSUtils.respond(OK, SUCCESS, topologyEditorMetadata);
+            return WSUtils.respond(topologyEditorMetadata, OK, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }

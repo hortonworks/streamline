@@ -73,7 +73,7 @@ public class SchemaAPI {
 
             EvolvingSchema evolvingInstance = EVOLVING_SCHEMA_MAP.get(componentId);
             Set<Stream> appliedStreams = evolvingInstance.apply(configurationJson, objectMapper.readValue(streamJson, Stream.class));
-            return WSUtils.respond(OK, SUCCESS, appliedStreams);
+            return WSUtils.respond(appliedStreams, OK, SUCCESS);
         } catch (NotFoundException ex) {
             return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, componentId.toString());
         } catch (Exception ex) {

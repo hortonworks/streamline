@@ -82,7 +82,7 @@ public class ParserInfoCatalogResource {
             } else {
                 parserInfos = parserInfoCatalogService.listParsers(WSUtils.buildQueryParameters(params));
             }
-            return WSUtils.respond(OK, SUCCESS, parserInfos);
+            return WSUtils.respond(parserInfos, OK, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -97,7 +97,7 @@ public class ParserInfoCatalogResource {
             if (parserInfo != null) {
                 Schema result = parserInfo.getParserSchema();
                 if (result != null) {
-                    return WSUtils.respond(OK, SUCCESS, result);
+                    return WSUtils.respond(result, OK, SUCCESS);
                 }
             }
         } catch (Exception ex) {
@@ -114,7 +114,7 @@ public class ParserInfoCatalogResource {
         try {
             ParserInfo result = doGetParserInfoById(parserId);
             if (result != null) {
-                return WSUtils.respond(OK, SUCCESS, result);
+                return WSUtils.respond(result, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -130,7 +130,7 @@ public class ParserInfoCatalogResource {
         try {
             ParserInfo removedParser = parserInfoCatalogService.removeParser(parserId);
             if (removedParser != null) {
-                return WSUtils.respond(OK, SUCCESS, removedParser);
+                return WSUtils.respond(removedParser, OK, SUCCESS);
             } else {
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, parserId.toString());
             }
@@ -148,7 +148,7 @@ public class ParserInfoCatalogResource {
     @Path("/parsers/upload-verify")
     public Response verifyParserUpload(@FormDataParam("parserJar") final InputStream inputStream) {
         try {
-            return WSUtils.respond(Response.Status.OK, SUCCESS, parserInfoCatalogService.verifyParserUpload(inputStream));
+            return WSUtils.respond(parserInfoCatalogService.verifyParserUpload(inputStream), Response.Status.OK, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         } finally {
@@ -174,7 +174,7 @@ public class ParserInfoCatalogResource {
             String jarStoragePath = prefix + UUID.randomUUID().toString() + ".jar";
             parserInfo.setJarStoragePath(jarStoragePath);
             ParserInfo result = parserInfoCatalogService.addParser(parserInfo, schemaFromParserJar, inputStream);
-            return WSUtils.respond(CREATED, SUCCESS, result);
+            return WSUtils.respond(result, CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         } finally {

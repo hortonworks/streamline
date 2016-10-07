@@ -117,7 +117,7 @@ public class TagCatalogResource {
                 tags = tagService.listTags(queryParams);
             }
             if (tags != null)
-                return WSUtils.respond(OK, SUCCESS, makeTagDto(tags));
+                return WSUtils.respond(makeTagDto(tags), OK, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -155,7 +155,7 @@ public class TagCatalogResource {
         try {
             Tag result = tagService.getTag(tagId);
             if (result != null) {
-                return WSUtils.respond(OK, SUCCESS, makeTagDto(result));
+                return WSUtils.respond(makeTagDto(result), OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -226,7 +226,7 @@ public class TagCatalogResource {
     public Response addTag(TagDto tagDto) {
         try {
             Tag createdTag = tagService.addTag(makeTag(tagDto));
-            return WSUtils.respond(CREATED, SUCCESS, makeTagDto(createdTag));
+            return WSUtils.respond(makeTagDto(createdTag), CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -274,7 +274,7 @@ public class TagCatalogResource {
         try {
             Tag removedTag = tagService.removeTag(tagId);
             if (removedTag != null) {
-                return WSUtils.respond(OK, SUCCESS, makeTagDto(removedTag));
+                return WSUtils.respond(makeTagDto(removedTag), OK, SUCCESS);
             } else {
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, removedTag.toString());
             }
@@ -318,7 +318,7 @@ public class TagCatalogResource {
     public Response addOrUpdateTag(@PathParam("id") Long tagId, TagDto tagDto) {
         try {
             Tag newTag = tagService.addOrUpdateTag(tagId, makeTag(tagDto));
-            return WSUtils.respond(OK, SUCCESS, makeTagDto(newTag));
+            return WSUtils.respond(makeTagDto(newTag), OK, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -425,7 +425,7 @@ public class TagCatalogResource {
         try {
             List<TaggedEntity> result = tagService.getEntities(tagId, true);
             if (result != null) {
-                return WSUtils.respond(OK, SUCCESS, result);
+                return WSUtils.respond(result, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -463,7 +463,7 @@ public class TagCatalogResource {
         try {
             List<Tag> tags = tagService.getTags(new TaggedEntity(namespace, entityId));
             if (tags != null) {
-                return WSUtils.respond(OK, SUCCESS, makeTagDto(tags));
+                return WSUtils.respond(makeTagDto(tags), OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());

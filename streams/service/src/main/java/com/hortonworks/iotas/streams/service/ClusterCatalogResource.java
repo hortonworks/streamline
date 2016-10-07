@@ -75,7 +75,7 @@ public class ClusterCatalogResource {
                 clusters = catalogService.listClusters(queryParams);
             }
             if (clusters != null) {
-                return WSUtils.respond(OK, SUCCESS, clusters);
+                return WSUtils.respond(clusters, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -92,7 +92,7 @@ public class ClusterCatalogResource {
         try {
             Cluster result = catalogService.getCluster(clusterId);
             if (result != null) {
-                return WSUtils.respond(OK, SUCCESS, result);
+                return WSUtils.respond(result, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -117,7 +117,7 @@ public class ClusterCatalogResource {
             Cluster clusterObj = clusterConfig.getValueAs(Cluster.class);
             saveClusterConfig(inputStream, clusterObj);
             Cluster createdCluster = catalogService.addCluster(clusterObj);
-            return WSUtils.respond(CREATED, SUCCESS, createdCluster);
+            return WSUtils.respond(createdCluster, CREATED, SUCCESS);
         } catch (ProcessingException ex) {
             return WSUtils.respond(BAD_REQUEST, ResponseMessage.BAD_REQUEST);
         } catch (Exception ex) {
@@ -132,7 +132,7 @@ public class ClusterCatalogResource {
         try {
             Cluster removedCluster = catalogService.removeCluster(clusterId);
             if (removedCluster != null) {
-                return WSUtils.respond(OK, SUCCESS, removedCluster);
+                return WSUtils.respond(removedCluster, OK, SUCCESS);
             } else {
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, clusterId.toString());
             }
@@ -157,7 +157,7 @@ public class ClusterCatalogResource {
             Cluster clusterObj = clusterConfig.getValueAs(Cluster.class);
             saveClusterConfig(inputStream, clusterObj);
             Cluster newCluster = catalogService.addOrUpdateCluster(clusterId, clusterObj);
-            return WSUtils.respond(OK, SUCCESS, newCluster);
+            return WSUtils.respond(newCluster, OK, SUCCESS);
         } catch (ProcessingException ex) {
             return WSUtils.respond(BAD_REQUEST, ResponseMessage.BAD_REQUEST);
         } catch (Exception ex) {

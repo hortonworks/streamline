@@ -73,7 +73,7 @@ public class NotificationsResource {
         try {
             Notification result = notificationService.getNotification(id);
             if (result != null) {
-                return WSUtils.respond(OK, SUCCESS, result);
+                return WSUtils.respond(result, OK, SUCCESS);
             }
         } catch (Exception ex) {
             LOG.error("Got exception", ex);
@@ -97,7 +97,7 @@ public class NotificationsResource {
             }
             notifications = notificationService.findNotifications(queryParams);
             if (notifications != null && !notifications.isEmpty()) {
-                return WSUtils.respond(OK, SUCCESS, notifications);
+                return WSUtils.respond(notifications, OK, SUCCESS);
             }
         } catch (Exception ex) {
             LOG.error("Got exception", ex);
@@ -114,7 +114,7 @@ public class NotificationsResource {
                                              @PathParam("status") Notification.Status status) {
         try {
             Notification updateNotification = notificationService.updateNotificationStatus(notificationId, status);
-            return WSUtils.respond(OK, SUCCESS, updateNotification);
+            return WSUtils.respond(updateNotification, OK, SUCCESS);
         } catch (Exception ex) {
             LOG.error("Got exception", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -128,7 +128,7 @@ public class NotificationsResource {
         try {
             IotasEvent result = notificationService.getEvent(id);
             if (result != null) {
-                return WSUtils.respond(OK, SUCCESS, result);
+                return WSUtils.respond(result, OK, SUCCESS);
             }
         } catch (Exception ex) {
             LOG.error("Got exception", ex);

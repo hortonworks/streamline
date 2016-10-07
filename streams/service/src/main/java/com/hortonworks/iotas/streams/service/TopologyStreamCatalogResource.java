@@ -97,7 +97,7 @@ public class TopologyStreamCatalogResource {
         try {
             Collection<StreamInfo> streamInfos = catalogService.listStreamInfos(queryParams);
             if (streamInfos != null) {
-                return WSUtils.respond(OK, SUCCESS, streamInfos);
+                return WSUtils.respond(streamInfos, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -138,7 +138,7 @@ public class TopologyStreamCatalogResource {
         try {
             StreamInfo streamInfo = catalogService.getStreamInfo(id);
             if (streamInfo != null && streamInfo.getTopologyId().equals(topologyId)) {
-                return WSUtils.respond(OK, SUCCESS, streamInfo);
+                return WSUtils.respond(streamInfo, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -191,7 +191,7 @@ public class TopologyStreamCatalogResource {
     public Response addStreamInfo(@PathParam("topologyId") Long topologyId, StreamInfo streamInfo) {
         try {
             StreamInfo createdStream = catalogService.addStreamInfo(topologyId, streamInfo);
-            return WSUtils.respond(CREATED, SUCCESS, createdStream);
+            return WSUtils.respond(createdStream, CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -253,7 +253,7 @@ public class TopologyStreamCatalogResource {
     public Response addOrUpdateStreamInfo(@PathParam("topologyId") Long topologyId, @PathParam("id") Long id, StreamInfo streamInfo) {
         try {
             StreamInfo newStreamInfo = catalogService.addOrUpdateStreamInfo(topologyId, id, streamInfo);
-            return WSUtils.respond(OK, SUCCESS, newStreamInfo);
+            return WSUtils.respond(newStreamInfo, OK, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -296,7 +296,7 @@ public class TopologyStreamCatalogResource {
         try {
             StreamInfo removedStream = catalogService.removeStreamInfo(id);
             if (removedStream != null) {
-                return WSUtils.respond(OK, SUCCESS, removedStream);
+                return WSUtils.respond(removedStream, OK, SUCCESS);
             } else {
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, id.toString());
             }

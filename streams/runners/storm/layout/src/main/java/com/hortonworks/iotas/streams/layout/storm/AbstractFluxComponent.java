@@ -110,10 +110,8 @@ public abstract class AbstractFluxComponent implements FluxComponent {
                 Object value = conf.get(propertyNames[i]);
                 if (value != null) {
                     Map propertyMap = new LinkedHashMap();
-                    propertyMap.put(StormTopologyLayoutConstants.YAML_KEY_NAME,
-                            propertyNames[i]);
-                    propertyMap.put(StormTopologyLayoutConstants.YAML_KEY_VALUE,
-                              value);
+                    propertyMap.put(StormTopologyLayoutConstants.YAML_KEY_NAME, propertyNames[i]);
+                    propertyMap.put(StormTopologyLayoutConstants.YAML_KEY_VALUE, value);
                     properties.add(propertyMap);
                 }
             }

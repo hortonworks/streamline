@@ -90,12 +90,12 @@ public class TopologyCatalogResource {
         try {
             Collection<Topology> topologies = catalogService.listTopologies();
             if (topologies != null) {
-                return WSUtils.respond(OK, SUCCESS, topologies);
+                return WSUtils.respond(topologies, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, Collections.emptyList());
+        return WSUtils.respond(Collections.emptyList(), NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER);
     }
 
     @GET
@@ -106,7 +106,7 @@ public class TopologyCatalogResource {
         try {
             Topology result = catalogService.getTopology(topologyId);
             if (result != null) {
-                return WSUtils.respond(OK, SUCCESS, result);
+                return WSUtils.respond(result, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -130,7 +130,7 @@ public class TopologyCatalogResource {
             }
             Topology createdTopology = catalogService.addTopology
                     (topology);
-            return WSUtils.respond(CREATED, SUCCESS, createdTopology);
+            return WSUtils.respond(createdTopology, CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -144,7 +144,7 @@ public class TopologyCatalogResource {
             Topology removedTopology = catalogService.removeTopology
                     (topologyId);
             if (removedTopology != null) {
-                return WSUtils.respond(OK, SUCCESS, removedTopology);
+                return WSUtils.respond(removedTopology, OK, SUCCESS);
             } else {
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND,
                         topologyId.toString());
@@ -170,7 +170,7 @@ public class TopologyCatalogResource {
             }
             Topology result = catalogService.addOrUpdateTopology
                     (topologyId, topology);
-            return WSUtils.respond(OK, SUCCESS, topology);
+            return WSUtils.respond(topology, OK, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -184,7 +184,7 @@ public class TopologyCatalogResource {
             Topology result = catalogService.getTopology(topologyId);
             if (result != null) {
                 TopologyActions.Status status = catalogService.topologyStatus(result);
-                return WSUtils.respond(OK, SUCCESS, status);
+                return WSUtils.respond(status, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -200,7 +200,7 @@ public class TopologyCatalogResource {
             Topology result = catalogService.getTopology(topologyId);
             if (result != null) {
                 //catalogService.validateTopology(SCHEMA, topologyId);
-                return WSUtils.respond(OK, SUCCESS, result);
+                return WSUtils.respond(result, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -217,7 +217,7 @@ public class TopologyCatalogResource {
             if (result != null) {
 //TODO: fix     catalogService.validateTopology(SCHEMA, topologyId);
                 catalogService.deployTopology(result);
-                return WSUtils.respond(OK, SUCCESS, result);
+                return WSUtils.respond(result, OK, SUCCESS);
             }
         } catch (Exception ex) {
             LOG.error("Failed to deploy the topology ", topologyId, ex);
@@ -234,7 +234,7 @@ public class TopologyCatalogResource {
             Topology result = catalogService.getTopology(topologyId);
             if (result != null) {
                 catalogService.killTopology(result);
-                return WSUtils.respond(OK, SUCCESS, result);
+                return WSUtils.respond(result, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -250,7 +250,7 @@ public class TopologyCatalogResource {
             Topology result = catalogService.getTopology(topologyId);
             if (result != null) {
                 catalogService.suspendTopology(result);
-                return WSUtils.respond(OK, SUCCESS, result);
+                return WSUtils.respond(result, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -266,7 +266,7 @@ public class TopologyCatalogResource {
             Topology result = catalogService.getTopology(topologyId);
             if (result != null) {
                 catalogService.resumeTopology(result);
-                return WSUtils.respond(OK, SUCCESS, result);
+                return WSUtils.respond(result, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -282,12 +282,12 @@ public class TopologyCatalogResource {
             Collection<TopologyComponentDefinition.TopologyComponentType>
                     topologyComponents = catalogService.listTopologyComponentTypes();
             if (topologyComponents != null) {
-                return WSUtils.respond(OK, SUCCESS, topologyComponents);
+                return WSUtils.respond(topologyComponents, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, Collections.emptyList());
+        return WSUtils.respond(Collections.emptyList(), NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER);
     }
 
     /**
@@ -306,7 +306,7 @@ public class TopologyCatalogResource {
             Collection<TopologyComponentDefinition> topologyComponentDefinitions = catalogService
                     .listTopologyComponentsForTypeWithFilter(componentType, queryParams);
             if (topologyComponentDefinitions != null) {
-                return WSUtils.respond(OK, SUCCESS, topologyComponentDefinitions);
+                return WSUtils.respond(topologyComponentDefinitions, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -323,7 +323,7 @@ public class TopologyCatalogResource {
             TopologyComponentDefinition result = catalogService
                     .getTopologyComponent(id);
             if (result != null) {
-                return WSUtils.respond(OK, SUCCESS, result);
+                return WSUtils.respond(result, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -344,7 +344,7 @@ public class TopologyCatalogResource {
             topologyComponentDefinition.setType(componentType);
             TopologyComponentDefinition createdComponent = catalogService
                     .addTopologyComponent(topologyComponentDefinition);
-            return WSUtils.respond(CREATED, SUCCESS, createdComponent);
+            return WSUtils.respond(createdComponent, CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -363,7 +363,7 @@ public class TopologyCatalogResource {
             topologyComponentDefinition.setType(componentType);
             TopologyComponentDefinition result = catalogService.addOrUpdateTopologyComponent(id,
                     topologyComponentDefinition);
-            return WSUtils.respond(OK, SUCCESS, result);
+            return WSUtils.respond(result, OK, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -376,7 +376,7 @@ public class TopologyCatalogResource {
         try {
             TopologyComponentDefinition removedTopologyComponentDefinition = catalogService.removeTopologyComponent(id);
             if (removedTopologyComponentDefinition != null) {
-                return WSUtils.respond(OK, SUCCESS, removedTopologyComponentDefinition);
+                return WSUtils.respond(removedTopologyComponentDefinition, OK, SUCCESS);
             } else {
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, id.toString());
             }
@@ -423,7 +423,7 @@ public class TopologyCatalogResource {
             queryParams = WSUtils.buildQueryParameters(params);
             Collection<CustomProcessorInfo> customProcessorInfos = catalogService.listCustomProcessorsWithFilter(queryParams);
             if (customProcessorInfos != null) {
-                return WSUtils.respond(OK, SUCCESS, customProcessorInfos);
+                return WSUtils.respond(customProcessorInfos, OK, SUCCESS);
             }
         } catch (Exception ex) {
             LOG.debug(ex.getMessage(), ex);
@@ -452,7 +452,7 @@ public class TopologyCatalogResource {
             }
             CustomProcessorInfo customProcessorInfo = new ObjectMapper().readValue(customProcessorInfoStr, CustomProcessorInfo.class);
             CustomProcessorInfo createdCustomProcessor = catalogService.addCustomProcessorInfo(customProcessorInfo, jarFile);
-            return WSUtils.respond(CREATED, SUCCESS, createdCustomProcessor);
+            return WSUtils.respond(createdCustomProcessor, CREATED, SUCCESS);
         } catch (Exception e) {
             LOG.debug("Exception thrown while trying to add a custom processor", e);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, e.getMessage());
@@ -484,7 +484,7 @@ public class TopologyCatalogResource {
             }
             CustomProcessorInfo customProcessorInfo = new ObjectMapper().readValue(customProcessorInfoStr, CustomProcessorInfo.class);
             CustomProcessorInfo updatedCustomProcessor = catalogService.updateCustomProcessorInfo(customProcessorInfo, jarFile);
-            return WSUtils.respond(OK, SUCCESS, updatedCustomProcessor);
+            return WSUtils.respond(updatedCustomProcessor, OK, SUCCESS);
         } catch (Exception e) {
             LOG.debug("Exception thrown while trying to add/update a custom processor", e);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, e.getMessage());
@@ -507,7 +507,7 @@ public class TopologyCatalogResource {
         try {
             CustomProcessorInfo removedCustomProcessorInfo = catalogService.removeCustomProcessorInfo(name);
             if (removedCustomProcessorInfo != null) {
-                return WSUtils.respond(OK, SUCCESS, removedCustomProcessorInfo);
+                return WSUtils.respond(removedCustomProcessorInfo, OK, SUCCESS);
             } else {
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, name);
             }

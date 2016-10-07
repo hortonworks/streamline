@@ -52,13 +52,13 @@ public class SchemaResource {
     @GET
     @Path("/{schemaName}")
     @Timed
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response getTopologySourceSchema(@PathParam("schemaName") String schemaName) {
         String schema = null;
         try {
             SchemaVersionInfo schemaVersionInfo = schemaRegistryClient.getLatestSchemaVersionInfo(schemaName);
             schema = schemaVersionInfo != null ? schemaVersionInfo.getSchemaText() : null;
-            return WSUtils.respond(OK, SUCCESS, schema);
+            return WSUtils.respond(schema, OK, SUCCESS);
         } catch (SchemaNotFoundException e) {
             // ignore and log error
         } catch (Exception ex) {

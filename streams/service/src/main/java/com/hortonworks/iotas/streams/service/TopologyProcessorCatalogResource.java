@@ -93,7 +93,7 @@ public class TopologyProcessorCatalogResource {
         try {
             Collection<TopologyProcessor> processors = catalogService.listTopologyProcessors(queryParams);
             if (processors != null) {
-                return WSUtils.respond(OK, SUCCESS, processors);
+                return WSUtils.respond(processors, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -134,7 +134,7 @@ public class TopologyProcessorCatalogResource {
         try {
             TopologyProcessor source = catalogService.getTopologyProcessor(processorId);
             if (source != null && source.getTopologyId().equals(topologyId)) {
-                return WSUtils.respond(OK, SUCCESS, source);
+                return WSUtils.respond(source, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -186,7 +186,7 @@ public class TopologyProcessorCatalogResource {
     public Response addTopologyProcessor(@PathParam("topologyId") Long topologyId, TopologyProcessor topologyProcessor) {
         try {
             TopologyProcessor createdProcessor = catalogService.addTopologyProcessor(topologyId, topologyProcessor);
-            return WSUtils.respond(CREATED, SUCCESS, createdProcessor);
+            return WSUtils.respond(createdProcessor, CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -235,7 +235,7 @@ public class TopologyProcessorCatalogResource {
                                               TopologyProcessor topologyProcessor) {
         try {
             TopologyProcessor createdTopologyProcessor = catalogService.addOrUpdateTopologyProcessor(topologyId, processorId, topologyProcessor);
-            return WSUtils.respond(CREATED, SUCCESS, createdTopologyProcessor);
+            return WSUtils.respond(createdTopologyProcessor, CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -272,7 +272,7 @@ public class TopologyProcessorCatalogResource {
         try {
             TopologyProcessor topologyProcessor = catalogService.removeTopologyProcessor(processorId);
             if (topologyProcessor != null) {
-                return WSUtils.respond(OK, SUCCESS, topologyProcessor);
+                return WSUtils.respond(topologyProcessor, OK, SUCCESS);
             } else {
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, processorId.toString());
             }

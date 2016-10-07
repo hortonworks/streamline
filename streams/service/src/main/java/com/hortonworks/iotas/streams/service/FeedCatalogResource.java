@@ -61,7 +61,7 @@ public class FeedCatalogResource {
                 dataFeeds = catalogService.listDataFeeds(queryParams);
             }
             if (dataFeeds != null && !dataFeeds.isEmpty()) {
-                return WSUtils.respond(OK, SUCCESS, dataFeeds);
+                return WSUtils.respond(dataFeeds, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -78,7 +78,7 @@ public class FeedCatalogResource {
         try {
             DataFeed result = catalogService.getDataFeed(dataFeedId);
             if (result != null) {
-                return WSUtils.respond(OK, SUCCESS, result);
+                return WSUtils.respond(result, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -97,7 +97,7 @@ public class FeedCatalogResource {
                 ParserInfo parserInfo = catalogService.getParserInfo(dataFeed.getParserId());
                 Schema result = parserInfo.getParserSchema();
                 if (result != null) {
-                    return WSUtils.respond(OK, SUCCESS, result);
+                    return WSUtils.respond(result, OK, SUCCESS);
                 }
             }
         } catch (Exception ex) {
@@ -113,7 +113,7 @@ public class FeedCatalogResource {
     public Response addDataFeed(DataFeed feed) {
         try {
             DataFeed addedFeed = catalogService.addDataFeed(feed);
-            return WSUtils.respond(CREATED, SUCCESS, addedFeed);
+            return WSUtils.respond(addedFeed, CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
@@ -126,7 +126,7 @@ public class FeedCatalogResource {
         try {
             DataFeed removedDatafeed = catalogService.removeDataFeed(dataFeedId);
             if (removedDatafeed != null) {
-                return WSUtils.respond(OK, SUCCESS, removedDatafeed);
+                return WSUtils.respond(removedDatafeed, OK, SUCCESS);
             } else {
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, dataFeedId.toString());
             }
@@ -141,7 +141,7 @@ public class FeedCatalogResource {
     public Response addOrUpdateDataFeed(@PathParam("id") Long dataFeedId, DataFeed feed) {
         try {
             DataFeed newDataFeed = catalogService.addOrUpdateDataFeed(dataFeedId, feed);
-            return WSUtils.respond(OK, SUCCESS, feed);
+            return WSUtils.respond(feed, OK, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
