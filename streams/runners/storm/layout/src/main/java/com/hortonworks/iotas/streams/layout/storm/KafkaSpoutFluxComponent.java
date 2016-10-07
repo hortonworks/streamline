@@ -66,10 +66,9 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
         };
 
         List propertiesYaml = getPropertiesYaml(properties);
-        LinkedHashMap<Object, Object> pair = new LinkedHashMap<>();
-        pair.put(StormTopologyLayoutConstants.YAML_KEY_NAME, TopologyLayoutConstants.JSON_KEY_MULTI_SCHEME_IMPL);
-        pair.put(StormTopologyLayoutConstants.YAML_KEY_VALUE, schemeRef);
-        propertiesYaml.add(pair);
+
+        propertiesYaml.add(getSchemeRefEntry(schemeRef));
+        propertiesYaml.add(getOutputStreamIdEntry());
 
         List spoutConfigConstructorArgs = new ArrayList();
         Map ref = getRefYaml(zkHostsRef);
@@ -86,11 +85,27 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
         return spoutConfigComponentId;
     }
 
+    private Map<String, Object> getSchemeRefEntry(String schemeRef) {
+        LinkedHashMap<String, Object> pair = new LinkedHashMap<>();
+        pair.put(StormTopologyLayoutConstants.YAML_KEY_NAME, TopologyLayoutConstants.JSON_KEY_MULTI_SCHEME_IMPL);
+        pair.put(StormTopologyLayoutConstants.YAML_KEY_REF, schemeRef);
+        return pair;
+    }
+
+    private Map<String, Object> getOutputStreamIdEntry() {
+        LinkedHashMap<String, Object> pair = new LinkedHashMap<>();
+        pair.put(StormTopologyLayoutConstants.YAML_KEY_NAME, "outputStreamId");
+        pair.put(StormTopologyLayoutConstants.YAML_KEY_VALUE, TopologyLayoutConstants.JSON_KEY_PARSED_TUPLES_STREAM);
+
+        return pair;
+    }
+
     private String addSchemeComponent() {
-        String streamsSchemeId = "streamsScheme" + UUID_FOR_COMPONENTS;
+        String streamsSchemeId = "streamsScheme-" + UUID_FOR_COMPONENTS;
         String schemeClassName = "com.hortonworks.iotas.streams.runtime.storm.spout.StreamsKafkaSpoutScheme";
         String schemaName = (String) conf.get("topic");
-        List<String> constructorArgs = Lists.newArrayList((kafkaSource != null ? kafkaSource.getId() : ""), schemaName);
+        String schemaRegistryUrl = (String) conf.get(TopologyLayoutConstants.SCHEMA_REGISTRY_URL);
+        List<String> constructorArgs = Lists.newArrayList((kafkaSource != null ? kafkaSource.getId() : ""), schemaName, schemaRegistryUrl);
         addToComponents(createComponent(streamsSchemeId, schemeClassName, null, constructorArgs, null));
 
         return streamsSchemeId;

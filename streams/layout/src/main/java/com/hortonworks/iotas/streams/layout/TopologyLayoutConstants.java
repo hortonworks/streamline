@@ -57,7 +57,7 @@ public final class TopologyLayoutConstants {
     public final static String JSON_KEY_SOCKET_TIMEOUT_MS = "socketTimeoutMs";
     public final static String JSON_KEY_FETCH_MAX_WAIT = "fetchMaxWait";
     public final static String JSON_KEY_BUFFER_SIZE_BYTES = "bufferSizeBytes";
-    public final static String JSON_KEY_MULTI_SCHEME_IMPL = "schemeImpl";
+    public final static String JSON_KEY_MULTI_SCHEME_IMPL = "scheme";
     public final static String JSON_KEY_IGNORE_ZK_OFFSETS = "ignoreZkOffsets";
     public final static String JSON_KEY_MAX_OFFSET_BEHIND = "maxOffsetBehind";
     public final static String

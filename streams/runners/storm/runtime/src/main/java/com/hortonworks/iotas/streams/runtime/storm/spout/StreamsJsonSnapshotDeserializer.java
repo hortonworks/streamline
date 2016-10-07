@@ -32,7 +32,7 @@ import java.util.Map;
 /**
  *
  */
-public class StreamsSnapshotDeserializer extends AbstractSnapshotDeserializer<Map<String, Object>, String> {
+public class StreamsJsonSnapshotDeserializer extends AbstractSnapshotDeserializer<Map<String, Object>, String> {
 
     @Override
     protected String getParsedSchema(SchemaVersionInfo schemaVersionInfo) {

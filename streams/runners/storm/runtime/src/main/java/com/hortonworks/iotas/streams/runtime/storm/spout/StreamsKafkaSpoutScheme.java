@@ -19,6 +19,7 @@ package com.hortonworks.iotas.streams.runtime.storm.spout;
 
 import com.hortonworks.iotas.streams.common.IotasEventImpl;
 import com.hortonworks.registries.schemaregistry.SchemaMetadata;
+import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
 import org.apache.storm.spout.MultiScheme;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Values;
@@ -35,23 +36,31 @@ import java.util.Map;
  */
 public class StreamsKafkaSpoutScheme implements MultiScheme {
 
-    private final StreamsSnapshotDeserializer deserializer;
+    private volatile StreamsJsonSnapshotDeserializer deserializer;
     private final SchemaMetadata schemaMetadata;
+    private final String schemaRegistryUrl;
     private String dataSourceId;
 
-    public StreamsKafkaSpoutScheme(String dataSourceId, String schemaName) {
+    public StreamsKafkaSpoutScheme(String dataSourceId, String schemaName, String schemaRegistryUrl) {
         this.dataSourceId = dataSourceId;
-
         schemaMetadata = new SchemaMetadata.Builder(schemaName).type("streams").schemaGroup("kafka").build();
-        deserializer = new StreamsSnapshotDeserializer();
-        Map<String, Object> conf = null; // get schemaregistry related configuration
-        deserializer.init(conf);
+        this.schemaRegistryUrl = schemaRegistryUrl;
     }
 
     @Override
     public Iterable<List<Object>> deserialize(ByteBuffer byteBuffer) {
-        Map<String, Object> keyValues = deserializer.deserialize(getInputStream(byteBuffer), schemaMetadata, null);
+        Map<String, Object> keyValues = deserializer().deserialize(getInputStream(byteBuffer), schemaMetadata, null);
         return Collections.<List<Object>>singletonList(new Values(new IotasEventImpl(keyValues, dataSourceId)));
+    }
+
+    private synchronized StreamsJsonSnapshotDeserializer deserializer() {
+        if(deserializer == null) {
+            deserializer = new StreamsJsonSnapshotDeserializer();
+            deserializer.init(Collections.singletonMap(SchemaRegistryClient.Options.SCHEMA_REGISTRY_URL, schemaRegistryUrl));
+            return deserializer;
+        }
+
+        return deserializer;
     }
 
     private InputStream getInputStream(ByteBuffer byteBuffer) {
