@@ -2,6 +2,7 @@ package com.hortonworks.iotas.streams.runtime.storm.bolt.rules;
 
 import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.Result;
+import com.hortonworks.iotas.streams.common.IotasEventImpl;
 import com.hortonworks.iotas.streams.exception.ProcessingException;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.Window;
 import com.hortonworks.iotas.streams.runtime.processor.RuleProcessorRuntime;
@@ -35,7 +36,7 @@ import static com.hortonworks.iotas.streams.runtime.transform.AddHeaderTransform
  * A windowed rules bolt
  */
 public class WindowRulesBolt extends BaseWindowedBolt {
-    private static final Logger LOG = LoggerFactory.getLogger(RulesBolt.class);
+    private static final Logger LOG = LoggerFactory.getLogger(WindowRulesBolt.class);
 
     private RuleProcessorRuntime ruleProcessorRuntime;
 
@@ -63,7 +64,7 @@ public class WindowRulesBolt extends BaseWindowedBolt {
     @Override
     public void execute(TupleWindow inputWindow) {
         ++windowId;
-        LOG.debug("Window activated, window id {}", windowId);
+        LOG.debug("Window activated, window id {}, number of tuples in window {}", windowId, inputWindow.get().size());
         List<Tuple> curGroup = new ArrayList<>();
         try {
             IotasEvent event;
@@ -125,12 +126,18 @@ public class WindowRulesBolt extends BaseWindowedBolt {
     private IotasEvent getIotasEventFromTuple(Tuple tuple) {
         final Object iotasEvent = tuple.getValueByField(IotasEvent.IOTAS_EVENT);
         if (iotasEvent instanceof IotasEvent) {
-            return (IotasEvent) iotasEvent;
+            return getIotasEventWithStream((IotasEvent) iotasEvent, tuple);
         } else {
             LOG.debug("Invalid tuple received. Tuple disregarded and rules not evaluated.\n\tTuple [{}]." +
                               "\n\tIotasEvent [{}].", tuple, iotasEvent);
         }
         return null;
+    }
+
+    private IotasEvent getIotasEventWithStream(IotasEvent event, Tuple tuple) {
+        return new IotasEventImpl(event.getFieldsAndValues(),
+                event.getDataSourceId(), event.getId(),
+                event.getHeader(), tuple.getSourceStreamId(), event.getAuxiliaryFieldsAndValues());
     }
 
     @Override

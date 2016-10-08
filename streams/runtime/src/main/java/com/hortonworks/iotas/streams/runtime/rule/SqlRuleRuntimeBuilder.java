@@ -19,14 +19,17 @@
 package com.hortonworks.iotas.streams.runtime.rule;
 
 import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.layout.component.rule.Rule;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.Expression;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.GroupBy;
 import com.hortonworks.iotas.streams.runtime.rule.condition.expression.StormSqlExpression;
 import com.hortonworks.iotas.streams.runtime.rule.sql.SqlEngine;
+import static com.hortonworks.iotas.streams.runtime.rule.sql.SqlScript.ValuesToIotasEventConverter;
+
 import com.hortonworks.iotas.streams.runtime.rule.sql.SqlScript;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,10 +37,12 @@ import java.util.List;
 import static com.hortonworks.iotas.streams.layout.component.rule.expression.Window.WINDOW_ID;
 
 public class SqlRuleRuntimeBuilder extends AbstractRuleRuntimeBuilder {
+    protected static final Logger LOG = LoggerFactory.getLogger(SqlRuleRuntimeBuilder.class);
+
     private Rule rule;
     private StormSqlExpression stormSqlExpression;
     private SqlEngine sqlEngine;
-    private SqlScript<IotasEvent> sqlScript;
+    private SqlScript sqlScript;
     private static final GroupBy GROUP_BY_WINDOWID = new GroupBy(new FieldExpression(Schema.Field.of(WINDOW_ID, Schema.Type.LONG)));
     @Override
     public void setRule(Rule rule) {
@@ -57,17 +62,22 @@ public class SqlRuleRuntimeBuilder extends AbstractRuleRuntimeBuilder {
                                                     rule.getProjection(),
                                                     groupByExpressions.isEmpty() ? null : new GroupBy(groupByExpressions),
                                                     groupByExpressions.isEmpty() ? null : rule.getHaving());
+        LOG.info("Built stormSqlExpression {}", stormSqlExpression);
     }
 
     @Override
     public void buildScriptEngine() {
         sqlEngine = new SqlEngine();
+        LOG.info("Built sqlEngine {}", sqlEngine);
     }
 
     @Override
     public void buildScript() {
-        sqlScript = new SqlScript<>(stormSqlExpression, sqlEngine);
-        sqlScript.setValuesConverter(new SqlScript.ValuesToIotasEventConverter(sqlScript.getOutputFieldNames()));
+        sqlScript = new SqlScript(stormSqlExpression, sqlEngine);
+        LOG.info("Built SqlScript {}", sqlScript);
+        ValuesToIotasEventConverter valuesConverter = new ValuesToIotasEventConverter(sqlScript.getOutputFields());
+        sqlScript.setValuesConverter(valuesConverter);
+        LOG.info("valuesConverter {}", valuesConverter);
     }
 
     @Override

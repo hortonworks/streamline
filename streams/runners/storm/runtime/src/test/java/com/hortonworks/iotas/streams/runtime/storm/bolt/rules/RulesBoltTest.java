@@ -132,6 +132,8 @@ public abstract class RulesBoltTest extends RulesTopologyTest {
         new Expectations() {{
             mockTuple.getValueByField(IotasEvent.IOTAS_EVENT);
             result = IOTAS_EVENT_NO_MATCH_TUPLE;
+            mockTuple.getSourceStreamId();
+            result = "default";
         }};
 
         executeAndVerifyCollectorCallsAcks(0, null);

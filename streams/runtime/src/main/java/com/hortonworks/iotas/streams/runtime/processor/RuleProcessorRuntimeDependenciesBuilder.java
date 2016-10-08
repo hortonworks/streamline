@@ -43,24 +43,23 @@ public class RuleProcessorRuntimeDependenciesBuilder {
 
     public List<RuleRuntime> getRulesRuntime() {
         final List<Rule> rules = rulesProcessor.getRules();
-        final List<RuleRuntime> rulesRuntime = new ArrayList<>();
+        final List<RuleRuntime> ruleRuntimes = new ArrayList<>();
 
         if (rules != null) {
             for (Rule rule : rules) {
+                LOG.info("Processing rule {} with ruleRuntimeBuilder", rule);
                 ruleRuntimeBuilder.setRule(rule);
-                if (rule.getCondition() != null) {
-                    ruleRuntimeBuilder.buildExpression();
-                    ruleRuntimeBuilder.buildScriptEngine();
-                    ruleRuntimeBuilder.buildScript();
-                }
+                ruleRuntimeBuilder.buildExpression();
+                ruleRuntimeBuilder.buildScriptEngine();
+                ruleRuntimeBuilder.buildScript();
                 ruleRuntimeBuilder.buildActions();
                 RuleRuntime ruleRuntime = ruleRuntimeBuilder.buildRuleRuntime();
-                rulesRuntime.add(ruleRuntime);
-                LOG.trace("Added {}", ruleRuntime);
+                ruleRuntimes.add(ruleRuntime);
+                LOG.info("Added {}", ruleRuntime);
             }
-            LOG.debug("Finished building. [{}]", this);
+            LOG.info("ruleRuntimes [{}]", ruleRuntimes);
         }
-        return rulesRuntime;
+        return ruleRuntimes;
     }
 
     public RulesProcessor getRulesProcessor() {

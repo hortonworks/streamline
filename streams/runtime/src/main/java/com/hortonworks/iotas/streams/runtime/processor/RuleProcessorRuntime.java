@@ -110,18 +110,19 @@ public class RuleProcessorRuntime implements Serializable, ProcessorRuntime {
     public List<Result> process(IotasEvent iotasEvent) throws ProcessingException {
         List<Result> results = new ArrayList<>();
         try {
-            IotasEvent result;
             List<RuleRuntime> ruleRuntimes = getRulesRuntime(iotasEvent);
             LOG.debug("Process event {}, rule runtimes {}", iotasEvent, ruleRuntimes);
             for (RuleRuntime rr : ruleRuntimes) {
-                if ((result = rr.evaluate(iotasEvent)) != null) {
-                    results.addAll(rr.process(result));
+                for (IotasEvent result : rr.evaluate(iotasEvent)) {
+                    if (result != null) {
+                        results.addAll(rr.process(result));
+                    }
                 }
             }
         } catch (Exception e) {
             String message = String.format("Error evaluating rule processor with id: %s, error: %s",
-                                           rulesProcessor.getId(), e.getMessage());
-            LOG.error(message);
+                    rulesProcessor.getId(), e.getMessage());
+            LOG.error(message, e);
             throw new ProcessingException(message, e);
         }
         return results;
@@ -138,7 +139,7 @@ public class RuleProcessorRuntime implements Serializable, ProcessorRuntime {
         List<RuleRuntime> result = streamToRuleRuntimes.get(inputStream);
         if (result == null) {
             LOG.debug("Could not find matching rules for input stream {}. Will not process event.", inputStream);
-            result = Collections.EMPTY_LIST;
+            result = Collections.emptyList();
         }
         return result;
     }

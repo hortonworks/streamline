@@ -96,7 +96,7 @@ public class WindowInfo extends AbstractStorable {
                 throw new IllegalArgumentException("expr or functionName should be specified");
             }
             if (!StringUtils.isEmpty(outputFieldName)) {
-                str += " AS " + outputFieldName;
+                str += " AS \"" + outputFieldName + "\"";
             }
             return str;
         }

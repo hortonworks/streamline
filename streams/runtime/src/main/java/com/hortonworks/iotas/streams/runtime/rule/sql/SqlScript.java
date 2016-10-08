@@ -18,6 +18,8 @@
 
 package com.hortonworks.iotas.streams.runtime.rule.sql;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import com.hortonworks.iotas.common.Schema;
 import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.common.IotasEventImpl;
@@ -32,6 +34,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,30 +47,32 @@ import static com.hortonworks.iotas.streams.runtime.rule.condition.expression.St
 /**
  * Evaluates the {@link ExpressionRuntime} for each {@code Input} using the provided {@code Storm} SQL Engine
  */
-public class SqlScript<O> extends Script<IotasEvent, O, SqlEngine> {
+public class SqlScript extends Script<IotasEvent, Collection<IotasEvent>, SqlEngine> {
     private static final Logger LOG = LoggerFactory.getLogger(SqlScript.class);
-    private ValuesConverter<O> valuesConverter;
-    private final List<Schema.Field> fieldsToEmit;
+    private ValuesConverter<IotasEvent> valuesConverter;
+    private final List<Schema.Field> stormSqlFields;
     private final List<String> projectedFields;
-    private final List<String> outputFieldNames;
+    private final List<String> outputFields;
     public SqlScript(ExpressionRuntime expressionRuntime, ScriptEngine<SqlEngine> scriptEngine) {
         this(expressionRuntime, scriptEngine, null);
     }
     public SqlScript(ExpressionRuntime expressionRuntime, ScriptEngine<SqlEngine> scriptEngine,
-                     ValuesConverter<O> valuesConverter) {
+                     ValuesConverter<IotasEvent> valuesConverter) {
         super(expressionRuntime.asString(), scriptEngine);
         this.valuesConverter = valuesConverter;
 
         // This is needed to avoid ServiceLoader limitation. Please read comments in RulesDataSourcesProvider
         // The delegate must be set before compiling the query
         RulesDataSourcesProvider.setDelegate(((SqlEngine)scriptEngine).getDataSourceProvider());
-        ((SqlEngine)scriptEngine).compileQuery(createQuery((StormSqlExpression) expressionRuntime));
-        fieldsToEmit = ((StormSqlExpression) expressionRuntime).getFieldsToEmit();
+        stormSqlFields = ((StormSqlExpression) expressionRuntime).getStormSqlFields();
+        if (!stormSqlFields.isEmpty()) {
+            ((SqlEngine) scriptEngine).compileQuery(createQuery((StormSqlExpression) expressionRuntime));
+        }
         projectedFields = ((StormSqlExpression) expressionRuntime).getProjectedFields();
-        outputFieldNames = ((StormSqlExpression) expressionRuntime).getOutputFieldNames();
+        outputFields = ((StormSqlExpression) expressionRuntime).getOutputFields();
     }
 
-    public void setValuesConverter(ValuesConverter<O> valuesConverter) {
+    public void setValuesConverter(ValuesConverter<IotasEvent> valuesConverter) {
         this.valuesConverter = valuesConverter;
     }
 
@@ -79,10 +85,16 @@ public class SqlScript<O> extends Script<IotasEvent, O, SqlEngine> {
     }
 
     @Override
-    public O evaluate(IotasEvent iotasEvent) throws ScriptException {
-        final String expressionStr = expression;
-        LOG.debug("Evaluating [{}] with [{}]", expressionStr, iotasEvent);
-        Values result = null;
+    public Collection<IotasEvent> evaluate(IotasEvent iotasEvent) throws ScriptException {
+        LOG.debug("Evaluating [{}] with script engine [{}]", iotasEvent, scriptEngine);
+        List<Values> result = null;
+        if (stormSqlFields == null || stormSqlFields.isEmpty()) {
+            if (iotasEvent == GROUP_BY_TRIGGER_EVENT) {
+                return Collections.emptyList();
+            } else {
+                return Collections.singletonList(iotasEvent);
+            }
+        }
         try {
             if (iotasEvent == GROUP_BY_TRIGGER_EVENT) {
                 result = scriptEngine.flush();
@@ -94,13 +106,13 @@ public class SqlScript<O> extends Script<IotasEvent, O, SqlEngine> {
         } catch (ConditionEvaluationException ex) {
             LOG.error("Got exception {} while processing IotasEvent {}", ex, iotasEvent);
         }
-        LOG.debug("Expression [{}] evaluated to [{}]", expressionStr, result);
+        LOG.debug("Result [{}]", result);
         return convert(result, iotasEvent);
     }
 
     private Values createValues(IotasEvent iotasEvent) {
         Values values = new Values();
-        for (Schema.Field field : fieldsToEmit) {
+        for (Schema.Field field : stormSqlFields) {
             Object value = iotasEvent.getFieldsAndValues().get(field.getName());
             if (value == null) {
                 throw new ConditionEvaluationException("Missing property " + field.getName());
@@ -110,23 +122,26 @@ public class SqlScript<O> extends Script<IotasEvent, O, SqlEngine> {
         return values;
     }
 
-    private O convert(Values result, IotasEvent inputEvent) {
-        O output = null;
-        if(valuesConverter != null) {
-            output = valuesConverter.convert(result, inputEvent);
-        } else {
-            output = (O) result;
+    private Collection<IotasEvent> convert(List<Values> result, final IotasEvent inputEvent) {
+        Collection<IotasEvent> output = Collections.emptyList();
+        if (result != null) {
+            if (valuesConverter != null) {
+                output = Collections2.transform(result, new Function<Values, IotasEvent>() {
+                    @Override
+                    public IotasEvent apply(Values values) {
+                        return valuesConverter.convert(values, inputEvent);
+                    }
+                });
+            } else {
+                output = Collections.singletonList((IotasEvent) result);
+            }
         }
         LOG.debug("Expression evaluation result [{}] converted to [{}]", result, output);
         return output;
     }
 
-    public List<String> getProjectedFields() {
-        return projectedFields;
-    }
-
-    public List<String> getOutputFieldNames() {
-        return outputFieldNames;
+    public List<String> getOutputFields() {
+        return outputFields;
     }
 
     public interface ValuesConverter<O> {
@@ -136,18 +151,11 @@ public class SqlScript<O> extends Script<IotasEvent, O, SqlEngine> {
         O convert(Values input, IotasEvent inputEvent);
     }
 
-    public static class ValuesToBooleanConverter implements ValuesConverter<Boolean> {
-        @Override
-        public Boolean convert(Values input, IotasEvent inputEvent) {
-            return input != null;
-        }
-    }
-
     public static class ValuesToIotasEventConverter implements ValuesConverter<IotasEvent> {
-        private final List<String> projectedFields;
+        private final List<String> outputFields;
 
         public ValuesToIotasEventConverter(List<String> projectedFields) {
-            this.projectedFields = projectedFields;
+            this.outputFields = projectedFields;
         }
 
         @Override
@@ -155,10 +163,10 @@ public class SqlScript<O> extends Script<IotasEvent, O, SqlEngine> {
             IotasEvent result;
             if (input == null) {
                 result = null;
-            } else if (projectedFields != null) {
+            } else if (outputFields != null && !outputFields.isEmpty()) {
                 Map<String, Object> fieldsAndValues = new HashMap<>();
-                for (int i = 0; i < projectedFields.size(); i++) {
-                    fieldsAndValues.put(projectedFields.get(i), input.get(i));
+                for (int i = 0; i < outputFields.size(); i++) {
+                    fieldsAndValues.put(outputFields.get(i), input.get(i));
                 }
                 if (inputEvent != null) {
                     result = new IotasEventImpl(fieldsAndValues, inputEvent.getDataSourceId(), inputEvent.getId(),
@@ -171,5 +179,22 @@ public class SqlScript<O> extends Script<IotasEvent, O, SqlEngine> {
             }
             return result;
         }
+
+        @Override
+        public String toString() {
+            return "ValuesToIotasEventConverter{" +
+                    "outputFields=" + outputFields +
+                    '}';
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "SqlScript{" +
+                "valuesConverter=" + valuesConverter +
+                ", stormSqlFields=" + stormSqlFields +
+                ", projectedFields=" + projectedFields +
+                ", outputFields=" + outputFields +
+                "} " + super.toString();
     }
 }

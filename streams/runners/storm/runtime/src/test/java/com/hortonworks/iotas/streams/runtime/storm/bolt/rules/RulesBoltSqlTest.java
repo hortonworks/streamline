@@ -56,6 +56,8 @@ public class RulesBoltSqlTest extends RulesBoltTest {
         new Expectations() {{
             mockTuple.getValueByField(IotasEvent.IOTAS_EVENT);
             result = IOTAS_EVENT;
+            mockTuple.getSourceStreamId();
+            result = "default";
         }};
 
         rulesBolt.execute(mockTuple);

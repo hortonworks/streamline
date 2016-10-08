@@ -20,6 +20,7 @@ import org.apache.storm.tuple.TupleImpl;
 import org.apache.storm.tuple.Values;
 import org.apache.storm.windowing.TupleWindow;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -43,6 +44,16 @@ public class WindowRulesBoltTest {
     @Mocked
     TopologyContext mockContext;
 
+    @Before
+    public void setUp() {
+        new Expectations() {{
+            mockContext.getComponentOutputFields(anyString, anyString);
+            result = new Fields(IotasEvent.IOTAS_EVENT);
+            mockContext.getComponentId(anyInt);
+            result = "componentid";
+        }};
+    }
+
     @Test
     public void testCountBasedWindow() throws Exception {
         Assert.assertTrue(doTest(readFile("/window-rule-count.json"), 2));
@@ -57,6 +68,20 @@ public class WindowRulesBoltTest {
                 Assert.assertEquals("min salary is 30, max salary is 100", fieldsAndValues1.get("body"));
                 Map<String, Object> fieldsAndValues2 = ((IotasEvent) tuples.get(1).get(0)).getFieldsAndValues();
                 Assert.assertEquals("min salary is 110, max salary is 200", fieldsAndValues2.get("body"));
+            }
+        };
+    }
+
+    @Test
+    public void testCountBasedWindowFilterAll() throws Exception {
+        Assert.assertTrue(doTest(readFile("/window-rule-groupby-filter.json"), 1));
+        new Verifications() {
+            {
+                String streamId;
+                Collection<Tuple> anchors;
+                List<List<Object>> tuples = new ArrayList<>();
+                mockCollector.emit(streamId = withCapture(), anchors = withCapture(), withCapture(tuples));
+                times=0;
             }
         };
     }
@@ -88,6 +113,38 @@ public class WindowRulesBoltTest {
     }
 
     @Test
+    public void testCountBasedWindowWithGroupbyUnordered() throws Exception {
+        String rulesJson = readFile("/window-rule-groupby-unordered.json");
+        RulesDependenciesFactory factory = new RulesDependenciesFactory(
+                new RulesProcessorJsonBuilder(rulesJson), RulesDependenciesFactory.ScriptType.SQL);
+        Window windowConfig = factory.createRuleProcessorRuntime().getRulesRuntime().get(0).getRule().getWindow();
+        WindowRulesBolt wb = new WindowRulesBolt(factory);
+        wb.withWindowConfig(windowConfig);
+        WindowedBoltExecutor wbe = new WindowedBoltExecutor(wb);
+        Map<String, Object> conf = wb.getComponentConfiguration();
+        wbe.prepare(conf, mockContext, mockCollector);
+        wbe.execute(getNextTuple(10));
+        wbe.execute(getNextTuple(15));
+        wbe.execute(getNextTuple(11));
+        wbe.execute(getNextTuple(16));
+        new Verifications() {
+            {
+                String streamId;
+                Collection<Tuple> anchors;
+                List<List<Object>> tuples = new ArrayList<>();
+                mockCollector.emit(streamId = withCapture(), anchors = withCapture(), withCapture(tuples));
+                Assert.assertEquals(2, tuples.size());
+                Map<String, Object> fieldsAndValues = ((IotasEvent) tuples.get(0).get(0)).getFieldsAndValues();
+                Assert.assertEquals(2, fieldsAndValues.get("deptid"));
+                Assert.assertEquals(110, fieldsAndValues.get("salary_MAX"));
+                fieldsAndValues = ((IotasEvent) tuples.get(1).get(0)).getFieldsAndValues();
+                Assert.assertEquals(3, fieldsAndValues.get("deptid"));
+                Assert.assertEquals(160, fieldsAndValues.get("salary_MAX"));
+            }
+        };
+    }
+
+    @Test
     public void testTimeBasedWindow() throws Exception {
         Assert.assertTrue(doTest(readFile("/window-rule-time.json"), 1));
         new Verifications() {
@@ -103,13 +160,24 @@ public class WindowRulesBoltTest {
         };
     }
 
+    @Test
+    public void testTimeBasedWindowEmptyCondition() throws Exception {
+        Assert.assertTrue(doTest(readFile("/window-rule-empty-condition.json"), 1));
+        new Verifications() {
+            {
+                String streamId;
+                Collection<Tuple> anchors;
+                List<List<Object>> tuples = new ArrayList<>();
+                mockCollector.emit(streamId = withCapture(), anchors = withCapture(), withCapture(tuples));
+                Assert.assertEquals("outputstream", streamId);
+                Map<String, Object> fieldsAndValues1 = ((IotasEvent) tuples.get(0).get(0)).getFieldsAndValues();
+                Assert.assertEquals(0, fieldsAndValues1.get("deptid"));
+                Assert.assertEquals(40, fieldsAndValues1.get("salary_MAX"));
+            }
+        };
+    }
+
     private boolean doTest(String rulesJson, int expectedExecuteCount) throws Exception {
-        new Expectations() {{
-            mockContext.getComponentOutputFields(anyString, anyString);
-            result = new Fields(IotasEvent.IOTAS_EVENT);
-            mockContext.getComponentId(anyInt);
-            result = "componentid";
-        }};
         RulesDependenciesFactory factory = new RulesDependenciesFactory(
                 new RulesProcessorJsonBuilder(rulesJson), RulesDependenciesFactory.ScriptType.SQL);
         Window windowConfig = factory.createRuleProcessorRuntime().getRulesRuntime().get(0).getRule().getWindow();
@@ -140,7 +208,7 @@ public class WindowRulesBoltTest {
 
     private Tuple getNextTuple(int i) {
         IotasEvent event = new IotasEventImpl(ImmutableMap.<String, Object>of("empid", i, "salary", i * 10, "deptid", i/5), "dsrcid");
-        return new TupleImpl(mockContext, new Values(event), 1, "stream");
+        return new TupleImpl(mockContext, new Values(event), 1, "inputstream");
     }
 
 }

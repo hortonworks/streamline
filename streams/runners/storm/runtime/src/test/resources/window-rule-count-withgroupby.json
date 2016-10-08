@@ -4,6 +4,9 @@
       "name": "rule_1",
       "id": 1,
       "ruleProcessorName": "rule_processsor_1",
+      "streams": [
+        "inputstream"
+      ],
       "actions": [
         {
           "name": "notificationsink",

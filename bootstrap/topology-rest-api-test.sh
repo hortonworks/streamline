@@ -322,8 +322,8 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
     "description": "windowed rule test",
     "projections": [
         {"expr": "humidity"},
-        {"functionName": "max", "args": ["temperature"], "outputFieldName": "maxtemp"},
-        {"functionName": "topN", "args": ["5", "temperature"], "outputFieldName": "toptwotemp"}
+        {"functionName": "max", "args": ["temperature"], "outputFieldName": "maxTemp"},
+        {"functionName": "topN", "args": ["5", "temperature"], "outputFieldName": "topTwoTemp"}
     ],
     "streams": ["parsedTuplesStream"],
     "groupbykeys": ["humidity"],

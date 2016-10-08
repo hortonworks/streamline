@@ -1,0 +1,89 @@
+{
+  "outputStreams": [
+    {
+      "id": "outputstream",
+      "schema": {
+        "fields": [
+          {
+            "name": "foo",
+            "type": "INTEGER",
+            "optional": true
+          },
+          {
+            "name": "bar",
+            "type": "INTEGER",
+            "optional": false
+          },
+          {
+            "name": "baz",
+            "type": "INTEGER",
+            "optional": false
+          }
+        ]
+      }
+    }
+  ],
+  "rules": [
+    {
+      "id": 5,
+      "name": "test2",
+      "description": "test",
+      "ruleProcessorName": "test",
+      "streams": [
+        "inputstream"
+      ],
+      "projection": {
+        "expressions": [
+          {
+            "class": "com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression",
+            "value": {
+              "name": "foo",
+              "type": "INTEGER",
+              "optional": false
+            }
+          },
+          {
+            "class": "com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression",
+            "value": {
+              "name": "bar",
+              "type": "INTEGER",
+              "optional": false
+            }
+          }
+        ]
+      },
+      "condition": {
+        "expression": {
+          "class": "com.hortonworks.iotas.streams.layout.component.rule.expression.BinaryExpression",
+          "operator": "GREATER_THAN",
+          "first": {
+            "class": "com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression",
+            "value": {
+              "name": "foo",
+              "type": "INTEGER",
+              "optional": false
+            }
+          },
+          "second": {
+            "class": "com.hortonworks.iotas.streams.layout.component.rule.expression.Literal",
+            "value": "10"
+          }
+        }
+      },
+      "groupBy": null,
+      "having": null,
+      "window": null,
+      "actions": [
+        {
+          "__type": "com.hortonworks.iotas.streams.layout.component.rule.action.TransformAction",
+          "name": "HBase",
+          "outputStreams": [
+            "outputstream"
+          ],
+          "transforms": [
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -55,4 +55,12 @@ public class AsExpression extends Expression {
     public void accept(ExpressionVisitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return "AsExpression{" +
+                "expression=" + expression +
+                ", alias='" + alias + '\'' +
+                "} " + super.toString();
+    }
 }

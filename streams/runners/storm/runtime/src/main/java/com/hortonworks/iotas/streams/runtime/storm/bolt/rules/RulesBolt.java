@@ -21,6 +21,7 @@ package com.hortonworks.iotas.streams.runtime.storm.bolt.rules;
 import com.hortonworks.iotas.common.Constants;
 import com.hortonworks.iotas.streams.IotasEvent;
 import com.hortonworks.iotas.streams.Result;
+import com.hortonworks.iotas.streams.common.IotasEventImpl;
 import com.hortonworks.iotas.streams.runtime.processor.RuleProcessorRuntime;
 import com.hortonworks.iotas.streams.runtime.rule.RulesDependenciesFactory;
 import org.apache.storm.task.OutputCollector;
@@ -69,11 +70,11 @@ public class RulesBolt extends BaseRichBolt {
     public void execute(Tuple input) {  // Input tuple is expected to be an IotasEvent
         try {
             final Object iotasEvent = input.getValueByField(IotasEvent.IOTAS_EVENT);
-
             if (iotasEvent instanceof IotasEvent) {
-                LOG.debug("++++++++ Executing tuple [{}] which contains IotasEvent [{}]", input, iotasEvent);
-                for(Result result: ruleProcessorRuntime.process((IotasEvent) iotasEvent)) {
-                    for (IotasEvent event: result.events) {
+                IotasEvent iotasEventWithStream = getIotasEventWithStream((IotasEvent) iotasEvent, input);
+                LOG.debug("++++++++ Executing tuple [{}], IotasEvent [{}]", input, iotasEventWithStream);
+                for (Result result : ruleProcessorRuntime.process(iotasEventWithStream)) {
+                    for (IotasEvent event : result.events) {
                         collector.emit(result.stream, input, new Values(event));
                     }
                 }
@@ -87,6 +88,12 @@ public class RulesBolt extends BaseRichBolt {
             collector.reportError(e);
             LOG.debug("", e);                        // useful to debug unit tests
         }
+    }
+
+    private IotasEvent getIotasEventWithStream(IotasEvent event, Tuple tuple) {
+        return new IotasEventImpl(event.getFieldsAndValues(),
+                event.getDataSourceId(), event.getId(),
+                event.getHeader(), tuple.getSourceStreamId(), event.getAuxiliaryFieldsAndValues());
     }
 
     @Override

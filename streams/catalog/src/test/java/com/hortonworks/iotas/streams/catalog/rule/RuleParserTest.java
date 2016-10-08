@@ -85,6 +85,39 @@ public class RuleParserTest {
     }
 
     @Test
+    public void testParseAsExpressionWithCase() throws Exception {
+        new Expectations() {{
+            mockCatalogService.listStreamInfos(withAny(new ArrayList<QueryParam>()));
+            result=mockStreamInfo;
+            mockStreamInfo.getStreamId();
+            result="teststream";
+            mockStreamInfo.getFields();
+            result= Arrays.asList(Schema.Field.of("temperature", Schema.Type.LONG),
+                    Schema.Field.of("humidity", Schema.Type.LONG));
+        }};
+        RuleInfo ruleInfo = new RuleInfo();
+        ruleInfo.setId(1L);
+        ruleInfo.setName("Test");
+        ruleInfo.setDescription("test rule");
+        ruleInfo.setTopologyId(1L);
+        ruleInfo.setSql("select temperature as \"temp_TEST\" from teststream where humidity > 80");
+        RuleParser ruleParser = new RuleParser(mockCatalogService, ruleInfo.getSql(), ruleInfo.getTopologyId());
+        ruleParser.parse();
+        assertEquals(new Condition(new BinaryExpression(Operator.GREATER_THAN,
+                        new FieldExpression(Schema.Field.of("humidity", Schema.Type.LONG)),
+                        new Literal("80"))),
+                ruleParser.getCondition());
+        assertEquals(new Projection(Arrays.asList(new AsExpression(new FieldExpression(Schema.Field.of("temperature", Schema.Type.LONG)), "temp_TEST"))),
+                ruleParser.getProjection());
+        assertEquals(1, ruleParser.getStreams().size());
+        assertEquals(new Stream("teststream", Arrays.asList(Schema.Field.of("temperature", Schema.Type.LONG),
+                Schema.Field.of("humidity", Schema.Type.LONG))),
+                ruleParser.getStreams().get(0));
+        assertNull(ruleParser.getGroupBy());
+        assertNull(ruleParser.getHaving());
+    }
+
+    @Test
     public void testParseAgg() throws Exception {
         final UDFInfo stddevp = new UDFInfo();
         stddevp.setClassName("foo.class.name");

@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 /** Implementation of Storm SQL engine that evaluates pre-compiled queries for each input */
@@ -47,10 +48,10 @@ public class SqlEngine implements ScriptEngine<SqlEngine> {
     }
 
     private DataSource dataSource;                      // step 1
-    private ChannelContext channelContext;              // step 2 - Data Source sets context
+    private volatile ChannelContext channelContext;              // step 2 - Data Source sets context
     private ChannelHandler channelHandler;              // step 3
     private DataSourcesProvider dataSourceProvider;     // step 4
-    private Values result;
+    private List<Values> result = new ArrayList<>();
 
     /*
     Doing work in the constructor is not ideal but all of these inner classes make the code much simpler
@@ -68,32 +69,30 @@ public class SqlEngine implements ScriptEngine<SqlEngine> {
 
     public void compileQuery(List<String> statements) {
         try {
-            LOG.debug("Compiling query statements {}", statements);
+            LOG.info("Compiling query statements {}", statements);
             StormSql stormSql = StormSql.construct();
             stormSql.execute(statements, channelHandler);
-            LOG.debug("Query statements successfully compiled");
+            LOG.info("Query statements successfully compiled");
         } catch (Exception e) {
             throw new RuntimeException(String.format("Error compiling query. Statements [%s]", statements), e);
         }
     }
 
-    public Values eval(Values input) {
-        Values cachedResult = null;
+    public List<Values> eval(Values input) {
         channelContext.emit(input);
-        cachedResult = result;              // this.result is set synchronously in ChannelHandler
-        result = null;                      // reset this.result
-        return cachedResult;
+        List<Values> res = new ArrayList<>(result);
+        result.clear();
+        return res;
     }
 
     /*
      * force evaluation of pending results, for e.g. evaluate last group in case of group-by
      */
-    public Values flush() {
-        Values cachedResult = null;
+    public List<Values> flush() {
         channelContext.flush();
-        cachedResult = result;              // this.result is set synchronously in ChannelHandler
-        result = null;                      // reset this.result
-        return cachedResult;
+        List<Values> res = new ArrayList<>(result);
+        result.clear();
+        return res;
     }
 
     public void execute(Tuple tuple, OutputCollector outputCollector) {
@@ -107,6 +106,7 @@ public class SqlEngine implements ScriptEngine<SqlEngine> {
     private class RulesDataSource implements DataSource {
         @Override
         public void open(ChannelContext ctx) {
+            LOG.info("open invoked with ChannelContext {}", ctx);
             SqlEngine.this.channelContext = ctx;
         }
     }
@@ -119,7 +119,7 @@ public class SqlEngine implements ScriptEngine<SqlEngine> {
         @Override
         public void dataReceived(ChannelContext ctx, Values data) {
             LOG.debug("SQL query result set {}", data);
-            SqlEngine.this.result = data;
+            SqlEngine.this.result.add(data);
         }
 
         @Override
@@ -154,5 +154,16 @@ public class SqlEngine implements ScriptEngine<SqlEngine> {
 
     public DataSourcesProvider getDataSourceProvider() {
         return dataSourceProvider;
+    }
+
+    @Override
+    public String toString() {
+        return "SqlEngine{" +
+                "dataSource=" + dataSource +
+                ", channelContext=" + channelContext +
+                ", channelHandler=" + channelHandler +
+                ", dataSourceProvider=" + dataSourceProvider +
+                ", result=" + result +
+                '}';
     }
 }

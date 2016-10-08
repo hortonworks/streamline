@@ -27,6 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
+import java.util.Collection;
+import java.util.Collections;
 
 public class GroovyRuleRuntimeBuilder extends AbstractRuleRuntimeBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(GroovyRuleRuntimeBuilder.class);
@@ -77,10 +79,14 @@ public class GroovyRuleRuntimeBuilder extends AbstractRuleRuntimeBuilder {
 
     @Override
     public RuleRuntime buildRuleRuntime() {
-        GroovyScript<IotasEvent> wrapper = new GroovyScript<IotasEvent>(groovyExpression.asString(), groovyScriptEngine) {
+        GroovyScript<Collection<IotasEvent>> wrapper = new GroovyScript<Collection<IotasEvent>>(groovyExpression.asString(), groovyScriptEngine) {
             @Override
-            public IotasEvent evaluate(IotasEvent input) throws ScriptException {
-                return groovyScript.evaluate(input) ? input : null;
+            public Collection<IotasEvent> evaluate(IotasEvent input) throws ScriptException {
+                if (groovyScript.evaluate(input)) {
+                    return Collections.singletonList(input);
+                } else {
+                    return Collections.emptyList();
+                }
             }
         };
         return new RuleRuntime(rule, wrapper, actions);
