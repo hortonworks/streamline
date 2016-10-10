@@ -24,7 +24,11 @@ import com.hortonworks.iotas.streams.layout.component.rule.expression.Expression
 import com.hortonworks.iotas.streams.layout.component.rule.expression.FieldExpression;
 import com.hortonworks.iotas.streams.layout.component.rule.expression.GroupBy;
 import com.hortonworks.iotas.streams.runtime.rule.condition.expression.StormSqlExpression;
+import com.hortonworks.iotas.streams.runtime.rule.sql.RulesDataSourcesProvider;
 import com.hortonworks.iotas.streams.runtime.rule.sql.SqlEngine;
+
+import static com.hortonworks.iotas.streams.runtime.rule.condition.expression.StormSqlExpression.RULE_SCHEMA;
+import static com.hortonworks.iotas.streams.runtime.rule.condition.expression.StormSqlExpression.RULE_TABLE;
 import static com.hortonworks.iotas.streams.runtime.rule.sql.SqlScript.ValuesToIotasEventConverter;
 
 import com.hortonworks.iotas.streams.runtime.rule.sql.SqlScript;
@@ -68,7 +72,19 @@ public class SqlRuleRuntimeBuilder extends AbstractRuleRuntimeBuilder {
     @Override
     public void buildScriptEngine() {
         sqlEngine = new SqlEngine();
+        List<Schema.Field> fields = stormSqlExpression.getStormSqlFields();
+        if (!fields.isEmpty()) {
+            sqlEngine.compileQuery(createQuery(stormSqlExpression));
+        }
         LOG.info("Built sqlEngine {}", sqlEngine);
+    }
+
+    private List<String> createQuery(StormSqlExpression expression) {
+        final List<String> statements = new ArrayList<>(2);
+        statements.add(expression.createTable(RULE_SCHEMA, RULE_TABLE));
+        statements.addAll(expression.createFunctions());
+        statements.add(expression.select(RULE_TABLE));
+        return statements;
     }
 
     @Override

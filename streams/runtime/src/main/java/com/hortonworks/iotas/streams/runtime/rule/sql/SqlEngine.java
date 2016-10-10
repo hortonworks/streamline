@@ -19,26 +19,20 @@
 package com.hortonworks.iotas.streams.runtime.rule.sql;
 
 
-import com.hortonworks.iotas.streams.runtime.rule.condition.expression.StormSqlExpression;
 import com.hortonworks.iotas.streams.runtime.script.engine.ScriptEngine;
 import org.apache.storm.sql.StormSql;
 import org.apache.storm.sql.runtime.ChannelContext;
-import org.apache.storm.sql.runtime.ChannelHandler;
-import org.apache.storm.sql.runtime.DataSource;
-import org.apache.storm.sql.runtime.DataSourcesProvider;
-import org.apache.storm.sql.runtime.FieldInfo;
-import org.apache.storm.sql.runtime.ISqlTridentDataSource;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 
-/** Implementation of Storm SQL engine that evaluates pre-compiled queries for each input */
+/**
+ * Implementation of Storm SQL engine that evaluates pre-compiled queries for each input
+ */
 public class SqlEngine implements ScriptEngine<SqlEngine> {
     protected static final Logger LOG = LoggerFactory.getLogger(SqlEngine.class);
 
@@ -47,24 +41,11 @@ public class SqlEngine implements ScriptEngine<SqlEngine> {
         return this;
     }
 
-    private DataSource dataSource;                      // step 1
-    private volatile ChannelContext channelContext;              // step 2 - Data Source sets context
-    private ChannelHandler channelHandler;              // step 3
-    private DataSourcesProvider dataSourceProvider;     // step 4
-    private List<Values> result = new ArrayList<>();
+    private volatile ChannelContext channelContext;
+    private RulesChannelHandler channelHandler;
 
-    /*
-    Doing work in the constructor is not ideal but all of these inner classes make the code much simpler
-    and avoid lots of callbacks. Nevertheless, this should not be an issue for testing as this is a very focused
-    class that has a very specific purpose and therefore is very unlikely to change.
-    Furthermore, the SQL streaming framework is still under development and it's API is subject to changing,
-    so for now this is a reasonable solution
-    */
     public SqlEngine() {
-        // This sequence of steps cannot be changed
-        this.dataSource = this.new RulesDataSource();                   // Step 1 && Step 2 - RulesDataSource Sets Channel Context
-        this.channelHandler = this.new RulesChannelHandler();           // Step 3
-        this.dataSourceProvider = this.new RulesDataSourcesProvider();  // Step 4
+        channelHandler = new RulesChannelHandler();
     }
 
     public void compileQuery(List<String> statements) {
@@ -72,7 +53,8 @@ public class SqlEngine implements ScriptEngine<SqlEngine> {
             LOG.info("Compiling query statements {}", statements);
             StormSql stormSql = StormSql.construct();
             stormSql.execute(statements, channelHandler);
-            LOG.info("Query statements successfully compiled");
+            channelContext = RulesDataSourcesProvider.getDataSource().getChannelContext();
+            LOG.info("Query statements successfully compiled, channelContext set to {}", channelContext);
         } catch (Exception e) {
             throw new RuntimeException(String.format("Error compiling query. Statements [%s]", statements), e);
         }
@@ -80,8 +62,8 @@ public class SqlEngine implements ScriptEngine<SqlEngine> {
 
     public List<Values> eval(Values input) {
         channelContext.emit(input);
-        List<Values> res = new ArrayList<>(result);
-        result.clear();
+        List<Values> res = channelHandler.getResult();
+        channelHandler.clearResult();
         return res;
     }
 
@@ -90,8 +72,8 @@ public class SqlEngine implements ScriptEngine<SqlEngine> {
      */
     public List<Values> flush() {
         channelContext.flush();
-        List<Values> res = new ArrayList<>(result);
-        result.clear();
+        List<Values> res = channelHandler.getResult();
+        channelHandler.clearResult();
         return res;
     }
 
@@ -103,67 +85,12 @@ public class SqlEngine implements ScriptEngine<SqlEngine> {
         return (Values) input.getValues();
     }
 
-    private class RulesDataSource implements DataSource {
-        @Override
-        public void open(ChannelContext ctx) {
-            LOG.info("open invoked with ChannelContext {}", ctx);
-            SqlEngine.this.channelContext = ctx;
-        }
-    }
-
-    private class RulesChannelHandler implements ChannelHandler {
-        /*
-        This method only gets called when the query produces a non-empty result set.
-        The hypothetical scenario of an empty result set would result in this method not being called, i.e. no data
-        */
-        @Override
-        public void dataReceived(ChannelContext ctx, Values data) {
-            LOG.debug("SQL query result set {}", data);
-            SqlEngine.this.result.add(data);
-        }
-
-        @Override
-        public void channelInactive(ChannelContext ctx) { }
-
-        @Override
-        public void exceptionCaught(Throwable cause) { }
-
-        @Override
-        public void flush(ChannelContext channelContext) { }
-
-        @Override
-        public void setSource(ChannelContext channelContext, Object o) { }
-    }
-
-    private class RulesDataSourcesProvider implements DataSourcesProvider {
-        @Override
-        public String scheme() {
-            return StormSqlExpression.RULE_SCHEMA;
-        }
-
-        @Override
-        public DataSource construct(URI uri, String s, String s1, List<FieldInfo> list) {
-            return SqlEngine.this.dataSource;
-        }
-
-        @Override
-        public ISqlTridentDataSource constructTrident(URI uri, String s, String s1, String s2, List<FieldInfo> list) {
-            return null;
-        }
-    }
-
-    public DataSourcesProvider getDataSourceProvider() {
-        return dataSourceProvider;
-    }
 
     @Override
     public String toString() {
         return "SqlEngine{" +
-                "dataSource=" + dataSource +
-                ", channelContext=" + channelContext +
+                "channelContext=" + channelContext +
                 ", channelHandler=" + channelHandler +
-                ", dataSourceProvider=" + dataSourceProvider +
-                ", result=" + result +
                 '}';
     }
 }

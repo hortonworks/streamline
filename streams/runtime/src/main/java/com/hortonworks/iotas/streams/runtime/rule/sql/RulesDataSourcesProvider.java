@@ -18,46 +18,46 @@
 
 package com.hortonworks.iotas.streams.runtime.rule.sql;
 
+import com.hortonworks.iotas.streams.runtime.rule.condition.expression.StormSqlExpression;
 import org.apache.storm.sql.runtime.DataSource;
 import org.apache.storm.sql.runtime.DataSourcesProvider;
 import org.apache.storm.sql.runtime.FieldInfo;
 import org.apache.storm.sql.runtime.ISqlTridentDataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.List;
 
-/** This is an auxiliary service class that is needed in order to circumvent a limitation of {@link java.util.ServiceLoader},
- * which uses reflection to create the service classes, but does not cover the case where the service class is an
- * inner class. We need the service class to be an inner class for the reasons justified in {@link SqlEngine}.
- * */
-
 public class RulesDataSourcesProvider implements DataSourcesProvider {
-    private static DataSourcesProvider delegate;
-    protected static final Logger log = LoggerFactory.getLogger(RulesDataSourcesProvider.class);
-
-    public RulesDataSourcesProvider() {
-        log.debug("Created RulesDataSourcesProvider with delegate [{}]", delegate);
-    }
+    private static final ThreadLocal<RulesDataSource> dataSource = new ThreadLocal<RulesDataSource>() {
+        @Override
+        protected RulesDataSource initialValue() {
+            return new RulesDataSource();
+        }
+    };
 
     @Override
     public String scheme() {
-        return delegate.scheme();
+        return StormSqlExpression.RULE_SCHEMA;
     }
 
     @Override
     public DataSource construct(URI uri, String s, String s1, List<FieldInfo> list) {
-        return delegate.construct(uri, s, s1, list);
+        return dataSource.get();
     }
 
     @Override
     public ISqlTridentDataSource constructTrident(URI uri, String s, String s1, String s2, List<FieldInfo> list) {
-        return delegate.constructTrident(uri, s, s1, s2, list);
+        return null;
     }
 
-    static void setDelegate(DataSourcesProvider delegate) {
-        RulesDataSourcesProvider.delegate = delegate;
-        log.debug("Set DataSourcesProvider delegate to [{}]", delegate.getClass().getName());
+    public static RulesDataSource getDataSource() {
+        return dataSource.get();
+    }
+
+    @Override
+    public String toString() {
+        return "RulesDataSourcesProvider{" +
+                "dataSource=" + dataSource.get() +
+                '}';
     }
 }

@@ -33,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,8 +40,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.hortonworks.iotas.streams.common.IotasEventImpl.GROUP_BY_TRIGGER_EVENT;
-import static com.hortonworks.iotas.streams.runtime.rule.condition.expression.StormSqlExpression.RULE_SCHEMA;
-import static com.hortonworks.iotas.streams.runtime.rule.condition.expression.StormSqlExpression.RULE_TABLE;
 
 /**
  * Evaluates the {@link ExpressionRuntime} for each {@code Input} using the provided {@code Storm} SQL Engine
@@ -61,27 +58,13 @@ public class SqlScript extends Script<IotasEvent, Collection<IotasEvent>, SqlEng
         super(expressionRuntime.asString(), scriptEngine);
         this.valuesConverter = valuesConverter;
 
-        // This is needed to avoid ServiceLoader limitation. Please read comments in RulesDataSourcesProvider
-        // The delegate must be set before compiling the query
-        RulesDataSourcesProvider.setDelegate(((SqlEngine)scriptEngine).getDataSourceProvider());
         stormSqlFields = ((StormSqlExpression) expressionRuntime).getStormSqlFields();
-        if (!stormSqlFields.isEmpty()) {
-            ((SqlEngine) scriptEngine).compileQuery(createQuery((StormSqlExpression) expressionRuntime));
-        }
         projectedFields = ((StormSqlExpression) expressionRuntime).getProjectedFields();
         outputFields = ((StormSqlExpression) expressionRuntime).getOutputFields();
     }
 
     public void setValuesConverter(ValuesConverter<IotasEvent> valuesConverter) {
         this.valuesConverter = valuesConverter;
-    }
-
-    private List<String> createQuery(StormSqlExpression expression) {
-        final List<String> statements = new ArrayList<>(2);
-        statements.add(expression.createTable(RULE_SCHEMA, RULE_TABLE));
-        statements.addAll(expression.createFunctions());
-        statements.add(expression.select(RULE_TABLE));
-        return statements;
     }
 
     @Override

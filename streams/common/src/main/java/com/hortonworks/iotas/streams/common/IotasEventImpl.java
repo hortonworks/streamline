@@ -1,9 +1,15 @@
 package com.hortonworks.iotas.streams.common;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import com.hortonworks.iotas.streams.IotasEvent;
 
+import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -102,7 +108,19 @@ public class IotasEventImpl implements IotasEvent {
 
     @Override
     public String getDataSourceId() {
-        return dataSourceId;
+        String res = dataSourceId;
+        if (res == null) {
+            Object dataSourceIds = header.get("dataSourceIds");
+            if (dataSourceIds instanceof List) {
+                res = Joiner.on(",").join(Collections2.filter((List) dataSourceIds, new Predicate() {
+                    @Override
+                    public boolean apply(Object input) {
+                        return input != null;
+                    }
+                }));
+            }
+        }
+        return res;
     }
 
     @Override

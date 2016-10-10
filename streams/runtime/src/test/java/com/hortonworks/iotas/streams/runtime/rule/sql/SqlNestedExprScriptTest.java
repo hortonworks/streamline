@@ -35,7 +35,7 @@ public class SqlNestedExprScriptTest {
     public void setUp() throws Exception {
     }
 
-    @Test
+//    @Test
     public void testBasic() throws Exception {
         Condition condition = new Condition();
         Expression x = new FieldExpression(Schema.Field.of("x", Schema.Type.INTEGER));
@@ -51,7 +51,7 @@ public class SqlNestedExprScriptTest {
     }
 
 
-    @Test
+//    @Test
     public void testEvaluateNestedMap() throws Exception {
         Condition condition = new Condition();
         Expression y_b = new MapFieldExpression(
@@ -72,7 +72,7 @@ public class SqlNestedExprScriptTest {
     }
 
 
-    @Test
+//    @Test
     public void testEvaluateNestedMapList() throws Exception {
         Condition condition = new Condition();
         Expression y_a_0 = new ArrayFieldExpression(new MapFieldExpression(
