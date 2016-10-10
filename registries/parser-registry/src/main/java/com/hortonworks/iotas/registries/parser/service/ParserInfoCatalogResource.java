@@ -63,7 +63,7 @@ public class ParserInfoCatalogResource {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private ParsersCatalogService parserInfoCatalogService;
+    private final ParsersCatalogService parserInfoCatalogService;
 
     public ParserInfoCatalogResource(ParsersCatalogService service) {
         this.parserInfoCatalogService = service;

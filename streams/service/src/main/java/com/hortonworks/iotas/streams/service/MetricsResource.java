@@ -52,7 +52,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 public class MetricsResource {
     private static final Logger LOG = LoggerFactory.getLogger(MetricsResource.class);
 
-    private StreamCatalogService catalogService;
+    private final StreamCatalogService catalogService;
 
     public MetricsResource(StreamCatalogService service) {
         this.catalogService = service;

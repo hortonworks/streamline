@@ -103,32 +103,32 @@ public abstract class AbstractNotificationMapper implements Mapper<Notification>
 
         // fields
         for (Map.Entry<String, Object> field : notification.getFieldsAndValues().entrySet()) {
-            put.add(CF_FIELDS,
+            put.addColumn(CF_FIELDS,
                     field.getKey().getBytes(CHARSET),
                     serializer.serialize(field.getValue()));
         }
 
         // status
-        put.add(CF_STATUS, CQ_STATUS, notification.getStatus().toString().getBytes(CHARSET));
+        put.addColumn(CF_STATUS, CQ_STATUS, notification.getStatus().toString().getBytes(CHARSET));
 
         // event-ids
         for (String eventId : notification.getEventIds()) {
-            put.add(CF_EVENTIDS, eventId.getBytes(CHARSET), CV_DEFAULT);
+            put.addColumn(CF_EVENTIDS, eventId.getBytes(CHARSET), CV_DEFAULT);
         }
 
         // data source ids
         for (String dataSourceId : notification.getDataSourceIds()) {
-            put.add(CF_DATASOURCE_IDS, dataSourceId.getBytes(CHARSET), CV_DEFAULT);
+            put.addColumn(CF_DATASOURCE_IDS, dataSourceId.getBytes(CHARSET), CV_DEFAULT);
         }
 
         // rule-id
-        put.add(CF_RULEID, notification.getRuleId().getBytes(CHARSET), CV_DEFAULT);
+        put.addColumn(CF_RULEID, notification.getRuleId().getBytes(CHARSET), CV_DEFAULT);
 
         // notifier name
-        put.add(CF_NOTIFIER_NAME, notification.getNotifierName().getBytes(CHARSET), CV_DEFAULT);
+        put.addColumn(CF_NOTIFIER_NAME, notification.getNotifierName().getBytes(CHARSET), CV_DEFAULT);
 
         // ts
-        put.add(CF_TIMESTAMP, Long.toString(notification.getTs()).getBytes(CHARSET), CV_DEFAULT);
+        put.addColumn(CF_TIMESTAMP, Long.toString(notification.getTs()).getBytes(CHARSET), CV_DEFAULT);
 
         LOG.trace("Formed Put {} from notification {}", put, notification);
     }
@@ -179,7 +179,7 @@ public abstract class AbstractNotificationMapper implements Mapper<Notification>
         List<TableMutation> tableMutations = new ArrayList<>();
         for (byte[] rowKey : getRowKeys(notification)) {
             Put put = new Put(rowKey);
-            put.add(CF_STATUS, CQ_STATUS, status.toString().getBytes(CHARSET));
+            put.addColumn(CF_STATUS, CQ_STATUS, status.toString().getBytes(CHARSET));
             tableMutations.add(new TableMutationImpl(getTableName(), put));
         }
         return tableMutations;

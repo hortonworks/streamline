@@ -40,7 +40,7 @@ public class StorageWriteBehind implements StorageWriter {
     // ======= Callables for async writing to the Storage Layer =============
 
     private class AddCallable implements Callable<Storable> {
-        private Storable storable;
+        private final Storable storable;
 
         AddCallable(Storable storable) {
             this.storable = storable;
@@ -53,7 +53,7 @@ public class StorageWriteBehind implements StorageWriter {
     }
 
     private class AddOrUpdateCallable implements Callable<Storable> {
-        private Storable storable;
+        private final Storable storable;
 
         AddOrUpdateCallable(Storable storable) {
             this.storable = storable;
@@ -66,7 +66,7 @@ public class StorageWriteBehind implements StorageWriter {
     }
 
     private class DeleteCallable implements Callable<Storable> {
-        private StorableKey key;
+        private final StorableKey key;
 
         DeleteCallable(StorableKey key) {
             this.key = key;

@@ -32,7 +32,7 @@ import java.util.List;
  */
 public class TransformAction extends Action {
 
-    protected List<Transform> transforms = new ArrayList<>();
+    protected final List<Transform> transforms = new ArrayList<>();
 
     public TransformAction() { }
 

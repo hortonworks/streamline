@@ -39,11 +39,11 @@ public interface TopologyMetrics extends TopologyTimeSeriesMetrics {
      * If field is not available for that streaming framework, implementator can leave it as null or default value.
      */
     class ComponentMetric {
-        private String componentName;
-        private Long inputRecords;
-        private Long outputRecords;
-        private Long failedRecords;
-        private Double processedTime;
+        private final String componentName;
+        private final Long inputRecords;
+        private final Long outputRecords;
+        private final Long failedRecords;
+        private final Double processedTime;
 
         /**
          * Constructor.

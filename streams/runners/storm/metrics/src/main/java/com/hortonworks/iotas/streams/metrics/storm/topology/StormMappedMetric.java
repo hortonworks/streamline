@@ -19,7 +19,7 @@ enum StormMappedMetric {
     offset("kafkaOffset.%s/totalLatestCompletedOffset", TimeSeriesQuerier.AggregateFunction.AVG),
     lag("kafkaOffset.%s/totalSpoutLag", TimeSeriesQuerier.AggregateFunction.AVG);
 
-    private String stormMetricName;
+    private final String stormMetricName;
     private final TimeSeriesQuerier.AggregateFunction aggregateFunction;
 
     StormMappedMetric(String stormMetricName, TimeSeriesQuerier.AggregateFunction aggregateFunction) {

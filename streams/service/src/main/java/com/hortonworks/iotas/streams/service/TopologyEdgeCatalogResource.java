@@ -53,7 +53,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Path("/api/v1/catalog/topologies/{topologyId}/edges")
 @Produces(MediaType.APPLICATION_JSON)
 public class TopologyEdgeCatalogResource {
-    private StreamCatalogService catalogService;
+    private final StreamCatalogService catalogService;
 
     public TopologyEdgeCatalogResource(StreamCatalogService catalogService) {
         this.catalogService = catalogService;

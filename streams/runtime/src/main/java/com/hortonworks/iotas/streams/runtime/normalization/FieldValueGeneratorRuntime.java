@@ -71,9 +71,9 @@ public class FieldValueGeneratorRuntime {
     }
 
     public static class Builder {
-        private Schema.Field field;
-        private String script;
-        private Object value;
+        private final Schema.Field field;
+        private final String script;
+        private final Object value;
 
         public Builder(FieldValueGenerator fieldValueGenerator) {
             this.field = fieldValueGenerator.getField();

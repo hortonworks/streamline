@@ -83,7 +83,7 @@ public class HBaseNotificationStore implements NotificationStore {
     /**
      * The index mappers for Notification secondary indexes
      */
-    private List<NotificationIndexMapper> notificationIndexMappers = new ArrayList<>();
+    private final List<NotificationIndexMapper> notificationIndexMappers = new ArrayList<>();
 
     private HBaseScanConfigBuilder hBaseScanConfigBuilder;
 

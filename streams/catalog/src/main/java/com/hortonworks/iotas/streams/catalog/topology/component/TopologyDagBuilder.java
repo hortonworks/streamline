@@ -60,7 +60,7 @@ public class TopologyDagBuilder {
     }
 
     private List<QueryParam> queryParam(Topology topology) {
-        List<QueryParam> queryParams = new ArrayList<QueryParam>();
+        List<QueryParam> queryParams = new ArrayList<>();
         queryParams.add(new QueryParam("topologyId", topology.getId().toString()));
         return queryParams;
     }

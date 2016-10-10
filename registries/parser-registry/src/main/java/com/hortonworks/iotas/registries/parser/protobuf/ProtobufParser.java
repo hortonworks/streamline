@@ -63,8 +63,8 @@ public class ProtobufParser extends BaseParser {
     }
 
     private List<Field> getFields(ProtobufSchema protoSchema, Class<?> clazz) throws ParserException {
-        List<Field> fields = new ArrayList<Field>();
-        List<String> fieldNames = new ArrayList<String>();
+        List<Field> fields = new ArrayList<>();
+        List<String> fieldNames = new ArrayList<>();
         for (ProtobufField field : protoSchema.getRootType().fields()) {
             try {
                 fields.add(clazz.getField(field.name));
@@ -157,7 +157,7 @@ public class ProtobufParser extends BaseParser {
     }
 
     public Map<String, Object> parse(byte[] data) throws ParserException {
-        Map<String, Object> res = new HashMap<String, Object>();
+        Map<String, Object> res = new HashMap<>();
         try {
             Object value = reader.readValue(data);
             if (fieldLookup) {

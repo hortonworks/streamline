@@ -43,8 +43,8 @@ public class EmailNotifier implements Notifier, TransportListener {
             this.key = key;
             this.defaultVal = defaultVal;
         }
-        String key;
-        String defaultVal;
+        final String key;
+        final String defaultVal;
     }
 
     private static Field Field(String key, String defaultVal) {
@@ -80,7 +80,7 @@ public class EmailNotifier implements Notifier, TransportListener {
     private static final Field[] MSG_FIELDS = {FIELD_FROM, FIELD_TO, FIELD_SUBJECT, FIELD_CONTENT_TYPE, FIELD_BODY};
 
     private NotificationContext ctx;
-    private Map<Message, String> msgNotificationMap = new ConcurrentHashMap<>();
+    private final Map<Message, String> msgNotificationMap = new ConcurrentHashMap<>();
     private Map<String, String> msgFields;
     private Session emailSession;
     private Transport emailTransport;

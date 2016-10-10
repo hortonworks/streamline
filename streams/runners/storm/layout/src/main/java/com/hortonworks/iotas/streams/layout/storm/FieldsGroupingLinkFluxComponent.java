@@ -35,8 +35,8 @@ public class FieldsGroupingLinkFluxComponent extends LinkFluxComponent {
         if (listLength == 0) {
             throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
         }
-        for (int i = 0; i < listLength; ++i) {
-            if (!ConfigFieldValidation.isStringAndNotEmpty(groupingFields.get(i))) {
+        for (Object groupingField : groupingFields) {
+            if (!ConfigFieldValidation.isStringAndNotEmpty(groupingField)) {
                 throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
             }
         }

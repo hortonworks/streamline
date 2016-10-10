@@ -37,11 +37,11 @@ public class NotificationQueueHandler {
     /**
      * Track the tasks so that it can be re-submitted in case of retry.
      */
-    private ConcurrentHashMap<String, NotificationQueueTask> taskMap;
+    private final ConcurrentHashMap<String, NotificationQueueTask> taskMap;
 
     private static class NotificationQueueTask implements Runnable {
-        Notifier notifier;
-        Notification notification;
+        final Notifier notifier;
+        final Notification notification;
 
         NotificationQueueTask(Notifier notifier, Notification notification) {
             this.notifier = notifier;
@@ -61,7 +61,7 @@ public class NotificationQueueHandler {
         }
     }
 
-    private ExecutorService executorService;
+    private final ExecutorService executorService;
 
     public NotificationQueueHandler() {
         this(MAX_THREADS);

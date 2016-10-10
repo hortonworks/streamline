@@ -60,12 +60,12 @@ class StormTopologyValidator {
     // be present and it has to be one of the two streams - parsed or failed
     void validateParserProcessorLinks () throws BadTopologyLayoutException {
         List<Map> dataSources = (List) this.topologyConfig.get(TopologyLayoutConstants.JSON_KEY_DATA_SOURCES);
-        Set<String> dataSourceNames = new HashSet<String>();
+        Set<String> dataSourceNames = new HashSet<>();
         for (Map dataSource: dataSources) {
             dataSourceNames.add((String) dataSource.get(TopologyLayoutConstants.JSON_KEY_UINAME));
         }
         List<Map> processors = (List) this.topologyConfig.get(TopologyLayoutConstants.JSON_KEY_PROCESSORS);
-        Map<String, Map> parserProcessors = new LinkedHashMap<String, Map>();
+        Map<String, Map> parserProcessors = new LinkedHashMap<>();
         for (Map processor: processors) {
             String type = (String) processor.get(TopologyLayoutConstants.JSON_KEY_TYPE);
             if ("PARSER".equals(type)) {
@@ -83,7 +83,7 @@ class StormTopologyValidator {
             String to = (String) linkConfig.get(TopologyLayoutConstants.JSON_KEY_TO);
             if (parserProcessorKeys.contains(from)) {
                 Map processor = parserProcessors.get(from);
-                List<String> processorStreams = new ArrayList<String>();
+                List<String> processorStreams = new ArrayList<>();
                 String parsedTuplesStream = (String) processor.get(TopologyLayoutConstants.JSON_KEY_PARSED_TUPLES_STREAM);
                 processorStreams.add(parsedTuplesStream);
                 String failedTuplesStream = (String) processor.get(TopologyLayoutConstants.JSON_KEY_FAILED_TUPLES_STREAM);
@@ -106,12 +106,12 @@ class StormTopologyValidator {
 
     void validateRuleProcessorLinks () throws BadTopologyLayoutException {
         List<Map> dataSources = (List) this.topologyConfig.get(TopologyLayoutConstants.JSON_KEY_DATA_SOURCES);
-        Set<String> dataSourceNames = new HashSet<String>();
+        Set<String> dataSourceNames = new HashSet<>();
         for (Map dataSource: dataSources) {
             dataSourceNames.add((String) dataSource.get(TopologyLayoutConstants.JSON_KEY_UINAME));
         }
         List<Map> processors = (List) this.topologyConfig.get(TopologyLayoutConstants.JSON_KEY_PROCESSORS);
-        Map<String, Map> ruleProcessors = new LinkedHashMap<String, Map>();
+        Map<String, Map> ruleProcessors = new LinkedHashMap<>();
         for (Map processor: processors) {
             String type = (String) processor.get(TopologyLayoutConstants.JSON_KEY_TYPE);
             if ("RULE".equals(type)) {
@@ -156,13 +156,13 @@ class StormTopologyValidator {
 
     void validateCustomProcessorLinks () throws BadTopologyLayoutException {
         List<Map> dataSources = (List) this.topologyConfig.get(TopologyLayoutConstants.JSON_KEY_DATA_SOURCES);
-        Set<String> dataSourceNames = new HashSet<String>();
+        Set<String> dataSourceNames = new HashSet<>();
         for (Map dataSource: dataSources) {
             dataSourceNames.add((String) dataSource.get(TopologyLayoutConstants.JSON_KEY_UINAME));
         }
         List<Map> processors = (List) this.topologyConfig.get(TopologyLayoutConstants.JSON_KEY_PROCESSORS);
-        Map<String, Schema> inputSchemas = new LinkedHashMap<String, Schema>();
-        Map<String, Map<String, Schema>> outputSchemas = new LinkedHashMap<String, Map<String, Schema>>();
+        Map<String, Schema> inputSchemas = new LinkedHashMap<>();
+        Map<String, Map<String, Schema>> outputSchemas = new LinkedHashMap<>();
         for (Map processor: processors) {
             String type = (String) processor.get(TopologyLayoutConstants.JSON_KEY_TYPE);
             if ("CUSTOM".equals(type)) {
@@ -216,7 +216,7 @@ class StormTopologyValidator {
     // method above
     private Map<String, Set<String>> getRuleProcessorStreamIdsToOutputFields
             (Map ruleProcessorConfig) {
-        Map<String, Set<String>> result = new LinkedHashMap<String, Set<String>>();
+        Map<String, Set<String>> result = new LinkedHashMap<>();
         String processorName = (String) ruleProcessorConfig.get(TopologyLayoutConstants.JSON_KEY_NAME);
         List<Map> rules = (List) ruleProcessorConfig.get(TopologyLayoutConstants.JSON_KEY_RULES);
         for (Map rule: rules) {
@@ -228,7 +228,7 @@ class StormTopologyValidator {
                 ruleId = (Long) ruleIdO;
             }
             String ruleName = (String) rule.get(TopologyLayoutConstants.JSON_KEY_NAME);
-            Set<String> outputFields = new HashSet<String>();
+            Set<String> outputFields = new HashSet<>();
             Map action = (Map) rule.get(TopologyLayoutConstants.JSON_KEY_RULE_ACTIONS);
             List<Map> declaredOutputs = (List<Map>) action.get(TopologyLayoutConstants.JSON_KEY_RULE_DECLARED_OUTPUT);
             for (Map declaredOutput: declaredOutputs) {
@@ -243,7 +243,7 @@ class StormTopologyValidator {
     // For a custom processor config object, this method returns a map of output streamids and schema for each
     // such stream. This is used in validation in validateCustomProcessorLinks method above
     private Map<String, Schema> getCustomProcessorOutputSchema (Map config) throws IOException {
-        Map<String, Schema> result = new LinkedHashMap<String, Schema>();
+        Map<String, Schema> result = new LinkedHashMap<>();
         Map<String, Object> outputSchemaConfig = (Map<String, Object>) config.get(TopologyLayoutConstants.JSON_KEY_OUTPUT_STREAMS_SCHEMA);
         for (Map.Entry<String, Object> entry: outputSchemaConfig.entrySet()) {
             result.put(entry.getKey(), Utils.getSchemaFromConfig((Map) entry.getValue()));

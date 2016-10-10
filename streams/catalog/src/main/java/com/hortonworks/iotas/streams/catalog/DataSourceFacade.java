@@ -21,7 +21,7 @@ public class DataSourceFacade {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceFacade.class);
 
     private final CatalogService catalogService;
-    private TagClient tagClient;
+    private final TagClient tagClient;
 
 
     public DataSourceFacade(CatalogService catalogService, TagClient tagClient) {
@@ -109,7 +109,7 @@ public class DataSourceFacade {
     public List<DataSourceDto> getAllDataSourceDtos() throws IOException, InstantiationException, IllegalAccessException {
         Collection<DataSource> dataSources = catalogService.listDataSources();
         Collection<DataFeed> dataFeeds = catalogService.listDataFeeds();
-        Map<Long, DataFeed> feedMap = new HashMap<Long, DataFeed>();
+        Map<Long, DataFeed> feedMap = new HashMap<>();
         for (DataFeed dataFeed : dataFeeds) {
             feedMap.put(dataFeed.getDataSourceId(), dataFeed);
         }

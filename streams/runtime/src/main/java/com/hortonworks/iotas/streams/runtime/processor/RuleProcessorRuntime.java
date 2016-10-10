@@ -50,8 +50,8 @@ import static com.hortonworks.iotas.streams.common.IotasEventImpl.GROUP_BY_TRIGG
 public class RuleProcessorRuntime implements Serializable, ProcessorRuntime {
     protected static final Logger LOG = LoggerFactory.getLogger(RuleProcessorRuntime.class);
 
-    protected RulesProcessor rulesProcessor;
-    protected List<RuleRuntime> rulesRuntime;
+    protected final RulesProcessor rulesProcessor;
+    protected final List<RuleRuntime> rulesRuntime;
     private Map<String, List<RuleRuntime>> streamToRuleRuntimes;
     private List<RuleRuntime> allRuleRuntimes;
 

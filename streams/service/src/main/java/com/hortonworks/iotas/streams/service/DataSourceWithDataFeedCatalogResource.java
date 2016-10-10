@@ -104,7 +104,7 @@ public class DataSourceWithDataFeedCatalogResource {
     @Timed
     public Response listDataSourcesWithDataFeedForTypeWithFilter(@PathParam("type") DataSource.Type type,
                                                                  @Context UriInfo uriInfo) {
-        List<QueryParam> queryParams = new ArrayList<QueryParam>();
+        List<QueryParam> queryParams = new ArrayList<>();
         try {
             MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
             queryParams = WSUtils.buildQueryParameters(params);

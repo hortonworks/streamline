@@ -60,7 +60,7 @@ public abstract class AbstractSplitJoinActionRuntime extends AbstractActionRunti
 
         File filesDir = new File(config.get(Constants.LOCAL_FILES_PATH).toString());
         ensureDirExists(filesDir);
-        File localFile = null;
+        File localFile;
         do {
             localFile = new File(filesDir, jarId + "-" + UUID.randomUUID());
         } while(localFile.exists());
@@ -101,7 +101,7 @@ public abstract class AbstractSplitJoinActionRuntime extends AbstractActionRunti
      * @param jarId id of the jar resource
      * @param fqcn FullyQualifiedClassName of the object to be created
      * @param klass Class instance of the object to be created
-     * @return
+     * @return instance of the given class loaded from the given jar or current class loader if {@code jarId} is null.
      */
     protected  <T> T getInstance(Long jarId, String fqcn, Class<T> klass) {
         T instance = null;

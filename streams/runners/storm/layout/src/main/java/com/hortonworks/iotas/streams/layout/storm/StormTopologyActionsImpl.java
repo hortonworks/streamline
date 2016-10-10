@@ -20,11 +20,11 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -137,7 +137,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
     @Override
     public void kill (TopologyLayout topology) throws Exception {
-        List<String> commands = new ArrayList<String>();
+        List<String> commands = new ArrayList<>();
         commands.add(stormCliPath);
         commands.add("kill");
         commands.add(getTopologyName(topology));
@@ -163,7 +163,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
     @Override
     public void suspend (TopologyLayout topology) throws Exception {
-        List<String> commands = new ArrayList<String>();
+        List<String> commands = new ArrayList<>();
         commands.add(stormCliPath);
         commands.add("deactivate");
         commands.add(getTopologyName(topology));
@@ -176,7 +176,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
     @Override
     public void resume (TopologyLayout topology) throws Exception {
-        List<String> commands = new ArrayList<String>();
+        List<String> commands = new ArrayList<>();
         commands.add(stormCliPath);
         commands.add("activate");
         commands.add(getTopologyName(topology));
@@ -190,7 +190,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
     @Override
     public Status status(TopologyLayout topology) throws Exception {
         StatusImpl status = new StatusImpl();
-        List<String> commands = new ArrayList<String>();
+        List<String> commands = new ArrayList<>();
         commands.add(stormCliPath);
         commands.add("list");
         String topologyName = getTopologyName(topology);
@@ -311,7 +311,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
         processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();
         StringWriter sw = new StringWriter();
-        IOUtils.copy(process.getInputStream(), sw);
+        IOUtils.copy(process.getInputStream(), sw, Charset.defaultCharset());
         String stdout = sw.toString();
         process.waitFor();
         int exitValue = process.exitValue();

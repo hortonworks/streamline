@@ -26,9 +26,8 @@ public abstract class AbstractFluxComponent implements FluxComponent {
     // zkUrl, topic, etc.
     protected Map<String, Object> conf;
     private boolean isGenerated;
-    protected List<Map<String, Object>> referencedComponents = new
-            ArrayList<Map<String, Object>>();
-    protected Map<String, Object> component = new LinkedHashMap<String, Object>();
+    protected final List<Map<String, Object>> referencedComponents = new ArrayList<>();
+    protected Map<String, Object> component = new LinkedHashMap<>();
     protected final UUID UUID_FOR_COMPONENTS = UUID.randomUUID();
 //  TODO: to be fixed after catalog rest client is refactored
 //  protected CatalogRestClient catalogRestClient;
@@ -106,11 +105,11 @@ public abstract class AbstractFluxComponent implements FluxComponent {
     protected List getPropertiesYaml (String[] propertyNames) {
         List properties = new ArrayList();
         if ((propertyNames != null) && (propertyNames.length > 0)) {
-            for (int i = 0; i < propertyNames.length; ++i) {
-                Object value = conf.get(propertyNames[i]);
+            for (String propertyName : propertyNames) {
+                Object value = conf.get(propertyName);
                 if (value != null) {
                     Map propertyMap = new LinkedHashMap();
-                    propertyMap.put(StormTopologyLayoutConstants.YAML_KEY_NAME, propertyNames[i]);
+                    propertyMap.put(StormTopologyLayoutConstants.YAML_KEY_NAME, propertyName);
                     propertyMap.put(StormTopologyLayoutConstants.YAML_KEY_VALUE, value);
                     properties.add(propertyMap);
                 }
@@ -122,8 +121,8 @@ public abstract class AbstractFluxComponent implements FluxComponent {
     protected List getConstructorArgsYaml (String[] constructorArgNames) {
         List constructorArgs = new ArrayList();
         if ((constructorArgNames != null) && (constructorArgNames.length > 0)) {
-            for (int i = 0; i < constructorArgNames.length; ++i) {
-                Object value = conf.get(constructorArgNames[i]);
+            for (String constructorArgName : constructorArgNames) {
+                Object value = conf.get(constructorArgName);
                 if (value != null) {
                     constructorArgs.add(value);
                 }
@@ -134,7 +133,7 @@ public abstract class AbstractFluxComponent implements FluxComponent {
 
     protected List getConfigMethodsYaml (String[] configMethodNames, String[] configKeys) {
         List configMethods = new ArrayList();
-        List<String> nonNullConfigMethodNames = new ArrayList<String>();
+        List<String> nonNullConfigMethodNames = new ArrayList<>();
         List values = new ArrayList();
         if ((configMethodNames != null) && (configKeys != null) &&
                 (configMethodNames.length == configKeys.length) && (configKeys.length > 0)) {
@@ -203,8 +202,7 @@ public abstract class AbstractFluxComponent implements FluxComponent {
 
     // Overloaded version of above method since we need it for NotificationBolt and perhaps other components in future
     protected void validateBooleanFields (String[] fieldNames, boolean areRequiredFields, Map<String, Object> conf) throws BadTopologyLayoutException {
-        for (int i = 0; i < fieldNames.length; ++i) {
-            String fieldName = fieldNames[i];
+        for (String fieldName : fieldNames) {
             Object value = conf.get(fieldName);
             boolean isValid = true;
             if (areRequiredFields) {
@@ -392,8 +390,7 @@ public abstract class AbstractFluxComponent implements FluxComponent {
 
     protected void validateFloatOrDoubleFields (String[] fieldNames, boolean
             areRequiredFields) throws BadTopologyLayoutException {
-        for (int i = 0; i < fieldNames.length; ++i) {
-            String fieldName = fieldNames[i];
+        for (String fieldName : fieldNames) {
             Object value = conf.get(fieldName);
             boolean isValid = true;
             if (areRequiredFields) {

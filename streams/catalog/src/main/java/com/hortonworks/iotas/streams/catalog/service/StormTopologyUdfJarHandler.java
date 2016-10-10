@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class StormTopologyUdfJarHandler extends TopologyDagVisitor {
-    private Set<String> udfs = new HashSet<>();
+    private final Set<String> udfs = new HashSet<>();
 
     @Override
     public void visit(RulesProcessor rulesProcessor) {

@@ -28,8 +28,8 @@ import java.io.Serializable;
 public class RulesDependenciesFactory implements Serializable {
     public enum ScriptType {GROOVY, SQL}
 
-    private ComponentBuilder<RulesProcessor> rulesProcessorBuilder;
-    private ScriptType scriptType;
+    private final ComponentBuilder<RulesProcessor> rulesProcessorBuilder;
+    private final ScriptType scriptType;
 
     public RulesDependenciesFactory(ComponentBuilder<RulesProcessor> rulesProcessorBuilder, ScriptType scriptType) {
         this.rulesProcessorBuilder = rulesProcessorBuilder;

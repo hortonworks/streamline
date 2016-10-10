@@ -132,11 +132,11 @@ public class StreamCatalogService {
     private static final String TOPOLOGY_WINDOWINFO_NAMESPACE = new WindowInfo().getNameSpace();
     private static final String UDF_NAMESPACE = new UDFInfo().getNameSpace();
 
-    private StorageManager dao;
-    private TopologyActions topologyActions;
-    private TopologyMetrics topologyMetrics;
-    private FileStorage fileStorage;
-    private TopologyDagBuilder topologyDagBuilder;
+    private final StorageManager dao;
+    private final TopologyActions topologyActions;
+    private final TopologyMetrics topologyMetrics;
+    private final FileStorage fileStorage;
+    private final TopologyDagBuilder topologyDagBuilder;
 
     public StreamCatalogService(StorageManager dao,
                                 TopologyActions topologyActions,
@@ -720,7 +720,7 @@ public class StreamCatalogService {
     private NotifierInfo getNotifierInfoByName(String notifierName) throws Exception {
         NotifierInfo notifierInfo = null;
         QueryParam queryParam = new QueryParam(NotifierInfo.NOTIFIER_NAME, notifierName);
-        List<QueryParam> queryParams = new ArrayList<QueryParam>();
+        List<QueryParam> queryParams = new ArrayList<>();
         queryParams.add(queryParam);
         Collection<NotifierInfo> existingNotifiers = this.listNotifierInfos(queryParams);
         if ((existingNotifiers != null) && !existingNotifiers.isEmpty()) {
@@ -900,7 +900,7 @@ public class StreamCatalogService {
             for (TopologyProcessor processor : processors) {
                 List<StreamInfo> streamInfos = getOutputStreams(processor);
                 processor.setOutputStreams(streamInfos);
-                processor.setOutputStreamIds(new ArrayList<Long>(Collections2.transform(streamInfos, new Function<StreamInfo, Long>() {
+                processor.setOutputStreamIds(new ArrayList<>(Collections2.transform(streamInfos, new Function<StreamInfo, Long>() {
                     @Nullable
                     @Override
                     public Long apply(@Nullable StreamInfo input) {
@@ -938,7 +938,7 @@ public class StreamCatalogService {
             for (TopologySource source : sources) {
                 List<StreamInfo> streamInfos = getOutputStreams(source);
                 source.setOutputStreams(streamInfos);
-                source.setOutputStreamIds(new ArrayList<Long>(Collections2.transform(streamInfos, new Function<StreamInfo, Long>() {
+                source.setOutputStreamIds(new ArrayList<>(Collections2.transform(streamInfos, new Function<StreamInfo, Long>() {
                     @Nullable
                     @Override
                     public Long apply(@Nullable StreamInfo input) {
@@ -1178,7 +1178,7 @@ public class StreamCatalogService {
 
     // check if edge already exists for given topology between same source and dest
     private void checkDuplicateEdge(TopologyEdge edge) {
-        List<QueryParam> queryParams = new ArrayList<QueryParam>();
+        List<QueryParam> queryParams = new ArrayList<>();
         queryParams.add(new QueryParam("topologyId", edge.getTopologyId().toString()));
         queryParams.add(new QueryParam("fromId", edge.getFromId().toString()));
         queryParams.add(new QueryParam("toId", edge.getToId().toString()));

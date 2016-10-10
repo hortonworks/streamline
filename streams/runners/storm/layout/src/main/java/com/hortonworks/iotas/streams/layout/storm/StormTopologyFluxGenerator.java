@@ -38,10 +38,10 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
 
     private final List<Map.Entry<String, Map<String, Object>>> keysAndComponents = new ArrayList<>();
 
-    private TopologyDag topologyDag;
+    private final TopologyDag topologyDag;
     private final Map<String, String> config;
 
-    private FluxComponentFactory fluxComponentFactory = new FluxComponentFactory();
+    private final FluxComponentFactory fluxComponentFactory = new FluxComponentFactory();
 
     public StormTopologyFluxGenerator(TopologyDag topologyDag, Map<String, String> config) {
         this.topologyDag = topologyDag;

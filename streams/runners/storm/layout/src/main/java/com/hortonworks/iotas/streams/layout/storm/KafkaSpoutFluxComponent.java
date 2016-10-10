@@ -153,8 +153,8 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
             }
             List zkServers = (List) value;
             int listLength = zkServers.size();
-            for (int i = 0; i < listLength; ++i) {
-                if (!ConfigFieldValidation.isStringAndNotEmpty(zkServers.get(i))) {
+            for (Object zkServer : zkServers) {
+                if (!ConfigFieldValidation.isStringAndNotEmpty(zkServer)) {
                     throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
                 }
             }

@@ -29,7 +29,7 @@ public class HdfsBoltFluxComponent extends AbstractFluxComponent {
              "withSyncPolicy",
              "withRotationPolicy"
         };
-        List<String> configMethodArgRefs = new ArrayList<String>();
+        List<String> configMethodArgRefs = new ArrayList<>();
         configMethodArgRefs.add(addFileNameFormatComponent());
         configMethodArgRefs.add(addRecordFormatComponent());
         configMethodArgRefs.add(addSyncPolicyComponent());

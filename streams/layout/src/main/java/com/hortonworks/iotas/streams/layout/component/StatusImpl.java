@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class StatusImpl implements TopologyActions.Status {
     String status = "Unknown"; // default
-    Map<String, String> extra = new HashMap<>();
+    final Map<String, String> extra = new HashMap<>();
 
     public void setStatus(String status) {
         this.status = status;

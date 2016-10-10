@@ -231,7 +231,7 @@ public class CustomProcessorInfo {
 
 
     private Map<String, Object> getProperties (List<ConfigField> configFields) {
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new HashMap<>();
         Set<String> propertyKeys = this.getPropertyKeys();
         for (ConfigField configField: configFields) {
             if (propertyKeys.contains(configField.getName())) {

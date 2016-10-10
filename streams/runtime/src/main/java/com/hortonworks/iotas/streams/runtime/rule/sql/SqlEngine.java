@@ -42,7 +42,7 @@ public class SqlEngine implements ScriptEngine<SqlEngine> {
     }
 
     private volatile ChannelContext channelContext;
-    private RulesChannelHandler channelHandler;
+    private final RulesChannelHandler channelHandler;
 
     public SqlEngine() {
         channelHandler = new RulesChannelHandler();

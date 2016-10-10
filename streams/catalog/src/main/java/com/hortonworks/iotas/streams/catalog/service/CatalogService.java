@@ -66,10 +66,10 @@ public class CatalogService {
     private static final String DATA_FEED_NAMESPACE = new DataFeed().getNameSpace();
     private static final String FILE_NAMESPACE = FileInfo.NAME_SPACE;
 
-    private StorageManager dao;
-    private FileStorage fileStorage;
-    private TagClient tagClient;
-    private ParserClient parserClient;
+    private final StorageManager dao;
+    private final FileStorage fileStorage;
+    private final TagClient tagClient;
+    private final ParserClient parserClient;
 
 
     public CatalogService(StorageManager dao, FileStorage fileStorage, TagClient tagClient, ParserClient parserClient) {
@@ -135,7 +135,7 @@ public class CatalogService {
     }
 
     public Collection<DataSource> listDataSourcesForType(DataSource.Type type, List<QueryParam> params) throws Exception {
-        List<DataSource> dataSources = new ArrayList<DataSource>();
+        List<DataSource> dataSources = new ArrayList<>();
         String ns = getNamespaceForDataSourceType(type);
         Collection<DataSourceSubType> subTypes = dao.<DataSourceSubType>find(ns, params);
         for (DataSourceSubType st : subTypes) {

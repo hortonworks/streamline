@@ -43,7 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ActionRuntimeService extends RuntimeService<ActionRuntime, Action> {
     private static final Logger log = LoggerFactory.getLogger(ActionRuntimeService.class);
 
-    private static Map<Class<? extends Action>, Factory<ActionRuntime, Action>> actionRuntimeFactories = new ConcurrentHashMap<>();
+    private static final Map<Class<? extends Action>, Factory<ActionRuntime, Action>> actionRuntimeFactories = new ConcurrentHashMap<>();
     static {
         // register factories
         // todo this can be moved to startup listener to add all supported ActionRuntimes.
@@ -57,7 +57,7 @@ public class ActionRuntimeService extends RuntimeService<ActionRuntime, Action> 
         log.debug("Registered factories : [{}]", actionRuntimeFactories);
     }
 
-    private static ActionRuntimeService instance = new ActionRuntimeService();
+    private static final ActionRuntimeService instance = new ActionRuntimeService();
 
     private ActionRuntimeService() {
         super(actionRuntimeFactories);

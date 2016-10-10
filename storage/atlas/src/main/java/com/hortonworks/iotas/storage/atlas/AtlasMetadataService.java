@@ -59,9 +59,9 @@ public class AtlasMetadataService {
     private static final String ATLAS_CONFIG_DIR = "atlas.config.dir";
     private static final String ATLAS_CONF = "ATLAS_CONF";
 
-    private static Logger LOG = LoggerFactory.getLogger(AtlasMetadataService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AtlasMetadataService.class);
 
-    private Injector metadataModuleInjector;
+    private final Injector metadataModuleInjector;
     private final MetadataService metadataService;
 
     public AtlasMetadataService() {

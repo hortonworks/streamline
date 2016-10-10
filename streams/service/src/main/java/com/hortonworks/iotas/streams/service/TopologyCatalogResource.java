@@ -75,7 +75,7 @@ public class TopologyCatalogResource {
     private static final Logger LOG = LoggerFactory.getLogger(TopologyCatalogResource.class);
     public static final String JAR_FILE_PARAM_NAME = "jarFile";
     public static final String CP_INFO_PARAM_NAME = "customProcessorInfo";
-    private StreamCatalogService catalogService;
+    private final StreamCatalogService catalogService;
     private final URL SCHEMA = Thread.currentThread().getContextClassLoader()
             .getResource("assets/schemas/topology.json");
 
@@ -299,7 +299,7 @@ public class TopologyCatalogResource {
     @Timed
     public Response listTopologyComponentsForTypeWithFilter (@PathParam
                                                                    ("component") TopologyComponentDefinition.TopologyComponentType componentType, @Context UriInfo uriInfo) {
-        List<QueryParam> queryParams = new ArrayList<QueryParam>();
+        List<QueryParam> queryParams = new ArrayList<>();
         try {
             MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
             queryParams = WSUtils.buildQueryParameters(params);

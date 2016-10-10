@@ -8,7 +8,7 @@ import java.util.List;
  * Projection of fields in a rule
  */
 public class Projection implements Serializable {
-    private List<Expression> expressions = new ArrayList<>();
+    private final List<Expression> expressions = new ArrayList<>();
 
     public Projection() {
     }

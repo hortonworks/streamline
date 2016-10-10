@@ -44,9 +44,9 @@ import java.util.Map;
 
 public class TagClient {
 
-    private Client client;
-    private String catalogRootUrl;
-    private String tagRootUrl;
+    private final Client client;
+    private final String catalogRootUrl;
+    private final String tagRootUrl;
 
     public TagClient(String catalogRootUrl) {
         this(catalogRootUrl, new ClientConfig());
@@ -268,7 +268,7 @@ public class TagClient {
     }
 
     private <T> List<T> getEntities(WebTarget target, Class<T> clazz) {
-        List<T> entities = new ArrayList<T>();
+        List<T> entities = new ArrayList<>();
         Response responseObject = target.request(MediaType.APPLICATION_JSON_TYPE).get();
         try {
             String response = responseObject.readEntity(String.class);

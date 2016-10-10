@@ -17,7 +17,7 @@ import java.util.Map;
  */
 public class NormalizationBoltFluxComponent extends AbstractFluxComponent {
     private final Logger log = LoggerFactory.getLogger(NormalizationBoltFluxComponent.class);
-    private NormalizationProcessor normalizationProcessor;
+    private final NormalizationProcessor normalizationProcessor;
 
     public NormalizationBoltFluxComponent(NormalizationProcessor normalizationProcessor) {
         this.normalizationProcessor = normalizationProcessor;
