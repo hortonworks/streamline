@@ -707,6 +707,10 @@ public class StreamCatalogService {
         return this.topologyMetrics.getTimeSeriesQuerier().getRawMetrics(metricName, parameters, from, to);
     }
 
+    public TopologyMetrics.TopologyMetric getTopologyMetric(Topology topology) {
+        return this.topologyMetrics.getTopologyMetric(getTopologyLayout(topology));
+    }
+
     public Collection<TopologyComponentDefinition.TopologyComponentType> listTopologyComponentTypes() {
         return Arrays.asList(TopologyComponentDefinition.TopologyComponentType.values());
     }
