@@ -31,6 +31,8 @@ import com.hortonworks.iotas.streams.layout.component.rule.action.transform.Subs
 import com.hortonworks.iotas.streams.runtime.RuntimeService;
 import com.hortonworks.iotas.streams.runtime.TransformActionRuntime;
 import com.hortonworks.iotas.streams.runtime.transform.AddHeaderTransformRuntime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,6 +45,7 @@ import java.util.Set;
  * {@link ActionRuntime} implementation for notifications.
  */
 public class NotifierActionRuntime extends AbstractActionRuntime {
+    private static final Logger LOG = LoggerFactory.getLogger(NotifierActionRuntime.class);
 
     private final NotifierAction notifierAction;
     private TransformActionRuntime transformActionRuntime;
@@ -54,7 +57,8 @@ public class NotifierActionRuntime extends AbstractActionRuntime {
 
     @Override
     public void setActionRuntimeContext(ActionRuntimeContext actionRuntimeContext) {
-        outputStream = actionRuntimeContext.getRule().getOutputStreamNameForAction(notifierAction);
+        outputStream = notifierAction.getOutputStreams().iterator().next();
+        LOG.debug("Notifier action {}, outputStream set to {}", notifierAction, outputStream);
         transformActionRuntime = new TransformActionRuntime(
                 new TransformAction(getNotificationTransforms(notifierAction, actionRuntimeContext.getRule().getId()),
                         Collections.singleton(outputStream)));
