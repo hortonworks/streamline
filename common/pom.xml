@@ -49,6 +49,12 @@
         <dependency>
             <groupId>com.github.fge</groupId>
             <artifactId>json-schema-validator</artifactId>
+            <exclusions>
+              <exclusion>
+                <groupId>javax.mail</groupId>
+                <artifactId>mailapi</artifactId>
+              </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
