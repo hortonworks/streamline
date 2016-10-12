@@ -8,23 +8,17 @@ import com.hortonworks.iotas.storage.catalog.AbstractStorable;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Logical cluster which contains services.
+ * @see Service
+ */
 public class Cluster extends AbstractStorable {
-    private static final String NAMESPACE = "cluster";
-    /**
-     * The cluster type
-     */
-    public enum Type {
-        STORM, KAFKA, HDFS, HBASE
-    }
+    private static final String NAMESPACE = "clusters";
 
     private Long id;
     private String name;
-    private Type type;
     private String description = "";
-    private String tags = "";
     private Long timestamp;
-    private String clusterConfigFileName;
-    private String clusterConfigStorageName;
 
     /**
      * The name of the cluster
@@ -38,18 +32,6 @@ public class Cluster extends AbstractStorable {
     }
 
     /**
-     * The type of the cluster. Should be one of {@link Cluster.Type}
-     */
-    public Type getType() {
-        return type;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
-    }
-
-
-    /**
      * The cluster description (optional)
      */
     public String getDescription() {
@@ -58,18 +40,6 @@ public class Cluster extends AbstractStorable {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-
-    /**
-     * A comma separated tags associated with the cluster (optional)
-     */
-    public String getTags() {
-        return tags;
-    }
-
-    public void setTags(String tags) {
-        this.tags = tags;
     }
 
     /**
@@ -96,28 +66,6 @@ public class Cluster extends AbstractStorable {
         this.timestamp = timestamp;
     }
 
-    /**
-     * Name of cluster specific config file. E.g. hdfs-site.xml, hbase-site.xml etc
-     */
-    public String getClusterConfigFileName() {
-        return clusterConfigFileName;
-    }
-
-    public void setClusterConfigFileName(String clusterConfigFileName) {
-        this.clusterConfigFileName = clusterConfigFileName;
-    }
-
-    /**
-     * The actual name with which the file is stored in the storage. E.g. hdfs-site.xml-UUID
-     */
-    public String getClusterConfigStorageName() {
-        return clusterConfigStorageName;
-    }
-
-    public void setClusterConfigStorageName(String clusterConfigStorageName) {
-        this.clusterConfigStorageName = clusterConfigStorageName;
-    }
-
     @JsonIgnore
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<>();
@@ -128,32 +76,29 @@ public class Cluster extends AbstractStorable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof Cluster)) return false;
 
         Cluster cluster = (Cluster) o;
 
-        if (id != null ? !id.equals(cluster.id) : cluster.id != null) return false;
-        if (name != null ? !name.equals(cluster.name) : cluster.name != null) return false;
-        if (type != cluster.type) return false;
-        if (description != null ? !description.equals(cluster.description) : cluster.description != null) return false;
-        if (tags != null ? !tags.equals(cluster.tags) : cluster.tags != null) return false;
-        if (timestamp != null ? !timestamp.equals(cluster.timestamp) : cluster.timestamp != null) return false;
-        if (clusterConfigFileName != null ? !clusterConfigFileName.equals(cluster.clusterConfigFileName) : cluster.clusterConfigFileName != null)
+        if (getId() != null ? !getId().equals(cluster.getId()) : cluster.getId() != null)
             return false;
-        return clusterConfigStorageName != null ? clusterConfigStorageName.equals(cluster.clusterConfigStorageName) : cluster.clusterConfigStorageName == null;
+        if (getName() != null ? !getName().equals(cluster.getName()) : cluster.getName() != null)
+            return false;
+        if (getDescription() != null ?
+            !getDescription().equals(cluster.getDescription()) :
+            cluster.getDescription() != null) return false;
+        return getTimestamp() != null ?
+            getTimestamp().equals(cluster.getTimestamp()) :
+            cluster.getTimestamp() == null;
 
     }
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (type != null ? type.hashCode() : 0);
-        result = 31 * result + (description != null ? description.hashCode() : 0);
-        result = 31 * result + (tags != null ? tags.hashCode() : 0);
-        result = 31 * result + (timestamp != null ? timestamp.hashCode() : 0);
-        result = 31 * result + (clusterConfigFileName != null ? clusterConfigFileName.hashCode() : 0);
-        result = 31 * result + (clusterConfigStorageName != null ? clusterConfigStorageName.hashCode() : 0);
+        int result = getId() != null ? getId().hashCode() : 0;
+        result = 31 * result + (getName() != null ? getName().hashCode() : 0);
+        result = 31 * result + (getDescription() != null ? getDescription().hashCode() : 0);
+        result = 31 * result + (getTimestamp() != null ? getTimestamp().hashCode() : 0);
         return result;
     }
 
@@ -162,12 +107,8 @@ public class Cluster extends AbstractStorable {
         return "Cluster{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", type=" + type +
                 ", description='" + description + '\'' +
-                ", tags='" + tags + '\'' +
                 ", timestamp=" + timestamp +
-                ", clusterConfigFileName='" + clusterConfigFileName + '\'' +
-                ", clusterConfigStorageName='" + clusterConfigStorageName + '\'' +
                 "}";
     }
 }

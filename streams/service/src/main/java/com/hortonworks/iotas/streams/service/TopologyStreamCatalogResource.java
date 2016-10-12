@@ -133,7 +133,6 @@ public class TopologyStreamCatalogResource {
     @GET
     @Path("/{id}")
     @Timed
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getStreamInfoById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long id) {
         try {
             StreamInfo streamInfo = catalogService.getStreamInfo(id);

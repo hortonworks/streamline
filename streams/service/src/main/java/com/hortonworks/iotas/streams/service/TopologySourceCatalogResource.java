@@ -133,7 +133,6 @@ public class TopologySourceCatalogResource {
     @GET
     @Path("/{id}")
     @Timed
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getTopologySourceById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sourceId) {
         try {
             TopologySource source = catalogService.getTopologySource(sourceId);

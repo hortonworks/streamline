@@ -1,7 +1,9 @@
 package com.hortonworks.iotas.streams.layout;
 
 public final class TopologyLayoutConstants {
-    private TopologyLayoutConstants () {}
+
+
+  private TopologyLayoutConstants () {}
     // streaming engines
     public static final String STORM_STREAMING_ENGINE = "STORM";
 
@@ -126,6 +128,7 @@ public final class TopologyLayoutConstants {
     public final static String JSON_KEY_CUSTOM_PROCESSOR_PREFIX_REGEX = "config\\.";
 
     public static final String JSON_KEY_CLUSTERS = "clusters";
+    public static final String JSON_KEY_SERVICES = "services";
 
     public static final String JAVA_JAR_COMMAND = "javaJarCommand";
 

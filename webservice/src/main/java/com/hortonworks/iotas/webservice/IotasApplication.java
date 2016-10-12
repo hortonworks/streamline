@@ -112,8 +112,6 @@ public class IotasApplication extends Application<IotasConfiguration> {
         return CacheBuilder.newBuilder().maximumSize(maxSize);
     }
 
-
-
     private FileStorage getJarStorage (IotasConfiguration configuration) {
         FileStorage fileStorage = null;
         try {

@@ -141,7 +141,6 @@ public class UDFCatalogResource {
     @GET
     @Path("/udfs/{id}")
     @Timed
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getUDFById(@PathParam("id") Long id) {
         try {
             UDFInfo result = catalogService.getUDF(id);

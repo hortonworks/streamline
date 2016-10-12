@@ -2,17 +2,18 @@ package com.hortonworks.iotas.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.iotas.common.QueryParam;
-import com.hortonworks.iotas.common.util.FileStorage;
 import com.hortonworks.iotas.common.util.WSUtils;
+import com.hortonworks.iotas.storage.exception.AlreadyExistsException;
 import com.hortonworks.iotas.streams.catalog.Cluster;
+import com.hortonworks.iotas.streams.catalog.Component;
+import com.hortonworks.iotas.streams.catalog.Service;
+import com.hortonworks.iotas.streams.catalog.ServiceConfiguration;
 import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
-import org.glassfish.jersey.media.multipart.FormDataBodyPart;
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
-import org.glassfish.jersey.media.multipart.FormDataParam;
+import com.hortonworks.iotas.streams.cluster.discovery.ServiceNodeDiscoverer;
+import com.hortonworks.iotas.streams.cluster.discovery.ambari.AmbariServiceNodeDiscoverer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -26,35 +27,36 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
-import java.util.UUID;
+import java.util.Set;
 
 import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.BAD_REQUEST_PARAM_MISSING;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.ENTITY_BY_NAME_NOT_FOUND;
 import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
 import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
 import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
+import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.IMPORT_ALREADY_IN_PROGRESS;
 import static com.hortonworks.iotas.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.UNSUPPORTED_MEDIA_TYPE;
+import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 
 @Path("/api/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class ClusterCatalogResource {
     private static final Logger LOG = LoggerFactory.getLogger(ClusterCatalogResource.class);
     private final StreamCatalogService catalogService;
-    private final FileStorage fileStorage;
+    private static final Set<Long> importInProgressCluster = new HashSet<>();
 
-    public ClusterCatalogResource(StreamCatalogService catalogService, FileStorage fileStorage) {
+    public ClusterCatalogResource(StreamCatalogService catalogService) {
         this.catalogService = catalogService;
-        this.fileStorage = fileStorage;
     }
 
     /**
@@ -87,7 +89,6 @@ public class ClusterCatalogResource {
     @GET
     @Path("/clusters/{id}")
     @Timed
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getClusterById(@PathParam("id") Long clusterId) {
         try {
             Cluster result = catalogService.getCluster(clusterId);
@@ -100,23 +101,33 @@ public class ClusterCatalogResource {
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, clusterId.toString());
     }
 
-    // curl -X POST 'http://localhost:8080/api/v1/catalog/clusters' -F clusterConfigFile=/tmp/hdfs-site.xml
-    // -F cluster='{"name":"testcluster", "type":"KAFKA", "clusterConfigFileName":"hdfs-site.xml"};type=application/json'
+    @GET
+    @Path("/clusters/name/{clusterName}")
+    @Timed
+    public Response getClusterByName(@PathParam("clusterName") String clusterName) {
+        try {
+            Cluster result = catalogService.getClusterByName(clusterName);
+            if (result != null) {
+                return WSUtils.respond(result, OK, SUCCESS);
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+        return WSUtils.respond(NOT_FOUND, ENTITY_BY_NAME_NOT_FOUND, clusterName);
+    }
+
     @Timed
     @POST
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/clusters")
-    public Response addCluster(@FormDataParam("clusterConfigFile") final InputStream inputStream,
-                               @FormDataParam("clusterConfigFile") final FormDataContentDisposition contentDispositionHeader,
-                               @FormDataParam("cluster") final FormDataBodyPart clusterConfig) {
+    public Response addCluster(Cluster cluster) {
         try {
-            LOG.debug("Media type {}", clusterConfig.getMediaType());
-            if (!clusterConfig.getMediaType().equals(MediaType.APPLICATION_JSON_TYPE)) {
-                return WSUtils.respond(UNSUPPORTED_MEDIA_TYPE, ResponseMessage.UNSUPPORTED_MEDIA_TYPE);
+            String clusterName = cluster.getName();
+            Cluster result = catalogService.getClusterByName(clusterName);
+            if (result != null) {
+                throw new AlreadyExistsException("Cluster entity already exists with name " + clusterName);
             }
-            Cluster clusterObj = clusterConfig.getValueAs(Cluster.class);
-            saveClusterConfig(inputStream, clusterObj);
-            Cluster createdCluster = catalogService.addCluster(clusterObj);
+
+            Cluster createdCluster = catalogService.addCluster(cluster);
             return WSUtils.respond(createdCluster, CREATED, SUCCESS);
         } catch (ProcessingException ex) {
             return WSUtils.respond(BAD_REQUEST, ResponseMessage.BAD_REQUEST);
@@ -142,21 +153,12 @@ public class ClusterCatalogResource {
     }
 
     @PUT
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/clusters/{id}")
     @Timed
     public Response addOrUpdateCluster(@PathParam("id") Long clusterId,
-                                       @FormDataParam("clusterConfigFile") final InputStream inputStream,
-                                       @FormDataParam("clusterConfigFile") final FormDataContentDisposition contentDispositionHeader,
-                                       @FormDataParam("cluster") final FormDataBodyPart clusterConfig) {
+                                       Cluster cluster) {
         try {
-            LOG.debug("Media type {}", clusterConfig.getMediaType());
-            if (!clusterConfig.getMediaType().equals(MediaType.APPLICATION_JSON_TYPE)) {
-                return WSUtils.respond(UNSUPPORTED_MEDIA_TYPE, ResponseMessage.UNSUPPORTED_MEDIA_TYPE);
-            }
-            Cluster clusterObj = clusterConfig.getValueAs(Cluster.class);
-            saveClusterConfig(inputStream, clusterObj);
-            Cluster newCluster = catalogService.addOrUpdateCluster(clusterId, clusterObj);
+            Cluster newCluster = catalogService.addOrUpdateCluster(clusterId, cluster);
             return WSUtils.respond(newCluster, OK, SUCCESS);
         } catch (ProcessingException ex) {
             return WSUtils.respond(BAD_REQUEST, ResponseMessage.BAD_REQUEST);
@@ -165,19 +167,156 @@ public class ClusterCatalogResource {
         }
     }
 
-    private void saveClusterConfig(InputStream is, Cluster cluster) throws IOException {
-        String clusterConfigFileName = cluster.getClusterConfigFileName();
-        if (clusterConfigFileName != null) {
-            if (is != null) {
-                String storageName = cluster.getClusterConfigFileName() + "-" + UUID.randomUUID().toString();
-                String uploadedPath = this.fileStorage.uploadFile(is, storageName);
-                cluster.setClusterConfigStorageName(storageName);
-                LOG.debug("{} uploaded to {}", clusterConfigFileName, uploadedPath);
-            } else {
-                String message = String.format("clusterConfigFileName %s content is missing.", clusterConfigFileName);
-                LOG.error(message);
-                throw new IllegalArgumentException(message);
+    @POST
+    @Path("/cluster/import/ambari")
+    @Timed
+    public Response importServicesFromAmbari(AmbariClusterImportParams params) {
+        Long clusterId = params.getClusterId();
+        if (clusterId == null) {
+            return WSUtils.respond(BAD_REQUEST, BAD_REQUEST_PARAM_MISSING, "clusterId");
+        }
+
+        Cluster retrievedCluster = catalogService.getCluster(clusterId);
+        if (retrievedCluster == null) {
+            return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, String.valueOf(clusterId));
+        }
+
+        boolean acquired = false;
+        try {
+            synchronized (importInProgressCluster) {
+                if (importInProgressCluster.contains(clusterId)) {
+                    return WSUtils.respond(SERVICE_UNAVAILABLE, IMPORT_ALREADY_IN_PROGRESS, String.valueOf(clusterId));
+                }
+
+                importInProgressCluster.add(clusterId);
+                acquired = true;
             }
+
+            ServiceNodeDiscoverer discoverer = new AmbariServiceNodeDiscoverer(params.getAmbariRestApiRootUrl(),
+                params.getUsername(), params.getPassword());
+
+            retrievedCluster = catalogService.importClusterServices(discoverer, retrievedCluster);
+
+            ClusterServicesImportResult result = new ClusterServicesImportResult(retrievedCluster);
+
+            for (Service service : catalogService.listServices(clusterId)) {
+                Collection<ServiceConfiguration> configurations = catalogService.listServiceConfigurations(service.getId());
+                Collection<Component> components = catalogService.listComponents(service.getId());
+
+                ClusterServicesImportResult.ServiceWithComponents s =
+                    new ClusterServicesImportResult.ServiceWithComponents(service);
+                s.setComponents(components);
+                s.setConfigurations(configurations);
+
+                result.addService(s);
+            }
+
+            return WSUtils.respond(result, OK, SUCCESS);
+        } catch (Exception ex) {
+            LOG.error("Got exception", ex);
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        } finally {
+            if (acquired) {
+                synchronized (importInProgressCluster) {
+                    importInProgressCluster.remove(clusterId);
+                }
+            }
+        }
+    }
+
+    private static class AmbariClusterImportParams {
+        // This is up to how UI makes input for cluster.
+        // If UI can enumerate available clusters, no need to worry about using ID directly.
+        private Long clusterId;
+        private String ambariRestApiRootUrl;
+        private String username;
+        private String password;
+
+        public Long getClusterId() {
+            return clusterId;
+        }
+
+        public void setClusterId(Long clusterId) {
+            this.clusterId = clusterId;
+        }
+
+        public String getAmbariRestApiRootUrl() {
+            return ambariRestApiRootUrl;
+        }
+
+        public void setAmbariRestApiRootUrl(String ambariRestApiRootUrl) {
+            this.ambariRestApiRootUrl = ambariRestApiRootUrl;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+    }
+
+    private static class ClusterServicesImportResult {
+        private Cluster cluster;
+        private Collection<ServiceWithComponents> services = new ArrayList<>();
+
+        static class ServiceWithComponents {
+            private Service service;
+            private Collection<ServiceConfiguration> configurations;
+            private Collection<Component> components;
+
+            public ServiceWithComponents(Service service) {
+                this.service = service;
+            }
+
+            public Service getService() {
+                return service;
+            }
+
+            public Collection<Component> getComponents() {
+                return components;
+            }
+
+            public void setComponents(Collection<Component> components) {
+                this.components = components;
+            }
+
+            public Collection<ServiceConfiguration> getConfigurations() {
+                return configurations;
+            }
+
+            public void setConfigurations(Collection<ServiceConfiguration> configurations) {
+                this.configurations = configurations;
+            }
+        }
+
+        public ClusterServicesImportResult(Cluster cluster) {
+            this.cluster = cluster;
+        }
+
+        public Cluster getCluster() {
+            return cluster;
+        }
+
+        public Collection<ServiceWithComponents> getServices() {
+            return services;
+        }
+
+        public void setServices(Collection<ServiceWithComponents> services) {
+            this.services = services;
+        }
+
+        public void addService(ServiceWithComponents service) {
+            services.add(service);
         }
     }
 

@@ -37,6 +37,8 @@ import com.hortonworks.iotas.streams.catalog.DataSource;
 import com.hortonworks.iotas.streams.catalog.DataSourceDto;
 import com.hortonworks.iotas.streams.catalog.FileInfo;
 import com.hortonworks.iotas.streams.catalog.NotifierInfo;
+import com.hortonworks.iotas.streams.catalog.Service;
+import com.hortonworks.iotas.streams.catalog.ServiceConfiguration;
 import com.hortonworks.iotas.streams.catalog.Topology;
 import com.hortonworks.iotas.streams.catalog.TopologyEditorMetadata;
 import com.hortonworks.iotas.streams.catalog.processor.CustomProcessorInfo;
@@ -115,11 +117,15 @@ public class RestIntegrationTest {
         File fileToUpload;
         List<String> fieldsToIgnore;
 
+        List<ResourceTestElement> resourcesToPostFirst; // dependent entities
+
         public ResourceTestElement(Object resourceToPost, Object resourceToPut, String id, String url) {
             this.resourceToPost = resourceToPost;
             this.resourceToPut = resourceToPut;
             this.id = id;
             this.url = url;
+
+            resourcesToPostFirst = new ArrayList<>();
         }
 
         public ResourceTestElement withMultiPart() {
@@ -151,6 +157,10 @@ public class RestIntegrationTest {
             return this;
         }
 
+        public ResourceTestElement withDependentResource(ResourceTestElement resourceToPostFirst) {
+            this.resourcesToPostFirst.add(resourceToPostFirst);
+            return this;
+        }
     }
 
     /**
@@ -175,6 +185,22 @@ public class RestIntegrationTest {
         }
     }
 
+    private ResourceTestElement clusterResourceToTest = new ResourceTestElement(
+        createCluster(1l, "testCluster"), createCluster(1l, "testClusterPut"), "1", rootUrl + "clusters");
+
+    private ResourceTestElement serviceResourceToTest = new ResourceTestElement(
+        createService(1l, 1l, "testService"), createService(1l, 1l, "testServicePut"), "1", rootUrl + "clusters/1/services")
+        .withDependentResource(clusterResourceToTest);
+
+    private ResourceTestElement serviceConfigurationResourceToTest = new ResourceTestElement(
+        createServiceConfig(1l, 1l, "testServiceConfig"), createServiceConfig(1l, 1l, "testServiceConfigPut"), "1",
+        rootUrl + "services/1/configurations")
+        .withDependentResource(clusterResourceToTest).withDependentResource(serviceResourceToTest);
+
+    private ResourceTestElement componentResourceToTest = new ResourceTestElement(
+        createComponent(1l, 1l, "testComponent"), createComponent(1l, 1l, "testComponentPut"), "1", rootUrl + "services/1/components")
+        .withDependentResource(clusterResourceToTest).withDependentResource(serviceResourceToTest);
+
     /**
      * List of all things that will be tested
      */
@@ -182,9 +208,7 @@ public class RestIntegrationTest {
             new ResourceTestElement(createTag(1L, "foo-tag"), createTag(1L, "foo-tag-new"), "1", rootUrl + "tags"),
             // TODO: The below test case needs to be fixed since it should first create the data source and then add the corresponding datafeed
             //new ResourceTestElement(createDataFeed(1l, "testDataFeed"), createDataFeed(1l, "testDataFeedPut"), "1", rootUrl + "feeds"),
-            new ResourceTestElement(createClusterInfo(1l, "testCluster"), createClusterInfo(1l, "testClusterPut"), "1", rootUrl + "clusters")
-                                    .withMultiPart().withEntitiyNameHeader("cluster").withFileNameHeader("clusterConfigFile")
-                                    .withFileToUpload("hdfs-site.xml").withFieldsToIgnore(Collections.singletonList("clusterConfigStorageName")),
+            clusterResourceToTest, serviceResourceToTest, componentResourceToTest,
             new ResourceTestElement(createNotifierInfo(1l, "testNotifier"), createNotifierInfo(1l, "testNotifierPut"), "1", rootUrl + "notifiers"),
             new ResourceTestElement(createDataSourceDto(1l, "testDataSourceWithDataFeed:" + System.currentTimeMillis()), createDataSourceDto(1l, "testDataSourceWithDataFeedPut:" + System.currentTimeMillis()), "1", rootUrl + "datasources"),
             new ResourceTestElement(createTopology(1l, "iotasTopology"), createTopology(1l, "iotasTopologyPut"), "1", rootUrl + "topologies"),
@@ -231,6 +255,19 @@ public class RestIntegrationTest {
             String url = resourceToTest.url;
             Object resourceToPost = resourceToTest.resourceToPost;
             Object resourceToPut = resourceToTest.resourceToPut;
+            List<ResourceTestElement> resourcesToPostFirst = resourceToTest.resourcesToPostFirst;
+
+            for (ResourceTestElement dependantResource : resourcesToPostFirst) {
+                String response;
+                if (dependantResource.multipart) {
+                    response = client.target(dependantResource.url).request().post(Entity.entity(getMultiPart(dependantResource, dependantResource.resourceToPost),
+                        MediaType.MULTIPART_FORM_DATA), String.class);
+                } else {
+                    response = client.target(dependantResource.url).request().post(Entity.json(dependantResource.resourceToPost), String.class);
+                }
+                Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+            }
+
             String id = resourceToTest.id;
             String response;
 
@@ -265,8 +302,15 @@ public class RestIntegrationTest {
                 Assert.assertEquals(resourceToPut, getEntity(response, resourceToPut.getClass(), resourceToTest.fieldsToIgnore));
             }
 
-            response = client.target(url).request().delete(String.class);
-            Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+            try {
+              response = client.target(url).request().delete(String.class);
+              Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+            } finally {
+              for (ResourceTestElement dependantResource : resourcesToPostFirst) {
+                response = client.target(dependantResource.url + "/" + dependantResource.id).request().delete(String.class);
+                Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+              }
+            }
 
             try {
                 client.target(url).request().get(String.class);
@@ -279,60 +323,51 @@ public class RestIntegrationTest {
     }
 
     /**
-     * For each TestResource element in resourcesToTest List, tests Post, Put, Get and Delete.
+     * Test whether service API can distinguish cluster
      *
      * @throws Exception
      */
     @Test
-    public void testComponentAPIs() throws Exception {
+    public void testServiceAPIsCanDistinguishCluster() throws Exception {
         Client client = ClientBuilder.newClient(new ClientConfig());
 
         Long clusterId = 1L;
-        List<Component> componentsToPost = new ArrayList<>();
-        for(long i=1; i<4; i++) {
-            componentsToPost.add(createComponent(clusterId, i, "testComponent:"+i));
-        }
-        String url = rootUrl + "clusters/1/components";
-        Component resourceToPut = createComponent(clusterId, 1l, "testComponentPut");
-        Class resourceToPostClass = Component.class;
 
-        String response = client.target(url).request().post(Entity.json(componentsToPost), String.class);
+        // create Cluster first
+        storeTestCluster(client, clusterId);
+
+        String serviceBaseUrl = rootUrl + String.format("clusters/%d/services", clusterId);
+
+        Service service = createService(clusterId, 1L, "testService:"+1);
+
+        String serviceEntityUrl = serviceBaseUrl + "/" + 1;
+
+        String response = client.target(serviceEntityUrl).request()
+                .put(Entity.json(service), String.class);
         Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
 
-        response = client.target(url).request().get(String.class);
-        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
-        Assert.assertEquals(new HashSet<>(componentsToPost), new HashSet<>(getEntities(response, resourceToPostClass)));
+        Long anotherClusterId = 2L;
 
-        for (int i=0; i<componentsToPost.size(); i++) {
-            String curUrl = url + "/" + (i+1);
-            response = client.target(curUrl).request().get(String.class);
-            Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
-            Assert.assertEquals(componentsToPost.get(i), getEntity(response, resourceToPostClass));
-        }
-        
-        url = url + "/" + 1;
-        response = client.target(url).request().put(Entity.json(resourceToPut), String.class);
+        serviceBaseUrl = rootUrl + String.format("clusters/%d/services", anotherClusterId);
+        response = client.target(serviceBaseUrl).request().get(String.class);
         Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+        Assert.assertEquals(Collections.emptyList(), getEntities(response, Service.class));
 
-        response = client.target(url).request().get(String.class);
-        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
-        Assert.assertEquals(resourceToPut, getEntity(response, resourceToPut.getClass()));
-
-        response = client.target(url).request().delete(String.class);
-        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
-
+        serviceEntityUrl = serviceBaseUrl + "/" + 1;
         try {
-            client.target(url).request().get(String.class);
+            client.target(serviceEntityUrl).request().get(String.class);
             Assert.fail("Should have thrown NotFoundException.");
         } catch (NotFoundException e) {
             response = e.getResponse().readEntity(String.class);
             Assert.assertEquals(CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND.getCode(), getResponseCode(response));
         }
 
+        removeService(client, clusterId, service.getId());
+        removeCluster(client, clusterId);
     }
 
     /**
-     * IOT-102: Test whether component API can distinguish cluster
+     * Test whether component API can distinguish cluster and service
      *
      * @throws Exception
      */
@@ -341,20 +376,27 @@ public class RestIntegrationTest {
         Client client = ClientBuilder.newClient(new ClientConfig());
 
         Long clusterId = 1L;
-        String componentBaseUrl = rootUrl + String.format("clusters/%d/components", clusterId);
+        Long serviceId = 1L;
 
-        Component component = createComponent(clusterId, 1L, "testComponent:"+1);
+        // create Cluster and Service first
+        storeTestCluster(client, clusterId);
+        storeTestService(client, clusterId, serviceId);
+
+        String componentBaseUrl = rootUrl + String.format("services/%d/components", clusterId, serviceId);
+
+        Component component = createComponent(serviceId, 1L, "testComponent:"+1);
 
         String componentEntityUrl = componentBaseUrl + "/" + 1;
         String response = client.target(componentEntityUrl).request().put(Entity.json(component), String.class);
         Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
 
         Long anotherClusterId = 2L;
+        Long anotherServiceId = 2L;
 
-        componentBaseUrl = rootUrl + String.format("clusters/%d/components", anotherClusterId);
+        componentBaseUrl = rootUrl + String.format("services/%d/components", anotherClusterId, anotherServiceId);
         response = client.target(componentBaseUrl).request().get(String.class);
         Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
-        Assert.assertEquals(Collections.emptyList(), getEntities(response, Component.class.getClass()));
+        Assert.assertEquals(Collections.emptyList(), getEntities(response, Component.class));
 
         componentEntityUrl = componentBaseUrl + "/" + 1;
         try {
@@ -364,6 +406,22 @@ public class RestIntegrationTest {
             response = e.getResponse().readEntity(String.class);
             Assert.assertEquals(CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND.getCode(), getResponseCode(response));
         }
+
+        removeComponent(client, clusterId, serviceId, component.getId());
+        removeService(client, clusterId, serviceId);
+        removeCluster(client, clusterId);
+    }
+
+    private void storeTestCluster(Client client, Long clusterId) {
+        Cluster cluster = createCluster(clusterId, "testcluster");
+        String clusterBaseUrl = rootUrl + String.format("clusters");
+        client.target(clusterBaseUrl).request().post(Entity.json(cluster));
+    }
+
+    private void storeTestService(Client client, Long clusterId, Long serviceId) {
+        Service service = createService(clusterId, serviceId, "test");
+        String serviceBaseUrl = rootUrl + String.format("clusters/%d/services", clusterId);
+        client.target(serviceBaseUrl).request().post(Entity.json(service));
     }
 
     @Test
@@ -795,28 +853,45 @@ public class RestIntegrationTest {
         return createTag(id, name, Collections.<Long>emptyList());
     }
 
-    private Cluster createClusterInfo(Long id, String name) {
+    private Cluster createCluster(Long id, String name) {
         Cluster cluster = new Cluster();
         cluster.setDescription("test");
         cluster.setId(id);
         cluster.setName(name);
-        cluster.setTags("tags");
         cluster.setTimestamp(System.currentTimeMillis());
-        cluster.setType(Cluster.Type.HDFS);
-        cluster.setClusterConfigFileName("hdfs-site.xml");
         return cluster;
     }
 
-    private Component createComponent(Long clusterId, Long id, String name) {
+    private Service createService(Long clusterId, Long id, String name) {
+        Service service = new Service();
+        service.setDescription("test-component");
+        service.setName(name);
+        service.setId(id);
+        service.setClusterId(clusterId);
+        service.setTimestamp(System.currentTimeMillis());
+        return service;
+    }
+
+    private ServiceConfiguration createServiceConfig(Long serviceId, Long id, String name) {
+        ServiceConfiguration configuration = new ServiceConfiguration();
+        configuration.setId(id);
+        configuration.setServiceId(serviceId);
+        configuration.setName(name);
+        configuration.setFilename("core-site.xml");
+        configuration.setTimestamp(System.currentTimeMillis());
+        configuration.setDescription("core site of HDFS");
+        configuration.setConfiguration("{\"configkey\": \"value\"}");
+        return configuration;
+    }
+
+    private Component createComponent(Long serviceId, Long id, String name) {
         Component component = new Component();
-        component.setClusterId(clusterId);
-        component.setDescription("desc");
-        component.setHosts("host-1, host-2");
+        component.setHosts(Lists.newArrayList("host-1","host-2"));
         component.setId(id);
         component.setName(name);
         component.setPort(8080);
+        component.setServiceId(serviceId);
         component.setTimestamp(System.currentTimeMillis());
-        component.setType(Component.ComponentType.BROKER);
         return component;
     }
 
@@ -904,4 +979,18 @@ public class RestIntegrationTest {
         return fileFile;
     }
 
+
+    private void removeCluster(Client client, Long clusterId) {
+        client.target(rootUrl + String.format("clusters/%d", clusterId)).request().delete();
+    }
+
+    private void removeService(Client client, Long clusterId, Long serviceId) {
+        client.target(rootUrl + String.format("clusters/%d/services/%d", clusterId, serviceId))
+            .request().delete();
+    }
+
+    private void removeComponent(Client client, Long clusterId, Long serviceId, Long componentId) {
+        client.target(rootUrl + String.format("clusters/%d/services/%d/components/%d", clusterId, serviceId, componentId))
+            .request().delete();
+    }
 }

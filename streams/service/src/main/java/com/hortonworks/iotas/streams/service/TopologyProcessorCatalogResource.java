@@ -129,7 +129,6 @@ public class TopologyProcessorCatalogResource {
     @GET
     @Path("/{id}")
     @Timed
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getTopologyProcessorById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long processorId) {
         try {
             TopologyProcessor source = catalogService.getTopologyProcessor(processorId);

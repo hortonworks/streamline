@@ -150,7 +150,6 @@ public class TagCatalogResource {
     @GET
     @Path("/tags/{id}")
     @Timed
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getTagById(@PathParam("id") Long tagId) {
         try {
             Tag result = tagService.getTag(tagId);
@@ -420,7 +419,6 @@ public class TagCatalogResource {
     @GET
     @Path("/tags/{id}/entities")
     @Timed
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getTaggedEntities(@PathParam("id") Long tagId) {
         try {
             List<TaggedEntity> result = tagService.getEntities(tagId, true);
@@ -458,7 +456,6 @@ public class TagCatalogResource {
     @GET
     @Path("/taggedentities/{namespace}/{id}/tags")
     @Timed
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getTagsForEntity(@PathParam("namespace") String namespace, @PathParam("id") Long entityId) {
         try {
             List<Tag> tags = tagService.getTags(new TaggedEntity(namespace, entityId));

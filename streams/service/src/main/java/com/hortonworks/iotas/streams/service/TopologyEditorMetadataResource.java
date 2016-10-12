@@ -36,7 +36,6 @@ public class TopologyEditorMetadataResource {
     @GET
     @Path("/system/topologyeditormetadata")
     @Timed
-    @Produces(MediaType.APPLICATION_JSON)
     public Response listTopologyEditorMetadata () {
         try {
             Collection<TopologyEditorMetadata> result = catalogService.listTopologyEditorMetadata();
@@ -52,7 +51,6 @@ public class TopologyEditorMetadataResource {
     @GET
     @Path("/system/topologyeditormetadata/{id}")
     @Timed
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getTopologyEditorMetadataByTopologyId (@PathParam("id") Long topologyId) {
         try {
             TopologyEditorMetadata result = catalogService.getTopologyEditorMetadata(topologyId);

@@ -101,7 +101,6 @@ public class TopologyCatalogResource {
     @GET
     @Path("/topologies/{topologyId}")
     @Timed
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getTopologyById (@PathParam("topologyId") Long topologyId) {
         try {
             Topology result = catalogService.getTopology(topologyId);
@@ -317,7 +316,6 @@ public class TopologyCatalogResource {
     @GET
     @Path("/system/componentdefinitions/{component}/{id}")
     @Timed
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getTopologyById (@PathParam("component") TopologyComponentDefinition.TopologyComponentType componentType, @PathParam ("id") Long id) {
         try {
             TopologyComponentDefinition result = catalogService

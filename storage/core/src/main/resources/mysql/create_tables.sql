@@ -221,3 +221,42 @@ CREATE TABLE IF NOT EXISTS udfs (
     digest VARCHAR(256) NOT NULL,
     PRIMARY KEY (id)
 );
+
+CREATE TABLE IF NOT EXISTS clusters (
+  id BIGINT AUTO_INCREMENT NOT NULL,
+  name VARCHAR(256) NOT NULL,
+  description VARCHAR(256),
+  timestamp BIGINT,
+  PRIMARY KEY (id)
+)
+
+CREATE TABLE IF NOT EXISTS services (
+  id BIGINT AUTO_INCREMENT NOT NULL,
+  clusterId BIGINT NOT NULL,
+  name VARCHAR(256) NOT NULL,
+  description VARCHAR(256),
+  timestamp BIGINT,
+  PRIMARY KEY (id)
+)
+
+CREATE TABLE IF NOT EXISTS service_configurations (
+  id BIGINT AUTO_INCREMENT NOT NULL,
+  serviceId BIGINT NOT NULL,
+  name VARCHAR(256) NOT NULL,
+  configuration TEXT NOT NULL,
+  description VARCHAR(256),
+  filename VARCHAR(256),
+  timestamp BIGINT,
+  PRIMARY KEY (id)
+)
+
+CREATE TABLE IF NOT EXISTS components (
+  id BIGINT AUTO_INCREMENT NOT NULL,
+  serviceId BIGINT NOT NULL,
+  name VARCHAR(256) NOT NULL,
+  hosts TEXT NOT NULL,
+  protocol VARCHAR(256),
+  port BIGINT,
+  timestamp BIGINT,
+  PRIMARY KEY (id)
+)

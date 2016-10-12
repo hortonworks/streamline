@@ -113,7 +113,6 @@ public class RuleCatalogResource {
     @GET
     @Path("/{id}")
     @Timed
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getTopologyRuleById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId) {
         try {
             RuleInfo ruleInfo = catalogService.getRule(ruleId);

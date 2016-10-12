@@ -49,6 +49,11 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>com.hortonworks.iotas</groupId>
+            <artifactId>streams-cluster</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-core</artifactId>
             <exclusions>
