@@ -1,4 +1,5 @@
 ## 0.1.4
+ * IOT-441: Remove creating tables as part of server start
  * IOT-396: Enhance UDF support in rules engine.
  * IOT-359: Move Windowing its own component.
  * IOT-390: Added option to directly specify conditions in rule api.
