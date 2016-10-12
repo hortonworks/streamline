@@ -48,9 +48,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class IotasApplication extends Application<IotasConfiguration> {
-
-    private static final Logger log = LoggerFactory.getLogger(IotasApplication.class);
-    private static final String JDBC = "jdbc";
+    private static final Logger LOG = LoggerFactory.getLogger(IotasApplication.class);
 
     public static void main(String[] args) throws Exception {
         new IotasApplication().run(args);
@@ -131,17 +129,25 @@ public class IotasApplication extends Application<IotasConfiguration> {
         List<ModuleConfiguration> modules = iotasConfiguration.getModules();
         List<Object> resourcesToRegister = new ArrayList<>();
         for (ModuleConfiguration moduleConfiguration: modules) {
-            ModuleRegistration moduleRegistration = (ModuleRegistration) Class.forName(moduleConfiguration.getClassName()).newInstance();
+            String moduleName = moduleConfiguration.getName();
+            String moduleClassName = moduleConfiguration.getClassName();
+            LOG.info("Registering module [{}] with class [{}]", moduleName, moduleClassName);
+            ModuleRegistration moduleRegistration = (ModuleRegistration) Class.forName(moduleClassName).newInstance();
             if (moduleConfiguration.getConfig() == null) {
                 moduleConfiguration.setConfig(new HashMap<String, Object>());
             }
             moduleConfiguration.getConfig().put(Constants.CONFIG_TIME_SERIES_DB, iotasConfiguration.getTimeSeriesDBConfiguration());
             moduleConfiguration.getConfig().put(Constants.CONFIG_CATALOG_ROOT_URL, catalogRootUrl);
             moduleRegistration.init(moduleConfiguration.getConfig(), fileStorage);
-            StorageManagerAware storageManagerAware = (StorageManagerAware) moduleRegistration;
-            storageManagerAware.setStorageManager(storageManager);
+            if (moduleRegistration instanceof StorageManagerAware) {
+                LOG.info("Module [{}] is StorageManagerAware and setting StorageManager.", moduleName);
+                StorageManagerAware storageManagerAware = (StorageManagerAware) moduleRegistration;
+                storageManagerAware.setStorageManager(storageManager);
+            }
             resourcesToRegister.addAll(moduleRegistration.getResources());
         }
+
+        LOG.info("Registering resources to Jersey environment: [{}]", resourcesToRegister);
         for(Object resource : resourcesToRegister) {
             environment.jersey().register(resource);
         }
