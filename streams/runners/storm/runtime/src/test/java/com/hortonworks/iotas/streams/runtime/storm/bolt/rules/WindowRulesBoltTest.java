@@ -63,7 +63,7 @@ public class WindowRulesBoltTest {
                 Collection<Tuple> anchors;
                 List<List<Object>> tuples = new ArrayList<>();
                 mockCollector.emit(streamId = withCapture(), anchors = withCapture(), withCapture(tuples));
-                System.out.println(tuples);
+                Assert.assertEquals("outputstream", streamId);
                 Map<String, Object> fieldsAndValues1 = ((IotasEvent) tuples.get(0).get(0)).getFieldsAndValues();
                 Assert.assertEquals("min salary is 30, max salary is 100", fieldsAndValues1.get("body"));
                 Map<String, Object> fieldsAndValues2 = ((IotasEvent) tuples.get(1).get(0)).getFieldsAndValues();
@@ -95,7 +95,6 @@ public class WindowRulesBoltTest {
                 Collection<Tuple> anchors;
                 List<List<Object>> tuples = new ArrayList<>();
                 mockCollector.emit(streamId = withCapture(), anchors = withCapture(), withCapture(tuples));
-                System.out.println(tuples);
                 Map<String, Object> fieldsAndValues1 = ((IotasEvent) tuples.get(0).get(0)).getFieldsAndValues();
                 Assert.assertEquals("count is 2, min salary is 30, max salary is 40", fieldsAndValues1.get("body"));
                 Map<String, Object> fieldsAndValues2 = ((IotasEvent) tuples.get(1).get(0)).getFieldsAndValues();
@@ -153,7 +152,6 @@ public class WindowRulesBoltTest {
                 Collection<Tuple> anchors;
                 List<List<Object>> tuples = new ArrayList<>();
                 mockCollector.emit(streamId = withCapture(), anchors = withCapture(), withCapture(tuples));
-                System.out.println(tuples);
                 Map<String, Object> fieldsAndValues1 = ((IotasEvent) tuples.get(0).get(0)).getFieldsAndValues();
                 Assert.assertEquals("min salary is 30, max salary is 200", fieldsAndValues1.get("body"));
             }

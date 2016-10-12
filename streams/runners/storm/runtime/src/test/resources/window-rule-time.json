@@ -1,4 +1,23 @@
 {
+  "outputStreams": [
+    {
+      "id": "outputstream",
+      "schema": {
+        "fields": [
+          {
+            "name": "deptid",
+            "type": "INTEGER",
+            "optional": false
+          },
+          {
+            "name": "salary_MAX",
+            "type": "DOUBLE",
+            "optional": false
+          }
+        ]
+      }
+    }
+  ],
   "rules": [
     {
       "name": "rule_1",
@@ -13,6 +32,7 @@
           "outputFieldsAndDefaults": {
             "body": "min salary is ${MIN(salary)}, max salary is ${MAX(salary)}"
           },
+          "outputStreams": ["outputstream"],
           "notifierName": "email_notifier",
           "__type": "com.hortonworks.iotas.streams.layout.component.rule.action.NotifierAction"
         }
