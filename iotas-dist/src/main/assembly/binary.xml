@@ -68,10 +68,24 @@
             </includes>
         </fileSet>
         <fileSet>
+            <directory>${project.basedir}./storage/tool/target</directory>
+            <outputDirectory>/bootstrap/lib</outputDirectory>
+            <includes>
+                <include>storage-tool*jar</include>
+            </includes>
+        </fileSet>
+        <fileSet>
             <directory>${project.basedir}./bootstrap</directory>
             <outputDirectory>/bootstrap</outputDirectory>
             <includes>
                 <include>*</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>${project.basedir}./storage/core/src/main/resources</directory>
+            <outputDirectory>/bootstrap/sql</outputDirectory>
+            <includes>
+                <include>**/*.sql</include>
             </includes>
         </fileSet>
     </fileSets>

@@ -7,7 +7,6 @@ import com.hortonworks.iotas.storage.StorableKey;
 import com.hortonworks.iotas.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.iotas.storage.impl.jdbc.connection.ConnectionBuilder;
 import com.hortonworks.iotas.storage.impl.jdbc.connection.HikariCPConnectionBuilder;
-import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.JdbcClient;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.query.PhoenixDeleteQuery;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.query.PhoenixSelectQuery;
 import com.hortonworks.iotas.storage.impl.jdbc.provider.phoenix.query.PhoenixSequenceIdQuery;
@@ -85,11 +84,6 @@ public class PhoenixExecutor extends AbstractQueryExecutor {
 
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl(jdbcUrl);
-
-        JdbcClient jdbcClient = new JdbcClient(jdbcUrl);
-        log.info("creating tables");
-        String createPath = "phoenix/create_tables.sql";
-        jdbcClient.runScript(createPath);
 
         final HikariCPConnectionBuilder connectionBuilder = new HikariCPConnectionBuilder(hikariConfig);
         final ExecutionConfig executionConfig = new ExecutionConfig(queryTimeOutInSecs);
