@@ -25,7 +25,7 @@ import java.util.Map;
  * </p>
  * <p>Version 2 of Protocol Buffer is supported.</p>
  */
-public class ProtobufParser extends BaseParser {
+public final class ProtobufParser extends BaseParser {
     private static final String VERSION = "2.0";
     private static final Logger LOG = LoggerFactory.getLogger(ProtobufParser.class);
     private ProtobufSchema protoBufSchema;

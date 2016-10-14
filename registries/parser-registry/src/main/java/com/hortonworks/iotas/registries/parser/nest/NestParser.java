@@ -18,7 +18,7 @@ import java.util.Random;
 /**
  * Created by pbrahmbhatt on 7/30/15.
  */
-public class NestParser extends BaseParser {
+public final class NestParser extends BaseParser {
     private static final Logger log = LoggerFactory.getLogger(NestParser.class);
 
     private static final ObjectMapper mapper = new ObjectMapper();

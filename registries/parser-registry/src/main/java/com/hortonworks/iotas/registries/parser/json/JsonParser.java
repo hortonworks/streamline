@@ -15,7 +15,7 @@ import java.util.Map;
  * A simple json parser that uses {@link ObjectMapper} to parse
  * json to a Map&lt;String, Object&gt;
  */
-public class JsonParser extends BaseParser {
+public final class JsonParser extends BaseParser {
     private static final String VERSION = "1.0";
     private static final Logger LOG = LoggerFactory.getLogger(JsonParser.class);
 
