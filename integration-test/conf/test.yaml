@@ -1,0 +1,58 @@
+loggingConf: ./conf/logging.conf
+services:
+  zookeeper:
+    location: /tmp/services/zookeeper
+    build:
+      type: binary
+      url: http://www-us.apache.org/dist/zookeeper/zookeeper-3.4.6/zookeeper-3.4.6.tar.gz
+    config:
+      port: 2181
+      dataDir: /tmp/zookeeper
+
+  kafka:
+    location: /tmp/services/kafka
+    kafka_home: /tmp/services/kafka/kafka_2.10-0.10.0.1
+    build:
+      type: binary
+      url: http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
+    config:
+      listeners: PLAINTEXT://0.0.0.0:9092
+      kafka.log.dirs: /tmp/kafka-logs
+
+  storm:
+    location: /tmp/services/storm
+    storm_home: /tmp/services/storm/apache-storm-1.0.2
+    build:
+      type: binary
+      url: http://www-us.apache.org/dist/storm/apache-storm-1.0.2/apache-storm-1.0.2.tar.gz
+    config:
+      ui.port: 9094
+      storm.local.dir : /tmp/storm-data
+
+  registry:
+    location: /tmp/services/registry
+    storm_home: /tmp/services/registry
+    build:
+      type: maven
+      url:  git@github.com:hortonworks/registry.git
+      name: registry
+      dist: registry-dist
+      version: 0.1.0-SNAPSHOT
+      dist_file: hortonworks-registry-0.1.0-SNAPSHOT.tar.gz
+    config:
+      ui.port: 9094
+      storm.local.dir : /tmp/storm-data
+
+  streamline:
+    location: /tmp/services/streamline
+    storm_home: /tmp/services/streamline
+    build:
+      type: maven
+      url:  git@github.com:hortonworks/streamline.git
+      name: streamline
+      dist: iotas-dist
+      version: 0.1.0-SNAPSHOT
+      dist_file: hortonworks-iotas-0.1.0-SNAPSHOT.tar.gz
+    config:
+      ui.port: 9095
+      storm.local.dir : /tmp/storm-data
