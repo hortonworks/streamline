@@ -1,0 +1,5 @@
+{
+  "type": "long",
+  "namespace": "com.hortonworks.iot",
+  "name": "device"
+}

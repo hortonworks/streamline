@@ -1,0 +1,48 @@
+{
+  "type": "record",
+  "namespace": "com.hortonworks.iot",
+  "name": "device",
+  "fields": [
+    {
+      "name": "xid",
+      "type": "long"
+    },
+    {
+      "name": "name",
+      "type": ["null", "string"]
+    },
+    {
+      "name": "version",
+      "type": "int"
+    },
+    {
+      "name": "timestamp",
+      "type": "long"
+    },
+    {
+      "name": "address",
+      "type": {
+        "type": "record",
+        "name": "AddressRecord",
+        "fields": [
+          {
+            "name": "streetaddress",
+            "type": "string"
+          },
+          {
+            "name": "city",
+            "type": "string"
+          },
+          {
+            "name": "state",
+            "type": "string"
+          },
+          {
+            "name": "zip",
+            "type": "string"
+          }
+        ]
+      }
+    }
+  ]
+}

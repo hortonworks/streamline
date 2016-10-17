@@ -15,6 +15,12 @@ public interface IotasEvent {
     String IOTAS_EVENT = "iotas.event";
 
     /**
+     * This represents whetehr the received payload in StreamLine is of primitive type but it is pushed with this field
+     * in {@link #getFieldsAndValues()}
+     */
+    String PRIMITIVE_PAYLOAD_FIELD = "com.hortonworks.payload.primitive.field";
+
+    /**
      * The key values in the event.
      *
      * @return the key value map

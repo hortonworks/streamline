@@ -323,6 +323,12 @@
             <artifactId>schema-registry-client</artifactId>
             <version>${schema-registry.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.hortonworks.registries</groupId>
+            <artifactId>schema-registry-serdes</artifactId>
+            <version>${schema-registry.version}</version>
+        </dependency>
+
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.jmockit</groupId>
