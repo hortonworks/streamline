@@ -20,7 +20,7 @@ class StormService:
         self.location = config[config_property.LOCATION]
         self.build_type = config[config_property.BUILD][config_property.BUILD_TYPE]
         self.build_url = config[config_property.BUILD][config_property.URL]
-        self.storm_config = config[config_property.CONFIG]
+        self.storm_config_file = config[config_property.CONFIG]
         self.download = download
         self.build = build
 
@@ -30,7 +30,7 @@ class StormService:
             storm_home = download_and_unzip(self.build_url, self.location)
         else:
             storm_home = self.config[config_property.STORM_HOME]
-
+        
         logger.info("storm home "+ storm_home)
         storm_pids = os.path.join(self.location, "pids")
         logger.info("storm pids dir " + storm_pids)

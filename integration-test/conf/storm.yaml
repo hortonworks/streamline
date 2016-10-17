@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -16,36 +14,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-"""
-Define Yaml configuration property names here.
-"""
-
-ZOOKEEPER = "zookeeper"
-KAFKA = "kafka"
-STORM = "storm"
-REGISTRY = "registry"
-STREAMLINE = "streamline"
-
-LOCATION = "location"
-BUILD = "build"
-BUILD_TYPE = "type"
-CONFIG = "config"
-SERVICES = "services"
-
-"""
-Define setup configuration property names here
-"""
-BUILD_BINARY = "binary"
-URL = "url"
-BUILD_MAVEN = "maven"
-BUILD_NAME = "name"
-BUILD_DIST = "dist"
-BUILD_VERSION = "version"
-BUILD_DIST_FILE = "dist_file"
-KAFKA_HOME = "kafka_home"
-STORM_HOME = "storm_home"
-REGISTRY_HOME = "registry_home"
-STREAMLINE_HOME = "streamline_home"
-
-
+ui.port: 8080
+nimbus.seeds: ["localhost"]

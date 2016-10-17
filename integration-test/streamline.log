@@ -1,1436 +1,217 @@
-2016-10-14 19:56:21,915 - streamline - INFO - setting up Kafka Service
-2016-10-14 19:56:42,876 - streamline - INFO - setting up Kafka Service
-2016-10-14 19:57:19,469 - streamline - INFO - setting up Kafka Service
-2016-10-14 19:58:10,190 - streamline - INFO - setting up Kafka Service
-2016-10-14 19:59:24,804 - streamline - INFO - setting up Kafka Service
-2016-10-14 20:00:05,489 - streamline - INFO - setting up Kafka Service
-2016-10-14 20:00:37,255 - streamline - INFO - setting up Kafka Service
-2016-10-14 20:01:27,824 - streamline - INFO - setting up Kafka Service
-2016-10-14 20:01:54,974 - streamline - INFO - setting up Kafka Service
-2016-10-14 20:02:37,085 - streamline - INFO - setting up Kafka Service
-2016-10-14 20:02:56,313 - streamline - INFO - setting up Kafka Service
-2016-10-14 20:02:56,313 - streamline.service.utils.add - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 20:06:44,742 - streamline - INFO - setting up Kafka Service
-2016-10-14 20:06:44,742 - streamline.service.utils.add - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka/kafka
-2016-10-14 20:11:48,623 - streamline - INFO - setting up Kafka Service
-2016-10-14 20:11:58,164 - streamline - INFO - setting up Kafka Service
-2016-10-14 20:12:15,750 - streamline - INFO - setting up Kafka Service
-2016-10-14 20:12:15,751 - streamline.service.utils.add - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 20:12:15,751 - streamline.service.utils.add - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 20:12:55,493 - streamline - INFO - setting up Kafka Service
-2016-10-14 20:12:55,494 - streamline.service.utils.add - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 20:12:55,494 - streamline.service.utils.add - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 20:13:22,416 - streamline - INFO - setting up Kafka Service
-2016-10-14 20:13:22,416 - streamline.service.utils.add - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 20:13:22,416 - streamline.service.utils.add - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 20:13:32,453 - streamline - INFO - setting up Kafka Service
-2016-10-14 20:13:32,453 - streamline.service.utils.add - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 20:13:32,454 - streamline.service.utils.add - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 20:15:03,992 - streamline - INFO - setting up Kafka Service
-2016-10-14 20:15:03,992 - streamline.service.utils.add - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 20:15:03,992 - streamline.service.utils.add - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 20:15:22,715 - streamline - INFO - setting up Kafka Service
-2016-10-14 20:15:22,715 - streamline.service.utils.add - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 20:15:22,715 - streamline.service.utils.add - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 20:32:02,407 - streamline - INFO - setting up Kafka Service
-2016-10-14 20:32:02,408 - streamline.service.utils.add - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 20:32:02,408 - streamline.service.utils.add - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 20:32:22,435 - streamline - INFO - setting up Kafka Service
-2016-10-14 20:32:22,435 - streamline.service.utils.add - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 20:32:22,435 - streamline.service.utils.add - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 20:32:53,838 - streamline - INFO - setting up Kafka Service
-2016-10-14 20:32:53,838 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 20:32:53,838 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 20:32:57,025 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
-2016-10-14 20:39:50,249 - streamline - INFO - setting up Kafka Service
-2016-10-14 20:39:50,249 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 20:39:50,249 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 20:39:53,504 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 20:39:53,504 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
-2016-10-14 20:40:11,396 - streamline - INFO - setting up Kafka Service
-2016-10-14 20:40:11,396 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 20:40:11,396 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 20:40:14,406 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 20:40:14,406 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
-2016-10-14 20:41:03,529 - streamline - INFO - setting up Kafka Service
-2016-10-14 20:41:03,529 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 20:41:03,529 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 20:41:06,371 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 20:41:39,336 - streamline - INFO - setting up Kafka Service
-2016-10-14 20:41:39,336 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 20:41:39,336 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 20:41:42,364 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 20:41:42,831 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
-2016-10-14 20:42:57,589 - streamline - INFO - setting up Kafka Service
-2016-10-14 20:42:57,589 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 20:42:57,589 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 20:43:00,495 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 20:43:31,958 - streamline - INFO - setting up Kafka Service
-2016-10-14 20:43:31,960 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 20:43:31,960 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 20:43:35,019 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 20:43:35,569 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
-2016-10-14 20:44:06,198 - streamline - INFO - setting up Kafka Service
-2016-10-14 20:44:06,199 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 20:44:06,199 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 20:44:08,907 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 20:44:09,356 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 20:44:09,356 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
-2016-10-14 21:47:05,870 - streamline - INFO - setting up Kafka Service
-2016-10-14 21:47:05,870 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 21:47:05,870 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 21:47:05,870 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 21:47:08,036 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 21:47:08,598 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 21:47:08,598 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 21:47:37,384 - streamline - INFO - setting up Kafka Service
-2016-10-14 21:47:37,384 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 21:47:37,384 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 21:47:37,384 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 21:47:48,881 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 21:47:49,476 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 21:47:49,476 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 21:47:49,477 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/conf/zookeeper.properties
-2016-10-14 21:50:19,457 - streamline - INFO - setting up Kafka Service
-2016-10-14 21:50:19,457 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 21:50:19,457 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 21:50:19,457 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 21:50:30,931 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 21:50:31,434 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 21:50:31,434 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 21:50:31,434 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/conf/zookeeper.properties
-2016-10-14 21:50:31,435 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/conf/server.properties
-2016-10-14 21:52:02,527 - streamline - INFO - setting up Kafka Service
-2016-10-14 21:52:02,527 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 21:52:02,527 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 21:52:02,527 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 21:52:05,612 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 21:52:06,077 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 21:52:06,077 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 21:52:06,077 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 21:52:06,077 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 21:54:22,450 - streamline - INFO - setting up Kafka Service
-2016-10-14 21:54:22,450 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 21:54:22,450 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 21:54:22,450 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 21:54:25,370 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 21:54:25,811 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 21:54:25,812 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 21:54:25,812 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 21:54:25,812 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 21:56:02,045 - streamline - INFO - setting up Kafka Service
-2016-10-14 21:56:02,045 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 21:56:02,045 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 21:56:02,045 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 21:56:05,318 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 21:56:05,637 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 21:56:05,637 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 21:56:05,637 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 21:56:05,637 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 21:56:23,628 - streamline - INFO - setting up Kafka Service
-2016-10-14 21:56:23,628 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 21:56:23,628 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 21:56:23,628 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 21:56:35,242 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 21:56:35,597 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 21:56:35,597 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 21:56:35,597 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 21:56:35,597 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 21:58:37,142 - streamline - INFO - setting up Kafka Service
-2016-10-14 21:58:37,143 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 21:58:37,143 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 21:58:37,143 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 21:58:40,372 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 21:58:40,867 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 21:58:40,867 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 21:58:40,867 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 21:58:40,867 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 21:59:07,949 - streamline - INFO - setting up Kafka Service
-2016-10-14 21:59:07,949 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 21:59:07,949 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 21:59:07,949 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 21:59:11,094 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 21:59:11,463 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 21:59:11,463 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 21:59:11,463 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 21:59:11,463 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 21:59:11,463 - streamline.daemon - INFO - starting process /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 21:59:54,064 - streamline - INFO - setting up Kafka Service
-2016-10-14 21:59:54,065 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 21:59:54,065 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 21:59:54,065 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 21:59:56,907 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 21:59:57,374 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 21:59:57,374 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 21:59:57,374 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 21:59:57,374 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 21:59:57,374 - streamline.daemon - INFO - starting process /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:00:15,987 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:00:15,987 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:00:15,987 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:00:15,987 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:00:18,825 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:00:19,526 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:00:19,526 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:00:19,526 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:00:19,526 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:00:19,526 - streamline.daemon - INFO - starting process /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:00:41,889 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:00:41,889 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:00:41,889 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:00:41,889 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:00:53,337 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:00:53,880 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:00:53,880 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:00:53,880 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:00:53,880 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:00:53,880 - streamline.daemon - INFO - starting process /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:01:09,921 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:01:09,922 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:01:09,922 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:01:09,922 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:01:13,003 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:01:13,568 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:01:13,568 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:01:13,568 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:01:13,568 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:01:13,568 - streamline.daemon - INFO - starting process /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:02:30,574 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:02:30,574 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:02:30,575 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:02:30,575 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:02:33,306 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:02:33,879 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:02:33,879 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:02:33,879 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:02:33,879 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:02:33,879 - streamline.daemon - INFO - starting process /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:03:15,484 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:03:15,484 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:03:15,484 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:03:15,484 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:03:18,297 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:03:18,834 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:03:18,835 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:03:18,835 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:03:18,835 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:03:18,835 - streamline.daemon - INFO - starting process /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:04:37,362 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:04:37,362 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:04:37,362 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:04:37,362 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:04:48,926 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:04:49,807 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:04:49,807 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:04:49,807 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:04:49,807 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:04:49,808 - streamline.daemon - INFO - starting process /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:05:11,219 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:05:11,219 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:05:11,219 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:05:11,219 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:05:22,720 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:05:23,115 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:05:23,116 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:05:23,116 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:05:23,116 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:05:23,116 - streamline.daemon - INFO - starting process /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:06:22,151 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:06:22,151 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:06:22,151 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:06:22,151 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:06:25,390 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:06:26,001 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:06:26,001 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:06:26,001 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:06:26,001 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:06:40,357 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:06:40,358 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:06:40,358 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:06:40,358 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:06:43,179 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:06:43,719 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:06:43,720 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:06:43,720 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:06:43,720 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:07:28,185 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:07:28,185 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:07:28,186 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:07:28,186 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:07:30,994 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:07:31,773 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:07:31,773 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:07:31,773 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:07:31,773 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:07:31,849 - streamline.daemon - INFO - process 4382 started
-2016-10-14 22:08:09,654 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:08:09,654 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:08:09,654 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:08:09,654 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:08:12,852 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:08:13,421 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:08:13,421 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:08:13,421 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:08:13,421 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:08:47,700 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:08:47,701 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:08:47,701 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:08:47,701 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:08:59,195 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:08:59,656 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:08:59,656 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:08:59,657 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:08:59,657 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:09:40,422 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:09:40,422 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:09:40,422 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:09:40,422 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:09:43,879 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:09:44,432 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:09:44,432 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:09:44,432 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:09:44,432 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:09:44,432 - streamline.daemon - INFO - starting process /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties >/dev/null
-2016-10-14 22:11:15,283 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:11:15,283 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:11:15,283 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:11:15,284 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:11:18,551 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:11:19,054 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:11:19,054 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:11:19,054 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:11:19,054 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:11:19,054 - streamline.daemon - INFO - starting process /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties >/dev/null 2>/dev/null &
-2016-10-14 22:11:19,065 - streamline.daemon - INFO - process 5505 started
-2016-10-14 22:23:44,074 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:23:44,074 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:23:44,074 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:23:44,074 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:23:47,017 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:23:47,517 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:23:47,517 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:25:44,891 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:25:44,892 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:25:44,892 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:25:44,892 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:25:56,372 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:25:56,832 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:25:56,832 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:25:56,832 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh/tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:27:00,881 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:27:00,881 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:27:00,881 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:27:00,881 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:27:04,053 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:27:04,681 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:27:04,681 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:27:04,681 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh/tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:27:48,898 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:27:48,898 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:27:48,898 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:27:48,898 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:28:00,386 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:28:00,809 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:28:00,810 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:28:00,810 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh/tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:28:00,810 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh/tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:29:57,809 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:29:57,809 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:29:57,809 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:29:57,809 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:30:01,050 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:30:01,552 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:30:01,552 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:30:01,552 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh/tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:30:01,552 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh/tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:31:41,532 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:31:41,532 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:31:41,532 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:31:41,532 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:31:53,010 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:31:53,531 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:31:53,532 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:31:53,532 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh/tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:31:53,532 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh/tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:31:53,532 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 22:32:23,342 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:32:23,342 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:32:23,342 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:32:23,342 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:32:26,825 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:32:27,324 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:32:27,324 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:32:27,324 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh/tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:32:27,324 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh/tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:32:27,324 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 22:33:11,818 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:33:11,818 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:33:11,818 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:33:11,818 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:33:15,208 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:33:15,728 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:33:15,728 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:33:15,728 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh/tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:33:15,728 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh/tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:33:15,728 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 22:35:13,045 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:35:13,045 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:35:13,045 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:35:13,045 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:35:15,753 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:35:16,264 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:35:16,264 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:35:16,265 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh/tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:35:16,265 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh/tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:35:16,265 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 22:35:33,404 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:35:33,404 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:35:33,404 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:35:33,404 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:35:36,297 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:35:36,734 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:35:36,734 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:35:36,734 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh/tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:35:36,734 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh/tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:35:36,734 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 22:37:09,071 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:37:09,071 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:37:09,071 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:37:09,071 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:37:20,749 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:37:21,237 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:37:21,237 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:37:21,237 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh/tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:37:21,237 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh/tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:37:21,237 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 22:37:21,237 - streamline.Daemon - INFO - in daemonize
-2016-10-14 22:38:28,307 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:38:28,307 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:38:28,307 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:38:28,307 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:38:31,135 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:38:31,649 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:38:31,649 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:38:31,649 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh/tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:38:31,650 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh/tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:38:31,650 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 22:38:31,650 - streamline.Daemon - INFO - in daemonize
-2016-10-14 22:39:29,363 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:39:29,363 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:39:29,363 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:39:29,363 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:39:32,263 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:39:32,739 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:39:32,739 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:39:32,739 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh/tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:39:32,739 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh/tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:39:32,739 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 22:39:32,739 - streamline.Daemon - INFO - in daemonize
-2016-10-14 22:40:19,349 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:40:19,349 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:40:19,349 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:40:19,349 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:40:21,981 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:40:22,468 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:40:22,468 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:40:22,468 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:40:22,468 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:40:22,468 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 22:40:22,469 - streamline.Daemon - INFO - in daemonize
-2016-10-14 22:40:43,583 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:40:43,583 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:40:43,583 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:40:43,584 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:40:46,311 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:40:46,845 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:40:46,845 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:40:46,845 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:40:46,845 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:40:46,846 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 22:40:46,846 - streamline.Daemon - INFO - in daemonize
-2016-10-14 22:41:27,882 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:41:27,882 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:41:27,882 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:41:27,882 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:41:31,344 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:41:31,839 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:41:31,839 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:41:31,839 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:41:31,839 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:41:31,839 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 22:41:31,839 - streamline.Daemon - INFO - in daemonize
-2016-10-14 22:49:34,024 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:49:34,024 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:49:34,024 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:49:34,025 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:49:36,825 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:49:37,242 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:49:37,242 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:49:37,242 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:49:37,242 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:49:37,242 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 22:49:37,242 - streamline.Daemon - INFO - in daemonize
-2016-10-14 22:49:59,583 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:49:59,583 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:49:59,583 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:49:59,583 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:50:02,220 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:50:02,721 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:50:02,721 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:50:02,721 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:50:02,721 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:50:02,721 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 22:50:02,722 - streamline.Daemon - INFO - in daemonize
-2016-10-14 22:52:17,658 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:52:17,658 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:52:17,658 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:52:17,658 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:52:29,365 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:52:29,824 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:52:29,824 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:52:29,824 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:53:06,491 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:53:06,491 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:53:06,491 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:53:06,491 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:53:21,549 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:53:22,097 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:53:22,097 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:53:22,097 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:53:22,097 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:53:22,097 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 22:53:22,097 - streamline.Daemon - INFO - in daemonize
-2016-10-14 22:54:16,905 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:54:16,905 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:54:16,905 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:54:16,906 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:54:21,773 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:54:22,321 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:54:22,321 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:54:22,322 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:54:22,322 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:54:22,322 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 22:54:22,322 - streamline.Daemon - INFO - in daemonize
-2016-10-14 22:54:43,449 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:54:43,449 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:54:43,449 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:54:43,450 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:54:46,652 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:54:47,146 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:54:47,146 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:54:47,147 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:54:47,147 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:54:47,147 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 22:54:47,147 - streamline.Daemon - INFO - in daemonize
-2016-10-14 22:55:02,336 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:55:02,336 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:55:02,336 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:55:02,336 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:55:05,183 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:55:05,701 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:55:05,701 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:55:05,701 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:55:05,701 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:55:05,702 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 22:55:05,702 - streamline.Daemon - INFO - in daemonize
-2016-10-14 22:55:45,861 - streamline - INFO - setting up Kafka Service
-2016-10-14 22:55:45,862 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:55:45,862 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 22:55:45,862 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 22:55:48,663 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 22:55:49,166 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 22:55:49,166 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 22:55:49,166 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 22:55:49,166 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 22:55:49,166 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 22:55:49,166 - streamline.Daemon - INFO - in daemonize
-2016-10-14 23:02:34,926 - streamline - INFO - setting up Kafka Service
-2016-10-14 23:02:34,926 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 23:02:34,926 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 23:02:34,926 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 23:02:37,664 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 23:02:38,166 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 23:02:38,166 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 23:02:38,166 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 23:02:38,166 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 23:02:38,166 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 23:02:38,166 - streamline.Daemon - INFO - in daemonize
-2016-10-14 23:03:49,286 - streamline - INFO - setting up Kafka Service
-2016-10-14 23:03:49,286 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 23:03:49,286 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 23:03:49,286 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 23:03:52,880 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 23:03:53,503 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 23:03:53,503 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 23:03:53,503 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 23:03:53,503 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 23:03:53,503 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 23:03:53,503 - streamline.Daemon - INFO - in daemonize
-2016-10-14 23:05:02,889 - streamline - INFO - setting up Kafka Service
-2016-10-14 23:05:02,889 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 23:05:02,889 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 23:05:02,889 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 23:05:06,086 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 23:05:06,668 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 23:05:06,668 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 23:05:06,668 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 23:05:06,668 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 23:05:06,668 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 23:05:06,669 - streamline.Daemon - INFO - in daemonize
-2016-10-14 23:06:06,546 - streamline - INFO - setting up Kafka Service
-2016-10-14 23:06:06,546 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 23:06:06,547 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 23:06:06,547 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 23:06:09,690 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 23:06:10,512 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 23:06:10,512 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 23:06:10,512 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 23:06:10,512 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 23:06:10,512 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 23:06:10,512 - streamline.Daemon - INFO - in daemonize
-2016-10-14 23:07:03,622 - streamline - INFO - setting up Kafka Service
-2016-10-14 23:07:03,623 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 23:07:03,623 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 23:07:03,623 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 23:07:15,118 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 23:07:15,650 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 23:07:15,650 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 23:07:15,650 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 23:07:15,650 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 23:07:15,651 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 23:07:15,651 - streamline.Daemon - INFO - in daemonize
-2016-10-14 23:07:53,024 - streamline - INFO - setting up Kafka Service
-2016-10-14 23:07:53,025 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 23:07:53,025 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 23:07:53,025 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 23:08:04,670 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 23:08:05,169 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 23:08:05,170 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 23:08:05,170 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 23:08:05,170 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 23:08:05,170 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 23:08:05,170 - streamline.Daemon - INFO - in daemonize
-2016-10-14 23:08:05,170 - streamline.Daemon - INFO - cmd run /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties > /dev/null 2> /dev/null &
-2016-10-14 23:10:38,709 - streamline - INFO - setting up Kafka Service
-2016-10-14 23:10:38,709 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 23:10:38,709 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 23:10:38,709 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 23:10:41,856 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 23:10:42,364 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 23:10:42,365 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 23:10:42,365 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 23:10:42,365 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 23:10:42,365 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 23:10:42,365 - streamline.Daemon - INFO - cmd run /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties > /dev/null 2>&1  &
-2016-10-14 23:14:23,070 - streamline - INFO - setting up Kafka Service
-2016-10-14 23:14:23,070 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 23:14:23,070 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 23:14:23,070 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 23:14:26,019 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 23:14:26,520 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 23:14:26,520 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 23:14:26,520 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 23:14:26,520 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 23:14:26,520 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 23:14:26,520 - streamline.Daemon - INFO - cmd run /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties > /dev/null 2>&1  &
-2016-10-14 23:15:28,122 - streamline - INFO - setting up Kafka Service
-2016-10-14 23:15:28,122 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 23:15:28,123 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 23:15:28,123 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 23:15:30,889 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 23:15:31,419 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 23:15:31,419 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 23:15:31,419 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 23:15:31,420 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 23:15:31,420 - streamline.service.utils - INFO - starting zookeeper
-2016-10-14 23:15:31,420 - streamline.Daemon - INFO - cmd run /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties > /dev/null &
-2016-10-14 23:15:53,577 - streamline - INFO - setting up Kafka Service
-2016-10-14 23:15:53,577 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-14 23:15:53,577 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-14 23:15:53,577 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-14 23:16:05,034 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-14 23:16:05,515 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-14 23:16:05,515 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-14 23:16:05,515 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-14 23:16:05,515 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-14 23:16:05,515 - streamline.service.utils - INFO - starting zookeeper
-2016-10-15 21:06:02,042 - streamline - INFO - setting up Kafka Service
-2016-10-15 21:06:02,043 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:06:02,043 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-15 21:06:02,043 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-15 21:06:04,992 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:06:05,725 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 21:06:05,725 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 21:06:05,725 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 21:06:05,725 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 21:06:05,725 - streamline.service.utils - INFO - starting zookeeper
-2016-10-15 21:06:33,832 - streamline - INFO - setting up Kafka Service
-2016-10-15 21:06:33,832 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:06:33,832 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-15 21:06:33,832 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-15 21:06:36,717 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:06:37,181 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 21:06:37,181 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 21:06:37,181 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 21:06:37,182 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 21:06:37,182 - streamline.service.utils - INFO - starting zookeeper
-2016-10-15 21:07:08,531 - streamline - INFO - setting up Kafka Service
-2016-10-15 21:07:08,531 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:07:08,531 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-15 21:07:08,531 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-15 21:07:11,398 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:07:11,927 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 21:07:11,927 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 21:07:11,927 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 21:07:11,927 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 21:07:11,927 - streamline.service.utils - INFO - starting zookeeper
-2016-10-15 21:07:11,931 - streamline.Daemon - INFO - process started with pid 66912
-2016-10-15 21:08:24,535 - streamline - INFO - setting up Kafka Service
-2016-10-15 21:08:24,535 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:08:24,535 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-15 21:08:24,535 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-15 21:08:27,240 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:08:27,703 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 21:08:27,703 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 21:08:27,703 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 21:08:27,704 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 21:08:27,704 - streamline.service.utils - INFO - starting zookeeper
-2016-10-15 21:08:27,706 - streamline.Daemon - INFO - process started with pid 67415
-2016-10-15 21:08:57,707 - streamline.service.utils - INFO - stopping zookeeper
-2016-10-15 21:11:10,291 - streamline - INFO - setting up Kafka Service
-2016-10-15 21:11:10,291 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:11:10,291 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-15 21:11:10,291 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-15 21:11:21,936 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:11:22,597 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 21:11:22,597 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 21:11:22,597 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 21:11:22,597 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 21:11:22,597 - streamline.service.utils - INFO - starting zookeeper
-2016-10-15 21:11:22,600 - streamline.Daemon - INFO - process started with pid 68360
-2016-10-15 21:11:22,602 - streamline.service.utils - INFO - stopping zookeeper
-2016-10-15 21:12:24,972 - streamline - INFO - setting up Kafka Service
-2016-10-15 21:12:24,972 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:12:24,972 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-15 21:12:24,972 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-15 21:12:28,224 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:12:28,641 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 21:12:28,641 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 21:12:28,641 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 21:12:28,641 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 21:12:28,641 - streamline.service.utils - INFO - starting zookeeper
-2016-10-15 21:12:28,644 - streamline.Daemon - INFO - process started with pid 68921
-2016-10-15 21:12:28,645 - streamline.service.utils - INFO - stopping zookeeper
-2016-10-15 21:12:28,645 - streamline.Daemon - INFO - killing process 68921
-2016-10-15 21:15:00,798 - streamline - INFO - setting up Kafka Service
-2016-10-15 21:15:00,798 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:15:00,798 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-15 21:15:00,798 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-15 21:15:03,938 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:15:04,971 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 21:15:04,971 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 21:15:04,971 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 21:15:04,971 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 21:15:04,971 - streamline.service.utils - INFO - starting zookeeper
-2016-10-15 21:15:04,974 - streamline.Daemon - INFO - process started with pid 69501
-2016-10-15 21:15:04,975 - streamline.service.utils - INFO - stopping zookeeper
-2016-10-15 21:15:04,975 - streamline.Daemon - INFO - killing process 69501
-2016-10-15 21:15:04,975 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:15:05,079 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:15:05,180 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:15:05,280 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:15:05,385 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:15:05,485 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:15:05,586 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:15:05,690 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:15:05,790 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:15:05,893 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:15:05,993 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:15:06,096 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:15:06,198 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:15:06,298 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:15:06,402 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:15:06,506 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:15:06,610 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:15:06,714 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:15:06,816 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:15:06,918 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:15:07,024 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:15:07,128 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:15:07,231 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:15:07,331 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:15:07,434 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:15:07,538 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:15:07,641 - streamline.Daemon - INFO - pkill value None
-2016-10-15 21:21:46,885 - streamline - INFO - setting up Kafka Service
-2016-10-15 21:21:46,886 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:21:46,886 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-15 21:21:46,886 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-15 21:21:49,706 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:21:50,204 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 21:21:50,204 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 21:21:50,204 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 21:21:50,204 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 21:21:50,205 - streamline.service.utils - INFO - starting zookeeper
-2016-10-15 21:21:50,207 - streamline.Daemon - INFO - process started with pid 70856
-2016-10-15 21:21:50,209 - streamline.service.utils - INFO - stopping zookeeper
-2016-10-15 21:22:14,859 - streamline - INFO - setting up Kafka Service
-2016-10-15 21:22:14,859 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:22:14,859 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-15 21:22:14,859 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-15 21:22:26,465 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:22:27,001 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 21:22:27,001 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 21:22:27,001 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 21:22:27,002 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 21:22:27,002 - streamline.service.utils - INFO - starting zookeeper
-2016-10-15 21:22:27,004 - streamline.Daemon - INFO - process started with pid 71215
-2016-10-15 21:22:27,004 - streamline.service.utils - INFO - stopping zookeeper
-2016-10-15 21:22:27,005 - streamline.Daemon - INFO - killing process <bound method Daemon.pid of <services.daemon.Daemon instance at 0x10a044d88>>
-2016-10-15 21:23:31,380 - streamline - INFO - setting up Kafka Service
-2016-10-15 21:23:31,381 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:23:31,381 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-15 21:23:31,381 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-15 21:23:34,668 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:23:35,192 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 21:23:35,192 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 21:23:35,192 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 21:23:35,192 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 21:23:35,192 - streamline.service.utils - INFO - starting zookeeper
-2016-10-15 21:23:35,195 - streamline.Daemon - INFO - process started with pid 71719
-2016-10-15 21:23:35,195 - streamline.service.utils - INFO - stopping zookeeper
-2016-10-15 21:24:02,132 - streamline - INFO - setting up Kafka Service
-2016-10-15 21:24:02,132 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:24:02,132 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-15 21:24:02,132 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-15 21:24:13,760 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:24:14,253 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 21:24:14,253 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 21:24:14,253 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 21:24:14,253 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 21:24:14,253 - streamline.service.utils - INFO - starting zookeeper
-2016-10-15 21:24:14,257 - streamline.Daemon - INFO - process started with pid 72255
-2016-10-15 21:24:14,257 - streamline.service.utils - INFO - stopping zookeeper
-2016-10-15 21:24:14,258 - streamline.Daemon - INFO - pid <bound method Daemon.pid of <services.daemon.Daemon instance at 0x10e70ad40>> 
-2016-10-15 21:24:14,258 - streamline.Daemon - INFO - killing process <bound method Daemon.pid of <services.daemon.Daemon instance at 0x10e70ad40>>
-2016-10-15 21:24:53,216 - streamline - INFO - setting up Kafka Service
-2016-10-15 21:24:53,217 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:24:53,217 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-15 21:24:53,217 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-15 21:24:56,748 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:24:57,290 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 21:24:57,290 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 21:24:57,290 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 21:24:57,290 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 21:24:57,290 - streamline.service.utils - INFO - starting zookeeper
-2016-10-15 21:24:57,293 - streamline.Daemon - INFO - process started with pid 72688
-2016-10-15 21:24:57,293 - streamline.service.utils - INFO - stopping zookeeper
-2016-10-15 21:24:57,293 - streamline.Daemon - INFO - pid 72688 
-2016-10-15 21:24:57,294 - streamline.Daemon - INFO - killing process 72688
-2016-10-15 21:28:41,218 - streamline - INFO - setting up Kafka Service
-2016-10-15 21:28:41,218 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:28:41,218 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-15 21:28:41,218 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-15 21:28:52,801 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:28:53,254 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 21:28:53,254 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 21:28:53,254 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 21:28:53,254 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 21:28:53,254 - streamline.service.utils - INFO - starting zookeeper
-2016-10-15 21:28:53,257 - streamline.Daemon - INFO - process started with pid 73620
-2016-10-15 21:28:53,258 - streamline.service.utils - INFO - stopping zookeeper
-2016-10-15 21:28:53,258 - streamline.Daemon - INFO - pid 73620 
-2016-10-15 21:28:53,259 - streamline.Daemon - INFO - killing process 73620
-2016-10-15 21:35:03,871 - streamline - INFO - setting up Kafka Service
-2016-10-15 21:35:03,871 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:35:03,871 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-15 21:35:03,871 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-15 21:35:07,227 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:35:07,723 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 21:35:07,723 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 21:35:07,723 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 21:35:07,723 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 21:35:07,723 - streamline.service.utils - INFO - starting zookeeper
-2016-10-15 21:35:07,726 - streamline.Daemon - INFO - process started with pid 74847
-2016-10-15 21:35:07,728 - streamline.service.utils - INFO - stopping zookeeper
-2016-10-15 21:35:07,729 - streamline.Daemon - INFO - pid 74847 
-2016-10-15 21:35:07,729 - streamline.Daemon - INFO - killing process 74847
-2016-10-15 21:35:45,602 - streamline - INFO - setting up Kafka Service
-2016-10-15 21:35:45,602 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:35:45,602 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-15 21:35:45,602 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-15 21:35:48,390 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:35:48,861 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 21:35:48,861 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 21:35:48,861 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 21:35:48,861 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 21:35:48,862 - streamline.service.utils - INFO - starting zookeeper
-2016-10-15 21:35:48,864 - streamline.Daemon - INFO - process started with pid 75009
-2016-10-15 21:35:48,864 - streamline.service.utils - INFO - stopping zookeeper
-2016-10-15 21:35:48,864 - streamline.Daemon - INFO - pid 75009 
-2016-10-15 21:35:48,865 - streamline.Daemon - INFO - killing process 75009
-2016-10-15 21:36:16,756 - streamline - INFO - setting up Kafka Service
-2016-10-15 21:36:16,756 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:36:16,756 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-15 21:36:16,756 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-15 21:36:19,509 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-15 21:36:20,052 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 21:36:20,052 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 21:36:20,052 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 21:36:20,052 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 21:36:20,052 - streamline.service.utils - INFO - starting zookeeper
-2016-10-15 21:36:20,056 - streamline.Daemon - INFO - process started with pid 75165
-2016-10-15 21:36:20,057 - streamline.service.utils - INFO - stopping zookeeper
-2016-10-15 21:36:20,057 - streamline.Daemon - INFO - pid 75165 
-2016-10-15 21:36:20,057 - streamline.Daemon - INFO - killing process 75165
-2016-10-15 21:36:20,057 - streamline.service.utils - INFO - process alive 75165 
-2016-10-15 21:36:20,057 - streamline.service.utils - INFO - process alive 0 
-2016-10-15 21:36:20,058 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
-2016-10-15 22:05:51,111 - streamline - INFO - setting up Kafka Service
-2016-10-15 22:05:51,111 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-15 22:06:08,314 - streamline - INFO - setting up Kafka Service
-2016-10-15 22:06:08,314 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-15 22:06:08,314 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-15 22:06:08,314 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-15 22:06:19,854 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-15 22:06:20,337 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 22:06:20,338 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 22:06:20,338 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 22:06:20,338 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 22:06:20,338 - streamline.service.utils - INFO - starting Zookeeper
-2016-10-15 22:06:20,343 - streamline.Daemon - INFO - process started with pid 81017
-2016-10-15 22:06:20,344 - streamline.service.utils - INFO - starting Kafka broker
-2016-10-15 22:06:20,347 - streamline.Daemon - INFO - process started with pid 81018
-2016-10-15 22:07:20,347 - streamline.service.utils - INFO - stopping Zookeeper
-2016-10-15 22:07:20,348 - streamline.Daemon - INFO - pid 81017 
-2016-10-15 22:07:20,348 - streamline.Daemon - INFO - killing process 81017
-2016-10-15 22:07:20,349 - streamline.service.utils - INFO - stopping Kafka
-2016-10-15 22:07:20,349 - streamline.Daemon - INFO - pid 81018 
-2016-10-15 22:07:20,349 - streamline.Daemon - INFO - killing process 81018
-2016-10-15 22:07:20,349 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
-2016-10-15 22:11:48,694 - streamline - INFO - setting up Kafka Service
-2016-10-15 22:11:48,694 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-15 22:11:48,695 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-15 22:11:48,695 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-15 22:11:52,856 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-15 22:11:53,461 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 22:11:53,461 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 22:11:53,463 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 22:11:53,463 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 22:11:53,463 - streamline.service.utils - INFO - starting Zookeeper
-2016-10-15 22:11:53,466 - streamline.Daemon - INFO - process started with pid 82849
-2016-10-15 22:11:53,467 - streamline.service.utils - INFO - starting Kafka broker
-2016-10-15 22:11:53,469 - streamline.Daemon - INFO - process started with pid 82850
-2016-10-15 22:12:53,469 - streamline.service.utils - INFO - stopping Zookeeper
-2016-10-15 22:12:53,470 - streamline.Daemon - INFO - pid 82849 
-2016-10-15 22:12:53,470 - streamline.Daemon - INFO - killing process 82849
-2016-10-15 22:12:53,470 - streamline.service.utils - INFO - stopping Kafka
-2016-10-15 22:12:53,470 - streamline.Daemon - INFO - pid 82850 
-2016-10-15 22:12:53,471 - streamline.Daemon - INFO - killing process 82850
-2016-10-15 22:12:53,471 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
-2016-10-15 22:16:05,334 - streamline - INFO - setting up Kafka Service
-2016-10-15 22:16:05,334 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-15 22:16:05,334 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-15 22:16:05,334 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-15 22:16:08,766 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-15 22:16:09,343 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 22:16:09,343 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 22:16:09,343 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 22:16:09,343 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 22:16:09,343 - streamline.service.utils - INFO - starting Zookeeper
-2016-10-15 22:16:09,345 - streamline.Daemon - INFO - process started with pid 84639
-2016-10-15 22:16:09,346 - streamline.service.utils - INFO - starting Kafka broker
-2016-10-15 22:17:09,345 - streamline.service.utils - INFO - stopping Zookeeper
-2016-10-15 22:17:09,346 - streamline.Daemon - INFO - pid 84639 
-2016-10-15 22:17:09,346 - streamline.Daemon - INFO - killing process 84639
-2016-10-15 22:17:09,347 - streamline.service.utils - INFO - stopping Kafka
-2016-10-15 22:17:09,347 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
-2016-10-15 22:18:20,463 - streamline - INFO - setting up Kafka Service
-2016-10-15 22:18:38,992 - streamline - INFO - setting up Kafka Service
-2016-10-15 22:18:58,980 - streamline - INFO - setting up Kafka Service
-2016-10-15 22:18:58,980 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 22:18:58,980 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 22:18:58,981 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 22:18:58,981 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 22:18:58,981 - streamline.service.utils - INFO - starting Zookeeper
-2016-10-15 22:18:58,983 - streamline.Daemon - INFO - process started with pid 85583
-2016-10-15 22:18:58,984 - streamline.service.utils - INFO - starting Kafka broker
-2016-10-15 22:19:58,986 - streamline.service.utils - INFO - stopping Zookeeper
-2016-10-15 22:19:58,987 - streamline.Daemon - INFO - pid 85583 
-2016-10-15 22:19:58,987 - streamline.Daemon - INFO - killing process 85583
-2016-10-15 22:19:58,987 - streamline.Daemon - ERROR - failed to kill the process 85583 due to [Errno 3] No such process
-2016-10-15 22:19:58,988 - streamline.service.utils - INFO - stopping Kafka
-2016-10-15 22:19:58,988 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
-2016-10-15 22:20:21,877 - streamline - INFO - setting up Kafka Service
-2016-10-15 22:20:21,877 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 22:20:21,877 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 22:20:21,877 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 22:20:21,877 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 22:20:21,877 - streamline.service.utils - INFO - starting Zookeeper
-2016-10-15 22:20:21,880 - streamline.Daemon - INFO - process started with pid 86372
-2016-10-15 22:20:21,883 - streamline.service.utils - INFO - starting Kafka broker
-2016-10-15 22:21:21,884 - streamline.service.utils - INFO - stopping Zookeeper
-2016-10-15 22:21:21,885 - streamline.Daemon - INFO - pid 86372 
-2016-10-15 22:21:21,885 - streamline.Daemon - INFO - killing process 86372
-2016-10-15 22:21:21,885 - streamline.service.utils - INFO - stopping Kafka
-2016-10-15 22:21:21,885 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
-2016-10-15 22:23:20,460 - streamline - INFO - setting up Kafka Service
-2016-10-15 22:23:20,460 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 22:23:20,461 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 22:23:20,461 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 22:23:20,461 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 22:23:20,461 - streamline.service.utils - INFO - starting Zookeeper
-2016-10-15 22:23:20,465 - streamline.Daemon - INFO - process started with pid 87322
-2016-10-15 22:23:20,466 - streamline.service.utils - INFO - starting Kafka broker
-2016-10-15 22:23:50,465 - streamline.service.utils - INFO - stopping Zookeeper
-2016-10-15 22:23:50,466 - streamline.Daemon - INFO - pid 87322 
-2016-10-15 22:23:50,466 - streamline.Daemon - INFO - killing process 87322
-2016-10-15 22:23:50,466 - streamline.service.utils - INFO - process_alive 87322
-2016-10-15 22:23:50,468 - streamline.service.utils - INFO - stopping Kafka
-2016-10-15 22:23:50,468 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
-2016-10-15 22:24:45,850 - streamline - INFO - setting up Kafka Service
-2016-10-15 22:24:45,850 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 22:24:45,850 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 22:24:45,850 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 22:24:45,850 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 22:24:45,851 - streamline.service.utils - INFO - starting Zookeeper
-2016-10-15 22:24:45,853 - streamline.Daemon - INFO - process started with pid 87955
-2016-10-15 22:24:45,853 - streamline.service.utils - INFO - starting Kafka broker
-2016-10-15 22:25:15,853 - streamline.service.utils - INFO - stopping Zookeeper
-2016-10-15 22:25:15,853 - streamline.Daemon - INFO - pid 87955 
-2016-10-15 22:25:15,853 - streamline.Daemon - INFO - killing process 87955
-2016-10-15 22:25:15,854 - streamline.service.utils - INFO - process_alive 87955
-2016-10-15 22:25:15,854 - streamline.service.utils - INFO - returning alive 0
-2016-10-15 22:25:15,854 - streamline.service.utils - INFO - stopping Kafka
-2016-10-15 22:25:15,854 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
-2016-10-15 22:27:28,876 - streamline - INFO - setting up Kafka Service
-2016-10-15 22:27:28,876 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 22:27:28,876 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 22:27:28,877 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 22:27:28,877 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 22:27:28,877 - streamline.service.utils - INFO - starting Zookeeper
-2016-10-15 22:27:28,879 - streamline.Daemon - INFO - process started with pid 88792
-2016-10-15 22:27:28,882 - streamline.service.utils - INFO - starting Kafka broker
-2016-10-15 22:27:58,883 - streamline.service.utils - INFO - stopping Zookeeper
-2016-10-15 22:27:58,883 - streamline.Daemon - INFO - pid 88792 
-2016-10-15 22:27:58,883 - streamline.Daemon - INFO - killing process 88792
-2016-10-15 22:27:58,883 - streamline.service.utils - INFO - process_alive 88792
-2016-10-15 22:27:58,884 - streamline.service.utils - INFO - returning alive True
-2016-10-15 22:27:58,884 - streamline.Daemon - INFO - killing None
-2016-10-15 22:27:58,988 - streamline.service.utils - INFO - process_alive 88792
-2016-10-15 22:27:58,988 - streamline.service.utils - INFO - returning alive True
-2016-10-15 22:27:58,988 - streamline.Daemon - INFO - killing None
-2016-10-15 22:27:59,092 - streamline.service.utils - INFO - process_alive 88792
-2016-10-15 22:27:59,092 - streamline.service.utils - INFO - returning alive True
-2016-10-15 22:27:59,092 - streamline.Daemon - INFO - killing None
-2016-10-15 22:27:59,195 - streamline.service.utils - INFO - process_alive 88792
-2016-10-15 22:27:59,195 - streamline.service.utils - INFO - returning alive True
-2016-10-15 22:27:59,195 - streamline.Daemon - INFO - killing None
-2016-10-15 22:27:59,297 - streamline.service.utils - INFO - process_alive 88792
-2016-10-15 22:27:59,298 - streamline.service.utils - INFO - returning alive False
-2016-10-15 22:27:59,298 - streamline.service.utils - INFO - stopping Kafka
-2016-10-15 22:27:59,298 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
-2016-10-15 22:29:40,490 - streamline - INFO - setting up Kafka Service
-2016-10-15 22:29:40,491 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 22:29:40,491 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 22:29:40,491 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 22:29:40,492 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 22:29:40,492 - streamline.service.utils - INFO - starting Zookeeper
-2016-10-15 22:29:40,496 - streamline.Daemon - INFO - process started with pid 89620
-2016-10-15 22:29:40,496 - streamline.service.utils - INFO - starting Kafka broker
-2016-10-15 22:29:40,498 - streamline.Daemon - INFO - process started with pid 89621
-2016-10-15 22:30:10,503 - streamline.service.utils - INFO - stopping Zookeeper
-2016-10-15 22:30:10,504 - streamline.Daemon - INFO - killing process 89620
-2016-10-15 22:30:11,111 - streamline.service.utils - INFO - stopping Kafka
-2016-10-15 22:30:11,111 - streamline.Daemon - INFO - killing process 89621
-2016-10-15 22:33:01,290 - streamline - INFO - setting up Kafka Service
-2016-10-15 22:33:01,291 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 22:33:01,291 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 22:33:01,291 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 22:33:01,291 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 22:33:01,291 - streamline.service.utils - INFO - starting Zookeeper
-2016-10-15 22:33:01,293 - streamline.Daemon - INFO - process started with pid 90995
-2016-10-15 22:33:01,294 - streamline.service.utils - INFO - starting Kafka broker
-2016-10-15 22:33:01,297 - streamline.Daemon - INFO - process started with pid 90996
-2016-10-15 22:33:31,298 - streamline.service.utils - INFO - stopping Kafka
-2016-10-15 22:33:31,298 - streamline.Daemon - INFO - killing process 90996
-2016-10-15 22:33:31,300 - streamline.service.utils - INFO - stopping Zookeeper
-2016-10-15 22:33:31,301 - streamline.Daemon - INFO - killing process 90995
-2016-10-15 22:33:31,917 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
-2016-10-15 22:34:05,430 - streamline - INFO - setting up Kafka Service
-2016-10-15 22:34:05,430 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 22:34:05,430 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 22:34:05,430 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 22:34:05,430 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 22:34:05,430 - streamline.service.utils - INFO - starting Zookeeper
-2016-10-15 22:34:05,432 - streamline.Daemon - INFO - process started with pid 91824
-2016-10-15 22:34:05,433 - streamline.service.utils - INFO - starting Kafka broker
-2016-10-15 22:34:05,435 - streamline.Daemon - INFO - process started with pid 91825
-2016-10-15 22:34:35,438 - streamline.service.utils - INFO - stopping Kafka
-2016-10-15 22:34:35,438 - streamline.Daemon - INFO - killing process 91825
-2016-10-15 22:34:38,217 - streamline.service.utils - INFO - stopping Zookeeper
-2016-10-15 22:34:38,219 - streamline.Daemon - INFO - killing process 91824
-2016-10-15 22:34:38,826 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
-2016-10-15 22:40:09,081 - streamline - INFO - setting up Kafka Service
-2016-10-15 22:40:09,081 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 22:40:09,081 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 22:40:09,082 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 22:40:09,082 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 22:40:09,082 - streamline.service.utils - INFO - starting Zookeeper
-2016-10-15 22:40:09,084 - streamline.Daemon - INFO - process started with pid 93275
-2016-10-15 22:40:09,085 - streamline.service.utils - INFO - starting Kafka broker
-2016-10-15 22:40:09,087 - streamline.Daemon - INFO - process started with pid 93276
-2016-10-15 22:40:39,087 - streamline.service.utils - INFO - stopping Kafka
-2016-10-15 22:40:39,090 - streamline.Daemon - INFO - killing process 93276
-2016-10-15 22:40:41,132 - streamline.service.utils - INFO - stopping Zookeeper
-2016-10-15 22:40:41,135 - streamline.Daemon - INFO - killing process 93275
-2016-10-15 22:40:41,743 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
-2016-10-15 22:55:54,917 - streamline - INFO - setting up Kafka Service
-2016-10-15 22:55:54,918 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-15 22:55:54,918 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-15 22:55:54,918 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-15 22:55:57,736 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-15 22:55:58,233 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 22:55:58,234 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 22:55:58,234 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 22:55:58,234 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 22:55:58,234 - streamline - INFO - setting up Storm Service
-2016-10-15 22:56:33,463 - streamline - INFO - setting up Kafka Service
-2016-10-15 22:56:33,463 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-15 22:56:33,463 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-15 22:56:33,463 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-15 22:56:36,357 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-15 22:56:36,751 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 22:56:36,751 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 22:56:36,751 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 22:56:36,751 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 22:56:36,752 - streamline - INFO - setting up Storm Service
-2016-10-15 22:56:36,752 - streamline.service.utils - INFO - downloading Storm binaries from http://www.apache.org/dyn/closer.lua/storm/apache-storm-1.0.2/apache-storm-1.0.2.tar.gz
-2016-10-15 22:56:36,752 - streamline.service.utils - INFO - downloading http://www.apache.org/dyn/closer.lua/storm/apache-storm-1.0.2/apache-storm-1.0.2.tar.gz to /tmp/services/storm
-2016-10-15 22:56:36,752 - streamline.service.utils - INFO - filename apache-storm-1.0.2.tar ext .gz
-2016-10-15 22:58:46,475 - streamline - INFO - setting up Kafka Service
-2016-10-15 22:58:46,476 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-15 22:58:46,476 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-15 22:58:46,476 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-15 22:58:49,195 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-15 22:58:49,609 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 22:58:49,609 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 22:58:49,609 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 22:58:49,609 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 22:58:49,609 - streamline - INFO - setting up Storm Service
-2016-10-15 22:58:49,609 - streamline.service.utils - INFO - downloading Storm binaries from http://www.apache.org/dyn/closer.lua/storm/apache-storm-1.0.2/apache-storm-1.0.2.tar.gz
-2016-10-15 22:58:49,609 - streamline.service.utils - INFO - downloading http://www.apache.org/dyn/closer.lua/storm/apache-storm-1.0.2/apache-storm-1.0.2.tar.gz to /tmp/services/storm
-2016-10-15 22:58:49,609 - streamline.service.utils - INFO - filename apache-storm-1.0.2.tar ext .gz
-2016-10-15 22:58:50,158 - streamline.service.utils - INFO - storm home /tmp/services/storm/apache-storm-1.0.2.tar
-2016-10-15 22:58:50,158 - streamline.service.utils - INFO - storm pids dir /tmp/services/storm/pids
-2016-10-15 22:58:50,159 - streamline.service.utils - INFO - nimbus start command /tmp/services/storm/apache-storm-1.0.2.tar/bin/storm.py nimbus
-2016-10-15 22:59:13,572 - streamline - INFO - setting up Kafka Service
-2016-10-15 22:59:13,572 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-15 22:59:13,573 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-15 22:59:13,573 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-15 22:59:16,359 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-15 22:59:16,908 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 22:59:16,908 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 22:59:16,908 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 22:59:16,908 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 22:59:16,908 - streamline - INFO - setting up Storm Service
-2016-10-15 22:59:16,908 - streamline.service.utils - INFO - downloading Storm binaries from http://www.apache.org/dyn/closer.lua/storm/apache-storm-1.0.2/apache-storm-1.0.2.tar.gz
-2016-10-15 22:59:16,908 - streamline.service.utils - INFO - downloading http://www.apache.org/dyn/closer.lua/storm/apache-storm-1.0.2/apache-storm-1.0.2.tar.gz to /tmp/services/storm
-2016-10-15 22:59:16,909 - streamline.service.utils - INFO - filename apache-storm-1.0.2.tar ext .gz
-2016-10-15 22:59:17,461 - streamline.service.utils - INFO - storm home /tmp/services/storm/apache-storm-1.0.2.tar
-2016-10-15 22:59:17,461 - streamline.service.utils - INFO - storm pids dir /tmp/services/storm/pids
-2016-10-15 22:59:17,461 - streamline.service.utils - INFO - nimbus start command /tmp/services/storm/apache-storm-1.0.2.tar/bin/storm.py nimbus
-2016-10-15 22:59:17,461 - streamline.service.utils - INFO - supervisor start command /tmp/services/storm/apache-storm-1.0.2.tar/bin/storm.py supervisor
-2016-10-15 22:59:17,462 - streamline.service.utils - INFO - storm ui start command /tmp/services/storm/apache-storm-1.0.2.tar/bin/storm.py ui
-2016-10-15 22:59:17,462 - streamline.service.utils - INFO - starting Zookeeper
-2016-10-15 22:59:17,464 - streamline.Daemon - INFO - process started with pid 97315
-2016-10-15 22:59:17,465 - streamline.service.utils - INFO - starting Kafka broker
-2016-10-15 22:59:17,469 - streamline.Daemon - INFO - process started with pid 97316
-2016-10-15 22:59:47,472 - streamline.service.utils - INFO - starting Nimbus
-2016-10-15 22:59:47,475 - streamline.Daemon - INFO - process started with pid 97813
-2016-10-15 22:59:47,476 - streamline.service.utils - INFO - starting Supervisor
-2016-10-15 22:59:47,479 - streamline.Daemon - INFO - process started with pid 97814
-2016-10-15 22:59:47,480 - streamline.service.utils - INFO - starting UI
-2016-10-15 22:59:47,482 - streamline.Daemon - INFO - process started with pid 97815
-2016-10-15 23:00:17,484 - streamline.service.utils - INFO - stopping Kafka
-2016-10-15 23:00:17,484 - streamline.Daemon - INFO - killing process 97316
-2016-10-15 23:00:19,543 - streamline.service.utils - INFO - stopping Zookeeper
-2016-10-15 23:00:19,543 - streamline.Daemon - INFO - killing process 97315
-2016-10-15 23:00:20,158 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
-2016-10-15 23:00:20,158 - streamline.service.utils - INFO - stopping UI
-2016-10-15 23:00:20,158 - streamline.Daemon - INFO - killing process 97815
-2016-10-15 23:00:20,159 - streamline.service.utils - INFO - stopping Supervisor
-2016-10-15 23:00:20,159 - streamline.Daemon - INFO - killing process 97814
-2016-10-15 23:00:20,159 - streamline.service.utils - INFO - stopping Nimbus
-2016-10-15 23:00:20,159 - streamline.Daemon - INFO - killing process 97813
-2016-10-15 23:00:40,820 - streamline - INFO - setting up Kafka Service
-2016-10-15 23:00:40,820 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-15 23:00:40,820 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-15 23:00:40,821 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-15 23:00:43,733 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-15 23:00:44,359 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 23:00:44,359 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 23:00:44,359 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 23:00:44,359 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 23:00:44,359 - streamline - INFO - setting up Storm Service
-2016-10-15 23:00:44,360 - streamline.service.utils - INFO - downloading Storm binaries from http://www.apache.org/dyn/closer.lua/storm/apache-storm-1.0.2/apache-storm-1.0.2.tar.gz
-2016-10-15 23:00:44,360 - streamline.service.utils - INFO - downloading http://www.apache.org/dyn/closer.lua/storm/apache-storm-1.0.2/apache-storm-1.0.2.tar.gz to /tmp/services/storm
-2016-10-15 23:00:44,360 - streamline.service.utils - INFO - filename apache-storm-1.0.2.tar ext .gz
-2016-10-15 23:00:44,882 - streamline.service.utils - INFO - extracting /tmp/services/storm/apache-storm-1.0.2.tar.gz
-2016-10-15 23:05:17,018 - streamline - INFO - setting up Kafka Service
-2016-10-15 23:05:17,018 - streamline.service.utils - INFO - downloading Kafka binaries from http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-2016-10-15 23:05:17,018 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz to /tmp/services/kafka
-2016-10-15 23:05:17,018 - streamline.service.utils - INFO - filename kafka_2.10-0.10.0.1 ext .tgz
-2016-10-15 23:05:23,893 - streamline.service.utils - INFO - extracting /tmp/services/kafka/kafka_2.10-0.10.0.1.tgz
-2016-10-15 23:05:24,417 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 23:05:24,417 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 23:05:24,417 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 23:05:24,418 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 23:05:24,418 - streamline - INFO - setting up Storm Service
-2016-10-15 23:05:24,418 - streamline.service.utils - INFO - downloading Storm binaries from http://www-us.apache.org/dist/storm/apache-storm-1.0.2/apache-storm-1.0.2.tar.gz
-2016-10-15 23:05:24,418 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/storm/apache-storm-1.0.2/apache-storm-1.0.2.tar.gz to /tmp/services/storm
-2016-10-15 23:05:24,418 - streamline.service.utils - INFO - filename apache-storm-1.0.2.tar ext .gz
-2016-10-15 23:05:36,482 - streamline.service.utils - INFO - extracting /tmp/services/storm/apache-storm-1.0.2.tar.gz
-2016-10-15 23:05:41,106 - streamline.service.utils - INFO - storm home /tmp/services/storm/apache-storm-1.0.2.tar
-2016-10-15 23:05:41,107 - streamline.service.utils - INFO - storm pids dir /tmp/services/storm/pids
-2016-10-15 23:05:41,107 - streamline.service.utils - INFO - nimbus start command /tmp/services/storm/apache-storm-1.0.2.tar/bin/storm.py nimbus
-2016-10-15 23:05:41,107 - streamline.service.utils - INFO - supervisor start command /tmp/services/storm/apache-storm-1.0.2.tar/bin/storm.py supervisor
-2016-10-15 23:05:41,107 - streamline.service.utils - INFO - storm ui start command /tmp/services/storm/apache-storm-1.0.2.tar/bin/storm.py ui
-2016-10-15 23:05:41,107 - streamline.service.utils - INFO - starting Zookeeper
-2016-10-15 23:05:41,111 - streamline.Daemon - INFO - process started with pid 99220
-2016-10-15 23:05:41,112 - streamline.service.utils - INFO - starting Kafka broker
-2016-10-15 23:05:41,115 - streamline.Daemon - INFO - process started with pid 99221
-2016-10-15 23:06:11,119 - streamline.service.utils - INFO - starting Nimbus
-2016-10-15 23:06:11,123 - streamline.Daemon - INFO - process started with pid 99719
-2016-10-15 23:06:11,124 - streamline.service.utils - INFO - starting Supervisor
-2016-10-15 23:06:11,127 - streamline.Daemon - INFO - process started with pid 99720
-2016-10-15 23:06:11,128 - streamline.service.utils - INFO - starting UI
-2016-10-15 23:06:11,131 - streamline.Daemon - INFO - process started with pid 99721
-2016-10-15 23:06:41,132 - streamline.service.utils - INFO - stopping Kafka
-2016-10-15 23:06:41,134 - streamline.Daemon - INFO - killing process 99221
-2016-10-15 23:06:43,683 - streamline.service.utils - INFO - stopping Zookeeper
-2016-10-15 23:06:43,684 - streamline.Daemon - INFO - killing process 99220
-2016-10-15 23:06:44,298 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
-2016-10-15 23:06:44,298 - streamline.service.utils - INFO - stopping UI
-2016-10-15 23:06:44,298 - streamline.Daemon - INFO - killing process 99721
-2016-10-15 23:06:44,298 - streamline.service.utils - INFO - stopping Supervisor
-2016-10-15 23:06:44,298 - streamline.Daemon - INFO - killing process 99720
-2016-10-15 23:06:44,299 - streamline.service.utils - INFO - stopping Nimbus
-2016-10-15 23:06:44,299 - streamline.Daemon - INFO - killing process 99719
-2016-10-15 23:08:15,670 - streamline - INFO - setting up Kafka Service
-2016-10-15 23:08:15,670 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 23:08:15,670 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 23:08:15,670 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 23:08:15,671 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 23:08:15,671 - streamline - INFO - setting up Storm Service
-2016-10-15 23:08:15,671 - streamline.service.utils - INFO - downloading Storm binaries from http://www-us.apache.org/dist/storm/apache-storm-1.0.2/apache-storm-1.0.2.tar.gz
-2016-10-15 23:08:15,671 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/storm/apache-storm-1.0.2/apache-storm-1.0.2.tar.gz to /tmp/services/storm
-2016-10-15 23:08:15,671 - streamline.service.utils - INFO - filename apache-storm-1.0.2.tar ext .gz
-2016-10-15 23:08:25,172 - streamline.service.utils - INFO - extracting /tmp/services/storm/apache-storm-1.0.2.tar.gz
-2016-10-15 23:08:27,258 - streamline.service.utils - INFO - storm home /tmp/services/storm/apache-storm-1.0.2.tar
-2016-10-15 23:08:27,258 - streamline.service.utils - INFO - storm pids dir /tmp/services/storm/pids
-2016-10-15 23:08:27,258 - streamline.service.utils - INFO - nimbus start command /tmp/services/storm/apache-storm-1.0.2.tar/bin/storm nimbus
-2016-10-15 23:08:27,258 - streamline.service.utils - INFO - supervisor start command /tmp/services/storm/apache-storm-1.0.2.tar/bin/storm supervisor
-2016-10-15 23:08:27,258 - streamline.service.utils - INFO - storm ui start command /tmp/services/storm/apache-storm-1.0.2.tar/bin/storm ui
-2016-10-15 23:08:27,258 - streamline.service.utils - INFO - starting Zookeeper
-2016-10-15 23:08:27,260 - streamline.Daemon - INFO - process started with pid 499
-2016-10-15 23:08:27,261 - streamline.service.utils - INFO - starting Kafka broker
-2016-10-15 23:08:27,263 - streamline.Daemon - INFO - process started with pid 500
-2016-10-15 23:08:57,267 - streamline.service.utils - INFO - starting Nimbus
-2016-10-15 23:08:57,270 - streamline.Daemon - INFO - process started with pid 1016
-2016-10-15 23:08:57,271 - streamline.service.utils - INFO - starting Supervisor
-2016-10-15 23:08:57,274 - streamline.Daemon - INFO - process started with pid 1017
-2016-10-15 23:08:57,275 - streamline.service.utils - INFO - starting UI
-2016-10-15 23:08:57,278 - streamline.Daemon - INFO - process started with pid 1018
-2016-10-15 23:09:27,281 - streamline.service.utils - INFO - stopping Kafka
-2016-10-15 23:09:27,283 - streamline.Daemon - INFO - killing process 500
-2016-10-15 23:09:30,143 - streamline.service.utils - INFO - stopping Zookeeper
-2016-10-15 23:09:30,143 - streamline.Daemon - INFO - killing process 499
-2016-10-15 23:09:30,759 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
-2016-10-15 23:09:30,759 - streamline.service.utils - INFO - stopping UI
-2016-10-15 23:09:30,760 - streamline.Daemon - INFO - killing process 1018
-2016-10-15 23:09:30,760 - streamline.service.utils - INFO - stopping Supervisor
-2016-10-15 23:09:30,760 - streamline.Daemon - INFO - killing process 1017
-2016-10-15 23:09:30,760 - streamline.service.utils - INFO - stopping Nimbus
-2016-10-15 23:09:30,760 - streamline.Daemon - INFO - killing process 1016
-2016-10-15 23:15:37,817 - streamline - INFO - setting up Kafka Service
-2016-10-15 23:15:37,817 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-15 23:15:37,817 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-15 23:15:37,818 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-15 23:15:37,818 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-15 23:15:37,818 - streamline - INFO - setting up Storm Service
-2016-10-15 23:15:37,818 - streamline.service.utils - INFO - downloading Storm binaries from http://www-us.apache.org/dist/storm/apache-storm-1.0.2/apache-storm-1.0.2.tar.gz
-2016-10-15 23:15:37,818 - streamline.service.utils - INFO - downloading http://www-us.apache.org/dist/storm/apache-storm-1.0.2/apache-storm-1.0.2.tar.gz to /tmp/services/storm
-2016-10-15 23:15:37,818 - streamline.service.utils - INFO - filename apache-storm-1.0.2 ext .tar.gz
-2016-10-15 23:15:49,136 - streamline.service.utils - INFO - extracting /tmp/services/storm/apache-storm-1.0.2.tar.gz
-2016-10-15 23:15:51,130 - streamline.service.utils - INFO - storm home /tmp/services/storm/apache-storm-1.0.2
-2016-10-15 23:15:51,131 - streamline.service.utils - INFO - storm pids dir /tmp/services/storm/pids
-2016-10-15 23:15:51,131 - streamline.service.utils - INFO - nimbus start command /tmp/services/storm/apache-storm-1.0.2/bin/storm nimbus
-2016-10-15 23:15:51,131 - streamline.service.utils - INFO - supervisor start command /tmp/services/storm/apache-storm-1.0.2/bin/storm supervisor
-2016-10-15 23:15:51,131 - streamline.service.utils - INFO - storm ui start command /tmp/services/storm/apache-storm-1.0.2/bin/storm ui
-2016-10-15 23:15:51,131 - streamline.service.utils - INFO - starting Zookeeper
-2016-10-15 23:15:51,134 - streamline.Daemon - INFO - process started with pid 2469
-2016-10-15 23:15:51,135 - streamline.service.utils - INFO - starting Kafka broker
-2016-10-15 23:15:51,138 - streamline.Daemon - INFO - process started with pid 2470
-2016-10-15 23:16:21,138 - streamline.service.utils - INFO - starting Nimbus
-2016-10-15 23:16:21,143 - streamline.Daemon - INFO - process started with pid 2985
-2016-10-15 23:16:21,144 - streamline.service.utils - INFO - starting Supervisor
-2016-10-15 23:16:21,147 - streamline.Daemon - INFO - process started with pid 2986
-2016-10-15 23:16:21,147 - streamline.service.utils - INFO - starting UI
-2016-10-15 23:16:21,150 - streamline.Daemon - INFO - process started with pid 2987
-2016-10-15 23:16:51,150 - streamline.service.utils - INFO - stopping Kafka
-2016-10-15 23:16:51,151 - streamline.Daemon - INFO - killing process 2470
-2016-10-15 23:16:53,406 - streamline.service.utils - INFO - stopping Zookeeper
-2016-10-15 23:16:53,407 - streamline.Daemon - INFO - killing process 2469
-2016-10-15 23:16:54,018 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
-2016-10-15 23:16:54,018 - streamline.service.utils - INFO - stopping UI
-2016-10-15 23:16:54,018 - streamline.Daemon - INFO - killing process 2987
-2016-10-15 23:16:54,427 - streamline.service.utils - INFO - stopping Supervisor
-2016-10-15 23:16:54,428 - streamline.Daemon - INFO - killing process 2986
-2016-10-15 23:16:55,554 - streamline.service.utils - INFO - stopping Nimbus
-2016-10-15 23:16:55,556 - streamline.Daemon - INFO - killing process 2985
-2016-10-15 23:16:56,978 - streamline.service.utils - INFO - deleting dir /tmp/services/storm
-2016-10-15 23:48:30,604 - streamline - INFO - setting up Kafka Service
-2016-10-15 23:48:30,604 - streamline - INFO - setting up Storm Service
-2016-10-15 23:48:30,604 - streamline - INFO - setting up Registry Service
-2016-10-15 23:48:30,604 - streamline.service.utils - INFO - downloading registry code from https://github.com/hortonworks/registry/archive/master.zip
-2016-10-15 23:48:30,604 - streamline.service.utils - INFO - downloading https://github.com/hortonworks/registry/archive/master.zip to /tmp/services/registry
-2016-10-15 23:49:14,548 - streamline - INFO - setting up Kafka Service
-2016-10-15 23:49:14,548 - streamline - INFO - setting up Storm Service
-2016-10-15 23:49:14,548 - streamline - INFO - setting up Registry Service
-2016-10-15 23:49:14,548 - streamline.service.utils - INFO - downloading registry code from https://github.com/hortonworks/registry/archive/master.zip
-2016-10-15 23:49:14,548 - streamline.service.utils - INFO - downloading https://github.com/hortonworks/registry/archive/master.zip to /tmp/services/registry
-2016-10-15 23:50:04,364 - streamline - INFO - setting up Kafka Service
-2016-10-15 23:50:04,364 - streamline - INFO - setting up Storm Service
-2016-10-15 23:50:04,364 - streamline - INFO - setting up Registry Service
-2016-10-15 23:50:04,365 - streamline.service.utils - INFO - downloading registry code from https://github.com/hortonworks/registry/archive/master.zip
-2016-10-15 23:50:04,365 - streamline.service.utils - INFO - downloading https://github.com/hortonworks/registry/archive/master.zip to /tmp/services/registry
-2016-10-15 23:57:48,950 - streamline - INFO - setting up Kafka Service
-2016-10-15 23:57:48,950 - streamline - INFO - setting up Storm Service
-2016-10-15 23:57:48,950 - streamline - INFO - setting up Registry Service
-2016-10-15 23:57:48,950 - streamline.service.utils - INFO - downloading registry code from https://github.com/hortonworks/registry/archive/master.zip
-2016-10-15 23:57:48,951 - streamline.service.utils - INFO - downloading https://github.com/hortonworks/registry/archive/master.zip to /tmp/services/registry
-2016-10-16 00:00:01,166 - streamline - INFO - setting up Kafka Service
-2016-10-16 00:00:01,166 - streamline - INFO - setting up Storm Service
-2016-10-16 00:00:01,167 - streamline - INFO - setting up Registry Service
-2016-10-16 00:00:01,167 - streamline.service.utils - INFO - downloading registry code from git@github.com:hortonworks/registry.git
-2016-10-16 00:00:01,167 - streamline.service.utils - INFO - downloading git@github.com:hortonworks/registry.git to /tmp/services/registry
-2016-10-16 00:00:01,167 - streamline.service.utils - INFO - cloning the registry
-2016-10-16 00:00:25,465 - streamline - INFO - setting up Kafka Service
-2016-10-16 00:00:25,465 - streamline - INFO - setting up Storm Service
-2016-10-16 00:00:25,465 - streamline - INFO - setting up Registry Service
-2016-10-16 00:00:25,465 - streamline.service.utils - INFO - downloading registry code from git@github.com:hortonworks/registry.git
-2016-10-16 00:00:25,466 - streamline.service.utils - INFO - downloading git@github.com:hortonworks/registry.git to /tmp/services/registry
-2016-10-16 00:00:25,466 - streamline.service.utils - INFO - cloning the registry
-2016-10-16 00:01:27,583 - streamline - INFO - setting up Kafka Service
-2016-10-16 00:01:27,583 - streamline - INFO - setting up Storm Service
-2016-10-16 00:01:27,583 - streamline - INFO - setting up Registry Service
-2016-10-16 00:01:27,583 - streamline.service.utils - INFO - downloading registry code from git@github.com:hortonworks/registry.git
-2016-10-16 00:01:27,583 - streamline.service.utils - INFO - downloading git@github.com:hortonworks/registry.git to /tmp/services/registry
-2016-10-16 00:01:27,584 - streamline.service.utils - INFO - cloning the registry
-2016-10-16 00:01:29,776 - streamline.service.utils - INFO - building the registry
-2016-10-16 00:01:31,180 - streamline.service.utils - INFO - building the dist registry-dist
-2016-10-16 00:01:32,403 - streamline.service.utils - INFO - built file /tmp/services/registry/registry/registry-dist/target/registry0.1.0-SNAPSHOT.tar.gz
-2016-10-16 00:01:32,403 - streamline.service.utils - INFO - extracting /tmp/services/registry/registry/registry-dist/target/registry0.1.0-SNAPSHOT.tar.gz
-2016-10-16 00:02:25,376 - streamline - INFO - setting up Kafka Service
-2016-10-16 00:02:25,376 - streamline - INFO - setting up Storm Service
-2016-10-16 00:02:25,377 - streamline - INFO - setting up Registry Service
-2016-10-16 00:02:25,377 - streamline.service.utils - INFO - downloading registry code from git@github.com:hortonworks/registry.git
-2016-10-16 00:02:25,377 - streamline.service.utils - INFO - downloading git@github.com:hortonworks/registry.git to /tmp/services/registry
-2016-10-16 00:02:25,377 - streamline.service.utils - INFO - cloning the registry
-2016-10-16 00:02:27,568 - streamline.service.utils - INFO - building the registry
-2016-10-16 00:02:43,412 - streamline.service.utils - INFO - building the dist registry-dist
-2016-10-16 00:03:30,853 - streamline.service.utils - INFO - built file /tmp/services/registry/registry/registry-dist/target/registry0.1.0-SNAPSHOT.tar.gz
-2016-10-16 00:03:30,853 - streamline.service.utils - INFO - extracting /tmp/services/registry/registry/registry-dist/target/registry0.1.0-SNAPSHOT.tar.gz
-2016-10-16 00:07:08,980 - streamline - INFO - setting up Kafka Service
-2016-10-16 00:07:08,980 - streamline - INFO - setting up Storm Service
-2016-10-16 00:07:08,980 - streamline - INFO - setting up Registry Service
-2016-10-16 00:07:08,980 - streamline.service.utils - INFO - downloading registry code from git@github.com:hortonworks/registry.git
-2016-10-16 00:07:08,980 - streamline.service.utils - INFO - downloading git@github.com:hortonworks/registry.git to /tmp/services/registry
-2016-10-16 00:07:08,980 - streamline.service.utils - INFO - cloning the registry
-2016-10-16 00:07:11,497 - streamline.service.utils - INFO - building the registry
-2016-10-16 00:07:26,957 - streamline.service.utils - INFO - building the dist registry-dist
-2016-10-16 00:08:11,771 - streamline.service.utils - INFO - built file /tmp/services/registry/registry/registry-dist/target/hortonworks-registry-0.1.0-SNAPSHOT.tar.gz
-2016-10-16 00:08:11,771 - streamline.service.utils - INFO - extracting /tmp/services/registry/registry/registry-dist/target/hortonworks-registry-0.1.0-SNAPSHOT.tar.gz
-2016-10-16 00:08:16,635 - streamline.service.utils - INFO - registry home /tmp/services/registry/registry0.1.0-SNAPSHOT
-2016-10-16 00:08:16,635 - streamline.service.utils - INFO - registry pids dir /tmp/services/registry/pids
-2016-10-16 00:08:16,635 - streamline.service.utils - INFO - registry start command /tmp/services/registry/registry0.1.0-SNAPSHOT/bin/registry-server-start.sh /tmp/services/registry/registry0.1.0-SNAPSHOT/conf/registry-dev.yaml
-2016-10-16 00:08:16,635 - streamline.service.utils - INFO - starting Registry
-2016-10-16 00:08:16,638 - streamline.Daemon - INFO - process started with pid 16627
-2016-10-16 00:10:17,317 - streamline - INFO - setting up Kafka Service
-2016-10-16 00:10:17,318 - streamline - INFO - setting up Storm Service
-2016-10-16 00:10:17,318 - streamline - INFO - setting up Registry Service
-2016-10-16 00:10:17,318 - streamline.service.utils - INFO - downloading registry code from git@github.com:hortonworks/registry.git
-2016-10-16 00:10:17,318 - streamline.service.utils - INFO - downloading git@github.com:hortonworks/registry.git to /tmp/services/registry
-2016-10-16 00:10:17,318 - streamline.service.utils - INFO - cloning the registry
-2016-10-16 00:10:19,775 - streamline.service.utils - INFO - building the registry
-2016-10-16 00:10:36,642 - streamline.service.utils - INFO - building the dist registry-dist
-2016-10-16 00:11:20,857 - streamline.service.utils - INFO - built file /tmp/services/registry/registry/registry-dist/target/hortonworks-registry-0.1.0-SNAPSHOT.tar.gz
-2016-10-16 00:11:20,858 - streamline.service.utils - INFO - extracting /tmp/services/registry/registry/registry-dist/target/hortonworks-registry-0.1.0-SNAPSHOT.tar.gz
-2016-10-16 00:12:34,658 - streamline - INFO - setting up Kafka Service
-2016-10-16 00:12:34,658 - streamline - INFO - setting up Storm Service
-2016-10-16 00:12:34,658 - streamline - INFO - setting up Registry Service
-2016-10-16 00:12:34,658 - streamline.service.utils - INFO - downloading registry code from git@github.com:hortonworks/registry.git
-2016-10-16 00:12:34,659 - streamline.service.utils - INFO - downloading git@github.com:hortonworks/registry.git to /tmp/services/registry
-2016-10-16 00:12:34,659 - streamline.service.utils - INFO - cloning the registry
-2016-10-16 00:12:37,631 - streamline.service.utils - INFO - building the registry
-2016-10-16 00:12:55,208 - streamline.service.utils - INFO - building the dist registry-dist
-2016-10-16 00:13:43,394 - streamline.service.utils - INFO - built file /tmp/services/registry/registry/registry-dist/target/hortonworks-registry-0.1.0-SNAPSHOT.tar.gz
-2016-10-16 00:13:43,394 - streamline.service.utils - INFO - extracting /tmp/services/registry/registry/registry-dist/target/hortonworks-registry-0.1.0-SNAPSHOT.tar.gz
-2016-10-16 00:13:47,740 - streamline.service.utils - INFO - registry home /tmp/services/registry/hortonworks-registry-0.1.0-SNAPSHOT
-2016-10-16 00:13:47,740 - streamline.service.utils - INFO - registry pids dir /tmp/services/registry/pids
-2016-10-16 00:13:47,743 - streamline.service.utils - INFO - registry start command /tmp/services/registry/hortonworks-registry-0.1.0-SNAPSHOT/bin/registry-server-start.sh /tmp/services/registry/hortonworks-registry-0.1.0-SNAPSHOT/conf/registry-dev.yaml
-2016-10-16 00:13:47,743 - streamline.service.utils - INFO - starting Registry
-2016-10-16 00:13:47,746 - streamline.Daemon - INFO - process started with pid 21387
-2016-10-16 00:14:17,750 - streamline.service.utils - INFO - stopping Registry
-2016-10-16 00:14:17,751 - streamline.Daemon - INFO - killing process 21387
-2016-10-16 00:14:17,853 - streamline.service.utils - INFO - deleting dir /tmp/services/registry
-2016-10-16 00:16:45,180 - streamline - INFO - setting up Kafka Service
-2016-10-16 00:16:45,181 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
-2016-10-16 00:16:45,181 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
-2016-10-16 00:16:45,181 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
-2016-10-16 00:16:45,182 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
-2016-10-16 00:16:45,182 - streamline - INFO - setting up Storm Service
-2016-10-16 00:16:45,182 - streamline.service.utils - INFO - storm home /tmp/services/storm/apache-storm-1.0.2
-2016-10-16 00:16:45,182 - streamline.service.utils - INFO - storm pids dir /tmp/services/storm/pids
-2016-10-16 00:16:45,182 - streamline.service.utils - INFO - nimbus start command /tmp/services/storm/apache-storm-1.0.2/bin/storm nimbus
-2016-10-16 00:16:45,183 - streamline.service.utils - INFO - supervisor start command /tmp/services/storm/apache-storm-1.0.2/bin/storm supervisor
-2016-10-16 00:16:45,183 - streamline.service.utils - INFO - storm ui start command /tmp/services/storm/apache-storm-1.0.2/bin/storm ui
-2016-10-16 00:16:45,183 - streamline - INFO - setting up Registry Service
-2016-10-16 00:16:45,183 - streamline.service.utils - INFO - downloading registry code from git@github.com:hortonworks/registry.git
-2016-10-16 00:16:45,183 - streamline.service.utils - INFO - downloading git@github.com:hortonworks/registry.git to /tmp/services/registry
-2016-10-16 00:16:45,184 - streamline.service.utils - INFO - cloning the registry
-2016-10-16 00:16:45,200 - streamline.service.utils - INFO - building the registry
-2016-10-16 00:17:03,342 - streamline.service.utils - INFO - building the dist registry-dist
-2016-10-16 00:17:48,966 - streamline.service.utils - INFO - built file /tmp/services/registry/registry/registry-dist/target/hortonworks-registry-0.1.0-SNAPSHOT.tar.gz
-2016-10-16 00:17:48,966 - streamline.service.utils - INFO - extracting /tmp/services/registry/registry/registry-dist/target/hortonworks-registry-0.1.0-SNAPSHOT.tar.gz
-2016-10-16 00:17:50,989 - streamline.service.utils - INFO - registry home /tmp/services/registry/hortonworks-registry-0.1.0-SNAPSHOT
-2016-10-16 00:17:50,989 - streamline.service.utils - INFO - registry pids dir /tmp/services/registry/pids
-2016-10-16 00:17:50,992 - streamline.service.utils - INFO - registry start command /tmp/services/registry/hortonworks-registry-0.1.0-SNAPSHOT/bin/registry-server-start.sh /tmp/services/registry/hortonworks-registry-0.1.0-SNAPSHOT/conf/registry-dev.yaml
-2016-10-16 00:17:50,992 - streamline.service.utils - INFO - starting Zookeeper
-2016-10-16 00:17:50,995 - streamline.Daemon - INFO - process started with pid 23910
-2016-10-16 00:17:50,996 - streamline.service.utils - INFO - starting Kafka broker
-2016-10-16 00:17:50,998 - streamline.Daemon - INFO - process started with pid 23911
-2016-10-16 00:18:21,002 - streamline.service.utils - INFO - starting Nimbus
-2016-10-16 00:18:21,006 - streamline.Daemon - INFO - process started with pid 24416
-2016-10-16 00:18:21,007 - streamline.service.utils - INFO - starting Supervisor
-2016-10-16 00:18:21,010 - streamline.Daemon - INFO - process started with pid 24417
-2016-10-16 00:18:21,011 - streamline.service.utils - INFO - starting UI
-2016-10-16 00:18:21,015 - streamline.Daemon - INFO - process started with pid 24418
-2016-10-16 00:18:51,016 - streamline.service.utils - INFO - starting Registry
-2016-10-16 00:18:51,021 - streamline.Daemon - INFO - process started with pid 24550
-2016-10-16 00:19:21,023 - streamline.service.utils - INFO - stopping Kafka
-2016-10-16 00:19:21,024 - streamline.Daemon - INFO - killing process 23911
-2016-10-16 00:19:24,090 - streamline.service.utils - INFO - stopping Zookeeper
-2016-10-16 00:19:24,090 - streamline.Daemon - INFO - killing process 23910
-2016-10-16 00:19:24,701 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
-2016-10-16 00:19:24,702 - streamline.service.utils - INFO - stopping UI
-2016-10-16 00:19:24,702 - streamline.Daemon - INFO - killing process 24418
-2016-10-16 00:19:25,109 - streamline.service.utils - INFO - stopping Supervisor
-2016-10-16 00:19:25,110 - streamline.Daemon - INFO - killing process 24417
-2016-10-16 00:19:26,240 - streamline.service.utils - INFO - stopping Nimbus
-2016-10-16 00:19:26,240 - streamline.Daemon - INFO - killing process 24416
-2016-10-16 00:19:27,678 - streamline.service.utils - INFO - deleting dir /tmp/services/storm
-2016-10-16 00:19:27,678 - streamline.service.utils - INFO - stopping Registry
-2016-10-16 00:19:27,679 - streamline.Daemon - INFO - killing process 24550
-2016-10-16 00:19:27,782 - streamline.service.utils - INFO - deleting dir /tmp/services/registry
+2016-10-16 17:14:11,490 - streamline - INFO - setting up Kafka Service
+2016-10-16 17:14:11,490 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
+2016-10-16 17:14:11,490 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
+2016-10-16 17:14:11,490 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
+2016-10-16 17:14:11,490 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
+2016-10-16 17:14:11,490 - streamline - INFO - setting up Storm Service
+2016-10-16 17:14:11,490 - streamline.service.utils - INFO - storm home /tmp/services/storm/apache-storm-1.0.2
+2016-10-16 17:14:11,490 - streamline.service.utils - INFO - storm pids dir /tmp/services/storm/pids
+2016-10-16 17:14:11,490 - streamline.service.utils - INFO - nimbus start command /tmp/services/storm/apache-storm-1.0.2/bin/storm nimbus
+2016-10-16 17:14:11,490 - streamline.service.utils - INFO - supervisor start command /tmp/services/storm/apache-storm-1.0.2/bin/storm supervisor
+2016-10-16 17:14:11,490 - streamline.service.utils - INFO - storm ui start command /tmp/services/storm/apache-storm-1.0.2/bin/storm ui
+2016-10-16 17:14:11,490 - streamline - INFO - setting up Registry Service
+2016-10-16 17:14:11,491 - streamline.service.utils - INFO - registry home /tmp/services/registry/hortonworks-registry-0.1.0-SNAPSHOT
+2016-10-16 17:14:11,491 - streamline.service.utils - INFO - registry pids dir /tmp/services/registry/pids
+2016-10-16 17:14:11,491 - streamline.service.utils - INFO - registry start command /tmp/services/registry/hortonworks-registry-0.1.0-SNAPSHOT/bin/registry-server-start.sh /tmp/services/registry/hortonworks-registry-0.1.0-SNAPSHOT/conf/registry-dev.yaml
+2016-10-16 17:14:11,491 - streamline - INFO - setting up Streamline Service
+2016-10-16 17:14:11,491 - streamline.service.utils - INFO - streamline home /tmp/services/streamline/hortonworks-iotas-0.1.0-SNAPSHOT
+2016-10-16 17:14:11,491 - streamline.service.utils - INFO - streamline pids dir /tmp/services/streamline/pids
+2016-10-16 17:14:11,491 - streamline.service.utils - INFO - streamline start command /tmp/services/streamline/hortonworks-iotas-0.1.0-SNAPSHOT/bin/iotas-server-start.sh /tmp/services/streamline/hortonworks-iotas-0.1.0-SNAPSHOT/conf/iotas-dev.yaml
+2016-10-16 17:14:11,491 - streamline.service.utils - INFO - starting Zookeeper
+2016-10-16 17:14:11,493 - streamline.Daemon - INFO - process started with pid 49588
+2016-10-16 17:14:11,494 - streamline.service.utils - INFO - starting Kafka broker
+2016-10-16 17:14:11,497 - streamline.Daemon - INFO - process started with pid 49589
+2016-10-16 17:14:41,499 - streamline.service.utils - INFO - starting Nimbus
+2016-10-16 17:14:41,501 - streamline.Daemon - INFO - process started with pid 50094
+2016-10-16 17:14:41,502 - streamline.service.utils - INFO - starting Supervisor
+2016-10-16 17:14:41,505 - streamline.Daemon - INFO - process started with pid 50095
+2016-10-16 17:14:41,505 - streamline.service.utils - INFO - starting UI
+2016-10-16 17:14:41,508 - streamline.Daemon - INFO - process started with pid 50096
+2016-10-16 17:15:11,509 - streamline.service.utils - INFO - starting Registry
+2016-10-16 17:15:11,511 - streamline.Daemon - INFO - process started with pid 50202
+2016-10-16 17:15:41,516 - streamline.service.utils - INFO - starting Streamline
+2016-10-16 17:15:41,518 - streamline.Daemon - INFO - process started with pid 50272
+2016-10-16 17:15:41,519 - streamline.service.utils - INFO - running Streamline bootstrap
+2016-10-16 17:15:56,523 - streamline.service.utils - INFO - Running the command /tmp/services/streamline/hortonworks-iotas-0.1.0-SNAPSHOT/bootstrap/bootstrap.sh
+2016-10-16 17:15:57,020 - streamline.service.utils - INFO - Running the command /tmp/services/streamline/hortonworks-iotas-0.1.0-SNAPSHOT/bootstrap/bootstrap-udf.sh
+2016-10-16 17:16:12,238 - streamline.service.utils - INFO - stopping Kafka
+2016-10-16 17:16:12,240 - streamline.Daemon - INFO - killing process 49589
+2016-10-16 17:16:15,122 - streamline.service.utils - INFO - stopping Zookeeper
+2016-10-16 17:16:15,123 - streamline.Daemon - INFO - killing process 49588
+2016-10-16 17:16:15,737 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
+2016-10-16 17:16:15,737 - streamline.service.utils - INFO - stopping UI
+2016-10-16 17:16:15,737 - streamline.Daemon - INFO - killing process 50096
+2016-10-16 17:16:16,150 - streamline.service.utils - INFO - stopping Supervisor
+2016-10-16 17:16:16,150 - streamline.Daemon - INFO - killing process 50095
+2016-10-16 17:16:17,210 - streamline.service.utils - INFO - stopping Nimbus
+2016-10-16 17:16:17,212 - streamline.Daemon - INFO - killing process 50094
+2016-10-16 17:16:18,647 - streamline.service.utils - INFO - deleting dir /tmp/services/storm
+2016-10-16 17:16:18,647 - streamline.service.utils - INFO - stopping Registry
+2016-10-16 17:16:18,648 - streamline.Daemon - INFO - killing process 50202
+2016-10-16 17:16:18,749 - streamline.service.utils - INFO - deleting dir /tmp/services/registry
+2016-10-16 17:16:18,750 - streamline.service.utils - INFO - stopping Streamline
+2016-10-16 17:16:18,750 - streamline.Daemon - INFO - killing process 50272
+2016-10-16 17:16:18,750 - streamline.service.utils - ERROR - process alive error [Errno 10] No child processes
+2016-10-16 17:17:09,387 - streamline - INFO - setting up Kafka Service
+2016-10-16 17:17:09,388 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
+2016-10-16 17:17:09,388 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
+2016-10-16 17:17:09,388 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
+2016-10-16 17:17:09,388 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
+2016-10-16 17:17:09,388 - streamline - INFO - setting up Storm Service
+2016-10-16 17:17:09,388 - streamline.service.utils - INFO - storm home /tmp/services/storm/apache-storm-1.0.2
+2016-10-16 17:17:09,388 - streamline.service.utils - INFO - storm pids dir /tmp/services/storm/pids
+2016-10-16 17:17:09,388 - streamline.service.utils - INFO - nimbus start command /tmp/services/storm/apache-storm-1.0.2/bin/storm nimbus
+2016-10-16 17:17:09,388 - streamline.service.utils - INFO - supervisor start command /tmp/services/storm/apache-storm-1.0.2/bin/storm supervisor
+2016-10-16 17:17:09,388 - streamline.service.utils - INFO - storm ui start command /tmp/services/storm/apache-storm-1.0.2/bin/storm ui
+2016-10-16 17:17:09,388 - streamline - INFO - setting up Registry Service
+2016-10-16 17:17:09,388 - streamline.service.utils - INFO - registry home /tmp/services/registry/hortonworks-registry-0.1.0-SNAPSHOT
+2016-10-16 17:17:09,388 - streamline.service.utils - INFO - registry pids dir /tmp/services/registry/pids
+2016-10-16 17:17:09,388 - streamline.service.utils - INFO - registry start command /tmp/services/registry/hortonworks-registry-0.1.0-SNAPSHOT/bin/registry-server-start.sh /tmp/services/registry/hortonworks-registry-0.1.0-SNAPSHOT/conf/registry-dev.yaml
+2016-10-16 17:17:09,388 - streamline - INFO - setting up Streamline Service
+2016-10-16 17:17:09,388 - streamline.service.utils - INFO - streamline home /tmp/services/streamline/hortonworks-iotas-0.1.0-SNAPSHOT
+2016-10-16 17:17:09,389 - streamline.service.utils - INFO - streamline pids dir /tmp/services/streamline/pids
+2016-10-16 17:17:09,389 - streamline.service.utils - INFO - streamline start command /tmp/services/streamline/hortonworks-iotas-0.1.0-SNAPSHOT/bin/iotas-server-start.sh /tmp/services/streamline/hortonworks-iotas-0.1.0-SNAPSHOT/conf/iotas-dev.yaml
+2016-10-16 17:17:09,389 - streamline.service.utils - INFO - starting Zookeeper
+2016-10-16 17:17:09,391 - streamline.Daemon - INFO - process started with pid 50758
+2016-10-16 17:17:09,392 - streamline.service.utils - INFO - starting Kafka broker
+2016-10-16 17:17:09,394 - streamline.Daemon - INFO - process started with pid 50759
+2016-10-16 17:17:39,395 - streamline.service.utils - INFO - starting Nimbus
+2016-10-16 17:17:39,399 - streamline.Daemon - INFO - process started with pid 51261
+2016-10-16 17:17:39,400 - streamline.service.utils - INFO - starting Supervisor
+2016-10-16 17:17:39,403 - streamline.Daemon - INFO - process started with pid 51262
+2016-10-16 17:17:39,403 - streamline.service.utils - INFO - starting UI
+2016-10-16 17:17:39,406 - streamline.Daemon - INFO - process started with pid 51263
+2016-10-16 17:18:09,408 - streamline.service.utils - INFO - starting Registry
+2016-10-16 17:18:09,410 - streamline.Daemon - INFO - process started with pid 51402
+2016-10-16 17:18:39,413 - streamline.service.utils - INFO - starting Streamline
+2016-10-16 17:18:39,418 - streamline.Daemon - INFO - process started with pid 51495
+2016-10-16 17:18:39,421 - streamline.service.utils - INFO - running Streamline bootstrap
+2016-10-16 17:18:54,421 - streamline.service.utils - INFO - Running the command /tmp/services/streamline/hortonworks-iotas-0.1.0-SNAPSHOT/bootstrap/bootstrap.sh
+2016-10-16 17:18:54,961 - streamline.service.utils - INFO - Running the command /tmp/services/streamline/hortonworks-iotas-0.1.0-SNAPSHOT/bootstrap/bootstrap-udf.sh
+2016-10-16 17:19:55,182 - streamline.service.utils - INFO - stopping Kafka
+2016-10-16 17:19:55,185 - streamline.Daemon - INFO - killing process 50759
+2016-10-16 17:19:57,751 - streamline.service.utils - INFO - stopping Zookeeper
+2016-10-16 17:19:57,751 - streamline.Daemon - INFO - killing process 50758
+2016-10-16 17:19:58,361 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
+2016-10-16 17:19:58,361 - streamline.service.utils - INFO - stopping UI
+2016-10-16 17:19:58,362 - streamline.Daemon - INFO - killing process 51263
+2016-10-16 17:19:58,772 - streamline.service.utils - INFO - stopping Supervisor
+2016-10-16 17:19:58,772 - streamline.Daemon - INFO - killing process 51262
+2016-10-16 17:19:59,892 - streamline.service.utils - INFO - stopping Nimbus
+2016-10-16 17:19:59,895 - streamline.Daemon - INFO - killing process 51261
+2016-10-16 17:20:01,336 - streamline.service.utils - INFO - deleting dir /tmp/services/storm
+2016-10-16 17:20:01,336 - streamline.service.utils - INFO - stopping Registry
+2016-10-16 17:20:01,338 - streamline.Daemon - INFO - killing process 51402
+2016-10-16 17:20:01,442 - streamline.service.utils - INFO - deleting dir /tmp/services/registry
+2016-10-16 17:20:01,442 - streamline.service.utils - INFO - stopping Streamline
+2016-10-16 17:20:01,444 - streamline.Daemon - INFO - killing process 51495
+2016-10-16 17:20:01,444 - streamline.service.utils - ERROR - process alive error [Errno 10] No child processes
+2016-10-16 17:24:14,875 - streamline - INFO - setting up Kafka Service
+2016-10-16 17:24:14,875 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
+2016-10-16 17:24:14,875 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
+2016-10-16 17:24:14,875 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
+2016-10-16 17:24:14,875 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
+2016-10-16 17:24:14,875 - streamline - INFO - setting up Storm Service
+2016-10-16 17:24:14,876 - streamline.service.utils - INFO - storm home /tmp/services/storm/apache-storm-1.0.2
+2016-10-16 17:24:14,876 - streamline.service.utils - INFO - storm pids dir /tmp/services/storm/pids
+2016-10-16 17:24:14,876 - streamline.service.utils - INFO - nimbus start command /tmp/services/storm/apache-storm-1.0.2/bin/storm nimbus
+2016-10-16 17:24:14,876 - streamline.service.utils - INFO - supervisor start command /tmp/services/storm/apache-storm-1.0.2/bin/storm supervisor
+2016-10-16 17:24:14,876 - streamline.service.utils - INFO - storm ui start command /tmp/services/storm/apache-storm-1.0.2/bin/storm ui
+2016-10-16 17:24:14,876 - streamline - INFO - setting up Registry Service
+2016-10-16 17:24:14,876 - streamline.service.utils - INFO - registry home /tmp/services/registry/hortonworks-registry-0.1.0-SNAPSHOT
+2016-10-16 17:24:14,876 - streamline.service.utils - INFO - registry pids dir /tmp/services/registry/pids
+2016-10-16 17:24:14,876 - streamline.service.utils - INFO - registry start command /tmp/services/registry/hortonworks-registry-0.1.0-SNAPSHOT/bin/registry-server-start.sh /tmp/services/registry/hortonworks-registry-0.1.0-SNAPSHOT/conf/registry-dev.yaml
+2016-10-16 17:24:14,876 - streamline - INFO - setting up Streamline Service
+2016-10-16 17:24:14,876 - streamline.service.utils - INFO - streamline home /tmp/services/streamline/hortonworks-iotas-0.1.0-SNAPSHOT
+2016-10-16 17:24:14,876 - streamline.service.utils - INFO - streamline pids dir /tmp/services/streamline/pids
+2016-10-16 17:24:14,876 - streamline.service.utils - INFO - streamline start command /tmp/services/streamline/hortonworks-iotas-0.1.0-SNAPSHOT/bin/iotas-server-start.sh /tmp/services/streamline/hortonworks-iotas-0.1.0-SNAPSHOT/conf/iotas-dev.yaml
+2016-10-16 17:24:14,877 - streamline.service.utils - INFO - starting Zookeeper
+2016-10-16 17:24:14,879 - streamline.Daemon - INFO - process started with pid 52731
+2016-10-16 17:24:14,880 - streamline.service.utils - INFO - starting Kafka broker
+2016-10-16 17:24:14,884 - streamline.Daemon - INFO - process started with pid 52732
+2016-10-16 17:24:44,884 - streamline.service.utils - INFO - starting Nimbus
+2016-10-16 17:24:44,888 - streamline.Daemon - INFO - process started with pid 53240
+2016-10-16 17:24:44,890 - streamline.service.utils - INFO - starting Supervisor
+2016-10-16 17:24:44,894 - streamline.Daemon - INFO - process started with pid 53241
+2016-10-16 17:24:44,895 - streamline.service.utils - INFO - starting UI
+2016-10-16 17:24:44,898 - streamline.Daemon - INFO - process started with pid 53242
+2016-10-16 17:25:14,898 - streamline.service.utils - INFO - starting Registry
+2016-10-16 17:25:14,901 - streamline.Daemon - INFO - process started with pid 53367
+2016-10-16 17:25:44,906 - streamline.service.utils - INFO - starting Streamline
+2016-10-16 17:25:44,909 - streamline.Daemon - INFO - process started with pid 53444
+2016-10-16 17:25:44,910 - streamline.service.utils - INFO - running Streamline bootstrap
+2016-10-16 17:25:59,910 - streamline.service.utils - INFO - Running the command /tmp/services/streamline/hortonworks-iotas-0.1.0-SNAPSHOT/bootstrap/bootstrap.sh
+2016-10-16 17:26:00,459 - streamline.service.utils - INFO - Running the command /tmp/services/streamline/hortonworks-iotas-0.1.0-SNAPSHOT/bootstrap/bootstrap-udf.sh
+2016-10-16 17:27:00,887 - streamline.service.utils - INFO - stopping Kafka
+2016-10-16 17:27:00,890 - streamline.Daemon - INFO - killing process 52732
+2016-10-16 17:27:03,142 - streamline.service.utils - INFO - stopping Zookeeper
+2016-10-16 17:27:03,142 - streamline.Daemon - INFO - killing process 52731
+2016-10-16 17:27:03,762 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
+2016-10-16 17:27:03,763 - streamline.service.utils - INFO - stopping UI
+2016-10-16 17:27:03,763 - streamline.Daemon - INFO - killing process 53242
+2016-10-16 17:27:04,170 - streamline.service.utils - INFO - stopping Supervisor
+2016-10-16 17:27:04,170 - streamline.Daemon - INFO - killing process 53241
+2016-10-16 17:27:05,299 - streamline.service.utils - INFO - stopping Nimbus
+2016-10-16 17:27:05,299 - streamline.Daemon - INFO - killing process 53240
+2016-10-16 17:27:06,735 - streamline.service.utils - INFO - deleting dir /tmp/services/storm
+2016-10-16 17:27:06,735 - streamline.service.utils - INFO - stopping Registry
+2016-10-16 17:27:06,737 - streamline.Daemon - INFO - killing process 53367
+2016-10-16 17:27:06,844 - streamline.service.utils - INFO - deleting dir /tmp/services/registry
+2016-10-16 17:27:06,844 - streamline.service.utils - INFO - stopping Streamline
+2016-10-16 17:27:06,844 - streamline.Daemon - INFO - killing process 53444
+2016-10-16 17:27:06,845 - streamline.service.utils - ERROR - process alive error [Errno 10] No child processes
+2016-10-16 17:27:57,291 - streamline - INFO - setting up Kafka Service
+2016-10-16 17:27:57,291 - streamline.service.utils - INFO - kafka home /tmp/services/kafka/kafka_2.10-0.10.0.1
+2016-10-16 17:27:57,291 - streamline.service.utils - INFO - kafka pids dir /tmp/services/kafka/pids
+2016-10-16 17:27:57,291 - streamline.service.utils - INFO - zookeeper start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/zookeeper-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/zookeeper.properties
+2016-10-16 17:27:57,291 - streamline.service.utils - INFO - kafka start command /tmp/services/kafka/kafka_2.10-0.10.0.1/bin/kafka-server-start.sh /tmp/services/kafka/kafka_2.10-0.10.0.1/config/server.properties
+2016-10-16 17:27:57,291 - streamline - INFO - setting up Storm Service
+2016-10-16 17:27:57,291 - streamline.service.utils - INFO - storm home /tmp/services/storm/apache-storm-1.0.2
+2016-10-16 17:27:57,291 - streamline.service.utils - INFO - storm pids dir /tmp/services/storm/pids
+2016-10-16 17:27:57,292 - streamline.service.utils - INFO - nimbus start command /tmp/services/storm/apache-storm-1.0.2/bin/storm nimbus
+2016-10-16 17:27:57,292 - streamline.service.utils - INFO - supervisor start command /tmp/services/storm/apache-storm-1.0.2/bin/storm supervisor
+2016-10-16 17:27:57,292 - streamline.service.utils - INFO - storm ui start command /tmp/services/storm/apache-storm-1.0.2/bin/storm ui
+2016-10-16 17:27:57,292 - streamline - INFO - setting up Registry Service
+2016-10-16 17:27:57,292 - streamline.service.utils - INFO - registry home /tmp/services/registry/hortonworks-registry-0.1.0-SNAPSHOT
+2016-10-16 17:27:57,292 - streamline.service.utils - INFO - registry pids dir /tmp/services/registry/pids
+2016-10-16 17:27:57,292 - streamline.service.utils - INFO - registry start command /tmp/services/registry/hortonworks-registry-0.1.0-SNAPSHOT/bin/registry-server-start.sh /tmp/services/registry/hortonworks-registry-0.1.0-SNAPSHOT/conf/registry-dev.yaml
+2016-10-16 17:27:57,292 - streamline - INFO - setting up Streamline Service
+2016-10-16 17:27:57,292 - streamline.service.utils - INFO - streamline home /tmp/services/streamline/hortonworks-iotas-0.1.0-SNAPSHOT
+2016-10-16 17:27:57,292 - streamline.service.utils - INFO - streamline pids dir /tmp/services/streamline/pids
+2016-10-16 17:27:57,292 - streamline.service.utils - INFO - streamline start command /tmp/services/streamline/hortonworks-iotas-0.1.0-SNAPSHOT/bin/iotas-server-start.sh /tmp/services/streamline/hortonworks-iotas-0.1.0-SNAPSHOT/conf/iotas-dev.yaml
+2016-10-16 17:27:57,292 - streamline.service.utils - INFO - starting Zookeeper
+2016-10-16 17:27:57,294 - streamline.Daemon - INFO - process started with pid 53998
+2016-10-16 17:27:57,295 - streamline.service.utils - INFO - starting Kafka broker
+2016-10-16 17:27:57,298 - streamline.Daemon - INFO - process started with pid 53999
+2016-10-16 17:28:27,301 - streamline.service.utils - INFO - starting Nimbus
+2016-10-16 17:28:27,304 - streamline.Daemon - INFO - process started with pid 54511
+2016-10-16 17:28:27,305 - streamline.service.utils - INFO - starting Supervisor
+2016-10-16 17:28:27,307 - streamline.Daemon - INFO - process started with pid 54512
+2016-10-16 17:28:27,308 - streamline.service.utils - INFO - starting UI
+2016-10-16 17:28:27,311 - streamline.Daemon - INFO - process started with pid 54513
+2016-10-16 17:28:57,311 - streamline.service.utils - INFO - starting Registry
+2016-10-16 17:28:57,313 - streamline.Daemon - INFO - process started with pid 54628
+2016-10-16 17:29:27,315 - streamline.service.utils - INFO - starting Streamline
+2016-10-16 17:29:27,317 - streamline.Daemon - INFO - process started with pid 54697
+2016-10-16 17:29:27,318 - streamline.service.utils - INFO - running Streamline bootstrap
+2016-10-16 17:29:42,321 - streamline.service.utils - INFO - Running the command /tmp/services/streamline/hortonworks-iotas-0.1.0-SNAPSHOT/bootstrap/bootstrap.sh
+2016-10-16 17:29:42,899 - streamline.service.utils - INFO - Running the command /tmp/services/streamline/hortonworks-iotas-0.1.0-SNAPSHOT/bootstrap/bootstrap-udf.sh
+2016-10-16 17:30:43,150 - streamline.service.utils - INFO - stopping Kafka
+2016-10-16 17:30:43,152 - streamline.Daemon - INFO - killing process 53999
+2016-10-16 17:30:46,093 - streamline.service.utils - INFO - stopping Zookeeper
+2016-10-16 17:30:46,094 - streamline.Daemon - INFO - killing process 53998
+2016-10-16 17:30:46,717 - streamline.service.utils - INFO - deleting dir /tmp/services/kafka
+2016-10-16 17:30:46,717 - streamline.service.utils - INFO - stopping UI
+2016-10-16 17:30:46,719 - streamline.Daemon - INFO - killing process 54513
+2016-10-16 17:30:47,122 - streamline.service.utils - INFO - stopping Supervisor
+2016-10-16 17:30:47,122 - streamline.Daemon - INFO - killing process 54512
+2016-10-16 17:30:48,237 - streamline.service.utils - INFO - stopping Nimbus
+2016-10-16 17:30:48,239 - streamline.Daemon - INFO - killing process 54511
+2016-10-16 17:30:49,687 - streamline.service.utils - INFO - deleting dir /tmp/services/storm
+2016-10-16 17:30:49,687 - streamline.service.utils - INFO - stopping Registry
+2016-10-16 17:30:49,689 - streamline.Daemon - INFO - killing process 54628
+2016-10-16 17:30:49,793 - streamline.service.utils - INFO - deleting dir /tmp/services/registry
+2016-10-16 17:30:49,793 - streamline.service.utils - INFO - stopping Streamline
+2016-10-16 17:30:49,793 - streamline.Daemon - INFO - killing process 54697
+2016-10-16 17:30:49,794 - streamline.service.utils - ERROR - process alive error [Errno 10] No child processes
+2016-10-16 17:30:49,794 - streamline.service.utils - INFO - deleting dir /tmp/services/streamline

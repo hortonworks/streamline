@@ -21,6 +21,7 @@ from __future__ import print_function
 from services.kafka import KafkaService
 from services.storm import StormService
 from services.registry import RegistryService
+from services.streamline import StreamlineService
 from services import config_property
 
 import sys
@@ -52,15 +53,21 @@ class StreamlineTest(object):
         self.registryService = RegistryService(self.config[config_property.SERVICES][config_property.REGISTRY], args.download, args.build)
         self.registryService.setup()
 
+        self.logger.info("setting up Streamline Service")
+        self.streamlineService = StreamlineService(self.config[config_property.SERVICES][config_property.STREAMLINE], args.download, args.build)
+        self.streamlineService.setup()
+
     def start(self):
         self.kafkaService.start()
         self.stormService.start()
         self.registryService.start()
+        self.streamlineService.start()
 
     def stop(self):
         self.kafkaService.stop()
         self.stormService.stop()
         self.registryService.stop()
+        self.streamlineService.stop()
 
 
 def arg_parser():
@@ -80,12 +87,13 @@ def arg_parser():
 
 def main(args):
     config = {}
+    print(args.confFile)
     with open(args.confFile, 'r') as stream:
         try:
             config = yaml.load(stream)
         except yaml.YAMLError as exc:
             print(exc)
-
+    print(config)
     streamlineTest = StreamlineTest(config, args)
     streamlineTest.setup()
     streamlineTest.start()

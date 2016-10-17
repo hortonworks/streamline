@@ -1,5 +1,5 @@
-loggingConf: ./conf/logging.conf
-services:
+ loggingConf: ./conf/logging.conf
+ services:
   zookeeper:
     location: /tmp/services/zookeeper
     build:
@@ -15,23 +15,19 @@ services:
     build:
       type: binary
       url: http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.10-0.10.0.1.tgz
-    config:
-      listeners: PLAINTEXT://0.0.0.0:9092
-      kafka.log.dirs: /tmp/kafka-logs
-
+    config: ./conf/server.properties
+      
   storm:
     location: /tmp/services/storm
     storm_home: /tmp/services/storm/apache-storm-1.0.2
     build:
       type: binary
       url: http://www-us.apache.org/dist/storm/apache-storm-1.0.2/apache-storm-1.0.2.tar.gz
-    config:
-      ui.port: 9094
-      storm.local.dir : /tmp/storm-data
-
+    config: ./conf/storm.yaml
+      
   registry:
     location: /tmp/services/registry
-    storm_home: /tmp/services/registry
+    registry_home: /tmp/services/registry/hortonworks-registry-0.1.0-SNAPSHOT
     build:
       type: maven
       url:  git@github.com:hortonworks/registry.git
@@ -39,13 +35,12 @@ services:
       dist: registry-dist
       version: 0.1.0-SNAPSHOT
       dist_file: hortonworks-registry-0.1.0-SNAPSHOT.tar.gz
-    config:
-      ui.port: 9094
-      storm.local.dir : /tmp/storm-data
+    config: ./conf/registry.yaml
+      
 
   streamline:
     location: /tmp/services/streamline
-    storm_home: /tmp/services/streamline
+    streamline_home: /tmp/services/streamline/hortonworks-iotas-0.1.0-SNAPSHOT
     build:
       type: maven
       url:  git@github.com:hortonworks/streamline.git
@@ -53,6 +48,5 @@ services:
       dist: iotas-dist
       version: 0.1.0-SNAPSHOT
       dist_file: hortonworks-iotas-0.1.0-SNAPSHOT.tar.gz
-    config:
-      ui.port: 9095
-      storm.local.dir : /tmp/storm-data
+    config: ./conf/iotas.yaml
+      

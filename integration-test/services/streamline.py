@@ -14,7 +14,7 @@ from utils import *
 
 module_logger = logging.getLogger("streamline.StreamlineService")
 
-class RegistryService:
+class StreamlineService:
     def __init__(self, config, download, build):
         self.config = config
         self.location = config[config_property.LOCATION]
@@ -36,20 +36,31 @@ class RegistryService:
         else:
             streamline_home = self.config[config_property.STREAMLINE_HOME]
 
-        logger.info("streamline home "+ registry_home)
+        self.streamline_home = streamline_home
+        logger.info("streamline home "+ streamline_home)
         streamline_pids = os.path.join(self.location, "pids")
         logger.info("streamline pids dir " + streamline_pids)
         mkdir(streamline_pids)
 
         streamline_start = os.path.join(streamline_home, "bin", "iotas-server-start.sh") + " " + os.path.join(streamline_home, "conf", "iotas-dev.yaml")
-        logger.info("registry start command " +  registry_start)
+        logger.info("streamline start command " +  streamline_start)
         self.streamline = Daemon(streamline_start, os.path.join(streamline_pids, "streamline.pid"))
 
 
     def start(self):
         logger.info("starting Streamline")
         self.streamline.start()
-        time.sleep(30)
+        logger.info("running Streamline bootstrap")
+        time.sleep(15)
+        self.bootstrap()
+        time.sleep(60)
+
+    def bootstrap(self):
+        bootstrap_cmd = os.path.join(self.streamline_home, "bootstrap", "bootstrap.sh")
+        run_cmd(bootstrap_cmd)
+        bootstrap_udf_cmd = os.path.join(self.streamline_home, "bootstrap", "bootstrap-udf.sh")
+        run_cmd(bootstrap_udf_cmd)
+
 
     def stop(self):
         logger.info("stopping Streamline")

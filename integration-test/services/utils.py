@@ -1,4 +1,4 @@
-import urllib,  os, shutil, logging, tarfile, zipfile, subprocess
+import urllib, os, shutil, logging, tarfile, zipfile, subprocess, errno
 from urlparse import urlparse
 from os.path import basename
 from shutil import copyfile
@@ -45,6 +45,12 @@ def download_and_build(url, dir, service_name, service_dist, service_version, se
 
     return os.path.join(dir, service_ext_dir)
 
+def run_cmd(cmd):
+    #build the binaries
+    logger.info("Running the command %s", cmd)
+    subprocess.call(cmd, shell=True)
+
+
 def delete_dir(dir):
     logger.info("deleting dir " + dir)
     #shutil.rmtree(dir)
@@ -59,19 +65,12 @@ def process_alive(pid):
     if pid == 0:
         raise ValueError('invalid PID 0')
     try:
-        alive = not os.waitpid(pid, os.WNOHANG)[0] 
+        return os.waitpid(pid, os.WNOHANG) == (0, 0)
     except OSError as err:
-        if err.errno == errno.ESRCH:
-            # ESRCH == No such process
-            return False
-        elif err.errno == errno.EPERM:
-            # EPERM clearly means there's a process to deny access to
-            return True
-        else:
-            # According to "man 2 kill" possible error values are
-            # (EINVAL, EPERM, ESRCH)
+        logger.error("process alive error %s", err)
+        if err.errno != errno.ECHILD:
             raise
-    return alive
+    return False
 
 
 def splitext(path):

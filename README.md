@@ -21,6 +21,7 @@ Same config can be used to start debugging.
 ##Bootstrapping webserver with test data
 `cd $STREAMLINE-HOME\bootstrap`
 `./bootstrap.sh`
+`./bootstrap-udf.sh`
 
 Please see `bootstrap.sh` which is just bunch of curl commands in case you want to add some other objects to webservice's in memory store.
 
