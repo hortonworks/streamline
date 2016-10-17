@@ -35,7 +35,7 @@ public class SqlNestedExprScriptTest {
     public void setUp() throws Exception {
     }
 
-//    @Test
+    @Test
     public void testBasic() throws Exception {
         Condition condition = new Condition();
         Expression x = new FieldExpression(Schema.Field.of("x", Schema.Type.INTEGER));
