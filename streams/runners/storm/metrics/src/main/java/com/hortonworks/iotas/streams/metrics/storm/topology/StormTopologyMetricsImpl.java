@@ -15,6 +15,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.hortonworks.iotas.streams.metrics.storm.topology.StormMetricsConstant.STATS_JSON_ACKED_TUPLES;
+import static com.hortonworks.iotas.streams.metrics.storm.topology.StormMetricsConstant.STATS_JSON_COMPLETE_LATENCY;
+import static com.hortonworks.iotas.streams.metrics.storm.topology.StormMetricsConstant.STATS_JSON_FAILED_TUPLES;
+import static com.hortonworks.iotas.streams.metrics.storm.topology.StormMetricsConstant.STATS_JSON_PROCESS_LATENCY;
+import static com.hortonworks.iotas.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_BOLTS;
+import static com.hortonworks.iotas.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_BOLT_ID;
+import static com.hortonworks.iotas.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_SPOUTS;
+import static com.hortonworks.iotas.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_SPOUT_ID;
+import static com.hortonworks.iotas.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_STATS;
+import static com.hortonworks.iotas.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_STATUS;
+import static com.hortonworks.iotas.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_UPTIME_SECS;
+import static com.hortonworks.iotas.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_WINDOW;
+
 /**
  * Storm implementation of the TopologyMetrics interface
  */
@@ -42,6 +55,47 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
      * {@inheritDoc}
      */
     @Override
+    public TopologyMetric getTopologyMetric(TopologyLayout topology) {
+        String stormTopologyName = getTopologyName(topology);
+
+        String topologyId = findTopologyId(stormTopologyName);
+        if (topologyId == null) {
+            throw new TopologyNotAliveException("Topology not found in Storm Cluster - topology name in Storm: " + stormTopologyName);
+        }
+
+        Map<String, ?> responseMap = client.target(getTopologyUrl(topologyId)).request(MediaType.APPLICATION_JSON_TYPE).get(Map.class);
+
+        Long uptimeSeconds = ((Number) responseMap.get(TOPOLOGY_JSON_UPTIME_SECS)).longValue();
+        String status = (String) responseMap.get(TOPOLOGY_JSON_STATUS);
+
+        List<Map<String, ?>> topologyStatsList = (List<Map<String, ?>>) responseMap.get(TOPOLOGY_JSON_STATS);
+
+        // pick smallest time window
+        Map<String, ?> topologyStatsMap = null;
+        Long smallestWindow = Long.MAX_VALUE;
+        for (Map<String, ?> topoStats : topologyStatsList) {
+            String windowStr = (String) topoStats.get(TOPOLOGY_JSON_WINDOW);
+            Long window = convertWindowString(windowStr, uptimeSeconds);
+            if (smallestWindow > window) {
+                smallestWindow = window;
+                topologyStatsMap = topoStats;
+            }
+        }
+
+        // extract metrics from smallest time window
+        Long window = smallestWindow;
+        Long acked = getLongValueOrDefault(topologyStatsMap, STATS_JSON_ACKED_TUPLES, 0L);
+        Long failedRecords = getLongValueOrDefault(topologyStatsMap, STATS_JSON_FAILED_TUPLES, 0L);
+        Double completeLatency = getDoubleValueFromStringOrDefault(topologyStatsMap, STATS_JSON_COMPLETE_LATENCY, 0.0d);
+
+        return new TopologyMetric(topology.getName(), status, uptimeSeconds, window,
+            acked * 1.0 / window, completeLatency, failedRecords);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Map<String, ComponentMetric> getMetricsForTopology(TopologyLayout topology) {
         String stormTopologyName = getTopologyName(topology);
 
@@ -49,21 +103,21 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
 
         String topologyId = findTopologyId(stormTopologyName);
         if (topologyId == null) {
-            throw new RuntimeException("Topology not found in Storm Cluster - topology name in Storm: " + stormTopologyName);
+            throw new TopologyNotAliveException("Topology not found in Storm Cluster - topology name in Storm: " + stormTopologyName);
         }
 
         Map<String, ?> responseMap = client.target(getTopologyUrl(topologyId)).request(MediaType.APPLICATION_JSON_TYPE).get(Map.class);
 
-        List<Map<String, ?>> spouts = (List<Map<String, ?>>) responseMap.get("spouts");
+        List<Map<String, ?>> spouts = (List<Map<String, ?>>) responseMap.get(TOPOLOGY_JSON_SPOUTS);
         for (Map<String, ?> spout : spouts) {
-            String spoutName = (String) spout.get("spoutId");
+            String spoutName = (String) spout.get(TOPOLOGY_JSON_SPOUT_ID);
             ComponentMetric metric = extractMetric(spoutName, spout);
             metricMap.put(metric.getComponentName(), metric);
         }
 
-        List<Map<String, ?>> bolts = (List<Map<String, ?>>) responseMap.get("bolts");
+        List<Map<String, ?>> bolts = (List<Map<String, ?>>) responseMap.get(TOPOLOGY_JSON_BOLTS);
         for (Map<String, ?> bolt : bolts) {
-            String boltName = (String) bolt.get("boltId");
+            String boltName = (String) bolt.get(TOPOLOGY_JSON_BOLT_ID);
             ComponentMetric metric = extractMetric(boltName, bolt);
             metricMap.put(metric.getComponentName(), metric);
         }
@@ -112,31 +166,10 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
     }
 
     private ComponentMetric extractMetric(String componentName, Map<String, ?> componentMap) {
-        Long inputRecords = 0L;
-        Long outputRecords = 0L;
-        Double processedTime = 0.0d;
-        Long failedRecords = 0L;
-
-        if (componentMap.containsKey(StormMetricsConstant.COMPONENT_EXECUTED_TUPLES)) {
-            Number executed = (Number) componentMap.get(StormMetricsConstant.COMPONENT_EXECUTED_TUPLES);
-            inputRecords = executed.longValue();
-        }
-        if (componentMap.containsKey(StormMetricsConstant.COMPONENT_EMITTED_TUPLES)) {
-            Number emitted = (Number) componentMap.get(StormMetricsConstant.COMPONENT_EMITTED_TUPLES);
-            outputRecords = emitted.longValue();
-        }
-        if (componentMap.containsKey(StormMetricsConstant.COMPONENT_PROCESS_LATENCY)) {
-            String processLatencyStr = (String) componentMap.get(StormMetricsConstant.COMPONENT_PROCESS_LATENCY);
-            try {
-                processedTime = Double.parseDouble(processLatencyStr);
-            } catch (NumberFormatException e) {
-                // noop
-            }
-        }
-        if (componentMap.containsKey(StormMetricsConstant.COMPONENT_FAILED_TUPLES)) {
-            Number failed = (Number) componentMap.get(StormMetricsConstant.COMPONENT_FAILED_TUPLES);
-            failedRecords = failed.longValue();
-        }
+        Long inputRecords = getLongValueOrDefault(componentMap, StormMetricsConstant.STATS_JSON_EXECUTED_TUPLES, 0L);
+        Long outputRecords = getLongValueOrDefault(componentMap, StormMetricsConstant.STATS_JSON_EMITTED_TUPLES, 0L);
+        Long failedRecords = getLongValueOrDefault(componentMap, StormMetricsConstant.STATS_JSON_FAILED_TUPLES, 0L);
+        Double processedTime = getDoubleValueFromStringOrDefault(componentMap, STATS_JSON_PROCESS_LATENCY, 0.0d);
 
         return new ComponentMetric(componentName, inputRecords, outputRecords, failedRecords, processedTime);
     }
@@ -168,4 +201,36 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
         return "iotas-" + topology.getId() + "-" + topology.getName();
     }
 
+    private Long convertWindowString(String windowStr, Long uptime) {
+        if (windowStr.equals(":all-time")) {
+            return uptime;
+        } else {
+            return Long.valueOf(windowStr);
+        }
+    }
+
+    private Long getLongValueOrDefault(Map<String, ?> map, String key, Long defaultValue) {
+        if (map.containsKey(key)) {
+            Number number = (Number) map.get(key);
+            if (number != null) {
+                return number.longValue();
+            }
+        }
+        return defaultValue;
+    }
+
+    private Double getDoubleValueFromStringOrDefault(Map<String, ?> map, String key,
+        Double defaultValue) {
+        if (map.containsKey(key)) {
+            String valueStr = (String) map.get(key);
+            if (valueStr != null) {
+                try {
+                    return Double.parseDouble(valueStr);
+                } catch (NumberFormatException e) {
+                    // noop
+                }
+            }
+        }
+        return defaultValue;
+    }
 }

@@ -19,6 +19,7 @@
 package com.hortonworks.iotas.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.iotas.common.QueryParam;
 import com.hortonworks.iotas.common.util.WSUtils;
@@ -27,6 +28,8 @@ import com.hortonworks.iotas.streams.catalog.processor.CustomProcessorInfo;
 import com.hortonworks.iotas.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.iotas.streams.catalog.topology.TopologyComponentDefinition;
 import com.hortonworks.iotas.streams.layout.component.TopologyActions;
+import com.hortonworks.iotas.streams.metrics.storm.topology.TopologyNotAliveException;
+import com.hortonworks.iotas.streams.metrics.topology.TopologyMetrics;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
@@ -86,16 +89,26 @@ public class TopologyCatalogResource {
     @GET
     @Path("/topologies")
     @Timed
-    public Response listTopologies () {
+    public Response listTopologies (@javax.ws.rs.QueryParam("withMetric") Boolean withMetric) {
         try {
             Collection<Topology> topologies = catalogService.listTopologies();
+            Response response;
             if (topologies != null) {
-                return WSUtils.respond(topologies, OK, SUCCESS);
+                if (withMetric == null || !withMetric) {
+                    response = WSUtils.respond(topologies, OK, SUCCESS);
+                } else {
+                    List<TopologyCatalogWithMetric> topologiesWithMetric = enrichMetricToTopology(
+                        topologies);
+                    response = WSUtils.respond(topologiesWithMetric, OK, SUCCESS);
+                }
+            } else {
+                response = WSUtils.respond(Collections.emptyList(), OK, SUCCESS);
             }
+
+            return response;
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
-        return WSUtils.respond(Collections.emptyList(), NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER);
     }
 
     @GET
@@ -514,6 +527,22 @@ public class TopologyCatalogResource {
         }
     }
 
+    private List<TopologyCatalogWithMetric> enrichMetricToTopology(
+        Collection<Topology> topologies) {
+        // need to also provide Topology Metric
+        List<TopologyCatalogWithMetric> topologiesWithMetric = new ArrayList<>(topologies.size());
+        for (Topology topology : topologies) {
+            TopologyMetrics.TopologyMetric topologyMetric;
+            try {
+                topologyMetric = catalogService.getTopologyMetric(topology);
+                topologiesWithMetric.add(new TopologyCatalogWithMetric(topology, true, topologyMetric));
+            } catch (TopologyNotAliveException e) {
+                topologiesWithMetric.add(new TopologyCatalogWithMetric(topology, false, null));
+            }
+        }
+        return topologiesWithMetric;
+    }
+
     private Response validateTopologyComponent (TopologyComponentDefinition topologyComponentDefinition) {
         Response response = null;
         if (StringUtils.isEmpty(topologyComponentDefinition.getName())) {
@@ -547,5 +576,30 @@ public class TopologyCatalogResource {
         }
         return result;
     }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private static class TopologyCatalogWithMetric {
+        private final Topology topology;
+        private final boolean running;
+        private final TopologyMetrics.TopologyMetric metric;
+
+        public TopologyCatalogWithMetric(Topology topology, boolean running, TopologyMetrics.TopologyMetric metric) {
+            this.topology = topology;
+            this.running = running;
+            this.metric = metric;
+        }
+
+        public Topology getTopology() {
+            return topology;
+        }
+
+        public boolean isRunning() {
+            return running;
+        }
+
+        public TopologyMetrics.TopologyMetric getMetric() {
+            return metric;
+        }
+     }
 }
 
