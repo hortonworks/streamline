@@ -346,8 +346,12 @@ public class TopologyComponentFactory {
             public StreamlineProcessor create(TopologyComponent component) {
                 RulesProcessor processor = new RulesProcessor();
                 ObjectMapper objectMapper = new ObjectMapper();
+
                 Set<Stream> outputStreams = createOutputStreams((TopologyOutputComponent) component);
                 processor.addOutputStreams(outputStreams);
+
+                boolean processAll = component.getConfig().getBoolean(RulesProcessor.CONFIG_PROCESS_ALL);
+                processor.setProcessAll(processAll);
 
                 Object ruleList = component.getConfig().getAny(RulesProcessor.CONFIG_KEY_RULES);
                 List<Long> ruleIds = objectMapper.convertValue(ruleList, new TypeReference<List<Long>>() {
