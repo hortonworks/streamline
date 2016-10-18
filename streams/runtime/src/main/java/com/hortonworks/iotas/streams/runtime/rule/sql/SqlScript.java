@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,6 +41,8 @@ import java.util.List;
 import java.util.Map;
 
 import static com.hortonworks.iotas.streams.common.IotasEventImpl.GROUP_BY_TRIGGER_EVENT;
+import static com.hortonworks.iotas.streams.runtime.rule.condition.expression.StormSqlExpression.RULE_SCHEMA;
+import static com.hortonworks.iotas.streams.runtime.rule.condition.expression.StormSqlExpression.RULE_TABLE;
 
 /**
  * Evaluates the {@link ExpressionRuntime} for each {@code Input} using the provided {@code Storm} SQL Engine
@@ -57,10 +60,21 @@ public class SqlScript extends Script<IotasEvent, Collection<IotasEvent>, SqlEng
                      ValuesConverter<IotasEvent> valuesConverter) {
         super(expressionRuntime.asString(), scriptEngine);
         this.valuesConverter = valuesConverter;
-
         stormSqlFields = ((StormSqlExpression) expressionRuntime).getStormSqlFields();
+        if (!stormSqlFields.isEmpty()) {
+            SqlEngine sqlEngine = (SqlEngine) scriptEngine;
+            sqlEngine.compileQuery(createQuery((StormSqlExpression) expressionRuntime));
+        }
         projectedFields = ((StormSqlExpression) expressionRuntime).getProjectedFields();
         outputFields = ((StormSqlExpression) expressionRuntime).getOutputFields();
+    }
+
+    private List<String> createQuery(StormSqlExpression expression) {
+        final List<String> statements = new ArrayList<>(2);
+        statements.add(expression.createTable(RULE_SCHEMA, RULE_TABLE));
+        statements.addAll(expression.createFunctions());
+        statements.add(expression.select(RULE_TABLE));
+        return statements;
     }
 
     public void setValuesConverter(ValuesConverter<IotasEvent> valuesConverter) {
