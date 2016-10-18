@@ -54,11 +54,14 @@ public class RuleProcessorRuntime implements Serializable, ProcessorRuntime {
     protected final List<RuleRuntime> rulesRuntime;
     private Map<String, List<RuleRuntime>> streamToRuleRuntimes;
     private List<RuleRuntime> allRuleRuntimes;
+    private boolean processAll = true;
 
     public RuleProcessorRuntime(RuleProcessorRuntimeDependenciesBuilder builder) {
         this.rulesProcessor = builder.getRulesProcessor();
         this.rulesRuntime = builder.getRulesRuntime();
         buildStreamToRulesRuntime();
+        rulesProcessor.getConfig().getBoolean("flag");
+        this.processAll = rulesProcessor.getProcessAll();
     }
 
     private void buildStreamToRulesRuntime() {
@@ -118,6 +121,8 @@ public class RuleProcessorRuntime implements Serializable, ProcessorRuntime {
                         results.addAll(rr.process(result));
                     }
                 }
+                if(!processAll)
+                    break;
             }
         } catch (Exception e) {
             String message = String.format("Error evaluating rule processor with id: %s, error: %s",
