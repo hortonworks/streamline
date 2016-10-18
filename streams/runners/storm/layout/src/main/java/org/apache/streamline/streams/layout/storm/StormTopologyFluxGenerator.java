@@ -4,6 +4,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Multimap;
+import org.apache.streamline.common.Config;
 import org.apache.streamline.streams.layout.component.Component;
 import org.apache.streamline.streams.layout.component.Edge;
 import org.apache.streamline.streams.layout.component.InputComponent;
@@ -14,12 +15,14 @@ import org.apache.streamline.streams.layout.component.OutputComponent;
 import org.apache.streamline.streams.layout.component.StreamGrouping;
 import org.apache.streamline.streams.layout.component.TopologyDag;
 import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
+import org.apache.streamline.streams.layout.component.TopologyLayout;
 import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
 import org.apache.streamline.streams.layout.component.rule.Rule;
 import org.apache.streamline.streams.layout.component.rule.expression.Window;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,15 +39,18 @@ import static org.apache.streamline.streams.layout.storm.StormTopologyLayoutCons
 public class StormTopologyFluxGenerator extends TopologyDagVisitor {
     private static final Logger LOG = LoggerFactory.getLogger(StormTopologyFluxGenerator.class);
 
-    private final List<Map.Entry<String, Map<String, Object>>> keysAndComponents = new ArrayList<>();
-
-    private final TopologyDag topologyDag;
-    private final Map<String, String> config;
+    private static final int DELTA = 5;
 
     private final FluxComponentFactory fluxComponentFactory = new FluxComponentFactory();
 
-    public StormTopologyFluxGenerator(TopologyDag topologyDag, Map<String, String> config) {
-        this.topologyDag = topologyDag;
+    private final List<Map.Entry<String, Map<String, Object>>> keysAndComponents = new ArrayList<>();
+    private final TopologyDag topologyDag;
+    private final Map<String, String> config;
+    private final Config topologyConfig;
+
+    public StormTopologyFluxGenerator(TopologyLayout topologyLayout, Map<String, String> config) throws IOException {
+        this.topologyDag = topologyLayout.getTopologyDag();
+        this.topologyConfig = topologyLayout.getConfig();
         this.config = config;
     }
 
@@ -86,12 +92,12 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
             }
             int windowedRulesProcessorId = 0;
             // create windowed bolt per unique window configuration
-            for (Collection<Rule> rules : windowedRules.asMap().values()) {
+            for (Map.Entry<Window, Collection<Rule>> entry : windowedRules.asMap().entrySet()) {
                 RulesProcessor windowedRulesProcessor = new RulesProcessor(rulesProcessor);
-                windowedRulesProcessor.setRules(new ArrayList<>(rules));
+                windowedRulesProcessor.setRules(new ArrayList<>(entry.getValue()));
                 windowedRulesProcessor.setId(rulesProcessor.getId() + "." + ++windowedRulesProcessorId);
                 windowedRulesProcessor.setName("WindowedRulesProcessor");
-                windowedRulesProcessor.getConfig().setAny(RulesProcessor.CONFIG_KEY_RULES, Collections2.transform(rules, new Function<Rule, Long>() {
+                windowedRulesProcessor.getConfig().setAny(RulesProcessor.CONFIG_KEY_RULES, Collections2.transform(entry.getValue(), new Function<Rule, Long>() {
                     @Override
                     public Long apply(Rule input) {
                         return input.getId();
@@ -103,6 +109,7 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
                 // Wire the windowed bolt with the appropriate edges
                 wireWindowedRulesProcessor(windowedRulesProcessor, topologyDag.getEdgesTo(rulesProcessor),
                         topologyDag.getEdgesFrom(rulesProcessor));
+                mayBeUpdateTopologyConfig(entry.getKey());
             }
         }
         if (rulesWithoutWindow.isEmpty()) {
@@ -117,6 +124,30 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
             }));
             keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_BOLTS,
                     getYamlComponents(new RuleBoltFluxComponent(rulesProcessor), rulesProcessor)));
+        }
+    }
+
+    private void mayBeUpdateTopologyConfig(Window window) {
+        int messageTimeoutSecs = DELTA;
+        int maxPending = DELTA;
+        if (window.getWindowLength() instanceof Window.Duration) {
+            messageTimeoutSecs += ((Window.Duration) window.getWindowLength()).getDurationMs()/1000;
+        } else if (window.getWindowLength() instanceof Window.Count) {
+            maxPending += ((Window.Count) window.getWindowLength()).getCount();
+        }
+        if (window.getSlidingInterval() instanceof Window.Duration) {
+            messageTimeoutSecs += ((Window.Duration) window.getSlidingInterval()).getDurationMs()/1000;
+        } else if (window.getSlidingInterval() instanceof Window.Count) {
+            maxPending += ((Window.Count) window.getSlidingInterval()).getCount();
+        }
+        setIfGreater(StormTopologyLayoutConstants.TOPOLOGY_MESSAGE_TIMEOUT_SECS, messageTimeoutSecs);
+        setIfGreater(StormTopologyLayoutConstants.TOPOLOGY_MAX_SPOUT_PENDING, maxPending);
+    }
+
+    private void setIfGreater(String key, int value) {
+        Integer curVal = topologyConfig.getInt(key, DELTA);
+        if (value > curVal) {
+            topologyConfig.setAny(key, value);
         }
     }
 
@@ -179,6 +210,10 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
 
     public List<Map.Entry<String, Map<String, Object>>> getYamlKeysAndComponents() {
         return keysAndComponents;
+    }
+
+    public Config getTopologyConfig() {
+        return topologyConfig;
     }
 
     private Map<String, Object> getYamlComponents(FluxComponent fluxComponent, Component topologyComponent) {

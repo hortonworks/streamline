@@ -228,7 +228,7 @@ CREATE TABLE IF NOT EXISTS clusters (
   description VARCHAR(256),
   timestamp BIGINT,
   PRIMARY KEY (id)
-)
+);
 
 CREATE TABLE IF NOT EXISTS services (
   id BIGINT AUTO_INCREMENT NOT NULL,
@@ -237,7 +237,7 @@ CREATE TABLE IF NOT EXISTS services (
   description VARCHAR(256),
   timestamp BIGINT,
   PRIMARY KEY (id)
-)
+);
 
 CREATE TABLE IF NOT EXISTS service_configurations (
   id BIGINT AUTO_INCREMENT NOT NULL,
@@ -248,7 +248,7 @@ CREATE TABLE IF NOT EXISTS service_configurations (
   filename VARCHAR(256),
   timestamp BIGINT,
   PRIMARY KEY (id)
-)
+);
 
 CREATE TABLE IF NOT EXISTS components (
   id BIGINT AUTO_INCREMENT NOT NULL,
@@ -259,4 +259,4 @@ CREATE TABLE IF NOT EXISTS components (
   port BIGINT,
   timestamp BIGINT,
   PRIMARY KEY (id)
-)
+);

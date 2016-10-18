@@ -695,11 +695,11 @@ public class StreamCatalogService {
         return this.topologyMetrics.getCompleteLatency(getTopologyLayout(topology), sourceId, from, to);
     }
 
-    public Map<String, Map<Long, Double>> getComponentStats(Topology topology, String sourceId, Long from, Long to) {
+    public Map<String, Map<Long, Double>> getComponentStats(Topology topology, String sourceId, Long from, Long to) throws IOException {
         return this.topologyMetrics.getComponentStats(getTopologyLayout(topology), sourceId, from, to);
     }
 
-    public Map<String, Map<Long, Double>> getKafkaTopicOffsets(Topology topology, String sourceId, Long from, Long to) {
+    public Map<String, Map<Long, Double>> getKafkaTopicOffsets(Topology topology, String sourceId, Long from, Long to) throws IOException {
         return this.topologyMetrics.getkafkaTopicOffsets(getTopologyLayout(topology), sourceId, from, to);
     }
 
@@ -707,7 +707,7 @@ public class StreamCatalogService {
         return this.topologyMetrics.getTimeSeriesQuerier().getRawMetrics(metricName, parameters, from, to);
     }
 
-    public TopologyMetrics.TopologyMetric getTopologyMetric(Topology topology) {
+    public TopologyMetrics.TopologyMetric getTopologyMetric(Topology topology) throws IOException {
         return this.topologyMetrics.getTopologyMetric(getTopologyLayout(topology));
     }
 
@@ -1770,7 +1770,7 @@ public class StreamCatalogService {
         return cluster;
     }
 
-    private TopologyLayout getTopologyLayout(Topology topology) {
+    private TopologyLayout getTopologyLayout(Topology topology) throws IOException {
         return new TopologyLayout(topology.getId(), topology.getName(),
                 topology.getConfig(), topology.getTopologyDag());
     }

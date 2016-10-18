@@ -528,7 +528,7 @@ public class TopologyCatalogResource {
     }
 
     private List<TopologyCatalogWithMetric> enrichMetricToTopology(
-        Collection<Topology> topologies) {
+        Collection<Topology> topologies) throws IOException {
         // need to also provide Topology Metric
         List<TopologyCatalogWithMetric> topologiesWithMetric = new ArrayList<>(topologies.size());
         for (Topology topology : topologies) {

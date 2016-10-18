@@ -9,6 +9,7 @@ import mockit.Mocked;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +33,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testWithoutAssigningTimeSeriesQuerier() {
+    public void testWithoutAssigningTimeSeriesQuerier() throws IOException {
         stormTopologyTimeSeriesMetrics.setTimeSeriesQuerier(null);
 
         final TopologyLayout topology = new TopologyLayout(1L, "topology", null, null);
