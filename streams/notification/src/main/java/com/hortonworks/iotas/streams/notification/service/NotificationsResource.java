@@ -79,7 +79,7 @@ public class NotificationsResource {
             LOG.error("Got exception", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, id.toString());
+        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, id);
     }
 
     @GET
@@ -134,7 +134,7 @@ public class NotificationsResource {
             LOG.error("Got exception", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, id.toString());
+        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, id);
     }
 
 }

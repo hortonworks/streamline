@@ -53,7 +53,7 @@ public class ParserBoltFluxComponent extends AbstractFluxComponent {
             TopologyLayoutConstants.JSON_KEY_PARSER_ID
         };
         Long[] mins = {
-            1l, 1l
+                1L, 1L
         };
         Long[] maxes = {
             Long.MAX_VALUE, Long.MAX_VALUE

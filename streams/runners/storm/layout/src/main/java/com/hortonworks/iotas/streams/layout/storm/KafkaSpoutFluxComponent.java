@@ -211,7 +211,7 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
             TopologyLayoutConstants.JSON_KEY_RETRY_DELAY_MAX_MS
         };
         Long[] mins = {
-            0l, 0l, 0l, 0l
+                0L, 0L, 0L, 0L
         };
         Long[] maxes = {
             Long.MAX_VALUE, Long.MAX_VALUE, Long.MAX_VALUE, Long.MAX_VALUE

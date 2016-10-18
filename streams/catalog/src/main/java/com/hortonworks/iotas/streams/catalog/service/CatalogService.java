@@ -123,7 +123,7 @@ public class CatalogService {
 
     // TODO: implement pagination
     public Collection<DataSource> listDataSources() throws IOException, IllegalAccessException, InstantiationException {
-        Collection<DataSource> dataSources = this.dao.<DataSource>list(DATA_SOURCE_NAMESPACE);
+        Collection<DataSource> dataSources = this.dao.list(DATA_SOURCE_NAMESPACE);
         if (dataSources != null) {
             for (DataSource ds : dataSources) {
                 DataSourceSubType dataSourcesubType = getSubtypeFromDataSource(ds);
@@ -137,7 +137,7 @@ public class CatalogService {
     public Collection<DataSource> listDataSourcesForType(DataSource.Type type, List<QueryParam> params) throws Exception {
         List<DataSource> dataSources = new ArrayList<>();
         String ns = getNamespaceForDataSourceType(type);
-        Collection<DataSourceSubType> subTypes = dao.<DataSourceSubType>find(ns, params);
+        Collection<DataSourceSubType> subTypes = dao.find(ns, params);
         for (DataSourceSubType st : subTypes) {
             dataSources.add(getDataSource(st.getDataSourceId()));
         }
@@ -147,7 +147,7 @@ public class CatalogService {
     public DataSource getDataSource(Long id) throws IOException, InstantiationException, IllegalAccessException {
         DataSource ds = new DataSource();
         ds.setId(id);
-        DataSource result = dao.<DataSource>get(new StorableKey(DATA_SOURCE_NAMESPACE, ds.getPrimaryKey()));
+        DataSource result = dao.get(new StorableKey(DATA_SOURCE_NAMESPACE, ds.getPrimaryKey()));
         if (result != null) {
             DataSourceSubType subType = getSubtypeFromDataSource(result);
             result.setTypeConfig(CoreUtils.storableToJson(subType));
@@ -199,17 +199,17 @@ public class CatalogService {
     }
 
     public Collection<DataFeed> listDataFeeds() {
-        return this.dao.<DataFeed>list(DATA_FEED_NAMESPACE);
+        return this.dao.list(DATA_FEED_NAMESPACE);
     }
 
     public Collection<DataFeed> listDataFeeds(List<QueryParam> params) throws Exception {
-        return dao.<DataFeed>find(DATA_FEED_NAMESPACE, params);
+        return dao.find(DATA_FEED_NAMESPACE, params);
     }
 
     public DataFeed getDataFeed(Long dataFeedId) {
         DataFeed df = new DataFeed();
         df.setId(dataFeedId);
-        return this.dao.<DataFeed>get(new StorableKey(DATA_FEED_NAMESPACE, df.getPrimaryKey()));
+        return this.dao.get(new StorableKey(DATA_FEED_NAMESPACE, df.getPrimaryKey()));
     }
 
     public DataFeed addDataFeed(DataFeed feed) {
@@ -253,7 +253,7 @@ public class CatalogService {
     public DataFeed removeDataFeed(Long dataFeedId) {
         DataFeed feed = new DataFeed();
         feed.setId(dataFeedId);
-        return dao.<DataFeed>remove(new StorableKey(DATA_FEED_NAMESPACE, feed.getPrimaryKey()));
+        return dao.remove(new StorableKey(DATA_FEED_NAMESPACE, feed.getPrimaryKey()));
     }
 
     public DataFeed addOrUpdateDataFeed(Long id, DataFeed feed) {

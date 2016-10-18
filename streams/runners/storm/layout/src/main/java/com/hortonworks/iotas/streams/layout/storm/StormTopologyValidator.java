@@ -137,7 +137,7 @@ class StormTopologyValidator {
                 if (!ruleStreams.contains(streamId)) {
                     throw new BadTopologyLayoutException (String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
                 }
-                if ("FIELDS".equals((String) link.get(TopologyLayoutConstants.JSON_KEY_TYPE))) {
+                if ("FIELDS".equals(link.get(TopologyLayoutConstants.JSON_KEY_TYPE))) {
                     Set<String> outputFields = streamIdToOutput.get(streamId);
                     List<String> groupingFields = (List) linkConfig.get(TopologyLayoutConstants.JSON_KEY_GROUPING_FIELDS);
                     if (!outputFields.containsAll(groupingFields)) {
@@ -193,7 +193,7 @@ class StormTopologyValidator {
                 if (!outputStreams.contains(streamId)) {
                     throw new BadTopologyLayoutException (String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
                 }
-                if ("FIELDS".equals((String) link.get(TopologyLayoutConstants.JSON_KEY_TYPE))) {
+                if ("FIELDS".equals(link.get(TopologyLayoutConstants.JSON_KEY_TYPE))) {
                     Set<String> outputFields = getTopLevelFieldNamesFromSchema(streamIdToOutput.get(streamId));
                     List<String> groupingFields = (List) linkConfig.get(TopologyLayoutConstants.JSON_KEY_GROUPING_FIELDS);
                     if (!outputFields.containsAll(groupingFields)) {
@@ -220,7 +220,7 @@ class StormTopologyValidator {
         String processorName = (String) ruleProcessorConfig.get(TopologyLayoutConstants.JSON_KEY_NAME);
         List<Map> rules = (List) ruleProcessorConfig.get(TopologyLayoutConstants.JSON_KEY_RULES);
         for (Map rule: rules) {
-            long ruleId = 0l;
+            long ruleId = 0L;
             Object ruleIdO = rule.get(TopologyLayoutConstants.JSON_KEY_ID);
             if (ConfigFieldValidation.isInteger(ruleIdO)) {
                 ruleId = (Integer) ruleIdO;

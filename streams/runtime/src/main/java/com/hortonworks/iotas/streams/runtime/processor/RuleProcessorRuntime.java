@@ -74,7 +74,7 @@ public class RuleProcessorRuntime implements Serializable, ProcessorRuntime {
             }
         }
         streamToRuleRuntimes = ImmutableMap.copyOf(map);
-        ImmutableSet.Builder<RuleRuntime> builder = ImmutableSet.<RuleRuntime>builder();
+        ImmutableSet.Builder<RuleRuntime> builder = ImmutableSet.builder();
         for(List<RuleRuntime> ruleRuntimes: streamToRuleRuntimes.values()) {
             builder.addAll(ruleRuntimes);
         }
