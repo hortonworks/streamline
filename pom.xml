@@ -48,6 +48,7 @@
         <calcite.version>1.10.0</calcite.version>
         <commons.version>2.5</commons.version>
         <commons-cli.version>1.2</commons-cli.version>
+        <schema-registry.version>0.1.0-SNAPSHOT</schema-registry.version>
     </properties>
 
     <distributionManagement>
