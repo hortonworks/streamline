@@ -13,7 +13,6 @@
 
     <properties>
         <storm.version>1.1.0-SNAPSHOT</storm.version>
-        <schema-registry.version>0.1.0-SNAPSHOT</schema-registry.version>
         <aws-java-sdk.version>1.10.77</aws-java-sdk.version>
     </properties>
 
@@ -318,11 +317,6 @@
                     <artifactId>slf4j-log4j12</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.hortonworks.registries</groupId>
-            <artifactId>schema-registry-avro</artifactId>
-            <version>${schema-registry.version}</version>
         </dependency>
         <dependency>
             <groupId>com.hortonworks.registries</groupId>
