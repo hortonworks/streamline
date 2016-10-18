@@ -67,23 +67,23 @@ public class ParsersCatalogService {
     }
 
     public Collection<ParserInfo> listParsers () {
-        return dao.<ParserInfo>list(PARSER_INFO_NAMESPACE);
+        return dao.list(PARSER_INFO_NAMESPACE);
     }
 
     public Collection<ParserInfo> listParsers (List<QueryParam> queryParams) {
-        return dao.<ParserInfo>find(PARSER_INFO_NAMESPACE, queryParams);
+        return dao.find(PARSER_INFO_NAMESPACE, queryParams);
     }
 
     public ParserInfo getParserInfo (Long parserId) {
         ParserInfo parserInfo = new ParserInfo();
         parserInfo.setId(parserId);
-        return dao.<ParserInfo>get(new StorableKey(PARSER_INFO_NAMESPACE, parserInfo.getPrimaryKey()));
+        return dao.get(new StorableKey(PARSER_INFO_NAMESPACE, parserInfo.getPrimaryKey()));
     }
 
     public ParserInfo removeParser (Long parserId) throws IOException {
         ParserInfo parserInfo = new ParserInfo();
         parserInfo.setId(parserId);
-        ParserInfo removed = this.dao.<ParserInfo>remove(new StorableKey(PARSER_INFO_NAMESPACE, parserInfo.getPrimaryKey()));
+        ParserInfo removed = this.dao.remove(new StorableKey(PARSER_INFO_NAMESPACE, parserInfo.getPrimaryKey()));
         if (removed != null) {
             fileStorage.deleteFile(removed.getJarStoragePath());
         }

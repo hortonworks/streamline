@@ -116,7 +116,7 @@ public class CatalogTagService implements TagService {
     public Tag getTag(Long tagId) {
         Tag tag = new Tag();
         tag.setId(tagId);
-        Tag result = this.dao.<Tag>get(new StorableKey(TAG_NAMESPACE, tag.getPrimaryKey()));
+        Tag result = this.dao.get(new StorableKey(TAG_NAMESPACE, tag.getPrimaryKey()));
         if (result != null) {
             result.setTags(getTags(getTaggedEntity(result)));
         }
@@ -244,7 +244,7 @@ public class CatalogTagService implements TagService {
     }
 
     private Collection<TagStorableMapping> listTagStorableMapping(List<QueryParam> params) {
-        return dao.<TagStorableMapping>find(TAG_STORABLE_MAPPING_NAMESPACE, params);
+        return dao.find(TAG_STORABLE_MAPPING_NAMESPACE, params);
     }
 
     private Collection<Tag> makeTags(Collection<Tag> tags) {

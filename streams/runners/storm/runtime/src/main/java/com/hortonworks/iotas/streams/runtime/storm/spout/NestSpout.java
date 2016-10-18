@@ -29,7 +29,7 @@ public class NestSpout extends BaseRichSpout {
     public void nextTuple() {
         Utils.sleep(100);
         long userId = random.nextLong();
-        long temperature = random.nextLong() % 150l;
+        long temperature = random.nextLong() % 150L;
         long evenTime = System.currentTimeMillis();
         long longitude = random.nextLong();
         long latitude = random.nextLong();

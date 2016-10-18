@@ -43,7 +43,7 @@ public class WSUtils {
     private WSUtils() {
     }
 
-    public static Response respond(Collection<? extends Object> entities, Response.Status status, CatalogResponse.ResponseMessage msg, String... formatArgs) {
+    public static Response respond(Collection<?> entities, Response.Status status, CatalogResponse.ResponseMessage msg, String... formatArgs) {
         return Response.status(status)
                 .entity(CatalogResponse.newResponse(msg).entities(entities).format(formatArgs))
                 .build();
@@ -63,7 +63,7 @@ public class WSUtils {
 
     public static List<QueryParam> buildQueryParameters(MultivaluedMap<String, String> params) {
         if (params == null || params.isEmpty()) {
-            return Collections.<QueryParam>emptyList();
+            return Collections.emptyList();
         }
 
         List<QueryParam> queryParams = new ArrayList<>();

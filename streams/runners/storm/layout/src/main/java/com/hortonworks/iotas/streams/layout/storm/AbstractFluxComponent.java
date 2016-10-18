@@ -63,7 +63,7 @@ public abstract class AbstractFluxComponent implements FluxComponent {
     @Override
     public void validateConfig () throws BadTopologyLayoutException {
         String[] fieldNames = {TopologyLayoutConstants.JSON_KEY_PARALLELISM};
-        Long[] mins = {1l};
+        Long[] mins = {1L};
         Long[] maxes = {Long.MAX_VALUE};
         this.validateLongFields(fieldNames, false, mins, maxes);
     }

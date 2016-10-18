@@ -53,7 +53,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
                 stormArtifactsLocation = conf.get(StormTopologyLayoutConstants.STORM_ARTIFACTS_LOCATION_KEY);
             }
             if (conf.containsKey(StormTopologyLayoutConstants.STORM_HOME_DIR)) {
-                String stormHomeDir = conf.get(StormTopologyLayoutConstants.STORM_HOME_DIR).toString();
+                String stormHomeDir = conf.get(StormTopologyLayoutConstants.STORM_HOME_DIR);
                 if (!stormHomeDir.endsWith(File.separator)) {
                     stormHomeDir += File.separator;
                 }

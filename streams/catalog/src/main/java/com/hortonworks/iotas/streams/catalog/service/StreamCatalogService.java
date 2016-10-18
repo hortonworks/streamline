@@ -476,22 +476,22 @@ public class StreamCatalogService {
     public NotifierInfo getNotifierInfo(Long id) {
         NotifierInfo notifierInfo = new NotifierInfo();
         notifierInfo.setId(id);
-        return this.dao.<NotifierInfo>get(new StorableKey(NOTIFIER_INFO_NAMESPACE, notifierInfo.getPrimaryKey()));
+        return this.dao.get(new StorableKey(NOTIFIER_INFO_NAMESPACE, notifierInfo.getPrimaryKey()));
     }
 
     public Collection<NotifierInfo> listNotifierInfos() {
-        return this.dao.<NotifierInfo>list(NOTIFIER_INFO_NAMESPACE);
+        return this.dao.list(NOTIFIER_INFO_NAMESPACE);
     }
 
     public Collection<NotifierInfo> listNotifierInfos(List<QueryParam> params) throws Exception {
-        return dao.<NotifierInfo>find(NOTIFIER_INFO_NAMESPACE, params);
+        return dao.find(NOTIFIER_INFO_NAMESPACE, params);
     }
 
 
     public NotifierInfo removeNotifierInfo(Long notifierId) {
         NotifierInfo notifierInfo = new NotifierInfo();
         notifierInfo.setId(notifierId);
-        return dao.<NotifierInfo>remove(new StorableKey(NOTIFIER_INFO_NAMESPACE, notifierInfo.getPrimaryKey()));
+        return dao.remove(new StorableKey(NOTIFIER_INFO_NAMESPACE, notifierInfo.getPrimaryKey()));
     }
 
 
@@ -659,7 +659,7 @@ public class StreamCatalogService {
             if (fileType != null) {
                 File destPath = Paths.get(artifactsDir.toString(), filename).toFile();
 
-                Map<String, Object> conf = objectMapper.readValue(configuration.getConfiguration(), Map.class);;
+                Map<String, Object> conf = objectMapper.readValue(configuration.getConfiguration(), Map.class);
 
                 try {
                     configFileWriter.writeConfigToFile(fileType, conf, destPath);
@@ -1111,7 +1111,7 @@ public class StreamCatalogService {
 
     private Collection<TopologySourceStreamMapping> listTopologySourceStreamMapping(List<QueryParam> params) {
         try {
-            return dao.<TopologySourceStreamMapping>find(TOPOLOGY_SOURCE_STREAM_MAPPING_NAMESPACE, params);
+            return dao.find(TOPOLOGY_SOURCE_STREAM_MAPPING_NAMESPACE, params);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -1196,7 +1196,7 @@ public class StreamCatalogService {
     public TopologySink getTopologySink(Long id) {
         TopologySink topologySink = new TopologySink();
         topologySink.setId(id);
-        return dao.<TopologySink>get(new StorableKey(TOPOLOGY_SINK_NAMESPACE, topologySink.getPrimaryKey()));
+        return dao.get(new StorableKey(TOPOLOGY_SINK_NAMESPACE, topologySink.getPrimaryKey()));
     }
 
     public TopologySink addTopologySink(Long topologyId, TopologySink topologySink) {
@@ -1218,21 +1218,21 @@ public class StreamCatalogService {
     public TopologySink removeTopologySink(Long id) {
         TopologySink topologySink = new TopologySink();
         topologySink.setId(id);
-        return dao.<TopologySink>remove(new StorableKey(TOPOLOGY_SINK_NAMESPACE, topologySink.getPrimaryKey()));
+        return dao.remove(new StorableKey(TOPOLOGY_SINK_NAMESPACE, topologySink.getPrimaryKey()));
     }
 
     public Collection<TopologySink> listTopologySinks() {
-        return dao.<TopologySink>list(TOPOLOGY_SINK_NAMESPACE);
+        return dao.list(TOPOLOGY_SINK_NAMESPACE);
     }
 
     public Collection<TopologySink> listTopologySinks(List<QueryParam> params) throws Exception {
-        return dao.<TopologySink>find(TOPOLOGY_SINK_NAMESPACE, params);
+        return dao.find(TOPOLOGY_SINK_NAMESPACE, params);
     }
 
     public TopologyProcessor getTopologyProcessor(Long id) {
         TopologyProcessor topologyProcessor = new TopologyProcessor();
         topologyProcessor.setId(id);
-        TopologyProcessor processor = dao.<TopologyProcessor>get(
+        TopologyProcessor processor = dao.get(
                 new StorableKey(TOPOLOGY_PROCESSOR_NAMESPACE, topologyProcessor.getPrimaryKey()));
         fillProcessorStreams(processor);
         return processor;
@@ -1324,7 +1324,7 @@ public class StreamCatalogService {
 
     private Collection<TopologyProcessorStreamMapping> listTopologyProcessorStreamMapping(List<QueryParam> params) {
         try {
-            return dao.<TopologyProcessorStreamMapping>find(TOPOLOGY_PROCESSOR_STREAM_MAPPING_NAMESPACE, params);
+            return dao.find(TOPOLOGY_PROCESSOR_STREAM_MAPPING_NAMESPACE, params);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -1333,7 +1333,7 @@ public class StreamCatalogService {
     public TopologyEdge getTopologyEdge(Long id) {
         TopologyEdge topologyEdge = new TopologyEdge();
         topologyEdge.setId(id);
-        return dao.<TopologyEdge>get(new StorableKey(TOPOLOGY_EDGE_NAMESPACE, topologyEdge.getPrimaryKey()));
+        return dao.get(new StorableKey(TOPOLOGY_EDGE_NAMESPACE, topologyEdge.getPrimaryKey()));
     }
 
     public TopologyEdge addTopologyEdge(Long topologyId, TopologyEdge topologyEdge) {
@@ -1432,21 +1432,21 @@ public class StreamCatalogService {
     public TopologyEdge removeTopologyEdge(Long id) {
         TopologyEdge topologyEdge = new TopologyEdge();
         topologyEdge.setId(id);
-        return dao.<TopologyEdge>remove(new StorableKey(TOPOLOGY_EDGE_NAMESPACE, topologyEdge.getPrimaryKey()));
+        return dao.remove(new StorableKey(TOPOLOGY_EDGE_NAMESPACE, topologyEdge.getPrimaryKey()));
     }
 
     public Collection<TopologyEdge> listTopologyEdges() {
-        return dao.<TopologyEdge>list(TOPOLOGY_EDGE_NAMESPACE);
+        return dao.list(TOPOLOGY_EDGE_NAMESPACE);
     }
 
     public Collection<TopologyEdge> listTopologyEdges(List<QueryParam> params) throws Exception {
-        return dao.<TopologyEdge>find(TOPOLOGY_EDGE_NAMESPACE, params);
+        return dao.find(TOPOLOGY_EDGE_NAMESPACE, params);
     }
 
     public StreamInfo getStreamInfo(Long id) {
         StreamInfo streamInfo = new StreamInfo();
         streamInfo.setId(id);
-        return dao.<StreamInfo>get(new StorableKey(STREAMINFO_NAMESPACE, streamInfo.getPrimaryKey()));
+        return dao.get(new StorableKey(STREAMINFO_NAMESPACE, streamInfo.getPrimaryKey()));
     }
 
     public StreamInfo addStreamInfo(Long topologyId, StreamInfo streamInfo) {
@@ -1472,23 +1472,23 @@ public class StreamCatalogService {
     public StreamInfo removeStreamInfo(Long id) {
         StreamInfo streamInfo = new StreamInfo();
         streamInfo.setId(id);
-        return dao.<StreamInfo>remove(new StorableKey(STREAMINFO_NAMESPACE, streamInfo.getPrimaryKey()));
+        return dao.remove(new StorableKey(STREAMINFO_NAMESPACE, streamInfo.getPrimaryKey()));
     }
 
     public Collection<StreamInfo> listStreamInfos() {
-        return dao.<StreamInfo>list(STREAMINFO_NAMESPACE);
+        return dao.list(STREAMINFO_NAMESPACE);
     }
 
     public Collection<StreamInfo> listStreamInfos(List<QueryParam> params) throws Exception {
-        return dao.<StreamInfo>find(STREAMINFO_NAMESPACE, params);
+        return dao.find(STREAMINFO_NAMESPACE, params);
     }
 
     public Collection<RuleInfo> listRules() {
-        return dao.<RuleInfo>list(TOPOLOGY_RULEINFO_NAMESPACE);
+        return dao.list(TOPOLOGY_RULEINFO_NAMESPACE);
     }
 
     public Collection<RuleInfo> listRules(List<QueryParam> params) throws Exception {
-        return dao.<RuleInfo>find(TOPOLOGY_RULEINFO_NAMESPACE, params);
+        return dao.find(TOPOLOGY_RULEINFO_NAMESPACE, params);
     }
 
     public RuleInfo addRule(Long topologyId, RuleInfo ruleInfo) throws Exception {
@@ -1506,7 +1506,7 @@ public class StreamCatalogService {
     public RuleInfo getRule(Long id) throws Exception {
         RuleInfo ruleInfo = new RuleInfo();
         ruleInfo.setId(id);
-        return dao.<RuleInfo>get(new StorableKey(TOPOLOGY_RULEINFO_NAMESPACE, ruleInfo.getPrimaryKey()));
+        return dao.get(new StorableKey(TOPOLOGY_RULEINFO_NAMESPACE, ruleInfo.getPrimaryKey()));
     }
 
     public RuleInfo addOrUpdateRule(Long topologyid, Long ruleId, RuleInfo ruleInfo) throws Exception {
@@ -1522,16 +1522,16 @@ public class StreamCatalogService {
     public RuleInfo removeRule(Long id) {
         RuleInfo ruleInfo = new RuleInfo();
         ruleInfo.setId(id);
-        return dao.<RuleInfo>remove(
+        return dao.remove(
                 new StorableKey(TOPOLOGY_RULEINFO_NAMESPACE, ruleInfo.getPrimaryKey()));
     }
 
     public Collection<WindowInfo> listWindows() {
-        return dao.<WindowInfo>list(TOPOLOGY_WINDOWINFO_NAMESPACE);
+        return dao.list(TOPOLOGY_WINDOWINFO_NAMESPACE);
     }
 
     public Collection<WindowInfo> listWindows(List<QueryParam> params) throws Exception {
-        return dao.<WindowInfo>find(TOPOLOGY_WINDOWINFO_NAMESPACE, params);
+        return dao.find(TOPOLOGY_WINDOWINFO_NAMESPACE, params);
     }
 
     public WindowInfo addWindow(Long topologyId, WindowInfo windowInfo) throws Exception {
@@ -1549,7 +1549,7 @@ public class StreamCatalogService {
     public WindowInfo getWindow(Long id) throws Exception {
         WindowInfo windowInfo = new WindowInfo();
         windowInfo.setId(id);
-        return dao.<WindowInfo>get(new StorableKey(TOPOLOGY_WINDOWINFO_NAMESPACE, windowInfo.getPrimaryKey()));
+        return dao.get(new StorableKey(TOPOLOGY_WINDOWINFO_NAMESPACE, windowInfo.getPrimaryKey()));
     }
 
     public WindowInfo addOrUpdateWindow(Long topologyid, Long ruleId, WindowInfo windowInfo) throws Exception {
@@ -1565,7 +1565,7 @@ public class StreamCatalogService {
     public WindowInfo removeWindow(Long id) {
         WindowInfo ruleInfo = new WindowInfo();
         ruleInfo.setId(id);
-        return dao.<WindowInfo>remove(
+        return dao.remove(
                 new StorableKey(TOPOLOGY_WINDOWINFO_NAMESPACE, ruleInfo.getPrimaryKey()));
     }
 
@@ -1674,17 +1674,17 @@ public class StreamCatalogService {
     }
 
     public Collection<UDFInfo> listUDFs() {
-        return this.dao.<UDFInfo>list(UDF_NAMESPACE);
+        return this.dao.list(UDF_NAMESPACE);
     }
 
     public Collection<UDFInfo> listUDFs(List<QueryParam> queryParams) {
-        return dao.<UDFInfo>find(UDF_NAMESPACE, queryParams);
+        return dao.find(UDF_NAMESPACE, queryParams);
     }
 
     public UDFInfo getUDF(Long id) {
         UDFInfo udfInfo = new UDFInfo();
         udfInfo.setId(id);
-        return this.dao.<UDFInfo>get(new StorableKey(UDF_NAMESPACE, udfInfo.getPrimaryKey()));
+        return this.dao.get(new StorableKey(UDF_NAMESPACE, udfInfo.getPrimaryKey()));
     }
 
     public UDFInfo addUDF(UDFInfo udfInfo) {
@@ -1706,7 +1706,7 @@ public class StreamCatalogService {
     public UDFInfo removeUDF(Long id) {
         UDFInfo udfInfo = new UDFInfo();
         udfInfo.setId(id);
-        return dao.<UDFInfo>remove(new StorableKey(UDF_NAMESPACE, udfInfo.getPrimaryKey()));
+        return dao.remove(new StorableKey(UDF_NAMESPACE, udfInfo.getPrimaryKey()));
     }
 
     public UDFInfo addOrUpdateUDF(Long udfId, UDFInfo udfInfo) {
