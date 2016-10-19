@@ -10,10 +10,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>streams-cluster</artifactId>
-    <properties>
-        <commons-lang.version>2.5</commons-lang.version>
-    </properties>
-
     <dependencies>
         <!-- module dependency -->
         <dependency>
@@ -33,7 +29,6 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>${commons.version}</version>
         </dependency>
 
         <!--test-->
