@@ -14,7 +14,6 @@
     <packaging>pom</packaging>
     <modules>
         <module>core</module>
-        <module>atlas</module>
         <module>tool</module>
     </modules>
 
