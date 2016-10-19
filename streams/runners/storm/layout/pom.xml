@@ -20,7 +20,6 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>${commons.version}</version>
         </dependency>
     </dependencies>
 </project>

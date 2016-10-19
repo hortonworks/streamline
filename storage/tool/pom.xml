@@ -13,7 +13,6 @@
 
     <properties>
         <hikari.version>2.2.5</hikari.version>
-        <commons-lang.version>2.5</commons-lang.version>
         <h2database.version>1.4.188</h2database.version>
     </properties>
 
