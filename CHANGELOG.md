@@ -1,4 +1,5 @@
 ## 0.1.4
+ * IOT-460: Rename packages from com.hortonworks.iotas to org.apache.streamline
  * IOT-392: ClusterConfiguration should be able to take in ambari url and grab Storm, Kafka , HDFS , Hbase, Hive etc.. configurations
  * IOT-441: Remove creating tables as part of server start
  * IOT-396: Enhance UDF support in rules engine.
