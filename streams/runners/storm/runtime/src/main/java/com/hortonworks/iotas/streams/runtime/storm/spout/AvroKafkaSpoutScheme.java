@@ -84,7 +84,7 @@ public class AvroKafkaSpoutScheme implements MultiScheme {
         }
 
         public int read(byte[] bytes, int off, int len) throws IOException {
-            Preconditions.checkNotNull(bytes, "Given bytearray can not be null");
+            Preconditions.checkNotNull(bytes, "Given byte array can not be null");
             Preconditions.checkPositionIndexes(off, len, bytes.length);
 
             if (!buf.hasRemaining()) {
