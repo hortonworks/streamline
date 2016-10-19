@@ -195,6 +195,8 @@ public class ClusterCatalogResource {
             ServiceNodeDiscoverer discoverer = new AmbariServiceNodeDiscoverer(params.getAmbariRestApiRootUrl(),
                 params.getUsername(), params.getPassword());
 
+            discoverer.init(null);
+
             retrievedCluster = catalogService.importClusterServices(discoverer, retrievedCluster);
 
             ClusterServicesImportResult result = new ClusterServicesImportResult(retrievedCluster);
