@@ -84,7 +84,7 @@ bolts:
           - "hbase.conf"
 
   - id: "NotificationsTestBolt"
-    className: "com.hortonworks.iotas.streams.runtime.storm.testing.NotificationsTestBolt"
+    className: "org.apache.streamline.streams.runtime.storm.testing.NotificationsTestBolt"
     parallelism: 1
     configMethods:
       - name: "withConsoleNotificationStream"

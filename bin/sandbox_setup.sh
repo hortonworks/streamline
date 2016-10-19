@@ -22,7 +22,7 @@ sed -i 's/8080/21000/' /root/IoTaS/webservice/conf/iotas.yaml
 sed -i 's/8081/21001/' /root/IoTaS/webservice/conf/iotas.yaml
 #Now start the IoTaS web server by executing below commands
 cd /root/IoTaS/webservice/
-nohup java -cp target/webservice-0.1.0-SNAPSHOT.jar com.hortonworks.iotas.webservice.IotasApplication server conf/iotas.yaml&
+nohup java -cp target/webservice-0.1.0-SNAPSHOT.jar org.apache.streamline.webservice.IotasApplication server conf/iotas.yaml&
 sleep 10
 #Once the web server has been successfully started you can quickly add the needed components to create and run a topology using a bunch of curl commands. However, because some of the topology components use configuration specific to the clusters on which those topology components will be running you need to follow the steps below to ensure that the component configurations have the correct value.
 #Change the hdfs url.
@@ -35,7 +35,7 @@ cd /root/IoTaS/bin/
 #Create kafka topic from which the topology consumes the data
 /usr/hdp/2.3.2.0-2950/kafka/bin/kafka-topics.sh --create --topic nest-topic --zookeeper localhost:2181 --replication-factor 1 --partitions 3
 #Produce some data on to the topic just created above. Note that hostname for kafka broker should be the hostname of sandbox VM and the port for kafka broker should be the same as the one configured in ambari for kafka. 
-java -cp /root/IoTaS/simulator/target/simulator-0.1.0-SNAPSHOT.jar com.hortonworks.iotas.simulator.CLI -b sandbox.hortonworks.com:6667 -t nest-topic -f /root/IoTaS/simulator/src/main/resources/nest-iotas-messages
+java -cp /root/IoTaS/simulator/target/simulator-0.1.0-SNAPSHOT.jar org.apache.streamline.simulator.CLI -b sandbox.hortonworks.com:6667 -t nest-topic -f /root/IoTaS/simulator/src/main/resources/nest-iotas-messages
 #Create the hbase table used by topology to save tuples satisfying rules.
 echo "create 'nest', 'cf', 'd'" | hbase shell
 #Create the hdfs directories used by the components.

@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>streams-runners-storm</artifactId>
-        <groupId>com.hortonworks.iotas</groupId>
+        <groupId>org.apache.streamline</groupId>
         <version>0.1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -18,7 +18,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.hortonworks.iotas</groupId>
+            <groupId>org.apache.streamline</groupId>
             <artifactId>parser-registry</artifactId>
             <version>${project.version}</version>
             <!-- dropwizard and phoenix have conflicts in jersey related dependencies  -->
@@ -45,7 +45,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.hortonworks.iotas</groupId>
+            <groupId>org.apache.streamline</groupId>
             <artifactId>streams-layout-storm</artifactId>
             <version>0.1.0-SNAPSHOT</version>
             <!-- dropwizard and phoenix have conflicts in jersey related dependencies  -->
@@ -72,7 +72,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.hortonworks.iotas</groupId>
+            <groupId>org.apache.streamline</groupId>
             <artifactId>streams-notification</artifactId>
             <version>${project.version}</version>
             <exclusions>
@@ -83,7 +83,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.hortonworks.iotas</groupId>
+            <groupId>org.apache.streamline</groupId>
             <artifactId>streams-notifier</artifactId>
             <version>${project.version}</version>
             <exclusions>
@@ -94,7 +94,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.hortonworks.iotas</groupId>
+            <groupId>org.apache.streamline</groupId>
             <artifactId>streams-runtime</artifactId>
             <version>${project.version}</version>
             <exclusions>
@@ -105,7 +105,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.hortonworks.iotas</groupId>
+            <groupId>org.apache.streamline</groupId>
             <artifactId>streams-runtime</artifactId>
             <version>${project.version}</version>
             <exclusions>
@@ -116,7 +116,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.hortonworks.iotas</groupId>
+            <groupId>org.apache.streamline</groupId>
             <artifactId>streams-common</artifactId>
             <version>${project.version}</version>
             <exclusions>
@@ -376,7 +376,7 @@
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.hortonworks.iotas.webservice.IotasApplication</mainClass>
+                                    <mainClass>org.apache.streamline.webservice.IotasApplication</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>

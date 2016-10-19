@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.hortonworks.iotas</groupId>
-    <artifactId>iotas</artifactId>
+    <groupId>org.apache.streamline</groupId>
+    <artifactId>streamline</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
@@ -329,7 +329,7 @@
                     <transformers>
                       <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                       <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                        <mainClass>com.hortonworks.iotas.webservice.IotasApplication</mainClass>
+                        <mainClass>org.apache.streamline.webservice.IotasApplication</mainClass>
                       </transformer>
                     </transformers>
                   </configuration>
@@ -408,10 +408,10 @@
          <profile>
            <id>dist</id>
            <properties>
-             <exclude.unit.test.groups>com.hortonworks.iotas.common.test.IntegrationTest,com.hortonworks.iotas.common.test.HBaseIntegrationTest</exclude.unit.test.groups>
+             <exclude.unit.test.groups>org.apache.streamline.common.test.IntegrationTest,org.apache.streamline.common.test.HBaseIntegrationTest</exclude.unit.test.groups>
              <include.unit.test.groups></include.unit.test.groups>
-             <exclude.integration.test.groups>com.hortonworks.iotas.common.test.HBaseIntegrationTest</exclude.integration.test.groups>
-             <include.integration.test.groups>com.hortonworks.iotas.common.test.IntegrationTest</include.integration.test.groups>
+             <exclude.integration.test.groups>org.apache.streamline.common.test.HBaseIntegrationTest</exclude.integration.test.groups>
+             <include.integration.test.groups>org.apache.streamline.common.test.IntegrationTest</include.integration.test.groups>
            </properties>
            <modules>
              <module>iotas-dist</module>
@@ -423,20 +423,20 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <exclude.unit.test.groups>com.hortonworks.iotas.common.test.IntegrationTest,com.hortonworks.iotas.common.test.HBaseIntegrationTest</exclude.unit.test.groups>
+                <exclude.unit.test.groups>org.apache.streamline.common.test.IntegrationTest,org.apache.streamline.common.test.HBaseIntegrationTest</exclude.unit.test.groups>
                 <include.unit.test.groups></include.unit.test.groups>
-                <exclude.integration.test.groups>com.hortonworks.iotas.common.test.HBaseIntegrationTest</exclude.integration.test.groups>
-                <include.integration.test.groups>com.hortonworks.iotas.common.test.IntegrationTest</include.integration.test.groups>
+                <exclude.integration.test.groups>org.apache.streamline.common.test.HBaseIntegrationTest</exclude.integration.test.groups>
+                <include.integration.test.groups>org.apache.streamline.common.test.IntegrationTest</include.integration.test.groups>
             </properties>
         </profile>
 
         <profile>
             <id>dev-tests-including-external-env</id>
             <properties>
-                <exclude.unit.test.groups>com.hortonworks.iotas.common.test.IntegrationTest,com.hortonworks.iotas.common.test.HBaseIntegrationTest</exclude.unit.test.groups>
+                <exclude.unit.test.groups>org.apache.streamline.common.test.IntegrationTest,org.apache.streamline.common.test.HBaseIntegrationTest</exclude.unit.test.groups>
                 <include.unit.test.groups></include.unit.test.groups>
                 <exclude.integration.test.groups></exclude.integration.test.groups>
-                <include.integration.test.groups>com.hortonworks.iotas.common.test.IntegrationTest,com.hortonworks.iotas.common.test.HBaseIntegrationTest</include.integration.test.groups>
+                <include.integration.test.groups>org.apache.streamline.common.test.IntegrationTest,org.apache.streamline.common.test.HBaseIntegrationTest</include.integration.test.groups>
             </properties>
         </profile>
     </profiles>

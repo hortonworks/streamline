@@ -261,7 +261,7 @@ export default class OutputSchema extends Component {
 					conf = {
 						name: type+'-action',
 						outputStreams: [streamName],
-						__type: 'com.hortonworks.iotas.streams.layout.component.impl.splitjoin.'+(nodeData.type === 'SPLIT' ? 'SplitAction' : (nodeData.type === 'STAGE' ? 'StageAction' : 'JoinAction'))
+						__type: 'org.apache.streamline.streams.layout.component.impl.splitjoin.'+(nodeData.type === 'SPLIT' ? 'SplitAction' : (nodeData.type === 'STAGE' ? 'StageAction' : 'JoinAction'))
 					}
 				} else {
 					conf.outputStreams.push(streamName);
@@ -315,9 +315,9 @@ export default class OutputSchema extends Component {
 								if(targetObj.currentType === 'Notification'){
 									actionObj.outputFieldsAndDefaults = this.notificationNode.config.properties.fieldValues || {};
 									actionObj.notifierName = this.notificationNode.config.properties.notifierName || '';
-									actionObj.__type = "com.hortonworks.iotas.streams.layout.component.rule.action.NotifierAction";
+									actionObj.__type = "org.apache.streamline.streams.layout.component.rule.action.NotifierAction";
 								} else {
-									actionObj.__type = "com.hortonworks.iotas.streams.layout.component.rule.action.TransformAction";
+									actionObj.__type = "org.apache.streamline.streams.layout.component.rule.action.TransformAction";
 								}
 								if(actions.length === 0){
 									actions.push(actionObj);

@@ -1,13 +1,13 @@
 modules:
   - name: parser-registry
-    className: com.hortonworks.iotas.registries.parser.service.ParserRegistryModule
+    className: org.apache.streamline.registries.parser.service.ParserRegistryModule
   - name: tag-registry
-    className: com.hortonworks.iotas.registries.tag.service.TagRegistryModule
+    className: org.apache.streamline.registries.tag.service.TagRegistryModule
   - name: streams
-    className: com.hortonworks.iotas.streams.service.StreamsModule
+    className: org.apache.streamline.streams.service.StreamsModule
     config:
-      topologyActionsImpl: com.hortonworks.iotas.streams.layout.storm.StormTopologyActionsImpl
-      topologyMetricsImpl: com.hortonworks.iotas.streams.metrics.storm.topology.StormTopologyMetricsImpl
+      topologyActionsImpl: org.apache.streamline.streams.layout.storm.StormTopologyActionsImpl
+      topologyMetricsImpl: org.apache.streamline.streams.metrics.storm.topology.StormTopologyMetricsImpl
       #change the below to the path on your local machine
       iotasStormJar: /tmp/streams-runtime-storm-0.1.0-SNAPSHOT.jar
       stormHomeDir: /usr/local/Cellar/storm/0.10.0/
@@ -24,13 +24,13 @@ modules:
 catalogRootUrl: "http://localhost:8080/api/v1/catalog"
 # Filesystem based jar storage
 fileStorageConfiguration:
-  className: "com.hortonworks.iotas.common.util.LocalFileSystemStorage"
+  className: "org.apache.streamline.common.util.LocalFileSystemStorage"
   properties:
     directory: "/tmp"
 
 # HDFS based Jar storage
 #fileStorageConfiguration:
-#  className: "com.hortonworks.iotas.common.util.HdfsFileStorage"
+#  className: "org.apache.streamline.common.util.HdfsFileStorage"
 #  properties:
 #    fsUrl: "file:///"
 #    directory: "/tmp/test-hdfs"
@@ -39,11 +39,11 @@ fileStorageConfiguration:
 #
 # Example configuration for inmemory is:
 #storageProviderConfiguration:
-# providerClass: "com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager"
+# providerClass: "org.apache.streamline.storage.impl.memory.InMemoryStorageManager"
 #
 # Example configuration for phoenix based JDBC driver
 #storageProviderConfiguration:
-# providerClass: "com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManager"
+# providerClass: "org.apache.streamline.storage.impl.jdbc.JdbcStorageManager"
 # properties:
 #   db.type: "phoenix"
 #   queryTimeoutInSecs: 30
@@ -53,7 +53,7 @@ fileStorageConfiguration:
 #
 # MySQL based jdbc provider configuration is:
 #storageProviderConfiguration:
-# providerClass: "com.hortonworks.iotas.storage.impl.jdbc.JdbcStorageManager"
+# providerClass: "org.apache.streamline.storage.impl.jdbc.JdbcStorageManager"
 # properties:
 #   db.type: "mysql"
 #   queryTimeoutInSecs: 30
@@ -63,7 +63,7 @@ fileStorageConfiguration:
 #
 # Atlas based provider configuration is:
 #storageProviderConfiguration:
-# providerClass: "com.hortonworks.iotas.storage.atlas.AtlasStoreManager"
+# providerClass: "org.apache.streamline.storage.atlas.AtlasStoreManager"
 # properties:
 #   atlas.graph.storage.backend: "berkeleyje"
 #   atlas.graph.storage.directory: "/var/data/iotas/graph/berkley"
@@ -76,7 +76,7 @@ fileStorageConfiguration:
 #   atlas.EntityAuditRepository.impl: "org.apache.atlas.repository.audit.NoopEntityAuditRepository"
 
 storageProviderConfiguration:
- providerClass: "com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager"
+ providerClass: "org.apache.streamline.storage.impl.memory.InMemoryStorageManager"
 
 
 server:
@@ -116,7 +116,7 @@ logging:
   loggers:
 
     # Sets the level for 'com.example.app' to DEBUG.
-    com.hortonworks.iotas: TRACE
+    org.apache.streamline: TRACE
 
 
   appenders:

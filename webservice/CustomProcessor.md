@@ -97,8 +97,8 @@ schemaClass| String | Fully qualified class name to support schema evolution
                     ]
                 }
             },
-            "customProcessorImpl":"com.hortonworks.iotas.streams.runtime.processor.ConsoleCustomProcessorRuntime",
-            "schemaClass":"com.hortonworks.iotas.streams.schema.CustomProcessorSchemaEvolver"
+            "customProcessorImpl":"org.apache.streamline.streams.runtime.processor.ConsoleCustomProcessorRuntime",
+            "schemaClass":"org.apache.streamline.streams.schema.CustomProcessorSchemaEvolver"
         }
     ]
 }
@@ -195,7 +195,7 @@ file in the tar should have the same name as the jarFileName property in info.js
   "configFields": [{"name":"configField", "isOptional":false, "type":"string", "defaultValue":null,"isUserInput":true,"tooltip":"Config field"}],
   "inputSchema": {"fields":[{"name":"childField1","type":"INTEGER"},{"name":"childField2","type":"BOOLEAN"},{"name":"topLevelStringField","type":"STRING"}]},
   "outputStreamToSchema": {"stream1":{"fields":[{"name":"childField1","type":"INTEGER"},{"name":"childField2","type":"BOOLEAN"},{"name":"topLevelStringField","type":"STRING"}]}},
-  "customProcessorImpl": "com.hortonworks.iotas.streams.runtime.processor.ConsoleCustomProcessorRuntime",
-  "schemaClass":"com.hortonworks.iotas.streams.schema.CustomProcessorSchemaEvolver"
+  "customProcessorImpl": "org.apache.streamline.streams.runtime.processor.ConsoleCustomProcessorRuntime",
+  "schemaClass":"org.apache.streamline.streams.schema.CustomProcessorSchemaEvolver"
 }
 ```

@@ -38,7 +38,7 @@
       "window": null,
       "actions": [
         {
-          "__type": "com.hortonworks.iotas.streams.layout.component.rule.action.TransformAction",
+          "__type": "org.apache.streamline.streams.layout.component.rule.action.TransformAction",
           "name": "HBase",
           "outputStreams": [
             "outputstream"

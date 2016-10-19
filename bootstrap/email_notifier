@@ -1,7 +1,7 @@
 {
   "name":"email_notifier",
   "jarFileName": "notifiers.jar",
-  "className": "com.hortonworks.iotas.streams.notifiers.EmailNotifier",
+  "className": "org.apache.streamline.streams.notifiers.EmailNotifier",
   "properties": {
     "username": "hwemailtest@gmail.com",
     "password": "testing12",

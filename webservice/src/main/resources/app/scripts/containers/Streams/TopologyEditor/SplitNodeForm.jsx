@@ -129,7 +129,7 @@ export default class SplitNodeForm extends Component {
 					splitConfigData = {
 						name: 'split-action',
 						outputStreams: [],
-						__type: 'com.hortonworks.iotas.streams.layout.component.impl.splitjoin.SplitAction'
+						__type: 'org.apache.streamline.streams.layout.component.impl.splitjoin.SplitAction'
 					};
 				}
 				splitConfigData.jarId = fileId;

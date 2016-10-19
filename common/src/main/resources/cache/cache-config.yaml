@@ -7,7 +7,7 @@ caches:
       entry:
         key: "java.lang.String"
         val: "java.lang.Integer"
-        codec: "com.hortonworks.iotas.cache.entries.MyCodec"
+        codec: "org.apache.streamline.cache.entries.MyCodec"
       connection:
         host: "localhost"
         port: "6379"

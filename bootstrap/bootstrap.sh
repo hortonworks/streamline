@@ -21,7 +21,7 @@ function run_cmd {
 
 function add_nest_parser {
   echo "POST nest_parser"
-  cmd="curl -sS -X POST -i -F parserJar=@../parsers/target/parsers-0.1.0-SNAPSHOT.jar -F parserInfo='{\"id\":1, \"name\":\"NestParser\",\"className\":\"com.hortonworks.iotas.parsers.nest.NestParser\",\"version\":0}' -F schemaFromParserJar=true http://localhost:8080/api/v1/catalog/parsers"
+  cmd="curl -sS -X POST -i -F parserJar=@../parsers/target/parsers-0.1.0-SNAPSHOT.jar -F parserInfo='{\"id\":1, \"name\":\"NestParser\",\"className\":\"org.apache.streamline.parsers.nest.NestParser\",\"version\":0}' -F schemaFromParserJar=true http://localhost:8080/api/v1/catalog/parsers"
   run_cmd $cmd
 }
 

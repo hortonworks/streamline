@@ -1,0 +1,328 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.streamline.streams.catalog.service;
+
+import org.apache.streamline.common.QueryParam;
+import org.apache.streamline.common.util.FileStorage;
+import org.apache.streamline.registries.parser.ParserInfo;
+import org.apache.streamline.registries.parser.client.ParserClient;
+import org.apache.streamline.registries.tag.TaggedEntity;
+import org.apache.streamline.registries.tag.client.TagClient;
+import org.apache.streamline.storage.DataSourceSubType;
+import org.apache.streamline.storage.Storable;
+import org.apache.streamline.storage.StorableKey;
+import org.apache.streamline.storage.StorageManager;
+import org.apache.streamline.storage.exception.StorageException;
+import org.apache.streamline.storage.util.CoreUtils;
+import org.apache.streamline.streams.catalog.DataFeed;
+import org.apache.streamline.streams.catalog.DataSet;
+import org.apache.streamline.streams.catalog.DataSource;
+import org.apache.streamline.streams.catalog.Device;
+import org.apache.streamline.streams.catalog.FileInfo;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+
+
+/**
+ * A service layer where we could put our business logic.
+ * Right now this exists as a very thin layer between the DAO and
+ * the REST controllers.
+ */
+public class CatalogService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(CatalogService.class);
+
+    // TODO: the namespace and Id generation logic should be moved inside DAO
+    private static final String DATA_SOURCE_NAMESPACE = new DataSource().getNameSpace();
+    private static final String DEVICE_NAMESPACE = new Device().getNameSpace();
+    private static final String DATASET_NAMESPACE = new DataSet().getNameSpace();
+    private static final String DATA_FEED_NAMESPACE = new DataFeed().getNameSpace();
+    private static final String FILE_NAMESPACE = FileInfo.NAME_SPACE;
+
+    private final StorageManager dao;
+    private final FileStorage fileStorage;
+    private final TagClient tagClient;
+    private final ParserClient parserClient;
+
+
+    public CatalogService(StorageManager dao, FileStorage fileStorage, TagClient tagClient, ParserClient parserClient) {
+        this.dao = dao;
+        dao.registerStorables(getStorableClasses());
+        this.fileStorage = fileStorage;
+        this.tagClient = tagClient;
+        this.parserClient = parserClient;
+    }
+
+    public static Collection<Class<? extends Storable>> getStorableClasses() {
+        InputStream resourceAsStream = CatalogService.class.getClassLoader().getResourceAsStream("storables.props");
+        HashSet<Class<? extends Storable>> classes = new HashSet<>();
+        try {
+            List<String> classNames = IOUtils.readLines(resourceAsStream);
+            for (String className : classNames) {
+                classes.add((Class<? extends Storable>) Class.forName(className));
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        return classes;
+    }
+
+    private String getNamespaceForDataSourceType(DataSource.Type dataSourceType) {
+        if (dataSourceType == DataSource.Type.DEVICE) {
+            return DEVICE_NAMESPACE;
+        } else if (dataSourceType == DataSource.Type.DATASET) {
+            return DATASET_NAMESPACE;
+        }
+        return DataSource.Type.UNKNOWN.toString();
+    }
+
+    private DataSourceSubType getSubtypeFromDataSource(DataSource ds) throws IllegalAccessException, InstantiationException {
+        String ns = getNamespaceForDataSourceType(ds.getType());
+        Class<? extends DataSourceSubType> classForDataSourceType = getClassForDataSourceType(ds.getType());
+        DataSourceSubType dataSourcesubType = classForDataSourceType.newInstance();
+        dataSourcesubType.setDataSourceId(ds.getId());
+        return dao.get(new StorableKey(ns, dataSourcesubType.getPrimaryKey()));
+    }
+
+    private Class<? extends DataSourceSubType> getClassForDataSourceType(DataSource.Type dataSourceType) {
+        if (dataSourceType == DataSource.Type.DEVICE) {
+            return Device.class;
+        } else if (dataSourceType == DataSource.Type.DATASET) {
+            return DataSet.class;
+        }
+        throw new IllegalArgumentException("Unknown data source type " + dataSourceType);
+    }
+
+    // TODO: implement pagination
+    public Collection<DataSource> listDataSources() throws IOException, IllegalAccessException, InstantiationException {
+        Collection<DataSource> dataSources = this.dao.list(DATA_SOURCE_NAMESPACE);
+        if (dataSources != null) {
+            for (DataSource ds : dataSources) {
+                DataSourceSubType dataSourcesubType = getSubtypeFromDataSource(ds);
+                ds.setTypeConfig(CoreUtils.storableToJson(dataSourcesubType));
+                ds.setTags(tagClient.getTags(new TaggedEntity(ds)));
+            }
+        }
+        return dataSources;
+    }
+
+    public Collection<DataSource> listDataSourcesForType(DataSource.Type type, List<QueryParam> params) throws Exception {
+        List<DataSource> dataSources = new ArrayList<>();
+        String ns = getNamespaceForDataSourceType(type);
+        Collection<DataSourceSubType> subTypes = dao.find(ns, params);
+        for (DataSourceSubType st : subTypes) {
+            dataSources.add(getDataSource(st.getDataSourceId()));
+        }
+        return dataSources;
+    }
+
+    public DataSource getDataSource(Long id) throws IOException, InstantiationException, IllegalAccessException {
+        DataSource ds = new DataSource();
+        ds.setId(id);
+        DataSource result = dao.get(new StorableKey(DATA_SOURCE_NAMESPACE, ds.getPrimaryKey()));
+        if (result != null) {
+            DataSourceSubType subType = getSubtypeFromDataSource(result);
+            result.setTypeConfig(CoreUtils.storableToJson(subType));
+            result.setTags(tagClient.getTags(new TaggedEntity(result)));
+        }
+        return result;
+    }
+
+    public DataSource addDataSource(DataSource dataSource) throws IOException {
+        if (dataSource.getId() == null) {
+            dataSource.setId(this.dao.nextId(DATA_SOURCE_NAMESPACE));
+        }
+        if (dataSource.getTimestamp() == null) {
+            dataSource.setTimestamp(System.currentTimeMillis());
+        }
+        DataSourceSubType subType = CoreUtils.jsonToStorable(dataSource.getTypeConfig(),
+                getClassForDataSourceType(dataSource.getType()));
+        subType.setDataSourceId(dataSource.getId());
+        this.dao.add(dataSource);
+        this.dao.add(subType);
+        tagClient.addTagsForEntity(new TaggedEntity(dataSource), dataSource.getTags());
+        return dataSource;
+    }
+
+    public DataSource removeDataSource(Long dataSourceId) throws IOException, IllegalAccessException, InstantiationException {
+        DataSource dataSource = getDataSource(dataSourceId);
+        if (dataSource != null) {
+            /*
+            * Delete the child entity first
+            */
+            String ns = getNamespaceForDataSourceType(dataSource.getType());
+            this.dao.remove(new StorableKey(ns, dataSource.getPrimaryKey()));
+            dao.<DataSource>remove(new StorableKey(DATA_SOURCE_NAMESPACE, dataSource.getPrimaryKey()));
+            tagClient.removeTagsForEntity(new TaggedEntity(dataSource), dataSource.getTags());
+        }
+        return dataSource;
+    }
+
+    public DataSource addOrUpdateDataSource(Long id, DataSource dataSource) throws IOException {
+        dataSource.setId(id);
+        dataSource.setTimestamp(System.currentTimeMillis());
+        DataSourceSubType subType = CoreUtils.jsonToStorable(dataSource.getTypeConfig(),
+                getClassForDataSourceType(dataSource.getType()));
+        subType.setDataSourceId(dataSource.getId());
+        this.dao.addOrUpdate(dataSource);
+        this.dao.addOrUpdate(subType);
+        tagClient.addOrUpdateTagsForEntity(new TaggedEntity(dataSource), dataSource.getTags());
+        return dataSource;
+    }
+
+    public Collection<DataFeed> listDataFeeds() {
+        return this.dao.list(DATA_FEED_NAMESPACE);
+    }
+
+    public Collection<DataFeed> listDataFeeds(List<QueryParam> params) throws Exception {
+        return dao.find(DATA_FEED_NAMESPACE, params);
+    }
+
+    public DataFeed getDataFeed(Long dataFeedId) {
+        DataFeed df = new DataFeed();
+        df.setId(dataFeedId);
+        return this.dao.get(new StorableKey(DATA_FEED_NAMESPACE, df.getPrimaryKey()));
+    }
+
+    public DataFeed addDataFeed(DataFeed feed) {
+        if (feed.getId() == null) {
+            feed.setId(this.dao.nextId(DATA_FEED_NAMESPACE));
+        }
+        validateDatafeed(feed);
+        this.dao.add(feed);
+        return feed;
+    }
+
+    /**
+     * Basic validation
+     * 1. Datasource referenced in this datafeed should exist
+     * 2. End-points should be unique for Datasets
+     */
+    private void validateDatafeed(DataFeed feed) {
+        DataSource dataSource = null;
+        LOG.debug("Validating data feed [{}]", feed);
+        try {
+            dataSource = getDataSource(feed.getDataSourceId());
+        } catch (Exception ex) {
+            throw new StorageException("Got exception while validating datafeed [" + feed + "]", ex);
+        }
+        if (dataSource == null) {
+            throw new StorageException("Cannot add Datafeed [" + feed + "] for non existent datasource");
+        } else if (dataSource.getType() == DataSource.Type.DATASET) {
+            QueryParam qp = new QueryParam("type", feed.getType());
+            Collection<DataFeed> existing = null;
+            try {
+                existing = listDataFeeds(Collections.singletonList(qp));
+            } catch (Exception ex) {
+                throw new StorageException("Got excepting while listing data feeds with query param " + qp, ex);
+            }
+            if (!existing.isEmpty()) {
+                throw new StorageException("Datafeed type must be unique for a Dataset");
+            }
+        }
+    }
+
+    public DataFeed removeDataFeed(Long dataFeedId) {
+        DataFeed feed = new DataFeed();
+        feed.setId(dataFeedId);
+        return dao.remove(new StorableKey(DATA_FEED_NAMESPACE, feed.getPrimaryKey()));
+    }
+
+    public DataFeed addOrUpdateDataFeed(Long id, DataFeed feed) {
+        feed.setId(id);
+        this.dao.addOrUpdate(feed);
+        return feed;
+    }
+
+    public InputStream getFileFromJarStorage(String fileName) throws IOException {
+        return this.fileStorage.downloadFile(fileName);
+    }
+
+    public String uploadFileToStorage(InputStream inputStream, String jarFileName) throws IOException {
+        return fileStorage.uploadFile(inputStream, jarFileName);
+    }
+
+    public InputStream downloadFileFromStorage(String jarName) throws IOException {
+        return fileStorage.downloadFile(jarName);
+    }
+
+    public boolean deleteFileFromStorage(String jarName) throws IOException {
+        return fileStorage.deleteFile(jarName);
+    }
+
+
+    private Map<String, String> convertMapValuesToString (Map<String, Object> map) {
+        Map<String, String> result = new HashMap<>();
+        for (Map.Entry<String, Object> e : map.entrySet()) {
+            Object val = e.getValue();
+            if (val != null) {
+                result.put(e.getKey(), val.toString());
+            }
+        }
+        return result;
+    }
+
+    public Collection<FileInfo> listFiles() {
+        return dao.list(FILE_NAMESPACE);
+    }
+
+    public Collection<FileInfo> listFiles(List<QueryParam> queryParams) {
+        return dao.find(FILE_NAMESPACE, queryParams);
+    }
+
+    public FileInfo getFile(Long jarId) {
+        FileInfo file = new FileInfo();
+        file.setId(jarId);
+        return dao.get(new StorableKey(FILE_NAMESPACE, file.getPrimaryKey()));
+    }
+
+    public FileInfo removeFile(Long fileId) {
+        FileInfo file = new FileInfo();
+        file.setId(fileId);
+        return dao.remove(new StorableKey(FILE_NAMESPACE, file.getPrimaryKey()));
+    }
+
+    public FileInfo addOrUpdateFile(FileInfo file) {
+        if (file.getId() == null) {
+            file.setId(dao.nextId(FILE_NAMESPACE));
+        }
+        if (file.getTimestamp() == null) {
+            file.setTimestamp(System.currentTimeMillis());
+        }
+        dao.addOrUpdate(file);
+
+        return file;
+    }
+
+    public ParserInfo getParserInfo (Long parserId) {
+        return parserClient.getParserInfo(parserId);
+    }
+}

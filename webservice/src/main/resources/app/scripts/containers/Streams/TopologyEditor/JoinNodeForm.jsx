@@ -137,7 +137,7 @@ export default class JoinNodeForm extends Component {
 					joinConfigData = {
 						name: 'join-action',
 						outputStreams: [],
-						__type: 'com.hortonworks.iotas.streams.layout.component.impl.splitjoin.JoinAction'
+						__type: 'org.apache.streamline.streams.layout.component.impl.splitjoin.JoinAction'
 					};
 				}
 				joinConfigData.jarId = fileId;

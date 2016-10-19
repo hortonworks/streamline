@@ -2,7 +2,7 @@
 catalogRootUrl: "http://localhost:8080/api/v1/catalog"
 
 storageProviderConfiguration:
- providerClass: "com.hortonworks.iotas.storage.impl.memory.InMemoryStorageManager"
+ providerClass: "org.apache.streamline.storage.impl.memory.InMemoryStorageManager"
 
 server:
   rootPath: '/*'
@@ -41,7 +41,7 @@ logging:
   loggers:
 
     # Sets the level for 'com.example.app' to DEBUG.
-    com.hortonworks.iotas: TRACE
+    org.apache.streamline: TRACE
 
 
   appenders:

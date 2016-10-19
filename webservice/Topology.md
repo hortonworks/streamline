@@ -133,7 +133,7 @@ topology json that user will create using UI.
             {\"name\":\"retryDelayMaxMs\",\"isOptional\":true,\"defaultValue\":60000},
             {\"name\":\"parallelism\",\"isOptional\":true,\"defaultValue\":1}
         ]",
-        "transformationClass":"com.hortonworks.iotas.topology.storm.KafkaSpoutFluxComponent"}
+        "transformationClass":"org.apache.streamline.topology.storm.KafkaSpoutFluxComponent"}
     ]
 }
 ```

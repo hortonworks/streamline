@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.hortonworks.iotas</groupId>
-        <artifactId>iotas</artifactId>
+        <groupId>org.apache.streamline</groupId>
+        <artifactId>streamline</artifactId>
         <version>0.1.0-SNAPSHOT</version>
     </parent>
 
@@ -20,7 +20,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.hortonworks.iotas</groupId>
+            <groupId>org.apache.streamline</groupId>
             <artifactId>streams-common</artifactId>
             <version>${project.version}</version>
             <exclusions>
