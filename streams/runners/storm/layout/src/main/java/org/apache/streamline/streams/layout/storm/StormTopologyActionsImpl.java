@@ -3,13 +3,14 @@ package org.apache.streamline.streams.layout.storm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.streamline.common.Config;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
 import org.apache.streamline.streams.layout.component.StatusImpl;
 import org.apache.streamline.streams.layout.component.TopologyActions;
 import org.apache.streamline.streams.layout.component.TopologyDag;
 import org.apache.streamline.streams.layout.component.TopologyLayout;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.DumperOptions;
@@ -155,10 +156,11 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
     @Override
     public void validate (TopologyLayout topology) throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
-        Map topologyConfig = mapper.readValue(topology.getConfig(), Map.class);
-        StormTopologyValidator validator = new StormTopologyValidator(topologyConfig, this.catalogRootUrl);
-        validator.validate();
+        Map<String, Object> topologyConfig = topology.getConfig().getProperties();
+        if (!topologyConfig.isEmpty()) {
+            StormTopologyValidator validator = new StormTopologyValidator(topologyConfig, this.catalogRootUrl);
+            validator.validate();
+        }
     }
 
     @Override
@@ -229,9 +231,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
     }
 
     private String createYamlFile (TopologyLayout topology) throws Exception {
-        String configJson = topology.getConfig();
         Map<String, Object> yamlMap;
-        Map<String, Object> jsonMap;
         ObjectMapper objectMapper = new ObjectMapper();
         File f;
         FileWriter fileWriter = null;
@@ -243,14 +243,18 @@ public class StormTopologyActionsImpl implements TopologyActions {
                             "artifact for topology id " + topology.getId());
                 }
             }
-            jsonMap = objectMapper.readValue(configJson, Map.class);
             yamlMap = new LinkedHashMap<>();
             yamlMap.put(StormTopologyLayoutConstants.YAML_KEY_NAME, getTopologyName(topology));
-            addTopologyConfig(yamlMap, jsonMap);
-            for (Map.Entry<String, Map<String, Object>> entry: getYamlKeysAndComponents(topology.getTopologyDag())) {
+            TopologyDag topologyDag = topology.getTopologyDag();
+            LOG.debug("Initial Topology config {}", topology.getConfig());
+            StormTopologyFluxGenerator fluxGenerator = new StormTopologyFluxGenerator(topology, conf);
+            topologyDag.traverse(fluxGenerator);
+            for (Map.Entry<String, Map<String, Object>> entry: fluxGenerator.getYamlKeysAndComponents()) {
                 addComponentToCollection(yamlMap, entry.getValue(), entry.getKey());
             }
-
+            Config topologyConfig = fluxGenerator.getTopologyConfig();
+            LOG.debug("Final Topology config {}", topologyConfig);
+            addTopologyConfig(yamlMap, topologyConfig.getProperties());
             DumperOptions options = new DumperOptions();
             options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
             options.setSplitLines(false);
@@ -264,12 +268,6 @@ public class StormTopologyActionsImpl implements TopologyActions {
                 fileWriter.close();
             }
         }
-    }
-
-    private List<Map.Entry<String, Map<String, Object>>> getYamlKeysAndComponents(TopologyDag topologyDag) {
-        StormTopologyFluxGenerator fluxGenerator = new StormTopologyFluxGenerator(topologyDag, conf);
-        topologyDag.traverse(fluxGenerator);
-        return fluxGenerator.getYamlKeysAndComponents();
     }
 
     private String getTopologyName (TopologyLayout topology) {

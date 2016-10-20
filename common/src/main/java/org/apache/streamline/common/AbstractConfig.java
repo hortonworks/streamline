@@ -44,6 +44,10 @@ public abstract class AbstractConfig implements Serializable {
         properties.put(key, value);
     }
 
+    public void putAll(Map<String, Object> properties) {
+        this.properties.putAll(properties);
+    }
+
     public Object get(String key, Object defaultValue) {
         Object value = properties.get(key);
         return value != null ? value : defaultValue;
@@ -93,11 +97,8 @@ public abstract class AbstractConfig implements Serializable {
         return (boolean) get(key, defaultValue);
     }
 
-    /**
-     * for jackson
-     */
     public Map<String, Object> getProperties() {
-        return properties;
+        return new HashMap<>(properties);
     }
 
     @Override

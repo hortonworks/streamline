@@ -91,7 +91,7 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
     private String findKafkaTopicName(TopologyLayout topology, String sourceId) {
         String kafkaTopicName = null;
         try {
-            Map<String, Object> topologyConfig = mapper.readValue(topology.getConfig(), new TypeReference<Map<String, Object>>(){});
+            Map<String, Object> topologyConfig = topology.getConfig().getProperties();
             List<Map<String, Object>> dataSources = (List<Map<String, Object>>) topologyConfig.get(TopologyLayoutConstants.JSON_KEY_DATA_SOURCES);
 
             for (Map<String, Object> dataSource : dataSources) {
@@ -111,7 +111,7 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
                 Map<String, Object> dataSourceConfig = (Map<String, Object>) dataSource.get(TopologyLayoutConstants.JSON_KEY_CONFIG);
                 kafkaTopicName = (String) dataSourceConfig.get(TopologyLayoutConstants.JSON_KEY_TOPIC);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new IllegalStateException("Failed to parse topology configuration.");
         }
 

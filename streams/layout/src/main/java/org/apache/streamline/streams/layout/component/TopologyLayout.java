@@ -1,15 +1,30 @@
 package org.apache.streamline.streams.layout.component;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.streamline.common.Config;
+
+import java.io.IOException;
+import java.util.Map;
+
 public class TopologyLayout {
     private final Long id;
     private final String name;
-    private final String config;
+    private final Config config;
     private final TopologyDag topologyDag;
 
-    public TopologyLayout(Long id, String name, String config, TopologyDag topologyDag) {
+    public TopologyLayout(Long id, String name, String configStr, TopologyDag topologyDag) throws IOException {
         this.id = id;
         this.name = name;
-        this.config = config;
+        if (!StringUtils.isEmpty(configStr)) {
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String, Object> properties = mapper.readValue(configStr, new TypeReference<Map<String, Object>>(){});
+            config = new Config();
+            config.putAll(properties);
+        } else {
+            config = new Config();
+        }
         this.topologyDag = topologyDag;
     }
 
@@ -21,7 +36,7 @@ public class TopologyLayout {
         return name;
     }
 
-    public String getConfig() {
+    public Config getConfig() {
         return config;
     }
 

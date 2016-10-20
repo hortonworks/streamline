@@ -550,7 +550,7 @@ public class TopologyCatalogResource {
         try {
             TopologyMetrics.TopologyMetric topologyMetric = catalogService.getTopologyMetric(topology);
             topologyCatalogWithMetric = new TopologyCatalogWithMetric(topology, true, topologyMetric);
-        } catch (TopologyNotAliveException e) {
+        } catch (TopologyNotAliveException | IOException e) {
             topologyCatalogWithMetric = new TopologyCatalogWithMetric(topology, false, null);
         }
         return topologyCatalogWithMetric;

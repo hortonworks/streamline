@@ -252,11 +252,11 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
     "window": {
         "windowLength": {
           "class": ".Window$Duration",
-          "durationMs": 500
+          "durationMs": 60000
         },
         "slidingInterval": {
           "class": ".Window$Duration",
-          "durationMs": 500
+          "durationMs": 60000
         },
         "tsField": null,
         "lagMs": 0
