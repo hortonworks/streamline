@@ -1,6 +1,6 @@
-package com.hortonworks.iotas.streams.udaf;
+package org.apache.streamline.streams.udaf;
 
-import com.hortonworks.iotas.streams.rule.UDAF;
+import org.apache.streamline.streams.rule.UDAF;
 
 public class NumberSum implements UDAF<Number, Number, Number> {
     @Override
