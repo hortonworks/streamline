@@ -229,7 +229,7 @@ export default class ComponentNodeContainer extends Component {
 									return (
 									<NodeContainer
 										key={i}
-										imgPath="styles/img/custom.png"
+                                                                                imgPath="styles/img/color-icon-custom.png"
 										name={name ? name.defaultValue : 'Custom'}
 										type={Components.Processor.value}
 										nodeType="Custom"

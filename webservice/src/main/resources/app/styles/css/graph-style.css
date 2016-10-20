@@ -1,0 +1,457 @@
+/* Topology Editor */
+.graph-bg {
+  margin-bottom: 0px;
+  background-size: 10px 10px;
+  background-image: linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px);
+  position: relative;
+  overflow: hidden;
+  background-color: #ececec;
+  min-height: 500px;
+}
+#windowSlider, #kafkaSlider {
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  width: 650px;
+  padding: 10px;
+  overflow: auto;
+  background-color: #fff;
+  right: -650px;
+  box-shadow: -1px 0px 1px rgba(0,0,0,0.20);
+  z-index: 9;
+
+  transition: ease .5s all;
+}
+#windowSlider.active, #kafkaSlider.active {
+  right: 0px;
+}
+h3.slider-title {
+  font-weight: 300;
+  margin-top: 0px;
+  margin-bottom: 20px;
+  padding: 5px;
+  border-bottom: 1px dotted #ccc;
+}
+.divider{
+  position: relative;
+  color: #C2CADA;
+  display: inline-block;
+  border-right: 1px solid;
+  height: 20px;
+  top: 4px;
+}
+.nodes-list-container .panel,
+.panel-group .panel {
+    border-radius: 0px;
+}
+.panel-title > a { cursor:pointer }
+.nodes-list-container {
+  width: 200px;
+  position: absolute;
+  top: 60px;
+  right: 30px;
+  cursor: 'move';
+}
+.nodes-list-container .panel-default .panel-default {
+  margin-bottom: 0px;
+}
+.nodes-list-container .panel-default > .panel-heading {
+    border-radius: 0px;
+}
+.nodes-list-container .panel-default .panel-default > .panel-heading {
+  padding: 0;
+}
+.nodes-list-container .panel-default .panel-default > .panel-heading a {
+  color: #44697d;
+  display: block;
+  padding: 7px 14px;
+  font-size: 12px;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  background-color: #fcfcfd;
+}
+.nodes-list-container .panel-default > .panel-heading {
+  cursor: move;
+}
+.nodes-list-container .panel-default .panel-default .panel-body {
+  max-height: 120px;
+  overflow-y: auto;
+}
+.topology-icon{
+  width: 48px;
+  margin-right: 3px;
+  margin-bottom: 2px;
+  cursor: pointer;
+}
+svg {
+  background-color: transparent;
+  cursor: default;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+path.link.dragline {
+  pointer-events: none;
+  stroke-width: 2px;
+}
+
+path.link.hidden {
+  stroke-width: 0;
+}
+
+circle.node {
+  stroke-width: 1.5px;
+  cursor: pointer;
+}
+
+circle.node.reflexive {
+  stroke-width: 1px;
+}
+
+text.id {
+  text-anchor: middle;
+  font-weight: bold;
+}
+
+.d3-tip {
+  line-height: 1;
+  font-weight: bold;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border-radius: 2px;
+  font-size: 12px;
+}
+
+.modal-tip {
+  z-index: 9999;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+  box-sizing: border-box;
+  display: inline;
+  font-size: 10px;
+  width: 100%;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.8);
+  content: "\25BC";
+  position: absolute;
+  text-align: center;
+}
+
+/* Style northward tooltips differently */
+.d3-tip.n:after {
+  margin: -1px 0 0 0;
+  top: 100%;
+  left: 0;
+}
+
+.d3-tip ul {padding:0; margin:0; list-style: none;}
+.d3-tip ul li {font-size: 12px; line-height: 20px;}
+.table-backgrid>thead>tr>th>a {
+  color:#707980;
+}
+.conceptG {
+  cursor: pointer;
+}
+.conceptG.selected{
+  stroke-width: 2;
+}
+.conceptG.selected .node-rectangle {
+  stroke: #1190c0;
+}
+marker{
+    fill: grey;
+}
+
+g.conceptG circle{
+    stroke-width: 2px;
+    stroke: white;
+}
+
+path.link {
+    fill: transparent;
+    stroke: #636363;
+    cursor: pointer;
+}
+
+path.link:hover{
+    stroke: #67c2ef;
+}
+
+g.connect-node circle{
+    fill: #BEFFFF;
+}
+
+path.link.hidden{
+    stroke-width: 0;
+}
+
+path.link.selected {
+    stroke-dasharray: 5, 5;
+    stroke-width: 2;
+}
+rect.datasink {
+  fill: #fff;
+}
+rect.processor {
+  fill: #fff;
+}
+rect.source {
+  fill: #fff;
+}
+rect.datasink-img {
+  fill: #fff;
+  cursor: auto;
+}
+rect.processor-img {
+  fill: #fff;
+  cursor: auto;
+}
+rect.source-img {
+  fill: #fff;
+  cursor: auto;
+}
+text.datasink {
+  fill: #a9a9a9;
+}
+text.processor {
+  fill: #a9a9a9;
+}
+text.source {
+  fill: #a9a9a9;
+}
+circle.source,
+circle.processor,
+circle.datasink {
+  fill: #3eae49;
+}
+text.node-title {
+  font-size: 16px;
+  fill: #666;
+}
+text.node-type-label {
+  fill: #a9a9a9;
+  font-size: 12px;
+}
+svg > foreignObject > p {
+  text-align: center;
+  overflow: overlay;
+  position: relative;
+}
+.conceptG .fa-times{
+  fill: #EA0000;
+  cursor: pointer;
+}
+.conceptG .parallelism-count{
+  fill: #666;
+  cursor: pointer;
+  font-size: 12px
+}
+.conceptG .fa-caret-up,
+.conceptG .fa-caret-down {
+  fill: #a9a9a9;
+  cursor: pointer;
+}
+.conceptG .parallelism-count{
+  cursor: auto;
+}
+.link-group .fa-random{
+  fill: #69BE29;
+  cursor: pointer;
+}
+
+.node {
+  width: 160px;
+  display: inline-block;
+  position: relative;
+  border-style: solid;
+  border-width: 1px 2px 2px 1px;
+  border-color: #666;
+  border-radius: 6px;
+  padding-left: 40px;
+  padding-right: 10px;
+  margin-bottom: 5px;
+  line-height: 35px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #666;
+  background-color: #DDD;
+}
+.node .node-icon {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 35px;
+  height: 35px;
+  padding: 5px;
+  background-color: #666;
+  border-radius: 4px 0px 0px 4px;
+}
+.node.datasource {
+  border-color: #3db5e6;
+  color: #3db5e6;
+  background-color: #ebf9ff;
+}
+.node.datasource .node-icon {
+  background-color: #3db5e6;
+}
+.node.processor {
+  border-color: #e17000;
+  color: #e17000;
+  background-color: #fff0e1;
+}
+.node.processor .node-icon {
+  background-color: #e17000;
+}
+.node.sink {
+  border-color: #f6a800;
+  color: #f6a800;
+  background-color: #fff7ea;
+}
+.node.sink .node-icon {
+  background-color: #f6a800;
+}
+.nodes-list-container > .panel-default > .panel-collapse > .panel-body {
+  padding: 0px;
+}
+.nodes-list-container .panel-default .panel-default {
+  border-left: none;
+  border-right: none;
+}
+.nodes-list-container .panel-default .panel-default > .panel-collapse > .panel-body {
+  padding: 5px 10px;
+}
+
+/* Topology Editor Components */
+.component-panel {
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  right: 0px;
+  width: 200px;
+  overflow: auto;
+  background-color: #fff;
+  box-shadow: 0px 0px 6px rgba(0,0,0,0.4);
+}
+.component-panel input[type="text"] {
+    border: none;
+}
+#component-accordion .panel {
+  border-left: none;
+  border-right: none;
+  margin-top: 0px;
+}
+#component-accordion .panel .panel-heading {
+  padding: 0px;
+}
+#component-accordion .panel .panel-heading .panel-title {
+  display: block;
+  padding: 7px 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+  background-color: #e2f4fc;
+}
+#component-accordion .panel .panel-heading .panel-title:hover,
+#component-accordion .panel .panel-heading .panel-title:focus {
+  text-decoration: none;
+  color: #333;
+}
+#component-accordion .panel .panel-body {
+  padding: 0px;
+  border: none;
+}
+#component-accordion .panel .list-group {
+  margin-bottom: 0px;
+}
+#component-accordion .panel .list-group-item {
+  padding: 10px;
+  cursor: move;
+  border-radius: 0px;
+}
+#component-accordion .panel .list-group-item .component-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 10px;
+}
+.invalidInput {
+  border-color: #d81010;
+}
+.table-stream > tbody > tr > td {
+  word-break: break-all;
+}
+.schema-stats > i.fa,
+.schema-stats > div {
+  float: left;
+}
+.schema-stats > i.fa {
+  color: #e2f4fb;
+  margin-right: 6px;
+}
+.schema-stats h6 {
+  color: #000;
+  margin-top: 0px;
+  margin-bottom: 5px;
+}
+.schema-stats h4 {
+  font-weight: bold;
+  color: #44697d;
+  margin-top: 0px;
+}
+
+/*normalization processor*/
+
+.field-list {
+  list-style: none;
+  padding: 0px;
+  margin: -5px;
+}
+.field-list li {
+  background: white;
+  color: #374767;
+  padding: 8px;
+  margin: 5px 0px;
+  border: 1px solid;
+  font-size: 12px;
+}
+.field-list li.mandatory {
+  color: #a94442;
+  border-color: #a94442;
+  background-color: #f2dede;
+}
+.field-list li.mandatory a {
+  color: #a94442;
+  border-bottom-color: #a94442 !important;
+}
+.field-list li.mandatory i {
+  color: #a94442;
+}
+.field-list li.mandatory a:hover {
+  font-weight: 600;
+  text-decoration: underline;
+}
+.field-list li.optional {
+  border-color: #8a6d3b;
+  background-color: #fcf8e3;
+}
+.field-list li.optional a {
+  color: #8a6d3b;
+}
+.field-list li.optional a:hover {
+  font-weight: 600;
+  text-decoration: underline;
+}
+.scrollable-body {
+  max-height: 500px;
+  overflow-y: auto;
+}
+.field-list .label{
+  padding: .2em .6em .4em;
+}

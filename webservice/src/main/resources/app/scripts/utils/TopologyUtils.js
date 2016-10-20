@@ -726,6 +726,12 @@ const MouseUpAction = function(topologyId, d3node, d, metaInfo, internalFlags, c
 
 	var mouseDownNode = internalFlags.mouseDownNode;
 
+        //cannot connect from unconfigured node
+        if(!internalFlags.addEdgeFromNode) {
+                internalFlags.addEdgeFromNode = true;
+                return;
+        }
+
 	// if (!mouseDownNode) return;
 
 	dragLine.classed("hidden", true);
@@ -827,7 +833,8 @@ const generateNodeData = function(nodes, constantsArr, parentType, metadata, res
 			uiname: nodes[i].name,
 			imageURL: constObj.imgPath,
 			isConfigured: configuredFlag,
-			parallelismCount: nodes[i].config.properties.parallelism || 1
+                        parallelismCount: nodes[i].config.properties.parallelism || 1,
+                        nodeLabel: constObj.label
 		}
 		if(currentMetaObj.streamId){
 			obj.streamId = currentMetaObj.streamId;
