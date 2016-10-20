@@ -18,6 +18,7 @@
 package com.hortonworks.iotas.streams.service;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.streamline.streams.service.AvroStreamsSchemaConverter;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;

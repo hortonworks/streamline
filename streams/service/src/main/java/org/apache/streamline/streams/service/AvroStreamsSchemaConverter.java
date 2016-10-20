@@ -15,12 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hortonworks.iotas.streams.service;
+package org.apache.streamline.streams.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.iotas.common.Schema;
-import com.hortonworks.iotas.streams.IotasEvent;
+import org.apache.streamline.common.Schema;
+import org.apache.streamline.streams.IotasEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +47,7 @@ public class AvroStreamsSchemaConverter {
             effFields = Collections.singletonList(field);
         }
 
-        return new ObjectMapper().writeValueAsString(Schema.of(effFields));
+        return new ObjectMapper().writeValueAsString(effFields);
     }
 
     private Schema.Field generateStreamsSchemaField(org.apache.avro.Schema avroSchema) {

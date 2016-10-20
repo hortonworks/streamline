@@ -15,11 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hortonworks.iotas.streams.runtime.storm.spout;
+package org.apache.streamline.streams.runtime.storm.spout;
 
-import com.hortonworks.iotas.streams.IotasEvent;
+import org.apache.streamline.streams.IotasEvent;
 import com.hortonworks.registries.schemaregistry.SchemaMetadata;
-import com.hortonworks.registries.schemaregistry.avro.AvroSnapshotDeserializer;
+import com.hortonworks.registries.schemaregistry.serdes.avro.AvroSnapshotDeserializer;
 import com.hortonworks.registries.schemaregistry.serde.SerDesException;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericEnumSymbol;

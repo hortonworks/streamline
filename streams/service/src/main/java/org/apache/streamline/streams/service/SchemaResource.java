@@ -54,26 +54,30 @@ public class SchemaResource {
         avroStreamsSchemaConverter = new AvroStreamsSchemaConverter();
     }
 
+    // This API would change once we consider other sources. Currently supports kafka sources for the given topic names.
     @GET
-    @Path("/{schemaName}")
+    @Path("/{topicName}")
     @Timed
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTopologySourceSchema(@PathParam("schemaName") String schemaName) {
+    public Response getKafkaSourceSchema(@PathParam("topicName") String topicName) {
         try {
+            // for now, takes care of kafka for topic values. We will enhance to work this to get schema for different
+            // sources based on given properties.
+            String schemaName = topicName+":v";
             SchemaVersionInfo schemaVersionInfo = schemaRegistryClient.getLatestSchemaVersionInfo(schemaName);
             String schema = schemaVersionInfo != null ? schemaVersionInfo.getSchemaText() : null;
-
+            LOG.debug("######### Received schema from schema registry: ", schema);
             if (schema != null && !schema.isEmpty()) {
                 schema = avroStreamsSchemaConverter.convertAvro(schema);
             }
-
+            LOG.debug("######### Converted schema: ", schema);
             return WSUtils.respond(schema, OK, SUCCESS);
         } catch (SchemaNotFoundException e) {
             // ignore and log error
-            LOG.error("Schema not found for name: [{}]", schemaName, e);
-            return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, schemaName);
+            LOG.error("Schema not found for name: [{}]", topicName, e);
+            return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, topicName);
         } catch (Exception ex) {
-            LOG.error("Error occurred while retrieving schema with name [{}]", schemaName, ex);
+            LOG.error("Error occurred while retrieving schema with name [{}]", topicName, ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
     }
