@@ -25,17 +25,15 @@ const onEnter = (nextState, replace, callback) => {
 }
 
 export default (
-	<Route path="/" component={null} name="Home" onEnter={onEnter}>
-		<IndexRoute name="Dashboard" component={DashboardContainer} onEnter={onEnter} />
-		<Route path="dashboard" name="Dashboard" component={DashboardContainer} onEnter={onEnter}/>
+        <Route path="/" component={null} name="My Applications" onEnter={onEnter}>
+                <IndexRoute name="My Applications" component={TopologyListContainer} onEnter={onEnter} />
 		<Route path="schema-registry" name="Schema Registry" onEnter={onEnter}>
 			<IndexRoute component={ParserRegContainer} onEnter={onEnter} />
 		</Route>
-		<Route path="device-registry" name="Device Registry" component={DeviceRegContainer} onEnter={onEnter}/>
 		<Route path="metrics" name="Metrics" component={MetricsContainer} onEnter={onEnter}/>
-		<Route path="streams-builder" name="Streams Builder" onEnter={onEnter}>
-			<IndexRoute component={TopologyListContainer} onEnter={onEnter} />
-			<Route path=":id" name="Topology Editor" component={TopologyEditorContainer} onEnter={onEnter}/>
+                <Route path="applications" name="My Applications" onEnter={onEnter}>
+                <IndexRoute component={TopologyListContainer} onEnter={onEnter} />
+                        <Route path=":id" name="Application Editor" component={TopologyEditorContainer} onEnter={onEnter}/>
 		</Route>
 		<Route path="news-feed" name="News Feed" component={NewsFeedContainer} onEnter={onEnter}/>
 		<Route path="configuration" name="Configuration" component={ConfigurationContainer} onEnter={onEnter}/>

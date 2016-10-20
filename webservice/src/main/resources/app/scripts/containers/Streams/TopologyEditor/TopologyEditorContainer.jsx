@@ -5,7 +5,7 @@ import { DragDropContext, DropTarget } from 'react-dnd';
 import { ItemTypes, Components } from '../../../utils/Constants';
 import HTML5Backend from 'react-dnd-html5-backend';
 import BaseContainer from '../../BaseContainer';
-import {Link} from 'react-router';
+import {Link , withRouter} from 'react-router';
 import TopologyREST from '../../../rest/TopologyREST';
 import {OverlayTrigger, Tooltip, Accordion, Panel} from 'react-bootstrap';
 import Switch from 'react-bootstrap-switch';
@@ -50,7 +50,7 @@ class EditorGraph extends Component{
 		let left = window.innerWidth - 300;
 		this.state = {
 			boxes: {
-				top: 50, 
+                                top: 50,
 				left: left
 			}
 		};
@@ -72,7 +72,7 @@ class EditorGraph extends Component{
 		return connectDropTarget(
 			<div>
 				<div className="graph-bg" style={{height: actualHeight}}>
-					<TopologyGraphComponent 
+                                        <TopologyGraphComponent
 						height={parseInt(actualHeight, 10)}
 						data={graphData}
 						topologyId={topologyId}
@@ -96,7 +96,7 @@ class EditorGraph extends Component{
 }
 
 @observer
-export default class TopologyEditorContainer extends Component {
+class TopologyEditorContainer extends Component {
 	constructor(props){
 		super(props);
 		this.breadcrumbData = {
@@ -109,10 +109,28 @@ export default class TopologyEditorContainer extends Component {
 		this.topologyId = this.props.params.id;
 		this.customProcessors = [];
 		this.fetchData();
+    this.nextRoutes = '';
+    this.navigateFlag = false;
 	}
 	componentWillMount(){
 		state.showComponentNodeContainer = true;
 	}
+
+  componentDidMount() {
+      this.props.router.setRouteLeaveHook(this.props.route, this.routerWillLeave)
+  }
+
+  routerWillLeave = (nextLocation) => {
+    this.nextRoutes = nextLocation.pathname;
+    this.refs.leaveEditable.show();
+    return this.navigateFlag;
+  }
+
+  confirmLeave = () => {
+    this.navigateFlag = true;
+    this.refs.leaveEditable.hide();
+    this.props.router.push(this.nextRoutes);
+  }
 
 	@observable viewMode = true;
 	@observable modalTitle = '';
@@ -126,10 +144,10 @@ export default class TopologyEditorContainer extends Component {
 		topologyName: '',
 		altFlag: true
 	}
-	
+
 	fetchData(){
 		let promiseArr = [];
-		
+
 		promiseArr.push(TopologyREST.getTopology(this.topologyId));
 		promiseArr.push(TopologyREST.getSourceComponent());
 		promiseArr.push(TopologyREST.getProcessorComponent());
@@ -140,14 +158,14 @@ export default class TopologyEditorContainer extends Component {
 		promiseArr.push(TopologyREST.getAllNodes(this.topologyId, 'sinks'));
 		promiseArr.push(TopologyREST.getAllNodes(this.topologyId, 'edges'));
 		promiseArr.push(TopologyREST.getMetaInfo(this.topologyId));
-		
+
 		Promise.all(promiseArr)
 			.then((resultsArr)=>{
 				let allNodes = [];
 				let data = resultsArr[0].entity;
 				this.topologyName = data.name;
-				this.topologyConfig = JSON.parse(data.config);
-				
+                                this.topologyConfig = JSON.parse(data.topology.config);
+
 				this.sourceConfigArr = resultsArr[1].entities;
 				this.processorConfigArr = resultsArr[2].entities;
 				this.sinkConfigArr = resultsArr[3].entities;
@@ -161,14 +179,14 @@ export default class TopologyEditorContainer extends Component {
 				let edgesArr = resultsArr[8].entities || [];
 
 				this.graphData.metaInfo = JSON.parse(resultsArr[9].entity.data);
-				
+
 				this.graphData.nodes = TopologyUtils.syncNodeData(sourcesNode, processorsNode, sinksNode, this.graphData.metaInfo);
-				
+
 				this.graphData.uinamesList = [];
 				this.graphData.nodes.map(node=>{ this.graphData.uinamesList.push(node.uiname); })
 
 				this.graphData.edges = TopologyUtils.syncEdgeData(edgesArr, this.graphData.nodes);
-				
+
 				this.setState({topologyName: this.topologyName});
 				this.customProcessors = this.getCustomProcessors();
 				//If topology's timestamp is less then 20 seconds, changing view mode to edit mode
@@ -177,8 +195,8 @@ export default class TopologyEditorContainer extends Component {
 					this.viewMode = false;
 				}
 			});
-		this.graphData = { 
-			nodes: [], 
+                this.graphData = {
+                        nodes: [],
 			edges: [],
 			uinamesList: [],
 			graphTransforms: {
@@ -419,16 +437,16 @@ export default class TopologyEditorContainer extends Component {
 					<div className="col-sm-12">
 						<div className="box">
 							<div className="box-head">
-								{!this.viewMode ? 
-									<Editable id="topologyName" 
-										ref="topologyNameEditable" 
-										inline={false} 
+                                                                {!this.viewMode ?
+                                                                        <Editable id="topologyName"
+                                                                                ref="topologyNameEditable"
+                                                                                inline={false}
 										resolve={this.saveTopologyName.bind(this)}
 										reject={this.handleEditableReject.bind(this)}
 									>
 										<input defaultValue={this.state.topologyName} onChange={this.handleNameChange.bind(this)}/>
 									</Editable>
-								: 
+                                                                :
 									<span style={{color: "#43a047"}}>{this.state.topologyName}</span>
 								}
 								{!this.viewMode ?
@@ -442,32 +460,32 @@ export default class TopologyEditorContainer extends Component {
 										</OverlayTrigger>
 									</div>
 								: null}
-								{!this.viewMode ? 
+                                                                {!this.viewMode ?
 									<div className="box-controls">
-										{!this.viewMode && !state.showComponentNodeContainer ? 
+                                                                                {!this.viewMode && !state.showComponentNodeContainer ?
 											<OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Components</Tooltip>}>
 												<a href="javascript:void(0);" className="show-node-list" onClick={this.showHideComponentNodeContainer.bind(this)}><i className="fa fa-th-list"></i></a>
 											</OverlayTrigger>
 										: null}
-									
+
 										<OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Configure</Tooltip>}>
 											<a href="javascript:void(0);" className="config" onClick={this.showConfig.bind(this)}><i className="fa fa-gear"></i></a>
 										</OverlayTrigger>
 									</div>
 								: null}
 								<div className="box-controls">
-									{this.viewMode ? 
+                                                                        {this.viewMode ?
 										<OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Edit</Tooltip>}>
 											<a href="javascript:void(0);" className="show-node-list" onClick={this.handleModeChange.bind(this, false)}><i className="fa fa-pencil"></i></a>
 										</OverlayTrigger>
-									: 
+                                                                        :
 										<OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Save</Tooltip>}>
 											<a href="javascript:void(0);" className="config" onClick={this.handleModeChange.bind(this, true)}><i className="fa fa-save"></i></a>
 										</OverlayTrigger>
 									}
 								</div>
 							</div>
-							<EditorGraph 
+                                                        <EditorGraph
 								graphData={this.graphData}
 								viewMode={this.viewMode}
 								topologyId={this.topologyId}
@@ -483,7 +501,7 @@ export default class TopologyEditorContainer extends Component {
 				</Modal>
 				<Modal ref="NodeModal"
 					bsSize="large"
-					data-title={ this.viewMode ? this.modalTitle : (nodeType === "Custom" ? this.modalTitle : 
+                                        data-title={ this.viewMode ? this.modalTitle : (nodeType === "Custom" ? this.modalTitle :
 						(<Editable
 							ref="editableNodeName"
 							inline={true}
@@ -496,7 +514,13 @@ export default class TopologyEditorContainer extends Component {
 					data-resolve={this.handleSaveNodeModal.bind(this)}>
 					{this.modalContent()}
 				</Modal>
+        <Modal ref="leaveEditable" data-title="Confirm Box" data-resolve={this.confirmLeave.bind(this)}
+           data-reject={() => {return false} } >
+           {<p>Are you sure want to navigate away from this page ?</p>}
+        </Modal>
 			</BaseContainer>
 		)
 	}
 }
+
+export default withRouter(TopologyEditorContainer)

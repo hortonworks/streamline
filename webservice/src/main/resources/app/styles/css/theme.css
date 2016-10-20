@@ -1,0 +1,245 @@
+/*
+  Theme: Streamline
+  Author: Sanket
+*/
+
+/* Global */
+*:focus {
+  outline: none !important;
+}
+
+/* Generic */
+body {
+  background-color: #ebecf1;
+  font-family: 'Open Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  padding-bottom: 30px;
+}
+footer {
+        position: fixed;
+        bottom: 0px;
+        width: 100%;
+        padding: 5px 15px;
+        background-color: rgba(255,255,255,0.8);
+        box-shadow: 0px 0px 5px rgba(0,0,0,0.5);
+}
+
+/* Header */
+.navbar-inverse {
+    background-color: #323544;
+    border-color: #2c2e3b;
+    border-radius: 0px;
+}
+.navbar-inverse .navbar-nav > .open > a,
+.navbar-inverse .navbar-nav > .open > a:hover,
+.navbar-inverse .navbar-nav > .open > a:focus {
+  background-color: #2c2e3b;
+}
+.navbar-brand {
+        padding: 15px 0px 15px 15px;
+}
+.page-title-box {
+        padding-right: 15px;
+    padding-left: 15px;
+    margin-bottom: 20px;
+}
+.page-title-box .page-title {
+        margin: 0px;
+        text-transform: uppercase;
+        color: #323232;
+}
+
+/* Stream Box */
+.stream-box {
+        background-color: #fff;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+.stream-box .stream-head {
+    padding: 15px;
+    border-bottom: 4px #f2f2f2 solid;
+}
+.stream-box .stream-head h4 {
+    color: #57585b;
+    margin: 0px 0px 5px;
+}
+.stream-box .stream-head h4:hover{
+    color: #2d2d2d;
+}
+.stream-box .stream-head h5 {
+    color: #a7a9ad;
+    margin: 0px;
+}
+.stream-box .stream-body {
+    padding: 15px;
+}
+.stream-stats h6 {
+    color: #9aa0aa;
+    margin: 0px 0px 5px;
+    text-transform: uppercase;
+}
+.stream-stats h3 {
+    margin-top: 0px;
+    color: #414042;
+}
+.breadcrumb{
+  margin-bottom: 0!important;
+  padding: 3px 0;
+  font-size: 10px
+}
+
+.stream-actions .dropdown-menu{
+  left : -144px
+}
+.stream-status{
+        position: absolute;
+    top: 44px;
+    right: 2px;
+    width: 120px;
+    background: #888888;
+    color: #fff;
+    padding: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+}
+.stream-status:before {
+    content: "";
+    position: absolute;
+    display: block;
+    right: 0;
+    bottom: -12px;
+    border-style: solid;
+    border-color: #555555 transparent transparent transparent;
+    border-width: 12px 12px 0 0px;
+}
+.stream-status.ACTIVE{
+  background-color: #1290c0;
+}
+.stream-status.ACTIVE:before{
+  border-color: #006489 transparent transparent transparent;
+}
+.stream-status.KILLED {
+        background-color: #ef6062;
+}
+.stream-status.KILLED:before {
+        border-color: #c13d3f transparent transparent transparent;
+}
+.stream-status.INACTIVE {
+        background-color: #feba33;
+}
+.stream-status.INACTIVE:before {
+        border-color: #d4961d transparent transparent transparent;
+}
+
+.stream-status.REFRESH {
+        background-color: #12c089;
+}
+.stream-status.REFRESH:before {
+        border-color: #088c62 transparent transparent transparent;
+}
+.color-error {
+        color: #ef6062 !important;
+}
+
+.stream-actions > .dropdown > button,
+.stream-actions > .dropdown > button:after,
+.stream-actions > .dropdown > button:before {
+        background-color: transparent;
+        border: none;
+        color: #666;
+        font-size: 18px;
+}
+.stream-actions > .dropdown.open > button,
+.stream-actions > .dropdown.open > button:after,
+.stream-actions > .dropdown.open > button:before,
+.stream-actions > .dropdown > button:hover,
+.stream-actions > .dropdown > button:hover:before,
+.stream-actions > .dropdown > button:hover:after {
+        background: #CCC;
+    border-left: 1px solid #CCC;
+    border-right: 1px solid #CCC;
+}
+/* Hexagon Buttons */
+.hb {
+        display: inline-block;
+        position:relative;
+        text-align: center;
+        z-index: 0;
+        line-height: 20px;
+}
+.hb,
+.hb:before,
+.hb:after {
+  padding: 0px;
+        height: 18px;
+    width: 32px;
+    box-sizing: border-box;
+
+    background-color: #1290c0;
+        border-left:1px solid #1290c0;
+        border-right:1px solid #1290c0;
+        color: #fff;
+}
+.hb:before,
+.hb:after {
+        position: absolute;
+        content: "";
+        left: -1px;
+        top: 0;
+        z-index: -1;
+}
+.hb:before {
+        -webkit-transform: rotate(60deg);
+        -moz-transform: rotate(60deg);
+        -ms-transform: rotate(60deg);
+        -o-transform: rotate(60deg);
+        transform: rotate(60deg);
+}
+.hb:after {
+        -webkit-transform: rotate(-60deg);
+        -moz-transform: rotate(-60deg);
+        -ms-transform: rotate(-60deg);
+        -o-transform: rotate(-60deg);
+        transform: rotate(-60deg);
+}
+.hb:hover,
+.hb:hover:before,
+.hb:hover:after {
+        background: #0a698c;
+        border-left:1px solid #0a698c;
+        border-right:1px solid #0a698c;
+        color: #fff;
+}
+.hb i {
+        z-index: 9;
+}
+
+.hb.danger,
+.hb.danger:before,
+.hb.danger:after {
+        background-color: #f06261;
+        border-left:1px solid #f06261;
+        border-right:1px solid #f06261;
+}
+.hb.danger:hover,
+.hb.danger:hover:before,
+.hb.danger:hover:after {
+        background: #c54948;
+        border-left:1px solid #c54948;
+        border-right:1px solid #c54948;
+}
+.hb.success,
+.hb.success:before,
+.hb.success:after {
+        background-color: #3eae4a;
+        border-left:1px solid #3eae4a;
+        border-right:1px solid #3eae4a;
+}
+.hb.success:hover,
+.hb.success:hover:before,
+.hb.success:hover:after {
+        background: #288432;
+        border-left:1px solid #288432;
+        border-right:1px solid #288432;
+}

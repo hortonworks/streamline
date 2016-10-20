@@ -4,21 +4,21 @@ import {baseUrl} from '../utils/Constants';
 import { CustomFetch } from '../utils/Overrides';
 
 const TopologyREST = {
-	getAllTopology(options) {
+  getAllTopology(options) {
 		options = options || {};
 		options.method = options.method || 'GET';
-		return CustomFetch(baseUrl+'topologies', options)
+                return CustomFetch(baseUrl+'topologies?withMetric=true',options)
 			.then( (response) => {
 		  		return response.json();
 		  	})
 	},
-	getTopology(id, options) {
+  getTopology(id, options) {
 		options = options || {};
 		options.method = options.method || 'GET';
-		return fetch(baseUrl+'topologies/'+id, options)
+                return fetch(baseUrl+'topologies/'+id+"?withMetric=true", options)
 			.then( (response) => {
 		  		return response.json();
-		  	})	
+                        })
 	},
 	postTopology(options) {
 		options = options || {};
@@ -82,7 +82,7 @@ const TopologyREST = {
 		return fetch(baseUrl+'system/componentdefinitions/SOURCE?streamingEngine=STORM', options)
 			.then( (response) => {
 		  		return response.json();
-		  	})	
+                        })
 	},
 	getProcessorComponent(options) {
 		options = options || {};
@@ -90,7 +90,7 @@ const TopologyREST = {
 		return fetch(baseUrl+'system/componentdefinitions/PROCESSOR?streamingEngine=STORM', options)
 			.then( (response) => {
 		  		return response.json();
-		  	})	
+                        })
 	},
 	getSinkComponent(options) {
 		options = options || {};
@@ -98,7 +98,7 @@ const TopologyREST = {
 		return fetch(baseUrl+'system/componentdefinitions/SINK?streamingEngine=STORM', options)
 			.then( (response) => {
 		  		return response.json();
-		  	})	
+                        })
 	},
 	getLinkComponent(options) {
 		options = options || {};
@@ -106,7 +106,7 @@ const TopologyREST = {
 		return fetch(baseUrl+'system/componentdefinitions/LINK?streamingEngine=STORM', options)
 			.then( (response) => {
 		  		return response.json();
-		  	})	
+                        })
 	},
 	getMetaInfo(id, options) {
 		options = options || {};
@@ -114,7 +114,7 @@ const TopologyREST = {
 		return fetch(baseUrl+'system/topologyeditormetadata/'+id, options)
 			.then( (response) => {
 		  		return response.json();
-		  	})	
+                        })
 	},
 	postMetaInfo(options) {
 		options = options || {};
@@ -126,7 +126,7 @@ const TopologyREST = {
 		return fetch(baseUrl+'system/topologyeditormetadata', options)
 			.then( (response) => {
 		  		return response.json();
-		  	})	
+                        })
 	},
 	putMetaInfo(id, options) {
 		options = options || {};
@@ -138,7 +138,7 @@ const TopologyREST = {
 		return fetch(baseUrl+'system/topologyeditormetadata/'+id, options)
 			.then( (response) => {
 		  		return response.json();
-		  	})	
+                        })
 	},
 	deleteMetaInfo(id, options) {
 		options = options || {};

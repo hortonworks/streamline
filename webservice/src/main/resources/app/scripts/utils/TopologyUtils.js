@@ -23,7 +23,7 @@ import NotificationNodeForm from '../containers/Streams/TopologyEditor/Notificat
 const defineMarkers = function(svg){
 	// define arrow markers for graph links
 	let defs = svg.append('svg:defs')
-	
+
 	defs.append('svg:marker')
 		.attr('id', 'end-arrow')
 		.attr('viewBox', '0 -5 10 10')
@@ -45,7 +45,7 @@ const defineMarkers = function(svg){
 		.append('svg:path')
 		.attr('d', 'M0 -5 L10 0 L0 5')
 
-	// define filter for gray(unconfigured) icons 
+        // define filter for gray(unconfigured) icons
 	defs.append('svg:filter')
 		.attr('id', 'grayscale')
 		.append('feColorMatrix')
@@ -72,7 +72,7 @@ const isValidConnection = function(sourceNode, targetNode){
 
 const createNode = function(topologyId, data, callback, metaInfo, paths, edges, internalFlags, uinamesList){
 	let promiseArr = [];
-	
+
 	data.map((o)=>{
 		let nodeType = this.getNodeType(o.parentType);
 
@@ -98,7 +98,7 @@ const createNode = function(topologyId, data, callback, metaInfo, paths, edges, 
 		}
 		promiseArr.push(TopologyREST.createNode(topologyId, nodeType, {body: JSON.stringify(obj)}));
 	});
-	
+
 	//Make calls to create node or nodes
 	Promise.all(promiseArr)
 		.then((results)=>{
@@ -288,7 +288,7 @@ const deleteNode = function(topologyId, currentNode, nodes, edges, internalFlags
 					}
 				})
 
-				
+
 				//Delete Rules incase of Rule Processor
 				if(nodeData.type === 'RULE'){
 					if(nodeData.config.properties.rules){
@@ -329,7 +329,7 @@ const deleteNode = function(topologyId, currentNode, nodes, edges, internalFlags
 						}
 					})
 				}
-				
+
 				//Delete Links
 				let edgeArr = this.getEdges(edges, currentNode);
 				targetArr.map((o)=>{
@@ -352,8 +352,8 @@ const deleteNode = function(topologyId, currentNode, nodes, edges, internalFlags
 					data: JSON.stringify(metaInfo)
 				};
 				promiseArr.push(TopologyREST.putMetaInfo(topologyId, {body: JSON.stringify(metaData)}));
-				
-				//Delete current node 
+
+                                //Delete current node
 				promiseArr.push(TopologyREST.deleteNode(topologyId, this.getNodeType(currentNode.parentType), currentNode.nodeId));
 
 				//If needed to reset any processor on delete - it comes here or in callback
@@ -522,7 +522,7 @@ const showNodeModal = function(ModalScope, setModalContent, node, updateGraphMet
 const getConfigContainer = function(node, configData, editMode, topologyId, currentEdges, allNodes, linkShuffleOptions){
 	let nodeType = this.getNodeType(node.parentType);
 	let sourceNodes = [], targetNodes = [];
-	currentEdges.map((e)=>{ 
+        currentEdges.map((e)=>{
 		if(e.target.nodeId === node.nodeId){
 			//find source node of parser
 			sourceNodes.push(e.source);
@@ -534,7 +534,7 @@ const getConfigContainer = function(node, configData, editMode, topologyId, curr
 	switch(node.currentType){
 		case Components.Datasources[0].name: //Device
 		return () => {
-			return <DeviceNodeForm 
+                        return <DeviceNodeForm
 					ref="ConfigModal"
 					nodeData={node}
 					configData={configData}
@@ -817,7 +817,7 @@ const generateNodeData = function(nodes, constantsArr, parentType, metadata, res
 		} else {
 			currentMetaObj = currentMetaObj[0];
 		}
-		
+
 		let obj = {
 			x: currentMetaObj.x,
 			y: currentMetaObj.y,
@@ -841,13 +841,13 @@ const syncEdgeData = function(edges, nodes){
 	edges.map((edge)=>{
 		//Find source node
 		let fromNode = nodes.filter((o)=>{ return o.nodeId === edge.fromId});
-		if(fromNode.length !== 0) 
+                if(fromNode.length !== 0)
 			fromNode = fromNode[0];
 		else console.error("From node is missing");
 
 		//Find target node
 		let toNode = nodes.filter((o)=>{ return o.nodeId === edge.toId});
-		if(toNode.length !== 0) 
+                if(toNode.length !== 0)
 			toNode = toNode[0];
 		else console.error("To node is missing");
 
@@ -905,6 +905,11 @@ const updateParallelismCount = function(topologyId, nodeData){
 		})
 }
 
+const topologyFilter = function(entities , filterValue){
+  let matchFilter = new RegExp(filterValue , 'i');
+    return entities.filter(filteredList => !filterValue || matchFilter.test(filteredList.topology.name))
+}
+
 export default {
 	defineMarkers,
 	isValidConnection,
@@ -934,5 +939,6 @@ export default {
 	createLineOnUI,
 	getNodeRectClass,
 	getNodeImgRectClass,
-	updateParallelismCount
+        updateParallelismCount,
+  topologyFilter
 };
