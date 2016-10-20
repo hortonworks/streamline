@@ -214,11 +214,14 @@ CREATE TABLE IF NOT EXISTS windowinfos (
 CREATE TABLE IF NOT EXISTS udfs (
     id BIGINT AUTO_INCREMENT NOT NULL,
     name VARCHAR(256) NOT NULL,
+    displayName VARCHAR(256) NOT NULL,
     description VARCHAR(256) NOT NULL,
     type  VARCHAR(256) NOT NULL,
     className  VARCHAR(256) NOT NULL,
     jarStoragePath  VARCHAR(256) NOT NULL,
     digest VARCHAR(256) NOT NULL,
+    argTypes VARCHAR(256) NOT NULL,
+    returnType VARCHAR(256) NOT NULL,
     PRIMARY KEY (id)
 );
 

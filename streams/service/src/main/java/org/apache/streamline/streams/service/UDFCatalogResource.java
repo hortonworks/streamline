@@ -1,11 +1,17 @@
 package org.apache.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
+import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import org.apache.streamline.common.QueryParam;
+import org.apache.streamline.common.Schema;
 import org.apache.streamline.common.catalog.CatalogResponse;
+import org.apache.streamline.common.exception.ParserException;
 import org.apache.streamline.common.util.FileStorage;
 import org.apache.streamline.common.util.FileUtil;
+import org.apache.streamline.common.util.ProxyUtil;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.UDFInfo;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
@@ -16,6 +22,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -35,12 +42,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -305,14 +316,69 @@ public class UDFCatalogResource {
             try (DigestInputStream dis = new DigestInputStream(inputStream, md)) {
                 tmpFile = FileUtil.writeInputStreamToTempFile(inputStream, ".jar");
             }
-            Set<String> udafs = catalogService.loadUdafsFromJar(tmpFile);
-            validateUDF(udafs, udfInfo, checkDuplicate);
+            Map<String, Class<?>> udafs = catalogService.loadUdafsFromJar(tmpFile);
+            validateUDF(new HashSet<>(ProxyUtil.canonicalNames(udafs.values())), udfInfo, checkDuplicate);
+            updateTypeInfo(udfInfo, udafs.get(udfInfo.getClassName()));
             String digest = Hex.encodeHexString(md.digest());
             LOG.debug("Digest: {}", digest);
             udfInfo.setDigest(digest);
             String jarPath = getExistingJarPath(digest).or(uploadJar(new FileInputStream(tmpFile), udfInfo.getName()));
             udfInfo.setJarStoragePath(jarPath);
         }
+    }
+
+    private void updateTypeInfo(UDFInfo udfInfo, Class<?> clazz) {
+        udfInfo.setReturnType(getReturnType(clazz));
+        udfInfo.setArgTypes(getArgTypes(clazz));
+    }
+
+    private Schema.Type getReturnType(Class<?> clazz) {
+        try {
+            Method resultMethod = findMethod(clazz, "result");
+            if (resultMethod != null) {
+                return Schema.fromJavaType(resultMethod.getReturnType());
+            }
+        } catch (Exception ex) {
+            LOG.error("Could not determine type info for " + clazz, ex);
+        }
+        return null;
+    }
+
+    private List<String> getArgTypes(Class<?> clazz) {
+        Method addMethod = findMethod(clazz, "add");
+        if (addMethod == null) {
+            return Collections.emptyList();
+        }
+        final Class<?>[] params = addMethod.getParameterTypes();
+        List<String> argTypes = new ArrayList<>();
+        for (int i = 1; i < params.length; i++) {
+            final Class<?> arg = params[i];
+            try {
+                argTypes.add(Schema.fromJavaType(arg).toString());
+            } catch (ParserException ex) {
+                Collection<Schema.Type> types = Collections2.filter(Arrays.asList(Schema.Type.values()), new Predicate<Schema.Type>() {
+                    public boolean apply(Schema.Type input) {
+                        return arg.isAssignableFrom(input.getJavaType());
+                    }
+                });
+                if (types.isEmpty()) {
+                    LOG.error("Could not find a compatible type in schema for {} argument types", addMethod);
+                    return Collections.emptyList();
+                } else {
+                    argTypes.add(Joiner.on("|").join(types));
+                }
+            }
+        }
+        return argTypes;
+    }
+
+    private Method findMethod(Class<?> clazz, String name) {
+        for (Method method : clazz.getDeclaredMethods()) {
+            if (method.getName().equals(name) && !method.isBridge()) {
+                return method;
+            }
+        }
+        return null;
     }
 
     private String uploadJar(InputStream is, String udfName) throws IOException {

@@ -1,5 +1,7 @@
 package org.apache.streamline.registries.parser.service;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import com.google.common.io.ByteStreams;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.Schema;
@@ -15,6 +17,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -116,7 +119,7 @@ public class ParsersCatalogService {
 
     public Collection<String> verifyParserUpload (InputStream inputStream) throws IOException {
         final File tmpFile = FileUtil.writeInputStreamToTempFile(inputStream, ".jar");
-        return ProxyUtil.loadAllClassesFromJar(tmpFile, Parser.class);
+        return ProxyUtil.canonicalNames(ProxyUtil.loadAllClassesFromJar(tmpFile, Parser.class));
     }
 
     /**

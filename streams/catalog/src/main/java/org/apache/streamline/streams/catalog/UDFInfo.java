@@ -19,34 +19,47 @@
 package org.apache.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.storage.PrimaryKey;
 import org.apache.streamline.storage.Storable;
 import org.apache.streamline.storage.catalog.AbstractStorable;
 import org.apache.commons.lang3.StringUtils;
+import com.fasterxml.jackson.core.type.TypeReference;
 
+
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.apache.streamline.streams.layout.component.rule.expression.Udf.Type;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UDFInfo extends AbstractStorable {
     private static final String NAMESPACE = "udfs";
 
     public static final String ID = "id";
     public static final String NAME = "name";
+    public static final String DISPLAYNAME = "displayName";
     public static final String DESCRIPTION = "description";
     public static final String CLASSNAME = "className";
     public static final String JARSTORAGEPATH = "jarStoragePath";
     public static final String TYPE = "type";
     public static final String DIGEST = "digest";
+    public static final String ARGTYPES = "argTypes";
+    public static final String RETURNTYPE = "returnType";
 
     private Long id;
     private String name;
+    private String displayName;
     private String description;
     private Type type;
     private String className;
     private String jarStoragePath;
+    private List<String> argTypes;
+    private Schema.Type returnType;
     /**
      * The jar file digest which can be used to de-dup jar files.
      * If a newly submitted jar's digest matches with that of an already
@@ -69,6 +82,14 @@ public class UDFInfo extends AbstractStorable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
     public String getDescription() {
@@ -137,25 +158,48 @@ public class UDFInfo extends AbstractStorable {
         this.digest = digest;
     }
 
+    public List<String> getArgTypes() {
+        return argTypes;
+    }
+
+    public void setArgTypes(List<String> argTypes) {
+        this.argTypes = argTypes;
+    }
+
+    public Schema.Type getReturnType() {
+        return returnType;
+    }
+
+    public void setReturnType(Schema.Type returnType) {
+        this.returnType = returnType;
+    }
+
     @JsonIgnore
     @Override
     public Schema getSchema() {
         return Schema.of(
                 Schema.Field.of(ID, Schema.Type.LONG),
                 Schema.Field.of(NAME, Schema.Type.STRING),
+                Schema.Field.of(DISPLAYNAME, Schema.Type.STRING),
                 Schema.Field.of(DESCRIPTION, Schema.Type.STRING),
                 Schema.Field.of(TYPE, Schema.Type.STRING),
                 Schema.Field.of(CLASSNAME, Schema.Type.STRING),
                 Schema.Field.of(JARSTORAGEPATH, Schema.Type.STRING),
-                Schema.Field.of(DIGEST, Schema.Type.STRING)
+                Schema.Field.of(DIGEST, Schema.Type.STRING),
+                Schema.Field.of(ARGTYPES, Schema.Type.STRING),
+                Schema.Field.of(RETURNTYPE, Schema.Type.STRING)
         );
     }
 
     @Override
     public Map<String, Object> toMap() {
+        ObjectMapper mapper = new ObjectMapper();
         Map<String, Object> map = super.toMap();
         try {
-            map.put("type", type != null ? type.toString() : "");
+            map.put(TYPE, type != null ? type.toString() : "");
+            map.put(ARGTYPES, argTypes != null ? mapper.writerFor(new TypeReference<List<String>>() {
+            }).writeValueAsString(argTypes) : "");
+            map.put(RETURNTYPE, returnType != null ? returnType.toString() : "");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -164,15 +208,33 @@ public class UDFInfo extends AbstractStorable {
 
     @Override
     public Storable fromMap(Map<String, Object> map) {
+        ObjectMapper mapper = new ObjectMapper();
         setId((Long) map.get(ID));
         setName((String) map.get(NAME));
+        setDisplayName((String) map.get(DISPLAYNAME));
         setDescription((String) map.get(DESCRIPTION));
         setClassName((String) map.get(CLASSNAME));
         setJarStoragePath((String) map.get(JARSTORAGEPATH));
         setDigest((String) map.get(DIGEST));
         String typeStr = (String) map.get(TYPE);
-        if (!StringUtils.isEmpty(typeStr)) {
-            setType(Enum.valueOf(Type.class, typeStr));
+        try {
+            if (!StringUtils.isEmpty(typeStr)) {
+                setType(Enum.valueOf(Type.class, typeStr));
+            }
+            String argTypesStr = (String) map.get(ARGTYPES);
+            if (!StringUtils.isEmpty(argTypesStr)) {
+                List<String> argTypes = mapper.readValue(argTypesStr, new TypeReference<List<String>>() {
+                });
+                setArgTypes(argTypes);
+            } else {
+                setArgTypes(Collections.<String>emptyList());
+            }
+            String returnTypeStr = (String) map.get(RETURNTYPE);
+            if (!StringUtils.isEmpty(returnTypeStr)) {
+                setReturnType(Enum.valueOf(Schema.Type.class, returnTypeStr));
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
         return this;
     }
@@ -198,11 +260,14 @@ public class UDFInfo extends AbstractStorable {
         return "UDFInfo{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
+                ", displayName='" + displayName + '\'' +
                 ", description='" + description + '\'' +
                 ", type=" + type +
                 ", className='" + className + '\'' +
                 ", jarStoragePath='" + jarStoragePath + '\'' +
+                ", argTypes=" + argTypes +
+                ", returnType=" + returnType +
                 ", digest='" + digest + '\'' +
-                "}";
+                "} " + super.toString();
     }
 }
