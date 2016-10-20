@@ -97,7 +97,7 @@ public class TopologyCatalogResource {
                 if (withMetric == null || !withMetric) {
                     response = WSUtils.respond(topologies, OK, SUCCESS);
                 } else {
-                    List<TopologyCatalogWithMetric> topologiesWithMetric = enrichMetricToTopology(
+                    List<TopologyCatalogWithMetric> topologiesWithMetric = enrichMetricToTopologies(
                         topologies);
                     response = WSUtils.respond(topologiesWithMetric, OK, SUCCESS);
                 }
@@ -114,11 +114,18 @@ public class TopologyCatalogResource {
     @GET
     @Path("/topologies/{topologyId}")
     @Timed
-    public Response getTopologyById (@PathParam("topologyId") Long topologyId) {
+    public Response getTopologyById (@PathParam("topologyId") Long topologyId,
+        @javax.ws.rs.QueryParam("withMetric") Boolean withMetric) {
         try {
             Topology result = catalogService.getTopology(topologyId);
             if (result != null) {
-                return WSUtils.respond(result, OK, SUCCESS);
+                if (withMetric == null || !withMetric) {
+                    return WSUtils.respond(result, OK, SUCCESS);
+                } else {
+                    TopologyCatalogWithMetric topologiesWithMetric = enrichMetricToTopology(
+                        result);
+                    return WSUtils.respond(topologiesWithMetric, OK, SUCCESS);
+                }
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -527,20 +534,26 @@ public class TopologyCatalogResource {
         }
     }
 
-    private List<TopologyCatalogWithMetric> enrichMetricToTopology(
+    private List<TopologyCatalogWithMetric> enrichMetricToTopologies(
         Collection<Topology> topologies) {
         // need to also provide Topology Metric
         List<TopologyCatalogWithMetric> topologiesWithMetric = new ArrayList<>(topologies.size());
         for (Topology topology : topologies) {
-            TopologyMetrics.TopologyMetric topologyMetric;
-            try {
-                topologyMetric = catalogService.getTopologyMetric(topology);
-                topologiesWithMetric.add(new TopologyCatalogWithMetric(topology, true, topologyMetric));
-            } catch (TopologyNotAliveException e) {
-                topologiesWithMetric.add(new TopologyCatalogWithMetric(topology, false, null));
-            }
+            TopologyCatalogWithMetric topologyCatalogWithMetric = enrichMetricToTopology(topology);
+            topologiesWithMetric.add(topologyCatalogWithMetric);
         }
         return topologiesWithMetric;
+    }
+
+    private TopologyCatalogWithMetric enrichMetricToTopology(Topology topology) {
+        TopologyCatalogWithMetric topologyCatalogWithMetric;
+        try {
+            TopologyMetrics.TopologyMetric topologyMetric = catalogService.getTopologyMetric(topology);
+            topologyCatalogWithMetric = new TopologyCatalogWithMetric(topology, true, topologyMetric);
+        } catch (TopologyNotAliveException e) {
+            topologyCatalogWithMetric = new TopologyCatalogWithMetric(topology, false, null);
+        }
+        return topologyCatalogWithMetric;
     }
 
     private Response validateTopologyComponent (TopologyComponentDefinition topologyComponentDefinition) {
