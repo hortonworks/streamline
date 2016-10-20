@@ -17,21 +17,27 @@ import java.util.Map;
 
 import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.STATS_JSON_ACKED_TUPLES;
 import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.STATS_JSON_COMPLETE_LATENCY;
+import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.STATS_JSON_EMITTED_TUPLES;
 import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.STATS_JSON_FAILED_TUPLES;
 import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.STATS_JSON_PROCESS_LATENCY;
+import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.STATS_JSON_TRANSFERRED_TUPLES;
 import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_BOLTS;
 import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_BOLT_ID;
+import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_EXECUTORS_TOTAL;
 import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_SPOUTS;
 import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_SPOUT_ID;
 import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_STATS;
 import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_STATUS;
 import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_UPTIME_SECS;
 import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_WINDOW;
+import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_WORKERS_TOTAL;
 
 /**
  * Storm implementation of the TopologyMetrics interface
  */
 public class StormTopologyMetricsImpl implements TopologyMetrics {
+    public static final String FRAMEWORK = "STORM";
+
     private Client client;
     private String stormApiRootUrl;
     private TopologyTimeSeriesMetrics timeSeriesMetrics;
@@ -67,6 +73,8 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
 
         Long uptimeSeconds = ((Number) responseMap.get(TOPOLOGY_JSON_UPTIME_SECS)).longValue();
         String status = (String) responseMap.get(TOPOLOGY_JSON_STATUS);
+        Long workerTotal = ((Number) responseMap.get(TOPOLOGY_JSON_WORKERS_TOTAL)).longValue();
+        Long executorTotal = ((Number) responseMap.get(TOPOLOGY_JSON_EXECUTORS_TOTAL)).longValue();
 
         List<Map<String, ?>> topologyStatsList = (List<Map<String, ?>>) responseMap.get(TOPOLOGY_JSON_STATS);
 
@@ -88,8 +96,18 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
         Long failedRecords = getLongValueOrDefault(topologyStatsMap, STATS_JSON_FAILED_TUPLES, 0L);
         Double completeLatency = getDoubleValueFromStringOrDefault(topologyStatsMap, STATS_JSON_COMPLETE_LATENCY, 0.0d);
 
-        return new TopologyMetric(topology.getName(), status, uptimeSeconds, window,
-            acked * 1.0 / window, completeLatency, failedRecords);
+        // Storm specific metrics
+        Long emittedTotal = getLongValueOrDefault(topologyStatsMap, STATS_JSON_EMITTED_TUPLES, 0L);
+        Long transferred = getLongValueOrDefault(topologyStatsMap, STATS_JSON_TRANSFERRED_TUPLES, 0L);
+
+        Map<String, Number> miscMetrics = new HashMap<>();
+        miscMetrics.put(TOPOLOGY_JSON_WORKERS_TOTAL, workerTotal);
+        miscMetrics.put(TOPOLOGY_JSON_EXECUTORS_TOTAL, executorTotal);
+        miscMetrics.put(STATS_JSON_EMITTED_TUPLES, emittedTotal);
+        miscMetrics.put(STATS_JSON_TRANSFERRED_TUPLES, transferred);
+
+        return new TopologyMetric(FRAMEWORK, topology.getName(), status, uptimeSeconds, window,
+            acked * 1.0 / window, completeLatency, failedRecords, miscMetrics);
     }
 
     /**
@@ -167,7 +185,7 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
 
     private ComponentMetric extractMetric(String componentName, Map<String, ?> componentMap) {
         Long inputRecords = getLongValueOrDefault(componentMap, StormMetricsConstant.STATS_JSON_EXECUTED_TUPLES, 0L);
-        Long outputRecords = getLongValueOrDefault(componentMap, StormMetricsConstant.STATS_JSON_EMITTED_TUPLES, 0L);
+        Long outputRecords = getLongValueOrDefault(componentMap, STATS_JSON_EMITTED_TUPLES, 0L);
         Long failedRecords = getLongValueOrDefault(componentMap, StormMetricsConstant.STATS_JSON_FAILED_TUPLES, 0L);
         Double processedTime = getDoubleValueFromStringOrDefault(componentMap, STATS_JSON_PROCESS_LATENCY, 0.0d);
 

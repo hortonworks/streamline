@@ -47,6 +47,7 @@ public interface TopologyMetrics extends TopologyTimeSeriesMetrics {
      * If field is not available for that streaming framework, implementator can leave it as null or default value.
      */
     class TopologyMetric {
+        private final String framework;
         private final String topologyName;
         private final String status;
         private final Long uptime;
@@ -54,10 +55,12 @@ public interface TopologyMetrics extends TopologyTimeSeriesMetrics {
         private final Double throughput;
         private final Double latency;
         private final Long failedRecords;
+        private final Map<String, Number> misc;
 
         /**
          * Constructor.
-         *  @param topologyName  'topology name' for Streams.
+         * @param framework        Which streaming framework runs this topology. (e.g. Storm, Spark Streaming, etc.)
+         * @param topologyName  'topology name' for Streams.
          *                      If topology name for streaming framework is different from topology name for Streams,
          *                      implementation of TopologyMetrics should match the relation.
          * @param status        Status of the topology. Representation of status may be different among implementations.
@@ -66,9 +69,12 @@ public interface TopologyMetrics extends TopologyTimeSeriesMetrics {
          * @param throughput    Throughput for Streams in window, represented via tps (processed records per second).
          * @param latency       Average latency of processed time (processing one record) in window.
          * @param failedRecords Failed records in window.
+         * @param misc          Additional metrics which are framework specific.
          */
-        public TopologyMetric(String topologyName, String status, Long uptime, Long windowSecs,
-            Double throughput, Double latency, Long failedRecords) {
+        public TopologyMetric(String framework, String topologyName, String status, Long uptime,
+            Long windowSecs, Double throughput, Double latency, Long failedRecords,
+            Map<String, Number> misc) {
+            this.framework = framework;
             this.topologyName = topologyName;
             this.status = status;
             this.uptime = uptime;
@@ -76,6 +82,11 @@ public interface TopologyMetrics extends TopologyTimeSeriesMetrics {
             this.throughput = throughput;
             this.latency = latency;
             this.failedRecords = failedRecords;
+            this.misc = misc;
+        }
+
+        public String getFramework() {
+            return framework;
         }
 
         public String getTopologyName() {
@@ -104,6 +115,10 @@ public interface TopologyMetrics extends TopologyTimeSeriesMetrics {
 
         public Long getFailedRecords() {
             return failedRecords;
+        }
+
+        public Map<String, Number> getMisc() {
+            return misc;
         }
     }
 

@@ -6,6 +6,8 @@ public class StormMetricsConstant {
 
     public static final String TOPOLOGY_JSON_UPTIME_SECS = "uptimeSeconds";
     public static final String TOPOLOGY_JSON_STATUS = "status";
+    public static final String TOPOLOGY_JSON_WORKERS_TOTAL = "workersTotal";
+    public static final String TOPOLOGY_JSON_EXECUTORS_TOTAL = "executorsTotal";
     public static final String TOPOLOGY_JSON_STATS = "topologyStats";
     public static final String TOPOLOGY_JSON_WINDOW = "window";
     public static final String TOPOLOGY_JSON_SPOUTS = "spouts";
@@ -15,6 +17,7 @@ public class StormMetricsConstant {
 
     public static final String STATS_JSON_EXECUTED_TUPLES = "executed";
     public static final String STATS_JSON_EMITTED_TUPLES = "emitted";
+    public static final String STATS_JSON_TRANSFERRED_TUPLES = "transferred";
     public static final String STATS_JSON_PROCESS_LATENCY = "processLatency";
     public static final String STATS_JSON_COMPLETE_LATENCY = "completeLatency";
     public static final String STATS_JSON_ACKED_TUPLES = "acked";
