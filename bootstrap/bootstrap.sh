@@ -60,7 +60,6 @@ done
 
 post /system/componentdefinitions/SOURCE $bootstrap_dir/kafka-topology-component
 post /system/componentdefinitions/PROCESSOR $bootstrap_dir/rule-topology-component
-post /system/componentdefinitions/PROCESSOR $bootstrap_dir/parser-topology-component
 post /system/componentdefinitions/PROCESSOR $bootstrap_dir/normalization-processor-topology-component
 post /system/componentdefinitions/SINK $bootstrap_dir/hdfs-topology-component
 post /system/componentdefinitions/SINK $bootstrap_dir/hbase-topology-component

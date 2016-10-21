@@ -100,4 +100,10 @@ public interface StreamlineEvent {
      * @return the new StreamlineEvent
      */
     StreamlineEvent addHeaders(Map<String, Object> headers);
+
+    /**
+     * Returns the byte representation of this event so that it can be stored to a store like HDFS
+     * @return
+     */
+    byte[] getBytes ();
 }

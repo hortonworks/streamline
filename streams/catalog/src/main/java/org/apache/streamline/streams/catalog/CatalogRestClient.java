@@ -42,16 +42,11 @@ public class CatalogRestClient {
 
     private final Client client;
 
-    private static final String DATASOURCE_URL = "datasources";
-    private static final String FEED_URL = "feeds";
     private static final String NOTIFIER_URL = "notifiers";
     private static final String CUSTOM_PROCESSOR_JAR_DOWNLOAD_URL = "system/componentdefinitions/PROCESSOR/custom";
     private static final String FILE_DOWNLOAD_URL = "files/download/";
 
     private final String rootCatalogURL;
-    private final WebTarget rootTarget;
-    private final WebTarget dataSourceTarget;
-    private final WebTarget feedTarget;
     private final ParserClient parserClient;
 
     //TODO: timeouts should come from a config so probably make them constructor args.
@@ -63,9 +58,6 @@ public class CatalogRestClient {
         this.rootCatalogURL = rootCatalogURL;
         client = ClientBuilder.newClient(clientConfig);
         client.register(MultiPartFeature.class);
-        rootTarget = client.target(rootCatalogURL);
-        dataSourceTarget = rootTarget.path(DATASOURCE_URL);
-        feedTarget = rootTarget.path(FEED_URL);
         parserClient = new ParserClient(rootCatalogURL);
     }
 
@@ -104,21 +96,6 @@ public class CatalogRestClient {
     public NotifierInfo getNotifierInfo(String notifierName) {
         return getEntities(client.target(String.format("%s/%s/?name=%s", rootCatalogURL, NOTIFIER_URL, notifierName)),
                             NotifierInfo.class).get(0);
-    }
-
-    public DataSourceDto getDataSource(String deviceId, String version) {
-        return getEntities(client.target(String.format("%s/%s/type/DEVICE/?make=%s&model=%s",
-                                            rootCatalogURL, DATASOURCE_URL, deviceId, version)),
-                            DataSourceDto.class).get(0);
-    }
-
-    public ParserInfo getParserInfo(String deviceId, String version) {
-        String url = String.format("%s/%s/type/DEVICE?make=%s&model=%s", rootCatalogURL, DATASOURCE_URL, deviceId, version);
-        DataSource dataSource = getEntities(client.target(url), DataSource.class).get(0);
-        DataFeed dataFeed = getEntities(client.target(String.format("%s/%s?dataSourceId=%s",
-                                        rootCatalogURL, FEED_URL, dataSource.getId())), DataFeed.class).get(0);
-
-        return getParserInfo(dataFeed.getParserId());
     }
 
     protected InputStream getInputStream(String fileId, String relativeUrl) {

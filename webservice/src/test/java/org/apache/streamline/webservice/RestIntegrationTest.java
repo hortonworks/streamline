@@ -32,9 +32,6 @@ import org.apache.streamline.registries.tag.TaggedEntity;
 import org.apache.streamline.registries.tag.dto.TagDto;
 import org.apache.streamline.streams.catalog.Cluster;
 import org.apache.streamline.streams.catalog.Component;
-import org.apache.streamline.streams.catalog.DataFeed;
-import org.apache.streamline.streams.catalog.DataSource;
-import org.apache.streamline.streams.catalog.DataSourceDto;
 import org.apache.streamline.streams.catalog.FileInfo;
 import org.apache.streamline.streams.catalog.NotifierInfo;
 import org.apache.streamline.streams.catalog.Service;
@@ -208,8 +205,7 @@ public class RestIntegrationTest {
             //new ResourceTestElement(createDataFeed(1l, "testDataFeed"), createDataFeed(1l, "testDataFeedPut"), "1", rootUrl + "feeds"),
             clusterResourceToTest, serviceResourceToTest, componentResourceToTest,
             new ResourceTestElement(createNotifierInfo(1l, "testNotifier"), createNotifierInfo(1l, "testNotifierPut"), "1", rootUrl + "notifiers"),
-            new ResourceTestElement(createDataSourceDto(1l, "testDataSourceWithDataFeed:" + System.currentTimeMillis()), createDataSourceDto(1l, "testDataSourceWithDataFeedPut:" + System.currentTimeMillis()), "1", rootUrl + "datasources"),
-            new ResourceTestElement(createTopology(1l, "streamlineTopology"), createTopology(1l, "streamlineTopologyPut"), "1", rootUrl + "topologies"),
+            new ResourceTestElement(createTopology(1l, "iotasTopology"), createTopology(1l, "iotasTopologyPut"), "1", rootUrl + "topologies"),
             new ResourceTestElement(createTopologyEditorMetadata(1l, "{\"x\":5,\"y\":6}"), createTopologyEditorMetadata(1l, "{\"x\":6,\"y\":5}"), "1", rootUrl + "system/topologyeditormetadata"),
             new ResourceTestElement(createTopologyComponent(1l, "kafkaSpoutComponent", TopologyComponentDefinition.TopologyComponentType.SOURCE, "KAFKA"), createTopologyComponent(1l, "kafkaSpoutComponentPut", TopologyComponentDefinition.TopologyComponentType.SOURCE, "KAFKA") , "1", rootUrl + "system/componentdefinitions/SOURCE"),
             new ResourceTestElement(createTopologyComponent(2l, "parserProcessor", TopologyComponentDefinition.TopologyComponentType.PROCESSOR, "PARSER"), createTopologyComponent(2l, "parserProcessorPut", TopologyComponentDefinition.TopologyComponentType.PROCESSOR, "PARSER"), "2", rootUrl + "system/componentdefinitions/PROCESSOR"),
@@ -420,55 +416,6 @@ public class RestIntegrationTest {
         Service service = createService(clusterId, serviceId, "test");
         String serviceBaseUrl = rootUrl + String.format("clusters/%d/services", clusterId);
         client.target(serviceBaseUrl).request().post(Entity.json(service));
-    }
-
-    @Test
-    public void testHierarchicalTags() throws Exception {
-        Client client = ClientBuilder.newClient(new ClientConfig());
-        String tagUrl = rootUrl + "tags";
-        String dsUrl = rootUrl + "datasources";
-        long parentTagId = 10L;
-        long childTagId = 11L;
-
-        /*
-         * create a "parent-tag"
-         */
-        TagDto parent = createTag(parentTagId, "parent-tag");
-        String response = client.target(tagUrl).request().post(Entity.json(parent), String.class);
-        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
-
-        /*
-         * create a "child-tag" which is tagged under "parent-tag"
-         */
-        TagDto child = createTag(childTagId, "child-tag", ImmutableList.<Long>of(parentTagId));
-        response = client.target(tagUrl).request().post(Entity.json(child), String.class);
-        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
-
-        /*
-         * create a datasource tagged with "child-tag"
-         */
-        DataSourceDto dataSourceDto = createDataSourceDto(12L, "test-tag-ds");
-        dataSourceDto.setTags("child-tag");
-        response = client.target(dsUrl).request().post(Entity.json(dataSourceDto), String.class);
-        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
-
-        /*
-         * data source should be listed under "parent-tag" even though its tagged with "child-tag"
-         */
-        String tagEntitiesUrl = String.format("%s/%s/entities", tagUrl, parentTagId);
-        response = client.target(tagEntitiesUrl).request().get(String.class);
-        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
-        List<TaggedEntity> entityId = getEntities(response, TaggedEntity.class);
-        Assert.assertTrue(entityId.get(0).getId() == 12L);
-
-        /*
-         * data source should also be listed under "child-tag"
-         */
-        tagEntitiesUrl = String.format("%s/%s/entities", tagUrl, childTagId);
-        response = client.target(tagEntitiesUrl).request().get(String.class);
-        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
-        entityId = getEntities(response, TaggedEntity.class);
-        Assert.assertTrue(entityId.get(0).getId() == 12L);
     }
 
     /*
@@ -778,51 +725,6 @@ public class RestIntegrationTest {
     }
 
     //============== Helper methods to create the actual objects that the rest APIS expect as Input ==========//
-
-    private DataSource createDataSource(Long id, String name) {
-        DataSource ds = new DataSource();
-        ds.setId(id);
-        ds.setName(name);
-        ds.setDescription("desc");
-        Tag tag = new Tag();
-        tag.setId(1L);
-        tag.setName("test-tag");
-        tag.setDescription("test");
-        ds.setTags(Arrays.asList(tag));
-        ds.setTimestamp(System.currentTimeMillis());
-        ds.setType(DataSource.Type.DEVICE);
-        ds.setTypeConfig("{\"make\":\"1\",\"model\":\"1\"}");
-        return ds;
-    }
-
-    private DataFeed createDataFeed(Long id, String name) {
-        DataFeed df = new DataFeed();
-        df.setId(id);
-        df.setDataSourceId(1L);
-        df.setName(name);
-        df.setType("kafka://host:port/topic");
-        df.setParserId(id);
-        return df;
-    }
-
-    private DataSourceDto createDataSourceDto(Long dataSourceId, String dataSourceName) {
-
-        DataSource ds = createDataSource(dataSourceId, dataSourceName);
-        DataFeed df = createDataFeedWithDataSourceId(dataSourceId, "feed:" + dataSourceName);
-
-        return new DataSourceDto(ds, df);
-    }
-
-    private DataFeed createDataFeedWithDataSourceId(long datasourceId, String feedName) {
-        DataFeed df = new DataFeed();
-        df.setId(System.currentTimeMillis());
-        df.setDataSourceId(datasourceId);
-        df.setName(feedName);
-        df.setName(feedName);
-        df.setType("KAFKA");
-        df.setParserId(datasourceId);
-        return df;
-    }
 
     private ParserInfo createParserInfo(Long id, String name) {
         ParserInfo pi = new ParserInfo();

@@ -3,25 +3,6 @@
 
 -- THE NAMES OF THE TABLE COLUMNS MUST MATCH THE NAMES OF THE CORRESPONDING CLASS MODEL FIELDS;
 
- CREATE TABLE IF NOT EXISTS datasources (
-     id BIGINT AUTO_INCREMENT NOT NULL,
-     name VARCHAR(256) NOT NULL,
-     description TEXT,
-     tags TEXT,
-     timestamp  BIGINT,
-     type TEXT NOT NULL,
-     typeConfig TEXT,
-     PRIMARY KEY (id)
- );
-
-CREATE TABLE IF NOT EXISTS devices (
-    make VARCHAR(255) NOT NULL,
-    model VARCHAR(255) NOT NULL,
-    dataSourceId BIGINT NOT NULL,
-    PRIMARY KEY (dataSourceId),
-    UNIQUE KEY `UK_id_version` (make, model),
-    FOREIGN KEY (dataSourceId) REFERENCES datasources(id)
-);
 
 CREATE TABLE IF NOT EXISTS parser_info (
     id BIGINT AUTO_INCREMENT NOT NULL,
@@ -44,19 +25,6 @@ CREATE TABLE IF NOT EXISTS files (
     timestamp  BIGINT,
     PRIMARY KEY (id),
     UNIQUE KEY `jars_UK_name_version` (name, version)
-);
-
-CREATE TABLE IF NOT EXISTS datafeeds (
-    id BIGINT AUTO_INCREMENT NOT NULL,
-    dataSourceId BIGINT NOT NULL,
-    name VARCHAR(256) NOT NULL,
-    description TEXT,
-    tags TEXT,
-    parserId BIGINT NOT NULL,
-    type TEXT NOT NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (dataSourceId) REFERENCES datasources(id),
-    FOREIGN KEY (parserId) REFERENCES parser_info(id)
 );
 
 CREATE TABLE IF NOT EXISTS topologies (

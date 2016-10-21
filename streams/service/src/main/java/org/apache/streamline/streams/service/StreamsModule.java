@@ -11,7 +11,6 @@ import org.apache.streamline.registries.parser.client.ParserClient;
 import org.apache.streamline.registries.tag.client.TagClient;
 import org.apache.streamline.storage.StorageManager;
 import org.apache.streamline.storage.StorageManagerAware;
-import org.apache.streamline.streams.catalog.DataSourceFacade;
 import org.apache.streamline.streams.catalog.service.CatalogService;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.exception.ConfigException;
@@ -61,7 +60,6 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         TagClient tagClient = new TagClient(catalogRootUrl);
         ParserClient parserClient = new ParserClient(catalogRootUrl);
         final CatalogService catalogService = new CatalogService(storageManager, fileStorage, tagClient, parserClient);
-        result.addAll(getDataSourceRelatedResources(catalogService, tagClient));
         result.add(new MetricsResource(streamcatalogService));
         result.addAll(getClusterRelatedResources(streamcatalogService));
         result.add(new FileCatalogResource(catalogService));
@@ -84,16 +82,6 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
     @Override
     public void setStorageManager(StorageManager storageManager) {
         this.storageManager = storageManager;
-    }
-
-    private List<Object> getDataSourceRelatedResources (CatalogService catalogService, TagClient tagClient) {
-        List<Object> result = new ArrayList<>();
-        final FeedCatalogResource feedResource = new FeedCatalogResource(catalogService);
-        result.add(feedResource);
-        final DataSourceWithDataFeedCatalogResource dataSourceWithDataFeedCatalogResource =
-                new DataSourceWithDataFeedCatalogResource(new DataSourceFacade(catalogService, tagClient));
-        result.add(dataSourceWithDataFeedCatalogResource);
-        return result;
     }
 
     private List<Object> getTopologyRelatedResources (StreamCatalogService streamcatalogService) {

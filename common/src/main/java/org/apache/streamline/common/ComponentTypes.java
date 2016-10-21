@@ -14,7 +14,6 @@ public class ComponentTypes {
     public static final String STAGE = "STAGE";
     public static final String RULE = "RULE";
     public static final String WINDOW = "WINDOW";
-    public static final String PARSER = "PARSER";
     public static final String CUSTOM = "CUSTOM";
     public static final String OPENTSDB = "OPENTSDB";
     public static final String HBASE = "HBASE";

@@ -1,6 +1,6 @@
 package org.apache.streamline.streams.runtime.storm.hdfs;
 
-import org.apache.streamline.streams.runtime.storm.bolt.ParserBolt;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.storm.hdfs.bolt.format.RecordFormat;
 import org.apache.storm.tuple.Tuple;
 
@@ -13,7 +13,7 @@ import org.apache.storm.tuple.Tuple;
 public class IdentityHdfsRecordFormat implements RecordFormat {
     @Override
     public byte[] format(Tuple tuple) {
-        byte[] data = tuple.getBinaryByField(ParserBolt.BYTES_FIELD);
+        byte[] data = ((StreamlineEvent) tuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT)).getBytes();
         byte[] recordDelimiter = "\n".getBytes();
         byte[] result = new byte[data.length + recordDelimiter.length];
         System.arraycopy(data, 0, result, 0, data.length);

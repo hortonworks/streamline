@@ -1,8 +1,5 @@
-DROP TABLE IF EXISTS devices;
-DROP TABLE IF EXISTS datafeeds;
 DROP TABLE IF EXISTS parser_info;
 DROP TABLE IF EXISTS files;
-DROP TABLE IF EXISTS datasources;
 DROP TABLE IF EXISTS topologies;
 DROP TABLE IF EXISTS topology_component_definitions;
 DROP TABLE IF EXISTS topology_editor_metadata;
