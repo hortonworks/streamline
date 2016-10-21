@@ -102,10 +102,10 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
 
     private String addSchemeComponent() {
         String streamsSchemeId = "streamsScheme-" + UUID_FOR_COMPONENTS;
-        String schemeClassName = "org.apache.streamline.streams.runtime.storm.spout.StreamsKafkaSpoutScheme";
-        String schemaName = (String) conf.get("topic");
+        String schemeClassName = "org.apache.streamline.streams.runtime.storm.spout.AvroKafkaSpoutScheme";
+        String topicName = (String) conf.get(TopologyLayoutConstants.JSON_KEY_TOPIC);
         String schemaRegistryUrl = (String) conf.get(TopologyLayoutConstants.SCHEMA_REGISTRY_URL);
-        List<String> constructorArgs = Lists.newArrayList((kafkaSource != null ? kafkaSource.getId() : ""), schemaName, schemaRegistryUrl);
+        List<String> constructorArgs = Lists.newArrayList((kafkaSource != null ? kafkaSource.getId() : ""), topicName, schemaRegistryUrl);
         addToComponents(createComponent(streamsSchemeId, schemeClassName, null, constructorArgs, null));
 
         return streamsSchemeId;
