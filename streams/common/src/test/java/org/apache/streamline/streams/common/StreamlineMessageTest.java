@@ -12,26 +12,26 @@ import static org.junit.Assert.assertNull;
 /**
  * Created by aiyer on 9/24/15.
  */
-public class IotasMessageTest {
+public class StreamlineMessageTest {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     public void testMappingWithoutMessageId() throws IOException {
         InputStream in = this.getClass().getClassLoader().getResourceAsStream("iotas-message-1.json");
 
-        IotasMessage iotasMessage = objectMapper.readValue(in, IotasMessage.class);
+        StreamlineMessage message = objectMapper.readValue(in, StreamlineMessage.class);
 
-        assertEquals(iotasMessage.getMake(), "nest");
-        assertNull(iotasMessage.getMessageId());
+        assertEquals(message.getMake(), "nest");
+        assertNull(message.getMessageId());
     }
 
     @Test
     public void testMappingWithMessageId() throws IOException {
         InputStream in = this.getClass().getClassLoader().getResourceAsStream("iotas-message-2.json");
 
-        IotasMessage iotasMessage = objectMapper.readValue(in, IotasMessage.class);
+        StreamlineMessage message = objectMapper.readValue(in, StreamlineMessage.class);
 
-        assertEquals(iotasMessage.getMake(), "nest");
-        assertEquals(iotasMessage.getMessageId(), "100");
+        assertEquals(message.getMake(), "nest");
+        assertEquals(message.getMessageId(), "100");
     }
 }

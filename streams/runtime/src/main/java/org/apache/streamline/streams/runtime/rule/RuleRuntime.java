@@ -18,7 +18,7 @@
 
 package org.apache.streamline.streams.runtime.rule;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
 import org.apache.streamline.streams.exception.ProcessingException;
 import org.apache.streamline.streams.layout.component.rule.Rule;
@@ -45,16 +45,16 @@ public class RuleRuntime implements Serializable, ProcessorRuntime {
     protected static final Logger LOG = LoggerFactory.getLogger(RuleRuntime.class);
 
     protected final Rule rule;
-    protected final Script<IotasEvent, Collection<IotasEvent>, ?> script;     // Script used to evaluate the condition
+    protected final Script<StreamlineEvent, Collection<StreamlineEvent>, ?> script;     // Script used to evaluate the condition
     protected final List<ActionRuntime> actions;
 
-    public RuleRuntime(Rule rule, Script<IotasEvent, Collection<IotasEvent>, ?> script, List<ActionRuntime> actions) {
+    public RuleRuntime(Rule rule, Script<StreamlineEvent, Collection<StreamlineEvent>, ?> script, List<ActionRuntime> actions) {
         this.rule = rule;
         this.script = script;
         this.actions = actions;
     }
 
-    public Collection<IotasEvent> evaluate(IotasEvent input) {
+    public Collection<StreamlineEvent> evaluate(StreamlineEvent input) {
         try {
             LOG.debug("Evaluate {} with script {}", input, script);
             return script.evaluate(input);
@@ -66,15 +66,15 @@ public class RuleRuntime implements Serializable, ProcessorRuntime {
     /**
      * Executes a {@link Rule}'s Action
      *
-     * @param input runtime input to this rule
+     * @param event runtime input to this rule
      */
     @Override
-    public List<Result> process (IotasEvent input) throws ProcessingException {
-        LOG.debug("process invoked with IotasEvent {}", input);
+    public List<Result> process (StreamlineEvent event) throws ProcessingException {
+        LOG.debug("process invoked with StreamlineEvent {}", event);
         List<Result> allResults = new ArrayList<>();
         try {
             for (ActionRuntime action : actions) {
-                List<Result> actionResults = action.execute(input);
+                List<Result> actionResults = action.execute(event);
                 LOG.debug("Applied action {}, Result {}", action, actionResults);
                 if(actionResults != null) {
                     allResults.addAll(actionResults);

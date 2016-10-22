@@ -19,9 +19,9 @@ package org.apache.streamline.streams.runtime;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.layout.component.rule.action.TransformAction;
 import org.apache.streamline.streams.layout.component.rule.action.transform.MergeTransform;
 import org.apache.streamline.streams.layout.component.rule.action.transform.ProjectionTransform;
@@ -51,13 +51,13 @@ public class TransformRuntimePipelineActionTest {
         defaults.put("2", "TWO");
         defaults.put("3", "THREE");
 
-        IotasEvent event = new IotasEventImpl(fieldsAndValues, "dsrcid");
+        StreamlineEvent event = new StreamlineEventImpl(fieldsAndValues, "dsrcid");
         MergeTransform merge = new MergeTransform(defaults);
         ProjectionTransform projection = new ProjectionTransform("test-projection", defaults.keySet());
         TransformAction transformAction = new TransformAction(ImmutableList.of(merge, projection));
         transformAction.setOutputStreams(ImmutableSet.of("streamid"));
         ActionRuntime actionRuntime = new TransformActionRuntime(transformAction);
-        List<IotasEvent> resultEvents = new ArrayList<>();
+        List<StreamlineEvent> resultEvents = new ArrayList<>();
         for (Result result : actionRuntime.execute(event)) {
             resultEvents.addAll(result.events);
         }
@@ -78,14 +78,14 @@ public class TransformRuntimePipelineActionTest {
         defaults.put("3", "THREE");
         defaults.put("4", "${2} plus ${2}");
 
-        IotasEvent event = new IotasEventImpl(fieldsAndValues, "dsrcid");
+        StreamlineEvent event = new StreamlineEventImpl(fieldsAndValues, "dsrcid");
         MergeTransform merge = new MergeTransform(defaults);
         SubstituteTransform substitute = new SubstituteTransform();
         ProjectionTransform projection = new ProjectionTransform("test-projection", defaults.keySet());
         TransformAction transformAction = new TransformAction(ImmutableList.of(merge, substitute, projection));
         transformAction.setOutputStreams(ImmutableSet.of("streamid"));
         ActionRuntime actionRuntime = new TransformActionRuntime(transformAction);
-        List<IotasEvent> resultEvents = new ArrayList<>();
+        List<StreamlineEvent> resultEvents = new ArrayList<>();
         for (Result result : actionRuntime.execute(event)) {
             resultEvents.addAll(result.events);
         }

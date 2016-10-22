@@ -18,7 +18,7 @@
 
 package org.apache.streamline.streams.runtime.storm.bolt.notification;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.catalog.CatalogRestClient;
 import org.apache.streamline.streams.catalog.NotifierInfo;
 import org.apache.streamline.streams.notification.Notification;
@@ -27,7 +27,7 @@ import org.apache.streamline.streams.notification.common.NotifierConfigImpl;
 import org.apache.streamline.streams.notification.service.NotificationService;
 import org.apache.streamline.streams.notification.service.NotificationServiceImpl;
 import org.apache.streamline.streams.notification.store.hbase.HBaseNotificationStore;
-import org.apache.streamline.streams.runtime.notification.IotasEventAdapter;
+import org.apache.streamline.streams.runtime.notification.StreamlineEventAdapter;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -101,7 +101,7 @@ public class NotificationBolt extends BaseRichBolt {
 
     @Override
     public void execute(Tuple tuple) {
-        Notification notification = new IotasEventAdapter((IotasEvent) tuple.getValueByField(IotasEvent.IOTAS_EVENT));
+        Notification notification = new StreamlineEventAdapter((StreamlineEvent) tuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT));
         notificationContext.track(notification.getId(), tuple);
         // send to notifier
         notificationService.notify(this.notifierName, notification);

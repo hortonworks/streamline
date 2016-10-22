@@ -18,7 +18,7 @@
  */
 package org.apache.streamline.streams.layout.component.rule.action.transform;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.layout.Transform;
 
 import java.util.Collections;
@@ -26,7 +26,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Expands template variables in the IotasEvent values by looking up the variables in {@link IotasEvent#getFieldsAndValues()}.
+ * Expands template variables in the StreamlineEvent values by looking up the variables in {@link StreamlineEvent#getFieldsAndValues()}.
  */
 public class SubstituteTransform extends Transform {
     private final Set<String> fields = new HashSet<>();

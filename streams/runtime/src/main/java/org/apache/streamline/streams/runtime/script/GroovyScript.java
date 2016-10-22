@@ -18,7 +18,7 @@
 
 package org.apache.streamline.streams.runtime.script;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.layout.component.rule.expression.Expression;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
@@ -33,9 +33,9 @@ import java.util.Map;
 /**
  * Evaluates the {@link Expression} for each {@code Input} using the provided Groovy Engine
  *
- * @param <O> Type of output returned after the script is evaluated with {@link GroovyScript#evaluate(IotasEvent)}.
+ * @param <O> Type of output returned after the script is evaluated with {@link GroovyScript#evaluate(StreamlineEvent)}.
  */
-public class GroovyScript<O> extends Script<IotasEvent, O, javax.script.ScriptEngine> {
+public class GroovyScript<O> extends Script<StreamlineEvent, O, javax.script.ScriptEngine> {
     private static final Logger LOG = LoggerFactory.getLogger(GroovyScript.class);
 
     // instance of parsed Script is not thread-safe so we want to store parsed script per each thread
@@ -54,13 +54,13 @@ public class GroovyScript<O> extends Script<IotasEvent, O, javax.script.ScriptEn
     }
 
     @Override
-    public O evaluate(IotasEvent iotasEvent) throws ScriptException {
-        LOG.debug("Evaluating [{}] with [{}]", expression, iotasEvent);
+    public O evaluate(StreamlineEvent event) throws ScriptException {
+        LOG.debug("Evaluating [{}] with [{}]", expression, event);
         groovy.lang.Script parsedScript = getParsedScript();
         O evaluatedResult = null;
 
-        if (iotasEvent != null) {
-            final Map<String, Object> fieldsToValues = iotasEvent.getFieldsAndValues();
+        if (event != null) {
+            final Map<String, Object> fieldsToValues = event.getFieldsAndValues();
             if (fieldsToValues != null) {
                 try {
                     Binding binding = createBinding(fieldsToValues);

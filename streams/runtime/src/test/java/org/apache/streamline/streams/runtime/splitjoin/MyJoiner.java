@@ -18,7 +18,7 @@
  */
 package org.apache.streamline.streams.runtime.splitjoin;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +34,7 @@ public class MyJoiner extends DefaultJoiner {
     }
 
     @Override
-    public IotasEvent join(EventGroup eventGroup) {
+    public StreamlineEvent join(EventGroup eventGroup) {
         log.info("########## join");
         invocationCount++;
         return super.join(eventGroup);

@@ -18,7 +18,7 @@
 
 package org.apache.streamline.streams.notification.store.hbase;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.notification.Notification;
 import org.apache.streamline.streams.notification.store.Criteria;
 import org.apache.streamline.streams.notification.store.CriteriaImpl;
@@ -60,10 +60,10 @@ public class HBaseScanConfigBuilderTest {
         hBaseScanConfigBuilder = new HBaseScanConfigBuilder();
         hBaseScanConfigBuilder.addMappers(Notification.class, Arrays.asList(mockIndexMapper));
 
-        Criteria<IotasEvent> iotasEventCriteria = new CriteriaImpl<>(IotasEvent.class);
+        Criteria<StreamlineEvent> eventCriteria = new CriteriaImpl<>(StreamlineEvent.class);
 
-        HBaseScanConfig<IotasEvent> iotasEventScanConfig = hBaseScanConfigBuilder.getScanConfig(iotasEventCriteria);
-        assertNull(iotasEventScanConfig);
+        HBaseScanConfig<StreamlineEvent> eventScanConfig = hBaseScanConfigBuilder.getScanConfig(eventCriteria);
+        assertNull(eventScanConfig);
     }
 
     @Test
@@ -96,7 +96,7 @@ public class HBaseScanConfigBuilderTest {
         hBaseScanConfigBuilder = new HBaseScanConfigBuilder();
         hBaseScanConfigBuilder.addMappers(Notification.class, Arrays.asList(mockIndexMapper));
 
-        Criteria<Notification> iotasEventCriteria = new CriteriaImpl<>(Notification.class);
+        Criteria<Notification> eventCriteria = new CriteriaImpl<>(Notification.class);
 
         HBaseScanConfig<Notification> notificationScanConfig = hBaseScanConfigBuilder.getScanConfig(mockNotificationCriteria);
 
@@ -149,7 +149,7 @@ public class HBaseScanConfigBuilderTest {
         hBaseScanConfigBuilder = new HBaseScanConfigBuilder();
         hBaseScanConfigBuilder.addMappers(Notification.class, Arrays.asList(mockIndexMapper));
 
-        Criteria<Notification> iotasEventCriteria = new CriteriaImpl<>(Notification.class);
+        Criteria<Notification> eventCriteria = new CriteriaImpl<>(Notification.class);
 
         HBaseScanConfig<Notification> notificationScanConfig = hBaseScanConfigBuilder.getScanConfig(mockNotificationCriteria);
 

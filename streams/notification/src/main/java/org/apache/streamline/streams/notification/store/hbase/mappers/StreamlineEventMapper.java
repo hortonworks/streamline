@@ -18,8 +18,8 @@
 
 package org.apache.streamline.streams.notification.store.hbase.mappers;
 
-import org.apache.streamline.streams.IotasEvent;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.StreamlineEvent;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 
@@ -29,30 +29,30 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A mapper for the IotasEvent
+ * A mapper for the StreamlineEvent
  */
-public class IotasEventMapper implements Mapper<IotasEvent> {
+public class StreamlineEventMapper implements Mapper<StreamlineEvent> {
 
-    // TODO: the table should be changed to "Iotasevent"
+    // TODO: the table should be changed to "StreamlineEvent"
     private static final String TABLE_NAME = "nest";
 
     private static final byte[] CF_FIELDS = "cf".getBytes(StandardCharsets.UTF_8);
     private static final byte[] CF_DATASOURCE_ID = "d".getBytes(StandardCharsets.UTF_8);
 
     @Override
-    public List<TableMutation> tableMutations(IotasEvent iotasEvent) {
-        throw new UnsupportedOperationException("Not implemented, IotasEvents are currently inserted via HbaseBolt.");
+    public List<TableMutation> tableMutations(StreamlineEvent event) {
+        throw new UnsupportedOperationException("Not implemented, StreamlineEvent are currently inserted via HbaseBolt.");
     }
 
     @Override
-    public IotasEvent entity(Result result) {
+    public StreamlineEvent entity(Result result) {
         String id = Bytes.toString(result.getRow());
         Map<String, Object> fieldsAndValues = new HashMap<>();
         for(Map.Entry<byte[], byte[]> entry: result.getFamilyMap(CF_FIELDS).entrySet()) {
             fieldsAndValues.put(Bytes.toString(entry.getKey()), Bytes.toString(entry.getValue()));
         }
         String dataSourceId = Bytes.toString(result.getFamilyMap(CF_DATASOURCE_ID).firstEntry().getKey());
-        return new IotasEventImpl(fieldsAndValues, dataSourceId, id);
+        return new StreamlineEventImpl(fieldsAndValues, dataSourceId, id);
     }
 
     @Override

@@ -20,7 +20,7 @@ package org.apache.streamline.simulator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
-import org.apache.streamline.streams.common.IotasMessage;
+import org.apache.streamline.streams.common.StreamlineMessage;
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
@@ -115,7 +115,7 @@ public class CLI {
             while((line = reader.readLine()) != null){
                 if(line.trim().length() == 0) continue;
 
-                IotasMessage message = mapper.readValue(line, IotasMessage.class);
+                StreamlineMessage message = mapper.readValue(line, StreamlineMessage.class);
                 if(cmd.hasOption(OPTION_TIMESTAMP)){
                     message.setTimestamp(System.currentTimeMillis());
                 }
@@ -178,7 +178,7 @@ public class CLI {
                 }
             }
 
-            IotasMessage message = new IotasMessage();
+            StreamlineMessage message = new StreamlineMessage();
             message.setMake(lastMake);
             message.setType(lastType);
             message.setModel(lastModel);
@@ -188,7 +188,7 @@ public class CLI {
         }
     }
 
-    private static void writeToKafka(Producer<String, String> producer, IotasMessage message, String topic){
+    private static void writeToKafka(Producer<String, String> producer, StreamlineMessage message, String topic){
         ObjectMapper mapper = new ObjectMapper();
         try {
             String json = mapper.writeValueAsString(message);

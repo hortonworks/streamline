@@ -20,7 +20,7 @@ package org.apache.streamline.streams.runtime.splitjoin;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 
 import java.util.Collections;
 import java.util.Map;
@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
  * This class stores all split events of a specific split group.
  */
 public class EventGroup {
-    private final Cache<Integer, IotasEvent> splitEvents;
+    private final Cache<Integer, StreamlineEvent> splitEvents;
     private final String groupId;
     private final String dataSourceId;
     private final long eventExpiryInterval;
@@ -47,7 +47,7 @@ public class EventGroup {
                 .expireAfterWrite(eventExpiryInterval, TimeUnit.MILLISECONDS).build();
     }
 
-    public void addPartitionEvent(IotasEvent partitionedEvent) {
+    public void addPartitionEvent(StreamlineEvent partitionedEvent) {
         final Map<String, Object> header = partitionedEvent.getHeader();
         if(header == null || !header.containsKey(SplitActionRuntime.SPLIT_PARTITION_ID)) {
             throw new IllegalArgumentException("Received event is not of partition event as it doe not contain header  with name: "+SplitActionRuntime.SPLIT_PARTITION_ID);
@@ -75,7 +75,7 @@ public class EventGroup {
         return groupId;
     }
 
-    public Iterable<IotasEvent> getSplitEvents() {
+    public Iterable<StreamlineEvent> getSplitEvents() {
         return Collections.unmodifiableCollection(splitEvents.asMap().values());
     }
 

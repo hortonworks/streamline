@@ -3,7 +3,7 @@ package org.apache.streamline.streams.schema;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import org.apache.streamline.common.Schema;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.layout.component.Stream;
 import org.apache.streamline.streams.layout.component.impl.normalization.BulkNormalizationConfig;
 import org.apache.streamline.streams.layout.component.impl.normalization.FieldBasedNormalizationConfig;
@@ -38,7 +38,7 @@ public class NormalizationProcessorSchemaEvolverTest {
         Set<Stream> streams = evolver.apply(componentConfigJson, inputStream);
 
         // given output stream is same as EvolvingSchemaTestObject.inputStream()
-        Set<Stream> expectStreams = Collections.singleton(new Stream(IotasEventImpl.DEFAULT_SOURCE_STREAM, inputStream.getSchema()));
+        Set<Stream> expectStreams = Collections.singleton(new Stream(StreamlineEventImpl.DEFAULT_SOURCE_STREAM, inputStream.getSchema()));
 
         // we can check stream id of output stream is default
         assertEquals(expectStreams, streams);
@@ -54,7 +54,7 @@ public class NormalizationProcessorSchemaEvolverTest {
         Set<Stream> streams = evolver.apply(componentConfigJson, inputStream);
 
         // given output stream is same as EvolvingSchemaTestObject.inputStream()
-        Set<Stream> expectStreams = Collections.singleton(new Stream(IotasEventImpl.DEFAULT_SOURCE_STREAM, inputStream.getSchema()));
+        Set<Stream> expectStreams = Collections.singleton(new Stream(StreamlineEventImpl.DEFAULT_SOURCE_STREAM, inputStream.getSchema()));
 
         // we can check stream id of output stream is default
         assertEquals(expectStreams, streams);
@@ -70,7 +70,7 @@ public class NormalizationProcessorSchemaEvolverTest {
         Set<Stream> streams = evolver.apply(componentConfigJson, inputStream);
 
         // schema is preserved when input stream is not matched, but stream id of output stream is replaced with 'default'
-        Stream outputStream = new Stream(IotasEventImpl.DEFAULT_SOURCE_STREAM, EvolvingSchemaTestObject.inputStream().getSchema());
+        Stream outputStream = new Stream(StreamlineEventImpl.DEFAULT_SOURCE_STREAM, EvolvingSchemaTestObject.inputStream().getSchema());
         Set<Stream> expectStreams = Collections.singleton(outputStream);
 
         // we can check stream id of output stream is default

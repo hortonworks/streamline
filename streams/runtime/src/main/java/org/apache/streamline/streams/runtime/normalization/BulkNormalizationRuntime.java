@@ -19,7 +19,7 @@
 package org.apache.streamline.streams.runtime.normalization;
 
 import org.apache.streamline.common.Schema;
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.layout.component.impl.normalization.BulkNormalizationConfig;
 import org.apache.streamline.streams.runtime.script.GroovyScript;
 import org.apache.streamline.streams.runtime.script.engine.GroovyScriptEngine;
@@ -57,18 +57,18 @@ public class BulkNormalizationRuntime extends NormalizationRuntime {
     }
 
     @Override
-    public Map<String, Object> normalize(IotasEvent iotasEvent) throws NormalizationException {
-        LOG.debug("Running bulk normalization script [{}] for received event [{}] ", groovyScript, iotasEvent);
+    public Map<String, Object> normalize(StreamlineEvent event) throws NormalizationException {
+        LOG.debug("Running bulk normalization script [{}] for received event [{}] ", groovyScript, event);
 
         Map<String, Object> result = null;
         if (groovyScript != null) {
             try {
-                result = groovyScript.evaluate(iotasEvent);
+                result = groovyScript.evaluate(event);
             } catch (ScriptException e) {
                 throw new NormalizationException(e);
             }
         } else {
-            result = iotasEvent.getFieldsAndValues();
+            result = event.getFieldsAndValues();
             LOG.info("Nothing to normalize as normalization script is not configured");
         }
 

@@ -18,7 +18,7 @@
 package org.apache.streamline.streams.layout.component.impl.normalization;
 
 import org.apache.streamline.common.Schema;
-import org.apache.streamline.streams.layout.component.IotasProcessor;
+import org.apache.streamline.streams.layout.component.StreamlineProcessor;
 import org.apache.streamline.streams.layout.component.Stream;
 import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
 
@@ -33,7 +33,7 @@ import java.util.Map;
  * it should normalize the payload from input schema to output schema.
  *
  */
-public class NormalizationProcessor extends IotasProcessor {
+public class NormalizationProcessor extends StreamlineProcessor {
     public static final String DEFAULT_STREAM_ID = "default";
     public static final String CONFIG_KEY_TYPE = "normalizationProcessorType";
     public static final String CONFIG_KEY_NORMALIZATION = "normalizationConfig";

@@ -21,10 +21,10 @@ package org.apache.streamline.streams.runtime.splitjoin;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import org.apache.streamline.common.Constants;
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
 import org.apache.streamline.streams.catalog.CatalogRestClient;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.layout.Transform;
 import org.apache.streamline.streams.layout.component.impl.splitjoin.JoinAction;
 import org.apache.streamline.streams.layout.component.impl.splitjoin.SplitAction;
@@ -146,7 +146,7 @@ public class SplitJoinTest {
 
         final List<Result> results = stageActionRuntime.execute(createRootEvent());
         for (Result result : results) {
-            for (IotasEvent event : result.events) {
+            for (StreamlineEvent event : result.events) {
                 final Map enrichments = (Map) event.getAuxiliaryFieldsAndValues().get(EnrichmentTransform.ENRICHMENTS_FIELD_NAME);
                 Assert.assertEquals(enrichments.get(enrichFieldName), enrichedValue);
             }
@@ -163,8 +163,8 @@ public class SplitJoinTest {
         splitActionRuntime.setActionRuntimeContext(new ActionRuntimeContext(splitRule, splitAction));
         splitActionRuntime.initialize(config);
 
-        IotasEvent iotasEvent = createRootEvent();
-        final List<Result> results = splitActionRuntime.execute(iotasEvent);
+        StreamlineEvent streamlineEvent = createRootEvent();
+        final List<Result> results = splitActionRuntime.execute(streamlineEvent);
 
         JoinAction joinAction = (JoinAction) joinRule.getAction();
         JoinActionRuntime joinActionRuntime = new JoinActionRuntime(joinAction);
@@ -173,7 +173,7 @@ public class SplitJoinTest {
 
         List<Result> effectiveResult = null;
         for (Result result : results) {
-            for (IotasEvent event : result.events) {
+            for (StreamlineEvent event : result.events) {
                 List<Result> processedResult = joinActionRuntime.execute(event);
                 if(processedResult != null ) {
                     effectiveResult = processedResult;
@@ -217,8 +217,8 @@ public class SplitJoinTest {
         splitActionRuntime.setActionRuntimeContext(new ActionRuntimeContext(null, splitAction));
         splitActionRuntime.initialize(config);
 
-        IotasEvent iotasEvent = createRootEvent();
-        final List<Result> results = splitActionRuntime.execute(iotasEvent);
+        StreamlineEvent event = createRootEvent();
+        final List<Result> results = splitActionRuntime.execute(event);
 
         JoinActionRuntime joinActionRuntime = new JoinActionRuntime(joinAction);
         joinActionRuntime.setActionRuntimeContext(new ActionRuntimeContext(null, joinAction));
@@ -226,8 +226,8 @@ public class SplitJoinTest {
 
         List<Result> effectiveResult = null;
         for (Result result : results) {
-            for (IotasEvent event : result.events) {
-                List<Result> processedResult = joinActionRuntime.execute(event);
+            for (StreamlineEvent e : result.events) {
+                List<Result> processedResult = joinActionRuntime.execute(e);
                 if(processedResult != null ) {
                     effectiveResult = processedResult;
                 }
@@ -254,17 +254,17 @@ public class SplitJoinTest {
 
         final List<Result> results = stageActionRuntime.execute(createRootEvent());
         for (Result result : results) {
-            for (IotasEvent event : result.events) {
+            for (StreamlineEvent event : result.events) {
                 final Map enrichments = (Map) event.getAuxiliaryFieldsAndValues().get(EnrichmentTransform.ENRICHMENTS_FIELD_NAME);
                 Assert.assertEquals(enrichments.get(enrichFieldName), enrichedValue);
             }
         }
     }
 
-    private IotasEvent createRootEvent() {
+    private StreamlineEvent createRootEvent() {
         Map<String, Object> fieldValues = new HashMap<String, Object>(){{put("foo", "foo-value"); put("bar", "bar-"+System.currentTimeMillis());}};
 
-        return new IotasEventImpl(fieldValues, "ds-1", UUID.randomUUID().toString(), Collections.<String, Object>emptyMap(), "source-stream");
+        return new StreamlineEventImpl(fieldValues, "ds-1", UUID.randomUUID().toString(), Collections.<String, Object>emptyMap(), "source-stream");
     }
 
     @Mocked

@@ -19,9 +19,9 @@
 package org.apache.streamline.streams.runtime.storm.bolt.rules;
 
 import org.apache.streamline.common.Constants;
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.runtime.processor.RuleProcessorRuntime;
 import org.apache.streamline.streams.runtime.rule.RulesDependenciesFactory;
 import org.apache.storm.task.OutputCollector;
@@ -67,20 +67,20 @@ public class RulesBolt extends BaseRichBolt {
     }
 
     @Override
-    public void execute(Tuple input) {  // Input tuple is expected to be an IotasEvent
+    public void execute(Tuple input) {  // Input tuple is expected to be an StreamlineEvent
         try {
-            final Object iotasEvent = input.getValueByField(IotasEvent.IOTAS_EVENT);
-            if (iotasEvent instanceof IotasEvent) {
-                IotasEvent iotasEventWithStream = getIotasEventWithStream((IotasEvent) iotasEvent, input);
-                LOG.debug("++++++++ Executing tuple [{}], IotasEvent [{}]", input, iotasEventWithStream);
-                for (Result result : ruleProcessorRuntime.process(iotasEventWithStream)) {
-                    for (IotasEvent event : result.events) {
-                        collector.emit(result.stream, input, new Values(event));
+            final Object event = input.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
+            if (event instanceof StreamlineEvent) {
+                StreamlineEvent eventWithStream = getStreamlineEventWithStream((StreamlineEvent) event, input);
+                LOG.debug("++++++++ Executing tuple [{}], StreamlineEvent [{}]", input, eventWithStream);
+                for (Result result : ruleProcessorRuntime.process(eventWithStream)) {
+                    for (StreamlineEvent e : result.events) {
+                        collector.emit(result.stream, input, new Values(e));
                     }
                 }
             } else {
                 LOG.debug("Invalid tuple received. Tuple disregarded and rules not evaluated.\n\tTuple [{}]." +
-                        "\n\tIotasEvent [{}].", input, iotasEvent);
+                        "\n\tStreamlineEvent [{}].", input, event);
             }
             collector.ack(input);
         } catch (Exception e) {
@@ -90,8 +90,8 @@ public class RulesBolt extends BaseRichBolt {
         }
     }
 
-    private IotasEvent getIotasEventWithStream(IotasEvent event, Tuple tuple) {
-        return new IotasEventImpl(event.getFieldsAndValues(),
+    private StreamlineEvent getStreamlineEventWithStream(StreamlineEvent event, Tuple tuple) {
+        return new StreamlineEventImpl(event.getFieldsAndValues(),
                 event.getDataSourceId(), event.getId(),
                 event.getHeader(), tuple.getSourceStreamId(), event.getAuxiliaryFieldsAndValues());
     }
@@ -99,7 +99,7 @@ public class RulesBolt extends BaseRichBolt {
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
         for (String stream : boltDependenciesFactory.createRuleProcessorRuntime().getStreams()) {
-            declarer.declareStream(stream, new Fields(IotasEvent.IOTAS_EVENT));
+            declarer.declareStream(stream, new Fields(StreamlineEvent.STREAMLINE_EVENT));
         }
     }
 }

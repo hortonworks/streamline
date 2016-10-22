@@ -72,7 +72,7 @@ fi
 
 # Launch mode
 if [ "x$DAEMON_MODE" = "xtrue" ]; then
-  nohup $JAVA $IOTAS_HEAP_OPTS $IOTAS_JVM_PERFORMANCE_OPTS -cp $CLASSPATH $IOTAS_OPTS "org.apache.streamline.webservice.IotasApplication" "server" "$@" > "$CONSOLE_OUTPUT_FILE" 2>&1 < /dev/null &
+  nohup $JAVA $IOTAS_HEAP_OPTS $IOTAS_JVM_PERFORMANCE_OPTS -cp $CLASSPATH $IOTAS_OPTS "org.apache.streamline.webservice.StreamlineApplication" "server" "$@" > "$CONSOLE_OUTPUT_FILE" 2>&1 < /dev/null &
 else
-  exec $JAVA $IOTAS_HEAP_OPTS $IOTAS_JVM_PERFORMANCE_OPTS -cp $CLASSPATH $IOTAS_OPTS "org.apache.streamline.webservice.IotasApplication" "server" "$@"
+  exec $JAVA $IOTAS_HEAP_OPTS $IOTAS_JVM_PERFORMANCE_OPTS -cp $CLASSPATH $IOTAS_OPTS "org.apache.streamline.webservice.StreamlineApplication" "server" "$@"
 fi

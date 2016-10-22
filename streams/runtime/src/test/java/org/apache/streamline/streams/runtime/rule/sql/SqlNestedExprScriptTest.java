@@ -1,8 +1,8 @@
 package org.apache.streamline.streams.runtime.rule.sql;
 
 import org.apache.streamline.common.Schema;
-import org.apache.streamline.streams.IotasEvent;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.StreamlineEvent;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.layout.component.rule.expression.ArrayFieldExpression;
 import org.apache.streamline.streams.layout.component.rule.expression.BinaryExpression;
 import org.apache.streamline.streams.layout.component.rule.expression.Condition;
@@ -18,7 +18,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -44,12 +43,12 @@ public class SqlNestedExprScriptTest {
         Expression x = new FieldExpression(Schema.Field.of("x", Schema.Type.INTEGER));
         condition.setExpression(new BinaryExpression(Operator.NOT_EQUAL, x, new Literal("100")));
         sqlScript = new SqlScript(new StormSqlExpression(condition), new SqlEngine(),
-                                                     new SqlScript.ValuesToIotasEventConverter(Collections.singletonList("x")));
+                                                     new SqlScript.ValuesToStreamlineEventConverter(Collections.singletonList("x")));
 
         Map<String, Object> kv = new HashMap<>();
         kv.put("x", 100);
-        IotasEvent event = new IotasEventImpl(kv, "1");
-        Collection<IotasEvent> result = sqlScript.evaluate(event);
+        StreamlineEvent event = new StreamlineEventImpl(kv, "1");
+        Collection<StreamlineEvent> result = sqlScript.evaluate(event);
         Assert.assertTrue(result.isEmpty());
     }
 
@@ -61,7 +60,7 @@ public class SqlNestedExprScriptTest {
                 new FieldExpression(Schema.Field.of("y", Schema.Type.NESTED)), "b");
         condition.setExpression(new BinaryExpression(Operator.LESS_THAN, y_b, new Literal("100")));
         sqlScript = new SqlScript(new StormSqlExpression(condition), new SqlEngine(),
-                                                     new SqlScript.ValuesToIotasEventConverter(Collections.singletonList("y")));
+                                                     new SqlScript.ValuesToStreamlineEventConverter(Collections.singletonList("y")));
 
         Map<String, Object> nested = new HashMap<>();
         nested.put("a", 5);
@@ -69,8 +68,8 @@ public class SqlNestedExprScriptTest {
         Map<String, Object> kv = new HashMap<>();
         kv.put("x", 10);
         kv.put("y", nested);
-        IotasEvent event = new IotasEventImpl(kv, "1");
-        Collection<IotasEvent> result = sqlScript.evaluate(event);
+        StreamlineEvent event = new StreamlineEventImpl(kv, "1");
+        Collection<StreamlineEvent> result = sqlScript.evaluate(event);
         Assert.assertEquals(1, result.size());
     }
 
@@ -82,7 +81,7 @@ public class SqlNestedExprScriptTest {
                 new FieldExpression(Schema.Field.of("y", Schema.Type.NESTED)), "a"), 0);
         condition.setExpression(new BinaryExpression(Operator.LESS_THAN, y_a_0, new Literal("100")));
         sqlScript = new SqlScript(new StormSqlExpression(condition), new SqlEngine(),
-                                                     new SqlScript.ValuesToIotasEventConverter(Collections.singletonList("y")));
+                                                     new SqlScript.ValuesToStreamlineEventConverter(Collections.singletonList("y")));
         List<Integer> nestedList = new ArrayList<>();
         nestedList.add(500);
         nestedList.add(1);
@@ -91,8 +90,8 @@ public class SqlNestedExprScriptTest {
         Map<String, Object> kv = new HashMap<>();
         kv.put("x", 10);
         kv.put("y", nestedMap);
-        IotasEvent event = new IotasEventImpl(kv, "1");
-        Collection<IotasEvent> result = sqlScript.evaluate(event);
+        StreamlineEvent event = new StreamlineEventImpl(kv, "1");
+        Collection<StreamlineEvent> result = sqlScript.evaluate(event);
         Assert.assertTrue(result.isEmpty());
     }
 }

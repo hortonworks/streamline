@@ -19,7 +19,7 @@
 package org.apache.streamline.streams.notification.service;
 
 import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.notification.Notification;
 import org.apache.streamline.streams.notification.NotificationContext;
 import org.apache.streamline.streams.notification.Notifier;
@@ -86,12 +86,12 @@ public interface NotificationService {
      * Gets Iotas event from the store matching the given eventId.
      * </p>
      */
-    IotasEvent getEvent(String eventId);
+    StreamlineEvent getEvent(String eventId);
 
     /**
      * Return a list of iotas events matching the given event ids.
      */
-    List<IotasEvent> getEvents(List<String> eventIds);
+    List<StreamlineEvent> getEvents(List<String> eventIds);
 
     /**
      * Update the notification status.

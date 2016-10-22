@@ -1,8 +1,8 @@
 package org.apache.streamline.streams.runtime.storm.hbase;
 
 import com.google.common.base.Charsets;
-import org.apache.streamline.streams.IotasEvent;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.StreamlineEvent;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
@@ -28,7 +28,7 @@ public class ParserOutputHBaseMapperTest {
     private static final Map<String, Object> TEST_PARSED_MAP = new HashMap<String, Object>() {{
        put(COLUMN_FIELD, COLUMN_FIELD);
     }};
-    private static final IotasEvent TEST_EVENT = new IotasEventImpl(TEST_PARSED_MAP, "dsrcid1", ROW_KEY_FIELD);
+    private static final StreamlineEvent TEST_EVENT = new StreamlineEventImpl(TEST_PARSED_MAP, "dsrcid1", ROW_KEY_FIELD);
 
 
     private ParserOutputHBaseMapper mapper = new ParserOutputHBaseMapper(COLUMN_FAMILY);
@@ -37,7 +37,7 @@ public class ParserOutputHBaseMapperTest {
     @Before
     public void setup() {
         new Expectations() {{
-            mockTuple.getValueByField(IotasEvent.IOTAS_EVENT); returns(TEST_EVENT);
+            mockTuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT); returns(TEST_EVENT);
         }};
     }
 

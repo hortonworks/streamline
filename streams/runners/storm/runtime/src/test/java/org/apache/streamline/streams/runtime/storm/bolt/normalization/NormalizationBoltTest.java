@@ -20,8 +20,8 @@ package org.apache.streamline.streams.runtime.storm.bolt.normalization;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.streamline.common.Schema;
-import org.apache.streamline.streams.IotasEvent;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.StreamlineEvent;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.layout.component.Stream;
 import org.apache.streamline.streams.layout.component.impl.normalization.BulkNormalizationConfig;
 import org.apache.streamline.streams.layout.component.impl.normalization.FieldBasedNormalizationConfig;
@@ -74,14 +74,14 @@ public class NormalizationBoltTest {
     @Injectable
     private Tuple tuple;
 
-    public static final IotasEventImpl INPUT_IOTAS_EVENT = new IotasEventImpl(new HashMap<String, Object>() {{
+    public static final StreamlineEventImpl INPUT_IOTAS_EVENT = new StreamlineEventImpl(new HashMap<String, Object>() {{
         put("illuminance", 70);
         put("temp", 104);
         put("foo", 100);
         put("humidity", "40h");
     }}, "ds-" + System.currentTimeMillis(), "id-" + System.currentTimeMillis());
 
-    public static final IotasEventImpl INVALID_INPUT_IOTAS_EVENT = new IotasEventImpl(new HashMap<String, Object>() {{
+    public static final StreamlineEventImpl INVALID_INPUT_IOTAS_EVENT = new StreamlineEventImpl(new HashMap<String, Object>() {{
         put("illuminance", 70);
         put("tmprtr", 101);
         put("foo", 100);
@@ -94,8 +94,8 @@ public class NormalizationBoltTest {
             new Schema.Field("illuminance", Schema.Type.INTEGER),
             new Schema.Field("new-field", Schema.Type.STRING));
 
-    private static final IotasEvent VALID_OUTPUT_IOTAS_EVENT =
-            new IotasEventImpl(new HashMap<String, Object>() {{
+    private static final StreamlineEvent VALID_OUTPUT_IOTAS_EVENT =
+            new StreamlineEventImpl(new HashMap<String, Object>() {{
                 put("temperature", 40);
                 put("humidity", "40h");
                 put("illuminance", 70);
@@ -125,7 +125,7 @@ public class NormalizationBoltTest {
 
     private void testNormalizationBolt(NormalizationBolt normalizationBolt) {
         new Expectations() {{
-            tuple.getValueByField(IotasEvent.IOTAS_EVENT);
+            tuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
             returns(INPUT_IOTAS_EVENT);
         }};
 
@@ -140,7 +140,7 @@ public class NormalizationBoltTest {
 
     private void testNormalizationBoltFailure(NormalizationBolt normalizationBolt) {
         new Expectations() {{
-            tuple.getValueByField(IotasEvent.IOTAS_EVENT);
+            tuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
             returns(INVALID_INPUT_IOTAS_EVENT);
 
             tuple.getSourceStreamId();

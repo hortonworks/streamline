@@ -23,7 +23,7 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
 import org.apache.streamline.streams.exception.ProcessingException;
 import org.apache.streamline.streams.layout.component.Stream;
@@ -42,7 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.streamline.streams.common.IotasEventImpl.GROUP_BY_TRIGGER_EVENT;
+import static org.apache.streamline.streams.common.StreamlineEventImpl.GROUP_BY_TRIGGER_EVENT;
 
 /**
  * Represents a runtime rules processor
@@ -107,13 +107,13 @@ public class RuleProcessorRuntime implements Serializable, ProcessorRuntime {
     }
 
     @Override
-    public List<Result> process(IotasEvent iotasEvent) throws ProcessingException {
+    public List<Result> process(StreamlineEvent event) throws ProcessingException {
         List<Result> results = new ArrayList<>();
         try {
-            List<RuleRuntime> ruleRuntimes = getRulesRuntime(iotasEvent);
-            LOG.debug("Process event {}, rule runtimes {}", iotasEvent, ruleRuntimes);
+            List<RuleRuntime> ruleRuntimes = getRulesRuntime(event);
+            LOG.debug("Process event {}, rule runtimes {}", event, ruleRuntimes);
             for (RuleRuntime rr : ruleRuntimes) {
-                for (IotasEvent result : rr.evaluate(iotasEvent)) {
+                for (StreamlineEvent result : rr.evaluate(event)) {
                     if (result != null) {
                         results.addAll(rr.process(result));
                     }
@@ -128,7 +128,7 @@ public class RuleProcessorRuntime implements Serializable, ProcessorRuntime {
         return results;
     }
 
-    private List<RuleRuntime> getRulesRuntime(IotasEvent event) throws ProcessingException {
+    private List<RuleRuntime> getRulesRuntime(StreamlineEvent event) throws ProcessingException {
         if (event == GROUP_BY_TRIGGER_EVENT) {
             return allRuleRuntimes;
         }

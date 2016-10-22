@@ -5,8 +5,8 @@ import org.apache.streamline.common.Schema;
 import org.apache.streamline.common.exception.ParserException;
 import org.apache.streamline.registries.parser.BaseParser;
 import org.apache.streamline.registries.parser.exception.DataValidationException;
-import org.apache.streamline.streams.IotasEvent;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.StreamlineEvent;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 
 import java.util.HashMap;
 import java.util.List;
@@ -22,7 +22,7 @@ public class MockParser extends BaseParser {
         put("a","b");
     }};
 
-    public static final IotasEvent IOTAS_EVENT = new IotasEventImpl(PARSER_OUTPUT, "dsrcid");
+    public static final StreamlineEvent IOTAS_EVENT = new StreamlineEventImpl(PARSER_OUTPUT, "dsrcid");
 
     @Override
     public String version() {

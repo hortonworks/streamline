@@ -17,8 +17,8 @@
  */
 package org.apache.streamline.streams.runtime.transform;
 
-import org.apache.streamline.streams.IotasEvent;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.StreamlineEvent;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.layout.component.rule.action.transform.SubstituteTransform;
 import org.apache.streamline.streams.runtime.TransformRuntime;
 import org.junit.Test;
@@ -42,9 +42,9 @@ public class SubstituteTransformRuntimeTest {
         fieldsAndValues.put("2", "two");
         fieldsAndValues.put("3", "three");
 
-        IotasEvent event = new IotasEventImpl(fieldsAndValues, "dsrcid");
+        StreamlineEvent event = new StreamlineEventImpl(fieldsAndValues, "dsrcid");
         TransformRuntime transformRuntime = new SubstituteTransformRuntime();
-        List<IotasEvent> result = transformRuntime.execute(event);
+        List<StreamlineEvent> result = transformRuntime.execute(event);
         assertEquals(1, result.size());
         assertEquals(3, result.get(0).getFieldsAndValues().size());
         assertEquals("one", result.get(0).getFieldsAndValues().get("1"));
@@ -59,9 +59,9 @@ public class SubstituteTransformRuntimeTest {
         fieldsAndValues.put("2", "two");
         fieldsAndValues.put("3", "${1} plus ${2}");
 
-        IotasEvent event = new IotasEventImpl(fieldsAndValues, "dsrcid");
+        StreamlineEvent event = new StreamlineEventImpl(fieldsAndValues, "dsrcid");
         TransformRuntime transformRuntime = new SubstituteTransformRuntime();
-        List<IotasEvent> result = transformRuntime.execute(event);
+        List<StreamlineEvent> result = transformRuntime.execute(event);
         assertEquals(1, result.size());
         assertEquals(3, result.get(0).getFieldsAndValues().size());
         assertEquals("one", result.get(0).getFieldsAndValues().get("1"));
@@ -76,9 +76,9 @@ public class SubstituteTransformRuntimeTest {
         fieldsAndValues.put("2", "${1} plus ${1}");
         fieldsAndValues.put("3", "${1} plus two");
 
-        IotasEvent event = new IotasEventImpl(fieldsAndValues, "dsrcid");
+        StreamlineEvent event = new StreamlineEventImpl(fieldsAndValues, "dsrcid");
         TransformRuntime transformRuntime = new SubstituteTransformRuntime(new SubstituteTransform(Collections.singleton("3")));
-        List<IotasEvent> result = transformRuntime.execute(event);
+        List<StreamlineEvent> result = transformRuntime.execute(event);
         assertEquals(1, result.size());
         assertEquals(3, result.get(0).getFieldsAndValues().size());
         assertEquals("one", result.get(0).getFieldsAndValues().get("1"));
@@ -93,9 +93,9 @@ public class SubstituteTransformRuntimeTest {
         fieldsAndValues.put("2", 2);
         fieldsAndValues.put("3", "${1} plus ${2}");
 
-        IotasEvent event = new IotasEventImpl(fieldsAndValues, "dsrcid");
+        StreamlineEvent event = new StreamlineEventImpl(fieldsAndValues, "dsrcid");
         TransformRuntime transformRuntime = new SubstituteTransformRuntime();
-        List<IotasEvent> result = transformRuntime.execute(event);
+        List<StreamlineEvent> result = transformRuntime.execute(event);
         assertEquals(1, result.size());
         assertEquals(3, result.get(0).getFieldsAndValues().size());
         assertEquals(1, result.get(0).getFieldsAndValues().get("1"));
@@ -110,9 +110,9 @@ public class SubstituteTransformRuntimeTest {
         fieldsAndValues.put("2", "${1} plus ${1}");
         fieldsAndValues.put("3", "${1} plus ${2}");
 
-        IotasEvent event = new IotasEventImpl(fieldsAndValues, "dsrcid");
+        StreamlineEvent event = new StreamlineEventImpl(fieldsAndValues, "dsrcid");
         TransformRuntime transformRuntime = new SubstituteTransformRuntime();
-        List<IotasEvent> result = transformRuntime.execute(event);
+        List<StreamlineEvent> result = transformRuntime.execute(event);
         assertEquals(1, result.size());
         assertEquals(3, result.get(0).getFieldsAndValues().size());
         assertEquals("one", result.get(0).getFieldsAndValues().get("1"));
@@ -126,9 +126,9 @@ public class SubstituteTransformRuntimeTest {
         fieldsAndValues.put("1", "${2} minus one");
         fieldsAndValues.put("2", "${1} plus one");
 
-        IotasEvent event = new IotasEventImpl(fieldsAndValues, "dsrcid");
+        StreamlineEvent event = new StreamlineEventImpl(fieldsAndValues, "dsrcid");
         TransformRuntime transformRuntime = new SubstituteTransformRuntime();
-        List<IotasEvent> result = transformRuntime.execute(event);
+        List<StreamlineEvent> result = transformRuntime.execute(event);
         System.out.println(result);
         assertEquals(1, result.size());
         assertEquals(event, result.get(0));

@@ -1,7 +1,7 @@
 package org.apache.streamline.streams.runtime.script;
 
-import org.apache.streamline.streams.IotasEvent;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.StreamlineEvent;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.runtime.script.engine.GroovyScriptEngine;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +31,7 @@ public class GroovyScriptNestedExprTest {
         Map<String, Object> kv = new HashMap<>();
         kv.put("x", 2);
         kv.put("y", nested);
-        IotasEvent event = new IotasEventImpl(kv, "1");
+        StreamlineEvent event = new StreamlineEventImpl(kv, "1");
         Boolean result = groovyScript.evaluate(event);
         System.out.println(result);
     }
@@ -45,7 +45,7 @@ public class GroovyScriptNestedExprTest {
         Map<String, Object> kv = new HashMap<>();
         kv.put("x", 2);
         kv.put("y", nested);
-        IotasEvent event = new IotasEventImpl(kv, "1");
+        StreamlineEvent event = new StreamlineEventImpl(kv, "1");
         Boolean result = groovyScript.evaluate(event);
         System.out.println(result);
     }
@@ -61,7 +61,7 @@ public class GroovyScriptNestedExprTest {
         Map<String, Object> kv = new HashMap<>();
         kv.put("x", 2);
         kv.put("y", nestedMap);
-        IotasEvent event = new IotasEventImpl(kv, "1");
+        StreamlineEvent event = new StreamlineEventImpl(kv, "1");
         Boolean result = groovyScript.evaluate(event);
         System.out.println(result);
     }

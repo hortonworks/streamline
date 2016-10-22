@@ -7,15 +7,15 @@ public abstract class TopologyDagVisitor {
         throw new UnsupportedOperationException("Not Implemented");
     }
 
-    public void visit(IotasSource iotasSource) {
+    public void visit(StreamlineSource source) {
         throw new UnsupportedOperationException("Not Implemented");
     }
 
-    public void visit(IotasSink iotasSink) {
+    public void visit(StreamlineSink sink) {
         throw new UnsupportedOperationException("Not Implemented");
     }
 
-    public void visit(IotasProcessor iotasProcessor) {
+    public void visit(StreamlineProcessor processor) {
         throw new UnsupportedOperationException("Not Implemented");
     }
 

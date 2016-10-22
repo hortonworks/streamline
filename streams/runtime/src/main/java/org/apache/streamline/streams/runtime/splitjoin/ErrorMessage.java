@@ -18,7 +18,7 @@
  */
 package org.apache.streamline.streams.runtime.splitjoin;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
 
 import java.util.List;
@@ -40,14 +40,14 @@ public class ErrorMessage {
     /**
      * Received event in an Action or StageProcessor at which this error occurred.
      */
-    public final List<IotasEvent> receivedEvents;
+    public final List<StreamlineEvent> receivedEvents;
 
     /**
      * Result event to be sent to target stream. This can be null in a case error occurred before computing result event.
      */
     public final Result resultEvent;
 
-    public ErrorMessage(Long componentId, String error, List<IotasEvent> receivedEvents, Result resultEvent) {
+    public ErrorMessage(Long componentId, String error, List<StreamlineEvent> receivedEvents, Result resultEvent) {
         this.componentId = componentId;
         this.error = error;
         this.receivedEvents = receivedEvents;

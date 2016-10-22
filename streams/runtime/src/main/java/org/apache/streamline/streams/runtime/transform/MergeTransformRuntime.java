@@ -17,8 +17,8 @@
  */
 package org.apache.streamline.streams.runtime.transform;
 
-import org.apache.streamline.streams.IotasEvent;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.StreamlineEvent;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.layout.Transform;
 import org.apache.streamline.streams.layout.component.rule.action.transform.MergeTransform;
 import org.apache.streamline.streams.runtime.RuntimeService;
@@ -43,7 +43,7 @@ public class MergeTransformRuntime implements TransformRuntime {
     }
 
     @Override
-    public List<IotasEvent> execute(IotasEvent input) {
+    public List<StreamlineEvent> execute(StreamlineEvent input) {
         Map<String, Object> merged = new HashMap<>();
         merged.putAll(input.getFieldsAndValues());
         for (Map.Entry<String, ?> entry : mergeTransform.getDefaults().entrySet()) {
@@ -51,7 +51,7 @@ public class MergeTransformRuntime implements TransformRuntime {
                 merged.put(entry.getKey(), entry.getValue());
             }
         }
-        return Collections.<IotasEvent>singletonList(new IotasEventImpl(merged, input.getDataSourceId()));
+        return Collections.<StreamlineEvent>singletonList(new StreamlineEventImpl(merged, input.getDataSourceId()));
     }
 
     @Override

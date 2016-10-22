@@ -25,8 +25,8 @@ import org.apache.storm.shade.com.google.common.base.Preconditions;
 import org.apache.storm.spout.MultiScheme;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Values;
-import org.apache.streamline.streams.IotasEvent;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.StreamlineEvent;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -73,12 +73,12 @@ public class AvroKafkaSpoutScheme implements MultiScheme {
                              schemaMetadata,
                              null);
 
-        return Collections.<List<Object>>singletonList(new Values(new IotasEventImpl(keyValues, dataSourceId)));
+        return Collections.<List<Object>>singletonList(new Values(new StreamlineEventImpl(keyValues, dataSourceId)));
     }
 
     @Override
     public Fields getOutputFields() {
-        return new Fields(IotasEvent.IOTAS_EVENT);
+        return new Fields(StreamlineEvent.STREAMLINE_EVENT);
     }
 
     public static class ByteBufferInputStream extends InputStream {

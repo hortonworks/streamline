@@ -23,11 +23,11 @@ import org.apache.streamline.common.Constants;
 import org.apache.streamline.common.util.ProxyUtil;
 import org.apache.streamline.registries.parser.Parser;
 import org.apache.streamline.registries.parser.ParserInfo;
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.catalog.CatalogRestClient;
 import org.apache.streamline.streams.catalog.DataSourceDto;
-import org.apache.streamline.streams.common.IotasEventImpl;
-import org.apache.streamline.streams.common.IotasMessage;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
+import org.apache.streamline.streams.common.StreamlineMessage;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.storm.task.OutputCollector;
@@ -103,7 +103,7 @@ public class ParserBolt extends BaseRichBolt {
     }
 
     /**
-     * If the user knows the dataSourceId they can set it here. This will be set in the IotasEvent as the default.
+     * If the user knows the dataSourceId they can set it here. This will be set in the StreamlineEvent as the default.
      *
      * @param dataSourceId
      */
@@ -116,7 +116,7 @@ public class ParserBolt extends BaseRichBolt {
             throw new IllegalArgumentException("conf must contain " + Constants.CATALOG_ROOT_URL + " and " + LOCAL_PARSER_JAR_PATH);
         }
         String catalogRootURL = stormConf.get(Constants.CATALOG_ROOT_URL).toString();
-        //We could also add the iotasMessage timestamp to calculate overall pipeline latency.
+        //We could also add the StreamlineMessage timestamp to calculate overall pipeline latency.
         this.collector = collector;
         this.localParserJarPath = stormConf.get(LOCAL_PARSER_JAR_PATH).toString();
         this.client = new CatalogRestClient(catalogRootURL);
@@ -133,15 +133,15 @@ public class ParserBolt extends BaseRichBolt {
         String messageId = null;
         try {
             if (parserId == null) {
-                //If a parserId is not configured in parser Bolt, we assume that the input is an iotasMessage encoded in JSON
-                final IotasMessage iotasMessage = objectMapper.readValue(new String(inputBytes, StandardCharsets.UTF_8), IotasMessage.class);
-                parser = getParser(iotasMessage);
+                //If a parserId is not configured in parser Bolt, we assume that the input is an message encoded in JSON
+                final StreamlineMessage message = objectMapper.readValue(new String(inputBytes, StandardCharsets.UTF_8), StreamlineMessage.class);
+                parser = getParser(message);
                 if(dataSourceId == null) {
-                    dataSourceId = getDataSourceId(iotasMessage);
+                    dataSourceId = getDataSourceId(message);
                 }
-                // override inputBytes with the data in IotasMessage
-                inputBytes = iotasMessage.getData();
-                messageId = iotasMessage.getMessageId();
+                // override inputBytes with the data in StreamlineMessage
+                inputBytes = message.getData();
+                messageId = message.getMessageId();
             } else {
                 parser = getParser(parserId);
             }
@@ -155,13 +155,13 @@ public class ParserBolt extends BaseRichBolt {
             parser.validate(parsedInput);
 
             final String dtSrcId = dataSourceId == null ? StringUtils.EMPTY : dataSourceId.toString();
-            IotasEvent event;
+            StreamlineEvent event;
 
-            // If message id is set in the incoming message, we use it as the IotasEvent id, else the id is random UUID.
+            // If message id is set in the incoming message, we use it as the StreamlineEvent id, else the id is random UUID.
             if(messageId == null) {
-                event = new IotasEventImpl(parsedInput, dtSrcId);
+                event = new StreamlineEventImpl(parsedInput, dtSrcId);
             } else {
-                event = new IotasEventImpl(parsedInput, dtSrcId, messageId);
+                event = new StreamlineEventImpl(parsedInput, dtSrcId, messageId);
             }
 
             final Values values = new Values(event);
@@ -214,8 +214,8 @@ public class ParserBolt extends BaseRichBolt {
         }
     }
 
-    private Long getDataSourceId (IotasMessage iotasMessage) {
-        DataSourceIdentifier dataSrcIdf = new DataSourceIdentifier(iotasMessage.getMake(), iotasMessage.getModel());
+    private Long getDataSourceId (StreamlineMessage message) {
+        DataSourceIdentifier dataSrcIdf = new DataSourceIdentifier(message.getMake(), message.getModel());
         DataSourceDto dataSourceDto = dataSrcIdfToDataSrc.get(dataSrcIdf);
         if(dataSourceDto == null) {
             dataSourceDto = client.getDataSource(dataSrcIdf.getId(), dataSrcIdf.getVersion());
@@ -227,8 +227,8 @@ public class ParserBolt extends BaseRichBolt {
         return dataSourceDto.getDataSourceId();
     }
 
-    private Parser getParser(IotasMessage iotasMessage) {
-        DataSourceIdentifier dataSrcIdf = new DataSourceIdentifier(iotasMessage.getMake(), iotasMessage.getModel());
+    private Parser getParser(StreamlineMessage message) {
+        DataSourceIdentifier dataSrcIdf = new DataSourceIdentifier(message.getMake(), message.getModel());
         Parser parser = dataSrcIdfToParser.get(dataSrcIdf);
         if (parser == null) {
             ParserInfo parserInfo = client.getParserInfo(dataSrcIdf.getId(), dataSrcIdf.getVersion());
@@ -256,14 +256,14 @@ public class ParserBolt extends BaseRichBolt {
     }
 
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declareStream(this.parsedTuplesStreamId, new Fields(IotasEvent.IOTAS_EVENT));
+        declarer.declareStream(this.parsedTuplesStreamId, new Fields(StreamlineEvent.STREAMLINE_EVENT));
         if (this.unparsedTuplesStreamId != null) {
             declarer.declareStream(this.unparsedTuplesStreamId, new Fields(BYTES_FIELD));
         }
     }
 
     /**
-     * Parser will always receive an IotasMessage, which will have id and version to uniquely identify the datasource
+     * Parser will always receive an StreamlineMessage, which will have id and version to uniquely identify the datasource
      * this message is associated with. This class is just a composite structure to represent that unique datasource identifier.
      */
     private static class DataSourceIdentifier {

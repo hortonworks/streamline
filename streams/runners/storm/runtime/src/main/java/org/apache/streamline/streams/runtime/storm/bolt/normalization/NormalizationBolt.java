@@ -17,9 +17,9 @@
  */
 package org.apache.streamline.streams.runtime.storm.bolt.normalization;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.layout.component.Stream;
 import org.apache.streamline.streams.layout.component.impl.normalization.NormalizationProcessor;
 import org.apache.streamline.streams.layout.component.impl.normalization.NormalizationProcessorJsonBuilder;
@@ -62,16 +62,16 @@ public class NormalizationBolt extends AbstractProcessorBolt {
         normalizationProcessorRuntime.initialize(Collections.<String, Object>emptyMap());
     }
 
-    public void process(Tuple inputTuple, IotasEvent iotasEvent) throws Exception {
-        LOG.debug("Normalizing received IotasEvent: [{}] with tuple: [{}]", iotasEvent, inputTuple);
+    public void process(Tuple inputTuple, StreamlineEvent event) throws Exception {
+        LOG.debug("Normalizing received StreamlineEvent: [{}] with tuple: [{}]", event, inputTuple);
         //todo this bolt will be replaced with custom baseprocessor bolt.
-        IotasEventImpl iotasEventWithStream = new IotasEventImpl(iotasEvent.getFieldsAndValues(), iotasEvent.getDataSourceId(),
-                iotasEvent.getId(), iotasEvent.getHeader(), inputTuple.getSourceStreamId());
-        List<Result> outputEvents = normalizationProcessorRuntime.process(iotasEventWithStream);
+        StreamlineEventImpl eventWithStream = new StreamlineEventImpl(event.getFieldsAndValues(), event.getDataSourceId(),
+                event.getId(), event.getHeader(), inputTuple.getSourceStreamId());
+        List<Result> outputEvents = normalizationProcessorRuntime.process(eventWithStream);
         LOG.debug("Emitting events to collector: [{}]", outputEvents);
         for (Result outputEvent : outputEvents) {
-            for (IotasEvent event : outputEvent.events) {
-                collector.emit(outputEvent.stream, inputTuple, new Values(event));
+            for (StreamlineEvent e : outputEvent.events) {
+                collector.emit(outputEvent.stream, inputTuple, new Values(e));
             }
         }
     }
@@ -79,7 +79,7 @@ public class NormalizationBolt extends AbstractProcessorBolt {
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
         for (Stream stream : normalizationProcessor.getOutputStreams()) {
-            declarer.declareStream(stream.getId(), new Fields(IotasEvent.IOTAS_EVENT));
+            declarer.declareStream(stream.getId(), new Fields(StreamlineEvent.STREAMLINE_EVENT));
         }
     }
 }

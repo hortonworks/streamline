@@ -18,7 +18,7 @@
  */
 package org.apache.streamline.streams.runtime.splitjoin;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
 import org.apache.streamline.streams.layout.Transform;
 import org.apache.streamline.streams.layout.component.impl.splitjoin.StageAction;
@@ -61,7 +61,7 @@ public class StageActionRuntime extends AbstractSplitJoinActionRuntime {
     }
 
     @Override
-    public List<Result> execute(IotasEvent input) {
+    public List<Result> execute(StreamlineEvent input) {
         return transformActionRuntime.execute(input);
     }
 

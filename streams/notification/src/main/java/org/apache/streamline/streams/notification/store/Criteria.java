@@ -22,7 +22,7 @@ import java.util.List;
 
 /**
  * An interface for specifying different query criteria for querying the Notification store.
- * The interface is parameterized on the type of the entity (E.g. Notification, IotasEvent etc).
+ * The interface is parameterized on the type of the entity (E.g. Notification, StreamlineEvent etc).
  */
 public interface Criteria<T> {
 

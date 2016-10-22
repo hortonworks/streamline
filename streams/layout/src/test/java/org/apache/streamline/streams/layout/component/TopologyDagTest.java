@@ -40,9 +40,9 @@ public class TopologyDagTest {
 
     @Test
     public void testAddEdge() throws Exception {
-        Source src = new IotasSource(Collections.singleton(new Stream("f1", "f2")));
-        Sink sink = new IotasSink();
-        Processor processor = new IotasProcessor(Collections.singleton(new Stream("r1")));
+        Source src = new StreamlineSource(Collections.singleton(new Stream("f1", "f2")));
+        Sink sink = new StreamlineSink();
+        Processor processor = new StreamlineProcessor(Collections.singleton(new Stream("r1")));
 
         topology.add(src).add(processor).add(sink);
         topology.addEdge(src, processor);
@@ -64,9 +64,9 @@ public class TopologyDagTest {
 
     @Test
     public void testGetAllEdges() throws Exception {
-        Source src = new IotasSource(Collections.singleton(new Stream("f1", "f2")));
-        Sink sink = new IotasSink();
-        Processor processor = new IotasProcessor(Collections.singleton(new Stream("r1")));
+        Source src = new StreamlineSource(Collections.singleton(new Stream("f1", "f2")));
+        Sink sink = new StreamlineSink();
+        Processor processor = new StreamlineProcessor(Collections.singleton(new Stream("r1")));
 
         topology.add(src).add(processor).add(sink);
         topology.addEdge(src, processor);
@@ -81,9 +81,9 @@ public class TopologyDagTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidSource() throws Exception {
-        Source src = new IotasSource(Collections.singleton(new Stream("f1", "f2")));
-        Sink sink = new IotasSink();
-        Processor processor = new IotasProcessor(Collections.singleton(new Stream("r1")));
+        Source src = new StreamlineSource(Collections.singleton(new Stream("f1", "f2")));
+        Sink sink = new StreamlineSink();
+        Processor processor = new StreamlineProcessor(Collections.singleton(new Stream("r1")));
 
         topology.addEdge(src, processor);
     }
@@ -91,9 +91,9 @@ public class TopologyDagTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidSink() throws Exception {
-        Source src = new IotasSource(Collections.singleton(new Stream("f1", "f2")));
-        Sink sink = new IotasSink();
-        Processor processor = new IotasProcessor(Collections.singleton(new Stream("r1")));
+        Source src = new StreamlineSource(Collections.singleton(new Stream("f1", "f2")));
+        Sink sink = new StreamlineSink();
+        Processor processor = new StreamlineProcessor(Collections.singleton(new Stream("r1")));
 
         topology.add(src);
         topology.addEdge(src, processor);
@@ -101,9 +101,9 @@ public class TopologyDagTest {
 
     @Test
     public void testRemoveEdge() throws Exception {
-        Source src = new IotasSource(Collections.singleton(new Stream("f1", "f2")));
-        Sink sink = new IotasSink();
-        Processor processor = new IotasProcessor(Collections.singleton(new Stream("r1")));
+        Source src = new StreamlineSource(Collections.singleton(new Stream("f1", "f2")));
+        Sink sink = new StreamlineSink();
+        Processor processor = new StreamlineProcessor(Collections.singleton(new Stream("r1")));
 
         topology.add(src).add(processor).add(sink);
         topology.addEdge(src, processor);
@@ -121,9 +121,9 @@ public class TopologyDagTest {
         Stream stream1 = new Stream("f1", "f2");
         Stream stream2 = new Stream("f3", "f4");
         Stream stream3 = new Stream("r1");
-        Source src = new IotasSource(Sets.newHashSet(stream1, stream2));
-        Sink sink = new IotasSink();
-        Processor processor = new IotasProcessor(Collections.singleton(stream3));
+        Source src = new StreamlineSource(Sets.newHashSet(stream1, stream2));
+        Sink sink = new StreamlineSink();
+        Processor processor = new StreamlineProcessor(Collections.singleton(stream3));
 
         topology.add(src).add(processor).add(sink);
         topology.addEdge(src, processor, stream2.getId());
@@ -139,10 +139,10 @@ public class TopologyDagTest {
 
     @Test
     public void testTopOrder() {
-        Source src1 = new IotasSource(Collections.singleton(new Stream("f1", "f2")));
-        Source src2 = new IotasSource(Collections.singleton(new Stream("f1", "f2")));
-        Sink sink = new IotasSink();
-        Processor processor = new IotasProcessor(Collections.singleton(new Stream("r1")));
+        Source src1 = new StreamlineSource(Collections.singleton(new Stream("f1", "f2")));
+        Source src2 = new StreamlineSource(Collections.singleton(new Stream("f1", "f2")));
+        Sink sink = new StreamlineSink();
+        Processor processor = new StreamlineProcessor(Collections.singleton(new Stream("r1")));
 
         topology.add(src1).add(src2).add(processor).add(sink);
         topology.addEdge(src1, processor);
@@ -156,9 +156,9 @@ public class TopologyDagTest {
 
     @Test(expected =  IllegalStateException.class)
     public void testTopOrderCycle() {
-        Source src1 = new IotasSource(Collections.singleton(new Stream("f1", "f2")));
-        Processor processor1 = new IotasProcessor(Collections.singleton(new Stream("r1")));
-        Processor processor2 = new IotasProcessor(Collections.singleton(new Stream("r1")));
+        Source src1 = new StreamlineSource(Collections.singleton(new Stream("f1", "f2")));
+        Processor processor1 = new StreamlineProcessor(Collections.singleton(new Stream("r1")));
+        Processor processor2 = new StreamlineProcessor(Collections.singleton(new Stream("r1")));
 
         topology.add(src1).add(processor1).add(processor2);
         topology.addEdge(src1, processor1);

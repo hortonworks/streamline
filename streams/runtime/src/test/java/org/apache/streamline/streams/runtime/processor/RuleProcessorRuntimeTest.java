@@ -2,7 +2,7 @@ package org.apache.streamline.streams.runtime.processor;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.exception.ProcessingException;
 import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
 import org.apache.streamline.streams.layout.component.rule.Rule;
@@ -39,16 +39,16 @@ public class RuleProcessorRuntimeTest {
     Rule mockRule2;
 
     @Mocked
-    IotasEvent event1;
+    StreamlineEvent event1;
 
     @Mocked
-    IotasEvent event2;
+    StreamlineEvent event2;
 
     @Mocked
-    IotasEvent event3;
+    StreamlineEvent event3;
 
     @Mocked
-    IotasEvent event4;
+    StreamlineEvent event4;
 
     @Before
     public void setUp() {

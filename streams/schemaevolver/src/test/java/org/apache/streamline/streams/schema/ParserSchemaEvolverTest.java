@@ -7,7 +7,7 @@ import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.registries.parser.ParserInfo;
 import org.apache.streamline.streams.catalog.DataFeed;
 import org.apache.streamline.streams.catalog.service.CatalogService;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
 import org.apache.streamline.streams.layout.component.Stream;
 import org.apache.streamline.streams.schema.exception.BadComponentConfigException;
@@ -51,7 +51,7 @@ public class ParserSchemaEvolverTest {
         Map<String, Object> componentConfigMap = buildParserComponentConfig();
         String componentConfig = objectMapper.writeValueAsString(componentConfigMap);
 
-        Set<Stream> streams = evolver.apply(componentConfig, new Stream(IotasEventImpl.DEFAULT_SOURCE_STREAM, ""));
+        Set<Stream> streams = evolver.apply(componentConfig, new Stream(StreamlineEventImpl.DEFAULT_SOURCE_STREAM, ""));
         assertEquals(streams.size(), 1);
 
         String expectedStreamName = (String) ((Map<String, Object>) componentConfigMap.get("config"))
@@ -102,7 +102,7 @@ public class ParserSchemaEvolverTest {
         Map<String, Object> componentConfigMap = buildParserComponentConfigForDataSourceId();
         String componentConfig = objectMapper.writeValueAsString(componentConfigMap);
 
-        Set<Stream> streams = evolver.apply(componentConfig, new Stream(IotasEventImpl.DEFAULT_SOURCE_STREAM, ""));
+        Set<Stream> streams = evolver.apply(componentConfig, new Stream(StreamlineEventImpl.DEFAULT_SOURCE_STREAM, ""));
         assertEquals(streams.size(), 1);
 
         String expectedStreamName = (String) ((Map<String, Object>) componentConfigMap.get("config"))

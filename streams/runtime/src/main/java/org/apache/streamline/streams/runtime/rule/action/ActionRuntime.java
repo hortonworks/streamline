@@ -19,7 +19,7 @@
 
 package org.apache.streamline.streams.runtime.rule.action;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
 
 import java.io.Serializable;
@@ -41,7 +41,7 @@ public interface ActionRuntime extends Serializable {
     void setActionRuntimeContext(ActionRuntimeContext actionRuntimeContext);
 
     /**
-     * This is invoked before {@link #execute(IotasEvent)} method is invoked. Any resources can be initialized which are used in
+     * This is invoked before {@link #execute(StreamlineEvent)} method is invoked. Any resources can be initialized which are used in
      * processing the received events
      *
      * @param config configuration key/values which could have been configured at action/processor/topology level.
@@ -51,10 +51,10 @@ public interface ActionRuntime extends Serializable {
     /**
      * Execute the current action and return a {@link List} of {@link Result}s.
      *
-     * @param input the input IotasEvent
+     * @param input the input StreamlineEvent
      * @return the results
      */
-    List<Result> execute(IotasEvent input);
+    List<Result> execute(StreamlineEvent input);
 
 
     /**

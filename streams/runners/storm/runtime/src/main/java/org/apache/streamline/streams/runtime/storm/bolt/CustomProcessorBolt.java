@@ -4,10 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.common.util.ProxyUtil;
 import org.apache.streamline.common.util.Utils;
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
 import org.apache.streamline.streams.catalog.CatalogRestClient;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.exception.ProcessingException;
 import org.apache.streamline.streams.layout.storm.StormTopologyLayoutConstants;
 import org.apache.streamline.streams.runtime.CustomProcessorRuntime;
@@ -185,18 +185,18 @@ public class CustomProcessorBolt extends BaseRichBolt {
     @Override
     public void execute (Tuple input) {
         try {
-            final Object tupleField = input.getValueByField(IotasEvent.IOTAS_EVENT);
-            if (tupleField instanceof IotasEvent) {
-                IotasEvent iotasEvent = (IotasEvent) tupleField;
-                for (Result result: customProcessorRuntime.process(new IotasEventImpl(iotasEvent.getFieldsAndValues(), iotasEvent.getDataSourceId(), iotasEvent
-                        .getId(), iotasEvent.getHeader(), input.getSourceStreamId()))) {
-                    for (IotasEvent event: result.events) {
-                        collector.emit(result.stream, input, new Values(event));
+            final Object tupleField = input.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
+            if (tupleField instanceof StreamlineEvent) {
+                StreamlineEvent event = (StreamlineEvent) tupleField;
+                for (Result result: customProcessorRuntime.process(new StreamlineEventImpl(event.getFieldsAndValues(), event.getDataSourceId(), event
+                        .getId(), event.getHeader(), input.getSourceStreamId()))) {
+                    for (StreamlineEvent e: result.events) {
+                        collector.emit(result.stream, input, new Values(e));
                     }
                 }
             } else {
                 LOG.debug("Invalid tuple received. Tuple disregarded and not sent to custom processor for processing.\n\tTuple [{}]." +
-                        "\n\tIotasEvent [{}].", input, tupleField);
+                        "\n\tStreamlineEvent [{}].", input, tupleField);
             }
             collector.ack(input);
         } catch (ProcessingException e) {
@@ -217,7 +217,7 @@ public class CustomProcessorBolt extends BaseRichBolt {
             throw new RuntimeException(message);
         }
         for (String outputStream: outputSchema.keySet()) {
-            declarer.declareStream(outputStream, new Fields(IotasEvent.IOTAS_EVENT));
+            declarer.declareStream(outputStream, new Fields(StreamlineEvent.STREAMLINE_EVENT));
         }
     }
 

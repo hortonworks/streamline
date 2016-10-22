@@ -20,7 +20,7 @@ package org.apache.streamline.streams.runtime.normalization;
 
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.common.exception.ParserException;
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
 import org.apache.streamline.streams.exception.ProcessingException;
 import org.apache.streamline.streams.layout.component.Stream;
@@ -52,19 +52,19 @@ public class NormalizationProcessorRuntime implements ProcessorRuntime {
     }
 
     /*
-     * todo: It should receive input Stream also and generate output Stream along with IotasEvent. This support should
+     * todo: It should receive input Stream also and generate output Stream along with StreamlineEvent. This support should
      * come from processor framework, will add later.
      */
     @Override
-    public List<Result> process(IotasEvent iotasEvent) throws ProcessingException {
-        String currentStreamId = iotasEvent.getSourceStream() != null ? iotasEvent.getSourceStream() : NormalizationProcessor.DEFAULT_STREAM_ID;
+    public List<Result> process(StreamlineEvent event) throws ProcessingException {
+        String currentStreamId = event.getSourceStream() != null ? event.getSourceStream() : NormalizationProcessor.DEFAULT_STREAM_ID;
         NormalizationRuntime normalizationRuntime = schemasWithNormalizationRuntime.get(currentStreamId);
         LOG.debug("Normalization runtime for this stream [{}]", normalizationRuntime);
 
-        IotasEvent outputEvent = iotasEvent;
+        StreamlineEvent outputEvent = event;
         if (normalizationRuntime != null) {
             try {
-                outputEvent =  normalizationRuntime.execute(iotasEvent);
+                outputEvent =  normalizationRuntime.execute(event);
                 schemaValidator.validate(outputEvent.getFieldsAndValues());
             } catch (NormalizationException e) {
                 throw new RuntimeException(e);

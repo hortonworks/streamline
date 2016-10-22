@@ -18,7 +18,7 @@
  */
 package org.apache.streamline.streams.runtime.splitjoin;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
 import org.apache.streamline.streams.layout.component.impl.splitjoin.SplitAction;
 import org.apache.streamline.streams.layout.component.rule.action.Action;
@@ -68,13 +68,13 @@ public class SplitActionRuntime extends AbstractSplitJoinActionRuntime {
     }
 
     @Override
-    public List<Result> execute(IotasEvent input) {
+    public List<Result> execute(StreamlineEvent input) {
         // based on split-action configuration, generate events for respective streams
         final List<Result> results = splitter.splitEvent(input, getOutputStreams());
 
         // check whether the split event has all the required split/join info.
         for (Result result : results) {
-            for (IotasEvent event : result.events) {
+            for (StreamlineEvent event : result.events) {
                 checkGroupIdPartitionId(event);
             }
         }
@@ -82,7 +82,7 @@ public class SplitActionRuntime extends AbstractSplitJoinActionRuntime {
         return results;
     }
 
-    private void checkGroupIdPartitionId(IotasEvent event) {
+    private void checkGroupIdPartitionId(StreamlineEvent event) {
         final Map<String, Object> header = event.getHeader();
 
         if (header == null) {

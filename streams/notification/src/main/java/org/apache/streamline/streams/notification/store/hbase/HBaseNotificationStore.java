@@ -18,14 +18,14 @@
 
 package org.apache.streamline.streams.notification.store.hbase;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.notification.Notification;
 import org.apache.streamline.streams.notification.store.Criteria;
 import org.apache.streamline.streams.notification.store.NotificationStore;
 import org.apache.streamline.streams.notification.store.NotificationStoreException;
 import org.apache.streamline.streams.notification.store.hbase.mappers.DatasourceNotificationMapper;
 import org.apache.streamline.streams.notification.store.hbase.mappers.DatasourceStatusNotificationMapper;
-import org.apache.streamline.streams.notification.store.hbase.mappers.IotasEventMapper;
+import org.apache.streamline.streams.notification.store.hbase.mappers.StreamlineEventMapper;
 import org.apache.streamline.streams.notification.store.hbase.mappers.NotificationIndexMapper;
 import org.apache.streamline.streams.notification.store.hbase.mappers.NotificationMapper;
 import org.apache.streamline.streams.notification.store.hbase.mappers.NotifierNotificationMapper;
@@ -78,7 +78,7 @@ public class HBaseNotificationStore implements NotificationStore {
     /**
      * The mapper for converting iotas events
      */
-    private final IotasEventMapper iotaseventMapper;
+    private final StreamlineEventMapper eventMapper;
 
     /**
      * The index mappers for Notification secondary indexes
@@ -118,8 +118,8 @@ public class HBaseNotificationStore implements NotificationStore {
             notificationMapper = new NotificationMapper(notificationIndexMappers);
             tables.put(notificationMapper.getTableName(), tlHTable(notificationMapper.getTableName()));
 
-            iotaseventMapper = new IotasEventMapper();
-            tables.put(iotaseventMapper.getTableName(), tlHTable(iotaseventMapper.getTableName()));
+            eventMapper = new StreamlineEventMapper();
+            tables.put(eventMapper.getTableName(), tlHTable(eventMapper.getTableName()));
 
             hBaseScanConfigBuilder = new HBaseScanConfigBuilder();
             hBaseScanConfigBuilder.addMappers(Notification.class, notificationIndexMappers);
@@ -175,21 +175,21 @@ public class HBaseNotificationStore implements NotificationStore {
     }
 
     @Override
-    public IotasEvent getEvent(String eventId) {
+    public StreamlineEvent getEvent(String eventId) {
         try {
-            String tableName = iotaseventMapper.getTableName();
+            String tableName = eventMapper.getTableName();
             LOG.debug("getting event with eventId {} from table {}", eventId, tableName);
             Get get = new Get(eventId.getBytes(StandardCharsets.UTF_8));
             Result result = tables.get(tableName).get().get(get);
-            return result.isEmpty() ? null : iotaseventMapper.entity(result);
+            return result.isEmpty() ? null : eventMapper.entity(result);
         } catch (IOException ex) {
             throw new NotificationStoreException("Error getting event id: " + eventId, ex);
         }
     }
 
     @Override
-    public List<IotasEvent> getEvents(List<String> eventIds) {
-        List<IotasEvent> events = new ArrayList<>();
+    public List<StreamlineEvent> getEvents(List<String> eventIds) {
+        List<StreamlineEvent> events = new ArrayList<>();
         for (String eventId : eventIds) {
             events.add(getEvent(eventId));
         }

@@ -19,7 +19,7 @@ package org.apache.streamline.streams.runtime.normalization;
 
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.common.exception.ParserException;
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.layout.component.impl.normalization.FieldValueGenerator;
 import org.apache.streamline.streams.runtime.script.GroovyScript;
 import org.apache.streamline.streams.runtime.script.engine.GroovyScriptEngine;
@@ -30,7 +30,7 @@ import javax.script.ScriptException;
 
 /**
  * This class represents runtime component of {@link FieldValueGenerator}. It generates an output field with a value.
- * That value can be either static value or computed dynamically by running the given script with received IotasEvent.
+ * That value can be either static value or computed dynamically by running the given script with received StreamlineEvent.
  *
  */
 public class FieldValueGeneratorRuntime {
@@ -44,17 +44,17 @@ public class FieldValueGeneratorRuntime {
         this.field = field;
     }
 
-    public Object generateValue(IotasEvent iotasEvent) throws NormalizationException {
+    public Object generateValue(StreamlineEvent event) throws NormalizationException {
         if(value != null) {
-            LOG.debug("Returning default static value [{}] for [{}]", value, iotasEvent);
+            LOG.debug("Returning default static value [{}] for [{}]", value, event);
             return value;
         }
 
         try {
-            LOG.debug("Running script [{}] with input [{}]", groovyScript, iotasEvent);
-            Object evaluatedValue = groovyScript.evaluate(iotasEvent);
+            LOG.debug("Running script [{}] with input [{}]", groovyScript, event);
+            Object evaluatedValue = groovyScript.evaluate(event);
 
-            LOG.debug("Computed value is {}. field: [{}] script: [{}] input: [{}]", value, field, groovyScript, iotasEvent);
+            LOG.debug("Computed value is {}. field: [{}] script: [{}] input: [{}]", value, field, groovyScript, event);
             Schema.Type type = field.getType();
             if(!type.valueOfSameType(evaluatedValue)) {
                 throw new NormalizationException("Computed value is not of expected type: "+ type);

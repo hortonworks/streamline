@@ -24,12 +24,9 @@ import org.apache.streamline.streams.layout.component.rule.expression.Expression
 import org.apache.streamline.streams.layout.component.rule.expression.FieldExpression;
 import org.apache.streamline.streams.layout.component.rule.expression.GroupBy;
 import org.apache.streamline.streams.runtime.rule.condition.expression.StormSqlExpression;
-import org.apache.streamline.streams.runtime.rule.sql.RulesDataSourcesProvider;
 import org.apache.streamline.streams.runtime.rule.sql.SqlEngine;
 
-import static org.apache.streamline.streams.runtime.rule.condition.expression.StormSqlExpression.RULE_SCHEMA;
-import static org.apache.streamline.streams.runtime.rule.condition.expression.StormSqlExpression.RULE_TABLE;
-import static org.apache.streamline.streams.runtime.rule.sql.SqlScript.ValuesToIotasEventConverter;
+import static org.apache.streamline.streams.runtime.rule.sql.SqlScript.ValuesToStreamlineEventConverter;
 
 import org.apache.streamline.streams.runtime.rule.sql.SqlScript;
 import org.slf4j.Logger;
@@ -79,7 +76,7 @@ public class SqlRuleRuntimeBuilder extends AbstractRuleRuntimeBuilder {
     public void buildScript() {
         sqlScript = new SqlScript(stormSqlExpression, sqlEngine);
         LOG.info("Built SqlScript {}", sqlScript);
-        ValuesToIotasEventConverter valuesConverter = new ValuesToIotasEventConverter(sqlScript.getOutputFields());
+        SqlScript.ValuesToStreamlineEventConverter valuesConverter = new ValuesToStreamlineEventConverter(sqlScript.getOutputFields());
         sqlScript.setValuesConverter(valuesConverter);
         LOG.info("valuesConverter {}", valuesConverter);
     }

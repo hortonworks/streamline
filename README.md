@@ -8,13 +8,13 @@ From command line execute the following commands:
 `mvn clean install`  
 `cd webservice`  
 `mvn package`  
-`java -cp target/webservice-0.1.0-SNAPSHOT.jar org.apache.streamline.webservice.IotasApplication server conf/iotas-dev.yaml`
+`java -cp target/webservice-0.1.0-SNAPSHOT.jar org.apache.streamline.webservice.StreamlineApplication server conf/iotas-dev.yaml`
 
 This should start the webserver on localhost port 8080. If you are running storm on the same host you may get 
 `java.net.BindException: Address already in use` in which case you should modify `server` section of iotas.yaml.
 
 ##Intellij
-`Run -> Edit Configuration -> Application -> IotasApplication` in the `Program argument section` add `server $IOTAS-HOME/webservice/conf/iotas.yaml`
+`Run -> Edit Configuration -> Application -> StreamlineApplication` in the `Program argument section` add `server $IOTAS-HOME/webservice/conf/iotas.yaml`
 
 Same config can be used to start debugging.
 
@@ -28,7 +28,7 @@ Please see `bootstrap.sh` which is just bunch of curl commands in case you want 
 First you need to populate your kafka topic, if you have not done so create your kafka topic by executing    
 `kafka-topics.sh --create --topic nest-topic --zookeeper localhost:2181 --replication-factor 1 --partitions 3`  
 
-Then run the device simulator CLI to post some sample `IotasMessage` containing nest data to your kafka topic.  
+Then run the device simulator CLI to post some sample `StreamlineMessage` containing nest data to your kafka topic.
 `cd $IOTAS-HOME`  
 `java -cp simulator/target/simulator-0.1.0-SNAPSHOT.jar org.apache.streamline.simulator.CLI -b localhost:9092 -t nest-topic -f simulator/src/main/resources/nest-iotas-messages`
 
@@ -66,7 +66,7 @@ Before starting hbase, put the below hbase-site.xml in the hbase config director
 </configuration>
   ```
 
-Now you need to create HBase tables where the IotasEvent and Notifications will be stored.
+Now you need to create HBase tables where the StreamlineEvent and Notifications will be stored.
   
 `hbase shell`
 

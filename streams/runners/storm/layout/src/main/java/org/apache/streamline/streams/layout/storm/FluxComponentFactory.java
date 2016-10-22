@@ -1,7 +1,7 @@
 package org.apache.streamline.streams.layout.storm;
 
 import com.google.common.collect.ImmutableMap;
-import org.apache.streamline.streams.layout.component.IotasComponent;
+import org.apache.streamline.streams.layout.component.StreamlineComponent;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,12 +32,12 @@ class FluxComponentFactory {
         providerMap = builder.build();
     }
 
-    FluxComponent getFluxComponent(IotasComponent iotasComponent) {
-        Provider<FluxComponent> provider = providerMap.get(iotasComponent.getType());
+    FluxComponent getFluxComponent(StreamlineComponent component) {
+        Provider<FluxComponent> provider = providerMap.get(component.getType());
         if (provider == null) {
-            throw new IllegalArgumentException("Flux component provider is not registered for " + iotasComponent.getType());
+            throw new IllegalArgumentException("Flux component provider is not registered for " + component.getType());
         }
-        return provider.create(iotasComponent);
+        return provider.create(component);
     }
 
     private void createProviders(ImmutableMap.Builder<String, Provider<FluxComponent>> builder) {
@@ -56,7 +56,7 @@ class FluxComponentFactory {
     private Provider<FluxComponent> provider(final Class<? extends FluxComponent> clazz) {
         return new Provider<FluxComponent>() {
             @Override
-            public FluxComponent create(IotasComponent component) {
+            public FluxComponent create(StreamlineComponent component) {
                 try {
                     Constructor<? extends FluxComponent> constructor =
                             ConstructorUtils.getAccessibleConstructor(clazz, component.getClass());
@@ -73,6 +73,6 @@ class FluxComponentFactory {
     }
 
     private interface Provider<T> {
-        T create(IotasComponent component);
+        T create(StreamlineComponent component);
     }
 }

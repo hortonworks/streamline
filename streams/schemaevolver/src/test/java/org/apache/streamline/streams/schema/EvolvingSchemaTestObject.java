@@ -1,7 +1,7 @@
 package org.apache.streamline.streams.schema;
 
 import org.apache.streamline.common.Schema;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.layout.component.Stream;
 
 /**
@@ -20,6 +20,6 @@ public class EvolvingSchemaTestObject {
         schemaBuilder.field(new Schema.Field("field2", Schema.Type.LONG));
         schemaBuilder.field(new Schema.Field("field3", Schema.Type.STRING));
 
-        return new Stream(IotasEventImpl.DEFAULT_SOURCE_STREAM, schemaBuilder.build());
+        return new Stream(StreamlineEventImpl.DEFAULT_SOURCE_STREAM, schemaBuilder.build());
     }
 }

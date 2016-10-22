@@ -18,7 +18,7 @@
  */
 package org.apache.streamline.streams.runtime.transform;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.layout.Transform;
 import org.apache.streamline.streams.layout.component.rule.action.transform.EnrichmentTransform;
 import org.apache.streamline.streams.layout.component.rule.action.transform.TransformDataProvider;
@@ -52,14 +52,14 @@ public class EnrichmentTransformRuntime implements TransformRuntime {
     }
 
     @Override
-    public List<IotasEvent> execute(IotasEvent iotasEvent) {
+    public List<StreamlineEvent> execute(StreamlineEvent event) {
         List<String> fieldsToBeEnriched = enrichmentTransform.getFieldsToBeEnriched();
-        Map<String, Object> fieldsAndValues = iotasEvent.getFieldsAndValues();
-        Map<String, Object> auxiliaryFieldsAndValues = iotasEvent.getAuxiliaryFieldsAndValues();
+        Map<String, Object> fieldsAndValues = event.getFieldsAndValues();
+        Map<String, Object> auxiliaryFieldsAndValues = event.getAuxiliaryFieldsAndValues();
         Map<String, Object> enrichments = (Map<String, Object>) auxiliaryFieldsAndValues.get(EnrichmentTransform.ENRICHMENTS_FIELD_NAME);
         if (enrichments == null) {
             enrichments = new HashMap<>();
-            iotasEvent.addAuxiliaryFieldAndValue(EnrichmentTransform.ENRICHMENTS_FIELD_NAME, enrichments);
+            event.addAuxiliaryFieldAndValue(EnrichmentTransform.ENRICHMENTS_FIELD_NAME, enrichments);
         }
 
         for (String fieldName : fieldsToBeEnriched) {
@@ -72,7 +72,7 @@ public class EnrichmentTransformRuntime implements TransformRuntime {
                 log.warn("Value in input event for key [{}] is null", fieldName);
             }
         }
-        return Collections.singletonList(iotasEvent);
+        return Collections.singletonList(event);
     }
 
     public static class Factory implements RuntimeService.Factory<TransformRuntime, Transform> {

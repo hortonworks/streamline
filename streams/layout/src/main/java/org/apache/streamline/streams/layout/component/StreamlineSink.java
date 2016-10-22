@@ -20,7 +20,7 @@ package org.apache.streamline.streams.layout.component;
 /**
  * The base implementation of a {@link Sink} that all Iotas sinks should extend.
  */
-public class IotasSink extends IotasComponent implements Sink {
+public class StreamlineSink extends StreamlineComponent implements Sink {
     @Override
     public void accept(TopologyDagVisitor visitor) {
         visitor.visit(this);
@@ -28,6 +28,6 @@ public class IotasSink extends IotasComponent implements Sink {
 
     @Override
     public String toString() {
-        return "IotasSink{} " + super.toString();
+        return "StreamlineSink{} " + super.toString();
     }
 }

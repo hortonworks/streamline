@@ -1,9 +1,9 @@
 package org.apache.streamline.streams.layout.component.impl;
 
-import org.apache.streamline.streams.layout.component.IotasSource;
+import org.apache.streamline.streams.layout.component.StreamlineSource;
 import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
 
-public class KafkaSource extends IotasSource {
+public class KafkaSource extends StreamlineSource {
     private static final String ZK_URL = "zkUrl";
 
     public KafkaSource() {}

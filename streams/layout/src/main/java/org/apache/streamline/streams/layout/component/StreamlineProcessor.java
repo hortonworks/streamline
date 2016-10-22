@@ -24,18 +24,18 @@ import java.util.Set;
 /**
  * The base implementation of a {@link Processor} that all Iotas processors should extend.
  */
-public class IotasProcessor extends IotasComponent implements Processor {
+public class StreamlineProcessor extends StreamlineComponent implements Processor {
     private final Set<Stream> outputStreams = new HashSet<>();
 
-    public IotasProcessor() {
+    public StreamlineProcessor() {
         this(Collections.EMPTY_SET);
     }
 
-    public IotasProcessor(Set<Stream> outputStreams) {
+    public StreamlineProcessor(Set<Stream> outputStreams) {
         addOutputStreams(outputStreams);
     }
 
-    public IotasProcessor(IotasProcessor other) {
+    public StreamlineProcessor(StreamlineProcessor other) {
         super(other);
         addOutputStreams(other.getOutputStreams());
     }
@@ -69,7 +69,7 @@ public class IotasProcessor extends IotasComponent implements Processor {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
 
-        IotasProcessor processor = (IotasProcessor) o;
+        StreamlineProcessor processor = (StreamlineProcessor) o;
 
         return outputStreams != null ? outputStreams.equals(processor.outputStreams) : processor.outputStreams == null;
 
@@ -89,7 +89,7 @@ public class IotasProcessor extends IotasComponent implements Processor {
 
     @Override
     public String toString() {
-        return "IotasProcessor{" +
+        return "StreamlineProcessor{" +
                 "outputStreams=" + outputStreams +
                 '}'+super.toString();
     }

@@ -24,7 +24,7 @@ import java.util.List;
 
 /**
  * Maps the different entities like Notification,
- * IotasEvent, Rule etc into one or more HBase tables.
+ * StreamlineEvent, Rule etc into one or more HBase tables.
  */
 public interface Mapper<T> {
 

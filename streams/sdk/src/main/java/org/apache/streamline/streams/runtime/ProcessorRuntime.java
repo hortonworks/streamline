@@ -1,6 +1,6 @@
 package org.apache.streamline.streams.runtime;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
 import org.apache.streamline.streams.exception.ProcessingException;
 
@@ -12,12 +12,12 @@ import java.util.Map;
  */
 public interface ProcessorRuntime {
      /**
-     * Process the {@link IotasEvent} and throw a {@link ProcessingException} if an error arises during processing
-     * @param iotasEvent to be processed
+     * Process the {@link StreamlineEvent} and throw a {@link ProcessingException} if an error arises during processing
+     * @param event to be processed
      * @return
      * @throws ProcessingException
      */
-    List<Result> process (IotasEvent iotasEvent) throws ProcessingException;
+    List<Result> process (StreamlineEvent event) throws ProcessingException;
 
     /**
      * Initialize any necessary resources needed for the implementation

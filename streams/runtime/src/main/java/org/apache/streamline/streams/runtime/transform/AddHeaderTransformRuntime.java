@@ -1,8 +1,8 @@
 package org.apache.streamline.streams.runtime.transform;
 
 
-import org.apache.streamline.streams.IotasEvent;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.StreamlineEvent;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.layout.Transform;
 import org.apache.streamline.streams.layout.component.rule.action.transform.AddHeaderTransform;
 import org.apache.streamline.streams.runtime.RuntimeService;
@@ -31,7 +31,7 @@ public class AddHeaderTransformRuntime implements TransformRuntime {
     }
 
     @Override
-    public List<IotasEvent> execute(IotasEvent input) {
+    public List<StreamlineEvent> execute(StreamlineEvent input) {
         Map<String, Object> header = new HashMap<>();
         if(addHeaderTransform.getFixedHeader() != null) {
             header.putAll(addHeaderTransform.getFixedHeader());
@@ -39,8 +39,8 @@ public class AddHeaderTransformRuntime implements TransformRuntime {
         header.put(HEADER_FIELD_DATASOURCE_IDS, Collections.singletonList(input.getDataSourceId()));
         header.put(HEADER_FIELD_EVENT_IDS, Collections.singletonList(input.getId()));
         header.put(HEADER_FIELD_TIMESTAMP, System.currentTimeMillis());
-        return Collections.<IotasEvent>singletonList(
-                new IotasEventImpl(input.getFieldsAndValues(), input.getDataSourceId(), header));
+        return Collections.<StreamlineEvent>singletonList(
+                new StreamlineEventImpl(input.getFieldsAndValues(), input.getDataSourceId(), header));
     }
 
     @Override

@@ -8,9 +8,9 @@ import org.apache.streamline.common.Config;
 import org.apache.streamline.streams.layout.component.Component;
 import org.apache.streamline.streams.layout.component.Edge;
 import org.apache.streamline.streams.layout.component.InputComponent;
-import org.apache.streamline.streams.layout.component.IotasProcessor;
-import org.apache.streamline.streams.layout.component.IotasSink;
-import org.apache.streamline.streams.layout.component.IotasSource;
+import org.apache.streamline.streams.layout.component.StreamlineProcessor;
+import org.apache.streamline.streams.layout.component.StreamlineSink;
+import org.apache.streamline.streams.layout.component.StreamlineSource;
 import org.apache.streamline.streams.layout.component.OutputComponent;
 import org.apache.streamline.streams.layout.component.StreamGrouping;
 import org.apache.streamline.streams.layout.component.TopologyDag;
@@ -55,21 +55,21 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
     }
 
     @Override
-    public void visit(IotasSource iotasSource) {
+    public void visit(StreamlineSource source) {
         keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_SPOUTS,
-                getYamlComponents(fluxComponentFactory.getFluxComponent(iotasSource), iotasSource)));
+                getYamlComponents(fluxComponentFactory.getFluxComponent(source), source)));
     }
 
     @Override
-    public void visit(IotasSink iotasSink) {
+    public void visit(StreamlineSink sink) {
         keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_BOLTS,
-                getYamlComponents(fluxComponentFactory.getFluxComponent(iotasSink), iotasSink)));
+                getYamlComponents(fluxComponentFactory.getFluxComponent(sink), sink)));
     }
 
     @Override
-    public void visit(IotasProcessor iotasProcessor) {
+    public void visit(StreamlineProcessor processor) {
         keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_BOLTS,
-                getYamlComponents(fluxComponentFactory.getFluxComponent(iotasProcessor), iotasProcessor)));
+                getYamlComponents(fluxComponentFactory.getFluxComponent(processor), processor)));
     }
 
     @Override

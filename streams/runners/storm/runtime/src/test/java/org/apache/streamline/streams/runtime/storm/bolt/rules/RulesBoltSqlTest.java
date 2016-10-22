@@ -17,8 +17,8 @@
  */
 package org.apache.streamline.streams.runtime.storm.bolt.rules;
 
-import org.apache.streamline.streams.IotasEvent;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.StreamlineEvent;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.runtime.rule.RulesDependenciesFactory;
 import mockit.Expectations;
 import mockit.VerificationsInOrder;
@@ -32,14 +32,14 @@ import java.util.HashMap;
 
 @RunWith(JMockit.class)
 public class RulesBoltSqlTest extends RulesBoltTest {
-    private static final IotasEvent IOTAS_EVENT = new IotasEventImpl(new HashMap<String, Object>() {{
+    private static final StreamlineEvent IOTAS_EVENT = new StreamlineEventImpl(new HashMap<String, Object>() {{
         put("humidity", 51);
         put("temperature", 101);
         put("field3", 23);
         put("devicename", "nestdevice");
     }}, "dataSrcId_3", "3");
 
-    private static final IotasEvent PROJECTED_IOTAS_EVENT = new IotasEventImpl(new HashMap<String, Object>() {{
+    private static final StreamlineEvent PROJECTED_IOTAS_EVENT = new StreamlineEventImpl(new HashMap<String, Object>() {{
         put("humidity", 51);
         put("INCR(humidity, 10)", 61);
         put("UPPER(devicename)", "NESTDEVICE");
@@ -54,7 +54,7 @@ public class RulesBoltSqlTest extends RulesBoltTest {
     @Test
     public void test_ProjectedValues() throws Exception {
         new Expectations() {{
-            mockTuple.getValueByField(IotasEvent.IOTAS_EVENT);
+            mockTuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
             result = IOTAS_EVENT;
             mockTuple.getSourceStreamId();
             result = "default";
@@ -71,7 +71,7 @@ public class RulesBoltSqlTest extends RulesBoltTest {
             mockOutputCollector.emit(ruleProcessorRuntime.getRulesRuntime().get(1).getStreams().iterator().next(),
                                      mockTuple, actualValues = withCapture());
             times = 1;    // rule 2 triggers
-            Assert.assertEquals(PROJECTED_IOTAS_EVENT.getFieldsAndValues(), ((IotasEvent)actualValues.get(0)).getFieldsAndValues());
+            Assert.assertEquals(PROJECTED_IOTAS_EVENT.getFieldsAndValues(), ((StreamlineEvent)actualValues.get(0)).getFieldsAndValues());
             mockOutputCollector.ack(mockTuple);
             times = 1;
         }};

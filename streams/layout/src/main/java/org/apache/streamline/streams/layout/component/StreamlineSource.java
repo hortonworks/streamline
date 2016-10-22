@@ -24,14 +24,14 @@ import java.util.Set;
 /**
  * The base implementation of a {@link Source} that all Iotas sources should extend.
  */
-public class IotasSource extends IotasComponent implements Source {
+public class StreamlineSource extends StreamlineComponent implements Source {
     private final Set<Stream> outputStreams = new HashSet<>();
 
-    public IotasSource() {
+    public StreamlineSource() {
         this(Collections.EMPTY_SET);
     }
 
-    public IotasSource(Set<Stream> outputStreams) {
+    public StreamlineSource(Set<Stream> outputStreams) {
         addOutputStreams(outputStreams);
     }
 
@@ -54,7 +54,7 @@ public class IotasSource extends IotasComponent implements Source {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
 
-        IotasSource that = (IotasSource) o;
+        StreamlineSource that = (StreamlineSource) o;
 
         return outputStreams != null ? outputStreams.equals(that.outputStreams) : that.outputStreams == null;
 
@@ -84,7 +84,7 @@ public class IotasSource extends IotasComponent implements Source {
 
     @Override
     public String toString() {
-        return "IotasSource{" +
+        return "StreamlineSource{" +
                 "outputStreams=" + outputStreams +
                 "} " + super.toString();
     }

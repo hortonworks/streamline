@@ -17,7 +17,7 @@
  */
 package org.apache.streamline.streams.runtime.storm.spout;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import com.hortonworks.registries.schemaregistry.SchemaMetadata;
 import com.hortonworks.registries.schemaregistry.serdes.avro.AvroSnapshotDeserializer;
 import com.hortonworks.registries.schemaregistry.serde.SerDesException;
@@ -49,7 +49,7 @@ public class AvroStreamsSnapshotDeserializer extends AvroSnapshotDeserializer {
         if (values instanceof Map) {
             keyValues.putAll((Map) values);
         } else {
-            keyValues.put(IotasEvent.PRIMITIVE_PAYLOAD_FIELD, values);
+            keyValues.put(StreamlineEvent.PRIMITIVE_PAYLOAD_FIELD, values);
         }
 
         return keyValues;

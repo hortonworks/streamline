@@ -20,7 +20,7 @@ package org.apache.streamline.streams.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.streamline.common.Schema;
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,8 +107,8 @@ public class AvroStreamsSchemaConverter {
         }
 
         if (isPrimitive) {
-            effField = isOptional ? Schema.Field.optional(IotasEvent.PRIMITIVE_PAYLOAD_FIELD, fieldType)
-                    : Schema.Field.of(IotasEvent.PRIMITIVE_PAYLOAD_FIELD, fieldType);
+            effField = isOptional ? Schema.Field.optional(StreamlineEvent.PRIMITIVE_PAYLOAD_FIELD, fieldType)
+                    : Schema.Field.of(StreamlineEvent.PRIMITIVE_PAYLOAD_FIELD, fieldType);
         }
 
         return effField;

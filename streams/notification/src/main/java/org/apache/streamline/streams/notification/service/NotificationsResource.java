@@ -25,7 +25,7 @@ package org.apache.streamline.streams.notification.service;
 import com.codahale.metrics.annotation.Timed;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.util.WSUtils;
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.notification.Notification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,7 +126,7 @@ public class NotificationsResource {
     @Timed
     public Response getEventById(@PathParam("id") String id) {
         try {
-            IotasEvent result = notificationService.getEvent(id);
+            StreamlineEvent result = notificationService.getEvent(id);
             if (result != null) {
                 return WSUtils.respond(result, OK, SUCCESS);
             }

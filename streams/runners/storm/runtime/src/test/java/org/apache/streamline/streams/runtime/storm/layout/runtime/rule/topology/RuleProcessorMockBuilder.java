@@ -22,7 +22,7 @@ import com.google.common.collect.ImmutableList;
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.common.Schema.Field;
 import org.apache.streamline.streams.layout.component.ComponentBuilder;
-import org.apache.streamline.streams.layout.component.IotasSink;
+import org.apache.streamline.streams.layout.component.StreamlineSink;
 import org.apache.streamline.streams.layout.component.Sink;
 import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
 import org.apache.streamline.streams.layout.component.rule.Rule;
@@ -127,7 +127,7 @@ public class RuleProcessorMockBuilder implements ComponentBuilder<RulesProcessor
     }
 
     private Sink buildSink(long sinkId) {
-        IotasSink sink = new IotasSink();
+        StreamlineSink sink = new StreamlineSink();
         sink.setId(String.valueOf(ruleProcessorId));
         sink.setName(SINK + "_" + sinkId);
         return sink;

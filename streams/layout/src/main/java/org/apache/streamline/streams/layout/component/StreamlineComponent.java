@@ -21,20 +21,20 @@ import org.apache.streamline.common.Config;
 
 /**
  * Any Iotas design time topology component (source, sink, processor etc)
- * inherits from {@link IotasComponent} to provide
+ * inherits from {@link StreamlineComponent} to provide
  * the default implementation for the {@link Component} methods.
  */
-public abstract class IotasComponent implements Component {
+public abstract class StreamlineComponent implements Component {
     private String id;
     private String name;
     private Config config;
     private String type;
 
-    public IotasComponent() {
+    public StreamlineComponent() {
         config = new Config();
     }
 
-    public IotasComponent(IotasComponent other) {
+    public StreamlineComponent(StreamlineComponent other) {
         this.id = other.id;
         this.name = other.name;
         this.config = new Config(other.getConfig());
@@ -80,7 +80,7 @@ public abstract class IotasComponent implements Component {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        IotasComponent that = (IotasComponent) o;
+        StreamlineComponent that = (StreamlineComponent) o;
 
         return id != null ? id.equals(that.id) : that.id == null;
 
@@ -93,7 +93,7 @@ public abstract class IotasComponent implements Component {
 
     @Override
     public String toString() {
-        return "IotasComponent{" +
+        return "StreamlineComponent{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", config='" + config + '\'' +

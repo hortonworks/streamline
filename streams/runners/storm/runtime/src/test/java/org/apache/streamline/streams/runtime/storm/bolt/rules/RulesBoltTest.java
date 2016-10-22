@@ -18,8 +18,8 @@
 
 package org.apache.streamline.streams.runtime.storm.bolt.rules;
 
-import org.apache.streamline.streams.IotasEvent;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.StreamlineEvent;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.runtime.processor.RuleProcessorRuntime;
 import org.apache.streamline.streams.runtime.rule.RulesDependenciesFactory;
 import org.apache.streamline.streams.runtime.storm.layout.runtime.rule.topology.RuleProcessorMockBuilder;
@@ -59,21 +59,21 @@ public abstract class RulesBoltTest extends RulesTopologyTest {
     };
 
     // Only one rule triggers with these values for temperature, humidity
-    private static final IotasEvent IOTAS_EVENT_MATCHES_TUPLE = new IotasEventImpl(new HashMap<String, Object>() {{
+    private static final StreamlineEvent IOTAS_EVENT_MATCHES_TUPLE = new StreamlineEventImpl(new HashMap<String, Object>() {{
         put(RuleProcessorMockBuilder.TEMPERATURE, 101);
         put(RuleProcessorMockBuilder.HUMIDITY, 51);
     }}, "dataSrcId_1", "1");
 
     private static final Values IOTAS_EVENT_MATCHES_TUPLE_VALUES = new Values(IOTAS_EVENT_MATCHES_TUPLE);
 
-    private static final IotasEvent IOTAS_EVENT_NO_MATCH_TUPLE = new IotasEventImpl(new HashMap<String, Object>() {{
+    private static final StreamlineEvent IOTAS_EVENT_NO_MATCH_TUPLE = new StreamlineEventImpl(new HashMap<String, Object>() {{
         put("non_existent_field1", 101);
         put("non_existent_field2", 51);
         put("non_existent_field3", 23);
     }}, "dataSrcId_2", "2");
 
     // Only one rule triggers with these values for temperature, humidity. Other fields are disregarded
-    private static final IotasEvent IOTAS_EVENT_MATCH_AND_NO_MATCH_TUPLE = new IotasEventImpl(new HashMap<String, Object>() {{
+    private static final StreamlineEvent IOTAS_EVENT_MATCH_AND_NO_MATCH_TUPLE = new StreamlineEventImpl(new HashMap<String, Object>() {{
         put("non_existent_field1", 101);
         put(RuleProcessorMockBuilder.TEMPERATURE, 101);
         put("non_existent_field2", 51);
@@ -106,7 +106,7 @@ public abstract class RulesBoltTest extends RulesTopologyTest {
 //            mockTuple.getValues();
 //            result = IOTAS_EVENT_MATCHES_TUPLE_VALUES;
 
-            mockTuple.getValueByField(IotasEvent.IOTAS_EVENT);
+            mockTuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
             result = IOTAS_EVENT_MATCHES_TUPLE;
         }};
 
@@ -119,7 +119,7 @@ public abstract class RulesBoltTest extends RulesTopologyTest {
 //            mockTuple.getValues();
 //            result = IOTAS_EVENT_MATCH_AND_NO_MATCH_TUPLE_VALUES;
 
-            mockTuple.getValueByField(IotasEvent.IOTAS_EVENT);
+            mockTuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
             result = IOTAS_EVENT_MATCH_AND_NO_MATCH_TUPLE;
         }};
 
@@ -130,7 +130,7 @@ public abstract class RulesBoltTest extends RulesTopologyTest {
     public void test_noFieldsMatchTuple_ruleDoesNotEvaluate_fails() throws Exception {
 //        test_allFieldsMatchTuple_oneRuleEvaluates_acks();
         new Expectations() {{
-            mockTuple.getValueByField(IotasEvent.IOTAS_EVENT);
+            mockTuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
             result = IOTAS_EVENT_NO_MATCH_TUPLE;
             mockTuple.getSourceStreamId();
             result = "default";
@@ -140,9 +140,9 @@ public abstract class RulesBoltTest extends RulesTopologyTest {
     }
 
     @Test
-    public void test_nullIotasEvent_ruleDoesNotEvaluate_acks() throws Exception {
+    public void test_nullStreamlineEvent_ruleDoesNotEvaluate_acks() throws Exception {
         new Expectations() {{
-            mockTuple.getValueByField(IotasEvent.IOTAS_EVENT);
+            mockTuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
             returns(null);
         }};
 

@@ -18,7 +18,7 @@
 
 package org.apache.streamline.streams.runtime.rule;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.layout.component.rule.Rule;
 import org.apache.streamline.streams.runtime.rule.condition.expression.GroovyExpression;
 import org.apache.streamline.streams.runtime.script.GroovyScript;
@@ -57,14 +57,14 @@ public class GroovyRuleRuntimeBuilder extends AbstractRuleRuntimeBuilder {
     public void buildScript() {
         groovyScript = new GroovyScript<Boolean>(groovyExpression.asString(), groovyScriptEngine) {
             @Override
-            public Boolean evaluate(IotasEvent iotasEvent) throws ScriptException {
+            public Boolean evaluate(StreamlineEvent event) throws ScriptException {
                 Boolean evaluates = false;
                 try {
-                    evaluates =  super.evaluate(iotasEvent);
+                    evaluates =  super.evaluate(event);
                 } catch (ScriptException e) {
                     if (e.getCause() != null && e.getCause() instanceof groovy.lang.MissingPropertyException) {
                         // Occurs when not all the properties required for evaluating the script are set. This can happen for example
-                        // when receiving an IotasEvent that does not have all the fields required to evaluate the expression
+                        // when receiving an StreamlineEvent that does not have all the fields required to evaluate the expression
                         LOG.debug("Missing property required to evaluate expression. {}", e.getCause().getMessage());
                         LOG.trace("",e);
                         evaluates = false;
@@ -79,11 +79,11 @@ public class GroovyRuleRuntimeBuilder extends AbstractRuleRuntimeBuilder {
 
     @Override
     public RuleRuntime buildRuleRuntime() {
-        GroovyScript<Collection<IotasEvent>> wrapper = new GroovyScript<Collection<IotasEvent>>(groovyExpression.asString(), groovyScriptEngine) {
+        GroovyScript<Collection<StreamlineEvent>> wrapper = new GroovyScript<Collection<StreamlineEvent>>(groovyExpression.asString(), groovyScriptEngine) {
             @Override
-            public Collection<IotasEvent> evaluate(IotasEvent input) throws ScriptException {
-                if (groovyScript.evaluate(input)) {
-                    return Collections.singletonList(input);
+            public Collection<StreamlineEvent> evaluate(StreamlineEvent event) throws ScriptException {
+                if (groovyScript.evaluate(event)) {
+                    return Collections.singletonList(event);
                 } else {
                     return Collections.emptyList();
                 }

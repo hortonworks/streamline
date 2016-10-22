@@ -19,7 +19,7 @@ package org.apache.streamline.streams.runtime.normalization;
 
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.common.exception.ParserException;
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.layout.component.impl.normalization.Transformer;
 import org.apache.streamline.streams.runtime.script.GroovyScript;
 import org.apache.streamline.streams.runtime.script.engine.GroovyScriptEngine;
@@ -44,26 +44,26 @@ public class TransformerRuntime {
         this.groovyScript = groovyScript;
     }
 
-    public Object execute(IotasEvent iotasEvent) throws NormalizationException {
+    public Object execute(StreamlineEvent event) throws NormalizationException {
         try {
             String inputFieldName = transformer.getInputField().getName();
-            if (!iotasEvent.getFieldsAndValues().containsKey(inputFieldName)) {
-                throw new IllegalArgumentException("IotasEvent does not have input field: " + inputFieldName);
+            if (!event.getFieldsAndValues().containsKey(inputFieldName)) {
+                throw new IllegalArgumentException("StreamlineEvent does not have input field: " + inputFieldName);
             }
 
             Object value = null;
             if (groovyScript != null) {
-                LOG.debug("Running script [{}] with input [{}]", groovyScript, iotasEvent);
+                LOG.debug("Running script [{}] with input [{}]", groovyScript, event);
 
-                value = groovyScript.evaluate(iotasEvent);
+                value = groovyScript.evaluate(event);
 
-                LOG.debug("Computed value is {}. transformer: [{}] script: [{}] input: [{}]", value, transformer, groovyScript, iotasEvent);
+                LOG.debug("Computed value is {}. transformer: [{}] script: [{}] input: [{}]", value, transformer, groovyScript, event);
                 Schema.Type type = transformer.getOutputField().getType();
                 if (!type.equals(Schema.fromJavaType(value))) {
                     throw new NormalizationException("Computed value is not of expected type: " + type);
                 }
             } else {
-                value = iotasEvent.getFieldsAndValues().get(inputFieldName);
+                value = event.getFieldsAndValues().get(inputFieldName);
                 LOG.debug("Input field value returned: {}", value);
             }
             return value;

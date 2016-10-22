@@ -20,9 +20,9 @@ package org.apache.streamline.streams.runtime.splitjoin;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.layout.component.impl.splitjoin.JoinAction;
 import org.apache.streamline.streams.layout.component.rule.action.Action;
 import org.apache.streamline.streams.runtime.RuntimeService;
@@ -64,9 +64,9 @@ public class JoinActionRuntime extends AbstractSplitJoinActionRuntime {
     }
 
     @Override
-    public List<Result> execute(IotasEvent iotasEvent) {
+    public List<Result> execute(StreamlineEvent event) {
         // group received event if possible
-        final EventGroup eventGroup = groupEvents(iotasEvent);
+        final EventGroup eventGroup = groupEvents(event);
 
         // join them if group is complete
         if (eventGroup != null && eventGroup.isComplete()) {
@@ -82,29 +82,29 @@ public class JoinActionRuntime extends AbstractSplitJoinActionRuntime {
      * @param eventGroup
      */
     protected List<Result> joinEvents(EventGroup eventGroup) {
-        IotasEvent joinedEvent = joiner.join(eventGroup);
+        StreamlineEvent joinedEvent = joiner.join(eventGroup);
 
         List<Result> results = new ArrayList<>();
         for (String stream : getOutputStreams()) {
-            results.add(new Result(stream, Collections.singletonList(getIotasEvent(joinedEvent, stream))));
+            results.add(new Result(stream, Collections.singletonList(getStreamlineEvent(joinedEvent, stream))));
         }
         groupedEvents.invalidate(eventGroup.getGroupId());
 
         return results;
     }
 
-    private IotasEvent getIotasEvent(IotasEvent iotasEvent, String stream) {
-        return new IotasEventImpl(iotasEvent.getFieldsAndValues(), iotasEvent.getDataSourceId(), iotasEvent.getId(), iotasEvent.getHeader(), stream, iotasEvent.getAuxiliaryFieldsAndValues());
+    private StreamlineEvent getStreamlineEvent(StreamlineEvent event, String stream) {
+        return new StreamlineEventImpl(event.getFieldsAndValues(), event.getDataSourceId(), event.getId(), event.getHeader(), stream, event.getAuxiliaryFieldsAndValues());
     }
 
-    protected EventGroup groupEvents(IotasEvent iotasEvent) {
+    protected EventGroup groupEvents(StreamlineEvent event) {
 
-        final Map<String, Object> header = iotasEvent.getHeader();
+        final Map<String, Object> header = event.getHeader();
         if (header != null && header.containsKey(SplitActionRuntime.SPLIT_GROUP_ID)) {
             final String groupId = (String) header.get(SplitActionRuntime.SPLIT_GROUP_ID);
-            final String dataSourceId = iotasEvent.getDataSourceId();
+            final String dataSourceId = event.getDataSourceId();
             final EventGroup eventGroup = getEventGroup(groupId, dataSourceId);
-            eventGroup.addPartitionEvent(iotasEvent);
+            eventGroup.addPartitionEvent(event);
 
             return eventGroup;
         }

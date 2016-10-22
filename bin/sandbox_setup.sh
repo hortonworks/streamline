@@ -22,7 +22,7 @@ sed -i 's/8080/21000/' /root/IoTaS/webservice/conf/iotas.yaml
 sed -i 's/8081/21001/' /root/IoTaS/webservice/conf/iotas.yaml
 #Now start the IoTaS web server by executing below commands
 cd /root/IoTaS/webservice/
-nohup java -cp target/webservice-0.1.0-SNAPSHOT.jar org.apache.streamline.webservice.IotasApplication server conf/iotas.yaml&
+nohup java -cp target/webservice-0.1.0-SNAPSHOT.jar org.apache.streamline.webservice.StreamlineApplication server conf/iotas.yaml&
 sleep 10
 #Once the web server has been successfully started you can quickly add the needed components to create and run a topology using a bunch of curl commands. However, because some of the topology components use configuration specific to the clusters on which those topology components will be running you need to follow the steps below to ensure that the component configurations have the correct value.
 #Change the hdfs url.

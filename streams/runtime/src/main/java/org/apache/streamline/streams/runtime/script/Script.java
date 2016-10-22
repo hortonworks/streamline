@@ -19,7 +19,7 @@
 package org.apache.streamline.streams.runtime.script;
 
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.layout.component.rule.expression.Expression;
 import org.apache.streamline.streams.runtime.script.engine.ScriptEngine;
 
@@ -28,7 +28,7 @@ import java.io.Serializable;
 
 /**
  * Evaluates the {@link Expression} with the {@link ScriptEngine} for each {@code Input}
- * @param <I> The type of input on which this script is evaluated, e.g. {@code tuple} for {@code Apache Storm} or {@link IotasEvent}
+ * @param <I> The type of input on which this script is evaluated, e.g. {@code tuple} for {@code Apache Storm} or {@link StreamlineEvent}
  * @param <O> The type of output returned after the script is evaluated with {@link Script#evaluate(I)}.
  * @param <E> The Script Engine used to evaluate the scripts
  */

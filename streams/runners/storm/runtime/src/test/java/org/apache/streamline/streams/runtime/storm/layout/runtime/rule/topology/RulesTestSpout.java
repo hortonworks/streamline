@@ -19,8 +19,8 @@
 package org.apache.streamline.streams.runtime.storm.layout.runtime.rule.topology;
 
 import com.google.common.collect.Lists;
-import org.apache.streamline.streams.IotasEvent;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.StreamlineEvent;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.storm.spout.SpoutOutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -42,12 +42,12 @@ public class RulesTestSpout extends BaseRichSpout {
 
     private SpoutOutputCollector collector;
 
-    public static final IotasEventImpl IOTAS_EVENT_1 = new IotasEventImpl(new HashMap<String, Object>() {{
+    public static final StreamlineEventImpl IOTAS_EVENT_1 = new StreamlineEventImpl(new HashMap<String, Object>() {{
         put("temperature", 101);
         put("humidity", 51);
     }}, "dataSrcId_1", "23");
 
-    public static final IotasEventImpl IOTAS_EVENT_2 = new IotasEventImpl(new HashMap<String, Object>() {{
+    public static final StreamlineEventImpl IOTAS_EVENT_2 = new StreamlineEventImpl(new HashMap<String, Object>() {{
         put("temperature", 99);
         put("humidity", 49);
     }}, "dataSrcId_2", "24");
@@ -84,7 +84,7 @@ public class RulesTestSpout extends BaseRichSpout {
     }
 
     public Fields getOutputFields() {
-        return new Fields(IotasEvent.IOTAS_EVENT);
+        return new Fields(StreamlineEvent.STREAMLINE_EVENT);
     }
 
     @Override

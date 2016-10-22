@@ -17,8 +17,8 @@
  */
 package org.apache.streamline.streams.runtime.transform;
 
-import org.apache.streamline.streams.IotasEvent;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.StreamlineEvent;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.layout.Transform;
 import org.apache.streamline.streams.layout.component.rule.action.transform.ProjectionTransform;
 import org.apache.streamline.streams.runtime.RuntimeService;
@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Project given fields from the input IotasEvent.
+ * Project given fields from the input StreamlineEvent.
  */
 public class ProjectionTransformRuntime implements TransformRuntime {
     private final ProjectionTransform projectionTransform;
@@ -45,16 +45,16 @@ public class ProjectionTransformRuntime implements TransformRuntime {
     }
 
     @Override
-    public List<IotasEvent> execute(IotasEvent input) {
+    public List<StreamlineEvent> execute(StreamlineEvent input) {
         return doTransform(input);
     }
 
-    private List<IotasEvent> doTransform(IotasEvent input) {
+    private List<StreamlineEvent> doTransform(StreamlineEvent input) {
         Map<String, Object> result = new HashMap<>();
         for (String field : projectionTransform.getProjectionFields()) {
             result.put(field, input.getFieldsAndValues().get(field));
         }
-        return Collections.<IotasEvent>singletonList(new IotasEventImpl(result, input.getDataSourceId()));
+        return Collections.<StreamlineEvent>singletonList(new StreamlineEventImpl(result, input.getDataSourceId()));
     }
 
     @Override

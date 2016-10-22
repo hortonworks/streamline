@@ -25,7 +25,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
-public class IotasConfiguration extends Configuration {
+public class StreamlineConfiguration extends Configuration {
 
     @NotEmpty
     private List<ModuleConfiguration> modules;

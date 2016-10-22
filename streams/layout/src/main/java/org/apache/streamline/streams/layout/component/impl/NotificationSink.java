@@ -1,11 +1,11 @@
 package org.apache.streamline.streams.layout.component.impl;
 
-import org.apache.streamline.streams.layout.component.IotasSink;
+import org.apache.streamline.streams.layout.component.StreamlineSink;
 import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
 
 import java.util.Map;
 
-public class NotificationSink extends IotasSink {
+public class NotificationSink extends StreamlineSink {
     private static final String CONFIG_KEY_NAME = "notifierName";
     private static final String CONFIG_KEY_JAR_FILENAME = "jarFileName";
     private static final String CONFIG_KEY_CLASSNAME = "className";

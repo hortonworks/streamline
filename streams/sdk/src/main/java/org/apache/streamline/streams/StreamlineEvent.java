@@ -7,12 +7,12 @@ import java.util.Map;
  * This can also be referred in the notification to know which events produced
  * the notification.
  */
-public interface IotasEvent {
+public interface StreamlineEvent {
 
     // Default value chosen to be blank and not the default used in storm since wanted to keep it independent of storm.
     String DEFAULT_SOURCE_STREAM = "default";// Default value chosen to be blank and not the default used in storm since wanted to keep it independent of storm.
 
-    String IOTAS_EVENT = "iotas.event";
+    String STREAMLINE_EVENT = "streamline.event";
 
     /**
      * This represents whetehr the received payload in StreamLine is of primitive type but it is pushed with this field
@@ -88,16 +88,16 @@ public interface IotasEvent {
      * All the other fields are copied from this event.
      *
      * @param fieldsAndValues the map of fieldsAndValues to add
-     * @return the new IotasEvent
+     * @return the new StreamlineEvent
      */
-    IotasEvent addFieldsAndValues(Map<String, Object> fieldsAndValues);
+    StreamlineEvent addFieldsAndValues(Map<String, Object> fieldsAndValues);
 
     /**
      * Returns a new Iotas event with the given headers added to the existing headers.
      * All the other fields are copied from this event.
      *
      * @param headers the map of fieldsAndValues to add or overwrite
-     * @return the new IotasEvent
+     * @return the new StreamlineEvent
      */
-    IotasEvent addHeaders(Map<String, Object> headers);
+    StreamlineEvent addHeaders(Map<String, Object> headers);
 }

@@ -1,6 +1,6 @@
 package org.apache.streamline.streams.runtime.processor;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
 import org.apache.streamline.streams.exception.ConfigException;
 import org.apache.streamline.streams.exception.ProcessingException;
@@ -36,10 +36,10 @@ public class ConsoleCustomProcessorRuntime implements CustomProcessorRuntime {
     }
 
     @Override
-    public List<Result> process(IotasEvent iotasEvent) throws ProcessingException {
-        LOG.debug("Processing {}", iotasEvent);
+    public List<Result> process(StreamlineEvent event) throws ProcessingException {
+        LOG.debug("Processing {}", event);
         List<Result> results = new ArrayList<>();
-        results.add(new Result("stream1",Arrays.asList(iotasEvent)));
+        results.add(new Result("stream1",Arrays.asList(event)));
         return results;
     }
 

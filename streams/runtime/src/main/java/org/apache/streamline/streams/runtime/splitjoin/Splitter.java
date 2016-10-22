@@ -18,7 +18,7 @@
  */
 package org.apache.streamline.streams.runtime.splitjoin;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
 
 import java.util.List;
@@ -37,5 +37,5 @@ public interface Splitter {
      * @param outputStreams
      * @return List of Results which contain split events for the given input event.
      */
-    List<Result> splitEvent(IotasEvent inputEvent, Set<String> outputStreams);
+    List<Result> splitEvent(StreamlineEvent inputEvent, Set<String> outputStreams);
 }

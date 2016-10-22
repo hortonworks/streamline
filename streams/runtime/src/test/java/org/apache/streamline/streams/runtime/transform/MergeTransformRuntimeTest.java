@@ -17,8 +17,8 @@
  */
 package org.apache.streamline.streams.runtime.transform;
 
-import org.apache.streamline.streams.IotasEvent;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.StreamlineEvent;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.layout.component.rule.action.transform.MergeTransform;
 import org.apache.streamline.streams.runtime.TransformRuntime;
 import org.junit.Test;
@@ -44,9 +44,9 @@ public class MergeTransformRuntimeTest {
         defaults.put("2", "TWO");
         defaults.put("3", "THREE");
 
-        IotasEvent event = new IotasEventImpl(fieldsAndValues, "dsrcid");
+        StreamlineEvent event = new StreamlineEventImpl(fieldsAndValues, "dsrcid");
         TransformRuntime transformRuntime = new MergeTransformRuntime(new MergeTransform(defaults));
-        List<IotasEvent> result = transformRuntime.execute(event);
+        List<StreamlineEvent> result = transformRuntime.execute(event);
         System.out.println(result);
         assertEquals(1, result.size());
         assertEquals("two", result.get(0).getFieldsAndValues().get("2"));

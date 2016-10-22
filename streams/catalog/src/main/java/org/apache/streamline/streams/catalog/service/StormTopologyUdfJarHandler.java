@@ -1,9 +1,9 @@
 package org.apache.streamline.streams.catalog.service;
 
 import org.apache.streamline.streams.layout.component.Edge;
-import org.apache.streamline.streams.layout.component.IotasProcessor;
-import org.apache.streamline.streams.layout.component.IotasSink;
-import org.apache.streamline.streams.layout.component.IotasSource;
+import org.apache.streamline.streams.layout.component.StreamlineProcessor;
+import org.apache.streamline.streams.layout.component.StreamlineSink;
+import org.apache.streamline.streams.layout.component.StreamlineSource;
 import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
 import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
 import org.apache.streamline.streams.layout.component.rule.Rule;
@@ -26,15 +26,15 @@ public class StormTopologyUdfJarHandler extends TopologyDagVisitor {
     }
 
     @Override
-    public void visit(IotasSource iotasSource) {
+    public void visit(StreamlineSource source) {
     }
 
     @Override
-    public void visit(IotasSink iotasSink) {
+    public void visit(StreamlineSink sink) {
     }
 
     @Override
-    public void visit(IotasProcessor iotasProcessor) {
+    public void visit(StreamlineProcessor processor) {
     }
 
     public Set<String> getUdfs() {

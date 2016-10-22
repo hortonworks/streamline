@@ -18,7 +18,7 @@
 
 package org.apache.streamline.streams.runtime.transform;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.runtime.TransformRuntime;
 
 import java.util.Collections;
@@ -27,7 +27,7 @@ import java.util.List;
 public class IdentityTransformRuntime implements TransformRuntime {
 
     @Override
-    public List<IotasEvent> execute(IotasEvent input) {
+    public List<StreamlineEvent> execute(StreamlineEvent input) {
         return Collections.singletonList(input);
     }
 

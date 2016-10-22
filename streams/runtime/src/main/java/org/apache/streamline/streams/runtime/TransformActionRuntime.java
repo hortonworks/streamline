@@ -19,7 +19,7 @@
 
 package org.apache.streamline.streams.runtime;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
 import org.apache.streamline.streams.layout.Transform;
 import org.apache.streamline.streams.layout.component.rule.action.Action;
@@ -82,14 +82,14 @@ public class TransformActionRuntime extends AbstractActionRuntime {
      * returns the {@link Result}
      */
     @Override
-    public List<Result> execute(IotasEvent input) {
+    public List<Result> execute(StreamlineEvent input) {
         return Collections.singletonList(new Result(stream, doTransform(input)));
     }
 
     /*
      * applies the transformation chain to the input and returns the transformed events
      */
-    protected List<IotasEvent> doTransform(IotasEvent input) {
+    protected List<StreamlineEvent> doTransform(StreamlineEvent input) {
         return doTransform(input, 0);
     }
 
@@ -97,12 +97,12 @@ public class TransformActionRuntime extends AbstractActionRuntime {
      * applies the i th transform and recursively invokes the method to apply
      * the rest of the transformations in the chain.
      */
-    private List<IotasEvent> doTransform(IotasEvent inputEvent, int i) {
+    private List<StreamlineEvent> doTransform(StreamlineEvent inputEvent, int i) {
         if (i >= transformRuntimes.size()) {
             return Collections.singletonList(inputEvent);
         }
-        List<IotasEvent> transformed = new ArrayList<>();
-        final List<IotasEvent> iotasEvents = transformRuntimes.get(i).execute(inputEvent);
+        List<StreamlineEvent> transformed = new ArrayList<>();
+        final List<StreamlineEvent> events = transformRuntimes.get(i).execute(inputEvent);
         //todo handle split/join events here.
         // explore approaches to handle these scenarios.
         // add empty event when it returns null or empty collection
@@ -111,7 +111,7 @@ public class TransformActionRuntime extends AbstractActionRuntime {
         // todo we can solve this when we can have system level join stream from each stage processor to join processor.
         // which will send total no of those events so that join can wait.
 
-        for (IotasEvent event : iotasEvents) {
+        for (StreamlineEvent event : events) {
             transformed.addAll(doTransform(event, i + 1));
         }
         return transformed;

@@ -18,7 +18,7 @@
  */
 package org.apache.streamline.streams.runtime.splitjoin;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +38,7 @@ public class MySplitter extends DefaultSplitter {
     }
 
     @Override
-    public List<Result> splitEvent(IotasEvent inputEvent, Set<String> outputStreams) {
+    public List<Result> splitEvent(StreamlineEvent inputEvent, Set<String> outputStreams) {
         log.info("##########splitEvent");
         invocationCount++;
         return super.splitEvent(inputEvent, outputStreams);

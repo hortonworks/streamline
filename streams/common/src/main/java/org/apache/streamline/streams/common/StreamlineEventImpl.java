@@ -3,10 +3,8 @@ package org.apache.streamline.streams.common;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 
-import javax.annotation.Nullable;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -14,13 +12,13 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * A default implementation of IotasEvent.
+ * A default implementation of StreamlineEvent.
  */
-public class IotasEventImpl implements IotasEvent {
+public class StreamlineEventImpl implements StreamlineEvent {
     // Default value chosen to be blank and not the default used in storm since wanted to keep it independent of storm.
     public final static String DEFAULT_SOURCE_STREAM = "default";
     // special event to trigger evaluation of group by
-    public static final IotasEvent GROUP_BY_TRIGGER_EVENT = new IotasEventImpl(null, null);
+    public static final StreamlineEvent GROUP_BY_TRIGGER_EVENT = new StreamlineEventImpl(null, null);
 
     private final Map<String, Object> header;
     private final String sourceStream;
@@ -30,54 +28,54 @@ public class IotasEventImpl implements IotasEvent {
     private final String id;
 
     /**
-     * Creates an IotasEvent with given keyValues, dataSourceId
+     * Creates an StreamlineEvent with given keyValues, dataSourceId
      * and a random UUID as the id.
      */
-    public IotasEventImpl(Map<String, Object> keyValues, String dataSourceId) {
+    public StreamlineEventImpl(Map<String, Object> keyValues, String dataSourceId) {
         this(keyValues, dataSourceId, UUID.randomUUID().toString());
     }
 
     /**
-     * Creates an IotasEvent with given keyValues, dataSourceId and id.
+     * Creates an StreamlineEvent with given keyValues, dataSourceId and id.
      */
-    public IotasEventImpl(Map<String, Object> keyValues, String dataSourceId, String id) {
+    public StreamlineEventImpl(Map<String, Object> keyValues, String dataSourceId, String id) {
         this(keyValues, dataSourceId, id, Collections.<String, Object>emptyMap(), DEFAULT_SOURCE_STREAM);
     }
 
     /**
-     * Creates an IotasEvent with given keyValues, dataSourceId and header.
+     * Creates an StreamlineEvent with given keyValues, dataSourceId and header.
      */
-    public IotasEventImpl(Map<String, Object> keyValues, String dataSourceId, Map<String, Object> header) {
+    public StreamlineEventImpl(Map<String, Object> keyValues, String dataSourceId, Map<String, Object> header) {
         this(keyValues, dataSourceId, UUID.randomUUID().toString(), header, DEFAULT_SOURCE_STREAM);
     }
 
     /**
-     * Creates an IotasEvent with given keyValues, dataSourceId, id and header.
+     * Creates an StreamlineEvent with given keyValues, dataSourceId, id and header.
      */
-    public IotasEventImpl(Map<String, Object> keyValues, String dataSourceId, String id, Map<String, Object> header) {
+    public StreamlineEventImpl(Map<String, Object> keyValues, String dataSourceId, String id, Map<String, Object> header) {
         this(keyValues, dataSourceId, id, header, DEFAULT_SOURCE_STREAM);
     }
 
 
     /**
-     * Creates an IotasEvent with given keyValues, dataSourceId, id and header and sourceStream.
+     * Creates an StreamlineEvent with given keyValues, dataSourceId, id and header and sourceStream.
      */
-    public IotasEventImpl(Map<String, Object> fieldsAndValues, String dataSourceId, String id, Map<String, Object> header, String sourceStream) {
+    public StreamlineEventImpl(Map<String, Object> fieldsAndValues, String dataSourceId, String id, Map<String, Object> header, String sourceStream) {
         this(fieldsAndValues, dataSourceId, id, header, sourceStream, null);
     }
 
     /**
-     * Creates an IotasEvent with given keyValues, dataSourceId, id and header, sourceStream and auxiliary fields.
-     * Creates an IotasEvent with given keyValues, dataSourceId, header and sourceStream.
+     * Creates an StreamlineEvent with given keyValues, dataSourceId, id and header, sourceStream and auxiliary fields.
+     * Creates an StreamlineEvent with given keyValues, dataSourceId, header and sourceStream.
      */
-    public IotasEventImpl(Map<String, Object> keyValues, String dataSourceId, Map<String, Object> header, String sourceStream) {
+    public StreamlineEventImpl(Map<String, Object> keyValues, String dataSourceId, Map<String, Object> header, String sourceStream) {
         this(keyValues, dataSourceId, UUID.randomUUID().toString(), header, sourceStream);
     }
 
     /**
-     * Creates an IotasEvent with given keyValues, dataSourceId, id, header and sourceStream.
+     * Creates an StreamlineEvent with given keyValues, dataSourceId, id, header and sourceStream.
      */
-    public IotasEventImpl(Map<String, Object> keyValues, String dataSourceId, String id, Map<String, Object> header, String sourceStream, Map<String, Object> auxiliaryFieldsAndValues) {
+    public StreamlineEventImpl(Map<String, Object> keyValues, String dataSourceId, String id, Map<String, Object> header, String sourceStream, Map<String, Object> auxiliaryFieldsAndValues) {
         this.fieldsAndValues = keyValues;
         this.dataSourceId = dataSourceId;
         this.id = id;
@@ -132,14 +130,14 @@ public class IotasEventImpl implements IotasEvent {
      * Returns a new Iotas event with the given fieldsAndValues added to the existing fieldsAndValues
      *
      * @param fieldsAndValues the map of fieldsAndValues to add
-     * @return the new IotasEvent
+     * @return the new StreamlineEvent
      */
     @Override
-    public IotasEvent addFieldsAndValues(Map<String, Object> fieldsAndValues) {
+    public StreamlineEvent addFieldsAndValues(Map<String, Object> fieldsAndValues) {
         Map<String, Object> kv = new HashMap<>();
         kv.putAll(getFieldsAndValues());
         kv.putAll(fieldsAndValues);
-        return new IotasEventImpl(kv, this.getDataSourceId(), this.getHeader(), this.getSourceStream());
+        return new StreamlineEventImpl(kv, this.getDataSourceId(), this.getHeader(), this.getSourceStream());
     }
 
     /**
@@ -147,14 +145,14 @@ public class IotasEventImpl implements IotasEvent {
      * All the other fields are copied from this event.
      *
      * @param headers the map of fieldsAndValues to add or overwrite
-     * @return the new IotasEvent
+     * @return the new StreamlineEvent
      */
     @Override
-    public IotasEvent addHeaders(Map<String, Object> headers) {
+    public StreamlineEvent addHeaders(Map<String, Object> headers) {
         Map<String, Object> kv = new HashMap<>();
         kv.putAll(getHeader());
         kv.putAll(headers);
-        return new IotasEventImpl(this.getFieldsAndValues(), this.getDataSourceId(), kv, this.getSourceStream());
+        return new StreamlineEventImpl(this.getFieldsAndValues(), this.getDataSourceId(), kv, this.getSourceStream());
     }
 
     @Override
@@ -167,7 +165,7 @@ public class IotasEventImpl implements IotasEvent {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        IotasEventImpl that = (IotasEventImpl) o;
+        StreamlineEventImpl that = (StreamlineEventImpl) o;
 
         return id.equals(that.id);
     }
@@ -179,7 +177,7 @@ public class IotasEventImpl implements IotasEvent {
 
     @Override
     public String toString() {
-        return "IotasEventImpl{" +
+        return "StreamlineEventImpl{" +
                 "header=" + header +
                 ", sourceStream='" + sourceStream + '\'' +
                 ", fieldsAndValues=" + fieldsAndValues +

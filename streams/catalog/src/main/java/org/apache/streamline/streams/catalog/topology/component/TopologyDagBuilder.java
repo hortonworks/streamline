@@ -37,19 +37,19 @@ public class TopologyDagBuilder {
 
     private void addSources(TopologyDag dag, Topology topology) throws Exception {
         for (TopologySource topologySource : catalogService.listTopologySources(queryParam(topology))) {
-            dag.add(factory.getIotasSource(topologySource));
+            dag.add(factory.getStreamlineSource(topologySource));
         }
     }
 
     private void addProcessors(TopologyDag dag, Topology topology) throws Exception {
         for (TopologyProcessor topologyProcessor : catalogService.listTopologyProcessors(queryParam(topology))) {
-            dag.add(factory.getIotasProcessor(topologyProcessor));
+            dag.add(factory.getStreamlineProcessor(topologyProcessor));
         }
     }
 
     private void addSinks(TopologyDag dag, Topology topology) throws Exception {
         for (TopologySink topologySink : catalogService.listTopologySinks(queryParam(topology))) {
-            dag.add(factory.getIotasSink(topologySink));
+            dag.add(factory.getStreamlineSink(topologySink));
         }
     }
 

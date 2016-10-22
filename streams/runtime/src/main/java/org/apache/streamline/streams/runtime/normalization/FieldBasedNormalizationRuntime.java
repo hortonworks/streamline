@@ -18,7 +18,7 @@
 package org.apache.streamline.streams.runtime.normalization;
 
 import org.apache.streamline.common.Schema;
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.layout.component.impl.normalization.FieldBasedNormalizationConfig;
 import org.apache.streamline.streams.layout.component.impl.normalization.FieldValueGenerator;
 import org.apache.streamline.streams.layout.component.impl.normalization.Transformer;
@@ -55,14 +55,14 @@ public class FieldBasedNormalizationRuntime extends NormalizationRuntime {
         this.fieldsToBeFiltered = fieldsToBeFiltered == null || fieldsToBeFiltered.isEmpty() ? builder.fieldsTobeFiltered : fieldsToBeFiltered;
     }
 
-    public Map<String, Object> normalize(IotasEvent iotasEvent) throws NormalizationException {
-        Map<String, Object> outputFieldNameValuePairs = new HashMap<>(iotasEvent.getFieldsAndValues());
+    public Map<String, Object> normalize(StreamlineEvent event) throws NormalizationException {
+        Map<String, Object> outputFieldNameValuePairs = new HashMap<>(event.getFieldsAndValues());
 
-        LOG.debug("Received iotas event {}", iotasEvent);
+        LOG.debug("Received iotas event {}", event);
 
-        executeTransformers(iotasEvent, outputFieldNameValuePairs);
+        executeTransformers(event, outputFieldNameValuePairs);
 
-        executeOutputFieldValueGenerators(iotasEvent, outputFieldNameValuePairs);
+        executeOutputFieldValueGenerators(event, outputFieldNameValuePairs);
 
         // filtered fields should not exist in the output event.
         executeFilters(outputFieldNameValuePairs);
@@ -73,16 +73,16 @@ public class FieldBasedNormalizationRuntime extends NormalizationRuntime {
     /**
      * Executes output FieldValueGenerators which add new output fields generated from given fieldValueGenerators
      */
-    private void executeOutputFieldValueGenerators(IotasEvent iotasEvent, Map<String, Object> outputFieldNameValuePairs)
+    private void executeOutputFieldValueGenerators(StreamlineEvent event, Map<String, Object> outputFieldNameValuePairs)
             throws NormalizationException {
 
         for (FieldValueGeneratorRuntime fieldValueGeneratorRuntime : fieldValueGeneratorRuntimes) {
             String name = fieldValueGeneratorRuntime.getField().getName();
             if (!outputFieldNameValuePairs.containsKey(name)) {
-                Object value = fieldValueGeneratorRuntime.generateValue(iotasEvent);
+                Object value = fieldValueGeneratorRuntime.generateValue(event);
                 outputFieldNameValuePairs.put(name, value);
             } else {
-                LOG.debug("Default value for field [{}] is not generated as it exists in the received event [{}]", name, iotasEvent);
+                LOG.debug("Default value for field [{}] is not generated as it exists in the received event [{}]", name, event);
             }
         }
     }
@@ -101,11 +101,11 @@ public class FieldBasedNormalizationRuntime extends NormalizationRuntime {
     /**
      * Executes transformerRuntimes which transform an input schema field to an output schema field.
      */
-    private void executeTransformers(IotasEvent iotasEvent, Map<String, Object> outputFieldNameValuePairs)
+    private void executeTransformers(StreamlineEvent event, Map<String, Object> outputFieldNameValuePairs)
             throws NormalizationException {
 
         for (TransformerRuntime transformerRuntime : transformerRuntimes) {
-            Object result = transformerRuntime.execute(iotasEvent);
+            Object result = transformerRuntime.execute(event);
             outputFieldNameValuePairs.remove(transformerRuntime.getTransformer().getInputField().getName());
             outputFieldNameValuePairs.put(transformerRuntime.getTransformer().getOutputField().getName(), result);
         }

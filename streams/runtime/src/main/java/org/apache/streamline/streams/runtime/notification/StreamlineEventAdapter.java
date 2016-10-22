@@ -18,7 +18,7 @@
 
 package org.apache.streamline.streams.runtime.notification;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.notification.Notification;
 
 import java.util.Collections;
@@ -32,18 +32,18 @@ import static org.apache.streamline.streams.runtime.transform.AddHeaderTransform
 import static org.apache.streamline.streams.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_TIMESTAMP;
 
 /**
- * Adapts {@link IotasEvent} to {@link org.apache.streamline.streams.notification.Notification}
+ * Adapts {@link StreamlineEvent} to {@link org.apache.streamline.streams.notification.Notification}
  */
-public class IotasEventAdapter implements Notification {
-    private final IotasEvent iotasEvent;
+public class StreamlineEventAdapter implements Notification {
+    private final StreamlineEvent event;
 
-    public IotasEventAdapter(IotasEvent iotasEvent) {
-        this.iotasEvent = iotasEvent;
+    public StreamlineEventAdapter(StreamlineEvent event) {
+        this.event = event;
     }
 
     @Override
     public String getId() {
-        return iotasEvent.getId();
+        return event.getId();
     }
 
     @Override
@@ -71,7 +71,7 @@ public class IotasEventAdapter implements Notification {
 
     @Override
     public Map<String, Object> getFieldsAndValues() {
-        return iotasEvent.getFieldsAndValues();
+        return event.getFieldsAndValues();
     }
 
     @Override
@@ -91,18 +91,18 @@ public class IotasEventAdapter implements Notification {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        IotasEventAdapter that = (IotasEventAdapter) o;
+        StreamlineEventAdapter that = (StreamlineEventAdapter) o;
 
-        return iotasEvent != null ? iotasEvent.equals(that.iotasEvent) : that.iotasEvent == null;
+        return event != null ? event.equals(that.event) : that.event == null;
 
     }
 
     @Override
     public int hashCode() {
-        return iotasEvent != null ? iotasEvent.hashCode() : 0;
+        return event != null ? event.hashCode() : 0;
     }
 
     private <T> T getHeader(String key) {
-        return (T) iotasEvent.getHeader().get(key);
+        return (T) event.getHeader().get(key);
     }
 }

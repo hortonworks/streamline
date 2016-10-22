@@ -3,7 +3,7 @@ package org.apache.streamline.streams.schema;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.layout.component.Stream;
 import org.apache.streamline.streams.layout.component.impl.normalization.NormalizationConfig;
 import org.apache.streamline.streams.layout.component.impl.normalization.NormalizationProcessor;
@@ -31,10 +31,10 @@ public class NormalizationProcessorSchemaEvolver implements EvolvingSchema {
             if (normalizationConfigMap.containsKey(inputStream.getId())) {
                 // matched input stream: it only has one output stream and stream id will be replaced to default
                 Stream outputStream = normalizationProcessor.getOutputStreams().iterator().next();
-                streams.add(new Stream(IotasEventImpl.DEFAULT_SOURCE_STREAM, outputStream.getSchema()));
+                streams.add(new Stream(StreamlineEventImpl.DEFAULT_SOURCE_STREAM, outputStream.getSchema()));
             } else {
                 // mismatched input stream: preserve input schema but stream id will be replaced to default
-                streams.add(new Stream(IotasEventImpl.DEFAULT_SOURCE_STREAM, inputStream.getSchema()));
+                streams.add(new Stream(StreamlineEventImpl.DEFAULT_SOURCE_STREAM, inputStream.getSchema()));
             }
             return streams;
         } catch (Exception e) {

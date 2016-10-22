@@ -1,6 +1,6 @@
 package org.apache.streamline.streams.common;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 
@@ -14,7 +14,7 @@ import static org.junit.Assert.assertNotNull;
 /**
  * Created by aiyer on 9/23/15.
  */
-public class IotasEventImplTest {
+public class StreamlineEventImplTest {
 
     @Test
     public void testGetFieldsAndValues() throws Exception {
@@ -23,7 +23,7 @@ public class IotasEventImplTest {
         map.put("b", "bval");
 
 
-        IotasEvent event = new IotasEventImpl(map, StringUtils.EMPTY);
+        StreamlineEvent event = new StreamlineEventImpl(map, StringUtils.EMPTY);
 
         assertEquals(map, event.getFieldsAndValues());
     }
@@ -35,7 +35,7 @@ public class IotasEventImplTest {
         map.put("b", "bval");
 
 
-        IotasEvent event = new IotasEventImpl(map, org.apache.commons.lang.StringUtils.EMPTY);
+        StreamlineEvent event = new StreamlineEventImpl(map, org.apache.commons.lang.StringUtils.EMPTY);
 
         assertNotNull(UUID.fromString(event.getId()));
     }
@@ -47,7 +47,7 @@ public class IotasEventImplTest {
         map.put("b", "bval");
 
 
-        IotasEvent event = new IotasEventImpl(map, "1");
+        StreamlineEvent event = new StreamlineEventImpl(map, "1");
 
         assertEquals("1", event.getDataSourceId());
 
@@ -56,9 +56,9 @@ public class IotasEventImplTest {
     @Test
     public void testGetSourceStream() throws Exception {
         String sourceStream = "stream";
-        IotasEvent event = new IotasEventImpl(new HashMap<String, Object>(), "1");
-        assertEquals(IotasEventImpl.DEFAULT_SOURCE_STREAM, event.getSourceStream());
-        event = new IotasEventImpl(new HashMap<String, Object>(), "1", "1", new HashMap<String, Object>(), sourceStream);
+        StreamlineEvent event = new StreamlineEventImpl(new HashMap<String, Object>(), "1");
+        assertEquals(StreamlineEventImpl.DEFAULT_SOURCE_STREAM, event.getSourceStream());
+        event = new StreamlineEventImpl(new HashMap<String, Object>(), "1", "1", new HashMap<String, Object>(), sourceStream);
         assertEquals(sourceStream, event.getSourceStream());
     }
 
@@ -70,9 +70,9 @@ public class IotasEventImplTest {
         map.put("b", "bval");
 
 
-        IotasEvent event1 = new IotasEventImpl(map, StringUtils.EMPTY);
+        StreamlineEvent event1 = new StreamlineEventImpl(map, StringUtils.EMPTY);
 
-        IotasEvent event2 = new IotasEventImpl(map, StringUtils.EMPTY, event1.getId());
+        StreamlineEvent event2 = new StreamlineEventImpl(map, StringUtils.EMPTY, event1.getId());
 
         assertEquals(event1, event2);
     }
@@ -84,9 +84,9 @@ public class IotasEventImplTest {
         map.put("b", "bval");
 
 
-        IotasEvent event1 = new IotasEventImpl(map, StringUtils.EMPTY);
+        StreamlineEvent event1 = new StreamlineEventImpl(map, StringUtils.EMPTY);
 
-        IotasEvent event2 = new IotasEventImpl(map, StringUtils.EMPTY, event1.getId());
+        StreamlineEvent event2 = new StreamlineEventImpl(map, StringUtils.EMPTY, event1.getId());
 
         assertEquals(event1.hashCode(), event2.hashCode());
     }

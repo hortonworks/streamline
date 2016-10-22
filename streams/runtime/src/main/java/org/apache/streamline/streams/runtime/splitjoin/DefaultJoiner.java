@@ -18,8 +18,8 @@
  */
 package org.apache.streamline.streams.runtime.splitjoin;
 
-import org.apache.streamline.streams.IotasEvent;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.StreamlineEvent;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,10 +36,10 @@ public class DefaultJoiner implements Joiner {
     }
 
     @Override
-    public IotasEvent join(EventGroup eventGroup) {
+    public StreamlineEvent join(EventGroup eventGroup) {
         Map<String, Object> fieldValues = new HashMap<>();
         Map<String, Object> auxiliaryFieldValues = new HashMap<>();
-        for (IotasEvent subEvent : eventGroup.getSplitEvents()) {
+        for (StreamlineEvent subEvent : eventGroup.getSplitEvents()) {
             if(subEvent.getAuxiliaryFieldsAndValues() != null) {
                 auxiliaryFieldValues.putAll(subEvent.getAuxiliaryFieldsAndValues());
             }
@@ -48,7 +48,7 @@ public class DefaultJoiner implements Joiner {
             }
         }
 
-        return new IotasEventImpl(fieldValues, eventGroup.getDataSourceId(),
+        return new StreamlineEventImpl(fieldValues, eventGroup.getDataSourceId(),
                 UUID.randomUUID().toString(), Collections.<String, Object>emptyMap(), null, auxiliaryFieldValues);
     }
 }

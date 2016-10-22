@@ -38,7 +38,7 @@ import org.apache.streamline.storage.Storable;
 import org.apache.streamline.storage.StorableKey;
 import org.apache.streamline.storage.StorageManager;
 import org.apache.streamline.storage.exception.StorageException;
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.catalog.Cluster;
 import org.apache.streamline.streams.catalog.Component;
 import org.apache.streamline.streams.catalog.NotifierInfo;
@@ -1647,7 +1647,7 @@ public class StreamCatalogService {
     private String getTable(List<String> streams) {
         if (streams == null || streams.isEmpty()) {
             LOG.warn("Rule condition is specified without input stream, will use default stream");
-            return IotasEvent.DEFAULT_SOURCE_STREAM;
+            return StreamlineEvent.DEFAULT_SOURCE_STREAM;
         } else if (streams.size() == 1) {
             return streams.iterator().next();
         } else {

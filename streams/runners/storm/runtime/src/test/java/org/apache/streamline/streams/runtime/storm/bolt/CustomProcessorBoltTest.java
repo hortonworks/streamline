@@ -2,10 +2,10 @@ package org.apache.streamline.streams.runtime.storm.bolt;
 
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.common.util.ProxyUtil;
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
 import org.apache.streamline.streams.catalog.CatalogRestClient;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.exception.ProcessingException;
 import org.apache.streamline.streams.layout.storm.StormTopologyLayoutConstants;
 import org.apache.streamline.streams.runtime.CustomProcessorRuntime;
@@ -43,7 +43,7 @@ public class CustomProcessorBoltTest {
     private Schema outputSchema = new Schema.SchemaBuilder().field(new Schema.Field("A", Schema.Type.INTEGER)).build();
     private String outputStream = "stream";
     private Map<String, Schema> outputStreamToSchema = new HashMap<>();
-    private final Fields OUTPUT_FIELDS = new Fields(IotasEvent.IOTAS_EVENT);
+    private final Fields OUTPUT_FIELDS = new Fields(StreamlineEvent.STREAMLINE_EVENT);
     private final String someString = "someString";
     private final String stream = "stream";
     final String jarFileName = "iotas-core.jar";
@@ -153,16 +153,16 @@ public class CustomProcessorBoltTest {
         customProcessorBolt.inputSchema(inputSchema);
         Map<String, Object> data = new HashMap<>();
         data.put("key", "value");
-        final IotasEvent iotasEvent = new IotasEventImpl(data, "dsrcid");
-        final Result result = new Result(outputStream, Arrays.asList(iotasEvent));
+        final StreamlineEvent event = new StreamlineEventImpl(data, "dsrcid");
+        final Result result = new Result(outputStream, Arrays.asList(event));
         final List<Result> results = new ArrayList<>();
         results.add(result);
         final ProcessingException pe = new ProcessingException("Test");
         new Expectations() {{
             tuple.getSourceStreamId();
             returns(stream);
-            tuple.getValueByField(IotasEvent.IOTAS_EVENT);
-            returns(iotasEvent);
+            tuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
+            returns(event);
             catalogRestClient.getCustomProcessorJar(withEqual(jarFileName));
             result = new ByteArrayInputStream("some-stream".getBytes());
             minTimes = 0;
@@ -175,11 +175,11 @@ public class CustomProcessorBoltTest {
         }};
         if (!isSuccess) {
             new Expectations() {{
-                customProcessorRuntime.process(iotasEvent); result = pe;
+                customProcessorRuntime.process(event); result = pe;
             }};
         } else {
             new Expectations() {{
-                customProcessorRuntime.process(iotasEvent);
+                customProcessorRuntime.process(event);
                 returns(results);
             }};
         }
@@ -189,7 +189,7 @@ public class CustomProcessorBoltTest {
         customProcessorBolt.execute(tuple);
         if (!isSuccess) {
             new VerificationsInOrder(){{
-                customProcessorRuntime.process(iotasEvent);
+                customProcessorRuntime.process(event);
                 times = 1;
                 mockOutputCollector.fail(tuple);
                 times = 1;
@@ -199,11 +199,11 @@ public class CustomProcessorBoltTest {
             new VerificationsInOrder() {{
                 tuple.getSourceStreamId();
                 times = 1;
-                IotasEvent actual;
+                StreamlineEvent actual;
                 customProcessorRuntime.process(actual = withCapture());
                 times = 1;
                 Assert.assertEquals(actual.getSourceStream(), stream);
-                Assert.assertEquals(actual, iotasEvent);
+                Assert.assertEquals(actual, event);
                 Values actualValues;
                 mockOutputCollector.emit(outputStream, tuple, actualValues = withCapture());
                 times = 1;

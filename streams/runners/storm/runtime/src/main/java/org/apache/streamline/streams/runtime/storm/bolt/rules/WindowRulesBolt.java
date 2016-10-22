@@ -1,8 +1,8 @@
 package org.apache.streamline.streams.runtime.storm.bolt.rules;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.exception.ProcessingException;
 import org.apache.streamline.streams.layout.component.rule.expression.Window;
 import org.apache.streamline.streams.runtime.processor.RuleProcessorRuntime;
@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.streamline.streams.common.IotasEventImpl.GROUP_BY_TRIGGER_EVENT;
+import static org.apache.streamline.streams.common.StreamlineEventImpl.GROUP_BY_TRIGGER_EVENT;
 import static org.apache.streamline.streams.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_DATASOURCE_IDS;
 import static org.apache.streamline.streams.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_EVENT_IDS;
 
@@ -67,10 +67,10 @@ public class WindowRulesBolt extends BaseWindowedBolt {
         LOG.debug("Window activated, window id {}, number of tuples in window {}", windowId, inputWindow.get().size());
         List<Tuple> curGroup = new ArrayList<>();
         try {
-            IotasEvent event;
+            StreamlineEvent event;
             for (Tuple input : inputWindow.get()) {
-                if ((event = getIotasEventFromTuple(input)) != null) {
-                    LOG.debug("++++++++ Executing tuple [{}] which contains IotasEvent [{}]", input, event);
+                if ((event = getStreamlineEventFromTuple(input)) != null) {
+                    LOG.debug("++++++++ Executing tuple [{}] which contains StreamlineEvent [{}]", input, event);
                     processAndEmit(event, curGroup);
                     curGroup.add(input);
                 }
@@ -83,9 +83,9 @@ public class WindowRulesBolt extends BaseWindowedBolt {
         }
     }
 
-    private void processAndEmit(IotasEvent event, List<Tuple> curGroup) throws ProcessingException {
-        for (Result result : ruleProcessorRuntime.process(iotasEventWithWindowId(event))) {
-            for (IotasEvent e : result.events) {
+    private void processAndEmit(StreamlineEvent event, List<Tuple> curGroup) throws ProcessingException {
+        for (Result result : ruleProcessorRuntime.process(eventWithWindowId(event))) {
+            for (StreamlineEvent e : result.events) {
                 // TODO: updateHeaders can be handled at ruleProcessorRuntime.process stage passing context info.
                 collector.emit(result.stream, new Values(updateHeaders(e, curGroup)));
             }
@@ -93,7 +93,7 @@ public class WindowRulesBolt extends BaseWindowedBolt {
         }
     }
 
-    private IotasEvent updateHeaders(IotasEvent event, List<Tuple> tuples) {
+    private StreamlineEvent updateHeaders(StreamlineEvent event, List<Tuple> tuples) {
         Map<String, Object> headers = new HashMap<>();
         headers.put(HEADER_FIELD_EVENT_IDS, getEventIds(tuples));
         headers.put(HEADER_FIELD_DATASOURCE_IDS, getDataSourceIds(tuples));
@@ -103,9 +103,9 @@ public class WindowRulesBolt extends BaseWindowedBolt {
 
     private List<String> getEventIds(List<Tuple> tuples) {
         Set<String> res = new HashSet<>();
-        IotasEvent event;
+        StreamlineEvent event;
         for (Tuple tuple : tuples) {
-            if ((event = getIotasEventFromTuple(tuple)) != null) {
+            if ((event = getStreamlineEventFromTuple(tuple)) != null) {
                 res.add(event.getId());
             }
         }
@@ -114,28 +114,28 @@ public class WindowRulesBolt extends BaseWindowedBolt {
 
     private List<String> getDataSourceIds(List<Tuple> tuples) {
         Set<String> res = new HashSet<>();
-        IotasEvent event;
+        StreamlineEvent event;
         for (Tuple tuple : tuples) {
-            if ((event = getIotasEventFromTuple(tuple)) != null) {
+            if ((event = getStreamlineEventFromTuple(tuple)) != null) {
                 res.add(event.getDataSourceId());
             }
         }
         return new ArrayList<>(res);
     }
 
-    private IotasEvent getIotasEventFromTuple(Tuple tuple) {
-        final Object iotasEvent = tuple.getValueByField(IotasEvent.IOTAS_EVENT);
-        if (iotasEvent instanceof IotasEvent) {
-            return getIotasEventWithStream((IotasEvent) iotasEvent, tuple);
+    private StreamlineEvent getStreamlineEventFromTuple(Tuple tuple) {
+        final Object event = tuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
+        if (event instanceof StreamlineEvent) {
+            return getStreamlineEventWithStream((StreamlineEvent) event, tuple);
         } else {
             LOG.debug("Invalid tuple received. Tuple disregarded and rules not evaluated.\n\tTuple [{}]." +
-                              "\n\tIotasEvent [{}].", tuple, iotasEvent);
+                              "\n\tStreamlineEvent [{}].", tuple, event);
         }
         return null;
     }
 
-    private IotasEvent getIotasEventWithStream(IotasEvent event, Tuple tuple) {
-        return new IotasEventImpl(event.getFieldsAndValues(),
+    private StreamlineEvent getStreamlineEventWithStream(StreamlineEvent event, Tuple tuple) {
+        return new StreamlineEventImpl(event.getFieldsAndValues(),
                 event.getDataSourceId(), event.getId(),
                 event.getHeader(), tuple.getSourceStreamId(), event.getAuxiliaryFieldsAndValues());
     }
@@ -143,7 +143,7 @@ public class WindowRulesBolt extends BaseWindowedBolt {
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
         for (String stream : boltDependenciesFactory.createRuleProcessorRuntime().getStreams()) {
-            declarer.declareStream(stream, new Fields(IotasEvent.IOTAS_EVENT));
+            declarer.declareStream(stream, new Fields(StreamlineEvent.STREAMLINE_EVENT));
         }
     }
 
@@ -181,7 +181,7 @@ public class WindowRulesBolt extends BaseWindowedBolt {
         }
     }
 
-    private IotasEvent iotasEventWithWindowId(final IotasEvent event) {
+    private StreamlineEvent eventWithWindowId(final StreamlineEvent event) {
         if (event == GROUP_BY_TRIGGER_EVENT) {
             return event;
         }

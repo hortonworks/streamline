@@ -20,7 +20,7 @@ package org.apache.streamline.streams.common;
 
 import java.util.Map;
 
-public class IotasMessage {
+public class StreamlineMessage {
 
     private String make;
 
@@ -36,7 +36,7 @@ public class IotasMessage {
 
     private String messageId;
 
-    public IotasMessage(){
+    public StreamlineMessage(){
 
     }
 

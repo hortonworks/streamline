@@ -17,8 +17,8 @@
  */
 package org.apache.streamline.streams.runtime.transform;
 
-import org.apache.streamline.streams.IotasEvent;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.StreamlineEvent;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.layout.Transform;
 import org.apache.streamline.streams.layout.component.rule.action.transform.SubstituteTransform;
 import org.apache.streamline.streams.runtime.RuntimeService;
@@ -33,30 +33,30 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Expands template variables in the IotasEvent values by looking up the
- * variables in the IotasEvent fieldsAndValues.
+ * Expands template variables in the StreamlineEvent values by looking up the
+ * variables in the StreamlineEvent fieldsAndValues.
  */
 public class SubstituteTransformRuntime implements TransformRuntime {
     private static final Logger LOG = LoggerFactory.getLogger(SubstituteTransformRuntime.class);
     private final SubstituteTransform substituteTransform;
 
     /**
-     * Does variable substitution for all the fields in the IotasEvent
+     * Does variable substitution for all the fields in the StreamlineEvent
      */
     public SubstituteTransformRuntime() {
         this(new SubstituteTransform());
     }
 
     /**
-     * Does variable substitution for the specified set of fields in the IotasEvent
+     * Does variable substitution for the specified set of fields in the StreamlineEvent
      */
     public SubstituteTransformRuntime(SubstituteTransform substituteTransform) {
         this.substituteTransform = substituteTransform;
     }
 
     @Override
-    public List<IotasEvent> execute(IotasEvent input) {
-        List<IotasEvent> result;
+    public List<StreamlineEvent> execute(StreamlineEvent input) {
+        List<StreamlineEvent> result;
         try {
             result = substitute(input);
         } catch (Exception ex) {
@@ -67,7 +67,7 @@ public class SubstituteTransformRuntime implements TransformRuntime {
         return result;
     }
 
-    private List<IotasEvent> substitute(IotasEvent input) {
+    private List<StreamlineEvent> substitute(StreamlineEvent input) {
         Map<String, Object> substitutedFieldsAndValues = new HashMap<>();
         StrSubstitutor substitutor = new StrSubstitutor(input.getFieldsAndValues());
         for(Map.Entry<String, Object> entry: input.getFieldsAndValues().entrySet()) {
@@ -77,7 +77,7 @@ public class SubstituteTransformRuntime implements TransformRuntime {
                 substitutedFieldsAndValues.put(entry.getKey(), entry.getValue());
             }
         }
-        return Collections.<IotasEvent>singletonList(new IotasEventImpl(substitutedFieldsAndValues, input.getDataSourceId()));
+        return Collections.<StreamlineEvent>singletonList(new StreamlineEventImpl(substitutedFieldsAndValues, input.getDataSourceId()));
     }
 
     private boolean shouldSubstitue(String key, Object value) {

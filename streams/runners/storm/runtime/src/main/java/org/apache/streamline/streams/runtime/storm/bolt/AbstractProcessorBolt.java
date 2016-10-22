@@ -18,7 +18,7 @@
  */
 package org.apache.streamline.streams.runtime.storm.bolt;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.base.BaseRichBolt;
@@ -48,13 +48,13 @@ public abstract class AbstractProcessorBolt extends BaseRichBolt {
     @Override
     public void execute(Tuple inputTuple) {
         try {
-            Object iotasEvent = inputTuple.getValueByField(IotasEvent.IOTAS_EVENT);
-            LOG.debug("Executing IotasEvent: [{}] with tuple: [{}]", iotasEvent, inputTuple);
+            Object event = inputTuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
+            LOG.debug("Executing StreamlineEvent: [{}] with tuple: [{}]", event, inputTuple);
 
-            if(iotasEvent instanceof IotasEvent) {
-                process(inputTuple, (IotasEvent) iotasEvent);
+            if(event instanceof StreamlineEvent) {
+                process(inputTuple, (StreamlineEvent) event);
             } else {
-                LOG.debug("Received invalid input tuple:[{}] with iotas event:[{}] and it is not processed.", inputTuple, iotasEvent);
+                LOG.debug("Received invalid input tuple:[{}] with iotas event:[{}] and it is not processed.", inputTuple, event);
             }
 
             collector.ack(inputTuple);
@@ -65,6 +65,6 @@ public abstract class AbstractProcessorBolt extends BaseRichBolt {
         }
     }
 
-    protected abstract void process(Tuple inputTuple, IotasEvent iotasEvent) throws Exception;
+    protected abstract void process(Tuple inputTuple, StreamlineEvent event) throws Exception;
 
 }

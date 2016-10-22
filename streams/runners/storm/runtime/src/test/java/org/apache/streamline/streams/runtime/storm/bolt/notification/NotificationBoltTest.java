@@ -19,17 +19,17 @@
 package org.apache.streamline.streams.runtime.storm.bolt.notification;
 
 import org.apache.streamline.common.util.ProxyUtil;
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.catalog.CatalogRestClient;
 import org.apache.streamline.streams.catalog.NotifierInfo;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.notification.Notification;
 import org.apache.streamline.streams.notification.NotificationContext;
 import org.apache.streamline.streams.notification.Notifier;
 import org.apache.streamline.streams.notification.service.NotificationQueueHandler;
 import org.apache.streamline.streams.notification.store.hbase.HBaseNotificationStore;
 import org.apache.streamline.streams.notifiers.ConsoleNotifier;
-import org.apache.streamline.streams.runtime.notification.IotasEventAdapter;
+import org.apache.streamline.streams.runtime.notification.StreamlineEventAdapter;
 import mockit.Expectations;
 import mockit.Mock;
 import mockit.MockUp;
@@ -143,10 +143,10 @@ public class NotificationBoltTest {
         Map<String, Object> fieldsAndValues = new HashMap<>();
         fieldsAndValues.put("foo", "100");
         fieldsAndValues.put("bar", "200");
-        final IotasEvent iotasEvent = new IotasEventImpl(fieldsAndValues, "srcid");
+        final StreamlineEvent event = new StreamlineEventImpl(fieldsAndValues, "srcid");
         NotificationBolt consoleNotificationBolt = new NotificationBolt("console_notifier");
         final ConsoleNotifier consoleNotifier = new ConsoleNotifier();
-        final Notification notification = new IotasEventAdapter(iotasEvent);
+        final Notification notification = new StreamlineEventAdapter(event);
         new MockUp<NotificationQueueHandler>() {
             @Mock
             public void enqueue(Notifier notifier, Notification notification1) {
@@ -168,7 +168,7 @@ public class NotificationBoltTest {
             mockProxyUtil.loadClassFromJar("/tmp/console_notifier.jar", "ConsoleNotifier");
             result = consoleNotifier;
             tuple.getValueByField(anyString);
-            result = iotasEvent;
+            result = event;
         }};
 
         Map<String, String> stormConf = new HashMap<>();
@@ -193,8 +193,8 @@ public class NotificationBoltTest {
 
         Map<String, Object> fieldsAndValues = new HashMap<>();
         fieldsAndValues.put("temperature", "100");
-        final IotasEvent iotasEvent = new IotasEventImpl(fieldsAndValues, "srcid");
-        final Notification notification = new IotasEventAdapter(iotasEvent);
+        final StreamlineEvent event = new StreamlineEventImpl(fieldsAndValues, "srcid");
+        final Notification notification = new StreamlineEventAdapter(event);
         new MockUp<NotificationQueueHandler>() {
             @Mock
             public void enqueue(Notifier notifier, Notification notification1) {
@@ -215,7 +215,7 @@ public class NotificationBoltTest {
             mockProxyUtil.loadClassFromJar(anyString, "TestClass");
             result = notifier;
             tuple.getValueByField(anyString);
-            result = iotasEvent;
+            result = event;
         }};
 
         Map<String, String> stormConf = new HashMap<>();
@@ -245,8 +245,8 @@ public class NotificationBoltTest {
 
         Map<String, Object> fieldsAndValues = new HashMap<>();
         fieldsAndValues.put("foobar", "100");
-        final IotasEvent iotasEvent = new IotasEventImpl(fieldsAndValues, "srcid");
-        final Notification notification = new IotasEventAdapter(iotasEvent);
+        final StreamlineEvent event = new StreamlineEventImpl(fieldsAndValues, "srcid");
+        final Notification notification = new StreamlineEventAdapter(event);
 
         new MockUp<NotificationQueueHandler>() {
             @Mock
@@ -273,7 +273,7 @@ public class NotificationBoltTest {
             mockProxyUtil.loadClassFromJar(anyString, "TestClass");
             result = notifier;
             tuple.getValueByField(anyString);
-            result = iotasEvent;
+            result = event;
         }};
 
         Map<String, String> stormConf = new HashMap<>();

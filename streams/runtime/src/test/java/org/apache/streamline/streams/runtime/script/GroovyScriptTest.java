@@ -18,7 +18,7 @@
 
 package org.apache.streamline.streams.runtime.script;
 
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.runtime.script.engine.GroovyScriptEngine;
 import org.junit.Assert;
 import org.junit.Test;
@@ -49,7 +49,7 @@ public class GroovyScriptTest {
         fieldsAndValue.put("temperature", 20);
         fieldsAndValue.put("humidity", 10);
         try {
-            assertTrue(groovyScript.evaluate(new IotasEventImpl(fieldsAndValue, "1")));
+            assertTrue(groovyScript.evaluate(new StreamlineEventImpl(fieldsAndValue, "1")));
         } catch (ScriptException e) {
             e.printStackTrace();
             Assert.fail("It shouldn't throw ScriptException");
@@ -58,7 +58,7 @@ public class GroovyScriptTest {
         fieldsAndValue.clear();
         fieldsAndValue.put("no_related_field", 3);
         try {
-            groovyScript.evaluate(new IotasEventImpl(fieldsAndValue, "1"));
+            groovyScript.evaluate(new StreamlineEventImpl(fieldsAndValue, "1"));
             // it means that previous bound variables are used now
             Assert.fail("It should not evaluate correctly");
         } catch (ScriptException e) {
@@ -93,7 +93,7 @@ public class GroovyScriptTest {
                         fieldsAndValue.put("a", aVal);
 
                         try {
-                            assertEquals(aVal % 2 == 0, groovyScript.evaluate(new IotasEventImpl(fieldsAndValue, "1")));
+                            assertEquals(aVal % 2 == 0, groovyScript.evaluate(new StreamlineEventImpl(fieldsAndValue, "1")));
                         } catch (Throwable e) {
                             e.printStackTrace();
                             anyException.set(e);

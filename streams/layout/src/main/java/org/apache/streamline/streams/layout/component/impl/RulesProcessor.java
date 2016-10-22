@@ -20,7 +20,7 @@ package org.apache.streamline.streams.layout.component.impl;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
-import org.apache.streamline.streams.layout.component.IotasProcessor;
+import org.apache.streamline.streams.layout.component.StreamlineProcessor;
 import org.apache.streamline.streams.layout.component.Stream;
 import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
 import org.apache.streamline.streams.layout.component.rule.Rule;
@@ -36,7 +36,7 @@ import java.util.Set;
 /**
  * Represents a design time rules processor.
  */
-public class RulesProcessor extends IotasProcessor {     //TODO: Rename to RuleProcessor
+public class RulesProcessor extends StreamlineProcessor {     //TODO: Rename to RuleProcessor
     private static final Logger log = LoggerFactory.getLogger(RulesProcessor.class);
 
     public static final String CONFIG_KEY_RULES = "rules";

@@ -1,22 +1,22 @@
 package org.apache.streamline.streams.runtime;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 
 import java.io.Serializable;
 import java.util.List;
 
 /**
- * Abstraction for transformations on IotasEvent
+ * Abstraction for transformations on StreamlineEvent
  */
 public interface TransformRuntime extends Serializable {
 
     /**
-     * Transforms an input {@link IotasEvent} and generates zero, one or
+     * Transforms an input {@link StreamlineEvent} and generates zero, one or
      * more events as a result.
      *
-     * @param input the input IotasEvent
+     * @param input the input StreamlineEvent
      * @return the list of events generated from the transformation
      */
-    List<IotasEvent> execute(IotasEvent input);
+    List<StreamlineEvent> execute(StreamlineEvent input);
 
 }

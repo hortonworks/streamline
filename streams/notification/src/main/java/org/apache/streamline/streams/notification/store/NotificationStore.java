@@ -18,7 +18,7 @@
 
 package org.apache.streamline.streams.notification.store;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.notification.Notification;
 
 import java.util.List;
@@ -57,21 +57,21 @@ public interface NotificationStore {
      * Look up an event from the notification store by id.
      *
      * @param eventId the event id
-     * @return the IotasEvent
+     * @return the StreamlineEvent
      */
-    IotasEvent getEvent(String eventId);
+    StreamlineEvent getEvent(String eventId);
 
     /**
      * Look up events from the notification store based on event id.
      */
-    List<IotasEvent> getEvents(List<String> eventIds);
+    List<StreamlineEvent> getEvents(List<String> eventIds);
 
 
     /**
      * <p>
      * Returns a list of entities from the store based on some criteria.
      * E.g List of Notification for dataSourceId = 100
-     *     List of latest 10 IotasEvent etc
+     *     List of latest 10 StreamlineEvent etc
      * </p>
      * @return the entities
      */

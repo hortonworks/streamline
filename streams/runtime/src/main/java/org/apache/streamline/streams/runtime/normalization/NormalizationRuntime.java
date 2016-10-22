@@ -19,8 +19,8 @@
 package org.apache.streamline.streams.runtime.normalization;
 
 import org.apache.streamline.common.Schema;
-import org.apache.streamline.streams.IotasEvent;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.StreamlineEvent;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.layout.component.impl.normalization.BulkNormalizationConfig;
 import org.apache.streamline.streams.layout.component.impl.normalization.FieldBasedNormalizationConfig;
 import org.apache.streamline.streams.layout.component.impl.normalization.NormalizationConfig;
@@ -41,12 +41,12 @@ public abstract class NormalizationRuntime {
         this.normalizationConfig = normalizationConfig;
     }
 
-    public final IotasEvent execute(IotasEvent iotasEvent) throws NormalizationException {
-        Map<String, Object> result = normalize(iotasEvent);
-        return new IotasEventImpl(result, iotasEvent.getDataSourceId(), iotasEvent.getId(), iotasEvent.getHeader());
+    public final StreamlineEvent execute(StreamlineEvent event) throws NormalizationException {
+        Map<String, Object> result = normalize(event);
+        return new StreamlineEventImpl(result, event.getDataSourceId(), event.getId(), event.getHeader());
     }
 
-    protected abstract Map<String, Object> normalize(IotasEvent iotasEvent) throws NormalizationException;
+    protected abstract Map<String, Object> normalize(StreamlineEvent event) throws NormalizationException;
 
     public static class Factory {
         public NormalizationRuntime create(NormalizationConfig normalizationConfig, Schema declaredOutputSchema, NormalizationProcessor.Type type) {

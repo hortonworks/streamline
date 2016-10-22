@@ -1,10 +1,9 @@
 package org.apache.streamline.streams.runtime.storm.bolt.rules;
 
 import com.google.common.collect.ImmutableMap;
-import org.apache.streamline.streams.IotasEvent;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.StreamlineEvent;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.layout.component.RulesProcessorJsonBuilder;
-import org.apache.streamline.streams.layout.component.rule.expression.Window;
 import org.apache.streamline.streams.runtime.rule.RulesDependenciesFactory;
 import mockit.Expectations;
 import mockit.Mocked;
@@ -14,24 +13,17 @@ import org.apache.commons.io.IOUtils;
 import org.apache.storm.Config;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
-import org.apache.storm.topology.WindowedBoltExecutor;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.TupleImpl;
 import org.apache.storm.tuple.Values;
-import org.apache.storm.windowing.TupleWindow;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Unit test for {@link RulesBolt}
@@ -49,7 +41,7 @@ public class RulesBoltConditionTest {
     public void setUp() {
         new Expectations() {{
             mockContext.getComponentOutputFields(anyString, anyString);
-            result = new Fields(IotasEvent.IOTAS_EVENT);
+            result = new Fields(StreamlineEvent.STREAMLINE_EVENT);
             mockContext.getComponentId(anyInt);
             result = "componentid";
         }};
@@ -151,7 +143,7 @@ public class RulesBoltConditionTest {
     }
 
     private Tuple getTuple(int i) {
-        IotasEvent event = new IotasEventImpl(ImmutableMap.<String, Object>of("foo", i, "bar", 100, "baz", 200), "dsrcid");
+        StreamlineEvent event = new StreamlineEventImpl(ImmutableMap.<String, Object>of("foo", i, "bar", 100, "baz", 200), "dsrcid");
         return new TupleImpl(mockContext, new Values(event), 1, "inputstream");
     }
 

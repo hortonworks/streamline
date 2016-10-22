@@ -61,7 +61,7 @@ public class HBaseScanConfigBuilder {
             };
 
     /**
-     * Adds a list of index mappers for the entity (E.g. Notification, IotasEvent etc). The Class of the entity
+     * Adds a list of index mappers for the entity (E.g. Notification, StreamlineEvent etc). The Class of the entity
      * is passed as the first argument to ensure type safety.
      *
      * @param clazz        the class of the entity for which the index mappers are added.

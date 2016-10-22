@@ -18,7 +18,7 @@
  */
 package org.apache.streamline.streams.layout.component.rule.action.transform;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.layout.Transform;
 
 import java.util.Collections;
@@ -26,7 +26,7 @@ import java.util.Set;
 
 /**
  * This class can be used to configure projection transform which can be used in any {@link org.apache.streamline.streams.layout.component.rule.action.Action}
- * of a rule based processor. It projects the required fields of a received {@link IotasEvent}
+ * of a rule based processor. It projects the required fields of a received {@link StreamlineEvent}
  *
  */
 public class ProjectionTransform extends Transform {

@@ -1,7 +1,7 @@
 package org.apache.streamline.streams.runtime.storm.testing;
 
-import org.apache.streamline.streams.IotasEvent;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.StreamlineEvent;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.runtime.transform.AddHeaderTransformRuntime;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
@@ -47,7 +47,7 @@ public class NotificationsTestBolt extends BaseRichBolt {
 
     @Override
     public void execute(Tuple input) {
-        IotasEvent event = (IotasEvent) input.getValueByField(IotasEvent.IOTAS_EVENT);
+        StreamlineEvent event = (StreamlineEvent) input.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
         List<String> eventIds = Arrays.asList(event.getId());
         List<String> dataSourceIds = Arrays.asList(event.getDataSourceId());
 
@@ -65,8 +65,8 @@ public class NotificationsTestBolt extends BaseRichBolt {
             header.put(AddHeaderTransformRuntime.HEADER_FIELD_RULE_ID, 1L);
             header.put(AddHeaderTransformRuntime.HEADER_FIELD_TIMESTAMP, System.currentTimeMillis());
 
-            IotasEvent iotasEvent = new IotasEventImpl(fieldsMap, "notificationsTestBolt", header);
-            collector.emit(consoleNotificationStream, new Values(iotasEvent));
+            StreamlineEvent streamlineEvent = new StreamlineEventImpl(fieldsMap, "notificationsTestBolt", header);
+            collector.emit(consoleNotificationStream, new Values(streamlineEvent));
         }
 
         // Send an email every EMAIL_NOTIFICATION_INTERVAL
@@ -81,9 +81,9 @@ public class NotificationsTestBolt extends BaseRichBolt {
                 header.put(AddHeaderTransformRuntime.HEADER_FIELD_RULE_ID, 1L);
                 header.put(AddHeaderTransformRuntime.HEADER_FIELD_TIMESTAMP, System.currentTimeMillis());
 
-                IotasEvent iotasEvent = new IotasEventImpl(fieldsMap, "notificationsTestBolt", header);
+                StreamlineEvent streamlineEvent = new StreamlineEventImpl(fieldsMap, "notificationsTestBolt", header);
 
-                collector.emit(emailNotificationStream, new Values(iotasEvent));
+                collector.emit(emailNotificationStream, new Values(streamlineEvent));
             }
         }
         collector.ack(input);
@@ -92,10 +92,10 @@ public class NotificationsTestBolt extends BaseRichBolt {
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
         if (!consoleNotificationStream.isEmpty()) {
-            declarer.declareStream(consoleNotificationStream, new Fields(IotasEvent.IOTAS_EVENT));
+            declarer.declareStream(consoleNotificationStream, new Fields(StreamlineEvent.STREAMLINE_EVENT));
         }
         if (!emailNotificationStream.isEmpty()) {
-            declarer.declareStream(emailNotificationStream, new Fields(IotasEvent.IOTAS_EVENT));
+            declarer.declareStream(emailNotificationStream, new Fields(StreamlineEvent.STREAMLINE_EVENT));
         }
     }
 }

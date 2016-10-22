@@ -5,7 +5,7 @@ import com.google.common.base.Charsets;
 import org.apache.streamline.common.Constants;
 import org.apache.streamline.registries.parser.ParserInfo;
 import org.apache.streamline.streams.catalog.CatalogRestClient;
-import org.apache.streamline.streams.common.IotasMessage;
+import org.apache.streamline.streams.common.StreamlineMessage;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Mocked;
@@ -36,7 +36,7 @@ public class ParserBoltTest {
     private static final byte[] DATA = "test".getBytes(Charsets.UTF_8);
     private static final Values VALUES = new Values(MockParser.IOTAS_EVENT);
 
-    private IotasMessage msg;
+    private StreamlineMessage msg;
     private @Tested ParserBolt parserBolt;
     private ParserInfo parserInfo;
 
@@ -56,7 +56,7 @@ public class ParserBoltTest {
 
         parserBolt.prepare(config, null, mockOutputCollector);
 
-        msg = new IotasMessage();
+        msg = new StreamlineMessage();
         msg.setMake(DEVICE_MAKE);
         msg.setModel(MODEL);
         msg.setData(DATA);
@@ -76,7 +76,7 @@ public class ParserBoltTest {
     }
 
     @Test
-    public void testParserBoltHandlesIotasMessages() throws Exception {
+    public void testParserBoltHandlesStreamlineMessages() throws Exception {
         final byte[] json = new ObjectMapper().writeValueAsString(msg).getBytes(Charsets.UTF_8);
 
         new Expectations() {{
@@ -89,7 +89,7 @@ public class ParserBoltTest {
     }
 
     @Test
-    public void testParserBoltHandlesNonIotasMessage() throws Exception {
+    public void testParserBoltHandlesNonStreamlineMessage() throws Exception {
         parserBolt.withParserId(PARSER_ID);
 
         new TupleRestClientExpectations(DATA);

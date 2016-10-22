@@ -20,7 +20,7 @@ package org.apache.streamline.streams.notification.service;
 
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.util.ProxyUtil;
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.notification.Notification;
 import org.apache.streamline.streams.notification.NotificationContext;
 import org.apache.streamline.streams.notification.Notifier;
@@ -153,13 +153,13 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public IotasEvent getEvent(String eventId) {
+    public StreamlineEvent getEvent(String eventId) {
         LOG.debug("getEvent with eventId {}", eventId);
         return notificationStore.getEvent(eventId);
     }
 
     @Override
-    public List<IotasEvent> getEvents(List<String> eventIds) {
+    public List<StreamlineEvent> getEvents(List<String> eventIds) {
         LOG.debug("getEvents with eventIds {}", eventIds);
         return notificationStore.getEvents(eventIds);
     }

@@ -18,9 +18,9 @@
  */
 package org.apache.streamline.streams.runtime.splitjoin;
 
-import org.apache.streamline.streams.IotasEvent;
+import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
-import org.apache.streamline.streams.common.IotasEventImpl;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,36 +39,35 @@ public class DefaultSplitter implements Splitter {
     }
 
     @Override
-    public List<Result> splitEvent(IotasEvent inputEvent, Set<String> outputStreams) {
+    public List<Result> splitEvent(StreamlineEvent inputEvent, Set<String> outputStreams) {
         List<Result> results = new ArrayList<>();
         String groupId = getGroupId(inputEvent);
         int curPartNo = 0;
         int totalParts = outputStreams.size();
         for (String stream : outputStreams) {
-            IotasEvent partitionedEvent = createPartitionEvent(inputEvent, groupId, ++curPartNo, stream, totalParts);
+            StreamlineEvent partitionedEvent = createPartitionEvent(inputEvent, groupId, ++curPartNo, stream, totalParts);
             results.add(new Result(stream, Collections.singletonList(partitionedEvent)));
         }
 
         return results;
     }
 
-    private IotasEvent createPartitionEvent(IotasEvent iotasEvent, String groupId, int partNo, String stream, int totalParts) {
+    private StreamlineEvent createPartitionEvent(StreamlineEvent event, String groupId, int partNo, String stream, int totalParts) {
         Map<String, Object> headers = new HashMap<>();
-        if (iotasEvent.getHeader() != null) {
-            headers.putAll(iotasEvent.getHeader());
+        if (event.getHeader() != null) {
+            headers.putAll(event.getHeader());
         }
         headers.put(SplitActionRuntime.SPLIT_GROUP_ID, groupId);
         headers.put(SplitActionRuntime.SPLIT_PARTITION_ID, partNo);
         headers.put(SplitActionRuntime.SPLIT_TOTAL_PARTITIONS_ID, totalParts);
-        return new IotasEventImpl(iotasEvent.getFieldsAndValues(), iotasEvent.getDataSourceId(),
-                UUID.randomUUID().toString(), headers, stream, iotasEvent.getAuxiliaryFieldsAndValues());
+        return new StreamlineEventImpl(event.getFieldsAndValues(), event.getDataSourceId(),
+                UUID.randomUUID().toString(), headers, stream, event.getAuxiliaryFieldsAndValues());
     }
 
     /**
-     * @param iotasEvent
-     * @return groupid for a given {@code iotasEvent}
+     * @return groupid for a given {@code event}
      */
-    protected String getGroupId(IotasEvent iotasEvent) {
+    protected String getGroupId(StreamlineEvent event) {
         return UUID.randomUUID().toString();
     }
 
