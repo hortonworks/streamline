@@ -7,7 +7,7 @@ public final class StormTopologyLayoutConstants {
 
     // artifact
     public static final String STORM_ARTIFACTS_LOCATION_KEY = "stormArtifactsDirectory";
-    public static final String STORM_JAR_LOCATION_KEY = "iotasStormJar";
+    public static final String STORM_JAR_LOCATION_KEY = "streamlineStormJar";
     public static final String STORM_HOME_DIR = "stormHomeDir";
     public static final String TOPOLOGY_MESSAGE_TIMEOUT_SECS = "topology.message.timeout.secs";
     public static final String TOPOLOGY_MAX_SPOUT_PENDING = "topology.max.spout.pending";

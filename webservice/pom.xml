@@ -155,7 +155,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.streamline</groupId>
-            <artifactId>streams-runtime</artifactId>
+            <artifactId>streamline-runtime</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>

@@ -12,7 +12,7 @@ cp /etc/hadoop/conf/hdfs-site.xml /root/IoTaS/storm/src/main/resources/
 cp /etc/hbase/conf/hbase-site.xml /root/IoTaS/storm/src/main/resources/
 mvn clean install -DskipTests=true
 cp /root/IoTaS/storm/target/storm-0.1.0-SNAPSHOT.jar /tmp/
-#Above step is to copy the storm jar that contains all components for running the topology to a location expected by IoTaS. Default location is /tmp. To change that, update the value for iotasStormJar in /root/IoTaS/webservice/conf/streamline.yaml and copy the storm jar to that location
+#Above step is to copy the storm jar that contains all components for running the topology to a location expected by IoTaS. Default location is /tmp. To change that, update the value for streamlineStormJar in /root/IoTaS/webservice/conf/streamline.yaml and copy the storm jar to that location
 #In /root/IoTaS/webservice/conf/streamline.yaml check the fileStorageConfiguration section. Update the fsUrl to the correct value from ambari hdfs configuration. By default the value for fsUrl is “hdfs://localhost:9000”. Sandbox ambari hdfs configuration by default uses the port 8020. Hence, the new value should be "hdfs://sandbox.hortonworks.com:8020" where sandbox.hortonworks.com is the hostname of the sandbox. Below is  the command to replace the value
 sed -i 's/hdfs:\/\/localhost:9000/hdfs:\/\/sandbox.hortonworks.com:8020/g' /root/IoTaS/webservice/conf/streamline.yaml
 #Under the same configuration check the value for key directory and create hdfs directory with the same value. The is the directory that will be used by IoTaS for storing different jars in hdfs. You can use the default value of /tmp/test-hdfs or use a different value. The command for creating hdfs directory for default value are as below.

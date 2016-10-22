@@ -3,13 +3,13 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>streams-runners-storm</artifactId>
+        <artifactId>streamline-runners-storm</artifactId>
         <groupId>org.apache.streamline</groupId>
         <version>0.1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>streams-runtime-storm</artifactId>
+    <artifactId>streamline-runtime-storm</artifactId>
 
     <properties>
         <storm.version>1.1.0-SNAPSHOT</storm.version>
@@ -95,7 +95,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.streamline</groupId>
-            <artifactId>streams-runtime</artifactId>
+            <artifactId>streamline-runtime</artifactId>
             <version>${project.version}</version>
             <exclusions>
                 <exclusion>
@@ -106,7 +106,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.streamline</groupId>
-            <artifactId>streams-runtime</artifactId>
+            <artifactId>streamline-runtime</artifactId>
             <version>${project.version}</version>
             <exclusions>
                 <exclusion>

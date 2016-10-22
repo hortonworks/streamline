@@ -9,7 +9,7 @@ modules:
       topologyActionsImpl: org.apache.streamline.streams.layout.storm.StormTopologyActionsImpl
       topologyMetricsImpl: org.apache.streamline.streams.metrics.storm.topology.StormTopologyMetricsImpl
       #change the below to the path on your local machine
-      iotasStormJar: /tmp/streams-runtime-storm-0.1.0-SNAPSHOT.jar
+      streamlineStormJar: /tmp/streamline-runtime-storm-0.1.0-SNAPSHOT.jar
       stormHomeDir: /usr/local/Cellar/storm/0.10.0/
       stormApiRootUrl: "http://localhost:8888/api/v1"
       # schema registry configuration
