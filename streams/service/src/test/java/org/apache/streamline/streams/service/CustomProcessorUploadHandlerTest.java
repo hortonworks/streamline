@@ -49,7 +49,7 @@ public class CustomProcessorUploadHandlerTest {
         f.mkdir();
         f = new File(successfulUploadMoveDirectory);
         f.mkdir();
-        jarFile = new FileInputStream(new File(classLoader.getResource(resourceDirectoryPrefix + "iotas-core.jar").getFile()));
+        jarFile = new FileInputStream(new File(classLoader.getResource(resourceDirectoryPrefix + "streamline-core.jar").getFile()));
         byte[] data = new byte[1024];
         ObjectMapper mapper = new ObjectMapper();
         FileInputStream fileInputStream = new FileInputStream(new File(classLoader.getResource(resourceDirectoryPrefix + "info.json")

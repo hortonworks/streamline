@@ -47,7 +47,7 @@ schemaClass| String | Fully qualified class name to support schema evolution
             "streamingEngine":"STORM",
             "name":"Console Custom Processor",
             "description":"Console Custom Processor",
-            "jarFileName":"iotas-core.jar",
+            "jarFileName":"streamline-core.jar",
             "configFields":[
                 {
                     "name":"configField", 
@@ -160,7 +160,7 @@ To download the jar file associated with the custom processor use the GET reques
 Note that the get URL ends with the name of the file. This has to be the same name that
 was used to assign the property jarFileName in custom processor post/put.
 
-`GET /api/v1/catalog/system/componentdefinitions/PROCESSOR/custom/iotas-core.jar`
+`GET /api/v1/catalog/system/componentdefinitions/PROCESSOR/custom/streamline-core.jar`
 
 ## Auto upload for Custom Processors
 
@@ -191,7 +191,7 @@ file in the tar should have the same name as the jarFileName property in info.js
   "streamingEngine": "STORM",
   "name": "Console Custom Processor",
   "description": "Console Custom Processor",
-  "jarFileName": "iotas-core.jar",
+  "jarFileName": "streamline-core.jar",
   "configFields": [{"name":"configField", "isOptional":false, "type":"string", "defaultValue":null,"isUserInput":true,"tooltip":"Config field"}],
   "inputSchema": {"fields":[{"name":"childField1","type":"INTEGER"},{"name":"childField2","type":"BOOLEAN"},{"name":"topLevelStringField","type":"STRING"}]},
   "outputStreamToSchema": {"stream1":{"fields":[{"name":"childField1","type":"INTEGER"},{"name":"childField2","type":"BOOLEAN"},{"name":"topLevelStringField","type":"STRING"}]}},

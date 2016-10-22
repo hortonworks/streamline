@@ -435,7 +435,7 @@
              <include.integration.test.groups>org.apache.streamline.common.test.IntegrationTest</include.integration.test.groups>
            </properties>
            <modules>
-             <module>iotas-dist</module>
+             <module>streamline-dist</module>
            </modules>
          </profile>    
         <profile>

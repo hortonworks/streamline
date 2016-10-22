@@ -54,7 +54,7 @@ public abstract class AbstractProcessorBolt extends BaseRichBolt {
             if(event instanceof StreamlineEvent) {
                 process(inputTuple, (StreamlineEvent) event);
             } else {
-                LOG.debug("Received invalid input tuple:[{}] with iotas event:[{}] and it is not processed.", inputTuple, event);
+                LOG.debug("Received invalid input tuple:[{}] with streamline event:[{}] and it is not processed.", inputTuple, event);
             }
 
             collector.ack(inputTuple);

@@ -24,10 +24,10 @@
         <version>0.1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>hortonworks-iotas-bin</artifactId>
+    <artifactId>hortonworks-streamline-bin</artifactId>
     <packaging>pom</packaging>
-    <name>IoTaS Binary Distribution</name>
-    <description>IoTaS binary distribution</description>
+    <name>Apache Streamline Binary Distribution</name>
+    <description>Apache Streamline binary distribution</description>
 
     <dependencies>
         <dependency>
@@ -43,7 +43,7 @@
     </dependencies>
 
     <properties>
-        <final.Name>hortonworks-iotas</final.Name>
+        <final.Name>hortonworks-streamline</final.Name>
     </properties>
 
     <build>

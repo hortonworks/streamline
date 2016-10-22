@@ -545,7 +545,7 @@ public class RestIntegrationTest {
         String prefixQueryParam = "?streamingEngine=STORM";
         List<String> getUrlQueryParms = new ArrayList<String>();
         getUrlQueryParms.add(prefixQueryParam + "&name=ConsoleCustomProcessorRuntime");
-        getUrlQueryParms.add(prefixQueryParam + "&jarFileName=iotas-core.jar");
+        getUrlQueryParms.add(prefixQueryParam + "&jarFileName=streamline-core.jar");
         getUrlQueryParms.add(prefixQueryParam + "&customProcessorImpl=" + ConsoleCustomProcessorRuntime.class.getCanonicalName());
         List<List<CustomProcessorInfo>> getResults = new ArrayList<List<CustomProcessorInfo>>();
         getResults.add(Arrays.asList(customProcessorInfo));
@@ -940,7 +940,7 @@ public class RestIntegrationTest {
         CustomProcessorInfo customProcessorInfo = new CustomProcessorInfo();
         customProcessorInfo.setName("ConsoleCustomProcessorRuntime");
         customProcessorInfo.setDescription("Console Custom Processor");
-        customProcessorInfo.setJarFileName("iotas-core.jar");
+        customProcessorInfo.setJarFileName("streamline-core.jar");
         customProcessorInfo.setCustomProcessorImpl(ConsoleCustomProcessorRuntime.class.getCanonicalName());
         customProcessorInfo.setStreamingEngine(TopologyLayoutConstants.STORM_STREAMING_ENGINE);
         customProcessorInfo.setConfigFields(getConfigFields());
@@ -973,7 +973,7 @@ public class RestIntegrationTest {
     }
 
     private java.io.File getCpJarFile () throws IOException {
-        java.io.File fileFile = new java.io.File("/tmp/iotas-core.jar");
+        java.io.File fileFile = new java.io.File("/tmp/streamline-core.jar");
         IOUtils.copy(JAR_FILE_STREAM, new FileOutputStream(fileFile));
         return fileFile;
     }

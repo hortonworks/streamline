@@ -46,7 +46,7 @@ public class CustomProcessorBoltTest {
     private final Fields OUTPUT_FIELDS = new Fields(StreamlineEvent.STREAMLINE_EVENT);
     private final String someString = "someString";
     private final String stream = "stream";
-    final String jarFileName = "iotas-core.jar";
+    final String jarFileName = "streamline-core.jar";
     final String localJarPath = "/tmp";
 
     private @Tested
