@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>streams-cluster</artifactId>
+    <artifactId>streamline-cluster</artifactId>
     <dependencies>
         <!-- module dependency -->
         <dependency>
@@ -19,7 +19,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.streamline</groupId>
-            <artifactId>streams-common</artifactId>
+            <artifactId>streamline-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

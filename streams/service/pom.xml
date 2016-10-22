@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>streams-service</artifactId>
+    <artifactId>streamline-service</artifactId>
 
 
     <properties>
@@ -24,22 +24,22 @@
         </dependency>
         <dependency>
             <groupId>org.apache.streamline</groupId>
-            <artifactId>streams-catalog</artifactId>
+            <artifactId>streamline-catalog</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.streamline</groupId>
-            <artifactId>streams-layout-storm</artifactId>
+            <artifactId>streamline-layout-storm</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.streamline</groupId>
-            <artifactId>streams-metrics-storm</artifactId>
+            <artifactId>streamline-metrics-storm</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.streamline</groupId>
-            <artifactId>streams-notification</artifactId>
+            <artifactId>streamline-notification</artifactId>
             <version>${project.version}</version>
             <exclusions>
                 <exclusion>
@@ -50,7 +50,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.streamline</groupId>
-            <artifactId>streams-cluster</artifactId>
+            <artifactId>streamline-cluster</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

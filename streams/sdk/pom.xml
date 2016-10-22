@@ -12,7 +12,7 @@
         <guava.version>12.0.1</guava.version>
     </properties>
 
-    <artifactId>streams-sdk</artifactId>
+    <artifactId>streamline-sdk</artifactId>
     <dependencies>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

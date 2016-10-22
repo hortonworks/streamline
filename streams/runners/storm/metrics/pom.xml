@@ -8,12 +8,12 @@
         <version>0.1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>streams-metrics-storm</artifactId>
+    <artifactId>streamline-metrics-storm</artifactId>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.streamline</groupId>
-            <artifactId>streams-metrics</artifactId>
+            <artifactId>streamline-metrics</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

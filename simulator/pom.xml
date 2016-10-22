@@ -21,7 +21,7 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.streamline</groupId>
-            <artifactId>streams-common</artifactId>
+            <artifactId>streamline-common</artifactId>
             <version>${project.version}</version>
             <exclusions>
                 <exclusion>

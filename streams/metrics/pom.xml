@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>streams-metrics</artifactId>
+    <artifactId>streamline-metrics</artifactId>
     <dependencies>
         <dependency>
             <groupId>org.apache.streamline</groupId>
@@ -18,7 +18,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.streamline</groupId>
-            <artifactId>streams-layout</artifactId>
+            <artifactId>streamline-layout</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

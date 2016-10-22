@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>streams-layout</artifactId>
+    <artifactId>streamline-layout</artifactId>
 
 
     <dependencies>
@@ -20,7 +20,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.streamline</groupId>
-            <artifactId>streams-sdk</artifactId>
+            <artifactId>streamline-sdk</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

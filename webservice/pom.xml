@@ -73,7 +73,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.streamline</groupId>
-            <artifactId>streams-service</artifactId>
+            <artifactId>streamline-service</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
