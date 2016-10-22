@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hortonworks.iotas.streams.runtime;
+package org.apache.streamline.streams.runtime;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.streamline.streams.runtime.storm.spout.AvroStreamsSnapshotDeserializer;
