@@ -135,8 +135,8 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
 
     private TopologyActions getTopologyActionsImpl () {
         String className = (String) config.get(org.apache.streamline.streams.common.Constants.CONFIG_TOPOLOGY_ACTIONS_IMPL);
-        // Note that iotasStormJar value needs to be changed in streamline.yaml
-        // based on the location of the storm module jar of iotas project.
+        // Note that streamlineStormJar value needs to be changed in streamline.yaml
+        // based on the location of the storm module jar of Streamline project.
         // Reason for doing it this way is storm ui right now does not
         // support submitting a jar because of security vulnerability. Hence
         // for now, we just run the storm jar command in a shell on machine

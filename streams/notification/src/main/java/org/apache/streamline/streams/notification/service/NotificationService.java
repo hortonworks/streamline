@@ -89,7 +89,7 @@ public interface NotificationService {
     StreamlineEvent getEvent(String eventId);
 
     /**
-     * Return a list of iotas events matching the given event ids.
+     * Return a list of events matching the given event ids.
      */
     List<StreamlineEvent> getEvents(List<String> eventIds);
 

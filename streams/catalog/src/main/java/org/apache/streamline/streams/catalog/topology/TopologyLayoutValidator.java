@@ -24,7 +24,7 @@ public class TopologyLayoutValidator {
     private final Set<String> linkToComponentKeys = new HashSet<>();
 
     // Constructor to initialize the object with json to be validated where
-    // json is the string representation of an iotas topology created using UI
+    // json is the string representation of an streamline topology created using UI
     public TopologyLayoutValidator (String json) {
         this.json = json;
     }

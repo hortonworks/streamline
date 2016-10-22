@@ -76,7 +76,7 @@ public class HBaseNotificationStore implements NotificationStore {
     private final NotificationMapper notificationMapper;
 
     /**
-     * The mapper for converting iotas events
+     * The mapper for converting StreamlineEvents
      */
     private final StreamlineEventMapper eventMapper;
 

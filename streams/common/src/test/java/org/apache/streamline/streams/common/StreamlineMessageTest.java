@@ -17,7 +17,7 @@ public class StreamlineMessageTest {
 
     @Test
     public void testMappingWithoutMessageId() throws IOException {
-        InputStream in = this.getClass().getClassLoader().getResourceAsStream("iotas-message-1.json");
+        InputStream in = this.getClass().getClassLoader().getResourceAsStream("streamline-message-1.json");
 
         StreamlineMessage message = objectMapper.readValue(in, StreamlineMessage.class);
 
@@ -27,7 +27,7 @@ public class StreamlineMessageTest {
 
     @Test
     public void testMappingWithMessageId() throws IOException {
-        InputStream in = this.getClass().getClassLoader().getResourceAsStream("iotas-message-2.json");
+        InputStream in = this.getClass().getClassLoader().getResourceAsStream("streamline-message-2.json");
 
         StreamlineMessage message = objectMapper.readValue(in, StreamlineMessage.class);
 
