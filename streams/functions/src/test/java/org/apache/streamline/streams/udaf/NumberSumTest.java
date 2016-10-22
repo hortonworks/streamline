@@ -1,4 +1,4 @@
-package com.hortonworks.iotas.streams.udaf;
+package org.apache.streamline.streams.udaf;
 
 import org.apache.streamline.streams.udaf.NumberSum;
 import org.junit.Assert;
