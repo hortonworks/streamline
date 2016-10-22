@@ -14,7 +14,7 @@ while [ -h "${PRG}" ]; do
 done
 
 BOOTSTRAP_DIR=`dirname ${PRG}`
-CONFIG_FILE_PATH=${BOOTSTRAP_DIR}/../conf/iotas.yaml
+CONFIG_FILE_PATH=${BOOTSTRAP_DIR}/../conf/streamline.yaml
 
 # Which java to use
 if [ -z "$JAVA_HOME" ]; then

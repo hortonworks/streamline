@@ -98,7 +98,7 @@ public class RestIntegrationTest {
      * See https://dropwizard.github.io/dropwizard/manual/testing.html#integration-testing
      */
     @ClassRule
-    public static final DropwizardAppRule<StreamlineConfiguration> RULE = new DropwizardAppRule<>(StreamlineApplication.class, ResourceHelpers.resourceFilePath("iotas-test.yaml"));
+    public static final DropwizardAppRule<StreamlineConfiguration> RULE = new DropwizardAppRule<>(StreamlineApplication.class, ResourceHelpers.resourceFilePath("streamline-test.yaml"));
 
     private String rootUrl = String.format("http://localhost:%d/api/v1/catalog/", RULE.getLocalPort());
     private final InputStream JAR_FILE_STREAM = new ByteArrayInputStream("some jar gibberish".getBytes());

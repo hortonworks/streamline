@@ -95,14 +95,14 @@
             $IOTAS_HOME/conf
         -->
         <file>
-            <source>${project.basedir}./webservice/conf/iotas-dev.yaml</source>
+            <source>${project.basedir}./webservice/conf/streamline-dev.yaml</source>
             <outputDirectory>/conf</outputDirectory>
-            <destName>iotas-dev.yaml</destName>
+            <destName>streamline-dev.yaml</destName>
         </file>
         <file>
-            <source>${project.basedir}./webservice/conf/iotas.yaml</source>
+            <source>${project.basedir}./webservice/conf/streamline.yaml</source>
             <outputDirectory>/conf</outputDirectory>
-            <destName>iotas.yaml</destName>
+            <destName>streamline.yaml</destName>
         </file>
         <file>
             <source>${project.basedir}./simulator/src/main/resources/nest-iotas-messages</source>

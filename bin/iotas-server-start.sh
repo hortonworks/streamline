@@ -16,7 +16,7 @@
 
 if [ $# -lt 1 ];
 then
-	echo "USAGE: $0 [-daemon] iotas.yaml"
+	echo "USAGE: $0 [-daemon] streamline.yaml"
 	exit 1
 fi
 base_dir=$(dirname $0)/..

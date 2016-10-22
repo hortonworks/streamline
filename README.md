@@ -8,13 +8,13 @@ From command line execute the following commands:
 `mvn clean install`  
 `cd webservice`  
 `mvn package`  
-`java -cp target/webservice-0.1.0-SNAPSHOT.jar org.apache.streamline.webservice.StreamlineApplication server conf/iotas-dev.yaml`
+`java -cp target/webservice-0.1.0-SNAPSHOT.jar org.apache.streamline.webservice.StreamlineApplication server conf/streamline-dev.yaml`
 
 This should start the webserver on localhost port 8080. If you are running storm on the same host you may get 
-`java.net.BindException: Address already in use` in which case you should modify `server` section of iotas.yaml.
+`java.net.BindException: Address already in use` in which case you should modify `server` section of streamline.yaml.
 
 ##Intellij
-`Run -> Edit Configuration -> Application -> StreamlineApplication` in the `Program argument section` add `server $IOTAS-HOME/webservice/conf/iotas.yaml`
+`Run -> Edit Configuration -> Application -> StreamlineApplication` in the `Program argument section` add `server $IOTAS-HOME/webservice/conf/streamline.yaml`
 
 Same config can be used to start debugging.
 

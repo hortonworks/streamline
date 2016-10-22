@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A file watcher service for iotas that can be used to dispatch file event notifications
+ * A file watcher service for Streamline that can be used to dispatch file event notifications
  * to different handlers.
  */
 public class FileWatcher {
