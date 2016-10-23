@@ -105,9 +105,9 @@
             <destName>streamline.yaml</destName>
         </file>
         <file>
-            <source>${project.basedir}./simulator/src/main/resources/nest-iotas-messages</source>
+            <source>${project.basedir}./simulator/src/main/resources/nest-streamline-messages</source>
             <outputDirectory>/examples/topology/resources</outputDirectory>
-            <destName>nest-iotas-messages</destName>
+            <destName>nest-streamline-messages</destName>
         </file>
         <file>
             <source>${project.basedir}./webservice/conf/streamline-env.sh</source>

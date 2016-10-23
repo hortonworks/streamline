@@ -30,7 +30,7 @@ First you need to populate your kafka topic, if you have not done so create your
 
 Then run the device simulator CLI to post some sample `StreamlineMessage` containing nest data to your kafka topic.
 `cd $IOTAS-HOME`  
-`java -cp simulator/target/simulator-0.1.0-SNAPSHOT.jar org.apache.streamline.simulator.CLI -b localhost:9092 -t nest-topic -f simulator/src/main/resources/nest-iotas-messages`
+`java -cp simulator/target/simulator-0.1.0-SNAPSHOT.jar org.apache.streamline.simulator.CLI -b localhost:9092 -t nest-topic -f simulator/src/main/resources/nest-streamline-messages`
 
 Sometimes the command fails with following exceptions:
 `Exception in thread "main" kafka.common.FailedToSendMessageException: Failed to send messages after 3 tries.

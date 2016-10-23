@@ -35,7 +35,7 @@ cd /root/IoTaS/bin/
 #Create kafka topic from which the topology consumes the data
 /usr/hdp/2.3.2.0-2950/kafka/bin/kafka-topics.sh --create --topic nest-topic --zookeeper localhost:2181 --replication-factor 1 --partitions 3
 #Produce some data on to the topic just created above. Note that hostname for kafka broker should be the hostname of sandbox VM and the port for kafka broker should be the same as the one configured in ambari for kafka. 
-java -cp /root/IoTaS/simulator/target/simulator-0.1.0-SNAPSHOT.jar org.apache.streamline.simulator.CLI -b sandbox.hortonworks.com:6667 -t nest-topic -f /root/IoTaS/simulator/src/main/resources/nest-iotas-messages
+java -cp /root/IoTaS/simulator/target/simulator-0.1.0-SNAPSHOT.jar org.apache.streamline.simulator.CLI -b sandbox.hortonworks.com:6667 -t nest-topic -f /root/IoTaS/simulator/src/main/resources/nest-streamline-messages
 #Create the hbase table used by topology to save tuples satisfying rules.
 echo "create 'nest', 'cf', 'd'" | hbase shell
 #Create the hdfs directories used by the components.
