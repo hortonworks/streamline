@@ -34,7 +34,7 @@ fi
 [ -z $MAX_WAIT_TIME ] && MAX_WAIT_TIME=120
 
 # Iotas env script
-. $IOTAS_HOME/conf/iotas-env.sh
+. $IOTAS_HOME/conf/streamline-env.sh
 
 #Iotas PID
 PID=0

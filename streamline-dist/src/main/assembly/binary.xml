@@ -110,9 +110,9 @@
             <destName>nest-iotas-messages</destName>
         </file>
         <file>
-            <source>${project.basedir}./webservice/conf/iotas-env.sh</source>
+            <source>${project.basedir}./webservice/conf/streamline-env.sh</source>
             <outputDirectory>/conf</outputDirectory>
-            <destName>iotas-env.sh</destName>
+            <destName>streamline-env.sh</destName>
         </file>
         <file>
             <source>${project.basedir}/LICENSE</source>
