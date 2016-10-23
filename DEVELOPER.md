@@ -203,9 +203,9 @@ You can also use the maven `dist` profile to build the code and create the distr
 
 The binaries will be created at:
 
-    streamline-dist/target/hortonworks-iotas-<version>.pom
-    streamline-dist/target/hortonworks-iotas-<version>.tar.gz
-    streamline-dist/target/hortonworks-iotas-<version>.zip
+    streamline-dist/target/hortonworks-streamline-<version>.pom
+    streamline-dist/target/hortonworks-streamline-<version>.tar.gz
+    streamline-dist/target/hortonworks-streamline-<version>.zip
 
 including corresponding `*.asc` digital signature files.
 
@@ -216,4 +216,4 @@ above _your_ GPG private key will be used to create those signatures.
 You can verify whether the digital signatures match their corresponding files:
 
     # Example: Verify the signature of the `.tar.gz` binary.
-    $ gpg --verify streamline-dist/target/hortonworks-iotas-<version>.tar.gz.asc
+    $ gpg --verify streamline-dist/target/hortonworks-streamline-<version>.tar.gz.asc
