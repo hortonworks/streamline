@@ -195,7 +195,7 @@ You can create a _distribution_ as follows.
     $ mvn clean install # you may skip tests with `-DskipTests=true` to save time
 
     # Create the binary distribution.
-    $ cd iotas-dist && mvn package
+    $ cd streamline-dist && mvn package
 
 You can also use the maven `dist` profile to build the code and create the distribution in one step.
 
@@ -203,9 +203,9 @@ You can also use the maven `dist` profile to build the code and create the distr
 
 The binaries will be created at:
 
-    iotas-dist/target/hortonworks-iotas-<version>.pom
-    iotas-dist/target/hortonworks-iotas-<version>.tar.gz
-    iotas-dist/target/hortonworks-iotas-<version>.zip
+    streamline-dist/target/hortonworks-iotas-<version>.pom
+    streamline-dist/target/hortonworks-iotas-<version>.tar.gz
+    streamline-dist/target/hortonworks-iotas-<version>.zip
 
 including corresponding `*.asc` digital signature files.
 
@@ -216,4 +216,4 @@ above _your_ GPG private key will be used to create those signatures.
 You can verify whether the digital signatures match their corresponding files:
 
     # Example: Verify the signature of the `.tar.gz` binary.
-    $ gpg --verify iotas-dist/target/hortonworks-iotas-<version>.tar.gz.asc
+    $ gpg --verify streamline-dist/target/hortonworks-iotas-<version>.tar.gz.asc
