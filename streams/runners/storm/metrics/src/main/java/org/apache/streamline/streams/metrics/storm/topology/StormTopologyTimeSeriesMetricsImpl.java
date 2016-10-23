@@ -85,7 +85,7 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
     }
 
     private String getTopologyName(TopologyLayout topology) {
-        return "iotas-" + topology.getId() + "-" + topology.getName();
+        return "streamline-" + topology.getId() + "-" + topology.getName();
     }
 
     private String findKafkaTopicName(TopologyLayout topology, String sourceId) {

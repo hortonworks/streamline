@@ -35,7 +35,7 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 
 /**
- * REST resource for managing hierarchical tags in the Iotas system.
+ * REST resource for managing hierarchical tags in the Streamline system.
  * <p>
  * <b>Note:</b> The JAVADOCS should be updated whenever there are any changes to the api.
  */

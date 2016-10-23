@@ -22,7 +22,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * The base implementation of a {@link Processor} that all Iotas processors should extend.
+ * The base implementation of a {@link Processor} that all Streamline processors should extend.
  */
 public class StreamlineProcessor extends StreamlineComponent implements Processor {
     private final Set<Stream> outputStreams = new HashSet<>();

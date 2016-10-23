@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public class NotificationsTestBolt extends BaseRichBolt {
 
-    public static final String IOTAS_NOTIFICATION = "iotas.notification";
+    public static final String STREAMLINE_NOTIFICATION = "streamline.notification";
     private static final int EMAIL_NOTIFICATION_INTERVAL = 500; // after every 500 notifications
 
     private OutputCollector collector;

@@ -48,7 +48,7 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 
 /**
- * An edge between two components in an IotasTopology
+ * An edge between two components in an StreamlineTopology
  */
 @Path("/api/v1/catalog/topologies/{topologyId}/edges")
 @Produces(MediaType.APPLICATION_JSON)

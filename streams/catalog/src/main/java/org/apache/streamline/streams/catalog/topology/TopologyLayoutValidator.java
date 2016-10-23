@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Utility class for validating json string representing a IoTaS Topology
+ * Utility class for validating json string representing a Streamline Topology
  * layout
  */
 public class TopologyLayoutValidator {

@@ -28,7 +28,7 @@ public class NotificationBoltFluxComponent extends AbstractFluxComponent {
     public void validateConfig () throws BadTopologyLayoutException {
         super.validateConfig();
         String className = (String) conf.get(TopologyLayoutConstants.JSON_KEY_NOTIFIER_CLASSNAME);
-        // IoTaS frameworks supports email notifiers by default. However there is support for custom notifiers as well. Here, we handle validation for fields
+        // Streamline frameworks supports email notifiers by default. However there is support for custom notifiers as well. Here, we handle validation for fields
         // necessary for email notifiers only. Otherwise we pass. For other custom notifiers we could add validate method to Notifier interface and call it
         // here or we could let the custom notifier handle it at runtime after submitting the topology
         if ("org.apache.streamline.streams.notifiers.EmailNotifier".equals(className)) {

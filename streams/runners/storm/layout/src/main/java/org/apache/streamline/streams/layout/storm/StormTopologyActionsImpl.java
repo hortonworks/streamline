@@ -271,7 +271,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
     }
 
     private String getTopologyName (TopologyLayout topology) {
-        return "iotas-" + topology.getId() + "-" + topology.getName();
+        return "streamline-" + topology.getId() + "-" + topology.getName();
     }
 
     private String getFilePath (TopologyLayout topology) {

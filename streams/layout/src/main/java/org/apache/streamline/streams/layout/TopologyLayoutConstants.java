@@ -121,7 +121,7 @@ public final class TopologyLayoutConstants {
     public final static String JSON_KEY_CUSTOM_PROCESSOR_SUB_TYPE = "CUSTOM";
     public final static String JSON_KEY_LOCAL_JAR_PATH = "localJarPath";
     public final static String JSON_KEY_LOCAL_JAR_PATH_TOOLTIP = "Local path on worker node to download jar.";
-    // Custom processor's own config fields will be uploaded in IoTaS topology components with a namespace to avoid collision with the CustomProcessorBolt's
+    // Custom processor's own config fields will be uploaded in Streamline topology components with a namespace to avoid collision with the CustomProcessorBolt's
     // config fields. The below constant represents that namespace and the other is regular expression is to remove the namespace when forwarding the config
     // values to the custom processor implementation
     public final static String JSON_KEY_CUSTOM_PROCESSOR_PREFIX = "config.";

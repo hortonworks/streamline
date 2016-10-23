@@ -48,7 +48,7 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 
 /**
- * Sink component within an IotasTopology
+ * Sink component within an StreamlineTopology
  */
 @Path("/api/v1/catalog/topologies/{topologyId}/sinks")
 @Produces(MediaType.APPLICATION_JSON)

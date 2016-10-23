@@ -18,15 +18,15 @@ public interface TopologyActions {
     //Kill the artifact that was deployed using deploy
     void kill (TopologyLayout topology) throws Exception;
 
-    //Validate the json representing the IoTaS based on underlying streaming
+    //Validate the json representing the Streamline based on underlying streaming
     // engine
     void validate (TopologyLayout topology) throws Exception;
 
-    //Suspend the json representing the IoTaS based on underlying streaming
+    //Suspend the json representing the Streamline based on underlying streaming
     // engine
     void suspend (TopologyLayout topology) throws Exception;
 
-    //Resume the json representing the IoTaS based on underlying streaming
+    //Resume the json representing the Streamline based on underlying streaming
     // engine
     void resume (TopologyLayout topology) throws Exception;
 

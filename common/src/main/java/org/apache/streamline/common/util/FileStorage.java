@@ -23,13 +23,13 @@ import java.io.InputStream;
 import java.util.Map;
 
 /**
- * Interface abstracting the upload and download of files (like parser jars, split/join or custom processor jars or any other files) for IoTaS.
- * IoTaS will provide a default file system based implementation which can be swapped by another implementation using fileStorageConfiguration
+ * Interface abstracting the upload and download of files (like parser jars, split/join or custom processor jars or any other files) for Streamline.
+ * Streamline will provide a default file system based implementation which can be swapped by another implementation using fileStorageConfiguration
  * property in the streamline.yaml
  */
 public interface FileStorage {
 
-    String DEFAULT_DIR = "/tmp/iotas-files";
+    String DEFAULT_DIR = "/tmp/streamline-files";
 
     /**
      * The file storage can be initialized with a set of key/value pairs.

@@ -106,7 +106,7 @@ public class TopologyComponentFactory {
         return sink;
     }
 
-    public Edge getIotasEdge(TopologyEdge topologyEdge) {
+    public Edge getStreamlineEdge(TopologyEdge topologyEdge) {
         Edge edge = new Edge();
         edge.setFrom(getOutputComponent(topologyEdge));
         edge.setTo(getInputComponent(topologyEdge));

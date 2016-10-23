@@ -55,7 +55,7 @@ public class TopologyDagBuilder {
 
     private void addEdges(TopologyDag dag, Topology topology) throws Exception {
         for (TopologyEdge topologyEdge: catalogService.listTopologyEdges(queryParam(topology))) {
-            dag.addEdge(factory.getIotasEdge(topologyEdge));
+            dag.addEdge(factory.getStreamlineEdge(topologyEdge));
         }
     }
 

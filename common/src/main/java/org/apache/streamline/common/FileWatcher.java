@@ -114,7 +114,7 @@ public class FileWatcher {
                 LOG.info("No file event handlers passed.");
             }
         } catch (IOException e) {
-            LOG.warn("Unable to get the default file system watch service. Iotas FileWatcher is not active.", e);
+            LOG.warn("Unable to get the default file system watch service. Streamline FileWatcher is not active.", e);
         }
     }
 }

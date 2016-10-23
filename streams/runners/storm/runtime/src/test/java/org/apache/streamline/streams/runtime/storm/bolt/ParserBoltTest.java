@@ -34,7 +34,7 @@ public class ParserBoltTest {
     private static final String DEVICE_MAKE = "1";
     private static final String MODEL = "1";
     private static final byte[] DATA = "test".getBytes(Charsets.UTF_8);
-    private static final Values VALUES = new Values(MockParser.IOTAS_EVENT);
+    private static final Values VALUES = new Values(MockParser.STREAMLINE_EVENT);
 
     private StreamlineMessage msg;
     private @Tested ParserBolt parserBolt;
@@ -99,7 +99,7 @@ public class ParserBoltTest {
 
     @Test
     public void testBadMessage() throws Exception {
-        final byte[] json = "bad-iotas-message".getBytes(); // throws exception because it is not in JSON format
+        final byte[] json = "bad-streamline-message".getBytes(); // throws exception because it is not in JSON format
 
         new Expectations() {{
             mockTuple.getBinaryByField(ParserBolt.BYTES_FIELD); returns(json);

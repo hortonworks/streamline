@@ -49,7 +49,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 
 /**
  * Represents output stream from a source or a processor component
- * in an IotasTopology
+ * in an StreamlineTopology
  */
 @Path("/api/v1/catalog/topologies/{topologyId}/streams")
 @Produces(MediaType.APPLICATION_JSON)

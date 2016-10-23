@@ -216,7 +216,7 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
     }
 
     private String getTopologyName(TopologyLayout topology) {
-        return "iotas-" + topology.getId() + "-" + topology.getName();
+        return "streamline-" + topology.getId() + "-" + topology.getName();
     }
 
     private Long convertWindowString(String windowStr, Long uptime) {

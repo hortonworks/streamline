@@ -29,7 +29,7 @@ import java.util.List;
 
 /**
  * <p>
- * This interface represents the basic services provided for IoTaS push
+ * This interface represents the basic services provided for Streamline push
  * and pull notifications.
  * This could be plugged into any stream processing framework.
  * </p>
@@ -83,7 +83,7 @@ public interface NotificationService {
 
     /**
      * <p>
-     * Gets Iotas event from the store matching the given eventId.
+     * Gets Streamline event from the store matching the given eventId.
      * </p>
      */
     StreamlineEvent getEvent(String eventId);

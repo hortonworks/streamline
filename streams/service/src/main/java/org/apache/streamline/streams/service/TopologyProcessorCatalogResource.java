@@ -48,7 +48,7 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 
 /**
- * Processor component within an IotasTopology
+ * Processor component within an StreamlineTopology
  */
 @Path("/api/v1/catalog/topologies/{topologyId}/processors")
 @Produces(MediaType.APPLICATION_JSON)

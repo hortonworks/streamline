@@ -22,7 +22,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * The base implementation of a {@link Source} that all Iotas sources should extend.
+ * The base implementation of a {@link Source} that all Streamline sources should extend.
  */
 public class StreamlineSource extends StreamlineComponent implements Source {
     private final Set<Stream> outputStreams = new HashSet<>();

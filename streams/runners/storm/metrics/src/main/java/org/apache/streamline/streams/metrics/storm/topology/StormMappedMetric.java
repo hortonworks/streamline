@@ -3,7 +3,7 @@ package org.apache.streamline.streams.metrics.storm.topology;
 import org.apache.streamline.streams.metrics.TimeSeriesQuerier;
 
 /**
- * Metric name conversion table between IoTaS and Storm. It also contains function information for aggregation.
+ * Metric name conversion table between Streamline and Storm. It also contains function information for aggregation.
  */
 enum StormMappedMetric {
     completeLatency("__complete-latency", TimeSeriesQuerier.AggregateFunction.AVG),

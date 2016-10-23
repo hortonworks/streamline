@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * Interface which defines methods for querying topology metrics from time-series DB.
  * <p/>
- * Implementation of this interface should convert metric name between IoTaS and streaming framework.
+ * Implementation of this interface should convert metric name between Streamline and streaming framework.
  * Converted metric name will be converted once again from TimeSeriesQuerier to perform actual query to time-series DB.
  */
 public interface TopologyTimeSeriesMetrics {

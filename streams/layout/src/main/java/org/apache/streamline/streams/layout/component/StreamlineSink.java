@@ -18,7 +18,7 @@
 package org.apache.streamline.streams.layout.component;
 
 /**
- * The base implementation of a {@link Sink} that all Iotas sinks should extend.
+ * The base implementation of a {@link Sink} that all Streamline sinks should extend.
  */
 public class StreamlineSink extends StreamlineComponent implements Sink {
     @Override

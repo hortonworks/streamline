@@ -56,7 +56,7 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
 
     @Override
     public String getName() {
-        return "IoTaS Web Service";
+        return "Streamline Web Service";
     }
 
     @Override

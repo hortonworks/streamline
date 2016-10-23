@@ -59,7 +59,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
         // also verification
         new Expectations() {{
             mockTimeSeriesQuerier.getMetrics(
-                    withEqual("iotas-" + topology.getId() + "-" + topology.getName()),
+                    withEqual("streamline-" + topology.getId() + "-" + topology.getName()),
                     withEqual(sourceId),
                     withEqual(StormMappedMetric.completeLatency.getStormMetricName()),
                     withEqual(StormMappedMetric.completeLatency.getAggregateFunction()),
@@ -94,7 +94,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
         // also verification
         new Expectations() {{
             mockTimeSeriesQuerier.getMetrics(
-                    withEqual("iotas-" + topology.getId() + "-" + topology.getName()),
+                    withEqual("streamline-" + topology.getId() + "-" + topology.getName()),
                     withEqual(sourceId),
                     withEqual(String.format(StormMappedMetric.logsize.getStormMetricName(), topicName)),
                     withEqual(StormMappedMetric.logsize.getAggregateFunction()),
@@ -104,7 +104,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
             result = expected.get(StormMappedMetric.logsize.name());
 
             mockTimeSeriesQuerier.getMetrics(
-                    withEqual("iotas-" + topology.getId() + "-" + topology.getName()),
+                    withEqual("streamline-" + topology.getId() + "-" + topology.getName()),
                     withEqual(sourceId),
                     withEqual(String.format(StormMappedMetric.offset.getStormMetricName(), topicName)),
                     withEqual(StormMappedMetric.offset.getAggregateFunction()),
@@ -114,7 +114,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
             result = expected.get(StormMappedMetric.offset.name());
 
             mockTimeSeriesQuerier.getMetrics(
-                    withEqual("iotas-" + topology.getId() + "-" + topology.getName()),
+                    withEqual("streamline-" + topology.getId() + "-" + topology.getName()),
                     withEqual(sourceId),
                     withEqual(String.format(StormMappedMetric.lag.getStormMetricName(), topicName)),
                     withEqual(StormMappedMetric.lag.getAggregateFunction()),
@@ -147,7 +147,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
 
         new Expectations() {{
             mockTimeSeriesQuerier.getMetrics(
-                    withEqual("iotas-" + topology.getId() + "-" + topology.getName()),
+                    withEqual("streamline-" + topology.getId() + "-" + topology.getName()),
                     withEqual(sourceId),
                     withEqual(StormMappedMetric.inputRecords.getStormMetricName()),
                     withEqual(StormMappedMetric.inputRecords.getAggregateFunction()),
@@ -157,7 +157,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
             result = expected.get(StormMappedMetric.inputRecords.name());
 
             mockTimeSeriesQuerier.getMetrics(
-                    withEqual("iotas-" + topology.getId() + "-" + topology.getName()),
+                    withEqual("streamline-" + topology.getId() + "-" + topology.getName()),
                     withEqual(sourceId),
                     withEqual(StormMappedMetric.outputRecords.getStormMetricName()),
                     withEqual(StormMappedMetric.outputRecords.getAggregateFunction()),
@@ -167,7 +167,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
             result = expected.get(StormMappedMetric.outputRecords.name());
 
             mockTimeSeriesQuerier.getMetrics(
-                    withEqual("iotas-" + topology.getId() + "-" + topology.getName()),
+                    withEqual("streamline-" + topology.getId() + "-" + topology.getName()),
                     withEqual(sourceId),
                     withEqual(StormMappedMetric.failedRecords.getStormMetricName()),
                     withEqual(StormMappedMetric.failedRecords.getAggregateFunction()),
@@ -177,7 +177,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
             result = expected.get(StormMappedMetric.failedRecords.name());
 
             mockTimeSeriesQuerier.getMetrics(
-                    withEqual("iotas-" + topology.getId() + "-" + topology.getName()),
+                    withEqual("streamline-" + topology.getId() + "-" + topology.getName()),
                     withEqual(sourceId),
                     withEqual(StormMappedMetric.processedTime.getStormMetricName()),
                     withEqual(StormMappedMetric.processedTime.getAggregateFunction()),
@@ -187,7 +187,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
             result = expected.get(StormMappedMetric.processedTime.name());
 
             mockTimeSeriesQuerier.getMetrics(
-                    withEqual("iotas-" + topology.getId() + "-" + topology.getName()),
+                    withEqual("streamline-" + topology.getId() + "-" + topology.getName()),
                     withEqual(sourceId),
                     withEqual(StormMappedMetric.recordsInWaitQueue.getStormMetricName()),
                     withEqual(StormMappedMetric.recordsInWaitQueue.getAggregateFunction()),

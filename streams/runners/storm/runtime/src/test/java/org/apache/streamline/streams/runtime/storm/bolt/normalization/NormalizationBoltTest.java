@@ -74,14 +74,14 @@ public class NormalizationBoltTest {
     @Injectable
     private Tuple tuple;
 
-    public static final StreamlineEventImpl INPUT_IOTAS_EVENT = new StreamlineEventImpl(new HashMap<String, Object>() {{
+    public static final StreamlineEventImpl INPUT_STREAMLINE_EVENT = new StreamlineEventImpl(new HashMap<String, Object>() {{
         put("illuminance", 70);
         put("temp", 104);
         put("foo", 100);
         put("humidity", "40h");
     }}, "ds-" + System.currentTimeMillis(), "id-" + System.currentTimeMillis());
 
-    public static final StreamlineEventImpl INVALID_INPUT_IOTAS_EVENT = new StreamlineEventImpl(new HashMap<String, Object>() {{
+    public static final StreamlineEventImpl INVALID_INPUT_STREAMLINE_EVENT = new StreamlineEventImpl(new HashMap<String, Object>() {{
         put("illuminance", 70);
         put("tmprtr", 101);
         put("foo", 100);
@@ -94,13 +94,13 @@ public class NormalizationBoltTest {
             new Schema.Field("illuminance", Schema.Type.INTEGER),
             new Schema.Field("new-field", Schema.Type.STRING));
 
-    private static final StreamlineEvent VALID_OUTPUT_IOTAS_EVENT =
+    private static final StreamlineEvent VALID_OUTPUT_STREAMLINE_EVENT =
             new StreamlineEventImpl(new HashMap<String, Object>() {{
                 put("temperature", 40);
                 put("humidity", "40h");
                 put("illuminance", 70);
                 put("new-field", "new value");
-            }}, INPUT_IOTAS_EVENT.getDataSourceId(), INPUT_IOTAS_EVENT.getId());
+            }}, INPUT_STREAMLINE_EVENT.getDataSourceId(), INPUT_STREAMLINE_EVENT.getId());
 
     private static final String INPUT_STREAM_ID = "inputStream";
     @Test
@@ -126,13 +126,13 @@ public class NormalizationBoltTest {
     private void testNormalizationBolt(NormalizationBolt normalizationBolt) {
         new Expectations() {{
             tuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
-            returns(INPUT_IOTAS_EVENT);
+            returns(INPUT_STREAMLINE_EVENT);
         }};
 
         normalizationBolt.execute(tuple);
 
         new Verifications() {{
-            outputCollector.emit(withAny(""), tuple, new Values(VALID_OUTPUT_IOTAS_EVENT));
+            outputCollector.emit(withAny(""), tuple, new Values(VALID_OUTPUT_STREAMLINE_EVENT));
             times = 1;
             outputCollector.ack(tuple);
         }};
@@ -141,7 +141,7 @@ public class NormalizationBoltTest {
     private void testNormalizationBoltFailure(NormalizationBolt normalizationBolt) {
         new Expectations() {{
             tuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
-            returns(INVALID_INPUT_IOTAS_EVENT);
+            returns(INVALID_INPUT_STREAMLINE_EVENT);
 
             tuple.getSourceStreamId();
             returns(INPUT_STREAM_ID);
@@ -234,7 +234,7 @@ public class NormalizationBoltTest {
     public void testGroovyWithCustomObjects() throws IOException {
         Binding binding = new Binding();
         binding.setVariable("device", new Device("device-"+System.currentTimeMillis()));
-        for (Map.Entry<String, Object> entry : INPUT_IOTAS_EVENT.getFieldsAndValues().entrySet()) {
+        for (Map.Entry<String, Object> entry : INPUT_STREAMLINE_EVENT.getFieldsAndValues().entrySet()) {
             binding.setVariable(entry.getKey(), entry.getValue());
         }
         binding.setVariable("__outputSchema", OUTPUT_SCHEMA_FIELDS);

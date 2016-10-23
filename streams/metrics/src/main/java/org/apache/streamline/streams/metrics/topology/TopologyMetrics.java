@@ -6,9 +6,9 @@ import org.apache.streamline.streams.layout.component.TopologyLayout;
 import java.util.Map;
 
 /**
- * Interface that shows metrics for IoTaS topology.
+ * Interface that shows metrics for Streamline topology.
  * <p/>
- * Each underlying streaming framework should provide implementations to integrate metrics of framework into IoTaS.
+ * Each underlying streaming framework should provide implementations to integrate metrics of framework into Streamline.
  * <p/>
  * Note that this interface also extends TopologyTimeSeriesMetrics, which is for querying topology metrics from time-series DB.
  */
@@ -22,7 +22,7 @@ public interface TopologyMetrics extends TopologyTimeSeriesMetrics {
     void init (Map<String, String> conf) throws ConfigException;
 
     /**
-     * Retrieves topology metric for IoTaS topology/
+     * Retrieves topology metric for Streamline topology/
      *
      * @param topology topology catalog instance. Implementations should find actual runtime topology with provided topology.
      * @return TopologyMetrics
@@ -30,12 +30,12 @@ public interface TopologyMetrics extends TopologyTimeSeriesMetrics {
     TopologyMetric getTopologyMetric(TopologyLayout topology);
 
     /**
-     * Retrieves metrics data for IoTaS topology.
+     * Retrieves metrics data for Streamline topology.
      *
      * @param topology topology catalog instance. Implementations should find actual runtime topology with provided topology.
      * @return pair of (component name, ComponentMetric instance).
      * Implementations should ensure that component name is same to UI name of component
-     * so that it can be matched to IoTas topology.
+     * so that it can be matched to Streamline topology.
      */
     Map<String, ComponentMetric> getMetricsForTopology(TopologyLayout topology);
 

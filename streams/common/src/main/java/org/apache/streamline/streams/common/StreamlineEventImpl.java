@@ -127,7 +127,7 @@ public class StreamlineEventImpl implements StreamlineEvent {
     }
 
     /**
-     * Returns a new Iotas event with the given fieldsAndValues added to the existing fieldsAndValues
+     * Returns a new Streamline event with the given fieldsAndValues added to the existing fieldsAndValues
      *
      * @param fieldsAndValues the map of fieldsAndValues to add
      * @return the new StreamlineEvent
@@ -141,7 +141,7 @@ public class StreamlineEventImpl implements StreamlineEvent {
     }
 
     /**
-     * Returns a new Iotas event with the given headers added to the existing headers.
+     * Returns a new Streamline event with the given headers added to the existing headers.
      * All the other fields are copied from this event.
      *
      * @param headers the map of fieldsAndValues to add or overwrite

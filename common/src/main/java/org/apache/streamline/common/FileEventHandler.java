@@ -3,7 +3,7 @@ package org.apache.streamline.common;
 import java.nio.file.Path;
 
 /**
- * An interface expected to be implemented by any Iotas component that needs to handle file watcher events.
+ * An interface expected to be implemented by any Streamline component that needs to handle file watcher events.
  * Currently supported events are create, delete and modify
  */
 public interface FileEventHandler {

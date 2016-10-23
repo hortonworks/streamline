@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Bolt for supporting custom processors components in an IoTaS topology
+ * Bolt for supporting custom processors components in an Streamline topology
  */
 public class CustomProcessorBolt extends BaseRichBolt {
     private static final Logger LOG = LoggerFactory.getLogger(CustomProcessorBolt.class);

@@ -48,7 +48,7 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 
 /**
- * Source component within an IotasTopology
+ * Source component within an StreamlineTopology
  */
 @Path("/api/v1/catalog/topologies/{topologyId}/sources")
 @Produces(MediaType.APPLICATION_JSON)

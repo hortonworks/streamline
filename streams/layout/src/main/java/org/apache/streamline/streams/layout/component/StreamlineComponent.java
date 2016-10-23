@@ -20,7 +20,7 @@ package org.apache.streamline.streams.layout.component;
 import org.apache.streamline.common.Config;
 
 /**
- * Any Iotas design time topology component (source, sink, processor etc)
+ * Any Streamline design time topology component (source, sink, processor etc)
  * inherits from {@link StreamlineComponent} to provide
  * the default implementation for the {@link Component} methods.
  */

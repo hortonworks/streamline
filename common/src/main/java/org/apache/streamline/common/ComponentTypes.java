@@ -1,7 +1,7 @@
 package org.apache.streamline.common;
 
 /**
- * The components supported by default in Iotas
+ * The components supported by default in Streamline
  */
 public class ComponentTypes {
 

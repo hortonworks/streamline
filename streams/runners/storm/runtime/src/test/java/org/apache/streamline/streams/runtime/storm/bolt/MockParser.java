@@ -22,7 +22,7 @@ public class MockParser extends BaseParser {
         put("a","b");
     }};
 
-    public static final StreamlineEvent IOTAS_EVENT = new StreamlineEventImpl(PARSER_OUTPUT, "dsrcid");
+    public static final StreamlineEvent STREAMLINE_EVENT = new StreamlineEventImpl(PARSER_OUTPUT, "dsrcid");
 
     @Override
     public String version() {

@@ -140,7 +140,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         // Reason for doing it this way is storm ui right now does not
         // support submitting a jar because of security vulnerability. Hence
         // for now, we just run the storm jar command in a shell on machine
-        // where IoTaS is deployed. It is run in StormTopologyActionsImpl
+        // where Streamline is deployed. It is run in StormTopologyActionsImpl
         // class. This also adds a security vulnerability. We will change
         // this later on using our cluster entity when its handled right in
         // storm.

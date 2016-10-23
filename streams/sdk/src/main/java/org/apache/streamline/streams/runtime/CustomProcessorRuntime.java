@@ -5,7 +5,7 @@ import org.apache.streamline.streams.exception.ConfigException;
 import java.util.Map;
 
 /**
- * An interface for supporting custom processor components in an IoTaS topology
+ * An interface for supporting custom processor components in an Streamline topology
  */
 public interface CustomProcessorRuntime extends ProcessorRuntime {
 
