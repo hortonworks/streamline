@@ -36,7 +36,7 @@
 
     <fileSets>
         <!--
-            $IOTAS_HOME/bin
+            $STREAMLINE_HOME/bin
         -->
         <fileSet>
             <directory>${project.basedir}./bin</directory>
@@ -92,7 +92,7 @@
 
     <files>
         <!--
-            $IOTAS_HOME/conf
+            $STREAMLINE_HOME/conf
         -->
         <file>
             <source>${project.basedir}./webservice/conf/streamline-dev.yaml</source>

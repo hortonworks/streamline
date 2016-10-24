@@ -1,4 +1,4 @@
-# IoTas Notifications API
+# Streamline Notifications API
 
 ## Get Notification by Id 
 

@@ -1,7 +1,7 @@
 ### A sample use case
 
 Lets assume we want to process data from two separate data sources, DEVICE-A & DEVICE-B. The devices are pushing
-messages to a single kafa topic *kafa-topic-T1*. Lets say, we also have parsers (that implement the iotas 
+messages to a single kafa topic *kafa-topic-T1*. Lets say, we also have parsers (that implement the Streamline
 *Parser* interface) for parsing the messages from these devices bundled into jar files.
  
 1. First we need to add the data source details via the datasource create API.
@@ -77,4 +77,3 @@ messages to a single kafa topic *kafa-topic-T1*. Lets say, we also have parsers 
   
   Also note that a `feed` represents the stream of data produced by a single `datasource`. However the same `datasource` can 
   be producing multiple `feeds` which can be parsed by same or different `parsers`.
-  

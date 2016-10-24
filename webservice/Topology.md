@@ -1,11 +1,11 @@
-# Iotas Topology REST API
+# Streamline Topology REST API
 
 
 **Topology**
 
 A *Topology* is a top level entity that is expected to be created by the 
 user through UI. It can be thought of as a graph representing different 
-components of an IoTaS topology and how they are connected. The components here
+components of an Streamline topology and how they are connected. The components here
 are the nodes of the graph and the connections between them are the edges. There
 are types of components. They are DataSources, DataSinks and Processors.
 Each component within a Topology is identified by a unique name in the UI. 

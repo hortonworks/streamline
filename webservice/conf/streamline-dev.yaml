@@ -68,9 +68,9 @@ storageProviderConfiguration:
 # providerClass: "org.apache.streamline.storage.atlas.AtlasStoreManager"
 # properties:
 #   atlas.graph.storage.backend: "berkeleyje"
-#   atlas.graph.storage.directory: "/var/data/iotas/graph/berkley"
+#   atlas.graph.storage.directory: "/var/data/streamline/graph/berkley"
 #   atlas.graph.index.search.backend: "elasticsearch"
-#   atlas.graph.index.search.directory: "/var/data/iotas/graph/elasticsearch"
+#   atlas.graph.index.search.directory: "/var/data/streamline/graph/elasticsearch"
 #   atlas.graph.index.search.elasticsearch.client-only: false
 #   atlas.graph.index.search.elasticsearch.local-mode: true
 #   atlas.graph.index.search.elasticsearch.create.sleep: 4000

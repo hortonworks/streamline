@@ -1,4 +1,4 @@
-name: "iotas-topology"
+name: "streamline-topology"
 config:
 #  topology.debug: true
   catalog.root.url: ${catalog.root.url}

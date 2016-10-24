@@ -1,6 +1,6 @@
 kafka.spout.zkUrl: "localhost:2181"
 kafka.spout.topic: "nest-topic"
-kafka.spout.zkRoot: "/Iotas-kafka-spout"
+kafka.spout.zkRoot: "/Streamline-kafka-spout"
 kafka.spout.id: "nest-kafka-spout"
 #parser.id: 1
 hbase.row.key: "device_id"

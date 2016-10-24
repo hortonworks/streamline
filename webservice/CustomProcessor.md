@@ -1,9 +1,9 @@
-# Iotas Custom Processor REST API
+# Streamline Custom Processor REST API
 
 
 **Custom Processor**
 
-A *Custom Processor* is a feature in IoTaS that will let a user plug in custom
+A *Custom Processor* is a feature in Streamline that will let a user plug in custom
 processing logic in their topologies. The first step to being able to do this
 is registering the custom processor components. The rest endpoint for adding,
 updating, deleting and getting custom processors is 
@@ -164,9 +164,9 @@ was used to assign the property jarFileName in custom processor post/put.
 
 ## Auto upload for Custom Processors
 
-IoTaS also provides a way to drop and upload custom processors to the system so that they can be used
+Streamline also provides a way to drop and upload custom processors to the system so that they can be used
 in topology editor, just as if they were uploaded using a POST request using REST endpoint. For this,
-IoTaS server needs to be started with three configuration parameters set in streamline.yaml. They are
+Streamline server needs to be started with three configuration parameters set in streamline.yaml. They are
 
 customProcessorWatchPath: "/tmp"
 
@@ -174,11 +174,11 @@ customProcessorUploadFailPath: "/tmp/failed"
 
 customProcessorUploadSuccessPath: "/tmp/uploaded"
 
-customProcessorWatchPath is where IoTaS will poll for any tar files that are created. Those tar files
+customProcessorWatchPath is where Streamline will poll for any tar files that are created. Those tar files
 will automatically be tried for upload as CustomProcessor implementations. If the upload succeeds the
 tar file will be moved to customProcessorUploadSuccessPath location and customProcessorUploadFailPath
 otherwise. Note that these 3 directories are expected to be created with right permissions before
-starting IoTaS. Any files other than tar will be ignored and moved to customProcessorUploadFailPath.
+starting Streamline. Any files other than tar will be ignored and moved to customProcessorUploadFailPath.
 The tar file is expected to have 2 files in it. The main file is info.json. This is the json file 
 containing json representing CustomProcessorInfo. A sample json is shown below. The name of the file
 has to be info.json. Otherwise it will fail to upload. The other file is the jar file.
