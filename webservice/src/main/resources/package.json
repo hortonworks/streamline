@@ -42,7 +42,7 @@
     "mobx": "^2.4.2",
     "mobx-react": "^3.5.4",
     "moment": "^2.14.1",
-    "pace": "git+https://github.com/HubSpot/pace.git",
+    "pace-progress": "https://github.com/HubSpot/pace/tarball/master",
     "react": "^15.2.1",
     "react-bootstrap": "^0.30.0",
     "react-bootstrap-switch": "^3.4.5",
