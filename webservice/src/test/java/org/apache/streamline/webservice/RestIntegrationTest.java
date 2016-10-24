@@ -26,6 +26,7 @@ import com.google.common.collect.Lists;
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.common.catalog.CatalogResponse;
 import org.apache.streamline.common.test.IntegrationTest;
+import org.apache.streamline.examples.processors.ConsoleCustomProcessor;
 import org.apache.streamline.registries.parser.ParserInfo;
 import org.apache.streamline.registries.tag.Tag;
 import org.apache.streamline.registries.tag.TaggedEntity;
@@ -45,7 +46,6 @@ import org.apache.streamline.streams.catalog.processor.CustomProcessorInfo;
 import org.apache.streamline.streams.catalog.topology.ConfigField;
 import org.apache.streamline.streams.catalog.topology.TopologyComponentDefinition;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.streamline.streams.runtime.processor.ConsoleCustomProcessorRuntime;
 import org.apache.streamline.streams.service.TopologyCatalogResource;
 import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit.DropwizardAppRule;
@@ -543,9 +543,9 @@ public class RestIntegrationTest {
         CustomProcessorInfo customProcessorInfo = createCustomProcessorInfo();
         String prefixQueryParam = "?streamingEngine=STORM";
         List<String> getUrlQueryParms = new ArrayList<String>();
-        getUrlQueryParms.add(prefixQueryParam + "&name=ConsoleCustomProcessorRuntime");
+        getUrlQueryParms.add(prefixQueryParam + "&name=ConsoleCustomProcessor");
         getUrlQueryParms.add(prefixQueryParam + "&jarFileName=streamline-core.jar");
-        getUrlQueryParms.add(prefixQueryParam + "&customProcessorImpl=" + ConsoleCustomProcessorRuntime.class.getCanonicalName());
+        getUrlQueryParms.add(prefixQueryParam + "&customProcessorImpl=" + ConsoleCustomProcessor.class.getCanonicalName());
         List<List<CustomProcessorInfo>> getResults = new ArrayList<List<CustomProcessorInfo>>();
         getResults.add(Arrays.asList(customProcessorInfo));
         getResults.add(Arrays.asList(customProcessorInfo));
@@ -937,10 +937,10 @@ public class RestIntegrationTest {
 
     private CustomProcessorInfo createCustomProcessorInfo () {
         CustomProcessorInfo customProcessorInfo = new CustomProcessorInfo();
-        customProcessorInfo.setName("ConsoleCustomProcessorRuntime");
+        customProcessorInfo.setName("ConsoleCustomProcessor");
         customProcessorInfo.setDescription("Console Custom Processor");
         customProcessorInfo.setJarFileName("streamline-core.jar");
-        customProcessorInfo.setCustomProcessorImpl(ConsoleCustomProcessorRuntime.class.getCanonicalName());
+        customProcessorInfo.setCustomProcessorImpl(ConsoleCustomProcessor.class.getCanonicalName());
         customProcessorInfo.setStreamingEngine(TopologyLayoutConstants.STORM_STREAMING_ENGINE);
         customProcessorInfo.setConfigFields(getConfigFields());
         customProcessorInfo.setInputSchema(getSchema());

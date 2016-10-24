@@ -1,0 +1,59 @@
+{
+  "type": "record",
+  "namespace": "com.hortonworks.iot",
+  "name": "trucks",
+  "fields": [
+    {
+      "name": "driverId",
+      "type": "long"
+    },
+    {
+      "name": "truckId",
+      "type": "long"
+    },
+    {
+      "name": "eventTime",
+      "type": "string"
+    },
+    {
+      "name": "eventType",
+      "type": "string"
+    },
+    {
+      "name": "latitude",
+      "type": "double"
+    },
+    {
+      "name": "longitude",
+      "type": "double"
+    },
+    {
+      "name": "eventKey",
+      "type": "string"
+    },
+    {
+      "name": "correlationId",
+      "type": "string"
+    },
+    {
+      "name": "driverName",
+      "type": "string"
+    },
+    {
+      "name": "routeId",
+      "type": "long"
+    },
+    {
+      "name": "routeName",
+      "type": "string"
+    },
+    {
+      "name": "eventDate",
+      "type": "string"
+    },
+    {
+      "name": "miles",
+      "type": "long"
+    }
+  ]
+}

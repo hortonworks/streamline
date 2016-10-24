@@ -13,10 +13,12 @@
         <module>common</module>
         <module>cache</module>
         <module>storage</module>
-        <module>simulator</module>
         <module>webservice</module>
         <module>streams</module>
         <module>registries</module>
+
+        <!--examples-->
+        <module>examples/processors</module>
     </modules>
 
     <properties>

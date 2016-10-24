@@ -15,19 +15,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import print_function
 
-#from services.zookeeper import ZookeeperService
 from services.kafka import KafkaService
 from services.storm import StormService
 from services.registry import RegistryService
 from services.streamline import StreamlineService
 from services import config_property
 
-import sys
-import yaml
-import logging
-import logging.config
+import sys, yaml
+import logging, logging.config
 
 class StreamlineTest(object):
     """

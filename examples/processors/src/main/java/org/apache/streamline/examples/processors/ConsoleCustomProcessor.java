@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.runtime.processor;
+package org.apache.streamline.examples.processors;
 
 import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
@@ -16,17 +16,17 @@ import java.util.Map;
 /**
  * Console Custom Processor is a sample custom processor to test the storm topology with custom processor bolt
  */
-public class ConsoleCustomProcessorRuntime implements CustomProcessorRuntime {
-    protected static final Logger LOG = LoggerFactory.getLogger(ConsoleCustomProcessorRuntime.class);
+public class ConsoleCustomProcessor implements CustomProcessorRuntime {
+    protected static final Logger LOG = LoggerFactory.getLogger(ConsoleCustomProcessor.class);
     public static final String CONFIG_FIELD_NAME = "configField";
     Map<String, Object> config;
-    @Override
+ 
     public void initialize(Map<String, Object> config) {
         this.config = config;
         LOG.info("Initializing with config field " + CONFIG_FIELD_NAME + " = " + this.config.get(CONFIG_FIELD_NAME).toString());
     }
 
-    @Override
+    
     public void validateConfig(Map<String, Object> config) throws ConfigException {
         LOG.debug("Validating config ");
         if (!config.containsKey(CONFIG_FIELD_NAME)) {
@@ -35,7 +35,7 @@ public class ConsoleCustomProcessorRuntime implements CustomProcessorRuntime {
         LOG.debug("Config valid ");
     }
 
-    @Override
+
     public List<Result> process(StreamlineEvent event) throws ProcessingException {
         LOG.debug("Processing {}", event);
         List<Result> results = new ArrayList<>();
@@ -43,7 +43,7 @@ public class ConsoleCustomProcessorRuntime implements CustomProcessorRuntime {
         return results;
     }
 
-    @Override
+   
     public void cleanup() {
         LOG.debug("Cleaning up");
     }

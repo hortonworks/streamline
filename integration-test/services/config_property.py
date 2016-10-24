@@ -48,4 +48,20 @@ STORM_HOME = "storm_home"
 REGISTRY_HOME = "registry_home"
 STREAMLINE_HOME = "streamline_home"
 
+"""
+Define test spec config property names here
+"""
+TEST_SETUP = "test_setup"
+REGISTRY_URL = "registry_url"
+STREAMLINE_URL = "streamline_url"
+PROCESSORS = "processors"
+SCHEMAS = "schemas"
+METADATA = "metadata"
+SCHEMA_FILE = "schemaFile"
+TOPIC = "topic"
+JAR_FILE = "jarFile"
+PAYLOAD = "payload"
+
+
+
 
