@@ -22,11 +22,14 @@ package org.apache.streamline.streams.catalog;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.common.Schema.Field;
 import org.apache.streamline.storage.PrimaryKey;
+import org.apache.streamline.storage.Storable;
 import org.apache.streamline.storage.catalog.AbstractStorable;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -114,7 +117,8 @@ public class StreamInfo extends AbstractStorable {
     public String getFieldsData() throws Exception {
         if (fields != null) {
             ObjectMapper mapper = new ObjectMapper();
-            return mapper.writeValueAsString(fields);
+            return mapper.writerFor(new TypeReference<List<Field>>() {
+            }).writeValueAsString(fields);
         }
         return "";
     }
@@ -193,5 +197,25 @@ public class StreamInfo extends AbstractStorable {
             throw new RuntimeException(e);
         }
         return map;
+    }
+
+    @Override
+    public Storable fromMap(Map<String, Object> map) {
+        setId((Long) map.get(ID));
+        setStreamId((String) map.get(STREAMID));
+        setTopologyId((Long) map.get(TOPOLOGYID));
+        setTimestamp((Long)map.get(TIMESTAMP));
+        ObjectMapper mapper = new ObjectMapper();
+        String fieldsDataStr = (String) map.get(FIELDSDATA);
+        if (!StringUtils.isEmpty(fieldsDataStr)) {
+            List<Field> fields;
+            try {
+                fields = mapper.readValue(fieldsDataStr, new TypeReference<List<Field>>() {});
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            setFields(fields);
+        }
+        return this;
     }
 }

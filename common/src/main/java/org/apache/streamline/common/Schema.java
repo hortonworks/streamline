@@ -17,6 +17,14 @@
  */
 package org.apache.streamline.common;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.DatabindContext;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
+import com.fasterxml.jackson.databind.annotation.JsonTypeResolver;
+import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.common.collect.ImmutableList;
 import org.apache.streamline.common.exception.ParserException;
 
@@ -91,6 +99,68 @@ public class Schema implements Serializable {
         }
     }
 
+    /**
+     * A custom JsonTypeIdResolver that uses the Field.Type property to deserialize
+     * to the correct Schema.Field and/or its sub-classes.
+     */
+    static class SchemaJsonTypeIdResolver implements TypeIdResolver {
+        private JavaType baseType;
+
+        @Override
+        public void init(JavaType javaType) {
+            baseType = javaType;
+        }
+
+        @Override
+        public String idFromValue(Object o) {
+            return idFromValueAndType(o, o.getClass());
+        }
+
+        @Override
+        public String idFromValueAndType(Object o, Class<?> aClass) {
+            return null;
+        }
+
+        @Override
+        public String idFromBaseType() {
+            return idFromValueAndType(null, baseType.getRawClass());
+        }
+
+        @Override
+        public JavaType typeFromId(String s) {
+            return typeFromId(null, s);
+        }
+
+        @Override
+        public JavaType typeFromId(DatabindContext databindContext, String s) {
+            Type fieldType = Schema.Type.valueOf(s);
+            JavaType javaType;
+            switch (fieldType) {
+                case NESTED:
+                    javaType = TypeFactory.defaultInstance().constructType(NestedField.class);
+                    break;
+                case ARRAY:
+                    javaType = TypeFactory.defaultInstance().constructType(ArrayField.class);
+                    break;
+                default:
+                    javaType = TypeFactory.defaultInstance().constructType(Field.class);
+            }
+            return javaType;
+        }
+
+        @Override
+        public String getDescForKnownTypeIds() {
+            return null;
+        }
+
+        @Override
+        public JsonTypeInfo.Id getMechanism() {
+            return JsonTypeInfo.Id.CUSTOM;
+        }
+    }
+
+    @JsonTypeInfo(use= JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "type", visible = true)
+    @JsonTypeIdResolver(SchemaJsonTypeIdResolver.class)
     public static class Field implements Serializable {
         String name;
         Type type;
@@ -209,7 +279,7 @@ public class Schema implements Serializable {
      * A composite type for representing nested types.
      */
     public static class NestedField extends Field {
-        private final List<Field> fields;
+        private List<Field> fields;
 
         public static NestedField of(String name, List<Field> fields) {
             return new NestedField(name, fields);
@@ -227,6 +297,7 @@ public class Schema implements Serializable {
             return new NestedField(name, Arrays.asList(fields), true);
         }
 
+        private NestedField() {}
         private NestedField(String name, List<Field> fields) {
             this(name, fields, false);
         }

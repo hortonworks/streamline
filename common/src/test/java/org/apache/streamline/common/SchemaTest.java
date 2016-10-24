@@ -18,10 +18,14 @@
 
 package org.apache.streamline.common;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -56,5 +60,23 @@ public class SchemaTest {
         ObjectMapper mapper = new ObjectMapper();
         Schema schema = mapper.readValue(json, Schema.class);
         System.out.println(schema);
+    }
+
+    @Test
+    public void testSerializeNestedSchema() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        Schema nested = new Schema();
+        Schema.Field f1 = new Schema.Field("field1", Type.INTEGER);
+        Schema.Field x = new Schema.Field("x", Type.INTEGER);
+        Schema.Field y = new Schema.Field("y", Type.INTEGER);
+        Schema.Field f2 = Schema.NestedField.of("field2", Arrays.asList(x, y));
+        nested.setFields(Arrays.asList(f1, f2));
+        String expected = "{\"fields\":[{\"name\":\"field1\",\"type\":\"INTEGER\",\"optional\":false}," +
+                "{\"name\":\"field2\",\"type\":\"NESTED\",\"optional\":false,\"fields\":[{\"name\":\"x\",\"type\":\"INTEGER\"," +
+                "\"optional\":false},{\"name\":\"y\",\"type\":\"INTEGER\",\"optional\":false}]}]}";
+        assertEquals(expected, mapper.writeValueAsString(nested));
+        Schema schema2;
+        schema2 = mapper.readValue(expected, Schema.class);
+        assertEquals(nested, schema2);
     }
 }
