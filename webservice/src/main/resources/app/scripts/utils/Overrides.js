@@ -1,6 +1,6 @@
 import ReactCodemirror from 'react-codemirror';
 import fetch from 'isomorphic-fetch';
-import pace from 'pace';
+import pace from 'pace-progress';
 
 ReactCodemirror.prototype.componentWillReceiveProps =  function(nextProps){
 
