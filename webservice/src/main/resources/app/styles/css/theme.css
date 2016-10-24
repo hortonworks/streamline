@@ -15,6 +15,11 @@ body {
   -webkit-font-smoothing: antialiased;
   padding-bottom: 30px;
 }
+body.graph-bg {
+    background: #eef0ef url('../../../styles/img/graph-bg.png') repeat;
+    /*background-size: 20px 20px;
+    background-image: linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px);*/
+}
 footer {
         position: fixed;
         bottom: 0px;
@@ -167,6 +172,7 @@ footer {
         text-align: center;
         z-index: 0;
         line-height: 20px;
+        margin: 1px;
 }
 .hb,
 .hb:before,
@@ -242,4 +248,57 @@ footer {
         background: #288432;
         border-left:1px solid #288432;
         border-right:1px solid #288432;
+}
+
+/* Topolgy Editor */
+.topology-editor-controls a {
+    color: #1892c1;
+    font-size: 21px;
+    margin-left: 8px;
+}
+.topology-editor-controls a:hover {
+    color: #0d739a;
+}
+.component-panel {
+    position: fixed;
+    height: 480px;
+    top: 50%;
+    left: 0px;
+    margin-top: -240px;
+    overflow-y: auto;
+    background-color: #fff;
+    padding: 10px;
+    font-size: 0.875em;
+    border-radius: 0px 10px 10px 0px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+}
+.component-title {
+    color: #808487;
+    text-align: center;
+    text-transform: uppercase;
+}
+.component-list {
+    list-style: none;
+    padding: 0px;
+    margin-bottom: 15px;
+}
+.component-list > li {
+    text-align: center;
+    color: #72bcd5;
+    margin-bottom: 10px;
+}
+.component-list > li > img {
+    display: block;
+    margin: 0 auto 4px;
+    width: 24px;
+}
+
+.topology-footer {
+    width: 100%;
+    position: absolute;
+    bottom: 0px;
+    padding: 20px;
+}
+.displayNone {
+    display: none;
 }

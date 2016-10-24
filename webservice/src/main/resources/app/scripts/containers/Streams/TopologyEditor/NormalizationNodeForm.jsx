@@ -424,7 +424,7 @@ export default class NormalizationNodeForm extends Component {
 										onChange={this.handleStreamChange.bind(this)}
 										required={true}
 										searchable={false}
-										disabled={!this.state.editMode}
+                                                                                clearable={false}
 									/>
 								</div>
 							</div>

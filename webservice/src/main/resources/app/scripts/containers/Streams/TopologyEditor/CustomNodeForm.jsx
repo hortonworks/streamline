@@ -234,7 +234,7 @@ export default class CustomNodeForm extends Component {
 							}
 						</form>
 					</Tab>
-					<Tab eventKey={2} title="Output Streams">
+                                        <Tab eventKey={2} title="Output Streams" unmountOnExit={true}>
 						{showSchema ?
 							<OutputSchema
 								topologyId={topologyId}

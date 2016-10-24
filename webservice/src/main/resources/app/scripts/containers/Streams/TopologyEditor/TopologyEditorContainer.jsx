@@ -71,8 +71,9 @@ class EditorGraph extends Component{
 		const { boxes } = this.state;
 		return connectDropTarget(
 			<div>
-				<div className="graph-bg" style={{height: actualHeight}}>
+                                <div className="" style={{height: actualHeight}}>
                                         <TopologyGraphComponent
+                                                ref="TopologyGraph"
 						height={parseInt(actualHeight, 10)}
 						data={graphData}
 						topologyId={topologyId}
@@ -114,6 +115,10 @@ class TopologyEditorContainer extends Component {
 	}
 	componentWillMount(){
 		state.showComponentNodeContainer = true;
+                document.getElementsByTagName('body')[0].className='graph-bg'
+        }
+        componentWillUnmount(){
+                document.getElementsByTagName('body')[0].className=''
 	}
 
   componentDidMount() {
@@ -207,7 +212,11 @@ class TopologyEditorContainer extends Component {
 			metaInfo: {
 				sources: [],
 				processors: [],
-				sinks: []
+                                sinks: [],
+                                graphTransforms: {
+                                        dragCoords: [0,0],
+                                        zoomScale: 1
+                                }
 			}
 		};
 	}
@@ -292,10 +301,12 @@ class TopologyEditorContainer extends Component {
 				//Check for custom processor
 				if(node.currentType.toLowerCase() === Components.Processors[2].name.toLowerCase()){
 					let index = null;
+                                        let customNames = this.graphData.metaInfo.customNames;
+                                        let customNameObj = _.find(customNames, {uiname: node.uiname});
 					config.map((c,i)=>{
 						let configArr = JSON.parse(c.config);
 						configArr.map(o=>{
-							if(o.name === 'name' && o.defaultValue === node.uiname){
+                                                        if(o.name === 'name' && o.defaultValue === customNameObj.customProcessorName){
 								index = i;
 							}
 						})
@@ -409,6 +420,12 @@ class TopologyEditorContainer extends Component {
 					} else {
 						this.node.isConfigured = true;
 						let i = this.graphData.uinamesList.indexOf(this.node.uiname);
+                                                if(this.node.currentType === 'Custom') {
+                                                        let obj = _.find(this.graphData.metaInfo.customNames, {uiname: this.node.uiname});
+                                                        obj.uiname = savedNode.entity.name;
+                                                        this.node.uiname = savedNode.entity.name;
+                                                        TopologyUtils.updateMetaInfo(this.topologyId, this.node, this.graphData.metaInfo);
+                                                }
 						this.node.uiname = savedNode.entity.name;
 						this.node.parallelismCount = savedNode.entity.config.properties.parallelism || 1;
 						if(i > -1)
@@ -429,79 +446,64 @@ class TopologyEditorContainer extends Component {
 	getCustomProcessors() {
 		return this.processorConfigArr.filter((o)=>{ return o.subType === 'CUSTOM'});
 	}
+        graphZoomAction(zoomType){
+                this.refs.EditorGraph.refs.child.decoratedComponentInstance
+                        .refs.TopologyGraph.decoratedComponentInstance.zoomAction(zoomType);
+        }
  	render() {
  		let nodeType = this.node ? this.node.currentType : '';
 		return (
 			<BaseContainer ref="BaseContainer" routes={this.props.routes} onLandingPage="false" breadcrumbData={this.breadcrumbData}>
 				<div className="row">
 					<div className="col-sm-12">
-						<div className="box">
-							<div className="box-head">
-                                                                {!this.viewMode ?
-                                                                        <Editable id="topologyName"
-                                                                                ref="topologyNameEditable"
-                                                                                inline={false}
-										resolve={this.saveTopologyName.bind(this)}
-										reject={this.handleEditableReject.bind(this)}
-									>
-										<input defaultValue={this.state.topologyName} onChange={this.handleNameChange.bind(this)}/>
-									</Editable>
-                                                                :
-									<span style={{color: "#43a047"}}>{this.state.topologyName}</span>
-								}
-								{!this.viewMode ?
-									<div className="box-controls">
-										<OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Run</Tooltip>}>
-											<a href="javascript:void(0);" className="play" onClick={this.deployTopology.bind(this)}><i className="fa fa-play"></i></a>
-										</OverlayTrigger>
-
-										<OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Kill</Tooltip>}>
-											<a href="javascript:void(0);" className="remove" onClick={this.killTopology.bind(this)}><i className="fa fa-times"></i></a>
-										</OverlayTrigger>
-									</div>
-								: null}
-                                                                {!this.viewMode ?
-									<div className="box-controls">
-                                                                                {!this.viewMode && !state.showComponentNodeContainer ?
-											<OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Components</Tooltip>}>
-												<a href="javascript:void(0);" className="show-node-list" onClick={this.showHideComponentNodeContainer.bind(this)}><i className="fa fa-th-list"></i></a>
-											</OverlayTrigger>
-										: null}
-
-										<OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Configure</Tooltip>}>
-											<a href="javascript:void(0);" className="config" onClick={this.showConfig.bind(this)}><i className="fa fa-gear"></i></a>
-										</OverlayTrigger>
-									</div>
-								: null}
-								<div className="box-controls">
-                                                                        {this.viewMode ?
-										<OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Edit</Tooltip>}>
-											<a href="javascript:void(0);" className="show-node-list" onClick={this.handleModeChange.bind(this, false)}><i className="fa fa-pencil"></i></a>
-										</OverlayTrigger>
-                                                                        :
-										<OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Save</Tooltip>}>
-											<a href="javascript:void(0);" className="config" onClick={this.handleModeChange.bind(this, true)}><i className="fa fa-save"></i></a>
-										</OverlayTrigger>
-									}
-								</div>
+                                        <div className="box">
+                                                <div className="page-title-box clearfix">
+                                                        <div className="topology-editor-controls pull-right">
+                                                                <OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Zoom In</Tooltip>}>
+                                                                        <a href="javascript:void(0);" className="zoom-in" onClick={this.graphZoomAction.bind(this, 'zoom_in')}><i className="fa fa-search-plus"></i></a>
+                                                                </OverlayTrigger>
+                                                                <OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Zoom Out</Tooltip>}>
+                                                                        <a href="javascript:void(0);" className="zoom-out" onClick={this.graphZoomAction.bind(this, 'zoom_out')}><i className="fa fa-search-minus"></i></a>
+                                                                </OverlayTrigger>
+                                                                <OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Configure</Tooltip>}>
+                                                                        <a href="javascript:void(0);" className="config" onClick={this.showConfig.bind(this)}><i className="fa fa-gear"></i></a>
+                                                                </OverlayTrigger>
 							</div>
-                                                        <EditorGraph
+                                                </div>
+                                                <EditorGraph
+                                                                ref="EditorGraph"
 								graphData={this.graphData}
 								viewMode={this.viewMode}
 								topologyId={this.topologyId}
 								getModalScope={this.getModalScope.bind(this)}
 								setModalContent={this.setModalContent.bind(this)}
 								customProcessors={this.customProcessors}
-							/>
+                                                />
+                                                <div className="topology-footer">
+                                                        {this.viewMode ?
+                                                                [
+                                                                <OverlayTrigger key={1} placement="top" overlay={<Tooltip id="tooltip">Run</Tooltip>}>
+                                                                <a href="javascript:void(0);" className="hb success pull-right" onClick={this.deployTopology.bind(this)}><i className="fa fa-paper-plane"></i></a>
+                                                                </OverlayTrigger>,
+                                                                <OverlayTrigger key={2} placement="top" overlay={<Tooltip id="tooltip">Edit</Tooltip>}>
+                                                                                <a href="javascript:void(0);" className="hb success pull-right show-node-list" onClick={this.handleModeChange.bind(this, false)}><i className="fa fa-pencil"></i></a>
+                                                                </OverlayTrigger>
+                                                                ]
+                                                                :
+                                                                <OverlayTrigger key={1} placement="top" overlay={<Tooltip id="tooltip">Save</Tooltip>}>
+                                                                                <a href="javascript:void(0);" className="hb success pull-right save" onClick={this.handleModeChange.bind(this, true)}><i className="fa fa-save"></i></a>
+                                                                </OverlayTrigger>
+                                                        }
 						</div>
 					</div>
+                                        </div>
 				</div>
 				<Modal ref="TopologyConfigModal" data-title="Topology Configuration" data-resolve={this.handleSaveConfig.bind(this)}>
-					<TopologyConfig ref="topologyConfig" topologyId={this.topologyId} data={this.topologyConfig} topologyName={this.state.topologyName}/>
+                                        <TopologyConfig ref="topologyConfig" topologyId={this.topologyId} data={this.topologyConfig} topologyName={this.state.topologyName} viewMode={this.viewMode}/>
 				</Modal>
 				<Modal ref="NodeModal"
 					bsSize="large"
-                                        data-title={ this.viewMode ? this.modalTitle : (nodeType === "Custom" ? this.modalTitle :
+                        data-title={ this.viewMode ? this.modalTitle :
 						(<Editable
 							ref="editableNodeName"
 							inline={true}
@@ -510,7 +512,7 @@ class TopologyEditorContainer extends Component {
 							>
 							<input defaultValue={this.modalTitle} onChange={this.handleNodeNameChange.bind(this)}/>
 						</Editable>)
-					)}
+                                        }
 					data-resolve={this.handleSaveNodeModal.bind(this)}>
 					{this.modalContent()}
 				</Modal>

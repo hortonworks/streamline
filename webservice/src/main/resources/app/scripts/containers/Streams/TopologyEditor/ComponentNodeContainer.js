@@ -105,96 +105,16 @@ export default class ComponentNodeContainer extends Component {
 	handleSelectPanel(activeKey){
 		this.setState({ activeKey });
 	}
-	handleSearchComponent(e) {
-		let name = e.target.value,
-			showSources = false,
-			showProcessors = false,
-			showSinks = false,
-			datasourcesArr = [],
-			processorsArr = [],
-			sinksArr = [];
-
-		if(name === '') {
-			let componentsObj = this.getAllComponents();
-			this.setState({
-				datasources: componentsObj.datasources,
-				processors: componentsObj.processors,
-				sinks: componentsObj.sinks,
-				searchComponent: false
-			});
-			return;
-		}
-
-		Components.Datasources.map((o)=>{
-			if(o.label.toLowerCase().indexOf(name.toLowerCase())!=-1 && !o.hideOnUI) {
-				datasourcesArr.push(o);
-			}
-		});
-		Components.Processors.map((o)=>{
-			if(o.label.toLowerCase().indexOf(name.toLowerCase())!=-1 && !o.hideOnUI && o.label !== 'Custom') {
-				processorsArr.push(o);
-			}
-		});
-		this.props.customProcessors.map((p)=>{
-			let config = p.config ? JSON.parse(p.config) : {},
-				customName = _.find(config, {name: "name"});
-			p.label = customName.defaultValue;
-			if(p.label.toLowerCase().indexOf(name.toLowerCase())!=-1) {
-				processorsArr.push(p);
-			}
-		});
-		Components.Sinks.map((o)=>{
-			if(o.label.toLowerCase().indexOf(name.toLowerCase())!=-1 && !o.hideOnUI) {
-				sinksArr.push(o);
-			}
-		});
-		if(datasourcesArr.length > 0) {
-			datasourcesArr = Utils.sortArray(datasourcesArr.slice(), 'label', true);
-			showSources = true;
-		}
-		if(processorsArr.length > 0) {
-			processorsArr = Utils.sortArray(processorsArr.slice(), 'label', true);
-			showProcessors = true;
-		}if(sinksArr.length > 0) {
-			sinksArr = Utils.sortArray(sinksArr.slice(), 'label', true);
-			showSinks = true;
-		}
-
-		this.setState({
-			searchComponent: true,
-			sourceBox: showSources,
-			datasources: datasourcesArr,
-			processorBox: showProcessors,
-			processors: processorsArr,
-			sinkBox: showSinks,
-			sinks: sinksArr
-		});
-	}
 	render(){
 		const { hideSourceOnDrag, left, top, isDragging, children } = this.props;
 	    if (isDragging && hideSourceOnDrag) {
 	      return null;
 	    }
 		return (
-			<div className="component-panel">
-					<div>
-						<input
-							className="form-control"
-							type="text"
-							placeholder="Search..."
-							onChange={this.handleSearchComponent.bind(this)}
-						/>
-					</div>
-					<PanelGroup activeKey={this.state.activeKey} onSelect={this.handleSelectPanel.bind(this)} id="component-accordion">
-						<Panel
-							eventKey="1"
-							header={this.getSourceHeader()}
-							onSelect={this.showHideSourceBox.bind(this)}
-							collapsible={true}
-							expanded={this.state.sourceBox}
-						>
-							<ul className="list-group">
-							{this.state.datasources.map((source, i)=>{
+                        <div className="component-panel right">
+                                        <h6 className="component-title">Source</h6>
+                                        <ul className="component-list">
+                                                {this.state.datasources.map((source, i)=>{
 								if(source.hideOnUI === 'true'){
 									return null;
 								}
@@ -208,18 +128,11 @@ export default class ComponentNodeContainer extends Component {
 										hideSourceOnDrag={false}
 									/>
 								)
-							})}
-							</ul>
-						</Panel>
-						<Panel
-							eventKey="2"
-							header={this.getProcessorHeader()}
-							onSelect={this.showHideProcessorBox.bind(this)}
-							collapsible={true}
-							expanded={this.state.processorBox}
-						>
-							<ul className="list-group">
-							{this.state.processors.map((processor, i)=>{
+                                                })}
+                                        </ul>
+                                        <h6 className="component-title">Processor</h6>
+                                        <ul className="component-list">
+                                                {this.state.processors.map((processor, i)=>{
 								if(processor.hideOnUI === 'true'){
 									return null;
 								}
@@ -229,7 +142,7 @@ export default class ComponentNodeContainer extends Component {
 									return (
 									<NodeContainer
 										key={i}
-                                                                                imgPath="styles/img/color-icon-custom.png"
+                                                                                imgPath="styles/img/icon-custom.png"
 										name={name ? name.defaultValue : 'Custom'}
 										type={Components.Processor.value}
 										nodeType="Custom"
@@ -248,17 +161,11 @@ export default class ComponentNodeContainer extends Component {
 									/>
 									)
 								}
-							})}
-							</ul>
-						</Panel>
-						<Panel
-							eventKey="3"
-							header={this.getSinkHeader()}
-							onSelect={this.showHideSinkBox.bind(this)}
-							collapsible={true}
-							expanded={this.state.sinkBox}
-						>
-							{this.state.sinks.map((sink, i)=>{
+                                                })}
+                                        </ul>
+                                        <h6 className="component-title">Sink</h6>
+                                        <ul className="component-list">
+                                                {this.state.sinks.map((sink, i)=>{
 								if(sink.hideOnUI === 'true'){
 									return null;
 								}
@@ -272,9 +179,8 @@ export default class ComponentNodeContainer extends Component {
 										hideSourceOnDrag={false}
 									/>
 								)
-							})}
-						</Panel>
-					</PanelGroup>
+                                                })}
+                                        </ul>
 			</div>
 		)
 	}

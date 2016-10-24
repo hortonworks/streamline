@@ -97,6 +97,9 @@ export default class OutputSchema extends Component {
 
 	handleValueChange(e) {
 		let obj = {};
+                if(e.target.value.indexOf('-') > -1) {
+                        return;
+                }
 		obj[e.target.name] = e.target.value;
 		this.setState(obj);
 	}

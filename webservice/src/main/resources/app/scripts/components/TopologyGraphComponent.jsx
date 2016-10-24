@@ -139,31 +139,84 @@ export default class TopologyGraphComponent extends Component {
 			thisGraph.svgMouseUp.call(thisGraph, d);
 		});
 
-		// listen for dragging
-		// this.dragSvg = d3.behavior.zoom().scaleExtent([0, 8]).on("zoom", function(){
-		// 	thisGraph.internalFlags.justScaleTransGraph = true;
-		// 	d3.select("." + thisGraph.constants.graphClass)
-		// 		.attr("transform", "translate(" + thisGraph.dragSvg.translate() + ")" + "scale(" + thisGraph.dragSvg.scale() + ")");
-		// }).on("zoomend", function() {
-		// 	let gTranslate = thisGraph.dragSvg.translate(),
-		// 		gScaled = thisGraph.dragSvg.scale();
+                // listen for dragging - also used for zoom in/out via buttons
+                this.dragSvg = d3.behavior.zoom().scaleExtent([0, 8]).on("zoom", function(){
+                        thisGraph.internalFlags.justScaleTransGraph = true;
+                        d3.select("." + thisGraph.constants.graphClass)
+                                .attr("transform", "translate(" + thisGraph.dragSvg.translate() + ")" + "scale(" + thisGraph.dragSvg.scale() + ")");
+                }).on("zoomend", function() {
+                        let gTranslate = thisGraph.dragSvg.translate(),
+                                gScaled = thisGraph.dragSvg.scale();
 
-		// 	thisGraph.graphTransforms = {
-		// 		dragCoords: gTranslate,
-		// 		zoomScale: gScaled
-		// 	};
-		// 	console.info("Save graph transform values.");
-		// });
+                        thisGraph.graphTransforms = {
+                                dragCoords: gTranslate,
+                                zoomScale: gScaled
+                        };
+                        //NOTE - If using scroll to zoom in/out, then SAVE METADATA HERE
+                });
 
-		// this.dragSvg.translate(this.graphTransforms.dragCoords);
-		// this.dragSvg.scale(this.graphTransforms.zoomScale);
-		// this.dragSvg.event(svg);
+                this.dragSvg.translate(this.graphTransforms.dragCoords);
+                this.dragSvg.scale(this.graphTransforms.zoomScale);
+                this.dragSvg.event(svg);
 
+                //NOTE - To use scroll for zoom in/out, uncomment the below line
 		// svg.call(this.dragSvg).on("dblclick.zoom", null);
 
 		this.updateGraph();
 		this.renderFlag = true;
 	}
+
+        zoomAction(zoomType){
+                let thisGraph = this,
+                        direction = 1,
+                factor = 0.2,
+                target_zoom = 1,
+                center = [thisGraph.svg[0][0].clientWidth / 2, thisGraph.svg[0][0].clientHeight / 2],
+                zoom = thisGraph.dragSvg,
+                extent = zoom.scaleExtent(),
+                translate = zoom.translate(),
+                translate0 = [],
+                l = [],
+                view = {x: translate[0], y: translate[1], k: zoom.scale()};
+
+            direction = (zoomType === 'zoom_in') ? 1 : -1;
+            target_zoom = zoom.scale() * (1 + factor * direction);
+
+            if (target_zoom < extent[0] || target_zoom > extent[1]) { return false; }
+
+            translate0 = [(center[0] - view.x) / view.k, (center[1] - view.y) / view.k];
+            view.k = target_zoom;
+            l = [translate0[0] * view.k + view.x, translate0[1] * view.k + view.y];
+
+            view.x += center[0] - l[0];
+            view.y += center[1] - l[1];
+
+            thisGraph.interpolateZoom([view.x, view.y], view.k);
+        }
+
+        interpolateZoom(translate, scale){
+                let thisGraph = this,
+                        zoom = thisGraph.dragSvg;
+            return d3.transition().duration(350).tween("zoom", function () {
+                let iTranslate = d3.interpolate(zoom.translate(), translate),
+                    iScale = d3.interpolate(zoom.scale(), scale);
+                return function (t) {
+                    zoom
+                        .scale(iScale(t))
+                        .translate(iTranslate(t));
+                    d3.select("." + thisGraph.constants.graphClass)
+                                        .attr("transform", "translate(" + thisGraph.dragSvg.translate() + ")" + "scale(" + thisGraph.dragSvg.scale() + ")");
+                                thisGraph.metaInfo.graphTransforms = thisGraph.graphTransforms = {
+                                        dragCoords: thisGraph.dragSvg.translate(),
+                                        zoomScale: thisGraph.dragSvg.scale()
+                                };
+                                clearTimeout(this.saveMetaInfoTimer);
+                                this.saveMetaInfoTimer = setTimeout(()=>{
+                                        TopologyUtils.saveMetaInfo(thisGraph.topologyId, null, thisGraph.metaInfo, null);
+                                },500)
+                };
+            });
+        }
 
 	dragMove(d){
 		let {internalFlags, constants} = this;
@@ -263,10 +316,12 @@ export default class TopologyGraphComponent extends Component {
 	createNode(delta, imgUrl, parentType, name, currentType){
 		let {internalFlags, constants, nodes, topologyId, metaInfo, paths, edges, uinamesList} = this;
 		internalFlags.graphMouseDown = true;
-		// var xycoords = d3.mouse(thisGraph.svgG.node()),
+                        d3.event = event
+                        var xycoords = d3.mouse(this.svgG.node());
+                        d3.event = null;
 		let d = {
-			x: delta.x + (constants.rectangleWidth / 2) - constants.rectangleWidth,
-			y: delta.y - (constants.rectangleHeight / 2) - constants.rectangleHeight - 5.5,
+                        x: xycoords[0] + (constants.rectangleWidth / 2) - constants.rectangleWidth,
+                        y: xycoords[1] - (constants.rectangleHeight / 2) - 5.5,
 			parentType: parentType,
 			currentType: currentType,
 			uiname: name,
@@ -440,7 +495,8 @@ export default class TopologyGraphComponent extends Component {
 		});
 
 		thisGraph.rectangles.selectAll('rect')
-			.attr("filter", function(d){ if(!d.isConfigured){ return "url(#grayscale)"; } else return ""; });
+                        .attr("filter", function(d){ if(!d.isConfigured){ return "url(#grayscale)"; } else return ""; })
+                        .attr("filter", function(d){ return "url(#dropshadow)"; });
 		thisGraph.rectangles.selectAll('image')
                         .attr("filter", function(d){ return "url(#grayscale)"; });
 		thisGraph.rectangles.selectAll('circle')
@@ -467,6 +523,7 @@ export default class TopologyGraphComponent extends Component {
                         newGs.append("rect").attr("width", constants.rectangleWidth + constants.rectangleHeight).attr("height",constants.rectangleHeight-1)
                                 .attr("class", function(d){ return 'node-rectangle ' + TopologyUtils.getNodeRectClass(d);})
 				.attr("filter", function(d){ if(!d.isConfigured) return "url(#grayscale)"; else return ""; })
+                                .attr("filter", function(d){ return "url(#dropshadow)"; })
 				.on("mouseover", function(d){ if(thisGraph.editMode) d3.select(this.parentElement).select('text.fa.fa-times').style('display','block'); })
 				.on("mouseout", function(d){ if(thisGraph.editMode) d3.select(this.parentElement).select('text.fa.fa-times').style('display','none'); })
                                 .on('mousedown', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d); })
@@ -655,13 +712,19 @@ export default class TopologyGraphComponent extends Component {
 		this.edges = data.edges;
 		this.metaInfo = data.metaInfo;
 		this.linkShuffleOptions = data.linkShuffleOptions;
-		this.graphTransforms = data.graphTransforms || {
+                this.graphTransforms = data.metaInfo.graphTransforms || {
 			dragCoords: [0,0],
 			zoomScale: 1
 		};
 		this.getModalScope = this.props.getModalScope;
 		this.setModalContent = this.props.setModalContent;
 		if(this.renderFlag){
+                        d3.select("." + this.constants.graphClass)
+                                .attr("transform", "translate(" + this.graphTransforms.dragCoords + ")" + "scale(" + this.graphTransforms.zoomScale + ")");
+                        this.dragSvg.translate(this.graphTransforms.dragCoords);
+                        this.dragSvg.scale(this.graphTransforms.zoomScale);
+                        this.dragSvg.event(this.svg);
+
 			this.updateGraph();
 		}
 		return connectDropTarget(

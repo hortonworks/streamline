@@ -51,6 +51,28 @@ const defineMarkers = function(svg){
 		.append('feColorMatrix')
 			.attr('type', 'saturate')
 			.attr('values', '0');
+
+        // define filter for node shadow
+        var filter = defs.append('svg:filter')
+                .attr('id', 'dropshadow')
+                .attr('x', 0)
+                .attr('y', 0)
+                .attr('width', '200%')
+                .attr('height', '200%');
+
+                filter.append('feOffset')
+                        .attr('result', 'offOut')
+                        .attr('in', 'SourceAlpha')
+                        .attr('dx', -4)
+                        .attr('dy', -4);
+                filter.append('feGaussianBlur')
+                        .attr('result', 'blurOut')
+                        .attr('in', 'offOut')
+                        .attr('stdDeviation', 6);
+                filter.append('feBlend')
+                        .attr('in', 'SourceGraphic')
+                        .attr('in2', 'blurOut')
+                        .attr('mode', 'normal');
 }
 
 const isValidConnection = function(sourceNode, targetNode){
@@ -75,6 +97,7 @@ const createNode = function(topologyId, data, callback, metaInfo, paths, edges, 
 
 	data.map((o)=>{
 		let nodeType = this.getNodeType(o.parentType);
+                let customName = o.uiname;
 
 		//Dynamic Names of nodes
 		while(uinamesList.indexOf(o.uiname) !== -1){
@@ -88,6 +111,19 @@ const createNode = function(topologyId, data, callback, metaInfo, paths, edges, 
 		uinamesList.push(o.uiname);
 		//
 		//
+                if(o.currentType === 'Custom') {
+                        if(metaInfo.customNames) {
+                                metaInfo.customNames.push({
+                                        uiname: o.uiname,
+                                        customProcessorName: customName
+                                });
+                        } else {
+                                metaInfo.customNames = [{
+                                        uiname: o.uiname,
+                                        customProcessorName: customName
+                                }];
+                        }
+                }
 		let obj = {
 			name: o.uiname,
 			config: {},
@@ -121,14 +157,16 @@ const createNode = function(topologyId, data, callback, metaInfo, paths, edges, 
 }
 
 const saveMetaInfo = function(topologyId, nodes, metaInfo, callback){
-	nodes.map((o)=>{
-		let obj = {
-			x: o.x,
-			y: o.y,
-			id: o.nodeId
-		};
-		metaInfo[this.getNodeType(o.parentType)].push(obj);
-	})
+        if(nodes){
+                nodes.map((o)=>{
+                        let obj = {
+                                x: o.x,
+                                y: o.y,
+                                id: o.nodeId
+                        };
+                        metaInfo[this.getNodeType(o.parentType)].push(obj);
+                })
+        }
 
 	let data = {
 		topologyId: topologyId,
@@ -137,8 +175,10 @@ const saveMetaInfo = function(topologyId, nodes, metaInfo, callback){
 
 	TopologyREST.putMetaInfo(topologyId, {body: JSON.stringify(data)})
 		.then(()=>{
-			//call the callback to update the graph
-			callback();
+                        if(callback) {
+                                //call the callback to update the graph
+                                callback();
+                        }
 		})
 }
 
@@ -163,9 +203,16 @@ const removeNodeFromMeta = function(metaInfo, currentNode){
 	let currentType = this.getNodeType(currentNode.parentType);
 	let arr = metaInfo[currentType];
 	let nodeMeta = arr.filter((o)=>{ return o.id === currentNode.nodeId});
+        let customNameArr = metaInfo.customNames;
 	nodeMeta.map((o)=>{
 		arr.splice(arr.indexOf(o), 1);
 	})
+        if(customNameArr) {
+        let customMeta = customNameArr.filter((o)=>{return o.uiname === currentNode.uiname});
+        customMeta.map((o)=>{
+                customNameArr.splice(customNameArr.indexOf(o), 1);
+        })
+        }
 	return metaInfo;
 }
 
@@ -263,15 +310,42 @@ const deleteNode = function(topologyId, currentNode, nodes, edges, internalFlags
 			})
 		}
 
-		//TODO
 		//Find out if the source of the current node is rules/windows
 		//then update those processor by removing actions from it.
-		// let connectingNodes = edges.filter((obj)=>{ return obj.target == currentNode; });
-		// connectingNodes.map((o,i)=>{
-		// 	if(o.source.currentType === 'Rule' || o.source.currentType === 'Window'){
-		// 		console.warn("Update actions here ");
-		// 	}
-		// })
+                let connectingNodes = edges.filter((obj)=>{ return obj.target == currentNode; });
+                let actionsPromiseArr = [];
+                connectingNodes.map((o,i)=>{
+                        if(o.source.currentType === 'Rule' || o.source.currentType === 'Window'){
+                                let type = o.source.currentType === 'Rule' ? 'rules' : 'windows';
+                                TopologyREST.getAllNodes(topologyId, type).then((results)=>{
+                                        results.entities.map((nodeObj)=>{
+                                                let actionsArr = nodeObj.actions,
+                                                        actions = [],
+                                                        hasAction = false;
+                                                actionsArr.map((a)=>{
+                                                        if(a.name !== currentNode.uiname){
+                                                                actions.push(a);
+                                                        } else {
+                                                                hasAction = true;
+                                                        }
+                                                });
+                                                if(hasAction) {
+                                                        nodeObj.actions = actions;
+                                                        actionsPromiseArr.push(TopologyREST.updateNode(topologyId, type, nodeObj.id, {body: JSON.stringify(nodeObj)}));
+                                                }
+                                        });
+                                });
+                        }
+                })
+
+                Promise.all(actionsPromiseArr).
+                        then((results)=>{
+                                for(let i = 0; i < results.length; i++){
+                                        if(results[i].responseCode !== 1000){
+                                                FSReactToastr.error(<strong>{results[i].responseMessage}</strong>);
+                                        }
+                                }
+                        });
 
 		Promise.all(nodePromiseArr)
 			.then(results=>{
