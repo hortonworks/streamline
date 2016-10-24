@@ -1,6 +1,6 @@
 # Developer documentation
 
-This document summarizes information relevant to IoTaS committers and contributors.  It includes information about
+This document summarizes information relevant to Streamline committers and contributors.  It includes information about
 the development processes and policies as well as the tools we use to facilitate those.
 
 ---
@@ -92,22 +92,22 @@ This section explains how to perform common activities such as reporting a bug o
 ### Create a pull request
 
 Pull requests should be done against the read-only git repository at
-[https://github.com/hortonworks/IoTaS](https://github.com/hortonworks/IoTaS).
+[https://github.com/hortonworks/Streams](https://github.com/hortonworks/Streams).
 
 Take a look at [Creating a pull request](https://help.github.com/articles/creating-a-pull-request).  In a nutshell you
 need to:
 
-1. [Fork](https://help.github.com/articles/fork-a-repo) the IoTaS GitHub repository at
-   [https://github.com/hortonworks/IoTaS/](https://github.com/hortonworks/IoTaS/) to your personal GitHub
+1. [Fork](https://help.github.com/articles/fork-a-repo) the Streamline GitHub repository at
+   [https://github.com/hortonworks/Streams/](https://github.com/hortonworks/Streams/) to your personal GitHub
    account.  See [Fork a repo](https://help.github.com/articles/fork-a-repo) for detailed instructions.
 2. Commit any changes to your fork.
-3. Send a [pull request](https://help.github.com/articles/creating-a-pull-request) to the IoTaS GitHub repository
+3. Send a [pull request](https://help.github.com/articles/creating-a-pull-request) to the Streamline GitHub repository
    that you forked in step 1.  If your pull request is related to an existing IoTaS JIRA ticket -- for instance, because
    you reported a bug report via JIRA earlier -- then prefix the title of your pull request with the corresponding JIRA
    ticket number (e.g. `IOT-123: ...`).
 
 You may want to read [Syncing a fork](https://help.github.com/articles/syncing-a-fork) for instructions on how to keep
-your fork up to date with the latest changes of the upstream  `IoTaS` repository.
+your fork up to date with the latest changes of the upstream  `Streams` repository.
 
 ### Git Commit Messages Format
 
@@ -134,7 +134,7 @@ A summary with the contents of the patch is optional but strongly encouraged if 
 
 To pull in a merge request you should generally follow the command line instructions sent out by GitHub.
 
-1. Go to your local copy of the [Apache git repo](https://github.com/hortonworks/IoTaS.git), switch
+1. Go to your local copy of the [Apache git repo](https://github.com/hortonworks/Streams.git), switch
    to the `master` branch, and make sure it is up to date.
 
         $ git checkout master

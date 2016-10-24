@@ -21,11 +21,11 @@ then
 fi
 base_dir=$(dirname $0)/..
 
-if [ "x$IOTAS_HEAP_OPTS" = "x" ]; then
-    export IOTAS_HEAP_OPTS="-Xmx1G -Xms1G"
+if [ "x$STREAMLINE_HEAP_OPTS" = "x" ]; then
+    export STREAMLINE_HEAP_OPTS="-Xmx1G -Xms1G"
 fi
 
-EXTRA_ARGS="-name IotasServer"
+EXTRA_ARGS="-name StreamlineServer"
 
 # create logs directory
 if [ "x$LOG_DIR" = "x" ]; then
@@ -66,13 +66,13 @@ else
 fi
 
 # JVM performance options
-if [ -z "$IOTAS_JVM_PERFORMANCE_OPTS" ]; then
-  IOTAS_JVM_PERFORMANCE_OPTS="-server -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -XX:+CMSScavengeBeforeRemark -XX:+DisableExplicitGC -Djava.awt.headless=true"
+if [ -z "$STREAMLINE_JVM_PERFORMANCE_OPTS" ]; then
+  STREAMLINE_JVM_PERFORMANCE_OPTS="-server -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -XX:+CMSScavengeBeforeRemark -XX:+DisableExplicitGC -Djava.awt.headless=true"
 fi
 
 # Launch mode
 if [ "x$DAEMON_MODE" = "xtrue" ]; then
-  nohup $JAVA $IOTAS_HEAP_OPTS $IOTAS_JVM_PERFORMANCE_OPTS -cp $CLASSPATH $IOTAS_OPTS "org.apache.streamline.webservice.StreamlineApplication" "server" "$@" > "$CONSOLE_OUTPUT_FILE" 2>&1 < /dev/null &
+  nohup $JAVA $STREAMLINE_HEAP_OPTS $STREAMLINE_JVM_PERFORMANCE_OPTS -cp $CLASSPATH $STREAMLINE_OPTS "org.apache.streamline.webservice.StreamlineApplication" "server" "$@" > "$CONSOLE_OUTPUT_FILE" 2>&1 < /dev/null &
 else
-  exec $JAVA $IOTAS_HEAP_OPTS $IOTAS_JVM_PERFORMANCE_OPTS -cp $CLASSPATH $IOTAS_OPTS "org.apache.streamline.webservice.StreamlineApplication" "server" "$@"
+  exec $JAVA $STREAMLINE_HEAP_OPTS $STREAMLINE_JVM_PERFORMANCE_OPTS -cp $CLASSPATH $STREAMLINE_OPTS "org.apache.streamline.webservice.StreamlineApplication" "server" "$@"
 fi

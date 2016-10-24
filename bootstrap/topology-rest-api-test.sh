@@ -55,7 +55,7 @@ topologyid=$(getId $out)
 echo -e "\n------"
 out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
     "streamId": "default",
-    "fields": [{"name": "iotas.event", "type": "NESTED"} ]
+    "fields": [{"name": "streamline.event", "type": "NESTED"} ]
 }' "${catalogurl}/topologies/$topologyid/streams")
 
 echo $out
@@ -73,7 +73,7 @@ parserStream=$(getId $out)
 echo -e "\n------"
 out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
     "streamId": "sink-stream",
-    "fields": [{"name": "iotas.event", "type": "NESTED"} ]
+    "fields": [{"name": "streamline.event", "type": "NESTED"} ]
 }' "${catalogurl}/topologies/$topologyid/streams")
 
 echo $out
@@ -97,7 +97,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
     "config": {
         "properties": {
             "topic": "nest-topic",
-            "zkRoot": "/Iotas-kafka-spout",
+            "zkRoot": "/Streamline-kafka-spout",
             "spoutConfigId": "nest-kafka-spout-config",
             "zkUrl": "localhost:2181",
             "zkPath": "/brokers",
@@ -117,7 +117,7 @@ sourceid=$(getId $out)
 echo -e "\n------"
 out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
     "streamId": "kinesis",
-    "fields": [{"name": "iotas.event", "type": "NESTED"} ]
+    "fields": [{"name": "streamline.event", "type": "NESTED"} ]
 }' "${catalogurl}/topologies/$topologyid/streams")
 
 echo $out
@@ -153,7 +153,7 @@ kinesisid=$(getId $out)
 echo -e "\n------"
 out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
     "streamId": "eventhub",
-    "fields": [{"name": "iotas.event", "type": "NESTED"} ]
+    "fields": [{"name": "streamline.event", "type": "NESTED"} ]
 }' "${catalogurl}/topologies/$topologyid/streams")
 
 echo $out

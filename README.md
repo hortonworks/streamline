@@ -1,10 +1,10 @@
-# IoTaS
-Internet of Things at Scale.
+# Streamline
+Stream Processing and Analytics.
 
 ##How to run locally
 From command line execute the following commands:
 
-`cd $IOTAS-HOME`  
+`cd $STREAMLINE-HOME`  
 `mvn clean install`  
 `cd webservice`  
 `mvn package`  
@@ -14,12 +14,12 @@ This should start the webserver on localhost port 8080. If you are running storm
 `java.net.BindException: Address already in use` in which case you should modify `server` section of streamline.yaml.
 
 ##Intellij
-`Run -> Edit Configuration -> Application -> StreamlineApplication` in the `Program argument section` add `server $IOTAS-HOME/webservice/conf/streamline.yaml`
+`Run -> Edit Configuration -> Application -> StreamlineApplication` in the `Program argument section` add `server $STREAMLINE-HOME/webservice/conf/streamline.yaml`
 
 Same config can be used to start debugging.
 
 ##Bootstrapping webserver with test data
-`cd $IOTAS-HOME\bootstrap`
+`cd $STREAMLINE-HOME\bootstrap`
 `./bootstrap.sh`
 
 Please see `bootstrap.sh` which is just bunch of curl commands in case you want to add some other objects to webservice's in memory store.
@@ -29,7 +29,7 @@ First you need to populate your kafka topic, if you have not done so create your
 `kafka-topics.sh --create --topic nest-topic --zookeeper localhost:2181 --replication-factor 1 --partitions 3`  
 
 Then run the device simulator CLI to post some sample `StreamlineMessage` containing nest data to your kafka topic.
-`cd $IOTAS-HOME`  
+`cd $STREAMLINE-HOME`  
 `java -cp simulator/target/simulator-0.1.0-SNAPSHOT.jar org.apache.streamline.simulator.CLI -b localhost:9092 -t nest-topic -f simulator/src/main/resources/nest-streamline-messages`
 
 Sometimes the command fails with following exceptions:
@@ -94,7 +94,7 @@ UI can be used to create/generate a topology and run that on a storm cluster.
 
 #Accounting for bad tuples in a topology
 A mechanism has been added so that when messages are being played from a 
-spout in an IotaS topology and they can't successfully be parsed then such 
+spout in an Streamline topology and they can't successfully be parsed then such 
 messages end up in some persistent storage. The way it works is ParserBolt 
 needs to be supplied with two stream ids using builder methods 
 withParsedTuplesStreamId and withUnparsedTuplesStreamId. The former stream id
