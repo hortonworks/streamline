@@ -1,6 +1,7 @@
 package org.apache.streamline.streams.runtime.storm.hdfs;
 
-import org.apache.streamline.streams.runtime.storm.bolt.ParserBolt;
+import org.apache.streamline.streams.StreamlineEvent;
+import org.apache.streamline.streams.common.StreamlineEventImpl;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
@@ -11,12 +12,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
 @RunWith(JMockit.class)
 public class IdentityHdfsRecordFormatTest {
 
-    private static final byte[] TEST_BYTES = "test-bytes".getBytes();
-    private static final byte[] TEST_BYTES_RESULT = "test-bytes\n".getBytes();
+    private static final StreamlineEvent STREAMLINEEVENT = new StreamlineEventImpl(new HashMap<>(), "id");
+    private static final byte[] TEST_BYTES_RESULT = (STREAMLINEEVENT.toString() + "\n").getBytes();
 
     private IdentityHdfsRecordFormat format = new IdentityHdfsRecordFormat();
     private @Mocked Tuple mockTuple;
@@ -24,7 +26,7 @@ public class IdentityHdfsRecordFormatTest {
     @Before
     public void setup () {
         new Expectations() {{
-            mockTuple.getBinaryByField(ParserBolt.BYTES_FIELD); returns(TEST_BYTES);
+            mockTuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT); returns(STREAMLINEEVENT);
         }};
     }
 

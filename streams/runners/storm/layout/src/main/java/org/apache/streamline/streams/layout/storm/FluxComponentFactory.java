@@ -19,7 +19,6 @@ import static org.apache.streamline.common.ComponentTypes.KINESIS;
 import static org.apache.streamline.common.ComponentTypes.NORMALIZATION;
 import static org.apache.streamline.common.ComponentTypes.NOTIFICATION;
 import static org.apache.streamline.common.ComponentTypes.OPENTSDB;
-import static org.apache.streamline.common.ComponentTypes.PARSER;
 
 class FluxComponentFactory {
     private static final Logger LOG = LoggerFactory.getLogger(FluxComponentFactory.class);
@@ -50,7 +49,6 @@ class FluxComponentFactory {
         builder.put(NOTIFICATION, provider(NotificationBoltFluxComponent.class));
         builder.put(CUSTOM, provider(CustomProcessorBoltFluxComponent.class));
         builder.put(NORMALIZATION, provider(NormalizationBoltFluxComponent.class));
-        builder.put(PARSER, provider(ParserBoltFluxComponent.class));
     }
 
     private Provider<FluxComponent> provider(final Class<? extends FluxComponent> clazz) {

@@ -45,21 +45,9 @@ public class CoreMySqlStorageManagerWithCacheIntegrationTest extends MySqlStorag
     @Test(expected = NonIncrementalColumnException.class)
     public void testNextId_NoAutoincrementTable_NonIncrementalKeyException() throws Exception {
         for (StorableTest test : storableTests) {
-            if (test instanceof CatalogTests.DeviceTest) {
+            if (test instanceof CatalogTests.FilesTest) {
                 getStorageManager().nextId(test.getNameSpace());    // should throw exception
             }
         }
     }
-
-    @Test
-    public void testNextId_AutoincrementColumn_IdPlusOne() throws Exception {
-
-        for (StorableTest test : storableTests) {
-            // Device does not have auto_increment, and therefore there is no concept of nextId and should throw exception (tested below)
-            if (!(test instanceof CatalogTests.DeviceTest)) {
-                doTestNextId_AutoincrementColumn_IdPlusOne(test);
-            }
-        }
-    }
-
 }
