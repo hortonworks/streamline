@@ -13,6 +13,7 @@ public class ComponentTypes {
     public static final String JOIN = "JOIN";
     public static final String STAGE = "STAGE";
     public static final String RULE = "RULE";
+    public static final String BRANCH = "BRANCH";
     public static final String WINDOW = "WINDOW";
     public static final String CUSTOM = "CUSTOM";
     public static final String OPENTSDB = "OPENTSDB";

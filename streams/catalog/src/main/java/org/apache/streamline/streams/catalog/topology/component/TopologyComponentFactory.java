@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import org.apache.streamline.common.Config;
 import org.apache.streamline.streams.catalog.RuleInfo;
+import org.apache.streamline.streams.catalog.BranchRuleInfo;
 import org.apache.streamline.streams.catalog.StreamInfo;
 import org.apache.streamline.streams.catalog.TopologyComponent;
 import org.apache.streamline.streams.catalog.TopologyEdge;
@@ -51,6 +52,7 @@ import static org.apache.streamline.common.ComponentTypes.KAFKA;
 import static org.apache.streamline.common.ComponentTypes.NORMALIZATION;
 import static org.apache.streamline.common.ComponentTypes.NOTIFICATION;
 import static org.apache.streamline.common.ComponentTypes.RULE;
+import static org.apache.streamline.common.ComponentTypes.BRANCH;
 import static org.apache.streamline.common.ComponentTypes.SPLIT;
 import static org.apache.streamline.common.ComponentTypes.STAGE;
 import static org.apache.streamline.common.ComponentTypes.WINDOW;
@@ -169,6 +171,7 @@ public class TopologyComponentFactory {
     private Map<String, Provider<StreamlineProcessor>> createProcessorProviders() {
         ImmutableMap.Builder<String, Provider<StreamlineProcessor>> builder = ImmutableMap.builder();
         builder.put(rulesProcessorProvider());
+        builder.put(branchRulesProcessorProvider());
         builder.put(windowProcessorProvider());
         builder.put(normalizationProcessorProvider());
         builder.put(splitProcessorProvider());
@@ -327,13 +330,26 @@ public class TopologyComponentFactory {
         }));
     }
 
+    private Map.Entry<String, Provider<StreamlineProcessor>> branchRulesProcessorProvider() {
+        return new SimpleImmutableEntry<>(BRANCH, createRulesProcessorProvider(new RuleExtractor() {
+            @Override
+            public Rule getRule(Long ruleId) throws Exception {
+                BranchRuleInfo brRuleInfo = catalogService.getBranchRule(ruleId);
+                if (brRuleInfo == null) {
+                    throw new IllegalArgumentException("Cannot find branch rule with id " + ruleId);
+                }
+                return brRuleInfo.getRule();
+            }
+        }));
+    }
+
     private Map.Entry<String, Provider<StreamlineProcessor>> windowProcessorProvider() {
         return new SimpleImmutableEntry<>(WINDOW, createRulesProcessorProvider(new RuleExtractor() {
             @Override
             public Rule getRule(Long ruleId) throws Exception {
                 WindowInfo windowInfo = catalogService.getWindow(ruleId);
                 if (windowInfo == null) {
-                    throw new IllegalArgumentException("Cannot find rule with id " + ruleId);
+                    throw new IllegalArgumentException("Cannot find window rule with id " + ruleId);
                 }
                 return windowInfo.getRule();
             }

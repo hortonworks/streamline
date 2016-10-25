@@ -15,6 +15,7 @@ DROP TABLE IF EXISTS topology_edges
 DROP TABLE IF EXISTS streaminfo
 DROP TABLE IF EXISTS notifierinfos
 DROP TABLE IF EXISTS ruleinfos
+DROP TABLE IF EXISTS branchruleinfos
 DROP TABLE IF EXISTS windowinfos
 DROP TABLE IF EXISTS udfs
 DROP TABLE IF EXISTS clusters
