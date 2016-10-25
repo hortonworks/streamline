@@ -1,4 +1,4 @@
-#Steps to setup IoTaS and run a sample topology on HDP sandbox.
+#Steps to setup Streamline and run a sample topology on HDP sandbox.
 
 Download HDP 2.3.2 sandbox for VirtualBox or VMware from http://hortonworks.com/hdp/downloads/
 
@@ -15,13 +15,13 @@ Go to ambari server home page at http://127.0.0.1:8080 and login using username 
 
 Using Ambari UI, stop all components on sandbox except for zookeeper, storm, kafka, hdfs and hbase. This can be done by going to http://127.0.0.1:8080/#/main/services/ and verifying the services on the list on the left hand side by taking necessary actions - stop/start.
 
-At this point, you can clone the IoTaS git repository using your git username. Go to the terminal window with ssh session in to sandbox
+At this point, you can clone the Streamline git repository using your git username. Go to the terminal window with ssh session in to sandbox
 
 `cd /root`
 
-`git clone https://<gitusername>@github.com/hortonworks/IoTaS.git`
+`git clone https://<gitusername>@github.com/hortonworks/Streams.git`
 
-`cd IoTaS`
+`cd streamline`
 
 Change directory to bin and run sandbox_setup.sh script
 
@@ -31,7 +31,7 @@ Change directory to bin and run sandbox_setup.sh script
 
 Restart all storm components from ambari UI
 
-At this point you are ready to deploy the iotas topology using storm by executing the below curl command
+At this point you are ready to deploy the Streamline topology using storm by executing the below curl command
 
 `curl -X POST http://localhost:21000/api/v1/catalog/topologies/1/actions/deploy -H "Content-Type: application/json"`
 

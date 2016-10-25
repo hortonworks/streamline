@@ -1,4 +1,4 @@
-# IoTas REST API
+# Streamline REST API
 
 [Cluster api](webservice/Cluster.md)
 [Notifications api](webservice/Notifications.md)

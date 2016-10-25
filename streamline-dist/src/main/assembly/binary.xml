@@ -36,7 +36,7 @@
 
     <fileSets>
         <!--
-            $IOTAS_HOME/bin
+            $STREAMLINE_HOME/bin
         -->
         <fileSet>
             <directory>${project.basedir}./bin</directory>
@@ -92,7 +92,7 @@
 
     <files>
         <!--
-            $IOTAS_HOME/conf
+            $STREAMLINE_HOME/conf
         -->
         <file>
             <source>${project.basedir}./webservice/conf/streamline-dev.yaml</source>
@@ -105,14 +105,14 @@
             <destName>streamline.yaml</destName>
         </file>
         <file>
-            <source>${project.basedir}./simulator/src/main/resources/nest-iotas-messages</source>
+            <source>${project.basedir}./simulator/src/main/resources/nest-streamline-messages</source>
             <outputDirectory>/examples/topology/resources</outputDirectory>
-            <destName>nest-iotas-messages</destName>
+            <destName>nest-streamline-messages</destName>
         </file>
         <file>
-            <source>${project.basedir}./webservice/conf/iotas-env.sh</source>
+            <source>${project.basedir}./webservice/conf/streamline-env.sh</source>
             <outputDirectory>/conf</outputDirectory>
-            <destName>iotas-env.sh</destName>
+            <destName>streamline-env.sh</destName>
         </file>
         <file>
             <source>${project.basedir}/LICENSE</source>
