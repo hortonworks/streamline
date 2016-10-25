@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 public class TestSinkProcessor implements CustomProcessorRuntime {
-    protected static final Logger LOG = LoggerFactory.getLogger(ConsoleCustomProcessor.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(TestSinkProcessor.class);
     public static final String FILE_FIELD_NAME = "file";
     Map<String, Object> config;
     FileWriter file;
@@ -57,11 +57,11 @@ public class TestSinkProcessor implements CustomProcessorRuntime {
         LOG.debug("Config valid ");
     }
 
-    public List<Result> process(StreamlineEvent event) throws ProcessingException {
+    public List<Result> process(StreamlineEvent streamlineEvent) throws ProcessingException {
         try {
-            LOG.debug("Processing {}", event);
+            LOG.debug("Processing {}", streamlineEvent);
             JSONObject json = new JSONObject();
-            json.putAll(event.getFieldsAndValues());
+            json.putAll(streamlineEvent.getFieldsAndValues());
             file.write(json.toJSONString());
             file.flush();
         } catch(Exception e) {

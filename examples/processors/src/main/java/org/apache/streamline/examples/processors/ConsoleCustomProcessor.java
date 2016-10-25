@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Console Custom Processor is a sample custom processor to test the storm topology with custom processor bolt
+ * Console Processor is a sample custom processor to test the storm topology with custom processor bolt
  */
 public class ConsoleCustomProcessor implements CustomProcessorRuntime {
     protected static final Logger LOG = LoggerFactory.getLogger(ConsoleCustomProcessor.class);

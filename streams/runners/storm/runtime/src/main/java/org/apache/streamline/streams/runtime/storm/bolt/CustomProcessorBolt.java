@@ -197,7 +197,7 @@ public class CustomProcessorBolt extends BaseRichBolt {
                             collector.emit(result.stream, input, new Values(e));
                         }
                     }
-		        }
+	        }
             } else {
                 LOG.debug("Invalid tuple received. Tuple disregarded and not sent to custom processor for processing.\n\tTuple [{}]." +
                         "\n\tStreamlineEvent [{}].", input, tupleField);
