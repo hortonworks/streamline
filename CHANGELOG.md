@@ -1,4 +1,5 @@
 ## 0.1.4
+ * STREAMLINE-394: Remove classes related to device centric view. 
  * STREAMLINE-393: Capture Metadata from clusters.
  * STREAMLINE-444: Enhance UDF api include type information.
  * STREAMLINE-448: Windowing component should add topology.message.timeout.secs.
