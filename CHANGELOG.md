@@ -1,4 +1,5 @@
 ## 0.1.4
+ * STREAMLINE-463: A few fixes to accept nested schema json in /streams
  * STREAMLINE-394: Remove classes related to device centric view. 
  * STREAMLINE-393: Capture Metadata from clusters.
  * STREAMLINE-444: Enhance UDF api include type information.
