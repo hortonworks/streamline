@@ -17,6 +17,8 @@ import java.util.Set;
 
 public class StormTopologyExtraJarsHandler extends TopologyDagVisitor {
     private final Set<String> extraJars = new HashSet<>();
+    private final Set<String> resourceNames = new HashSet<>();
+
     private final StreamCatalogService catalogService;
 
     StormTopologyExtraJarsHandler(StreamCatalogService catalogService) {
@@ -39,6 +41,7 @@ public class StormTopologyExtraJarsHandler extends TopologyDagVisitor {
                 extraJars.add(udf.getJarStoragePath());
             }
         }
+        resourceNames.addAll(rulesProcessor.getExtraResources());
     }
 
     @Override
@@ -48,19 +51,26 @@ public class StormTopologyExtraJarsHandler extends TopologyDagVisitor {
     @Override
     public void visit(StreamlineSource source) {
         extraJars.addAll(source.getExtraJars());
+        resourceNames.addAll(source.getExtraResources());
     }
 
     @Override
     public void visit(StreamlineSink sink) {
         extraJars.addAll(sink.getExtraJars());
+        resourceNames.addAll(sink.getExtraResources());
     }
 
     @Override
     public void visit(StreamlineProcessor processor) {
         extraJars.addAll(processor.getExtraJars());
+        resourceNames.addAll(processor.getExtraResources());
     }
 
     public Set<String> getExtraJars() {
         return extraJars;
+    }
+
+    public Set<String> getExtraResources() {
+        return resourceNames;
     }
 }

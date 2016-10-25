@@ -73,6 +73,7 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
                 getYamlComponents(fluxComponentFactory.getFluxComponent(processor), processor)));
     }
 
+
     @Override
     public void visit(final RulesProcessor rulesProcessor) {
         rulesProcessor.getConfig().setAny("outputStreams", rulesProcessor.getOutputStreams());

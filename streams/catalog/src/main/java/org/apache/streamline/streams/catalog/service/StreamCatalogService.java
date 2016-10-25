@@ -48,6 +48,7 @@ import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.catalog.BranchRuleInfo;
 import org.apache.streamline.streams.catalog.Cluster;
 import org.apache.streamline.streams.catalog.Component;
+import org.apache.streamline.streams.catalog.FileInfo;
 import org.apache.streamline.streams.catalog.NotifierInfo;
 import org.apache.streamline.streams.catalog.RuleInfo;
 import org.apache.streamline.streams.catalog.Service;
@@ -883,7 +884,10 @@ public class StreamCatalogService {
         ensureValid(dag);
         LOG.info("Deploying topology {}", topology);
         setUpClusterArtifacts(topology);
-        setUpExtraJars(topology);
+        StormTopologyExtraJarsHandler extraJarsHandler = new StormTopologyExtraJarsHandler(this);
+        topology.getTopologyDag().traverse(extraJarsHandler);
+        setUpExtraJars(topology, extraJarsHandler.getExtraJars());
+        setUpResources(topology, extraJarsHandler.getExtraResources());
         topologyActions.deploy(getTopologyLayout(topology));
     }
 
@@ -909,13 +913,10 @@ public class StreamCatalogService {
         }
     }
 
-    private void setUpExtraJars(Topology topology) throws IOException {
-        StormTopologyExtraJarsHandler extraJarsHandler = new StormTopologyExtraJarsHandler(this);
-        topology.getTopologyDag().traverse(extraJarsHandler);
+    private void setUpExtraJars(Topology topology, Set<String> extraJars) throws IOException {
         Path extraJarsLocation = topologyActions.getExtraJarsLocation(getTopologyLayout(topology));
         makeEmptyDir(extraJarsLocation);
-        Set<String> extraJars = new HashSet<>();
-        extraJars.addAll(extraJarsHandler.getExtraJars());
+        extraJars.addAll(extraJars);
         extraJars.addAll(getBundleJars(getTopologyLayout(topology)));
         downloadAndCopyJars(extraJars, extraJarsLocation);
     }
@@ -942,6 +943,37 @@ public class StreamCatalogService {
                     IOUtils.copy(src, dest);
                     copiedJars.add(jar);
                     LOG.debug("Jar {} copied to {}", jar, destPath);
+                }
+            }
+        }
+    }
+
+    private void setUpResources(Topology topology, Set<String> extraResources) throws IOException {
+        Path artifactsDir = topologyActions.getArtifactsLocation(getTopologyLayout(topology));
+        Path resourceDir = Paths.get(artifactsDir.toString(), "resources");
+        makeEmptyDir(resourceDir);
+
+        Set<String> copiedResources = new HashSet<>();
+        for (String resource : extraResources) {
+            if (!copiedResources.contains(resource)) {
+                File destPath = Paths.get(resourceDir.toString(), resource).toFile();
+                List<QueryParam> queryParams = new ArrayList<>();
+                queryParams.add(new QueryParam("name", resource));
+
+                Collection<FileInfo> fileInfos = listFiles(queryParams);
+                if (fileInfos.isEmpty())
+                    throw new IllegalArgumentException("File is not available with name : " + resource);
+
+                String fileName = "";
+                for (FileInfo file : fileInfos)
+                    fileName = file.getStoredFileName();
+
+                try (InputStream src = fileStorage.downloadFile(fileName);
+                     FileOutputStream dest = new FileOutputStream(destPath)
+                ) {
+                    IOUtils.copy(src, dest);
+                    copiedResources.add(resource);
+                    LOG.debug("Resource {} copied to {}", resource, destPath);
                 }
             }
         }
@@ -2625,5 +2657,9 @@ public class StreamCatalogService {
                 .getSubType(), UUID.randomUUID().toString(), ".jar");
         String bundleJarFileName = String.join("-", jarFileName);
         return bundleJarFileName;
+    }
+
+    private Collection<FileInfo> listFiles(List<QueryParam> queryParams) {
+        return dao.find( FileInfo.NAME_SPACE, queryParams);
     }
 }
