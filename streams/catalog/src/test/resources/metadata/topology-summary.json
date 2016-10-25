@@ -1,0 +1,49 @@
+{
+  "topologies": [
+    {
+      "assignedTotalMem": 1664,
+      "owner": "storm",
+      "requestedMemOnHeap": 0,
+      "encodedId": "kafka-topology-2-1474413185",
+      "assignedMemOnHeap": 1664,
+      "id": "kafka-topology-2-1474413185",
+      "uptime": "15d 18h 58m 0s",
+      "schedulerInfo": null,
+      "name": "kafka-topology",
+      "workersTotal": 2,
+      "status": "ACTIVE",
+      "requestedMemOffHeap": 0,
+      "tasksTotal": 20,
+      "requestedCpu": 0,
+      "replicationCount": 1,
+      "executorsTotal": 20,
+      "uptimeSeconds": 1364280,
+      "assignedCpu": 0,
+      "assignedMemOffHeap": 0,
+      "requestedTotalMem": 0
+    },
+    {
+      "assignedTotalMem": 1664,
+      "owner": "storm",
+      "requestedMemOnHeap": 0,
+      "encodedId": "kafka-topology-2-3-1474413375",
+      "assignedMemOnHeap": 1664,
+      "id": "kafka-topology-2-3-1474413375",
+      "uptime": "15d 18h 54m 49s",
+      "schedulerInfo": null,
+      "name": "kafka-topology-2",
+      "workersTotal": 2,
+      "status": "ACTIVE",
+      "requestedMemOffHeap": 0,
+      "tasksTotal": 20,
+      "requestedCpu": 0,
+      "replicationCount": 1,
+      "executorsTotal": 20,
+      "uptimeSeconds": 1364089,
+      "assignedCpu": 0,
+      "assignedMemOffHeap": 0,
+      "requestedTotalMem": 0
+    }
+  ],
+  "schedulerDisplayResource": false
+}

@@ -8,6 +8,7 @@ A *Cluster* is a top level entity that can be used to create logical container w
 external services.
 
 Field | Type | Comment
+---|---|----
 id | Long | The primary key
 name | String | The name of cluster. It should be unique.
 description | String | The description of cluster if any.
@@ -18,6 +19,7 @@ A *Service* defines an external components like storm, kafka, and so on that pro
 A service entity is belong to a cluster entity.
 
 Field | Type | Comment
+---|---|----
 id | Long | The primary key
 clusterId | Long | The cluster's primary key which a service is belong to.
 name | String | The name of service. Combination of cluster id and service name should be unique.
@@ -30,6 +32,7 @@ configuration file of service, like `core-site.xml`, and `storm.yaml`, and so on
 A service configuration is belong to a service entity.
 
 Field | Type | Comment
+---|---|----
 id | Long | The primary key
 serviceId | Long | The service's primary key which a service configuration is belong to.
 name | String | The name of service configuration. Combination of service id and service configuration name should be unique.
@@ -64,7 +67,7 @@ and show only sample for creating a service, service configuration, component.
 
 ### Create a cluster
 
-`POST /api/v1/clusters`
+`POST /api/v1/catalog/clusters`
 
 **Sample Input**
 

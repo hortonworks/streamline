@@ -93,7 +93,6 @@ import java.util.Map;
  */
 @Category(IntegrationTest.class)
 public class RestIntegrationTest {
-
     /**
      * See https://dropwizard.github.io/dropwizard/manual/testing.html#integration-testing
      */
