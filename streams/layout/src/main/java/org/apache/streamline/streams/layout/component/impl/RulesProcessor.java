@@ -40,7 +40,9 @@ public class RulesProcessor extends StreamlineProcessor {     //TODO: Rename to 
     private static final Logger log = LoggerFactory.getLogger(RulesProcessor.class);
 
     public static final String CONFIG_KEY_RULES = "rules";
+    public static final String CONFIG_PROCESS_ALL = "processAll";
     private List<Rule> rules;
+    private boolean processAll = true;
 
     public RulesProcessor() {
     }
@@ -48,6 +50,15 @@ public class RulesProcessor extends StreamlineProcessor {     //TODO: Rename to 
     public RulesProcessor(RulesProcessor other) {
         super(other);
         this.rules = new ArrayList<>(other.getRules());
+        this.processAll = other.processAll;
+    }
+
+    public boolean getProcessAll() {
+        return processAll;
+    }
+
+    public void setProcessAll(boolean processAll) {
+        this.processAll = processAll;
     }
 
     public List<Rule> getRules() {

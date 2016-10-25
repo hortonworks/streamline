@@ -195,6 +195,18 @@ CREATE TABLE IF NOT EXISTS ruleinfos (
     PRIMARY KEY (id)
 );
 
+CREATE TABLE IF NOT EXISTS branchruleinfos (
+    id BIGINT AUTO_INCREMENT NOT NULL,
+    topologyId BIGINT NOT NULL,
+    name VARCHAR(256) NOT NULL,
+    description VARCHAR(256) NOT NULL,
+    stream TEXT NOT NULL,
+    `condition` TEXT NOT NULL,
+    parsedRuleStr TEXT NOT NULL,
+    actions TEXT NOT NULL,
+    PRIMARY KEY (id)
+);
+
 CREATE TABLE IF NOT EXISTS windowinfos (
     id BIGINT AUTO_INCREMENT NOT NULL,
     topologyId BIGINT NOT NULL,
@@ -209,7 +221,6 @@ CREATE TABLE IF NOT EXISTS windowinfos (
     groupbykeys TEXT NULL,
     PRIMARY KEY (id)
 );
-
 
 CREATE TABLE IF NOT EXISTS udfs (
     id BIGINT AUTO_INCREMENT NOT NULL,
