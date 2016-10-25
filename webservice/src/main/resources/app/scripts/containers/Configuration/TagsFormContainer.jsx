@@ -41,6 +41,8 @@ export default class TagsFormContainer extends Component {
 		if(name !== '' && description !== ''){
 			return true;
 		} else {
+      (this.state.name.length === 0 ) ? this.nameRef.setAttribute('class',"form-control error") : this.nameRef.setAttribute('class',"form-control");
+      (this.state.description.length === 0 ) ? this.desc.setAttribute('class',"form-control error") : this.desc.setAttribute('class',"form-control");
 			return false;
 		}
 	}
@@ -61,9 +63,10 @@ export default class TagsFormContainer extends Component {
 		return (
 			<form className="form-horizontal">
 				<div className="form-group">
-					<label className="col-sm-3 control-label">Name*</label>
-					<div className="col-sm-5">
-						<input 
+                                        <label className="col-sm-12 control-label text-left">Name*</label>
+                                        <div className="col-sm-12">
+                                                <input
+              ref={(ref) => this.nameRef = ref}
 							name="name"
 							placeholder="Name"
 							onChange={this.handleValueChange.bind(this)}
@@ -73,17 +76,18 @@ export default class TagsFormContainer extends Component {
 							required={true}
 						/>
 					</div>
-					{this.state.name === '' ? 
+                                        {/*this.state.name === '' ?
 						<div className="col-sm-4">
 							<p className="form-control-static error-note">Please Enter Name</p>
 						</div>
-					: null}
+                                        : null*/}
 				</div>
 
 				<div className="form-group">
-					<label className="col-sm-3 control-label">Description*</label>
-					<div className="col-sm-5">
+                                        <label className="col-sm-12 control-label text-left">Description*</label>
+                                        <div className="col-sm-12">
 						<input
+              ref={(ref) => this.desc = ref}
 							name="description"
 							placeholder="Description"
 							onChange={this.handleValueChange.bind(this)}
@@ -93,11 +97,11 @@ export default class TagsFormContainer extends Component {
 						    required={true}
 						/>
 					</div>
-					{this.state.description === '' ?
+                                        {/*this.state.description === '' ?
 						<div className="col-sm-4">
 							<p className="form-control-static error-note">Please Enter Description</p>
 						</div>
-					: null}
+                                        : null*/}
 				</div>
 			</form>
 		)

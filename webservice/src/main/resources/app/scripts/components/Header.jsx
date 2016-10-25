@@ -16,13 +16,21 @@ export default class Header extends Component {
         break;
       case "3.2" : this.context.router.push("schema-registry")
         break;
-      default : break;
+      case "4.1" : this.context.router.push("custom-processor")
+        break;
+      case "4.2" : this.context.router.push("tags")
+        break;
+      case "4.3" : this.context.router.push("files")
+        break;
+       default : break;
     }
   }
 
   render(){
     const userIcon = <i className="fa fa-user"></i>;
     const bigIcon = <i className="fa fa-chevron-down"></i>;
+    const config = <i className="fa fa-cog"></i>;
+
     return(
       <Navbar inverse fluid={true} >
         <Navbar.Header>
@@ -47,17 +55,19 @@ export default class Header extends Component {
           <Navbar.Text pullLeft>
                 {this.props.headerContent}
           </Navbar.Text>
-          <Nav pullRight>
-              <NavItem eventKey={2} href="javascript:void(0)">
-                  <i className="fa fa-bell"></i>
-              </NavItem>
-              <NavDropdown id="userDropdown" eventKey="4" title={userIcon}>
-                <MenuItem eventKey="4.1">Action</MenuItem>
-                <MenuItem eventKey="4.2">Another action</MenuItem>
-                <MenuItem eventKey="4.3">Something else here</MenuItem>
+          <Nav pullRight onSelect={this.clickHandler}>
+            <NavDropdown id="configuration" eventKey="4" title={config} noCaret>
+              <MenuItem eventKey="4.1">Custom Processor</MenuItem>
+              <MenuItem eventKey="4.2">Tags</MenuItem>
+              <MenuItem eventKey="4.3">Files</MenuItem>
+            </NavDropdown>
+            <NavDropdown id="userDropdown" eventKey="5" title={userIcon}>
+              <MenuItem eventKey="5.1">Action</MenuItem>
+              <MenuItem eventKey="5.2">Another action</MenuItem>
+                <MenuItem eventKey="5.3">Something else here</MenuItem>
                 <MenuItem divider />
-                <MenuItem eventKey="4.4">Separated link</MenuItem>
-              </NavDropdown>
+                <MenuItem eventKey="5.4">Separated link</MenuItem>
+            </NavDropdown>
           </Nav>
         </Navbar.Collapse>
       </Navbar>

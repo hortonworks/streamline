@@ -121,6 +121,11 @@ const splitSeconds = function(sec_num){
                             +seconds+'s ago';
 }
 
+const filterByName = function(entities, filterValue){
+  let matchFilter = new RegExp(filterValue , 'i');
+    return entities.filter(filteredList => !filterValue || matchFilter.test(filteredList.name))
+}
+
 export default {
 	searchFilter,
 	sortArray,
@@ -128,5 +133,6 @@ export default {
         millisecondsToNumber,
   capitaliseFirstLetter,
   splitTimeStamp,
-  splitSeconds
+  splitSeconds,
+  filterByName
 };

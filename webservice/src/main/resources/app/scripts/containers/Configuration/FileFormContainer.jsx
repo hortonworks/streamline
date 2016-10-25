@@ -62,6 +62,9 @@ export default class FileFormContainer extends Component {
 		if(name !== '' && fileJar !== '' && version !== ''){
 			return true;
 		} else {
+      (this.state.name.length === 0 ) ? this.nameRef.setAttribute('class',"form-control error") : this.nameRef.setAttribute('class',"form-control");
+      (this.state.version.length === 0 ) ? this.version.setAttribute('class',"form-control error") : this.version.setAttribute('class',"form-control");
+      (this.state.fileJar.length === 0 ) ? this.refs.fileJar.setAttribute('class',"form-control error") : this.refs.fileJar.setAttribute('class',"form-control");
 			return false;
 		}
 	}
@@ -83,9 +86,10 @@ export default class FileFormContainer extends Component {
 		return (
 			<form className="form-horizontal">
 				<div className="form-group">
-					<label className="col-sm-3 control-label">Name*</label>
-					<div className="col-sm-5">
+                                        <label className="col-sm-12 control-label">Name*</label>
+                                        <div className="col-sm-12">
 						<input
+              ref={(ref) => this.nameRef = ref}
 							name="name"
 							placeholder="Name"
 							onChange={this.handleValueChange.bind(this)}
@@ -95,15 +99,15 @@ export default class FileFormContainer extends Component {
 						    required={true}
 						/>
 					</div>
-					{this.state.name === '' ?
+                                        {/*this.state.name === '' ?
 						<div className="col-sm-4">
 							<p className="form-control-static error-note">Please Enter File Name</p>
 						</div>
-					: null}
+                                        : null*/}
 				</div>
 				<div className="form-group">
-					<label className="col-sm-3 control-label">Upload Jar*</label>
-					<div className="col-sm-5">
+                                        <label className="col-sm-12 control-label">Upload Jar*</label>
+                                        <div className="col-sm-12">
 						<input
 							name="storedFileName"
 							type="file"
@@ -115,16 +119,17 @@ export default class FileFormContainer extends Component {
 							required={true}
 						/>
 					</div>
-					{this.state.fileJar === '' ?
+                                        {/*this.state.fileJar === '' ?
 						<div className="col-sm-4">
 							<p className="form-control-static error-note">Please Select Jar File</p>
 						</div>
-					: null}
+                                        : null*/}
 				</div>
 				<div className="form-group">
-					<label className="col-sm-3 control-label">Version*</label>
-					<div className="col-sm-5">
+                                        <label className="col-sm-12 control-label">Version*</label>
+                                        <div className="col-sm-12">
 						<input
+              ref={(ref) => this.version = ref}
 							name="version"
 							placeholder="Version"
 							onChange={this.handleValueChange.bind(this)}
@@ -136,11 +141,11 @@ export default class FileFormContainer extends Component {
 							inputMode="numeric"
 						/>
 					</div>
-					{this.state.version === ''?
+                                        {/*this.state.version === ''?
 						<div className="col-sm-4">
 							<p className="form-control-static error-note">Please Enter Version</p>
 						</div>
-					: null}
+                                        : null*/}
 				</div>
 			</form>
 		)

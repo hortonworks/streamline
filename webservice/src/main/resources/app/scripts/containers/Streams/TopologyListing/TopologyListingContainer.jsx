@@ -14,6 +14,7 @@ import FSReactToastr from '../../../components/FSReactToastr';
 
 /* component import */
 import BaseContainer from '../../BaseContainer';
+// import NoData from '../../../components/NoData';
 
 class TopologyItems extends Component{
         constructor(props){
@@ -89,7 +90,7 @@ class TopologyItems extends Component{
                                                                         <div className="row">
                                                                                         <div className="col-lg-4 stream-stats">
                                                                                                         <h6>Errors</h6>
-                                                                                                        <h3>{metricWrap.failedRecords || 0}</h3>
+                                                                                                        <h3 className="color-error">{metricWrap.failedRecords || 0}</h3>
                                                                                         </div>
                                                                                         <div className="col-lg-4 stream-stats">
                                                                                                         <h6>Worker</h6>
@@ -118,6 +119,7 @@ class TopologyListingContainer extends Component{
                         super();
                         this.state = {
                                 entities : [],
+                                filterValue:'',
                                 isLoading : {
                                         loader : false,
                                         idCheck : ''
@@ -245,19 +247,17 @@ class TopologyListingContainer extends Component{
 
                 render(){
                         const {entities,filterValue,isLoading} = this.state;
-                        const filteredEntities = TopologyUtils.topologyFilter(entities , filterValue);
+                        const filteredEntities = TopologyUtils.topologyFilter(entities, filterValue);
 
                         return(
                                         <BaseContainer
                                                 ref="BaseContainer"
                                                 routes={this.props.routes}
+                                                headerContent={this.props.routes[this.props.routes.length-1].name}
                                         >
                                                         <div className="row">
                                                                 <div className="page-title-box clearfix">
-                                                                                <div className="col-md-6">
-                                                                                                My Applications
-                                                                                </div>
-                                                                                <div className="col-md-4 text-right">
+                                                                                <div className="col-md-4 col-md-offset-6 text-right">
                                                                                         <FormGroup>
                                                                                                 <InputGroup>
                                                                                                         <FormControl type="text"
@@ -279,16 +279,18 @@ class TopologyListingContainer extends Component{
                                                                 </div>
                                                         </div>
                                                         <div className="row">
-                                                                                                {
-                                                                                                        filteredEntities.map((list) => {
-                                                                                                                        return <TopologyItems
-                                                                                                                                                                key={list.topology.id}
-                                                                                                                                                                topologyList={list}
-                                                                                                                                                                topologyAction={this.actionHandler}
-                                                                                                                                                                isLoading={isLoading}
-                                                                                                                                                        />
-                                                                                                        })
-                                                                                                }
+                                                        {
+                                                                (filteredEntities.length === 0) 
+                                                                ? null
+                                                                : filteredEntities.map((list) => {
+                                                                        return <TopologyItems
+                                                                                key={list.topology.id}
+                                                                                topologyList={list}
+                                                                                topologyAction={this.actionHandler}
+                                                                                isLoading={isLoading}
+                                                                        />
+                                                                })
+                                                        }
                                                         </div>
                                         </BaseContainer>
                         );
