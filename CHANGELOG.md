@@ -1,4 +1,5 @@
 ## 0.1.4
+ * IOT-393: Capture Metadata from clusters.
  * IOT-444: Enhance UDF api include type information.
  * IOT-448: Windowing component should add topology.message.timeout.secs.
  * IOT-460: Rename packages from com.hortonworks.iotas to org.apache.streamline
