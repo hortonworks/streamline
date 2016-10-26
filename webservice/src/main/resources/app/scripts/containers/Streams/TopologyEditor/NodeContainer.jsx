@@ -35,9 +35,9 @@ export default class NodeContainer extends Component {
 		const {imgPath, nodeType, type, name} = this.props;
 		//TODO add img paths to Constants
 		return connectDragSource(
-			<div>
-			<img src={"styles/img/color-icon-"+nodeType.toLowerCase()+".png"} className="component-icon" /> {name}
-			</div>
+                        <li>
+                        <img src={"styles/img/icon-"+nodeType.toLowerCase()+".png"} /> {name}
+                        </li>
 		)
 	}
 
@@ -46,10 +46,6 @@ export default class NodeContainer extends Component {
 		if (isDragging && hideSourceOnDrag) {
 	      return null;
 	    }
-		return (
-			<li className="list-group-item">
-				{this.getDragableNode(connectDragSource)}
-			</li>
-		)
+                return this.getDragableNode(connectDragSource)
 	}
 }

@@ -10,7 +10,9 @@ import MetricsContainer from '../containers/Streams/Metrics/MetricsContainer'
 import TopologyListContainer from '../containers/Streams/TopologyListing/TopologyListingContainer'
 import TopologyEditorContainer from '../containers/Streams/TopologyEditor/TopologyEditorContainer'
 import NewsFeedContainer from '../containers/NewsFeed/NewsFeedContainer'
-import ConfigurationContainer from '../containers/Configuration/ConfigurationContainer'
+import CustomProcessorContainer from '../containers/Configuration/CustomProcessorContainer'
+import TagsContainer from '../containers/Configuration/TagsContainer'
+import FilesContainer from '../containers/Configuration/FilesContainer'
 import state from '../app_state';
 
 const onEnter = (nextState, replace, callback) => {
@@ -25,19 +27,21 @@ const onEnter = (nextState, replace, callback) => {
 }
 
 export default (
-	<Route path="/" component={null} name="Home" onEnter={onEnter}>
-		<IndexRoute name="Dashboard" component={DashboardContainer} onEnter={onEnter} />
-		<Route path="dashboard" name="Dashboard" component={DashboardContainer} onEnter={onEnter}/>
-		<Route path="schema-registry" name="Schema Registry" onEnter={onEnter}>
-			<IndexRoute component={ParserRegContainer} onEnter={onEnter} />
-		</Route>
-		<Route path="device-registry" name="Device Registry" component={DeviceRegContainer} onEnter={onEnter}/>
-		<Route path="metrics" name="Metrics" component={MetricsContainer} onEnter={onEnter}/>
-		<Route path="streams-builder" name="Streams Builder" onEnter={onEnter}>
-			<IndexRoute component={TopologyListContainer} onEnter={onEnter} />
-			<Route path=":id" name="Topology Editor" component={TopologyEditorContainer} onEnter={onEnter}/>
-		</Route>
-		<Route path="news-feed" name="News Feed" component={NewsFeedContainer} onEnter={onEnter}/>
-		<Route path="configuration" name="Configuration" component={ConfigurationContainer} onEnter={onEnter}/>
-	</Route>
+
+  <Route path="/" component={null} name="Home" onEnter={onEnter}>
+    <IndexRoute name="My Applications" component={TopologyListContainer} onEnter={onEnter} />
+  <Route path="schema-registry" name="Schema Registry" onEnter={onEnter}>
+	<IndexRoute component={ParserRegContainer} onEnter={onEnter} />
+  </Route>
+  <Route path="metrics" name="Metrics" component={MetricsContainer} onEnter={onEnter}/>
+  <Route path="applications" name="My Applications" onEnter={onEnter}>
+	<IndexRoute name="My Applications" component={TopologyListContainer} onEnter={onEnter} />
+    <Route path=":id" name="Application Editor" component={TopologyEditorContainer} onEnter={onEnter}/>
+  </Route>
+  <Route path="custom-processor" name="Custom Processor" component={CustomProcessorContainer} onEnter={onEnter}/>
+  <Route path="tags" name="Tags" component={TagsContainer} onEnter={onEnter}/>
+  <Route path="files" name="Files" component={FilesContainer} onEnter={onEnter}/>
+  <Route path="news-feed" name="News Feed" component={NewsFeedContainer} onEnter={onEnter}/>
+  </Route>
+
 )

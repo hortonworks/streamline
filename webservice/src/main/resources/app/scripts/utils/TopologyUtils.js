@@ -23,7 +23,7 @@ import NotificationNodeForm from '../containers/Streams/TopologyEditor/Notificat
 const defineMarkers = function(svg){
 	// define arrow markers for graph links
 	let defs = svg.append('svg:defs')
-	
+
 	defs.append('svg:marker')
 		.attr('id', 'end-arrow')
 		.attr('viewBox', '0 -5 10 10')
@@ -45,12 +45,34 @@ const defineMarkers = function(svg){
 		.append('svg:path')
 		.attr('d', 'M0 -5 L10 0 L0 5')
 
-	// define filter for gray(unconfigured) icons 
+        // define filter for gray(unconfigured) icons
 	defs.append('svg:filter')
 		.attr('id', 'grayscale')
 		.append('feColorMatrix')
 			.attr('type', 'saturate')
 			.attr('values', '0');
+
+        // define filter for node shadow
+        var filter = defs.append('svg:filter')
+                .attr('id', 'dropshadow')
+                .attr('x', 0)
+                .attr('y', 0)
+                .attr('width', '200%')
+                .attr('height', '200%');
+
+                filter.append('feOffset')
+                        .attr('result', 'offOut')
+                        .attr('in', 'SourceAlpha')
+                        .attr('dx', -4)
+                        .attr('dy', -4);
+                filter.append('feGaussianBlur')
+                        .attr('result', 'blurOut')
+                        .attr('in', 'offOut')
+                        .attr('stdDeviation', 6);
+                filter.append('feBlend')
+                        .attr('in', 'SourceGraphic')
+                        .attr('in2', 'blurOut')
+                        .attr('mode', 'normal');
 }
 
 const isValidConnection = function(sourceNode, targetNode){
@@ -72,9 +94,10 @@ const isValidConnection = function(sourceNode, targetNode){
 
 const createNode = function(topologyId, data, callback, metaInfo, paths, edges, internalFlags, uinamesList){
 	let promiseArr = [];
-	
+
 	data.map((o)=>{
 		let nodeType = this.getNodeType(o.parentType);
+                let customName = o.uiname;
 
 		//Dynamic Names of nodes
 		while(uinamesList.indexOf(o.uiname) !== -1){
@@ -88,6 +111,19 @@ const createNode = function(topologyId, data, callback, metaInfo, paths, edges, 
 		uinamesList.push(o.uiname);
 		//
 		//
+                if(o.currentType === 'Custom') {
+                        if(metaInfo.customNames) {
+                                metaInfo.customNames.push({
+                                        uiname: o.uiname,
+                                        customProcessorName: customName
+                                });
+                        } else {
+                                metaInfo.customNames = [{
+                                        uiname: o.uiname,
+                                        customProcessorName: customName
+                                }];
+                        }
+                }
 		let obj = {
 			name: o.uiname,
 			config: {},
@@ -98,7 +134,7 @@ const createNode = function(topologyId, data, callback, metaInfo, paths, edges, 
 		}
 		promiseArr.push(TopologyREST.createNode(topologyId, nodeType, {body: JSON.stringify(obj)}));
 	});
-	
+
 	//Make calls to create node or nodes
 	Promise.all(promiseArr)
 		.then((results)=>{
@@ -121,14 +157,16 @@ const createNode = function(topologyId, data, callback, metaInfo, paths, edges, 
 }
 
 const saveMetaInfo = function(topologyId, nodes, metaInfo, callback){
-	nodes.map((o)=>{
-		let obj = {
-			x: o.x,
-			y: o.y,
-			id: o.nodeId
-		};
-		metaInfo[this.getNodeType(o.parentType)].push(obj);
-	})
+        if(nodes){
+                nodes.map((o)=>{
+                        let obj = {
+                                x: o.x,
+                                y: o.y,
+                                id: o.nodeId
+                        };
+                        metaInfo[this.getNodeType(o.parentType)].push(obj);
+                })
+        }
 
 	let data = {
 		topologyId: topologyId,
@@ -137,8 +175,10 @@ const saveMetaInfo = function(topologyId, nodes, metaInfo, callback){
 
 	TopologyREST.putMetaInfo(topologyId, {body: JSON.stringify(data)})
 		.then(()=>{
-			//call the callback to update the graph
-			callback();
+                        if(callback) {
+                                //call the callback to update the graph
+                                callback();
+                        }
 		})
 }
 
@@ -163,9 +203,16 @@ const removeNodeFromMeta = function(metaInfo, currentNode){
 	let currentType = this.getNodeType(currentNode.parentType);
 	let arr = metaInfo[currentType];
 	let nodeMeta = arr.filter((o)=>{ return o.id === currentNode.nodeId});
+        let customNameArr = metaInfo.customNames;
 	nodeMeta.map((o)=>{
 		arr.splice(arr.indexOf(o), 1);
 	})
+        if(customNameArr) {
+        let customMeta = customNameArr.filter((o)=>{return o.uiname === currentNode.uiname});
+        customMeta.map((o)=>{
+                customNameArr.splice(customNameArr.indexOf(o), 1);
+        })
+        }
 	return metaInfo;
 }
 
@@ -263,15 +310,42 @@ const deleteNode = function(topologyId, currentNode, nodes, edges, internalFlags
 			})
 		}
 
-		//TODO
 		//Find out if the source of the current node is rules/windows
 		//then update those processor by removing actions from it.
-		// let connectingNodes = edges.filter((obj)=>{ return obj.target == currentNode; });
-		// connectingNodes.map((o,i)=>{
-		// 	if(o.source.currentType === 'Rule' || o.source.currentType === 'Window'){
-		// 		console.warn("Update actions here ");
-		// 	}
-		// })
+                let connectingNodes = edges.filter((obj)=>{ return obj.target == currentNode; });
+                let actionsPromiseArr = [];
+                connectingNodes.map((o,i)=>{
+                        if(o.source.currentType === 'Rule' || o.source.currentType === 'Window'){
+                                let type = o.source.currentType === 'Rule' ? 'rules' : 'windows';
+                                TopologyREST.getAllNodes(topologyId, type).then((results)=>{
+                                        results.entities.map((nodeObj)=>{
+                                                let actionsArr = nodeObj.actions,
+                                                        actions = [],
+                                                        hasAction = false;
+                                                actionsArr.map((a)=>{
+                                                        if(a.name !== currentNode.uiname){
+                                                                actions.push(a);
+                                                        } else {
+                                                                hasAction = true;
+                                                        }
+                                                });
+                                                if(hasAction) {
+                                                        nodeObj.actions = actions;
+                                                        actionsPromiseArr.push(TopologyREST.updateNode(topologyId, type, nodeObj.id, {body: JSON.stringify(nodeObj)}));
+                                                }
+                                        });
+                                });
+                        }
+                })
+
+                Promise.all(actionsPromiseArr).
+                        then((results)=>{
+                                for(let i = 0; i < results.length; i++){
+                                        if(results[i].responseCode !== 1000){
+                                                FSReactToastr.error(<strong>{results[i].responseMessage}</strong>);
+                                        }
+                                }
+                        });
 
 		Promise.all(nodePromiseArr)
 			.then(results=>{
@@ -288,7 +362,7 @@ const deleteNode = function(topologyId, currentNode, nodes, edges, internalFlags
 					}
 				})
 
-				
+
 				//Delete Rules incase of Rule Processor
 				if(nodeData.type === 'RULE'){
 					if(nodeData.config.properties.rules){
@@ -329,7 +403,7 @@ const deleteNode = function(topologyId, currentNode, nodes, edges, internalFlags
 						}
 					})
 				}
-				
+
 				//Delete Links
 				let edgeArr = this.getEdges(edges, currentNode);
 				targetArr.map((o)=>{
@@ -352,8 +426,8 @@ const deleteNode = function(topologyId, currentNode, nodes, edges, internalFlags
 					data: JSON.stringify(metaInfo)
 				};
 				promiseArr.push(TopologyREST.putMetaInfo(topologyId, {body: JSON.stringify(metaData)}));
-				
-				//Delete current node 
+
+                                //Delete current node
 				promiseArr.push(TopologyREST.deleteNode(topologyId, this.getNodeType(currentNode.parentType), currentNode.nodeId));
 
 				//If needed to reset any processor on delete - it comes here or in callback
@@ -522,7 +596,7 @@ const showNodeModal = function(ModalScope, setModalContent, node, updateGraphMet
 const getConfigContainer = function(node, configData, editMode, topologyId, currentEdges, allNodes, linkShuffleOptions){
 	let nodeType = this.getNodeType(node.parentType);
 	let sourceNodes = [], targetNodes = [];
-	currentEdges.map((e)=>{ 
+        currentEdges.map((e)=>{
 		if(e.target.nodeId === node.nodeId){
 			//find source node of parser
 			sourceNodes.push(e.source);
@@ -534,7 +608,7 @@ const getConfigContainer = function(node, configData, editMode, topologyId, curr
 	switch(node.currentType){
 		case Components.Datasources[0].name: //Device
 		return () => {
-			return <DeviceNodeForm 
+                        return <DeviceNodeForm
 					ref="ConfigModal"
 					nodeData={node}
 					configData={configData}
@@ -726,6 +800,12 @@ const MouseUpAction = function(topologyId, d3node, d, metaInfo, internalFlags, c
 
 	var mouseDownNode = internalFlags.mouseDownNode;
 
+        //cannot connect from unconfigured node
+        if(!internalFlags.addEdgeFromNode) {
+                internalFlags.addEdgeFromNode = true;
+                return;
+        }
+
 	// if (!mouseDownNode) return;
 
 	dragLine.classed("hidden", true);
@@ -817,7 +897,7 @@ const generateNodeData = function(nodes, constantsArr, parentType, metadata, res
 		} else {
 			currentMetaObj = currentMetaObj[0];
 		}
-		
+
 		let obj = {
 			x: currentMetaObj.x,
 			y: currentMetaObj.y,
@@ -827,7 +907,8 @@ const generateNodeData = function(nodes, constantsArr, parentType, metadata, res
 			uiname: nodes[i].name,
 			imageURL: constObj.imgPath,
 			isConfigured: configuredFlag,
-			parallelismCount: nodes[i].config.properties.parallelism || 1
+                        parallelismCount: nodes[i].config.properties.parallelism || 1,
+                        nodeLabel: constObj.label
 		}
 		if(currentMetaObj.streamId){
 			obj.streamId = currentMetaObj.streamId;
@@ -841,13 +922,13 @@ const syncEdgeData = function(edges, nodes){
 	edges.map((edge)=>{
 		//Find source node
 		let fromNode = nodes.filter((o)=>{ return o.nodeId === edge.fromId});
-		if(fromNode.length !== 0) 
+                if(fromNode.length !== 0)
 			fromNode = fromNode[0];
 		else console.error("From node is missing");
 
 		//Find target node
 		let toNode = nodes.filter((o)=>{ return o.nodeId === edge.toId});
-		if(toNode.length !== 0) 
+                if(toNode.length !== 0)
 			toNode = toNode[0];
 		else console.error("To node is missing");
 
@@ -905,6 +986,11 @@ const updateParallelismCount = function(topologyId, nodeData){
 		})
 }
 
+const topologyFilter = function(entities , filterValue){
+  let matchFilter = new RegExp(filterValue , 'i');
+    return entities.filter(filteredList => !filterValue || matchFilter.test(filteredList.topology.name))
+}
+
 export default {
 	defineMarkers,
 	isValidConnection,
@@ -934,5 +1020,6 @@ export default {
 	createLineOnUI,
 	getNodeRectClass,
 	getNodeImgRectClass,
-	updateParallelismCount
+        updateParallelismCount,
+  topologyFilter
 };

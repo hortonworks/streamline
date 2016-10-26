@@ -8,6 +8,9 @@ import FSReactToastr from '../../components/FSReactToastr';
 import FileREST from '../../rest/FileREST';
 import Modal from '../../components/FSModal'
 import {pageSize} from '../../utils/Constants';
+import BaseContainer from '../../containers/BaseContainer';
+import {FormGroup,InputGroup,FormControl} from 'react-bootstrap';
+import Utils from '../../utils/Utils';
 
 export default class FilesContainer extends Component {
 
@@ -15,7 +18,8 @@ export default class FilesContainer extends Component {
 		super();
 		this.fetchData();
 		this.state = {
-			entities: []
+                        entities: [],
+      filterValue:''
 		};
 	}
 
@@ -74,49 +78,85 @@ export default class FilesContainer extends Component {
 		},(Modal)=>{});
 	}
 
+  onFilterChange = (e) => {
+    this.setState({
+      filterValue : e.target.value.trim()
+    })
+  }
+
 	render() {
-		let {entities} = this.state;
+                let {entities,filterValue} = this.state;
+    const filteredEntities = Utils.filterByName(entities , filterValue);
 		return (
-			<div>
-				<div className="clearfix row-margin-bottom">
-					<button type="button" onClick={this.handleAdd.bind(this)} className="btn btn-success pull-left">
-						<i className="fa fa-file"></i> Add Files
-					</button>
-				</div>
-				<div className="row">
-					<div className="col-sm-12">
-						<Table 
-			              className="table table-hover table-bordered"
-			              noDataText="No records found."
-			              currentPage={0}
-			              itemsPerPage={entities.length > pageSize ? pageSize : 0} pageButtonLimit={5}>
-			                <Thead>
-			                  <Th column="name">Name</Th>
-			                  <Th column="version">Version</Th>
-			                  <Th column="storedFileName">Stored File Name</Th>
-			                  <Th column="action">Actions</Th>
-			                </Thead>
-			              {entities.map((obj, i) => {
-			                return (
-			                  <Tr key={i}>
-			                    <Td column="name">{obj.name}</Td>
-			                    <Td column="version">{obj.version}</Td>
-			                    <Td column="storedFileName">{obj.storedFileName}</Td>
-			                    <Td column="action">
-			                    	<div className="btn-action">
-			                    		<BtnDelete callback={this.handleDelete.bind(this, obj.id)}/>
-			                    	</div>
-			                    </Td>
-			                  </Tr>
-			                )
-			              })}
-			            </Table>
-					</div>
-				</div>
-				<Modal ref="Modal" data-title="Add File" data-resolve={this.handleSave.bind(this)}>
-					<FileFormContainer ref="addFile" />
-				</Modal>
-			</div>
+				<BaseContainer
+                  ref="BaseContainer"
+                  routes={this.props.routes}
+                  headerContent={this.props.routes[this.props.routes.length-1].name}
+                >
+                  <div className="row">
+                    <div className="page-title-box clearfix">
+                        <div className="col-md-4 col-md-offset-6 text-right">
+                          <FormGroup>
+                            <InputGroup>
+                              <FormControl type="text"
+                                placeholder="Search by name"
+                                onKeyUp={this.onFilterChange}
+                              />
+                                  <InputGroup.Addon>
+                                    <i className="fa fa-search"></i>
+                                  </InputGroup.Addon>
+                            </InputGroup>
+                          </FormGroup>
+                        </div>
+                        <div className="col-md-2 col-sm-3 text-right">
+                          <button className="btn btn-success"
+                            type="button"
+                            onClick={this.handleAdd.bind(this)}
+                          >
+                            <i className="fa fa-plus-circle"></i>
+                            &nbsp;Add Files
+                          </button>
+                        </div>
+                    </div>
+                  </div>
+                  <div className="row">
+                        <div className="col-sm-12">
+                            <div className="box">
+                                <div className="box-body">
+                                  <Table
+                                    className="table table-hover table-bordered"
+                                    noDataText="No records found."
+                                    currentPage={0}
+                                    itemsPerPage={filteredEntities.length > pageSize ? pageSize : 0} pageButtonLimit={5}>
+                                      <Thead>
+                                        <Th column="name">Name</Th>
+                                        <Th column="version">Version</Th>
+                                        <Th column="storedFileName">Stored File Name</Th>
+                                        <Th column="action">Actions</Th>
+                                      </Thead>
+                                    {filteredEntities.map((obj, i) => {
+                                      return (
+                                        <Tr key={`${obj.name}${i}`}>
+                                          <Td column="name">{obj.name}</Td>
+                                          <Td column="version">{obj.version}</Td>
+                                          <Td column="storedFileName">{obj.storedFileName}</Td>
+                                          <Td column="action">
+                                            <div className="btn-action">
+                                              <BtnDelete callback={this.handleDelete.bind(this, obj.id)}/>
+                                            </div>
+                                          </Td>
+                                        </Tr>
+                                      )
+                                    })}
+                                  </Table>
+                                </div>
+                            </div>
+                        </div>
+                  </div>
+					<Modal ref="Modal" data-title="Add File" data-resolve={this.handleSave.bind(this)}>
+						<FileFormContainer ref="addFile" />
+					  </Modal>
+				</BaseContainer>
 		)
 	}
 }

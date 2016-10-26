@@ -9,6 +9,10 @@ import Nestable from '../../libs/react-dnd-nestable/Nestable';
 import TagsFormContainer from './TagsFormContainer';
 import FSReactToastr from '../../components/FSReactToastr';
 import Modal from '../../components/FSModal'
+import BaseContainer from '../../containers/BaseContainer'
+import Utils from '../../utils/Utils';
+import {FormGroup,InputGroup,FormControl} from 'react-bootstrap';
+// import NoData from '../../components/NoData';
 
 var styles = {
   children: {
@@ -20,9 +24,12 @@ var styles = {
 export default class TagsContainer extends Component {
 	constructor(props){
 		super(props);
+    this.state = {
+      filterValue:''
+    }
 		this.fetchData();
 	}
-	
+
 	fetchData(){
 		TagREST.getAllTags()
 			.then((tags)=>{
@@ -75,7 +82,7 @@ export default class TagsContainer extends Component {
 		let flag = false;
 		let childIdArr = [];
 		childIdArr.push(childId);
-		
+
 		//Find all childId's and keep adding into childIdArr
 		while(!flag){
 			if(this.metaObj[childId] !== null){
@@ -212,7 +219,7 @@ export default class TagsContainer extends Component {
 			}
 			parentId = [parentData.id];
 		}
-		
+
 		let {id, name, description, tagIds} = movedItem;
 		let data = {id, name, description, tagIds};
 		data.tagIds = parentId;
@@ -231,28 +238,92 @@ export default class TagsContainer extends Component {
 		this.setState({ entities: newItems });
 	}
 
+  onFilterChange = (e) => {
+    this.setState({
+      filterValue : e.target.value.trim()
+    })
+  }
+
  	render() {
- 		const {entities, parentId, currentId, modalTitle} = this.state
+		const {entities, parentId, currentId, modalTitle ,filterValue} = this.state;
+    const filterByTagName = function(entities, filterValue){
+      let matchFilter = new RegExp(filterValue , 'i');
+
+      const filter = (arr) => {
+        return arr.filter(filteredList => {
+          let res = (matchFilter.test(filteredList.name) ? filteredList : undefined)
+          if(!res){
+            if(filteredList.children){
+              let child = filter(filteredList.children);
+              if(child.length){
+                return filteredList;
+              }
+            }
+          }else{
+            return res;
+          }
+        })
+      }
+
+        return filter(entities)
+    }
+    const filteredEntities = filterByTagName(entities || [], filterValue) || [];
+
 	    return (
-	        <div>
-	        	<div className="clearfix row-margin-bottom">
-                    <button type="button" className="btn btn-success pull-left" onClick={this.handleAdd.bind(this, null)}><i className="fa fa-tags"></i> Add Tags</button>
+                <BaseContainer
+            ref="BaseContainer"
+            routes={this.props.routes}
+            headerContent={this.props.routes[this.props.routes.length-1].name}
+          >
+              <div className="row">
+                <div className="page-title-box clearfix">
+                    <div className="col-md-4 col-md-offset-6 text-right">
+                      <FormGroup>
+                        <InputGroup>
+                          <FormControl type="text"
+                            placeholder="Search by name"
+                            onKeyUp={this.onFilterChange}
+                          />
+                              <InputGroup.Addon>
+                                <i className="fa fa-search"></i>
+                              </InputGroup.Addon>
+                        </InputGroup>
+                      </FormGroup>
+                    </div>
+                    <div className="col-md-2 col-sm-3 text-right">
+                      <button className="btn btn-success"
+                        type="button"
+                        onClick={this.handleAdd.bind(this, null)}
+                      >
+                        <i className="fa fa-plus-circle"></i>
+                        &nbsp;Add Tags
+                      </button>
+                    </div>
                 </div>
-                <div className="row">
-                	<div className="col-sm-8">
-                		<Nestable
-							useDragHandle
-							items={ entities }
-							renderItem={ this.renderItem.bind(this) }
-							onUpdate={ this.updateItems.bind(this) }
-							childrenStyle={ styles.children }
-						/>
-                	</div>
-                </div>
-                <Modal ref="Modal" data-title={modalTitle} data-resolve={this.handleSave.bind(this)}>
+              </div>
+              <div className="row">
+                    <div className="col-sm-12">
+                        <div className="box">
+                            <div className="box-body">
+                              {
+                                (filteredEntities.length === 0)
+                                  ? null
+                                  : <Nestable
+                                    useDragHandle
+                                    items={ filteredEntities }
+                                    renderItem={ this.renderItem.bind(this) }
+                                    onUpdate={ this.updateItems.bind(this) }
+                                    childrenStyle={ styles.children }
+                                  />
+                              }
+                            </div>
+                        </div>
+                    </div>
+              </div>
+              <Modal ref="Modal" data-title={modalTitle} data-resolve={this.handleSave.bind(this)}>
 					<TagsFormContainer ref="addTag" parentId={parentId} currentId={currentId}/>
 				</Modal>
-	        </div>
+                </BaseContainer>
 	    )
 	}
 }

@@ -51,7 +51,7 @@ export default class FSModal extends Component {
     footer(){
         return (
             <Modal.Footer>
-                <Button bsStyle='danger' onClick={this.cancel.bind(this)}>
+                <Button bsStyle='default' onClick={this.cancel.bind(this)}>
                     {this.state.btnCancelText || 'Cancel'}
                 </Button>
                 <Button bsStyle='success' onClick={this.sure.bind(this)}>

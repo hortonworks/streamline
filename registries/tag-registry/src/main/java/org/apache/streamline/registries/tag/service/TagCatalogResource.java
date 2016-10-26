@@ -39,7 +39,7 @@ import static javax.ws.rs.core.Response.Status.OK;
  * <p>
  * <b>Note:</b> The JAVADOCS should be updated whenever there are any changes to the api.
  */
-@Path("/api/v1/catalog")
+@Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class TagCatalogResource {
     private final TagService tagService;

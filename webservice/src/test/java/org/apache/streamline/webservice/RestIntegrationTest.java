@@ -269,6 +269,7 @@ public class RestIntegrationTest {
                 response = client.target(url).request().post(Entity.entity(getMultiPart(resourceToTest, resourceToPost),
                                                                            MediaType.MULTIPART_FORM_DATA), String.class);
             } else {
+                System.out.println("url " + url);
                 response = client.target(url).request().post(Entity.json(resourceToPost), String.class);
             }
             Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));

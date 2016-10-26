@@ -70,6 +70,7 @@ export default class TopologyConfigContainer extends Component {
 							className="form-control"
 							value={this.state.rootdir}
 							required={true}
+                                                        disabled={this.props.viewMode}
 						/>
 					</div>
 					{this.state.rootdir === '' ? 
@@ -89,6 +90,7 @@ export default class TopologyConfigContainer extends Component {
 							className="form-control"
 							value={this.state.parserJar}
 							required={true}
+                                                        disabled={this.props.viewMode}
 						/>
 					</div>
 					{this.state.parserJar === '' ? 
@@ -108,6 +110,7 @@ export default class TopologyConfigContainer extends Component {
 							className="form-control"
 							value={this.state.notifierJar}
 							required={true}
+                                                        disabled={this.props.viewMode}
 						/>
 					</div>
 					{this.state.notifierJar === '' ? 

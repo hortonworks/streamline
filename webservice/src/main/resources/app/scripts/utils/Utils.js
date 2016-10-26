@@ -1,5 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
+import moment from 'moment';
 
 const searchFilter = function(fullData, filterArr){
 	fullData = fullData || [];
@@ -85,9 +86,53 @@ const millisecondsToNumber = function(number){
 	}
 }
 
+const capitaliseFirstLetter = function(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+const splitTimeStamp = function(date){
+  const currentDT = moment(new Date());
+  const createdDT = moment(date);
+  const dateObj = moment.duration(currentDT.diff(createdDT));
+  return 'Created time '+ ((dateObj._data.days === 0)
+                            ? '': dateObj._data.days+'d ')
+                             +((dateObj._data.days === 0 && dateObj._data.hours === 0 )
+                               ? '' : dateObj._data.hours+'h ')
+                                + ((dateObj._data.days === 0 && dateObj._data.hours === 0 && dateObj._data.minutes === 0)
+                                  ? '' : dateObj._data.minutes+'m ')
+                                    + dateObj._data.seconds+'s ago';
+}
+
+const splitSeconds = function(sec_num){
+    let days    = Math.floor(sec_num / (3600 * 24));
+    let hours   = Math.floor((sec_num - (days * (3600 * 24)))/3600);
+    let minutes = Math.floor((sec_num - (days * (3600 * 24)) - (hours * 3600)) / 60);
+    let seconds = Math.floor(sec_num - (days * (3600 * 24)) - (hours * 3600) - (minutes * 60));
+
+    if (hours   < 10) {hours   = "0"+hours;}
+    if (minutes < 10) {minutes = "0"+minutes;}
+    if (seconds < 10) {seconds = "0"+seconds;}
+
+  return 'Uptime '+((days === 0) ? '': days+'d ')
+                    +((days === 0 && hours === 0)
+                      ? '' : hours+'h ')
+                        +((days === 0 && hours === 0 && minutes === 0)
+                          ? '' : minutes+'m ')
+                            +seconds+'s ago';
+}
+
+const filterByName = function(entities, filterValue){
+  let matchFilter = new RegExp(filterValue , 'i');
+    return entities.filter(filteredList => !filterValue || matchFilter.test(filteredList.name))
+}
+
 export default {
 	searchFilter,
 	sortArray,
 	numberToMilliseconds,
-	millisecondsToNumber
+        millisecondsToNumber,
+  capitaliseFirstLetter,
+  splitTimeStamp,
+  splitSeconds,
+  filterByName
 };

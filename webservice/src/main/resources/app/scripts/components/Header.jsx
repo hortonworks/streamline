@@ -1,47 +1,81 @@
 import React, {Component} from 'react';
 import {Link} from 'react-router'
 import state from '../app_state';
+import {Nav,Navbar,NavItem,NavDropdown,MenuItem} from 'react-bootstrap';
 
 export default class Header extends Component {
+
 	constructor(props){
 		super();
 	}
 
-    toggleSideBar(){
-    	state.sidebar.show = !state.sidebar.show;
+  clickHandler = (eventKey) => {
+    event.preventDefault();
+    switch(eventKey){
+      case "3.1" : this.context.router.push("applications")
+        break;
+      case "3.2" : this.context.router.push("schema-registry")
+        break;
+      case "4.1" : this.context.router.push("custom-processor")
+        break;
+      case "4.2" : this.context.router.push("tags")
+        break;
+      case "4.3" : this.context.router.push("files")
+        break;
+       default : break;
     }
-    render() {
-        return (
-            <header className="navbar navbar-inverse navbar-fixed-top">
-			    <div className="container-fluid">
-			        <div className="row">
-			            <div className="col-sm-2">
-			                <ul className="nav navbar-nav">
-			                    {this.props.onLandingPage === 'false' ? <li><a role="button" className="left-bar-toggle" onClick={this.toggleSideBar.bind(this)}><i className="fa fa-lg fa-th-large"></i></a></li> : null}
-			                    <li><Link to="/news-feed" role="button"><i className="fa fa-lg fa-newspaper-o"></i></Link></li>
-			                </ul>
-			            </div>
-			            <div className="col-sm-8 text-center">
-			                <Link to="/" className="navbar-logo"><img src="styles/img/logo.png" height="30" /></Link>
-			            </div>
-			            <div className="col-sm-2">
-			                <ul className="nav navbar-nav navbar-right">
-			                    <li><Link to="/configuration"><i className="fa fa-lg fa-gear"></i></Link></li>
-			                    <li className="dropdown">
-			                        <a href="javascript:void(0);" className="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i className="fa fa-lg fa-user"></i></a>
-			                        <ul className="dropdown-menu">
-			                            <li><a href="javascript:void(0);">Change Password</a></li>
-			                            <li><a href="javascript:void(0);">Edit Profile</a></li>
-			                            <li><a href="javascript:void(0);">View Profile</a></li>
-			                            <li role="separator" className="divider"></li>
-			                            <li><a href="javascript:void(0);">Logout</a></li>
-			                        </ul>
-			                    </li>
-			                </ul>
-			            </div>
-			        </div>
-			    </div>
-            </header>
-        );
+  }
+
+  render(){
+    const userIcon = <i className="fa fa-user"></i>;
+    const bigIcon = <i className="fa fa-chevron-down"></i>;
+    const config = <i className="fa fa-cog"></i>;
+
+    return(
+      <Navbar inverse fluid={true} >
+        <Navbar.Header>
+          <Navbar.Brand>
+            <Link to="/"><strong>Stream</strong>Line</Link>
+          </Navbar.Brand>
+          <Navbar.Toggle />
+        </Navbar.Header>
+        <Navbar.Collapse>
+          <Nav onSelect={this.clickHandler}>
+            <NavDropdown id="dash_dropdown"  eventKey="3" title={bigIcon} noCaret>
+              <MenuItem eventKey="3.1">
+                <i className="fa fa-sitemap"></i>
+                  &nbsp;My Appliations
+              </MenuItem>
+              <MenuItem eventKey="3.2">
+                <i className="fa fa-file-code-o"></i>
+                  &nbsp;Schema Registry
+              </MenuItem>
+            </NavDropdown>
+          </Nav>
+          <Navbar.Text pullLeft>
+                {this.props.headerContent}
+          </Navbar.Text>
+          <Nav pullRight onSelect={this.clickHandler}>
+            <NavDropdown id="configuration" eventKey="4" title={config} noCaret>
+              <MenuItem eventKey="4.1">Custom Processor</MenuItem>
+              <MenuItem eventKey="4.2">Tags</MenuItem>
+              <MenuItem eventKey="4.3">Files</MenuItem>
+            </NavDropdown>
+            <NavDropdown id="userDropdown" eventKey="5" title={userIcon}>
+              <MenuItem eventKey="5.1">Action</MenuItem>
+              <MenuItem eventKey="5.2">Another action</MenuItem>
+                <MenuItem eventKey="5.3">Something else here</MenuItem>
+                <MenuItem divider />
+                <MenuItem eventKey="5.4">Separated link</MenuItem>
+            </NavDropdown>
+          </Nav>
+        </Navbar.Collapse>
+      </Navbar>
+    );
   }
 }
+
+
+Header.contextTypes = {
+    router: React.PropTypes.object.isRequired
+};

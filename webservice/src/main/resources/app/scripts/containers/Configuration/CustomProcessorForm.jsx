@@ -15,6 +15,7 @@ import 'codemirror/mode/javascript/javascript';
 import jsonlint from 'jsonlint';
 import lint from 'codemirror/addon/lint/lint';
 import Modal from '../../components/FSModal';
+import BaseContainer from '../BaseContainer'
 
 CodeMirror.registerHelper("lint", "json", function(text) {
   var found = [];
@@ -204,177 +205,185 @@ export default class CustomProcessorForm extends Component {
         };
 		return (
 			<div>
-				<form className="form-horizontal">
-				<div className="form-group">
-					<label className="col-sm-2 control-label">Streaming Engine*</label>
-					<div className="col-sm-5">
-						<input
-							name="streamingEngine"
-							placeholder="Streaming Engine"
-							onChange={this.handleValueChange.bind(this)}
-							type="text"
-							className="form-control"
-							value={this.state.streamingEngine}
-							disabled={true}
-						    required={true}
-						/>
-					</div>
-					{this.state.streamingEngine === '' ?
-						<div className="col-sm-4">
-							<p className="form-control-static error-note">Please Enter a Streaming Engine</p>
-						</div>
-					: null}
-				</div>
-				<div className="form-group">
-					<label className="col-sm-2 control-label">Name*</label>
-					<div className="col-sm-5">
-						<input
-							name="name"
-							placeholder="Name"
-							onChange={this.handleValueChange.bind(this)}
-							type="text"
-							className="form-control"
-							value={this.state.name}
-						    required={true}
-						    disabled = {this.props.id ? true : false}
-						/>
-					</div>
-					{this.state.name === '' ?
-						<div className="col-sm-4">
-							<p className="form-control-static error-note">Please Enter Name</p>
-						</div>
-					: null}
-				</div>
-				<div className="form-group">
-					<label className="col-sm-2 control-label">Description*</label>
-					<div className="col-sm-5">
-						<input
-							name="description"
-							placeholder="Description"
-							onChange={this.handleValueChange.bind(this)}
-							type="text"
-							className="form-control"
-							value={this.state.description}
-						    required={true}
-						/>
-					</div>
-					{this.state.description === '' ?
-						<div className="col-sm-4">
-							<p className="form-control-static error-note">Please Enter Description</p>
-						</div>
-					: null}
-				</div>
-				<div className="form-group">
-					<label className="col-sm-2 control-label">Classname*</label>
-					<div className="col-sm-5">
-						<input
-							name="customProcessorImpl"
-							placeholder="Classname"
-							onChange={this.handleValueChange.bind(this)}
-							type="text"
-							className="form-control"
-							value={this.state.customProcessorImpl}
-						    required={true}
-						/>
-					</div>
-					{this.state.customProcessorImpl === '' ?
-						<div className="col-sm-4">
-							<p className="form-control-static error-note">Please Enter Classname</p>
-						</div>
-					: null}
-				</div>
-				<div className="form-group">
-					<label className="col-sm-2 control-label">Upload Jar*</label>
-					<div className="col-sm-5">
-						<input
-							type="file"
-							name="jarFileName"
-							placeholder="Select Jar"
-							accept=".jar"
-							className="form-control"
-							ref="jarFileName"
-							onChange={(event)=>{this.handleJarUpload.call(this, event)}}
-						    required={true}
-						/>
-					</div>
-					{this.state.jarFileName === '' ?
-						<div className="col-sm-4">
-							<p className="form-control-static error-note">Please Select a Jar</p>
-						</div>
-					: null}
-				</div>
-				<div className="form-group">
-					<label className="col-sm-2 control-label">Config Fields*</label>
-					<div className="col-sm-5">
-						<button type="button" className="btn btn-sm btn-primary" onClick={this.handleAddFields.bind(this)}>Add Config Fields</button>
-					</div>
-					{this.state.configFields.length === 0 ? (
-						<div className="col-sm-4">
-							<p className="form-control-static error-note">Please add Config Fields</p>
-						</div>)
-					: null}
-				</div>
-				<div className="row">
-					<div className="col-sm-10 col-sm-offset-2">
-						<Table
-			              className="table table-hover table-bordered"
-			              noDataText="No records found."
-			              currentPage={0}
-			              itemsPerPage={this.state.configFields.length > pageSize ? pageSize : 0} pageButtonLimit={5}>
-			                <Thead>
-			                  <Th column="name">Name</Th>
-			                  <Th column="isOptional">Is Optional</Th>
-			                  <Th column="type">Type</Th>
-			                  <Th column="defaultValue">Default Value</Th>
-			                  <Th column="isUserInput">Is User Input</Th>
-			                  <Th column="tooltip">Tooltip</Th>
-			                  <Th column="action">Actions</Th>
-			                </Thead>
-			              {this.state.configFields.map((obj, i) => {
-			                return (
-			                  <Tr key={i}>
-			                    <Td column="name">{obj.name}</Td>
-			                    <Td column="isOptional">{obj.isOptional}</Td>
-			                    <Td column="type">{obj.type}</Td>
-			                    <Td column="defaultValue">{obj.defaultValue}</Td>
-			                    <Td column="isUserInput">{obj.isUserInput}</Td>
-			                    <Td column="tooltip">{obj.tooltip}</Td>
-			                    <Td column="action">
-			                    	<div className="btn-action">
-										<BtnEdit callback={this.handleConfigFieldsEdit.bind(this, obj.id)}/>
-										<BtnDelete callback={this.handleConfigFieldsDelete.bind(this, obj.id)}/>
-			                    	</div>
-			                    </Td>
-			                  </Tr>
-			                )
-			              })}
-			            </Table>
-					</div>
-				</div>
-				<div className="form-group">
-					<label className="col-sm-2 control-label">Input Schema*</label>
-					<div className="col-sm-6">
-						<ReactCodemirror
-							ref="JSONCodemirror"
-							value={this.state.inputSchema}
-							onChange={this.handleInputSchemaChange.bind(this)}
-							options={jsonoptions}
-						/>
-					</div>
-				</div>
-				<div className="form-group">
-					<label className="col-sm-2 control-label">Output Schema*</label>
-					<div className="col-sm-10">
-						<OutputSchemaContainer ref="OutputSchemaContainer" streamData={this.state.outputStreamToSchema}/>
-					</div>
-				</div>
-				<div className="form-group">
-					<div className="col-sm-12 text-center">
-						<button type="button" className="btn btn-default" onClick={this.props.onCancel}>Cancel</button>{'\n'}
-						<button type="button" className="btn btn-success" onClick={this.props.onSave}>Save</button>
-					</div>
-				</div>
-			</form>
+        <div className="row">
+            <div className="col-sm-12">
+                <div className="box">
+                    <div className="box-body">
+                      <form className="form-horizontal">
+                        <div className="form-group">
+                          <label className="col-sm-2 control-label">Streaming Engine*</label>
+                          <div className="col-sm-5">
+                            <input
+                              name="streamingEngine"
+                              placeholder="Streaming Engine"
+                              onChange={this.handleValueChange.bind(this)}
+                              type="text"
+                              className="form-control"
+                              value={this.state.streamingEngine}
+                              disabled={true}
+                                required={true}
+                            />
+                          </div>
+                          {this.state.streamingEngine === '' ?
+                            <div className="col-sm-4">
+                              <p className="form-control-static error-note">Please Enter a Streaming Engine</p>
+                            </div>
+                          : null}
+                        </div>
+                        <div className="form-group">
+                          <label className="col-sm-2 control-label">Name*</label>
+                          <div className="col-sm-5">
+                            <input
+                              name="name"
+                              placeholder="Name"
+                              onChange={this.handleValueChange.bind(this)}
+                              type="text"
+                              className="form-control"
+                              value={this.state.name}
+                                required={true}
+                                disabled = {this.props.id ? true : false}
+                            />
+                          </div>
+                          {this.state.name === '' ?
+                            <div className="col-sm-4">
+                              <p className="form-control-static error-note">Please Enter Name</p>
+                            </div>
+                          : null}
+                        </div>
+                        <div className="form-group">
+                          <label className="col-sm-2 control-label">Description*</label>
+                          <div className="col-sm-5">
+                            <input
+                              name="description"
+                              placeholder="Description"
+                              onChange={this.handleValueChange.bind(this)}
+                              type="text"
+                              className="form-control"
+                              value={this.state.description}
+                                required={true}
+                            />
+                          </div>
+                          {this.state.description === '' ?
+                            <div className="col-sm-4">
+                              <p className="form-control-static error-note">Please Enter Description</p>
+                            </div>
+                          : null}
+                        </div>
+                        <div className="form-group">
+                          <label className="col-sm-2 control-label">Classname*</label>
+                          <div className="col-sm-5">
+                            <input
+                              name="customProcessorImpl"
+                              placeholder="Classname"
+                              onChange={this.handleValueChange.bind(this)}
+                              type="text"
+                              className="form-control"
+                              value={this.state.customProcessorImpl}
+                                required={true}
+                            />
+                          </div>
+                          {this.state.customProcessorImpl === '' ?
+                            <div className="col-sm-4">
+                              <p className="form-control-static error-note">Please Enter Classname</p>
+                            </div>
+                          : null}
+                        </div>
+                        <div className="form-group">
+                          <label className="col-sm-2 control-label">Upload Jar*</label>
+                          <div className="col-sm-5">
+                            <input
+                              type="file"
+                              name="jarFileName"
+                              placeholder="Select Jar"
+                              accept=".jar"
+                              className="form-control"
+                              ref="jarFileName"
+                              onChange={(event)=>{this.handleJarUpload.call(this, event)}}
+                                required={true}
+                            />
+                          </div>
+                          {this.state.jarFileName === '' ?
+                            <div className="col-sm-4">
+                              <p className="form-control-static error-note">Please Select a Jar</p>
+                            </div>
+                          : null}
+                        </div>
+                        <div className="form-group">
+                          <label className="col-sm-2 control-label">Config Fields*</label>
+                          <div className="col-sm-5">
+                            <button type="button" className="btn btn-sm btn-primary" onClick={this.handleAddFields.bind(this)}>Add Config Fields</button>
+                          </div>
+                          {this.state.configFields.length === 0 ? (
+                            <div className="col-sm-4">
+                              <p className="form-control-static error-note">Please add Config Fields</p>
+                            </div>)
+                          : null}
+                        </div>
+                        <div className="row">
+                          <div className="col-sm-10 col-sm-offset-2">
+                            <Table
+                                    className="table table-hover table-bordered"
+                                    noDataText="No records found."
+                                    currentPage={0}
+                                    itemsPerPage={this.state.configFields.length > pageSize ? pageSize : 0} pageButtonLimit={5}>
+                                      <Thead>
+                                        <Th column="name">Name</Th>
+                                        <Th column="isOptional">Is Optional</Th>
+                                        <Th column="type">Type</Th>
+                                        <Th column="defaultValue">Default Value</Th>
+                                        <Th column="isUserInput">Is User Input</Th>
+                                        <Th column="tooltip">Tooltip</Th>
+                                        <Th column="action">Actions</Th>
+                                      </Thead>
+                                    {this.state.configFields.map((obj, i) => {
+                                      return (
+                                        <Tr key={i}>
+                                          <Td column="name">{obj.name}</Td>
+                                          <Td column="isOptional">{obj.isOptional}</Td>
+                                          <Td column="type">{obj.type}</Td>
+                                          <Td column="defaultValue">{obj.defaultValue}</Td>
+                                          <Td column="isUserInput">{obj.isUserInput}</Td>
+                                          <Td column="tooltip">{obj.tooltip}</Td>
+                                          <Td column="action">
+                                            <div className="btn-action">
+                                    <BtnEdit callback={this.handleConfigFieldsEdit.bind(this, obj.id)}/>
+                                    <BtnDelete callback={this.handleConfigFieldsDelete.bind(this, obj.id)}/>
+                                            </div>
+                                          </Td>
+                                        </Tr>
+                                      )
+                                    })}
+                                  </Table>
+                          </div>
+                        </div>
+                        <div className="form-group">
+                          <label className="col-sm-2 control-label">Input Schema*</label>
+                          <div className="col-sm-6">
+                            <ReactCodemirror
+                              ref="JSONCodemirror"
+                              value={this.state.inputSchema}
+                              onChange={this.handleInputSchemaChange.bind(this)}
+                              options={jsonoptions}
+                            />
+                          </div>
+                        </div>
+                        <div className="form-group">
+                          <label className="col-sm-2 control-label">Output Schema*</label>
+                          <div className="col-sm-10">
+                            <OutputSchemaContainer ref="OutputSchemaContainer" streamData={this.state.outputStreamToSchema}/>
+                          </div>
+                        </div>
+                        <div className="form-group">
+                        <div className="col-sm-12 text-center">
+                          <button type="button" className="btn btn-default" onClick={this.props.onCancel}>Cancel</button>{'\n'}
+                          <button type="button" className="btn btn-success" onClick={this.props.onSave}>Save</button>
+                        </div>
+                      </div>
+                      </form>
+                    </div>
+                </div>
+            </div>
+      </div>
 			<Modal ref="ConfigFieldModal" data-title={this.state.modalTitle} data-resolve={this.handleSaveConfigFieldModal.bind(this)}>
 				{this.modalContent()}
 			</Modal>
