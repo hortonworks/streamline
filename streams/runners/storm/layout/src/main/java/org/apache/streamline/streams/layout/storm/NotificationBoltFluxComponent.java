@@ -1,25 +1,49 @@
 package org.apache.streamline.streams.layout.storm;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
+import org.apache.streamline.streams.layout.component.impl.NotificationSink;
 import org.apache.streamline.streams.layout.exception.BadTopologyLayoutException;
+import org.codehaus.jackson.annotate.JsonMethod;
 
 import java.util.List;
 import java.util.Map;
 
 public class NotificationBoltFluxComponent extends AbstractFluxComponent {
+    private NotificationSink notificationSink;
+
+    // for unit tests
+    NotificationBoltFluxComponent() {
+    }
+
+    public NotificationBoltFluxComponent(NotificationSink notificationSink) {
+        this.notificationSink = notificationSink;
+    }
+
     @Override
     protected void generateComponent() {
         String boltId = "notificationBolt" + UUID_FOR_COMPONENTS;
-        String boltClassName = "org.apache.streamline.streams.runtime.storm.bolt.notification" +
-                ".NotificationBolt";
-        String[] constructorArgNames =  {
-                TopologyLayoutConstants.JSON_KEY_NOTIFIER_NAME
-        };
+        String boltClassName = "org.apache.streamline.streams.runtime.storm.bolt.notification.NotificationBolt";
+        String[] constructorArgNames = {TopologyLayoutConstants.JSON_KEY_NOTIFICATION_SINK_JSON};
+        try {
+            if (notificationSink == null) {
+                throw new RuntimeException("Error generating flux, notificationSink = " + notificationSink);
+            }
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
+            objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+            String notificationSinkJsonStr = objectMapper.writeValueAsString(notificationSink);
+            conf.put(TopologyLayoutConstants.JSON_KEY_NOTIFICATION_SINK_JSON, notificationSinkJsonStr);
+        } catch (JsonProcessingException ex) {
+            throw new RuntimeException(ex);
+        }
         List boltConstructorArgs = getConstructorArgsYaml(constructorArgNames);
         String[] configMethodNames = {"withHBaseConfigKey"};
-        String[] configKeys = { TopologyLayoutConstants.JSON_KEY_NOTIFIER_CONFIG_KEY };
-        List configMethods = getConfigMethodsYaml(configMethodNames,
-                configKeys);
+        String[] configKeys = {TopologyLayoutConstants.JSON_KEY_NOTIFIER_CONFIG_KEY};
+        List configMethods = getConfigMethodsYaml(configMethodNames, configKeys);
         component = createComponent(boltId, boltClassName, null, boltConstructorArgs, configMethods);
         addParallelismToComponent();
     }

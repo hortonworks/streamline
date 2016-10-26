@@ -70,12 +70,10 @@ import org.apache.streamline.streams.cluster.discovery.ServiceNodeDiscoverer;
 import org.apache.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import org.apache.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.streamline.streams.layout.component.InputComponent;
 import org.apache.streamline.streams.layout.component.Stream;
 import org.apache.streamline.streams.layout.component.TopologyActions;
 import org.apache.streamline.streams.layout.component.TopologyDag;
 import org.apache.streamline.streams.layout.component.TopologyLayout;
-import org.apache.streamline.streams.layout.component.impl.NotificationSink;
 import org.apache.streamline.streams.layout.component.rule.Rule;
 import org.apache.streamline.streams.layout.exception.BadTopologyLayoutException;
 import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
@@ -576,38 +574,26 @@ public class StreamCatalogService {
         TopologyDag dag = topologyDagBuilder.getDag(topology);
         topology.setTopologyDag(dag);
         LOG.debug("Deploying topology {}", topology);
-        addUpdateNotifierInfoFromTopology(topology);
         setUpClusterArtifacts(topology);
-        setUpUdfJars(topology);
+        setUpExtraJars(topology);
         topologyActions.deploy(getTopologyLayout(topology));
     }
 
-    private void setUpUdfJars(Topology topology) throws IOException {
-        StormTopologyUdfJarHandler udfHandler = new StormTopologyUdfJarHandler();
-        topology.getTopologyDag().traverse(udfHandler);
-        Set<String> udfs = udfHandler.getUdfs();
-        Path udfJarsDir = topologyActions.getExtraJarsLocation(getTopologyLayout(topology));
-        Set<UDFInfo> udfsToShip = new HashSet<>();
-        makeEmptyDir(udfJarsDir);
-        for (String udf: udfs) {
-            Collection<UDFInfo> udfInfos = listUDFs(Collections.singletonList(new QueryParam(UDFInfo.NAME, udf)));
-            if(udfInfos.size() > 1) {
-                throw new IllegalArgumentException("Multiple UDF definitions with name:" + udf);
-            } else if (udfInfos.size() == 1) {
-                udfsToShip.add(udfInfos.iterator().next());
-            }
-        }
+    private void setUpExtraJars(Topology topology) throws IOException {
+        StormTopologyExtraJarsHandler extraJarsHandler = new StormTopologyExtraJarsHandler(this);
+        topology.getTopologyDag().traverse(extraJarsHandler);
+        Path extraJarsLocation = topologyActions.getExtraJarsLocation(getTopologyLayout(topology));
+        makeEmptyDir(extraJarsLocation);
         Set<String> copiedJars = new HashSet<>();
-        for (UDFInfo udf : udfsToShip) {
-            String jarPath = udf.getJarStoragePath();
-            if (!copiedJars.contains(jarPath)) {
-                File destPath = Paths.get(udfJarsDir.toString(), Paths.get(jarPath).getFileName().toString()).toFile();
-                try (InputStream src = fileStorage.downloadFile(jarPath);
+        for (String jar : extraJarsHandler.getExtraJars()) {
+            if (!copiedJars.contains(jar)) {
+                File destPath = Paths.get(extraJarsLocation.toString(), Paths.get(jar).getFileName().toString()).toFile();
+                try (InputStream src = fileStorage.downloadFile(jar);
                      FileOutputStream dest = new FileOutputStream(destPath)
                 ) {
                     IOUtils.copy(src, dest);
-                    copiedJars.add(jarPath);
-                    LOG.debug("Jar {} copied to {}", jarPath, destPath);
+                    copiedJars.add(jar);
+                    LOG.debug("Jar {} copied to {}", jar, destPath);
                 }
             }
         }
@@ -907,59 +893,6 @@ public class StreamCatalogService {
         TopologyEditorMetadata topologyEditorMetadata = new TopologyEditorMetadata();
         topologyEditorMetadata.setTopologyId(topologyId);
         return dao.remove(topologyEditorMetadata.getStorableKey());
-    }
-
-    /*
-     * This method is present because currently NotificationBolt expects a notifier name and queries NotifierInfo
-     * rest endpoint to retrieve the information for that notifier. However, there is no UI present for NotifierInfo
-     * rest endpoint. As a result, in order for NotificationBolt to work as is, we need to
-     * add or update any notification sink components present in the topology json before we deploy the topology
-     */
-    private void addUpdateNotifierInfoFromTopology(Topology topology) throws Exception {
-        for (InputComponent inputComponent : topology.getTopologyDag().getInputComponents()) {
-            if (inputComponent instanceof NotificationSink) {
-                NotifierInfo notifierInfo = populateNotifierInfo((NotificationSink) inputComponent);
-                NotifierInfo existingNotifierInfo = this.getNotifierInfoByName(notifierInfo.getName());
-                if (existingNotifierInfo != null) {
-                    this.addOrUpdateNotifierInfo(existingNotifierInfo.getId(), notifierInfo);
-                } else {
-                    this.addNotifierInfo(notifierInfo);
-                }
-            }
-        }
-    }
-
-    private NotifierInfo populateNotifierInfo(NotificationSink notificationSink) {
-        NotifierInfo notifierInfo = new NotifierInfo();
-        notifierInfo.setName(notificationSink.getNotifierName());
-        notifierInfo.setClassName(notificationSink.getNotifierClassName());
-        notifierInfo.setJarFileName(notificationSink.getNotifierJarFileName());
-        notifierInfo.setProperties(convertMapValuesToString(notificationSink.getNotifierProperties()));
-        notifierInfo.setFieldValues(convertMapValuesToString(notificationSink.getNotifierFieldValues()));
-        return notifierInfo;
-    }
-
-    private Map<String, String> convertMapValuesToString(Map<String, Object> map) {
-        Map<String, String> result = new HashMap<>();
-        for (Map.Entry<String, Object> e : map.entrySet()) {
-            Object val = e.getValue();
-            if (val != null) {
-                result.put(e.getKey(), val.toString());
-            }
-        }
-        return result;
-    }
-
-    private NotifierInfo getNotifierInfoByName(String notifierName) throws Exception {
-        NotifierInfo notifierInfo = null;
-        QueryParam queryParam = new QueryParam(NotifierInfo.NOTIFIER_NAME, notifierName);
-        List<QueryParam> queryParams = new ArrayList<>();
-        queryParams.add(queryParam);
-        Collection<NotifierInfo> existingNotifiers = this.listNotifierInfos(queryParams);
-        if ((existingNotifiers != null) && !existingNotifiers.isEmpty()) {
-            notifierInfo = existingNotifiers.iterator().next();
-        }
-        return notifierInfo;
     }
 
     public TopologySource getTopologySource(Long id) {

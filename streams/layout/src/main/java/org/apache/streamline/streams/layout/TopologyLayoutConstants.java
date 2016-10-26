@@ -79,6 +79,7 @@ public final class TopologyLayoutConstants {
     public final static String JSON_KEY_DATA_SOURCE_ID = "dataSourceId";
     public final static String JSON_KEY_STREAM_ID = "streamId";
     public final static String JSON_KEY_NOTIFIER_NAME = "notifierName";
+    public final static String JSON_KEY_NOTIFICATION_SINK_JSON = "notificationSinkJson";
     public final static String JSON_KEY_NOTIFIER_JAR_FILENAME = "jarFileName";
     public final static String JSON_KEY_NOTIFIER_CLASSNAME = "className";
     public final static String JSON_KEY_NOTIFIER_PROPERTIES = "properties";

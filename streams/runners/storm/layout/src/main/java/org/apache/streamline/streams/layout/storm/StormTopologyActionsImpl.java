@@ -232,7 +232,6 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
     private String createYamlFile (TopologyLayout topology) throws Exception {
         Map<String, Object> yamlMap;
-        ObjectMapper objectMapper = new ObjectMapper();
         File f;
         FileWriter fileWriter = null;
         try {
