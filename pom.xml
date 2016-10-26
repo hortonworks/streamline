@@ -20,51 +20,95 @@
     </modules>
 
     <properties>
-        <!-- dependency versions -->
-        <junit.version>4.11</junit.version>
-        <snakeyaml.version>1.15</snakeyaml.version>
-        <jackson.version>2.7.3</jackson.version>
-        <slf4j.version>1.7.12</slf4j.version>
-        <guava.version>18.0</guava.version>
-        <hadoop.version>2.7.1</hadoop.version>
-        <kafka.version>0.8.1.1</kafka.version>
-        <kafkaArtifact>kafka_2.10</kafkaArtifact>
-        <scalaVersion>2.10.5</scalaVersion>
-        <dropwizard.version>0.9.0-rc4</dropwizard.version>
-        <jersey.version>2.22.1</jersey.version>
-        <jersey-media-multipart.version>2.22.1</jersey-media-multipart.version>
-        <jmockit.version>1.19</jmockit.version>
-        <groovy.version>2.4.5</groovy.version>
-        <!-- plugin versions -->
-        <maven-jar-plugin.version>2.6</maven-jar-plugin.version>
-        <maven-surefire.version>2.18.1</maven-surefire.version>
-        <maven-shade-plugin.version>2.4.1</maven-shade-plugin.version>
-        <hbase.version>1.1.2.2.3.98.0-63</hbase.version>
-        <jsonschemavalidator.version>2.2.6</jsonschemavalidator.version>
-        <kryo.version>2.21</kryo.version>
-        <logback.version>1.1.3</logback.version>
-        <mysql-connector.version>5.1.38</mysql-connector.version>
-        <phoenix.version>4.4.0-HBase-1.1</phoenix.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Compile Scope Dependencies -->
         <calcite.version>1.11.0-SNAPSHOT</calcite.version>
-        <commons.version>2.5</commons.version>
-        <commons-io.version>2.5</commons-io.version>
         <commons-cli.version>1.3.1</commons-cli.version>
+        <commons-io.version>2.5</commons-io.version>
         <commons-lang.version>2.6</commons-lang.version>
         <commons-lang3.version>3.4</commons-lang3.version>
+        <commons.version>2.5</commons.version>
+        <curator.version>2.11.0</curator.version>
+        <dropwizard.version>0.9.0-rc4</dropwizard.version>
+        <firebase-client.version>1.0.7</firebase-client.version>
+        <groovy.version>2.4.5</groovy.version>
+        <guava.version>18.0</guava.version>
+        <hadoop.version>2.7.1</hadoop.version>
+        <hbase.version>1.1.2.2.3.98.0-63</hbase.version>
+        <HikariCP-java6.version>2.2.5</HikariCP-java6.version>
+        <hive.version>2.1.0</hive.version>
+        <jackson.version>2.7.3</jackson.version>
+        <javax.mail.version>1.5.3</javax.mail.version>
+        <jersey.version>2.22.1</jersey.version>
+        <json-schema-validator.version>2.2.6</json-schema-validator.version>
+        <kafka.version>0.8.1.1</kafka.version>
+        <kafkaArtifact>kafka_2.10</kafkaArtifact>
+        <kryo.version>2.21</kryo.version>
+        <mysql-connector-java.version>5.1.38</mysql-connector-java.version>
+        <phoenix.version>4.4.0-HBase-1.1</phoenix.version>
+        <redis.lettuce.version>3.4.2.Final</redis.lettuce.version>
+        <scala.version>2.10.5</scala.version>
         <schema-registry.version>0.1.0-SNAPSHOT</schema-registry.version>
-        <curator-framework.version>2.11.0</curator-framework.version>
+        <slf4j.version>1.7.12</slf4j.version>
+        <storm.version>1.1.0-SNAPSHOT</storm.version>
+        <woodstox-core-asl.version>4.4.1</woodstox-core-asl.version>
+
+        <!-- Provided Scope Dependencies -->
+        <aws-java-sdk.version>1.10.77</aws-java-sdk.version>
+
+        <!-- Runtime Scope Dependencies -->
+        <logback.version>1.1.3</logback.version>
+
+        <!-- Test Scope Dependencies -->
+        <h2.version>1.4.188</h2.version>
+        <hamcrest.version>1.3</hamcrest.version>
+        <jmockit.version>1.19</jmockit.version>
+        <junit.version>4.11</junit.version>
+        <wiremock-standalone.version>2.0.9-beta</wiremock-standalone.version>
+
+        <!-- Plugin Versions -->
+        <maven-jar-plugin.version>2.6</maven-jar-plugin.version>
+        <maven-shade-plugin.version>2.4.1</maven-shade-plugin.version>
+        <maven-surefire.version>2.18.1</maven-surefire.version>
     </properties>
 
     <distributionManagement>
-      <repository>
-        <id>${repoid}</id>
-        <name>${reponame}</name>
-        <url>${repourl}</url>
-      </repository>
+        <repository>
+            <id>${repoid}</id>
+            <name>${reponame}</name>
+            <url>${repourl}</url>
+        </repository>
     </distributionManagement>
 
     <dependencyManagement>
         <dependencies>
+            <!-- Compile Scope Dependencies. Default, hence no need to explicitly declare -->
+            <dependency>
+                <groupId>biz.paluch.redis</groupId>
+                <artifactId>lettuce</artifactId>
+                <version>${redis.lettuce.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>com.esotericsoftware.kryo</groupId>
+                <artifactId>kryo</artifactId>
+                <version>${kryo.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-core</artifactId>
@@ -76,8 +120,8 @@
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-annotations</artifactId>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-properties</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
@@ -87,45 +131,29 @@
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.dataformat</groupId>
-                <artifactId>jackson-dataformat-yaml</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.dataformat</groupId>
                 <artifactId>jackson-dataformat-xml</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.dataformat</groupId>
-                <artifactId>jackson-dataformat-properties</artifactId>
+                <artifactId>jackson-dataformat-yaml</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${slf4j.version}</version>
+                <groupId>com.firebase</groupId>
+                <artifactId>firebase-client</artifactId>
+                <version>${firebase-client.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>log4j-over-slf4j</artifactId>
-                <version>${slf4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>jcl-over-slf4j</artifactId>
-                <version>${slf4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-classic</artifactId>
-                <version>${logback.version}</version>
+                <groupId>com.github.fge</groupId>
+                <artifactId>json-schema-validator</artifactId>
+                <version>${json-schema-validator.version}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-api</artifactId>
+                        <groupId>javax.mail</groupId>
+                        <artifactId>mailapi</artifactId>
                     </exclusion>
                 </exclusions>
-                <scope>runtime</scope>
             </dependency>
             <dependency>
                 <groupId>com.google.guava</groupId>
@@ -133,28 +161,94 @@
                 <version>${guava.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-hdfs</artifactId>
-                <version>${hadoop.version}</version>
+                <groupId>com.hortonworks.registries</groupId>
+                <artifactId>schema-registry-client</artifactId>
+                <version>${schema-registry.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hortonworks.registries</groupId>
+                <artifactId>schema-registry-serdes</artifactId>
+                <version>${schema-registry.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sun.mail</groupId>
+                <artifactId>javax.mail</artifactId>
+                <version>${javax.mail.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zaxxer</groupId>
+                <artifactId>HikariCP-java6</artifactId>
+                <version>${HikariCP-java6.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-cli</groupId>
+                <artifactId>commons-cli</artifactId>
+                <version>${commons-cli.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons-io.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-lang</groupId>
+                <artifactId>commons-lang</artifactId>
+                <version>${commons-lang.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.dropwizard</groupId>
+                <artifactId>dropwizard-assets</artifactId>
+                <version>${dropwizard.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.dropwizard</groupId>
+                <artifactId>dropwizard-core</artifactId>
+                <version>${dropwizard.version}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>log4j</groupId>
-                        <artifactId>log4j</artifactId>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>log4j-over-slf4j</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>com.sun.jersey</groupId>
-                        <artifactId>jersey-core</artifactId>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>jcl-over-slf4j</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>com.sun.jersey</groupId>
-                        <artifactId>jersey-json</artifactId>
+                        <groupId>com.google.guava</groupId>
+                        <artifactId>guava</artifactId>
                     </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${mysql-connector-java.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.calcite</groupId>
+                <artifactId>calcite-core</artifactId>
+                <version>${calcite.version}</version>
+                <exclusions>
                     <exclusion>
                         <groupId>org.slf4j</groupId>
                         <artifactId>slf4j-log4j12</artifactId>
                     </exclusion>
                 </exclusions>
-
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.curator</groupId>
+                <artifactId>curator-client</artifactId>
+                <version>${curator.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.curator</groupId>
+                <artifactId>curator-framework</artifactId>
+                <version>${curator.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
@@ -166,12 +260,128 @@
                         <artifactId>log4j</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>com.sun.jersey</groupId>
                         <artifactId>jersey-core</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>javax.servlet</groupId>
                         <artifactId>servlet-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.google.protobuf</groupId>
+                        <artifactId>protobuf-java</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-hdfs</artifactId>
+                <version>${hadoop.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.jersey</groupId>
+                        <artifactId>jersey-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.jersey</groupId>
+                        <artifactId>jersey-json</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.google.protobuf</groupId>
+                        <artifactId>protobuf-java</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hbase</groupId>
+                <artifactId>hbase-client</artifactId>
+                <version>${hbase.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.zookeeper</groupId>
+                        <artifactId>zookeeper</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.jersey</groupId>
+                        <artifactId>jersey-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.jersey</groupId>
+                        <artifactId>jersey-json</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.hadoop</groupId>
+                        <artifactId>hadoop-common</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hive</groupId>
+                <artifactId>hive-exec</artifactId>
+                <version>${hive.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>log4j-slf4j-impl</artifactId>
+                        <groupId>org.apache.logging.log4j</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.calcite</groupId>
+                        <artifactId>calcite-avatica</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.google.protobuf</groupId>
+                        <artifactId>protobuf-java</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hive</groupId>
+                <artifactId>hive-metastore</artifactId>
+                <version>${hive.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.sun.jersey</groupId>
+                        <artifactId>jersey-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>log4j-slf4j-impl</artifactId>
+                        <groupId>org.apache.logging.log4j</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.jersey</groupId>
+                        <artifactId>jersey-json</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.jersey.contribs</groupId>
+                        <artifactId>jersey-guice</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.eclipse.jetty.aggregate</groupId>
+                        <artifactId>jetty-all</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.google.protobuf</groupId>
+                        <artifactId>protobuf-java</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -188,85 +398,501 @@
                         <groupId>log4j</groupId>
                         <artifactId>log4j</artifactId>
                     </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.scala-lang</groupId>
-                <artifactId>scala-library</artifactId>
-                <version>${scalaVersion}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.dropwizard</groupId>
-                <artifactId>dropwizard-core</artifactId>
-                <version>${dropwizard.version}</version>
-                <exclusions>
                     <exclusion>
                         <groupId>org.slf4j</groupId>
-                        <artifactId>log4j-over-slf4j</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>jcl-over-slf4j</artifactId>
+                        <artifactId>slf4j-log4j12</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.hbase</groupId>
-                <artifactId>hbase-client</artifactId>
-                <version>${hbase.version}</version>
+                <groupId>org.apache.phoenix</groupId>
+                <artifactId>phoenix-core</artifactId>
+                <version>${phoenix.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.slf4j</groupId>
                         <artifactId>slf4j-log4j12</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>org.apache.zookeeper</groupId>
-                        <artifactId>zookeeper</artifactId>
+                        <groupId>com.sun.jersey</groupId>
+                        <artifactId>jersey-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.jersey</groupId>
+                        <artifactId>jersey-server</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.jersey</groupId>
+                        <artifactId>jersey-client</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.mortbay.jetty</groupId>
+                        <artifactId>jetty</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.mortbay.jetty</groupId>
+                        <artifactId>jetty-sslengine</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.mortbay.jetty</groupId>
+                        <artifactId>jsp-2.1</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.mortbay.jetty</groupId>
+                        <artifactId>jsp-api-2.1</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.mortbay.jetty</groupId>
+                        <artifactId>servlet-api-2.5</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.google.protobuf</groupId>
+                        <artifactId>protobuf-java</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.storm</groupId>
+                <artifactId>flux-core</artifactId>
+                <version>${storm.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.storm</groupId>
+                <artifactId>storm-hbase</artifactId>
+                <version>${storm.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.hbase</groupId>
+                        <artifactId>hbase-server</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.hbase</groupId>
+                        <artifactId>hbase-client</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.hadoop</groupId>
+                        <artifactId>hadoop-hdfs</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.storm</groupId>
+                <artifactId>storm-hdfs</artifactId>
+                <version>${storm.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.hadoop</groupId>
+                        <artifactId>hadoop-common</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.storm</groupId>
+                <artifactId>storm-kafka</artifactId>
+                <version>${storm.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.storm</groupId>
+                <artifactId>storm-kinesis</artifactId>
+                <version>${storm.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.storm</groupId>
+                <artifactId>storm-sql-core</artifactId>
+                <version>${storm.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.storm</groupId>
+                <artifactId>storm-sql-runtime</artifactId>
+                <version>${storm.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.groovy</groupId>
+                <artifactId>groovy-all</artifactId>
+                <version>${groovy.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.woodstox</groupId>
+                <artifactId>woodstox-core-asl</artifactId>
+                <version>${woodstox-core-asl.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.jersey.core</groupId>
                 <artifactId>jersey-client</artifactId>
                 <version>${jersey.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.core</groupId>
+                <artifactId>jersey-server</artifactId>
+                <version>${jersey.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.media</groupId>
+                <artifactId>jersey-media-json-jackson</artifactId>
+                <version>${jersey.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                        <artifactId>jackson-jaxrs-base</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.jersey.media</groupId>
                 <artifactId>jersey-media-multipart</artifactId>
-                <version>${jersey-media-multipart.version}</version>
+                <version>${jersey.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.github.fge</groupId>
-                <artifactId>json-schema-validator</artifactId>
-                <version>${jsonschemavalidator.version}</version>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-library</artifactId>
+                <version>${scala.version}</version>
             </dependency>
             <dependency>
-                <groupId>commons-io</groupId>
-                <artifactId>commons-io</artifactId>
-                <version>${commons-io.version}</version>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jcl-over-slf4j</artifactId>
+                <version>${slf4j.version}</version>
             </dependency>
             <dependency>
-                <groupId>commons-cli</groupId>
-                <artifactId>commons-cli</artifactId>
-                <version>${commons-cli.version}</version>
+                <groupId>org.slf4j</groupId>
+                <artifactId>log4j-over-slf4j</artifactId>
+                <version>${slf4j.version}</version>
             </dependency>
             <dependency>
-                <groupId>commons-lang</groupId>
-                <artifactId>commons-lang</artifactId>
-                <version>${commons-lang.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>${commons-lang3.version}</version>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
             </dependency>
 
-            <!-- Test dependencies -->
-            <!-- JMockit dependency must appear before JUnit dependency -->
+            <!-- Project Artifact Dependencies -->
             <dependency>
-                <groupId>org.jmockit</groupId>
-                <artifactId>jmockit</artifactId>
-                <version>${jmockit.version}</version>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>cache</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>common</artifactId>
+                <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.jersey</groupId>
+                        <artifactId>jersey-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.jersey</groupId>
+                        <artifactId>jersey-server</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.jersey</groupId>
+                        <artifactId>jersey-client</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.mortbay.jetty</groupId>
+                        <artifactId>jetty</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.mortbay.jetty</groupId>
+                        <artifactId>jetty-sslengine</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.mortbay.jetty</groupId>
+                        <artifactId>jsp-2.1</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.mortbay.jetty</groupId>
+                        <artifactId>jsp-api-2.1</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.mortbay.jetty</groupId>
+                        <artifactId>servlet-api-2.5</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>parser-registry</artifactId>
+                <version>${project.version}</version>
+                <!-- dropwizard and phoenix have conflicts in jersey related dependencies  -->
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.phoenix</groupId>
+                        <artifactId>phoenix-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                    <!-- Storm will load its underlying framework for slf4j,
+                    so exclude underlying logging framework for Streamline -->
+                    <exclusion>
+                        <groupId>ch.qos.logback</groupId>
+                        <artifactId>logback-classic</artifactId>
+                    </exclusion>
+                    <!-- This is needed to avoid conflict with email notifier -->
+                    <exclusion>
+                        <groupId>javax.mail</groupId>
+                        <artifactId>mailapi</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>registries</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>storage</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>storage-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>streamline-catalog</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>streamline-cluster</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>streamline-common</artifactId>
+                <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>streamline-layout</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>streamline-layout-storm</artifactId>
+                <version>${project.version}</version>
+                <!-- dropwizard and phoenix have conflicts in jersey related dependencies  -->
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.phoenix</groupId>
+                        <artifactId>phoenix-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                    <!-- Storm will load its underlying framework for slf4j,
+                    so exclude underlying logging framework for Streamline -->
+                    <exclusion>
+                        <groupId>ch.qos.logback</groupId>
+                        <artifactId>logback-classic</artifactId>
+                    </exclusion>
+                    <!-- This is needed to avoid conflict with email notifier -->
+                    <exclusion>
+                        <groupId>javax.mail</groupId>
+                        <artifactId>mailapi</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>streamline-metrics</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>streamline-metrics-storm</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>streamline-notification</artifactId>
+                <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>streamline-notifier</artifactId>
+                <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>streamline-runners</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>streamline-runners-storm</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>streamline-runtime</artifactId>
+                <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>streamline-runtime-storm</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>streamline-sdk</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>streamline-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>streams</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>tag-registry</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>webservice</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <!-- END Project Artifact Dependencies -->
+
+            <!-- Provided Scope Dependencies -->
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-java-sdk</artifactId>
+                <version>${aws-java-sdk.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.storm</groupId>
+                <artifactId>storm-core</artifactId>
+                <version>${storm.version}</version>
+                <scope>provided</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- Runtime Scope Dependencies -->
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
+                <scope>runtime</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- Test Scope Dependencies -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                <artifactId>jackson-jaxrs-base</artifactId>
+                <version>${jackson.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.github.tomakehurst</groupId>
+                <artifactId>wiremock-standalone</artifactId>
+                <version>${wiremock-standalone.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>${h2.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.dropwizard</groupId>
+                <artifactId>dropwizard-testing</artifactId>
+                <version>${dropwizard.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -276,29 +902,21 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.yaml</groupId>
-                <artifactId>snakeyaml</artifactId>
-                <version>${snakeyaml.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.esotericsoftware.kryo</groupId>
-                <artifactId>kryo</artifactId>
-                <version>${kryo.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.curator</groupId>
-                <artifactId>curator-framework</artifactId>
-                <version>${curator-framework.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.curator</groupId>
-                <artifactId>curator-client</artifactId>
-                <version>${curator-framework.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.apache.curator</groupId>
                 <artifactId>curator-test</artifactId>
-                <version>${curator-framework.version}</version>
+                <version>${curator.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest-all</artifactId>
+                <version>${hamcrest.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jmockit</groupId>
+                <artifactId>jmockit</artifactId>
+                <version>${jmockit.version}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
@@ -338,99 +956,101 @@
     </repositories>
 
     <build>
-      <pluginManagement>
-          <plugins>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-shade-plugin</artifactId>
-              <version>${maven-shade-plugin.version}</version>
-              <configuration>
-                <createDependencyReducedPom>true</createDependencyReducedPom>
-                <filters>
-                  <filter>
-                    <artifact>*:*</artifact>
-                    <excludes>
-                      <exclude>META-INF/*.SF</exclude>
-                      <exclude>META-INF/*.DSA</exclude>
-                      <exclude>META-INF/*.RSA</exclude>
-                    </excludes>
-                  </filter>
-                </filters>
-              </configuration>
-              <executions>
-                <execution>
-                  <phase>package</phase>
-                  <goals>
-                    <goal>shade</goal>
-                  </goals>
-                  <configuration>
-                    <transformers>
-                      <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                      <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                        <mainClass>org.apache.streamline.webservice.StreamlineApplication</mainClass>
-                      </transformer>
-                    </transformers>
-                  </configuration>
-                </execution>
-              </executions>
-            </plugin>
-            <!-- Enforces compilation using JDK 1.7. By default Maven uses JDK 1.5 -->
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-compiler-plugin</artifactId>
-              <configuration>
-                <source>1.8</source>
-                <target>1.8</target>
-              </configuration>
-            </plugin>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-jar-plugin</artifactId>
-              <version>${maven-jar-plugin.version}</version>
-              <configuration>
-                <archive>
-                  <manifest>
-                    <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                  </manifest>
-                </archive>
-              </configuration>
-            </plugin>
-            <!-- Test Plugins -->
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-surefire-plugin</artifactId>
-              <version>${maven-surefire.version}</version>
-                <configuration>
-                    <groups>${include.unit.test.groups}</groups>
-                    <excludedGroups>${exclude.unit.test.groups}</excludedGroups>
-                </configuration>
-            </plugin>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-surefire-report-plugin</artifactId>
-              <version>${maven-surefire.version}</version>
-            </plugin>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-failsafe-plugin</artifactId>
-              <version>${maven-surefire.version}</version>
-              <configuration>
-                <includes>
-                  <include>**/*.java</include>
-                </includes>
-                <groups>${include.integration.test.groups}</groups>
-                <excludedGroups>${exclude.integration.test.groups}</excludedGroups>
-              </configuration>
-              <executions>
-                <execution>
-                  <goals>
-                    <goal>integration-test</goal>
-                    <goal>verify</goal>
-                  </goals>
-                </execution>
-              </executions>
-            </plugin>
-          </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>${maven-shade-plugin.version}</version>
+                    <configuration>
+                        <createDependencyReducedPom>true</createDependencyReducedPom>
+                        <filters>
+                            <filter>
+                                <artifact>*:*</artifact>
+                                <excludes>
+                                    <exclude>META-INF/*.SF</exclude>
+                                    <exclude>META-INF/*.DSA</exclude>
+                                    <exclude>META-INF/*.RSA</exclude>
+                                </excludes>
+                            </filter>
+                        </filters>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>shade</goal>
+                            </goals>
+                            <configuration>
+                                <transformers>
+                                    <transformer
+                                            implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                    <transformer
+                                            implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                        <mainClass>org.apache.streamline.webservice.StreamlineApplication</mainClass>
+                                    </transformer>
+                                </transformers>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <!-- Enforces compilation using JDK 1.7. By default Maven uses JDK 1.5 -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <source>1.8</source>
+                        <target>1.8</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>${maven-jar-plugin.version}</version>
+                    <configuration>
+                        <archive>
+                            <manifest>
+                                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            </manifest>
+                        </archive>
+                    </configuration>
+                </plugin>
+                <!-- Test Plugins -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven-surefire.version}</version>
+                    <configuration>
+                        <groups>${include.unit.test.groups}</groups>
+                        <excludedGroups>${exclude.unit.test.groups}</excludedGroups>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-report-plugin</artifactId>
+                    <version>${maven-surefire.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>${maven-surefire.version}</version>
+                    <configuration>
+                        <includes>
+                            <include>**/*.java</include>
+                        </includes>
+                        <groups>${include.integration.test.groups}</groups>
+                        <excludedGroups>${exclude.integration.test.groups}</excludedGroups>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>integration-test</goal>
+                                <goal>verify</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
         </pluginManagement>
     </build>
     <reporting>
@@ -443,38 +1063,50 @@
     </reporting>
 
     <profiles>
-         <profile>
-           <id>dist</id>
-           <properties>
-             <exclude.unit.test.groups>org.apache.streamline.common.test.IntegrationTest,org.apache.streamline.common.test.HBaseIntegrationTest</exclude.unit.test.groups>
-             <include.unit.test.groups></include.unit.test.groups>
-             <exclude.integration.test.groups>org.apache.streamline.common.test.HBaseIntegrationTest</exclude.integration.test.groups>
-             <include.integration.test.groups>org.apache.streamline.common.test.IntegrationTest</include.integration.test.groups>
-           </properties>
-           <modules>
-             <module>streamline-dist</module>
-           </modules>
-         </profile>    
+        <profile>
+            <id>dist</id>
+            <properties>
+                <exclude.unit.test.groups>
+                    org.apache.streamline.common.test.IntegrationTest,org.apache.streamline.common.test.HBaseIntegrationTest
+                </exclude.unit.test.groups>
+                <include.unit.test.groups></include.unit.test.groups>
+                <exclude.integration.test.groups>org.apache.streamline.common.test.HBaseIntegrationTest
+                </exclude.integration.test.groups>
+                <include.integration.test.groups>org.apache.streamline.common.test.IntegrationTest
+                </include.integration.test.groups>
+            </properties>
+            <modules>
+                <module>streamline-dist</module>
+            </modules>
+        </profile>
         <profile>
             <id>dev-tests-basic</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <exclude.unit.test.groups>org.apache.streamline.common.test.IntegrationTest,org.apache.streamline.common.test.HBaseIntegrationTest</exclude.unit.test.groups>
+                <exclude.unit.test.groups>
+                    org.apache.streamline.common.test.IntegrationTest,org.apache.streamline.common.test.HBaseIntegrationTest
+                </exclude.unit.test.groups>
                 <include.unit.test.groups></include.unit.test.groups>
-                <exclude.integration.test.groups>org.apache.streamline.common.test.HBaseIntegrationTest</exclude.integration.test.groups>
-                <include.integration.test.groups>org.apache.streamline.common.test.IntegrationTest</include.integration.test.groups>
+                <exclude.integration.test.groups>org.apache.streamline.common.test.HBaseIntegrationTest
+                </exclude.integration.test.groups>
+                <include.integration.test.groups>org.apache.streamline.common.test.IntegrationTest
+                </include.integration.test.groups>
             </properties>
         </profile>
 
         <profile>
             <id>dev-tests-including-external-env</id>
             <properties>
-                <exclude.unit.test.groups>org.apache.streamline.common.test.IntegrationTest,org.apache.streamline.common.test.HBaseIntegrationTest</exclude.unit.test.groups>
+                <exclude.unit.test.groups>
+                    org.apache.streamline.common.test.IntegrationTest,org.apache.streamline.common.test.HBaseIntegrationTest
+                </exclude.unit.test.groups>
                 <include.unit.test.groups></include.unit.test.groups>
                 <exclude.integration.test.groups></exclude.integration.test.groups>
-                <include.integration.test.groups>org.apache.streamline.common.test.IntegrationTest,org.apache.streamline.common.test.HBaseIntegrationTest</include.integration.test.groups>
+                <include.integration.test.groups>
+                    org.apache.streamline.common.test.IntegrationTest,org.apache.streamline.common.test.HBaseIntegrationTest
+                </include.integration.test.groups>
             </properties>
         </profile>
     </profiles>

@@ -14,12 +14,10 @@
         <dependency>
             <groupId>org.apache.streamline</groupId>
             <artifactId>streamline-sdk</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.streamline</groupId>
             <artifactId>common</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-lang</groupId>
@@ -28,7 +26,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 

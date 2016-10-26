@@ -15,7 +15,6 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -56,26 +55,10 @@
         <dependency>
             <groupId>com.github.fge</groupId>
             <artifactId>json-schema-validator</artifactId>
-            <exclusions>
-              <exclusion>
-                <groupId>javax.mail</groupId>
-                <artifactId>mailapi</artifactId>
-              </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
@@ -85,13 +68,10 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <scope>test</scope>
         </dependency>
-                <dependency>
+        <dependency>
             <groupId>org.jmockit</groupId>
             <artifactId>jmockit</artifactId>
-            <version>${jmockit.version}</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

@@ -8,11 +8,13 @@
         <version>0.1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <properties>
-        <guava.version>12.0.1</guava.version>
-    </properties>
 
     <artifactId>streamline-sdk</artifactId>
+
+    <properties>
+        <guava.version.sdk>12.0.1</guava.version.sdk>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -25,7 +27,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
+            <version>${guava.version.sdk}</version>
         </dependency>
     </dependencies>
 </project>

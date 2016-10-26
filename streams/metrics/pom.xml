@@ -14,12 +14,10 @@
         <dependency>
             <groupId>org.apache.streamline</groupId>
             <artifactId>common</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.streamline</groupId>
             <artifactId>streamline-layout</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

@@ -15,17 +15,14 @@
         <dependency>
             <groupId>org.apache.streamline</groupId>
             <artifactId>common</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.streamline</groupId>
             <artifactId>streamline-sdk</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

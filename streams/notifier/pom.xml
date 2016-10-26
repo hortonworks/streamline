@@ -14,17 +14,14 @@
         <dependency>
             <groupId>org.apache.streamline</groupId>
             <artifactId>streamline-notification</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jmockit</groupId>
             <artifactId>jmockit</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -33,7 +30,6 @@
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>javax.mail</artifactId>
-            <version>1.5.3</version>
         </dependency>
     </dependencies>
 
