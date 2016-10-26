@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class RuleProcessorRuntimeDependenciesBuilder {
     protected static final Logger LOG = LoggerFactory.getLogger(RuleProcessorRuntimeDependenciesBuilder.class);
 

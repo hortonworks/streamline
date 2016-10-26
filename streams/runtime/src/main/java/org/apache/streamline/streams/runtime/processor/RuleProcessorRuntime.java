@@ -60,7 +60,6 @@ public class RuleProcessorRuntime implements Serializable, ProcessorRuntime {
         this.rulesProcessor = builder.getRulesProcessor();
         this.rulesRuntime = builder.getRulesRuntime();
         buildStreamToRulesRuntime();
-        rulesProcessor.getConfig().getBoolean("flag");
         this.processAll = rulesProcessor.getProcessAll();
     }
 
@@ -116,12 +115,14 @@ public class RuleProcessorRuntime implements Serializable, ProcessorRuntime {
             List<RuleRuntime> ruleRuntimes = getRulesRuntime(event);
             LOG.debug("Process event {}, rule runtimes {}", event, ruleRuntimes);
             for (RuleRuntime rr : ruleRuntimes) {
+                boolean succeeded = false;
                 for (StreamlineEvent result : rr.evaluate(event)) {
                     if (result != null) {
                         results.addAll(rr.process(result));
+                        succeeded = true;
                     }
                 }
-                if(!processAll)
+                if(!processAll && succeeded)
                     break;
             }
         } catch (Exception e) {

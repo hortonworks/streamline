@@ -366,7 +366,7 @@ public class TopologyComponentFactory {
                 Set<Stream> outputStreams = createOutputStreams((TopologyOutputComponent) component);
                 processor.addOutputStreams(outputStreams);
 
-                boolean processAll = component.getConfig().getBoolean(RulesProcessor.CONFIG_PROCESS_ALL);
+                boolean processAll = component.getConfig().getBoolean(RulesProcessor.CONFIG_PROCESS_ALL, true);
                 processor.setProcessAll(processAll);
 
                 Object ruleList = component.getConfig().getAny(RulesProcessor.CONFIG_KEY_RULES);
