@@ -8,7 +8,7 @@ import TopologyUtils from '../utils/TopologyUtils'
 
 const componentTarget = {
 	drop(props, monitor, component) {
-		let parentRect = document.getElementsByClassName('box')[0].getBoundingClientRect();
+                let parentRect = document.getElementsByClassName('graph-region')[0].getBoundingClientRect();
 		const item = monitor.getItem();
 		const delta = monitor.getClientOffset();
 		let {x , y} = delta;

@@ -9,6 +9,8 @@ import Modal, {Confirm} from './FSModal';
 import OutputSchemaForm from './OutputSchemaForm';
 import FSReactToastr from './FSReactToastr';
 import {pageSize} from '../utils/Constants';
+import CommonNotification from '../utils/CommonNotification';
+import {toastOpt} from '../utils/Constants'
 
 export default class OutputSchema extends Component {
 	static propTypes = {
@@ -53,7 +55,8 @@ export default class OutputSchema extends Component {
 			.then((results)=>{
 				results.map((result)=>{
 					if(result.responseCode !== 1000){
-						FSReactToastr.error(<strong>{result.responseMessage}</strong>);
+            FSReactToastr.error(
+                <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt)
 					}
 				})
 				//Current Node Data
@@ -62,7 +65,7 @@ export default class OutputSchema extends Component {
 				//Find all target edges connected from current node
 				let allEdges = results[1].entities;
 				this.nodeToOtherEdges = allEdges.filter((e)=>{return e.fromId === nodeId});
-				
+
 				//Find all rules of current node
 				if(this.nodeData.type === 'RULE'){
 					let allRules = results[2].entities;
@@ -151,11 +154,11 @@ export default class OutputSchema extends Component {
 		let {topologyId, nodeType, nodeId} = this.props;
 		let {outputStreams} = this.state;
 		let outputStreamIds = [];
-		
+
 		outputStreams.map((stream)=>{
 			outputStreamIds.push(stream.id);
 		});
-		
+
 		outputStreamIds.splice(outputStreamIds.indexOf(streamId), 1);
 		let outputStreamsObj = JSON.parse(JSON.stringify(this.nodeData.outputStreams));
 		let streamsObj = outputStreamsObj.filter((o)=>{return o.id === streamId})[0];
@@ -175,7 +178,7 @@ export default class OutputSchema extends Component {
 
 		//Add/Removing stream association from node
 		promiseArr.push(TopologyREST.updateNode(topologyId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)}));
-		
+
 		//Removing stream association from edges
 		this.nodeToOtherEdges.map(e=>{
 			let edgeId = e.id;
@@ -229,18 +232,19 @@ export default class OutputSchema extends Component {
 
 		//Removing stream
 		promiseArr.push(TopologyREST.deleteNode(topologyId, 'streams', streamId));
-		
+
 		Promise.all(promiseArr)
 			.then((results)=>{
 				results.map(result=>{
 					if(result.responseCode !== 1000){
-						FSReactToastr.error(<strong>{result.responseMessage}</strong>);
+            FSReactToastr.error(
+                <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt)
 					}
 				})
 				this.fetchNode();
 				FSReactToastr.success(<strong>Stream deleted successfully</strong>);
 			})
-		
+
 	}
 
 	handleAddSchema(id){
@@ -301,7 +305,7 @@ export default class OutputSchema extends Component {
 			: null}
 			<div className="row">
 				<div className="col-sm-12">
-					<Table 
+                                        <Table
 		              className="table table-hover table-bordered table-stream"
 		              noDataText="No records found."
 		              currentPage={0}
@@ -335,7 +339,7 @@ export default class OutputSchema extends Component {
 		                    		<BtnEdit callback={this.handleAddSchema.bind(this, obj.id)}/>
 		                    		{canDelete ? <BtnDelete callback={this.handleDelete.bind(this, obj.id)}/> : null}
 		                    	</div>
-		                    </Td> 
+                                    </Td>
 		                  </Tr>
 		                )
 		              })}

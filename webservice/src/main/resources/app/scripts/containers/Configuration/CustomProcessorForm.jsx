@@ -6,7 +6,7 @@ import {BtnDelete, BtnEdit} from '../../components/ActionButtons';
 import ConfigFieldsForm from './ConfigFieldsForm';
 import CustomProcessorREST from '../../rest/CustomProcessorREST';
 import OutputSchemaContainer from '../OutputSchemaContainer';
-import {pageSize} from '../../utils/Constants';
+import {pageSize,toastOpt} from '../../utils/Constants';
 import FSReactToastr from '../../components/FSReactToastr';
 import ReactCodemirror from 'react-codemirror';
 import '../../utils/Overrides';
@@ -15,7 +15,9 @@ import 'codemirror/mode/javascript/javascript';
 import jsonlint from 'jsonlint';
 import lint from 'codemirror/addon/lint/lint';
 import Modal from '../../components/FSModal';
-import BaseContainer from '../BaseContainer'
+import BaseContainer from '../BaseContainer';
+import CommonNotification from '../../utils/CommonNotification';
+
 
 CodeMirror.registerHelper("lint", "json", function(text) {
   var found = [];
@@ -59,7 +61,8 @@ export default class CustomProcessorForm extends Component {
 		CustomProcessorREST.getProcessor(id)
 			.then((processor)=>{
 				if(processor.responseCode !== 1000){
-					FSReactToastr.error(<strong>{processor.responseMessage}</strong>);
+          FSReactToastr.error(
+              <CommonNotification flag="error" content={processor.responseMessage}/>, '', toastOpt)
 				} else {
 					let {streamingEngine, name, description, customProcessorImpl, jarFileName, inputSchema, outputStreamToSchema, configFields} = processor.entities[0];
 					inputSchema = JSON.stringify(inputSchema.fields, null, "  ");

@@ -6,6 +6,8 @@ import Select, { Creatable } from 'react-select';
 import {Panel, Radio} from 'react-bootstrap';
 import TopologyREST from '../../../rest/TopologyREST';
 import FSReactToastr from '../../../components/FSReactToastr';
+import CommonNotification from '../../../utils/CommonNotification';
+import {toastOpt} from '../../../utils/Constants'
 
 class RuleFormula extends Component {
 	constructor(props){
@@ -133,7 +135,7 @@ class RuleFormula extends Component {
 				<div className="col-sm-1">
 					<button className="btn btn-danger btn-sm" type="button" onClick={this.handleRowDelete.bind(this, i)}><i className="fa fa-times"></i></button>
 				</div>
-			</div> 
+                        </div>
 		);
 	}
 	firstRow(d){
@@ -171,7 +173,7 @@ class RuleFormula extends Component {
 				<div className="col-sm-1">
 					<button className="btn btn-success btn-sm" type="button" onClick={this.handleRowAdd.bind(this)}><i className="fa fa-plus"></i></button>
 				</div>
-			</div> 
+                        </div>
 		);
 	}
 	handleRowDelete(i){
@@ -287,7 +289,7 @@ class RuleFormula extends Component {
 						return this.addRuleRow(d, i)
 					}
 				})}
-				{this.state.show ? 
+                                {this.state.show ?
 					<div className="form-group">
 						<label className="col-sm-2 control-label">Query Preview:</label>
 						<div className="col-sm-10">{this.previewQuery()}</div>
@@ -394,7 +396,8 @@ export default class RulesForm extends Component {
 			.then(results=>{
 				let result = results[0];
 				if(result.responseCode !== 1000){
-					FSReactToastr.error(<strong>{result.responseMessage}</strong>);
+          FSReactToastr.error(
+              <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt)
 					return false;
 				} else {
 					let msg = result.entity.name + " " + (ruleObj.id ? "updated" : "added") + ' successfully';
@@ -445,7 +448,7 @@ export default class RulesForm extends Component {
 					<div className="form-group">
 						<label className="col-sm-2 control-label">Description*</label>
 						<div className="col-sm-5">
-							<textArea 
+                                                        <textArea
 								name="description"
 								className={this.state.showDescriptionError ? "form-control invalidInput" : "form-control"}
 								onChange={this.handleValueChange.bind(this)}
@@ -457,34 +460,34 @@ export default class RulesForm extends Component {
 					<div className="form-group">
 						<label className="col-sm-2 control-label">Rule Type*</label>
 						<div className="col-sm-5">
-							<Radio 
-								inline={true} 
-								data-label="General"  
-								onChange={this.handleRadioBtn.bind(this)} 
+                                                        <Radio
+                                                                inline={true}
+                                                                data-label="General"
+                                                                onChange={this.handleRadioBtn.bind(this)}
 								checked={this.state.ruleType ? true: false}>General
 							</Radio>
 							<Radio
-								inline={true} 
-								data-label="Advanced" 
-								onChange={this.handleRadioBtn.bind(this)} 
+                                                                inline={true}
+                                                                data-label="Advanced"
+                                                                onChange={this.handleRadioBtn.bind(this)}
 								checked={this.state.ruleType ? false : true}>Advanced
 							</Radio>
 						</div>
 					</div>
-					{this.state.ruleType ? 
+                                        {this.state.ruleType ?
                                                 <RuleFormula ref="RuleFormula" fields={this.props.parsedStreams} sql={this.state.sql} condition={this.state.condition}/>
 						:
 						<div className="form-group">
 							<label className="col-sm-2 control-label">SQL Query*</label>
 							<div className="col-sm-5">
-								<ReactCodemirror 
-									ref="SQLCodemirror" 
-									value={this.state.sql} 
-									onChange={this.updateCode.bind(this)} 
-									options={sqloptions} 
+                                                                <ReactCodemirror
+                                                                        ref="SQLCodemirror"
+                                                                        value={this.state.sql}
+                                                                        onChange={this.updateCode.bind(this)}
+                                                                        options={sqloptions}
 								/>
 							</div>
-						</div> 
+                                                </div>
 					}
 				</form>
 			</div>

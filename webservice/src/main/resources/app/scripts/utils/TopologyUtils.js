@@ -1,6 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
-import {Components} from './Constants';
+import {Components,toastOpt} from './Constants';
 import TopologyREST from '../rest/TopologyREST';
 import FSReactToastr from '../components/FSReactToastr';
 //Sources
@@ -19,6 +19,7 @@ import WindowingAggregateNodeForm from '../containers/Streams/TopologyEditor/Win
 import HdfsNodeForm from '../containers/Streams/TopologyEditor/HdfsNodeForm';
 import HbaseNodeForm from '../containers/Streams/TopologyEditor/HbaseNodeForm'
 import NotificationNodeForm from '../containers/Streams/TopologyEditor/NotificationNodeForm'
+import CommonNotification from './CommonNotification';
 
 const defineMarkers = function(svg){
 	// define arrow markers for graph links
@@ -141,7 +142,8 @@ const createNode = function(topologyId, data, callback, metaInfo, paths, edges, 
 
 			results.map((o,i)=>{
 				if(o.responseCode !== 1000){
-					FSReactToastr.error(<strong>{o.responseMessage}</strong>);
+          FSReactToastr.error(
+              <CommonNotification flag="error" content={o.responseMessage}/>, '', toastOpt)
 				} else {
 					data[i].nodeId = o.entity.id;
 				}
@@ -252,7 +254,8 @@ const createEdge = function(mouseDownNode, d, paths, edges, internalFlags, callb
 				})
 		}
 	} else {
-		FSReactToastr.error(<strong>{mouseDownNode.currentType} cannot be connected to {d.currentType}</strong>);
+    FSReactToastr.error(
+        <CommonNotification flag="error" content={mouseDownNode.currentType+" cannot be connected to " +d.currentType}/>, '', toastOpt)
 	}
 }
 
@@ -342,7 +345,8 @@ const deleteNode = function(topologyId, currentNode, nodes, edges, internalFlags
                         then((results)=>{
                                 for(let i = 0; i < results.length; i++){
                                         if(results[i].responseCode !== 1000){
-                                                FSReactToastr.error(<strong>{results[i].responseMessage}</strong>);
+                                                FSReactToastr.error(
+                                                    <CommonNotification flag="error" content={results[i].responseMessage}/>, '', toastOpt)
                                         }
                                 }
                         });
@@ -451,7 +455,8 @@ const deleteNode = function(topologyId, currentNode, nodes, edges, internalFlags
 						.then((results)=>{
 							for(let i = 0; i < results.length; i++){
 								if(results[i].responseCode !== 1000){
-									FSReactToastr.error(<strong>{results[i].responseMessage}</strong>);
+                  FSReactToastr.error(
+                      <CommonNotification flag="error" content={results[i].responseMessage}/>, '', toastOpt)
 								}
 							}
 							//call the callback

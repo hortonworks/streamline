@@ -11,6 +11,8 @@ import {pageSize} from '../../utils/Constants';
 import BaseContainer from '../../containers/BaseContainer';
 import {FormGroup,InputGroup,FormControl} from 'react-bootstrap';
 import Utils from '../../utils/Utils';
+import CommonNotification from '../../utils/CommonNotification';
+import {toastOpt} from '../../utils/Constants'
 
 export default class FilesContainer extends Component {
 
@@ -27,14 +29,16 @@ export default class FilesContainer extends Component {
 		FileREST.getAllFiles()
 			.then((files)=>{
 				if(files.responseCode !== 1000){
-					FSReactToastr.error(<strong>{files.responseMessage}</strong>);
+          FSReactToastr.error(
+              <CommonNotification flag="error" content={files.responseMessage}/>, '', toastOpt)
 				} else {
 					let data = files.entities;
 					this.setState({entities: data})
 				}
 			})
 			.catch((err)=>{
-				FSReactToastr.error(<strong>{err}</strong>)
+        FSReactToastr.error(
+            <CommonNotification flag="error" content={err}/>, '', toastOpt)
 			});
 	}
 
@@ -49,7 +53,8 @@ export default class FilesContainer extends Component {
 					this.fetchData();
 					this.refs.Modal.hide();
 					if(file.responseCode !== 1000){
-						FSReactToastr.error(<strong>{file.responseMessage}</strong>);
+            FSReactToastr.error(
+                <CommonNotification flag="error" content={file.responseMessage}/>, '', toastOpt)
 					} else {
 						FSReactToastr.success(<strong>File added successfully</strong>);
 					}
@@ -67,13 +72,15 @@ export default class FilesContainer extends Component {
 					this.fetchData();
 					confirmBox.cancel();
 					if(file.responseCode !== 1000){
-						FSReactToastr.error(<strong>{file.responseMessage}</strong>);
+            FSReactToastr.error(
+                <CommonNotification flag="error" content={file.responseMessage}/>, '', toastOpt)
 					} else {
 						FSReactToastr.success(<strong>File deleted successfully</strong>)
 					}
 				})
 				.catch((err)=>{
-					FSReactToastr.error(<strong>{err}</strong>)
+          FSReactToastr.error(
+              <CommonNotification flag="error" content={err}/>, '', toastOpt)
 				})
 		},(Modal)=>{});
 	}

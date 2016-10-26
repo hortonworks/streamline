@@ -12,10 +12,12 @@ import lint from 'codemirror/addon/lint/lint';
 import TopologyREST from '../rest/TopologyREST';
 import FSReactToastr from './FSReactToastr';
 import TopologyUtils from '../utils/TopologyUtils';
+import CommonNotification from '../utils/CommonNotification';
+import {toastOpt} from '../utils/Constants'
 
 CodeMirror.registerHelper("lint", "json", function(text) {
   var found = [];
-  var {parser} = jsonlint; 
+  var {parser} = jsonlint;
   parser.parseError = function(str, hash) {
     var loc = hash.loc;
     found.push({from: CodeMirror.Pos(loc.first_line - 1, loc.first_column),
@@ -61,7 +63,7 @@ export default class OutputSchema extends Component {
 		}
 		this.notificationNode = null;
 		this.state = {
-			streamId, 
+                        streamId,
 			grouping,
 			// groupingArray: this.props.linkShuffleOptions,
 			groupingArray: [{value: "SHUFFLE", label: "SHUFFLE"},{value: "FIELDS", label: "FIELDS"}],
@@ -214,7 +216,7 @@ export default class OutputSchema extends Component {
 
 		let edgeGroupingData = {streamId: streamObj.id, grouping: grouping};
 		let promiseArr = [];
-		
+
 		if(streamObj.id){
 			//Update streams
 			promiseArr.push(TopologyREST.updateNode(topologyId, 'streams', streamObj.id, {body: JSON.stringify(streamData)}));
@@ -230,7 +232,7 @@ export default class OutputSchema extends Component {
 				//Update edges with streams
 				return this.updateEdges(results[0].entity.id, results[0].entity.streamId);
 			})
-		
+
 	}
 
 	updateEdges(id, streamName){
@@ -285,7 +287,8 @@ export default class OutputSchema extends Component {
 				if(windowId){
 					promise.push(TopologyREST.getNode(topologyId, 'windows', windowId))
 				} else {
-					FSReactToastr.error("Save window processor before saving output streams.");
+          FSReactToastr.error(
+              <CommonNotification flag="error" content={"Save window processor before saving output streams."}/>, '', toastOpt)
 				}
 			}
 			Promise.all(promise)
@@ -293,7 +296,7 @@ export default class OutputSchema extends Component {
 					let rulesPromiseArr = [];
 					results.map(result=>{
 						let actions = result.entity.actions || [];
-						
+
 						// Delete all actions with current stream name
 						let deleteActionsIndex = [];
 						actions.map((a,i)=>{
@@ -457,7 +460,7 @@ export default class OutputSchema extends Component {
 				</div>
 				: null
 				}
-				{ruleProcessor ? 
+                                {ruleProcessor ?
 					<div className="form-group">
 						<label className="col-sm-3 control-label">For Rule</label>
 						<div className="col-sm-5">

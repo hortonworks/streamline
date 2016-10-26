@@ -1,6 +1,7 @@
 const baseUrl = "/api/v1/catalog/";
 const pageSize = 25;
 const notifyTextLimit = 90;
+const toastOpt = {timeOut:0,closeButton:true,tapToDismiss:false,extendedTimeOut:0};
 const ItemTypes = {
   ComponentNodes: 'box',
   Nodes: 'node'
@@ -41,6 +42,7 @@ export {
 	baseUrl,
 	pageSize,
 	ItemTypes,
-        Components,
-  notifyTextLimit
+  Components,
+  notifyTextLimit,
+  toastOpt
 };

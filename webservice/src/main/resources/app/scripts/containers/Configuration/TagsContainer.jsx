@@ -12,7 +12,8 @@ import Modal from '../../components/FSModal'
 import BaseContainer from '../../containers/BaseContainer'
 import Utils from '../../utils/Utils';
 import {FormGroup,InputGroup,FormControl} from 'react-bootstrap';
-// import NoData from '../../components/NoData';
+import CommonNotification from '../../utils/CommonNotification';
+import {toastOpt} from '../../utils/Constants'
 
 var styles = {
   children: {
@@ -34,14 +35,16 @@ export default class TagsContainer extends Component {
 		TagREST.getAllTags()
 			.then((tags)=>{
 				if(tags.responseCode !== 1000){
-					FSReactToastr.error(<strong>{tags.responseMessage}</strong>);
+          FSReactToastr.error(
+              <CommonNotification flag="error" content={tags.responseMessage}/>, '', toastOpt)
 				} else {
 					let data = this.tempData = tags.entities;
 					this.syncData(data);
 				}
 			})
 			.catch((err)=>{
-				FSReactToastr.error(<strong>{err}</strong>);
+        FSReactToastr.error(
+            <CommonNotification flag="error" content={err}/>, '', toastOpt)
 			});
 	}
 
@@ -143,7 +146,8 @@ export default class TagsContainer extends Component {
 			this.refs.addTag.handleSave()
 				.then(tag=>{
 					if(tag.responseCode !== 1000){
-						FSReactToastr.error(<strong>{tag.responseMessage}</strong>);
+            FSReactToastr.error(
+                <CommonNotification flag="error" content={tag.responseMessage}/>, '', toastOpt)
 					} else {
 						if(this.state.currentId){
 							FSReactToastr.success(<strong>Tag updated successfully</strong>);
@@ -177,13 +181,15 @@ export default class TagsContainer extends Component {
 					this.fetchData();
 					confirmBox.cancel();
 					if(tags.responseCode !== 1000){
-						FSReactToastr.error(<strong>{tags.responseMessage}</strong>);
+            FSReactToastr.error(
+                <CommonNotification flag="error" content={tags.responseMessage}/>, '', toastOpt)
 					} else {
 						FSReactToastr.success(<strong>Tag deleted successfully</strong>)
 					}
 				})
 				.catch((err)=>{
-					FSReactToastr.error(<strong>{err}</strong>);
+          FSReactToastr.error(
+              <CommonNotification flag="error" content={err}/>, '', toastOpt)
 				})
 		},(Modal)=>{});
 	}
@@ -227,13 +233,15 @@ export default class TagsContainer extends Component {
 		TagREST.putTag(movedItem.id, {body: JSON.stringify(data)})
 			.then((tags)=>{
 				if(tags.responseCode !== 1000){
-					FSReactToastr.error(<strong>{tags.responseMessage}</strong>);
+          FSReactToastr.error(
+              <CommonNotification flag="error" content={tags.responseMessage}/>, '', toastOpt)
 				} else {
 					FSReactToastr.success(<strong>Tag position updated successfully</strong>)
 				}
 			})
 			.catch((err)=>{
-				FSReactToastr.error(<strong>{err}</strong>);
+        FSReactToastr.error(
+            <CommonNotification flag="error" content={err}/>, '', toastOpt)
 			})
 		this.setState({ entities: newItems });
 	}

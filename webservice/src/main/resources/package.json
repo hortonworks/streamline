@@ -59,6 +59,7 @@
     "react-select": "^1.0.0-beta14",
     "react-structured-filter": "^4.3.0",
     "react-toastr": "^2.8.0",
+    "react-treebeard": "^1.1.4",
     "react-twitter-typeahead": "^1.1.12",
     "react-utils": "^1.0.0",
     "reactable": "^0.14.0",

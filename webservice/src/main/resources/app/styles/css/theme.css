@@ -3,6 +3,8 @@
   Author: Sanket
 */
 
+@import url('https://fonts.googleapis.com/css?family=Oswald');
+
 /* Global */
 *:focus {
   outline: none !important;
@@ -455,12 +457,25 @@ span.user {
     height: 34px;
     padding: 6px 12px;
     font-size: 14px;
-    ine-height: 1.42857143;
     color: #555;
     background-color: #fff;
     background-image: none;
     border: 1px solid #ccc;
     border-radius: 4px;
+}
+#applicationName > input {
+    height: auto;
+    padding: 0px;
+    font-size: 14px;
+    color: #fff;
+    background-color: transparent;
+    border: none;
+}
+#applicationName > .btn-link.btn-success {
+  color:#5cb85c
+  } 
+#applicationName > .btn-link.btn-danger {
+  color:#d9534f
 }
 .editable-error {
     display: inline-block;
@@ -778,4 +793,9 @@ label {
 }
 .form-horizontal .control-label{
   text-align: left;
+}
+.form-horizontal .form-group{
+  margin-left: 0 ;
+  margin-right: 0 ;
+  margin-top: 10px;
 }

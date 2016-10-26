@@ -31,7 +31,7 @@ export default (
   <Route path="/" component={null} name="Home" onEnter={onEnter}>
     <IndexRoute name="My Applications" component={TopologyListContainer} onEnter={onEnter} />
   <Route path="schema-registry" name="Schema Registry" onEnter={onEnter}>
-	<IndexRoute component={ParserRegContainer} onEnter={onEnter} />
+        <IndexRoute component={SchemaRegContainer} onEnter={onEnter} />
   </Route>
   <Route path="metrics" name="Metrics" component={MetricsContainer} onEnter={onEnter}/>
   <Route path="applications" name="My Applications" onEnter={onEnter}>

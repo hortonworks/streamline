@@ -11,6 +11,8 @@ import FSReactToastr from '../../components/FSReactToastr';
 import {pageSize} from '../../utils/Constants';
 import Utils from '../../utils/Utils';
 import BaseContainer from '../../containers/BaseContainer';
+import CommonNotification from '../../utils/CommonNotification';
+import {toastOpt} from '../../utils/Constants'
 
 export default class CustomProcessorContainer extends Component {
 
@@ -28,7 +30,8 @@ export default class CustomProcessorContainer extends Component {
 		CustomProcessorREST.getAllProcessors()
 			.then((processors)=>{
 				if(processors.responseCode !== 1000){
-					FSReactToastr.error(<strong>{processors.responseMessage}</strong>);
+          FSReactToastr.error(
+              <CommonNotification flag="error" content={processors.responseMessage}/>, '', toastOpt)
 				} else {
 					let data = processors.entities;
 					this.setState({entities: data})
@@ -53,7 +56,8 @@ export default class CustomProcessorContainer extends Component {
 	handleSave() {
 		this.refs.CustomProcessorForm.handleSave().then((processor)=>{
 				if(processor.responseCode !== 1000){
-					FSReactToastr.error(<strong>{processor.responseMessage}</strong>);
+          FSReactToastr.error(
+              <CommonNotification flag="error" content={processors.responseMessage}/>, '', toastOpt)
 				} else {
 					FSReactToastr.success(<strong>Processor {this.state.processorId ? "updated" : "added"} successfully</strong>)
 					this.fetchData();
@@ -79,7 +83,8 @@ export default class CustomProcessorContainer extends Component {
 					this.fetchData();
 					confirmBox.cancel();
 					if(processor.responseCode !== 1000){
-						FSReactToastr.error(<strong>{processor.responseMessage}</strong>);
+            FSReactToastr.error(
+                <CommonNotification flag="error" content={processors.responseMessage}/>, '', toastOpt)
 					} else {
 						FSReactToastr.success(<strong>Processor deleted successfully</strong>)
 					}

@@ -55,7 +55,8 @@ export default class Editable extends Component {
     
     anchorStyle = {
         textDecoration: 'none',
-        borderBottom: 'dashed 1px #0088cc'
+        borderBottom: 'dashed 1px #0088cc',
+        cursor: 'pointer'
     }
 
     render() {
@@ -63,8 +64,8 @@ export default class Editable extends Component {
         const {edit, errorMsg} = this.state;
 
         const buttons = showButtons ? (
-            [<Button bsStyle="success" onClick={this.handleResolve} key="resolve"><i className="fa fa-check"></i></Button>,
-            <Button bsStyle="danger" onClick={this.handleReject} key="reject"><i className="fa fa-times"></i></Button>]
+            [<Button className="btn-link btn-xs" bsStyle="success" onClick={this.handleResolve} key="resolve"><i className="fa fa-check"></i></Button>,
+            <Button className="btn-link btn-xs" bsStyle="danger" onClick={this.handleReject} key="reject"><i className="fa fa-times"></i></Button>]
         ) : null;
 
         const error = errorMsg ? (
@@ -80,7 +81,7 @@ export default class Editable extends Component {
         )
 
         return (
-            <div className="editable-container" style={{display:'inline'}}>
+            <div className="editable-container" style={{display:'inline'}} id={this.props.id || ''}>
                 {edit && inline ?
                     null
                     :

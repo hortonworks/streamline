@@ -113,10 +113,10 @@ const splitSeconds = function(sec_num){
     if (minutes < 10) {minutes = "0"+minutes;}
     if (seconds < 10) {seconds = "0"+seconds;}
 
-  return 'Uptime '+((days === 0) ? '': days+'d ')
-                    +((days === 0 && hours === 0)
+	return 'Uptime '+((days === 0) ? '': days+'d ')
+                    +((days === 0 && (hours == "00" || 0))
                       ? '' : hours+'h ')
-                        +((days === 0 && hours === 0 && minutes === 0)
+                        +((days === 0 && (hours == "00" || 0) && minutes === 0)
                           ? '' : minutes+'m ')
                             +seconds+'s ago';
 }

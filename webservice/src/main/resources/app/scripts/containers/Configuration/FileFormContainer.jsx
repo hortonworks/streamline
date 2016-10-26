@@ -4,6 +4,8 @@ import {Link} from 'react-router';
 import _ from 'lodash';
 import FSReactToastr from '../../components/FSReactToastr';
 import FileREST from '../../rest/FileREST';
+import CommonNotification from '../../utils/CommonNotification';
+import {toastOpt} from '../../utils/Constants'
 
 export default class FileFormContainer extends Component {
 
@@ -30,11 +32,13 @@ export default class FileFormContainer extends Component {
 					let obj = {name, version, storedFileName};
 					this.setState(obj);
 				} else {
-					FSReactToastr.error(<strong>{file.responseMessage}</strong>)
+          FSReactToastr.error(
+              <CommonNotification flag="error" content={file.responseMessage}/>, '', toastOpt)
 				}
 			})
 			.catch((err)=>{
-				FSReactToastr.error(<strong>{err}</strong>)
+        FSReactToastr.error(
+            <CommonNotification flag="error" content={err}/>, '', toastOpt)
 			})
 	}
 

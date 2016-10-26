@@ -1,6 +1,8 @@
 import React, {Component}from 'react';
 import ReactDOM from 'react-dom';
 import TagREST from '../../rest/TagREST';
+import CommonNotification from '../../utils/CommonNotification';
+import {toastOpt} from '../../utils/Constants'
 
 export default class TagsFormContainer extends Component {
 	constructor(props){
@@ -19,14 +21,16 @@ export default class TagsFormContainer extends Component {
 		TagREST.getTag(id)
 			.then((tags)=>{
 				if(tags.responseCode !== 1000){
-					FSReactToastr.error(<strong>{tags.responseMessage}</strong>);
+          FSReactToastr.error(
+              <CommonNotification flag="error" content={tags.responseMessage}/>, '', toastOpt)
 				} else {
 					let {name, description, tagIds} = tags.entity;
 					this.setState({name, description, tagIds});
 				}
 			})
 			.catch((err)=>{
-				FSReactToastr.error(<strong>{err}</strong>);
+        FSReactToastr.error(
+            <CommonNotification flag="error" content={err}/>, '', toastOpt)
 			})
 	}
 
