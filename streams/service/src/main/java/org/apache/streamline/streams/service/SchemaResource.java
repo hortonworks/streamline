@@ -19,7 +19,7 @@ package org.apache.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import org.apache.streamline.common.util.WSUtils;
-import com.hortonworks.registries.schemaregistry.SchemaNotFoundException;
+import com.hortonworks.registries.schemaregistry.errors.SchemaNotFoundException;
 import com.hortonworks.registries.schemaregistry.SchemaVersionInfo;
 import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
 import org.slf4j.Logger;
