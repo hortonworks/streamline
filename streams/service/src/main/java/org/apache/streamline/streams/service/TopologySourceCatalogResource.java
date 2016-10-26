@@ -50,7 +50,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 /**
  * Source component within an StreamlineTopology
  */
-@Path("/api/v1/catalog/topologies/{topologyId}/sources")
+@Path("/v1/catalog/topologies/{topologyId}/sources")
 @Produces(MediaType.APPLICATION_JSON)
 public class TopologySourceCatalogResource {
     private final StreamCatalogService catalogService;

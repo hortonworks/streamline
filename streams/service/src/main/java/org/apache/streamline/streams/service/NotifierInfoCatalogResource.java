@@ -36,7 +36,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 /**
  * REST endpoint for configuring notifiers
  */
-@Path("/api/v1/catalog")
+@Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class NotifierInfoCatalogResource {
     private static final Logger LOG = LoggerFactory.getLogger(NotifierInfoCatalogResource.class);

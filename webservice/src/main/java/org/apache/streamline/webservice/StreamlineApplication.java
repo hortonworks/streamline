@@ -61,7 +61,7 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
 
     @Override
     public void initialize(Bootstrap<StreamlineConfiguration> bootstrap) {
-        bootstrap.addBundle(new AssetsBundle("/assets", "/ui", "index.html", "static"));
+        bootstrap.addBundle(new AssetsBundle("/assets", "/", "index.html", "static"));
         super.initialize(bootstrap);
     }
 

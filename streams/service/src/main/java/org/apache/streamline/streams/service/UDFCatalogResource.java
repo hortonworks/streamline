@@ -66,7 +66,7 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNSUPPORTED_MEDIA_TYPE;
 
-@Path("/api/v1/catalog/streams")
+@Path("/v1/catalog/streams")
 @Produces(MediaType.APPLICATION_JSON)
 public class UDFCatalogResource {
     private static final Logger LOG = LoggerFactory.getLogger(UDFCatalogResource.class);

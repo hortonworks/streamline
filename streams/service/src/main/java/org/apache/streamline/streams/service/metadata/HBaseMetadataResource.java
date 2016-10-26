@@ -25,7 +25,7 @@ import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessa
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 
-@Path("/api/v1/catalog")
+@Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class HBaseMetadataResource {
     private static final Logger LOG = LoggerFactory.getLogger(HBaseMetadataResource.class);

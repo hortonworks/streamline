@@ -25,7 +25,7 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 
-@Path("/api/v1/catalog")
+@Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class KafkaMetadataResource {
     private static final Logger LOG = LoggerFactory.getLogger(KafkaMetadataResource.class);

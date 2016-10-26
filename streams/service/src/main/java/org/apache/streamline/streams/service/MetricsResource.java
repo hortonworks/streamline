@@ -47,7 +47,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 /**
  * REST endpoint for metrics
  */
-@Path("/api/v1/metrics")
+@Path("/v1/metrics")
 @Produces(MediaType.APPLICATION_JSON)
 public class MetricsResource {
     private static final Logger LOG = LoggerFactory.getLogger(MetricsResource.class);

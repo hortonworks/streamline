@@ -50,7 +50,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 /**
  * An edge between two components in an StreamlineTopology
  */
-@Path("/api/v1/catalog/topologies/{topologyId}/edges")
+@Path("/v1/catalog/topologies/{topologyId}/edges")
 @Produces(MediaType.APPLICATION_JSON)
 public class TopologyEdgeCatalogResource {
     private final StreamCatalogService catalogService;

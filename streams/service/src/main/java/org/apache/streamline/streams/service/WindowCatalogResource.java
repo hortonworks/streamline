@@ -37,7 +37,7 @@ import static javax.ws.rs.core.Response.Status.OK;
  * A separate endpoint is provided for UI to have a separate endpoint
  * to configure window with aggregate functions.
  */
-@Path("/api/v1/catalog/topologies/{topologyId}/windows")
+@Path("/v1/catalog/topologies/{topologyId}/windows")
 @Produces(MediaType.APPLICATION_JSON)
 public class WindowCatalogResource {
     private static final Logger LOG = LoggerFactory.getLogger(WindowCatalogResource.class);

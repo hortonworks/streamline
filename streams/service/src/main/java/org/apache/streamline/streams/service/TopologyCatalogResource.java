@@ -72,7 +72,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 
 
 
-@Path("/api/v1/catalog")
+@Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class TopologyCatalogResource {
     private static final Logger LOG = LoggerFactory.getLogger(TopologyCatalogResource.class);

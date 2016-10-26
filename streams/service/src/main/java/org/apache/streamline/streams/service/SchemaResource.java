@@ -42,7 +42,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 /**
  *
  */
-@Path("/api/v1/schemas")
+@Path("/v1/schemas")
 public class SchemaResource {
     private static final Logger LOG = LoggerFactory.getLogger(SchemaResource.class);
 

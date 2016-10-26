@@ -42,7 +42,7 @@ import static javax.ws.rs.core.Response.Status.OK;
  * the corresponding {@link Rule} object and saved in the catalog db.
  * </p>
  */
-@Path("/api/v1/catalog/topologies/{topologyId}/rules")
+@Path("/v1/catalog/topologies/{topologyId}/rules")
 @Produces(MediaType.APPLICATION_JSON)
 public class RuleCatalogResource {
     private final StreamCatalogService catalogService;

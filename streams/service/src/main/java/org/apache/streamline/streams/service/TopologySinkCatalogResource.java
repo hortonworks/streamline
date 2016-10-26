@@ -50,7 +50,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 /**
  * Sink component within an StreamlineTopology
  */
-@Path("/api/v1/catalog/topologies/{topologyId}/sinks")
+@Path("/v1/catalog/topologies/{topologyId}/sinks")
 @Produces(MediaType.APPLICATION_JSON)
 public class TopologySinkCatalogResource {
     private final StreamCatalogService catalogService;

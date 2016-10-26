@@ -58,7 +58,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 /**
  * Catalog resource for {@link FileInfo} resources.
  */
-@Path("/api/v1/catalog")
+@Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class FileCatalogResource {
     private static final Logger log = LoggerFactory.getLogger(FileCatalogResource.class);
