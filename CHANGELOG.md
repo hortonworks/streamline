@@ -1,4 +1,7 @@
 ## 0.1.4
+ * STREAMLINE-484: UI - Change the Topology Editor as per the mocks
+ * STREAMLINE-483: UI - Improve Applications Listing page.
+ * STREAMLINE-428: Streamline Homepage Shouldn't Require /ui/index.html to Load Page.
  * STREAMLINE-463: A few fixes to accept nested schema json in /streams
  * STREAMLINE-394: Remove classes related to device centric view. 
  * STREAMLINE-393: Capture Metadata from clusters.
