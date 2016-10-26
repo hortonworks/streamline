@@ -92,13 +92,13 @@ This section explains how to perform common activities such as reporting a bug o
 ### Create a pull request
 
 Pull requests should be done against the read-only git repository at
-[https://github.com/hortonworks/Streams](https://github.com/hortonworks/Streams).
+[https://github.com/hortonworks/streamline](https://github.com/hortonworks/streamline).
 
 Take a look at [Creating a pull request](https://help.github.com/articles/creating-a-pull-request).  In a nutshell you
 need to:
 
 1. [Fork](https://help.github.com/articles/fork-a-repo) the Streamline GitHub repository at
-   [https://github.com/hortonworks/Streams/](https://github.com/hortonworks/Streams/) to your personal GitHub
+   [https://github.com/hortonworks/streamline/](https://github.com/hortonworks/streamline/) to your personal GitHub
    account.  See [Fork a repo](https://help.github.com/articles/fork-a-repo) for detailed instructions.
 2. Commit any changes to your fork.
 3. Send a [pull request](https://help.github.com/articles/creating-a-pull-request) to the Streamline GitHub repository
@@ -113,7 +113,7 @@ your fork up to date with the latest changes of the upstream  `Streams` reposito
 
 The Git commit messages must be standardized as follows:
 
-IOT-XXX: Title matching exactly the JIRA Summary (title)
+STREAMLINE-XXX: Title matching exactly the JIRA Summary (title)
 
 ```
 - An optional, bulleted (+, -, ., *), summary of the contents of 
@@ -122,7 +122,7 @@ IOT-XXX: Title matching exactly the JIRA Summary (title)
 - addressed by the patch.
 ```
 
-The text immediately following the JIRA number (IOT-XXX: ) must be an exact transcription of the JIRA summary (title), not the a summary of the contents of the patch.
+The text immediately following the JIRA number (STREAMLINE-XXX: ) must be an exact transcription of the JIRA summary (title), not the a summary of the contents of the patch.
 
 If the JIRA summary does not accurately describe what the patch is addressing, the JIRA summary must be modified, and then copied to the Git commit message.
 
@@ -134,7 +134,7 @@ A summary with the contents of the patch is optional but strongly encouraged if 
 
 To pull in a merge request you should generally follow the command line instructions sent out by GitHub.
 
-1. Go to your local copy of the [Apache git repo](https://github.com/hortonworks/Streams.git), switch
+1. Go to your local copy of the [Apache git repo](https://github.com/hortonworks/streamline.git), switch
    to the `master` branch, and make sure it is up to date.
 
         $ git checkout master
@@ -142,33 +142,33 @@ To pull in a merge request you should generally follow the command line instruct
         $ git merge origin/master
 
 2. Create a local branch for integrating and testing the pull request.  You may want to name the branch according to the
-   IoTaS JIRA ticket associated with the pull request (example: `IoTaS-1234`).
+   Streamline JIRA ticket associated with the pull request (example: `STREAMLINE-1234`).
 
-        $ git checkout -b <local_test_branch>  # e.g. git checkout -b IoTaS-1234
+        $ git checkout -b <local_test_branch>  # e.g. git checkout -b STREAMLINE-1234
 
 3. Merge the pull request into your local test branch.
 
         $ git pull <remote_repo_url> <remote_branch>
 
 4.  Assuming that the pull request merges without any conflicts:
-    Update the top-level `CHANGELOG.md`, and add in the JIRA ticket number (example: `IOT-1234`) and ticket
+    Update the top-level `CHANGELOG.md`, and add in the JIRA ticket number (example: `STREAMLINE-1234`) and ticket
     description to the change log.  Make sure that you place the JIRA ticket number in the commit comments where
     applicable.
 
 5. Run any sanity tests that you think are needed.
 
 6. Once you are confident that everything is ok, you can merge your local test branch into your local `master` branch,
-   and push the changes back to the official Apache repo.
+   and push the changes back to the hortonworks repo.
 
         # Pull request looks ok, change log was updated, etc.  We are ready for pushing.
         $ git checkout master
-        $ git merge <local_test_branch>  # e.g. git merge IOT-1234
+        $ git merge <local_test_branch>  # e.g. git merge STREAMLINE-1234
 
         # At this point our local master branch is ready, so now we will push the changes
         # to the official repo.  
-        $ git push origin master
+        $ git push origin  HEAD:refs/heads/master 
 
-7. The last step is updating the corresponding JIRA ticket.  [Go to JIRA](https://issues.apache.org/jira/browse/STORM)
+7. The last step is updating the corresponding JIRA ticket.  [Go to JIRA](https://hwxiot.atlassian.net)
    and resolve the ticket.  
 
 
@@ -177,7 +177,7 @@ To pull in a merge request you should generally follow the command line instruct
 # Build the code and run the tests
 
 ## Prerequisites
-Firt of all you need to make sure you are using maven 3.2.5 or higher and JDK 1.7 or higher.
+Firt of all you need to make sure you are using maven 3.2.5 or higher and JDK 1.8 or higher.
 
 ## Building
 
