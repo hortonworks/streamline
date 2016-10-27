@@ -1,0 +1,4 @@
+topic=truck_events_stream_4
+bootstrap.servers=localhost:9092
+schema.registry.url=http://localhost:7070/api/v1
+msgsLimit=200

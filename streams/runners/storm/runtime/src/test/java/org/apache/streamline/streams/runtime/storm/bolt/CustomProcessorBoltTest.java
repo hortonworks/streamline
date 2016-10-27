@@ -2,6 +2,7 @@ package org.apache.streamline.streams.runtime.storm.bolt;
 
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.common.util.ProxyUtil;
+import org.apache.streamline.examples.processors.ConsoleCustomProcessor;
 import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
 import org.apache.streamline.streams.catalog.CatalogRestClient;
@@ -9,7 +10,6 @@ import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.exception.ProcessingException;
 import org.apache.streamline.streams.layout.storm.StormTopologyLayoutConstants;
 import org.apache.streamline.streams.runtime.CustomProcessorRuntime;
-import org.apache.streamline.streams.runtime.processor.ConsoleCustomProcessorRuntime;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Mocked;
@@ -102,25 +102,25 @@ public class CustomProcessorBoltTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testNoLocalJarPathPrepare () throws Exception {
-        customProcessorBolt.customProcessorImpl(ConsoleCustomProcessorRuntime.class.getCanonicalName());
+        customProcessorBolt.customProcessorImpl(ConsoleCustomProcessor.class.getCanonicalName());
         customProcessorBolt.prepare(new HashMap(), null, null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testNoJarFileName () throws Exception {
-        customProcessorBolt.customProcessorImpl(ConsoleCustomProcessorRuntime.class.getCanonicalName());
+        customProcessorBolt.customProcessorImpl(ConsoleCustomProcessor.class.getCanonicalName());
         customProcessorBolt.localJarPath("/tmp");
         customProcessorBolt.prepare(new HashMap(), null, null);
     }
 
     @Test
     public void testPrepare () throws ClassNotFoundException, MalformedURLException, InstantiationException, IllegalAccessException {
-        customProcessorBolt.customProcessorImpl(ConsoleCustomProcessorRuntime.class.getCanonicalName());
+        customProcessorBolt.customProcessorImpl(ConsoleCustomProcessor.class.getCanonicalName());
         customProcessorBolt.localJarPath(localJarPath);
         customProcessorBolt.jarFileName(jarFileName);
         new Expectations() {{
             catalogRestClient.getCustomProcessorJar((jarFileName)); result = new ByteArrayInputStream("some-stream".getBytes()); minTimes=0; maxTimes=1;
-            customProcessorProxyUtil.loadClassFromJar(withEqual(localJarPath + File.separator + jarFileName), ConsoleCustomProcessorRuntime.class.getCanonicalName()
+            customProcessorProxyUtil.loadClassFromJar(withEqual(localJarPath + File.separator + jarFileName), ConsoleCustomProcessor.class.getCanonicalName()
             ); result = customProcessorRuntime;  minTimes=0; maxTimes=1;
         }};
         final Map<String, Object> config = new HashMap<>();
@@ -146,7 +146,7 @@ public class CustomProcessorBoltTest {
     }
 
     private void testExecute (boolean isSuccess) throws ProcessingException, ClassNotFoundException, MalformedURLException, InstantiationException, IllegalAccessException {
-                customProcessorBolt.customProcessorImpl(ConsoleCustomProcessorRuntime.class.getCanonicalName());
+                customProcessorBolt.customProcessorImpl(ConsoleCustomProcessor.class.getCanonicalName());
         customProcessorBolt.localJarPath(localJarPath);
         customProcessorBolt.jarFileName(jarFileName);
         customProcessorBolt.outputSchema(outputStreamToSchema);
@@ -167,7 +167,7 @@ public class CustomProcessorBoltTest {
             result = new ByteArrayInputStream("some-stream".getBytes());
             minTimes = 0;
             maxTimes = 1;
-            customProcessorProxyUtil.loadClassFromJar(withEqual(localJarPath + File.separator + jarFileName), ConsoleCustomProcessorRuntime.class.getCanonicalName()
+            customProcessorProxyUtil.loadClassFromJar(withEqual(localJarPath + File.separator + jarFileName), ConsoleCustomProcessor.class.getCanonicalName()
             );
             result = customProcessorRuntime;
             minTimes = 0;

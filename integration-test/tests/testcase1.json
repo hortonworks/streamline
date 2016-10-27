@@ -1,0 +1,27 @@
+{
+    "test_setup": {
+        "registry_url": "http://localhost:9090/api/v1/schemaregistry",
+        "streamline_url": "http://localhost:8080/api/v1/catalog",
+        "kafka" : {
+            "topic": "truck_events_demo_20",
+            "data_file": "./tests/testcase1_data/truck_events.csv",
+            "broker_url": "localhost:9092",
+            "msgsLimit": 200,
+            "ingest_cmd": ""
+        },
+        "processors":
+            {
+                "jarFile" : "../examples/processors/target/streamline-examples-processors-0.1.0-SNAPSHOT.jar",
+                "payload" : {
+                    "streamingEngine":"STORM",
+                    "name":"TestSink",
+                    "description":"TestSink",
+                    "customProcessorImpl":"org.apache.streamline.examples.processors.TestSinkProcessor",
+                    "inputSchema":{"fields":[{"name":"driverName","type":"STRING","optional":true},{"name":"miles_SUM","type":"DOUBLE","optional":false}]},
+                    "outputStreamToSchema":{"Stream-1":{"fields":[{"name":"driverName","type":"STRING","optional":true},{"name":"miles_SUM","type":"DOUBLE","optional":false}]}},
+                    "configFields":[{"name":"file","isOptional":false,"type":"string","defaultValue":"","isUserInput":true,"tooltip":"File Location"}],
+                    "jarFileName":"streamline-examples-processors-0.1.0-SNAPSHOT4.jar"
+                }
+            },
+    }
+}
