@@ -1,4 +1,5 @@
 ## 0.1.4
+ * STREAMLINE-487: Respond without metrics when topology API is called with metrics but storm API endpoint is down
  * STREAMLINE-484: UI - Change the Topology Editor as per the mocks
  * STREAMLINE-483: UI - Improve Applications Listing page.
  * STREAMLINE-428: Streamline Homepage Shouldn't Require /ui/index.html to Load Page.
