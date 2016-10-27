@@ -148,11 +148,14 @@ export default class TopologyGraphComponent extends Component {
                         let gTranslate = thisGraph.dragSvg.translate(),
                                 gScaled = thisGraph.dragSvg.scale();
 
-                        thisGraph.graphTransforms = {
+                        thisGraph.metaInfo.graphTransforms = thisGraph.graphTransforms = {
                                 dragCoords: gTranslate,
                                 zoomScale: gScaled
                         };
-                        //NOTE - If using scroll to zoom in/out, then SAVE METADATA HERE
+                        clearTimeout(this.saveMetaInfoTimer);
+                        this.saveMetaInfoTimer = setTimeout(()=>{
+                            TopologyUtils.saveMetaInfo(thisGraph.topologyId, null, thisGraph.metaInfo, null);
+                        },500)
                 });
 
                 this.dragSvg.translate(this.graphTransforms.dragCoords);
@@ -160,24 +163,24 @@ export default class TopologyGraphComponent extends Component {
                 this.dragSvg.event(svg);
 
                 //NOTE - To use scroll for zoom in/out, uncomment the below line
-		// svg.call(this.dragSvg).on("dblclick.zoom", null);
+		svg.call(this.dragSvg).on("dblclick.zoom", null);
 
 		this.updateGraph();
 		this.renderFlag = true;
 	}
 
         zoomAction(zoomType){
-                let thisGraph = this,
-                        direction = 1,
-                factor = 0.2,
-                target_zoom = 1,
-                center = [thisGraph.svg[0][0].clientWidth / 2, thisGraph.svg[0][0].clientHeight / 2],
-                zoom = thisGraph.dragSvg,
-                extent = zoom.scaleExtent(),
-                translate = zoom.translate(),
-                translate0 = [],
-                l = [],
-                view = {x: translate[0], y: translate[1], k: zoom.scale()};
+            let thisGraph = this,
+                    direction = 1,
+            factor = 0.2,
+            target_zoom = 1,
+            center = [thisGraph.svg[0][0].clientWidth / 2, thisGraph.svg[0][0].clientHeight / 2],
+            zoom = thisGraph.dragSvg,
+            extent = zoom.scaleExtent(),
+            translate = zoom.translate(),
+            translate0 = [],
+            l = [],
+            view = {x: translate[0], y: translate[1], k: zoom.scale()};
 
             direction = (zoomType === 'zoom_in') ? 1 : -1;
             target_zoom = zoom.scale() * (1 + factor * direction);

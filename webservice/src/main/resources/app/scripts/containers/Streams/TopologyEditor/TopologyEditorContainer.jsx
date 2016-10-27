@@ -116,10 +116,11 @@ class TopologyEditorContainer extends Component {
   }
   componentWillMount(){
     state.showComponentNodeContainer = true;
-    document.getElementsByTagName('body')[0].className='graph-bg'
+    document.getElementsByTagName('body')[0].className='graph-bg';
   }
   componentWillUnmount(){
-    document.getElementsByTagName('body')[0].className=''
+    document.getElementsByTagName('body')[0].className='';
+    document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay displayNone";
   }
 
   componentDidMount() {
@@ -151,7 +152,8 @@ class TopologyEditorContainer extends Component {
     topologyMetric: '',
     altFlag: true,
     isAppRunning: false,
-    topologyStatus: ''
+    topologyStatus: '',
+    unknown: ''
   }
 
   fetchData(){
@@ -176,6 +178,7 @@ class TopologyEditorContainer extends Component {
         this.topologyConfig = JSON.parse(data.topology.config);
         this.topologyMetric = data.metric || {misc : (data.metric === undefined) ? '' : metric.misc};
 
+        let unknown = data.running;
         let isAppRunning = false;
         let status = '';
         if(this.topologyMetric.status){
@@ -205,7 +208,7 @@ class TopologyEditorContainer extends Component {
 
         this.graphData.edges = TopologyUtils.syncEdgeData(edgesArr, this.graphData.nodes);
 
-        this.setState({topologyName: this.topologyName, topologyMetric: this.topologyMetric, isAppRunning: isAppRunning, topologyStatus: status});
+        this.setState({topologyName: this.topologyName, topologyMetric: this.topologyMetric, isAppRunning: isAppRunning, topologyStatus: status, unknown});
         this.customProcessors = this.getCustomProcessors();
         //If topology's timestamp is less then 20 seconds, changing view mode to edit mode
         let timeElapsedForTopology = ((new Date().getTime() - data.topology.timestamp)  / 1000 );
@@ -349,6 +352,7 @@ class TopologyEditorContainer extends Component {
     this.refs.BaseContainer.refs.Confirm.show({
       title: 'Are you sure you want to deploy this topology ?'
     }).then((confirmBox)=>{
+      document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay";
       this.setState({topologyStatus: 'DEPLOYING...'})
       TopologyREST.validateTopology(this.topologyId)
         .then(result=>{
@@ -356,6 +360,7 @@ class TopologyEditorContainer extends Component {
             FSReactToastr.error(
               <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt)
             let status = this.topologyMetric.status || 'NOT RUNNING';
+            document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay displayNone";
             this.setState({topologyStatus: status});
           } else {
             TopologyREST.deployTopology(this.topologyId)
@@ -364,6 +369,7 @@ class TopologyEditorContainer extends Component {
                   FSReactToastr.error(
                     <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
                   let status = this.topologyMetric.status || 'NOT RUNNING';
+                  document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay displayNone";
                   this.setState({topologyStatus: status});
                 } else {
                   FSReactToastr.success(<strong>Topology Deployed Successfully</strong>);
@@ -372,6 +378,7 @@ class TopologyEditorContainer extends Component {
                       let data = result.entity;
                       this.topologyMetric = data.metric || {misc: (data.metric === undefined) ? '' : metric.misc};
                       let status = this.topologyMetric.status || '';
+                      document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay displayNone";
                       this.setState({topologyMetric: this.topologyMetric, isAppRunning: true, topologyStatus: status});
                     });
                 }
@@ -385,6 +392,7 @@ class TopologyEditorContainer extends Component {
     this.refs.BaseContainer.refs.Confirm.show({
       title: 'Are you sure you want to kill this topology ?'
     }).then((confirmBox)=>{
+      document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay";
       this.setState({topologyStatus: 'KILLING...'})
       TopologyREST.killTopology(this.topologyId)
         .then(topology=>{
@@ -392,6 +400,7 @@ class TopologyEditorContainer extends Component {
             FSReactToastr.error(
               <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
             let status = this.topologyMetric.status || 'NOT RUNNING';
+            document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay displayNone";
             this.setState({topologyStatus: status});
           } else {
             FSReactToastr.success(<strong>Topology Killed Successfully</strong>);
@@ -400,6 +409,7 @@ class TopologyEditorContainer extends Component {
                 let data = result.entity;
                 this.topologyMetric = data.metric || {misc: (data.metric === undefined) ? '' : metric.misc};
                 let status = this.topologyMetric.status || '';
+                document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay displayNone";
                 this.setState({topologyMetric: this.topologyMetric, isAppRunning: false, topologyStatus: status});
               })
           }
@@ -551,23 +561,26 @@ class TopologyEditorContainer extends Component {
               />
               <div className="topology-footer">
                 {this.viewMode ?
-                  <OverlayTrigger key={1} placement="top" overlay={<Tooltip id="tooltip">Edit</Tooltip>}>
-                    <a href="javascript:void(0);" className="hb lg success pull-right show-node-list" onClick={this.handleModeChange.bind(this, false)}><i className="fa fa-pencil"></i></a>
-                  </OverlayTrigger>
+                  (this.state.unknown !== "UNKNOWN")
+                    ? <OverlayTrigger key={1} placement="top" overlay={<Tooltip id="tooltip">Edit</Tooltip>}>
+                        <a href="javascript:void(0);" className="hb lg success pull-right show-node-list" onClick={this.handleModeChange.bind(this, false)}><i className="fa fa-pencil"></i></a>
+                      </OverlayTrigger>
+                    : ''
                   :
                   (this.state.isAppRunning ?
                     <OverlayTrigger key={2} placement="top" overlay={<Tooltip id="tooltip">Kill</Tooltip>}>
                       <a href="javascript:void(0);" className="hb lg danger pull-right" onClick={this.killTopology.bind(this)}><i className={this.state.topologyStatus === 'KILLING...' ? "fa fa-spinner fa-spin": "fa fa-times"}></i></a>
                     </OverlayTrigger>
-                    :
-                    <OverlayTrigger key={3} placement="top" overlay={<Tooltip id="tooltip">Run</Tooltip>}>
-                      <a href="javascript:void(0);" className="hb lg success pull-right" onClick={this.deployTopology.bind(this)}><i className={this.state.topologyStatus === 'DEPLOYING...'? "fa fa-spinner fa-spin" : "fa fa-paper-plane"}></i></a>
-                    </OverlayTrigger>
+                    : (this.state.unknown !== "UNKNOWN")
+                      ? <OverlayTrigger key={3} placement="top" overlay={<Tooltip id="tooltip">Run</Tooltip>}>
+                          <a href="javascript:void(0);" className="hb lg success pull-right" onClick={this.deployTopology.bind(this)}><i className={this.state.topologyStatus === 'DEPLOYING...'? "fa fa-spinner fa-spin" : "fa fa-paper-plane"}></i></a>
+                        </OverlayTrigger>
+                      : ''
                   )
                 }
                 <div className="topology-status">
                   <p className="text-muted">Status:</p>
-                  <p>{this.state.topologyStatus || 'NOT RUNNING'}</p>
+                  <p>{(this.state.unknown === "UNKNOWN") ? "Storm server is not running" : this.state.topologyStatus || 'NOT RUNNING'}</p>
                 </div>
               </div>
             </div>

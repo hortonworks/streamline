@@ -132,7 +132,8 @@ class TopologyListingContainer extends Component {
             isLoading: {
                 loader: false,
                 idCheck: ''
-            }
+            },
+            fetchLoader : true
         }
 
         this.fetchData();
@@ -145,9 +146,10 @@ class TopologyListingContainer extends Component {
                     <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
             } else {
                 let result = Utils.sortArray(topology.entities.slice(), 'timestamp', false);
-                this.setState({entities: result});
+                this.setState({fetchLoader : false,entities: result});
             }
         }).catch((err) => {
+            this.setState({fetchLoader : false});
             FSReactToastr.error(
                 <CommonNotification flag="error" content={err}/>, '', toastOpt)
         });
@@ -256,7 +258,7 @@ class TopologyListingContainer extends Component {
         }
     }
     render() {
-        const {entities, filterValue, isLoading} = this.state;
+        const {entities, filterValue, isLoading,fetchLoader} = this.state;
         const filteredEntities = TopologyUtils.topologyFilter(entities, filterValue);
 
         return (
@@ -282,7 +284,10 @@ class TopologyListingContainer extends Component {
                     </div>
                 </div>
                 <div className="row">
-                    {(filteredEntities.length === 0)
+                    {
+                      (this.state.fetchLoader)
+                      ? "loading.."
+                      : (filteredEntities.length === 0)
                         ? <NoData/>
                         : filteredEntities.map((list) => {
                             return <TopologyItems key={list.topology.id} topologyList={list} topologyAction={this.actionHandler} isLoading={isLoading}/>
