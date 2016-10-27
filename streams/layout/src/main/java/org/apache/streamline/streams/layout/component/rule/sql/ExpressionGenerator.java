@@ -18,6 +18,7 @@
  */
 package org.apache.streamline.streams.layout.component.rule.sql;
 
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.streams.layout.component.Stream;
 import org.apache.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression;
@@ -81,7 +82,7 @@ public class ExpressionGenerator extends SqlBasicVisitor<Expression> {
 
     @Override
     public Expression visit(SqlLiteral literal) {
-        return new Literal(literal.toValue());
+        return new Literal(literal.toString());
     }
 
     @Override
