@@ -102,7 +102,7 @@ public class NormalizationBoltTest {
                 put("new-field", "new value");
             }}, INPUT_STREAMLINE_EVENT.getDataSourceId(), INPUT_STREAMLINE_EVENT.getId());
 
-    private static final String INPUT_STREAM_ID = "inputStream";
+    private static final String INPUT_STREAM_ID = String.valueOf(1L);
     @Test
     public void testFieldBasedNormalization() throws NormalizationException {
         testNormalizationBolt(createNormalizationBolt(createFieldBasedNormalizationProcessor("normalized-output")));
