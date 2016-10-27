@@ -46,7 +46,7 @@ public class Literal extends Expression {
     @Override
     public String toString() {
         return "Literal{" +
-                "value='" + value + '\'' +
+                "value [" + value + ']' +
                 "}";
     }
 }

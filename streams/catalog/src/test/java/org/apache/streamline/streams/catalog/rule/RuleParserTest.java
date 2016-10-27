@@ -45,6 +45,7 @@ import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(JMockit.class)
 public class RuleParserTest {
@@ -82,6 +83,36 @@ public class RuleParserTest {
                 ruleParser.getStreams().get(0));
         assertNull(ruleParser.getGroupBy());
         assertNull(ruleParser.getHaving());
+        assertTrue(ruleParser.getCondition().getExpression() instanceof BinaryExpression);
+        assertTrue(((BinaryExpression) ruleParser.getCondition().getExpression()).getSecond() instanceof Literal);
+        Literal literal = ((Literal) ((BinaryExpression) ruleParser.getCondition().getExpression()).getSecond());
+        assertEquals("80", literal.getValue());
+
+    }
+
+    @Test
+    public void testParseStringLiteral() throws Exception {
+        new Expectations() {{
+            mockCatalogService.listStreamInfos(withAny(new ArrayList<QueryParam>()));
+            result = mockStreamInfo;
+            mockStreamInfo.getStreamId();
+            result = "teststream";
+            mockStreamInfo.getFields();
+            result = Arrays.asList(Schema.Field.of("eventType", Schema.Type.STRING),
+                    Schema.Field.of("temperature", Schema.Type.LONG));
+        }};
+        RuleInfo ruleInfo = new RuleInfo();
+        ruleInfo.setId(1L);
+        ruleInfo.setName("Test");
+        ruleInfo.setDescription("test rule");
+        ruleInfo.setTopologyId(1L);
+        ruleInfo.setSql("select temperature from teststream where eventType <> 'Normal'");
+        RuleParser ruleParser = new RuleParser(mockCatalogService, ruleInfo.getSql(), ruleInfo.getTopologyId());
+        ruleParser.parse();
+        assertTrue(ruleParser.getCondition().getExpression() instanceof BinaryExpression);
+        assertTrue(((BinaryExpression) ruleParser.getCondition().getExpression()).getSecond() instanceof Literal);
+        Literal literal = ((Literal) ((BinaryExpression) ruleParser.getCondition().getExpression()).getSecond());
+        assertEquals("'Normal'", literal.getValue());
     }
 
     @Test

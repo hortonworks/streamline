@@ -94,6 +94,23 @@ public class RulesBoltConditionTest {
     }
 
     @Test
+    public void testSimpleRuleStringLiteral() throws Exception {
+        StreamlineEvent event = new StreamlineEventImpl(ImmutableMap.<String, Object>of("foo", "Normal", "bar", "abc", "baz", 200), "dsrcid");
+        Tuple tuple = new TupleImpl(mockContext, new Values(event), 1, "inputstream");
+
+        doTest(readFile("/simple-rule-string-literal.json"), tuple);
+        new Verifications() {
+            {
+                String streamId;
+                Tuple anchor;
+                List<List<Object>> tuples = new ArrayList<>();
+                mockCollector.emit(streamId = withCapture(), anchor = withCapture(), withCapture(tuples));
+                times=0;
+            }
+        };
+    }
+
+    @Test
     public void testSelectFields() throws Exception {
         doTest(readFile("/simple-rule-select.json"), getTuple(20));
         new Verifications() {
