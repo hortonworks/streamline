@@ -28,6 +28,7 @@ import org.apache.streamline.streams.catalog.processor.CustomProcessorInfo;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.catalog.topology.TopologyComponentDefinition;
 import org.apache.streamline.streams.layout.component.TopologyActions;
+import org.apache.streamline.streams.metrics.storm.topology.StormNotReachableException;
 import org.apache.streamline.streams.metrics.storm.topology.TopologyNotAliveException;
 import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
 import org.apache.commons.lang3.StringUtils;
@@ -549,9 +550,11 @@ public class TopologyCatalogResource {
         TopologyCatalogWithMetric topologyCatalogWithMetric;
         try {
             TopologyMetrics.TopologyMetric topologyMetric = catalogService.getTopologyMetric(topology);
-            topologyCatalogWithMetric = new TopologyCatalogWithMetric(topology, true, topologyMetric);
-        } catch (TopologyNotAliveException | IOException e) {
-            topologyCatalogWithMetric = new TopologyCatalogWithMetric(topology, false, null);
+            topologyCatalogWithMetric = new TopologyCatalogWithMetric(topology, TopologyRunningStatus.RUNNING, topologyMetric);
+        } catch (TopologyNotAliveException e) {
+            topologyCatalogWithMetric = new TopologyCatalogWithMetric(topology, TopologyRunningStatus.NOT_RUNNING, null);
+        } catch (StormNotReachableException | IOException e) {
+            topologyCatalogWithMetric = new TopologyCatalogWithMetric(topology, TopologyRunningStatus.UNKNOWN, null);
         }
         return topologyCatalogWithMetric;
     }
@@ -590,13 +593,17 @@ public class TopologyCatalogResource {
         return result;
     }
 
+    private enum TopologyRunningStatus {
+      RUNNING, NOT_RUNNING, UNKNOWN
+    }
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private static class TopologyCatalogWithMetric {
         private final Topology topology;
-        private final boolean running;
+        private final TopologyRunningStatus running;
         private final TopologyMetrics.TopologyMetric metric;
 
-        public TopologyCatalogWithMetric(Topology topology, boolean running, TopologyMetrics.TopologyMetric metric) {
+        public TopologyCatalogWithMetric(Topology topology, TopologyRunningStatus running, TopologyMetrics.TopologyMetric metric) {
             this.topology = topology;
             this.running = running;
             this.metric = metric;
@@ -606,8 +613,8 @@ public class TopologyCatalogResource {
             return topology;
         }
 
-        public boolean isRunning() {
-            return running;
+        public String getRunning() {
+            return running.name();
         }
 
         public TopologyMetrics.TopologyMetric getMetric() {

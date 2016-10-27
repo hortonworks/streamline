@@ -11,6 +11,7 @@ import org.glassfish.jersey.client.ClientConfig;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,7 +70,7 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
             throw new TopologyNotAliveException("Topology not found in Storm Cluster - topology name in Storm: " + stormTopologyName);
         }
 
-        Map<String, ?> responseMap = client.target(getTopologyUrl(topologyId)).request(MediaType.APPLICATION_JSON_TYPE).get(Map.class);
+        Map<String, ?> responseMap = doGetRequest(getTopologyUrl(topologyId));
 
         Long uptimeSeconds = ((Number) responseMap.get(TOPOLOGY_JSON_UPTIME_SECS)).longValue();
         String status = (String) responseMap.get(TOPOLOGY_JSON_STATUS);
@@ -110,6 +111,18 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
             acked * 1.0 / window, completeLatency, failedRecords, miscMetrics);
     }
 
+    private Map doGetRequest(String requestUrl) {
+        try {
+            return client.target(requestUrl).request(MediaType.APPLICATION_JSON_TYPE).get(Map.class);
+        } catch (javax.ws.rs.ProcessingException e) {
+            if (e.getCause() instanceof IOException) {
+                throw new StormNotReachableException("Exception while requesting " + requestUrl, e);
+            }
+
+            throw e;
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -124,7 +137,7 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
             throw new TopologyNotAliveException("Topology not found in Storm Cluster - topology name in Storm: " + stormTopologyName);
         }
 
-        Map<String, ?> responseMap = client.target(getTopologyUrl(topologyId)).request(MediaType.APPLICATION_JSON_TYPE).get(Map.class);
+        Map<String, ?> responseMap = doGetRequest(getTopologyUrl(topologyId));
 
         List<Map<String, ?>> spouts = (List<Map<String, ?>>) responseMap.get(TOPOLOGY_JSON_SPOUTS);
         for (Map<String, ?> spout : spouts) {
@@ -193,7 +206,7 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
     }
 
     private String findTopologyId(String topologyName) {
-        Map<?, ?> summaryMap = client.target(getTopologySummaryUrl()).request(MediaType.APPLICATION_JSON_TYPE).get(Map.class);
+        Map<?, ?> summaryMap = doGetRequest(getTopologySummaryUrl());
         List<Map<?, ?>> topologies = (List<Map<?, ?>>) summaryMap.get(StormMetricsConstant.TOPOLOGY_SUMMARY_JSON_TOPOLOGIES);
         String topologyId = null;
         for (Map<?, ?> topology : topologies) {
