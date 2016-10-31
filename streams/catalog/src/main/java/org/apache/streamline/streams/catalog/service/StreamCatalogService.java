@@ -1454,6 +1454,15 @@ public class StreamCatalogService {
         return dao.get(new StorableKey(STREAMINFO_NAMESPACE, streamInfo.getPrimaryKey()));
     }
 
+    public StreamInfo getStreamInfoByName(String streamId) {
+      for (StreamInfo streamInfo : listStreamInfos()) {
+        if (streamInfo.getStreamId().equals(streamId)) {
+          return streamInfo;
+        }
+      }
+      return null;
+    }
+
     public StreamInfo addStreamInfo(Long topologyId, StreamInfo streamInfo) {
         if (streamInfo.getId() == null) {
             streamInfo.setId(dao.nextId(STREAMINFO_NAMESPACE));

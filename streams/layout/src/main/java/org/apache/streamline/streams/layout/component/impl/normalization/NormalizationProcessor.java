@@ -35,7 +35,7 @@ import java.util.Map;
  */
 public class NormalizationProcessor extends StreamlineProcessor {
     public static final String DEFAULT_STREAM_ID = "default";
-    public static final String CONFIG_KEY_TYPE = "normalizationProcessorType";
+    public static final String CONFIG_KEY_TYPE = "type";
     public static final String CONFIG_KEY_NORMALIZATION = "normalizationConfig";
 
     /**

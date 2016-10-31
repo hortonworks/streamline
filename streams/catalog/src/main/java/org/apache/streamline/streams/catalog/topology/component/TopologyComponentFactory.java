@@ -258,7 +258,7 @@ public class TopologyComponentFactory {
     private void updateWithSchemas(Map<String, NormalizationConfig> normalizationConfigRead) {
         for (Map.Entry<String, NormalizationConfig> entry : normalizationConfigRead.entrySet()) {
             NormalizationConfig normalizationConfig = entry.getValue();
-            normalizationConfig.setInputSchema(catalogService.getStreamInfo(Long.parseLong(entry.getKey())).getSchema());
+            normalizationConfig.setInputSchema(catalogService.getStreamInfoByName(entry.getKey()).getSchema());
         }
     }
 
