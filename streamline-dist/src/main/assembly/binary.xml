@@ -75,6 +75,13 @@
             </includes>
         </fileSet>
         <fileSet>
+            <directory>${project.basedir}./streams/functions/target</directory>
+            <outputDirectory>/bootstrap/udf-jars</outputDirectory>
+            <includes>
+                <include>streamline-functions*jar</include>
+            </includes>
+        </fileSet>
+        <fileSet>
             <directory>${project.basedir}./bootstrap</directory>
             <outputDirectory>/bootstrap</outputDirectory>
             <includes>

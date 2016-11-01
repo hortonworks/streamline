@@ -115,3 +115,4 @@ crashlytics-build.properties
 
 node_modules
 public
+logs

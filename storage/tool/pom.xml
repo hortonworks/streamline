@@ -37,7 +37,6 @@
             <artifactId>phoenix-core</artifactId>
         </dependency>
     </dependencies>
-
     <build>
         <plugins>
             <plugin>

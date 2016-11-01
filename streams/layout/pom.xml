@@ -25,6 +25,10 @@
             <groupId>org.apache.calcite</groupId>
             <artifactId>calcite-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.calcite.avatica</groupId>
+            <artifactId>avatica</artifactId>
+        </dependency>
         <!--test-->
         <dependency>
             <groupId>org.jmockit</groupId>
