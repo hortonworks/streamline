@@ -19,9 +19,9 @@ package org.apache.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import org.apache.streamline.common.util.WSUtils;
-import com.hortonworks.registries.schemaregistry.errors.SchemaNotFoundException;
-import com.hortonworks.registries.schemaregistry.SchemaVersionInfo;
-import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
+import org.apache.registries.schemaregistry.errors.SchemaNotFoundException;
+import org.apache.registries.schemaregistry.SchemaVersionInfo;
+import org.apache.registries.schemaregistry.client.SchemaRegistryClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +63,7 @@ public class SchemaResource {
         try {
             // for now, takes care of kafka for topic values. We will enhance to work this to get schema for different
             // sources based on given properties.
-            String schemaName = topicName+":v";
+            String schemaName = topicName + ":v";
             SchemaVersionInfo schemaVersionInfo = schemaRegistryClient.getLatestSchemaVersionInfo(schemaName);
             String schema = schemaVersionInfo != null ? schemaVersionInfo.getSchemaText() : null;
             LOG.debug("######### Received schema from schema registry: ", schema);
