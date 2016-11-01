@@ -21,7 +21,7 @@ import org.apache.streamline.streams.metrics.TimeSeriesQuerier;
 import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
 import org.apache.streamline.streams.notification.service.NotificationServiceImpl;
 import org.apache.streamline.streams.notification.service.NotificationsResource;
-import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
+import org.apache.registries.schemaregistry.client.SchemaRegistryClient;
 import org.apache.streamline.streams.service.metadata.HBaseMetadataResource;
 import org.apache.streamline.streams.service.metadata.HiveMetadataResource;
 import org.apache.streamline.streams.service.metadata.KafkaMetadataResource;
@@ -84,7 +84,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         this.storageManager = storageManager;
     }
 
-    private List<Object> getTopologyRelatedResources (StreamCatalogService streamcatalogService) {
+    private List<Object> getTopologyRelatedResources(StreamCatalogService streamcatalogService) {
         List<Object> result = new ArrayList<>();
         final TopologyCatalogResource topologyCatalogResource = new TopologyCatalogResource(streamcatalogService);
         result.add(topologyCatalogResource);
@@ -103,7 +103,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         return result;
     }
 
-    private List<Object> getClusterRelatedResources (StreamCatalogService streamcatalogService) {
+    private List<Object> getClusterRelatedResources(StreamCatalogService streamcatalogService) {
         List<Object> result = new ArrayList<>();
         final ClusterCatalogResource clusterCatalogResource = new ClusterCatalogResource(streamcatalogService);
         result.add(clusterCatalogResource);
@@ -129,7 +129,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         return result;
     }
 
-    private List<Object> getNotificationsRelatedResources (StreamCatalogService streamcatalogService) {
+    private List<Object> getNotificationsRelatedResources(StreamCatalogService streamcatalogService) {
         List<Object> result = new ArrayList<>();
         Boolean isNotificationsRestDisabled = (Boolean) config.get(org.apache.streamline.streams.common.Constants.CONFIG_NOTIFICATIONS_REST_FLAG);
         if (isNotificationsRestDisabled == null || !isNotificationsRestDisabled) {
@@ -139,7 +139,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         return result;
     }
 
-    private TopologyActions getTopologyActionsImpl () {
+    private TopologyActions getTopologyActionsImpl() {
         String className = (String) config.get(org.apache.streamline.streams.common.Constants.CONFIG_TOPOLOGY_ACTIONS_IMPL);
         // Note that streamlineStormJar value needs to be changed in streamline.yaml
         // based on the location of the storm module jar of Streamline project.
@@ -168,7 +168,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         return topologyActions;
     }
 
-    private TopologyMetrics getTopologyMetricsImpl () throws ConfigException {
+    private TopologyMetrics getTopologyMetricsImpl() throws ConfigException {
         String className = (String) config.get(org.apache.streamline.streams.common.Constants.CONFIG_TOPOLOGY_METRICS_IMPL);
         TopologyMetrics topologyMetrics;
         try {
@@ -204,7 +204,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         }
     }
 
-    private void watchFiles (StreamCatalogService catalogService) {
+    private void watchFiles(StreamCatalogService catalogService) {
         String customProcessorWatchPath = (String) config.get(org.apache.streamline.streams.common.Constants.CONFIG_CP_WATCH_PATH);
         String customProcessorUploadFailPath = (String) config.get(org.apache.streamline.streams.common.Constants.CONFIG_CP_UPLOAD_FAIL_PATH);
         String customProcessorUploadSuccessPath = (String) config.get(org.apache.streamline.streams.common.Constants.CONFIG_CP_UPLOAD_SUCCESS_PATH);
@@ -212,7 +212,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
             return;
         }
         FileEventHandler customProcessorUploadHandler = new CustomProcessorUploadHandler(customProcessorWatchPath, customProcessorUploadFailPath,
-                customProcessorUploadSuccessPath, catalogService);
+                                                                                         customProcessorUploadSuccessPath, catalogService);
         List<FileEventHandler> fileEventHandlers = new ArrayList<>();
         fileEventHandlers.add(customProcessorUploadHandler);
         final FileWatcher fileWatcher = new FileWatcher(fileEventHandlers);

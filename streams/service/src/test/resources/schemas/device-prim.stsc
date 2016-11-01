@@ -1,1 +1,1 @@
-[{"name":"com.hortonworks.payload.primitive.field","type":"LONG","optional":false}]
+[{"name":"org.apache.streamline.streams.payload.primitive.field","type":"LONG","optional":false}]

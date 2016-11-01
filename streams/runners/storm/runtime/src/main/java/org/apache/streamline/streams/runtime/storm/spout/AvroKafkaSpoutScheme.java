@@ -17,10 +17,10 @@
  */
 package org.apache.streamline.streams.runtime.storm.spout;
 
-import com.hortonworks.registries.schemaregistry.SchemaMetadata;
-import com.hortonworks.registries.schemaregistry.avro.AvroSchemaProvider;
-import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
-import com.hortonworks.registries.schemaregistry.serdes.avro.kafka.Utils;
+import org.apache.registries.schemaregistry.SchemaMetadata;
+import org.apache.registries.schemaregistry.avro.AvroSchemaProvider;
+import org.apache.registries.schemaregistry.client.SchemaRegistryClient;
+import org.apache.registries.schemaregistry.serdes.avro.kafka.Utils;
 import org.apache.storm.shade.com.google.common.base.Preconditions;
 import org.apache.storm.spout.MultiScheme;
 import org.apache.storm.tuple.Fields;

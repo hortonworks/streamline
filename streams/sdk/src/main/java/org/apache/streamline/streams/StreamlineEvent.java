@@ -15,10 +15,10 @@ public interface StreamlineEvent {
     String STREAMLINE_EVENT = "streamline.event";
 
     /**
-     * This represents whetehr the received payload in StreamLine is of primitive type but it is pushed with this field
+     * This represents whether the received payload in StreamLine is of primitive type but it is pushed with this field
      * in {@link #getFieldsAndValues()}
      */
-    String PRIMITIVE_PAYLOAD_FIELD = "com.hortonworks.payload.primitive.field";
+    String PRIMITIVE_PAYLOAD_FIELD = "org.apache.streamline.streams.payload.primitive.field";
 
     /**
      * The key values in the event.
@@ -103,7 +103,8 @@ public interface StreamlineEvent {
 
     /**
      * Returns the byte representation of this event so that it can be stored to a store like HDFS
+     *
      * @return
      */
-    byte[] getBytes ();
+    byte[] getBytes();
 }

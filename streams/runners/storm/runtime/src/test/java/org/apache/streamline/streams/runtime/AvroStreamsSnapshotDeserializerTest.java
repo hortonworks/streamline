@@ -18,11 +18,12 @@
 package org.apache.streamline.streams.runtime;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.registries.schemaregistry.SchemaIdVersion;
 import org.apache.streamline.streams.runtime.storm.spout.AvroStreamsSnapshotDeserializer;
-import com.hortonworks.registries.schemaregistry.SchemaMetadata;
-import com.hortonworks.registries.schemaregistry.SchemaVersionKey;
-import com.hortonworks.registries.schemaregistry.serdes.avro.AvroSnapshotSerializer;
-import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
+import org.apache.registries.schemaregistry.SchemaMetadata;
+import org.apache.registries.schemaregistry.SchemaVersionKey;
+import org.apache.registries.schemaregistry.serdes.avro.AvroSnapshotSerializer;
+import org.apache.registries.schemaregistry.client.SchemaRegistryClient;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
@@ -87,7 +88,7 @@ public class AvroStreamsSnapshotDeserializerTest {
 
         GenericRecord rootRecord = new GenericData.Record(schema);
         rootRecord.put("xid", now);
-        rootRecord.put("name", "name-"+now);
+        rootRecord.put("name", "name-" + now);
         rootRecord.put("version", 1);
         rootRecord.put("timestamp", now);
         rootRecord.put("suit", "SPADES");
@@ -98,7 +99,7 @@ public class AvroStreamsSnapshotDeserializerTest {
 
     private static class CustomAvroSerializer extends AvroSnapshotSerializer {
         public byte[] customSerialize(Object input) {
-            return doSerialize(input, 1);
+            return doSerialize(input, new SchemaIdVersion(1L, 1));
         }
     }
 }
