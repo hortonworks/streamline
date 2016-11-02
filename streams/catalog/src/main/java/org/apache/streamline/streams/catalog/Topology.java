@@ -18,14 +18,20 @@ public class Topology implements Storable {
 
     public static final String NAME_SPACE = "topologies";
     public static final String ID = "id";
+    public static final String VERSIONID = "versionId";
     public static final String NAME = "name";
     public static final String CONFIG = "config";
     public static final String TIMESTAMP = "timestamp";
 
     /**
-     * Unique id identifying a topology. This is the primary key column.
+     * Unique id identifying a topology. This is the composite primary key column.
      */
     private Long id;
+
+    /**
+     * Unique version id identifying a topology. This is the composite primary key column.
+     */
+    private Long versionId;
 
     /**
      * Human readable topology name; input from user from UI.
@@ -67,6 +73,7 @@ public class Topology implements Storable {
     public Schema getSchema () {
         return Schema.of(
                 new Schema.Field(ID, Schema.Type.LONG),
+                new Schema.Field(VERSIONID, Schema.Type.LONG),
                 new Schema.Field(NAME, Schema.Type.STRING),
                 new Schema.Field(CONFIG, Schema.Type.STRING),
                 new Schema.Field(TIMESTAMP, Schema.Type.LONG)
@@ -76,8 +83,8 @@ public class Topology implements Storable {
     @JsonIgnore
     public PrimaryKey getPrimaryKey () {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<>();
-        fieldToObjectMap.put(new Schema.Field(ID, Schema.Type.LONG),
-                this.id);
+        fieldToObjectMap.put(new Schema.Field(ID, Schema.Type.LONG), this.id);
+        fieldToObjectMap.put(new Schema.Field(VERSIONID, Schema.Type.LONG), this.versionId);
         return new PrimaryKey(fieldToObjectMap);
     }
 
@@ -89,6 +96,7 @@ public class Topology implements Storable {
     public Map toMap () {
         Map<String, Object> map = new HashMap<>();
         map.put(ID, this.id);
+        map.put(VERSIONID, this.versionId);
         map.put(NAME, this.name);
         map.put(CONFIG, this.config);
         map.put(TIMESTAMP, this.timestamp);
@@ -97,6 +105,7 @@ public class Topology implements Storable {
 
     public Topology fromMap (Map<String, Object> map) {
         this.id = (Long) map.get(ID);
+        this.versionId = (Long) map.get(VERSIONID);
         this.name = (String) map.get(NAME);
         this.config = (String)  map.get(CONFIG);
         this.timestamp = (Long) map.get(TIMESTAMP);
@@ -110,6 +119,14 @@ public class Topology implements Storable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getVersionId() {
+        return versionId;
+    }
+
+    public void setVersionId(Long versionId) {
+        this.versionId = versionId;
     }
 
     public String getName() {
@@ -140,6 +157,7 @@ public class Topology implements Storable {
     public String toString() {
         return "Topology{" +
                 "id=" + id +
+                ", versionId=" + versionId +
                 ", name='" + name + '\'' +
                 ", config='" + config + '\'' +
                 ", timestamp=" + timestamp +
@@ -148,28 +166,21 @@ public class Topology implements Storable {
     }
 
     @Override
-    public boolean equals (Object o) {
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Topology that = (Topology) o;
+        Topology topology = (Topology) o;
 
-        if (id != null ? !id.equals(that.id) : that.id != null)
-            return false;
-        if (name != null ? !name.equals(that.name) : that.name != null)
-            return false;
-        if (config != null ? !config.equals(that.config) : that.config != null)
-            return false;
-        return true;
+        if (id != null ? !id.equals(topology.id) : topology.id != null) return false;
+        return versionId != null ? versionId.equals(topology.versionId) : topology.versionId == null;
+
     }
 
     @Override
-    public int hashCode () {
+    public int hashCode() {
         int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (config != null ? config.hashCode() : 0);
+        result = 31 * result + (versionId != null ? versionId.hashCode() : 0);
         return result;
     }
-
-
 }

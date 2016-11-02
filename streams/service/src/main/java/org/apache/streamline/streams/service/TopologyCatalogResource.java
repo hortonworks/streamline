@@ -20,17 +20,16 @@ package org.apache.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.Topology;
+import org.apache.streamline.streams.catalog.TopologyVersionInfo;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.layout.component.TopologyActions;
 import org.apache.streamline.streams.metrics.storm.topology.StormNotReachableException;
 import org.apache.streamline.streams.metrics.storm.topology.TopologyNotAliveException;
 import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,16 +50,16 @@ import java.util.Collections;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.BAD_REQUEST_PARAM_MISSING;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
-
+import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.BAD_REQUEST_PARAM_MISSING;
+import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
+import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_VERSION_NOT_FOUND;
+import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
+import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 
 
 @Path("/v1/catalog")
@@ -108,19 +107,15 @@ public class TopologyCatalogResource {
     @GET
     @Path("/topologies/{topologyId}")
     @Timed
-    public Response getTopologyById (@PathParam("topologyId") Long topologyId,
-        @javax.ws.rs.QueryParam("withMetric") Boolean withMetric,
-        @javax.ws.rs.QueryParam("latencyTopN") Integer latencyTopN) {
+    public Response getTopologyById(@PathParam("topologyId") Long topologyId,
+                                    @javax.ws.rs.QueryParam("withMetric") Boolean withMetric,
+                                    @javax.ws.rs.QueryParam("latencyTopN") Integer latencyTopN) {
         try {
-            Topology result = catalogService.getTopology(topologyId);
-            if (result != null) {
-                if (withMetric == null || !withMetric) {
-                    return WSUtils.respond(result, OK, SUCCESS);
-                } else {
-                    TopologyCatalogWithMetric topologiesWithMetric = enrichMetricToTopology(
-                        result, latencyTopN);
-                    return WSUtils.respond(topologiesWithMetric, OK, SUCCESS);
-                }
+            Response response = getTopologyByIdAndVersionId(topologyId,
+                    catalogService.getCurrentTopologyVersionId(topologyId),
+                    withMetric, latencyTopN);
+            if (response != null) {
+                return response;
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -129,10 +124,63 @@ public class TopologyCatalogResource {
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, topologyId.toString());
     }
 
+    @GET
+    @Path("/topologies/{topologyId}/versions/{versionId}")
+    @Timed
+    public Response getTopologyByIdAndVersion(@PathParam("topologyId") Long topologyId,
+                                              @PathParam("versionId") Long versionId,
+                                              @javax.ws.rs.QueryParam("withMetric") Boolean withMetric,
+                                              @javax.ws.rs.QueryParam("latencyTopN") Integer latencyTopN) {
+        try {
+            Response response = getTopologyByIdAndVersionId(topologyId, versionId, withMetric, latencyTopN);
+            if (response != null) {
+                return response;
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+        return WSUtils.respond(NOT_FOUND, ENTITY_VERSION_NOT_FOUND, topologyId.toString(), versionId.toString());
+    }
+
+    private Response getTopologyByIdAndVersionId(Long topologyId, Long versionId, Boolean withMetric,
+                                                 Integer latencyTopN) {
+        Topology result = catalogService.getTopology(topologyId, versionId);
+        if (result != null) {
+            if (withMetric == null || !withMetric) {
+                return WSUtils.respond(result, OK, SUCCESS);
+            } else {
+                TopologyCatalogWithMetric topologiesWithMetric = enrichMetricToTopology(
+                        result, latencyTopN);
+                return WSUtils.respond(topologiesWithMetric, OK, SUCCESS);
+            }
+        }
+        return null;
+    }
+
+    @GET
+    @Path("/topologies/{topologyId}/versions")
+    @Timed
+    public Response listTopologyVersions(@PathParam("topologyId") Long topologyId) {
+        try {
+            Collection<TopologyVersionInfo> versionInfos = catalogService.listTopologyVersionInfos(
+                    WSUtils.topologyVersionsQueryParam(topologyId));
+            Response response;
+            if (versionInfos != null) {
+                response = WSUtils.respond(versionInfos, OK, SUCCESS);
+            } else {
+                response = WSUtils.respond(Collections.emptyList(), OK, SUCCESS);
+            }
+            return response;
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+    }
+
+
     @POST
     @Path("/topologies")
     @Timed
-    public Response addTopology (Topology topology) {
+    public Response addTopology(Topology topology) {
         try {
             if (StringUtils.isEmpty(topology.getName())) {
                 return WSUtils.respond(BAD_REQUEST,
@@ -153,15 +201,37 @@ public class TopologyCatalogResource {
     @DELETE
     @Path("/topologies/{topologyId}")
     @Timed
-    public Response removeTopology (@PathParam("topologyId") Long topologyId) {
+    public Response removeTopology(@PathParam("topologyId") Long topologyId,
+                                    @javax.ws.rs.QueryParam("recurse") boolean recurse,
+                                    @javax.ws.rs.QueryParam("allVersions") boolean allVersions) {
+        if (allVersions) {
+            return removeAllTopologyVersions(topologyId, recurse);
+        } else {
+            return removeCurrentTopologyVersion(topologyId, recurse);
+        }
+    }
+
+    private Response removeAllTopologyVersions(Long topologyId, boolean recurse) {
+        Collection<TopologyVersionInfo> versions = catalogService.listTopologyVersionInfos(
+                WSUtils.topologyVersionsQueryParam(topologyId));
+        List<Topology> removed = new ArrayList<>();
+        for (TopologyVersionInfo version : versions) {
+            try {
+                removed.add(catalogService.removeTopology(topologyId, version.getId(), recurse));
+            } catch (Exception ex) {
+                return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+            }
+        }
+        return WSUtils.respond(removed, OK, SUCCESS);
+    }
+
+    private Response removeCurrentTopologyVersion(Long topologyId, boolean recurse) {
         try {
-            Topology removedTopology = catalogService.removeTopology
-                    (topologyId);
+            Topology removedTopology = catalogService.removeTopology(topologyId, recurse);
             if (removedTopology != null) {
                 return WSUtils.respond(removedTopology, OK, SUCCESS);
             } else {
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND,
-                        topologyId.toString());
+                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, topologyId.toString());
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -190,6 +260,52 @@ public class TopologyCatalogResource {
         }
     }
 
+    /**
+     * {
+     *     "name": "v2",
+     *     "description": "saved before prod deployment"
+     * }
+     */
+    @POST
+    @Path("/topologies/{topologyId}/versions/save")
+    @Timed
+    public Response saveTopologyVersion(@PathParam("topologyId") Long topologyId, TopologyVersionInfo versionInfo) {
+        try {
+            // update the current version with the new version info.
+            versionInfo.setTopologyId(topologyId);
+            Long currentVersionId = catalogService.getCurrentTopologyVersionId(topologyId);
+            TopologyVersionInfo savedVersion = catalogService.addOrUpdateTopologyVersionInfo(
+                    currentVersionId, versionInfo);
+            // create a new current version
+            TopologyVersionInfo currentVersion = catalogService.addCurrentVersionInfo(topologyId);
+            // TODO: clone the savedVersion of topology with currentVersion as the version id
+            return WSUtils.respond(savedVersion, CREATED, SUCCESS);
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+    }
+
+    @POST
+    @Path("/topologies/{topologyId}/versions/{versionId}/activate")
+    @Timed
+    public Response activateTopologyVersion(@PathParam("topologyId") Long topologyId,
+                                            @PathParam("versionId") Long versionId) {
+        try {
+            Long currentVersionId = catalogService.getCurrentTopologyVersionId(topologyId);
+            TopologyVersionInfo savedVersion = catalogService.getTopologyVersionInfo(versionId);
+            if (savedVersion != null) {
+                // remove current version
+                catalogService.removeTopology(topologyId, true);
+                // TODO: clone the savedVersion of topology with currentVersion as the version id
+            } else {
+                return WSUtils.respond(NOT_FOUND, ENTITY_VERSION_NOT_FOUND, topologyId.toString(), versionId.toString());
+            }
+            return WSUtils.respond(savedVersion, CREATED, SUCCESS);
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+    }
+
     @GET
     @Path("/topologies/{topologyId}/actions/status")
     @Timed
@@ -206,6 +322,23 @@ public class TopologyCatalogResource {
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, topologyId.toString());
     }
 
+    @GET
+    @Path("/topologies/{topologyId}/versions/{versionId}/actions/status")
+    @Timed
+    public Response topologyStatusVersion(@PathParam("topologyId") Long topologyId,
+                                          @PathParam("versionId") Long versionId) {
+        try {
+            Topology result = catalogService.getTopology(topologyId, versionId);
+            if (result != null) {
+                TopologyActions.Status status = catalogService.topologyStatus(result);
+                return WSUtils.respond(status, OK, SUCCESS);
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+        return WSUtils.respond(NOT_FOUND, ENTITY_VERSION_NOT_FOUND, topologyId.toString(), versionId.toString());
+    }
+
     @POST
     @Path("/topologies/{topologyId}/actions/validate")
     @Timed
@@ -220,6 +353,23 @@ public class TopologyCatalogResource {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, topologyId.toString());
+    }
+
+    @POST
+    @Path("/topologies/{topologyId}/versions/{versionId}/actions/validate")
+    @Timed
+    public Response validateTopologyVersion(@PathParam("topologyId") Long topologyId,
+                                            @PathParam("versionId") Long versionId) {
+        try {
+            Topology result = catalogService.getTopology(topologyId, versionId);
+            if (result != null) {
+                //catalogService.validateTopology(SCHEMA, topologyId);
+                return WSUtils.respond(result, OK, SUCCESS);
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+        return WSUtils.respond(NOT_FOUND, ENTITY_VERSION_NOT_FOUND, topologyId.toString(), versionId.toString());
     }
 
     @POST
@@ -241,6 +391,25 @@ public class TopologyCatalogResource {
     }
 
     @POST
+    @Path("/topologies/{topologyId}/versions/{versionId}/actions/deploy")
+    @Timed
+    public Response deployTopologyVersion(@PathParam("topologyId") Long topologyId,
+                                          @PathParam("versionId") Long versionId) {
+        try {
+            Topology result = catalogService.getTopology(topologyId, versionId);
+            if (result != null) {
+//TODO: fix     catalogService.validateTopology(SCHEMA, topologyId);
+                catalogService.deployTopology(result);
+                return WSUtils.respond(result, OK, SUCCESS);
+            }
+        } catch (Exception ex) {
+            LOG.error("Failed to deploy the topology ", topologyId, ex);
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+        return WSUtils.respond(NOT_FOUND, ENTITY_VERSION_NOT_FOUND, topologyId.toString(), versionId.toString());
+    }
+
+    @POST
     @Path("/topologies/{topologyId}/actions/kill")
     @Timed
     public Response killTopology (@PathParam("topologyId") Long topologyId) {
@@ -254,6 +423,23 @@ public class TopologyCatalogResource {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, topologyId.toString());
+    }
+
+    @POST
+    @Path("/topologies/{topologyId}/versions/{versionId}/actions/kill")
+    @Timed
+    public Response killTopologyVersion(@PathParam("topologyId") Long topologyId,
+                                        @PathParam("versionId") Long versionId) {
+        try {
+            Topology result = catalogService.getTopology(topologyId, versionId);
+            if (result != null) {
+                catalogService.killTopology(result);
+                return WSUtils.respond(result, OK, SUCCESS);
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+        return WSUtils.respond(NOT_FOUND, ENTITY_VERSION_NOT_FOUND, topologyId.toString(), versionId.toString());
     }
 
     @POST
@@ -273,6 +459,23 @@ public class TopologyCatalogResource {
     }
 
     @POST
+    @Path("/topologies/{topologyId}/versions/{versionId}/actions/suspend")
+    @Timed
+    public Response suspendTopologyVersion(@PathParam("topologyId") Long topologyId,
+                                           @PathParam("versionId") Long versionId) {
+        try {
+            Topology result = catalogService.getTopology(topologyId, versionId);
+            if (result != null) {
+                catalogService.suspendTopology(result);
+                return WSUtils.respond(result, OK, SUCCESS);
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+        return WSUtils.respond(NOT_FOUND, ENTITY_VERSION_NOT_FOUND, topologyId.toString(), versionId.toString());
+    }
+
+    @POST
     @Path("/topologies/{topologyId}/actions/resume")
     @Timed
     public Response resumeTopology (@PathParam("topologyId") Long topologyId) {
@@ -288,6 +491,22 @@ public class TopologyCatalogResource {
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, topologyId.toString());
     }
 
+    @POST
+    @Path("/topologies/{topologyId}/versions/{versionId}/actions/resume")
+    @Timed
+    public Response resumeTopologyVersion(@PathParam("topologyId") Long topologyId,
+                                          @PathParam("versionId") Long versionId) {
+        try {
+            Topology result = catalogService.getTopology(topologyId, versionId);
+            if (result != null) {
+                catalogService.resumeTopology(result);
+                return WSUtils.respond(result, OK, SUCCESS);
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+        return WSUtils.respond(NOT_FOUND, ENTITY_VERSION_NOT_FOUND, topologyId.toString(), versionId.toString());
+    }
 
     private List<TopologyCatalogWithMetric> enrichMetricToTopologies(
         Collection<Topology> topologies, String sortType, Integer latencyTopN) {

@@ -33,6 +33,7 @@ public class TopologyComponent extends AbstractStorable {
     public static final String NAMESPACE = "topology_components";
 
     public static final String ID = "id";
+    public static final String VERSIONID = "versionId";
     public static final String TOPOLOGYID = "topologyId";
     public static final String TOPOLOGY_COMPONENT_BUNDLE_ID = "topologyComponentBundleId";
     public static final String NAME = "name";
@@ -42,6 +43,7 @@ public class TopologyComponent extends AbstractStorable {
     private Long id;
     private Long topologyId = -1L;
     private Long topologyComponentBundleId = -1L;
+    private Long versionId = -1L;
     private String name = StringUtils.EMPTY;
     private Config config;
 
@@ -49,7 +51,8 @@ public class TopologyComponent extends AbstractStorable {
     @Override
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<>();
-        fieldToObjectMap.put(new Schema.Field("id", Schema.Type.LONG), this.id);
+        fieldToObjectMap.put(new Schema.Field(ID, Schema.Type.LONG), this.id);
+        fieldToObjectMap.put(new Schema.Field(VERSIONID, Schema.Type.LONG), this.versionId);
         return new PrimaryKey(fieldToObjectMap);
     }
 
@@ -63,6 +66,7 @@ public class TopologyComponent extends AbstractStorable {
     public Schema getSchema() {
         return Schema.of(
                 Schema.Field.of(ID, Schema.Type.LONG),
+                Schema.Field.of(VERSIONID, Schema.Type.LONG),
                 Schema.Field.of(TOPOLOGYID, Schema.Type.LONG),
                 Schema.Field.of(TOPOLOGY_COMPONENT_BUNDLE_ID, Schema.Type.LONG),
                 Schema.Field.of(NAME, Schema.Type.STRING),
@@ -76,6 +80,14 @@ public class TopologyComponent extends AbstractStorable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getVersionId() {
+        return versionId;
+    }
+
+    public void setVersionId(Long versionId) {
+        this.versionId = versionId;
     }
 
     public Long getTopologyId() {

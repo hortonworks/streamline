@@ -1,6 +1,7 @@
 package org.apache.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
+import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.TopologyEditorMetadata;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
@@ -15,14 +16,17 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Collection;
+import java.util.List;
 
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
+import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.apache.streamline.common.util.WSUtils.buildTopologyIdAndVersionIdAwareQueryParams;
 
 @Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
@@ -68,7 +72,8 @@ public class TopologyEditorMetadataResource {
     @Timed
     public Response addTopologyEditorMetadata (TopologyEditorMetadata topologyEditorMetadata) {
         try {
-            TopologyEditorMetadata addedTopologyEditorMetadata = catalogService.addTopologyEditorMetadata(topologyEditorMetadata);
+            TopologyEditorMetadata addedTopologyEditorMetadata = catalogService.addTopologyEditorMetadata(
+                    topologyEditorMetadata.getTopologyId(), topologyEditorMetadata);
             return WSUtils.respond(addedTopologyEditorMetadata, CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());

@@ -32,7 +32,8 @@ public class CatalogResponse {
         UNSUPPORTED_MEDIA_TYPE(1109, "Unsupported Media Type", 0),
         BAD_REQUEST(1110, "Bad Request", 0),
         IMPORT_ALREADY_IN_PROGRESS(1111, "Cluster [%s] is already in progress of import.", 1),
-        ENTITY_BY_NAME_NOT_FOUND(1102, "Entity with name [%s] not found.", 1);
+        ENTITY_BY_NAME_NOT_FOUND(1112, "Entity with name [%s] not found.", 1),
+        ENTITY_VERSION_NOT_FOUND(1113, "Entity with id [%s] and version [%s] not found.", 2);
 
         private final int code;
         private final String msg;

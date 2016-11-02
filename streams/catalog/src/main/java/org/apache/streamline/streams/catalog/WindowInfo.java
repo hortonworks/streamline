@@ -25,6 +25,7 @@ public class WindowInfo extends AbstractStorable {
     public static final String NAMESPACE = "windowinfos";
 
     public static final String ID = "id";
+    public static final String VERSIONID = "versionId";
     public static final String TOPOLOGY_ID = "topologyId";
     public static final String NAME = "name";
     public static final String DESCRIPTION = "description";
@@ -37,6 +38,7 @@ public class WindowInfo extends AbstractStorable {
     public static final String GROUPBYKEYS = "groupbykeys";
 
     private Long id;
+    private Long versionId;
     private Long topologyId;
     private String name = StringUtils.EMPTY;
     private String description = StringUtils.EMPTY;
@@ -106,7 +108,8 @@ public class WindowInfo extends AbstractStorable {
     @Override
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<Schema.Field, Object>();
-        fieldToObjectMap.put(new Schema.Field("id", Schema.Type.LONG), this.id);
+        fieldToObjectMap.put(new Schema.Field(ID, Schema.Type.LONG), this.id);
+        fieldToObjectMap.put(new Schema.Field(VERSIONID, Schema.Type.LONG), this.versionId);
         return new PrimaryKey(fieldToObjectMap);
     }
 
@@ -122,6 +125,14 @@ public class WindowInfo extends AbstractStorable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getVersionId() {
+        return versionId;
+    }
+
+    public void setVersionId(Long versionId) {
+        this.versionId = versionId;
     }
 
     public String getName() {
@@ -217,6 +228,7 @@ public class WindowInfo extends AbstractStorable {
     public Schema getSchema() {
         return Schema.of(
                 Schema.Field.of(ID, Schema.Type.LONG),
+                Schema.Field.of(VERSIONID, Schema.Type.LONG),
                 Schema.Field.of(TOPOLOGY_ID, Schema.Type.LONG),
                 Schema.Field.of(NAME, Schema.Type.STRING),
                 Schema.Field.of(DESCRIPTION, Schema.Type.STRING),
@@ -250,6 +262,7 @@ public class WindowInfo extends AbstractStorable {
     @Override
     public Storable fromMap(Map<String, Object> map) {
         setId((Long) map.get(ID));
+        setVersionId((Long) map.get(VERSIONID));
         setTopologyId((Long) map.get(TOPOLOGY_ID));
         setName((String) map.get(NAME));
         setDescription((String) map.get(DESCRIPTION));

@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS parser_info
+DROP TABLE IF EXISTS topology_versioninfos
 DROP TABLE IF EXISTS topologies
 DROP TABLE IF EXISTS topology_component_bundles
 DROP TABLE IF EXISTS files
@@ -23,6 +24,7 @@ DROP TABLE IF EXISTS services
 DROP TABLE IF EXISTS service_configurations
 DROP TABLE IF EXISTS components
 DROP SEQUENCE IF EXISTS parser_info_sequence
+DROP SEQUENCE IF EXISTS topology_versioninfos_sequence
 DROP SEQUENCE IF EXISTS topologies_sequence
 DROP SEQUENCE IF EXISTS topology_component_bundles_sequence
 DROP SEQUENCE IF EXISTS tag_sequence

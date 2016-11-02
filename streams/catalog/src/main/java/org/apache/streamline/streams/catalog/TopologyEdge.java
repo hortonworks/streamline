@@ -67,6 +67,7 @@ public class TopologyEdge extends AbstractStorable {
 
     public static final String NAMESPACE = "topology_edges";
     public static final String ID = "id";
+    public static final String VERSIONID = "versionId";
     public static final String TOPOLOGYID = "topologyId";
     public static final String FROMID = "fromId";
     public static final String TOID = "toId";
@@ -74,6 +75,7 @@ public class TopologyEdge extends AbstractStorable {
     public static final String STREAMGROUPINGSDATA = "streamGroupingsData";
 
     private Long id;
+    private Long versionId;
     private Long topologyId;
     private Long fromId;
     private Long toId;
@@ -89,7 +91,8 @@ public class TopologyEdge extends AbstractStorable {
     @Override
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<>();
-        fieldToObjectMap.put(new Schema.Field("id", Schema.Type.LONG), this.id);
+        fieldToObjectMap.put(new Schema.Field(ID, Schema.Type.LONG), this.id);
+        fieldToObjectMap.put(new Schema.Field(VERSIONID, Schema.Type.LONG), this.versionId);
         return new PrimaryKey(fieldToObjectMap);
     }
 
@@ -100,6 +103,14 @@ public class TopologyEdge extends AbstractStorable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getVersionId() {
+        return versionId;
+    }
+
+    public void setVersionId(Long versionId) {
+        this.versionId = versionId;
     }
 
     public Long getTopologyId() {
@@ -157,6 +168,7 @@ public class TopologyEdge extends AbstractStorable {
     public Schema getSchema() {
         return Schema.of(
                 Schema.Field.of(ID, Schema.Type.LONG),
+                Schema.Field.of(VERSIONID, Schema.Type.LONG),
                 Schema.Field.of(TOPOLOGYID, Schema.Type.LONG),
                 Schema.Field.of(FROMID, Schema.Type.LONG),
                 Schema.Field.of(TOID, Schema.Type.LONG),
@@ -167,11 +179,12 @@ public class TopologyEdge extends AbstractStorable {
     public String toString() {
         return "TopologyEdge{" +
                 "id=" + id +
+                ", versionId=" + versionId +
                 ", topologyId=" + topologyId +
                 ", fromId=" + fromId +
                 ", toId=" + toId +
                 ", streamGroupings=" + streamGroupings +
-                '}';
+                "} " + super.toString();
     }
 
     @Override

@@ -46,12 +46,13 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.apache.streamline.common.util.WSUtils.buildTopologyIdAndVersionIdAwareQueryParams;
 
 /**
  * Represents output stream from a source or a processor component
  * in an StreamlineTopology
  */
-@Path("/v1/catalog/topologies/{topologyId}/streams")
+@Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class TopologyStreamCatalogResource {
     private final StreamCatalogService catalogService;
@@ -91,13 +92,33 @@ public class TopologyStreamCatalogResource {
      * </pre>
      */
     @GET
+    @Path("/topologies/{topologyId}/streams")
     @Timed
     public Response listStreamInfos(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) {
-        List<QueryParam> queryParams = WSUtils.buildTopologyIdAwareQueryParams(topologyId, uriInfo);
+        return listTopologyStreams(
+                buildTopologyIdAndVersionIdAwareQueryParams(
+                        topologyId,
+                        catalogService.getCurrentTopologyVersionId(topologyId),
+                        uriInfo));
+    }
+
+    @GET
+    @Path("/topologies/{topologyId}/versions/{versionId}/streams")
+    @Timed
+    public Response listStreamInfosForVersion(@PathParam("topologyId") Long topologyId,
+                                                  @PathParam("versionId") Long versionId,
+                                                  @Context UriInfo uriInfo) {
+        return listTopologyStreams(
+                buildTopologyIdAndVersionIdAwareQueryParams(topologyId,
+                        versionId,
+                        uriInfo));
+    }
+
+    private Response listTopologyStreams(List<QueryParam> queryParams) {
         try {
-            Collection<StreamInfo> streamInfos = catalogService.listStreamInfos(queryParams);
-            if (streamInfos != null) {
-                return WSUtils.respond(streamInfos, OK, SUCCESS);
+            Collection<StreamInfo> sources = catalogService.listStreamInfos(queryParams);
+            if (sources != null) {
+                return WSUtils.respond(sources, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -105,9 +126,10 @@ public class TopologyStreamCatalogResource {
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, queryParams.toString());
     }
 
+
     /**
      * <p>
-     * Gets a specific stream by Id. For example,
+     * Gets the 'CURRENT' version of specific stream by Id. For example,
      * </p>
      * <b>GET /api/v1/catalog/topologies/:TOPOLOGY_ID/streams/:STREAM_ID</b>
      * <pre>
@@ -127,22 +149,39 @@ public class TopologyStreamCatalogResource {
      * }
      * </pre>
      *
-     * @param id the stream id
+     * @param streamId the stream id
      * @return the response
      */
     @GET
-    @Path("/{id}")
+    @Path("/topologies/{topologyId}/streams/{id}")
     @Timed
-    public Response getStreamInfoById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long id) {
+    public Response getStreamInfoById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long streamId) {
         try {
-            StreamInfo streamInfo = catalogService.getStreamInfo(id);
-            if (streamInfo != null && streamInfo.getTopologyId().equals(topologyId)) {
+            StreamInfo streamInfo = catalogService.getStreamInfo(topologyId, streamId);
+            if (streamInfo != null) {
                 return WSUtils.respond(streamInfo, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, id.toString());
+        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, streamId.toString());
+    }
+
+    @GET
+    @Path("/topologies/{topologyId}/versions/{versionId}/streams/{id}")
+    @Timed
+    public Response getStreamInfoById(@PathParam("topologyId") Long topologyId,
+                                      @PathParam("versionId") Long versionId,
+                                      @PathParam("id") Long streamId) {
+        try {
+            StreamInfo streamInfo = catalogService.getStreamInfo(topologyId, streamId, versionId);
+            if (streamInfo != null) {
+                return WSUtils.respond(streamInfo, OK, SUCCESS);
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, streamId.toString());
     }
 
     /**
@@ -186,6 +225,7 @@ public class TopologyStreamCatalogResource {
      * </pre>
      */
     @POST
+    @Path("/topologies/{topologyId}/streams")
     @Timed
     public Response addStreamInfo(@PathParam("topologyId") Long topologyId, StreamInfo streamInfo) {
         try {
@@ -247,7 +287,7 @@ public class TopologyStreamCatalogResource {
      * @return the response
      */
     @PUT
-    @Path("/{id}")
+    @Path("/topologies/{topologyId}/streams/{id}")
     @Timed
     public Response addOrUpdateStreamInfo(@PathParam("topologyId") Long topologyId, @PathParam("id") Long id, StreamInfo streamInfo) {
         try {
@@ -289,11 +329,11 @@ public class TopologyStreamCatalogResource {
      * </pre>
      */
     @DELETE
-    @Path("/{id}")
+    @Path("/topologies/{topologyId}/streams/{id}")
     @Timed
     public Response removeStreamInfo(@PathParam("topologyId") Long topologyId, @PathParam("id") Long id) {
         try {
-            StreamInfo removedStream = catalogService.removeStreamInfo(id);
+            StreamInfo removedStream = catalogService.removeStreamInfo(topologyId, id);
             if (removedStream != null) {
                 return WSUtils.respond(removedStream, OK, SUCCESS);
             } else {

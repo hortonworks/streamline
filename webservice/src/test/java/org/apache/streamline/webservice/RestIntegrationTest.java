@@ -827,6 +827,7 @@ public class RestIntegrationTest {
     private Topology createTopology (Long id, String name) {
         Topology topology = new Topology();
         topology.setId(id);
+        topology.setVersionId(1L);
         topology.setName(name);
         topology.setConfig("{}");
         topology.setTimestamp(System.currentTimeMillis());
@@ -836,6 +837,7 @@ public class RestIntegrationTest {
     private TopologyEditorMetadata createTopologyEditorMetadata (Long topologyId, String info) {
         TopologyEditorMetadata topologyEditorMetadata = new TopologyEditorMetadata();
         topologyEditorMetadata.setTopologyId(topologyId);
+        topologyEditorMetadata.setVersionId(1L);
         topologyEditorMetadata.setData(info);
         topologyEditorMetadata.setTimestamp(System.currentTimeMillis());
         return topologyEditorMetadata;

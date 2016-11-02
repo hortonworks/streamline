@@ -3,6 +3,7 @@ package org.apache.streamline.streams.service;
 import com.codahale.metrics.annotation.Timed;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.util.WSUtils;
+import org.apache.streamline.streams.catalog.RuleInfo;
 import org.apache.streamline.streams.catalog.WindowInfo;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.slf4j.Logger;
@@ -30,6 +31,7 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.apache.streamline.common.util.WSUtils.buildTopologyIdAndVersionIdAwareQueryParams;
 
 /**
  * REST resource for managing window rule with aggregate function.
@@ -37,7 +39,7 @@ import static javax.ws.rs.core.Response.Status.OK;
  * A separate endpoint is provided for UI to have a separate endpoint
  * to configure window with aggregate functions.
  */
-@Path("/v1/catalog/topologies/{topologyId}/windows")
+@Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class WindowCatalogResource {
     private static final Logger LOG = LoggerFactory.getLogger(WindowCatalogResource.class);
@@ -49,29 +51,63 @@ public class WindowCatalogResource {
     }
 
     @GET
+    @Path("/topologies/{topologyId}/windows")
     @Timed
     public Response listTopologyWindows(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) {
-        List<QueryParam> queryParams = WSUtils.buildTopologyIdAwareQueryParams(topologyId, uriInfo);
+        Long currentVersionId = catalogService.getCurrentTopologyVersionId(topologyId);
+        return listTopologyWindows(
+                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, currentVersionId, uriInfo));
+    }
+
+    @GET
+    @Path("/topologies/{topologyId}/versions/{versionId}/windows")
+    @Timed
+    public Response listTopologySourcesForVersion(@PathParam("topologyId") Long topologyId,
+                                                  @PathParam("versionId") Long versionId,
+                                                  @Context UriInfo uriInfo) {
+        return listTopologyWindows(
+                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, versionId, uriInfo));
+    }
+
+    private Response listTopologyWindows(List<QueryParam> queryParams) {
         try {
             Collection<WindowInfo> windowInfos = catalogService.listWindows(queryParams);
             if (windowInfos != null) {
                 return WSUtils.respond(windowInfos, OK, SUCCESS);
             }
         } catch (Exception ex) {
-            LOG.error("Got exception", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, queryParams.toString());
     }
 
     @GET
-    @Path("/{id}")
+    @Path("/topologies/{topologyId}/windows/{id}")
     @Timed
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTopologyWindowById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long windowId) {
         try {
-            WindowInfo windowInfo = catalogService.getWindow(windowId);
-            if (windowInfo != null && windowInfo.getTopologyId().equals(topologyId)) {
+            WindowInfo windowInfo = catalogService.getWindow(topologyId, windowId);
+            if (windowInfo != null) {
+                return WSUtils.respond(windowInfo, OK, SUCCESS);
+            }
+        } catch (Exception ex) {
+            LOG.error("Got exception", ex);
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, buildMessageForCompositeId(topologyId, windowId));
+    }
+
+    @GET
+    @Path("/topologies/{topologyId}/versions/{versionId}/windows/{id}")
+    @Timed
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getTopologyWindowByIdAndVersion(@PathParam("topologyId") Long topologyId,
+                                                    @PathParam("id") Long windowId,
+                                                    @PathParam("versionId") Long versionId) {
+        try {
+            WindowInfo windowInfo = catalogService.getWindow(topologyId, windowId, versionId);
+            if (windowInfo != null) {
                 return WSUtils.respond(windowInfo, OK, SUCCESS);
             }
         } catch (Exception ex) {
@@ -82,6 +118,7 @@ public class WindowCatalogResource {
     }
 
     @POST
+    @Path("/topologies/{topologyId}/windows")
     @Timed
     public Response addTopologyWindow(@PathParam("topologyId") Long topologyId, WindowInfo windowInfo) {
         try {
@@ -94,7 +131,7 @@ public class WindowCatalogResource {
     }
 
     @PUT
-    @Path("/{id}")
+    @Path("/topologies/{topologyId}/windows/{id}")
     @Timed
     public Response addOrUpdateWindow(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId,
                                     WindowInfo windowInfo) {
@@ -108,11 +145,11 @@ public class WindowCatalogResource {
     }
 
     @DELETE
-    @Path("/{id}")
+    @Path("/topologies/{topologyId}/windows/{id}")
     @Timed
     public Response removeWindowById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long windowId) {
         try {
-            WindowInfo windowInfo = catalogService.removeWindow(windowId);
+            WindowInfo windowInfo = catalogService.removeWindow(topologyId, windowId);
             if (windowInfo != null) {
                 return WSUtils.respond(windowInfo, OK, SUCCESS);
             } else {

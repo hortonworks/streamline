@@ -42,6 +42,7 @@ public class StreamCatagoryTests {
         private StreamInfo createStreamInfo(long id, List<Schema.Field> fields) {
             StreamInfo streamInfo = new StreamInfo();
             streamInfo.setId(id);
+            streamInfo.setVersionId(1L);
             streamInfo.setTopologyId(1L);
             streamInfo.setStreamId("Stream-" + id);
             streamInfo.setFields(fields);

@@ -28,9 +28,11 @@ import java.util.Map;
 public class TopologyProcessorStreamMapping extends AbstractStorable {
     public static final String NAMESPACE = "topology_processor_stream_mapping";
     public static final String FIELD_PROCESSOR_ID = "processorId";
+    public static final String FIELD_VERSION_ID = "versionId";
     public static final String FIELD_STREAM_ID = "streamId";
 
     private Long processorId;
+    private Long versionId;
     private Long streamId;
 
     // for jackson
@@ -38,8 +40,9 @@ public class TopologyProcessorStreamMapping extends AbstractStorable {
 
     }
 
-    public TopologyProcessorStreamMapping(Long processorId, Long streamId) {
+    public TopologyProcessorStreamMapping(Long processorId, Long versionId, Long streamId) {
         this.processorId = processorId;
+        this.versionId = versionId;
         this.streamId = streamId;
     }
 
@@ -52,6 +55,7 @@ public class TopologyProcessorStreamMapping extends AbstractStorable {
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<>();
         fieldToObjectMap.put(Schema.Field.of(FIELD_PROCESSOR_ID, Schema.Type.LONG), this.processorId);
+        fieldToObjectMap.put(Schema.Field.of(FIELD_VERSION_ID, Schema.Type.LONG), this.versionId);
         fieldToObjectMap.put(new Schema.Field(FIELD_STREAM_ID, Schema.Type.LONG), this.streamId);
         return new PrimaryKey(fieldToObjectMap);
     }
@@ -63,6 +67,14 @@ public class TopologyProcessorStreamMapping extends AbstractStorable {
 
     public void setProcessorId(Long processorId) {
         this.processorId = processorId;
+    }
+
+    public Long getVersionId() {
+        return versionId;
+    }
+
+    public void setVersionId(Long versionId) {
+        this.versionId = versionId;
     }
 
     public Long getStreamId() {
@@ -82,6 +94,7 @@ public class TopologyProcessorStreamMapping extends AbstractStorable {
         TopologyProcessorStreamMapping that = (TopologyProcessorStreamMapping) o;
 
         if (processorId != null ? !processorId.equals(that.processorId) : that.processorId != null) return false;
+        if (versionId != null ? !versionId.equals(that.versionId) : that.versionId != null) return false;
         return streamId != null ? streamId.equals(that.streamId) : that.streamId == null;
 
     }
@@ -89,6 +102,7 @@ public class TopologyProcessorStreamMapping extends AbstractStorable {
     @Override
     public int hashCode() {
         int result = processorId != null ? processorId.hashCode() : 0;
+        result = 31 * result + (versionId != null ? versionId.hashCode() : 0);
         result = 31 * result + (streamId != null ? streamId.hashCode() : 0);
         return result;
     }
@@ -97,7 +111,8 @@ public class TopologyProcessorStreamMapping extends AbstractStorable {
     public String toString() {
         return "TopologyProcessorStreamMapping{" +
                 "processorId=" + processorId +
+                ", versionId=" + versionId +
                 ", streamId=" + streamId +
-                '}';
+                "} " + super.toString();
     }
 }

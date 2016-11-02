@@ -46,11 +46,12 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.apache.streamline.common.util.WSUtils.buildTopologyIdAndVersionIdAwareQueryParams;
 
 /**
  * An edge between two components in an StreamlineTopology
  */
-@Path("/v1/catalog/topologies/{topologyId}/edges")
+@Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class TopologyEdgeCatalogResource {
     private final StreamCatalogService catalogService;
@@ -86,9 +87,25 @@ public class TopologyEdgeCatalogResource {
      * </pre>
      */
     @GET
+    @Path("/topologies/{topologyId}/edges")
     @Timed
     public Response listTopologyEdges(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) {
-        List<QueryParam> queryParams = WSUtils.buildTopologyIdAwareQueryParams(topologyId, uriInfo);
+        Long currentVersionId = catalogService.getCurrentTopologyVersionId(topologyId);
+        return listTopologyEdges(
+                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, currentVersionId, uriInfo));
+    }
+
+    @GET
+    @Path("/topologies/{topologyId}/versions/{versionId}/edges")
+    @Timed
+    public Response listTopologyEdgesForVersion(@PathParam("topologyId") Long topologyId,
+                                                  @PathParam("versionId") Long versionId,
+                                                  @Context UriInfo uriInfo) {
+        return listTopologyEdges(
+                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, versionId, uriInfo));
+    }
+
+    private Response listTopologyEdges(List<QueryParam> queryParams) {
         try {
             Collection<TopologyEdge> edges = catalogService.listTopologyEdges(queryParams);
             if (edges != null) {
@@ -97,13 +114,12 @@ public class TopologyEdgeCatalogResource {
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
-
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, queryParams.toString());
     }
 
     /**
      * <p>
-     * Gets a specific topology edge by Id. For example,
+     * Gets the 'CURRENT' version of specific topology edge by Id. For example,
      * </p>
      * <b>GET /api/v1/catalog/topologies/:TOPOLOGY_ID/edges/:EDGE_ID</b>
      * <pre>
@@ -126,12 +142,29 @@ public class TopologyEdgeCatalogResource {
      * </pre>
      */
     @GET
-    @Path("/{id}")
+    @Path("/topologies/{topologyId}/edges/{id}")
     @Timed
     public Response getTopologyEdgeById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long edgeId) {
         try {
-            TopologyEdge edge = catalogService.getTopologyEdge(edgeId);
-            if (edge != null && edge.getTopologyId().equals(topologyId)) {
+            TopologyEdge edge = catalogService.getTopologyEdge(topologyId, edgeId);
+            if (edge != null) {
+                return WSUtils.respond(edge, OK, SUCCESS);
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, buildMessageForCompositeId(topologyId, edgeId));
+    }
+
+    @GET
+    @Path("/topologies/{topologyId}/versions/{versionId}/edges/{id}")
+    @Timed
+    public Response getTopologyEdgeByIdAndVersion(@PathParam("topologyId") Long topologyId,
+                                                    @PathParam("id") Long edgeId,
+                                                    @PathParam("versionId") Long versionId) {
+        try {
+            TopologyEdge edge = catalogService.getTopologyEdge(topologyId, edgeId, versionId);
+            if (edge != null) {
                 return WSUtils.respond(edge, OK, SUCCESS);
             }
         } catch (Exception ex) {
@@ -174,6 +207,7 @@ public class TopologyEdgeCatalogResource {
      * </pre>
      */
     @POST
+    @Path("/topologies/{topologyId}/edges")
     @Timed
     public Response addTopologyEdge(@PathParam("topologyId") Long topologyId, TopologyEdge edge) {
         try {
@@ -216,7 +250,7 @@ public class TopologyEdgeCatalogResource {
      * </pre>
      */
     @PUT
-    @Path("/{id}")
+    @Path("/topologies/{topologyId}/edges/{id}")
     @Timed
     public Response addOrUpdateTopologyEdge(@PathParam("topologyId") Long topologyId, @PathParam("id") Long edgeId,
                                                  TopologyEdge edge) {
@@ -253,11 +287,11 @@ public class TopologyEdgeCatalogResource {
      * </pre>
      */
     @DELETE
-    @Path("/{id}")
+    @Path("/topologies/{topologyId}/edges/{id}")
     @Timed
     public Response removeTopologyEdge(@PathParam("topologyId") Long topologyId, @PathParam("id") Long edgeId) {
         try {
-            TopologyEdge removedEdge = catalogService.removeTopologyEdge(edgeId);
+            TopologyEdge removedEdge = catalogService.removeTopologyEdge(topologyId, edgeId);
             if (removedEdge != null) {
                 return WSUtils.respond(removedEdge, OK, SUCCESS);
             } else {

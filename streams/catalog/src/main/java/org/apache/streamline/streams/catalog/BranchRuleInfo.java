@@ -27,6 +27,7 @@ public class BranchRuleInfo extends AbstractStorable {
 
     public static final String ID = "id";
     public static final String TOPOLOGY_ID = "topologyId";
+    public static final String VERSION_ID = "versionId";
     public static final String NAME = "name";
     public static final String DESCRIPTION = "description";
     public static final String STREAM = "stream";
@@ -36,6 +37,7 @@ public class BranchRuleInfo extends AbstractStorable {
 
     private Long id;
     private Long topologyId;
+    private Long versionId;
     private String name;
     private String description;
     /*
@@ -57,7 +59,8 @@ public class BranchRuleInfo extends AbstractStorable {
     @Override
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<>();
-        fieldToObjectMap.put(new Schema.Field("id", Schema.Type.LONG), this.id);
+        fieldToObjectMap.put(new Schema.Field(ID, Schema.Type.LONG), this.id);
+        fieldToObjectMap.put(new Schema.Field(VERSION_ID, Schema.Type.LONG), this.versionId);
         return new PrimaryKey(fieldToObjectMap);
     }
 
@@ -73,6 +76,14 @@ public class BranchRuleInfo extends AbstractStorable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getVersionId() {
+        return versionId;
+    }
+
+    public void setVersionId(Long versionId) {
+        this.versionId = versionId;
     }
 
     public String getName() {
@@ -144,6 +155,7 @@ public class BranchRuleInfo extends AbstractStorable {
     public Schema getSchema() {
         return Schema.of(
                 Schema.Field.of(ID, Schema.Type.LONG),
+                Schema.Field.of(VERSION_ID, Schema.Type.LONG),
                 Schema.Field.of(TOPOLOGY_ID, Schema.Type.LONG),
                 Schema.Field.of(NAME, Schema.Type.STRING),
                 Schema.Field.of(DESCRIPTION, Schema.Type.STRING),
@@ -171,6 +183,7 @@ public class BranchRuleInfo extends AbstractStorable {
     @Override
     public Storable fromMap(Map<String, Object> map) {
         setId((Long) map.get(ID));
+        setVersionId((Long) map.get(VERSION_ID));
         setTopologyId((Long) map.get(TOPOLOGY_ID));
         setName((String) map.get(NAME));
         setDescription((String) map.get(DESCRIPTION));
@@ -195,16 +208,19 @@ public class BranchRuleInfo extends AbstractStorable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        BranchRuleInfo brRuleInfo = (BranchRuleInfo) o;
+        BranchRuleInfo that = (BranchRuleInfo) o;
 
-        if (id != null ? !id.equals(brRuleInfo.id) : brRuleInfo.id != null) return false;
-        return topologyId != null ? topologyId.equals(brRuleInfo.topologyId) : brRuleInfo.topologyId == null;
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+        if (topologyId != null ? !topologyId.equals(that.topologyId) : that.topologyId != null) return false;
+        return versionId != null ? versionId.equals(that.versionId) : that.versionId == null;
+
     }
 
     @Override
     public int hashCode() {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (topologyId != null ? topologyId.hashCode() : 0);
+        result = 31 * result + (versionId != null ? versionId.hashCode() : 0);
         return result;
     }
 
@@ -213,12 +229,13 @@ public class BranchRuleInfo extends AbstractStorable {
         return "BranchRuleInfo{" +
                 "id=" + id +
                 ", topologyId=" + topologyId +
+                ", versionId=" + versionId +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
-                ", stream=" + stream +
-                ", condition=" + condition +
+                ", stream='" + stream + '\'' +
+                ", condition='" + condition + '\'' +
                 ", parsedRuleStr='" + parsedRuleStr + '\'' +
                 ", actions=" + actions +
-                "}";
+                "} " + super.toString();
     }
 }

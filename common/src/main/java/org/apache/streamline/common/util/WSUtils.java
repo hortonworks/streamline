@@ -40,6 +40,8 @@ import java.util.List;
  * Utility methods for the webservice.
  */
 public class WSUtils {
+    public static final String CURRENT_VERSION = "CURRENT";
+
     private WSUtils() {
     }
 
@@ -79,6 +81,36 @@ public class WSUtils {
         queryParams.add(new QueryParam("topologyId", topologyId.toString()));
         addQueryParams(uriInfo, queryParams);
         return queryParams;
+    }
+
+    public static List<QueryParam> buildTopologyIdAndVersionIdAwareQueryParams(Long topologyId,
+                                                                             Long versionId,
+                                                                             UriInfo uriInfo) {
+        List<QueryParam> queryParams = new ArrayList<>();
+        queryParams.add(new QueryParam("topologyId", topologyId.toString()));
+        queryParams.add(new QueryParam("versionId", versionId.toString()));
+        addQueryParams(uriInfo, queryParams);
+        return queryParams;
+    }
+
+    public static List<QueryParam> currentTopologyVersionQueryParam(Long topologyId, UriInfo uriInfo) {
+        List<QueryParam> params = buildTopologyIdAwareQueryParams(topologyId, uriInfo);
+        params.addAll(currentVersionQueryParam());
+        return params;
+    }
+
+    public static List<QueryParam> currentVersionQueryParam() {
+        return Collections.singletonList(new QueryParam("name", CURRENT_VERSION));
+    }
+
+    public static List<QueryParam> topologyVersionsQueryParam(Long topologyId) {
+        List<QueryParam> params = buildTopologyIdAwareQueryParams(topologyId, null);
+        params.addAll(currentVersionQueryParam());
+        return params;
+    }
+
+    public static List<QueryParam> versionIdQueryParam(Long version) {
+        return Collections.singletonList(new QueryParam("versionId", version.toString()));
     }
 
     /**
