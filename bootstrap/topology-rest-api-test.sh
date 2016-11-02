@@ -8,34 +8,12 @@ function getId {
   echo $str | grep -o -E "\"id\":\d+" | head -n1 | cut -d : -f2
 }
 
-# --
-# Upload parser
-# --
 
 host=${1:-"localhost"}
 port=${2:-"8080"}
 catalogurl="http://$host:$port/api/v1/catalog"
 
 echo "Catalog url: $catalogurl"
-
-echo -e "\n------"
-curl -X POST -i -F parserJar=@parsers/target/parsers-0.1.0-SNAPSHOT.jar -F'schemaFromParserJar=true' -F parserInfo='{"name":"Nest","className":"org.apache.streamline.registries.parser.nest.NestParser","version":1}' ${catalogurl}/parsers
-
-# --
-# Create a device 
-# --
-echo -e "\n------"
-curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
-"type":"DEVICE",
-"dataSourceName":"test",
-"description":"test",
-"tags": "device",
-"dataFeedName":"feed1",
-"parserId":"1",
-"dataFeedType":"KAFKA",
-"typeConfig":"{\"make\":\"nest\",\"model\":\"m-1\"}",
-"parserName":"nest"
-}' "${catalogurl}/datasources"
 
 # --
 # Create a topology
@@ -186,26 +164,6 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
 
 echo $out
 eventhubid=$(getId $out)
-
-# --
-# Create parser processor
-# --
-echo -e "\n------"
-out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
-    "name": "ParserProcessor",
-    "config": {
-        "properties": {
-            "parallelism": 1,
-            "parsedTuplesStream": "parsedTuplesStream",
-            "failedTuplesStream": "failedTuplesStream"
-        }
-    },
-    "type": "PARSER",
-    "outputStreamIds": ['$parserStream']
-}' "${catalogurl}/topologies/$topologyid/processors")
-
-echo $out
-parserid=$(getId $out)
 
 # --
 # Create a rule
@@ -393,6 +351,10 @@ echo $out
 windowedruleprocessorid=$(getId $out)
 
 # --
+# Get the notifier details for email notifier
+# --
+notifierJar=$(curl -s "${catalogurl}/notifiers?name=email_notifier" | grep -oE 'jarFileName\":"\S+?\"'|cut -d \" -f 3)
+# --
 # Create notification sink
 # --
 echo -e "\n------"
@@ -402,7 +364,7 @@ out=$(curl -s  -X POST -H "Content-Type: application/json" -H "Cache-Control: no
         "config": {
             "properties" : {
           "notifierName": "email_notifier",
-          "jarFileName": "notifiers.jar",
+          "jarFileName": "'$notifierJar'",
           "className": "org.apache.streamline.streams.notifiers.EmailNotifier",
           "properties": {
             "username": "hwemailtest@gmail.com",
@@ -504,56 +466,6 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
 echo $out
 bulkNormProcId=$(getId $out)
 
-
-# --
-# Kafka -> Parser
-# --
-echo -e "\n------"
-curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
-    "fromId": '$sourceid',
-    "toId": '$parserid',
-    "streamGroupings": [{"streamId": '$streamid1', "grouping": "SHUFFLE"}]
-}' "${catalogurl}/topologies/$topologyid/edges"
-
-# --
-# Parser -> Bulk Normalization processor
-# --
-echo -e "\n------ Parser -> Bulk Normalization processor"
-curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
-    "fromId": '$parserid',
-    "toId": '$bulkNormProcId',
-    "streamGroupings": [{"streamId": '$parserStream', "grouping": "SHUFFLE"}]
-}' "${catalogurl}/topologies/$topologyid/edges"
-
-# --
-# Parser -> Finegrained Normalization processor
-# --
-echo -e "\n------ Parser -> Finegrained Normalization processor"
-curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
-    "fromId": '$parserid',
-    "toId": '$fgNormProcId',
-    "streamGroupings": [{"streamId": '$parserStream', "grouping": "SHUFFLE"}]
-}' "${catalogurl}/topologies/$topologyid/edges"
-
-# --
-# Parser -> Rule processor
-# --
-echo -e "\n------"
-curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
-    "fromId": '$parserid',
-    "toId": '$ruleprocessorid',
-    "streamGroupings": [{"streamId": '$parserStream', "grouping": "SHUFFLE"}]
-}' "${catalogurl}/topologies/$topologyid/edges"
-
-# --
-# Parser -> Window processor
-# --
-echo -e "\n------"
-curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
-    "fromId": '$parserid',
-    "toId": '$windowedruleprocessorid',
-    "streamGroupings": [{"streamId": '$parserStream', "grouping": "SHUFFLE"}]
-}' "${catalogurl}/topologies/$topologyid/edges"
 
 # --
 # Rule processor -> Notification

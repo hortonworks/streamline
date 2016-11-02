@@ -84,6 +84,7 @@ CREATE TABLE IF NOT EXISTS streaminfo (
 CREATE TABLE IF NOT EXISTS notifierinfos (
      id BIGINT AUTO_INCREMENT NOT NULL,
      name VARCHAR(256) NOT NULL,
+     description VARCHAR(256) NOT NULL,
      jarFileName TEXT NOT NULL,
      className TEXT NOT NULL,
      timestamp  BIGINT,

@@ -133,7 +133,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         List<Object> result = new ArrayList<>();
         Boolean isNotificationsRestDisabled = (Boolean) config.get(org.apache.streamline.streams.common.Constants.CONFIG_NOTIFICATIONS_REST_FLAG);
         if (isNotificationsRestDisabled == null || !isNotificationsRestDisabled) {
-            result.add(new NotifierInfoCatalogResource(streamcatalogService));
+            result.add(new NotifierInfoCatalogResource(streamcatalogService, fileStorage));
             result.add(new NotificationsResource(new NotificationServiceImpl()));
         }
         return result;

@@ -21,8 +21,8 @@ package org.apache.streamline.streams.runtime.storm.bolt.notification;
 import org.apache.streamline.common.util.ProxyUtil;
 import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.catalog.CatalogRestClient;
-import org.apache.streamline.streams.catalog.NotifierInfo;
 import org.apache.streamline.streams.common.StreamlineEventImpl;
+import org.apache.streamline.streams.layout.component.impl.NotificationSink;
 import org.apache.streamline.streams.notification.Notification;
 import org.apache.streamline.streams.notification.NotificationContext;
 import org.apache.streamline.streams.notification.Notifier;
@@ -70,9 +70,6 @@ public class NotificationBoltTest {
     private OutputCollector collector;
 
     @Mocked
-    private NotifierInfo notifierInfo;
-
-    @Mocked
     ProxyUtil<Notifier> mockProxyUtil;
 
     @Mocked
@@ -85,7 +82,33 @@ public class NotificationBoltTest {
 
     @Before
     public void setUp() throws Exception {
-        bolt = new NotificationBolt(NOTIFIER_NAME);
+        bolt = new NotificationBolt(new NotificationSink() {
+            @Override
+            public String getNotifierName() {
+                return NOTIFIER_NAME;
+            }
+
+            @Override
+            public String getNotifierJarFileName() {
+                return NOTIFIER_NAME + ".jar";
+            }
+
+            @Override
+            public String getNotifierClassName() {
+                return "TestClass";
+            }
+
+            @Override
+            public Map<String, Object> getNotifierProperties() {
+                return new HashMap<>();
+            }
+
+            @Override
+            public Map<String, Object> getNotifierFieldValues() {
+                return new HashMap<>();
+            }
+        });
+
         notifier = new Notifier() {
             private NotificationContext myCtx;
 
@@ -144,7 +167,33 @@ public class NotificationBoltTest {
         fieldsAndValues.put("foo", "100");
         fieldsAndValues.put("bar", "200");
         final StreamlineEvent event = new StreamlineEventImpl(fieldsAndValues, "srcid");
-        NotificationBolt consoleNotificationBolt = new NotificationBolt("console_notifier");
+        NotificationBolt consoleNotificationBolt = new NotificationBolt(new NotificationSink() {
+            @Override
+            public String getNotifierName() {
+                return "console_notifier";
+            }
+
+            @Override
+            public String getNotifierJarFileName() {
+                return "console_notifier.jar";
+            }
+
+            @Override
+            public String getNotifierClassName() {
+                return "ConsoleNotifier";
+            }
+
+            @Override
+            public Map<String, Object> getNotifierProperties() {
+                return new HashMap<>();
+            }
+
+            @Override
+            public Map<String, Object> getNotifierFieldValues() {
+                return new HashMap<>();
+            }
+        });
+
         final ConsoleNotifier consoleNotifier = new ConsoleNotifier();
         final Notification notification = new StreamlineEventAdapter(event);
         new MockUp<NotificationQueueHandler>() {
@@ -155,16 +204,6 @@ public class NotificationBoltTest {
             }
         };
         new Expectations() {{
-            catalogRestClient.getNotifierInfo(anyString);
-            result = notifierInfo;
-            notifierInfo.getJarFileName();
-            result = "console_notifier.jar";
-            notifierInfo.getClassName();
-            result = "ConsoleNotifier";
-            notifierInfo.getProperties();
-            result = NOTIFIER_PROPS;
-            notifierInfo.getFieldValues();
-            result = NOTIFIER_KV;
             mockProxyUtil.loadClassFromJar("/tmp/console_notifier.jar", "ConsoleNotifier");
             result = consoleNotifier;
             tuple.getValueByField(anyString);
@@ -178,8 +217,6 @@ public class NotificationBoltTest {
         consoleNotificationBolt.execute(tuple);
         new Verifications() {
             {
-                catalogRestClient.getNotifierInfo("console_notifier");
-                times = 1;
                 collector.ack(tuple);
                 times = 1;
                 hBaseNotificationStore.store(notification);
@@ -202,16 +239,6 @@ public class NotificationBoltTest {
             }
         };
         new Expectations() {{
-            catalogRestClient.getNotifierInfo(anyString);
-            result = notifierInfo;
-            notifierInfo.getJarFileName();
-            result = NOTIFIER_NAME + ".jar";
-            notifierInfo.getClassName();
-            result = "TestClass";
-            notifierInfo.getProperties();
-            result = NOTIFIER_PROPS;
-            notifierInfo.getFieldValues();
-            result = NOTIFIER_KV;
             mockProxyUtil.loadClassFromJar(anyString, "TestClass");
             result = notifier;
             tuple.getValueByField(anyString);
@@ -226,8 +253,6 @@ public class NotificationBoltTest {
         bolt.execute(tuple);
         new Verifications() {
             {
-                catalogRestClient.getNotifierInfo(NOTIFIER_NAME);
-                times = 1;
                 hBaseNotificationStore.store(notification);
                 times = 1;
                 hBaseNotificationStore.updateNotificationStatus(notification.getId(), Notification.Status.DELIVERED);
@@ -260,16 +285,6 @@ public class NotificationBoltTest {
         };
 
         new Expectations() {{
-            catalogRestClient.getNotifierInfo(anyString);
-            result = notifierInfo;
-            notifierInfo.getJarFileName();
-            result = NOTIFIER_NAME;
-            notifierInfo.getClassName();
-            result = "TestClass";
-            notifierInfo.getProperties();
-            result = NOTIFIER_PROPS;
-            notifierInfo.getFieldValues();
-            result = NOTIFIER_KV;
             mockProxyUtil.loadClassFromJar(anyString, "TestClass");
             result = notifier;
             tuple.getValueByField(anyString);
@@ -285,8 +300,6 @@ public class NotificationBoltTest {
 
         new Verifications() {
             {
-                catalogRestClient.getNotifierInfo(NOTIFIER_NAME);
-                times = 1;
                 hBaseNotificationStore.store(notification);
                 times = 1;
                 hBaseNotificationStore.updateNotificationStatus(notification.getId(), Notification.Status.FAILED);

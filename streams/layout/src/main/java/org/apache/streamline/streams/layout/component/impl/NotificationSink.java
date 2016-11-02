@@ -3,7 +3,9 @@ package org.apache.streamline.streams.layout.component.impl;
 import org.apache.streamline.streams.layout.component.StreamlineSink;
 import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 public class NotificationSink extends StreamlineSink {
     private static final String CONFIG_KEY_NAME = "notifierName";
@@ -30,6 +32,11 @@ public class NotificationSink extends StreamlineSink {
 
     public Map<String, Object> getNotifierFieldValues() {
         return getConfig().getAny(CONFIG_KEY_FIELD_VALUES);
+    }
+
+    @Override
+    public Set<String> getExtraJars() {
+        return Collections.singleton(getNotifierJarFileName());
     }
 
     @Override

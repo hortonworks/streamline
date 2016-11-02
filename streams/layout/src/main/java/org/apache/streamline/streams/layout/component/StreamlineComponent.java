@@ -19,6 +19,9 @@ package org.apache.streamline.streams.layout.component;
 
 import org.apache.streamline.common.Config;
 
+import java.util.Collections;
+import java.util.Set;
+
 /**
  * Any Streamline design time topology component (source, sink, processor etc)
  * inherits from {@link StreamlineComponent} to provide
@@ -73,6 +76,16 @@ public abstract class StreamlineComponent implements Component {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    /**
+     * Subclasses can override to return any extra jars they
+     * want to be shipped with the topology.
+     *
+     * @return the set of extra jars.
+     */
+    public Set<String> getExtraJars() {
+        return Collections.emptySet();
     }
 
     @Override

@@ -84,7 +84,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public Notifier register(String notifierName, NotificationContext ctx) {
-        // FIXME: change a way to load jar / class and modify NotificationServiceImplTest as relevant
+
         LOG.info("Registering notifier name {}, NotificationContext {}", notifierName, ctx);
         Notifier notifier = loadNotifier(ctx.getConfig().getJarPath(), ctx.getConfig().getClassName());
         Notifier registeredNotifier = notifiers.putIfAbsent(notifierName, notifier);
