@@ -23,7 +23,7 @@ package org.apache.streamline.streams.notification.service;
  */
 
 import com.codahale.metrics.annotation.Timed;
-import org.apache.streamline.common.QueryParam;
+import org.apache.registries.common.QueryParam;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.notification.Notification;

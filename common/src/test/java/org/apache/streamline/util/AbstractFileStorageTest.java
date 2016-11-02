@@ -19,7 +19,7 @@
 package org.apache.streamline.util;
 
 import com.google.common.collect.Lists;
-import org.apache.streamline.common.util.FileStorage;
+import org.apache.registries.common.util.FileStorage;
 import org.junit.Assert;
 import org.junit.Test;
 

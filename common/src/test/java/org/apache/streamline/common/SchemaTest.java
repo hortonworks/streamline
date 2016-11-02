@@ -18,25 +18,24 @@
 
 package org.apache.streamline.common;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.registries.common.Schema;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.apache.streamline.common.Schema.Type;
+import static org.apache.registries.common.Schema.Type;
 import static org.junit.Assert.assertEquals;
 
 public class SchemaTest {
     @Test
     public void testGetTypeOfValue() {
         final List<String> queryValues = Lists.newArrayList(Boolean.TRUE.toString(), Byte.toString(Byte.MAX_VALUE), Short.toString(Short.MAX_VALUE),
-                Integer.toString(Integer.MAX_VALUE), Long.toString(Long.MAX_VALUE), Float.toString(Float.MAX_VALUE), Double.toString(Double.MAX_VALUE), "SOME_STRING");
+                                                            Integer.toString(Integer.MAX_VALUE), Long.toString(Long.MAX_VALUE), Float.toString(Float.MAX_VALUE), Double.toString(Double.MAX_VALUE), "SOME_STRING");
 
         final List<Type> expectedTypes = Lists.newArrayList(Type.BOOLEAN, Type.BYTE, Type.SHORT, Type.INTEGER, Type.LONG, Type.FLOAT, Type.DOUBLE, Type.STRING);
 
@@ -53,6 +52,7 @@ public class SchemaTest {
             Collections.shuffle(indexes);
         }
     }
+
     @Test
     public void testSchemaFromJson() throws Exception {
         String json = "{\"fields\":[{\"name\":\"field1\", \"type\":\"STRING\"},{\"name\":\"field2\", \"type\":\"STRING\"}]}";
@@ -63,6 +63,7 @@ public class SchemaTest {
     }
 
     @Test
+//    @Ignore
     public void testSerializeNestedSchema() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         Schema nested = new Schema();

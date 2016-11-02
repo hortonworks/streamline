@@ -18,12 +18,12 @@
  */
 package org.apache.streamline.streams.catalog.service;
 
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.common.util.FileStorage;
+import org.apache.registries.common.QueryParam;
+import org.apache.registries.common.util.FileStorage;
 import org.apache.registries.tag.client.TagClient;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorableKey;
-import org.apache.streamline.storage.StorageManager;
+import org.apache.registries.storage.Storable;
+import org.apache.registries.storage.StorableKey;
+import org.apache.registries.storage.StorageManager;
 import org.apache.streamline.streams.catalog.FileInfo;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;

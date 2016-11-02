@@ -17,7 +17,7 @@
  */
 package org.apache.streamline.streams.layout.component.impl.normalization;
 
-import org.apache.streamline.common.Schema;
+import org.apache.registries.common.Schema;
 import org.apache.streamline.streams.layout.component.StreamlineProcessor;
 import org.apache.streamline.streams.layout.component.Stream;
 import org.apache.streamline.streams.layout.component.TopologyDagVisitor;

@@ -5,7 +5,7 @@ package org.apache.streamline.streams.layout.component.impl.normalization;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.apache.streamline.common.Config;
-import org.apache.streamline.common.Schema;
+import org.apache.registries.common.Schema;
 
 /**
  * Base class for normalization processor configuration.

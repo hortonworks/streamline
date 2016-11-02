@@ -19,7 +19,7 @@
 package org.apache.streamline.streams.layout.component.rule.sql;
 
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.apache.streamline.common.Schema;
+import org.apache.registries.common.Schema;
 import org.apache.streamline.streams.layout.component.Stream;
 import org.apache.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression;
 import org.apache.streamline.streams.layout.component.rule.expression.ArrayFieldExpression;

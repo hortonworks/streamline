@@ -18,8 +18,8 @@
  */
 package org.apache.streamline.streams.catalog.rule;
 
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.common.Schema;
+import org.apache.registries.common.QueryParam;
+import org.apache.registries.common.Schema;
 import org.apache.streamline.streams.catalog.RuleInfo;
 import org.apache.streamline.streams.catalog.StreamInfo;
 import org.apache.streamline.streams.catalog.UDFInfo;

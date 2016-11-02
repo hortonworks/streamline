@@ -18,15 +18,15 @@
 
 package org.apache.streamline.streams.catalog.storage;
 
+import org.apache.registries.storage.impl.jdbc.mysql.AbstractMySqlStorageManagerWithCacheIntegrationTest;
 import org.apache.streamline.common.test.IntegrationTest;
-import org.apache.streamline.storage.impl.jdbc.JdbcStorageManager;
-import org.apache.streamline.storage.impl.jdbc.mysql.MySqlStorageManagerWithCacheIntegrationTest;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
+import org.apache.registries.storage.impl.jdbc.JdbcStorageManager;
+import org.apache.registries.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.junit.experimental.categories.Category;
 
 @Category(IntegrationTest.class)
-public class StreamsMySqlStorageManagerWithCacheIntegrationTest extends MySqlStorageManagerWithCacheIntegrationTest {
+public class StreamsMySqlStorageManagerWithCacheIntegrationTest extends AbstractMySqlStorageManagerWithCacheIntegrationTest {
 
     @Override
     protected void setStorableTests() {

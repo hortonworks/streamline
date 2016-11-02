@@ -26,7 +26,7 @@ import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import org.apache.commons.io.IOUtils;
 import org.apache.registries.tag.dto.TagDto;
-import org.apache.streamline.common.Schema;
+import org.apache.registries.common.Schema;
 import org.apache.streamline.common.catalog.CatalogResponse;
 import org.apache.streamline.common.test.IntegrationTest;
 import org.apache.streamline.streams.catalog.Cluster;
@@ -197,8 +197,6 @@ public class RestIntegrationTest {
      */
     private Collection<ResourceTestElement> resourcesToTest = Lists.newArrayList(
             new ResourceTestElement(createTag(1L, "foo-tag"), createTag(1L, "foo-tag-new"), "1", rootUrl + "tags"),
-            // TODO: The below test case needs to be fixed since it should first create the data source and then add the corresponding datafeed
-            //new ResourceTestElement(createDataFeed(1l, "testDataFeed"), createDataFeed(1l, "testDataFeedPut"), "1", rootUrl + "feeds"),
             clusterResourceToTest, serviceResourceToTest, componentResourceToTest,
             new ResourceTestElement(createNotifierInfo(1l, "testNotifier"), createNotifierInfo(1l, "testNotifierPut"), "1", rootUrl + "notifiers"),
             new ResourceTestElement(createTopology(1l, "iotasTopology"), createTopology(1l, "iotasTopologyPut"), "1", rootUrl + "topologies"),

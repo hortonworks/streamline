@@ -1,11 +1,11 @@
 package org.apache.streamline.streams.catalog.storage;
 
 import org.apache.streamline.common.test.HBaseIntegrationTest;
-import org.apache.streamline.storage.impl.jdbc.JdbcStorageManager;
-import org.apache.streamline.storage.impl.jdbc.config.ExecutionConfig;
-import org.apache.streamline.storage.impl.jdbc.phoenix.PhoenixStorageManagerNoCacheIntegrationTest;
-import org.apache.streamline.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
+import org.apache.registries.storage.impl.jdbc.JdbcStorageManager;
+import org.apache.registries.storage.impl.jdbc.config.ExecutionConfig;
+import org.apache.registries.storage.impl.jdbc.phoenix.PhoenixStorageManagerNoCacheIntegrationTest;
+import org.apache.registries.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
+import org.apache.registries.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
 import org.apache.streamline.streams.catalog.Topology;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.catalog.topology.TopologyComponentDefinition;

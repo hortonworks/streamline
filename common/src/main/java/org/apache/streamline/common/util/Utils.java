@@ -1,7 +1,7 @@
 package org.apache.streamline.common.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.streamline.common.Schema;
+import org.apache.registries.common.Schema;
 
 import java.io.IOException;
 import java.util.Map;

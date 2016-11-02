@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.Map;
 
 public class StorageProviderConfigurationReader {
-  public static final String JDBC_STORAGE_MANAGER_CLASS = "org.apache.streamline.storage.impl.jdbc.JdbcStorageManager";
+  public static final String JDBC_STORAGE_MANAGER_CLASS = "org.apache.registries.storage.impl.jdbc.JdbcStorageManager";
   public static final String STORAGE_PROVIDER_CONFIGURATION = "storageProviderConfiguration";
   public static final String PROPERTIES = "properties";
   public static final String PROVIDER_CLASS = "providerClass";
@@ -78,7 +78,7 @@ public class StorageProviderConfigurationReader {
 
   /**
    * storageProviderConfiguration:
-   *   providerClass: "org.apache.streamline.storage.impl.jdbc.JdbcStorageManager"
+   *   providerClass: "org.apache.registries.storage.impl.jdbc.JdbcStorageManager"
    *   properties:
    *     db.type: "mysql"
    *     queryTimeoutInSecs: 30
@@ -95,7 +95,7 @@ public class StorageProviderConfigurationReader {
 
   /**
    * storageProviderConfiguration:
-   *   providerClass: "org.apache.streamline.storage.impl.jdbc.JdbcStorageManager"
+   *   providerClass: "org.apache.registries.storage.impl.jdbc.JdbcStorageManager"
    *   properties:
    *     db.type: "phoenix"
    *     queryTimeoutInSecs: 30

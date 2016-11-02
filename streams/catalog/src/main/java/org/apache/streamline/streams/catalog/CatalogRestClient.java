@@ -20,7 +20,7 @@ package org.apache.streamline.streams.catalog;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.streamline.storage.Storable;
+import org.apache.registries.storage.Storable;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 

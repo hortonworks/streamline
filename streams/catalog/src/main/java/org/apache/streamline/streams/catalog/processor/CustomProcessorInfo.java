@@ -2,7 +2,7 @@ package org.apache.streamline.streams.catalog.processor;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.streamline.common.Schema;
+import org.apache.registries.common.Schema;
 import org.apache.streamline.common.util.Utils;
 import org.apache.streamline.streams.catalog.topology.ConfigField;
 import org.apache.streamline.streams.catalog.topology.TopologyComponentDefinition;

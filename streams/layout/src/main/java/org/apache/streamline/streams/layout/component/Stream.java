@@ -17,7 +17,7 @@
  */
 package org.apache.streamline.streams.layout.component;
 
-import org.apache.streamline.common.Schema;
+import org.apache.registries.common.Schema;
 
 import java.io.Serializable;
 import java.util.ArrayList;

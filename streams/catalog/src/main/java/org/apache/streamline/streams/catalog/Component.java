@@ -1,9 +1,9 @@
 package org.apache.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.storage.PrimaryKey;
-import org.apache.streamline.storage.catalog.AbstractStorable;
+import org.apache.registries.common.Schema;
+import org.apache.registries.storage.PrimaryKey;
+import org.apache.registries.storage.catalog.AbstractStorable;
 
 import java.util.HashMap;
 import java.util.List;

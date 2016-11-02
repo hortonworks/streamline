@@ -50,7 +50,7 @@
             <artifactId>jmockit</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.streamline</groupId>
+            <groupId>org.apache.registries</groupId>
             <artifactId>storage-core</artifactId>
         </dependency>
         <dependency>

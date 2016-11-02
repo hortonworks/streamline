@@ -1,6 +1,6 @@
 package org.apache.streamline.streams.service;
 
-import org.apache.streamline.common.QueryParam;
+import org.apache.registries.common.QueryParam;
 import org.apache.streamline.common.catalog.CatalogResponse;
 import org.apache.streamline.streams.catalog.NotifierInfo;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;

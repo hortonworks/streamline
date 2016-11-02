@@ -19,8 +19,8 @@
 package org.apache.streamline.streams.runtime.storm.layout.runtime.rule.topology;
 
 import com.google.common.collect.ImmutableList;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.common.Schema.Field;
+import org.apache.registries.common.Schema;
+import org.apache.registries.common.Schema.Field;
 import org.apache.streamline.streams.layout.component.ComponentBuilder;
 import org.apache.streamline.streams.layout.component.StreamlineSink;
 import org.apache.streamline.streams.layout.component.Sink;

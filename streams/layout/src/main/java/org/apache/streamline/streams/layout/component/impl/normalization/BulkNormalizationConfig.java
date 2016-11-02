@@ -18,11 +18,11 @@
  */
 package org.apache.streamline.streams.layout.component.impl.normalization;
 
-import org.apache.streamline.common.Schema;
+import org.apache.registries.common.Schema;
 
 /**
- * It represents normalization configuration which uses bulk script to normalize payload from input {@link org.apache.streamline.common.Schema}
- * to output {@link org.apache.streamline.common.Schema}.
+ * It represents normalization configuration which uses bulk script to normalize payload from input {@link org.apache.registries.common.Schema}
+ * to output {@link org.apache.registries.common.Schema}.
  *
  */
 public class BulkNormalizationConfig extends NormalizationConfig {

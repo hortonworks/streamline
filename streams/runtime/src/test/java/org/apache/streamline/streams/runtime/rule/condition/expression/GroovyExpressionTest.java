@@ -1,6 +1,6 @@
 package org.apache.streamline.streams.runtime.rule.condition.expression;
 
-import org.apache.streamline.common.Schema;
+import org.apache.registries.common.Schema;
 import org.apache.streamline.streams.layout.component.rule.expression.ArrayFieldExpression;
 import org.apache.streamline.streams.layout.component.rule.expression.BinaryExpression;
 import org.apache.streamline.streams.layout.component.rule.expression.Condition;

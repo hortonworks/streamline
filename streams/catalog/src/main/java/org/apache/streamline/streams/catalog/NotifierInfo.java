@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.storage.PrimaryKey;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.catalog.AbstractStorable;
+import org.apache.registries.common.Schema;
+import org.apache.registries.storage.PrimaryKey;
+import org.apache.registries.storage.Storable;
+import org.apache.registries.storage.catalog.AbstractStorable;
 
 import java.io.IOException;
 import java.util.ArrayList;

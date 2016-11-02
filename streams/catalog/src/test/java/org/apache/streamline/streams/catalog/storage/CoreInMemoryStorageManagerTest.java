@@ -17,9 +17,9 @@
  */
 package org.apache.streamline.streams.catalog.storage;
 
-import org.apache.streamline.storage.impl.memory.InMemoryStorageManagerTest;
+import org.apache.registries.storage.impl.memory.AbstractInMemoryStorageManagerTest;
 
-public class CoreInMemoryStorageManagerTest extends InMemoryStorageManagerTest {
+public class CoreInMemoryStorageManagerTest extends AbstractInMemoryStorageManagerTest {
 
     @Override
     protected void setStorableTests() {

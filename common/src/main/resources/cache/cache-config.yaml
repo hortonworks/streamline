@@ -7,7 +7,7 @@ caches:
       entry:
         key: "java.lang.String"
         val: "java.lang.Integer"
-        codec: "org.apache.streamline.cache.entries.MyCodec"
+        codec: "org.apache.registries.cache.entries.MyCodec"
       connection:
         host: "localhost"
         port: "6379"

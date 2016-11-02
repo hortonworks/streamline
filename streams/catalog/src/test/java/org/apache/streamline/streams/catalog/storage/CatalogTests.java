@@ -1,7 +1,7 @@
 package org.apache.streamline.streams.catalog.storage;
 
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorableTest;
+import org.apache.registries.storage.Storable;
+import org.apache.registries.storage.StorableTest;
 import org.apache.streamline.streams.catalog.FileInfo;
 
 import java.util.ArrayList;

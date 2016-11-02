@@ -1,15 +1,15 @@
 package org.apache.streamline.streams.service;
 
+import org.apache.registries.common.util.FileStorage;
 import org.apache.streamline.common.Constants;
 import org.apache.streamline.common.FileEventHandler;
 import org.apache.streamline.common.FileWatcher;
-import org.apache.streamline.common.ModuleRegistration;
+import org.apache.registries.common.ModuleRegistration;
 import org.apache.streamline.common.TimeSeriesDBConfiguration;
-import org.apache.streamline.common.util.FileStorage;
 import org.apache.streamline.common.util.ReflectionHelper;
 import org.apache.registries.tag.client.TagClient;
-import org.apache.streamline.storage.StorageManager;
-import org.apache.streamline.storage.StorageManagerAware;
+import org.apache.registries.storage.StorageManager;
+import org.apache.registries.storage.StorageManagerAware;
 import org.apache.streamline.streams.catalog.service.CatalogService;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.exception.ConfigException;

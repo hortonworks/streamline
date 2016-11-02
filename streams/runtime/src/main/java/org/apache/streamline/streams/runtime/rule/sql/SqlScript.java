@@ -20,7 +20,7 @@ package org.apache.streamline.streams.runtime.rule.sql;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
-import org.apache.streamline.common.Schema;
+import org.apache.registries.common.Schema;
 import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.layout.component.rule.exception.ConditionEvaluationException;

@@ -53,6 +53,9 @@
         <storm.version>1.1.0-SNAPSHOT</storm.version>
         <woodstox-core-asl.version>4.4.1</woodstox-core-asl.version>
         <tag-registry.version>0.1.0-SNAPSHOT</tag-registry.version>
+        <storage.version>0.1.0-SNAPSHOT</storage.version>
+        <cache.version>0.1.0-SNAPSHOT</cache.version>
+
         <!-- Provided Scope Dependencies -->
         <aws-java-sdk.version>1.10.77</aws-java-sdk.version>
 
@@ -591,9 +594,9 @@
 
             <!-- Project Artifact Dependencies -->
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>org.apache.registries</groupId>
                 <artifactId>cache</artifactId>
-                <version>${project.version}</version>
+                <version>${cache.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.streamline</groupId>
@@ -644,14 +647,14 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>org.apache.registries</groupId>
                 <artifactId>storage</artifactId>
-                <version>${project.version}</version>
+                <version>${storage.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>org.apache.registries</groupId>
                 <artifactId>storage-core</artifactId>
-                <version>${project.version}</version>
+                <version>${storage.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.streamline</groupId>

@@ -18,7 +18,7 @@
 
 package org.apache.streamline.streams.notification.service;
 
-import org.apache.streamline.common.QueryParam;
+import org.apache.registries.common.QueryParam;
 import org.apache.streamline.common.util.ProxyUtil;
 import org.apache.streamline.streams.notification.Notification;
 import org.apache.streamline.streams.notification.NotificationContext;

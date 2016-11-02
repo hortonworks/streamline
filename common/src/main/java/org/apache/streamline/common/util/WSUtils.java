@@ -19,7 +19,7 @@
 package org.apache.streamline.common.util;
 
 import com.google.common.io.ByteStreams;
-import org.apache.streamline.common.QueryParam;
+import org.apache.registries.common.QueryParam;
 import org.apache.streamline.common.catalog.CatalogResponse;
 
 import javax.ws.rs.WebApplicationException;

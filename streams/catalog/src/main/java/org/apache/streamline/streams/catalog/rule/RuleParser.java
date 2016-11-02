@@ -21,7 +21,7 @@ package org.apache.streamline.streams.catalog.rule;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
-import org.apache.streamline.common.QueryParam;
+import org.apache.registries.common.QueryParam;
 import org.apache.streamline.streams.catalog.RuleInfo;
 import org.apache.streamline.streams.catalog.StreamInfo;
 import org.apache.streamline.streams.catalog.UDFInfo;

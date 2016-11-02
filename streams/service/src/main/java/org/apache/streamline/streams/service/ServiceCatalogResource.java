@@ -1,9 +1,9 @@
 package org.apache.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
-import org.apache.streamline.common.QueryParam;
+import org.apache.registries.common.QueryParam;
 import org.apache.streamline.common.util.WSUtils;
-import org.apache.streamline.storage.exception.AlreadyExistsException;
+import org.apache.registries.storage.exception.AlreadyExistsException;
 import org.apache.streamline.streams.catalog.Cluster;
 import org.apache.streamline.streams.catalog.Service;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
