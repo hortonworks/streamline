@@ -1,8 +1,6 @@
 modules:
-  - name: parser-registry
-    className: org.apache.streamline.registries.parser.service.ParserRegistryModule
   - name: tag-registry
-    className: org.apache.streamline.registries.tag.service.TagRegistryModule
+    className: org.apache.registries.tag.service.TagRegistryModule
   - name: streams
     className: org.apache.streamline.streams.service.StreamsModule
     config:

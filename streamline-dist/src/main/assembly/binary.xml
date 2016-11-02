@@ -47,13 +47,6 @@
             <fileMode>0755</fileMode>
         </fileSet>
         <fileSet>
-            <directory>${project.basedir}./registries/parser-registry/target</directory>
-            <outputDirectory>/examples/topology/parsers</outputDirectory>
-            <includes>
-                <include>parser*jar</include>
-            </includes>
-        </fileSet>
-        <fileSet>
             <directory>${project.basedir}./notifiers/target</directory>
             <outputDirectory>/examples/topology/notifications</outputDirectory>
             <includes>

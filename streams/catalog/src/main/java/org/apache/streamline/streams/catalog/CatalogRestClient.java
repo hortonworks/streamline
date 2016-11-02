@@ -20,8 +20,6 @@ package org.apache.streamline.streams.catalog;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.streamline.registries.parser.ParserInfo;
-import org.apache.streamline.registries.parser.client.ParserClient;
 import org.apache.streamline.storage.Storable;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
@@ -47,7 +45,6 @@ public class CatalogRestClient {
     private static final String FILE_DOWNLOAD_URL = "files/download/";
 
     private final String rootCatalogURL;
-    private final ParserClient parserClient;
 
     //TODO: timeouts should come from a config so probably make them constructor args.
     public CatalogRestClient(String rootCatalogURL) {
@@ -58,7 +55,6 @@ public class CatalogRestClient {
         this.rootCatalogURL = rootCatalogURL;
         client = ClientBuilder.newClient(clientConfig);
         client.register(MultiPartFeature.class);
-        parserClient = new ParserClient(rootCatalogURL);
     }
 
     private <T> List<T> getEntities(WebTarget target, Class<T> clazz) {
@@ -89,10 +85,6 @@ public class CatalogRestClient {
         }
     }
 
-    public ParserInfo getParserInfo(Long parserId) {
-        return parserClient.getParserInfo(parserId);
-    }
-
     public NotifierInfo getNotifierInfo(String notifierName) {
         return getEntities(client.target(String.format("%s/%s/?name=%s", rootCatalogURL, NOTIFIER_URL, notifierName)),
                             NotifierInfo.class).get(0);
@@ -106,10 +98,6 @@ public class CatalogRestClient {
 
     public InputStream getCustomProcessorJar (String jarFileName) {
         return getInputStream(jarFileName, CUSTOM_PROCESSOR_JAR_DOWNLOAD_URL);
-    }
-
-    public InputStream getParserJar(Long parserId) {
-        return parserClient.getParserJar(parserId);
     }
 
     public InputStream getFile(Long jarId) {
