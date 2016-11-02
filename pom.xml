@@ -11,7 +11,6 @@
 
     <modules>
         <module>common</module>
-        <module>cache</module>
         <module>storage</module>
         <module>simulator</module>
         <module>webservice</module>
