@@ -1,4 +1,5 @@
 ## 0.1.4
+ * STREAMLINE-485: Changes in UI due to recent changes in UDF type info
  * STREAMLINE-489: Maven POM Files Project Wide Refactoring
  * STREAMLINE-488: Fix NormalizationProcessor errors while deploying topology
  * STREAMLINE-487: Respond without metrics when topology API is called with metrics but storm API endpoint is down
