@@ -13,7 +13,6 @@
 
     <packaging>pom</packaging>
     <modules>
-        <module>core</module>
         <module>tool</module>
     </modules>
 
