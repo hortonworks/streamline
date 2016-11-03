@@ -19,11 +19,13 @@
 package org.apache.streamline.streams.runtime.storm.bolt.rules;
 
 import org.apache.streamline.common.Constants;
+import org.apache.streamline.common.util.Utils;
 import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
 import org.apache.streamline.streams.common.StreamlineEventImpl;
+import org.apache.streamline.streams.layout.component.Stream;
+import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
 import org.apache.streamline.streams.runtime.processor.RuleProcessorRuntime;
-import org.apache.streamline.streams.runtime.rule.RulesDependenciesFactory;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -43,19 +45,27 @@ public class RulesBolt extends BaseRichBolt {
     private static final Logger LOG = LoggerFactory.getLogger(RulesBolt.class);
 
     private RuleProcessorRuntime ruleProcessorRuntime;
-
-    private final RulesDependenciesFactory boltDependenciesFactory;
+    private final RulesProcessor rulesProcessor;
+    private final RuleProcessorRuntime.ScriptType scriptType;
 
     private OutputCollector collector;
 
-    public RulesBolt(RulesDependenciesFactory boltDependenciesFactory) {
-        this.boltDependenciesFactory = boltDependenciesFactory;
+    public RulesBolt(RulesProcessor rulesProcessor, RuleProcessorRuntime.ScriptType scriptType) {
+        this.rulesProcessor = rulesProcessor;
+        this.scriptType = scriptType;
+    }
+
+    public RulesBolt(String rulesProcessorJson, RuleProcessorRuntime.ScriptType scriptType) {
+        this(Utils.createObjectFromJson(rulesProcessorJson, RulesProcessor.class), scriptType);
     }
 
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
+        if (this.rulesProcessor == null) {
+            throw new RuntimeException("rulesProcessor cannot be null");
+        }
         this.collector = collector;
-        ruleProcessorRuntime = boltDependenciesFactory.createRuleProcessorRuntime();
+        ruleProcessorRuntime = new RuleProcessorRuntime(rulesProcessor, scriptType);
 
         Map<String, Object> config = Collections.emptyMap();
         if (stormConf != null) {
@@ -98,8 +108,11 @@ public class RulesBolt extends BaseRichBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        for (String stream : boltDependenciesFactory.createRuleProcessorRuntime().getStreams()) {
-            declarer.declareStream(stream, new Fields(StreamlineEvent.STREAMLINE_EVENT));
+        if (this.rulesProcessor == null) {
+            throw new RuntimeException("rulesProcessor cannot be null");
+        }
+        for (Stream stream : rulesProcessor.getOutputStreams()) {
+            declarer.declareStream(stream.getId(), new Fields(StreamlineEvent.STREAMLINE_EVENT));
         }
     }
 }

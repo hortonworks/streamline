@@ -2,6 +2,7 @@ package org.apache.streamline.streams.layout.component.rule.expression;
 
 import com.google.common.collect.ImmutableList;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -82,7 +83,7 @@ public class FunctionExpression extends Expression {
                 "}";
     }
 
-    public static class Function {
+    public static class Function implements Serializable {
         private String name;
         private String className;
         private boolean udf;

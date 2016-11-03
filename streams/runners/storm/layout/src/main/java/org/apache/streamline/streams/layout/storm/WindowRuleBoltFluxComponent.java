@@ -28,13 +28,20 @@ public class WindowRuleBoltFluxComponent extends RuleBoltFluxComponent {
     @Override
     protected void generateComponent() {
         rulesProcessor = (RulesProcessor) conf.get(StormTopologyLayoutConstants.STREAMLINE_COMPONENT_CONF_KEY);
-        String rulesBoltDependenciesFactory = addRulesBoltDependenciesFactory();
         String boltId = "windowruleBolt" + UUID_FOR_COMPONENTS;
         String boltClassName = "org.apache.streamline.streams.runtime.storm.bolt.rules.WindowRulesBolt";
         List boltConstructorArgs = new ArrayList();
-        Map ref = getRefYaml(rulesBoltDependenciesFactory);
-        boltConstructorArgs.add(ref);
-
+        ObjectMapper mapper = new ObjectMapper();
+        String rulesProcessorJson = null;
+        try {
+            rulesProcessorJson = mapper.writeValueAsString(rulesProcessor);
+        } catch (JsonProcessingException e) {
+            log.error("Error creating json config string for RulesProcessor",
+                    e);
+        }
+        boltConstructorArgs.add(rulesProcessorJson);
+        // hardcode script type enum for now.
+        boltConstructorArgs.add("SQL");
         String[] configMethodNames = {"withWindowConfig"};
         Object[] configKeys = {getRefYaml(addWindowConfig())};
         List configMethods = getConfigMethodsYaml(configMethodNames, configKeys);

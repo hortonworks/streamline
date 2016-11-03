@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.layout.topology.component.rule;
+package org.apache.streamline.streams.runtime.storm.layout.runtime.rule.topology;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.common.Schema.Field;
-import org.apache.streamline.streams.layout.component.ComponentBuilder;
 import org.apache.streamline.streams.layout.component.StreamlineSink;
 import org.apache.streamline.streams.layout.component.Sink;
 import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
@@ -31,14 +31,16 @@ import org.apache.streamline.streams.layout.component.rule.expression.BinaryExpr
 import org.apache.streamline.streams.layout.component.rule.expression.Condition;
 import org.apache.streamline.streams.layout.component.rule.expression.Expression;
 import org.apache.streamline.streams.layout.component.rule.expression.FieldExpression;
+import org.apache.streamline.streams.layout.component.rule.expression.FunctionExpression;
 import org.apache.streamline.streams.layout.component.rule.expression.Literal;
 import org.apache.streamline.streams.layout.component.rule.expression.Operator;
+import org.apache.streamline.streams.layout.component.rule.expression.Projection;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class RuleProcessorMockBuilder implements ComponentBuilder<RulesProcessor> {
+public class RulesProcessorMock {
     public static final String TEMPERATURE = "temperature";
     public static final String HUMIDITY = "humidity";
     public static final String RULE_PROCESSOR = "rule_processor";
@@ -48,72 +50,77 @@ public class RuleProcessorMockBuilder implements ComponentBuilder<RulesProcessor
     private final long ruleProcessorId;
     private final int numRules;
     private final int numSinks;
-    private List<Field> declaredInputsOutputs;
 
-    public RuleProcessorMockBuilder(long ruleProcessorId, int numRules, int numSinksPerRule) {
+    public RulesProcessorMock(long ruleProcessorId, int numRules, int numSinksPerRule) {
         this.ruleProcessorId = ruleProcessorId;
         this.numRules = numRules;
         this.numSinks = numSinksPerRule;
     }
 
-    @Override
-    public RulesProcessor build() {
+    public RulesProcessor get() {
         RulesProcessor rulesProcessor = new RulesProcessor();
         rulesProcessor.setId(String.valueOf(ruleProcessorId));
         rulesProcessor.setName(RULE_PROCESSOR + "_" + ruleProcessorId);
-        rulesProcessor.setRules(buildRules());
+        rulesProcessor.setRules(getRules());
         return rulesProcessor;
     }
 
-    private List<Field> buildDeclaredInputsOutputs() {
-        final Schema declaredInputsOutputs = new Schema.SchemaBuilder().fields(new ArrayList<Field>() {{
-            add(new Field(TEMPERATURE, Schema.Type.INTEGER));
-            add(new Field(HUMIDITY, Schema.Type.INTEGER));
-        }}).build();
-
-        this.declaredInputsOutputs = declaredInputsOutputs.getFields();
-        return declaredInputsOutputs.getFields();
-    }
-
-    private List<Rule> buildRules() {
+    private List<Rule> getRules() {
         List<Rule> rules = new ArrayList<>();
         for (int i = 1; i <= numRules; i++) {
-            rules.add(buildRule(i, buildCondition(i), buildAction(buildSinks())));
+            rules.add(getRule(i, getCondition(i), getAction(getSinks())));
         }
         return rules;
     }
 
-    private Rule buildRule(long ruleId, Condition condition, TransformAction action) {
+    public static class Incr {
+        public static Integer evaluate(Integer input, Integer incr) {
+            return input + incr;
+        }
+    }
+
+    private Rule getRule(long ruleId, Condition condition, TransformAction action) {
         Rule rule = new Rule();
         rule.setId(ruleId);
         rule.setName(RULE + "_" + ruleId);
         rule.setDescription(RULE + "_" + ruleId + "_desc");
         rule.setRuleProcessorName(RULE_PROCESSOR + "_" + ruleProcessorId);
         rule.setCondition(condition);
+        if (ruleId % 2 == 0) {
+            Projection projection = new Projection();
+            Expression humidity = new FieldExpression(Field.of("humidity", Schema.Type.INTEGER));
+            Expression deviceName = new FieldExpression(Field.of("devicename", Schema.Type.STRING));
+            Expression incr = new FunctionExpression("INCR",
+                                                     "org.apache.streamline.streams.runtime.storm.layout.runtime.rule.topology.RulesProcessorMock$Incr",
+                                                     ImmutableList.<Expression>of(humidity, new Literal("10")));
+            Expression upper = new FunctionExpression("UPPER", ImmutableList.<Expression>of(deviceName));
+            projection.setExpressions(ImmutableList.<Expression>of(humidity, incr, upper));
+            rule.setProjection(projection);
+        }
         rule.setActions(Collections.singletonList((Action) action));
         return rule;
     }
 
-    private TransformAction buildAction(List<Sink> sinks) {
+    private TransformAction getAction(List<Sink> sinks) {
         return new TransformAction();
     }
 
-    private List<Sink> buildSinks() {
+    private List<Sink> getSinks() {
         List<Sink> sinks = new ArrayList<>();
         for (int i = 1; i <= numSinks; i++) {
-            sinks.add(buildSink(i));
+            sinks.add(getSink(i));
         }
         return sinks;
     }
 
-    private Sink buildSink(long sinkId) {
+    private Sink getSink(long sinkId) {
         StreamlineSink sink = new StreamlineSink();
         sink.setId(String.valueOf(ruleProcessorId));
         sink.setName(SINK + "_" + sinkId);
         return sink;
     }
 
-    private Condition buildCondition(int idx) {
+    private Condition getCondition(int idx) {
         Condition condition = new Condition();
         if (idx % 2 == 0) {
             condition.setExpression(comparisonOperation(Operator.GREATER_THAN));// temperature  > 100  &&  humidity  > 50

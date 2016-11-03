@@ -14,7 +14,7 @@ public class Window implements Serializable {
     public static final String WINDOW_ID = "windowid";
 
     @JsonTypeInfo(use= JsonTypeInfo.Id.MINIMAL_CLASS, include= JsonTypeInfo.As.PROPERTY, property="class")
-    public static class WindowParam {
+    public static class WindowParam  implements Serializable {
     }
 
     public static class Count extends WindowParam {

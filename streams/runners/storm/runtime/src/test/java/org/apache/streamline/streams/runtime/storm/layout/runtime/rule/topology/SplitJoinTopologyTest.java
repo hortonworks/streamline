@@ -20,7 +20,6 @@ package org.apache.streamline.streams.runtime.storm.layout.runtime.rule.topology
 
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.streams.layout.Transform;
-import org.apache.streamline.streams.layout.component.ComponentBuilder;
 import org.apache.streamline.streams.layout.component.Stream;
 import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
 import org.apache.streamline.streams.layout.component.impl.splitjoin.JoinAction;
@@ -31,7 +30,7 @@ import org.apache.streamline.streams.layout.component.impl.splitjoin.StageAction
 import org.apache.streamline.streams.layout.component.impl.splitjoin.StageProcessor;
 import org.apache.streamline.streams.layout.component.rule.action.transform.EnrichmentTransform;
 import org.apache.streamline.streams.layout.component.rule.action.transform.InmemoryTransformDataProvider;
-import org.apache.streamline.streams.runtime.rule.RulesDependenciesFactory;
+import org.apache.streamline.streams.runtime.processor.RuleProcessorRuntime;
 import org.apache.streamline.streams.runtime.storm.bolt.rules.RulesBolt;
 import org.apache.storm.Config;
 import org.apache.storm.ILocalCluster;
@@ -100,35 +99,34 @@ public class SplitJoinTopologyTest {
     private RulesBolt createSplitBolt() {
         SplitAction splitAction = new SplitAction();
         splitAction.setOutputStreams(Collections.singleton(SPLIT_STREAM_ID.getId()));
-        SplitProcessorBuilder splitProcessorBuilder = new SplitProcessorBuilder(SPLIT_STREAM_ID, splitAction);
+        SplitRulesProcessor splitRulesProcessor = new SplitRulesProcessor(SPLIT_STREAM_ID, splitAction);
 
-        return new RulesBolt(new RulesDependenciesFactory(splitProcessorBuilder, getScriptType()));
+        return new RulesBolt(splitRulesProcessor.get(), getScriptType());
     }
 
     private RulesBolt createStageBolt() {
-        return new RulesBolt(new RulesDependenciesFactory(new StageProcessorBuilder(), getScriptType()));
+        return new RulesBolt(new StageRulesProcessor().get(), getScriptType());
     }
 
     private RulesBolt createJoinBolt() {
-        return new RulesBolt(new RulesDependenciesFactory(new JoinProcessorBuilder(), getScriptType()));
+        return new RulesBolt(new JoinRulesProcessor().get(), getScriptType());
     }
 
-    public RulesDependenciesFactory.ScriptType getScriptType() {
-        return RulesDependenciesFactory.ScriptType.SQL;
+    public RuleProcessorRuntime.ScriptType getScriptType() {
+        return RuleProcessorRuntime.ScriptType.SQL;
     }
 
-    static class SplitProcessorBuilder implements ComponentBuilder<RulesProcessor> {
+    static class SplitRulesProcessor {
 
         private Stream splitStream;
         private SplitAction splitAction;
 
-        public SplitProcessorBuilder(Stream splitStream, SplitAction splitAction) {
+        public SplitRulesProcessor(Stream splitStream, SplitAction splitAction) {
             this.splitStream = splitStream;
             this.splitAction = splitAction;
         }
 
-        @Override
-        public RulesProcessor build() {
+        public RulesProcessor get() {
             final SplitProcessor splitProcessor = new SplitProcessor();
             splitProcessor.addOutputStreams(Collections.singleton(splitStream));
             splitProcessor.setSplitAction(splitAction);
@@ -138,10 +136,9 @@ public class SplitJoinTopologyTest {
         }
     }
 
-    static class JoinProcessorBuilder implements ComponentBuilder<RulesProcessor> {
+    static class JoinRulesProcessor {
 
-        @Override
-        public RulesProcessor build() {
+        public RulesProcessor get() {
             JoinAction joinAction = new JoinAction();
             joinAction.setOutputStreams(Collections.singleton(JOIN_OUTPUT_STREAM.getId()));
             JoinProcessor joinProcessor = new JoinProcessor();
@@ -153,13 +150,12 @@ public class SplitJoinTopologyTest {
         }
     }
 
-    static class StageProcessorBuilder implements ComponentBuilder<RulesProcessor> {
+    static class StageRulesProcessor {
 
-        public StageProcessorBuilder() {
+        public StageRulesProcessor() {
         }
 
-        @Override
-        public RulesProcessor build() {
+        public RulesProcessor get() {
             final String enrichFieldName = "temperature";
 
             Map<Object, Object> enrichmentsData = new HashMap<>();

@@ -25,35 +25,9 @@ public class RuleBoltFluxComponent extends AbstractFluxComponent {
     @Override
     protected void generateComponent () {
         rulesProcessor = (RulesProcessor) conf.get(StormTopologyLayoutConstants.STREAMLINE_COMPONENT_CONF_KEY);
-        String rulesBoltDependenciesFactory = addRulesBoltDependenciesFactory();
         String boltId = "ruleBolt" + UUID_FOR_COMPONENTS;
         String boltClassName = "org.apache.streamline.streams.runtime.storm.bolt.rules.RulesBolt";
         List boltConstructorArgs = new ArrayList();
-        Map ref = getRefYaml(rulesBoltDependenciesFactory);
-        boltConstructorArgs.add(ref);
-        component = createComponent(boltId, boltClassName, null, boltConstructorArgs, null);
-        addParallelismToComponent();
-    }
-
-    protected String addRulesBoltDependenciesFactory () {
-        String rulesProcessorBuilderRef = addRulesProcessorBuilder();
-        String dependenciesFactoryId = "dependenciesFactory" + UUID_FOR_COMPONENTS;
-        String dependenciesFactoryClassName = "org.apache.streamline.streams.runtime.rule.RulesDependenciesFactory";
-        //constructor args
-        List constructorArgs = new ArrayList();
-        Map ref = getRefYaml(rulesProcessorBuilderRef);
-        constructorArgs.add(ref);
-        // hardcode script type enum for now. SQL also supported. For future this should be taken as input from UI
-        constructorArgs.add("SQL");
-        this.addToComponents(this.createComponent(dependenciesFactoryId, dependenciesFactoryClassName, null, constructorArgs, null));
-        return dependenciesFactoryId;
-    }
-
-    private String addRulesProcessorBuilder () {
-        String rulesProcessorBuilderComponentId = "rulesProcessorBuilder" +
-                UUID_FOR_COMPONENTS;
-        String rulesProcessorBuilderClassName = "org.apache.streamline.streams" +
-                ".layout.component.RulesProcessorJsonBuilder";
         ObjectMapper mapper = new ObjectMapper();
         String rulesProcessorJson = null;
         try {
@@ -62,12 +36,11 @@ public class RuleBoltFluxComponent extends AbstractFluxComponent {
             log.error("Error creating json config string for RulesProcessor",
                     e);
         }
-        //constructor args
-        List constructorArgs = new ArrayList();
-        constructorArgs.add(rulesProcessorJson);
-        this.addToComponents(this.createComponent(rulesProcessorBuilderComponentId,
-                rulesProcessorBuilderClassName, null, constructorArgs, null));
-        return rulesProcessorBuilderComponentId;
+        boltConstructorArgs.add(rulesProcessorJson);
+        // hardcode script type enum for now.
+        boltConstructorArgs.add("SQL");
+        component = createComponent(boltId, boltClassName, null, boltConstructorArgs, null);
+        addParallelismToComponent();
     }
 
     @Override

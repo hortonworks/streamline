@@ -1,12 +1,14 @@
 package org.apache.streamline.streams.runtime.storm.bolt.rules;
 
+import org.apache.streamline.common.util.Utils;
 import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
 import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.exception.ProcessingException;
+import org.apache.streamline.streams.layout.component.Stream;
+import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
 import org.apache.streamline.streams.layout.component.rule.expression.Window;
 import org.apache.streamline.streams.runtime.processor.RuleProcessorRuntime;
-import org.apache.streamline.streams.runtime.rule.RulesDependenciesFactory;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -39,21 +41,28 @@ public class WindowRulesBolt extends BaseWindowedBolt {
     private static final Logger LOG = LoggerFactory.getLogger(WindowRulesBolt.class);
 
     private RuleProcessorRuntime ruleProcessorRuntime;
-
-    private final RulesDependenciesFactory boltDependenciesFactory;
-
+    private final RulesProcessor rulesProcessor;
+    private final RuleProcessorRuntime.ScriptType scriptType;
     private OutputCollector collector;
-
     private long windowId;
 
-    public WindowRulesBolt(RulesDependenciesFactory boltDependenciesFactory) {
-        this.boltDependenciesFactory = boltDependenciesFactory;
+    public WindowRulesBolt(RulesProcessor rulesProcessor, RuleProcessorRuntime.ScriptType scriptType) {
+        this.rulesProcessor = rulesProcessor;
+        this.scriptType = scriptType;
     }
 
+    public WindowRulesBolt(String rulesProcessorJson, RuleProcessorRuntime.ScriptType scriptType) {
+        this(Utils.createObjectFromJson(rulesProcessorJson, RulesProcessor.class), scriptType);
+    }
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
+        if (this.rulesProcessor == null) {
+            throw new RuntimeException("rulesProcessor cannot be null");
+        }
         this.collector = collector;
-        ruleProcessorRuntime = boltDependenciesFactory.createRuleProcessorRuntime();
+        ruleProcessorRuntime = new RuleProcessorRuntime(rulesProcessor, scriptType);
+        Map<String, Object> config = Collections.emptyMap();
+        ruleProcessorRuntime.initialize(config);
     }
 
     /**
@@ -142,8 +151,11 @@ public class WindowRulesBolt extends BaseWindowedBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        for (String stream : boltDependenciesFactory.createRuleProcessorRuntime().getStreams()) {
-            declarer.declareStream(stream, new Fields(StreamlineEvent.STREAMLINE_EVENT));
+        if (this.rulesProcessor == null) {
+            throw new RuntimeException("rulesProcessor cannot be null");
+        }
+        for (Stream stream : rulesProcessor.getOutputStreams()) {
+            declarer.declareStream(stream.getId(), new Fields(StreamlineEvent.STREAMLINE_EVENT));
         }
     }
 

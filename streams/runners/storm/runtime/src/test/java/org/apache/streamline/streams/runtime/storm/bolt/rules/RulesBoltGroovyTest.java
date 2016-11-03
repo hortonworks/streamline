@@ -18,13 +18,13 @@
 
 package org.apache.streamline.streams.runtime.storm.bolt.rules;
 
-import org.apache.streamline.streams.runtime.rule.RulesDependenciesFactory;
 import mockit.integration.junit4.JMockit;
+import org.apache.streamline.streams.runtime.processor.RuleProcessorRuntime;
 import org.junit.runner.RunWith;
 
 @RunWith(JMockit.class)
 public class RulesBoltGroovyTest extends RulesBoltTest {
-    protected RulesDependenciesFactory.ScriptType getScriptType() {
-        return RulesDependenciesFactory.ScriptType.GROOVY;
+    protected RuleProcessorRuntime.ScriptType getScriptType() {
+        return RuleProcessorRuntime.ScriptType.GROOVY;
     }
 }

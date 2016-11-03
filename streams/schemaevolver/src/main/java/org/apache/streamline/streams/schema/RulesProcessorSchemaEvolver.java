@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.common.exception.ParserException;
+import org.apache.streamline.common.util.Utils;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.streamline.streams.layout.component.RulesProcessorJsonBuilder;
 import org.apache.streamline.streams.layout.component.Stream;
 import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
 import org.apache.streamline.streams.layout.component.rule.Rule;
@@ -47,8 +47,7 @@ public class RulesProcessorSchemaEvolver implements EvolvingSchema {
 
     private RulesProcessor buildRulesProcessor(Map<String, Object> rulesProcessorConfig) throws JsonProcessingException {
         String rulesProcessorConfigJson = objectMapper.writeValueAsString(rulesProcessorConfig);
-        RulesProcessorJsonBuilder rulesProcessorJsonBuilder = new RulesProcessorJsonBuilder(rulesProcessorConfigJson);
-        return rulesProcessorJsonBuilder.build();
+        return Utils.createObjectFromJson(rulesProcessorConfigJson, RulesProcessor.class);
     }
 
     private Set<Stream> extractStreamsFromRule(Stream inputStream, Rule rule) throws ParserException {

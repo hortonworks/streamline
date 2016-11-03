@@ -19,11 +19,11 @@ package org.apache.streamline.streams.runtime.storm.bolt.rules;
 
 import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.common.StreamlineEventImpl;
-import org.apache.streamline.streams.runtime.rule.RulesDependenciesFactory;
 import mockit.Expectations;
 import mockit.VerificationsInOrder;
 import mockit.integration.junit4.JMockit;
 import org.apache.storm.tuple.Values;
+import org.apache.streamline.streams.runtime.processor.RuleProcessorRuntime;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,8 +47,8 @@ public class RulesBoltSqlTest extends RulesBoltTest {
 
     private static final Values STREAMLINE_EVENT_VALUES = new Values(STREAMLINE_EVENT);
 
-    protected RulesDependenciesFactory.ScriptType getScriptType() {
-        return RulesDependenciesFactory.ScriptType.SQL;
+    protected RuleProcessorRuntime.ScriptType getScriptType() {
+        return RuleProcessorRuntime.ScriptType.SQL;
     }
 
     @Test
@@ -63,12 +63,12 @@ public class RulesBoltSqlTest extends RulesBoltTest {
         rulesBolt.execute(mockTuple);
 
         new VerificationsInOrder() {{
-            mockOutputCollector.emit(ruleProcessorRuntime.getRulesRuntime().get(0).getStreams().iterator().next(),
+            mockOutputCollector.emit(rulesProcessor.getRules().get(0).getOutputStreamNameForAction(rulesProcessor.getRules().get(0).getActions().iterator().next()),
                                      mockTuple, STREAMLINE_EVENT_VALUES);
             times = 0; // rule 1 does not trigger
 
             Values actualValues;
-            mockOutputCollector.emit(ruleProcessorRuntime.getRulesRuntime().get(1).getStreams().iterator().next(),
+            mockOutputCollector.emit(rulesProcessor.getRules().get(1).getOutputStreamNameForAction(rulesProcessor.getRules().get(1).getActions().iterator().next()),
                                      mockTuple, actualValues = withCapture());
             times = 1;    // rule 2 triggers
             Assert.assertEquals(PROJECTED_STREAMLINE_EVENT.getFieldsAndValues(), ((StreamlineEvent)actualValues.get(0)).getFieldsAndValues());

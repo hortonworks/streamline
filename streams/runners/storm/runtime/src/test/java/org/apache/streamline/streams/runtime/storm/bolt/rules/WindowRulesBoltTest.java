@@ -1,11 +1,11 @@
 package org.apache.streamline.streams.runtime.storm.bolt.rules;
 
 import com.google.common.collect.ImmutableMap;
+import org.apache.streamline.common.util.Utils;
 import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.common.StreamlineEventImpl;
-import org.apache.streamline.streams.layout.component.RulesProcessorJsonBuilder;
+import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
 import org.apache.streamline.streams.layout.component.rule.expression.Window;
-import org.apache.streamline.streams.runtime.rule.RulesDependenciesFactory;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;
@@ -19,6 +19,7 @@ import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.TupleImpl;
 import org.apache.storm.tuple.Values;
 import org.apache.storm.windowing.TupleWindow;
+import org.apache.streamline.streams.runtime.processor.RuleProcessorRuntime;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -114,10 +115,9 @@ public class WindowRulesBoltTest {
     @Test
     public void testCountBasedWindowWithGroupbyUnordered() throws Exception {
         String rulesJson = readFile("/window-rule-groupby-unordered.json");
-        RulesDependenciesFactory factory = new RulesDependenciesFactory(
-                new RulesProcessorJsonBuilder(rulesJson), RulesDependenciesFactory.ScriptType.SQL);
-        Window windowConfig = factory.createRuleProcessorRuntime().getRulesRuntime().get(0).getRule().getWindow();
-        WindowRulesBolt wb = new WindowRulesBolt(factory);
+        RulesProcessor rulesProcessor = Utils.createObjectFromJson(rulesJson, RulesProcessor.class);
+        Window windowConfig = rulesProcessor.getRules().get(0).getWindow();
+        WindowRulesBolt wb = new WindowRulesBolt(rulesJson, RuleProcessorRuntime.ScriptType.SQL);
         wb.withWindowConfig(windowConfig);
         WindowedBoltExecutor wbe = new WindowedBoltExecutor(wb);
         Map<String, Object> conf = wb.getComponentConfiguration();
@@ -176,11 +176,10 @@ public class WindowRulesBoltTest {
     }
 
     private boolean doTest(String rulesJson, int expectedExecuteCount) throws Exception {
-        RulesDependenciesFactory factory = new RulesDependenciesFactory(
-                new RulesProcessorJsonBuilder(rulesJson), RulesDependenciesFactory.ScriptType.SQL);
-        Window windowConfig = factory.createRuleProcessorRuntime().getRulesRuntime().get(0).getRule().getWindow();
+        RulesProcessor rulesProcessor = Utils.createObjectFromJson(rulesJson, RulesProcessor.class);
+        Window windowConfig = rulesProcessor.getRules().get(0).getWindow();
         final CountDownLatch latch = new CountDownLatch(expectedExecuteCount);
-        WindowRulesBolt wb = new WindowRulesBolt(factory) {
+        WindowRulesBolt wb = new WindowRulesBolt(rulesJson, RuleProcessorRuntime.ScriptType.SQL) {
             @Override
             public void execute(TupleWindow inputWindow) {
                 super.execute(inputWindow);

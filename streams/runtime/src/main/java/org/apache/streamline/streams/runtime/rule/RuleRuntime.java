@@ -33,10 +33,8 @@ import javax.script.ScriptException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Represents a rule runtime
@@ -99,17 +97,6 @@ public class RuleRuntime implements Serializable, ProcessorRuntime {
     @Override
     public void cleanup() {
 
-    }
-
-    public Collection<String> getStreams() {
-        LOG.debug("in getStreams");
-        Set<String> streams = new HashSet<>();
-        for(ActionRuntime action: actions) {
-            LOG.debug("Action {}, Stream {}", action, action.getOutputStreams());
-            streams.addAll(action.getOutputStreams());
-        }
-        LOG.debug("Returning streams {}", streams);
-        return streams;
     }
 
     public Rule getRule() {

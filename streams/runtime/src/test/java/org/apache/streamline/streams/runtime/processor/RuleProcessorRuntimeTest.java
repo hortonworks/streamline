@@ -15,13 +15,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Collections;
+
 /**
  * Unit tests for {@link RuleProcessorRuntime}
  */
 @RunWith(JMockit.class)
 public class RuleProcessorRuntimeTest {
-    @Mocked
-    RuleProcessorRuntimeDependenciesBuilder mockBuilder;
 
     @Mocked
     RulesProcessor mockRulesProcessor;
@@ -53,13 +53,9 @@ public class RuleProcessorRuntimeTest {
     @Before
     public void setUp() {
         new Expectations() {{
-            mockBuilder.getRulesProcessor();
-            result = mockRulesProcessor;
             mockRulesProcessor.getId();
             result = "rp1";
             minTimes = 0;
-            mockBuilder.getRulesRuntime();
-            result = ImmutableList.of(mockRr1, mockRr2);
             mockRr1.getRule();
             result = mockRule1;
             mockRr2.getRule();
@@ -85,7 +81,8 @@ public class RuleProcessorRuntimeTest {
 
     @Test
     public void testRule2Fires() throws Exception {
-        RuleProcessorRuntime rpr = new RuleProcessorRuntime(mockBuilder);
+        RuleProcessorRuntime rpr = new RuleProcessorRuntime(mockRulesProcessor, RuleProcessorRuntime.ScriptType.SQL);
+        rpr.initializeWithRuleRuntimesForTesting(Collections.emptyMap(), ImmutableList.of(mockRr1, mockRr2));
         rpr.process(event2);
         new Verifications() {{
             mockRr1.evaluate(event2);
@@ -97,7 +94,8 @@ public class RuleProcessorRuntimeTest {
 
     @Test
     public void testRule1AndRule2Fires() throws Exception {
-        RuleProcessorRuntime rpr = new RuleProcessorRuntime(mockBuilder);
+        RuleProcessorRuntime rpr = new RuleProcessorRuntime(mockRulesProcessor, RuleProcessorRuntime.ScriptType.SQL);
+        rpr.initializeWithRuleRuntimesForTesting(Collections.emptyMap(), ImmutableList.of(mockRr1, mockRr2));
         rpr.process(event1);
         new Verifications() {{
             mockRr1.evaluate(event1);
@@ -109,7 +107,8 @@ public class RuleProcessorRuntimeTest {
 
     @Test
     public void testNonMatchingStream() throws Exception {
-        RuleProcessorRuntime rpr = new RuleProcessorRuntime(mockBuilder);
+        RuleProcessorRuntime rpr = new RuleProcessorRuntime(mockRulesProcessor, RuleProcessorRuntime.ScriptType.SQL);
+        rpr.initializeWithRuleRuntimesForTesting(Collections.emptyMap(), ImmutableList.of(mockRr1, mockRr2));
         rpr.process(event3);
         new Verifications() {{
             mockRr1.evaluate(event3);
@@ -121,7 +120,8 @@ public class RuleProcessorRuntimeTest {
 
     @Test(expected = ProcessingException.class)
     public void testEventWithEmptyStream() throws Exception {
-        RuleProcessorRuntime rpr = new RuleProcessorRuntime(mockBuilder);
+        RuleProcessorRuntime rpr = new RuleProcessorRuntime(mockRulesProcessor, RuleProcessorRuntime.ScriptType.SQL);
+        rpr.initializeWithRuleRuntimesForTesting(Collections.emptyMap(), ImmutableList.of(mockRr1, mockRr2));
         rpr.process(event4);
     }
 }

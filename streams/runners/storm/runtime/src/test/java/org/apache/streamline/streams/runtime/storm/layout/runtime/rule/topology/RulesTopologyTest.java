@@ -18,10 +18,8 @@
 
 package org.apache.streamline.streams.runtime.storm.layout.runtime.rule.topology;
 
-import org.apache.streamline.streams.layout.component.ComponentBuilder;
 import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
 import org.apache.streamline.streams.runtime.processor.RuleProcessorRuntime;
-import org.apache.streamline.streams.runtime.rule.RulesDependenciesFactory;
 import org.apache.streamline.streams.runtime.storm.bolt.rules.RulesBolt;
 import org.apache.storm.Config;
 import org.apache.storm.ILocalCluster;
@@ -38,8 +36,6 @@ public abstract class RulesTopologyTest {
     protected static final String RULES_TEST_SINK_BOLT = "RulesTestSinkBolt";
     protected static final String RULES_TEST_SINK_BOLT_1 = RULES_TEST_SINK_BOLT + "_1";
     protected static final String RULES_TEST_SINK_BOLT_2 = RULES_TEST_SINK_BOLT + "_2";
-    private RuleProcessorRuntime ruleProcessorRuntime;
-    private RulesDependenciesFactory rulesDependenciesFactory;
 
     protected void submitTopology() throws AlreadyAliveException, InvalidTopologyException {
         final Config config = getConfig();
@@ -56,32 +52,25 @@ public abstract class RulesTopologyTest {
 
     protected StormTopology createTopology() {
         TopologyBuilder builder = new TopologyBuilder();
+        RulesProcessor rulesProcessor = createRulesProcessor();
         builder.setSpout(RULES_TEST_SPOUT, new RulesTestSpout());
-        builder.setBolt(RULES_BOLT, createRulesBolt(createDependenciesBuilderFactory(createRulesProcessorBuilder(), getScriptType()))).shuffleGrouping(RULES_TEST_SPOUT);
-        builder.setBolt(RULES_TEST_SINK_BOLT_1, new RulesTestSinkBolt()).shuffleGrouping(RULES_BOLT, getStream(0));
-        builder.setBolt(RULES_TEST_SINK_BOLT_2, new RulesTestSinkBolt()).shuffleGrouping(RULES_BOLT, getStream(1));
+        builder.setBolt(RULES_BOLT, createRulesBolt(rulesProcessor, getScriptType())).shuffleGrouping(RULES_TEST_SPOUT);
+        builder.setBolt(RULES_TEST_SINK_BOLT_1, new RulesTestSinkBolt()).shuffleGrouping(RULES_BOLT, rulesProcessor.getRules().get(0)
+                .getOutputStreamNameForAction(rulesProcessor.getRules().get(0).getActions().iterator().next()));
+        builder.setBolt(RULES_TEST_SINK_BOLT_2, new RulesTestSinkBolt()).shuffleGrouping(RULES_BOLT, rulesProcessor.getRules().get(1)
+                .getOutputStreamNameForAction(rulesProcessor.getRules().get(1).getActions().iterator().next()));
         return builder.createTopology();
     }
 
-    protected String getStream(int i) {
-        return ruleProcessorRuntime.getRulesRuntime().get(i).getStreams().iterator().next();
+    protected IRichBolt createRulesBolt(RulesProcessor rulesProcessor, RuleProcessorRuntime.ScriptType scriptType) {
+        return new RulesBolt(rulesProcessor, scriptType);
     }
 
-    protected RulesDependenciesFactory createDependenciesBuilderFactory(ComponentBuilder<RulesProcessor> rulesProcessorBuilder,
-                                                                        RulesDependenciesFactory.ScriptType scriptType) {
-        rulesDependenciesFactory = new RulesDependenciesFactory(rulesProcessorBuilder, scriptType);
-        return rulesDependenciesFactory;
+    protected RulesProcessor createRulesProcessor() {
+        return new RulesProcessorMock(1,2,2).get();
     }
 
-    protected IRichBolt createRulesBolt(RulesDependenciesFactory dependenciesBuilder) {
-        return new RulesBolt(dependenciesBuilder);
-    }
-
-    protected ComponentBuilder<RulesProcessor> createRulesProcessorBuilder() {
-        return new RuleProcessorMockBuilder(1,2,2);
-    }
-
-    protected abstract RulesDependenciesFactory.ScriptType getScriptType();
+    protected abstract RuleProcessorRuntime.ScriptType getScriptType();
 
     public static class RulesTopologyTestGroovy extends RulesTopologyTest {
         public static void main(String[] args) throws AlreadyAliveException, InvalidTopologyException {
@@ -89,8 +78,8 @@ public abstract class RulesTopologyTest {
             rulesTopologyTest.submitTopology();
         }
 
-        protected RulesDependenciesFactory.ScriptType getScriptType() {
-            return RulesDependenciesFactory.ScriptType.GROOVY;
+        protected RuleProcessorRuntime.ScriptType getScriptType() {
+            return RuleProcessorRuntime.ScriptType.GROOVY;
         }
     }
 
@@ -99,8 +88,8 @@ public abstract class RulesTopologyTest {
             RulesTopologyTest rulesTopologyTest = new RulesTopologyTestSql();
             rulesTopologyTest.submitTopology();
         }
-        protected RulesDependenciesFactory.ScriptType getScriptType() {
-            return RulesDependenciesFactory.ScriptType.SQL;
+        protected RuleProcessorRuntime.ScriptType getScriptType() {
+            return RuleProcessorRuntime.ScriptType.SQL;
         }
     }
 }

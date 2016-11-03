@@ -3,11 +3,11 @@ package org.apache.streamline.streams.schema;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
+import org.apache.streamline.common.util.Utils;
 import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.layout.component.Stream;
 import org.apache.streamline.streams.layout.component.impl.normalization.NormalizationConfig;
 import org.apache.streamline.streams.layout.component.impl.normalization.NormalizationProcessor;
-import org.apache.streamline.streams.layout.component.impl.normalization.NormalizationProcessorJsonBuilder;
 import org.apache.streamline.streams.schema.exception.BadComponentConfigException;
 
 import java.util.Map;
@@ -24,7 +24,7 @@ public class NormalizationProcessorSchemaEvolver implements EvolvingSchema {
         try {
             Map<String, Object> componentConfig = objectMapper.readValue(config, Map.class);
 
-            NormalizationProcessor normalizationProcessor = buildNormalizationProcessor(componentConfig);
+            NormalizationProcessor normalizationProcessor = getNormalizationProcessor(componentConfig);
 
             Set<Stream> streams = Sets.newHashSet();
             Map<String, NormalizationConfig> normalizationConfigMap = normalizationProcessor.getInputStreamsWithNormalizationConfig();
@@ -42,10 +42,9 @@ public class NormalizationProcessorSchemaEvolver implements EvolvingSchema {
         }
     }
 
-    private NormalizationProcessor buildNormalizationProcessor(Map<String, Object> normalizationProcessorConfig) throws JsonProcessingException {
+    private NormalizationProcessor getNormalizationProcessor(Map<String, Object> normalizationProcessorConfig) throws JsonProcessingException {
         String normalizationProcessorConfigJson = objectMapper.writeValueAsString(normalizationProcessorConfig);
-        NormalizationProcessorJsonBuilder normalizationProcessorBuilder = new NormalizationProcessorJsonBuilder(normalizationProcessorConfigJson);
-        return normalizationProcessorBuilder.build();
+        return Utils.createObjectFromJson(normalizationProcessorConfigJson, NormalizationProcessor.class);
     }
 
 }

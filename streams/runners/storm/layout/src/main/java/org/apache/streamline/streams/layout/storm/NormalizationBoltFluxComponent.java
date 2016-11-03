@@ -24,20 +24,9 @@ public class NormalizationBoltFluxComponent extends AbstractFluxComponent {
     @Override
     protected void generateComponent() {
         normalizationProcessor = (NormalizationProcessor) conf.get(StormTopologyLayoutConstants.STREAMLINE_COMPONENT_CONF_KEY);
-        String normalizationProcessorId = addNormalizationProcessorBuilder();
-
         String boltId = "normalizationBolt" + UUID_FOR_COMPONENTS;
         String boltClassName = "org.apache.streamline.streams.runtime.storm.bolt.normalization.NormalizationBolt";
         List boltConstructorArgs = new ArrayList();
-        Map ref = getRefYaml(normalizationProcessorId);
-        boltConstructorArgs.add(ref);
-        component = createComponent(boltId, boltClassName, null, boltConstructorArgs, null);
-        addParallelismToComponent();
-    }
-
-    private String addNormalizationProcessorBuilder() {
-        String normalizationProcessorBuilderComponentId = "normalizationProcessorBuilder" + UUID_FOR_COMPONENTS;
-        String normalizationProcessorBuilderClassName = "org.apache.streamline.streams.layout.component.impl.normalization.NormalizationProcessorJsonBuilder";
         ObjectMapper mapper = new ObjectMapper();
         String normalizationProcessorJson = null;
         try {
@@ -46,12 +35,9 @@ public class NormalizationBoltFluxComponent extends AbstractFluxComponent {
             log.error("Error creating json config string for NormalizationProcessor", e);
             throw new RuntimeException(e);
         }
-
-        //constructor args
-        List constructorArgs = new ArrayList();
-        constructorArgs.add(normalizationProcessorJson);
-        this.addToComponents(this.createComponent(normalizationProcessorBuilderComponentId, normalizationProcessorBuilderClassName, null, constructorArgs, null));
-        return normalizationProcessorBuilderComponentId;
+        boltConstructorArgs.add(normalizationProcessorJson);
+        component = createComponent(boltId, boltClassName, null, boltConstructorArgs, null);
+        addParallelismToComponent();
     }
 
     @Override

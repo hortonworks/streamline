@@ -3,8 +3,6 @@ package org.apache.streamline.streams.runtime.storm.bolt.rules;
 import com.google.common.collect.ImmutableMap;
 import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.common.StreamlineEventImpl;
-import org.apache.streamline.streams.layout.component.RulesProcessorJsonBuilder;
-import org.apache.streamline.streams.runtime.rule.RulesDependenciesFactory;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;
@@ -17,6 +15,7 @@ import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.TupleImpl;
 import org.apache.storm.tuple.Values;
+import org.apache.streamline.streams.runtime.processor.RuleProcessorRuntime;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -143,9 +142,7 @@ public class RulesBoltConditionTest {
     }
 
     private void doTest(String rulesJson, Tuple tuple) throws Exception {
-        RulesDependenciesFactory factory = new RulesDependenciesFactory(
-                new RulesProcessorJsonBuilder(rulesJson), RulesDependenciesFactory.ScriptType.SQL);
-        RulesBolt rulesBolt = new RulesBolt(factory) {
+        RulesBolt rulesBolt = new RulesBolt(rulesJson, RuleProcessorRuntime.ScriptType.SQL) {
             @Override
             public void execute(Tuple input) {
                 super.execute(input);

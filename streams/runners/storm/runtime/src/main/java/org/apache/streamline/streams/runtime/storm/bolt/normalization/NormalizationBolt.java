@@ -17,12 +17,12 @@
  */
 package org.apache.streamline.streams.runtime.storm.bolt.normalization;
 
+import org.apache.streamline.common.util.Utils;
 import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
 import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.layout.component.Stream;
 import org.apache.streamline.streams.layout.component.impl.normalization.NormalizationProcessor;
-import org.apache.streamline.streams.layout.component.impl.normalization.NormalizationProcessorJsonBuilder;
 import org.apache.streamline.streams.runtime.normalization.NormalizationProcessorRuntime;
 import org.apache.streamline.streams.runtime.storm.bolt.AbstractProcessorBolt;
 import org.apache.storm.task.OutputCollector;
@@ -51,13 +51,16 @@ public class NormalizationBolt extends AbstractProcessorBolt {
         this.normalizationProcessor = normalizationProcessor;
     }
 
-    public NormalizationBolt(NormalizationProcessorJsonBuilder normalizationProcessorJsonBuilder) {
-        this.normalizationProcessor = normalizationProcessorJsonBuilder.build();
+    public NormalizationBolt(String normalizationProcessorJson) {
+        this(Utils.createObjectFromJson(normalizationProcessorJson, NormalizationProcessor.class));
     }
 
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
         super.prepare(stormConf, context, collector);
+        if (normalizationProcessor == null) {
+            throw new RuntimeException("normalizationProcessor cannot be null");
+        }
         normalizationProcessorRuntime = new NormalizationProcessorRuntime(normalizationProcessor);
         normalizationProcessorRuntime.initialize(Collections.<String, Object>emptyMap());
     }
@@ -78,6 +81,9 @@ public class NormalizationBolt extends AbstractProcessorBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
+        if (normalizationProcessor == null) {
+            throw new RuntimeException("normalizationProcessor cannot be null");
+        }
         for (Stream stream : normalizationProcessor.getOutputStreams()) {
             declarer.declareStream(stream.getId(), new Fields(StreamlineEvent.STREAMLINE_EVENT));
         }
