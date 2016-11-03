@@ -16,13 +16,15 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.notification.service;
+package org.apache.streamline.streams.service;
 
-import org.apache.streamline.common.QueryParam;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
+import org.apache.streamline.common.QueryParam;
+import org.apache.streamline.streams.notification.service.NotificationService;
+import org.apache.streamline.streams.service.exception.request.EntityNotFoundException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,6 +35,7 @@ import javax.ws.rs.core.UriInfo;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 @RunWith(JMockit.class)
 public class NotificationsResourceTest {
@@ -68,15 +71,20 @@ public class NotificationsResourceTest {
             }
         };
 
-        resource.listNotifications(mockUriInfo);
+        try {
+            resource.listNotifications(mockUriInfo);
 
-        new Verifications() {
-            {
-                List<QueryParam> qps;
-                mockNotificationService.findNotifications(qps = withCapture());
-                //System.out.println(qps);
-                assertEquals(4, qps.size());
-            }
-        };
+            fail("We don't mock the result so it should throw entity not found");
+        } catch (EntityNotFoundException e) {
+            // expected
+            new Verifications() {
+                {
+                    List<QueryParam> qps;
+                    mockNotificationService.findNotifications(qps = withCapture());
+                    //System.out.println(qps);
+                    assertEquals(4, qps.size());
+                }
+            };
+        }
     }
 }

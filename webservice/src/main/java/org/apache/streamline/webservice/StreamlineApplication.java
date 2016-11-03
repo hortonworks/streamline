@@ -19,6 +19,7 @@
 package org.apache.streamline.webservice;
 
 import com.google.common.cache.CacheBuilder;
+import io.dropwizard.server.AbstractServerFactory;
 import org.apache.streamline.cache.Cache;
 import org.apache.streamline.common.Constants;
 import org.apache.streamline.common.ModuleRegistration;
@@ -39,6 +40,7 @@ import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import org.apache.streamline.streams.service.GenericExceptionMapper;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +69,12 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
 
     @Override
     public void run(StreamlineConfiguration configuration, Environment environment) throws Exception {
+        AbstractServerFactory sf = (AbstractServerFactory) configuration.getServerFactory();
+        // disable all default exception mappers
+        sf.setRegisterDefaultExceptionMappers(false);
+
+        environment.jersey().register(GenericExceptionMapper.class);
+
         registerResources(configuration, environment);
     }
 

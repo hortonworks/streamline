@@ -65,6 +65,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -195,22 +196,22 @@ public class RestIntegrationTest {
         createComponent(1l, 1l, "testComponent"), createComponent(1l, 1l, "testComponentPut"), "1", rootUrl + "services/1/components")
         .withDependentResource(clusterResourceToTest).withDependentResource(serviceResourceToTest);
 
+    private ResourceTestElement topologyResourceToTest = new ResourceTestElement(
+            createTopology(1l, "iotasTopology"), createTopology(1l, "iotasTopologyPut"), "1", rootUrl + "topologies")
+            .withFieldsToIgnore(Collections.singletonList("versionId"));
+
     /**
      * List of all things that will be tested
      */
     private Collection<ResourceTestElement> resourcesToTest = Lists.newArrayList(
-            new ResourceTestElement(createTag(1L, "foo-tag"), createTag(1L, "foo-tag-new"), "1", rootUrl + "tags"),
-            // TODO: The below test case needs to be fixed since it should first create the data source and then add the corresponding datafeed
-            //new ResourceTestElement(createDataFeed(1l, "testDataFeed"), createDataFeed(1l, "testDataFeedPut"), "1", rootUrl + "feeds"),
             clusterResourceToTest, serviceResourceToTest, componentResourceToTest,
             new ResourceTestElement(createNotifierInfo(1l, "testNotifier"), createNotifierInfo(1l, "testNotifierPut"), "1", rootUrl + "notifiers")
                     .withMultiPart().withEntitiyNameHeader("notifierConfig").withFileNameHeader("notifierJarFile")
                     .withFileToUpload("testnotifier.jar"),
-            new ResourceTestElement(createTopology(1l, "iotasTopology"), createTopology(1l, "iotasTopologyPut"), "1", rootUrl + "topologies"),
+            topologyResourceToTest,
             new ResourceTestElement(createTopologyEditorMetadata(1l, "{\"x\":5,\"y\":6}"),
                     createTopologyEditorMetadata(1l, "{\"x\":6,\"y\":5}"), "1", rootUrl + "system/topologyeditormetadata")
-                    .withDependentResource(new ResourceTestElement(createTopology(1l, "iotasTopology"), createTopology(1l, "iotasTopologyPut"), "1", rootUrl + "topologies"))
-            .withFieldsToIgnore(Collections.singletonList("versionId")),
+                    .withDependentResource(topologyResourceToTest).withFieldsToIgnore(Collections.singletonList("versionId"))
             /* Some issue with sending multi part for requests using this client and hence this test case is ignored for now. Fix later.
             new ResourceTestElement(createTopologyComponent(1l, "kafkaSpoutComponent", TopologyComponentBundle.TopologyComponentType.SOURCE, "KAFKA"), createTopologyComponent(1l, "kafkaSpoutComponentPut", TopologyComponentBundle.TopologyComponentType.SOURCE, "KAFKA") , "1", rootUrl + "streams/componentbundles/SOURCE"),
             new ResourceTestElement(createTopologyComponent(2l, "parserProcessor", TopologyComponentBundle.TopologyComponentType.PROCESSOR, "PARSER"), createTopologyComponent(2l, "parserProcessorPut", TopologyComponentBundle.TopologyComponentType.PROCESSOR, "PARSER"), "2", rootUrl + "streams/componentbundles/PROCESSOR"),
@@ -218,9 +219,12 @@ public class RestIntegrationTest {
             new ResourceTestElement(createTopologyComponent(4l, "shuffleGroupingLink", TopologyComponentBundle.TopologyComponentType.LINK, "SHUFFLE"), createTopologyComponent(4l, "shuffleGroupingLinkPut", TopologyComponentBundle.TopologyComponentType.LINK, "SHUFFLE"), "4", rootUrl + "streams/componentbundles/LINK"),
             */
             // parser is commented as parser takes a jar as input along with the parserInfo instance and so it needs a multipart request.
+            /* we can't apply new way to throw webservice related exception from parser-registry module
+             but it will be removed via STREAMLINE-435 so just commenting this out for now
             new ResourceTestElement(createParserInfo(1l, "testParser"), null, "1", rootUrl + "parsers")
                                     .withMultiPart().withEntitiyNameHeader("parserInfo").withFileNameHeader("parserJar")
                                     .withFileToUpload("parser.jar").withFieldsToIgnore(Collections.singletonList("jarStoragePath"))
+            */
     );
 
     private MultiPart getMultiPart(ResourceTestElement resourceToTest, Object entity) {
@@ -258,67 +262,66 @@ public class RestIntegrationTest {
             List<ResourceTestElement> resourcesToPostFirst = resourceToTest.resourcesToPostFirst;
 
             for (ResourceTestElement dependantResource : resourcesToPostFirst) {
-                String response;
+                Response response;
                 if (dependantResource.multipart) {
-                    response = client.target(dependantResource.url).request().post(Entity.entity(getMultiPart(dependantResource, dependantResource.resourceToPost),
-                        MediaType.MULTIPART_FORM_DATA), String.class);
+                    response = client.target(dependantResource.url).request().post(Entity
+                        .entity(getMultiPart(dependantResource, dependantResource.resourceToPost),
+                            MediaType.MULTIPART_FORM_DATA));
                 } else {
-                    response = client.target(dependantResource.url).request().post(Entity.json(dependantResource.resourceToPost), String.class);
+                    response = client.target(dependantResource.url).request().post(Entity.json(dependantResource.resourceToPost));
                 }
-                Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+                Assert.assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
             }
 
             String id = resourceToTest.id;
-            String response;
+            Response response;
 
             if (resourceToTest.multipart) {
                 response = client.target(url).request().post(Entity.entity(getMultiPart(resourceToTest, resourceToPost),
-                                                                           MediaType.MULTIPART_FORM_DATA), String.class);
+                                                                           MediaType.MULTIPART_FORM_DATA));
             } else {
                 System.out.println("url " + url);
-                response = client.target(url).request().post(Entity.json(resourceToPost), String.class);
+                response = client.target(url).request().post(Entity.json(resourceToPost));
             }
-            Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+            Assert.assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
-            response = client.target(url).request().get(String.class);
-            Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+            String jsonResponse = client.target(url).request().get(String.class);
             Assert.assertEquals(Lists.newArrayList(filterFields(resourceToPost, resourceToTest.fieldsToIgnore)),
-                                getEntities(response, resourceToPost.getClass(), resourceToTest.fieldsToIgnore));
+                                getEntities(jsonResponse, resourceToPost.getClass(), resourceToTest.fieldsToIgnore));
 
             url = url + "/" + id;
-            response = client.target(url).request().get(String.class);
-            Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
-            Assert.assertEquals(resourceToPost, getEntity(response, resourceToPost.getClass(), resourceToTest.fieldsToIgnore));
+            Object entityResponse = client.target(url).request().get(resourceToPost.getClass());
+            Assert.assertEquals(resourceToPost, filterFields(entityResponse, resourceToTest.fieldsToIgnore));
 
             if (resourceToPut != null) {
                 if (resourceToTest.multipart) {
-                    response = client.target(url).request().put(Entity.entity(getMultiPart(resourceToTest, resourceToPut),
-                                                                              MediaType.MULTIPART_FORM_DATA), String.class);
+                    client.target(url).request().put(Entity.entity(getMultiPart(resourceToTest, resourceToPut),
+                                                                              MediaType.MULTIPART_FORM_DATA));
                 } else {
-                    response = client.target(url).request().put(Entity.json(resourceToPut), String.class);
+                    client.target(url).request().put(Entity.json(resourceToPut));
                 }
-                Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
-                response = client.target(url).request().get(String.class);
-                Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
-                Assert.assertEquals(resourceToPut, getEntity(response, resourceToPut.getClass(), resourceToTest.fieldsToIgnore));
+                entityResponse = client.target(url).request().get(resourceToPut.getClass());
+                Assert.assertEquals(filterFields(resourceToPut, resourceToTest.fieldsToIgnore),
+                        filterFields(entityResponse, resourceToTest.fieldsToIgnore));
             }
 
             try {
-              response = client.target(url).request().delete(String.class);
-              Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+                entityResponse = client.target(url).request().delete(resourceToPut.getClass());
+                Assert.assertEquals(resourceToPut, filterFields(entityResponse, resourceToTest.fieldsToIgnore));
             } finally {
-              for (ResourceTestElement dependantResource : resourcesToPostFirst) {
-                response = client.target(dependantResource.url + "/" + dependantResource.id).request().delete(String.class);
-                Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
-              }
+                for (ResourceTestElement dependantResource : resourcesToPostFirst) {
+                    entityResponse = client.target(dependantResource.url + "/" + dependantResource.id)
+                        .request().delete(dependantResource.resourceToPost.getClass());
+                    Assert.assertEquals(filterFields(dependantResource.resourceToPost, dependantResource.fieldsToIgnore),
+                        filterFields(entityResponse, dependantResource.fieldsToIgnore));
+                }
             }
 
             try {
                 client.target(url).request().get(String.class);
                 Assert.fail("Should have thrown NotFoundException.");
             } catch (NotFoundException e) {
-                response = e.getResponse().readEntity(String.class);
-                Assert.assertEquals(CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND.getCode(), getResponseCode(response));
+                // passed
             }
         }
     }
@@ -343,15 +346,12 @@ public class RestIntegrationTest {
 
         String serviceEntityUrl = serviceBaseUrl + "/" + 1;
 
-        String response = client.target(serviceEntityUrl).request()
-                .put(Entity.json(service), String.class);
-        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+        client.target(serviceEntityUrl).request().put(Entity.json(service), Service.class);
 
         Long anotherClusterId = 2L;
 
         serviceBaseUrl = rootUrl + String.format("clusters/%d/services", anotherClusterId);
-        response = client.target(serviceBaseUrl).request().get(String.class);
-        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+        String response = client.target(serviceBaseUrl).request().get(String.class);
         Assert.assertEquals(Collections.emptyList(), getEntities(response, Service.class));
 
         serviceEntityUrl = serviceBaseUrl + "/" + 1;
@@ -359,8 +359,7 @@ public class RestIntegrationTest {
             client.target(serviceEntityUrl).request().get(String.class);
             Assert.fail("Should have thrown NotFoundException.");
         } catch (NotFoundException e) {
-            response = e.getResponse().readEntity(String.class);
-            Assert.assertEquals(CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND.getCode(), getResponseCode(response));
+            // passed
         }
 
         removeService(client, clusterId, service.getId());
@@ -388,15 +387,13 @@ public class RestIntegrationTest {
         Component component = createComponent(serviceId, 1L, "testComponent:"+1);
 
         String componentEntityUrl = componentBaseUrl + "/" + 1;
-        String response = client.target(componentEntityUrl).request().put(Entity.json(component), String.class);
-        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+        client.target(componentEntityUrl).request().put(Entity.json(component), Component.class);
 
         Long anotherClusterId = 2L;
         Long anotherServiceId = 2L;
 
         componentBaseUrl = rootUrl + String.format("services/%d/components", anotherServiceId);
-        response = client.target(componentBaseUrl).request().get(String.class);
-        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
+        String response = client.target(componentBaseUrl).request().get(String.class);
         Assert.assertEquals(Collections.emptyList(), getEntities(response, Component.class));
 
         componentEntityUrl = componentBaseUrl + "/" + 1;
@@ -404,8 +401,7 @@ public class RestIntegrationTest {
             client.target(componentEntityUrl).request().get(String.class);
             Assert.fail("Should have thrown NotFoundException.");
         } catch (NotFoundException e) {
-            response = e.getResponse().readEntity(String.class);
-            Assert.assertEquals(CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND.getCode(), getResponseCode(response));
+            // passed
         }
 
         removeComponent(client, clusterId, serviceId, component.getId());
@@ -436,7 +432,6 @@ public class RestIntegrationTest {
         String url = rootUrl + "streams/componentbundles";
 
         String response = client.target(url).request().get(String.class);
-        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
         Object expected = Arrays.asList(TopologyComponentBundle.TopologyComponentType.values());
         Object actual = getEntities(response, TopologyComponentBundle.TopologyComponentType.class);
         Assert.assertEquals(expected, actual);
@@ -519,8 +514,7 @@ public class RestIntegrationTest {
                 client.target(getUrl).request().get(String.class);
                 Assert.fail("Should have thrown NotFoundException.");
             } catch (NotFoundException e) {
-                response = e.getResponse().readEntity(String.class);
-                Assert.assertEquals(CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER.getCode(), getResponseCode(response));
+                // pass
             }
         }
         /*FileDataBodyPart imageFileBodyPart = new FileDataBodyPart(TopologyCatalogResource.IMAGE_FILE_PARAM_NAME, getCpImageFile(), MediaType
@@ -559,13 +553,9 @@ public class RestIntegrationTest {
         multiPart.bodyPart(new StreamDataBodyPart("file", fileStream, "file"));
         multiPart.bodyPart(new FormDataBodyPart("fileInfo", file, MediaType.APPLICATION_JSON_TYPE));
 
-        response = client.target(url)
+        FileInfo postedFile = client.target(url)
                 .request(MediaType.MULTIPART_FORM_DATA_TYPE, MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_OCTET_STREAM_TYPE)
-                .post(Entity.entity(multiPart, multiPart.getMediaType()), String.class);
-        FileInfo postedFile = getEntity(response, FileInfo.class);
-
-        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
-
+                .post(Entity.entity(multiPart, multiPart.getMediaType()), FileInfo.class);
 
         //DOWNLOAD
         InputStream downloadInputStream = client.target(url+"/download/"+ postedFile.getId()).request().get(InputStream.class);
@@ -577,26 +567,18 @@ public class RestIntegrationTest {
 
         Assert.assertArrayEquals(uploadedOutputStream.toByteArray(), downloadedJarOutputStream.toByteArray());
 
-
         // GET all
         response = client.target(url).request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
         List<FileInfo> files = getEntities(response, FileInfo.class);
 
-        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
-        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
         Assert.assertEquals(files.size(), 1);
         Assert.assertEquals(files.iterator().next().getName(), file.getName());
 
-
         // GET /files/1
-        response = client.target(url+"/"+ postedFile.getId()).request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
-        FileInfo receivedFile = getEntity(response, FileInfo.class);
+        FileInfo receivedFile = client.target(url+"/"+ postedFile.getId()).request(MediaType.APPLICATION_JSON_TYPE).get(FileInfo.class);
 
-        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
-        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
         Assert.assertEquals(receivedFile.getName(), postedFile.getName());
         Assert.assertEquals(receivedFile.getId(), postedFile.getId());
-
 
         // PUT
         postedFile.setName("andromeda-jar");
@@ -606,32 +588,23 @@ public class RestIntegrationTest {
         InputStream updatedFileStream = new ByteArrayInputStream("andromeda-jar-contents".getBytes());
         multiPart.bodyPart(new StreamDataBodyPart("file", updatedFileStream, "file"));
         multiPart.bodyPart(new FormDataBodyPart("fileInfo", postedFile, MediaType.APPLICATION_JSON_TYPE));
-        response = client.target(url)
+        FileInfo updatedFile = client.target(url)
                 .request(MediaType.MULTIPART_FORM_DATA_TYPE, MediaType.APPLICATION_JSON_TYPE)
-                .post(Entity.entity(multiPart, multiPart.getMediaType()), String.class);
-        FileInfo updatedFile = getEntity(response, FileInfo.class);
+                .post(Entity.entity(multiPart, multiPart.getMediaType()), FileInfo.class);
 
-        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
         Assert.assertEquals(updatedFile.getId(), postedFile.getId());
         Assert.assertEquals(updatedFile.getName(), postedFile.getName());
 
-
         // DELETE
-        response = client.target(url+"/"+ updatedFile.getId()).request().delete(String.class);
-        final FileInfo deletedFile = getEntity(response, FileInfo.class);
+        final FileInfo deletedFile = client.target(url+"/"+ updatedFile.getId()).request().delete(FileInfo.class);
 
-        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
-        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
         Assert.assertEquals(deletedFile.getId(), updatedFile.getId());
-
 
         // GET
         response = client.target(url).request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
         files = getEntities(response, FileInfo.class);
 
-        Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
         Assert.assertTrue(files.isEmpty());
-
     }
 
     /**
@@ -649,13 +622,11 @@ public class RestIntegrationTest {
             for (int i = 0; i < qpte.getUrls.size(); ++i) {
                  String getUrl = qpte.getUrls.get(i);
                 response = client.target(getUrl).request().get(String.class);
-                Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
                  Assert.assertEquals(Collections.emptyList(), getEntities(response, qpte.getResults.get(i).getClass()));
             }
             // post the resources now
             for (Object resource: qpte.resourcesToPost) {
                 response = client.target(qpte.postUrl).request().post(Entity.json (resource), String.class);
-                Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
             }
 
             // send get requests and match the response with expected results
@@ -663,7 +634,6 @@ public class RestIntegrationTest {
                 String getUrl = qpte.getUrls.get(i);
                 List<Object> expectedResults = qpte.getResults.get(i);
                 response = client.target(getUrl).request().get(String.class);
-                Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
                 Assert.assertEquals(expectedResults, getEntities(response, expectedResults.get(i).getClass()));
             }
         }

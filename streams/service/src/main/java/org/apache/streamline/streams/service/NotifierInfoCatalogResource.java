@@ -2,14 +2,15 @@ package org.apache.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.common.catalog.CatalogResponse;
 import org.apache.streamline.common.util.FileStorage;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.NotifierInfo;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import org.apache.streamline.streams.service.exception.request.UnsupportedMediaTypeException;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.apache.streamline.streams.service.exception.request.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +28,6 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -35,14 +35,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import static javax.ws.rs.core.Response.Status.UNSUPPORTED_MEDIA_TYPE;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 
 /**
@@ -68,42 +61,33 @@ public class NotifierInfoCatalogResource {
     @GET
     @Path("/notifiers")
     @Timed
-    public Response listNotifiers(@Context UriInfo uriInfo) {
+    public Response listNotifiers(@Context UriInfo uriInfo) throws Exception {
         List<QueryParam> queryParams = new ArrayList<>();
-        try {
-            MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
-            Collection<NotifierInfo> notifierInfos;
-            if (params.isEmpty()) {
-                notifierInfos = catalogService.listNotifierInfos();
-            } else {
-                queryParams = WSUtils.buildQueryParameters(params);
-                notifierInfos = catalogService.listNotifierInfos(queryParams);
-            }
-            if (notifierInfos != null) {
-                return WSUtils.respond(notifierInfos, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            LOG.error("Got exception", ex);
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
+        Collection<NotifierInfo> notifierInfos;
+        if (params.isEmpty()) {
+            notifierInfos = catalogService.listNotifierInfos();
+        } else {
+            queryParams = WSUtils.buildQueryParameters(params);
+            notifierInfos = catalogService.listNotifierInfos(queryParams);
+        }
+        if (notifierInfos != null) {
+            return WSUtils.respondEntities(notifierInfos, OK);
         }
 
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, queryParams.toString());
+        throw EntityNotFoundException.byFilter(queryParams.toString());
     }
 
     @GET
     @Path("/notifiers/{id}")
     @Timed
     public Response getNotifierById(@PathParam("id") Long id) {
-        try {
-            NotifierInfo result = catalogService.getNotifierInfo(id);
-            if (result != null) {
-                return WSUtils.respond(result, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            LOG.error("Got exception", ex);
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        NotifierInfo result = catalogService.getNotifierInfo(id);
+        if (result != null) {
+            return WSUtils.respondEntity(result, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, id.toString());
+
+        throw EntityNotFoundException.byId(id.toString());
     }
 
     /**
@@ -138,38 +122,30 @@ public class NotifierInfoCatalogResource {
     @Timed
     public Response addNotifier(@FormDataParam("notifierJarFile") final InputStream inputStream,
                                 @FormDataParam("notifierJarFile") final FormDataContentDisposition contentDispositionHeader,
-                                @FormDataParam("notifierConfig") final FormDataBodyPart notifierConfig) {
-        try {
-            LOG.debug("Media type {}", notifierConfig.getMediaType());
-            if (!notifierConfig.getMediaType().equals(MediaType.APPLICATION_JSON_TYPE)) {
-                return WSUtils.respond(UNSUPPORTED_MEDIA_TYPE, CatalogResponse.ResponseMessage.UNSUPPORTED_MEDIA_TYPE);
-            }
-            NotifierInfo notifierInfo = notifierConfig.getValueAs(NotifierInfo.class);
-            String jarFileName = uploadJar(inputStream, notifierInfo.getName());
-            notifierInfo.setJarFileName(jarFileName);
-            NotifierInfo createdNotifierInfo = catalogService.addNotifierInfo(notifierInfo);
-            return WSUtils.respond(createdNotifierInfo, CREATED, SUCCESS);
-        } catch (Exception ex) {
-            LOG.error("Got exception", ex);
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+                                @FormDataParam("notifierConfig") final FormDataBodyPart notifierConfig)
+        throws IOException {
+        MediaType mediaType = notifierConfig.getMediaType();
+        LOG.debug("Media type {}", mediaType);
+        if (!mediaType.equals(MediaType.APPLICATION_JSON_TYPE)) {
+            throw new UnsupportedMediaTypeException(mediaType.toString());
         }
+        NotifierInfo notifierInfo = notifierConfig.getValueAs(NotifierInfo.class);
+        String jarFileName = uploadJar(inputStream, notifierInfo.getName());
+        notifierInfo.setJarFileName(jarFileName);
+        NotifierInfo createdNotifierInfo = catalogService.addNotifierInfo(notifierInfo);
+        return WSUtils.respondEntity(createdNotifierInfo, CREATED);
     }
 
     @DELETE
     @Path("/notifiers/{id}")
     @Timed
     public Response removeNotifierInfo(@PathParam("id") Long id) {
-        try {
-            NotifierInfo removedNotifierInfo = catalogService.removeNotifierInfo(id);
-            if (removedNotifierInfo != null) {
-                return WSUtils.respond(removedNotifierInfo, OK, SUCCESS);
-            } else {
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, id.toString());
-            }
-        } catch (Exception ex) {
-            LOG.error("Got exception", ex);
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        NotifierInfo removedNotifierInfo = catalogService.removeNotifierInfo(id);
+        if (removedNotifierInfo != null) {
+            return WSUtils.respondEntity(removedNotifierInfo, OK);
         }
+
+        throw EntityNotFoundException.byId(id.toString());
     }
 
     @PUT
@@ -179,21 +155,18 @@ public class NotifierInfoCatalogResource {
     public Response addOrUpdateNotifierInfo(@PathParam("id") Long id,
                                             @FormDataParam("notifierJarFile") final InputStream inputStream,
                                             @FormDataParam("notifierJarFile") final FormDataContentDisposition contentDispositionHeader,
-                                            @FormDataParam("notifierConfig") final FormDataBodyPart notifierConfig) {
-        try {
-            LOG.debug("Media type {}", notifierConfig.getMediaType());
-            if (!notifierConfig.getMediaType().equals(MediaType.APPLICATION_JSON_TYPE)) {
-                return WSUtils.respond(UNSUPPORTED_MEDIA_TYPE, CatalogResponse.ResponseMessage.UNSUPPORTED_MEDIA_TYPE);
-            }
-            NotifierInfo notifierInfo = notifierConfig.getValueAs(NotifierInfo.class);
-            String jarFileName = uploadJar(inputStream, notifierInfo.getName());
-            notifierInfo.setJarFileName(jarFileName);
-            NotifierInfo newNotifierInfo = catalogService.addOrUpdateNotifierInfo(id, notifierInfo);
-            return WSUtils.respond(newNotifierInfo, OK, SUCCESS);
-        } catch (Exception ex) {
-            LOG.error("Got exception", ex);
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+                                            @FormDataParam("notifierConfig") final FormDataBodyPart notifierConfig)
+        throws IOException {
+        MediaType mediaType = notifierConfig.getMediaType();
+        LOG.debug("Media type {}", mediaType);
+        if (!mediaType.equals(MediaType.APPLICATION_JSON_TYPE)) {
+            throw new UnsupportedMediaTypeException(mediaType.toString());
         }
+        NotifierInfo notifierInfo = notifierConfig.getValueAs(NotifierInfo.class);
+        String jarFileName = uploadJar(inputStream, notifierInfo.getName());
+        notifierInfo.setJarFileName(jarFileName);
+        NotifierInfo newNotifierInfo = catalogService.addOrUpdateNotifierInfo(id, notifierInfo);
+        return WSUtils.respondEntity(newNotifierInfo, CREATED);
     }
 
     /**
@@ -206,18 +179,15 @@ public class NotifierInfoCatalogResource {
     @GET
     @Produces({"application/java-archive", "application/json"})
     @Path("/notifiers/download/{notifierId}")
-    public Response downloadUdf(@PathParam("notifierId") Long notifierId) {
-        try {
-            NotifierInfo notifierInfo = catalogService.getNotifierInfo(notifierId);
-            if (notifierInfo != null) {
-                StreamingOutput streamOutput = WSUtils.wrapWithStreamingOutput(
-                        catalogService.downloadFileFromStorage(notifierInfo.getJarFileName()));
-                return Response.ok(streamOutput).build();
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+    public Response downloadUdf(@PathParam("notifierId") Long notifierId) throws IOException {
+        NotifierInfo notifierInfo = catalogService.getNotifierInfo(notifierId);
+        if (notifierInfo != null) {
+            StreamingOutput streamOutput = WSUtils.wrapWithStreamingOutput(
+                    catalogService.downloadFileFromStorage(notifierInfo.getJarFileName()));
+            return Response.ok(streamOutput).build();
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, notifierId.toString());
+
+        throw EntityNotFoundException.byId(notifierId.toString());
     }
 
     private String uploadJar(InputStream is, String notifierName) throws IOException {
@@ -233,6 +203,4 @@ public class NotifierInfoCatalogResource {
         }
         return jarFileName;
     }
-
-
 }

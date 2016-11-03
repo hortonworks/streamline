@@ -23,6 +23,7 @@ import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.StreamInfo;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import org.apache.streamline.streams.service.exception.request.EntityNotFoundException;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -38,15 +39,9 @@ import javax.ws.rs.core.UriInfo;
 import java.util.Collection;
 import java.util.List;
 
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_VERSION_NOT_FOUND;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static org.apache.streamline.common.util.WSUtils.buildTopologyIdAndVersionIdAwareQueryParams;
 
 /**
@@ -95,7 +90,7 @@ public class TopologyStreamCatalogResource {
     @GET
     @Path("/topologies/{topologyId}/streams")
     @Timed
-    public Response listStreamInfos(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) {
+    public Response listStreamInfos(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) throws Exception {
         return listTopologyStreams(
                 buildTopologyIdAndVersionIdAwareQueryParams(
                         topologyId,
@@ -107,24 +102,21 @@ public class TopologyStreamCatalogResource {
     @Path("/topologies/{topologyId}/versions/{versionId}/streams")
     @Timed
     public Response listStreamInfosForVersion(@PathParam("topologyId") Long topologyId,
-                                                  @PathParam("versionId") Long versionId,
-                                                  @Context UriInfo uriInfo) {
+                                              @PathParam("versionId") Long versionId,
+                                              @Context UriInfo uriInfo) throws Exception {
         return listTopologyStreams(
                 buildTopologyIdAndVersionIdAwareQueryParams(topologyId,
                         versionId,
                         uriInfo));
     }
 
-    private Response listTopologyStreams(List<QueryParam> queryParams) {
-        try {
-            Collection<StreamInfo> sources = catalogService.listStreamInfos(queryParams);
-            if (sources != null) {
-                return WSUtils.respond(sources, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+    private Response listTopologyStreams(List<QueryParam> queryParams) throws Exception {
+        Collection<StreamInfo> sources = catalogService.listStreamInfos(queryParams);
+        if (sources != null) {
+            return WSUtils.respondEntities(sources, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, queryParams.toString());
+
+        throw EntityNotFoundException.byFilter(queryParams.toString());
     }
 
 
@@ -157,15 +149,12 @@ public class TopologyStreamCatalogResource {
     @Path("/topologies/{topologyId}/streams/{id}")
     @Timed
     public Response getStreamInfoById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long streamId) {
-        try {
-            StreamInfo streamInfo = catalogService.getStreamInfo(topologyId, streamId);
-            if (streamInfo != null) {
-                return WSUtils.respond(streamInfo, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        StreamInfo streamInfo = catalogService.getStreamInfo(topologyId, streamId);
+        if (streamInfo != null) {
+            return WSUtils.respondEntity(streamInfo, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, streamId.toString());
+
+        throw EntityNotFoundException.byId(buildMessageForCompositeId(topologyId, streamId));
     }
 
     @GET
@@ -174,15 +163,12 @@ public class TopologyStreamCatalogResource {
     public Response getStreamInfoById(@PathParam("topologyId") Long topologyId,
                                       @PathParam("versionId") Long versionId,
                                       @PathParam("id") Long streamId) {
-        try {
-            StreamInfo streamInfo = catalogService.getStreamInfo(topologyId, streamId, versionId);
-            if (streamInfo != null) {
-                return WSUtils.respond(streamInfo, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        StreamInfo streamInfo = catalogService.getStreamInfo(topologyId, streamId, versionId);
+        if (streamInfo != null) {
+            return WSUtils.respondEntity(streamInfo, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_VERSION_NOT_FOUND, buildMessageForCompositeId(topologyId, streamId),
+
+        throw EntityNotFoundException.byVersion(buildMessageForCompositeId(topologyId, streamId),
                 versionId.toString());
     }
 
@@ -230,12 +216,8 @@ public class TopologyStreamCatalogResource {
     @Path("/topologies/{topologyId}/streams")
     @Timed
     public Response addStreamInfo(@PathParam("topologyId") Long topologyId, StreamInfo streamInfo) {
-        try {
-            StreamInfo createdStream = catalogService.addStreamInfo(topologyId, streamInfo);
-            return WSUtils.respond(createdStream, CREATED, SUCCESS);
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
-        }
+        StreamInfo createdStream = catalogService.addStreamInfo(topologyId, streamInfo);
+        return WSUtils.respondEntity(createdStream, CREATED);
     }
 
     /**
@@ -292,12 +274,8 @@ public class TopologyStreamCatalogResource {
     @Path("/topologies/{topologyId}/streams/{id}")
     @Timed
     public Response addOrUpdateStreamInfo(@PathParam("topologyId") Long topologyId, @PathParam("id") Long id, StreamInfo streamInfo) {
-        try {
-            StreamInfo newStreamInfo = catalogService.addOrUpdateStreamInfo(topologyId, id, streamInfo);
-            return WSUtils.respond(newStreamInfo, OK, SUCCESS);
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
-        }
+        StreamInfo newStreamInfo = catalogService.addOrUpdateStreamInfo(topologyId, id, streamInfo);
+        return WSUtils.respondEntity(newStreamInfo, OK);
     }
 
     /**
@@ -334,17 +312,12 @@ public class TopologyStreamCatalogResource {
     @Path("/topologies/{topologyId}/streams/{id}")
     @Timed
     public Response removeStreamInfo(@PathParam("topologyId") Long topologyId, @PathParam("id") Long id) {
-        try {
-            StreamInfo removedStream = catalogService.removeStreamInfo(topologyId, id);
-            if (removedStream != null) {
-                return WSUtils.respond(removedStream, OK, SUCCESS);
-            } else {
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, id.toString());
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        StreamInfo removedStream = catalogService.removeStreamInfo(topologyId, id);
+        if (removedStream != null) {
+            return WSUtils.respondEntity(removedStream, OK);
         }
 
+        throw EntityNotFoundException.byId(buildMessageForCompositeId(topologyId, id));
     }
 
     private String buildMessageForCompositeId(Long topologyId, Long streamId) {

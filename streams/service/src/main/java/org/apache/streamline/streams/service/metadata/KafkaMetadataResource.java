@@ -17,12 +17,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_BY_NAME_NOT_FOUND;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 
 @Path("/v1/catalog")
@@ -38,10 +32,11 @@ public class KafkaMetadataResource {
     @GET
     @Path("/clusters/name/{clusterName}/services/kafka/brokers")
     @Timed
-    public Response getBrokersByClusterName(@PathParam("clusterName") String clusterName) {
+    public Response getBrokersByClusterName(@PathParam("clusterName") String clusterName)
+        throws Exception {
         final Cluster cluster = catalogService.getClusterByName(clusterName);
         if (cluster == null) {
-            return WSUtils.respond(NOT_FOUND, ENTITY_BY_NAME_NOT_FOUND, "cluster name " + clusterName);
+            throw org.apache.streamline.streams.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
         }
         return getBrokersByClusterId(cluster.getId());
     }
@@ -49,23 +44,22 @@ public class KafkaMetadataResource {
     @GET
     @Path("/clusters/{clusterId}/services/kafka/brokers")
     @Timed
-    public Response getBrokersByClusterId(@PathParam("clusterId") Long clusterId) {
+    public Response getBrokersByClusterId(@PathParam("clusterId") Long clusterId) throws Exception {
         try(final KafkaMetadataService kafkaMetadataService = KafkaMetadataService.newInstance(catalogService, clusterId)) {
-            return WSUtils.respond(kafkaMetadataService.getBrokerHostPortFromStreamsJson(clusterId), OK, SUCCESS);
+            return WSUtils.respondEntity(kafkaMetadataService.getBrokerHostPortFromStreamsJson(clusterId), OK);
         } catch (EntityNotFoundException ex) {
-            return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, ex.getMessage());
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+            throw org.apache.streamline.streams.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
         }
     }
 
     @GET
     @Path("/clusters/name/{clusterName}/services/kafka/topics")
     @Timed
-    public Response getTopicsByClusterName(@PathParam("clusterName") String clusterName) {
+    public Response getTopicsByClusterName(@PathParam("clusterName") String clusterName)
+        throws Exception {
         final Cluster cluster = catalogService.getClusterByName(clusterName);
         if (cluster == null) {
-            return WSUtils.respond(NOT_FOUND, ENTITY_BY_NAME_NOT_FOUND, "cluster name " + clusterName);
+            throw org.apache.streamline.streams.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
         }
         return getTopicsByClusterId(cluster.getId());
     }
@@ -73,13 +67,11 @@ public class KafkaMetadataResource {
     @GET
     @Path("/clusters/{clusterId}/services/kafka/topics")
     @Timed
-    public Response getTopicsByClusterId(@PathParam("clusterId") Long clusterId) {
+    public Response getTopicsByClusterId(@PathParam("clusterId") Long clusterId) throws Exception {
         try(final KafkaMetadataService kafkaMetadataService = KafkaMetadataService.newInstance(catalogService, clusterId)) {
-            return WSUtils.respond(kafkaMetadataService.getTopicsFromZk(), OK, SUCCESS);
+            return WSUtils.respondEntity(kafkaMetadataService.getTopicsFromZk(), OK);
         } catch (EntityNotFoundException ex) {
-            return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, ex.getMessage());
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+            throw org.apache.streamline.streams.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
         }
     }
 }
