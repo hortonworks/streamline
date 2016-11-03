@@ -39,6 +39,7 @@ import org.apache.streamline.storage.StorableKey;
 import org.apache.streamline.storage.StorageManager;
 import org.apache.streamline.storage.exception.StorageException;
 import org.apache.streamline.streams.StreamlineEvent;
+import org.apache.streamline.streams.catalog.BranchRuleInfo;
 import org.apache.streamline.streams.catalog.Cluster;
 import org.apache.streamline.streams.catalog.Component;
 import org.apache.streamline.streams.catalog.NotifierInfo;
@@ -131,6 +132,7 @@ public class StreamCatalogService {
     private static final String TOPOLOGY_PROCESSOR_STREAM_MAPPING_NAMESPACE = new TopologyProcessorStreamMapping().getNameSpace();
     private static final String TOPOLOGY_EDGE_NAMESPACE = new TopologyEdge().getNameSpace();
     private static final String TOPOLOGY_RULEINFO_NAMESPACE = new RuleInfo().getNameSpace();
+    private static final String TOPOLOGY_BRANCHRULEINFO_NAMESPACE = new BranchRuleInfo().getNameSpace();
     private static final String TOPOLOGY_WINDOWINFO_NAMESPACE = new WindowInfo().getNameSpace();
     private static final String UDF_NAMESPACE = new UDFInfo().getNameSpace();
 
@@ -1481,6 +1483,49 @@ public class StreamCatalogService {
         return dao.find(TOPOLOGY_WINDOWINFO_NAMESPACE, params);
     }
 
+    public Collection<BranchRuleInfo> listBranchRules() {
+        return dao.list(TOPOLOGY_BRANCHRULEINFO_NAMESPACE);
+    }
+
+    public Collection<BranchRuleInfo> listBranchRules(List<QueryParam> params) throws Exception {
+        return dao.find(TOPOLOGY_BRANCHRULEINFO_NAMESPACE, params);
+    }
+
+    public BranchRuleInfo addBranchRule(Long topologyId, BranchRuleInfo branchRuleInfo) throws Exception {
+        if (branchRuleInfo.getId() == null) {
+            branchRuleInfo.setId(dao.nextId(TOPOLOGY_BRANCHRULEINFO_NAMESPACE));
+        }
+        branchRuleInfo.setTopologyId(topologyId);
+        String parsedRuleStr = parseAndSerialize(branchRuleInfo);
+        LOG.debug("ParsedRuleStr {}", parsedRuleStr);
+        branchRuleInfo.setParsedRuleStr(parsedRuleStr);
+        dao.add(branchRuleInfo);
+        return branchRuleInfo;
+    }
+
+    public BranchRuleInfo getBranchRule(Long id) throws Exception {
+        BranchRuleInfo brRuleInfo = new BranchRuleInfo();
+        brRuleInfo.setId(id);
+        return dao.get(new StorableKey(TOPOLOGY_BRANCHRULEINFO_NAMESPACE, brRuleInfo.getPrimaryKey()));
+    }
+
+    public BranchRuleInfo addOrUpdateBranchRule(Long topologyid, Long ruleId, BranchRuleInfo brRuleInfo) throws Exception {
+        brRuleInfo.setId(ruleId);
+        brRuleInfo.setTopologyId(topologyid);
+        String parsedRuleStr = parseAndSerialize(brRuleInfo);
+        LOG.debug("ParsedRuleStr {}", parsedRuleStr);
+        brRuleInfo.setParsedRuleStr(parsedRuleStr);
+        dao.addOrUpdate(brRuleInfo);
+        return brRuleInfo;
+    }
+
+    public BranchRuleInfo removeBranchRule(Long id) {
+        BranchRuleInfo brRuleInfo = new BranchRuleInfo();
+        brRuleInfo.setId(id);
+        return dao.remove(
+                new StorableKey(TOPOLOGY_BRANCHRULEINFO_NAMESPACE, brRuleInfo.getPrimaryKey()));
+    }
+
     public WindowInfo addWindow(Long topologyId, WindowInfo windowInfo) throws Exception {
         if (windowInfo.getId() == null) {
             windowInfo.setId(dao.nextId(TOPOLOGY_WINDOWINFO_NAMESPACE));
@@ -1530,6 +1575,18 @@ public class StreamCatalogService {
             throw new IllegalArgumentException("Either streams or sql string should be specified.");
         }
         parseSql(rule, ruleInfo.getSql(), ruleInfo.getTopologyId());
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(rule);
+    }
+
+    private String parseAndSerialize(BranchRuleInfo ruleInfo) throws JsonProcessingException {
+        Rule rule = new Rule();
+        rule.setId(ruleInfo.getId());
+        rule.setName(ruleInfo.getName());
+        rule.setDescription(ruleInfo.getDescription());
+        rule.setActions(ruleInfo.getActions());
+        String sql = getSqlString(Arrays.asList(ruleInfo.getStream()), null, ruleInfo.getCondition(), null);
+        parseSql(rule, sql, ruleInfo.getTopologyId());
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(rule);
     }

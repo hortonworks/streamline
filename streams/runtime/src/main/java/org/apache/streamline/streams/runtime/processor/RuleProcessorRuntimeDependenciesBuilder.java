@@ -41,6 +41,9 @@ public class RuleProcessorRuntimeDependenciesBuilder {
         this.ruleRuntimeBuilder = ruleRuntimeBuilder;
     }
 
+    /**
+     * Converts List<rule> in the ruleProcessor into List<RuleRuntime>
+     */
     public List<RuleRuntime> getRulesRuntime() {
         final List<Rule> rules = rulesProcessor.getRules();
         final List<RuleRuntime> ruleRuntimes = new ArrayList<>();
