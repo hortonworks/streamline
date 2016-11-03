@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS topology_component_definitions ("id" BIGINT NOT NULL,
 CREATE TABLE IF NOT EXISTS topology_editor_metadata ("topologyId" BIGINT NOT NULL, "data" VARCHAR, "timestamp"  BIGINT, CONSTRAINT pk PRIMARY KEY ("topologyId"))
 CREATE TABLE IF NOT EXISTS tag ("id" BIGINT NOT NULL, "name" VARCHAR(256), "description" VARCHAR(256), "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
 CREATE TABLE IF NOT EXISTS tag_storable_mapping ("tagId" BIGINT NOT NULL, "storableNamespace" VARCHAR(32) NOT NULL, "storableId" BIGINT NOT NULL, CONSTRAINT pk PRIMARY KEY ("tagId", "storableNamespace", "storableId"))
-CREATE TABLE IF NOT EXISTS notifierinfos ("id" BIGINT  NOT NULL, "name" VARCHAR, "jarFileName" VARCHAR, "className" VARCHAR, "timestamp"  BIGINT, "properties" VARCHAR, "fieldValues" VARCHAR, CONSTRAINT pk PRIMARY KEY ("id"))
+CREATE TABLE IF NOT EXISTS notifierinfos ("id" BIGINT  NOT NULL, "name" VARCHAR, "description" VARCHAR, "jarFileName" VARCHAR, "className" VARCHAR, "timestamp"  BIGINT, "properties" VARCHAR, "fieldValues" VARCHAR, CONSTRAINT pk PRIMARY KEY ("id"))
 CREATE TABLE IF NOT EXISTS streaminfo ("id" BIGINT NOT NULL, "topologyId" BIGINT, "streamId" VARCHAR(256), "fieldsData" VARCHAR, "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
 CREATE TABLE IF NOT EXISTS topology_components ("id" BIGINT NOT NULL, "topologyId" BIGINT, "name" VARCHAR, "type" VARCHAR, "configData" VARCHAR, CONSTRAINT pk PRIMARY KEY ("id"))
 CREATE TABLE IF NOT EXISTS topology_sources ("id" BIGINT NOT NULL, "topologyId" BIGINT, "name" VARCHAR, "type" VARCHAR, "configData" VARCHAR, CONSTRAINT pk PRIMARY KEY ("id"))

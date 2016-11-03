@@ -198,7 +198,9 @@ public class RestIntegrationTest {
     private Collection<ResourceTestElement> resourcesToTest = Lists.newArrayList(
             new ResourceTestElement(createTag(1L, "foo-tag"), createTag(1L, "foo-tag-new"), "1", rootUrl + "tags"),
             clusterResourceToTest, serviceResourceToTest, componentResourceToTest,
-            new ResourceTestElement(createNotifierInfo(1l, "testNotifier"), createNotifierInfo(1l, "testNotifierPut"), "1", rootUrl + "notifiers"),
+            new ResourceTestElement(createNotifierInfo(1l, "testNotifier"), createNotifierInfo(1l, "testNotifierPut"), "1", rootUrl + "notifiers")
+                    .withMultiPart().withEntitiyNameHeader("notifierConfig").withFileNameHeader("notifierJarFile")
+                    .withFileToUpload("testnotifier.jar"),
             new ResourceTestElement(createTopology(1l, "iotasTopology"), createTopology(1l, "iotasTopologyPut"), "1", rootUrl + "topologies"),
             new ResourceTestElement(createTopologyEditorMetadata(1l, "{\"x\":5,\"y\":6}"), createTopologyEditorMetadata(1l, "{\"x\":6,\"y\":5}"), "1", rootUrl + "system/topologyeditormetadata"),
             new ResourceTestElement(createTopologyComponent(1l, "kafkaSpoutComponent", TopologyComponentDefinition.TopologyComponentType.SOURCE, "KAFKA"), createTopologyComponent(1l, "kafkaSpoutComponentPut", TopologyComponentDefinition.TopologyComponentType.SOURCE, "KAFKA") , "1", rootUrl + "system/componentdefinitions/SOURCE"),

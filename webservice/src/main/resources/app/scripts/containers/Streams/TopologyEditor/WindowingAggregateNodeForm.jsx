@@ -52,7 +52,8 @@ export default class WindowingAggregateNodeForm extends Component {
 			outputFieldsArr: [{args: '', functionName: '', outputFieldName: ''}],
 			functionListArr: [],
 			outputStreamId: '',
-			outputStreamFields: []
+                        outputStreamFields: [],
+      argumentError : false
 		};
 		this.state = obj;
 	}
@@ -316,6 +317,10 @@ export default class WindowingAggregateNodeForm extends Component {
 		})
 		if(obj){
 			if(obj.returnType){
+          if(fieldObj){
+            let argList = obj.argTypes[0].includes(fieldObj.type);
+            (argList) ? this.setState({argumentError : false}) : this.setState({argumentError : true})
+          }
 				return obj.returnType;
 			} else {
 				return fieldObj.type;
@@ -354,7 +359,7 @@ export default class WindowingAggregateNodeForm extends Component {
 	}
 
 	validateData(){
-		let {selectedKeys, windowNum, outputFieldsArr} = this.state;
+		let {selectedKeys, windowNum, outputFieldsArr, argumentError} = this.state;
 		let validData = true;
 		if(selectedKeys.length === 0 || windowNum === ''){
 			validData = false;
@@ -364,6 +369,9 @@ export default class WindowingAggregateNodeForm extends Component {
 				validData = false;
 			}
 		})
+    if(argumentError){
+      return false;
+    }
 		return validData;
 	}
 
@@ -493,7 +501,7 @@ export default class WindowingAggregateNodeForm extends Component {
 
 	render() {
 		let {parallelism, selectedKeys, keysList, editMode, intervalType, intervalTypeArr, windowNum, slidingNum,
-			durationType, slidingDurationType, durationTypeArr, outputFieldsArr, functionListArr, outputStreamId, outputStreamFields } = this.state;
+                        durationType, slidingDurationType, durationTypeArr, outputFieldsArr, functionListArr, outputStreamId, outputStreamFields,argumentError } = this.state;
 		let {topologyId, nodeType, nodeData, targetNodes, linkShuffleOptions} = this.props;
 		return (
 			<Tabs id="WindowForm" defaultActiveKey={1} className="schema-tabs">
@@ -606,6 +614,9 @@ export default class WindowingAggregateNodeForm extends Component {
 									<i className="fa fa-plus-circle"></i> Add Output Field
 								</button>
 							:null}
+              {
+                (argumentError) ? <label className="color-error">The Aggregate Function is not supported by input</label> : ''
+              }
 							<div className="clearfix row-margin-bottom"></div>
 							{outputFieldsArr.map((obj, i)=>{
 								return(

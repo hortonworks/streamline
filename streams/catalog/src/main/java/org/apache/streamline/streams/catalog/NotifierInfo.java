@@ -1,6 +1,7 @@
 package org.apache.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,21 +19,22 @@ import java.util.Map;
 /**
  * The notifier instance config stored in database.
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class NotifierInfo extends AbstractStorable {
     public static final String NAMESPACE = "notifierinfos";
 
     public static final String ID = "id";
     public static final String NOTIFIER_NAME = "name";
+    public static final String DESCRIPTION = "description";
     public static final String JARFILE_NAME = "jarFileName";
     public static final String CLASS_NAME = "className";
     public static final String PROPERTIES = "properties";
-    public static final String PROPERTIES_DATA = "propertiesData";
     public static final String FIELD_VALUES = "fieldValues";
-    public static final String FIELD_VALUES_DATA = "fieldValuesData";
     public static final String TIMESTAMP = "timestamp";
 
     private Long id;
     private String name;
+    private String description;
     private String jarFileName;
     private String className;
     private Map<String, String> properties;
@@ -165,6 +167,14 @@ public class NotifierInfo extends AbstractStorable {
         fieldValues = mapper.readValue(fieldValuesData, new TypeReference<Map<String, String>>() {});
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     @Override
     public Map<String, Object> toMap() {
         Map result = super.toMap();
@@ -180,6 +190,7 @@ public class NotifierInfo extends AbstractStorable {
     @Override
     public Storable fromMap(Map<String, Object> map) {
         this.setName((String) map.get(NOTIFIER_NAME));
+        this.setDescription((String) map.get(DESCRIPTION));
         this.setId((Long) map.get(ID));
         this.setJarFileName((String) map.get(JARFILE_NAME));
         this.setClassName((String) map.get(CLASS_NAME));
@@ -196,8 +207,9 @@ public class NotifierInfo extends AbstractStorable {
     @JsonIgnore
     public Schema getSchema() {
         List<Schema.Field> fields = new ArrayList<>();
-        fields.add(new Schema.Field(NOTIFIER_NAME, Schema.Type.STRING));
         fields.add(new Schema.Field(ID, Schema.Type.LONG));
+        fields.add(new Schema.Field(NOTIFIER_NAME, Schema.Type.STRING));
+        fields.add(new Schema.Field(DESCRIPTION, Schema.Type.STRING));
         fields.add(new Schema.Field(JARFILE_NAME, Schema.Type.STRING));
         fields.add(new Schema.Field(CLASS_NAME, Schema.Type.STRING));
         fields.add(new Schema.Field(TIMESTAMP, Schema.Type.LONG));

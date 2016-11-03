@@ -2,11 +2,14 @@ package org.apache.streamline.streams.service;
 
 import org.apache.registries.common.QueryParam;
 import org.apache.streamline.common.catalog.CatalogResponse;
+import org.apache.registries.common.util.FileStorage;
 import org.apache.streamline.streams.catalog.NotifierInfo;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.integration.junit4.JMockit;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,8 +17,10 @@ import org.junit.runner.RunWith;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
+import java.io.InputStream;
 import java.util.Arrays;
 
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -32,11 +37,23 @@ public class NotifierInfoCatalogResourceTest {
     @Injectable
     UriInfo mockUriInfo;
 
+    @Injectable
+    FileStorage mockFileStorage;
+
+    @Injectable
+    InputStream mockInputStream;
+
+    @Injectable
+    FormDataContentDisposition mockFormDataContentDisposition;
+
+    @Injectable
+    FormDataBodyPart mockFormDataBodyPart;
+
     MultivaluedMap<String, String> multiValuedMap;
 
     @Before
     public void setUp() throws Exception {
-        resource = new NotifierInfoCatalogResource(mockCatalogService);
+        resource = new NotifierInfoCatalogResource(mockCatalogService, mockFileStorage);
         multiValuedMap = new MultivaluedHashMap<>();
     }
 
@@ -82,14 +99,25 @@ public class NotifierInfoCatalogResourceTest {
     @Test
     public void testAddNotifier() throws Exception {
         final NotifierInfo notifierInfo = new NotifierInfo();
+        notifierInfo.setName("test");
         new Expectations() {
             {
                 mockCatalogService.addNotifierInfo(notifierInfo);times=1;
                 result = notifierInfo;
+                mockFormDataBodyPart.getMediaType();
+                result = APPLICATION_JSON_TYPE;
+                mockFormDataBodyPart.getValueAs(NotifierInfo.class);
+                result = notifierInfo;
+                mockFileStorage.uploadFile(mockInputStream, anyString);
+                result = "uploadedPath";
+
             }
         };
 
-        CatalogResponse catalogResponse = (CatalogResponse) resource.addNotifier(notifierInfo).getEntity();
+        CatalogResponse catalogResponse = (CatalogResponse) resource.addNotifier(
+                mockInputStream,
+                mockFormDataContentDisposition,
+                mockFormDataBodyPart).getEntity();
 
         assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), catalogResponse.getResponseCode());
         assertEquals(notifierInfo, catalogResponse.getEntity());

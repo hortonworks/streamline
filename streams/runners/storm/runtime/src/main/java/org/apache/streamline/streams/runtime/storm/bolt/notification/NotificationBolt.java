@@ -18,9 +18,14 @@
 
 package org.apache.streamline.streams.runtime.storm.bolt.notification;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.storm.task.OutputCollector;
+import org.apache.storm.task.TopologyContext;
+import org.apache.storm.topology.OutputFieldsDeclarer;
+import org.apache.storm.topology.base.BaseRichBolt;
+import org.apache.storm.tuple.Tuple;
 import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.catalog.CatalogRestClient;
-import org.apache.streamline.streams.catalog.NotifierInfo;
+import org.apache.streamline.streams.layout.component.impl.NotificationSink;
 import org.apache.streamline.streams.notification.Notification;
 import org.apache.streamline.streams.notification.NotifierConfig;
 import org.apache.streamline.streams.notification.common.NotifierConfigImpl;
@@ -28,14 +33,13 @@ import org.apache.streamline.streams.notification.service.NotificationService;
 import org.apache.streamline.streams.notification.service.NotificationServiceImpl;
 import org.apache.streamline.streams.notification.store.hbase.HBaseNotificationStore;
 import org.apache.streamline.streams.runtime.notification.StreamlineEventAdapter;
-import org.apache.storm.task.OutputCollector;
-import org.apache.storm.task.TopologyContext;
-import org.apache.storm.topology.OutputFieldsDeclarer;
-import org.apache.storm.topology.base.BaseRichBolt;
-import org.apache.storm.tuple.Tuple;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -44,26 +48,41 @@ import java.util.Properties;
  * and uses notification service to send out notifications.
  */
 public class NotificationBolt extends BaseRichBolt {
+    private static final Logger LOG = LoggerFactory.getLogger(NotificationBolt.class);
+
     private static final String CATALOG_ROOT_URL = "catalog.root.url";
     public static final String LOCAL_NOTIFIER_JAR_PATH = "local.notifier.jar.path";
 
     private static final String NOTIFICATION_SERVICE_CONFIG_KEY = "notification.conf";
     private NotificationService notificationService;
     private BoltNotificationContext notificationContext;
-    private CatalogRestClient catalogRestClient;
     private String hbaseConfigKey = "hbase.conf";
-
-    private final String notifierName;
+    private final NotificationSink notificationSink;
 
     /**
-     * <p>
-     *     The notifier name that this bolt handles. The notifier name should uniquely identify
-     *     a notifier instance that the user configured via dashboard (e.g. email_notifier_1).
-     * </p>
-     * @param notifierName The notifier name associated with this bolt.
+     * The serialized JSON for the notification sink which is the design time component
+     * in the streamline topology. The notifier jars and classes are assumed to be in the class path.
+     *
+     * @param notificationSinkJson
      */
-    public NotificationBolt(String notifierName) {
-        this.notifierName = notifierName;
+    public NotificationBolt(String notificationSinkJson) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            notificationSink = mapper.readValue(notificationSinkJson, NotificationSink.class);
+        } catch (IOException e) {
+            LOG.error("Error during deserialization of JSON string: {}", notificationSinkJson, e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * The notification sink which is the design time component in the streamline topology.
+     * The notifier jars and classes are assumed to be in the class path.
+     *
+     * @param notificationSink
+     */
+    public NotificationBolt(NotificationSink notificationSink) {
+        this.notificationSink = notificationSink;
     }
 
     public NotificationBolt withHBaseConfigKey(String key) {
@@ -84,19 +103,18 @@ public class NotificationBolt extends BaseRichBolt {
             notificationConf = Collections.emptyMap();
         }
         notificationService = new NotificationServiceImpl(notificationConf, new HBaseNotificationStore(hbaseConf));
-        catalogRestClient = new CatalogRestClient(stormConf.get(CATALOG_ROOT_URL).toString());
-        NotifierInfo notifierInfo = catalogRestClient.getNotifierInfo(this.notifierName);
 
         String jarPath = String.format("%s%s%s", stormConf.get(LOCAL_NOTIFIER_JAR_PATH).toString(),
-                                       File.separator, notifierInfo.getJarFileName());
+                                       File.separator, notificationSink.getNotifierJarFileName());
 
         Properties props = new Properties();
-        props.putAll(notifierInfo.getProperties());
-        NotifierConfig notifierConfig = new NotifierConfigImpl(props, notifierInfo.getFieldValues(),
-                                                               notifierInfo.getClassName(), jarPath);
+        props.putAll(convertMapValuesToString(notificationSink.getNotifierProperties()));
+        NotifierConfig notifierConfig = new NotifierConfigImpl(props,
+                convertMapValuesToString(notificationSink.getNotifierFieldValues()),
+                notificationSink.getNotifierClassName(), jarPath);
 
         notificationContext = new BoltNotificationContext(collector, notifierConfig);
-        notificationService.register(this.notifierName, notificationContext);
+        notificationService.register(notificationSink.getNotifierName(), notificationContext);
     }
 
     @Override
@@ -104,7 +122,7 @@ public class NotificationBolt extends BaseRichBolt {
         Notification notification = new StreamlineEventAdapter((StreamlineEvent) tuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT));
         notificationContext.track(notification.getId(), tuple);
         // send to notifier
-        notificationService.notify(this.notifierName, notification);
+        notificationService.notify(notificationSink.getNotifierName(), notification);
     }
 
     @Override
@@ -114,6 +132,17 @@ public class NotificationBolt extends BaseRichBolt {
     @Override
     public void cleanup() {
         notificationService.close();
+    }
+
+    private Map<String, String> convertMapValuesToString(Map<String, Object> map) {
+        Map<String, String> result = new HashMap<>();
+        for (Map.Entry<String, Object> e : map.entrySet()) {
+            Object val = e.getValue();
+            if (val != null) {
+                result.put(e.getKey(), val.toString());
+            }
+        }
+        return result;
     }
 
 }
