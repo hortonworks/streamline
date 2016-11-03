@@ -22,18 +22,6 @@ function run_cmd {
   echo "--------------------------------------"
 }
 
-function add_nest_parser {
-  echo "POST nest_parser"
-  cmd="curl -sS -X POST -i -F parserJar=@../parsers/target/parsers-0.1.0-SNAPSHOT.jar -F parserInfo='{\"id\":1, \"name\":\"NestParser\",\"className\":\"org.apache.streamline.parsers.nest.NestParser\",\"version\":0}' -F schemaFromParserJar=true http://${host}:${port}/api/v1/catalog/parsers"
-  run_cmd $cmd
-}
-
-function add_console_custom_processor {
-  echo "POST console_custom_processor"
-  cmd="curl -sS -X POST -i -F jarFile=@../core/target/core-0.1.0-SNAPSHOT.jar -F imageFile=@../webservice/src/main/resources/assets/libs/bower/jquery-ui/css/images/animated-overlay.gif http://${host}:${port}/api/v1/catalog/system/componentdefinitions/PROCESSOR/custom -F customProcessorInfo=@console_custom_processor"
-  run_cmd $cmd
-}
-
 function post {
   uri=$1
   data=$2
@@ -67,6 +55,7 @@ done
 
 post /system/componentdefinitions/SOURCE $bootstrap_dir/kafka-topology-component
 post /system/componentdefinitions/PROCESSOR $bootstrap_dir/rule-topology-component
+post /system/componentdefinitions/PROCESSOR $bootstrap_dir/branch-topology-component
 post /system/componentdefinitions/PROCESSOR $bootstrap_dir/normalization-processor-topology-component
 post /system/componentdefinitions/SINK $bootstrap_dir/hdfs-topology-component
 post /system/componentdefinitions/SINK $bootstrap_dir/hbase-topology-component
