@@ -379,7 +379,7 @@ public class RestIntegrationTest {
         storeTestCluster(client, clusterId);
         storeTestService(client, clusterId, serviceId);
 
-        String componentBaseUrl = rootUrl + String.format("services/%d/components", clusterId, serviceId);
+        String componentBaseUrl = rootUrl + String.format("services/%d/components", serviceId);
 
         Component component = createComponent(serviceId, 1L, "testComponent:"+1);
 
@@ -390,7 +390,7 @@ public class RestIntegrationTest {
         Long anotherClusterId = 2L;
         Long anotherServiceId = 2L;
 
-        componentBaseUrl = rootUrl + String.format("services/%d/components", anotherClusterId, anotherServiceId);
+        componentBaseUrl = rootUrl + String.format("services/%d/components", anotherServiceId);
         response = client.target(componentBaseUrl).request().get(String.class);
         Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
         Assert.assertEquals(Collections.emptyList(), getEntities(response, Component.class));
