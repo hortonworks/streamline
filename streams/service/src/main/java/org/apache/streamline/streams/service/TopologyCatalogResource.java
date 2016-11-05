@@ -21,6 +21,7 @@ package org.apache.streamline.streams.service;
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.Topology;
@@ -59,6 +60,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import static java.util.stream.Collectors.toList;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.BAD_REQUEST_PARAM_MISSING;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.CUSTOM_PROCESSOR_ONLY;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
@@ -79,6 +81,7 @@ public class TopologyCatalogResource {
     private static final Logger LOG = LoggerFactory.getLogger(TopologyCatalogResource.class);
     public static final String JAR_FILE_PARAM_NAME = "jarFile";
     public static final String CP_INFO_PARAM_NAME = "customProcessorInfo";
+    private static final Integer DEFAULT_N_OF_TOP_N_LATENCY = 3;
     private final StreamCatalogService catalogService;
     private final URL SCHEMA = Thread.currentThread().getContextClassLoader()
             .getResource("assets/schemas/topology.json");
@@ -90,7 +93,9 @@ public class TopologyCatalogResource {
     @GET
     @Path("/topologies")
     @Timed
-    public Response listTopologies (@javax.ws.rs.QueryParam("withMetric") Boolean withMetric) {
+    public Response listTopologies (@javax.ws.rs.QueryParam("withMetric") Boolean withMetric,
+        @javax.ws.rs.QueryParam("sort") String sortType,
+        @javax.ws.rs.QueryParam("latencyTopN") Integer latencyTopN) {
         try {
             Collection<Topology> topologies = catalogService.listTopologies();
             Response response;
@@ -99,7 +104,7 @@ public class TopologyCatalogResource {
                     response = WSUtils.respond(topologies, OK, SUCCESS);
                 } else {
                     List<TopologyCatalogWithMetric> topologiesWithMetric = enrichMetricToTopologies(
-                        topologies);
+                        topologies, sortType, latencyTopN);
                     response = WSUtils.respond(topologiesWithMetric, OK, SUCCESS);
                 }
             } else {
@@ -116,7 +121,8 @@ public class TopologyCatalogResource {
     @Path("/topologies/{topologyId}")
     @Timed
     public Response getTopologyById (@PathParam("topologyId") Long topologyId,
-        @javax.ws.rs.QueryParam("withMetric") Boolean withMetric) {
+        @javax.ws.rs.QueryParam("withMetric") Boolean withMetric,
+        @javax.ws.rs.QueryParam("latencyTopN") Integer latencyTopN) {
         try {
             Topology result = catalogService.getTopology(topologyId);
             if (result != null) {
@@ -124,7 +130,7 @@ public class TopologyCatalogResource {
                     return WSUtils.respond(result, OK, SUCCESS);
                 } else {
                     TopologyCatalogWithMetric topologiesWithMetric = enrichMetricToTopology(
-                        result);
+                        result, latencyTopN);
                     return WSUtils.respond(topologiesWithMetric, OK, SUCCESS);
                 }
             }
@@ -536,25 +542,46 @@ public class TopologyCatalogResource {
     }
 
     private List<TopologyCatalogWithMetric> enrichMetricToTopologies(
-        Collection<Topology> topologies) {
+        Collection<Topology> topologies, String sortType, Integer latencyTopN) {
         // need to also provide Topology Metric
         List<TopologyCatalogWithMetric> topologiesWithMetric = new ArrayList<>(topologies.size());
         for (Topology topology : topologies) {
-            TopologyCatalogWithMetric topologyCatalogWithMetric = enrichMetricToTopology(topology);
+            TopologyCatalogWithMetric topologyCatalogWithMetric = enrichMetricToTopology(topology, latencyTopN);
             topologiesWithMetric.add(topologyCatalogWithMetric);
         }
-        return topologiesWithMetric;
+
+        if (sortType != null) {
+            return topologiesWithMetric.stream().sorted((c1, c2) -> {
+                switch (TopologySortType.valueOf(sortType.toUpperCase())) {
+                case NAME:
+                    return c1.getTopology().getName().compareTo(c2.getTopology().getName());
+                case STATUS:
+                    return c1.getRunning().compareTo(c2.getRunning());
+                case LAST_UPDATED:
+                    return c1.getTopology().getTimestamp().compareTo(c2.getTopology().getTimestamp());
+                default:
+                    throw new IllegalStateException("Not supported SortType: " + sortType);
+                }
+            }).collect(toList());
+        } else {
+            return topologiesWithMetric;
+        }
     }
 
-    private TopologyCatalogWithMetric enrichMetricToTopology(Topology topology) {
+    private TopologyCatalogWithMetric enrichMetricToTopology(Topology topology, Integer latencyTopN) {
+        if (latencyTopN == null) {
+            latencyTopN = DEFAULT_N_OF_TOP_N_LATENCY;
+        }
+
         TopologyCatalogWithMetric topologyCatalogWithMetric;
         try {
             TopologyMetrics.TopologyMetric topologyMetric = catalogService.getTopologyMetric(topology);
-            topologyCatalogWithMetric = new TopologyCatalogWithMetric(topology, TopologyRunningStatus.RUNNING, topologyMetric);
+            List<Pair<String, Double>> latenciesTopN = catalogService.getTopNAndOtherComponentsLatency(topology, latencyTopN);
+            topologyCatalogWithMetric = new TopologyCatalogWithMetric(topology, TopologyRunningStatus.RUNNING, topologyMetric, latenciesTopN);
         } catch (TopologyNotAliveException e) {
-            topologyCatalogWithMetric = new TopologyCatalogWithMetric(topology, TopologyRunningStatus.NOT_RUNNING, null);
+            topologyCatalogWithMetric = new TopologyCatalogWithMetric(topology, TopologyRunningStatus.NOT_RUNNING, null, null);
         } catch (StormNotReachableException | IOException e) {
-            topologyCatalogWithMetric = new TopologyCatalogWithMetric(topology, TopologyRunningStatus.UNKNOWN, null);
+            topologyCatalogWithMetric = new TopologyCatalogWithMetric(topology, TopologyRunningStatus.UNKNOWN, null, null);
         }
         return topologyCatalogWithMetric;
     }
@@ -602,11 +629,14 @@ public class TopologyCatalogResource {
         private final Topology topology;
         private final TopologyRunningStatus running;
         private final TopologyMetrics.TopologyMetric metric;
+        private final List<Pair<String, Double>> latencyTopN;
 
-        public TopologyCatalogWithMetric(Topology topology, TopologyRunningStatus running, TopologyMetrics.TopologyMetric metric) {
+        public TopologyCatalogWithMetric(Topology topology, TopologyRunningStatus running,
+            TopologyMetrics.TopologyMetric metric, List<Pair<String, Double>> latencyTopN) {
             this.topology = topology;
             this.running = running;
             this.metric = metric;
+            this.latencyTopN = latencyTopN;
         }
 
         public Topology getTopology() {
@@ -620,6 +650,10 @@ public class TopologyCatalogResource {
         public TopologyMetrics.TopologyMetric getMetric() {
             return metric;
         }
-     }
+
+        public List<Pair<String, Double>> getLatencyTopN() {
+            return latencyTopN;
+        }
+    }
 }
 

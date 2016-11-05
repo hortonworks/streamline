@@ -29,6 +29,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.common.util.FileStorage;
@@ -98,6 +100,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -105,6 +108,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 
+import static java.util.stream.Collectors.toList;
 import static org.apache.streamline.streams.catalog.TopologyEdge.StreamGrouping;
 
 /**
@@ -680,7 +684,7 @@ public class StreamCatalogService {
         return this.topologyActions.status(getTopologyLayout(topology));
     }
 
-    public Map<String, TopologyMetrics.ComponentMetric> getTopologyMetrics(Topology topology) throws Exception {
+    public Map<String, TopologyMetrics.ComponentMetric> getTopologyMetrics(Topology topology) throws IOException {
         return this.topologyMetrics.getMetricsForTopology(getTopologyLayout(topology));
     }
 
@@ -702,6 +706,35 @@ public class StreamCatalogService {
 
     public TopologyMetrics.TopologyMetric getTopologyMetric(Topology topology) throws IOException {
         return this.topologyMetrics.getTopologyMetric(getTopologyLayout(topology));
+    }
+
+    public List<Pair<String, Double>> getTopNAndOtherComponentsLatency(Topology topology, int nOfTopN) throws IOException {
+        Map<String, TopologyMetrics.ComponentMetric> metricsForTopology = this.topologyMetrics
+            .getMetricsForTopology(getTopologyLayout(topology));
+
+        List<Pair<String, Double>> topNAndOther = new ArrayList<>();
+
+        List<ImmutablePair<String, Double>> latencyOrderedComponents = metricsForTopology.entrySet().stream()
+            .map((x) -> new ImmutablePair<>(x.getKey(), x.getValue().getProcessedTime()))
+            // reversed sort
+            .sorted((c1, c2) -> {
+                if (c2.getValue() == null) {
+                    // assuming c1 is bigger
+                    return -1;
+                } else {
+                    return c2.getValue().compareTo(c1.getValue());
+                }
+            })
+            .collect(toList());
+
+        latencyOrderedComponents.stream().limit(nOfTopN).forEachOrdered(topNAndOther::add);
+        double sumLatencyOthers = latencyOrderedComponents.stream()
+            .skip(nOfTopN).filter((x) -> x.getValue() != null)
+            .mapToDouble(Pair::getValue).sum();
+
+        topNAndOther.add(new ImmutablePair<>("Others", sumLatencyOthers));
+
+        return topNAndOther;
     }
 
     public Collection<TopologyComponentDefinition.TopologyComponentType> listTopologyComponentTypes() {
