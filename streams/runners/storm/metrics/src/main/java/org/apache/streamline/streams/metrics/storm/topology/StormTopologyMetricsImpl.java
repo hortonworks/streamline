@@ -202,7 +202,7 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
         Long failedRecords = getLongValueOrDefault(componentMap, StormMetricsConstant.STATS_JSON_FAILED_TUPLES, 0L);
         Double processedTime = getDoubleValueFromStringOrDefault(componentMap, STATS_JSON_PROCESS_LATENCY, 0.0d);
 
-        return new ComponentMetric(componentName, inputRecords, outputRecords, failedRecords, processedTime);
+        return new ComponentMetric(getComponentNameInStreamline(componentName), inputRecords, outputRecords, failedRecords, processedTime);
     }
 
     private String findTopologyId(String topologyName) {
@@ -263,5 +263,9 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
             }
         }
         return defaultValue;
+    }
+
+    private String getComponentNameInStreamline(String componentNameInStorm) {
+        return componentNameInStorm.substring(componentNameInStorm.indexOf('-'));
     }
 }
