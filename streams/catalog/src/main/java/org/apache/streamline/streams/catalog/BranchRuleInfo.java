@@ -39,7 +39,7 @@ public class BranchRuleInfo extends AbstractStorable {
     private String name;
     private String description;
     /*
-     * A branch info object will have either
+     * A branch info object will have
      * 1. the input stream and
      * 2. the condition string
      *    its translated into a select * from <stream> where <condition>
@@ -159,7 +159,6 @@ public class BranchRuleInfo extends AbstractStorable {
         ObjectMapper mapper = new ObjectMapper();
         Map<String, Object> map = super.toMap();
         try {
-            map.put(STREAM, stream != null ? mapper.writeValueAsString(stream) : "");
             map.put(ACTIONS, actions != null ? mapper.writerFor(new TypeReference<List<Action>>() {
             }).writeValueAsString(actions) : "");
         } catch (Exception e) {

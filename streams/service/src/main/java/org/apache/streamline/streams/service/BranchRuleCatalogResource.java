@@ -66,6 +66,7 @@ public class BranchRuleCatalogResource {
      *     "description": "rule test",
      *     "condition": "humidity > 90 AND celciusToFarenheit(temperature) > 80",
      *     "actions": ...
+     *     "stream": "stream1"
      *   }]
      * }
      * </pre>
@@ -100,6 +101,7 @@ public class BranchRuleCatalogResource {
      *     "name": "rule1",
      *     "description": "rule test",
      *     "actions": ...
+     *     "stream": "stream1"
      *   }
      * }
      * </pre>
@@ -130,6 +132,7 @@ public class BranchRuleCatalogResource {
      *   "description": "rule test",
      *   "condition": "humidity > 90 AND celciusToFarenheit(temperature) > 80",
      *   "actions": ...
+     *   "stream": "stream1"
      * }
      * </pre>
      * <i>Sample success response: </i>
@@ -144,6 +147,7 @@ public class BranchRuleCatalogResource {
      *     "description": "rule test",
      *     "condition": "humidity > 90 AND celciusToFarenheit(temperature) > 80",
      *     "actions": ...
+     *     "stream": "stream1"
      *   }
      * }
      * </pre>
@@ -177,6 +181,7 @@ public class BranchRuleCatalogResource {
      *   "description": "rule test",
      *   "condition": "humidity > 90 AND celciusToFarenheit(temperature) > 80",
      *   "actions": ...
+     *   "stream": "stream1"
      * }
      * </pre>
      * <i>Sample success response: </i>
@@ -191,6 +196,7 @@ public class BranchRuleCatalogResource {
      *     "description": "rule test",
      *     "condition": "humidity > 90 AND celciusToFarenheit(temperature) > 80",
      *     "actions": ...
+     *     "stream": "stream1"
      *   }
      * }
      * </pre>
@@ -225,6 +231,7 @@ public class BranchRuleCatalogResource {
      *     "description": "rule test",
      *     "condition": "humidity > 90 AND celciusToFarenheit(temperature) > 80",
      *     "actions": ...
+     *     "stream": "stream1"
      *   }
      * }
      * </pre>

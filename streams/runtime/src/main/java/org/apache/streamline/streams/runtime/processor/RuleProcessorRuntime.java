@@ -54,7 +54,7 @@ public class RuleProcessorRuntime implements Serializable, ProcessorRuntime {
     protected final List<RuleRuntime> rulesRuntime;
     private Map<String, List<RuleRuntime>> streamToRuleRuntimes;
     private List<RuleRuntime> allRuleRuntimes;
-    private boolean processAll = true;
+    final private boolean processAll;
 
     public RuleProcessorRuntime(RuleProcessorRuntimeDependenciesBuilder builder) {
         this.rulesProcessor = builder.getRulesProcessor();
