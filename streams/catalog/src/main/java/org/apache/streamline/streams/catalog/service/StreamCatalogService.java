@@ -48,6 +48,8 @@ import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.catalog.BranchRuleInfo;
 import org.apache.streamline.streams.catalog.Cluster;
 import org.apache.streamline.streams.catalog.Component;
+import org.apache.streamline.streams.catalog.Namespace;
+import org.apache.streamline.streams.catalog.NamespaceServiceClusterMapping;
 import org.apache.streamline.streams.catalog.NotifierInfo;
 import org.apache.streamline.streams.catalog.RuleInfo;
 import org.apache.streamline.streams.catalog.Service;
@@ -154,6 +156,8 @@ public class StreamCatalogService {
     private static final String TOPOLOGY_BRANCHRULEINFO_NAMESPACE = new BranchRuleInfo().getNameSpace();
     private static final String TOPOLOGY_WINDOWINFO_NAMESPACE = new WindowInfo().getNameSpace();
     private static final String UDF_NAMESPACE = new UDFInfo().getNameSpace();
+    private static final String NAMESPACE_NAMESPACE = new Namespace().getNameSpace();
+    private static final String NAMESPACE_SERVICE_CLUSTER_MAPPING_NAMESPACE = new NamespaceServiceClusterMapping().getNameSpace();
 
     private final StorageManager dao;
     private final TopologyActions topologyActions;
@@ -2626,5 +2630,96 @@ public class StreamCatalogService {
                 .getSubType(), UUID.randomUUID().toString(), ".jar");
         String bundleJarFileName = String.join("-", jarFileName);
         return bundleJarFileName;
+    }
+
+    public Collection<Namespace> listNamespaces() {
+        return this.dao.list(NAMESPACE_NAMESPACE);
+    }
+
+    public Collection<Namespace> listNamespaces(List<QueryParam> params) {
+        return dao.find(NAMESPACE_NAMESPACE, params);
+    }
+
+    public Namespace getNamespace(Long namespaceId) {
+        Namespace namespace = new Namespace();
+        namespace.setId(namespaceId);
+        return this.dao.get(new StorableKey(NAMESPACE_NAMESPACE, namespace.getPrimaryKey()));
+    }
+
+    public Namespace getNamespaceByName(String namespaceName) {
+        Collection<Namespace> namespaces = listNamespaces(Lists.newArrayList(new QueryParam("name", namespaceName)));
+        if (namespaces.size() > 1) {
+            LOG.warn("Multiple Namespaces have same name: {} returning first match.", namespaceName);
+            return namespaces.iterator().next();
+        } else if (namespaces.size() == 1) {
+            return namespaces.iterator().next();
+        }
+        return null;
+    }
+
+    public Namespace addNamespace(Namespace namespace) {
+        if (namespace.getId() == null) {
+            namespace.setId(this.dao.nextId(NAMESPACE_NAMESPACE));
+        }
+        if (namespace.getTimestamp() == null) {
+            namespace.setTimestamp(System.currentTimeMillis());
+        }
+        this.dao.add(namespace);
+        return namespace;
+    }
+
+    public Namespace removeNamespace(Long namespaceId) {
+        Namespace namespace = new Namespace();
+        namespace.setId(namespaceId);
+        return this.dao.remove(new StorableKey(NAMESPACE_NAMESPACE, namespace.getPrimaryKey()));
+    }
+
+    public Namespace addOrUpdateNamespace(Long namespaceId, Namespace namespace) {
+        if (namespace.getId() == null) {
+            namespace.setId(namespaceId);
+        }
+        if (namespace.getTimestamp() == null) {
+            namespace.setTimestamp(System.currentTimeMillis());
+        }
+        this.dao.addOrUpdate(namespace);
+        return namespace;
+    }
+
+    public Collection<NamespaceServiceClusterMapping> listServiceClusterMapping(Long namespaceId) {
+        return this.dao.find(NAMESPACE_SERVICE_CLUSTER_MAPPING_NAMESPACE,
+                Lists.newArrayList(new QueryParam("namespaceId", namespaceId.toString())));
+    }
+
+    public Collection<NamespaceServiceClusterMapping> listServiceClusterMapping(Long namespaceId, String serviceName) {
+        return this.dao.find(NAMESPACE_SERVICE_CLUSTER_MAPPING_NAMESPACE,
+                Lists.newArrayList(new QueryParam("namespaceId", namespaceId.toString()),
+                        new QueryParam("serviceName", serviceName)));
+    }
+
+    public NamespaceServiceClusterMapping getServiceClusterMapping(Long namespaceId,
+                                                                   String serviceName, Long clusterId) {
+        StorableKey key = getStorableKeyForNamespaceServiceClusterMapping(namespaceId, serviceName, clusterId);
+        return this.dao.get(key);
+    }
+
+    public NamespaceServiceClusterMapping removeServiceClusterMapping(Long namespaceId, String serviceName, Long clusterId) {
+        StorableKey key = getStorableKeyForNamespaceServiceClusterMapping(namespaceId, serviceName, clusterId);
+        return this.dao.remove(key);
+    }
+
+    public NamespaceServiceClusterMapping addOrUpdateServiceClusterMapping(
+            NamespaceServiceClusterMapping newMapping) {
+        this.dao.addOrUpdate(newMapping);
+        return newMapping;
+    }
+
+    private StorableKey getStorableKeyForNamespaceServiceClusterMapping(Long namespaceId, String serviceName,
+                                                                        Long clusterId) {
+        NamespaceServiceClusterMapping mapping = new NamespaceServiceClusterMapping();
+        mapping.setNamespaceId(namespaceId);
+        mapping.setServiceName(serviceName);
+        mapping.setClusterId(clusterId);
+        return new StorableKey(NAMESPACE_SERVICE_CLUSTER_MAPPING_NAMESPACE,
+                mapping.getPrimaryKey());
     }
 }
