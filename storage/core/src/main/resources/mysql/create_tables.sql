@@ -277,3 +277,20 @@ CREATE TABLE IF NOT EXISTS components (
   timestamp BIGINT,
   PRIMARY KEY (id)
 );
+
+CREATE TABLE IF NOT EXISTS namespaces (
+  id BIGINT AUTO_INCREMENT NOT NULL,
+  name VARCHAR(256) NOT NULL,
+  streamingEngine VARCHAR(256) NOT NULL,
+  timeSeriesDB VARCHAR(256) NULL,
+  description VARCHAR(256),
+  timestamp BIGINT,
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS namespace_service_cluster_mapping (
+    namespaceId BIGINT NOT NULL,
+    serviceName VARCHAR(256) NOT NULL,
+    clusterId BIGINT NOT NULL,
+    PRIMARY KEY (processorId, serviceName, clusterId)
+);

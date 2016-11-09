@@ -33,6 +33,8 @@ import org.apache.streamline.registries.tag.dto.TagDto;
 import org.apache.streamline.streams.catalog.Cluster;
 import org.apache.streamline.streams.catalog.Component;
 import org.apache.streamline.streams.catalog.FileInfo;
+import org.apache.streamline.streams.catalog.Namespace;
+import org.apache.streamline.streams.catalog.NamespaceServiceClusterMapping;
 import org.apache.streamline.streams.catalog.NotifierInfo;
 import org.apache.streamline.streams.catalog.Service;
 import org.apache.streamline.streams.catalog.ServiceConfiguration;
@@ -211,13 +213,14 @@ public class RestIntegrationTest {
             topologyResourceToTest,
             new ResourceTestElement(createTopologyEditorMetadata(1l, "{\"x\":5,\"y\":6}"),
                     createTopologyEditorMetadata(1l, "{\"x\":6,\"y\":5}"), "1", rootUrl + "system/topologyeditormetadata")
-                    .withDependentResource(topologyResourceToTest).withFieldsToIgnore(Collections.singletonList("versionId"))
+                    .withDependentResource(topologyResourceToTest).withFieldsToIgnore(Collections.singletonList("versionId")),
             /* Some issue with sending multi part for requests using this client and hence this test case is ignored for now. Fix later.
             new ResourceTestElement(createTopologyComponent(1l, "kafkaSpoutComponent", TopologyComponentBundle.TopologyComponentType.SOURCE, "KAFKA"), createTopologyComponent(1l, "kafkaSpoutComponentPut", TopologyComponentBundle.TopologyComponentType.SOURCE, "KAFKA") , "1", rootUrl + "streams/componentbundles/SOURCE"),
             new ResourceTestElement(createTopologyComponent(2l, "parserProcessor", TopologyComponentBundle.TopologyComponentType.PROCESSOR, "PARSER"), createTopologyComponent(2l, "parserProcessorPut", TopologyComponentBundle.TopologyComponentType.PROCESSOR, "PARSER"), "2", rootUrl + "streams/componentbundles/PROCESSOR"),
             new ResourceTestElement(createTopologyComponent(3l, "hbaseSink", TopologyComponentBundle.TopologyComponentType.SINK, "HBASE"), createTopologyComponent(3l, "hbaseSinkPut", TopologyComponentBundle.TopologyComponentType.SINK, "HBASE"), "3", rootUrl + "streams/componentbundles/SINK"),
             new ResourceTestElement(createTopologyComponent(4l, "shuffleGroupingLink", TopologyComponentBundle.TopologyComponentType.LINK, "SHUFFLE"), createTopologyComponent(4l, "shuffleGroupingLinkPut", TopologyComponentBundle.TopologyComponentType.LINK, "SHUFFLE"), "4", rootUrl + "streams/componentbundles/LINK"),
             */
+            new ResourceTestElement(createNamespace(1L, "testNamespace"), createNamespace(1L, "testNewNamespace"), "1", rootUrl + "namespaces")
             // parser is commented as parser takes a jar as input along with the parserInfo instance and so it needs a multipart request.
             /* we can't apply new way to throw webservice related exception from parser-registry module
              but it will be removed via STREAMLINE-435 so just commenting this out for now
@@ -607,6 +610,86 @@ public class RestIntegrationTest {
         Assert.assertTrue(files.isEmpty());
     }
 
+    @Test
+    public void testNamespaceServiceClusterMapping() {
+        Client client = ClientBuilder.newClient(new ClientConfig());
+
+        // precondition: namespace
+        Long namespaceId = 999L;
+        String namespaceName = "nstest";
+
+        storeTestNamespace(client, namespaceId, namespaceName);
+        NamespaceServiceClusterMapping retrMapping;
+        List<NamespaceServiceClusterMapping> entities;
+        String response;
+
+        // add
+        String serviceName = "STORM";
+        Long clusterId = 1L;
+
+        NamespaceServiceClusterMapping mapping1 = new NamespaceServiceClusterMapping(namespaceId, serviceName, clusterId);
+        retrMapping = mapNamespaceServiceCluster(client, mapping1);
+        Assert.assertEquals(mapping1, retrMapping);
+
+        // add2
+        String serviceName2 = "HDFS";
+        Long cluster2Id = 2L;
+
+        NamespaceServiceClusterMapping mapping2 = new NamespaceServiceClusterMapping(namespaceId, serviceName2, cluster2Id);
+        retrMapping = mapNamespaceServiceCluster(client, mapping2);
+        Assert.assertEquals(mapping2, retrMapping);
+
+        // remove (used once so no extraction)
+        String removeMappingUrl = rootUrl + "namespaces/" + namespaceId + "/mapping/" + serviceName + "/cluster/" + clusterId;
+        response = client.target(removeMappingUrl).request().delete(String.class);
+        retrMapping = getEntity(response, NamespaceServiceClusterMapping.class);
+        Assert.assertEquals(mapping1, retrMapping);
+
+        entities = listMappingInNamespace(client, namespaceId);
+        Assert.assertEquals(1, entities.size());
+
+        // add3
+        String serviceName3 = "HBASE";
+        Long cluster3Id = 2L;
+
+        NamespaceServiceClusterMapping mapping3 = new NamespaceServiceClusterMapping(namespaceId, serviceName3, cluster3Id);
+        retrMapping = mapNamespaceServiceCluster(client, mapping3);
+        Assert.assertEquals(mapping3, retrMapping);
+
+        // remove all (used once so no extraction)
+        String removeAllMappingsUrl = rootUrl + "namespaces/" + namespaceId + "/mapping";
+        response = client.target(removeAllMappingsUrl).request().delete(String.class);
+        entities = getEntities(response, NamespaceServiceClusterMapping.class);
+        Assert.assertEquals(2, entities.size());
+
+        entities = listMappingInNamespace(client, namespaceId);
+        Assert.assertEquals(0, entities.size());
+
+        // cleanup : remove namespace
+        String removeNamespaceUrl = rootUrl + "namespaces/" + namespaceId;
+        client.target(removeNamespaceUrl).request().delete();
+    }
+
+    private NamespaceServiceClusterMapping mapNamespaceServiceCluster(Client client, NamespaceServiceClusterMapping mapping) {
+        String mappingUrl = rootUrl + "namespaces/" + mapping.getNamespaceId() + "/mapping";
+        String response = client.target(mappingUrl).request().post(Entity.entity(mapping, MediaType.APPLICATION_JSON_TYPE), String.class);
+        NamespaceServiceClusterMapping retrMapping = getEntity(response, NamespaceServiceClusterMapping.class);
+        return retrMapping;
+    }
+
+    private List<NamespaceServiceClusterMapping> listMappingInNamespace(Client client, Long namespaceId) {
+        String mappingUrl = rootUrl + "namespaces/" + namespaceId + "/mapping";
+        String response = client.target(mappingUrl).request().get(String.class);
+        return getEntities(response, NamespaceServiceClusterMapping.class);
+    }
+
+    private Namespace storeTestNamespace(Client client, Long namespaceId, String namespaceName) {
+        Namespace namespace = createNamespace(namespaceId, namespaceName);
+        String namespaceBaseUrl = rootUrl + String.format("namespaces");
+        client.target(namespaceBaseUrl).request().post(Entity.json(namespace));
+        return namespace;
+    }
+
     /**
      * For each QueryParamsResourceTestElement it first try to send all get
      * requests and verifies the response. It then loads all resources via post
@@ -697,7 +780,7 @@ public class RestIntegrationTest {
         try {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode node = mapper.readTree(response);
-            return filterFields(mapper.treeToValue(node.get("entity"), clazz), fieldsToIgnore);
+            return filterFields(mapper.treeToValue(node, clazz), fieldsToIgnore);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -825,6 +908,14 @@ public class RestIntegrationTest {
         customProcessorInfo.setInputSchema(getSchema());
         customProcessorInfo.setOutputStreamToSchema(getOutputStreamsToSchema());
         return customProcessorInfo;
+    }
+
+    private Namespace createNamespace(long id, String name) {
+        Namespace namespace = new Namespace();
+        namespace.setId(id);
+        namespace.setName(name);
+        namespace.setTimestamp(System.currentTimeMillis());
+        return namespace;
     }
 
     private Schema getSchema () {
