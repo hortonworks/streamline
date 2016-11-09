@@ -41,6 +41,9 @@ import java.util.List;
  */
 public class WSUtils {
     public static final String CURRENT_VERSION = "CURRENT";
+    public static final String TOPOLOGY_ID = "topologyId";
+    public static final String VERSION_ID = "versionId";
+    public static final String NAME = "name";
 
     private WSUtils() {
     }
@@ -78,7 +81,7 @@ public class WSUtils {
 
     public static List<QueryParam> buildTopologyIdAwareQueryParams(Long topologyId, UriInfo uriInfo) {
         List<QueryParam> queryParams = new ArrayList<>();
-        queryParams.add(new QueryParam("topologyId", topologyId.toString()));
+        queryParams.add(new QueryParam(TOPOLOGY_ID, topologyId.toString()));
         addQueryParams(uriInfo, queryParams);
         return queryParams;
     }
@@ -87,8 +90,8 @@ public class WSUtils {
                                                                              Long versionId,
                                                                              UriInfo uriInfo) {
         List<QueryParam> queryParams = new ArrayList<>();
-        queryParams.add(new QueryParam("topologyId", topologyId.toString()));
-        queryParams.add(new QueryParam("versionId", versionId.toString()));
+        queryParams.add(new QueryParam(TOPOLOGY_ID, topologyId.toString()));
+        queryParams.addAll(versionIdQueryParam(versionId));
         addQueryParams(uriInfo, queryParams);
         return queryParams;
     }
@@ -100,7 +103,7 @@ public class WSUtils {
     }
 
     public static List<QueryParam> currentVersionQueryParam() {
-        return Collections.singletonList(new QueryParam("name", CURRENT_VERSION));
+        return Collections.singletonList(new QueryParam(NAME, CURRENT_VERSION));
     }
 
     public static List<QueryParam> topologyVersionsQueryParam(Long topologyId) {
@@ -110,7 +113,7 @@ public class WSUtils {
     }
 
     public static List<QueryParam> versionIdQueryParam(Long version) {
-        return Collections.singletonList(new QueryParam("versionId", version.toString()));
+        return Collections.singletonList(new QueryParam(VERSION_ID, version.toString()));
     }
 
     /**

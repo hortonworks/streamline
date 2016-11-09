@@ -42,7 +42,8 @@ CREATE TABLE IF NOT EXISTS topologies (
     name VARCHAR(256) NOT NULL,
     config TEXT NOT NULL,
     timestamp  BIGINT,
-    PRIMARY KEY (id, versionId)
+    PRIMARY KEY (id, versionId),
+    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
 );
 
 CREATE TABLE IF NOT EXISTS topology_component_bundles (
@@ -65,7 +66,8 @@ CREATE TABLE IF NOT EXISTS topology_editor_metadata (
     versionId BIGINT NOT NULL,
     data TEXT NOT NULL,
     timestamp BIGINT,
-    PRIMARY KEY (topologyId)
+    PRIMARY KEY (topologyId),
+    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
 );
 
 CREATE TABLE IF NOT EXISTS tag (
@@ -92,7 +94,8 @@ CREATE TABLE IF NOT EXISTS streaminfo (
     fieldsData TEXT NOT NULL,
     timestamp BIGINT,
     UNIQUE KEY `UK_streamId` (topologyId, versionId, streamId),
-    PRIMARY KEY (id, versionId)
+    PRIMARY KEY (id, versionId),
+    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
 );
 
 CREATE TABLE IF NOT EXISTS notifierinfos (
@@ -124,14 +127,16 @@ CREATE TABLE IF NOT EXISTS topology_sources (
     topologyComponentBundleId BIGINT NOT NULL,
     name VARCHAR(256) NOT NULL,
     configData TEXT NOT NULL,
-    PRIMARY KEY (id, versionId)
+    PRIMARY KEY (id, versionId),
+    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
 );
 
 CREATE TABLE IF NOT EXISTS topology_source_stream_mapping (
     sourceId BIGINT NOT NULL,
     versionId BIGINT NOT NULL,
     streamId BIGINT NOT NULL,
-    PRIMARY KEY (sourceId, versionId, streamId)
+    PRIMARY KEY (sourceId, versionId, streamId),
+    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
 );
 
 CREATE TABLE IF NOT EXISTS topology_sinks (
@@ -141,7 +146,8 @@ CREATE TABLE IF NOT EXISTS topology_sinks (
     topologyComponentBundleId BIGINT NOT NULL,
     name VARCHAR(256) NOT NULL,
     configData TEXT NOT NULL,
-    PRIMARY KEY (id, versionId)
+    PRIMARY KEY (id, versionId),
+    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
 );
 
 CREATE TABLE IF NOT EXISTS topology_processors (
@@ -151,14 +157,16 @@ CREATE TABLE IF NOT EXISTS topology_processors (
     topologyComponentBundleId BIGINT NOT NULL,
     name VARCHAR(256) NOT NULL,
     configData TEXT NOT NULL,
-    PRIMARY KEY (id, versionId)
+    PRIMARY KEY (id, versionId),
+    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
 );
 
 CREATE TABLE IF NOT EXISTS topology_processor_stream_mapping (
     processorId BIGINT NOT NULL,
     versionId BIGINT NOT NULL,
     streamId BIGINT NOT NULL,
-    PRIMARY KEY (processorId, versionId, streamId)
+    PRIMARY KEY (processorId, versionId, streamId),
+    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
 );
 
 CREATE TABLE IF NOT EXISTS topology_edges (
@@ -168,7 +176,8 @@ CREATE TABLE IF NOT EXISTS topology_edges (
     fromId BIGINT NOT NULL,
     toId BIGINT NOT NULL,
     streamGroupingsData TEXT NOT NULL,
-    PRIMARY KEY (id, versionId)
+    PRIMARY KEY (id, versionId),
+    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
 );
 
 CREATE TABLE IF NOT EXISTS ruleinfos (
@@ -183,7 +192,8 @@ CREATE TABLE IF NOT EXISTS ruleinfos (
     parsedRuleStr TEXT NOT NULL,
     window TEXT NOT NULL,
     actions TEXT NOT NULL,
-    PRIMARY KEY (id, versionId)
+    PRIMARY KEY (id, versionId),
+    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
 );
 
 CREATE TABLE IF NOT EXISTS branchruleinfos (
@@ -196,7 +206,8 @@ CREATE TABLE IF NOT EXISTS branchruleinfos (
     `condition` TEXT NOT NULL,
     parsedRuleStr TEXT NOT NULL,
     actions TEXT NOT NULL,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id, versionId),
+    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
 );
 
 CREATE TABLE IF NOT EXISTS windowinfos (
@@ -212,7 +223,8 @@ CREATE TABLE IF NOT EXISTS windowinfos (
     actions TEXT NOT NULL,
     projections TEXT NULL,
     groupbykeys TEXT NULL,
-    PRIMARY KEY (id, versionId)
+    PRIMARY KEY (id, versionId),
+    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
 );
 
 CREATE TABLE IF NOT EXISTS udfs (

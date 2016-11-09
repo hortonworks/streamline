@@ -198,4 +198,23 @@ public class TopologyEdge extends AbstractStorable {
         }
         return map;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        TopologyEdge edge = (TopologyEdge) o;
+
+        if (id != null ? !id.equals(edge.id) : edge.id != null) return false;
+        return versionId != null ? versionId.equals(edge.versionId) : edge.versionId == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (versionId != null ? versionId.hashCode() : 0);
+        return result;
+    }
 }

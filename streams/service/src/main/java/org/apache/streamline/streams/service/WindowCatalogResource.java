@@ -3,7 +3,6 @@ package org.apache.streamline.streams.service;
 import com.codahale.metrics.annotation.Timed;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.util.WSUtils;
-import org.apache.streamline.streams.catalog.RuleInfo;
 import org.apache.streamline.streams.catalog.WindowInfo;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.slf4j.Logger;
@@ -25,6 +24,7 @@ import java.util.List;
 
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
+import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_VERSION_NOT_FOUND;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -54,7 +54,7 @@ public class WindowCatalogResource {
     @Path("/topologies/{topologyId}/windows")
     @Timed
     public Response listTopologyWindows(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) {
-        Long currentVersionId = catalogService.getCurrentTopologyVersionId(topologyId);
+        Long currentVersionId = catalogService.getCurrentVersionId(topologyId);
         return listTopologyWindows(
                 buildTopologyIdAndVersionIdAwareQueryParams(topologyId, currentVersionId, uriInfo));
     }
@@ -114,7 +114,8 @@ public class WindowCatalogResource {
             LOG.error("Got exception", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, buildMessageForCompositeId(topologyId, windowId));
+        return WSUtils.respond(NOT_FOUND, ENTITY_VERSION_NOT_FOUND, buildMessageForCompositeId(topologyId, windowId),
+                versionId.toString());
     }
 
     @POST

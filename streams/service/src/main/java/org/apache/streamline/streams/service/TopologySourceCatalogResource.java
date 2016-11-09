@@ -40,6 +40,7 @@ import java.util.List;
 
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
+import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_VERSION_NOT_FOUND;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -92,7 +93,7 @@ public class TopologySourceCatalogResource {
     @Path("/topologies/{topologyId}/sources")
     @Timed
     public Response listTopologySources(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) {
-        Long currentVersionId = catalogService.getCurrentTopologyVersionId(topologyId);
+        Long currentVersionId = catalogService.getCurrentVersionId(topologyId);
         return listTopologySources(
                 buildTopologyIdAndVersionIdAwareQueryParams(topologyId, currentVersionId, uriInfo));
     }
@@ -174,7 +175,8 @@ public class TopologySourceCatalogResource {
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, buildMessageForCompositeId(topologyId, sourceId));
+        return WSUtils.respond(NOT_FOUND, ENTITY_VERSION_NOT_FOUND, buildMessageForCompositeId(topologyId, sourceId),
+                versionId.toString());
     }
 
     /**

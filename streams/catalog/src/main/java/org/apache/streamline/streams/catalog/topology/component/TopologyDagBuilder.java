@@ -3,6 +3,7 @@ package org.apache.streamline.streams.catalog.topology.component;
 
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.streams.catalog.Topology;
+import org.apache.streamline.streams.catalog.TopologyComponent;
 import org.apache.streamline.streams.catalog.TopologyEdge;
 import org.apache.streamline.streams.catalog.TopologyProcessor;
 import org.apache.streamline.streams.catalog.TopologySink;
@@ -61,8 +62,8 @@ public class TopologyDagBuilder {
 
     private List<QueryParam> queryParam(Topology topology) {
         List<QueryParam> queryParams = new ArrayList<>();
-        queryParams.add(new QueryParam("topologyId", topology.getId().toString()));
-        queryParams.add(new QueryParam("versionId", topology.getVersionId().toString()));
+        queryParams.add(new QueryParam(TopologyComponent.TOPOLOGYID, topology.getId().toString()));
+        queryParams.add(new QueryParam(TopologyComponent.VERSIONID, topology.getVersionId().toString()));
         return queryParams;
     }
 }

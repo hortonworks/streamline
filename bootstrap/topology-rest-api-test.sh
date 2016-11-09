@@ -401,7 +401,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
     "name": "FinegrainedNormalizationProcessor",
     "config": {
         "properties": {
-          "normalizationProcessorType": "fineGrained",
+          "type": "fineGrained",
           "normalizationConfig": {
           "'$parserStream'": {
           "__type": "org.apache.streamline.streams.layout.component.impl.normalization.FieldBasedNormalizationConfig",
@@ -450,7 +450,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
     "name": "BulkNormalizationProcessor",
     "config": {
         "properties": {
-          "normalizationProcessorType": "bulk",
+          "type": "bulk",
           "normalizationConfig": {
             "'$parserStream'": {
             "__type": "org.apache.streamline.streams.layout.component.impl.normalization.BulkNormalizationConfig",

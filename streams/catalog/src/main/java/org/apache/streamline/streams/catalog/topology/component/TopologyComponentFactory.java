@@ -108,7 +108,8 @@ public class TopologyComponentFactory {
         edge.setTo(getInputComponent(topologyEdge));
         Set<StreamGrouping> streamGroupings = new HashSet<>();
         for (TopologyEdge.StreamGrouping streamGrouping : topologyEdge.getStreamGroupings()) {
-            Stream stream = getStream(catalogService.getStreamInfo(topologyEdge.getTopologyId(), streamGrouping.getStreamId()));
+            Stream stream = getStream(catalogService.getStreamInfo(topologyEdge.getTopologyId(),
+                    streamGrouping.getStreamId(), topologyEdge.getVersionId()));
             Stream.Grouping grouping = Stream.Grouping.valueOf(streamGrouping.getGrouping().name());
             streamGroupings.add(new StreamGrouping(stream, grouping, streamGrouping.getFields()));
         }
@@ -138,9 +139,11 @@ public class TopologyComponentFactory {
     private OutputComponent getOutputComponent(TopologyEdge topologyEdge) {
         TopologySource topologySource;
         TopologyProcessor topologyProcessor;
-        if ((topologySource = catalogService.getTopologySource(topologyEdge.getTopologyId(), topologyEdge.getFromId())) != null) {
+        if ((topologySource = catalogService.getTopologySource(topologyEdge.getTopologyId(), topologyEdge.getFromId(),
+                topologyEdge.getVersionId())) != null) {
             return getStreamlineSource(topologySource);
-        } else if ((topologyProcessor = catalogService.getTopologyProcessor(topologyEdge.getTopologyId(), topologyEdge.getFromId())) != null) {
+        } else if ((topologyProcessor = catalogService.getTopologyProcessor(topologyEdge.getTopologyId(), topologyEdge.getFromId(),
+                topologyEdge.getVersionId())) != null) {
             return getStreamlineProcessor(topologyProcessor);
         } else {
             throw new IllegalArgumentException("Invalid from id for edge " + topologyEdge);
@@ -150,9 +153,11 @@ public class TopologyComponentFactory {
     private InputComponent getInputComponent(TopologyEdge topologyEdge) {
         TopologySink topologySink;
         TopologyProcessor topologyProcessor;
-        if ((topologySink = catalogService.getTopologySink(topologyEdge.getTopologyId(), topologyEdge.getToId())) != null) {
+        if ((topologySink = catalogService.getTopologySink(topologyEdge.getTopologyId(), topologyEdge.getToId(),
+                topologyEdge.getVersionId())) != null) {
             return getStreamlineSink(topologySink);
-        } else if ((topologyProcessor = catalogService.getTopologyProcessor(topologyEdge.getTopologyId(), topologyEdge.getToId())) != null) {
+        } else if ((topologyProcessor = catalogService.getTopologyProcessor(topologyEdge.getTopologyId(), topologyEdge.getToId(),
+                topologyEdge.getVersionId())) != null) {
             return getStreamlineProcessor(topologyProcessor);
         } else {
             throw new IllegalArgumentException("Invalid to id for edge " + topologyEdge);
@@ -208,7 +213,7 @@ public class TopologyComponentFactory {
     private Set<Stream> createOutputStreams(TopologyOutputComponent outputComponent) {
         Set<Stream> outputStreams = new HashSet<>();
         for (Long id : outputComponent.getOutputStreamIds()) {
-            outputStreams.add(getStream(catalogService.getStreamInfo(outputComponent.getTopologyId(), id)));
+            outputStreams.add(getStream(catalogService.getStreamInfo(outputComponent.getTopologyId(), id, outputComponent.getVersionId())));
         }
         return outputStreams;
     }
@@ -257,7 +262,7 @@ public class TopologyComponentFactory {
                 NormalizationProcessor.Type type = objectMapper.convertValue(typeObj, NormalizationProcessor.Type.class);
                 Map<String, NormalizationConfig> normConfig = objectMapper.convertValue(normConfObj, new TypeReference<Map<String, NormalizationConfig>>() {
                 });
-                updateWithSchemas(component.getTopologyId(), normConfig);
+                updateWithSchemas(component.getTopologyId(), component.getVersionId(), normConfig);
 
                 Set<Stream> outputStreams = createOutputStreams((TopologyOutputComponent) component);
                 if (outputStreams.size() != 1) {
@@ -270,10 +275,13 @@ public class TopologyComponentFactory {
         return new SimpleImmutableEntry<>(NORMALIZATION, provider);
     }
 
-    private void updateWithSchemas(Long topologyId, Map<String, NormalizationConfig> normalizationConfigRead) {
+    private void updateWithSchemas(Long topologyId, Long versionId, Map<String, NormalizationConfig> normalizationConfigRead) {
         for (Map.Entry<String, NormalizationConfig> entry : normalizationConfigRead.entrySet()) {
             NormalizationConfig normalizationConfig = entry.getValue();
-            normalizationConfig.setInputSchema(catalogService.getStreamInfoByName(topologyId, entry.getKey()).getSchema());
+            StreamInfo streamInfo = catalogService.getStreamInfoByName(topologyId, entry.getKey(), versionId);
+            if (streamInfo != null) {
+                normalizationConfig.setInputSchema(streamInfo.getSchema());
+            }
         }
     }
 
@@ -326,14 +334,14 @@ public class TopologyComponentFactory {
     }
 
     private interface RuleExtractor {
-        Rule getRule(Long topologyId, Long ruleId) throws Exception;
+        Rule getRule(Long topologyId, Long ruleId, Long versionId) throws Exception;
     }
 
     private Map.Entry<String, Provider<StreamlineProcessor>> rulesProcessorProvider() {
         return new SimpleImmutableEntry<>(RULE, createRulesProcessorProvider(new RuleExtractor() {
             @Override
-            public Rule getRule(Long topologyId, Long ruleId) throws Exception {
-                RuleInfo ruleInfo = catalogService.getRule(topologyId, ruleId);
+            public Rule getRule(Long topologyId, Long ruleId, Long versionId) throws Exception {
+                RuleInfo ruleInfo = catalogService.getRule(topologyId, ruleId, versionId);
                 if (ruleInfo == null) {
                     throw new IllegalArgumentException("Cannot find rule with id " + ruleId);
                 }
@@ -345,8 +353,8 @@ public class TopologyComponentFactory {
     private Map.Entry<String, Provider<StreamlineProcessor>> branchRulesProcessorProvider() {
         return new SimpleImmutableEntry<>(BRANCH, createRulesProcessorProvider(new RuleExtractor() {
             @Override
-            public Rule getRule(Long topologyId, Long ruleId) throws Exception {
-                BranchRuleInfo brRuleInfo = catalogService.getBranchRule(topologyId, ruleId);
+            public Rule getRule(Long topologyId, Long ruleId, Long versionId) throws Exception {
+                BranchRuleInfo brRuleInfo = catalogService.getBranchRule(topologyId, ruleId, versionId);
                 if (brRuleInfo == null) {
                     throw new IllegalArgumentException("Cannot find branch rule with id " + ruleId);
                 }
@@ -358,8 +366,8 @@ public class TopologyComponentFactory {
     private Map.Entry<String, Provider<StreamlineProcessor>> windowProcessorProvider() {
         return new SimpleImmutableEntry<>(WINDOW, createRulesProcessorProvider(new RuleExtractor() {
             @Override
-            public Rule getRule(Long topologyId, Long ruleId) throws Exception {
-                WindowInfo windowInfo = catalogService.getWindow(topologyId, ruleId);
+            public Rule getRule(Long topologyId, Long ruleId, Long versionId) throws Exception {
+                WindowInfo windowInfo = catalogService.getWindow(topologyId, ruleId, versionId);
                 if (windowInfo == null) {
                     throw new IllegalArgumentException("Cannot find window rule with id " + ruleId);
                 }
@@ -387,7 +395,7 @@ public class TopologyComponentFactory {
                 try {
                     List<Rule> rules = new ArrayList<>();
                     for (Long ruleId : ruleIds) {
-                        rules.add(ruleExtractor.getRule(component.getTopologyId(), ruleId));
+                        rules.add(ruleExtractor.getRule(component.getTopologyId(), ruleId, component.getVersionId()));
                     }
                     processor.setRules(rules);
                 } catch (Exception ex) {

@@ -40,6 +40,7 @@ import java.util.List;
 
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
+import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_VERSION_NOT_FOUND;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -98,7 +99,7 @@ public class TopologyStreamCatalogResource {
         return listTopologyStreams(
                 buildTopologyIdAndVersionIdAwareQueryParams(
                         topologyId,
-                        catalogService.getCurrentTopologyVersionId(topologyId),
+                        catalogService.getCurrentVersionId(topologyId),
                         uriInfo));
     }
 
@@ -181,7 +182,8 @@ public class TopologyStreamCatalogResource {
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, streamId.toString());
+        return WSUtils.respond(NOT_FOUND, ENTITY_VERSION_NOT_FOUND, buildMessageForCompositeId(topologyId, streamId),
+                versionId.toString());
     }
 
     /**
@@ -343,5 +345,9 @@ public class TopologyStreamCatalogResource {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
 
+    }
+
+    private String buildMessageForCompositeId(Long topologyId, Long streamId) {
+        return String.format("topology id <%d>, stream id <%d>", topologyId, streamId);
     }
 }

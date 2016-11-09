@@ -211,7 +211,6 @@ public class BranchRuleInfo extends AbstractStorable {
         BranchRuleInfo that = (BranchRuleInfo) o;
 
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (topologyId != null ? !topologyId.equals(that.topologyId) : that.topologyId != null) return false;
         return versionId != null ? versionId.equals(that.versionId) : that.versionId == null;
 
     }
@@ -219,7 +218,6 @@ public class BranchRuleInfo extends AbstractStorable {
     @Override
     public int hashCode() {
         int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (topologyId != null ? topologyId.hashCode() : 0);
         result = 31 * result + (versionId != null ? versionId.hashCode() : 0);
         return result;
     }

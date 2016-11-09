@@ -85,11 +85,10 @@ public class TopologyEditorMetadata extends AbstractStorable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        TopologyEditorMetadata that = (TopologyEditorMetadata) o;
+        TopologyEditorMetadata metadata = (TopologyEditorMetadata) o;
 
-        if (topologyId != null ? !topologyId.equals(that.topologyId) : that.topologyId != null) return false;
-        if (versionId != null ? !versionId.equals(that.versionId) : that.versionId != null) return false;
-        return data != null ? data.equals(that.data) : that.data == null;
+        if (topologyId != null ? !topologyId.equals(metadata.topologyId) : metadata.topologyId != null) return false;
+        return versionId != null ? versionId.equals(metadata.versionId) : metadata.versionId == null;
 
     }
 
@@ -97,7 +96,6 @@ public class TopologyEditorMetadata extends AbstractStorable {
     public int hashCode() {
         int result = topologyId != null ? topologyId.hashCode() : 0;
         result = 31 * result + (versionId != null ? versionId.hashCode() : 0);
-        result = 31 * result + (data != null ? data.hashCode() : 0);
         return result;
     }
 

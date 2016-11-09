@@ -5,7 +5,6 @@ import com.codahale.metrics.annotation.Timed;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.BranchRuleInfo;
-import org.apache.streamline.streams.catalog.RuleInfo;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.layout.component.rule.Rule;
 
@@ -30,6 +29,7 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
+import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_VERSION_NOT_FOUND;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static org.apache.streamline.common.util.WSUtils.buildTopologyIdAndVersionIdAwareQueryParams;
@@ -76,7 +76,7 @@ public class BranchRuleCatalogResource {
     @Path("/topologies/{topologyId}/branchrules")
     @Timed
     public Response listTopologyBranchRules(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) {
-        Long currentVersionId = catalogService.getCurrentTopologyVersionId(topologyId);
+        Long currentVersionId = catalogService.getCurrentVersionId(topologyId);
         return listTopologyBranchRules(
                 buildTopologyIdAndVersionIdAwareQueryParams(topologyId, currentVersionId, uriInfo));
     }
@@ -151,7 +151,8 @@ public class BranchRuleCatalogResource {
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, buildMessageForCompositeId(topologyId, ruleId));
+        return WSUtils.respond(NOT_FOUND, ENTITY_VERSION_NOT_FOUND, buildMessageForCompositeId(topologyId, ruleId),
+                versionId.toString());
     }
 
 

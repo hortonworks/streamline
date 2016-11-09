@@ -112,7 +112,7 @@ public class TopologyCatalogResource {
                                     @javax.ws.rs.QueryParam("latencyTopN") Integer latencyTopN) {
         try {
             Response response = getTopologyByIdAndVersionId(topologyId,
-                    catalogService.getCurrentTopologyVersionId(topologyId),
+                    catalogService.getCurrentVersionId(topologyId),
                     withMetric, latencyTopN);
             if (response != null) {
                 return response;
@@ -163,7 +163,7 @@ public class TopologyCatalogResource {
     public Response listTopologyVersions(@PathParam("topologyId") Long topologyId) {
         try {
             Collection<TopologyVersionInfo> versionInfos = catalogService.listTopologyVersionInfos(
-                    WSUtils.topologyVersionsQueryParam(topologyId));
+                    WSUtils.buildTopologyIdAwareQueryParams(topologyId, null));
             Response response;
             if (versionInfos != null) {
                 response = WSUtils.respond(versionInfos, OK, SUCCESS);
@@ -218,6 +218,7 @@ public class TopologyCatalogResource {
         for (TopologyVersionInfo version : versions) {
             try {
                 removed.add(catalogService.removeTopology(topologyId, version.getId(), recurse));
+                catalogService.removeTopologyVersionInfo(version.getId());
             } catch (Exception ex) {
                 return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
             }
@@ -228,6 +229,7 @@ public class TopologyCatalogResource {
     private Response removeCurrentTopologyVersion(Long topologyId, boolean recurse) {
         try {
             Topology removedTopology = catalogService.removeTopology(topologyId, recurse);
+            catalogService.removeTopologyVersionInfo(catalogService.getCurrentVersionId(topologyId));
             if (removedTopology != null) {
                 return WSUtils.respond(removedTopology, OK, SUCCESS);
             } else {
@@ -273,12 +275,10 @@ public class TopologyCatalogResource {
         try {
             // update the current version with the new version info.
             versionInfo.setTopologyId(topologyId);
-            Long currentVersionId = catalogService.getCurrentTopologyVersionId(topologyId);
+            Long currentVersionId = catalogService.getCurrentVersionId(topologyId);
             TopologyVersionInfo savedVersion = catalogService.addOrUpdateTopologyVersionInfo(
                     currentVersionId, versionInfo);
-            // create a new current version
-            TopologyVersionInfo currentVersion = catalogService.addCurrentVersionInfo(topologyId);
-            // TODO: clone the savedVersion of topology with currentVersion as the version id
+            catalogService.cloneTopologyVersion(topologyId, savedVersion.getId());
             return WSUtils.respond(savedVersion, CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -291,12 +291,23 @@ public class TopologyCatalogResource {
     public Response activateTopologyVersion(@PathParam("topologyId") Long topologyId,
                                             @PathParam("versionId") Long versionId) {
         try {
-            Long currentVersionId = catalogService.getCurrentTopologyVersionId(topologyId);
+            Long currentVersionId = -1L;
+            try {
+                currentVersionId = catalogService.getCurrentVersionId(topologyId);
+                if (currentVersionId.equals(versionId)) {
+                    throw new IllegalArgumentException("Version id " + versionId + " is already the current version");
+                }
+            } catch (IllegalStateException ex) {
+                // ignore and assume current version is not there
+            }
             TopologyVersionInfo savedVersion = catalogService.getTopologyVersionInfo(versionId);
             if (savedVersion != null) {
                 // remove current version
-                catalogService.removeTopology(topologyId, true);
-                // TODO: clone the savedVersion of topology with currentVersion as the version id
+                if (currentVersionId != -1) {
+                    catalogService.removeTopology(topologyId, true);
+                    catalogService.removeTopologyVersionInfo(currentVersionId);
+                }
+                catalogService.cloneTopologyVersion(topologyId, savedVersion.getId());
             } else {
                 return WSUtils.respond(NOT_FOUND, ENTITY_VERSION_NOT_FOUND, topologyId.toString(), versionId.toString());
             }

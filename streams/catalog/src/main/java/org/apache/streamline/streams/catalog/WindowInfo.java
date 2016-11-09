@@ -303,4 +303,23 @@ public class WindowInfo extends AbstractStorable {
         }
         return this;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        WindowInfo that = (WindowInfo) o;
+
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+        return versionId != null ? versionId.equals(that.versionId) : that.versionId == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (versionId != null ? versionId.hashCode() : 0);
+        return result;
+    }
 }

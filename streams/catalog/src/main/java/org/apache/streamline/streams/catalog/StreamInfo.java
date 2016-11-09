@@ -50,7 +50,6 @@ public class StreamInfo extends AbstractStorable {
     // unique storage level id
     private Long id;
 
-    // unique storage level id
     private Long versionId;
 
     // the stream identifier string
@@ -173,11 +172,7 @@ public class StreamInfo extends AbstractStorable {
         StreamInfo that = (StreamInfo) o;
 
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (versionId != null ? !versionId.equals(that.versionId) : that.versionId != null) return false;
-        if (streamId != null ? !streamId.equals(that.streamId) : that.streamId != null) return false;
-        if (topologyId != null ? !topologyId.equals(that.topologyId) : that.topologyId != null) return false;
-        if (fields != null ? !fields.equals(that.fields) : that.fields != null) return false;
-        return timestamp != null ? timestamp.equals(that.timestamp) : that.timestamp == null;
+        return versionId != null ? versionId.equals(that.versionId) : that.versionId == null;
 
     }
 
@@ -185,10 +180,6 @@ public class StreamInfo extends AbstractStorable {
     public int hashCode() {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (versionId != null ? versionId.hashCode() : 0);
-        result = 31 * result + (streamId != null ? streamId.hashCode() : 0);
-        result = 31 * result + (topologyId != null ? topologyId.hashCode() : 0);
-        result = 31 * result + (fields != null ? fields.hashCode() : 0);
-        result = 31 * result + (timestamp != null ? timestamp.hashCode() : 0);
         return result;
     }
 
