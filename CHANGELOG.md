@@ -1,7 +1,9 @@
 ## 0.1.4
+ * STREAMLINE-493: Disabling notification REST service by default for TP.
+ * STREAMLINE-436: Split Streams.
  * STREAMLINE-478: Ship notifier jars and notifier config with topology during deployment.
- * STREAMLINE-485: Changes in UI due to recent changes in UDF type info
- * STREAMLINE-489: Maven POM Files Project Wide Refactoring
+ * STREAMLINE-485: Changes in UI due to recent changes in UDF type info.
+ * STREAMLINE-489: Maven POM Files Project Wide Refactoring.
  * STREAMLINE-488: Fix NormalizationProcessor errors while deploying topology
  * STREAMLINE-487: Respond without metrics when topology API is called with metrics but storm API endpoint is down
  * STREAMLINE-484: UI - Change the Topology Editor as per the mocks

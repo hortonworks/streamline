@@ -26,6 +26,7 @@ import org.apache.storm.sql.runtime.ISqlTridentDataSource;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Properties;
 
 public class RulesDataSourcesProvider implements DataSourcesProvider {
     private static final ThreadLocal<RulesDataSource> dataSource = new ThreadLocal<RulesDataSource>() {
@@ -45,8 +46,8 @@ public class RulesDataSourcesProvider implements DataSourcesProvider {
         return dataSource.get();
     }
 
-    @Override
-    public ISqlTridentDataSource constructTrident(URI uri, String s, String s1, String s2, List<FieldInfo> list) {
+    @Override public ISqlTridentDataSource constructTrident(URI uri, String s, String s1,
+        Properties properties, List<FieldInfo> list) {
         return null;
     }
 

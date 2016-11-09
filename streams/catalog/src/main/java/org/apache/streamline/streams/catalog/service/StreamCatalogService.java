@@ -32,6 +32,8 @@ import com.google.common.collect.Sets;
 import org.apache.registries.common.QueryParam;
 import org.apache.registries.common.Schema;
 import org.apache.registries.common.util.FileStorage;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.streamline.common.util.JsonSchemaValidator;
 import org.apache.streamline.common.util.ProxyUtil;
 import org.apache.registries.storage.Storable;
@@ -39,6 +41,7 @@ import org.apache.registries.storage.StorableKey;
 import org.apache.registries.storage.StorageManager;
 import org.apache.registries.storage.exception.StorageException;
 import org.apache.streamline.streams.StreamlineEvent;
+import org.apache.streamline.streams.catalog.BranchRuleInfo;
 import org.apache.streamline.streams.catalog.Cluster;
 import org.apache.streamline.streams.catalog.Component;
 import org.apache.streamline.streams.catalog.NotifierInfo;
@@ -97,6 +100,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -104,6 +108,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 
+import static java.util.stream.Collectors.toList;
 import static org.apache.streamline.streams.catalog.TopologyEdge.StreamGrouping;
 
 /**
@@ -131,6 +136,7 @@ public class StreamCatalogService {
     private static final String TOPOLOGY_PROCESSOR_STREAM_MAPPING_NAMESPACE = new TopologyProcessorStreamMapping().getNameSpace();
     private static final String TOPOLOGY_EDGE_NAMESPACE = new TopologyEdge().getNameSpace();
     private static final String TOPOLOGY_RULEINFO_NAMESPACE = new RuleInfo().getNameSpace();
+    private static final String TOPOLOGY_BRANCHRULEINFO_NAMESPACE = new BranchRuleInfo().getNameSpace();
     private static final String TOPOLOGY_WINDOWINFO_NAMESPACE = new WindowInfo().getNameSpace();
     private static final String UDF_NAMESPACE = new UDFInfo().getNameSpace();
 
@@ -678,7 +684,7 @@ public class StreamCatalogService {
         return this.topologyActions.status(getTopologyLayout(topology));
     }
 
-    public Map<String, TopologyMetrics.ComponentMetric> getTopologyMetrics(Topology topology) throws Exception {
+    public Map<String, TopologyMetrics.ComponentMetric> getTopologyMetrics(Topology topology) throws IOException {
         return this.topologyMetrics.getMetricsForTopology(getTopologyLayout(topology));
     }
 
@@ -700,6 +706,35 @@ public class StreamCatalogService {
 
     public TopologyMetrics.TopologyMetric getTopologyMetric(Topology topology) throws IOException {
         return this.topologyMetrics.getTopologyMetric(getTopologyLayout(topology));
+    }
+
+    public List<Pair<String, Double>> getTopNAndOtherComponentsLatency(Topology topology, int nOfTopN) throws IOException {
+        Map<String, TopologyMetrics.ComponentMetric> metricsForTopology = this.topologyMetrics
+            .getMetricsForTopology(getTopologyLayout(topology));
+
+        List<Pair<String, Double>> topNAndOther = new ArrayList<>();
+
+        List<ImmutablePair<String, Double>> latencyOrderedComponents = metricsForTopology.entrySet().stream()
+            .map((x) -> new ImmutablePair<>(x.getKey(), x.getValue().getProcessedTime()))
+            // reversed sort
+            .sorted((c1, c2) -> {
+                if (c2.getValue() == null) {
+                    // assuming c1 is bigger
+                    return -1;
+                } else {
+                    return c2.getValue().compareTo(c1.getValue());
+                }
+            })
+            .collect(toList());
+
+        latencyOrderedComponents.stream().limit(nOfTopN).forEachOrdered(topNAndOther::add);
+        double sumLatencyOthers = latencyOrderedComponents.stream()
+            .skip(nOfTopN).filter((x) -> x.getValue() != null)
+            .mapToDouble(Pair::getValue).sum();
+
+        topNAndOther.add(new ImmutablePair<>("Others", sumLatencyOthers));
+
+        return topNAndOther;
     }
 
     public Collection<TopologyComponentDefinition.TopologyComponentType> listTopologyComponentTypes() {
@@ -1481,6 +1516,49 @@ public class StreamCatalogService {
         return dao.find(TOPOLOGY_WINDOWINFO_NAMESPACE, params);
     }
 
+    public Collection<BranchRuleInfo> listBranchRules() {
+        return dao.list(TOPOLOGY_BRANCHRULEINFO_NAMESPACE);
+    }
+
+    public Collection<BranchRuleInfo> listBranchRules(List<QueryParam> params) throws Exception {
+        return dao.find(TOPOLOGY_BRANCHRULEINFO_NAMESPACE, params);
+    }
+
+    public BranchRuleInfo addBranchRule(Long topologyId, BranchRuleInfo branchRuleInfo) throws Exception {
+        if (branchRuleInfo.getId() == null) {
+            branchRuleInfo.setId(dao.nextId(TOPOLOGY_BRANCHRULEINFO_NAMESPACE));
+        }
+        branchRuleInfo.setTopologyId(topologyId);
+        String parsedRuleStr = parseAndSerialize(branchRuleInfo);
+        LOG.debug("ParsedRuleStr {}", parsedRuleStr);
+        branchRuleInfo.setParsedRuleStr(parsedRuleStr);
+        dao.add(branchRuleInfo);
+        return branchRuleInfo;
+    }
+
+    public BranchRuleInfo getBranchRule(Long id) throws Exception {
+        BranchRuleInfo brRuleInfo = new BranchRuleInfo();
+        brRuleInfo.setId(id);
+        return dao.get(new StorableKey(TOPOLOGY_BRANCHRULEINFO_NAMESPACE, brRuleInfo.getPrimaryKey()));
+    }
+
+    public BranchRuleInfo addOrUpdateBranchRule(Long topologyid, Long ruleId, BranchRuleInfo brRuleInfo) throws Exception {
+        brRuleInfo.setId(ruleId);
+        brRuleInfo.setTopologyId(topologyid);
+        String parsedRuleStr = parseAndSerialize(brRuleInfo);
+        LOG.debug("ParsedRuleStr {}", parsedRuleStr);
+        brRuleInfo.setParsedRuleStr(parsedRuleStr);
+        dao.addOrUpdate(brRuleInfo);
+        return brRuleInfo;
+    }
+
+    public BranchRuleInfo removeBranchRule(Long id) {
+        BranchRuleInfo brRuleInfo = new BranchRuleInfo();
+        brRuleInfo.setId(id);
+        return dao.remove(
+                new StorableKey(TOPOLOGY_BRANCHRULEINFO_NAMESPACE, brRuleInfo.getPrimaryKey()));
+    }
+
     public WindowInfo addWindow(Long topologyId, WindowInfo windowInfo) throws Exception {
         if (windowInfo.getId() == null) {
             windowInfo.setId(dao.nextId(TOPOLOGY_WINDOWINFO_NAMESPACE));
@@ -1530,6 +1608,18 @@ public class StreamCatalogService {
             throw new IllegalArgumentException("Either streams or sql string should be specified.");
         }
         parseSql(rule, ruleInfo.getSql(), ruleInfo.getTopologyId());
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(rule);
+    }
+
+    private String parseAndSerialize(BranchRuleInfo ruleInfo) throws JsonProcessingException {
+        Rule rule = new Rule();
+        rule.setId(ruleInfo.getId());
+        rule.setName(ruleInfo.getName());
+        rule.setDescription(ruleInfo.getDescription());
+        rule.setActions(ruleInfo.getActions());
+        String sql = getSqlString(Arrays.asList(ruleInfo.getStream()), null, ruleInfo.getCondition(), null);
+        parseSql(rule, sql, ruleInfo.getTopologyId());
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(rule);
     }
