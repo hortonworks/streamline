@@ -1,13 +1,13 @@
 package org.apache.streamline.streams.metrics.storm.topology;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
 import org.apache.streamline.streams.layout.component.TopologyLayout;
 import org.apache.streamline.streams.metrics.TimeSeriesQuerier;
+import org.apache.streamline.streams.metrics.storm.StormRestAPIClient;
+import org.apache.streamline.streams.metrics.storm.StormTopologyUtil;
 import org.apache.streamline.streams.metrics.topology.TopologyTimeSeriesMetrics;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,8 +17,13 @@ import java.util.TreeMap;
  * Storm implementation of the TopologyTimeSeriesMetrics interface
  */
 public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMetrics {
+    private final StormRestAPIClient client;
     private TimeSeriesQuerier timeSeriesQuerier;
     private final ObjectMapper mapper = new ObjectMapper();
+
+    public StormTopologyTimeSeriesMetricsImpl(StormRestAPIClient client) {
+        this.client = client;
+    }
 
     @Override
     public void setTimeSeriesQuerier(TimeSeriesQuerier timeSeriesQuerier) {
@@ -34,7 +39,7 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
     public Map<Long, Double> getCompleteLatency(TopologyLayout topology, String sourceId, long from, long to) {
         assertTimeSeriesQuerierIsSet();
 
-        String stormTopologyName = getTopologyName(topology);
+        String stormTopologyName = StormTopologyUtil.findOrGenerateTopologyName(client, topology);
 
         return queryMetrics(stormTopologyName, sourceId, StormMappedMetric.completeLatency, from, to);
     }
@@ -43,7 +48,7 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
     public Map<String, Map<Long, Double>> getkafkaTopicOffsets(TopologyLayout topology, String sourceId, long from, long to) {
         assertTimeSeriesQuerierIsSet();
 
-        String stormTopologyName = getTopologyName(topology);
+        String stormTopologyName = StormTopologyUtil.findOrGenerateTopologyName(client, topology);
 
         String topicName = findKafkaTopicName(topology, sourceId);
         if (topicName == null) {
@@ -65,7 +70,7 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
     public Map<String, Map<Long, Double>> getComponentStats(TopologyLayout topology, String componentId, long from, long to) {
         assertTimeSeriesQuerierIsSet();
 
-        String stormTopologyName = getTopologyName(topology);
+        String stormTopologyName = StormTopologyUtil.findOrGenerateTopologyName(client, topology);
 
         StormMappedMetric[] metrics = { StormMappedMetric.inputRecords, StormMappedMetric.outputRecords,
                 StormMappedMetric.failedRecords, StormMappedMetric.processedTime, StormMappedMetric.recordsInWaitQueue };
@@ -82,10 +87,6 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
         if (timeSeriesQuerier == null) {
             throw new IllegalStateException("Time series querier is not set!");
         }
-    }
-
-    private String getTopologyName(TopologyLayout topology) {
-        return "streamline-" + topology.getId() + "-" + topology.getName();
     }
 
     private String findKafkaTopicName(TopologyLayout topology, String sourceId) {
