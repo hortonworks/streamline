@@ -1,6 +1,5 @@
 package org.apache.streamline.streams.layout.storm;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.FileUtils;
@@ -11,11 +10,16 @@ import org.apache.streamline.streams.layout.component.StatusImpl;
 import org.apache.streamline.streams.layout.component.TopologyActions;
 import org.apache.streamline.streams.layout.component.TopologyDag;
 import org.apache.streamline.streams.layout.component.TopologyLayout;
+import org.apache.streamline.streams.storm.common.StormRestAPIClient;
+import org.apache.streamline.streams.storm.common.StormTopologyUtil;
+import org.glassfish.jersey.client.ClientConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
@@ -35,12 +39,14 @@ import java.util.Map;
  */
 public class StormTopologyActionsImpl implements TopologyActions {
     private static final Logger LOG = LoggerFactory.getLogger(StormTopologyActionsImpl.class);
+    public static final int DEFAULT_WAIT_TIME_SEC = 30;
 
     private String stormArtifactsLocation = "/tmp/storm-artifacts/";
     private String stormCliPath = "storm";
     private String stormJarLocation;
     private String catalogRootUrl;
     private String javaJarCommand;
+    private StormRestAPIClient client;
     private Map<String, String> conf;
 
     public StormTopologyActionsImpl() {
@@ -68,6 +74,13 @@ public class StormTopologyActionsImpl implements TopologyActions {
             } else {
                 javaJarCommand = "jar";
             }
+
+            String stormApiRootUrl = null;
+            if (conf != null) {
+                stormApiRootUrl = conf.get(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY);
+            }
+            Client restClient = ClientBuilder.newClient(new ClientConfig());
+            this.client = new StormRestAPIClient(restClient, stormApiRootUrl);
         }
         File f = new File (stormArtifactsLocation);
         f.mkdirs();
@@ -138,12 +151,10 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
     @Override
     public void kill (TopologyLayout topology) throws Exception {
-        List<String> commands = new ArrayList<>();
-        commands.add(stormCliPath);
-        commands.add("kill");
-        commands.add(getTopologyName(topology));
-        int exitValue = executeShellProcess(commands).exitValue;
-        if (exitValue != 0) {
+        String stormTopologyId = StormTopologyUtil.findStormTopologyId(client, topology.getId());
+
+        boolean killed = client.killTopology(stormTopologyId, DEFAULT_WAIT_TIME_SEC);
+        if (!killed) {
             throw new Exception("Topology could not be killed " +
                     "successfully.");
         }
@@ -165,12 +176,10 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
     @Override
     public void suspend (TopologyLayout topology) throws Exception {
-        List<String> commands = new ArrayList<>();
-        commands.add(stormCliPath);
-        commands.add("deactivate");
-        commands.add(getTopologyName(topology));
-        int exitValue = executeShellProcess(commands).exitValue;
-        if (exitValue != 0) {
+        String stormTopologyId = StormTopologyUtil.findStormTopologyId(client, topology.getId());
+
+        boolean suspended = client.deactivateTopology(stormTopologyId);
+        if (!suspended) {
             throw new Exception("Topology could not be suspended " +
                     "successfully.");
         }
@@ -178,12 +187,10 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
     @Override
     public void resume (TopologyLayout topology) throws Exception {
-        List<String> commands = new ArrayList<>();
-        commands.add(stormCliPath);
-        commands.add("activate");
-        commands.add(getTopologyName(topology));
-        int exitValue = executeShellProcess(commands).exitValue;
-        if (exitValue != 0) {
+        String stormTopologyId = StormTopologyUtil.findStormTopologyId(client, topology.getId());
+
+        boolean resumed = client.activateTopology(stormTopologyId);
+        if (!resumed) {
             throw new Exception("Topology could not be resumed " +
                     "successfully.");
         }
@@ -191,29 +198,15 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
     @Override
     public Status status(TopologyLayout topology) throws Exception {
+        String stormTopologyId = StormTopologyUtil.findStormTopologyId(client, topology.getId());
+
+        Map topologyStatus = client.getTopology(stormTopologyId);
+
         StatusImpl status = new StatusImpl();
-        List<String> commands = new ArrayList<>();
-        commands.add(stormCliPath);
-        commands.add("list");
-        String topologyName = getTopologyName(topology);
-        ShellProcessResult result = executeShellProcess(commands);
-        int exitValue = result.exitValue;
-        if (exitValue != 0) {
-            LOG.error("Topology status could not be fetched for {}", topology.getName());
-        } else {
-            BufferedReader reader = new BufferedReader(new StringReader(result.stdout));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] fields = line.split("\\s+");
-                if (fields[0].equals(topologyName)) {
-                    status.setStatus(fields[1]);
-                    status.putExtra("Num_tasks", fields[2]);
-                    status.putExtra("Num_workers", fields[3]);
-                    status.putExtra("Uptime_secs", fields[4]);
-                    break;
-                }
-            }
-        }
+        status.setStatus((String) topologyStatus.get("status"));
+        status.putExtra("Num_tasks", String.valueOf(topologyStatus.get("workersTotal")));
+        status.putExtra("Num_workers", String.valueOf(topologyStatus.get("tasksTotal")));
+        status.putExtra("Uptime_secs", String.valueOf(topologyStatus.get("uptimeSeconds")));
         return status;
     }
 
@@ -222,12 +215,12 @@ public class StormTopologyActionsImpl implements TopologyActions {
      */
     @Override
     public Path getArtifactsLocation(TopologyLayout topology) {
-        return Paths.get(stormArtifactsLocation, getTopologyName(topology), "artifacts");
+        return Paths.get(stormArtifactsLocation, generateStormTopologyName(topology), "artifacts");
     }
 
     @Override
     public Path getExtraJarsLocation(TopologyLayout topology) {
-        return Paths.get(stormArtifactsLocation, getTopologyName(topology), "jars");
+        return Paths.get(stormArtifactsLocation, generateStormTopologyName(topology), "jars");
     }
 
     private String createYamlFile (TopologyLayout topology) throws Exception {
@@ -243,7 +236,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
                 }
             }
             yamlMap = new LinkedHashMap<>();
-            yamlMap.put(StormTopologyLayoutConstants.YAML_KEY_NAME, getTopologyName(topology));
+            yamlMap.put(StormTopologyLayoutConstants.YAML_KEY_NAME, generateStormTopologyName(topology));
             TopologyDag topologyDag = topology.getTopologyDag();
             LOG.debug("Initial Topology config {}", topology.getConfig());
             StormTopologyFluxGenerator fluxGenerator = new StormTopologyFluxGenerator(topology, conf, getExtraJarsLocation(topology));
@@ -269,12 +262,12 @@ public class StormTopologyActionsImpl implements TopologyActions {
         }
     }
 
-    private String getTopologyName (TopologyLayout topology) {
-        return "streamline-" + topology.getId() + "-" + topology.getName();
+    private String generateStormTopologyName(TopologyLayout topology) {
+        return StormTopologyUtil.generateStormTopologyName(topology.getId(), topology.getName());
     }
 
     private String getFilePath (TopologyLayout topology) {
-        return this.stormArtifactsLocation + getTopologyName(topology) + ".yaml";
+        return this.stormArtifactsLocation + generateStormTopologyName(topology) + ".yaml";
     }
 
     // Add topology level configs. catalogRootUrl, hbaseConf, hdfsConf,

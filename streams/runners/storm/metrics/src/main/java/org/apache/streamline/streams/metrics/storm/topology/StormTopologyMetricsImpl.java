@@ -5,36 +5,35 @@ import org.apache.streamline.streams.layout.TopologyLayoutConstants;
 import org.apache.streamline.streams.layout.component.Component;
 import org.apache.streamline.streams.layout.component.TopologyLayout;
 import org.apache.streamline.streams.metrics.TimeSeriesQuerier;
-import org.apache.streamline.streams.metrics.storm.StormRestAPIClient;
-import org.apache.streamline.streams.metrics.storm.StormTopologyUtil;
 import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
 import org.apache.streamline.streams.metrics.topology.TopologyTimeSeriesMetrics;
+import org.apache.streamline.streams.storm.common.StormRestAPIClient;
+import org.apache.streamline.streams.storm.common.StormTopologyUtil;
 import org.glassfish.jersey.client.ClientConfig;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.MediaType;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.STATS_JSON_ACKED_TUPLES;
-import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.STATS_JSON_COMPLETE_LATENCY;
-import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.STATS_JSON_EMITTED_TUPLES;
-import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.STATS_JSON_FAILED_TUPLES;
-import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.STATS_JSON_PROCESS_LATENCY;
-import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.STATS_JSON_TRANSFERRED_TUPLES;
-import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_BOLTS;
-import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_BOLT_ID;
-import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_EXECUTORS_TOTAL;
-import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_SPOUTS;
-import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_SPOUT_ID;
-import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_STATS;
-import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_STATUS;
-import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_UPTIME_SECS;
-import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_WINDOW;
-import static org.apache.streamline.streams.metrics.storm.topology.StormMetricsConstant.TOPOLOGY_JSON_WORKERS_TOTAL;
+import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.STATS_JSON_ACKED_TUPLES;
+import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.STATS_JSON_COMPLETE_LATENCY;
+import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.STATS_JSON_EMITTED_TUPLES;
+import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.STATS_JSON_EXECUTED_TUPLES;
+import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.STATS_JSON_FAILED_TUPLES;
+import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.STATS_JSON_PROCESS_LATENCY;
+import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.STATS_JSON_TRANSFERRED_TUPLES;
+import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.TOPOLOGY_JSON_BOLTS;
+import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.TOPOLOGY_JSON_BOLT_ID;
+import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.TOPOLOGY_JSON_EXECUTORS_TOTAL;
+import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.TOPOLOGY_JSON_SPOUTS;
+import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.TOPOLOGY_JSON_SPOUT_ID;
+import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.TOPOLOGY_JSON_STATS;
+import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.TOPOLOGY_JSON_STATUS;
+import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.TOPOLOGY_JSON_UPTIME_SECS;
+import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.TOPOLOGY_JSON_WINDOW;
+import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.TOPOLOGY_JSON_WORKERS_TOTAL;
 
 /**
  * Storm implementation of the TopologyMetrics interface
@@ -67,7 +66,7 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
      */
     @Override
     public TopologyMetric getTopologyMetric(TopologyLayout topology) {
-        String topologyId = StormTopologyUtil.findStormTopologyId(client, topology);
+        String topologyId = StormTopologyUtil.findStormTopologyId(client, topology.getId());
         if (topologyId == null) {
             throw new TopologyNotAliveException("Topology not found in Storm Cluster - topology id: " + topology.getId());
         }
@@ -118,7 +117,7 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
      */
     @Override
     public Map<String, ComponentMetric> getMetricsForTopology(TopologyLayout topology) {
-        String topologyId = StormTopologyUtil.findStormTopologyId(client, topology);
+        String topologyId = StormTopologyUtil.findStormTopologyId(client, topology.getId());
         if (topologyId == null) {
             throw new TopologyNotAliveException("Topology not found in Storm Cluster - topology id: " +
                     topology.getId());
@@ -185,9 +184,9 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
     }
 
     private ComponentMetric extractMetric(String componentName, Map<String, ?> componentMap) {
-        Long inputRecords = getLongValueOrDefault(componentMap, StormMetricsConstant.STATS_JSON_EXECUTED_TUPLES, 0L);
+        Long inputRecords = getLongValueOrDefault(componentMap, STATS_JSON_EXECUTED_TUPLES, 0L);
         Long outputRecords = getLongValueOrDefault(componentMap, STATS_JSON_EMITTED_TUPLES, 0L);
-        Long failedRecords = getLongValueOrDefault(componentMap, StormMetricsConstant.STATS_JSON_FAILED_TUPLES, 0L);
+        Long failedRecords = getLongValueOrDefault(componentMap, STATS_JSON_FAILED_TUPLES, 0L);
         Double processedTime = getDoubleValueFromStringOrDefault(componentMap, STATS_JSON_PROCESS_LATENCY, 0.0d);
 
         return new ComponentMetric(getComponentNameInStreamline(componentName), inputRecords, outputRecords, failedRecords, processedTime);

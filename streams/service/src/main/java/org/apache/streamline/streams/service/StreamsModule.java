@@ -166,6 +166,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         conf.put(StormTopologyLayoutConstants.STORM_HOME_DIR, (String) config.get(StormTopologyLayoutConstants.STORM_HOME_DIR));
         conf.put(TopologyLayoutConstants.JAVA_JAR_COMMAND, (String) config.get(TopologyLayoutConstants.JAVA_JAR_COMMAND));
         conf.put(TopologyLayoutConstants.SCHEMA_REGISTRY_URL, (String) config.get(TopologyLayoutConstants.SCHEMA_REGISTRY_URL));
+        conf.put(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY, (String) config.get(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY));
         topologyActions.init(conf);
         return topologyActions;
     }

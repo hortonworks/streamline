@@ -9,20 +9,21 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>streamline-layout-storm</artifactId>
+    <artifactId>streamline-common-storm</artifactId>
 
     <dependencies>
         <dependency>
-            <groupId>org.apache.streamline</groupId>
-            <artifactId>streamline-common-storm</artifactId>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.streamline</groupId>
-            <artifactId>streamline-layout</artifactId>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-multipart</artifactId>
         </dependency>
         <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
         </dependency>
     </dependencies>
+
 </project>

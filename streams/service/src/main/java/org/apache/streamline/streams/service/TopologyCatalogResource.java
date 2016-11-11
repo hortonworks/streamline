@@ -20,17 +20,15 @@ package org.apache.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.Topology;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.layout.component.TopologyActions;
-import org.apache.streamline.streams.metrics.storm.topology.StormNotReachableException;
 import org.apache.streamline.streams.metrics.storm.topology.TopologyNotAliveException;
 import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.streamline.streams.storm.common.StormNotReachableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
