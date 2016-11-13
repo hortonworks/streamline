@@ -15,7 +15,6 @@ import {pageSize} from '../../../utils/Constants';
 export default class RulesNodeForm extends Component {
 	static propTypes = {
 		nodeData: PropTypes.object.isRequired,
-		configData: PropTypes.object.isRequired,
 		editMode: PropTypes.bool.isRequired,
 		nodeType: PropTypes.string.isRequired,
 		topologyId: PropTypes.string.isRequired,
@@ -75,16 +74,19 @@ export default class RulesNodeForm extends Component {
 
 				let allStreams = results[2].entities;
 
-                                //find all input streams from connected edges
-                                this.allEdgesToNode = allEdges.filter((e)=>{return e.toId === nodeData.nodeId});
-                                this.parsedStreams = [];
-                                this.allEdgesToNode.map((e)=>{
-                                        e.streamGroupings.map((g)=>{
-                                                this.parsedStreams.push(_.find(allStreams, {id: g.streamId}));
-                                        });
-                                });
+                //find all input streams from connected edges
+                this.allEdgesToNode = allEdges.filter((e)=>{return e.toId === nodeData.nodeId});
+                this.parsedStreams = [];
+                this.allEdgesToNode.map((e)=>{
+                    e.streamGroupings.map((g)=>{
+                        this.parsedStreams.push(_.find(allStreams, {id: g.streamId}));
+                    });
+                });
 				if(this.nodeData.outputStreams.length === 0 || this.nodeData.outputStreams.length < this.parsedStreams.length) {
 					this.saveStreams();
+                                } else {
+                                        this.streamData = this.nodeData.outputStreams[0];
+                                        this.context.ParentForm.setState({outputStreamObj:this.streamData})
 				}
 
 				this.setState(stateObj);
@@ -95,28 +97,30 @@ export default class RulesNodeForm extends Component {
 	}
 
         saveStreams() {
-                let {topologyId, nodeType} = this.props;
-                let promiseForStreams = [];
-                this.parsedStreams.map((s, i)=>{
+            let {topologyId, nodeType} = this.props;
+            let promiseForStreams = [];
+            this.parsedStreams.map((s, i)=>{
 			let streamData = {
-					streamId: 'rule_processor_'+(this.nodeData.id)+'_stream_'+(i+1),
-					fields: s.fields
-				};
+                                streamId: 'rule_processor_'+(this.nodeData.id)+'_stream_'+(i+1),
+                                fields: s.fields
+                        };
 			//TODO - Need to find out exact streams that needs to be created and save only those
 			if((i+1) > this.nodeData.outputStreams.length)
 				promiseForStreams.push(TopologyREST.createNode(topologyId, 'streams', {body: JSON.stringify(streamData)}));
-		});
-                Promise.all(promiseForStreams)
+                        });
+            Promise.all(promiseForStreams)
                 .then(results=>{
-                                this.nodeData.outputStreamIds = this.nodeData.outputStreams.map((s)=>{return s.id;}) || [];
-                                results.map((s)=>{
-                                        this.nodeData.outputStreamIds.push(s.entity.id);
-                                });
-                                TopologyREST.updateNode(topologyId, nodeType, this.nodeData.id, {body: JSON.stringify(this.nodeData)})
-                                        .then((node)=>{
-                                                this.nodeData = node.entity;
-                                                this.setState({outputStreams: node.entity.outputStreams});
-                                        })
+                    this.nodeData.outputStreamIds = this.nodeData.outputStreams.map((s)=>{return s.id;}) || [];
+                    results.map((s)=>{
+                        this.nodeData.outputStreamIds.push(s.entity.id);
+                        this.streamData = s.entity;
+                        this.context.ParentForm.setState({outputStreamObj:this.streamData})
+                    });
+                    TopologyREST.updateNode(topologyId, nodeType, this.nodeData.id, {body: JSON.stringify(this.nodeData)})
+                        .then((node)=>{
+                            this.nodeData = node.entity;
+                            this.setState({outputStreams: node.entity.outputStreams});
+                        })
                 })
         }
 
@@ -170,29 +174,6 @@ export default class RulesNodeForm extends Component {
 				.then(result=>{
 					FSReactToastr.success(<strong>Rule deleted successfully</strong>);
 					this.fetchData();
-					let arr = this.refs.schema.currentRulesArr;
-					let index;
-					this.refs.schema.currentRulesArr.map((rule,i)=>{
-						if(rule.id === id){
-							index = i;
-						}
-					})
-					this.refs.schema.currentRulesArr.splice(index, 1);
-
-					let rules = this.refs.schema.nodeData.config.properties.rules;
-					rules.splice(rules.indexOf(id), 1);
-					this.refs.schema.nodeData.config.properties.rules = rules;
-
-					let streams = this.refs.schema.state.outputStreams;
-					if(streams && streams.length){
-						streams.map(obj=>{
-							let index = obj.forRule.indexOf(id);
-							if(index !== -1){
-								obj.forRule.splice(index, 1);
-							}
-						})
-					}
-					this.refs.schema.setState({outputStreams: streams});
 				})
 			confirmBox.cancel();
 		},()=>{})
@@ -203,28 +184,6 @@ export default class RulesNodeForm extends Component {
 			this.refs.RuleForm.handleSave().then((results)=>{
 				if(results){
 					this.fetchData();
-					let arr = this.refs.schema.currentRulesArr;
-					let index = null;
-					this.refs.schema.currentRulesArr.map((rule,i)=>{
-						if(rule.id === results.id){
-							index = i;
-						}
-					})
-					if(index !== null){
-						this.refs.schema.currentRulesArr[index] = results;
-					} else {
-						this.refs.schema.currentRulesArr.push(results);
-					}
-					let rules = this.refs.schema.nodeData.config.properties.rules;
-					if(!rules){
-						rules = [results.id];
-					} else {
-						if(rules.indexOf(results.id) === -1){
-							rules.push(results.id);
-						}
-					}
-					this.refs.schema.nodeData.config.properties.rules = rules;
-					this.refs.schema.forceUpdate();
 					this.refs.RuleModal.hide();
 				}
 			})
@@ -235,64 +194,46 @@ export default class RulesNodeForm extends Component {
 		let {topologyId, editMode, nodeType, nodeData, targetNodes, linkShuffleOptions} = this.props;
 		let {rules} = this.state;
 		return (
-			<div>
-				<Tabs id="RulesForm" defaultActiveKey={1} className="schema-tabs">
-					<Tab eventKey={1} title="Configuration">
-						{editMode ? 
-							<div className="clearfix row-margin-bottom">
-								<button type="button" onClick={this.handleAddRule.bind(this)} className="btn btn-success pull-left">
-									<i className="fa fa-plus"></i> Add New Rules
-								</button>
-							</div>
-						: null}
-						<div className="row">
-							<div className="col-sm-12">
-								<Table
-									className="table table-hover table-bordered"
-									noDataText="No records found."
-									currentPage={0}
-									itemsPerPage={rules.length > pageSize ? pageSize : 0}
-									pageButtonLimit={5}
-								>
-									<Thead>
-										<Th column="name">Rule Name</Th>
-										<Th column="sql">SQL Query</Th>
-										<Th column="action" className={!editMode ? 'displayNone' : null}>Actions</Th>
-									</Thead>
-									{rules.map((rule, i)=>{
-										return(
-											<Tr key={i}>
-												<Td column="name">{rule.name}</Td>
-												<Td column="sql">{rule.sql}</Td>
-												<Td column="action" className={!editMode ? 'displayNone' : null}>
-													<div className="btn-action">
-														<BtnEdit callback={this.handleAddRule.bind(this, rule.id)}/>
-														<BtnDelete callback={this.handleDeleteRule.bind(this, rule.id)}/>
-													</div>
-												</Td> 
-											</Tr>
-										)
-									})}
-								</Table>
-							</div>
-						</div>
-					</Tab>
-					<Tab eventKey={2} title="Output Streams">
-						<OutputSchema 
-							ref="schema"
-							topologyId={topologyId} 
-							editMode={editMode}
-							nodeId={nodeData.nodeId}
-							nodeType={nodeType}
-							targetNodes={targetNodes}
-							linkShuffleOptions={linkShuffleOptions}
-                                                        canAdd={false}
-                                                        canDelete={false}
-                                                        rulesOutputStreams={this.state.outputStreams}
-						/>
-					</Tab>
-				</Tabs>
-				<Modal ref="RuleModal" bsSize="large" data-title={this.state.modalTitle} data-resolve={this.handleSaveRule.bind(this)}>
+                        <div className="modal-form processor-modal-form">
+                                {editMode ?
+                                        <div className="clearfix row-margin-bottom">
+                                                <button type="button" onClick={this.handleAddRule.bind(this)} className="btn btn-success pull-left">
+                                                        <i className="fa fa-plus"></i> Add New Rules
+                                                </button>
+                                        </div>
+                                : null}
+                                <div className="row">
+                                        <div className="col-sm-12">
+                                                <Table
+                                                        className="table table-hover table-bordered"
+                                                        noDataText="No records found."
+                                                        currentPage={0}
+                                                        itemsPerPage={rules.length > pageSize ? pageSize : 0}
+                                                        pageButtonLimit={5}
+                                                >
+                                                        <Thead>
+                                                                <Th column="name">Name</Th>
+                                                                <Th column="sql">SQL Query</Th>
+                                                                <Th column="action" className={!editMode ? 'displayNone' : null}>Actions</Th>
+                                                        </Thead>
+                                                        {rules.map((rule, i)=>{
+                                                                return(
+                                                                        <Tr key={i}>
+                                                                                <Td column="name">{rule.name}</Td>
+                                                                                <Td column="sql">{rule.sql}</Td>
+                                                                                <Td column="action" className={!editMode ? 'displayNone' : null}>
+                                                                                        <div className="btn-action">
+                                                                                                <BtnEdit callback={this.handleAddRule.bind(this, rule.id)}/>
+                                                                                                <BtnDelete callback={this.handleDeleteRule.bind(this, rule.id)}/>
+                                                                                        </div>
+                                                                                </Td>
+                                                                        </Tr>
+                                                                )
+                                                        })}
+                                                </Table>
+                                        </div>
+                                </div>
+                                <Modal ref="RuleModal" dialogClassName="modal-fixed-height" bsSize="large" data-title={this.state.modalTitle} data-resolve={this.handleSaveRule.bind(this)}>
 					<RulesForm
 						ref="RuleForm"
 						topologyId={topologyId}
@@ -307,3 +248,7 @@ export default class RulesNodeForm extends Component {
 		)
 	}
 }
+
+RulesNodeForm.contextTypes = {
+    ParentForm: React.PropTypes.object,
+};

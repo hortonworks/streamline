@@ -56,7 +56,8 @@ export default class Editable extends Component {
     anchorStyle = {
         textDecoration: 'none',
         borderBottom: 'dashed 1px #0088cc',
-        cursor: 'pointer'
+        cursor: 'pointer',
+        color: '#323133'
     }
 
     render() {

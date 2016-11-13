@@ -14,7 +14,6 @@ import {toastOpt} from '../../../utils/Constants'
 export default class WindowingAggregateNodeForm extends Component {
 	static propTypes = {
 		nodeData: PropTypes.object.isRequired,
-		// configData: PropTypes.object,
 		editMode: PropTypes.bool.isRequired,
 		nodeType: PropTypes.string.isRequired,
 		topologyId: PropTypes.string.isRequired,
@@ -26,12 +25,12 @@ export default class WindowingAggregateNodeForm extends Component {
 
 	constructor(props) {
 		super(props);
+                this.sourceNodesId = [props.sourceNode.nodeId];
 		let {editMode} = props;
 		this.fetchData();
 		var obj = {
 			parallelism: 1,
 			editMode: editMode,
-			showSchema: false,
 			selectedKeys: [],
 			streamsList: [],
 			keysList: [],
@@ -52,8 +51,8 @@ export default class WindowingAggregateNodeForm extends Component {
 			outputFieldsArr: [{args: '', functionName: '', outputFieldName: ''}],
 			functionListArr: [],
 			outputStreamId: '',
-                        outputStreamFields: [],
-      argumentError : false
+            outputStreamFields: [],
+                argumentError : false
 		};
 		this.state = obj;
 	}
@@ -115,6 +114,7 @@ export default class WindowingAggregateNodeForm extends Component {
 							this.streamData = this.nodeData.outputStreams[0];
 							stateObj.outputStreamId = this.nodeData.outputStreams[0].streamId;
 							stateObj.outputStreamFields = JSON.parse(JSON.stringify(this.nodeData.outputStreams[0].fields));
+                            this.context.ParentForm.setState({outputStreamObj:this.streamData})
 						} else {
 							stateObj.outputStreamId = 'window_stream_'+this.nodeData.id;
 							stateObj.outputStreamFields = [];
@@ -125,6 +125,7 @@ export default class WindowingAggregateNodeForm extends Component {
 							TopologyREST.createNode(topologyId, 'streams', {body: JSON.stringify(dummyStreamObj)})
 								.then(streamResult => {
 									this.streamData = streamResult.entity;
+                                                                        this.context.ParentForm.setState({outputStreamObj:this.streamData})
 									this.nodeData.outputStreamIds = [this.streamData.id];
 									TopologyREST.updateNode(topologyId, nodeType, nodeData.nodeId, {body: JSON.stringify(this.nodeData)})
 								})
@@ -219,6 +220,7 @@ export default class WindowingAggregateNodeForm extends Component {
 		} else {
 			this.setState({selectedKeys: [], outputStreamFields: tempArr});
 		}
+                this.context.ParentForm.setState({outputStreamObj:this.streamData})
 	}
 
 	handleIntervalChange(obj){
@@ -278,6 +280,7 @@ export default class WindowingAggregateNodeForm extends Component {
 		}
 		let outputStreamFields = this.getOutputFieldsForStream(oldData, fieldsArr[index]);
 		this.streamData.fields = outputStreamFields;
+                this.context.ParentForm.setState({outputStreamObj:this.streamData})
 		this.setState({outputFieldsArr: fieldsArr, outputStreamFields: outputStreamFields});
 	}
 
@@ -354,6 +357,7 @@ export default class WindowingAggregateNodeForm extends Component {
 			}
 			fieldsArr.splice(index, 1);
 			this.streamData.fields = outputStreamFields;
+                        this.context.ParentForm.setState({outputStreamObj:this.streamData})
 			this.setState({outputFieldsArr: fieldsArr, outputStreamFields: outputStreamFields});
 		}
 	}
@@ -369,9 +373,9 @@ export default class WindowingAggregateNodeForm extends Component {
 				validData = false;
 			}
 		})
-    if(argumentError){
-      return false;
-    }
+                if(argumentError){
+                        return false;
+                }
 		return validData;
 	}
 
@@ -443,32 +447,32 @@ export default class WindowingAggregateNodeForm extends Component {
 		}
 		if(this.windowId){
 			return TopologyREST.getNode(topologyId, 'windows', this.windowId)
-					.then((result)=>{
-						let data = result.entity;
-						windowObj.actions = result.entity.actions || [];
+                        .then((result)=>{
+                                let data = result.entity;
+                                windowObj.actions = result.entity.actions || [];
 
-						if(this.props.sourceNode.currentType === 'Rule' ||
-							this.props.sourceNode.currentType === 'Window') {
-						let type = this.props.sourceNode.currentType === 'Rule' ? 'rules' : 'windows';
-						let nodeName = this.nodeData.name;
-						TopologyREST.getAllNodes(topologyId, type).then((results)=>{
-							results.entities.map((nodeObj)=>{
+                                if(this.props.sourceNode.currentType.toLowerCase() === 'rule' ||
+                                        this.props.sourceNode.currentType.toLowerCase() === 'window') {
+                                        let type = this.props.sourceNode.currentType.toLowerCase() === 'rule' ? 'rules' : 'windows';
+                                        let nodeName = this.nodeData.name;
+                                        TopologyREST.getAllNodes(topologyId, type).then((results)=>{
+                                                results.entities.map((nodeObj)=>{
 							let actionObj = nodeObj.actions.find((a)=>{
 								return a.name === nodeName;
-								});
+                                                        });
 							if(actionObj) {
 								actionObj.name = name;
 								TopologyREST.updateNode(topologyId, type, nodeObj.id, {body: JSON.stringify(nodeObj)});
 							}
-							});
 						});
-						}
+                                        });
+                                }
 
-						return TopologyREST.updateNode(topologyId, 'windows', this.windowId, {body: JSON.stringify(windowObj)})
-								.then(windowResult=>{
-									return this.updateNode(windowResult, name);
-								})
-					})
+                                return TopologyREST.updateNode(topologyId, 'windows', this.windowId, {body: JSON.stringify(windowObj)})
+                                .then(windowResult=>{
+                                        return this.updateNode(windowResult, name);
+                                })
+                        })
 		}
 	}
 	updateNode(windowObj, name){
@@ -490,54 +494,53 @@ export default class WindowingAggregateNodeForm extends Component {
 						let promiseArr = [
 							TopologyREST.updateNode(topologyId, nodeType, nodeData.nodeId, {body: JSON.stringify(data)}),
 							TopologyREST.updateNode(topologyId, 'streams', this.streamData.id, {body: JSON.stringify(streamData)})
-                                                ]
-                                                return Promise.all(promiseArr);
-                                        } else {
-                                                FSReactToastr.error(
-                                                    <CommonNotification flag="error" content={windowObj.responseMessage}/>, '', toastOpt)
-                                        }
-                                })
+                        ]
+                        return Promise.all(promiseArr);
+                            } else {
+                                    FSReactToastr.error(
+                                        <CommonNotification flag="error" content={windowObj.responseMessage}/>, '', toastOpt)
+                            }
+                        })
         }
 
 	render() {
 		let {parallelism, selectedKeys, keysList, editMode, intervalType, intervalTypeArr, windowNum, slidingNum,
-                        durationType, slidingDurationType, durationTypeArr, outputFieldsArr, functionListArr, outputStreamId, outputStreamFields,argumentError } = this.state;
+            durationType, slidingDurationType, durationTypeArr, outputFieldsArr, functionListArr, outputStreamId, outputStreamFields,argumentError } = this.state;
 		let {topologyId, nodeType, nodeData, targetNodes, linkShuffleOptions} = this.props;
 		return (
-			<Tabs id="WindowForm" defaultActiveKey={1} className="schema-tabs">
-				<Tab eventKey={1} title="Configuration">
-					<form className="form-horizontal">
-						<div className="form-group">
-							<label className="col-sm-3 control-label">Select Keys*</label>
-							<div className="col-sm-6">
-								<Select
-									value={selectedKeys}
-									options={keysList}
-									onChange={this.handleKeysChange.bind(this)}
-									multi={true}
-									required={true}
-									disabled={!editMode}
-									valueKey="name"
-									labelKey="name"
-								/>
-							</div>
+                                <form className="modal-form processor-modal-form">
+                                        <div className="form-group">
+                                                <label>Select Keys <span className="text-danger">*</span></label>
+                                                <div>
+                                                        <Select
+                                                                value={selectedKeys}
+                                                                options={keysList}
+                                                                onChange={this.handleKeysChange.bind(this)}
+                                                                multi={true}
+                                                                required={true}
+                                                                disabled={!editMode}
+                                                                valueKey="name"
+                                                                labelKey="name"
+                                                        />
 						</div>
-						<div className="form-group">
-							<label className="col-sm-3 control-label">Window Interval Type*</label>
-							<div className="col-sm-3">
-								<Select
-									value={intervalType}
-									options={intervalTypeArr}
-									onChange={this.handleIntervalChange.bind(this)}
-									required={true}
-									disabled={!editMode}
-									clearable={false}
-								/>
-							</div>
+                                        </div>
+                                        <div className="form-group">
+                                                <label>Window Interval Type <span className="text-danger">*</span></label>
+                                                <div>
+                                                        <Select
+                                                                value={intervalType}
+                                                                options={intervalTypeArr}
+                                                                onChange={this.handleIntervalChange.bind(this)}
+                                                                required={true}
+                                                                disabled={!editMode}
+                                                                clearable={false}
+                                                        />
 						</div>
-						<div className="form-group">
-							<label className="col-sm-3 control-label">Window Interval*</label>
-							<div className="col-sm-3">
+                                        </div>
+                                        <div className="form-group">
+                                                <label>Window Interval <span className="text-danger">*</span></label>
+                                                <div className="row">
+                                                        <div className="col-sm-5">
 								<input
 									name="windowNum"
 									value={windowNum}
@@ -551,7 +554,7 @@ export default class WindowingAggregateNodeForm extends Component {
 								/>
 							</div>
 							{intervalType === '.Window$Duration' ?
-								<div className="col-sm-3">
+                                                                <div className="col-sm-5">
 									<Select
 										value={durationType}
 										options={durationTypeArr}
@@ -563,9 +566,11 @@ export default class WindowingAggregateNodeForm extends Component {
 								</div>
 							: null}
 						</div>
-						<div className="form-group">
-							<label className="col-sm-3 control-label">Sliding Interval</label>
-							<div className="col-sm-3">
+                                        </div>
+                                        <div className="form-group">
+                                                <label>Sliding Interval</label>
+                                                <div className="row">
+                                                        <div className="col-sm-5">
 								<input
 									name="slidingNum"
 									value={slidingNum}
@@ -579,7 +584,7 @@ export default class WindowingAggregateNodeForm extends Component {
 								/>
 							</div>
 							{intervalType === '.Window$Duration' ?
-								<div className="col-sm-3">
+                                                                <div className="col-sm-5">
 									<Select
 										value={slidingDurationType}
 										options={durationTypeArr}
@@ -591,102 +596,96 @@ export default class WindowingAggregateNodeForm extends Component {
 								</div>
 							: null}
 						</div>
-						<div className="form-group">
-							<label className="col-sm-3 control-label">Parallelism</label>
-							<div className="col-sm-3">
-								<input
-									name="parallelism"
-									value={parallelism}
-									onChange={this.handleValueChange.bind(this)}
-									type="number"
-									className="form-control"
-									required={true}
-									disabled={!editMode}
-									min="0"
-									inputMode="numeric"
-								/>
+                                        </div>
+                                        <div className="form-group">
+                                                <label>Parallelism</label>
+                                                <div>
+                                                        <input
+                                                                name="parallelism"
+                                                                value={parallelism}
+                                                                onChange={this.handleValueChange.bind(this)}
+                                                                type="number"
+                                                                className="form-control"
+                                                                required={true}
+                                                                disabled={!editMode}
+                                                                min="0"
+                                                                inputMode="numeric"
+                                                        />
+                                                </div>
+                                        </div>
+                                        <fieldset className="fieldset-default">
+                                                <legend>Output Fields</legend>
+                                                {
+                                                        (argumentError) ? <label className="color-error">The Aggregate Function is not supported by input</label> : ''
+                                                }
+                                                <div className="row">
+                                                        <div className="col-sm-5">
+                                                                <label>Input</label>
+                                                        </div>
+                                                        <div className="col-sm-5">
+                                                                <label>Aggregate Function</label>
 							</div>
 						</div>
-						<fieldset className="fieldset-default">
-							<legend>Output Fields</legend>
-							{editMode ?
-								<button className="btn btn-success btn-sm" type="button" onClick={this.addOutputFields.bind(this)}>
-									<i className="fa fa-plus-circle"></i> Add Output Field
-								</button>
-							:null}
-              {
-                (argumentError) ? <label className="color-error">The Aggregate Function is not supported by input</label> : ''
-              }
-							<div className="clearfix row-margin-bottom"></div>
-							{outputFieldsArr.map((obj, i)=>{
-								return(
-									<div key={i} className="form-group">
-										<div className="col-sm-4">
-											{i === 0 ? <label>Input</label>: null}
-											<Select
-												value={obj.args}
-												options={keysList}
-												onChange={this.handleFieldChange.bind(this, 'args', i)}
-												required={true}
-												disabled={!editMode}
-												valueKey="name"
-												labelKey="name"
-												clearable={false}
-											/>
-										</div>
-										<div className="col-sm-3">
-											{i === 0 ? <label>Aggregate Function</label>: null}
-											<Select
-												value={obj.functionName}
-												options={functionListArr}
-												onChange={this.handleFieldChange.bind(this, 'functionName', i)}
-												required={true}
-												disabled={!editMode}
-												valueKey="name"
-												labelKey="displayName"
-											/>
-										</div>
-										<div className="col-sm-4">
-											{i === 0 ? <label>Output</label>: null}
-											<input
-												name="outputFieldName"
-												value={obj.outputFieldName}
-												ref="outputFieldName"
-												onChange={this.handleFieldChange.bind(this, 'outputFieldName', i)}
-												type="text"
-												className="form-control"
-												required={true}
-												disabled={!editMode}
-											/>
-										</div>
-										{i > 0 && editMode?
-											<div className="col-sm-1">
+                                                {outputFieldsArr.map((obj, i)=>{
+                                                        return(
+                                                                <div key={i} className="row form-group">
+                                                                        <div className="col-sm-5">
+                                                                                <Select
+                                                                                        value={obj.args}
+                                                                                        options={keysList}
+                                                                                        onChange={this.handleFieldChange.bind(this, 'args', i)}
+                                                                                        required={true}
+                                                                                        disabled={!editMode}
+                                                                                        valueKey="name"
+                                                                                        labelKey="name"
+                                                                                        clearable={false}
+                                                                                />
+                                                                        </div>
+                                                                        <div className="col-sm-5">
+                                                                                <Select
+                                                                                        value={obj.functionName}
+                                                                                        options={functionListArr}
+                                                                                        onChange={this.handleFieldChange.bind(this, 'functionName', i)}
+                                                                                        required={true}
+                                                                                        disabled={!editMode}
+                                                                                        valueKey="name"
+                                                                                        labelKey="displayName"
+                                                                                />
+                                                                        </div>
+                                                                        {editMode ?
+                                                                                <div className="col-sm-2">
+                                                                                        <button className="btn btn-default btn-sm" type="button" onClick={this.addOutputFields.bind(this)}>
+                                                                                                <i className="fa fa-plus"></i>
+                                                                                        </button>&nbsp;
+                                                                                        {i > 0 ?
 												<button className="btn btn-sm btn-danger" type="button" onClick={this.deleteFieldRow.bind(this, i)}>
 													<i className="fa fa-trash"></i>
 												</button>
-											</div>
-										: null}
-									</div>
-								)
-							})}
-						</fieldset>
-					</form>
-				</Tab>
-				<Tab eventKey={2} title="Output Streams">
-						<OutputSchema
-							ref="schema"
-							topologyId={topologyId}
-							editMode={editMode}
-							nodeId={nodeData.nodeId}
-							nodeType={nodeType}
-							targetNodes={targetNodes}
-							linkShuffleOptions={linkShuffleOptions}
-			    canAdd={false}
-			    canDelete={false}
-			    windowOutputStreams={this.streamData}
-						/>
-					</Tab>
-                        </Tabs>
-                )
+                                                                                        : null}
+                                                                                </div>
+                                                                        :null}
+                                                                        {/*<div className="col-sm-4">
+                                                                                {i === 0 ? <label>Output</label>: null}
+                                                                                <input
+                                                                                        name="outputFieldName"
+                                                                                        value={obj.outputFieldName}
+                                                                                        ref="outputFieldName"
+                                                                                        onChange={this.handleFieldChange.bind(this, 'outputFieldName', i)}
+                                                                                        type="text"
+                                                                                        className="form-control"
+                                                                                        required={true}
+                                                                                        disabled={!editMode}
+                                                                                />
+                                                                        </div>*/}
+                                                                </div>
+                                                        )
+                                                })}
+                                        </fieldset>
+                                </form>
+            )
         }
 }
+
+WindowingAggregateNodeForm.contextTypes = {
+    ParentForm: React.PropTypes.object,
+};

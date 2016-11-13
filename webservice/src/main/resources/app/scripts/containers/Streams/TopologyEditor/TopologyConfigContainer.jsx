@@ -58,66 +58,51 @@ export default class TopologyConfigContainer extends Component {
 	
 	render(){
 		return(
-			<form className="form-horizontal">
+                        <form className="modal-form config-modal-form">
 				<div className="form-group">
-					<label className="col-sm-3 control-label">hbase.rootdir*</label>
-					<div className="col-sm-5">
+                                        <label>hbase.rootdir <span className="text-danger">*</span></label>
+                                        <div>
 						<input 
 							name="rootdir"
 							placeholder="hbase.rootdir"
 							onChange={this.handleValueChange.bind(this)}
 							type="text"
-							className="form-control"
+                                                        className={this.state.rootdir.trim() === '' ? "form-control invalidInput" : "form-control"}
 							value={this.state.rootdir}
 							required={true}
-                                                        disabled={this.props.viewMode}
+                            disabled={this.props.viewMode}
 						/>
 					</div>
-					{this.state.rootdir === '' ? 
-						<div className="col-sm-4">
-							<p className="form-control-static error-note">Please Enter hbase.rootdir</p>
-						</div>
-					: null}
 				</div>
 				<div className="form-group">
-					<label className="col-sm-3 control-label">local.parser.jar.path*</label>
-					<div className="col-sm-5">
+                                        <label>local.parser.jar.path <span className="text-danger">*</span></label>
+                                        <div>
 						<input 
 							name="parserJar"
 							placeholder="local.parser.jar.path"
 							onChange={this.handleValueChange.bind(this)}
 							type="text"
-							className="form-control"
+                                                        className={this.state.parserJar.trim() === '' ? "form-control invalidInput" : "form-control"}
 							value={this.state.parserJar}
 							required={true}
-                                                        disabled={this.props.viewMode}
+                            disabled={this.props.viewMode}
 						/>
 					</div>
-					{this.state.parserJar === '' ? 
-						<div className="col-sm-4">
-							<p className="form-control-static error-note">Please Enter local.parser.jar.path</p>
-						</div>
-					: null}
 				</div>
 				<div className="form-group">
-					<label className="col-sm-3 control-label">local.notifier.jar.path*</label>
-					<div className="col-sm-5">
+                                        <label>local.notifier.jar.path <span className="text-danger">*</span></label>
+                                        <div>
 						<input 
 							name="notifierJar"
 							placeholder="local.notifier.jar.path"
 							onChange={this.handleValueChange.bind(this)}
 							type="text"
-							className="form-control"
+                                                        className={this.state.notifierJar.trim() === '' ? "form-control invalidInput" : "form-control"}
 							value={this.state.notifierJar}
 							required={true}
-                                                        disabled={this.props.viewMode}
+                            disabled={this.props.viewMode}
 						/>
 					</div>
-					{this.state.notifierJar === '' ? 
-						<div className="col-sm-4">
-							<p className="form-control-static error-note">Please Enter local.notifier.jar.path</p>
-						</div>
-					: null}
 				</div>
 			</form>
 		);

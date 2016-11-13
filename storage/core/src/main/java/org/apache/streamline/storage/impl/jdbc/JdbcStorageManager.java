@@ -110,7 +110,7 @@ public class JdbcStorageManager implements StorageManager {
             throws StorageException {
         log.debug("Searching for entries in table [{}] that match queryParams [{}]", namespace, queryParams);
 
-        if (queryParams == null) {
+        if (queryParams == null || queryParams.size() == 0) {
             return list(namespace);
         }
         Collection<T> entries = Collections.EMPTY_LIST;

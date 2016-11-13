@@ -8,15 +8,14 @@ gulp.task('webserver', function() {
     if (config.isDevelopment) {
         return gulp.src('./public')
             .pipe(webserver({
-                port: '9090',
+                port: '9999',
                 host: '0.0.0.0',
                 livereload: false,
                 //directoryListing: true,
                 open: false,
                 proxies: [{
-                    source: '/api', target: 'http://localhost:8080/api'
+                    source: '/api', target: 'http://localhost:8090/api'
                 }]
             }));
     }
 });
-

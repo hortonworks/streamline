@@ -8,13 +8,13 @@ import TopologyUtils from '../utils/TopologyUtils'
 
 const componentTarget = {
 	drop(props, monitor, component) {
-                let parentRect = document.getElementsByClassName('graph-region')[0].getBoundingClientRect();
+        let parentRect = document.getElementsByClassName('graph-region')[0].getBoundingClientRect();
 		const item = monitor.getItem();
 		const delta = monitor.getClientOffset();
 		let {x , y} = delta;
 		x = x - parentRect.left;
 		y = y - parentRect.top;
-		component.createNode({x, y}, item.imgPath, item.type, item.name, item.nodeType);
+                component.createNode({x, y}, item);
 	}
 };
 
@@ -34,7 +34,8 @@ export default class TopologyGraphComponent extends Component {
 		topologyId: PropTypes.string.isRequired,
 		viewMode: PropTypes.bool.isRequired,
 		getModalScope: PropTypes.func.isRequired,
-		setModalContent: PropTypes.func.isRequired
+                setModalContent: PropTypes.func.isRequired,
+                getEdgeConfigModal: PropTypes.func.isRequired
 	};
 
 	constructor(props){
@@ -283,18 +284,18 @@ export default class TopologyGraphComponent extends Component {
 
 	// mouseup on nodes
 	rectangleMouseUp(d3node, d) {
-		let {topologyId, internalFlags, constants, dragLine, paths, edges, rectangles, getModalScope, setModalContent, nodes, linkShuffleOptions, metaInfo} = this;
+                let {topologyId, internalFlags, constants, dragLine, paths, edges, rectangles, getModalScope, setModalContent, nodes, linkShuffleOptions, metaInfo, getEdgeConfigModal} = this;
 		return TopologyUtils.MouseUpAction(topologyId, d3node, d, metaInfo, internalFlags, 
 			constants, dragLine, paths, nodes, edges, linkShuffleOptions, this.updateGraph.bind(this), 
-			'rectangle', getModalScope, setModalContent, rectangles);
+                        'rectangle', getModalScope, setModalContent, rectangles, getEdgeConfigModal);
 	}
 
 	// mouseup on circle
 	circleMouseUp(d3node, d) {
-		let {topologyId, internalFlags, constants, dragLine, paths, edges, rectangles, getModalScope, setModalContent, nodes, linkShuffleOptions, metaInfo} = this;
+                let {topologyId, internalFlags, constants, dragLine, paths, edges, rectangles, getModalScope, setModalContent, nodes, linkShuffleOptions, metaInfo, getEdgeConfigModal} = this;
 		return TopologyUtils.MouseUpAction(topologyId, d3node, d, metaInfo, internalFlags, 
 			constants, dragLine, paths, nodes, edges, linkShuffleOptions, this.updateGraph.bind(this),
-			'circle', getModalScope, setModalContent, rectangles);
+                        'circle', getModalScope, setModalContent, rectangles, getEdgeConfigModal);
 	}
 
 	// mousedown on main svg
@@ -316,29 +317,28 @@ export default class TopologyGraphComponent extends Component {
 		internalFlags.graphMouseDown = false;
 	}
 
-	createNode(delta, imgUrl, parentType, name, currentType){
+    createNode(delta, itemObj){
 		let {internalFlags, constants, nodes, topologyId, metaInfo, paths, edges, uinamesList} = this;
+        let {imgUrl, parentType, name, currentType, topologyComponentBundleId} = itemObj;
 		internalFlags.graphMouseDown = true;
-                        d3.event = event
-                        var xycoords = d3.mouse(this.svgG.node());
-                        d3.event = null;
+        d3.event = event;
+        var xycoords = d3.mouse(this.svgG.node());
+        d3.event = null;
 		let d = {
-                        x: xycoords[0] + (constants.rectangleWidth / 2) - constants.rectangleWidth,
-                        y: xycoords[1] - (constants.rectangleHeight / 2) - 5.5,
-			parentType: parentType,
-			currentType: currentType,
-			uiname: name,
-			imageURL: imgUrl,
+            x: xycoords[0] + (constants.rectangleWidth / 2) - constants.rectangleWidth,
+            y: xycoords[1] - (constants.rectangleHeight / 2) - 5.5,
+            parentType: itemObj.type,
+            currentType: itemObj.nodeType,
+            uiname: itemObj.name,
+            imageURL: itemObj.imgPath,
 			isConfigured: false,
-                        parallelismCount: 1,
-                        nodeLabel: name
+            parallelismCount: 1,
+            nodeLabel: itemObj.name,
+            topologyComponentBundleId: itemObj.topologyComponentBundleId
 		};
 		nodes.push(d);
 		let createNodeArr = [d];
-		if(d.currentType === Components.Datasources[0].name){ // Device => Parser
-			let parserObj = this.createParserNode(d);
-			createNodeArr.push(parserObj);
-		} else if (d.currentType === Components.Processors[4].name){ // Split => Stage => Join
+        if (d.currentType.toLowerCase() === 'split'){ // Split => Stage => Join
 			let stageJoinArr = this.createStageJoinNode(d);
 			createNodeArr.push(...stageJoinArr);
 		}
@@ -346,34 +346,24 @@ export default class TopologyGraphComponent extends Component {
 		internalFlags.graphMouseDown = false;
 	}
 
-	createParserNode(d) {
-		let newObject = JSON.parse(JSON.stringify(d));
-		newObject.x += 200;
-		newObject.uiname = 'Parser';
-		newObject.parentType = Components.Processor.value;
-		newObject.currentType = Components.Processors[0].name;
-		newObject.imageURL = Components.Processors[0].imgPath;
-		this.nodes.push(newObject);
-		return newObject;
-	}
 	createStageJoinNode(d){
 		let arr = [];
 
 		let stageObj = JSON.parse(JSON.stringify(d));
-                stageObj.x += 220;
-		stageObj.uiname = 'Stage';
-		stageObj.parentType = Components.Processor.value;
-		stageObj.currentType = Components.Processors[5].name;
-		stageObj.imageURL = Components.Processors[5].imgPath;
+        stageObj.x += 220;
+        stageObj.uiname = 'STAGE';
+        stageObj.parentType = 'PROCESSOR';
+        stageObj.currentType = 'STAGE';
+        stageObj.imageURL = 'styles/img/icon-stage.png';
 		this.nodes.push(stageObj);
 		arr.push(stageObj);
 
 		let joinObj = JSON.parse(JSON.stringify(d));
-                joinObj.x += 440;
-		joinObj.uiname = 'Join';
-		joinObj.parentType = Components.Processor.value;
-		joinObj.currentType = Components.Processors[6].name;
-		joinObj.imageURL = Components.Processors[6].imgPath;
+        joinObj.x += 440;
+        joinObj.uiname = 'JOIN';
+        joinObj.parentType = 'PROCESSOR';
+        joinObj.currentType = 'JOIN';
+        joinObj.imageURL = 'styles/img/icon-join.png';
 		this.nodes.push(joinObj);
 		arr.push(joinObj);
 
@@ -454,17 +444,6 @@ export default class TopologyGraphComponent extends Component {
 		paths.enter()
 			.append("path")
 			.classed("link", true)
-			// .attr("d", d3.svg.line()
-			// 	.interpolate('cardinal')
-			// 	.x(function(d) {
-			// 		console.log(d);
-			// 		return x(d.date); 
-			// 	})
-			// 	.y(function(d) {
-			// 		console.log(d);
-			// 		return y(d.close); 
-			// 	})
-			// )
 			.attr("d", function(d){
 				return TopologyUtils.createLineOnUI(d, constants);
 			})
@@ -498,16 +477,16 @@ export default class TopologyGraphComponent extends Component {
 		});
 
 		thisGraph.rectangles.selectAll('rect')
-                        .attr("filter", function(d){ if(!d.isConfigured){ return "url(#grayscale)"; } else return ""; })
-                        .attr("filter", function(d){ return "url(#dropshadow)"; });
+            .attr("filter", function(d){ if(!d.isConfigured){ return "url(#grayscale)"; } else return ""; })
+            .attr("filter", function(d){ return "url(#dropshadow)"; });
 		thisGraph.rectangles.selectAll('image')
-                        .attr("filter", function(d){ return "url(#grayscale)"; });
+            .attr("filter", function(d){ return "url(#grayscale)"; });
 		thisGraph.rectangles.selectAll('circle')
 			.attr("filter", function(d){ if(!d.isConfigured){ return "url(#grayscale)"; } else return ""; });
 		thisGraph.rectangles.selectAll('text.node-title')
-                        .text(function(d){
-                                if(d.uiname.length > 14) {return d.uiname.slice(0, 13) + '...';} else return d.uiname;
-                        })
+            .text(function(d){
+                if(d.uiname.length > 14) {return d.uiname.slice(0, 13) + '...';} else return d.uiname;
+            })
 			.attr("filter", function(d){ if(!d.isConfigured){ return "url(#grayscale)"; } else return ""; });
 		thisGraph.rectangles.selectAll('text.parallelism-count')
 			.text(function(d){
@@ -522,186 +501,159 @@ export default class TopologyGraphComponent extends Component {
 				return "translate(" + d.x + "," + d.y + ")";
 			});
 
-                        //Outer Rectangle
-                        newGs.append("rect").attr("width", constants.rectangleWidth + constants.rectangleHeight).attr("height",constants.rectangleHeight-1)
-                                .attr("class", function(d){ return 'node-rectangle ' + TopologyUtils.getNodeRectClass(d);})
-				.attr("filter", function(d){ if(!d.isConfigured) return "url(#grayscale)"; else return ""; })
-                                .attr("filter", function(d){ return "url(#dropshadow)"; })
+        //Outer Rectangle
+        newGs.append("rect").attr("width", constants.rectangleWidth + constants.rectangleHeight).attr("height",constants.rectangleHeight-1)
+                .attr("class", function(d){ return 'node-rectangle ' + TopologyUtils.getNodeRectClass(d);})
+                        .attr("filter", function(d){ if(!d.isConfigured) return "url(#grayscale)"; else return ""; })
+                .attr("filter", function(d){ return "url(#dropshadow)"; })
+                        .on("mouseover", function(d){ if(thisGraph.editMode) d3.select(this.parentElement).select('text.fa.fa-times').style('display','block'); })
+                        .on("mouseout", function(d){ if(thisGraph.editMode) d3.select(this.parentElement).select('text.fa.fa-times').style('display','none'); })
+                .on('mousedown', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d); })
+                        .on('mouseup', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);})
+                .on('dblclick', function(d){
+                                thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);
+                    thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);
+                        })
+                        .call(thisGraph.drag);
+        //Image
+        newGs.append("image").attr("xlink:href", function(d){return d.imageURL;})
+            .attr("width", constants.rectangleHeight - 15).attr("height", constants.rectangleHeight - 15).attr("x", 8).attr("y", 7)
+            .attr("filter", function(d){ return "url(#grayscale)"; })
+                        .on("mouseover", function(d){ if(thisGraph.editMode) d3.select(this.parentElement).select('text.fa.fa-times').style('display','block'); })
+            .on("mouseout", function(d){ if(thisGraph.editMode) d3.select(this.parentElement).select('text.fa.fa-times').style('display','none'); })
+            .on('mousedown', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);})
+            .on('mouseup', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);})
+            .on('dblclick', function(d){
+                    thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);
+                    thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);
+            })
+            .call(thisGraph.drag);
+                //Parallelism Icons
+        newGs.append("text").attr("class","fa fa-caret-up").attr("x","165px").attr("y","13px")
+                        .text(function(d){return '\uf0d8';})
+                        .on("click", function(d){
+                                if(thisGraph.editMode){
+                                        let value = parseInt(d.parallelismCount, 10) + 1;
+                                        d.parallelismCount = value <= 0 ? 0 : value;
+                                        clearTimeout(thisGraph.clickTimeout);
+                                        thisGraph.clickTimeout = setTimeout(function(){
+                                                TopologyUtils.updateParallelismCount(thisGraph.topologyId, d);
+                                        },500)
+                                        thisGraph.updateGraph();
+                                }
+                        });
+        newGs.append("text").attr("class","fa fa-caret-down").attr("x","165px").attr("y","35px")
+                        .text(function(d){return '\uf0d7';})
+                        .on("click", function(d){
+                                if(thisGraph.editMode){
+                                        let value = parseInt(d.parallelismCount, 10) - 1;
+                                        d.parallelismCount = value <= 0 ? 0 : value;
+                                        clearTimeout(thisGraph.clickTimeout);
+                                        thisGraph.clickTimeout = setTimeout(function(){
+                                                TopologyUtils.updateParallelismCount(thisGraph.topologyId, d);
+                                        },500)
+                                        thisGraph.updateGraph();
+                                }
+                        });
+        newGs.append("text").attr("class","parallelism-count").attr("x","163px").attr("y","24px")
+                        .text(function(d){return d.parallelismCount.toString().length < 2 ? "0"+d.parallelismCount : d.parallelismCount;});
+                //RHS Circle
+                newGs.append("circle")
+            .attr("cx", function (d) { if(d.parentType !== 'SINK') return (constants.rectangleWidth + constants.rectangleHeight + 3.5); })
+                .attr("cy", function (d) { if(d.parentType !== 'SINK') return constants.rectangleHeight / 2; })
+            .attr("r", function (d) { if(d.parentType !== 'SINK') return '5'; })
+                .attr("class", function(d){ return TopologyUtils.getNodeRectClass(d);})
+                        .attr("filter", function(d){ if(!d.isConfigured) return "url(#grayscale)"; else return ""; })
+                .on("mouseover", function(d) {
+                                if (internalFlags.shiftNodeDrag) {
+                                        d3.select(this).classed(constants.connectClass, true);
+                                }
+                        })
+                        .on("mouseout", function(d) {
+                                d3.select(this).classed(constants.connectClass, false);
+                        })
+                        .on("mousedown", function(d) {
+                                if(thisGraph.editMode){
+                                        thisGraph.circleMouseDown.call(thisGraph, d3.select(this.parentNode), d);
+                                }
+                        })
+                        .on("mouseup", function(d) {
+                                if(thisGraph.editMode){
+                                        thisGraph.circleMouseUp.call(thisGraph, d3.select(this.parentNode), d);
+                                }
+                        })
+                        .call(thisGraph.drag);
+
+                //LHS Circle
+            newGs.append("circle")
+                            .attr("cx", -3.5)
+                .attr("cy", function (d) { if(d.parentType !== 'SOURCE') return (constants.rectangleHeight / 2); })
+                    .attr("r", function (d) { if(d.parentType !== 'SOURCE') return '5'; })
+                .attr("class", function(d){ return TopologyUtils.getNodeRectClass(d);})
+                        .attr("filter", function(d){ if(!d.isConfigured){ return "url(#grayscale)"; } else return ""; })
+                .on("mouseup", function(d) {
+                        if(thisGraph.editMode){
+                                thisGraph.circleMouseUp.call(thisGraph, d3.select(this.parentNode), d);
+                        }
+                        });
+
+            //Label Text
+                newGs.each(function(d) {
+                        let gEl = d3.select(this),
+                                title = d.uiname,
+                                words = title.split(/\s+/g),
+                                nwords = words.length,
+                                nodeTitle = '';
+                        let el = gEl.append("text")
+                                .attr("class", function(d){ return 'node-title '+TopologyUtils.getNodeRectClass(d);})
+                                .attr("filter", function(d){ if(!d.isConfigured){ return "url(#grayscale)"; } else return ""; })
+                .attr("dx", function(d){ return (constants.rectangleHeight); })
+                .attr("dy", function(d){ return ((constants.rectangleHeight / 2) - 2); })
 				.on("mouseover", function(d){ if(thisGraph.editMode) d3.select(this.parentElement).select('text.fa.fa-times').style('display','block'); })
 				.on("mouseout", function(d){ if(thisGraph.editMode) d3.select(this.parentElement).select('text.fa.fa-times').style('display','none'); })
-                                .on('mousedown', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d); })
+                                .on('mousedown', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);})
 				.on('mouseup', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);})
                                 .on('dblclick', function(d){
 					thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);
                                         thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);
 				})
 				.call(thisGraph.drag);
-                        //Image
-                        newGs.append("image").attr("xlink:href", function(d){return d.imageURL;})
-                                .attr("width", constants.rectangleHeight - 15).attr("height", constants.rectangleHeight - 15).attr("x", 8).attr("y", 7)
-                                .attr("filter", function(d){ return "url(#grayscale)"; })
-				.on("mouseover", function(d){ if(thisGraph.editMode) d3.select(this.parentElement).select('text.fa.fa-times').style('display','block'); })
-                                .on("mouseout", function(d){ if(thisGraph.editMode) d3.select(this.parentElement).select('text.fa.fa-times').style('display','none'); })
-                                .on('mousedown', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);})
-                                .on('mouseup', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);})
-                                .on('dblclick', function(d){
-                                        thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);
-                                        thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);
-                                })
-                                .call(thisGraph.drag);
-			//Parallelism Icons
-                        newGs.append("text").attr("class","fa fa-caret-up").attr("x","165px").attr("y","13px")
-				.text(function(d){return '\uf0d8';})
-				.on("click", function(d){
-					if(thisGraph.editMode){
-						let value = parseInt(d.parallelismCount, 10) + 1;
-						d.parallelismCount = value <= 0 ? 0 : value;
-						clearTimeout(thisGraph.clickTimeout);
-						thisGraph.clickTimeout = setTimeout(function(){
-							TopologyUtils.updateParallelismCount(thisGraph.topologyId, d);
-						},500)
-						thisGraph.updateGraph();
-					}
-				});
-                        newGs.append("text").attr("class","fa fa-caret-down").attr("x","165px").attr("y","35px")
-				.text(function(d){return '\uf0d7';})
-				.on("click", function(d){
-					if(thisGraph.editMode){
-						let value = parseInt(d.parallelismCount, 10) - 1;
-						d.parallelismCount = value <= 0 ? 0 : value;
-						clearTimeout(thisGraph.clickTimeout);
-						thisGraph.clickTimeout = setTimeout(function(){
-							TopologyUtils.updateParallelismCount(thisGraph.topologyId, d);
-						},500)
-						thisGraph.updateGraph();
-					}
-				});
-                        newGs.append("text").attr("class","parallelism-count").attr("x","163px").attr("y","24px")
-				.text(function(d){return d.parallelismCount.toString().length < 2 ? "0"+d.parallelismCount : d.parallelismCount;});
-			//RHS Circle
-			newGs.append("circle")
-                                .attr("cx", function (d) { if(d.parentType !== Components.Sink.value) return (constants.rectangleWidth + constants.rectangleHeight + 3.5); })
-		        .attr("cy", function (d) { if(d.parentType !== Components.Sink.value) return constants.rectangleHeight / 2; })
-                        .attr("r", function (d) { if(d.parentType !== Components.Sink.value) return '5'; })
-		        .attr("class", function(d){ return TopologyUtils.getNodeRectClass(d);})
-				.attr("filter", function(d){ if(!d.isConfigured) return "url(#grayscale)"; else return ""; })
-		        .on("mouseover", function(d) {
-					if (internalFlags.shiftNodeDrag) {
-						d3.select(this).classed(constants.connectClass, true);
-					}
-				})
-				.on("mouseout", function(d) {
-					d3.select(this).classed(constants.connectClass, false);
-				})
-				.on("mousedown", function(d) {
-					if(thisGraph.editMode){
-						thisGraph.circleMouseDown.call(thisGraph, d3.select(this.parentNode), d);
-					}
-				})
-				.on("mouseup", function(d) {
-					if(thisGraph.editMode){
-						thisGraph.circleMouseUp.call(thisGraph, d3.select(this.parentNode), d);
-					}
-				})
-				.call(thisGraph.drag);
-			//Failed Parser Circle
-			newGs.append("circle")
-				.attr("cx", function (d) { if(d.currentType === Components.Processors[0].name) return (constants.rectangleWidth / 2);})
-		        .attr("cy", function (d) { if(d.currentType === Components.Processors[0].name) return constants.rectangleHeight;})
-                        .attr("r", function (d) { if(d.currentType === Components.Processors[0].name) return '5';})
-			    .attr("filter", function(d){ if(!d.isConfigured) return "url(#grayscale)"; else return ""; })
-			    .attr("data-failedTuple", true)
-		        .style("fill", "red")
-		        .on("mouseover", function(d) {
-					if (internalFlags.shiftNodeDrag) {
-						d3.select(this).classed(constants.connectClass, true);
-					}
-				})
-				.on("mouseout", function(d) {
-					d3.select(this).classed(constants.connectClass, false);
-				})
-				.on("mousedown", function(d) {
-					if(thisGraph.editMode){
-						thisGraph.circleMouseDown.call(thisGraph, d3.select(this.parentNode), d);
-					}
-				})
-				.on("mouseup", function(d) {
-					if(thisGraph.editMode){
-						thisGraph.circleMouseUp.call(thisGraph, d3.select(this.parentNode), d);
-					}
-				})
-				.call(thisGraph.drag);
-			//LHS Circle
-		    newGs.append("circle")
-                                .attr("cx", -3.5)
-		        .attr("cy", function (d) { if(d.parentType !== Components.Datasource.value) return (constants.rectangleHeight / 2); })
-                        .attr("r", function (d) { if(d.parentType !== Components.Datasource.value) return '5'; })
-		        .attr("class", function(d){ return TopologyUtils.getNodeRectClass(d);})
-				.attr("filter", function(d){ if(!d.isConfigured){ return "url(#grayscale)"; } else return ""; })
-		        .on("mouseup", function(d) {
-		        	if(thisGraph.editMode){
-		        		thisGraph.circleMouseUp.call(thisGraph, d3.select(this.parentNode), d);
-		        	}
-				});
+            for (var i = 0; i < words.length; i++) {
+                nodeTitle += words[i]+' ';
+            }
+            if(nodeTitle.trim().length > 14) {
+                nodeTitle = nodeTitle.trim().slice(0, 13) + '...';
+            } else nodeTitle = nodeTitle.trim();
+            el.text(nodeTitle.trim());
+        });
 
-		    //Label Text
-			newGs.each(function(d) {
-				let gEl = d3.select(this),
-					title = d.uiname,
-					words = title.split(/\s+/g),
-					nwords = words.length,
-					nodeTitle = '';
-				let el = gEl.append("text")
-					.attr("class", function(d){ return 'node-title '+TopologyUtils.getNodeRectClass(d);})
-					.attr("filter", function(d){ if(!d.isConfigured){ return "url(#grayscale)"; } else return ""; })
-                                        .attr("dx", function(d){ return (constants.rectangleHeight); })
-                                        .attr("dy", function(d){ return ((constants.rectangleHeight / 2) - 2); })
-					.on("mouseover", function(d){ if(thisGraph.editMode) d3.select(this.parentElement).select('text.fa.fa-times').style('display','block'); })
-					.on("mouseout", function(d){ if(thisGraph.editMode) d3.select(this.parentElement).select('text.fa.fa-times').style('display','none'); })
-					.on('mousedown', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);})
-					.on('mouseup', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);})
-					.on('dblclick', function(d){ 
-						thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);
-						thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d); 
-					})
-					.call(thisGraph.drag);
+        //label text for node type
+        newGs.each(function(d) {
+            let gEl = d3.select(this),
+                title = d.nodeLabel;
+            let el = gEl.append("text")
+                .attr("class", function(d){ return 'node-type-label';})
+                .attr("filter", function(d){ if(!d.isConfigured){ return "url(#grayscale)"; } else return ""; })
+                .attr("dx", function(d){ return (constants.rectangleHeight); })
+                .attr("dy", function(d){ return ((constants.rectangleHeight - 7)); })
+                .on("mouseover", function(d){ if(thisGraph.editMode) d3.select(this.parentElement).select('text.fa.fa-times').style('display','block'); })
+                .on("mouseout", function(d){ if(thisGraph.editMode) d3.select(this.parentElement).select('text.fa.fa-times').style('display','none'); })
+                .on('mousedown', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);})
+                .on('mouseup', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);})
+                .on('dblclick', function(d){
+                    thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);
+                    thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);
+                })
+                .call(thisGraph.drag);
+            el.text(title.trim());
+        });
 
-                                for (var i = 0; i < words.length; i++) {
-                                        nodeTitle += words[i]+' ';
-                                }
-                                if(nodeTitle.trim().length > 14) {
-                                        nodeTitle = nodeTitle.trim().slice(0, 13) + '...';
-                                } else nodeTitle = nodeTitle.trim();
-                                el.text(nodeTitle.trim());
-                        });
-
-                        //label text for node type
-                        newGs.each(function(d) {
-                                let gEl = d3.select(this),
-                                        title = d.nodeLabel;
-                                let el = gEl.append("text")
-                                        .attr("class", function(d){ return 'node-type-label';})
-                                        .attr("filter", function(d){ if(!d.isConfigured){ return "url(#grayscale)"; } else return ""; })
-                                        .attr("dx", function(d){ return (constants.rectangleHeight); })
-                                        .attr("dy", function(d){ return ((constants.rectangleHeight - 7)); })
-                                        .on("mouseover", function(d){ if(thisGraph.editMode) d3.select(this.parentElement).select('text.fa.fa-times').style('display','block'); })
-                                        .on("mouseout", function(d){ if(thisGraph.editMode) d3.select(this.parentElement).select('text.fa.fa-times').style('display','none'); })
-                                        .on('mousedown', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);})
-                                        .on('mouseup', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);})
-                                        .on('dblclick', function(d){
-                                                thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);
-                                                thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);
-                                        })
-                                        .call(thisGraph.drag);
-                                el.text(title.trim());
-                        });
-
-                        //Delete Icon
-                        newGs.append("text").attr("class","fa fa-times").attr("x","-4px").attr("y","5px")
-                                .text(function(d){return '\uf00d';}).style("display","none")
-				.on("mouseover",function(d){if(thisGraph.editMode) this.style.display = 'block'})
-				.on("mouseout",function(d){if(thisGraph.editMode) this.style.display = 'none'})
-				.on("mousedown",function(d){if(thisGraph.editMode) thisGraph.deleteNode(d)})
+        //Delete Icon
+        newGs.append("text").attr("class","fa fa-times").attr("x","-4px").attr("y","5px")
+            .text(function(d){return '\uf00d';}).style("display","none")
+                        .on("mouseover",function(d){if(thisGraph.editMode) this.style.display = 'block'})
+                        .on("mouseout",function(d){if(thisGraph.editMode) this.style.display = 'none'})
+                        .on("mousedown",function(d){if(thisGraph.editMode) thisGraph.deleteNode(d)})
 		// remove old nodes
 		thisGraph.rectangles.exit().remove();
 	}
@@ -721,6 +673,7 @@ export default class TopologyGraphComponent extends Component {
 		};
 		this.getModalScope = this.props.getModalScope;
 		this.setModalContent = this.props.setModalContent;
+                this.getEdgeConfigModal = this.props.getEdgeConfigModal;
 		if(this.renderFlag){
                         d3.select("." + this.constants.graphClass)
                                 .attr("transform", "translate(" + this.graphTransforms.dragCoords + ")" + "scale(" + this.graphTransforms.zoomScale + ")");
