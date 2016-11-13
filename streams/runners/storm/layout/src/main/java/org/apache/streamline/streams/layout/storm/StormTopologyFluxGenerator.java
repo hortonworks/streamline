@@ -8,6 +8,7 @@ import org.apache.streamline.common.Config;
 import org.apache.streamline.streams.layout.component.Component;
 import org.apache.streamline.streams.layout.component.Edge;
 import org.apache.streamline.streams.layout.component.InputComponent;
+import org.apache.streamline.streams.layout.component.Stream;
 import org.apache.streamline.streams.layout.component.StreamlineProcessor;
 import org.apache.streamline.streams.layout.component.StreamlineSink;
 import org.apache.streamline.streams.layout.component.StreamlineSource;
@@ -170,7 +171,7 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
                 addEdge(edge.getFrom(),
                         windowedRulesProcessor,
                         streamGrouping.getStream().getId(),
-                        String.valueOf(streamGrouping.getGrouping()),
+                        streamGrouping.getGrouping(),
                         streamGrouping.getFields());
             }
         }
@@ -180,7 +181,7 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
                 addEdge(windowedRulesProcessor,
                         edge.getTo(),
                         streamGrouping.getStream().getId(),
-                        String.valueOf(streamGrouping.getGrouping()),
+                        streamGrouping.getGrouping(),
                         streamGrouping.getFields());
             }
         }
@@ -193,7 +194,7 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
                 addEdge(edge.getFrom(),
                         edge.getTo(),
                         streamGrouping.getStream().getId(),
-                        String.valueOf(streamGrouping.getGrouping()),
+                        streamGrouping.getGrouping(),
                         streamGrouping.getFields());
             }
         }
@@ -234,15 +235,22 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
         return yamlComponent;
     }
 
-    private void addEdge(OutputComponent from, InputComponent to, String streamId, String groupingType, List<String> fields) {
+    private void addEdge(OutputComponent from, InputComponent to, String streamId, Stream.Grouping groupingType, List<String> fields) {
         LinkFluxComponent fluxComponent = new LinkFluxComponent();
         Map<String, Object> config = new HashMap<>();
         Map<String, Object> grouping = new LinkedHashMap<>();
-        grouping.put(StormTopologyLayoutConstants.YAML_KEY_TYPE, groupingType);
-        grouping.put(StormTopologyLayoutConstants.YAML_KEY_STREAM_ID, streamId);
-        if (fields != null) {
-            grouping.put(StormTopologyLayoutConstants.YAML_KEY_ARGS, fields);
+        if (Stream.Grouping.FIELDS.equals(groupingType)) {
+            grouping.put(StormTopologyLayoutConstants.YAML_KEY_TYPE, StormTopologyLayoutConstants.YAML_KEY_CUSTOM_GROUPING);
+            Map customGroupingClass = new HashMap<>();
+            customGroupingClass.put(StormTopologyLayoutConstants.YAML_KEY_CLASS_NAME, StormTopologyLayoutConstants.YAML_KEY_CUSTOM_GROUPING_CLASSNAME);
+            customGroupingClass.put(StormTopologyLayoutConstants.YAML_KEY_CONSTRUCTOR_ARGS, fields);
+            grouping.put(StormTopologyLayoutConstants.YAML_KEY_CUSTOM_GROUPING_CLASS, customGroupingClass);
+        } else if (Stream.Grouping.SHUFFLE.equals(groupingType)) {
+            grouping.put(StormTopologyLayoutConstants.YAML_KEY_TYPE, StormTopologyLayoutConstants.YAML_KEY_LOCAL_OR_SHUFFLE_GROUPING);
+        } else {
+            throw new RuntimeException("Unsupported grouping type: " + groupingType + "  for storm link ");
         }
+        grouping.put(StormTopologyLayoutConstants.YAML_KEY_STREAM_ID, streamId);
         fluxComponent.updateLinkComponentWithGrouping(grouping);
         config.put(StormTopologyLayoutConstants.YAML_KEY_FROM, getFluxId(from));
         config.put(StormTopologyLayoutConstants.YAML_KEY_TO, getFluxId(to));
