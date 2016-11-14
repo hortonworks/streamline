@@ -27,9 +27,9 @@ import org.apache.streamline.streams.catalog.Topology;
 import org.apache.streamline.streams.catalog.TopologyVersionInfo;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.layout.component.TopologyActions;
-import org.apache.streamline.streams.storm.common.StormNotReachableException;
 import org.apache.streamline.streams.metrics.storm.topology.TopologyNotAliveException;
 import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
+import org.apache.streamline.streams.storm.common.StormNotReachableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +47,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,6 +62,7 @@ import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessa
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static org.apache.streamline.streams.catalog.TopologyVersionInfo.VERSION_PREFIX;
+import static org.apache.streamline.streams.service.TopologySortType.LAST_UPDATED;
 
 
 @Path("/v1/catalog")
@@ -72,9 +72,13 @@ public class TopologyCatalogResource {
     public static final String JAR_FILE_PARAM_NAME = "jarFile";
     public static final String CP_INFO_PARAM_NAME = "customProcessorInfo";
     private static final Integer DEFAULT_N_OF_TOP_N_LATENCY = 3;
-    private final StreamCatalogService catalogService;
+    private static final String DEFAULT_SORT_TYPE = LAST_UPDATED.name();
+    private static final Boolean DEFAULT_SORT_ORDER_ASCENDING = false;
+
     private final URL SCHEMA = Thread.currentThread().getContextClassLoader()
             .getResource("assets/schemas/topology.json");
+
+    private final StreamCatalogService catalogService;
 
     public TopologyCatalogResource(StreamCatalogService catalogService) {
         this.catalogService = catalogService;
@@ -85,6 +89,7 @@ public class TopologyCatalogResource {
     @Timed
     public Response listTopologies (@javax.ws.rs.QueryParam("withMetric") Boolean withMetric,
         @javax.ws.rs.QueryParam("sort") String sortType,
+        @javax.ws.rs.QueryParam("ascending") Boolean ascending,
         @javax.ws.rs.QueryParam("latencyTopN") Integer latencyTopN) {
         try {
             Collection<Topology> topologies = catalogService.listTopologies();
@@ -93,8 +98,15 @@ public class TopologyCatalogResource {
                 if (withMetric == null || !withMetric) {
                     response = WSUtils.respond(topologies, OK, SUCCESS);
                 } else {
+                    if (sortType == null) {
+                        sortType = DEFAULT_SORT_TYPE;
+                    }
+                    if (ascending == null) {
+                        ascending = DEFAULT_SORT_ORDER_ASCENDING;
+                    }
+
                     List<TopologyCatalogWithMetric> topologiesWithMetric = enrichMetricToTopologies(
-                        topologies, sortType, latencyTopN);
+                        topologies, sortType, ascending, latencyTopN);
                     response = WSUtils.respond(topologiesWithMetric, OK, SUCCESS);
                 }
             } else {
@@ -540,7 +552,7 @@ public class TopologyCatalogResource {
     }
 
     private List<TopologyCatalogWithMetric> enrichMetricToTopologies(
-        Collection<Topology> topologies, String sortType, Integer latencyTopN) {
+        Collection<Topology> topologies, String sortType, Boolean ascending, Integer latencyTopN) {
         // need to also provide Topology Metric
         List<TopologyCatalogWithMetric> topologiesWithMetric = new ArrayList<>(topologies.size());
         for (Topology topology : topologies) {
@@ -548,22 +560,24 @@ public class TopologyCatalogResource {
             topologiesWithMetric.add(topologyCatalogWithMetric);
         }
 
-        if (sortType != null) {
-            return topologiesWithMetric.stream().sorted((c1, c2) -> {
-                switch (TopologySortType.valueOf(sortType.toUpperCase())) {
+        return topologiesWithMetric.stream().sorted((c1, c2) -> {
+            int compared;
+            switch (TopologySortType.valueOf(sortType.toUpperCase())) {
                 case NAME:
-                    return c1.getTopology().getName().compareTo(c2.getTopology().getName());
+                    compared = c1.getTopology().getName().compareTo(c2.getTopology().getName());
+                    break;
                 case STATUS:
-                    return c1.getRunning().compareTo(c2.getRunning());
+                    compared = c1.getRunning().compareTo(c2.getRunning());
+                    break;
                 case LAST_UPDATED:
-                    return c1.getTopology().getVersionTimestamp().compareTo(c2.getTopology().getVersionTimestamp());
+                    compared = c1.getTopology().getVersionTimestamp().compareTo(c2.getTopology().getVersionTimestamp());
+                    break;
                 default:
                     throw new IllegalStateException("Not supported SortType: " + sortType);
-                }
-            }).collect(toList());
-        } else {
-            return topologiesWithMetric;
-        }
+            }
+
+            return ascending ? compared : (compared * -1);
+        }).collect(toList());
     }
 
     private TopologyCatalogWithMetric enrichMetricToTopology(Topology topology, Integer latencyTopN) {

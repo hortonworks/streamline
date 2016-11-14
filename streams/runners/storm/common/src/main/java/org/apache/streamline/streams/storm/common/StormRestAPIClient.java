@@ -24,6 +24,10 @@ public class StormRestAPIClient {
         return doGetRequest(getTopologyUrl(topologyId));
     }
 
+    public Map getComponent(String topologyId, String componentId) {
+        return doGetRequest(getComponentUrl(topologyId, componentId));
+    }
+
     public boolean killTopology(String stormTopologyId, int waitTime) {
         Map result = doPostRequestWithEmptyBody(getTopologyKillUrl(stormTopologyId, waitTime));
         return isPostOperationSuccess(result);
@@ -69,6 +73,10 @@ public class StormRestAPIClient {
 
     private String getTopologyUrl(String topologyId) {
         return stormApiRootUrl + "/topology/" + topologyId;
+    }
+
+    private String getComponentUrl(String topologyId, String componentId) {
+        return getTopologyUrl(topologyId) + "/component/" + componentId;
     }
 
     private String getTopologyKillUrl(String topologyId, int waitTime) {
