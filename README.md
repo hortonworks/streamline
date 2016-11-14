@@ -8,7 +8,7 @@ From command line execute the following commands:
 `mvn clean install`  
 `cd webservice`  
 `mvn package`  
-`java -cp target/webservice-0.1.0-SNAPSHOT.jar org.apache.streamline.webservice.StreamlineApplication server conf/streamline-dev.yaml`
+`java -cp target/webservice-0.1.0.jar org.apache.streamline.webservice.StreamlineApplication server conf/streamline-dev.yaml`
 
 This should start the webserver on localhost port 8080. If you are running storm on the same host you may get 
 `java.net.BindException: Address already in use` in which case you should modify `server` section of streamline.yaml.
@@ -30,7 +30,7 @@ First you need to populate your kafka topic, if you have not done so create your
 
 Then run the device simulator CLI to post some sample `StreamlineMessage` containing nest data to your kafka topic.
 `cd $STREAMLINE-HOME`  
-`java -cp simulator/target/simulator-0.1.0-SNAPSHOT.jar org.apache.streamline.simulator.CLI -b localhost:9092 -t nest-topic -f simulator/src/main/resources/nest-streamline-messages`
+`java -cp simulator/target/simulator-0.1.0.jar org.apache.streamline.simulator.CLI -b localhost:9092 -t nest-topic -f simulator/src/main/resources/nest-streamline-messages`
 
 Sometimes the command fails with following exceptions:
 `Exception in thread "main" kafka.common.FailedToSendMessageException: Failed to send messages after 3 tries.

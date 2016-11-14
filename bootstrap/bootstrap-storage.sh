@@ -25,7 +25,7 @@ fi
 
 CONF_READER_MAIN_CLASS=org.apache.streamline.storage.tool.StorageProviderConfigurationReader
 SCRIPT_RUNNER_MAIN_CLASS=org.apache.streamline.storage.tool.SQLScriptRunner
-CLASSPATH=${BOOTSTRAP_DIR}/lib/storage-tool-0.1.0-SNAPSHOT.jar:
+CLASSPATH=${BOOTSTRAP_DIR}/lib/storage-tool-0.1.0.jar:
 
 echo "Configuration file: ${CONFIG_FILE_PATH}"
 

@@ -457,7 +457,7 @@ public class TopologyCatalogResource {
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, queryParams.toString());
     }
 
-    //curl -X POST -i -F jarFile=@../core/target/core-0.1.0-SNAPSHOT.jar -F imageFile=@../webservice/src/main/resources/assets/libs/bower/jquery-ui/css/images/animated-overlay.gif http://localhost:8080/api/v1/catalog/system/componentdefinitions/PROCESSOR/custom -F customProcessorInfo=@console_custom_processor
+    //curl -X POST -i -F jarFile=@../core/target/core-0.1.0.jar -F imageFile=@../webservice/src/main/resources/assets/libs/bower/jquery-ui/css/images/animated-overlay.gif http://localhost:8080/api/v1/catalog/system/componentdefinitions/PROCESSOR/custom -F customProcessorInfo=@console_custom_processor
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/system/componentdefinitions/{processor}/custom")

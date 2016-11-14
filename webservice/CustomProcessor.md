@@ -112,7 +112,7 @@ This request takes jar file as well. A curl request below shows how to add a cus
 along with its jar file. console_custom_processor is a file containing the json described
 above.
 
-`curl -sS -X POST -i -F jarFile=@../core/target/core-0.1.0-SNAPSHOT.jar  http://localhost:8080/api/v1/catalog/system/componentdefinitions/PROCESSOR/custom -F customProcessorInfo=@console_custom_processor`
+`curl -sS -X POST -i -F jarFile=@../core/target/core-0.1.0.jar  http://localhost:8080/api/v1/catalog/system/componentdefinitions/PROCESSOR/custom -F customProcessorInfo=@console_custom_processor`
    
 **Success Response**
 

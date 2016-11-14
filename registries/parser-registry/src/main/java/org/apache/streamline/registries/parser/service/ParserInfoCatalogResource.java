@@ -141,7 +141,7 @@ public class ParserInfoCatalogResource {
 
 
 
-    //Test curl command curl -X POST -i -F parserJar=@parsers-0.1.0-SNAPSHOT.jar http://localhost:8080/api/v1/catalog/parsers/upload-verify
+    //Test curl command curl -X POST -i -F parserJar=@parsers-0.1.0.jar http://localhost:8080/api/v1/catalog/parsers/upload-verify
     @Timed
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -160,7 +160,7 @@ public class ParserInfoCatalogResource {
         }
     }
 
-    //Test curl command curl -X POST -i -F parserJar=@original-webservice-0.1.0-SNAPSHOT.jar -F parserInfo='{"parserName":"TestParser","className":"some.test.parserClass","version":0}' http://localhost:8080/api/v1/catalog/parsers
+    //Test curl command curl -X POST -i -F parserJar=@original-webservice-0.1.0.jar -F parserInfo='{"parserName":"TestParser","className":"some.test.parserClass","version":0}' http://localhost:8080/api/v1/catalog/parsers
     @Timed
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
