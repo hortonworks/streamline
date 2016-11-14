@@ -522,12 +522,14 @@ public class StreamCatalogService {
         return listTopologyVersionInfos(currentVersionQueryParam());
     }
 
-    private Optional<TopologyVersionInfo> getCurrentTopologyVersionInfo(Long topologyId) {
+    public Optional<TopologyVersionInfo> getCurrentTopologyVersionInfo(Long topologyId) {
         Collection<TopologyVersionInfo> versions = listTopologyVersionInfos(
                 WSUtils.currentTopologyVersionQueryParam(topologyId, null));
-        if (versions.size() != 1) {
+        if (versions.isEmpty()) {
             LOG.warn("No current version for topology " + topologyId);
             return Optional.empty();
+        } else if (versions.size() > 1) {
+            throw new IllegalStateException("More than one 'CURRENT' version for topology id: " + topologyId);
         }
         return Optional.of(versions.iterator().next());
     }
@@ -650,7 +652,9 @@ public class StreamCatalogService {
                 throw new RuntimeException(ex);
             }
         }
-        return dao.remove(topology.getStorableKey());
+        Topology removedTopology = dao.remove(topology.getStorableKey());
+        removeTopologyVersionInfo(versionId);
+        return removedTopology;
     }
 
     private void removeTopologyDependencies(Long topologyId, Long versionId) throws Exception {
@@ -720,6 +724,9 @@ public class StreamCatalogService {
                 copyTopologyDependencies(topologyId, versionId, topology.getVersionId());
             } catch (Exception ex) {
                 LOG.error("Got exception while copying topology dependencies", ex);
+                if (topology != null) {
+                    removeTopology(topology.getId(), topology.getVersionId(), true);
+                }
                 throw new RuntimeException(ex);
             }
         }
@@ -1404,7 +1411,7 @@ public class StreamCatalogService {
     private List<StreamInfo> addOutputStreams(Long topologyId, Long versionId, List<StreamInfo> streams) {
         List<StreamInfo> streamInfos = new ArrayList<>();
         for (StreamInfo outputStream : streams) {
-            streamInfos.add(addStreamInfo(topologyId, versionId, outputStream));
+            streamInfos.add(addStreamInfo(topologyId, versionId, new StreamInfo(outputStream)));
         }
         return streamInfos;
     }

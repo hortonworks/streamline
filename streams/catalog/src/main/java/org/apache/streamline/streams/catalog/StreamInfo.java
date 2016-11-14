@@ -30,9 +30,11 @@ import org.apache.streamline.storage.Storable;
 import org.apache.streamline.storage.catalog.AbstractStorable;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Catalog db entity for mapping output stream information
@@ -63,6 +65,21 @@ public class StreamInfo extends AbstractStorable {
 
     // db insert/update timestamp
     private Long timestamp;
+
+    public StreamInfo() {
+    }
+
+    // copy ctor
+    public StreamInfo(StreamInfo other) {
+        setId(other.getId());
+        setVersionId(other.getVersionId());
+        setStreamId(other.getStreamId());
+        setTopologyId(other.getTopologyId());
+        if (other.getFields() != null) {
+            setFields(other.getFields().stream().map(Field::new).collect(Collectors.toList()));
+        }
+        setTimestamp(other.getTimestamp());
+    }
 
     @JsonIgnore
     @Override
