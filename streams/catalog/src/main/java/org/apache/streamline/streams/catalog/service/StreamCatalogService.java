@@ -93,6 +93,13 @@ import org.apache.streamline.streams.layout.storm.FluxComponent;
 import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
 import org.apache.streamline.streams.rule.UDAF;
 import org.apache.streamline.streams.rule.UDAF2;
+import org.apache.streamline.streams.rule.UDF;
+import org.apache.streamline.streams.rule.UDF2;
+import org.apache.streamline.streams.rule.UDF3;
+import org.apache.streamline.streams.rule.UDF4;
+import org.apache.streamline.streams.rule.UDF5;
+import org.apache.streamline.streams.rule.UDF6;
+import org.apache.streamline.streams.rule.UDF7;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -153,6 +160,9 @@ public class StreamCatalogService {
     private static final String TOPOLOGY_BRANCHRULEINFO_NAMESPACE = new BranchRuleInfo().getNameSpace();
     private static final String TOPOLOGY_WINDOWINFO_NAMESPACE = new WindowInfo().getNameSpace();
     private static final String UDF_NAMESPACE = new UDFInfo().getNameSpace();
+
+    private static final ArrayList<Class<?>> UDF_CLASSES = Lists.newArrayList(UDAF.class, UDAF2.class, UDF.class, UDF2.class,
+                                                                              UDF3.class, UDF4.class, UDF5.class, UDF6.class, UDF7.class);
 
     private final StorageManager dao;
     private final TopologyActions topologyActions;
@@ -279,7 +289,7 @@ public class StreamCatalogService {
 
     public Service getServiceByName(Long clusterId, String serviceName) {
         Collection<Service> services = listServices(
-            Lists.newArrayList(new QueryParam("clusterId", String.valueOf(clusterId)), new QueryParam("name", serviceName)));
+                Lists.newArrayList(new QueryParam("clusterId", String.valueOf(clusterId)), new QueryParam("name", serviceName)));
         if (services.size() > 1) {
             LOG.warn("Multiple Services have same name {} in cluster {}. returning first match.", serviceName, clusterId);
             return services.iterator().next();
@@ -340,10 +350,10 @@ public class StreamCatalogService {
 
     public Component getComponentByName(Long serviceId, String componentName) {
         Collection<Component> components = listComponents(Lists.newArrayList(
-            new QueryParam("serviceId", String.valueOf(serviceId)), new QueryParam("name", componentName)));
+                new QueryParam("serviceId", String.valueOf(serviceId)), new QueryParam("name", componentName)));
         if (components.size() > 1) {
             LOG.warn("Multiple Components have same name {} in service {}. returning first match.",
-                componentName, serviceId);
+                     componentName, serviceId);
             return components.iterator().next();
         } else if (components.size() == 1) {
             return components.iterator().next();
@@ -380,7 +390,7 @@ public class StreamCatalogService {
     }
 
     public Collection<ServiceConfiguration> listServiceConfigurations(
-        List<QueryParam> queryParams) {
+            List<QueryParam> queryParams) {
         return dao.find(SERVICE_CONFIGURATION_NAMESPACE, queryParams);
     }
 
@@ -392,10 +402,10 @@ public class StreamCatalogService {
 
     public ServiceConfiguration getServiceConfigurationByName(Long serviceId, String configurationName) {
         Collection<ServiceConfiguration> configurations = listServiceConfigurations(Lists.newArrayList(
-            new QueryParam("serviceId", String.valueOf(serviceId)), new QueryParam("name", configurationName)));
+                new QueryParam("serviceId", String.valueOf(serviceId)), new QueryParam("name", configurationName)));
         if (configurations.size() > 1) {
             LOG.warn("Multiple ServiceConfigurations have same name {} in service {}. returning first match.",
-                configurationName, serviceId);
+                     configurationName, serviceId);
             return configurations.iterator().next();
         } else if (configurations.size() == 1) {
             return configurations.iterator().next();
@@ -421,12 +431,12 @@ public class StreamCatalogService {
     }
 
     public ServiceConfiguration addOrUpdateServiceConfiguration(Long serviceId,
-        ServiceConfiguration serviceConfiguration) {
+                                                                ServiceConfiguration serviceConfiguration) {
         return addOrUpdateServiceConfiguration(serviceId, serviceConfiguration.getId(), serviceConfiguration);
     }
 
     public ServiceConfiguration addOrUpdateServiceConfiguration(Long serviceId, Long serviceConfigurationId,
-        ServiceConfiguration serviceConfiguration) {
+                                                                ServiceConfiguration serviceConfiguration) {
         serviceConfiguration.setServiceId(serviceId);
         serviceConfiguration.setId(serviceConfigurationId);
         if (serviceConfiguration.getTimestamp() == null) {
@@ -437,7 +447,7 @@ public class StreamCatalogService {
     }
 
     public Map<String, Object> getDeserializedConfiguration(String clusterName, String serviceName,
-        String serviceConfiguraionName) throws IOException {
+                                                            String serviceConfiguraionName) throws IOException {
         Cluster cluster = getClusterByName(clusterName);
         if (cluster == null) {
             return null;
@@ -458,7 +468,7 @@ public class StreamCatalogService {
     }
 
     public Object lookupConfiguration(String clusterName, String serviceName,
-        String serviceConfiguraionName, String configKey) throws IOException {
+                                      String serviceConfiguraionName, String configKey) throws IOException {
         Cluster cluster = getClusterByName(clusterName);
         if (cluster == null) {
             return null;
@@ -957,8 +967,8 @@ public class StreamCatalogService {
             List<Object> serviceList = (List<Object>) jsonMap.get(TopologyLayoutConstants.JSON_KEY_SERVICES);
             if (serviceList != null) {
                 List<Service> services = objectMapper.readValue(objectMapper.writeValueAsString(serviceList),
-                        new TypeReference<List<Service>>() {
-                        });
+                                                                new TypeReference<List<Service>>() {
+                                                                });
 
                 for (Service service : services) {
                     Collection<ServiceConfiguration> configurations = listServiceConfigurations(service.getId());
@@ -976,8 +986,7 @@ public class StreamCatalogService {
             if (path.toFile().isDirectory()) {
                 FileUtils.cleanDirectory(path.toFile());
             } else {
-                final String errorMessage = String
-                    .format("Location '%s' must be a directory.", path);
+                final String errorMessage = String.format("Location '%s' must be a directory.", path);
                 LOG.error(errorMessage);
                 throw new IOException(errorMessage);
             }
@@ -989,7 +998,7 @@ public class StreamCatalogService {
 
     // Only known configuration files will be saved to local
     private void writeConfigurationFile(ObjectMapper objectMapper, Path artifactsDir,
-        ServiceConfiguration configuration) throws IOException {
+                                        ServiceConfiguration configuration) throws IOException {
         String filename = configuration.getFilename();
         if (filename != null && !filename.isEmpty()) {
             // Configuration itself is aware of file name
@@ -1052,27 +1061,27 @@ public class StreamCatalogService {
 
     public List<Pair<String, Double>> getTopNAndOtherComponentsLatency(Topology topology, int nOfTopN) throws IOException {
         Map<String, TopologyMetrics.ComponentMetric> metricsForTopology = this.topologyMetrics
-            .getMetricsForTopology(getTopologyLayout(topology));
+                .getMetricsForTopology(getTopologyLayout(topology));
 
         List<Pair<String, Double>> topNAndOther = new ArrayList<>();
 
         List<ImmutablePair<String, Double>> latencyOrderedComponents = metricsForTopology.entrySet().stream()
-            .map((x) -> new ImmutablePair<>(x.getKey(), x.getValue().getProcessedTime()))
-            // reversed sort
-            .sorted((c1, c2) -> {
-                if (c2.getValue() == null) {
-                    // assuming c1 is bigger
-                    return -1;
-                } else {
-                    return c2.getValue().compareTo(c1.getValue());
-                }
-            })
-            .collect(toList());
+                .map((x) -> new ImmutablePair<>(x.getKey(), x.getValue().getProcessedTime()))
+                // reversed sort
+                .sorted((c1, c2) -> {
+                    if (c2.getValue() == null) {
+                        // assuming c1 is bigger
+                        return -1;
+                    } else {
+                        return c2.getValue().compareTo(c1.getValue());
+                    }
+                })
+                .collect(toList());
 
         latencyOrderedComponents.stream().limit(nOfTopN).forEachOrdered(topNAndOther::add);
         double sumLatencyOthers = latencyOrderedComponents.stream()
-            .skip(nOfTopN).filter((x) -> x.getValue() != null)
-            .mapToDouble(Pair::getValue).sum();
+                .skip(nOfTopN).filter((x) -> x.getValue() != null)
+                .mapToDouble(Pair::getValue).sum();
 
         topNAndOther.add(new ImmutablePair<>("Others", sumLatencyOthers));
 
@@ -1896,14 +1905,14 @@ public class StreamCatalogService {
         }
 
         Collection<Long> edgeStreamIds = Collections2.transform(edge.getStreamGroupings(),
-                new Function<StreamGrouping, Long>() {
-                    public Long apply(StreamGrouping streamGrouping) {
-                        return streamGrouping.getStreamId();
-                    }
-                });
+                                                                new Function<StreamGrouping, Long>() {
+                                                                    public Long apply(StreamGrouping streamGrouping) {
+                                                                        return streamGrouping.getStreamId();
+                                                                    }
+                                                                });
         if (!outputStreamIds.containsAll(edgeStreamIds)) {
             throw new IllegalArgumentException("Edge stream Ids " + edgeStreamIds +
-                    " must be a subset of outputStreamIds " + outputStreamIds);
+                                                       " must be a subset of outputStreamIds " + outputStreamIds);
         }
         // check the fields specified in the fields grouping is a subset of the stream fields
         for (StreamGrouping streamGrouping : edge.getStreamGroupings()) {
@@ -1921,7 +1930,7 @@ public class StreamCatalogService {
                                 }));
                 if (!streamFields.containsAll(fields)) {
                     throw new IllegalArgumentException("Fields in the grouping " + fields +
-                            " must be a subset the stream fields " + streamFields);
+                                                               " must be a subset the stream fields " + streamFields);
                 }
             }
         }
@@ -2414,14 +2423,15 @@ public class StreamCatalogService {
         return udfInfo;
     }
 
-    public Map<String, Class<?>> loadUdafsFromJar(File jarFile) throws IOException {
+    public Map<String, Class<?>> loadUdfsFromJar(File jarFile) throws IOException {
         Map<String, Class<?>> udafs = new HashMap<>();
-        for (Class<?> clazz : ProxyUtil.loadAllClassesFromJar(jarFile, UDAF.class)) {
-            udafs.put(clazz.getCanonicalName(), clazz);
+
+        for (Class<?> udfClass : UDF_CLASSES) {
+            for (Class<?> clazz : ProxyUtil.loadAllClassesFromJar(jarFile, udfClass)) {
+                udafs.put(clazz.getCanonicalName(), clazz);
+            }
         }
-        for (Class<?> clazz : ProxyUtil.loadAllClassesFromJar(jarFile, UDAF2.class)) {
-            udafs.put(clazz.getCanonicalName(), clazz);
-        }
+
         return udafs;
     }
 
@@ -2465,13 +2475,13 @@ public class StreamCatalogService {
                 addService(service);
 
                 for (Map.Entry<String, Map<String, Object>> confTypeToConfiguration : configurations
-                    .entrySet()) {
+                        .entrySet()) {
                     String confType = confTypeToConfiguration.getKey();
                     Map<String, Object> configuration = confTypeToConfiguration.getValue();
                     String actualFileName = serviceNodeDiscoverer.getActualFileName(confType);
 
                     ServiceConfiguration serviceConfiguration = initializeServiceConfiguration(objectMapper,
-                        service.getId(), confType, actualFileName, configuration);
+                                                                                               service.getId(), confType, actualFileName, configuration);
 
                     addServiceConfiguration(serviceConfiguration);
                     flattenConfigurations.putAll(configuration);
@@ -2494,7 +2504,7 @@ public class StreamCatalogService {
 
     private TopologyLayout getTopologyLayout(Topology topology) throws IOException {
         return new TopologyLayout(topology.getId(), topology.getName(),
-                topology.getConfig(), topology.getTopologyDag());
+                                  topology.getConfig(), topology.getTopologyDag());
     }
 
     private org.apache.streamline.streams.layout.component.Component getComponentLayout(TopologyComponent component) {
@@ -2529,7 +2539,7 @@ public class StreamCatalogService {
     }
 
     private ServiceConfiguration initializeServiceConfiguration(ObjectMapper objectMapper, Long serviceId,
-        String confType, String actualFileName, Map<String, Object> configuration) throws JsonProcessingException {
+                                                                String confType, String actualFileName, Map<String, Object> configuration) throws JsonProcessingException {
         ServiceConfiguration conf = new ServiceConfiguration();
         conf.setId(this.dao.nextId(SERVICE_CONFIGURATION_NAMESPACE));
         conf.setName(confType);
@@ -2543,7 +2553,7 @@ public class StreamCatalogService {
     private void setProtocolAndPortIfAvailable(Map<String, Object> configurations, Component component) {
         try {
             ComponentPropertyPattern confMap = ComponentPropertyPattern
-                .valueOf(component.getName());
+                    .valueOf(component.getName());
             Object valueObj = configurations.get(confMap.getConnectionConfName());
             if (valueObj != null) {
                 Matcher matcher = confMap.getParsePattern().matcher(valueObj.toString());
@@ -2560,8 +2570,8 @@ public class StreamCatalogService {
                             component.setPort(Integer.parseInt(portStr));
                         } catch (NumberFormatException e) {
                             LOG.warn(
-                                "Protocol/Port information [{}] for component {} doesn't seem to known format [{}]."
-                                    + "skip assigning...", valueObj, component.getName(), confMap.getParsePattern());
+                                    "Protocol/Port information [{}] for component {} doesn't seem to known format [{}]."
+                                            + "skip assigning...", valueObj, component.getName(), confMap.getParsePattern());
 
                             // reset protocol information
                             component.setProtocol(null);
@@ -2569,7 +2579,7 @@ public class StreamCatalogService {
                     }
                 } else {
                     LOG.warn("Protocol/Port information [{}] for component {} doesn't seem to known format [{}]. "
-                            + "skip assigning...", valueObj, component.getName(), confMap.getParsePattern());
+                                     + "skip assigning...", valueObj, component.getName(), confMap.getParsePattern());
                 }
             } else {
                 LOG.warn("Protocol/Port related configuration ({}) is not set", confMap.getConnectionConfName());
