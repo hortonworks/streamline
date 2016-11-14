@@ -18,14 +18,12 @@
  */
 package org.apache.streamline.streams.catalog.service;
 
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.common.util.FileStorage;
-import org.apache.streamline.registries.parser.ParserInfo;
-import org.apache.streamline.registries.parser.client.ParserClient;
-import org.apache.streamline.registries.tag.client.TagClient;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorableKey;
-import org.apache.streamline.storage.StorageManager;
+import org.apache.registries.common.QueryParam;
+import org.apache.registries.common.util.FileStorage;
+import org.apache.registries.tag.client.TagClient;
+import org.apache.registries.storage.Storable;
+import org.apache.registries.storage.StorableKey;
+import org.apache.registries.storage.StorageManager;
 import org.apache.streamline.streams.catalog.FileInfo;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -52,14 +50,12 @@ public class CatalogService {
 
     private final StorageManager dao;
     private final FileStorage fileStorage;
-    private final ParserClient parserClient;
 
 
-    public CatalogService(StorageManager dao, FileStorage fileStorage, TagClient tagClient, ParserClient parserClient) {
+    public CatalogService(StorageManager dao, FileStorage fileStorage, TagClient tagClient) {
         this.dao = dao;
         dao.registerStorables(getStorableClasses());
         this.fileStorage = fileStorage;
-        this.parserClient = parserClient;
     }
 
     public static Collection<Class<? extends Storable>> getStorableClasses() {
@@ -121,7 +117,4 @@ public class CatalogService {
         return file;
     }
 
-    public ParserInfo getParserInfo (Long parserId) {
-        return parserClient.getParserInfo(parserId);
-    }
 }

@@ -1,7 +1,7 @@
 package org.apache.streamline.streams.runtime.rule.condition.expression;
 
 import com.google.common.collect.ImmutableList;
-import org.apache.streamline.common.Schema;
+import org.apache.registries.common.Schema;
 import org.apache.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression;
 import org.apache.streamline.streams.layout.component.rule.expression.BinaryExpression;
 import org.apache.streamline.streams.layout.component.rule.expression.Condition;

@@ -1,8 +1,6 @@
 modules:
-  - name: parser-registry
-    className: org.apache.streamline.registries.parser.service.ParserRegistryModule
   - name: tag-registry
-    className: org.apache.streamline.registries.tag.service.TagRegistryModule
+    className: org.apache.registries.tag.service.TagRegistryModule
   - name: streams
     className: org.apache.streamline.streams.service.StreamsModule
     config:
@@ -24,7 +22,7 @@ modules:
 catalogRootUrl: "http://localhost:8080/api/v1/catalog"
 # Filesystem based jar storage
 fileStorageConfiguration:
- className: "org.apache.streamline.common.util.LocalFileSystemStorage"
+ className: "org.apache.registries.common.util.LocalFileSystemStorage"
  properties:
    directory: "/tmp"
 
@@ -40,12 +38,12 @@ fileStorageConfiguration:
 # Example configuration for inmemory is:
 
 storageProviderConfiguration:
-  providerClass: "org.apache.streamline.storage.impl.memory.InMemoryStorageManager"
+  providerClass: "org.apache.registries.storage.impl.memory.InMemoryStorageManager"
 
 #
 # Example configuration for phoenix based JDBC driver
 #storageProviderConfiguration:
-# providerClass: "org.apache.streamline.storage.impl.jdbc.JdbcStorageManager"
+# providerClass: "org.apache.registries.storage.impl.jdbc.JdbcStorageManager"
 # properties:
 #   db.type: "phoenix"
 #   queryTimeoutInSecs: 30
@@ -55,7 +53,7 @@ storageProviderConfiguration:
 #
 # MySQL based jdbc provider configuration is:
 #storageProviderConfiguration:
-# providerClass: "org.apache.streamline.storage.impl.jdbc.JdbcStorageManager"
+# providerClass: "org.apache.registries.storage.impl.jdbc.JdbcStorageManager"
 # properties:
 #   db.type: "mysql"
 #   queryTimeoutInSecs: 30
@@ -65,7 +63,7 @@ storageProviderConfiguration:
 #
 # Atlas based provider configuration is:
 #storageProviderConfiguration:
-# providerClass: "org.apache.streamline.storage.atlas.AtlasStoreManager"
+# providerClass: "org.apache.registries.storage.atlas.AtlasStoreManager"
 # properties:
 #   atlas.graph.storage.backend: "berkeleyje"
 #   atlas.graph.storage.directory: "/var/data/streamline/graph/berkley"
@@ -78,7 +76,7 @@ storageProviderConfiguration:
 #   atlas.EntityAuditRepository.impl: "org.apache.atlas.repository.audit.NoopEntityAuditRepository"
 
 storageProviderConfiguration:
- providerClass: "org.apache.streamline.storage.impl.memory.InMemoryStorageManager"
+ providerClass: "org.apache.registries.storage.impl.memory.InMemoryStorageManager"
 
 # Time series DB querier configuration
 #timeSeriesDBConfiguration:

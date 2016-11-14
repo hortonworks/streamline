@@ -18,8 +18,8 @@
  */
 package org.apache.streamline.streams.runtime.normalization;
 
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.common.exception.ParserException;
+import org.apache.registries.common.Schema;
+import org.apache.registries.common.exception.ParserException;
 import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
 import org.apache.streamline.streams.exception.ProcessingException;

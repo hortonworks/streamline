@@ -18,7 +18,7 @@
 
 package org.apache.streamline.streams.notification.service;
 
-import org.apache.streamline.common.QueryParam;
+import org.apache.registries.common.QueryParam;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;

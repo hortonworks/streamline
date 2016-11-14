@@ -1,10 +1,10 @@
 package org.apache.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.storage.PrimaryKey;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorableKey;
+import org.apache.registries.common.Schema;
+import org.apache.registries.storage.PrimaryKey;
+import org.apache.registries.storage.Storable;
+import org.apache.registries.storage.StorableKey;
 import org.apache.streamline.streams.layout.component.TopologyDag;
 
 import java.util.HashMap;

@@ -18,8 +18,8 @@
  */
 package org.apache.streamline.util;
 
-import org.apache.streamline.common.util.FileStorage;
-import org.apache.streamline.common.util.LocalFileSystemStorage;
+import org.apache.registries.common.util.FileStorage;
+import org.apache.registries.common.util.LocalFileSystemStorage;
 
 public class LocalFileSystemStorageTest extends AbstractFileStorageTest {
     @Override

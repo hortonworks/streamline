@@ -21,15 +21,14 @@ package org.apache.streamline.webservice;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import org.apache.streamline.common.Schema;
+import io.dropwizard.testing.ResourceHelpers;
+import io.dropwizard.testing.junit.DropwizardAppRule;
+import org.apache.commons.io.IOUtils;
+import org.apache.registries.tag.dto.TagDto;
+import org.apache.registries.common.Schema;
 import org.apache.streamline.common.catalog.CatalogResponse;
 import org.apache.streamline.common.test.IntegrationTest;
-import org.apache.streamline.registries.parser.ParserInfo;
-import org.apache.streamline.registries.tag.Tag;
-import org.apache.streamline.registries.tag.TaggedEntity;
-import org.apache.streamline.registries.tag.dto.TagDto;
 import org.apache.streamline.streams.catalog.Cluster;
 import org.apache.streamline.streams.catalog.Component;
 import org.apache.streamline.streams.catalog.FileInfo;
@@ -44,9 +43,6 @@ import org.apache.streamline.streams.catalog.topology.TopologyComponentDefinitio
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
 import org.apache.streamline.streams.runtime.processor.ConsoleCustomProcessorRuntime;
 import org.apache.streamline.streams.service.TopologyCatalogResource;
-import io.dropwizard.testing.ResourceHelpers;
-import io.dropwizard.testing.junit.DropwizardAppRule;
-import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.BodyPart;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -201,8 +197,6 @@ public class RestIntegrationTest {
      */
     private Collection<ResourceTestElement> resourcesToTest = Lists.newArrayList(
             new ResourceTestElement(createTag(1L, "foo-tag"), createTag(1L, "foo-tag-new"), "1", rootUrl + "tags"),
-            // TODO: The below test case needs to be fixed since it should first create the data source and then add the corresponding datafeed
-            //new ResourceTestElement(createDataFeed(1l, "testDataFeed"), createDataFeed(1l, "testDataFeedPut"), "1", rootUrl + "feeds"),
             clusterResourceToTest, serviceResourceToTest, componentResourceToTest,
             new ResourceTestElement(createNotifierInfo(1l, "testNotifier"), createNotifierInfo(1l, "testNotifierPut"), "1", rootUrl + "notifiers")
                     .withMultiPart().withEntitiyNameHeader("notifierConfig").withFileNameHeader("notifierJarFile")
@@ -212,11 +206,7 @@ public class RestIntegrationTest {
             new ResourceTestElement(createTopologyComponent(1l, "kafkaSpoutComponent", TopologyComponentDefinition.TopologyComponentType.SOURCE, "KAFKA"), createTopologyComponent(1l, "kafkaSpoutComponentPut", TopologyComponentDefinition.TopologyComponentType.SOURCE, "KAFKA") , "1", rootUrl + "system/componentdefinitions/SOURCE"),
             new ResourceTestElement(createTopologyComponent(2l, "parserProcessor", TopologyComponentDefinition.TopologyComponentType.PROCESSOR, "PARSER"), createTopologyComponent(2l, "parserProcessorPut", TopologyComponentDefinition.TopologyComponentType.PROCESSOR, "PARSER"), "2", rootUrl + "system/componentdefinitions/PROCESSOR"),
             new ResourceTestElement(createTopologyComponent(3l, "hbaseSink", TopologyComponentDefinition.TopologyComponentType.SINK, "HBASE"), createTopologyComponent(3l, "hbaseSinkPut", TopologyComponentDefinition.TopologyComponentType.SINK, "HBASE"), "3", rootUrl + "system/componentdefinitions/SINK"),
-            new ResourceTestElement(createTopologyComponent(4l, "shuffleGroupingLink", TopologyComponentDefinition.TopologyComponentType.LINK, "SHUFFLE"), createTopologyComponent(4l, "shuffleGroupingLinkPut", TopologyComponentDefinition.TopologyComponentType.LINK, "SHUFFLE"), "4", rootUrl + "system/componentdefinitions/LINK"),
-            // parser is commented as parser takes a jar as input along with the parserInfo instance and so it needs a multipart request.
-            new ResourceTestElement(createParserInfo(1l, "testParser"), null, "1", rootUrl + "parsers")
-                                    .withMultiPart().withEntitiyNameHeader("parserInfo").withFileNameHeader("parserJar")
-                                    .withFileToUpload("parser.jar").withFieldsToIgnore(Collections.singletonList("jarStoragePath"))
+            new ResourceTestElement(createTopologyComponent(4l, "shuffleGroupingLink", TopologyComponentDefinition.TopologyComponentType.LINK, "SHUFFLE"), createTopologyComponent(4l, "shuffleGroupingLinkPut", TopologyComponentDefinition.TopologyComponentType.LINK, "SHUFFLE"), "4", rootUrl + "system/componentdefinitions/LINK")
     );
 
     private MultiPart getMultiPart(ResourceTestElement resourceToTest, Object entity) {
@@ -728,19 +718,6 @@ public class RestIntegrationTest {
     }
 
     //============== Helper methods to create the actual objects that the rest APIS expect as Input ==========//
-
-    private ParserInfo createParserInfo(Long id, String name) {
-        ParserInfo pi = new ParserInfo();
-        pi.setId(id);
-        pi.setName(name);
-        pi.setClassName("org.apache.streamline.registries.parser.nest.NestParser");
-        pi.setJarStoragePath("/tmp/parser.jar");
-        pi.setParserSchema(new Schema.SchemaBuilder().fields(new Schema.Field("deviceId", Schema.Type.LONG),
-                new Schema.Field("deviceName", Schema.Type.STRING)).build());
-        pi.setVersion(0l);
-        pi.setTimestamp(System.currentTimeMillis());
-        return pi;
-    }
 
     private TagDto createTag(Long id, String name, List<Long> tagIds) {
         TagDto tag = new TagDto();

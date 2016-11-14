@@ -11,12 +11,10 @@
 
     <modules>
         <module>common</module>
-        <module>cache</module>
         <module>storage</module>
         <module>simulator</module>
         <module>webservice</module>
         <module>streams</module>
-        <module>registries</module>
     </modules>
 
     <properties>
@@ -54,6 +52,9 @@
         <slf4j.version>1.7.12</slf4j.version>
         <storm.version>1.1.0-SNAPSHOT</storm.version>
         <woodstox-core-asl.version>4.4.1</woodstox-core-asl.version>
+        <tag-registry.version>0.1.0-SNAPSHOT</tag-registry.version>
+        <storage.version>0.1.0-SNAPSHOT</storage.version>
+        <cache.version>0.1.0-SNAPSHOT</cache.version>
 
         <!-- Provided Scope Dependencies -->
         <aws-java-sdk.version>1.10.77</aws-java-sdk.version>
@@ -598,9 +599,9 @@
 
             <!-- Project Artifact Dependencies -->
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>org.apache.registries</groupId>
                 <artifactId>cache</artifactId>
-                <version>${project.version}</version>
+                <version>${cache.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.streamline</groupId>
@@ -647,45 +648,18 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.streamline</groupId>
-                <artifactId>parser-registry</artifactId>
-                <version>${project.version}</version>
-                <!-- dropwizard and phoenix have conflicts in jersey related dependencies  -->
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.phoenix</groupId>
-                        <artifactId>phoenix-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-log4j12</artifactId>
-                    </exclusion>
-                    <!-- Storm will load its underlying framework for slf4j,
-                    so exclude underlying logging framework for Streamline -->
-                    <exclusion>
-                        <groupId>ch.qos.logback</groupId>
-                        <artifactId>logback-classic</artifactId>
-                    </exclusion>
-                    <!-- This is needed to avoid conflict with email notifier -->
-                    <exclusion>
-                        <groupId>javax.mail</groupId>
-                        <artifactId>mailapi</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.streamline</groupId>
                 <artifactId>registries</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>org.apache.registries</groupId>
                 <artifactId>storage</artifactId>
-                <version>${project.version}</version>
+                <version>${storage.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>org.apache.registries</groupId>
                 <artifactId>storage-core</artifactId>
-                <version>${project.version}</version>
+                <version>${storage.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.streamline</groupId>
@@ -814,9 +788,9 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>org.apache.registries</groupId>
                 <artifactId>tag-registry</artifactId>
-                <version>${project.version}</version>
+                <version>${tag-registry.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.streamline</groupId>

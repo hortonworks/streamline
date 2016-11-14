@@ -17,8 +17,8 @@
  */
 package org.apache.streamline.streams.runtime.normalization;
 
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.common.exception.ParserException;
+import org.apache.registries.common.Schema;
+import org.apache.registries.common.exception.ParserException;
 import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.layout.component.impl.normalization.Transformer;
 import org.apache.streamline.streams.runtime.script.GroovyScript;

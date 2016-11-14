@@ -1,7 +1,7 @@
 package org.apache.streamline.streams.schema;
 
 import com.google.common.collect.Sets;
-import org.apache.streamline.common.Schema;
+import org.apache.registries.common.Schema;
 import org.apache.streamline.streams.layout.component.Stream;
 import org.apache.streamline.streams.schema.exception.BadComponentConfigException;
 

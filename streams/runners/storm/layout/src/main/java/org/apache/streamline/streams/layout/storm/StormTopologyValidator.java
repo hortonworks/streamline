@@ -1,6 +1,6 @@
 package org.apache.streamline.streams.layout.storm;
 
-import org.apache.streamline.common.Schema;
+import org.apache.registries.common.Schema;
 import org.apache.streamline.common.util.ReflectionHelper;
 import org.apache.streamline.common.util.Utils;
 import org.apache.streamline.streams.layout.ConfigFieldValidation;

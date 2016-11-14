@@ -1,9 +1,9 @@
 package org.apache.streamline.streams.catalog.storage;
 
 import com.google.common.collect.Lists;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorableTest;
+import org.apache.registries.common.Schema;
+import org.apache.registries.storage.Storable;
+import org.apache.registries.storage.StorableTest;
 import org.apache.streamline.streams.catalog.NotifierInfo;
 import org.apache.streamline.streams.catalog.StreamInfo;
 

@@ -1,16 +1,15 @@
 package org.apache.streamline.streams.service;
 
+import org.apache.registries.common.util.FileStorage;
 import org.apache.streamline.common.Constants;
 import org.apache.streamline.common.FileEventHandler;
 import org.apache.streamline.common.FileWatcher;
-import org.apache.streamline.common.ModuleRegistration;
+import org.apache.registries.common.ModuleRegistration;
 import org.apache.streamline.common.TimeSeriesDBConfiguration;
-import org.apache.streamline.common.util.FileStorage;
 import org.apache.streamline.common.util.ReflectionHelper;
-import org.apache.streamline.registries.parser.client.ParserClient;
-import org.apache.streamline.registries.tag.client.TagClient;
-import org.apache.streamline.storage.StorageManager;
-import org.apache.streamline.storage.StorageManagerAware;
+import org.apache.registries.tag.client.TagClient;
+import org.apache.registries.storage.StorageManager;
+import org.apache.registries.storage.StorageManagerAware;
 import org.apache.streamline.streams.catalog.service.CatalogService;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.exception.ConfigException;
@@ -58,8 +57,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         }
         String catalogRootUrl = (String) config.get(Constants.CONFIG_CATALOG_ROOT_URL);
         TagClient tagClient = new TagClient(catalogRootUrl);
-        ParserClient parserClient = new ParserClient(catalogRootUrl);
-        final CatalogService catalogService = new CatalogService(storageManager, fileStorage, tagClient, parserClient);
+        final CatalogService catalogService = new CatalogService(storageManager, fileStorage, tagClient);
         result.add(new MetricsResource(streamcatalogService));
         result.addAll(getClusterRelatedResources(streamcatalogService));
         result.add(new FileCatalogResource(catalogService));

@@ -2,8 +2,8 @@ package org.apache.streamline.streams.schema;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.common.exception.ParserException;
+import org.apache.registries.common.Schema;
+import org.apache.registries.common.exception.ParserException;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
 import org.apache.streamline.streams.layout.component.Stream;
 import org.apache.streamline.streams.schema.exception.BadComponentConfigException;

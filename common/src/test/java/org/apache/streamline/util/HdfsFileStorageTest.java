@@ -18,8 +18,8 @@
  */
 package org.apache.streamline.util;
 
-import org.apache.streamline.common.util.HdfsFileStorage;
 import org.apache.commons.io.IOUtils;
+import org.apache.registries.common.util.HdfsFileStorage;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

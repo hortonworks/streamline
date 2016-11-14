@@ -19,7 +19,7 @@
 package org.apache.streamline.streams.runtime.rule.condition.expression;
 
 import com.google.common.base.Joiner;
-import org.apache.streamline.common.Schema;
+import org.apache.registries.common.Schema;
 import org.apache.streamline.streams.layout.component.rule.expression.Condition;
 import org.apache.streamline.streams.layout.component.rule.expression.Expression;
 import org.apache.streamline.streams.layout.component.rule.expression.ExpressionTranslator;

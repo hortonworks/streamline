@@ -1,14 +1,14 @@
 package org.apache.streamline.streams.catalog.storage;
 
 import org.apache.streamline.common.test.HBaseIntegrationTest;
-import org.apache.streamline.registries.parser.ParserInfo;
-import org.apache.streamline.storage.StorableTest;
-import org.apache.streamline.storage.exception.NonIncrementalColumnException;
-import org.apache.streamline.storage.impl.jdbc.JdbcStorageManager;
-import org.apache.streamline.storage.impl.jdbc.config.ExecutionConfig;
-import org.apache.streamline.storage.impl.jdbc.phoenix.PhoenixStorageManagerNoCacheIntegrationTest;
-import org.apache.streamline.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
+import org.apache.registries.storage.StorableTest;
+import org.apache.registries.storage.exception.NonIncrementalColumnException;
+import org.apache.registries.storage.impl.jdbc.JdbcStorageManager;
+import org.apache.registries.storage.impl.jdbc.config.ExecutionConfig;
+import org.apache.registries.storage.impl.jdbc.phoenix.PhoenixStorageManagerNoCacheIntegrationTest;
+import org.apache.registries.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
+import org.apache.registries.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
+import org.apache.streamline.streams.catalog.FileInfo;
 import org.apache.streamline.streams.catalog.service.CatalogService;
 import org.junit.Assert;
 import org.junit.Test;
@@ -30,7 +30,7 @@ public  class CorePhoenixStorageManagerNoCacheIntegrationTest extends PhoenixSto
     @Test
     public void testNextId_AutoincrementColumn_IdPlusOne() throws Exception {
         final PhoenixExecutor phoenixExecutor = new PhoenixExecutor(new ExecutionConfig(-1), connectionBuilder);
-        String[] nameSpaces = {ParserInfo.NAME_SPACE};
+        String[] nameSpaces = {FileInfo.NAME_SPACE};
         for (String nameSpace : nameSpaces) {
             log.info("Generating sequence-ids for namespace: [{}]", nameSpace);
             for (int x = 0; x < 100; x++) {

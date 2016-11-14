@@ -1,7 +1,7 @@
 package org.apache.streamline.streams.catalog.topology.component;
 
 
-import org.apache.streamline.common.QueryParam;
+import org.apache.registries.common.QueryParam;
 import org.apache.streamline.streams.catalog.Topology;
 import org.apache.streamline.streams.catalog.TopologyEdge;
 import org.apache.streamline.streams.catalog.TopologyProcessor;

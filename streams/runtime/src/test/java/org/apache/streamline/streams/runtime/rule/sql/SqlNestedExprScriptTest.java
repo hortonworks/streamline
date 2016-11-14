@@ -1,6 +1,6 @@
 package org.apache.streamline.streams.runtime.rule.sql;
 
-import org.apache.streamline.common.Schema;
+import org.apache.registries.common.Schema;
 import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.layout.component.rule.expression.ArrayFieldExpression;

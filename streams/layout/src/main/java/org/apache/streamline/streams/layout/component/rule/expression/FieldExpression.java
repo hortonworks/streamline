@@ -1,6 +1,6 @@
 package org.apache.streamline.streams.layout.component.rule.expression;
 
-import org.apache.streamline.common.Schema;
+import org.apache.registries.common.Schema;
 
 /**
  * A variable (field) expression, e.g. x

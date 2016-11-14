@@ -18,7 +18,7 @@
 
 package org.apache.streamline.streams.runtime.rule;
 
-import org.apache.streamline.common.Schema;
+import org.apache.registries.common.Schema;
 import org.apache.streamline.streams.layout.component.rule.Rule;
 import org.apache.streamline.streams.layout.component.rule.expression.Expression;
 import org.apache.streamline.streams.layout.component.rule.expression.FieldExpression;

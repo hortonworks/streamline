@@ -1,6 +1,6 @@
 package org.apache.streamline.streams.runtime.storm.bolt;
 
-import org.apache.streamline.common.Schema;
+import org.apache.registries.common.Schema;
 import org.apache.streamline.common.util.ProxyUtil;
 import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
@@ -38,7 +38,6 @@ import java.util.Map;
 @RunWith(JMockit.class)
 public class CustomProcessorBoltTest {
 
-    private static final Values VALUES = new Values(MockParser.STREAMLINE_EVENT);
     private Schema inputSchema = new Schema.SchemaBuilder().field(new Schema.Field("A", Schema.Type.INTEGER)).build();
     private Schema outputSchema = new Schema.SchemaBuilder().field(new Schema.Field("A", Schema.Type.INTEGER)).build();
     private String outputStream = "stream";

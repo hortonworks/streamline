@@ -18,7 +18,7 @@
  */
 package org.apache.streamline.streams.runtime.storm.layout.runtime.rule.topology;
 
-import org.apache.streamline.common.Schema;
+import org.apache.registries.common.Schema;
 import org.apache.streamline.streams.layout.Transform;
 import org.apache.streamline.streams.layout.component.ComponentBuilder;
 import org.apache.streamline.streams.layout.component.Stream;

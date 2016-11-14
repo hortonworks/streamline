@@ -13,6 +13,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.apache.registries</groupId>
+            <artifactId>common</artifactId>
+            <version>${storage.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>

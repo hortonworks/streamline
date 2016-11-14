@@ -6,10 +6,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.storage.PrimaryKey;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.catalog.AbstractStorable;
+import org.apache.registries.common.Schema;
+import org.apache.registries.storage.PrimaryKey;
+import org.apache.registries.storage.Storable;
+import org.apache.registries.storage.catalog.AbstractStorable;
 import org.apache.streamline.streams.layout.component.rule.Rule;
 import org.apache.streamline.streams.layout.component.rule.action.Action;
 

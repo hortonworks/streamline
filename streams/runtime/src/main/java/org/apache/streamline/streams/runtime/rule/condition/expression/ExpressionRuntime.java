@@ -18,7 +18,7 @@
 
 package org.apache.streamline.streams.runtime.rule.condition.expression;
 
-import org.apache.streamline.common.Schema.Field;
+import org.apache.registries.common.Schema.Field;
 import org.apache.streamline.streams.layout.component.rule.expression.Condition;
 import org.apache.streamline.streams.layout.component.rule.expression.GroupBy;
 import org.apache.streamline.streams.layout.component.rule.expression.Having;

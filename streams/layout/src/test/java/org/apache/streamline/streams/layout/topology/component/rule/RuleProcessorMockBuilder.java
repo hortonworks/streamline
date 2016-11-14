@@ -18,8 +18,8 @@
 
 package org.apache.streamline.streams.layout.topology.component.rule;
 
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.common.Schema.Field;
+import org.apache.registries.common.Schema;
+import org.apache.registries.common.Schema.Field;
 import org.apache.streamline.streams.layout.component.ComponentBuilder;
 import org.apache.streamline.streams.layout.component.StreamlineSink;
 import org.apache.streamline.streams.layout.component.Sink;

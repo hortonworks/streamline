@@ -1,7 +1,7 @@
 package org.apache.streamline.streams.runtime.storm.bolt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.streamline.common.Schema;
+import org.apache.registries.common.Schema;
 import org.apache.streamline.common.util.ProxyUtil;
 import org.apache.streamline.common.util.Utils;
 import org.apache.streamline.streams.StreamlineEvent;
