@@ -288,7 +288,6 @@ public class TopologyCatalogResource {
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, topologyId.toString());
     }
 
-
     private List<TopologyCatalogWithMetric> enrichMetricToTopologies(
         Collection<Topology> topologies, String sortType, Integer latencyTopN) {
         // need to also provide Topology Metric

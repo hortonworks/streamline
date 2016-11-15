@@ -235,7 +235,7 @@ public class UDFCatalogResource {
      * Update a udf.
      * <p>
      *     curl -X PUT 'http://localhost:8080/api/v1/catalog/udfs/34'
-     *     -F udfJarFile=@/tmp/streams-functions-0.1.0-SNAPSHOT.jar
+     *     -F udfJarFile=@/tmp/streams-functions-0.1.0.jar
      *     -F udfConfig='{"name":"stddev", "description": "stddev",
      *                   "type":"AGGREGATE", "className":"org.apache.streamline.streams.rule.udaf.Stddev"};type=application/json'
      * </p>
