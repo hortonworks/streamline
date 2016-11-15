@@ -508,7 +508,7 @@ export default class WindowingAggregateNodeForm extends Component {
             durationType, slidingDurationType, durationTypeArr, outputFieldsArr, functionListArr, outputStreamId, outputStreamFields,argumentError } = this.state;
 		let {topologyId, nodeType, nodeData, targetNodes, linkShuffleOptions} = this.props;
 		return (
-                                <form className="modal-form processor-modal-form">
+                                <form className="modal-form processor-modal-form form-overflow">
                                         <div className="form-group">
                                                 <label>Select Keys <span className="text-danger">*</span></label>
                                                 <div>
@@ -619,10 +619,10 @@ export default class WindowingAggregateNodeForm extends Component {
                                                         (argumentError) ? <label className="color-error">The Aggregate Function is not supported by input</label> : ''
                                                 }
                                                 <div className="row">
-                                                        <div className="col-sm-5">
+                                                        <div className="col-sm-5 outputCaption">
                                                                 <label>Input</label>
                                                         </div>
-                                                        <div className="col-sm-5">
+                                                        <div className="col-sm-5 outputCaption">
                                                                 <label>Aggregate Function</label>
 							</div>
 						</div>

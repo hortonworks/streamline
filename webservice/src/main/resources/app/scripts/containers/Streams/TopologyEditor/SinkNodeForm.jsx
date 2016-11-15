@@ -134,7 +134,7 @@ export default class SinkNodeForm extends Component {
                         readOnly={!this.props.editMode}
                         showRequired={this.state.showRequired}
                         FormData={formData}
-                        className="sink-modal-form"
+                        className="sink-modal-form form-overflow"
                     >
                         {fields}
                     </Form>

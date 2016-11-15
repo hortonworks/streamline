@@ -170,7 +170,7 @@ export class boolean extends BaseField {
                     {...this.props.attrs}
                     onChange={this.handleChange}
                     style={{marginRight: '10px'}}
-                    className={this.context.Form.state.Errors[this.props.valuePath] ? "form-control invalidInput" : "form-control"}
+                    className={this.context.Form.state.Errors[this.props.valuePath] ? "invalidInput" : ""}
                 />
                 {this.props.label} {this.props.validation && this.props.validation.indexOf('required') !== -1 ? <span className="text-danger">*</span> : null}
             </label>

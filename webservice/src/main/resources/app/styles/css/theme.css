@@ -12,21 +12,46 @@
 
 /* Generic */
 body {
-  background-color: #ebecf1;
+  background-color: #f0f0f0;
   font-family: 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   padding-bottom: 30px;
 }
 body.graph-bg {
-    background: #eef0ef url('../../../styles/img/graph-bg.png') repeat;
+  background: #eef0ef url('../../../styles/img/graph-bg.png') repeat;
+}
+body.edge-details {
+  padding: 0px;
+  background: none;
+}
+body.edge-details > div {
+  position: relative;
+  padding: 10px;
+  background-color: white;
+  box-shadow: 1px 1px 5px rgba(0,0,0,0.25);
+}
+body.edge-details > div:after {
+  content: "";
+  position: absolute;
+  display: block;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 11px;
+  top: -11px;
+  left: 50%;
+  margin-left: -11px;
+  border-top-width: 0;
+  border-bottom-color: #fff;
 }
 footer {
-        position: fixed;
-        bottom: 0px;
-        width: 100%;
-        padding: 5px 15px;
-        background-color: rgba(255,255,255,0.8);
-        box-shadow: 0px 0px 5px rgba(0,0,0,0.5);
+  position: fixed;
+  bottom: 0px;
+  width: 100%;
+  padding: 5px 15px;
+  background-color: rgba(255,255,255,0.8);
+  box-shadow: 0px 0px 5px rgba(0,0,0,0.5);
 }
 /* Bootstrap Overide */
 .text-danger{
@@ -63,7 +88,7 @@ footer {
 
 /* Modal */
 .modal-fixed-height > .modal-content > .modal-body {
-  height: 450px;
+  /*height: 450px;*/
   overflow-y: auto;
 }
 .modal-backdrop {
@@ -95,7 +120,7 @@ footer {
   margin-left: 15px;
 }
 .modal-tabs .nav-tabs > li > a {
-  color: #252525;
+  color: #262626;
   padding: 0px;
   border-bottom: 2px transparent solid;
 }
@@ -112,7 +137,7 @@ footer {
   background-color: transparent;
 }
 .modal-tabs .tab-content {
-  min-height: 450px;
+  min-height: 395px;
   position: relative;
   padding-top: 15px;
 }
@@ -157,29 +182,38 @@ label {
   top: 0px;
   bottom: -15px;
   right: 0px;
-  padding: 0px 20px;
+  padding: 0px 20px !important;;
 }
 .modal-sidebar-left {
   background-color: #f9f9f9;
   width: 200px;
   position: absolute;
-  top: 0px;
+  top: 0;
   bottom: -15px;
   left: 0px;
-  padding: 0px 20px;
+  padding: 0px 20px !important;
 }
 .source-modal-form{
   margin-left: 10px;
   width: 370px;
+  position: absolute;
+  top:0;
+  padding-top: 5px !important;
 }
 .processor-modal-form{
   margin-left: 210px;
   width: 480px;
+  top:0;
+  position: absolute;
+  padding-top: 5px !important;
 }
 .sink-modal-form{
   margin-left: 210px;
   margin-right: 10px;
   width: 370px;
+  top:0;
+  position: absolute;
+  padding-top: 5px !important;
 }
 .cp-modal-form,
 .edge-modal-form,
@@ -194,13 +228,14 @@ label {
   margin: 0px 0px 0px 10px;
 }
 .output-list li {
-  color: #6e6e6e;
+  color: #5a5b5e;
   margin-bottom: 5px;
+  font-size: 12px;
 }
 .output-list li span.output-type {
   display: block;
-  color: #afafaf;
-  font-size: 12px;
+  color: #aeb0b3;
+  font-size: 8px;
 }
 
 @media (min-width: 768px) {
@@ -583,19 +618,20 @@ label {
 }
 .component-panel {
     position: fixed;
-    height: 480px;
+    height: 500px !important;
+    width:70px;
     top: 50%;
     left: 0px;
-    margin-top: -240px;
-    overflow-y: auto;
+    transform: translateY(-50%);
     background-color: #fff;
-    padding: 10px;
+    padding: 10px 0;
     font-size: 0.875em;
     border-radius: 0px 10px 10px 0px;
-    box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
 }
 .component-title {
-    color: #808487;
+    font-size: 9px;
+    color: #323133;
     text-align: center;
     text-transform: uppercase;
 }
@@ -606,13 +642,14 @@ label {
 }
 .component-list > li {
     text-align: center;
-    color: #72bcd5;
+    color: #60aec9;
     margin-bottom: 10px;
+    font-size: 8px;
 }
 .component-list > li > img {
     display: block;
     margin: 0 auto 4px;
-    width: 24px;
+    width: 16px;
 }
 
 .topology-footer {
@@ -631,6 +668,11 @@ label {
 }
 .topology-status p {
     margin-bottom: 0px;
+    color: #545454;
+    font-size: 10px;
+}
+.topology-status > p.text-muted{
+  color: #818386;
 }
 .editable-container > input {
     height: 34px;
@@ -1074,6 +1116,12 @@ label {
   background-color: #676767;
   border: none;
   color: #fafafa;
+  font-size: 12px;
+}
+.has-value.Select--single > .Select-control .Select-value .Select-value-label,
+ .has-value.is-pseudo-focused.Select--single >
+ .Select-control .Select-value .Select-value-label{
+  color: #323133;
 }
 .row.form-group {
     margin-left: -5px;
@@ -1102,4 +1150,56 @@ label {
 }
 .confirm-box.modal-dialog .modal-body {
   padding: 15px;
+}
+.note-modal-form textarea{
+  width: 100%;
+  resize: none;
+}
+.panel-wrapper{
+  margin-top: 4px;
+  height: 474px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 5px;
+}
+.source-modal-form.form-overflow,
+.modal-sidebar-right.form-overflow,
+.modal-sidebar-left.form-overflow,
+.processor-modal-form.form-overflow,
+.sink-modal-form.form-overflow{
+  height: 395px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 5px;
+}
+.panel-wrapper::-webkit-scrollbar,
+.form-overflow::-webkit-scrollbar {
+    width: 2px;
+}
+.panel-wrapper::-webkit-scrollbar-track,
+.form-overflow::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(101, 103, 110,0.3);
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+}
+.panel-wrapper::-webkit-scrollbar-thumb,
+.form-overflow::-webkit-scrollbar-thumb {
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    background: rgba(187, 187, 187,1);
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+}
+.panel-wrapper::-webkit-scrollbar-thumb:window-inactive,
+.form-overflow::-webkit-scrollbar-thumb:window-inactive {
+        background: rgba(204,102,51,0.4);
+}
+.form-overflow h4,
+.form-overflow > fieldset > legend{
+  color: #323133;
+  font-size: 16px;
+}
+.outputCaption > label,
+.form-group > label{
+  font-size: 12px;
+  color: #606060;
 }

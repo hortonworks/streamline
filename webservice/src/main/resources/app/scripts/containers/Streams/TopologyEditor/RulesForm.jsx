@@ -433,7 +433,7 @@ export default class RulesForm extends Component {
 	render() {
 		let sqloptions = { lineNumbers: true, mode: "text/x-sql"};
 		return (
-                        <form className="modal-form rule-modal-form">
+                        <form className="modal-form rule-modal-form form-overflow">
                                 <div className="form-group">
                                         <label>Rule Name <span className="text-danger">*</span></label>
                                         <div>

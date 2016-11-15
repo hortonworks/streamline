@@ -48,6 +48,7 @@ export default class ComponentNodeContainer extends Component {
 	    }
 		return (
             <div className="component-panel right">
+              <div className="panel-wrapper">
                 <h6 className="component-title">Source</h6>
                 <ul className="component-list">
                     {this.state.datasources.map((source, i)=>{
@@ -112,6 +113,8 @@ export default class ComponentNodeContainer extends Component {
                     )
                 })}
                 </ul>
+              </div>
+
 			</div>
 		)
 	}

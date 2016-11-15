@@ -9,7 +9,7 @@ export default class StreamSidebar extends Component {
     render() {
         const {streamType, streamObj} = this.props;
         return (
-            <div className={streamType === 'input' ? "modal-sidebar-left" : "modal-sidebar-right"}>
+            <div className={streamType === 'input' ? "modal-sidebar-left form-overflow" : "modal-sidebar-right form-overflow"}>
                 <h4>{streamType === 'input' ? 'Input' : 'Output'}</h4>
                 <ul className="output-list">
                 {streamObj.fields && streamObj.fields.map((field, i)=>{

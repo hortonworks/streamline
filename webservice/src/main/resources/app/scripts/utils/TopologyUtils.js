@@ -229,7 +229,7 @@ const createEdge = function(mouseDownNode, d, paths, edges, internalFlags, callb
                                 nodeData.type = newEdge.source.currentType.toUpperCase();
                         }
                         if(getEdgeConfigModal){
-                                getEdgeConfigModal(topologyId, nodeData, newEdge, edges, callback);
+                                getEdgeConfigModal(topologyId, newEdge, edges, callback, nodeData);
                         } else {
                                 console.error("Cannot find getEdgeConfigModal: from createEdge:TopologyUtils");
                         }
@@ -858,7 +858,8 @@ const syncEdgeData = function(edges, nodes){
 		edgesArr.push({
 			source: fromNode,
 			target: toNode,
-			edgeId: edge.id
+                        edgeId: edge.id,
+                        streamGrouping: edge.streamGroupings[0]
 		});
 	})
 	return edgesArr;
@@ -914,6 +915,18 @@ const topologyFilter = function(entities , filterValue){
     return entities.filter(filteredList => !filterValue || matchFilter.test(filteredList.topology.name))
 }
 
+const getEdgeData = function(data, topologyId, callback) {
+        TopologyREST.getNode(topologyId, 'streams', data.streamGrouping.streamId)
+                .then((result)=>{
+                        let obj = {
+                                streamName: result.entity.streamId,
+                                grouping: data.streamGrouping.grouping,
+                                edgeData: data
+                        }
+                        callback(obj);
+                })
+}
+
 export default {
 	defineMarkers,
 	isValidConnection,
@@ -943,6 +956,7 @@ export default {
 	createLineOnUI,
 	getNodeRectClass,
 	getNodeImgRectClass,
-        updateParallelismCount,
-        topologyFilter
+    updateParallelismCount,
+    topologyFilter,
+    getEdgeData
 };

@@ -123,7 +123,7 @@ export default class SourceNodeForm extends Component {
                         readOnly={!this.props.editMode}
                         showRequired={this.state.showRequired}
                         FormData={formData}
-                        className="source-modal-form"
+                        className="source-modal-form form-overflow"
                         callback={this.showOutputStream.bind(this)}
                     >
                         {fields}

@@ -100,6 +100,19 @@ export default class TopologyGraphComponent extends Component {
 		this.paths = svgG.append("g").attr('class','link-group').selectAll("g");
 		this.rectangles = svgG.append("g").selectAll("g");
 
+                this.edgeStream = svgG
+                        .append('foreignObject')
+                        .attr("class", "edge-stream")
+                        .attr('width', 200)
+                        .attr('height', 200)
+                        .append("xhtml:body")
+                        .attr('class', 'edge-details')
+                        .style('display','none')
+                        .html('<p><strong>ID:</strong> </p>'+
+                                '<p><strong>Grouping:</strong> </p>'+
+                                '<p><button class="btn btn-xs btn-warning editEdge">Edit</button>'+
+                                '<button class="btn btn-xs btn-warning deleteEdge">Delete</button></p>');
+
 		this.drag = d3.behavior.drag()
 			.origin(function(d) {
 				return {
@@ -249,10 +262,37 @@ export default class TopologyGraphComponent extends Component {
 		let prevEdge = internalFlags.selectedEdge;
 		if (!prevEdge || prevEdge !== d) {
 			TopologyUtils.replaceSelectEdge(d3, d3path, d, constants, internalFlags, paths);
+                        d3.select('.edge-stream').attr('x', this.getBoundingBoxCenter(d3path)[0]-100);
+                        d3.select('.edge-stream').attr('y', this.getBoundingBoxCenter(d3path)[1]);
+                        TopologyUtils.getEdgeData(d, this.topologyId, this.setEdgeData.bind(this));
 		} else {
 			TopologyUtils.removeSelectFromEdge(d3, paths, constants, internalFlags);
+                        this.edgeStream.style('display', 'none');
 		}
 	}
+
+        setEdgeData(obj) {
+                let thisGraph = this;
+                let name = obj.streamName;
+                if(name.length > 15)
+                        name = name.slice(0, 15) + '...';
+                this.edgeStream.html('<div><p><strong>Stream:</strong> '+name+'</p>'+
+                                '<p><strong>Grouping:</strong> '+obj.grouping+'</p>'+
+                                '<p><button class="btn btn-xs btn-success editEdge"><i class="fa fa-pencil"></i> Edit</button> '+
+                                '<button class="btn btn-xs btn-danger deleteEdge"><i class="fa fa-trash"></i> Delete</button></p>'+
+                                '</div>');
+                this.edgeStream.style('display', 'block');
+                d3.select('.editEdge')
+                        .on("click", function() {
+                                this.getEdgeConfigModal(this.topologyId, obj.edgeData, this.edges, this.updateGraph, null, obj.streamName, obj.grouping);
+                                this.edgeStream.style('display', 'none');
+                        }.bind(this));
+                d3.select('.deleteEdge')
+                        .on("click", function() {
+                                this.deleteEdge(this.internalFlags.selectedEdge);
+                                this.edgeStream.style('display', 'none');
+                        }.bind(this));
+        }
 
 	// mousedown on node
 	rectangleMouseDown(d3node, d) {
@@ -401,6 +441,7 @@ export default class TopologyGraphComponent extends Component {
 	deleteEdge(selectedEdge){
 		let {topologyId, internalFlags, edges, updateGraph} = this;
 		TopologyUtils.deleteEdge(selectedEdge, topologyId, internalFlags, edges, updateGraph.bind(this));
+                this.edgeStream.style('display', 'none');
 	}
 
 	svgKeyUp() {
@@ -419,6 +460,12 @@ export default class TopologyGraphComponent extends Component {
 			element[i].parentNode.insertBefore(cloneElem, element[i]);
 		}
 	}
+
+        getBoundingBoxCenter(selection) {
+            var element = selection.node(),
+                bbox = element.getBBox();
+            return [bbox.x + bbox.width/2, bbox.y + bbox.height/2];
+        }
 
 	updateGraph() {
 		var duplicateLinks = document.getElementsByClassName('visible-link')

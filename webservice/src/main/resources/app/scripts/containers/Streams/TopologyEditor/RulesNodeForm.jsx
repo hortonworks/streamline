@@ -164,12 +164,12 @@ export default class RulesNodeForm extends Component {
 			title: 'Are you sure you want to delete rule ?'
 		}).then((confirmBox)=>{
 			let promiseArr = [TopologyREST.deleteNode(topologyId, 'rules', id)];
-			
+
 			let rules = this.nodeData.config.properties.rules;
 			rules.splice(rules.indexOf(id), 1);
-			
+
 			promiseArr.push(TopologyREST.updateNode(topologyId, nodeType, nodeData.nodeId, {body: JSON.stringify(this.nodeData)}));
-			
+
 			Promise.all(promiseArr)
 				.then(result=>{
 					FSReactToastr.success(<strong>Rule deleted successfully</strong>);
@@ -194,7 +194,7 @@ export default class RulesNodeForm extends Component {
 		let {topologyId, editMode, nodeType, nodeData, targetNodes, linkShuffleOptions} = this.props;
 		let {rules} = this.state;
 		return (
-                        <div className="modal-form processor-modal-form">
+                        <div className="modal-form processor-modal-form form-overflow">
                                 {editMode ?
                                         <div className="clearfix row-margin-bottom">
                                                 <button type="button" onClick={this.handleAddRule.bind(this)} className="btn btn-success pull-left">

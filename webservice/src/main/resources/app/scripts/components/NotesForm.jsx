@@ -16,7 +16,7 @@ export default class StreamSidebar extends Component {
   render() {
     return (
       <div className="note-modal-form">
-        <textarea rows="14" cols="122" />
+        <textarea rows="14" placeholder="enter notes here..."/>
       </div>
     );
   }

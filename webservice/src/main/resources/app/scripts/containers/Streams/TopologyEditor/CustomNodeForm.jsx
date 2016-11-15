@@ -181,7 +181,7 @@ export default class CustomNodeForm extends Component {
 		let {topologyId, editMode, nodeType, nodeData, targetNodes, linkShuffleOptions} = this.props;
 		let {showSchema, showError, showErrorLabel} = this.state;
 		return (
-            <form className="modal-form processor-modal-form">
+            <form className="modal-form processor-modal-form form-overflow">
                 {
                     this.state.userInputs.map((f, i)=>{
                         return (

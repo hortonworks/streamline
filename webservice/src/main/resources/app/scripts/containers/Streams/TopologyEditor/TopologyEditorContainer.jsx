@@ -528,8 +528,59 @@ class TopologyEditorContainer extends Component {
       this.refs.NodeModal.hide();
     }
   }
-  showEdgeConfigModal(topologyId, node, newEdge, edges, callback) {
-    this.edgeConfigData = {topologyId: topologyId, node: node, edge: newEdge, edges: edges, callback: callback};
+  showEdgeConfigModal(topologyId, newEdge, edges, callback, node, streamName, grouping) {
+    this.edgeConfigData = {topologyId: topologyId, edge: newEdge, edges: edges, callback: callback, streamName: streamName, grouping: grouping};
+    this.edgeConfigTitle = newEdge.source.uiname + '-' + newEdge.target.uiname;
+    let nodeType = newEdge.source.currentType.toLowerCase();
+    if(node && node.outputStreams.length === 1 && nodeType !== 'rule') {
+      let edgeData = {
+            fromId: newEdge.source.nodeId,
+            toId: newEdge.target.nodeId,
+            streamGroupings: [{
+                    streamId: node.outputStreams[0].id,
+                    grouping: 'SHUFFLE'
+            }]
+        };
+
+      if(node && nodeType === 'window'){
+          if(node.config.properties.rules && node.config.properties.rules.length > 0){
+                let rulesPromiseArr = [];
+                let saveRulesPromiseArr = [];
+          node.config.properties.rules.map((id)=>{
+                    rulesPromiseArr.push(TopologyREST.getNode(topologyId, 'windows', id));
+                })
+                Promise.all(rulesPromiseArr)
+                    .then((results)=>{
+                        results.map((result)=>{
+                            let data = result.entity;
+                                let actionObj = {
+                                    name: newEdge.target.uiname,
+                                    outputStreams: [node.outputStreams[0].streamId]
+                                };
+                                if(newEdge.target.currentType.toLowerCase() === 'notification'){
+                                    actionObj.outputFieldsAndDefaults = node.config.properties.fieldValues || {};
+                                    actionObj.notifierName = node.config.properties.notifierName || '';
+                                    actionObj.__type = "org.apache.streamline.streams.layout.component.rule.action.NotifierAction";
+                                } else {
+                                    actionObj.__type = "org.apache.streamline.streams.layout.component.rule.action.TransformAction";
+                                    actionObj.transforms = [];
+                                }
+                                data.actions.push(actionObj);
+                                saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, 'windows', data.id, {body: JSON.stringify(data)}))
+                        })
+                        Promise.all(saveRulesPromiseArr).then((savedResults)=>{});
+                    })
+            }
+        }
+      TopologyREST.createNode(topologyId, 'edges', {body: JSON.stringify(edgeData)})
+        .then((edge)=>{
+            newEdge.edgeId = edge.entity.id;
+            newEdge.streamGrouping = edge.entity.streamGroupings[0];
+            edges.push(newEdge);
+            //call the callback to update the graph
+            callback();
+          });
+    } else
     this.setState({altFlag: !this.state.altFlag},()=>{
       this.refs.EdgeConfigModal.show();
     });
@@ -541,8 +592,7 @@ class TopologyEditorContainer extends Component {
     }
   }
   handleCancelEdgeConfig(){
-    this.refs.EdgeConfig.validate();
-    return false;
+    this.refs.EdgeConfigModal.hide();
   }
   focusInput(component){
     if(component){
@@ -556,9 +606,9 @@ class TopologyEditorContainer extends Component {
     return (
       <span>
         <Link to="/">My Applications</Link> /&nbsp;
-          {this.viewMode ? 
+          {this.viewMode ?
             this.state.topologyName
-            : 
+            :
             <Editable
                 id="applicationName"
                 ref="topologyNameEditable"
@@ -653,8 +703,8 @@ class TopologyEditorContainer extends Component {
           data-resolve={this.handleSaveNodeModal.bind(this)}>
           {this.modalContent()}
         </Modal>
-        <Modal 
-          ref="leaveEditable" 
+        <Modal
+          ref="leaveEditable"
           data-title="Confirm Box"
           dialogClassName="confirm-box"
           data-resolve={this.confirmLeave.bind(this, true)}
@@ -663,7 +713,7 @@ class TopologyEditorContainer extends Component {
         </Modal>
         <Modal
           ref="EdgeConfigModal"
-          data-title="Select Stream"
+          data-title={this.edgeConfigTitle}
           data-resolve={this.handleSaveEdgeConfig.bind(this)}
           data-reject={this.handleCancelEdgeConfig.bind(this)}
         >
