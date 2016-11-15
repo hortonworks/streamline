@@ -68,11 +68,6 @@ public class NormalizationProcessor extends StreamlineProcessor {
     }
 
     @Override
-    public void accept(TopologyDagVisitor visitor) {
-        visitor.visit(this);
-    }
-
-    @Override
     public String toString() {
         return "NormalizationProcessor{" +
                 "inputStreamsWithNormalizationConfig=" + inputStreamsWithNormalizationConfig +

@@ -7,7 +7,7 @@ A *Custom Processor* is a feature in Streamline that will let a user plug in cus
 processing logic in their topologies. The first step to being able to do this
 is registering the custom processor components. The rest endpoint for adding,
 updating, deleting and getting custom processors is 
-/api/v1/catalog/system/componentdefinitions/PROCESSOR/custom 
+/api/v1/catalog/streams/componentbundles/PROCESSOR/custom 
 
 Following are the properties in the json needed to register a custom processor.
 Note that along with the json, the request also takes a file for each custom
@@ -23,15 +23,14 @@ jarFileName| String| Unique name of the jar file that will be used to upload/dow
 customProcessorImpl| String| Fully qualified class name implementing the interface
 inputSchema| Schema| Input schema that this custom processor expects
 outputStreamToSchema| Map<String,Schema>| Output schema per stream that it emits
-configFields| List<ConfigField>| List of config fields needed from user. Used by UI in topology editor
-schemaClass| String | Fully qualified class name to support schema evolution 
+topologyComponentUISpecification|TopologyComponentUISpecification| List of fields needed from user. Used by UI in topology editor
 
 
 ## Rest API
 
 ### Get
 
-`GET /api/v1/catalog/system/componentdefinitions/PROCESSOR/custom?name=Console%20Custom%20Processor`
+`GET /api/v1/catalog/streams/componentbundles/PROCESSOR/custom?name=Console%20Custom%20Processor`
 
 **Success Response**
 
@@ -48,16 +47,6 @@ schemaClass| String | Fully qualified class name to support schema evolution
             "name":"Console Custom Processor",
             "description":"Console Custom Processor",
             "jarFileName":"streamline-core.jar",
-            "configFields":[
-                {
-                    "name":"configField", 
-                    "tooltip":"Config field",
-                    "isOptional":false,
-                    "isUserInput":true,
-                    "defaultValue":null,
-                    "type":"string"
-                }
-            ],
             "inputSchema":{
                 "fields":[
                     {
@@ -97,8 +86,7 @@ schemaClass| String | Fully qualified class name to support schema evolution
                     ]
                 }
             },
-            "customProcessorImpl":"org.apache.streamline.streams.runtime.processor.ConsoleCustomProcessorRuntime",
-            "schemaClass":"org.apache.streamline.streams.schema.CustomProcessorSchemaEvolver"
+            "customProcessorImpl":"com.hortonworks.iotas.streams.runtime.processor.ConsoleCustomProcessorRuntime"
         }
     ]
 }
@@ -106,13 +94,13 @@ schemaClass| String | Fully qualified class name to support schema evolution
 
 ### Post
 
-`POST /api/v1/catalog/system/componentdefinitions/PROCESSOR/custom`
+`POST /api/v1/catalog/streams/componentbundles/PROCESSOR/custom`
 
 This request takes jar file as well. A curl request below shows how to add a custom processor
 along with its jar file. console_custom_processor is a file containing the json described
 above.
 
-`curl -sS -X POST -i -F jarFile=@../core/target/core-0.1.0-SNAPSHOT.jar  http://localhost:8080/api/v1/catalog/system/componentdefinitions/PROCESSOR/custom -F customProcessorInfo=@console_custom_processor`
+`curl -sS -X POST -i -F jarFile=@../core/target/core-0.1.0-SNAPSHOT.jar  http://localhost:8080/api/v1/catalog/streams/componentbundles/PROCESSOR/custom -F customProcessorInfo=@console_custom_processor`
    
 **Success Response**
 
@@ -122,7 +110,7 @@ above.
 
 ### Put
 
-`PUT /api/v1/catalog/system/componentdefinitions/PROCESSOR/custom`
+`PUT /api/v1/catalog/streams/componentbundles/PROCESSOR/custom`
 
 *Sample Input*
 
@@ -135,7 +123,7 @@ Same as POST above except that the file will now contain updated data with the s
 
 ### Delete
 
-`DELETE /api/v1/catalog/system/componentdefinitions/PROCESSOR/custom`
+`DELETE /api/v1/catalog/streams/componentbundles/PROCESSOR/custom`
 
 *Success Response*
 
@@ -160,7 +148,7 @@ To download the jar file associated with the custom processor use the GET reques
 Note that the get URL ends with the name of the file. This has to be the same name that
 was used to assign the property jarFileName in custom processor post/put.
 
-`GET /api/v1/catalog/system/componentdefinitions/PROCESSOR/custom/streamline-core.jar`
+`GET /api/v1/catalog/streams/componentbundles/PROCESSOR/custom/streamline-core.jar`
 
 ## Auto upload for Custom Processors
 
@@ -192,10 +180,9 @@ file in the tar should have the same name as the jarFileName property in info.js
   "name": "Console Custom Processor",
   "description": "Console Custom Processor",
   "jarFileName": "streamline-core.jar",
-  "configFields": [{"name":"configField", "isOptional":false, "type":"string", "defaultValue":null,"isUserInput":true,"tooltip":"Config field"}],
+  "topologyComponentUISpecification": {"fields": []},
   "inputSchema": {"fields":[{"name":"childField1","type":"INTEGER"},{"name":"childField2","type":"BOOLEAN"},{"name":"topLevelStringField","type":"STRING"}]},
   "outputStreamToSchema": {"stream1":{"fields":[{"name":"childField1","type":"INTEGER"},{"name":"childField2","type":"BOOLEAN"},{"name":"topLevelStringField","type":"STRING"}]}},
-  "customProcessorImpl": "org.apache.streamline.streams.runtime.processor.ConsoleCustomProcessorRuntime",
-  "schemaClass":"org.apache.streamline.streams.schema.CustomProcessorSchemaEvolver"
+  "customProcessorImpl": "com.hortonworks.iotas.streams.runtime.processor.ConsoleCustomProcessorRuntime"
 }
 ```

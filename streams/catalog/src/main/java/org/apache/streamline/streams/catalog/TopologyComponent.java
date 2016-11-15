@@ -34,15 +34,15 @@ public class TopologyComponent extends AbstractStorable {
 
     public static final String ID = "id";
     public static final String TOPOLOGYID = "topologyId";
+    public static final String TOPOLOGY_COMPONENT_BUNDLE_ID = "topologyComponentBundleId";
     public static final String NAME = "name";
-    public static final String TYPE = "type";
     public static final String CONFIG = "config";
     public static final String CONFIG_DATA = "configData";
 
     private Long id;
     private Long topologyId = -1L;
+    private Long topologyComponentBundleId = -1L;
     private String name = StringUtils.EMPTY;
-    private String type = StringUtils.EMPTY;
     private Config config;
 
     @JsonIgnore
@@ -64,8 +64,8 @@ public class TopologyComponent extends AbstractStorable {
         return Schema.of(
                 Schema.Field.of(ID, Schema.Type.LONG),
                 Schema.Field.of(TOPOLOGYID, Schema.Type.LONG),
+                Schema.Field.of(TOPOLOGY_COMPONENT_BUNDLE_ID, Schema.Type.LONG),
                 Schema.Field.of(NAME, Schema.Type.STRING),
-                Schema.Field.of(TYPE, Schema.Type.STRING),
                 Schema.Field.of(CONFIG_DATA, Schema.Type.STRING));
     }
 
@@ -86,6 +86,14 @@ public class TopologyComponent extends AbstractStorable {
         this.topologyId = topologyId;
     }
 
+    public Long getTopologyComponentBundleId() {
+        return topologyComponentBundleId;
+    }
+
+    public void setTopologyComponentBundleId(Long topologyComponentBundleId) {
+        this.topologyComponentBundleId = topologyComponentBundleId;
+    }
+
     public String getName() {
         return name;
     }
@@ -100,14 +108,6 @@ public class TopologyComponent extends AbstractStorable {
 
     public void setConfig(Config config) {
         this.config = config;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 
     @JsonIgnore

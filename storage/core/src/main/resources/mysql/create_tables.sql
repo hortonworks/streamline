@@ -35,16 +35,18 @@ CREATE TABLE IF NOT EXISTS topologies (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS topology_component_definitions (
+CREATE TABLE IF NOT EXISTS topology_component_bundles (
     id BIGINT AUTO_INCREMENT NOT NULL,
     name VARCHAR(256) NOT NULL,
     type TEXT NOT NULL,
     subType TEXT NOT NULL,
     streamingEngine TEXT NOT NULL,
-    config TEXT NOT NULL,
+    topologyComponentUISpecification TEXT NOT NULL,
     schemaClass TEXT,
     transformationClass TEXT,
     timestamp  BIGINT,
+    bundleJar TEXT,
+    builtin CHAR(4),
     PRIMARY KEY (id)
 );
 
@@ -96,8 +98,8 @@ CREATE TABLE IF NOT EXISTS notifierinfos (
 CREATE TABLE IF NOT EXISTS topology_components (
     id BIGINT AUTO_INCREMENT NOT NULL,
     topologyId BIGINT,
+    topologyComponentBundleId BIGINT,
     name VARCHAR(256),
-    type VARCHAR(256),
     configData TEXT,
     PRIMARY KEY (id)
 );
@@ -105,8 +107,8 @@ CREATE TABLE IF NOT EXISTS topology_components (
 CREATE TABLE IF NOT EXISTS topology_sources (
     id BIGINT AUTO_INCREMENT NOT NULL,
     topologyId BIGINT NOT NULL,
+    topologyComponentBundleId BIGINT NOT NULL,
     name VARCHAR(256) NOT NULL,
-    type VARCHAR(256) NOT NULL,
     configData TEXT NOT NULL,
     PRIMARY KEY (id)
 );
@@ -120,8 +122,8 @@ CREATE TABLE IF NOT EXISTS topology_source_stream_mapping (
 CREATE TABLE IF NOT EXISTS topology_sinks (
     id BIGINT AUTO_INCREMENT NOT NULL,
     topologyId BIGINT NOT NULL,
+    topologyComponentBundleId BIGINT NOT NULL,
     name VARCHAR(256) NOT NULL,
-    type VARCHAR(256) NOT NULL,
     configData TEXT NOT NULL,
     PRIMARY KEY (id)
 );
@@ -129,8 +131,8 @@ CREATE TABLE IF NOT EXISTS topology_sinks (
 CREATE TABLE IF NOT EXISTS topology_processors (
     id BIGINT AUTO_INCREMENT NOT NULL,
     topologyId BIGINT NOT NULL,
+    topologyComponentBundleId BIGINT NOT NULL,
     name VARCHAR(256) NOT NULL,
-    type VARCHAR(256) NOT NULL,
     configData TEXT NOT NULL,
     PRIMARY KEY (id)
 );

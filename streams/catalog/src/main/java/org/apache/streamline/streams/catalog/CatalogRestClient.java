@@ -43,7 +43,7 @@ public class CatalogRestClient {
     private final Client client;
 
     private static final String NOTIFIER_URL = "notifiers";
-    private static final String CUSTOM_PROCESSOR_JAR_DOWNLOAD_URL = "system/componentdefinitions/PROCESSOR/custom";
+    private static final String CUSTOM_PROCESSOR_JAR_DOWNLOAD_URL = "streams/componentbundles/PROCESSOR/custom";
     private static final String FILE_DOWNLOAD_URL = "files/download/";
 
     private final String rootCatalogURL;

@@ -8,7 +8,7 @@ import org.apache.streamline.storage.impl.jdbc.provider.phoenix.factory.PhoenixE
 import org.apache.streamline.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
 import org.apache.streamline.streams.catalog.Topology;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.streams.catalog.topology.TopologyComponentDefinition;
+import org.apache.streamline.streams.catalog.topology.TopologyComponentBundle;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -28,7 +28,7 @@ public  class StreamsPhoenixStorageManagerNoCacheIntegrationTest extends Phoenix
     @Test
     public void testNextId_AutoincrementColumn_IdPlusOne() throws Exception {
         final PhoenixExecutor phoenixExecutor = new PhoenixExecutor(new ExecutionConfig(-1), connectionBuilder);
-        String[] nameSpaces = {Topology.NAME_SPACE, TopologyComponentDefinition.NAME_SPACE};
+        String[] nameSpaces = {Topology.NAME_SPACE, TopologyComponentBundle.NAME_SPACE};
         for (String nameSpace : nameSpaces) {
             log.info("Generating sequence-ids for namespace: [{}]", nameSpace);
             for (int x = 0; x < 100; x++) {

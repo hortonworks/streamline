@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
 import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
-import org.apache.streamline.streams.layout.exception.BadTopologyLayoutException;
+import org.apache.streamline.streams.layout.exception.ComponentConfigException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,12 +22,9 @@ public class RuleBoltFluxComponent extends AbstractFluxComponent {
     public RuleBoltFluxComponent() {
     }
 
-    public RuleBoltFluxComponent(RulesProcessor rulesProcessor) {
-        this.rulesProcessor = rulesProcessor;
-    }
-
     @Override
     protected void generateComponent () {
+        rulesProcessor = (RulesProcessor) conf.get(StormTopologyLayoutConstants.STREAMLINE_COMPONENT_CONF_KEY);
         String rulesBoltDependenciesFactory = addRulesBoltDependenciesFactory();
         String boltId = "ruleBolt" + UUID_FOR_COMPONENTS;
         String boltClassName = "org.apache.streamline.streams.runtime.storm.bolt.rules.RulesBolt";
@@ -74,12 +71,12 @@ public class RuleBoltFluxComponent extends AbstractFluxComponent {
     }
 
     @Override
-    public void validateConfig () throws BadTopologyLayoutException {
+    public void validateConfig () throws ComponentConfigException {
         super.validateConfig();
         String fieldName = TopologyLayoutConstants.JSON_KEY_RULES_PROCESSOR_CONFIG;
         Map rulesProcessorConfig = (Map) conf.get(fieldName);
         if (rulesProcessorConfig == null) {
-            throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
+            throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
         }
         /*
         Commenting the below code because of cyclic dependency between layout
@@ -90,7 +87,7 @@ public class RuleBoltFluxComponent extends AbstractFluxComponent {
             //TODO: may be add further validation here for the RulesProcessor
             // object successfully created?
         } catch (IOException e) {
-            throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
+            throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
         }*/
     }
 }

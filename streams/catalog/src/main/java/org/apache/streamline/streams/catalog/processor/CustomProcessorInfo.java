@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.common.util.Utils;
-import org.apache.streamline.streams.catalog.topology.ConfigField;
-import org.apache.streamline.streams.catalog.topology.TopologyComponentDefinition;
+import org.apache.streamline.streams.catalog.topology.TopologyComponentBundle;
+import org.apache.streamline.streams.catalog.topology.TopologyComponentUISpecification;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
 
 import java.io.IOException;
@@ -23,7 +23,6 @@ public class CustomProcessorInfo {
     public static final String NAME = "name";
     public static final String DESCRIPTION = "description";
     public static final String JAR_FILE_NAME = "jarFileName";
-    public static final String CONFIG_FIELDS = "configFields";
     public static final String INPUT_SCHEMA = "inputSchema";
     public static final String OUTPUT_STREAM_TO_SCHEMA = "outputStreamToSchema";
     public static final String CUSTOM_PROCESSOR_IMPL = "customProcessorImpl";
@@ -32,7 +31,7 @@ public class CustomProcessorInfo {
     private String name;
     private String description;
     private String jarFileName;
-    private List<ConfigField> configFields;
+    private TopologyComponentUISpecification topologyComponentUISpecification;
     private Schema inputSchema;
     private Map<String, Schema> outputStreamToSchema;
     private String customProcessorImpl;
@@ -44,7 +43,7 @@ public class CustomProcessorInfo {
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", jarFileName='" + jarFileName + '\'' +
-                ", configFields=" + configFields +
+                ", topologyComponentUISpecification='" + topologyComponentUISpecification+ '\'' +
                 ", inputSchema=" + inputSchema +
                 ", outputStreamToSchema=" + outputStreamToSchema +
                 ", customProcessorImpl='" + customProcessorImpl + '\'' +
@@ -62,7 +61,9 @@ public class CustomProcessorInfo {
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
         if (jarFileName != null ? !jarFileName.equals(that.jarFileName) : that.jarFileName != null) return false;
-        if (configFields != null ? !configFields.equals(that.configFields) : that.configFields != null) return false;
+        if (topologyComponentUISpecification != null ? !topologyComponentUISpecification.equals(that.topologyComponentUISpecification) : that
+                .topologyComponentUISpecification != null)
+            return false;
         if (inputSchema != null ? !inputSchema.equals(that.inputSchema) : that.inputSchema != null) return false;
         if (outputStreamToSchema != null ? !outputStreamToSchema.equals(that.outputStreamToSchema) : that.outputStreamToSchema != null) return false;
         return !(customProcessorImpl != null ? !customProcessorImpl.equals(that.customProcessorImpl) : that.customProcessorImpl != null);
@@ -75,7 +76,7 @@ public class CustomProcessorInfo {
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
         result = 31 * result + (jarFileName != null ? jarFileName.hashCode() : 0);
-        result = 31 * result + (configFields != null ? configFields.hashCode() : 0);
+        result = 31 * result + (topologyComponentUISpecification != null ? topologyComponentUISpecification.hashCode() : 0);
         result = 31 * result + (inputSchema != null ? inputSchema.hashCode() : 0);
         result = 31 * result + (outputStreamToSchema != null ? outputStreamToSchema.hashCode() : 0);
         result = 31 * result + (customProcessorImpl != null ? customProcessorImpl.hashCode() : 0);
@@ -122,14 +123,6 @@ public class CustomProcessorInfo {
         this.jarFileName = jarFileName;
     }
 
-    public List<ConfigField> getConfigFields() {
-        return configFields;
-    }
-
-    public void setConfigFields(List<ConfigField> configFields) {
-        this.configFields = configFields;
-    }
-
     public Schema getInputSchema() {
         return inputSchema;
     }
@@ -146,96 +139,99 @@ public class CustomProcessorInfo {
         this.customProcessorImpl = customProcessorImpl;
     }
 
-    public CustomProcessorInfo fromTopologyComponent (TopologyComponentDefinition topologyComponentDefinition) throws IOException {
-        if (topologyComponentDefinition != null) {
-            this.setStreamingEngine(topologyComponentDefinition.getStreamingEngine());
-            List<ConfigField> configFields = this.getListOfConfigFields(topologyComponentDefinition);
-            Map<String, Object> config = this.getProperties(configFields);
-            this.setName((String) config.get(NAME));
-            this.setDescription((String) config.get(DESCRIPTION));
-            this.setJarFileName((String) config.get(JAR_FILE_NAME));
-            this.setCustomProcessorImpl((String) config.get(CUSTOM_PROCESSOR_IMPL));
-            Schema inputSchema = Utils.getSchemaFromConfig((Map) config.get(INPUT_SCHEMA));
-            this.setInputSchema(inputSchema);
-            Map<String, Schema> outputStreamToSchema = new HashMap<>();
-            Map<String, Map> outputStreamToMap = (Map<String, Map>) config.get(OUTPUT_STREAM_TO_SCHEMA);
-            for (Map.Entry<String, Map> entry: outputStreamToMap.entrySet()) {
-                outputStreamToSchema.put(entry.getKey(), Utils.getSchemaFromConfig(entry.getValue()));
-            }
+    public TopologyComponentUISpecification getTopologyComponentUISpecification() {
+        return topologyComponentUISpecification;
+    }
+
+    public void setTopologyComponentUISpecification(TopologyComponentUISpecification topologyComponentUISpecification) {
+        this.topologyComponentUISpecification = topologyComponentUISpecification;
+    }
+
+    public CustomProcessorInfo fromTopologyComponentBundle (TopologyComponentBundle topologyComponentBundle) throws IOException {
+        if (topologyComponentBundle != null) {
+            this.setStreamingEngine(topologyComponentBundle.getStreamingEngine());
+            TopologyComponentUISpecification topologyComponentUISpecification = topologyComponentBundle.getTopologyComponentUISpecification();
+            List<TopologyComponentUISpecification.UIField> uiFields = topologyComponentUISpecification.getFields();
+            Map<String, String> config = this.getPropertiesFromUIFields(uiFields);
+            this.setName(config.get(NAME));
+            this.setDescription(config.get(DESCRIPTION));
+            this.setJarFileName(config.get(JAR_FILE_NAME));
+            this.setCustomProcessorImpl(config.get(CUSTOM_PROCESSOR_IMPL));
+            this.setInputSchema(Utils.getSchemaFromConfig(config.get(INPUT_SCHEMA)));
+            ObjectMapper objectMapper = new ObjectMapper();
+            Map<String, Schema> outputStreamToSchema = objectMapper.readValue(config.get(OUTPUT_STREAM_TO_SCHEMA), new TypeReference<Map<String, Schema>>() {});
             this.setOutputStreamToSchema(outputStreamToSchema);
-            this.setConfigFields(this.getCustomProcessorConfigFields(configFields));
+            this.setTopologyComponentUISpecification(getCustomProcessorUISpecification(topologyComponentUISpecification));
         }
         return this;
     }
 
-    public TopologyComponentDefinition toTopologyComponent () throws IOException {
-        TopologyComponentDefinition result = new TopologyComponentDefinition();
+    public TopologyComponentBundle toTopologyComponentBundle () throws IOException {
+        TopologyComponentBundle result = new TopologyComponentBundle();
         result.setTimestamp(System.currentTimeMillis());
-        result.setType(TopologyComponentDefinition.TopologyComponentType.PROCESSOR);
+        result.setType(TopologyComponentBundle.TopologyComponentType.PROCESSOR);
         result.setSubType(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_SUB_TYPE);
         result.setStreamingEngine(this.streamingEngine);
         if (TopologyLayoutConstants.STORM_STREAMING_ENGINE.equals(this.streamingEngine)) {
             result.setName("customProcessorBoltComponent");
         }
-        List<ConfigField> configFields = new ArrayList<>();
-        configFields.addAll(this.getCustomProcessorConfigFieldsWithPrefix());
-        configFields.add(this.createConfigField(TopologyLayoutConstants.JSON_KEY_PARALLELISM, true, true, TopologyLayoutConstants
-                .JSON_KEY_PARALLELISM_TOOLTIP, ConfigField.Type.NUMBER, 1));
-        configFields.add(this.createConfigField(TopologyLayoutConstants.JSON_KEY_LOCAL_JAR_PATH, false, true, TopologyLayoutConstants
-                .JSON_KEY_LOCAL_JAR_PATH_TOOLTIP, ConfigField.Type.STRING, null));
-        configFields.add(this.createConfigField(NAME, false, false, "Custom processor name", ConfigField.Type.STRING, this.name));
-        configFields.add(this.createConfigField(DESCRIPTION, false, false, "Custom processor description", ConfigField.Type.STRING, this.description));
-        configFields.add(this.createConfigField(JAR_FILE_NAME, false, false, "Custom processor jar file", ConfigField.Type.STRING, this.jarFileName));
-        configFields.add(this.createConfigField(CUSTOM_PROCESSOR_IMPL, false, false, "Custom processor interface implementation class", ConfigField.Type
-                .STRING, this.customProcessorImpl));
-        configFields.add(this.createConfigField(INPUT_SCHEMA, false, false, "Custom processor input schema", ConfigField.Type.OBJECT, this.inputSchema));
-        configFields.add(this.createConfigField(OUTPUT_STREAM_TO_SCHEMA, false, false, "Custom processor output schema", ConfigField.Type.OBJECT, this
-                .outputStreamToSchema));
-        ObjectMapper mapper = new ObjectMapper();
-        result.setConfig(mapper.writeValueAsString(configFields));
+        result.setBuiltin(true);
+        result.setTransformationClass("org.apache.streamline.streams.layout.storm.CustomProcessorBoltFluxComponent");
+        List<TopologyComponentUISpecification.UIField> uiFields = new ArrayList<>();
+        uiFields.addAll(getCustomProcessorUIFieldsWithPrefix());
+        uiFields.add(this.createUIField(TopologyLayoutConstants.JSON_KEY_PARALLELISM, TopologyLayoutConstants.JSON_KEY_PARALLELISM, true, true,
+                TopologyLayoutConstants.JSON_KEY_PARALLELISM_TOOLTIP, TopologyComponentUISpecification.UIFieldType.NUMBER.NUMBER, 1));
+        uiFields.add(this.createUIField(TopologyLayoutConstants.JSON_KEY_LOCAL_JAR_PATH, TopologyLayoutConstants.JSON_KEY_LOCAL_JAR_PATH, false, true,
+                TopologyLayoutConstants.JSON_KEY_LOCAL_JAR_PATH_TOOLTIP, TopologyComponentUISpecification.UIFieldType.STRING, null));
+        uiFields.add(this.createUIField(NAME, NAME, false, false, "Custom processor name", TopologyComponentUISpecification.UIFieldType.STRING, this.name));
+        uiFields.add(this.createUIField(DESCRIPTION, DESCRIPTION, false, false, "Custom processor description", TopologyComponentUISpecification.UIFieldType
+                .STRING, this.description));
+        uiFields.add(this.createUIField(JAR_FILE_NAME, JAR_FILE_NAME, false, false, "Custom processor jar file", TopologyComponentUISpecification.UIFieldType
+                .STRING, this.jarFileName));
+        uiFields.add(this.createUIField(CUSTOM_PROCESSOR_IMPL, CUSTOM_PROCESSOR_IMPL, false, false, "Custom processor interface implementation class",
+                TopologyComponentUISpecification.UIFieldType.STRING, this.customProcessorImpl));
+        ObjectMapper objectMapper = new ObjectMapper();
+        uiFields.add(this.createUIField(INPUT_SCHEMA, INPUT_SCHEMA, false, false, "Custom processor input schema", TopologyComponentUISpecification
+                .UIFieldType.STRING, objectMapper.writeValueAsString(this.inputSchema)));
+        uiFields.add(this.createUIField(OUTPUT_STREAM_TO_SCHEMA, OUTPUT_STREAM_TO_SCHEMA, false, false, "Custom processor output schema",
+                TopologyComponentUISpecification.UIFieldType.STRING, objectMapper.writeValueAsString(this.outputStreamToSchema)));
+        TopologyComponentUISpecification topologyComponentUISpecification = new TopologyComponentUISpecification();
+        topologyComponentUISpecification.setFields(uiFields);
+        result.setTopologyComponentUISpecification(topologyComponentUISpecification);
         return result;
     }
 
-    private List<ConfigField> getCustomProcessorConfigFields (List<ConfigField> configFields) {
-        List<ConfigField> result = new ArrayList<>();
-        for (ConfigField configField: configFields) {
-            if (configField.getName().startsWith(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_PREFIX)) {
-                configField.setName(configField.getName().replaceFirst(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_PREFIX_REGEX, ""));
-                result.add(configField);
+    private TopologyComponentUISpecification getCustomProcessorUISpecification (TopologyComponentUISpecification topologyComponentUISpecification) {
+        TopologyComponentUISpecification result = new TopologyComponentUISpecification();
+        List<TopologyComponentUISpecification.UIField> fields = new ArrayList<>();
+        for (TopologyComponentUISpecification.UIField uiField: topologyComponentUISpecification.getFields()) {
+            if (uiField.getFieldName().startsWith(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_PREFIX)) {
+                TopologyComponentUISpecification.UIField newUIField = new TopologyComponentUISpecification.UIField(uiField);
+                newUIField.setFieldName(uiField.getFieldName().replaceFirst(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_PREFIX_REGEX, ""));
+                fields.add(newUIField);
             }
+        }
+        result.setFields(fields);
+        return result;
+    }
+
+    private List<TopologyComponentUISpecification.UIField> getCustomProcessorUIFieldsWithPrefix () {
+        List<TopologyComponentUISpecification.UIField> result = new ArrayList<>();
+        for (TopologyComponentUISpecification.UIField uiField: this.topologyComponentUISpecification.getFields()) {
+            TopologyComponentUISpecification.UIField newUIField = new TopologyComponentUISpecification.UIField(uiField);
+            newUIField.setFieldName(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_PREFIX + uiField.getFieldName());
+            result.add(newUIField);
         }
         return result;
     }
 
-    private List<ConfigField> getCustomProcessorConfigFieldsWithPrefix () {
-        List<ConfigField> result = new ArrayList<>();
-        if (this.configFields != null && this.configFields.size() > 0) {
-            for (ConfigField configField: this.configFields) {
-                ConfigField newConfigField = new ConfigField();
-                newConfigField.setName(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_PREFIX + configField.getName());
-                newConfigField.setIsOptional(configField.getIsOptional());
-                newConfigField.setDefaultValue(configField.getDefaultValue());
-                newConfigField.setIsUserInput(configField.getIsUserInput());
-                newConfigField.setTooltip(configField.getTooltip());
-                newConfigField.setType(configField.getType());
-                result.add(newConfigField);
-            }
-        }
-        return result;
-    }
 
-    private List<ConfigField> getListOfConfigFields (TopologyComponentDefinition topologyComponentDefinition) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(topologyComponentDefinition.getConfig(), new TypeReference<List<ConfigField>>() { });
-    }
-
-
-    private Map<String, Object> getProperties (List<ConfigField> configFields) {
-        Map<String, Object> result = new HashMap<>();
+    private Map<String, String> getPropertiesFromUIFields (List<TopologyComponentUISpecification.UIField> uiFields) {
+        Map<String, String> result = new HashMap<>();
         Set<String> propertyKeys = this.getPropertyKeys();
-        for (ConfigField configField: configFields) {
-            if (propertyKeys.contains(configField.getName())) {
-                result.put(configField.getName(), configField.getDefaultValue());
+        for (TopologyComponentUISpecification.UIField uiField: uiFields) {
+            if (propertyKeys.contains(uiField.getFieldName())) {
+                result.put(uiField.getFieldName(), (String) uiField.getDefaultValue());
             }
         }
         return result;
@@ -246,21 +242,22 @@ public class CustomProcessorInfo {
         result.add(NAME);
         result.add(DESCRIPTION);
         result.add(JAR_FILE_NAME);
-        result.add(CONFIG_FIELDS);
         result.add(INPUT_SCHEMA);
         result.add(OUTPUT_STREAM_TO_SCHEMA);
         result.add(CUSTOM_PROCESSOR_IMPL);
         return result;
     }
 
-   private ConfigField createConfigField (String name, boolean isOptional, boolean isUserInput, String tooltip, ConfigField.Type type, Object defaultValue) {
-        ConfigField configField = new ConfigField();
-        configField.setName(name);
-        configField.setIsOptional(isOptional);
-        configField.setIsUserInput(isUserInput);
-        configField.setTooltip(tooltip);
-        configField.setType(type);
-        configField.setDefaultValue(defaultValue);
-        return configField;
+    private TopologyComponentUISpecification.UIField createUIField (String fieldName, String uiName, boolean isOptional, boolean isUserInput, String tooltip,
+                                                                    TopologyComponentUISpecification.UIFieldType type, Object defaultValue) {
+        TopologyComponentUISpecification.UIField uiField = new TopologyComponentUISpecification.UIField();
+        uiField.setFieldName(fieldName);
+        uiField.setUiName(uiName);
+        uiField.setIsOptional(isOptional);
+        uiField.setIsUserInput(isUserInput);
+        uiField.setTooltip(tooltip);
+        uiField.setType(type);
+        uiField.setDefaultValue(defaultValue);
+        return uiField;
     }
 }

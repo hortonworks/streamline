@@ -11,6 +11,7 @@ public final class StormTopologyLayoutConstants {
     public static final String STORM_HOME_DIR = "stormHomeDir";
     public static final String TOPOLOGY_MESSAGE_TIMEOUT_SECS = "topology.message.timeout.secs";
     public static final String TOPOLOGY_MAX_SPOUT_PENDING = "topology.max.spout.pending";
+    public static final String STREAMLINE_COMPONENT_CONF_KEY = "streamlineComponent";
 
     // yaml key constants
     public static final String YAML_KEY_NAME = "name";

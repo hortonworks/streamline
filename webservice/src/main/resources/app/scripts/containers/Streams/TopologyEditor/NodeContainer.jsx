@@ -6,8 +6,8 @@ import { DragSource } from 'react-dnd';
 
 const nodeSource = {
 	beginDrag(props, monitor, component) {
-		const { imgPath, type, name, nodeType } = props;
-		return { imgPath, type, name, nodeType };
+                const { imgPath, type, name, nodeType, topologyComponentBundleId } = props;
+                return { imgPath, type, name, nodeType, topologyComponentBundleId };
 	}
 };
 
@@ -28,21 +28,21 @@ export default class NodeContainer extends Component {
 		name: PropTypes.string.isRequired,
 		hideSourceOnDrag: PropTypes.bool.isRequired,
 		children: PropTypes.node,
-		nodeType: PropTypes.string.isRequired
+                nodeType: PropTypes.string.isRequired,
+                topologyComponentBundleId: PropTypes.number.isRequired
 	};
 
 	getDragableNode(connectDragSource){
-		const {imgPath, nodeType, type, name} = this.props;
-		//TODO add img paths to Constants
+                const {imgPath, nodeType, type, name, topologyComponentBundleId} = this.props;
 		return connectDragSource(
-                        <li>
-                        <img src={"styles/img/icon-"+nodeType.toLowerCase()+".png"} /> {name}
-                        </li>
+            <li>
+                <img src={imgPath} /> {name}
+            </li>
 		)
 	}
 
 	render(){
-		const { hideSourceOnDrag, imgPath, type, name, connectDragSource, isDragging, children, nodeType } = this.props;
+                const { hideSourceOnDrag, imgPath, type, name, connectDragSource, isDragging, children, nodeType, topologyComponentBundleId } = this.props;
 		if (isDragging && hideSourceOnDrag) {
 	      return null;
 	    }

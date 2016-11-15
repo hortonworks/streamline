@@ -2,7 +2,7 @@ import React, {Component}from 'react';
 import ReactDOM from 'react-dom';
 import {Link} from 'react-router';
 import _ from 'lodash';
-import {FormGroup,InputGroup,FormControl} from 'react-bootstrap';
+import {FormGroup,InputGroup,FormControl,Button} from 'react-bootstrap';
 import { Table, Thead, Th, Tr, Td, unsafe } from 'reactable';
 import {BtnDelete, BtnEdit} from '../../components/ActionButtons';
 import CustomProcessorForm from './CustomProcessorForm';
@@ -22,7 +22,8 @@ export default class CustomProcessorContainer extends Component {
 		this.state = {
 			entities: [],
       showListing: true,
-      filterValue:''
+      filterValue:'',
+      slideInput : false
 		};
 	}
 
@@ -97,9 +98,32 @@ export default class CustomProcessorContainer extends Component {
       filterValue : e.target.value.trim()
     })
   }
+  slideInput = (e) => {
+    this.setState({slideInput  : true})
+    const input = document.querySelector('.inputAnimateIn');
+    input.focus();
+  }
+  slideInputOut = () => {
+    const input = document.querySelector('.inputAnimateIn');
+    (_.isEmpty(input.value)) ? this.setState({slideInput  : false}) : ''
+  }
+  componentDidUpdate(){
+    this.btnClassChange();
+  }
+  componentDidMount(){
+    this.btnClassChange();
+  }
+  btnClassChange = () => {
+    const container = document.querySelector('.wrapper')
+    container.setAttribute("class","container wrapper animated fadeIn ");
+  }
+  componentWillUnmount(){
+    const container = document.querySelector('.wrapper')
+    container.setAttribute("class","container-fluid wrapper animated fadeIn ");
+  }
 
 	render() {
-                let {entities,filterValue} = this.state;
+    let {entities,filterValue,slideInput} = this.state;
     const filteredEntities = Utils.filterByName(entities , filterValue);
 
 		return (
@@ -114,15 +138,21 @@ export default class CustomProcessorContainer extends Component {
                     <div className="page-title-box clearfix">
                         <div className="col-md-4 col-md-offset-6 text-right">
                           <FormGroup>
-                            <InputGroup>
-                              <FormControl type="text"
-                                placeholder="Search by name"
-                                onKeyUp={this.onFilterChange}
-                              />
+                              <InputGroup>
+                                  <FormControl type="text"
+                                    placeholder="Search by name"
+                                    onKeyUp={this.onFilterChange}
+                                    className={`inputAnimateIn ${(slideInput) ? "inputAnimateOut" : ''}`}
+                                    onBlur={this.slideInputOut}
+                                  />
                                   <InputGroup.Addon>
-                                    <i className="fa fa-search"></i>
+                                      <Button type="button"
+                                        onClick={this.slideInput}
+                                      >
+                                        <i className="fa fa-search"></i>
+                                      </Button>
                                   </InputGroup.Addon>
-                            </InputGroup>
+                              </InputGroup>
                           </FormGroup>
                         </div>
                         <div className="col-md-2 col-sm-3 text-right">

@@ -1,1 +1,86 @@
-{"type": "SINK", "name": "hdfsBoltComponent", "subType": "HDFS", "streamingEngine": "STORM", "config":"[{\"name\":\"fsUrl\",\"isOptional\":false,\"type\":\"string\",\"defaultValue\":null},{\"name\":\"configKey\",\"isOptional\":true,\"type\":\"string\",\"defaultValue\":\"\"},{\"name\":\"path\",\"isOptional\":true,\"type\":\"string\",\"defaultValue\":\"/storm\"},{\"name\":\"prefix\",\"isOptional\":true,\"type\":\"string\",\"defaultValue\":\"\"},{\"name\":\"extension\",\"isOptional\":true,\"type\":\"string\",\"defaultValue\":\".txt\"},{\"name\":\"countPolicyValue\",\"isOptional\":false,\"type\":\"number\",\"defaultValue\":null},{\"name\":\"rotationInterval\",\"isOptional\":false,\"type\":\"number\",\"defaultValue\":null},{\"name\":\"rotationIntervalUnit\",\"isOptional\":false,\"type\":\"string\",\"defaultValue\":null,\"values\":[\"SECONDS\",\"MINUTES\",\"HOURS\",\"DAYS\"]},{\"name\":\"parallelism\",\"isOptional\":true,\"type\":\"number\",\"defaultValue\":1}]", "transformationClass": "org.apache.streamline.streams.layout.storm.HdfsBoltFluxComponent", "timestamp": 1440118796994}
+{
+  "type": "SINK",
+  "name": "Hdfs Bolt",
+  "subType": "HDFS",
+  "builtin": true,
+  "streamingEngine": "STORM",
+  "transformationClass": "org.apache.streamline.streams.layout.storm.HdfsBoltFluxComponent",
+  "topologyComponentUISpecification": {
+    "fields": [
+      {
+        "uiName": "Hdfs url",
+        "fieldName": "fsUrl",
+        "isOptional": false,
+        "tooltip": "Url of the form hdfs://<host>:<port>  to connect to hdfs",
+        "type": "string"
+      },
+      {
+        "uiName": "Config key",
+        "fieldName": "configKey",
+        "isOptional": true,
+        "tooltip": "Config key to get any hdfs configuration from topology level configuration",
+        "type": "string",
+        "defaultValue": ""
+      },
+      {
+        "uiName": "Path",
+        "fieldName": "path",
+        "isOptional": true,
+        "tooltip": "Path for default file name format",
+        "type": "string",
+        "defaultValue": "/storm"
+      },
+      {
+        "uiName": "prefix",
+        "fieldName": "prefix",
+        "isOptional": true,
+        "tooltip": "Prefix for default file name format",
+        "type": "string",
+        "defaultValue": ""
+      },
+      {
+        "uiName": "Extension",
+        "fieldName": "extension",
+        "isOptional": true,
+        "tooltip": "Extension for default file name format",
+        "type": "string",
+        "defaultValue": ".txt"
+      },
+      {
+        "uiName": "Count policy value",
+        "fieldName": "countPolicyValue",
+        "isOptional": false,
+        "tooltip": "Count value for count sync policy",
+        "type": "number"
+      },
+      {
+        "uiName": "Rotation interval multiplier",
+        "fieldName": "rotationInterval",
+        "isOptional": false,
+        "tooltip": "Rotation interval multiplier for timed rotation policy",
+        "type": "number"
+      },
+      {
+        "uiName": "rotationIntervalUnit",
+        "fieldName": "rotationIntervalUnit",
+        "isOptional": false,
+        "tooltip": "Rotation interval unit for timed rotation policy",
+        "type": "enumstring",
+        "options": [
+          "SECONDS",
+          "MINUTES",
+          "HOURS",
+          "DAYS"
+        ]
+      },
+      {
+        "uiName": "Parallelism",
+        "fieldName": "parallelism",
+        "isOptional": true,
+        "tooltip": "Parallelism hint for hdfs bolt",
+        "type": "number",
+        "defaultValue": 1
+      }
+    ]
+  }
+}

@@ -1,13 +1,13 @@
 import React from 'react';
 import _ from 'lodash';
 import {Components,toastOpt} from './Constants';
+import d3 from 'd3';
 import TopologyREST from '../rest/TopologyREST';
 import FSReactToastr from '../components/FSReactToastr';
 //Sources
-import DeviceNodeForm from '../containers/Streams/TopologyEditor/DeviceNodeForm';
-import KafkaNodeForm from '../containers/Streams/TopologyEditor/KafkaNodeForm';
+import SourceNodeForm from '../containers/Streams/TopologyEditor/SourceNodeForm';
 //Processors
-import ParserNodeForm from '../containers/Streams/TopologyEditor/ParserNodeForm';
+import ProcessorNodeForm from '../containers/Streams/TopologyEditor/ProcessorNodeForm';
 import RulesNodeForm from '../containers/Streams/TopologyEditor/RulesNodeForm';
 import SplitNodeForm from '../containers/Streams/TopologyEditor/SplitNodeForm';
 import StageNodeForm from '../containers/Streams/TopologyEditor/StageNodeForm';
@@ -16,9 +16,7 @@ import CustomNodeForm from '../containers/Streams/TopologyEditor/CustomNodeForm'
 import NormalizationNodeForm from '../containers/Streams/TopologyEditor/NormalizationNodeForm';
 import WindowingAggregateNodeForm from '../containers/Streams/TopologyEditor/WindowingAggregateNodeForm';
 //Sinks
-import HdfsNodeForm from '../containers/Streams/TopologyEditor/HdfsNodeForm';
-import HbaseNodeForm from '../containers/Streams/TopologyEditor/HbaseNodeForm'
-import NotificationNodeForm from '../containers/Streams/TopologyEditor/NotificationNodeForm'
+import SinkNodeForm from '../containers/Streams/TopologyEditor/SinkNodeForm';
 import CommonNotification from './CommonNotification';
 
 const defineMarkers = function(svg){
@@ -77,20 +75,13 @@ const defineMarkers = function(svg){
 }
 
 const isValidConnection = function(sourceNode, targetNode){
-	let sourceType = sourceNode.currentType,
-		sourceParent = sourceNode.parentType,
-		targetType = targetNode.currentType,
-		targetParent = targetNode.parentType;
-
-	let resultObj = Components[sourceParent+'s'].filter((node)=>{
-		if(node.name === sourceType) return node;
-	});
-
-	if(resultObj.length > 0){
-		return resultObj[0].connectsTo.includes(targetType);
-	} else {
-		return false;
+        let validConnection = true;
+        if((sourceNode.currentType.toLowerCase() !== 'split' && targetNode.currentType.toLowerCase() === 'stage') ||
+                (sourceNode.currentType.toLowerCase() === 'stage' && targetNode.currentType.toLowerCase() !== 'join')
+          ){
+                validConnection = false;
 	}
+        return validConnection;
 }
 
 const createNode = function(topologyId, data, callback, metaInfo, paths, edges, internalFlags, uinamesList){
@@ -112,25 +103,25 @@ const createNode = function(topologyId, data, callback, metaInfo, paths, edges, 
 		uinamesList.push(o.uiname);
 		//
 		//
-                if(o.currentType === 'Custom') {
-                        if(metaInfo.customNames) {
-                                metaInfo.customNames.push({
-                                        uiname: o.uiname,
-                                        customProcessorName: customName
-                                });
-                        } else {
-                                metaInfo.customNames = [{
-                                        uiname: o.uiname,
-                                        customProcessorName: customName
-                                }];
-                        }
-                }
+        if(o.currentType.toLowerCase() === 'custom') {
+            if(metaInfo.customNames) {
+                metaInfo.customNames.push({
+                    uiname: o.uiname,
+                    customProcessorName: customName
+                });
+            } else {
+                metaInfo.customNames = [{
+                    uiname: o.uiname,
+                    customProcessorName: customName
+                }];
+            }
+        }
 		let obj = {
 			name: o.uiname,
 			config: {},
-			type: (o.currentType === Components.Datasources[0].name ? "KAFKA" : o.currentType.toUpperCase())
+                        topologyComponentBundleId:o.topologyComponentBundleId
 		}
-		if(o.parentType === Components.Processor.value){
+                if(o.parentType === 'PROCESSOR'){
 			obj["outputStreamIds"] = [];
 		}
 		promiseArr.push(TopologyREST.createNode(topologyId, nodeType, {body: JSON.stringify(obj)}));
@@ -159,16 +150,16 @@ const createNode = function(topologyId, data, callback, metaInfo, paths, edges, 
 }
 
 const saveMetaInfo = function(topologyId, nodes, metaInfo, callback){
-        if(nodes){
-                nodes.map((o)=>{
-                        let obj = {
-                                x: o.x,
-                                y: o.y,
-                                id: o.nodeId
-                        };
-                        metaInfo[this.getNodeType(o.parentType)].push(obj);
-                })
-        }
+    if(nodes){
+        nodes.map((o)=>{
+            let obj = {
+                x: o.x,
+                y: o.y,
+                id: o.nodeId
+            };
+            metaInfo[this.getNodeType(o.parentType)].push(obj);
+        })
+    }
 
 	let data = {
 		topologyId: topologyId,
@@ -177,10 +168,10 @@ const saveMetaInfo = function(topologyId, nodes, metaInfo, callback){
 
 	TopologyREST.putMetaInfo(topologyId, {body: JSON.stringify(data)})
 		.then(()=>{
-                        if(callback) {
-                                //call the callback to update the graph
-                                callback();
-                        }
+            if(callback) {
+                //call the callback to update the graph
+                callback();
+            }
 		})
 }
 
@@ -218,7 +209,7 @@ const removeNodeFromMeta = function(metaInfo, currentNode){
 	return metaInfo;
 }
 
-const createEdge = function(mouseDownNode, d, paths, edges, internalFlags, callback, topologyId){
+const createEdge = function(mouseDownNode, d, paths, edges, internalFlags, callback, topologyId, getEdgeConfigModal){
 	if(this.isValidConnection(mouseDownNode, d)){
 		let newEdge = {
 			source: mouseDownNode,
@@ -231,27 +222,18 @@ const createEdge = function(mouseDownNode, d, paths, edges, internalFlags, callb
 			return d.source === newEdge.source && d.target === newEdge.target;
 		});
 		if (!filtRes[0].length) {
-			if(newEdge.source.currentType === Components.Processors[0].name){
-				if(internalFlags.failedTupleDrag){
-					newEdge.target.streamId = "failedTuplesStream";
-				} else {
-					newEdge.target.streamId = "parsedTuplesStream";
-				}
-			}
-			let data = {
-				fromId: newEdge.source.nodeId,
-				toId: newEdge.target.nodeId,
-				streamGroupings: []
-			};
-
-			//Creating edges without stream grouping
-			TopologyREST.createNode(topologyId, 'edges', {body: JSON.stringify(data)})
-				.then((edge)=>{
-					newEdge.edgeId = edge.entity.id;
-					edges.push(newEdge);
-					//call the callback to update the graph
-					callback();
-				})
+                TopologyREST.getNode(topologyId, this.getNodeType(newEdge.source.parentType), newEdge.source.nodeId)
+                    .then((result)=>{
+                        let nodeData = result.entity;
+                        if(newEdge.source.currentType.toLowerCase() === 'window' || newEdge.source.currentType.toLowerCase() === 'rule'){
+                                nodeData.type = newEdge.source.currentType.toUpperCase();
+                        }
+                        if(getEdgeConfigModal){
+                                getEdgeConfigModal(topologyId, newEdge, edges, callback, nodeData);
+                        } else {
+                                console.error("Cannot find getEdgeConfigModal: from createEdge:TopologyUtils");
+                        }
+                        })
 		}
 	} else {
     FSReactToastr.error(
@@ -261,13 +243,13 @@ const createEdge = function(mouseDownNode, d, paths, edges, internalFlags, callb
 
 const getNodeType = function(parentType){
 	switch(parentType){
-		case Components.Datasource.value:
+                case 'SOURCE':
 			return 'sources'
 		break;
-		case Components.Processor.value:
+                case 'PROCESSOR':
 			return 'processors'
 		break;
-		case Components.Sink.value:
+                case 'SINK':
 			return 'sinks'
 		break;
 	}
@@ -279,15 +261,12 @@ const deleteNode = function(topologyId, currentNode, nodes, edges, internalFlags
 		callback = null,
 		currentType = currentNode.currentType;
 
-	if(currentType === Components.Processors[0].name){
-		//Check for parser
-		FSReactToastr.warning(<strong>Parser can only be deleted if Device is deleted</strong>);
-	} else if(currentType === Components.Processors[6].name){
+        if(currentType.toLowerCase() === 'join'){
 		//Check for join
 		FSReactToastr.warning(<strong>Join can only be deleted if Split is deleted</strong>);
 	} else {
 		//Check for stage to not allow delete if only one stage is present
-		if(currentType === Components.Processors[5].name){
+                if(currentType.toLowerCase() === 'stage'){
 			let stageProcessors = nodes.filter((o)=>{return o.currentType === currentType});
 			if(stageProcessors.length === 1){
 				FSReactToastr.warning(<strong>Stage can only be deleted if Split is deleted</strong>);
@@ -301,11 +280,11 @@ const deleteNode = function(topologyId, currentNode, nodes, edges, internalFlags
 		//Get data of connected nodes
 		//Incase of source => get Parser
 		//Incase of split => get all stage and only one join
-		if(currentType === Components.Datasources[0].name || currentType === Components.Processors[4].name){
+                if(currentType.toLowerCase() === 'split'){
 			let connectingEdges = edges.filter((obj)=>{ return obj.source == currentNode; });
 			connectingEdges.map((o, i)=>{
 				nodePromiseArr.push(TopologyREST.getNode(topologyId, this.getNodeType(o.target.parentType), o.target.nodeId))
-				if(i === 0 && currentType === Components.Processors[4].name){
+                                if(i === 0 && currentType.toLowerCase() === 'split'){
 					//All stages connects to only one Join
 					let stageJoinNodes = edges.filter((obj)=>{ return obj.source == o.target; });
 					nodePromiseArr.push(TopologyREST.getNode(topologyId, this.getNodeType(stageJoinNodes[0].target.parentType), stageJoinNodes[0].target.nodeId))
@@ -318,27 +297,27 @@ const deleteNode = function(topologyId, currentNode, nodes, edges, internalFlags
                 let connectingNodes = edges.filter((obj)=>{ return obj.target == currentNode; });
                 let actionsPromiseArr = [];
                 connectingNodes.map((o,i)=>{
-                        if(o.source.currentType === 'Rule' || o.source.currentType === 'Window'){
-                                let type = o.source.currentType === 'Rule' ? 'rules' : 'windows';
-                                TopologyREST.getAllNodes(topologyId, type).then((results)=>{
-                                        results.entities.map((nodeObj)=>{
-                                                let actionsArr = nodeObj.actions,
-                                                        actions = [],
-                                                        hasAction = false;
-                                                actionsArr.map((a)=>{
-                                                        if(a.name !== currentNode.uiname){
-                                                                actions.push(a);
-                                                        } else {
-                                                                hasAction = true;
-                                                        }
-                                                });
-                                                if(hasAction) {
-                                                        nodeObj.actions = actions;
-                                                        actionsPromiseArr.push(TopologyREST.updateNode(topologyId, type, nodeObj.id, {body: JSON.stringify(nodeObj)}));
-                                                }
-                                        });
+                    if(o.source.currentType.toLowerCase() === 'rule' || o.source.currentType.toLowerCase() === 'window'){
+                        let type = o.source.currentType.toLowerCase() === 'rule' ? 'rules' : 'windows';
+                        TopologyREST.getAllNodes(topologyId, type).then((results)=>{
+                            results.entities.map((nodeObj)=>{
+                                let actionsArr = nodeObj.actions,
+                                    actions = [],
+                                    hasAction = false;
+                                actionsArr.map((a)=>{
+                                    if(a.name !== currentNode.uiname){
+                                            actions.push(a);
+                                    } else {
+                                            hasAction = true;
+                                    }
                                 });
-                        }
+                                if(hasAction) {
+                                    nodeObj.actions = actions;
+                                    actionsPromiseArr.push(TopologyREST.updateNode(topologyId, type, nodeObj.id, {body: JSON.stringify(nodeObj)}));
+                                }
+                            });
+                        });
+                    }
                 })
 
                 Promise.all(actionsPromiseArr).
@@ -396,11 +375,11 @@ const deleteNode = function(topologyId, currentNode, nodes, edges, internalFlags
 				//For Device => Parser
 				//For Split => Stage and Join
 				let targetArr = [];
-				if(currentType === Components.Datasources[0].name || currentType === Components.Processors[4].name){
+                                if(currentType.toLowerCase() === 'split'){
 					let connectingEdges = edges.filter((obj)=>{ return obj.source == currentNode; });
 					connectingEdges.map((o, i)=>{
 						performAction.call(this, metaInfo, o.target, promiseArr, topologyId, targetArr);
-						if(i === 0 && currentType === Components.Processors[4].name){
+                                                if(i === 0 && currentType.toLowerCase() === 'split'){
 							//All stages connects to only one Join
 							let stageJoinNodes = edges.filter((obj)=>{ return obj.source == o.target; });
 							performAction.call(this, metaInfo, stageJoinNodes[0].target, promiseArr, topologyId, targetArr);
@@ -475,51 +454,47 @@ const getEdges = function(allEdges, currentNode){
 }
 
 const deleteEdge = function(selectedEdge, topologyId, internalFlags, edges, updateGraphMethod){
-	if(selectedEdge.source.currentType === Components.Datasources[0].name && selectedEdge.target.currentType === Components.Processors[0].name){
-		FSReactToastr.warning(<strong>Link between Device and Parser cannot be deleted.</strong>);
-	} else {
-		let promiseArr = [TopologyREST.deleteNode(topologyId, 'edges', selectedEdge.edgeId)];
-		if(selectedEdge.source.currentType === 'Rule' || selectedEdge.source.currentType === 'Window'){
-			promiseArr.push(TopologyREST.getNode(topologyId, 'processors', selectedEdge.source.nodeId));
-		}
-		Promise.all(promiseArr)
-			.then((results)=>{
-				if(results.length === 2){
-					//Find the connected source rule/window
-					let rulePromises = [];
-					let ruleProcessorNode = results[1].entity;
-					let type = ruleProcessorNode.type === 'WINDOW' ? 'windows' : 'rules';
-					if(ruleProcessorNode.config.properties.rules){
-						ruleProcessorNode.config.properties.rules.map(ruleId=>{
-							rulePromises.push(TopologyREST.getNode(topologyId, type, ruleId));
-						})
-					}
-					Promise.all(rulePromises)
-						.then(rulesResults=>{
-							rulesResults.map(ruleEntity=>{
-								let rule = ruleEntity.entity;
-								if(rule.actions){
-									//If source rule has target notification inside rule action,
-									//then remove and update the rules/window.
-									let index = null;
-									rule.actions.map((a, i)=>{
-										if(a.name === selectedEdge.target.uiname){
-											index = i;
-										}
-									})
-									if(index !== null){
-										rule.actions.splice(index, 1);
-										TopologyREST.updateNode(topologyId, type, rule.id, {body: JSON.stringify(rule)});
+    let promiseArr = [TopologyREST.deleteNode(topologyId, 'edges', selectedEdge.edgeId)];
+    if(selectedEdge.source.currentType.toLowerCase() === 'rule' || selectedEdge.source.currentType.toLowerCase() === 'window'){
+            promiseArr.push(TopologyREST.getNode(topologyId, 'processors', selectedEdge.source.nodeId));
+    }
+    Promise.all(promiseArr)
+        .then((results)=>{
+            if(results.length === 2){
+                //Find the connected source rule/window
+                let rulePromises = [];
+                let ruleProcessorNode = results[1].entity;
+                let type = selectedEdge.source.currentType.toLowerCase() === 'window' ? 'windows' : 'rules';
+                if(ruleProcessorNode.config.properties.rules){
+                        ruleProcessorNode.config.properties.rules.map(ruleId=>{
+                                rulePromises.push(TopologyREST.getNode(topologyId, type, ruleId));
+                        })
+                }
+                Promise.all(rulePromises)
+                    .then(rulesResults=>{
+                        rulesResults.map(ruleEntity=>{
+                            let rule = ruleEntity.entity;
+                            if(rule.actions){
+                                    //If source rule has target notification inside rule action,
+                                    //then remove and update the rules/window.
+                                    let index = null;
+                                    rule.actions.map((a, i)=>{
+                                        if(a.name === selectedEdge.target.uiname){
+                                            index = i;
 									}
-								}
 							})
+                                        if(index !== null){
+                                            rule.actions.splice(index, 1);
+                                            TopologyREST.updateNode(topologyId, type, rule.id, {body: JSON.stringify(rule)});
+                                                                }
+                                    }
 						})
-				}
-				edges.splice(edges.indexOf(selectedEdge), 1);
-				internalFlags.selectedEdge = null;
-				updateGraphMethod();
 			})
-	}
+                }
+            edges.splice(edges.indexOf(selectedEdge), 1);
+            internalFlags.selectedEdge = null;
+            updateGraphMethod();
+        })
 }
 
 // remove edges associated with a node
@@ -610,195 +585,142 @@ const getConfigContainer = function(node, configData, editMode, topologyId, curr
 			targetNodes.push(e.target)
 		}
 	});
-	switch(node.currentType){
-		case Components.Datasources[0].name: //Device
-		return () => {
-                        return <DeviceNodeForm
-					ref="ConfigModal"
-					nodeData={node}
-					configData={configData}
-					editMode={editMode}
-					nodeType={nodeType}
-					topologyId={topologyId}
-				/>;
+    if(node.parentType === 'SOURCE'){
+        return () => {
+            return <SourceNodeForm
+                                ref="ConfigModal"
+                                nodeData={node}
+                                configData={configData}
+                                editMode={editMode}
+                                nodeType={nodeType}
+                                topologyId={topologyId}
+                                targetNodes={targetNodes}
+                                linkShuffleOptions={linkShuffleOptions}
+                        />;
 		}
-		break;
-		case Components.Datasources[1].name: //Kafka
-		return () => {
-			return <KafkaNodeForm
-					ref="ConfigModal"
-					nodeData={node}
-					configData={configData}
-					editMode={editMode}
-					nodeType={nodeType}
-					topologyId={topologyId}
-					targetNodes={targetNodes}
-					linkShuffleOptions={linkShuffleOptions}
-				/>;
-		}
-		break;
-		case Components.Processors[0].name: //Parser
-			return ()=>{
-				return <ParserNodeForm
-					ref="ConfigModal"
-					nodeData={node}
-					configData={configData}
-					editMode={editMode}
-					nodeType={nodeType}
-					topologyId={topologyId}
-					sourceNode={sourceNodes[0]}
-					targetNodes={targetNodes}
-					linkShuffleOptions={linkShuffleOptions}
-				/>;
-			}
-		break;
-		case Components.Processors[1].name: //Rule
-			return ()=>{
-				return <RulesNodeForm
-					ref="ConfigModal"
-					nodeData={node}
-					configData={configData}
-					editMode={editMode}
-					nodeType={nodeType}
-					topologyId={topologyId}
-					sourceNode={sourceNodes}
-					targetNodes={targetNodes}
-					linkShuffleOptions={linkShuffleOptions}
-				/>;
-			}
-		break;
-		case Components.Processors[2].name: //Custom
-			return ()=>{
-				return <CustomNodeForm
-					ref="ConfigModal"
-					nodeData={node}
-					configData={configData}
-					editMode={editMode}
-					nodeType={nodeType}
-					topologyId={topologyId}
-					sourceNode={sourceNodes[0]}
-					targetNodes={targetNodes}
-					linkShuffleOptions={linkShuffleOptions}
-				/>;
-			}
-		break;
-		case Components.Processors[3].name: //Normalization
-			return ()=>{
-				return <NormalizationNodeForm
-					ref="ConfigModal"
-					nodeData={node}
-					configData={configData}
-					editMode={editMode}
-					nodeType={nodeType}
-					topologyId={topologyId}
-					targetNodes={targetNodes}
-					linkShuffleOptions={linkShuffleOptions}
-					currentEdges={currentEdges}
-				/>;
-			}
-		break;
-		case Components.Processors[4].name: //Split
-			return ()=>{
-				return <SplitNodeForm
-					ref="ConfigModal"
-					nodeData={node}
-					configData={configData}
-					editMode={editMode}
-					nodeType={nodeType}
-					topologyId={topologyId}
-					sourceNode={sourceNodes[0]}
-					targetNodes={targetNodes}
-					linkShuffleOptions={linkShuffleOptions}
-				/>;
-			}
-		break;
-		case Components.Processors[5].name: //Stage
-			return ()=>{
-				return <StageNodeForm
-					ref="ConfigModal"
-					nodeData={node}
-					configData={configData}
-					editMode={editMode}
-					nodeType={nodeType}
-					topologyId={topologyId}
-					targetNodes={targetNodes}
-					linkShuffleOptions={linkShuffleOptions}
-					currentEdges={currentEdges}
-				/>;
-			}
-		break;
-		case Components.Processors[6].name: //Join
-			return ()=>{
-				return <JoinNodeForm
-					ref="ConfigModal"
-					nodeData={node}
-					configData={configData}
-					editMode={editMode}
-					nodeType={nodeType}
-					topologyId={topologyId}
-					sourceNode={sourceNodes[0]}
-					targetNodes={targetNodes}
-					linkShuffleOptions={linkShuffleOptions}
-				/>;
-			}
-		break;
-		case Components.Processors[7].name: //Windowing
-			return ()=>{
-				return <WindowingAggregateNodeForm
-					ref="ConfigModal"
-					nodeData={node}
-					configData={configData}
-					editMode={editMode}
-					nodeType={nodeType}
-					topologyId={topologyId}
-					sourceNode={sourceNodes[0]}
-					targetNodes={targetNodes}
-					linkShuffleOptions={linkShuffleOptions}
-					currentEdges={currentEdges}
-				/>;
-			}
-		break;
-		case Components.Sinks[0].name: //Hdfs
-			return ()=>{
-				return <HdfsNodeForm
-					ref="ConfigModal"
-					nodeData={node}
-					configData={configData}
-					editMode={editMode}
-					nodeType={nodeType}
-					topologyId={topologyId}
-				/>
-			}
-		break;
-		case Components.Sinks[1].name: //Hbase
-			return ()=>{
-				return <HbaseNodeForm
-					ref="ConfigModal"
-					nodeData={node}
-					configData={configData}
-					editMode={editMode}
-					nodeType={nodeType}
-					topologyId={topologyId}
-				/>
-			}
-		break;
-		case Components.Sinks[2].name: //Notification
-			return ()=>{
-				return <NotificationNodeForm
-					ref="ConfigModal"
-					nodeData={node}
-					configData={configData}
-					editMode={editMode}
-					nodeType={nodeType}
-					topologyId={topologyId}
-					sourceNodes={sourceNodes}
-				/>
-			}
-		break;
-	}
+    } else if(node.parentType === 'SINK'){
+        return () => {
+            return <SinkNodeForm
+                                ref="ConfigModal"
+                                nodeData={node}
+                                configData={configData}
+                                editMode={editMode}
+                                nodeType={nodeType}
+                                topologyId={topologyId}
+                                sourceNodes={sourceNodes}
+            />;
+        }
+    } else if(node.parentType === 'PROCESSOR'){
+        let childElement = null;
+        switch(node.currentType.toUpperCase()){
+            case 'RULE': //Rule
+                childElement = () => { return <RulesNodeForm
+                    ref="ProcessorChildElement"
+                    nodeData={node}
+                    configData={configData}
+                    editMode={editMode}
+                    nodeType={nodeType}
+                    topologyId={topologyId}
+                    sourceNode={sourceNodes}
+                    targetNodes={targetNodes}
+                    linkShuffleOptions={linkShuffleOptions}
+                />};
+            break;
+            case 'CUSTOM': //Custom
+                childElement = () => { return <CustomNodeForm
+                    ref="ProcessorChildElement"
+                    nodeData={node}
+                    configData={configData}
+                    editMode={editMode}
+                    nodeType={nodeType}
+                    topologyId={topologyId}
+                    sourceNode={sourceNodes[0]}
+                    targetNodes={targetNodes}
+                    linkShuffleOptions={linkShuffleOptions}
+                />};
+            break;
+            case 'NORMALIZATION': //Normalization
+                childElement = () => { return <NormalizationNodeForm
+                    ref="ProcessorChildElement"
+                    nodeData={node}
+                    configData={configData}
+                    editMode={editMode}
+                    nodeType={nodeType}
+                    topologyId={topologyId}
+                    targetNodes={targetNodes}
+                    linkShuffleOptions={linkShuffleOptions}
+                    currentEdges={currentEdges}
+                />};
+            break;
+            case 'SPLIT': //Split
+                childElement = () => { return <SplitNodeForm
+                    ref="ProcessorChildElement"
+                    nodeData={node}
+                    configData={configData}
+                    editMode={editMode}
+                    nodeType={nodeType}
+                    topologyId={topologyId}
+                    sourceNode={sourceNodes[0]}
+                    targetNodes={targetNodes}
+                    linkShuffleOptions={linkShuffleOptions}
+                />};
+            break;
+            case 'STAGE': //Stage
+                childElement = () => { return <StageNodeForm
+                    ref="ProcessorChildElement"
+                    nodeData={node}
+                    configData={configData}
+                    editMode={editMode}
+                    nodeType={nodeType}
+                    topologyId={topologyId}
+                    targetNodes={targetNodes}
+                    linkShuffleOptions={linkShuffleOptions}
+                    currentEdges={currentEdges}
+                />};
+            break;
+            case 'JOIN': //Join
+                childElement = () => { return <JoinNodeForm
+                    ref="ProcessorChildElement"
+                    nodeData={node}
+                    configData={configData}
+                    editMode={editMode}
+                    nodeType={nodeType}
+                    topologyId={topologyId}
+                    sourceNode={sourceNodes[0]}
+                    targetNodes={targetNodes}
+                    linkShuffleOptions={linkShuffleOptions}
+                />};
+            break;
+            case 'WINDOW': //Windowing
+                childElement = () => { return <WindowingAggregateNodeForm
+                    ref="ProcessorChildElement"
+                    nodeData={node}
+                    configData={configData}
+                    editMode={editMode}
+                    nodeType={nodeType}
+                    topologyId={topologyId}
+                    sourceNode={sourceNodes[0]}
+                    targetNodes={targetNodes}
+                    linkShuffleOptions={linkShuffleOptions}
+                    currentEdges={currentEdges}
+                />};
+            break;
+        }
+        return () => {
+            return <ProcessorNodeForm
+                ref="ConfigModal"
+                nodeData={node}
+                editMode={editMode}
+                nodeType={nodeType}
+                topologyId={topologyId}
+                sourceNodes={sourceNodes}
+                getChildElement={childElement}
+            />;
+        }
+    }
 }
 
-const MouseUpAction = function(topologyId, d3node, d, metaInfo, internalFlags, constants, dragLine, paths, allNodes, edges, linkShuffleOptions, updateGraphMethod, elementType, getModalScope, setModalContent, rectangles){
+const MouseUpAction = function(topologyId, d3node, d, metaInfo, internalFlags, constants, dragLine, paths, allNodes, edges, linkShuffleOptions, updateGraphMethod, elementType, getModalScope, setModalContent, rectangles, getEdgeConfigModal){
 	// reset the internalFlags
 	internalFlags.shiftNodeDrag = false;
 	d3node.classed(constants.connectClass, false);
@@ -817,7 +739,7 @@ const MouseUpAction = function(topologyId, d3node, d, metaInfo, internalFlags, c
 
 	if (mouseDownNode && mouseDownNode !== d) {
 		// we're in a different node: create new edge for mousedown edge and add to graph
-		this.createEdge(mouseDownNode, d, paths, edges, internalFlags, updateGraphMethod, topologyId);
+                this.createEdge(mouseDownNode, d, paths, edges, internalFlags, updateGraphMethod, topologyId, getEdgeConfigModal);
 		this.updateMetaInfo(topologyId, d, metaInfo);
 	} else {
 		if(elementType === 'rectangle'){
@@ -828,7 +750,10 @@ const MouseUpAction = function(topologyId, d3node, d, metaInfo, internalFlags, c
 			} else {
 				// clicked, not dragged
 				if(d3.event && d3.event.type === 'dblclick'){
-					this.showNodeModal(getModalScope, setModalContent, d, updateGraphMethod, allNodes, edges, linkShuffleOptions);
+                                        let hasSource = edges.filter((e)=>{return e.target.nodeId === d.nodeId});
+                                        if(d.parentType === 'SOURCE' || hasSource.length) {
+                                                this.showNodeModal(getModalScope, setModalContent, d, updateGraphMethod, allNodes, edges, linkShuffleOptions);
+                                        }
 				} else {
 					// we're in the same node
 					if (internalFlags.selectedEdge) {
@@ -872,11 +797,11 @@ const setShuffleOptions = function(linkConfigArr){
 	return options;
 }
 
-const syncNodeData = function(sources, processors, sinks, metadata){
+const syncNodeData = function(sources, processors, sinks, metadata, sourcesBundle, processorsBundle, sinksBundle){
 	let nodeArr = [];
-	this.generateNodeData(sources, Components.Datasources, Components.Datasource.value, metadata.sources, nodeArr);
-	this.generateNodeData(processors, Components.Processors, Components.Processor.value, metadata.processors, nodeArr);
-	this.generateNodeData(sinks, Components.Sinks, Components.Sink.value, metadata.sinks, nodeArr);
+        this.generateNodeData(sources, sourcesBundle, metadata.sources, nodeArr);
+        this.generateNodeData(processors, processorsBundle, metadata.processors, nodeArr);
+        this.generateNodeData(sinks, sinksBundle, metadata.sinks, nodeArr);
 	return nodeArr;
 }
 
@@ -885,16 +810,11 @@ const capitalizeFirstLetter = function(string){
 	return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-const generateNodeData = function(nodes, constantsArr, parentType, metadata, resultArr){
+const generateNodeData = function(nodes, componentBundle, metadata, resultArr){
 	for(let i = 0; i < nodes.length; i++){
-		let currentType = this.capitalizeFirstLetter(nodes[i].type);
-		let constObj = constantsArr.filter((o)=>{return o.name === currentType});
+                let componentObj = componentBundle.filter(c=>{return c.id === nodes[i].topologyComponentBundleId})[0];
+                let currentType = this.capitalizeFirstLetter(componentObj.subType);
 		let configuredFlag = _.keys(nodes[i].config.properties).length > 0 ? true : false;
-		if(constObj.length === 0){
-			console.error(currentType+" is not present in our application");
-		} else {
-			constObj = constObj[0];
-		}
 
 		let currentMetaObj = metadata.filter((o)=>{return o.id === nodes[i].id});
 		if(currentMetaObj.length === 0){
@@ -903,17 +823,25 @@ const generateNodeData = function(nodes, constantsArr, parentType, metadata, res
 			currentMetaObj = currentMetaObj[0];
 		}
 
+		let nodeLabel = componentObj.subType;
+		if(componentObj.subType.toLowerCase() === 'custom'){
+			let config = componentObj.topologyComponentUISpecification.fields,
+            name = _.find(config, {fieldName: "name"});
+			nodeLabel = name.defaultValue || 'Custom';
+		}
+
 		let obj = {
 			x: currentMetaObj.x,
 			y: currentMetaObj.y,
 			nodeId: nodes[i].id,
-			parentType: parentType,
+            parentType: componentObj.type,
 			currentType: currentType,
 			uiname: nodes[i].name,
-			imageURL: constObj.imgPath,
+            imageURL: 'styles/img/icon-'+componentObj.subType.toLowerCase()+'.png',
 			isConfigured: configuredFlag,
-                        parallelismCount: nodes[i].config.properties.parallelism || 1,
-                        nodeLabel: constObj.label
+            parallelismCount: nodes[i].config.properties.parallelism || 1,
+            nodeLabel: nodeLabel,
+            topologyComponentBundleId: componentObj.id
 		}
 		if(currentMetaObj.streamId){
 			obj.streamId = currentMetaObj.streamId;
@@ -940,7 +868,8 @@ const syncEdgeData = function(edges, nodes){
 		edgesArr.push({
 			source: fromNode,
 			target: toNode,
-			edgeId: edge.id
+                        edgeId: edge.id,
+                        streamGrouping: edge.streamGroupings[0]
 		});
 	})
 	return edgesArr;
@@ -961,21 +890,21 @@ const createLineOnUI = function(edge, constants){
 }
 
 const getNodeRectClass = function(data){
-	if(data.parentType === Components.Datasource.value){
+        if(data.parentType === 'SOURCE'){
 		return 'source';
-	} else if(data.parentType === Components.Processor.value){
+        } else if(data.parentType === 'PROCESSOR'){
 		return 'processor';
-	} else if(data.parentType === Components.Sink.value){
+        } else if(data.parentType === 'SINK'){
 		return 'datasink';
 	}
 }
 
 const getNodeImgRectClass = function(data){
-	if(data.parentType === Components.Datasource.value){
+        if(data.parentType === 'SOURCE'){
 		return 'source-img';
-	} else if(data.parentType === Components.Processor.value){
+        } else if(data.parentType === 'PROCESSOR'){
 		return 'processor-img';
-	} else if(data.parentType === Components.Sink.value){
+        } else if(data.parentType === 'SINK'){
 		return 'datasink-img';
 	}
 }
@@ -994,6 +923,18 @@ const updateParallelismCount = function(topologyId, nodeData){
 const topologyFilter = function(entities , filterValue){
   let matchFilter = new RegExp(filterValue , 'i');
     return entities.filter(filteredList => !filterValue || matchFilter.test(filteredList.topology.name))
+}
+
+const getEdgeData = function(data, topologyId, callback) {
+        TopologyREST.getNode(topologyId, 'streams', data.streamGrouping.streamId)
+                .then((result)=>{
+                        let obj = {
+                                streamName: result.entity.streamId,
+                                grouping: data.streamGrouping.grouping,
+                                edgeData: data
+                        }
+                        callback(obj);
+                })
 }
 
 export default {
@@ -1025,6 +966,7 @@ export default {
 	createLineOnUI,
 	getNodeRectClass,
 	getNodeImgRectClass,
-        updateParallelismCount,
-  topologyFilter
+    updateParallelismCount,
+    topologyFilter,
+    getEdgeData
 };

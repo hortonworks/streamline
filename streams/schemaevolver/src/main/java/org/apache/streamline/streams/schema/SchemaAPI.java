@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.service.CatalogService;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.streams.catalog.topology.TopologyComponentDefinition;
 import org.apache.streamline.streams.layout.component.Stream;
+import org.apache.streamline.streams.catalog.topology.TopologyComponentBundle;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
@@ -58,12 +58,12 @@ public class SchemaAPI {
 
         try {
             if (!EVOLVING_SCHEMA_MAP.containsKey(componentId)) {
-                TopologyComponentDefinition topologyComponentDefinition = streamcatalogService.getTopologyComponent(componentId);
-                if (topologyComponentDefinition == null) {
+                TopologyComponentBundle topologyComponentBundle = streamcatalogService.getTopologyComponentBundle(componentId);
+                if (topologyComponentBundle == null) {
                     throw new NotFoundException("Component ID " + componentId + " not found in catalog");
                 }
 
-                String schemaClass = topologyComponentDefinition.getSchemaClass();
+                String schemaClass = topologyComponentBundle.getSchemaClass();
                 if (schemaClass == null) {
                     throw new UnsupportedOperationException("This component doesn't support Schema Evolution");
                 }

@@ -29,9 +29,10 @@ import java.util.Set;
  */
 public abstract class StreamlineComponent implements Component {
     private String id;
+    private String topologyComponentBundleId;
     private String name;
     private Config config;
-    private String type;
+    private String transformationClass;
 
     public StreamlineComponent() {
         config = new Config();
@@ -39,8 +40,10 @@ public abstract class StreamlineComponent implements Component {
 
     public StreamlineComponent(StreamlineComponent other) {
         this.id = other.id;
+        this.topologyComponentBundleId = other.topologyComponentBundleId;
         this.name = other.name;
         this.config = new Config(other.getConfig());
+        this.transformationClass = other.transformationClass;
     }
 
     @Override
@@ -70,12 +73,20 @@ public abstract class StreamlineComponent implements Component {
         this.config = config;
     }
 
-    public String getType() {
-        return type;
+    public String getTopologyComponentBundleId() {
+        return topologyComponentBundleId;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setTopologyComponentBundleId(String topologyComponentBundleId) {
+        this.topologyComponentBundleId = topologyComponentBundleId;
+    }
+
+    public String getTransformationClass() {
+        return transformationClass;
+    }
+
+    public void setTransformationClass(String transformationClass) {
+        this.transformationClass = transformationClass;
     }
 
     /**

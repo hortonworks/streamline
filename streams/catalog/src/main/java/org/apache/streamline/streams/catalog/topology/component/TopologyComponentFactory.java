@@ -24,7 +24,6 @@ import org.apache.streamline.streams.layout.component.StreamlineSource;
 import org.apache.streamline.streams.layout.component.OutputComponent;
 import org.apache.streamline.streams.layout.component.Stream;
 import org.apache.streamline.streams.layout.component.StreamGrouping;
-import org.apache.streamline.streams.layout.component.impl.CustomProcessor;
 import org.apache.streamline.streams.layout.component.impl.KafkaSource;
 import org.apache.streamline.streams.layout.component.impl.NotificationSink;
 import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
@@ -37,6 +36,7 @@ import org.apache.streamline.streams.layout.component.impl.splitjoin.SplitProces
 import org.apache.streamline.streams.layout.component.impl.splitjoin.StageAction;
 import org.apache.streamline.streams.layout.component.impl.splitjoin.StageProcessor;
 import org.apache.streamline.streams.layout.component.rule.Rule;
+import org.apache.streamline.streams.catalog.topology.TopologyComponentBundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +46,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.apache.streamline.common.ComponentTypes.CUSTOM;
 import static org.apache.streamline.common.ComponentTypes.JOIN;
 import static org.apache.streamline.common.ComponentTypes.KAFKA;
 import static org.apache.streamline.common.ComponentTypes.NORMALIZATION;
@@ -56,6 +55,7 @@ import static org.apache.streamline.common.ComponentTypes.BRANCH;
 import static org.apache.streamline.common.ComponentTypes.SPLIT;
 import static org.apache.streamline.common.ComponentTypes.STAGE;
 import static org.apache.streamline.common.ComponentTypes.WINDOW;
+
 import static java.util.AbstractMap.SimpleImmutableEntry;
 
 /**
@@ -78,21 +78,17 @@ public class TopologyComponentFactory {
     }
 
     public StreamlineSource getStreamlineSource(TopologySource topologySource) {
-        StreamlineSource source = getProvider(StreamlineSource.class, topologySource.getType()).create(topologySource);
-        source.setId(topologySource.getId().toString());
-        source.setName(topologySource.getName());
-        source.setConfig(topologySource.getConfig());
-        source.setType(topologySource.getType());
+        TopologyComponentBundle topologyComponentBundle = getTopologyComponentBundle(topologySource);
+        StreamlineSource source = getProvider(StreamlineSource.class, topologyComponentBundle.getSubType()).create(topologySource);
+        setIotasComponentFromTopologyComponent(source, topologySource, topologyComponentBundle);
         source.addOutputStreams(createOutputStreams(topologySource));
         return source;
     }
 
     public StreamlineProcessor getStreamlineProcessor(TopologyProcessor topologyProcessor) {
-        StreamlineProcessor processor = getProvider(StreamlineProcessor.class, topologyProcessor.getType()).create(topologyProcessor);
-        processor.setId(topologyProcessor.getId().toString());
-        processor.setName(topologyProcessor.getName());
-        processor.setConfig(topologyProcessor.getConfig());
-        processor.setType(topologyProcessor.getType());
+        TopologyComponentBundle topologyComponentBundle = getTopologyComponentBundle(topologyProcessor);
+        StreamlineProcessor processor = getProvider(StreamlineProcessor.class, topologyComponentBundle.getSubType()).create(topologyProcessor);
+        setIotasComponentFromTopologyComponent(processor, topologyProcessor, topologyComponentBundle);
         if (processor.getOutputStreams() == null || processor.getOutputStreams().isEmpty()) {
             processor.addOutputStreams(createOutputStreams(topologyProcessor));
         }
@@ -100,11 +96,9 @@ public class TopologyComponentFactory {
     }
 
     public StreamlineSink getStreamlineSink(TopologySink topologySink) {
-        StreamlineSink sink = getProvider(StreamlineSink.class, topologySink.getType()).create(topologySink);
-        sink.setId(topologySink.getId().toString());
-        sink.setName(topologySink.getName());
-        sink.setConfig(topologySink.getConfig());
-        sink.setType(topologySink.getType());
+        TopologyComponentBundle topologyComponentBundle = getTopologyComponentBundle(topologySink);
+        StreamlineSink sink = getProvider(StreamlineSink.class, topologyComponentBundle.getSubType()).create(topologySink);
+        setIotasComponentFromTopologyComponent(sink, topologySink, topologyComponentBundle);
         return sink;
     }
 
@@ -120,6 +114,25 @@ public class TopologyComponentFactory {
         }
         edge.addStreamGroupings(streamGroupings);
         return edge;
+    }
+
+    private TopologyComponentBundle getTopologyComponentBundle (TopologyComponent topologyComponent) {
+        TopologyComponentBundle topologyComponentBundle = catalogService.getTopologyComponentBundle(topologyComponent.getTopologyComponentBundleId());
+        if (topologyComponentBundle == null) {
+            String msg = "TopologyComponentBundle not found for topologyComponent " + topologyComponent;
+            LOG.debug(msg);
+            throw new RuntimeException(msg);
+        }
+        return topologyComponentBundle;
+    }
+
+    private void setIotasComponentFromTopologyComponent (StreamlineComponent streamlineComponent, TopologyComponent topologyComponent, TopologyComponentBundle
+            topologyComponentBundle) {
+        streamlineComponent.setId(topologyComponent.getId().toString());
+        streamlineComponent.setName(topologyComponent.getName());
+        streamlineComponent.setConfig(topologyComponent.getConfig());
+        streamlineComponent.setTopologyComponentBundleId(topologyComponentBundle.getId().toString());
+        streamlineComponent.setTransformationClass(topologyComponentBundle.getTransformationClass());
     }
 
     private OutputComponent getOutputComponent(TopologyEdge topologyEdge) {
@@ -177,7 +190,6 @@ public class TopologyComponentFactory {
         builder.put(splitProcessorProvider());
         builder.put(joinProcessorProvider());
         builder.put(stageProcessorProvider());
-        builder.put(customProcessorProvider());
         return builder.build();
     }
 
@@ -386,15 +398,6 @@ public class TopologyComponentFactory {
         };
     }
 
-    private Map.Entry<String, Provider<StreamlineProcessor>> customProcessorProvider() {
-        Provider<StreamlineProcessor> provider = new Provider<StreamlineProcessor>() {
-            @Override
-            public StreamlineProcessor create(TopologyComponent component) {
-                return new CustomProcessor();
-            }
-        };
-        return new SimpleImmutableEntry<>(CUSTOM, provider);
-    }
 
     private Map.Entry<String, Provider<StreamlineSink>> notificationSinkProvider() {
         Provider<StreamlineSink> provider = new Provider<StreamlineSink>() {

@@ -3,8 +3,8 @@ package org.apache.streamline.streams.schema;
 import org.apache.streamline.common.catalog.CatalogResponse;
 import org.apache.streamline.streams.catalog.service.CatalogService;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.streams.catalog.topology.TopologyComponentDefinition;
 import org.apache.streamline.streams.layout.component.Stream;
+import org.apache.streamline.streams.catalog.topology.TopologyComponentBundle;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.integration.junit4.JMockit;
@@ -59,14 +59,14 @@ public class SchemaAPITest {
     @Test
     public void testEvolveForSupportedComponent() throws Exception {
         topologyComponentMap.put("schemaClass", "org.apache.streamline.streams.schema.MockEvolvingSchemaImpl");
-        final TopologyComponentDefinition component = (TopologyComponentDefinition) new TopologyComponentDefinition().fromMap(topologyComponentMap);
+        final TopologyComponentBundle component = (TopologyComponentBundle) new TopologyComponentBundle().fromMap(topologyComponentMap);
 
         new Expectations() {
             {
                 mockUriInfo.getQueryParameters(); times = 1;
                 result = multiValuedMap;
 
-                mockstreamCatalogService.getTopologyComponent(1L);
+                mockstreamCatalogService.getTopologyComponentBundle(1L);
                 result = component;
             }
         };
@@ -86,14 +86,14 @@ public class SchemaAPITest {
         // assume schema class isn't defined to component definition
         topologyComponentMap.remove("schemaClass");
 
-        final TopologyComponentDefinition component = (TopologyComponentDefinition) new TopologyComponentDefinition().fromMap(topologyComponentMap);
+        final TopologyComponentBundle component = (TopologyComponentBundle) new TopologyComponentBundle().fromMap(topologyComponentMap);
 
         new Expectations() {
             {
                 mockUriInfo.getQueryParameters(); times = 1;
                 result = multiValuedMap;
 
-                mockstreamCatalogService.getTopologyComponent(1L);
+                mockstreamCatalogService.getTopologyComponentBundle(1L);
                 result = component;
             }
         };
@@ -112,7 +112,7 @@ public class SchemaAPITest {
                 mockUriInfo.getQueryParameters(); times = 1;
                 result = multiValuedMap;
 
-                mockstreamCatalogService.getTopologyComponent(1L);
+                mockstreamCatalogService.getTopologyComponentBundle(1L);
                 result = null;
             }
         };
@@ -129,7 +129,7 @@ public class SchemaAPITest {
         topologyComponentMap = createDummyParserTopologyComponentMap();
         topologyComponentMap.put("schemaClass", "org.apache.streamline.streams.schema.MockEvolvingSchemaCatalogServiceAwareImpl");
 
-        final TopologyComponentDefinition component = (TopologyComponentDefinition) new TopologyComponentDefinition()
+        final TopologyComponentBundle component = (TopologyComponentBundle) new TopologyComponentBundle()
                 .fromMap(topologyComponentMap);
 
         new Expectations() {
@@ -137,7 +137,7 @@ public class SchemaAPITest {
                 mockUriInfo.getQueryParameters(); times = 1;
                 result = multiValuedMap;
 
-                mockstreamCatalogService.getTopologyComponent(1L);
+                mockstreamCatalogService.getTopologyComponentBundle(1L);
                 result = component;
             }
         };
@@ -160,8 +160,8 @@ public class SchemaAPITest {
         map.put("timestamp", 1L);
         map.put("streamingEngine", "STORM");
         map.put("subType", "RULE");
-        map.put("config", "dummy");
         map.put("transformationClass", "dummy");
+        map.put("topologyComponentUISpecification", "{\"fields\": []}");
         return map;
     }
 

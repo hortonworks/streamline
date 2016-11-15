@@ -5,7 +5,7 @@ import org.apache.streamline.common.util.ReflectionHelper;
 import org.apache.streamline.common.util.Utils;
 import org.apache.streamline.streams.layout.ConfigFieldValidation;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.streamline.streams.layout.exception.BadTopologyLayoutException;
+import org.apache.streamline.streams.layout.exception.ComponentConfigException;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +58,7 @@ class StormTopologyValidator {
 
     // if there is a link from a parser processor then the stream id has to
     // be present and it has to be one of the two streams - parsed or failed
-    void validateParserProcessorLinks () throws BadTopologyLayoutException {
+    void validateParserProcessorLinks () throws ComponentConfigException {
         List<Map> dataSources = (List) this.topologyConfig.get(TopologyLayoutConstants.JSON_KEY_DATA_SOURCES);
         Set<String> dataSourceNames = new HashSet<>();
         for (Map dataSource: dataSources) {
@@ -74,7 +74,7 @@ class StormTopologyValidator {
         }
         Set<String> parserProcessorKeys = parserProcessors.keySet();
         if (parserProcessorKeys.size() == 0) {
-            throw new BadTopologyLayoutException(TopologyLayoutConstants.ERR_MSG_NO_PARSER_PROCESSOR);
+            throw new ComponentConfigException(TopologyLayoutConstants.ERR_MSG_NO_PARSER_PROCESSOR);
         }
         List<Map> links = (List) this.topologyConfig.get(TopologyLayoutConstants.JSON_KEY_LINKS);
         for (Map link: links) {
@@ -92,19 +92,19 @@ class StormTopologyValidator {
                 }
                 String streamId = (String) linkConfig.get(TopologyLayoutConstants.JSON_KEY_STREAM_ID);
                 if (StringUtils.isEmpty(streamId) || !processorStreams.contains(streamId)) {
-                    throw new BadTopologyLayoutException (String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
+                    throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
                 }
             }
             if (parserProcessorKeys.contains(to)) {
                 // link to a parser processor can only go from a data source
                 if (!dataSourceNames.contains(from)) {
-                    throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_INVALID_LINK_TO_PARSER, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
+                    throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_INVALID_LINK_TO_PARSER, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
                 }
             }
         }
     }
 
-    void validateRuleProcessorLinks () throws BadTopologyLayoutException {
+    void validateRuleProcessorLinks () throws ComponentConfigException {
         List<Map> dataSources = (List) this.topologyConfig.get(TopologyLayoutConstants.JSON_KEY_DATA_SOURCES);
         Set<String> dataSourceNames = new HashSet<>();
         for (Map dataSource: dataSources) {
@@ -130,31 +130,31 @@ class StormTopologyValidator {
             if (ruleProcessorKeys.contains(from)) {
                 String streamId = (String) linkConfig.get(TopologyLayoutConstants.JSON_KEY_STREAM_ID);
                 if (StringUtils.isEmpty(streamId)) {
-                    throw new BadTopologyLayoutException (String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
+                    throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
                 }
                 Map<String, Set<String>> streamIdToOutput = ruleProcessors.get(from);
                 Set<String> ruleStreams = streamIdToOutput.keySet();
                 if (!ruleStreams.contains(streamId)) {
-                    throw new BadTopologyLayoutException (String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
+                    throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
                 }
                 if ("FIELDS".equals(link.get(TopologyLayoutConstants.JSON_KEY_TYPE))) {
                     Set<String> outputFields = streamIdToOutput.get(streamId);
                     List<String> groupingFields = (List) linkConfig.get(TopologyLayoutConstants.JSON_KEY_GROUPING_FIELDS);
                     if (!outputFields.containsAll(groupingFields)) {
-                        throw new BadTopologyLayoutException (String.format(TopologyLayoutConstants.ERR_MSG_INVALID_GROUPING_FIELDS, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
+                        throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_INVALID_GROUPING_FIELDS, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
                     }
                 }
             }
             if (ruleProcessorKeys.contains(to)) {
                 // link to a rule processor can not go from a data source
                 if (dataSourceNames.contains(from)) {
-                    throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_INVALID_LINK_TO_PROCESSOR, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
+                    throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_INVALID_LINK_TO_PROCESSOR, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
                 }
             }
         }
     }
 
-    void validateCustomProcessorLinks () throws BadTopologyLayoutException {
+    void validateCustomProcessorLinks () throws ComponentConfigException {
         List<Map> dataSources = (List) this.topologyConfig.get(TopologyLayoutConstants.JSON_KEY_DATA_SOURCES);
         Set<String> dataSourceNames = new HashSet<>();
         for (Map dataSource: dataSources) {
@@ -173,7 +173,7 @@ class StormTopologyValidator {
                 } catch (IOException e) {
                     String message = "Invalid custom processor input or output schema config.";
                     LOG.error(message);
-                    throw new BadTopologyLayoutException(message, e);
+                    throw new ComponentConfigException(message, e);
                 }
             }
         }
@@ -186,25 +186,25 @@ class StormTopologyValidator {
             if (customProcessorKeys.contains(from)) {
                 String streamId = (String) linkConfig.get(TopologyLayoutConstants.JSON_KEY_STREAM_ID);
                 if (StringUtils.isEmpty(streamId)) {
-                    throw new BadTopologyLayoutException (String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
+                    throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
                 }
                 Map<String, Schema> streamIdToOutput = outputSchemas.get(from);
                 Set<String> outputStreams = streamIdToOutput.keySet();
                 if (!outputStreams.contains(streamId)) {
-                    throw new BadTopologyLayoutException (String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
+                    throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
                 }
                 if ("FIELDS".equals(link.get(TopologyLayoutConstants.JSON_KEY_TYPE))) {
                     Set<String> outputFields = getTopLevelFieldNamesFromSchema(streamIdToOutput.get(streamId));
                     List<String> groupingFields = (List) linkConfig.get(TopologyLayoutConstants.JSON_KEY_GROUPING_FIELDS);
                     if (!outputFields.containsAll(groupingFields)) {
-                        throw new BadTopologyLayoutException (String.format(TopologyLayoutConstants.ERR_MSG_INVALID_GROUPING_FIELDS, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
+                        throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_INVALID_GROUPING_FIELDS, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
                     }
                 }
             }
             if (customProcessorKeys.contains(to)) {
                 // link to a custom processor can not go from a data source
                 if (dataSourceNames.contains(from)) {
-                    throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_INVALID_LINK_TO_PROCESSOR, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
+                    throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_INVALID_LINK_TO_PROCESSOR, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
                 }
             }
         }

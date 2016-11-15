@@ -1,10 +1,10 @@
 DROP TABLE IF EXISTS parser_info;
 DROP TABLE IF EXISTS files;
 DROP TABLE IF EXISTS topologies;
-DROP TABLE IF EXISTS topology_component_definitions;
 DROP TABLE IF EXISTS topology_editor_metadata;
 DROP TABLE IF EXISTS tag;
 DROP TABLE IF EXISTS tag_storable_mapping;
+DROP TABLE IF EXISTS topology_component_bundles;
 DROP TABLE IF EXISTS streaminfo;
 DROP TABLE IF EXISTS notifierinfos;
 DROP TABLE IF EXISTS topology_components;
