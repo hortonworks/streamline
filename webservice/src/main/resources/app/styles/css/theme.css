@@ -17,6 +17,7 @@ body {
   -webkit-font-smoothing: antialiased;
   padding-bottom: 30px;
 }
+#viewMode.graph-bg,
 body.graph-bg {
   background: #eef0ef url('../../../styles/img/graph-bg.png') repeat;
 }
@@ -25,7 +26,7 @@ body.edge-details {
   background: none;
 }
 body.edge-details > div {
-  position: relative;
+  /*position: relative;*/
   padding: 10px;
   background-color: white;
   box-shadow: 1px 1px 5px rgba(0,0,0,0.25);
@@ -89,6 +90,10 @@ footer {
 /* Modal */
 .modal-fixed-height > .modal-content > .modal-body {
   /*height: 450px;*/
+  overflow-y: auto;
+}
+.rule-modal-fixed-height > .modal-content > .modal-body {
+  height: 450px;
   overflow-y: auto;
 }
 .modal-backdrop {
@@ -202,7 +207,7 @@ label {
 }
 .processor-modal-form{
   margin-left: 210px;
-  width: 480px;
+  width: 460px;
   top:0;
   position: absolute;
   padding-top: 5px !important;
@@ -619,7 +624,7 @@ label {
 .component-panel {
     position: fixed;
     height: 500px !important;
-    width:70px;
+    width:75px;
     top: 50%;
     left: 0px;
     transform: translateY(-50%);
@@ -649,7 +654,7 @@ label {
 .component-list > li > img {
     display: block;
     margin: 0 auto 4px;
-    width: 16px;
+    width: 22px;
 }
 
 .topology-footer {
@@ -1202,4 +1207,58 @@ label {
 .form-group > label{
   font-size: 12px;
   color: #606060;
+}
+.view-tiles {
+  margin: 20px 0;
+}
+.stat-tiles {
+  float: left;
+  width: 14%;
+  padding: 20px 15px;
+  background-color: #1b73b5;
+  color: #fff;
+  position: relative;
+}
+.stat-tiles:first-child,
+.stat-tiles:last-child {
+  background-color: #085c9d;
+}
+.stat-tiles.with-margin {
+  margin-left: 0.5%;
+}
+.stat-tiles h6 {
+  font-size: 11px;
+  text-transform: uppercase;
+  margin: 0px;
+}
+.stat-tiles h1 {
+  font-size: 33px;
+  margin: 0px;
+}
+.stat-tiles h1 small {
+  font-size: 16px;
+  color: #fff;
+  position: absolute;
+  top: 47%;
+  padding-left: 2px;
+}
+#viewMode.graph-bg{
+  border: 2px solid #ffffff;
+}
+.static-label {
+  display: inline-block;
+  color: #545454;
+}
+.static-label .text-muted {
+  color: #818386;
+}
+.margin-right {
+  margin-right: 20px;
+}
+.page-heading {
+  margin-top: 5px;
+  margin-bottom: 0px;
+}
+.styleWindowDN > .dropdown{
+  display: inline-block;
 }

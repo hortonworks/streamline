@@ -11,9 +11,10 @@ import FSReactToastr from '../../components/FSReactToastr';
 import Modal from '../../components/FSModal'
 import BaseContainer from '../../containers/BaseContainer'
 import Utils from '../../utils/Utils';
-import {FormGroup,InputGroup,FormControl} from 'react-bootstrap';
+import {FormGroup,InputGroup,FormControl,Button} from 'react-bootstrap';
 import CommonNotification from '../../utils/CommonNotification';
 import {toastOpt} from '../../utils/Constants'
+import NoData from '../../components/NoData';
 
 var styles = {
   children: {
@@ -26,7 +27,8 @@ export default class TagsContainer extends Component {
 	constructor(props){
 		super(props);
     this.state = {
-      filterValue:''
+      filterValue:'',
+      slideInput : false
     }
 		this.fetchData();
 	}
@@ -251,9 +253,33 @@ export default class TagsContainer extends Component {
       filterValue : e.target.value.trim()
     })
   }
+  slideInput = (e) => {
+    this.setState({slideInput  : true})
+    const input = document.querySelector('.inputAnimateIn');
+    input.focus();
+  }
+  slideInputOut = () => {
+    const input = document.querySelector('.inputAnimateIn');
+    (_.isEmpty(input.value)) ? this.setState({slideInput  : false}) : ''
+  }
+
+  componentDidUpdate(){
+    this.btnClassChange();
+  }
+  componentDidMount(){
+    this.btnClassChange();
+  }
+  btnClassChange = () => {
+    const container = document.querySelector('.wrapper')
+    container.setAttribute("class","container wrapper animated fadeIn ");
+  }
+  componentWillUnmount(){
+    const container = document.querySelector('.wrapper')
+    container.setAttribute("class","container-fluid wrapper animated fadeIn ");
+  }
 
  	render() {
-		const {entities, parentId, currentId, modalTitle ,filterValue} = this.state;
+                const {entities, parentId, currentId, modalTitle ,filterValue,slideInput} = this.state;
     const filterByTagName = function(entities, filterValue){
       let matchFilter = new RegExp(filterValue , 'i');
 
@@ -287,15 +313,21 @@ export default class TagsContainer extends Component {
                 <div className="page-title-box clearfix">
                     <div className="col-md-4 col-md-offset-6 text-right">
                       <FormGroup>
-                        <InputGroup>
-                          <FormControl type="text"
-                            placeholder="Search by name"
-                            onKeyUp={this.onFilterChange}
-                          />
+                          <InputGroup>
+                              <FormControl type="text"
+                                placeholder="Search by name"
+                                onKeyUp={this.onFilterChange}
+                                className={`inputAnimateIn ${(slideInput) ? "inputAnimateOut" : ''}`}
+                                onBlur={this.slideInputOut}
+                              />
                               <InputGroup.Addon>
-                                <i className="fa fa-search"></i>
+                                  <Button type="button"
+                                    onClick={this.slideInput}
+                                  >
+                                    <i className="fa fa-search"></i>
+                                  </Button>
                               </InputGroup.Addon>
-                        </InputGroup>
+                          </InputGroup>
                       </FormGroup>
                     </div>
                     <div className="col-md-2 col-sm-3 text-right">
@@ -315,7 +347,7 @@ export default class TagsContainer extends Component {
                             <div className="box-body">
                               {
                                 (filteredEntities.length === 0)
-                                  ? null
+                                  ? <NoData />
                                   : <Nestable
                                     useDragHandle
                                     items={ filteredEntities }

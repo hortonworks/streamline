@@ -26,6 +26,7 @@ export default class WindowingAggregateNodeForm extends Component {
 	constructor(props) {
 		super(props);
                 this.sourceNodesId = [props.sourceNode.nodeId];
+        this.ruleTargetNodes = [];
 		let {editMode} = props;
 		this.fetchData();
 		var obj = {
@@ -58,8 +59,9 @@ export default class WindowingAggregateNodeForm extends Component {
 	}
 
 	fetchData(){
-		let {topologyId, nodeType, nodeData, currentEdges} = this.props;
+                let {topologyId, nodeType, nodeData, currentEdges, targetNodes} = this.props;
 		let edgePromiseArr = [];
+                let ruleTargetNodes = targetNodes.filter((o)=>{return o.currentType.toLowerCase() === 'rule'});
 		currentEdges.map(edge=>{
 			if(edge.target.nodeId === nodeData.nodeId){
 				edgePromiseArr.push(TopologyREST.getNode(topologyId, 'edges', edge.edgeId));
@@ -82,6 +84,16 @@ export default class WindowingAggregateNodeForm extends Component {
 						})
 					}
 				})
+                                let rulePromiseArr = []
+                                ruleTargetNodes.map((ruleNode)=>{
+                    rulePromiseArr.push(TopologyREST.getNode(topologyId, nodeType, ruleNode.nodeId));
+                });
+                Promise.all(rulePromiseArr)
+			.then((results)=>{
+				results.map((o)=>{
+					this.ruleTargetNodes.push(o.entity);
+				});
+			});
 				Promise.all(promiseArr)
 					.then((results)=>{
 						this.nodeData = results[0].entity;
@@ -495,6 +507,13 @@ export default class WindowingAggregateNodeForm extends Component {
 							TopologyREST.updateNode(topologyId, nodeType, nodeData.nodeId, {body: JSON.stringify(data)}),
 							TopologyREST.updateNode(topologyId, 'streams', this.streamData.id, {body: JSON.stringify(streamData)})
                         ]
+                        this.ruleTargetNodes.map((ruleNode)=>{
+						let streamObj = {
+							streamId: ruleNode.outputStreams[0].streamId,
+							fields: outputStreamFields
+						}
+				promiseArr.push(TopologyREST.updateNode(topologyId, 'streams', ruleNode.outputStreams[0].id, {body: JSON.stringify(streamObj)}));
+                        });
                         return Promise.all(promiseArr);
                             } else {
                                     FSReactToastr.error(

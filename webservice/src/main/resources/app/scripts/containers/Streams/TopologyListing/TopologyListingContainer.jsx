@@ -117,12 +117,12 @@ class TopologyItems extends Component {
                 <div className="stream-head clearfix">
                     <div className="pull-left">
                       <Link to={`applications/${topology.id}`}>
-                          <h4>{Utils.capitaliseFirstLetter(topology.name)}</h4>
+                          <h4>{topology.name}</h4>
                       </Link>
                       <h5>
                           {(metricWrap.uptime === undefined)
                               ? (topologyList.running === "NOT_RUNNING") ? "Not Running" : topologyList.running
-                              : Utils.splitSeconds(metricWrap.uptime)
+                              : "Uptime "+Utils.splitSeconds(metricWrap.uptime)
                           }
                       </h5>
                     </div>
@@ -504,12 +504,16 @@ class TopologyListingContainer extends Component {
                         })
 }
                 </div>
-                <Paginate
-                  len={filteredEntities.length}
-                  splitData={splitData}
-                  pagesize={pageSize}
-                  pagePosition={this.pagePosition}
-                />
+                {
+                  (splitData.length !== 0)
+                    ? <Paginate
+                      len={filteredEntities.length}
+                      splitData={splitData}
+                      pagesize={pageSize}
+                      pagePosition={this.pagePosition}
+                    />
+                  :''
+                }
             </BaseContainer>
         );
     }

@@ -43,7 +43,7 @@ export default class CustomProcessorForm extends Component {
 		jarFileName: '',
 		inputSchema: '',
 		outputStreamToSchema: [],
-                topologyComponentUISpecification: [],
+    topologyComponentUISpecification: [],
 		fieldId: null,
 		modalTitle: 'Add Config  Field'
 	}
@@ -64,7 +64,7 @@ export default class CustomProcessorForm extends Component {
           FSReactToastr.error(
               <CommonNotification flag="error" content={processor.responseMessage}/>, '', toastOpt)
 				} else {
-                                        let {streamingEngine, name, description, customProcessorImpl, jarFileName, inputSchema, outputStreamToSchema, topologyComponentUISpecification} = processor.entities[0];
+          let {streamingEngine, name, description, customProcessorImpl, jarFileName, inputSchema, outputStreamToSchema, topologyComponentUISpecification} = processor.entities[0];
 					inputSchema = JSON.stringify(inputSchema.fields, null, "  ");
 					let arr = [],
 						streamIds = _.keys(outputStreamToSchema);
@@ -75,8 +75,8 @@ export default class CustomProcessorForm extends Component {
 						})
 					});
 					outputStreamToSchema = arr;
-                                        topologyComponentUISpecification.fields.map((o)=>{ o.id = this.idCount++; });
-                                        let obj = {streamingEngine, name, description, customProcessorImpl, jarFileName, inputSchema, outputStreamToSchema};
+          topologyComponentUISpecification.fields.map((o)=>{ o.id = this.idCount++; });
+          let obj = {streamingEngine, name, description, customProcessorImpl, jarFileName, inputSchema, outputStreamToSchema};
           obj.topologyComponentUISpecification = topologyComponentUISpecification.fields;
 					this.setState(obj);
 				}
@@ -96,9 +96,9 @@ export default class CustomProcessorForm extends Component {
 			return;
 		}
 		let fileObj = event.target.files[0];
-        this.setState({
-			jarFileName: fileObj
-        });
+    this.setState({
+      jarFileName: fileObj
+    });
 	}
 
 	handleAddFields() {
@@ -114,11 +114,11 @@ export default class CustomProcessorForm extends Component {
 	}
 
 	handleConfigFieldsEdit(id){
-                let obj = this.state.topologyComponentUISpecification.find((o) => o.id === id);
+    let obj = this.state.topologyComponentUISpecification.find((o) => o.id === id);
 
 		this.modalContent = ()=>{
-				return <ConfigFieldsForm ref="addField" id={id} fieldData={obj}/>
-			};
+			return <ConfigFieldsForm ref="addField" id={id} fieldData={obj}/>
+		};
 		this.setState({
 			fieldId: id,
 			title: 'Edit Config Field'
@@ -132,21 +132,21 @@ export default class CustomProcessorForm extends Component {
 			let data = this.refs.addField.getConfigField();
 			let arr = [];
 			if(this.state.fieldId) {
-                                let index = this.state.topologyComponentUISpecification.findIndex((o) => o.id === this.state.fieldId);
-                                arr = this.state.topologyComponentUISpecification;
+        let index = this.state.topologyComponentUISpecification.findIndex((o) => o.id === this.state.fieldId);
+        arr = this.state.topologyComponentUISpecification;
 				arr[index] = data;
 			} else {
-                                arr = [...this.state.topologyComponentUISpecification, data];
+        arr = [...this.state.topologyComponentUISpecification, data];
 			}
 			this.setState({
-                                topologyComponentUISpecification: arr
+        topologyComponentUISpecification: arr
 			})
 			this.refs.ConfigFieldModal.hide();
 		}
 	}
 
 	handleConfigFieldsDelete(id){
-                this.setState({topologyComponentUISpecification: _.reject(this.state.topologyComponentUISpecification, (o) => o.id === id)});
+    this.setState({topologyComponentUISpecification: _.reject(this.state.topologyComponentUISpecification, (o) => o.id === id)});
 	}
 
 	validateData() {
@@ -163,7 +163,7 @@ export default class CustomProcessorForm extends Component {
 
 	handleSave() {
 		if(this.validateData()) {
-                        let {streamingEngine, name, description, customProcessorImpl, jarFileName, topologyComponentUISpecification} = this.state;
+      let {streamingEngine, name, description, customProcessorImpl, jarFileName, topologyComponentUISpecification} = this.state;
 			let inputSchema = {
 				fields: JSON.parse(this.state.inputSchema)
 			};
@@ -174,13 +174,14 @@ export default class CustomProcessorForm extends Component {
 					fields: JSON.parse(o.fields)
 				};
 			});
-			let outputStreamToSchema = obj;
+  		let outputStreamToSchema = obj;
 
-                        let configFieldsArr = topologyComponentUISpecification.map((o) => {
-                                let {fieldName, uiName, isOptional, type, defaultValue, isUserInput, tooltip} = o;
-                                return {fieldName, uiName, isOptional, type,	defaultValue, isUserInput, tooltip};
+      let configFieldsArr = topologyComponentUISpecification.map((o) => {
+        let {fieldName, uiName, isOptional, type, defaultValue, isUserInput, tooltip} = o;
+        return {fieldName, uiName, isOptional, type,	defaultValue, isUserInput, tooltip};
 			});
-                let customProcessorInfo = {streamingEngine, name, description, customProcessorImpl, inputSchema, outputStreamToSchema, topologyComponentUISpecification: {fields: configFieldsArr}, jarFileName: jarFileName.name};
+      
+      let customProcessorInfo = {streamingEngine, name, description, customProcessorImpl, inputSchema, outputStreamToSchema, topologyComponentUISpecification: {fields: configFieldsArr}, jarFileName: jarFileName.name};
 
 			var formData = new FormData();
 			formData.append('jarFile', jarFileName);

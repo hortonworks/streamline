@@ -61,7 +61,8 @@ export default class EdgeConfigContainer extends Component {
                         .then((result)=>{
                                 let node = result.entity;
                                 let streamsArr = [];
-                                let fields = {};
+                                let fields = this.state.isEdit ? {} : node.outputStreams[0].fields;
+                                let streamId = this.state.isEdit ? this.state.streamId : node.outputStreams[0].streamId;
                                 node.outputStreams.map((s)=>{
                                         streamsArr.push({
                                                 label: s.streamId,
@@ -72,7 +73,7 @@ export default class EdgeConfigContainer extends Component {
                                         if(this.props.data.streamName === s.streamId)
                                                 fields = s.fields;
                                 });
-                                this.setState({sourceNode: result.entity, streamsArr: streamsArr, streamFields: JSON.stringify(fields, null, "  ")});
+                                this.setState({sourceNode: result.entity, streamsArr: streamsArr, streamId: streamId, streamFields: JSON.stringify(fields, null, "  ")});
                                 if(nodeType === 'rule') {
                                         node.config.properties.rules.map((id)=>{
                                         rulesPromiseArr.push(TopologyREST.getNode(this.topologyId, 'rules', id));
@@ -249,19 +250,6 @@ export default class EdgeConfigContainer extends Component {
                         <ReactCodemirror ref="JSONCodemirror" value={this.state.streamFields} options={jsonoptions} />
                     </div>
                 </div>
-                <div className="form-group">
-                    <label>Grouping <span className="text-danger">*</span></label>
-                    <div>
-                        <Select
-                            value={grouping}
-                            name='grouping'
-                            options={groupingsArr}
-                            onChange={this.handleGroupingChange.bind(this)}
-                            clearable={false}
-                            required={true}
-                        />
-                    </div>
-                </div>
                 {showRules ?
                 <div className="form-group">
                     <label>Rules <span className="text-danger">*</span></label>
@@ -278,6 +266,19 @@ export default class EdgeConfigContainer extends Component {
                     </div>
                 </div>
                 : null}
+                <div className="form-group">
+                    <label>Grouping <span className="text-danger">*</span></label>
+                    <div>
+                        <Select
+                            value={grouping}
+                            name='grouping'
+                            options={groupingsArr}
+                            onChange={this.handleGroupingChange.bind(this)}
+                            clearable={false}
+                            required={true}
+                        />
+                    </div>
+                </div>
             </form>
         );
     }

@@ -86,7 +86,10 @@ export class kafkaTopic extends BaseField {
     handleTopic(){
         let value = this.refs.input.value;
         if(value != ''){
-            this.getSchemaFromTopic(value);
+            clearTimeout(this.topicTimer);
+            this.topicTimer = setTimeout(()=>{
+                this.getSchemaFromTopic(value);
+            }, 700)
         }
     }
 

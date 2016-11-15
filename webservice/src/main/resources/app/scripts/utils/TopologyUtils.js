@@ -750,7 +750,10 @@ const MouseUpAction = function(topologyId, d3node, d, metaInfo, internalFlags, c
 			} else {
 				// clicked, not dragged
 				if(d3.event && d3.event.type === 'dblclick'){
-					this.showNodeModal(getModalScope, setModalContent, d, updateGraphMethod, allNodes, edges, linkShuffleOptions);
+                                        let hasSource = edges.filter((e)=>{return e.target.nodeId === d.nodeId});
+                                        if(d.parentType === 'SOURCE' || hasSource.length) {
+                                                this.showNodeModal(getModalScope, setModalContent, d, updateGraphMethod, allNodes, edges, linkShuffleOptions);
+                                        }
 				} else {
 					// we're in the same node
 					if (internalFlags.selectedEdge) {
@@ -820,17 +823,24 @@ const generateNodeData = function(nodes, componentBundle, metadata, resultArr){
 			currentMetaObj = currentMetaObj[0];
 		}
 
+		let nodeLabel = componentObj.subType;
+		if(componentObj.subType.toLowerCase() === 'custom'){
+			let config = componentObj.topologyComponentUISpecification.fields,
+            name = _.find(config, {fieldName: "name"});
+			nodeLabel = name.defaultValue || 'Custom';
+		}
+
 		let obj = {
 			x: currentMetaObj.x,
 			y: currentMetaObj.y,
 			nodeId: nodes[i].id,
-                        parentType: componentObj.type,
+            parentType: componentObj.type,
 			currentType: currentType,
 			uiname: nodes[i].name,
-                        imageURL: 'styles/img/icon-'+componentObj.subType.toLowerCase()+'.png',
+            imageURL: 'styles/img/icon-'+componentObj.subType.toLowerCase()+'.png',
 			isConfigured: configuredFlag,
             parallelismCount: nodes[i].config.properties.parallelism || 1,
-            nodeLabel: componentObj.subType,
+            nodeLabel: nodeLabel,
             topologyComponentBundleId: componentObj.id
 		}
 		if(currentMetaObj.streamId){

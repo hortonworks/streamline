@@ -98,7 +98,7 @@
         "isOptional": true,
         "tooltip": "Maximum offset lag allowed",
         "type": "number",
-        "defaultValue": 9223372036854775807
+        "defaultValue": 9007199254740991
       },
       {
         "uiName": "Use start offset?",

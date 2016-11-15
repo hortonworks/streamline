@@ -233,7 +233,7 @@ export default class RulesNodeForm extends Component {
                                                 </Table>
                                         </div>
                                 </div>
-                                <Modal ref="RuleModal" dialogClassName="modal-fixed-height" bsSize="large" data-title={this.state.modalTitle} data-resolve={this.handleSaveRule.bind(this)}>
+                                <Modal ref="RuleModal" dialogClassName="rule-modal-fixed-height" bsSize="large" data-title={this.state.modalTitle} data-resolve={this.handleSaveRule.bind(this)}>
 					<RulesForm
 						ref="RuleForm"
 						topologyId={topologyId}
