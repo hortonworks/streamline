@@ -1,7 +1,7 @@
 import fetch from 'isomorphic-fetch';
 import {baseUrl} from '../utils/Constants';
 
-const url = baseUrl + 'system/componentdefinitions/PROCESSOR/custom';
+const url = baseUrl + 'streams/componentbundles/PROCESSOR/custom';
 
 const CustomProcessorREST = {
 	getAllProcessors(options) {

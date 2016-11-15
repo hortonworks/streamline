@@ -4,10 +4,10 @@ import {baseUrl} from '../utils/Constants';
 import { CustomFetch } from '../utils/Overrides';
 
 const TopologyREST = {
-  getAllTopology(options) {
+  getAllTopology(sort,options) {
 		options = options || {};
 		options.method = options.method || 'GET';
-                return CustomFetch(baseUrl+'topologies?withMetric=true',options)
+                return CustomFetch(baseUrl+'topologies?withMetric=true&sort='+sort+'&latencyTopN=3',options)
 			.then( (response) => {
 		  		return response.json();
 		  	})
@@ -15,7 +15,7 @@ const TopologyREST = {
   getTopology(id, options) {
 		options = options || {};
 		options.method = options.method || 'GET';
-                return fetch(baseUrl+'topologies/'+id+"?withMetric=true", options)
+                return fetch(baseUrl+'topologies/'+id+"?withMetric=true&latencyTopN=3", options)
 			.then( (response) => {
 		  		return response.json();
                         })
@@ -79,7 +79,7 @@ const TopologyREST = {
 	getSourceComponent(options) {
 		options = options || {};
 		options.method = options.method || 'GET';
-		return fetch(baseUrl+'system/componentdefinitions/SOURCE?streamingEngine=STORM', options)
+                return fetch(baseUrl+'streams/componentbundles/SOURCE', options)
 			.then( (response) => {
 		  		return response.json();
                         })
@@ -87,7 +87,7 @@ const TopologyREST = {
 	getProcessorComponent(options) {
 		options = options || {};
 		options.method = options.method || 'GET';
-		return fetch(baseUrl+'system/componentdefinitions/PROCESSOR?streamingEngine=STORM', options)
+                return fetch(baseUrl+'streams/componentbundles/PROCESSOR', options)
 			.then( (response) => {
 		  		return response.json();
                         })
@@ -95,7 +95,7 @@ const TopologyREST = {
 	getSinkComponent(options) {
 		options = options || {};
 		options.method = options.method || 'GET';
-		return fetch(baseUrl+'system/componentdefinitions/SINK?streamingEngine=STORM', options)
+                return fetch(baseUrl+'streams/componentbundles/SINK', options)
 			.then( (response) => {
 		  		return response.json();
                         })
@@ -103,7 +103,7 @@ const TopologyREST = {
 	getLinkComponent(options) {
 		options = options || {};
 		options.method = options.method || 'GET';
-		return fetch(baseUrl+'system/componentdefinitions/LINK?streamingEngine=STORM', options)
+                return fetch(baseUrl+'streams/componentbundles/LINK', options)
 			.then( (response) => {
 		  		return response.json();
                         })

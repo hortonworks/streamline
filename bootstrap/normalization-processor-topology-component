@@ -1,1 +1,32 @@
-{"type": "PROCESSOR","name": "normalization component","subType": "NORMALIZATION","streamingEngine": "STORM","config": "[{\"name\": \"parallelism\", \"isOptional\": true, \"type\": \"number\",\"defaultValue\": 1},{\"name\": \"types\",\"isOptional\": false,\"type\": \"string\",\"defaultValue\": null,\"values\": [\"bulk\",\"fineGrained\"]}]","schemaClass": "org.apache.streamline.streams.schema.NormalizationProcessorSchemaEvolver","transformationClass": "org.apache.streamline.streams.layout.storm.NormalizationBoltFluxComponent","timestamp": 1458618392172}
+{
+  "type": "PROCESSOR",
+  "name": "Normalization bolt",
+  "subType": "NORMALIZATION",
+  "builtin": true,
+  "streamingEngine": "STORM",
+  "schemaClass": "org.apache.streamline.streams.schema.NormalizationProcessorSchemaEvolver",
+  "transformationClass": "org.apache.streamline.streams.layout.storm.NormalizationBoltFluxComponent",
+  "topologyComponentUISpecification": {
+    "fields": [
+      {
+        "uiName": "Types",
+        "fieldName": "types",
+        "isOptional": false,
+        "tooltip": "Type of Normalization",
+        "type": "enumstring",
+        "options": [
+          "bulk",
+          "fineGrained"
+        ]
+      },
+      {
+        "uiName": "Parallelism",
+        "fieldName": "parallelism",
+        "isOptional": true,
+        "tooltip": "Parallelism hint for normalization bolt",
+        "type": "number",
+        "defaultValue": 1
+      }
+    ]
+  }
+}

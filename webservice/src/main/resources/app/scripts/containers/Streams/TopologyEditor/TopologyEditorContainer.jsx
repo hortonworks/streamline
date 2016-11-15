@@ -11,16 +11,19 @@ import {OverlayTrigger, Tooltip, Accordion, Panel} from 'react-bootstrap';
 import Switch from 'react-bootstrap-switch';
 import ComponentNodeContainer from './ComponentNodeContainer';
 import TopologyConfig from './TopologyConfigContainer';
+import EdgeConfig from './EdgeConfigContainer';
 import TopologyGraphComponent from '../../../components/TopologyGraphComponent';
 import FSReactToastr from '../../../components/FSReactToastr';
 import {observer} from 'mobx-react';
 import {observable} from 'mobx';
 import _ from 'lodash';
+import Utils from '../../../utils/Utils';
 import TopologyUtils from '../../../utils/TopologyUtils';
 import Modal from '../../../components/FSModal';
 import Editable from '../../../components/Editable';
 import state from '../../../app_state';
 import CommonNotification from '../../../utils/CommonNotification';
+import TopologyViewMode from './TopologyViewMode';
 
 const componentTarget = {
   drop(props, monitor, component) {
@@ -46,6 +49,13 @@ class EditorGraph extends Component{
   static propTypes = {
     connectDropTarget: PropTypes.func.isRequired
   };
+  componentWillReceiveProps(newProps){
+    if(newProps.bundleArr !== null){
+      this.setState({
+        bundleArr: newProps.bundleArr
+      })
+    }
+  }
   constructor(props) {
     super(props);
     let left = window.innerWidth - 300;
@@ -53,7 +63,8 @@ class EditorGraph extends Component{
       boxes: {
         top: 50,
         left: left
-      }
+      },
+      bundleArr: props.bundleArr || null
     };
   }
   moveBox(left, top) {
@@ -67,9 +78,9 @@ class EditorGraph extends Component{
     }));
   }
   render(){
-    const actualHeight = (window.innerHeight - 185)+'px';
-    const { connectDropTarget , viewMode, topologyId, graphData, getModalScope, setModalContent} = this.props;
-    const { boxes } = this.state;
+    const actualHeight = (window.innerHeight - (this.props.viewMode ? 260 : 100))+'px';
+    const { connectDropTarget , viewMode, topologyId, graphData, getModalScope, setModalContent, getEdgeConfigModal} = this.props;
+    const { boxes, bundleArr } = this.state;
     return connectDropTarget(
       <div>
         <div className="" style={{height: actualHeight}}>
@@ -81,6 +92,7 @@ class EditorGraph extends Component{
             viewMode={viewMode}
             getModalScope={getModalScope}
             setModalContent={setModalContent}
+            getEdgeConfigModal={getEdgeConfigModal}
           />
           {!viewMode && state.showComponentNodeContainer ?
             <ComponentNodeContainer
@@ -89,6 +101,7 @@ class EditorGraph extends Component{
               hideSourceOnDrag={true}
               viewMode={viewMode}
               customProcessors={this.props.customProcessors}
+              bundleArr={bundleArr}
             />
           : null}
         </div>
@@ -114,13 +127,22 @@ class TopologyEditorContainer extends Component {
     this.nextRoutes = '';
     this.navigateFlag = false;
   }
+  componentDidUpdate(){
+    if(this.viewMode){
+      document.getElementsByTagName('body')[0].className='';
+      document.querySelector('.wrapper').setAttribute("class","container wrapper animated fadeIn ");
+    } else {
+      document.getElementsByTagName('body')[0].className='graph-bg';
+      document.querySelector('.wrapper').setAttribute("class","container-fluid wrapper animated fadeIn ");
+    }
+  }
   componentWillMount(){
     state.showComponentNodeContainer = true;
-    document.getElementsByTagName('body')[0].className='graph-bg';
   }
   componentWillUnmount(){
     document.getElementsByTagName('body')[0].className='';
     document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay displayNone";
+    document.querySelector('.wrapper').setAttribute("class","container-fluid wrapper animated fadeIn ");
   }
 
   componentDidMount() {
@@ -133,10 +155,14 @@ class TopologyEditorContainer extends Component {
     return this.navigateFlag;
   }
 
-  confirmLeave = () => {
-    this.navigateFlag = true;
-    this.refs.leaveEditable.hide();
-    this.props.router.push(this.nextRoutes);
+  confirmLeave(flag) {
+    if(flag){
+      this.navigateFlag = true;
+      this.refs.leaveEditable.hide();
+      this.props.router.push(this.nextRoutes);
+    } else {
+      this.refs.leaveEditable.hide();
+    }
   }
 
   @observable viewMode = true;
@@ -153,7 +179,8 @@ class TopologyEditorContainer extends Component {
     altFlag: true,
     isAppRunning: false,
     topologyStatus: '',
-    unknown: ''
+    unknown: '',
+    bundleArr:null
   }
 
   fetchData(){
@@ -201,14 +228,27 @@ class TopologyEditorContainer extends Component {
 
         this.graphData.metaInfo = JSON.parse(resultsArr[9].entity.data);
 
-        this.graphData.nodes = TopologyUtils.syncNodeData(sourcesNode, processorsNode, sinksNode, this.graphData.metaInfo);
+        this.graphData.nodes = TopologyUtils.syncNodeData(sourcesNode, processorsNode, sinksNode, this.graphData.metaInfo,
+          this.sourceConfigArr, this.processorConfigArr, this.sinkConfigArr);
 
         this.graphData.uinamesList = [];
         this.graphData.nodes.map(node=>{ this.graphData.uinamesList.push(node.uiname); })
 
         this.graphData.edges = TopologyUtils.syncEdgeData(edgesArr, this.graphData.nodes);
 
-        this.setState({topologyName: this.topologyName, topologyMetric: this.topologyMetric, isAppRunning: isAppRunning, topologyStatus: status, unknown});
+        this.setState({
+          timestamp : data.topology.timestamp,
+          topologyName: this.topologyName,
+          topologyMetric: this.topologyMetric,
+          isAppRunning: isAppRunning,
+          topologyStatus: status,
+          bundleArr: {
+            sourceBundle: this.sourceConfigArr,
+            processorsBundle: this.processorConfigArr,
+            sinksBundle: this.sinkConfigArr
+          },
+          unknown
+        });
         this.customProcessors = this.getCustomProcessors();
         //If topology's timestamp is less then 20 seconds, changing view mode to edit mode
         let timeElapsedForTopology = ((new Date().getTime() - data.topology.timestamp)  / 1000 );
@@ -220,10 +260,6 @@ class TopologyEditorContainer extends Component {
       nodes: [],
       edges: [],
       uinamesList: [],
-      graphTransforms: {
-        dragCoords: [0,0],
-        zoomScale: 1
-      },
       linkShuffleOptions: [],
       metaInfo: {
         sources: [],
@@ -231,7 +267,7 @@ class TopologyEditorContainer extends Component {
         sinks: [],
         graphTransforms: {
           dragCoords: [0,0],
-          zoomScale: 1
+          zoomScale: 0.8
         }
       }
     };
@@ -309,22 +345,22 @@ class TopologyEditorContainer extends Component {
       topologyId: this.topologyId
     }, config = [];
     switch(node.parentType){
-      case Components.Datasource.value:
-        config = this.sourceConfigArr.filter((o)=>{ return o.subType === 'KAFKA'})
+      case 'SOURCE':
+        config = this.sourceConfigArr.filter((o)=>{ return o.subType === node.currentType.toUpperCase()})
         if(config.length > 0) config = config[0];
         obj.configData = config;
       break;
-      case Components.Processor.value:
+      case 'PROCESSOR':
         config = this.processorConfigArr.filter((o)=>{ return o.subType === node.currentType.toUpperCase()})
         //Check for custom processor
-        if(node.currentType.toLowerCase() === Components.Processors[2].name.toLowerCase()){
+        if(node.currentType.toLowerCase() === 'custom'){
           let index = null;
           let customNames = this.graphData.metaInfo.customNames;
           let customNameObj = _.find(customNames, {uiname: node.uiname});
           config.map((c,i)=>{
-            let configArr = JSON.parse(c.config);
+            let configArr = c.topologyComponentUISpecification.fields;
             configArr.map(o=>{
-              if(o.name === 'name' && o.defaultValue === customNameObj.customProcessorName){
+              if(o.fieldName === 'name' && o.defaultValue === customNameObj.customProcessorName){
                 index = i;
               }
             })
@@ -340,7 +376,7 @@ class TopologyEditorContainer extends Component {
         }
         obj.configData = config;
       break;
-      case Components.Sink.value:
+      case 'SINK':
         config = this.sinkConfigArr.filter((o)=>{ return o.subType === node.currentType.toUpperCase()})
         if(config.length > 0) config = config[0];
         obj.configData = config;
@@ -420,6 +456,7 @@ class TopologyEditorContainer extends Component {
   setModalContent(node, updateGraphMethod, content){
     if(typeof content === 'function'){
       this.modalContent = content;
+      this.processorNode =  node.parentType.toLowerCase() === 'processor' ? true : false;
       this.setState({altFlag: !this.state.altFlag},()=>{
         this.node = node;
         this.modalTitle = this.node.uiname;
@@ -498,6 +535,72 @@ class TopologyEditorContainer extends Component {
       this.refs.NodeModal.hide();
     }
   }
+  showEdgeConfigModal(topologyId, newEdge, edges, callback, node, streamName, grouping) {
+    this.edgeConfigData = {topologyId: topologyId, edge: newEdge, edges: edges, callback: callback, streamName: streamName, grouping: grouping};
+    this.edgeConfigTitle = newEdge.source.uiname + '-' + newEdge.target.uiname;
+    let nodeType = newEdge.source.currentType.toLowerCase();
+    if(node && node.outputStreams.length === 1 && nodeType !== 'rule') {
+      let edgeData = {
+            fromId: newEdge.source.nodeId,
+            toId: newEdge.target.nodeId,
+            streamGroupings: [{
+                    streamId: node.outputStreams[0].id,
+                    grouping: 'SHUFFLE'
+            }]
+        };
+
+      if(node && nodeType === 'window'){
+          if(node.config.properties.rules && node.config.properties.rules.length > 0){
+                let rulesPromiseArr = [];
+                let saveRulesPromiseArr = [];
+          node.config.properties.rules.map((id)=>{
+                    rulesPromiseArr.push(TopologyREST.getNode(topologyId, 'windows', id));
+                })
+                Promise.all(rulesPromiseArr)
+                    .then((results)=>{
+                        results.map((result)=>{
+                            let data = result.entity;
+                                let actionObj = {
+                                    name: newEdge.target.uiname,
+                                    outputStreams: [node.outputStreams[0].streamId]
+                                };
+                                if(newEdge.target.currentType.toLowerCase() === 'notification'){
+                                    actionObj.outputFieldsAndDefaults = node.config.properties.fieldValues || {};
+                                    actionObj.notifierName = node.config.properties.notifierName || '';
+                                    actionObj.__type = "org.apache.streamline.streams.layout.component.rule.action.NotifierAction";
+                                } else {
+                                    actionObj.__type = "org.apache.streamline.streams.layout.component.rule.action.TransformAction";
+                                    actionObj.transforms = [];
+                                }
+                                data.actions.push(actionObj);
+                                saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, 'windows', data.id, {body: JSON.stringify(data)}))
+                        })
+                        Promise.all(saveRulesPromiseArr).then((savedResults)=>{});
+                    })
+            }
+        }
+      TopologyREST.createNode(topologyId, 'edges', {body: JSON.stringify(edgeData)})
+        .then((edge)=>{
+            newEdge.edgeId = edge.entity.id;
+            newEdge.streamGrouping = edge.entity.streamGroupings[0];
+            edges.push(newEdge);
+            //call the callback to update the graph
+            callback();
+          });
+    } else
+    this.setState({altFlag: !this.state.altFlag},()=>{
+      this.refs.EdgeConfigModal.show();
+    });
+  }
+  handleSaveEdgeConfig(){
+    if(this.refs.EdgeConfig.validate()) {
+      this.refs.EdgeConfig.handleSave();
+      this.refs.EdgeConfigModal.hide();
+    }
+  }
+  handleCancelEdgeConfig(){
+    this.refs.EdgeConfigModal.hide();
+  }
   focusInput(component){
     if(component){
       ReactDOM.findDOMNode(component).focus();
@@ -509,10 +612,10 @@ class TopologyEditorContainer extends Component {
   getTopologyHeader() {
     return (
       <span>
-        <Link to="/">My Applications</Link> /&nbsp;
-          {this.viewMode ? 
-            this.state.topologyName
-            : 
+        <Link to="/">All Streams</Link> /&nbsp;
+          {this.viewMode ?
+            'View: '+this.state.topologyName
+            :
             <Editable
                 id="applicationName"
                 ref="topologyNameEditable"
@@ -534,22 +637,15 @@ class TopologyEditorContainer extends Component {
     let nodeType = this.node ? this.node.currentType : '';
     return (
       <BaseContainer ref="BaseContainer" routes={this.props.routes} onLandingPage="false" breadcrumbData={this.breadcrumbData} headerContent={this.getTopologyHeader()}>
-        <div className="row">
-          <div className="col-sm-12">
-            <div className="graph-region">
-              <div className="page-title-box clearfix">
-                <div className="topology-editor-controls pull-right">
-                  <OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Zoom In</Tooltip>}>
-                    <a href="javascript:void(0);" className="zoom-in" onClick={this.graphZoomAction.bind(this, 'zoom_in')}><i className="fa fa-search-plus"></i></a>
-                  </OverlayTrigger>
-                  <OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Zoom Out</Tooltip>}>
-                    <a href="javascript:void(0);" className="zoom-out" onClick={this.graphZoomAction.bind(this, 'zoom_out')}><i className="fa fa-search-minus"></i></a>
-                  </OverlayTrigger>
-                  <OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Configure</Tooltip>}>
-                    <a href="javascript:void(0);" className="config" onClick={this.showConfig.bind(this)}><i className="fa fa-gear"></i></a>
-                  </OverlayTrigger>
-                </div>
-              </div>
+        {this.viewMode ?
+          <div>
+            <TopologyViewMode
+              {...this.state}
+              killTopology = {this.killTopology.bind(this)}
+              deployTopology = {this.deployTopology.bind(this)}
+              handleModeChange = {this.handleModeChange.bind(this)}
+            />
+          <div id="viewMode" className="graph-bg">
               <EditorGraph
                 ref="EditorGraph"
                 graphData={this.graphData}
@@ -558,39 +654,73 @@ class TopologyEditorContainer extends Component {
                 getModalScope={this.getModalScope.bind(this)}
                 setModalContent={this.setModalContent.bind(this)}
                 customProcessors={this.customProcessors}
+                bundleArr={this.state.bundleArr}
+                getEdgeConfigModal={this.showEdgeConfigModal.bind(this)}
               />
-              <div className="topology-footer">
-                {this.viewMode ?
-                  (this.state.unknown !== "UNKNOWN")
-                    ? <OverlayTrigger key={1} placement="top" overlay={<Tooltip id="tooltip">Edit</Tooltip>}>
-                        <a href="javascript:void(0);" className="hb lg success pull-right show-node-list" onClick={this.handleModeChange.bind(this, false)}><i className="fa fa-pencil"></i></a>
-                      </OverlayTrigger>
-                    : ''
-                  :
-                  (this.state.isAppRunning ?
-                    <OverlayTrigger key={2} placement="top" overlay={<Tooltip id="tooltip">Kill</Tooltip>}>
-                      <a href="javascript:void(0);" className="hb lg danger pull-right" onClick={this.killTopology.bind(this)}><i className={this.state.topologyStatus === 'KILLING...' ? "fa fa-spinner fa-spin": "fa fa-times"}></i></a>
+            </div>
+          </div>
+          :
+          <div className="row">
+            <div className="col-sm-12">
+              <div className="graph-region">
+                <div className="zoomWrap clearfix">
+                  <div className="topology-editor-controls pull-right">
+                    <OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Zoom In</Tooltip>}>
+                      <a href="javascript:void(0);" className="zoom-in" onClick={this.graphZoomAction.bind(this, 'zoom_in')}><i className="fa fa-search-plus"></i></a>
                     </OverlayTrigger>
-                    : (this.state.unknown !== "UNKNOWN")
-                      ? <OverlayTrigger key={3} placement="top" overlay={<Tooltip id="tooltip">Run</Tooltip>}>
-                          <a href="javascript:void(0);" className="hb lg success pull-right" onClick={this.deployTopology.bind(this)}><i className={this.state.topologyStatus === 'DEPLOYING...'? "fa fa-spinner fa-spin" : "fa fa-paper-plane"}></i></a>
+                    <OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Zoom Out</Tooltip>}>
+                      <a href="javascript:void(0);" className="zoom-out" onClick={this.graphZoomAction.bind(this, 'zoom_out')}><i className="fa fa-search-minus"></i></a>
+                    </OverlayTrigger>
+                    <OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Configure</Tooltip>}>
+                      <a href="javascript:void(0);" className="config" onClick={this.showConfig.bind(this)}><i className="fa fa-gear"></i></a>
+                    </OverlayTrigger>
+                  </div>
+                </div>
+                <EditorGraph
+                  ref="EditorGraph"
+                  graphData={this.graphData}
+                  viewMode={this.viewMode}
+                  topologyId={this.topologyId}
+                  getModalScope={this.getModalScope.bind(this)}
+                  setModalContent={this.setModalContent.bind(this)}
+                  customProcessors={this.customProcessors}
+                  bundleArr={this.state.bundleArr}
+                  getEdgeConfigModal={this.showEdgeConfigModal.bind(this)}
+                />
+                <div className="topology-footer">
+                  {this.viewMode ?
+                    (this.state.unknown !== "UNKNOWN")
+                      ? <OverlayTrigger key={1} placement="top" overlay={<Tooltip id="tooltip">Edit</Tooltip>}>
+                          <a href="javascript:void(0);" className="hb lg success pull-right show-node-list" onClick={this.handleModeChange.bind(this, false)}><i className="fa fa-pencil"></i></a>
                         </OverlayTrigger>
                       : ''
-                  )
-                }
-                <div className="topology-status">
-                  <p className="text-muted">Status:</p>
-                  <p>{(this.state.unknown === "UNKNOWN") ? "Storm server is not running" : this.state.topologyStatus || 'NOT RUNNING'}</p>
+                    :
+                    (this.state.isAppRunning ?
+                      <OverlayTrigger key={2} placement="top" overlay={<Tooltip id="tooltip">Kill</Tooltip>}>
+                        <a href="javascript:void(0);" className="hb lg danger pull-right" onClick={this.killTopology.bind(this)}><i className={this.state.topologyStatus === 'KILLING...' ? "fa fa-spinner fa-spin": "fa fa-times"}></i></a>
+                      </OverlayTrigger>
+                      : (this.state.unknown !== "UNKNOWN")
+                        ? <OverlayTrigger key={3} placement="top" overlay={<Tooltip id="tooltip">Run</Tooltip>}>
+                            <a href="javascript:void(0);" className="hb lg success pull-right" onClick={this.deployTopology.bind(this)}><i className={this.state.topologyStatus === 'DEPLOYING...'? "fa fa-spinner fa-spin" : "fa fa-paper-plane"}></i></a>
+                          </OverlayTrigger>
+                        : ''
+                    )
+                  }
+                  <div className="topology-status">
+                    <p className="text-muted">Status:</p>
+                    <p>{(this.state.unknown === "UNKNOWN") ? "Storm server is not running" : this.state.topologyStatus || 'NOT RUNNING'}</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        }
         <Modal ref="TopologyConfigModal" data-title="Topology Configuration" data-resolve={this.handleSaveConfig.bind(this)}>
           <TopologyConfig ref="topologyConfig" topologyId={this.topologyId} data={this.topologyConfig} topologyName={this.state.topologyName} viewMode={this.viewMode}/>
         </Modal>
         <Modal ref="NodeModal"
-          bsSize="large"
+          bsSize={this.processorNode ? "large" : null}
+          dialogClassName="modal-fixed-height"
           data-title={ this.viewMode ? this.modalTitle :
             (<Editable
               ref="editableNodeName"
@@ -604,9 +734,24 @@ class TopologyEditorContainer extends Component {
           data-resolve={this.handleSaveNodeModal.bind(this)}>
           {this.modalContent()}
         </Modal>
-        <Modal ref="leaveEditable" data-title="Confirm Box" data-resolve={this.confirmLeave.bind(this)}
-         data-reject={() => {return false} } >
-         {<p>Are you sure want to navigate away from this page ?</p>}
+        <Modal
+          ref="leaveEditable"
+          data-title="Confirm Box"
+          dialogClassName="confirm-box"
+          data-resolve={this.confirmLeave.bind(this, true)}
+          data-reject={this.confirmLeave.bind(this, false)} >
+            {<p>Are you sure want to navigate away from this page ?</p>}
+        </Modal>
+        <Modal
+          ref="EdgeConfigModal"
+          data-title={this.edgeConfigTitle}
+          data-resolve={this.handleSaveEdgeConfig.bind(this)}
+          data-reject={this.handleCancelEdgeConfig.bind(this)}
+        >
+          <EdgeConfig
+            ref="EdgeConfig"
+            data={this.edgeConfigData}
+          />
         </Modal>
       </BaseContainer>
     )

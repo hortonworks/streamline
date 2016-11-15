@@ -13,7 +13,8 @@ export default class ConfigFieldsForm extends Component {
 	}
 
 	defaultObj = {
-		name: '',
+	    fieldName: '',
+	    uiName: '',
 		isOptional: false,
 		type: '',
 		defaultValue: '',
@@ -43,44 +44,62 @@ export default class ConfigFieldsForm extends Component {
 	}
 
 	getConfigField() {
-		let {name, isOptional, type, defaultValue, isUserInput, tooltip, id} = this.state;
-		let obj = {name, isOptional, type, defaultValue, isUserInput, tooltip, id};
+	    let {fieldName, uiName, isOptional, type, defaultValue, isUserInput, tooltip, id} = this.state;
+	    let obj = {fieldName, uiName, isOptional, type, defaultValue, isUserInput, tooltip, id};
+	    if(obj.defaultValue !== '' && obj.type != 'string'){
+	    	if(obj.type === 'number'){
+		    	obj.defaultValue = Number(obj.defaultValue)
+		    } else if(obj.type === 'boolean'){
+		    	obj.defaultValue = obj.defaultValue === 'false' ? false : true;
+		    }
+	    }
 		return obj;
 	}
 
 	validate() {
-		let {name, type, tooltip} = this.state;
-		if(name === "" && type === "" && tooltip == "")
+        let {uiName, type, tooltip, fieldName} = this.state;
+        if(uiName.trim() !== "" && type.trim() !== "" && tooltip.trim() !== "" && fieldName.trim() !== ""){
+			return true;
+        }
+		else {
 			return false;
-		else return true;
+		}
 	}
 
 	render() {
 		return (
-			<div>
-			<form className="form-horizontal">
+            <form className="modal-form cp-modal-form">
 				<div className="form-group">
-					<label className="col-sm-3 control-label">Name*</label>
-					<div className="col-sm-4">
+                    <label>Field Name <span className="text-danger">*</span></label>
+                    <div>
 						<input
-							name="name"
+                            name="fieldName"
 							placeholder="Name"
 							onChange={this.handleValueChange.bind(this)}
 							type="text"
-							className="form-control"
-							value={this.state.name}
+                            className={this.state.fieldName.trim() == "" ? "form-control invalidInput" : "form-control"}
+                            value={this.state.fieldName}
 						    required={true}
 						/>
 					</div>
-					{this.state.name === '' ?
-						<div className="col-sm-4">
-							<p className="form-control-static error-note">Please Enter Name</p>
-						</div>
-					: null}
 				</div>
 				<div className="form-group">
-					<label className="col-sm-3 control-label">Is Optional</label>
-					<div className="col-sm-4">
+                    <label>UI Name <span className="text-danger">*</span></label>
+                    <div>
+                        <input
+                            name="uiName"
+                            placeholder="Name"
+                            onChange={this.handleValueChange.bind(this)}
+                            type="text"
+                            className={this.state.uiName.trim() == "" ? "form-control invalidInput" : "form-control"}
+                            value={this.state.uiName}
+                            required={true}
+                        />
+                    </div>
+                </div>
+                <div className="form-group">
+                    <label>Is Optional</label>
+                    <div>
 						<input
 							name="isOptional"
 							onChange={this.handleToggle.bind(this)}
@@ -91,8 +110,8 @@ export default class ConfigFieldsForm extends Component {
 					</div>
 				</div>
 				<div className="form-group">
-					<label className="col-sm-3 control-label">Type*</label>
-					<div className="col-sm-4">
+                    <label>Type <span className="text-danger">*</span></label>
+                    <div>
 						<Select
 							onChange={this.handleTypeChange.bind(this)}
 							value={this.state.type}
@@ -100,28 +119,23 @@ export default class ConfigFieldsForm extends Component {
 						    required={true}
 						/>
 					</div>
-					{this.state.type === '' ?
-						<div className="col-sm-4">
-							<p className="form-control-static error-note">Please Enter Type</p>
-						</div>
-					: null}
 				</div>
 				<div className="form-group">
-					<label className="col-sm-3 control-label">Default Value</label>
-					<div className="col-sm-4">
+                    <label>Default Value</label>
+                    <div>
 						<input
 							name="defaultValue"
 							placeholder="Default Value"
 							onChange={this.handleValueChange.bind(this)}
 							type="text"
-							className="form-control"
+                            className="form-control"
 							value={this.state.defaultValue}
 						/>
 					</div>
 				</div>
 				<div className="form-group">
-					<label className="col-sm-3 control-label">Is User Input</label>
-					<div className="col-sm-4">
+                    <label>Is User Input</label>
+                    <div>
 						<input
 							name="isUserInput"
 							onChange={this.handleToggle.bind(this)}
@@ -132,26 +146,20 @@ export default class ConfigFieldsForm extends Component {
 					</div>
 				</div>
 				<div className="form-group">
-					<label className="col-sm-3 control-label">Tooltip*</label>
-					<div className="col-sm-4">
+                    <label>Tooltip <span className="text-danger">*</span></label>
+                    <div>
 						<input
 							name="tooltip"
 							placeholder="Tool Tip"
 							onChange={this.handleValueChange.bind(this)}
 							type="text"
-							className="form-control"
+                            className={this.state.tooltip.trim() == "" ? "form-control invalidInput" : "form-control"}
 							value={this.state.tooltip}
 						    required={true}
 						/>
 					</div>
-					{this.state.tooltip === '' ?
-						<div className="col-sm-4">
-							<p className="form-control-static error-note">Please Enter Tooltip</p>
-						</div>
-					: null}
 				</div>
 			</form>
-			</div>
-			)
+                )
 	}
 }

@@ -75,11 +75,19 @@ export default class NormalizationNodeForm extends Component {
 						this.nodeData = results[0].entity;
 						let properties = this.nodeData.config.properties;
 						let outputStreamsArr = [];
+                                                let showSchema = false;
 						results.map((result, i)=>{
 							if(i > 0){
 								outputStreamsArr.push(result.entity);
 							}
 						})
+
+                                                if(this.nodeData.outputStreams.length === 0) {
+                                                        this.saveStream();
+                                                } else {
+                                                        showSchema = true;
+                                                }
+
 						if(outputStreamsArr.length > 0)
 							this.getInputStreams(outputStreamsArr);
 
@@ -110,12 +118,29 @@ export default class NormalizationNodeForm extends Component {
 							inputStreams: outputStreamsArr,
 							transformers: arr,
 							outputSchemaFields: outputSchemaArr,
-							outputFieldsMappingArr: mappingsArr
+                                                        outputFieldsMappingArr: mappingsArr,
+                                                        showSchema: showSchema
 						};
 						this.setState(stateObj, this.getInputSchemaFields.bind(this));
 					})
 			})
 	}
+
+        saveStream() {
+                let self = this;
+                let {topologyId, nodeType} = this.props;
+                let passStreamData = { streamId: 'normalization_stream_'+this.nodeData.id, fields: []};
+                TopologyREST.createNode(topologyId, 'streams', {body: JSON.stringify(passStreamData)})
+                        .then(result=>{
+                                self.nodeData.outputStreamIds = [];
+                                self.nodeData.outputStreamIds.push(result.entity.id);
+                                TopologyREST.updateNode(topologyId, nodeType, self.nodeData.id, {body: JSON.stringify(self.nodeData)})
+                                        .then((node)=>{
+                                                self.nodeData = node.entity;
+                                                self.setState({showSchema: true});
+                                        })
+                        })
+        }
 
 	getInputStreams(inputStreams) {
 		let arr = [];
@@ -403,7 +428,13 @@ export default class NormalizationNodeForm extends Component {
 				let newData = result.entity;
 				newData.config.properties = data;
 				newData.name = name;
-				return TopologyREST.updateNode(topologyId, nodeType, nodeId, {body: JSON.stringify(newData)})
+                                let outputStreamData = { streamId: newData.outputStreams[0].streamId , fields: this.state.outputSchemaFields};
+                                return TopologyREST.updateNode(topologyId, 'streams', newData.outputStreams[0].id, {body: JSON.stringify(outputStreamData)})
+                                        .then((stream)=>{
+                                                newData.outputStreamIds = [];
+                                                newData.outputStreamIds.push(stream.entity.id);
+                                                return TopologyREST.updateNode(topologyId, nodeType, nodeId, {body: JSON.stringify(newData)})
+                                        })
 			})
 	}
 
@@ -549,7 +580,8 @@ export default class NormalizationNodeForm extends Component {
 							</div>
 						</Panel>
 					</Tab>
-					<Tab eventKey={2} title="Output Streams">
+                                        <Tab eventKey={2} title="Output Streams" unmountOnExit={true}>
+                                                {showSchema ?
 						<OutputSchema
 							ref="schema"
 							topologyId={topologyId}
@@ -558,7 +590,10 @@ export default class NormalizationNodeForm extends Component {
 							nodeType={nodeType}
 							targetNodes={targetNodes}
 							linkShuffleOptions={linkShuffleOptions}
+                                                        canAdd={false}
+                                                        canDelete={false}
 						/>
+                                                : null}
 					</Tab>
 				</Tabs>
 			</div>

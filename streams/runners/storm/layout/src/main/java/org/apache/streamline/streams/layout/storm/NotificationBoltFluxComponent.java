@@ -6,8 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
 import org.apache.streamline.streams.layout.component.impl.NotificationSink;
-import org.apache.streamline.streams.layout.exception.BadTopologyLayoutException;
-import org.codehaus.jackson.annotate.JsonMethod;
+import org.apache.streamline.streams.layout.exception.ComponentConfigException;
 
 import java.util.List;
 import java.util.Map;
@@ -15,16 +14,12 @@ import java.util.Map;
 public class NotificationBoltFluxComponent extends AbstractFluxComponent {
     private NotificationSink notificationSink;
 
-    // for unit tests
-    NotificationBoltFluxComponent() {
-    }
-
-    public NotificationBoltFluxComponent(NotificationSink notificationSink) {
-        this.notificationSink = notificationSink;
+    public NotificationBoltFluxComponent() {
     }
 
     @Override
     protected void generateComponent() {
+        notificationSink = (NotificationSink) conf.get(StormTopologyLayoutConstants.STREAMLINE_COMPONENT_CONF_KEY);
         String boltId = "notificationBolt" + UUID_FOR_COMPONENTS;
         String boltClassName = "org.apache.streamline.streams.runtime.storm.bolt.notification.NotificationBolt";
         String[] constructorArgNames = {TopologyLayoutConstants.JSON_KEY_NOTIFICATION_SINK_JSON};
@@ -49,7 +44,7 @@ public class NotificationBoltFluxComponent extends AbstractFluxComponent {
     }
 
     @Override
-    public void validateConfig () throws BadTopologyLayoutException {
+    public void validateConfig () throws ComponentConfigException {
         super.validateConfig();
         String className = (String) conf.get(TopologyLayoutConstants.JSON_KEY_NOTIFIER_CLASSNAME);
         // Streamline frameworks supports email notifiers by default. However there is support for custom notifiers as well. Here, we handle validation for fields
@@ -62,7 +57,7 @@ public class NotificationBoltFluxComponent extends AbstractFluxComponent {
         }
     }
 
-    private void validateStringFields () throws BadTopologyLayoutException {
+    private void validateStringFields () throws ComponentConfigException {
         String[] requiredStringFields = {
                 TopologyLayoutConstants.JSON_KEY_NOTIFIER_NAME,
                 TopologyLayoutConstants.JSON_KEY_NOTIFIER_JAR_FILENAME,
@@ -71,10 +66,10 @@ public class NotificationBoltFluxComponent extends AbstractFluxComponent {
         validateStringFields(requiredStringFields, true);
     }
 
-    private void validateProperties () throws BadTopologyLayoutException {
+    private void validateProperties () throws ComponentConfigException {
         Map<String, Object> properties = (Map) conf.get(TopologyLayoutConstants.JSON_KEY_NOTIFIER_PROPERTIES);
         if (properties == null) {
-            throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, TopologyLayoutConstants
+            throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, TopologyLayoutConstants
                     .JSON_KEY_NOTIFIER_PROPERTIES));
         }
         String[] optionalBooleanFields = {
@@ -103,10 +98,10 @@ public class NotificationBoltFluxComponent extends AbstractFluxComponent {
         validateIntegerFields(requiredIntegerFields, true, mins, maxes, properties);
     }
 
-    private void validateFieldValues () throws BadTopologyLayoutException {
+    private void validateFieldValues () throws ComponentConfigException {
         Map<String, Object> fieldValues = (Map) conf.get(TopologyLayoutConstants.JSON_KEY_NOTIFIER_FIELD_VALUES);
         if (fieldValues == null) {
-            throw new BadTopologyLayoutException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, TopologyLayoutConstants
+            throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, TopologyLayoutConstants
                     .JSON_KEY_NOTIFIER_FIELD_VALUES));
         }
         String[] requiredStringFields = {

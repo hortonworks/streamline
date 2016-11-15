@@ -23,10 +23,10 @@ export default class CustomNodeForm extends Component {
 	constructor(props) {
 		super(props);
 		let {configData, editMode} = props;
-		this.customConfig = JSON.parse(configData.config)
-		let id = _.find(this.customConfig, {name: "name"}).defaultValue;
-		let parallelism = _.find(this.customConfig, {name: "parallelism"}).defaultValue;
-		this.fetchData(id);
+        this.customConfig = configData.topologyComponentUISpecification.fields;
+		let id = _.find(this.customConfig, {fieldName: "name"}).defaultValue;
+		let parallelism = _.find(this.customConfig, {fieldName: "parallelism"}).defaultValue;
+		this.fetchData(id, parallelism);
 
 		var obj = {
 			editMode: editMode,
@@ -38,15 +38,15 @@ export default class CustomNodeForm extends Component {
 
 		this.customConfig.map((o)=>{
 			if(o.type === "boolean")
-				obj[o.name] = o.defaultValue;
-			else obj[o.name] = o.defaultValue ? o.defaultValue : '';
+				obj[o.fieldName] = o.defaultValue;
+			else obj[o.fieldName] = o.defaultValue ? o.defaultValue : '';
 			if(o.isUserInput)
 				obj.userInputs.push(o);
 		});
 		this.state = obj;
 	}
 
-	fetchData(id) {
+	fetchData(id, defaultParallelism) {
 		let {topologyId, nodeType, nodeData} = this.props;
 		let promiseArr = [
 			CustomProcessorREST.getProcessor(id),
@@ -60,6 +60,7 @@ export default class CustomNodeForm extends Component {
 
 				this.nodeData = results[1].entity;
 				let properties = results[1].entity.config.properties;
+				if(!properties.parallelism) properties.parallelism=defaultParallelism;
 
 				let stateObj = {
 					parallelism: properties.parallelism,
@@ -75,19 +76,16 @@ export default class CustomNodeForm extends Component {
 
 				this.state.userInputs.map((i)=>{
 					if(i.type === "boolean")
-						stateObj[i.name] = (properties[i.name]) === true ? true : false;
+						stateObj[i.fieldName] = (properties[i.fieldName]) === true ? true : false;
 					else
-						stateObj[i.name] = properties[i.name] ? properties[i.name] : '';
+						stateObj[i.fieldName] = properties[i.fieldName] ? properties[i.fieldName] : '';
 				});
 
 				if(this.nodeData.outputStreams.length === 0)
 					this.saveStreams(outputStreamToSchema);
-				else stateObj.showSchema = true;
+                else this.context.ParentForm.setState({outputStreamObj: this.nodeData.outputStreams[0]});
 
 				this.setState(stateObj);
-			})
-			.catch((err)=>{
-				console.error(err);
 			})
 	}
 
@@ -120,6 +118,7 @@ export default class CustomNodeForm extends Component {
 					.then((node)=>{
 						self.nodeData = node.entity;
 						self.setState({showSchema: true});
+                        this.context.ParentForm.setState({outputStreamObj:node.entity.outputStreams})
 					})
 			})
 	}
@@ -145,10 +144,10 @@ export default class CustomNodeForm extends Component {
 
 	getData() {
 		let obj = {},
-			customConfig = this.customConfig;
+		customConfig = this.customConfig;
 
 		customConfig.map((o)=>{
-			obj[o.name] = this.state[o.name];
+			obj[o.fieldName] = this.state[o.fieldName];
 		});
 		return obj;
 	}
@@ -182,74 +181,57 @@ export default class CustomNodeForm extends Component {
 		let {topologyId, editMode, nodeType, nodeData, targetNodes, linkShuffleOptions} = this.props;
 		let {showSchema, showError, showErrorLabel} = this.state;
 		return (
-			<div>
-				<Tabs id="customForm" defaultActiveKey={1} className="schema-tabs">
-					<Tab eventKey={1} title="Configuration">
-						<form className="form-horizontal">
-							{
-								this.state.userInputs.map((f, i)=>{
-									return (
-										<div className="form-group" key={i}>
-										<label className="col-sm-3 control-label">{f.name}
-											{f.isOptional ? null : '*'}
-										</label>
-										<div className="col-sm-6">
-										{
-										f.type === "boolean" ?
-											[<Radio
-												key="1"
-												inline={true}
-												data-label="true"
-												data-name={f.name}
-												onChange={this.handleRadioBtn.bind(this)}
-												checked={this.state[f.name] ? true: false}
-												disabled={!this.state.editMode}>true
-											</Radio>,
-											<Radio
-												key="2"
-												inline={true}
-												data-label="false"
-												data-name={f.name}
-												onChange={this.handleRadioBtn.bind(this)}
-												checked={this.state[f.name] ? false : true}
-												disabled={!this.state.editMode}>false
-											</Radio>]
-						 				:
-										<input
-											name={f.name}
-											value={this.state[f.name]}
-											onChange={this.handleValueChange.bind(this, f)}
-											type={f.type}
-											className={!f.isOptional && showError && f.isInvalid ? "form-control invalidInput" : "form-control"}
-									    	required={f.isOptional ? false : true}
-									    	disabled={!this.state.editMode}
-									    	min={f.type === "number" ? "0" : null}
-									    	inputMode={f.type === "number" ? "numeric" : null}
-										/>
-										}
-										</div>
-										</div>
-										);
-								})
-							}
-						</form>
-					</Tab>
-                                        <Tab eventKey={2} title="Output Streams" unmountOnExit={true}>
-						{showSchema ?
-							<OutputSchema
-								topologyId={topologyId}
-								editMode={editMode}
-								nodeId={nodeData.nodeId}
-								nodeType={nodeType}
-								targetNodes={targetNodes}
-								linkShuffleOptions={linkShuffleOptions}
-								canAdd={false}
-								canDelete={false}
-							/>
-						: null}
-					</Tab>
-				</Tabs>
-			</div>
-			)
+            <form className="modal-form processor-modal-form form-overflow">
+                {
+                    this.state.userInputs.map((f, i)=>{
+                        return (
+                            <div className="form-group" key={i}>
+                                <label>{f.uiName}
+                                    {f.isOptional ? null : <span className="text-danger">*</span>}
+                                </label>
+                                <div>
+                                {
+                                    f.type === "boolean" ?
+                                        [<Radio
+                                            key="1"
+                                            inline={true}
+                                            data-label="true"
+                                            data-name={f.fieldName}
+                                            onChange={this.handleRadioBtn.bind(this)}
+                                            checked={this.state[f.fieldName] ? true: false}
+                                            disabled={!this.state.editMode}>true
+                                        </Radio>,
+                                        <Radio
+                                            key="2"
+                                            inline={true}
+                                            data-label="false"
+                                            data-name={f.name}
+                                            onChange={this.handleRadioBtn.bind(this)}
+                                            checked={this.state[f.fieldName] ? false : true}
+                                            disabled={!this.state.editMode}>false
+                                        </Radio>]
+                                    :
+                                    <input
+                                        name={f.fieldName}
+                                        value={this.state[f.fieldName]}
+                                        onChange={this.handleValueChange.bind(this, f)}
+                                        type={f.type}
+                                        className={!f.isOptional && showError && f.isInvalid ? "form-control invalidInput" : "form-control"}
+                                        required={f.isOptional ? false : true}
+                                        disabled={!this.state.editMode}
+                                        min={f.type === "number" ? "0" : null}
+                                        inputMode={f.type === "number" ? "numeric" : null}
+                                    />
+                                }
+                                </div>
+                            </div>
+                        );
+                    })
+                }
+            </form>
+        )
 	}
 }
+CustomNodeForm.contextTypes = {
+    ParentForm: React.PropTypes.object,
+};

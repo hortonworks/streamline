@@ -89,11 +89,6 @@ public class RulesProcessor extends StreamlineProcessor {     //TODO: Rename to 
     }
 
     @Override
-    public void accept(TopologyDagVisitor visitor) {
-        visitor.visit(this);
-    }
-
-    @Override
     public String toString() {
         return "RulesProcessor{" +
                 "rules=" + rules +

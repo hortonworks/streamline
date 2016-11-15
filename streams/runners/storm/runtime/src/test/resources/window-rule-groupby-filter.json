@@ -1,7 +1,6 @@
 {
   "id": "18.1",
   "name": "WindowedRulesProcessor",
-  "type": null,
   "outputStreams": [
     {
       "id": "outputstream",

@@ -1,64 +1,20 @@
 import React from 'react';
 import _ from 'lodash';
 import moment from 'moment';
-
-const searchFilter = function(fullData, filterArr){
-	fullData = fullData || [];
-	if(!filterArr.length){
-		return fullData;
-	} else {
-		let currentFilterIndexes = [];
-        filterArr.forEach( (filter, i) => {
-		let currentFilterSet = new Set();
-		let filterVal = filter.value.toLowerCase();
-		fullData.forEach((d,i) => {
-			if(d[filter.category] !== undefined){
-				if(filter.operator === "==" && d[filter.category].toString().toLowerCase() == filterVal){
-					currentFilterSet.add(i);
-				} else if(filter.operator === "!=" && d[filter.category].toString().toLowerCase() != filterVal){
-					currentFilterSet.add(i);
-				} else if(filter.operator === "contains" && d[filter.category].toString().toLowerCase().includes(filterVal)){
-					currentFilterSet.add(i);
-				} else if(filter.operator === "!contains" && !d[filter.category].toString().toLowerCase().includes(filterVal)){
-					currentFilterSet.add(i);
-				} else if(filter.operator === "<" && d[filter.category] < parseInt(filterVal, 10)){
-					currentFilterSet.add(i);
-				} else if(filter.operator === "<=" && d[filter.category] <= parseInt(filterVal, 10)){
-					currentFilterSet.add(i);
-				} else if(filter.operator === ">" && d[filter.category] > parseInt(filterVal, 10)){
-					currentFilterSet.add(i);
-				} else if(filter.operator === ">=" && d[filter.category] >= parseInt(filterVal, 10)){
-					currentFilterSet.add(i);
-					//FOR DATE:
-					//d[filter.category] >= Date.parse(filterVal)
-				}
-			}
-			//"<", "<=", ">", ">=".
-		});
-		currentFilterIndexes.push([...currentFilterSet]); // Convert set to array and push for intersection later
-		// Take intersection of the old one with the current one
-        });
-        let intersection = _.intersection.apply(_,currentFilterIndexes);
-        let filterData = [];
-        intersection.forEach((d,i)=>{
-        	filterData.push(fullData[d]);
-        });
-        return filterData;
-	}
-}
+import * as Fields from '../libs/form/Fields'
 
 const sortArray = function(sortingArr, keyName, ascendingFlag){
-		if (ascendingFlag)
-			return sortingArr.sort(function(a, b) {
-						if(a[keyName] < b[keyName]) return -1;
-						if(a[keyName] > b[keyName]) return 1;
-							return 0;
-					});
-		else return sortingArr.sort(function(a, b) {
-						if(b[keyName] < a[keyName]) return -1;
-						if(b[keyName] > a[keyName]) return 1;
-							return 0;
-					});
+        if (ascendingFlag)
+                return sortingArr.sort(function(a, b) {
+                        if(a[keyName] < b[keyName]) return -1;
+                        if(a[keyName] > b[keyName]) return 1;
+                                return 0;
+                });
+        else return sortingArr.sort(function(a, b) {
+                        if(b[keyName] < a[keyName]) return -1;
+                        if(b[keyName] > a[keyName]) return 1;
+                                return 0;
+                });
 }
 
 const numberToMilliseconds = function(number, type){
@@ -94,7 +50,7 @@ const splitTimeStamp = function(date){
   const currentDT = moment(new Date());
   const createdDT = moment(date);
   const dateObj = moment.duration(currentDT.diff(createdDT));
-  return 'Created time '+ ((dateObj._data.days === 0)
+  return  ((dateObj._data.days === 0)
                             ? '': dateObj._data.days+'d ')
                              +((dateObj._data.days === 0 && dateObj._data.hours === 0 )
                                ? '' : dateObj._data.hours+'h ')
@@ -113,7 +69,7 @@ const splitSeconds = function(sec_num){
     if (minutes < 10) {minutes = "0"+minutes;}
     if (seconds < 10) {seconds = "0"+seconds;}
 
-	return 'Uptime '+((days === 0) ? '': days+'d ')
+        return ((days === 0) ? '': days+'d ')
                     +((days === 0 && (hours == "00" || 0))
                       ? '' : hours+'h ')
                         +((days === 0 && (hours == "00" || 0) && minutes === 0)
@@ -126,13 +82,124 @@ const filterByName = function(entities, filterValue){
     return entities.filter(filteredList => !filterValue || matchFilter.test(filteredList.name))
 }
 
+const ellipses = function(string,len){
+  if(!string){
+    return;
+  }
+  const str = string.substr(0,len || 10) // default 10 character...
+  return (string.length > len) ? `${str}...` : str ;
+}
+
+const sortByKey = function(string){
+  switch (string) {
+    case "last_updated": return "Last Updated";
+      break;
+    case "name" : return "Name";
+      break;
+    case "status" : return "Status";
+      break;
+    default: return "Last Updated";
+  }
+}
+
+const secToMinConverter = function(milliseconds,src){
+  milliseconds = (!milliseconds) ? 0 : milliseconds;
+  let hours = milliseconds / (1000*60*60);
+  let absoluteHours = Math.floor(hours);
+  let f_hours = absoluteHours > 9 ? absoluteHours : 0 + absoluteHours;
+
+  //Get remainder from hours and convert to minutes
+  let minutes = (hours - absoluteHours) * 60;
+  let absoluteMinutes = Math.floor(minutes);
+  let f_mins = absoluteMinutes > 9 ? absoluteMinutes : 0 +  absoluteMinutes;
+
+  //Get remainder from minutes and convert to seconds
+  let seconds = (minutes - absoluteMinutes) * 60;
+  let absoluteSeconds = Math.floor(seconds);
+  let f_secs = absoluteSeconds > 9 ? absoluteSeconds : 0 + absoluteSeconds;
+
+  (f_hours !== 0)
+    ? milliseconds = (src === "list") ? _.round(f_hours+"."+f_mins)+" hours" : _.round(f_hours+"."+f_mins)+"/hours"
+    : (f_mins !== 0 && f_secs !== 0)
+      ? milliseconds =  (src === "list") ? _.round(f_mins+"."+f_secs)+" mins" : _.round(f_mins+"."+f_secs)+"/mins"
+      : milliseconds =  (src === "list") ? _.round(f_secs)+" sec" : _.round(f_secs)+"/sec"
+    return milliseconds;
+}
+
+const kFormatter = function(num){
+  num = (!num) ? 0 : num ;
+  return num > 999 ? (num/1000).toFixed(1) + 'k' : num
+}
+
+const genFields = function(fieldsJSON, _fieldName = [], FormData = {}){
+    const fields = [];
+    fieldsJSON.forEach((d, i) => {
+        const Comp = Fields[d.type.split('.').join('')] || null;
+        let _name = [..._fieldName, d.fieldName];
+        if(Comp){
+            let children = null;
+            if(d.fields && d.type != 'array.object' && d.type != 'array.enumobject'){
+                const _FormData = FormData[d.fieldName] = FormData[d.fieldName] ? FormData[d.fieldName] : {}
+                children = genFields(d.fields, _name, _FormData)
+            }
+            if(d.defaultValue != null){
+                if(d.type == 'enumobject'){
+                    FormData[d.fieldName] = FormData[d.fieldName] || {
+                        [d.defaultValue]: {}
+                    };
+                }else{
+                    FormData[d.fieldName] = FormData[d.fieldName] != undefined ? FormData[d.fieldName] : d.defaultValue;
+                }
+            }
+            const options = [];
+            if(d.options){
+                d.options.forEach((d) => {
+                    if(!_.isObject(d)){
+                        options.push({
+                            value: d,
+                            label: d
+                        })
+                    }else{
+                        options.push({
+                            value: d.fieldName,
+                            label: d.uiName
+                        })
+                    }
+		})
+            }
+            let validators = [];
+            if(!d.isOptional){
+                validators.push('required');
+            }
+            if(d.isKafkaTopicValidation){
+                validators.push('kafkaTopicValidation')
+            }
+            fields.push(<Comp
+                label={d.uiName}
+                _ref={d.fieldName}
+                value={d.fieldName/*_name.join('.')*/}
+                valuePath={_name.join('.')}
+                key={_name.join('.')}
+                validation={validators}
+                fieldAttr={{options : options}}
+                fieldJson={d}
+            >{children}</Comp>)
+        }
+    })
+    return fields;
+}
+
 export default {
-	searchFilter,
 	sortArray,
 	numberToMilliseconds,
         millisecondsToNumber,
-  capitaliseFirstLetter,
-  splitTimeStamp,
-  splitSeconds,
-  filterByName
+        capitaliseFirstLetter,
+        splitTimeStamp,
+        splitSeconds,
+        filterByName,
+        ellipses,
+        sortByKey,
+        secToMinConverter,
+        genFields,
+        kFormatter
 };

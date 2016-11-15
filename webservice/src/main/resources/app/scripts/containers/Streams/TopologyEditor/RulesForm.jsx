@@ -29,43 +29,43 @@ class RuleFormula extends Component {
 			operator: null,
 			field2: null
 		}];
-                let fields = [];
-                props.fields.map((f)=>{
-                        fields = [...fields, ...f.fields];
-                });
+        let fields = [];
+        props.fields.map((f)=>{
+            fields = [...fields, ...f.fields];
+        });
 		this.state = {
 			data: data,
-                        fields: fields,
-                        fields2Arr: JSON.parse(JSON.stringify(fields)),
+                fields: fields,
+                fields2Arr: JSON.parse(JSON.stringify(fields)),
 			sqlStr: props.sql,
 			show: false
 		};
 	}
 	componentDidMount(){
 		if(this.props.sql){
-                        this.prepareFormula(this.props.sql, this.props.condition);
+                this.prepareFormula(this.props.sql, this.props.condition);
 		}
 	}
-        prepareFormula(sqlStr, conditionStr){
+    prepareFormula(sqlStr, conditionStr){
         let arr = [];
         let t = [];
         if(conditionStr) {
-                arr = conditionStr.split(' ');
-                arr.map((d)=>{
-                        if(d !== ''){
-                                t.push(d);
-                        }
-                })
+            arr = conditionStr.split(' ');
+            arr.map((d)=>{
+                if(d !== ''){
+                    t.push(d);
+                }
+            })
         } else {
-                arr = sqlStr.split(' ');
-                let index = arr.findIndex(function(d){return d.toLowerCase().indexOf('where') !== -1});
-		arr.map((d,i)=>{
-			if(i > index){
-				if(d !== ''){
-					t.push(d);
+            arr = sqlStr.split(' ');
+            let index = arr.findIndex(function(d){return d.toLowerCase().indexOf('where') !== -1});
+                        arr.map((d,i)=>{
+                                if(i > index){
+                                        if(d !== ''){
+                                                t.push(d);
+                                        }
 				}
-			}
-		})
+                        })
         }
 		let dummyArr = ['field1', 'operator','field2','logicalOp'];
 		let j = 0;
@@ -95,7 +95,7 @@ class RuleFormula extends Component {
 	addRuleRow(d, i){
 		let {fields, fields2Arr} = this.state;
 		return (
-			<div key={i+1} className="form-group">
+                        <div key={i+1} className="row form-group">
 				<div className="col-sm-2">
 					<Select
 						value={d.logicalOp}
@@ -141,8 +141,10 @@ class RuleFormula extends Component {
 	firstRow(d){
 		let {fields, fields2Arr} = this.state;
 		return(
-			<div key={1} className="form-group">
-				<label className="col-sm-2 control-label">Create Query*</label>
+                        <div key={1} className="row form-group">
+                                <div className="col-sm-2">
+                                        <label>Create Query <span className="text-danger">*</span></label>
+                                </div>
 				<div className="col-sm-3">
 					<Select
 						value={d.field1}
@@ -173,7 +175,7 @@ class RuleFormula extends Component {
 				<div className="col-sm-1">
 					<button className="btn btn-success btn-sm" type="button" onClick={this.handleRowAdd.bind(this)}><i className="fa fa-plus"></i></button>
 				</div>
-                        </div>
+            </div>
 		);
 	}
 	handleRowDelete(i){
@@ -289,10 +291,12 @@ class RuleFormula extends Component {
 						return this.addRuleRow(d, i)
 					}
 				})}
-                                {this.state.show ?
+                {this.state.show ?
 					<div className="form-group">
-						<label className="col-sm-2 control-label">Query Preview:</label>
-						<div className="col-sm-10">{this.previewQuery()}</div>
+                                                <label>Query Preview:</label>
+                                                <div className="row">
+                                                        <div className="col-sm-12">{this.previewQuery()}</div>
+                                                </div>
 					</div>
 				: null}
 			</div>
@@ -429,68 +433,66 @@ export default class RulesForm extends Component {
 	render() {
 		let sqloptions = { lineNumbers: true, mode: "text/x-sql"};
 		return (
-			<div>
-				<form className="form-horizontal">
-					<div className="form-group">
-						<label className="col-sm-2 control-label">Rule Name*</label>
-						<div className="col-sm-5">
-							<input
-								name="name"
-								placeholder="Name"
-								onChange={this.handleValueChange.bind(this)}
-								type="text"
-								className={this.state.showNameError ? "form-control invalidInput" : "form-control"}
-								value={this.state.name}
+                        <form className="modal-form rule-modal-form form-overflow">
+                                <div className="form-group">
+                                        <label>Rule Name <span className="text-danger">*</span></label>
+                                        <div>
+                                                <input
+                                                        name="name"
+                                                        placeholder="Name"
+                                                        onChange={this.handleValueChange.bind(this)}
+                                                        type="text"
+                                                        className={this.state.showNameError ? "form-control invalidInput" : "form-control"}
+                                                        value={this.state.name}
+                                                required={true}
+                                                />
+                                        </div>
+                                </div>
+                                <div className="form-group">
+                                        <label>Description <span className="text-danger">*</span></label>
+                                        <div>
+                        <textArea
+                                                        name="description"
+                                                        className={this.state.showDescriptionError ? "form-control invalidInput" : "form-control"}
+                                                        onChange={this.handleValueChange.bind(this)}
+                                                        value={this.state.description}
 							required={true}
-							/>
-						</div>
+                                                />
 					</div>
+                                </div>
+                                <div className="form-group">
+                                        <label>Rule Type <span className="text-danger">*</span></label>
+                                        <div>
+                        <Radio
+                            inline={true}
+                            data-label="General"
+                            onChange={this.handleRadioBtn.bind(this)}
+                                                        checked={this.state.ruleType ? true: false}>General
+                                                </Radio>
+                                                <Radio
+                            inline={true}
+                            data-label="Advanced"
+                            onChange={this.handleRadioBtn.bind(this)}
+                                                        checked={this.state.ruleType ? false : true}>Advanced
+                                                </Radio>
+					</div>
+                                </div>
+                {this.state.ruleType ?
+                    <RuleFormula ref="RuleFormula" fields={this.props.parsedStreams} sql={this.state.sql} condition={this.state.condition}/>
+                                        :
 					<div className="form-group">
-						<label className="col-sm-2 control-label">Description*</label>
-						<div className="col-sm-5">
-                                                        <textArea
-								name="description"
-								className={this.state.showDescriptionError ? "form-control invalidInput" : "form-control"}
-								onChange={this.handleValueChange.bind(this)}
-								value={this.state.description}
-								required={true}
-							/>
+                                                <label>SQL Query <span className="text-danger">*</span></label>
+                                                <div>
+                                <ReactCodemirror
+                                ref="SQLCodemirror"
+                                value={this.state.sql}
+                                onChange={this.updateCode.bind(this)}
+                                options={sqloptions}
+                                                        />
 						</div>
-					</div>
-					<div className="form-group">
-						<label className="col-sm-2 control-label">Rule Type*</label>
-						<div className="col-sm-5">
-                                                        <Radio
-                                                                inline={true}
-                                                                data-label="General"
-                                                                onChange={this.handleRadioBtn.bind(this)}
-								checked={this.state.ruleType ? true: false}>General
-							</Radio>
-							<Radio
-                                                                inline={true}
-                                                                data-label="Advanced"
-                                                                onChange={this.handleRadioBtn.bind(this)}
-								checked={this.state.ruleType ? false : true}>Advanced
-							</Radio>
-						</div>
-					</div>
-                                        {this.state.ruleType ?
-                                                <RuleFormula ref="RuleFormula" fields={this.props.parsedStreams} sql={this.state.sql} condition={this.state.condition}/>
-						:
-						<div className="form-group">
-							<label className="col-sm-2 control-label">SQL Query*</label>
-							<div className="col-sm-5">
-                                                                <ReactCodemirror
-                                                                        ref="SQLCodemirror"
-                                                                        value={this.state.sql}
-                                                                        onChange={this.updateCode.bind(this)}
-                                                                        options={sqloptions}
-								/>
-							</div>
-                                                </div>
-					}
-				</form>
-			</div>
+                    </div>
+                                }
+                        </form>
 		);
 	}
 }

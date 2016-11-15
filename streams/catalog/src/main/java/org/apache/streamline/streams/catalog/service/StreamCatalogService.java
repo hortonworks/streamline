@@ -31,6 +31,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.streamline.streams.layout.storm.FluxComponent;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.common.util.FileStorage;
@@ -65,8 +66,6 @@ import org.apache.streamline.streams.catalog.configuration.ConfigFileType;
 import org.apache.streamline.streams.catalog.configuration.ConfigFileWriter;
 import org.apache.streamline.streams.catalog.processor.CustomProcessorInfo;
 import org.apache.streamline.streams.catalog.rule.RuleParser;
-import org.apache.streamline.streams.catalog.topology.ConfigField;
-import org.apache.streamline.streams.catalog.topology.TopologyComponentDefinition;
 import org.apache.streamline.streams.catalog.topology.TopologyLayoutValidator;
 import org.apache.streamline.streams.catalog.topology.component.TopologyDagBuilder;
 import org.apache.streamline.streams.cluster.discovery.ServiceNodeDiscoverer;
@@ -78,10 +77,13 @@ import org.apache.streamline.streams.layout.component.TopologyActions;
 import org.apache.streamline.streams.layout.component.TopologyDag;
 import org.apache.streamline.streams.layout.component.TopologyLayout;
 import org.apache.streamline.streams.layout.component.rule.Rule;
-import org.apache.streamline.streams.layout.exception.BadTopologyLayoutException;
 import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
 import org.apache.streamline.streams.rule.UDAF;
 import org.apache.streamline.streams.rule.UDAF2;
+import com.google.common.io.ByteStreams;
+import org.apache.streamline.streams.catalog.topology.TopologyComponentBundle;
+import org.apache.streamline.streams.catalog.topology.TopologyComponentUISpecification;
+import org.apache.streamline.streams.layout.exception.ComponentConfigException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -93,6 +95,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -107,6 +110,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
+import java.util.UUID;
 
 import static java.util.stream.Collectors.toList;
 import static org.apache.streamline.streams.catalog.TopologyEdge.StreamGrouping;
@@ -245,8 +249,7 @@ public class StreamCatalogService {
     }
 
     public Collection<Service> listServices(final Long clusterId) {
-        return this.dao.find(SERVICE_NAMESPACE,
-            Collections.singletonList(new QueryParam("clusterId", clusterId.toString())));
+        return this.dao.find(SERVICE_NAMESPACE, Collections.singletonList(new QueryParam("clusterId", clusterId.toString())));
     }
 
     public Collection<Service> listServices(List<QueryParam> params) {
@@ -312,8 +315,7 @@ public class StreamCatalogService {
     }
 
     public Collection<Component> listComponents(final Long serviceId) {
-        return dao.find(COMPONENT_NAMESPACE,
-            Collections.singletonList(new QueryParam("serviceId", serviceId.toString())));
+        return dao.find(COMPONENT_NAMESPACE, Collections.singletonList(new QueryParam("serviceId", serviceId.toString())));
     }
 
     public Collection<Component> listComponents(List<QueryParam> queryParams) {
@@ -364,8 +366,7 @@ public class StreamCatalogService {
     }
 
     public Collection<ServiceConfiguration> listServiceConfigurations(final Long serviceId) {
-        return dao.find(SERVICE_CONFIGURATION_NAMESPACE,
-            Collections.singletonList(new QueryParam("serviceId", serviceId.toString())));
+        return dao.find(SERVICE_CONFIGURATION_NAMESPACE, Collections.singletonList(new QueryParam("serviceId", serviceId.toString())));
     }
 
     public Collection<ServiceConfiguration> listServiceConfigurations(
@@ -561,7 +562,7 @@ public class StreamCatalogService {
                     .isValidJsonAsPerSchema(schema, json);
 
             if (!isValidAsPerSchema) {
-                throw new BadTopologyLayoutException("Topology with id "
+                throw new ComponentConfigException("Topology with id "
                         + topologyId + " failed to validate against json "
                         + "schema");
             }
@@ -590,10 +591,28 @@ public class StreamCatalogService {
         topology.getTopologyDag().traverse(extraJarsHandler);
         Path extraJarsLocation = topologyActions.getExtraJarsLocation(getTopologyLayout(topology));
         makeEmptyDir(extraJarsLocation);
+        Set<String> extraJars = new HashSet<>();
+        extraJars.addAll(extraJarsHandler.getExtraJars());
+        extraJars.addAll(getBundleJars(getTopologyLayout(topology)));
+        downloadAndCopyJars(extraJars, extraJarsLocation);
+    }
+
+    private Set<String> getBundleJars (TopologyLayout topologyLayout) throws IOException {
+        TopologyComponentBundleJarHandler topologyComponentBundleJarHandler = new TopologyComponentBundleJarHandler(this);
+        topologyLayout.getTopologyDag().traverse(topologyComponentBundleJarHandler);
+        Set<TopologyComponentBundle> bundlesToDeploy = topologyComponentBundleJarHandler.getTopologyComponentBundleSet();
+        Set<String> bundleJars = new HashSet<>();
+        for (TopologyComponentBundle topologyComponentBundle: bundlesToDeploy) {
+            bundleJars.add(topologyComponentBundle.getBundleJar());
+        }
+        return bundleJars;
+    }
+
+    private void downloadAndCopyJars (Set<String> jarsToDownload, Path destinationPath) throws IOException {
         Set<String> copiedJars = new HashSet<>();
-        for (String jar : extraJarsHandler.getExtraJars()) {
+        for (String jar: jarsToDownload) {
             if (!copiedJars.contains(jar)) {
-                File destPath = Paths.get(extraJarsLocation.toString(), Paths.get(jar).getFileName().toString()).toFile();
+                File destPath = Paths.get(destinationPath.toString(), Paths.get(jar).getFileName().toString()).toFile();
                 try (InputStream src = fileStorage.downloadFile(jar);
                      FileOutputStream dest = new FileOutputStream(destPath)
                 ) {
@@ -737,90 +756,132 @@ public class StreamCatalogService {
         return topNAndOther;
     }
 
-    public Collection<TopologyComponentDefinition.TopologyComponentType> listTopologyComponentTypes() {
-        return Arrays.asList(TopologyComponentDefinition.TopologyComponentType.values());
+    public Collection<TopologyComponentBundle.TopologyComponentType> listTopologyComponentBundleTypes() {
+        return Arrays.asList(TopologyComponentBundle.TopologyComponentType.values());
     }
 
-    public Collection<TopologyComponentDefinition> listTopologyComponentsForTypeWithFilter(TopologyComponentDefinition.TopologyComponentType componentType, List<QueryParam> params) {
-        List<TopologyComponentDefinition> topologyComponentDefinitions = new ArrayList<>();
-        String ns = TopologyComponentDefinition.NAME_SPACE;
-        Collection<TopologyComponentDefinition> filtered = dao.find(ns, params);
-        for (TopologyComponentDefinition tc : filtered) {
-            if (tc.getType().equals(componentType)) {
-                topologyComponentDefinitions.add(tc);
+    public Collection<TopologyComponentBundle> listTopologyComponentBundlesForTypeWithFilter(TopologyComponentBundle.TopologyComponentType componentType,
+                                                                                  List<QueryParam> params) {
+        List<TopologyComponentBundle> topologyComponentBundles = new ArrayList<>();
+        String ns = TopologyComponentBundle.NAME_SPACE;
+        Collection<TopologyComponentBundle> filtered = dao.find(ns, params);
+        for (TopologyComponentBundle tcb : filtered) {
+            if (tcb.getType().equals(componentType)) {
+                topologyComponentBundles.add(tcb);
             }
         }
-        return topologyComponentDefinitions;
+        return topologyComponentBundles;
     }
 
-    public TopologyComponentDefinition getTopologyComponent(Long topologyComponentId) {
-        TopologyComponentDefinition topologyComponentDefinition = new TopologyComponentDefinition();
-        topologyComponentDefinition.setId(topologyComponentId);
-        return this.dao.get(topologyComponentDefinition.getStorableKey());
+    public TopologyComponentBundle getTopologyComponentBundle(Long topologyComponentBundleId) {
+        TopologyComponentBundle topologyComponentBundle = new TopologyComponentBundle();
+        topologyComponentBundle.setId(topologyComponentBundleId);
+        return this.dao.get(topologyComponentBundle.getStorableKey());
     }
 
-    public TopologyComponentDefinition addTopologyComponent(TopologyComponentDefinition
-                                                                    topologyComponentDefinition) {
-        if (topologyComponentDefinition.getId() == null) {
-            topologyComponentDefinition.setId(this.dao.nextId(TopologyComponentDefinition.NAME_SPACE));
+    public TopologyComponentBundle addTopologyComponentBundle (TopologyComponentBundle topologyComponentBundle, InputStream bundleJar) throws
+            ComponentConfigException, IOException {
+        topologyComponentBundle.getTopologyComponentUISpecification().validate();
+        loadTransformationClassForBundle(topologyComponentBundle, bundleJar);
+        if (!topologyComponentBundle.getBuiltin()) {
+            topologyComponentBundle.setBundleJar(getTopologyComponentBundleJarName(topologyComponentBundle));
+            uploadFileToStorage(bundleJar, topologyComponentBundle.getBundleJar());
         }
-        if (topologyComponentDefinition.getTimestamp() == null) {
-            topologyComponentDefinition.setTimestamp(System.currentTimeMillis());
+        try {
+            if (topologyComponentBundle.getId() == null) {
+                topologyComponentBundle.setId(this.dao.nextId(TopologyComponentBundle.NAME_SPACE));
+            }
+            if (topologyComponentBundle.getTimestamp() == null) {
+                topologyComponentBundle.setTimestamp(System.currentTimeMillis());
+            }
+            this.dao.add(topologyComponentBundle);
+        } catch (StorageException e) {
+            if (!topologyComponentBundle.getBuiltin()) {
+                LOG.debug("StorageException while adding the bundle. Deleting the bundle jar.");
+                deleteFileFromStorage(topologyComponentBundle.getBundleJar());
+            }
+            throw e;
         }
-        this.dao.add(topologyComponentDefinition);
-        return topologyComponentDefinition;
+        return topologyComponentBundle;
     }
 
-    public TopologyComponentDefinition addOrUpdateTopologyComponent(Long id, TopologyComponentDefinition topologyComponentDefinition) {
-        topologyComponentDefinition.setId(id);
-        topologyComponentDefinition.setTimestamp(System.currentTimeMillis());
-        this.dao.addOrUpdate(topologyComponentDefinition);
-        return topologyComponentDefinition;
+    public TopologyComponentBundle addOrUpdateTopologyComponentBundle (Long id, TopologyComponentBundle topologyComponentBundle, InputStream bundleJar) throws
+            ComponentConfigException, IOException {
+        topologyComponentBundle.getTopologyComponentUISpecification().validate();
+        loadTransformationClassForBundle(topologyComponentBundle, bundleJar);
+        if (!topologyComponentBundle.getBuiltin()) {
+            topologyComponentBundle.setBundleJar(getTopologyComponentBundleJarName(topologyComponentBundle));
+            uploadFileToStorage(bundleJar, topologyComponentBundle.getBundleJar());
+        }
+        TopologyComponentBundle existing = new TopologyComponentBundle();
+        existing.setId(id);
+        existing = this.dao.get(existing.getStorableKey());
+        if (!existing.getBuiltin()) {
+            try {
+                deleteFileFromStorage(existing.getBundleJar());
+            } catch (IOException e) {
+                if (!topologyComponentBundle.getBuiltin()) {
+                    deleteFileFromStorage(topologyComponentBundle.getBundleJar());
+                }
+                throw e;
+            }
+        }
+        try {
+            topologyComponentBundle.setId(id);
+            topologyComponentBundle.setTimestamp(System.currentTimeMillis());
+            this.dao.addOrUpdate(topologyComponentBundle);
+        } catch (StorageException e) {
+            if (!topologyComponentBundle.getBuiltin()) {
+                deleteFileFromStorage(topologyComponentBundle.getBundleJar());
+            }
+            throw e;
+        }
+        return topologyComponentBundle;
     }
 
-    public TopologyComponentDefinition removeTopologyComponent(Long id) {
-        TopologyComponentDefinition topologyComponentDefinition = new TopologyComponentDefinition();
-        topologyComponentDefinition.setId(id);
-        return dao.remove(new StorableKey(TopologyComponentDefinition.NAME_SPACE, topologyComponentDefinition.getPrimaryKey()));
+    public TopologyComponentBundle removeTopologyComponentBundle (Long id) throws IOException {
+        TopologyComponentBundle topologyComponentBundle = new TopologyComponentBundle();
+        topologyComponentBundle.setId(id);
+        TopologyComponentBundle existing = this.dao.get(topologyComponentBundle.getStorableKey());
+        if (!existing.getBuiltin()) {
+            deleteFileFromStorage(existing.getBundleJar());
+        }
+        return dao.remove(existing.getStorableKey());
     }
 
     public InputStream getFileFromJarStorage(String fileName) throws IOException {
         return this.fileStorage.downloadFile(fileName);
     }
 
-    public Collection<CustomProcessorInfo> listCustomProcessorsWithFilter(List<QueryParam> params) throws IOException {
-        Collection<TopologyComponentDefinition> customProcessors = this.listCustomProcessorsComponentsWithFilter(params);
+    public Collection<CustomProcessorInfo> listCustomProcessorsFromBundleWithFilter(List<QueryParam> params) throws IOException {
+        Collection<TopologyComponentBundle> customProcessors = this.listCustomProcessorBundlesWithFilter(params);
         Collection<CustomProcessorInfo> result = new ArrayList<>();
-        for (TopologyComponentDefinition cp : customProcessors) {
+        for (TopologyComponentBundle cp : customProcessors) {
             CustomProcessorInfo customProcessorInfo = new CustomProcessorInfo();
-            customProcessorInfo.fromTopologyComponent(cp);
-            result.add(customProcessorInfo);
+            result.add(customProcessorInfo.fromTopologyComponentBundle(cp));
         }
         return result;
     }
 
-    private Collection<TopologyComponentDefinition> listCustomProcessorsComponentsWithFilter(List<QueryParam> params) throws IOException {
+    private Collection<TopologyComponentBundle> listCustomProcessorBundlesWithFilter(List<QueryParam> params) throws IOException {
         List<QueryParam> queryParamsForTopologyComponent = new ArrayList<>();
-        queryParamsForTopologyComponent.add(new QueryParam(TopologyComponentDefinition.SUB_TYPE, TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_SUB_TYPE));
+        queryParamsForTopologyComponent.add(new QueryParam(TopologyComponentBundle.SUB_TYPE, TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_SUB_TYPE));
         for (QueryParam qp : params) {
-            if (qp.getName().equals(TopologyComponentDefinition.STREAMING_ENGINE)) {
+            if (qp.getName().equals(TopologyComponentBundle.STREAMING_ENGINE)) {
                 queryParamsForTopologyComponent.add(qp);
             }
         }
-        Collection<TopologyComponentDefinition> customProcessors = this.listTopologyComponentsForTypeWithFilter(TopologyComponentDefinition.TopologyComponentType.PROCESSOR,
-                queryParamsForTopologyComponent);
-        Collection<TopologyComponentDefinition> result = new ArrayList<>();
-        ObjectMapper mapper = new ObjectMapper();
-        for (TopologyComponentDefinition cp : customProcessors) {
-            List<ConfigField> configFields = mapper.readValue(cp.getConfig(), new TypeReference<List<ConfigField>>() {
-            });
+        Collection<TopologyComponentBundle> customProcessors = this.listTopologyComponentBundlesForTypeWithFilter(TopologyComponentBundle.TopologyComponentType
+                        .PROCESSOR, queryParamsForTopologyComponent);
+        Collection<TopologyComponentBundle> result = new ArrayList<>();
+        for (TopologyComponentBundle cp : customProcessors) {
             Map<String, Object> config = new HashMap<>();
-            for (ConfigField configField : configFields) {
-                config.put(configField.getName(), configField.getDefaultValue());
+            for (TopologyComponentUISpecification.UIField uiField: cp.getTopologyComponentUISpecification().getFields()) {
+                config.put(uiField.getFieldName(), uiField.getDefaultValue());
             }
             boolean matches = true;
             for (QueryParam qp : params) {
-                if (!qp.getName().equals(TopologyComponentDefinition.STREAMING_ENGINE) && !qp.getValue().equals(config.get(qp.getName()))) {
+                if (!qp.getName().equals(TopologyComponentBundle.STREAMING_ENGINE) && !qp.getValue().equals(config.get(qp.getName()))) {
                     matches = false;
                     break;
                 }
@@ -832,12 +893,12 @@ public class StreamCatalogService {
         return result;
     }
 
-    public CustomProcessorInfo addCustomProcessorInfo(CustomProcessorInfo customProcessorInfo, InputStream jarFile) throws IOException {
+    public CustomProcessorInfo addCustomProcessorInfoAsBundle(CustomProcessorInfo customProcessorInfo, InputStream jarFile) throws IOException,
+            ComponentConfigException {
         try {
             uploadFileToStorage(jarFile, customProcessorInfo.getJarFileName());
-            TopologyComponentDefinition topologyComponentDefinition = customProcessorInfo.toTopologyComponent();
-            topologyComponentDefinition.setId(this.dao.nextId(TopologyComponentDefinition.NAME_SPACE));
-            this.dao.add(topologyComponentDefinition);
+            TopologyComponentBundle topologyComponentBundle = customProcessorInfo.toTopologyComponentBundle();
+            this.addTopologyComponentBundle(topologyComponentBundle, null);
         } catch (IOException e) {
             LOG.error("IOException thrown while trying to upload jar for %s", customProcessorInfo.getName());
             throw e;
@@ -854,21 +915,19 @@ public class StreamCatalogService {
         return customProcessorInfo;
     }
 
-    public CustomProcessorInfo updateCustomProcessorInfo(CustomProcessorInfo customProcessorInfo, InputStream jarFile) throws
-            IOException {
+    public CustomProcessorInfo updateCustomProcessorInfoAsBundle(CustomProcessorInfo customProcessorInfo, InputStream jarFile) throws
+            IOException, ComponentConfigException {
         List<QueryParam> queryParams = new ArrayList<>();
         queryParams.add(new QueryParam(CustomProcessorInfo.NAME, customProcessorInfo.getName()));
-        Collection<TopologyComponentDefinition> result = this.listCustomProcessorsComponentsWithFilter(queryParams);
+        Collection<TopologyComponentBundle> result = this.listCustomProcessorBundlesWithFilter(queryParams);
         if (result.isEmpty() || result.size() != 1) {
             throw new IOException("Failed to update custom processor with name:" + customProcessorInfo.getName());
         }
-
+        TopologyComponentBundle customProcessorBundle = result.iterator().next();
+        deleteFileFromStorage(new CustomProcessorInfo().fromTopologyComponentBundle(customProcessorBundle).getJarFileName());
         uploadFileToStorage(jarFile, customProcessorInfo.getJarFileName());
-        TopologyComponentDefinition customProcessorComponent = result.iterator().next();
-        TopologyComponentDefinition newCustomProcessorComponent = customProcessorInfo.toTopologyComponent();
-        newCustomProcessorComponent.setId(customProcessorComponent.getId());
-        this.dao.addOrUpdate(newCustomProcessorComponent);
-
+        TopologyComponentBundle newCustomProcessorBundle = customProcessorInfo.toTopologyComponentBundle();
+        this.addOrUpdateTopologyComponentBundle(customProcessorBundle.getId(), newCustomProcessorBundle, null);
         return customProcessorInfo;
     }
 
@@ -884,18 +943,17 @@ public class StreamCatalogService {
         return fileStorage.deleteFile(jarName);
     }
 
-    public CustomProcessorInfo removeCustomProcessorInfo(String name) throws IOException {
+    public CustomProcessorInfo removeCustomProcessorInfoAsBundle(String name) throws IOException {
         List<QueryParam> queryParams = new ArrayList<>();
         queryParams.add(new QueryParam(CustomProcessorInfo.NAME, name));
-        Collection<TopologyComponentDefinition> result = this.listCustomProcessorsComponentsWithFilter(queryParams);
+        Collection<TopologyComponentBundle> result = this.listCustomProcessorBundlesWithFilter(queryParams);
         if (result.isEmpty() || result.size() != 1) {
             throw new IOException("Failed to delete custom processor with name:" + name);
         }
-        TopologyComponentDefinition customProcessorComponent = result.iterator().next();
+        TopologyComponentBundle customProcessorBundle = result.iterator().next();
         CustomProcessorInfo customProcessorInfo = new CustomProcessorInfo();
-        customProcessorInfo.fromTopologyComponent(customProcessorComponent);
-        deleteFileFromStorage(customProcessorInfo.getJarFileName());
-        this.dao.remove(customProcessorComponent.getStorableKey());
+        deleteFileFromStorage(customProcessorInfo.fromTopologyComponentBundle(customProcessorBundle).getJarFileName());
+        this.removeTopologyComponentBundle(customProcessorBundle.getId());
         return customProcessorInfo;
     }
 
@@ -1886,4 +1944,47 @@ public class StreamCatalogService {
         }
     }
 
+    private void loadTransformationClassForBundle (TopologyComponentBundle topologyComponentBundle, InputStream bundleJar) {
+        if (topologyComponentBundle.getStreamingEngine().equals(TopologyLayoutConstants.STORM_STREAMING_ENGINE)) {
+            if (topologyComponentBundle.getBuiltin()) {
+                try {
+                    FluxComponent fluxComponent = (FluxComponent) Class.forName(topologyComponentBundle.getTransformationClass()).newInstance();
+                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+                    LOG.debug("Got exception", e);
+                    throw new RuntimeException("Check transformationClass property. Cannot load builtin transformation class " + topologyComponentBundle
+                            .getTransformationClass());
+                }
+            } else {
+                ProxyUtil<FluxComponent> fluxComponentProxyUtil = new ProxyUtil<FluxComponent>(FluxComponent.class);
+                OutputStream os = null;
+                InputStream is = null;
+                try {
+                    File tmpFile = File.createTempFile(UUID.randomUUID().toString(), ".jar");
+                    tmpFile.deleteOnExit();
+                    os = new FileOutputStream(tmpFile);
+                    ByteStreams.copy(bundleJar, os);
+                    FluxComponent fluxComponent = fluxComponentProxyUtil.loadClassFromJar(tmpFile.getAbsolutePath(), topologyComponentBundle
+                            .getTransformationClass());
+                } catch (Exception ex) {
+                    LOG.debug("Got exception", ex);
+                    throw new RuntimeException("Cannot load transformation class " + topologyComponentBundle.getTransformationClass() + " from bundle Jar: ");
+                } finally {
+                    try {
+                        if (os != null) {
+                            os.close();
+                        }
+                    } catch (IOException ex) {
+                        LOG.error("Got exception", ex);
+                    }
+                }
+            }
+        }
+    }
+
+    private String getTopologyComponentBundleJarName (TopologyComponentBundle topologyComponentBundle) {
+        List<String> jarFileName = Arrays.asList(topologyComponentBundle.getStreamingEngine(), topologyComponentBundle.getType().name(), topologyComponentBundle
+                .getSubType(), UUID.randomUUID().toString(), ".jar");
+        String bundleJarFileName = String.join("-", jarFileName);
+        return bundleJarFileName;
+    }
 }

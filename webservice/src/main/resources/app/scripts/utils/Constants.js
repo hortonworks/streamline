@@ -2,6 +2,8 @@ const baseUrl = "/api/v1/catalog/";
 const pageSize = 25;
 const notifyTextLimit = 90;
 const toastOpt = {timeOut:0,closeButton:true,tapToDismiss:false,extendedTimeOut:0};
+const registryPort = "9090";
+const PieChartColor = ["#006ea0","#77b0bd","#b7cfdb","#9dd1e9"];
 const ItemTypes = {
   ComponentNodes: 'box',
   Nodes: 'node'
@@ -35,7 +37,7 @@ const Components = {
                 { name: "Solr", label:"Solr", imgPath: "styles/img/icon-solr.png", hideOnUI:"true" },
                 { name: "Redis", label:"Redis", imgPath: "styles/img/icon-redis.png", hideOnUI:"true" },
                 { name: "Elastic Search", label:"Elastic Search", imgPath: "styles/img/icon-elasticsearch.png", hideOnUI:"true" }
-	]
+        ]
 };
 
 export {
@@ -44,5 +46,7 @@ export {
 	ItemTypes,
   Components,
   notifyTextLimit,
-  toastOpt
+  toastOpt,
+  PieChartColor,
+  registryPort
 };

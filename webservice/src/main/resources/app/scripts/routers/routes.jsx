@@ -2,9 +2,6 @@ import React from 'react'
 import { Router, Route, hashHistory, browserHistory, IndexRoute } from 'react-router'
 
 import DashboardContainer from '../containers/Dashboard/DashboardContainer'
-import ParserRegContainer from '../containers/Registry-Services/ParserRegistry/ParserRegistryContainer'
-import SchemaRegContainer from '../containers/Registry-Services/SchemaRegistry/SchemaRegistryContainer'
-import DeviceRegContainer from '../containers/Registry-Services/DeviceRegistry/DeviceRegistryContainer'
 
 import MetricsContainer from '../containers/Streams/Metrics/MetricsContainer'
 import TopologyListContainer from '../containers/Streams/TopologyListing/TopologyListingContainer'
@@ -29,12 +26,9 @@ const onEnter = (nextState, replace, callback) => {
 export default (
 
   <Route path="/" component={null} name="Home" onEnter={onEnter}>
-    <IndexRoute name="My Applications" component={TopologyListContainer} onEnter={onEnter} />
-  <Route path="schema-registry" name="Schema Registry" onEnter={onEnter}>
-        <IndexRoute component={SchemaRegContainer} onEnter={onEnter} />
-  </Route>
+    <IndexRoute name="All Streams" component={TopologyListContainer} onEnter={onEnter} />
   <Route path="metrics" name="Metrics" component={MetricsContainer} onEnter={onEnter}/>
-  <Route path="applications" name="My Applications" onEnter={onEnter}>
+  <Route path="applications" name="All Streams" onEnter={onEnter}>
 	<IndexRoute name="My Applications" component={TopologyListContainer} onEnter={onEnter} />
     <Route path=":id" name="Application Editor" component={TopologyEditorContainer} onEnter={onEnter}/>
   </Route>

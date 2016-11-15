@@ -1,4 +1,7 @@
 ## 0.1.4
+ * STREAMLINE-484: UI - Change the Topology Editor as per the mocks.
+ * STREAMLINE-446: UI - selecting the output schema.
+ * STREAMLINE-409: Add ability to add sources, sinks and processors to streams that are not supported by default bootstrap script.
  * STREAMLINE-493: Disabling notification REST service by default for TP.
  * STREAMLINE-436: Split Streams.
  * STREAMLINE-478: Ship notifier jars and notifier config with topology during deployment.

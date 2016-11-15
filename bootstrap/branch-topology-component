@@ -1,1 +1,49 @@
-{"type": "PROCESSOR", "name": "branchRuleBoltComponent", "subType": "BRANCH", "streamingEngine": "STORM", "config":"[{\"name\":\"parallelism\",\"isOptional\":true,\"type\":\"number\",\"defaultValue\":1},{\"name\":\"operations\",\"isOptional\":false,\"type\":\"string\",\"defaultValue\":null,\"values\":[\"EQUALS\",\"NOT_EQUAL\",\"GREATER_THAN\",\"LESS_THAN\",\"GREATER_THAN_EQUALS_TO\",\"LESS_THAN_EQUALS_TO\"]},{\"name\":\"logicalOperators\",\"isOptional\":false,\"type\":\"string\",\"defaultValue\":null,\"values\":[\"AND\",\"OR\"]}]", "schemaClass": "org.apache.streamline.streams.schema.RulesProcessorSchemaEvolver", "transformationClass": "org.apache.streamline.streams.layout.storm.RuleBoltFluxComponent", "timestamp": 1440118796995}
+{
+  "type": "PROCESSOR",
+  "name": "Branch Bolt",
+  "subType": "BRANCH",
+  "builtin": true,
+  "streamingEngine": "STORM",
+  "transformationClass": "org.apache.streamline.streams.layout.storm.RuleBoltFluxComponent",
+  "schemaClass": "org.apache.streamline.streams.schema.RulesProcessorSchemaEvolver",
+  "topologyComponentUISpecification": {
+    "fields": [
+      {
+        "uiName": "Operations",
+        "fieldName": "operations",
+        "isOptional": false,
+        "tooltip": "Rule operations",
+        "isUserInput": false,
+        "type": "enumstring",
+        "options": [
+          "EQUALS",
+          "NOT_EQUAL",
+          "GREATER_THAN",
+          "LESS_THAN",
+          "GREATER_THAN_EQUALS_TO",
+          "LESS_THAN_EQUALS_TO"
+        ]
+      },
+      {
+        "uiName": "Logical operators",
+        "fieldName": "logicalOperators",
+        "isOptional": false,
+        "tooltip": "Rule logical operators",
+        "isUserInput": false,
+        "type": "enumstring",
+        "options": [
+          "AND",
+          "OR"
+        ]
+      },
+      {
+        "uiName": "Parallelism",
+        "fieldName": "parallelism",
+        "isOptional": true,
+        "tooltip": "Parallelism hint for rule bolt",
+        "type": "number",
+        "defaultValue": 1
+      }
+    ]
+  }
+}

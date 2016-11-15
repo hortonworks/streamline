@@ -246,7 +246,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
             yamlMap.put(StormTopologyLayoutConstants.YAML_KEY_NAME, getTopologyName(topology));
             TopologyDag topologyDag = topology.getTopologyDag();
             LOG.debug("Initial Topology config {}", topology.getConfig());
-            StormTopologyFluxGenerator fluxGenerator = new StormTopologyFluxGenerator(topology, conf);
+            StormTopologyFluxGenerator fluxGenerator = new StormTopologyFluxGenerator(topology, conf, getExtraJarsLocation(topology));
             topologyDag.traverse(fluxGenerator);
             for (Map.Entry<String, Map<String, Object>> entry: fluxGenerator.getYamlKeysAndComponents()) {
                 addComponentToCollection(yamlMap, entry.getValue(), entry.getKey());

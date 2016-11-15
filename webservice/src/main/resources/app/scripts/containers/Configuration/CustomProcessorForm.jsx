@@ -43,7 +43,7 @@ export default class CustomProcessorForm extends Component {
 		jarFileName: '',
 		inputSchema: '',
 		outputStreamToSchema: [],
-		configFields: [],
+    topologyComponentUISpecification: [],
 		fieldId: null,
 		modalTitle: 'Add Config  Field'
 	}
@@ -64,7 +64,7 @@ export default class CustomProcessorForm extends Component {
           FSReactToastr.error(
               <CommonNotification flag="error" content={processor.responseMessage}/>, '', toastOpt)
 				} else {
-					let {streamingEngine, name, description, customProcessorImpl, jarFileName, inputSchema, outputStreamToSchema, configFields} = processor.entities[0];
+          let {streamingEngine, name, description, customProcessorImpl, jarFileName, inputSchema, outputStreamToSchema, topologyComponentUISpecification} = processor.entities[0];
 					inputSchema = JSON.stringify(inputSchema.fields, null, "  ");
 					let arr = [],
 						streamIds = _.keys(outputStreamToSchema);
@@ -75,8 +75,9 @@ export default class CustomProcessorForm extends Component {
 						})
 					});
 					outputStreamToSchema = arr;
-					configFields.map((o)=>{ o.id = this.idCount++; });
-					let obj = {streamingEngine, name, description, customProcessorImpl, jarFileName, inputSchema, outputStreamToSchema, configFields};
+          topologyComponentUISpecification.fields.map((o)=>{ o.id = this.idCount++; });
+          let obj = {streamingEngine, name, description, customProcessorImpl, jarFileName, inputSchema, outputStreamToSchema};
+          obj.topologyComponentUISpecification = topologyComponentUISpecification.fields;
 					this.setState(obj);
 				}
 			})
@@ -95,9 +96,9 @@ export default class CustomProcessorForm extends Component {
 			return;
 		}
 		let fileObj = event.target.files[0];
-        this.setState({
-			jarFileName: fileObj
-        });
+    this.setState({
+      jarFileName: fileObj
+    });
 	}
 
 	handleAddFields() {
@@ -113,11 +114,11 @@ export default class CustomProcessorForm extends Component {
 	}
 
 	handleConfigFieldsEdit(id){
-		let obj = this.state.configFields.find((o) => o.id === id);
+    let obj = this.state.topologyComponentUISpecification.find((o) => o.id === id);
 
 		this.modalContent = ()=>{
-				return <ConfigFieldsForm ref="addField" id={id} fieldData={obj}/>
-			};
+			return <ConfigFieldsForm ref="addField" id={id} fieldData={obj}/>
+		};
 		this.setState({
 			fieldId: id,
 			title: 'Edit Config Field'
@@ -131,38 +132,38 @@ export default class CustomProcessorForm extends Component {
 			let data = this.refs.addField.getConfigField();
 			let arr = [];
 			if(this.state.fieldId) {
-				let index = this.state.configFields.findIndex((o) => o.id === this.state.fieldId);
-				arr = this.state.configFields;
+        let index = this.state.topologyComponentUISpecification.findIndex((o) => o.id === this.state.fieldId);
+        arr = this.state.topologyComponentUISpecification;
 				arr[index] = data;
 			} else {
-				arr = [...this.state.configFields, data];
+        arr = [...this.state.topologyComponentUISpecification, data];
 			}
 			this.setState({
-				configFields: arr
+        topologyComponentUISpecification: arr
 			})
 			this.refs.ConfigFieldModal.hide();
 		}
 	}
 
 	handleConfigFieldsDelete(id){
-		this.setState({configFields: _.reject(this.state.configFields, (o) => o.id === id)});
+    this.setState({topologyComponentUISpecification: _.reject(this.state.topologyComponentUISpecification, (o) => o.id === id)});
 	}
 
 	validateData() {
 		let validDataFlag = true;
 		let {streamingEngine, name, description, customProcessorImpl, jarFileName,
-			configFields, inputSchema} = this.state;
+                        topologyComponentUISpecification, inputSchema} = this.state;
 		let outputStreams = this.refs.OutputSchemaContainer.getOutputStreams();
 
 		if(streamingEngine === '' || name === '' || description === '' || customProcessorImpl === '' ||
-			jarFileName === '' || inputSchema === '' || outputStreams.length === 0 || configFields.length === 0)
+                        jarFileName === '' || inputSchema === '' || outputStreams.length === 0 || topologyComponentUISpecification.length === 0)
 			validDataFlag = false;
 		return validDataFlag;
 	}
 
 	handleSave() {
 		if(this.validateData()) {
-			let {streamingEngine, name, description, customProcessorImpl, jarFileName, configFields} = this.state;
+      let {streamingEngine, name, description, customProcessorImpl, jarFileName, topologyComponentUISpecification} = this.state;
 			let inputSchema = {
 				fields: JSON.parse(this.state.inputSchema)
 			};
@@ -173,13 +174,14 @@ export default class CustomProcessorForm extends Component {
 					fields: JSON.parse(o.fields)
 				};
 			});
-			let outputStreamToSchema = obj;
+  		let outputStreamToSchema = obj;
 
-			let configFieldsArr = configFields.map((o) => {
-				let {name, isOptional, type, defaultValue, isUserInput, tooltip} = o;
-				return {name, isOptional, type,	defaultValue, isUserInput, tooltip};
+      let configFieldsArr = topologyComponentUISpecification.map((o) => {
+        let {fieldName, uiName, isOptional, type, defaultValue, isUserInput, tooltip} = o;
+        return {fieldName, uiName, isOptional, type,	defaultValue, isUserInput, tooltip};
 			});
-	        let customProcessorInfo = {streamingEngine, name, description, customProcessorImpl, inputSchema, outputStreamToSchema, configFields: configFieldsArr, jarFileName: jarFileName.name};
+      
+      let customProcessorInfo = {streamingEngine, name, description, customProcessorImpl, inputSchema, outputStreamToSchema, topologyComponentUISpecification: {fields: configFieldsArr}, jarFileName: jarFileName.name};
 
 			var formData = new FormData();
 			formData.append('jarFile', jarFileName);
@@ -214,111 +216,86 @@ export default class CustomProcessorForm extends Component {
                     <div className="box-body">
                       <form className="form-horizontal">
                         <div className="form-group">
-                          <label className="col-sm-2 control-label">Streaming Engine*</label>
+                          <label className="col-sm-2 control-label">Streaming Engine <span className="text-danger">*</span></label>
                           <div className="col-sm-5">
                             <input
                               name="streamingEngine"
                               placeholder="Streaming Engine"
                               onChange={this.handleValueChange.bind(this)}
                               type="text"
-                              className="form-control"
+                              className={this.state.streamingEngine.trim() == "" ? "form-control invalidInput" : "form-control"}
                               value={this.state.streamingEngine}
                               disabled={true}
                                 required={true}
                             />
                           </div>
-                          {this.state.streamingEngine === '' ?
-                            <div className="col-sm-4">
-                              <p className="form-control-static error-note">Please Enter a Streaming Engine</p>
-                            </div>
-                          : null}
                         </div>
                         <div className="form-group">
-                          <label className="col-sm-2 control-label">Name*</label>
+                          <label className="col-sm-2 control-label">Name <span className="text-danger">*</span></label>
                           <div className="col-sm-5">
                             <input
                               name="name"
                               placeholder="Name"
                               onChange={this.handleValueChange.bind(this)}
                               type="text"
-                              className="form-control"
+                              className={this.state.name.trim() == "" ? "form-control invalidInput" : "form-control"}
                               value={this.state.name}
                                 required={true}
                                 disabled = {this.props.id ? true : false}
                             />
                           </div>
-                          {this.state.name === '' ?
-                            <div className="col-sm-4">
-                              <p className="form-control-static error-note">Please Enter Name</p>
-                            </div>
-                          : null}
                         </div>
                         <div className="form-group">
-                          <label className="col-sm-2 control-label">Description*</label>
+                          <label className="col-sm-2 control-label">Description <span className="text-danger">*</span></label>
                           <div className="col-sm-5">
                             <input
                               name="description"
                               placeholder="Description"
                               onChange={this.handleValueChange.bind(this)}
                               type="text"
-                              className="form-control"
+                              className={this.state.description.trim() == "" ? "form-control invalidInput" : "form-control"}
                               value={this.state.description}
                                 required={true}
                             />
                           </div>
-                          {this.state.description === '' ?
-                            <div className="col-sm-4">
-                              <p className="form-control-static error-note">Please Enter Description</p>
-                            </div>
-                          : null}
                         </div>
                         <div className="form-group">
-                          <label className="col-sm-2 control-label">Classname*</label>
+                          <label className="col-sm-2 control-label">Classname <span className="text-danger">*</span></label>
                           <div className="col-sm-5">
                             <input
                               name="customProcessorImpl"
                               placeholder="Classname"
                               onChange={this.handleValueChange.bind(this)}
                               type="text"
-                              className="form-control"
+                              className={this.state.customProcessorImpl.trim() == "" ? "form-control invalidInput" : "form-control"}
                               value={this.state.customProcessorImpl}
                                 required={true}
                             />
                           </div>
-                          {this.state.customProcessorImpl === '' ?
-                            <div className="col-sm-4">
-                              <p className="form-control-static error-note">Please Enter Classname</p>
-                            </div>
-                          : null}
                         </div>
                         <div className="form-group">
-                          <label className="col-sm-2 control-label">Upload Jar*</label>
+                          <label className="col-sm-2 control-label">Upload Jar <span className="text-danger">*</span></label>
                           <div className="col-sm-5">
                             <input
                               type="file"
                               name="jarFileName"
                               placeholder="Select Jar"
                               accept=".jar"
-                              className="form-control"
+                              className={this.state.jarFileName == "" ? "form-control invalidInput" : "form-control"}
                               ref="jarFileName"
                               onChange={(event)=>{this.handleJarUpload.call(this, event)}}
                                 required={true}
                             />
                           </div>
-                          {this.state.jarFileName === '' ?
-                            <div className="col-sm-4">
-                              <p className="form-control-static error-note">Please Select a Jar</p>
-                            </div>
-                          : null}
                         </div>
                         <div className="form-group">
-                          <label className="col-sm-2 control-label">Config Fields*</label>
+                          <label className="col-sm-2 control-label">Config Fields <span className="text-danger">*</span></label>
                           <div className="col-sm-5">
                             <button type="button" className="btn btn-sm btn-primary" onClick={this.handleAddFields.bind(this)}>Add Config Fields</button>
                           </div>
-                          {this.state.configFields.length === 0 ? (
+                          {this.state.topologyComponentUISpecification.length === 0 ? (
                             <div className="col-sm-4">
-                              <p className="form-control-static error-note">Please add Config Fields</p>
+                              <p className="form-control-static text-danger">Please add Config Fields</p>
                             </div>)
                           : null}
                         </div>
@@ -328,9 +305,10 @@ export default class CustomProcessorForm extends Component {
                                     className="table table-hover table-bordered"
                                     noDataText="No records found."
                                     currentPage={0}
-                                    itemsPerPage={this.state.configFields.length > pageSize ? pageSize : 0} pageButtonLimit={5}>
+                                    itemsPerPage={this.state.topologyComponentUISpecification.length > pageSize ? pageSize : 0} pageButtonLimit={5}>
                                       <Thead>
-                                        <Th column="name">Name</Th>
+                                        <Th column="fieldName">Field Name</Th>
+                                        <Th column="uiName">UI Name</Th>
                                         <Th column="isOptional">Is Optional</Th>
                                         <Th column="type">Type</Th>
                                         <Th column="defaultValue">Default Value</Th>
@@ -338,10 +316,11 @@ export default class CustomProcessorForm extends Component {
                                         <Th column="tooltip">Tooltip</Th>
                                         <Th column="action">Actions</Th>
                                       </Thead>
-                                    {this.state.configFields.map((obj, i) => {
+                                    {this.state.topologyComponentUISpecification.map((obj, i) => {
                                       return (
                                         <Tr key={i}>
-                                          <Td column="name">{obj.name}</Td>
+                                          <Td column="fieldName">{obj.fieldName}</Td>
+                                          <Td column="uiName">{obj.uiName}</Td>
                                           <Td column="isOptional">{obj.isOptional}</Td>
                                           <Td column="type">{obj.type}</Td>
                                           <Td column="defaultValue">{obj.defaultValue}</Td>
@@ -360,7 +339,7 @@ export default class CustomProcessorForm extends Component {
                           </div>
                         </div>
                         <div className="form-group">
-                          <label className="col-sm-2 control-label">Input Schema*</label>
+                          <label className="col-sm-2 control-label">Input Schema <span className="text-danger">*</span></label>
                           <div className="col-sm-6">
                             <ReactCodemirror
                               ref="JSONCodemirror"
@@ -371,7 +350,7 @@ export default class CustomProcessorForm extends Component {
                           </div>
                         </div>
                         <div className="form-group">
-                          <label className="col-sm-2 control-label">Output Schema*</label>
+                          <label className="col-sm-2 control-label">Output Schema <span className="text-danger">*</span></label>
                           <div className="col-sm-10">
                             <OutputSchemaContainer ref="OutputSchemaContainer" streamData={this.state.outputStreamToSchema}/>
                           </div>

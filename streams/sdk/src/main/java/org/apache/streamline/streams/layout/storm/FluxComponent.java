@@ -1,6 +1,6 @@
 package org.apache.streamline.streams.layout.storm;
 
-import org.apache.streamline.streams.layout.exception.BadTopologyLayoutException;
+import org.apache.streamline.streams.layout.exception.ComponentConfigException;
 
 import java.util.List;
 import java.util.Map;
@@ -48,7 +48,7 @@ public interface FluxComponent {
 
     /*
     validate the configuration for this component.
-    throw BadTopologyLayoutException if configuration is not correct
+    throw ComponentConfigException if configuration is not correct
      */
-    void validateConfig () throws BadTopologyLayoutException;
+    void validateConfig () throws ComponentConfigException;
 }

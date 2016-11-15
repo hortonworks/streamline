@@ -1,7 +1,7 @@
 package org.apache.streamline.streams.layout.storm;
 
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.streamline.streams.layout.exception.BadTopologyLayoutException;
+import org.apache.streamline.streams.layout.exception.ComponentConfigException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -109,14 +109,14 @@ public class HdfsBoltFluxComponent extends AbstractFluxComponent {
     }
 
     @Override
-    public void validateConfig () throws BadTopologyLayoutException {
+    public void validateConfig () throws ComponentConfigException {
         super.validateConfig();
         validateStringFields();
         validateIntegerFields();
         validateFloatOrDoubleFields();
     }
 
-    private void validateStringFields () throws BadTopologyLayoutException {
+    private void validateStringFields () throws ComponentConfigException {
         String[] requiredStringFields = {
             TopologyLayoutConstants.JSON_KEY_FS_URL,
             TopologyLayoutConstants.JSON_KEY_ROTATION_INTERVAL_UNIT
@@ -131,7 +131,7 @@ public class HdfsBoltFluxComponent extends AbstractFluxComponent {
         validateStringFields(optionalStringFields, false);
     }
 
-    private void validateIntegerFields () throws BadTopologyLayoutException {
+    private void validateIntegerFields () throws ComponentConfigException {
         String[] requiredIntegerFields = {
             TopologyLayoutConstants.JSON_KEY_COUNT_POLICY_VALUE
         };
@@ -144,7 +144,7 @@ public class HdfsBoltFluxComponent extends AbstractFluxComponent {
         validateIntegerFields(requiredIntegerFields, true, mins, maxes);
     }
 
-    private void validateFloatOrDoubleFields () throws BadTopologyLayoutException {
+    private void validateFloatOrDoubleFields () throws ComponentConfigException {
         String[] requiredFields = {
             TopologyLayoutConstants.JSON_KEY_ROTATION_INTERVAL
         };

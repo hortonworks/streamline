@@ -15,7 +15,16 @@ public class Utils {
      */
     public static Schema getSchemaFromConfig (Map schemaConfig) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
-        String inputSchemaStr = objectMapper.writeValueAsString(schemaConfig);
-        return objectMapper.readValue(inputSchemaStr, Schema.class);
+        return getSchemaFromConfig(objectMapper.writeValueAsString(schemaConfig));
+    }
+    /**
+     * This method takes in a schema represented as a json string and returns a {@link Schema}
+     * @param schemaConfig A map representing {@link Schema}
+     * @return schema generated from the string argument
+     * @throws IOException
+     */
+    public static Schema getSchemaFromConfig (String schemaConfig) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.readValue(schemaConfig, Schema.class);
     }
 }

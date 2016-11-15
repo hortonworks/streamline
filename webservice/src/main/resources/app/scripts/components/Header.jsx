@@ -2,19 +2,25 @@ import React, {Component} from 'react';
 import {Link} from 'react-router'
 import state from '../app_state';
 import {Nav,Navbar,NavItem,NavDropdown,MenuItem} from 'react-bootstrap';
+import {registryPort} from '../utils/Constants';
 
 export default class Header extends Component {
 
 	constructor(props){
 		super();
+    this.getRegistryBaseURL();
 	}
+
+  getRegistryBaseURL(){
+    this.registryURL = window.location.protocol + '//' + window.location.hostname + ':' + registryPort + '/#/';
+  }
 
   clickHandler = (eventKey) => {
     event.preventDefault();
     switch(eventKey){
       case "3.1" : this.context.router.push("applications")
         break;
-      case "3.2" : this.context.router.push("schema-registry")
+      case "3.2" : window.location = this.registryURL+'schema-registry';
         break;
       case "4.1" : this.context.router.push("custom-processor")
         break;
@@ -28,14 +34,14 @@ export default class Header extends Component {
 
   render(){
     const userIcon = <i className="fa fa-user"></i>;
-    const bigIcon = <i className="fa fa-chevron-down"></i>;
+    const bigIcon = <i className="fa fa-caret-down"></i>;
     const config = <i className="fa fa-cog"></i>;
 
     return(
       <Navbar inverse fluid={true} >
         <Navbar.Header>
           <Navbar.Brand>
-            <Link to="/"><strong>Stream</strong>Line</Link>
+            <Link to="/"><strong className="whiteText">STREAM</strong>LINE</Link>
           </Navbar.Brand>
           <Navbar.Toggle />
         </Navbar.Header>
@@ -44,7 +50,7 @@ export default class Header extends Component {
             <NavDropdown id="dash_dropdown"  eventKey="3" title={bigIcon} noCaret>
               <MenuItem eventKey="3.1">
                 <i className="fa fa-sitemap"></i>
-                  &nbsp;My Appliations
+                  &nbsp;My Application
               </MenuItem>
               <MenuItem eventKey="3.2">
                 <i className="fa fa-file-code-o"></i>
@@ -52,7 +58,7 @@ export default class Header extends Component {
               </MenuItem>
             </NavDropdown>
           </Nav>
-          <Navbar.Text pullLeft>
+          <Navbar.Text pullLeft className="whiteText">
                 {this.props.headerContent}
           </Navbar.Text>
           <Nav pullRight onSelect={this.clickHandler}>
