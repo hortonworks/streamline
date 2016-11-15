@@ -17,12 +17,9 @@ public class NotificationBoltFluxComponent extends AbstractFluxComponent {
     public NotificationBoltFluxComponent() {
     }
 
-    public NotificationBoltFluxComponent(NotificationSink notificationSink) {
-        this.notificationSink = notificationSink;
-    }
-
     @Override
     protected void generateComponent() {
+        notificationSink = (NotificationSink) conf.get(StormTopologyLayoutConstants.STREAMLINE_COMPONENT_CONF_KEY);
         String boltId = "notificationBolt" + UUID_FOR_COMPONENTS;
         String boltClassName = "org.apache.streamline.streams.runtime.storm.bolt.notification.NotificationBolt";
         String[] constructorArgNames = {TopologyLayoutConstants.JSON_KEY_NOTIFICATION_SINK_JSON};

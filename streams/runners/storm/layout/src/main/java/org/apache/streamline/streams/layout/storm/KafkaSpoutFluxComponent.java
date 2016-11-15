@@ -18,18 +18,14 @@ import java.util.Map;
  */
 public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
     private static final Logger LOG = LoggerFactory.getLogger(KafkaSpoutFluxComponent.class);
-
-    private final KafkaSource kafkaSource;
+    private KafkaSource kafkaSource;
     // for unit tests
     public KafkaSpoutFluxComponent() {
-        kafkaSource = null;
-    }
-    public KafkaSpoutFluxComponent(KafkaSource kafkaSource) {
-        this.kafkaSource = kafkaSource;
     }
 
     @Override
     protected void generateComponent () {
+        kafkaSource = (KafkaSource) conf.get(StormTopologyLayoutConstants.STREAMLINE_COMPONENT_CONF_KEY);
         String spoutConfigRef = addSpoutConfigComponent();
         String spoutId = "kafkaSpout" + UUID_FOR_COMPONENTS;
         String spoutClassName = "org.apache.storm.kafka.KafkaSpout";

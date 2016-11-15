@@ -22,12 +22,9 @@ public class RuleBoltFluxComponent extends AbstractFluxComponent {
     public RuleBoltFluxComponent() {
     }
 
-    public RuleBoltFluxComponent(RulesProcessor rulesProcessor) {
-        this.rulesProcessor = rulesProcessor;
-    }
-
     @Override
     protected void generateComponent () {
+        rulesProcessor = (RulesProcessor) conf.get(StormTopologyLayoutConstants.STREAMLINE_COMPONENT_CONF_KEY);
         String rulesBoltDependenciesFactory = addRulesBoltDependenciesFactory();
         String boltId = "ruleBolt" + UUID_FOR_COMPONENTS;
         String boltClassName = "org.apache.streamline.streams.runtime.storm.bolt.rules.RulesBolt";

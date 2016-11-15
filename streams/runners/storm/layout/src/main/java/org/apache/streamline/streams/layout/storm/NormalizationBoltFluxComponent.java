@@ -21,12 +21,9 @@ public class NormalizationBoltFluxComponent extends AbstractFluxComponent {
 
     public NormalizationBoltFluxComponent () {}
 
-    public NormalizationBoltFluxComponent(NormalizationProcessor normalizationProcessor) {
-        this.normalizationProcessor = normalizationProcessor;
-    }
-
     @Override
     protected void generateComponent() {
+        normalizationProcessor = (NormalizationProcessor) conf.get(StormTopologyLayoutConstants.STREAMLINE_COMPONENT_CONF_KEY);
         String normalizationProcessorId = addNormalizationProcessorBuilder();
 
         String boltId = "normalizationBolt" + UUID_FOR_COMPONENTS;

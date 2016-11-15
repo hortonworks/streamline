@@ -221,6 +221,8 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
         Map<String, Object> props = new HashMap<>();
         props.putAll(config);
         props.putAll(topologyComponent.getConfig().getProperties());
+        // below line is needed becuase kafka, normalization, notification and rules flux components need design time entities
+        props.put(StormTopologyLayoutConstants.STREAMLINE_COMPONENT_CONF_KEY, topologyComponent);
         fluxComponent.withConfig(props);
 
         for (Map<String, Object> referencedComponent : fluxComponent.getReferencedComponents()) {

@@ -25,12 +25,9 @@ public class WindowRuleBoltFluxComponent extends RuleBoltFluxComponent {
     public WindowRuleBoltFluxComponent() {
     }
 
-    public WindowRuleBoltFluxComponent(RulesProcessor rulesProcessor) {
-        super(rulesProcessor);
-    }
-
     @Override
     protected void generateComponent() {
+        rulesProcessor = (RulesProcessor) conf.get(StormTopologyLayoutConstants.STREAMLINE_COMPONENT_CONF_KEY);
         String rulesBoltDependenciesFactory = addRulesBoltDependenciesFactory();
         String boltId = "windowruleBolt" + UUID_FOR_COMPONENTS;
         String boltClassName = "org.apache.streamline.streams.runtime.storm.bolt.rules.WindowRulesBolt";
