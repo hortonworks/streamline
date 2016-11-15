@@ -1,4 +1,5 @@
 ## 0.1.4
+ * STREAMLINE-462: Refactor Rules Processor.
  * STREAMLINE-484: UI - Change the Topology Editor as per the mocks.
  * STREAMLINE-446: UI - selecting the output schema.
  * STREAMLINE-409: Add ability to add sources, sinks and processors to streams that are not supported by default bootstrap script.
