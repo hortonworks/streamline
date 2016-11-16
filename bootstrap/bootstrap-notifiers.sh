@@ -6,7 +6,7 @@ port="${2:-8080}"
 
 # Load Notifiers
 echo "Adding Email notifier"
-curl -X POST "http://${host}:${port}/api/v1/catalog/notifiers" -F notifierJarFile=@${dir}/streams/notifier/target/streamline-notifier-0.1.0-SNAPSHOT.jar -F notifierConfig='{
+curl -X POST "http://${host}:${port}/api/v1/catalog/notifiers" -F notifierJarFile=@./notifier-jars/streamline-notifier-0.1.0-SNAPSHOT.jar -F notifierConfig='{
   "name": "email_notifier",
   "description": "testing",
   "className": "org.apache.streamline.streams.notifiers.EmailNotifier",
@@ -30,7 +30,7 @@ curl -X POST "http://${host}:${port}/api/v1/catalog/notifiers" -F notifierJarFil
 echo
 
 echo "Adding Console notifier"
-curl -X POST "http://${host}:${port}/api/v1/catalog/notifiers" -F notifierJarFile=@${dir}/streams/notifier/target/streamline-notifier-0.1.0-SNAPSHOT.jar -F notifierConfig='{
+curl -X POST "http://${host}:${port}/api/v1/catalog/notifiers" -F notifierJarFile=@./notifier-jars/streamline-notifier-0.1.0-SNAPSHOT.jar -F notifierConfig='{
   "name": "console_notifier",
   "description": "testing",
   "className": "org.apache.streamline.streams.notifiers.ConsoleNotifier"
