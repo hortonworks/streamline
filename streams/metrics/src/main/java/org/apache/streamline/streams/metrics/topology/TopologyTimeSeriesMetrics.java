@@ -1,5 +1,6 @@
 package org.apache.streamline.streams.metrics.topology;
 
+import org.apache.streamline.streams.layout.component.Component;
 import org.apache.streamline.streams.layout.component.TopologyLayout;
 import org.apache.streamline.streams.metrics.TimeSeriesQuerier;
 
@@ -21,12 +22,12 @@ public interface TopologyTimeSeriesMetrics {
      * Retrieve "complete latency" on source.
      *
      * @param topology  topology catalog instance
-     * @param sourceId  source id (same to component id)
+     * @param component component layout instance
      * @param from      beginning of the time period: timestamp (in milliseconds)
      * @param to        end of the time period: timestamp (in milliseconds)
      * @return Map of data points which are paired to (timestamp, value)
      */
-    Map<Long, Double> getCompleteLatency(TopologyLayout topology, String sourceId, long from, long to);
+    Map<Long, Double> getCompleteLatency(TopologyLayout topology, Component component, long from, long to);
 
     /**
      * Retrieve "kafka topic offsets" on source.
@@ -38,13 +39,13 @@ public interface TopologyTimeSeriesMetrics {
      * <p/>
      * That source should be "KAFKA" type and have topic name from configuration.
      *
-     * @param topology  topology catalog instance
-     * @param sourceId  source id (same to component id)
+     * @param topology  topology layout instance
+     * @param component component layout instance
      * @param from      beginning of the time period: timestamp (in milliseconds)
      * @param to        end of the time period: timestamp (in milliseconds)
      * @return Map of metric name and Map of data points which are paired to (timestamp, value).
      */
-    Map<String, Map<Long, Double>> getkafkaTopicOffsets(TopologyLayout topology, String sourceId, long from, long to);
+    Map<String, Map<Long, Double>> getkafkaTopicOffsets(TopologyLayout topology, Component component, long from, long to);
 
     /**
      * Retrieve "component stats" on component.
@@ -57,12 +58,12 @@ public interface TopologyTimeSeriesMetrics {
      * 5) "recordsInWaitQueue": Count of records waiting in queue<br/>
      *
      * @param topology      topology catalog instance
-     * @param componentId   component id
+     * @param component     component layout instance
      * @param from          beginning of the time period: timestamp (in milliseconds)
      * @param to            end of the time period: timestamp (in milliseconds)
      * @return Map of metric name and Map of data points which are paired to (timestamp, value).
      */
-    Map<String, Map<Long, Double>> getComponentStats(TopologyLayout topology, String componentId, long from, long to);
+    Map<String, Map<Long, Double>> getComponentStats(TopologyLayout topology, Component component, long from, long to);
 
     /**
      * Get instance of TimeSeriesQuerier.

@@ -141,8 +141,8 @@ public interface TopologyMetrics extends TopologyTimeSeriesMetrics {
         /**
          * Constructor.
          *
-         * @param componentName 'component name' for Streams.
-         *                      If component name for streaming framework is different from component name for Streams,
+         * @param componentName 'component name' for Streamline.
+         *                      If component name for streaming framework is different from component name for Streamline,
          *                      implementation of TopologyMetrics should match the relation.
          * @param inputRecords  Count of input records.
          * @param outputRecords Count of output records.

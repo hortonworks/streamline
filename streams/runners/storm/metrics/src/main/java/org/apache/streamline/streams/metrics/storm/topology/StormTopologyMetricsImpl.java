@@ -2,6 +2,7 @@ package org.apache.streamline.streams.metrics.storm.topology;
 
 import org.apache.streamline.streams.exception.ConfigException;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
+import org.apache.streamline.streams.layout.component.Component;
 import org.apache.streamline.streams.layout.component.TopologyLayout;
 import org.apache.streamline.streams.metrics.TimeSeriesQuerier;
 import org.apache.streamline.streams.metrics.storm.StormRestAPIClient;
@@ -163,24 +164,24 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
      * {@inheritDoc}
      */
     @Override
-    public Map<Long, Double> getCompleteLatency(TopologyLayout topology, String sourceId, long from, long to) {
-        return timeSeriesMetrics.getCompleteLatency(topology, sourceId, from, to);
+    public Map<Long, Double> getCompleteLatency(TopologyLayout topology, Component component, long from, long to) {
+        return timeSeriesMetrics.getCompleteLatency(topology, component, from, to);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Map<String, Map<Long, Double>> getkafkaTopicOffsets(TopologyLayout topology, String sourceId, long from, long to) {
-        return timeSeriesMetrics.getkafkaTopicOffsets(topology, sourceId, from, to);
+    public Map<String, Map<Long, Double>> getkafkaTopicOffsets(TopologyLayout topology, Component component, long from, long to) {
+        return timeSeriesMetrics.getkafkaTopicOffsets(topology, component, from, to);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Map<String, Map<Long, Double>> getComponentStats(TopologyLayout topology, String componentId, long from, long to) {
-        return timeSeriesMetrics.getComponentStats(topology, componentId, from, to);
+    public Map<String, Map<Long, Double>> getComponentStats(TopologyLayout topology, Component component, long from, long to) {
+        return timeSeriesMetrics.getComponentStats(topology, component, from, to);
     }
 
     private ComponentMetric extractMetric(String componentName, Map<String, ?> componentMap) {

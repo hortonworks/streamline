@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import mockit.Mock;
 import mockit.MockUp;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
+import org.apache.streamline.streams.layout.component.Component;
+import org.apache.streamline.streams.layout.component.StreamlineComponent;
+import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
 import org.apache.streamline.streams.layout.component.TopologyLayout;
 import org.apache.streamline.streams.metrics.TimeSeriesQuerier;
 import mockit.Expectations;
@@ -31,14 +34,15 @@ public class StormTopologyTimeSeriesMetricsImplTest {
     private Random random = new Random();
     private ObjectMapper mapper = new ObjectMapper();
 
-    private static final String SOURCE_ID = "device";
     private static final String TOPIC_NAME = "topic";
 
     private TopologyLayout topology;
+    private Component component;
     private String mockedTopologyName;
 
     @Before
     public void setUp() throws IOException {
+        component = getComponentLayoutForTest();
         topology = getTopologyLayoutForTest();
 
         String generatedTopologyName = StormTopologyUtil.generateStormTopologyName(topology);
@@ -73,13 +77,8 @@ public class StormTopologyTimeSeriesMetricsImplTest {
         final long from = 1L;
         final long to = 3L;
 
-        stormTopologyTimeSeriesMetrics.getCompleteLatency(topology, SOURCE_ID, from, to);
+        stormTopologyTimeSeriesMetrics.getCompleteLatency(topology, component, from, to);
         fail("It should throw Exception!");
-    }
-
-    private TopologyLayout getTopologyLayoutForTest() throws IOException {
-        Map<String, Object> configurations = buildTopologyConfigWithKafkaDataSource(SOURCE_ID, TOPIC_NAME);
-        return new TopologyLayout(1L, "topology", mapper.writeValueAsString(configurations), null);
     }
 
     @Test
@@ -93,7 +92,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
         new Expectations() {{
             mockTimeSeriesQuerier.getMetrics(
                     withEqual(mockedTopologyName),
-                    withEqual(SOURCE_ID),
+                    withEqual(component.getId() + "-" + component.getName()),
                     withEqual(StormMappedMetric.completeLatency.getStormMetricName()),
                     withEqual(StormMappedMetric.completeLatency.getAggregateFunction()),
                     withEqual(from), withEqual(to)
@@ -102,7 +101,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
             result = expected;
         }};
 
-        Map<Long, Double> actual = stormTopologyTimeSeriesMetrics.getCompleteLatency(topology, SOURCE_ID, from, to);
+        Map<Long, Double> actual = stormTopologyTimeSeriesMetrics.getCompleteLatency(topology, component, from, to);
         assertEquals(expected, actual);
     }
 
@@ -121,7 +120,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
         new Expectations() {{
             mockTimeSeriesQuerier.getMetrics(
                     withEqual(mockedTopologyName),
-                    withEqual(SOURCE_ID),
+                    withEqual(component.getId() + "-" + component.getName()),
                     withEqual(String.format(StormMappedMetric.logsize.getStormMetricName(), TOPIC_NAME)),
                     withEqual(StormMappedMetric.logsize.getAggregateFunction()),
                     withEqual(from), withEqual(to)
@@ -131,7 +130,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
 
             mockTimeSeriesQuerier.getMetrics(
                     withEqual(mockedTopologyName),
-                    withEqual(SOURCE_ID),
+                    withEqual(component.getId() + "-" + component.getName()),
                     withEqual(String.format(StormMappedMetric.offset.getStormMetricName(), TOPIC_NAME)),
                     withEqual(StormMappedMetric.offset.getAggregateFunction()),
                     withEqual(from), withEqual(to)
@@ -141,7 +140,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
 
             mockTimeSeriesQuerier.getMetrics(
                     withEqual(mockedTopologyName),
-                    withEqual(SOURCE_ID),
+                    withEqual(component.getId() + "-" + component.getName()),
                     withEqual(String.format(StormMappedMetric.lag.getStormMetricName(), TOPIC_NAME)),
                     withEqual(StormMappedMetric.lag.getAggregateFunction()),
                     withEqual(from), withEqual(to)
@@ -150,7 +149,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
             result = expected.get(StormMappedMetric.lag.name());
         }};
 
-        Map<String, Map<Long, Double>> actual = stormTopologyTimeSeriesMetrics.getkafkaTopicOffsets(topology, SOURCE_ID, from, to);
+        Map<String, Map<Long, Double>> actual = stormTopologyTimeSeriesMetrics.getkafkaTopicOffsets(topology, component, from, to);
         assertEquals(expected, actual);
     }
 
@@ -172,7 +171,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
         new Expectations() {{
             mockTimeSeriesQuerier.getMetrics(
                     withEqual(mockedTopologyName),
-                    withEqual(SOURCE_ID),
+                    withEqual(component.getId() + "-" + component.getName()),
                     withEqual(StormMappedMetric.inputRecords.getStormMetricName()),
                     withEqual(StormMappedMetric.inputRecords.getAggregateFunction()),
                     withEqual(from), withEqual(to)
@@ -182,7 +181,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
 
             mockTimeSeriesQuerier.getMetrics(
                     withEqual(mockedTopologyName),
-                    withEqual(SOURCE_ID),
+                    withEqual(component.getId() + "-" + component.getName()),
                     withEqual(StormMappedMetric.outputRecords.getStormMetricName()),
                     withEqual(StormMappedMetric.outputRecords.getAggregateFunction()),
                     withEqual(from), withEqual(to)
@@ -192,7 +191,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
 
             mockTimeSeriesQuerier.getMetrics(
                     withEqual(mockedTopologyName),
-                    withEqual(SOURCE_ID),
+                    withEqual(component.getId() + "-" + component.getName()),
                     withEqual(StormMappedMetric.failedRecords.getStormMetricName()),
                     withEqual(StormMappedMetric.failedRecords.getAggregateFunction()),
                     withEqual(from), withEqual(to)
@@ -202,7 +201,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
 
             mockTimeSeriesQuerier.getMetrics(
                     withEqual(mockedTopologyName),
-                    withEqual(SOURCE_ID),
+                    withEqual(component.getId() + "-" + component.getName()),
                     withEqual(StormMappedMetric.processedTime.getStormMetricName()),
                     withEqual(StormMappedMetric.processedTime.getAggregateFunction()),
                     withEqual(from), withEqual(to)
@@ -212,7 +211,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
 
             mockTimeSeriesQuerier.getMetrics(
                     withEqual(mockedTopologyName),
-                    withEqual(SOURCE_ID),
+                    withEqual(component.getId() + "-" + component.getName()),
                     withEqual(StormMappedMetric.recordsInWaitQueue.getStormMetricName()),
                     withEqual(StormMappedMetric.recordsInWaitQueue.getAggregateFunction()),
                     withEqual(from), withEqual(to)
@@ -221,15 +220,31 @@ public class StormTopologyTimeSeriesMetricsImplTest {
             result = expected.get(StormMappedMetric.recordsInWaitQueue.name());
         }};
 
-        Map<String, Map<Long, Double>> actual = stormTopologyTimeSeriesMetrics.getComponentStats(topology, SOURCE_ID, from, to);
+        Map<String, Map<Long, Double>> actual = stormTopologyTimeSeriesMetrics.getComponentStats(topology, component, from, to);
         assertEquals(expected, actual);
     }
 
-    private Map<String, Object> buildTopologyConfigWithKafkaDataSource(String sourceId, String topicName) {
+    private TopologyLayout getTopologyLayoutForTest() throws IOException {
+        Map<String, Object> configurations = buildTopologyConfigWithKafkaDataSource(TOPIC_NAME);
+        return new TopologyLayout(1L, "topology", mapper.writeValueAsString(configurations), null);
+    }
+
+    private Component getComponentLayoutForTest() {
+        StreamlineComponent component = new StreamlineComponent() {
+            @Override
+            public void accept(TopologyDagVisitor visitor) {
+            }
+        };
+        component.setId("11");
+        component.setName("device");
+        return component;
+    }
+
+    private Map<String, Object> buildTopologyConfigWithKafkaDataSource(String topicName) {
         Map<String, Object> configurations = new HashMap<>();
 
         Map<String, Object> dataSource = new HashMap<>();
-        dataSource.put(TopologyLayoutConstants.JSON_KEY_UINAME, sourceId);
+        dataSource.put(TopologyLayoutConstants.JSON_KEY_UINAME, component.getName());
         dataSource.put(TopologyLayoutConstants.JSON_KEY_TYPE, "KAFKA");
 
         Map<String, Object> dataSourceConfig = new HashMap<>();

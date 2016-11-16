@@ -31,6 +31,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.streamline.streams.layout.component.StreamlineComponent;
+import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
 import org.apache.streamline.streams.layout.storm.FluxComponent;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.Schema;
@@ -549,6 +551,17 @@ public class StreamCatalogService {
         return topology;
     }
 
+    public TopologyComponent getTopologyComponent(Long topologyComponentId) {
+        TopologyComponent topologyComponent = getTopologySource(topologyComponentId);
+        if (topologyComponent == null) {
+            topologyComponent = getTopologyProcessor(topologyComponentId);
+            if (topologyComponent == null) {
+                topologyComponent = getTopologySink(topologyComponentId);
+            }
+        }
+        return topologyComponent;
+    }
+
     public Topology validateTopology(URL schema, Long topologyId)
             throws Exception {
         Topology ds = new Topology();
@@ -707,16 +720,16 @@ public class StreamCatalogService {
         return this.topologyMetrics.getMetricsForTopology(getTopologyLayout(topology));
     }
 
-    public Map<Long, Double> getCompleteLatency(Topology topology, String sourceId, long from, long to) throws Exception {
-        return this.topologyMetrics.getCompleteLatency(getTopologyLayout(topology), sourceId, from, to);
+    public Map<Long, Double> getCompleteLatency(Topology topology, TopologyComponent component, long from, long to) throws Exception {
+        return this.topologyMetrics.getCompleteLatency(getTopologyLayout(topology), getComponentLayout(component), from, to);
     }
 
-    public Map<String, Map<Long, Double>> getComponentStats(Topology topology, String sourceId, Long from, Long to) throws IOException {
-        return this.topologyMetrics.getComponentStats(getTopologyLayout(topology), sourceId, from, to);
+    public Map<String, Map<Long, Double>> getComponentStats(Topology topology, TopologyComponent component, Long from, Long to) throws IOException {
+        return this.topologyMetrics.getComponentStats(getTopologyLayout(topology), getComponentLayout(component), from, to);
     }
 
-    public Map<String, Map<Long, Double>> getKafkaTopicOffsets(Topology topology, String sourceId, Long from, Long to) throws IOException {
-        return this.topologyMetrics.getkafkaTopicOffsets(getTopologyLayout(topology), sourceId, from, to);
+    public Map<String, Map<Long, Double>> getKafkaTopicOffsets(Topology topology, TopologyComponent component, Long from, Long to) throws IOException {
+        return this.topologyMetrics.getkafkaTopicOffsets(getTopologyLayout(topology), getComponentLayout(component), from, to);
     }
 
     public Map<String, Map<Long, Double>> getMetrics(String metricName, String parameters, Long from, Long to) {
@@ -1872,6 +1885,18 @@ public class StreamCatalogService {
     private TopologyLayout getTopologyLayout(Topology topology) throws IOException {
         return new TopologyLayout(topology.getId(), topology.getName(),
                 topology.getConfig(), topology.getTopologyDag());
+    }
+
+    private org.apache.streamline.streams.layout.component.Component getComponentLayout(TopologyComponent component) {
+        StreamlineComponent componentLayout = new StreamlineComponent() {
+            @Override
+            public void accept(TopologyDagVisitor visitor) {
+                throw new UnsupportedOperationException("Not intended to be called here.");
+            }
+        };
+        componentLayout.setId(component.getId().toString());
+        componentLayout.setName(component.getName());
+        return componentLayout;
     }
 
     private Service initializeService(Cluster cluster, String serviceName) {
