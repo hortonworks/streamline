@@ -26,9 +26,11 @@ import org.apache.streamline.storage.PrimaryKey;
 import org.apache.streamline.storage.catalog.AbstractStorable;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.apache.streamline.streams.layout.component.Stream.Grouping;
 
@@ -41,6 +43,14 @@ public class TopologyEdge extends AbstractStorable {
 
         // for jackson
         private StreamGrouping() {
+        }
+
+        public StreamGrouping(StreamGrouping other) {
+            this.streamId = other.getStreamId();
+            this.grouping = other.getGrouping();
+            if (other.getFields() != null) {
+                this.fields = new ArrayList<>(other.getFields());
+            }
         }
 
         public Long getStreamId() {
@@ -80,6 +90,20 @@ public class TopologyEdge extends AbstractStorable {
     private Long fromId;
     private Long toId;
     private List<StreamGrouping> streamGroupings;
+
+    public TopologyEdge() {
+    }
+
+    public TopologyEdge(TopologyEdge other) {
+        setId(other.getId());
+        setVersionId(other.getVersionId());
+        setTopologyId(other.getTopologyId());
+        setFromId(other.getFromId());
+        setToId(other.getToId());
+        if (other.getStreamGroupings() != null) {
+            setStreamGroupings(other.getStreamGroupings().stream().map(StreamGrouping::new).collect(Collectors.toList()));
+        }
+    }
 
     @JsonIgnore
     @Override

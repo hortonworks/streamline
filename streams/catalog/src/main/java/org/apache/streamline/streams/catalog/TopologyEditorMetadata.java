@@ -23,6 +23,16 @@ public class TopologyEditorMetadata extends AbstractStorable {
     private String data;
     private Long timestamp;
 
+    public TopologyEditorMetadata() {
+    }
+
+    public TopologyEditorMetadata(TopologyEditorMetadata other) {
+        setTopologyId(other.getTopologyId());
+        setVersionId(other.getVersionId());
+        setData(other.getData());
+        setTimestamp(other.getTimestamp());
+    }
+
     public void setTopologyId(Long topologyId) {
         this.topologyId = topologyId;
     }

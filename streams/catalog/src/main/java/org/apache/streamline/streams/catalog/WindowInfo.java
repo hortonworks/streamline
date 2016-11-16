@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class WindowInfo extends AbstractStorable {
@@ -50,6 +51,31 @@ public class WindowInfo extends AbstractStorable {
     private List<Projection> projections;
     private List<String> groupbykeys;
 
+    public WindowInfo() {
+    }
+
+    public WindowInfo(WindowInfo other) {
+        setId(other.getId());
+        setVersionId(other.getVersionId());
+        setTopologyId(other.getTopologyId());
+        setName(other.getName());
+        setDescription(other.getDescription());
+        if (other.getStreams() != null) {
+            setStreams(new ArrayList<>(other.getStreams()));
+        }
+        setCondition(other.getCondition());
+        setParsedRuleStr(other.getParsedRuleStr());
+        setWindow(new Window(other.getWindow()));
+        if (other.getActions() != null) {
+            setActions(other.getActions().stream().map(Action::new).collect(Collectors.toList()));
+        }
+        if (other.getProjections() != null) {
+            setProjections(other.getProjections().stream().map(Projection::new).collect(Collectors.toList()));
+        }
+        if (other.getGroupbykeys() != null) {
+            setGroupbykeys(new ArrayList<>(other.getGroupbykeys()));
+        }
+    }
     /**
      * A Projection can be either an expression or a function with zero or more args.
      * <ol>
@@ -78,6 +104,15 @@ public class WindowInfo extends AbstractStorable {
 
         // for jackson
         public Projection() {
+        }
+
+        public Projection(Projection other) {
+            this.expr = other.expr;
+            this.functionName = other.functionName;
+            if (other.args != null) {
+                this.args = new ArrayList<>(other.args);
+            }
+            this.outputFieldName = other.outputFieldName;
         }
 
         public Projection(String expr, String functionName, List<String> args, String outputFieldName) {

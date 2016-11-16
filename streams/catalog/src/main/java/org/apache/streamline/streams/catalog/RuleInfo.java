@@ -32,9 +32,11 @@ import org.apache.streamline.streams.layout.component.rule.expression.Window;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * A rule as represented in the UI layout
@@ -75,6 +77,26 @@ public class RuleInfo extends AbstractStorable {
 
     // for jackson
     public RuleInfo() {
+    }
+
+    public RuleInfo(RuleInfo other) {
+        setId(other.getId());
+        setVersionId(other.getVersionId());
+        setTopologyId(other.getTopologyId());
+        setName(other.getName());
+        setDescription(other.getDescription());
+        setCondition(other.getCondition());
+        setSql(other.getSql());
+        setParsedRuleStr(other.getParsedRuleStr());
+        if (other.getWindow() != null) {
+            setWindow(new Window(other.getWindow()));
+        }
+        if (other.getStreams() != null) {
+            setStreams(new ArrayList<>(other.getStreams()));
+        }
+        if (other.getActions() != null) {
+            setActions(other.getActions().stream().map(Action::new).collect(Collectors.toList()));
+        }
     }
 
     @JsonIgnore

@@ -78,17 +78,13 @@ public class TopologyComponentFactory {
     }
 
     public StreamlineSource getStreamlineSource(TopologySource topologySource) {
-        TopologyComponentBundle topologyComponentBundle = getTopologyComponentBundle(topologySource);
-        StreamlineSource source = getProvider(StreamlineSource.class, topologyComponentBundle.getSubType()).create(topologySource);
-        setIotasComponentFromTopologyComponent(source, topologySource, topologyComponentBundle);
+        StreamlineSource source = getStreamlineComponent(StreamlineSource.class, topologySource);
         source.addOutputStreams(createOutputStreams(topologySource));
         return source;
     }
 
     public StreamlineProcessor getStreamlineProcessor(TopologyProcessor topologyProcessor) {
-        TopologyComponentBundle topologyComponentBundle = getTopologyComponentBundle(topologyProcessor);
-        StreamlineProcessor processor = getProvider(StreamlineProcessor.class, topologyComponentBundle.getSubType()).create(topologyProcessor);
-        setIotasComponentFromTopologyComponent(processor, topologyProcessor, topologyComponentBundle);
+        StreamlineProcessor processor = getStreamlineComponent(StreamlineProcessor.class, topologyProcessor);
         if (processor.getOutputStreams() == null || processor.getOutputStreams().isEmpty()) {
             processor.addOutputStreams(createOutputStreams(topologyProcessor));
         }
@@ -96,10 +92,7 @@ public class TopologyComponentFactory {
     }
 
     public StreamlineSink getStreamlineSink(TopologySink topologySink) {
-        TopologyComponentBundle topologyComponentBundle = getTopologyComponentBundle(topologySink);
-        StreamlineSink sink = getProvider(StreamlineSink.class, topologyComponentBundle.getSubType()).create(topologySink);
-        setIotasComponentFromTopologyComponent(sink, topologySink, topologyComponentBundle);
-        return sink;
+        return getStreamlineComponent(StreamlineSink.class, topologySink);
     }
 
     public Edge getStreamlineEdge(TopologyEdge topologyEdge) {
@@ -127,13 +120,17 @@ public class TopologyComponentFactory {
         return topologyComponentBundle;
     }
 
-    private void setIotasComponentFromTopologyComponent (StreamlineComponent streamlineComponent, TopologyComponent topologyComponent, TopologyComponentBundle
-            topologyComponentBundle) {
-        streamlineComponent.setId(topologyComponent.getId().toString());
-        streamlineComponent.setName(topologyComponent.getName());
-        streamlineComponent.setConfig(topologyComponent.getConfig());
-        streamlineComponent.setTopologyComponentBundleId(topologyComponentBundle.getId().toString());
-        streamlineComponent.setTransformationClass(topologyComponentBundle.getTransformationClass());
+    private <T extends StreamlineComponent> T getStreamlineComponent(Class<T> clazz,
+                                                                     TopologyComponent topologyComponent) {
+        TopologyComponentBundle topologyComponentBundle = getTopologyComponentBundle(topologyComponent);
+        StreamlineComponent component = getProvider(clazz, topologyComponentBundle.getSubType())
+                .create(topologyComponent);
+        component.setId(topologyComponent.getId().toString());
+        component.setName(topologyComponent.getName());
+        component.setConfig(topologyComponent.getConfig());
+        component.setTopologyComponentBundleId(topologyComponentBundle.getId().toString());
+        component.setTransformationClass(topologyComponentBundle.getTransformationClass());
+        return clazz.cast(component);
     }
 
     private OutputComponent getOutputComponent(TopologyEdge topologyEdge) {

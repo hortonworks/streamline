@@ -21,11 +21,26 @@ package org.apache.streamline.streams.catalog;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class TopologyOutputComponent extends TopologyComponent {
     private List<Long> outputStreamIds;
     private List<StreamInfo> outputStreams;
+
+    public TopologyOutputComponent() {
+    }
+
+    public TopologyOutputComponent(TopologyOutputComponent other) {
+        super(other);
+        if (other.getOutputStreamIds() != null) {
+            setOutputStreamIds(new ArrayList<>(other.getOutputStreamIds()));
+        }
+        if (other.getOutputStreams() != null) {
+            setOutputStreams(other.getOutputStreams().stream().map(StreamInfo::new).collect(Collectors.toList()));
+        }
+    }
 
     @JsonIgnore
     public List<Long> getOutputStreamIds() {

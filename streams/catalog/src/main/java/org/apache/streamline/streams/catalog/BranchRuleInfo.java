@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * A branch rule as represented in the UI layout
@@ -53,6 +54,20 @@ public class BranchRuleInfo extends AbstractStorable {
 
     // for jackson
     public BranchRuleInfo() {
+    }
+
+    public BranchRuleInfo(BranchRuleInfo other) {
+        setId(other.getId());
+        setTopologyId(other.getTopologyId());
+        setVersionId(other.getVersionId());
+        setName(other.getName());
+        setDescription(other.getDescription());
+        setStream(other.getStream());
+        setCondition(other.getCondition());
+        setParsedRuleStr(other.getParsedRuleStr());
+        if (other.getActions() != null) {
+            setActions(other.getActions().stream().map(Action::new).collect(Collectors.toList()));
+        }
     }
 
     @JsonIgnore

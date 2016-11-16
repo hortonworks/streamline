@@ -163,7 +163,7 @@ public class TopologyCatalogResource {
     @Timed
     public Response listTopologyVersions(@PathParam("topologyId") Long topologyId) {
         try {
-            Collection<TopologyVersionInfo> versionInfos = catalogService.listTopologyVersionInfos(
+                Collection<TopologyVersionInfo> versionInfos = catalogService.listTopologyVersionInfos(
                     WSUtils.buildTopologyIdAwareQueryParams(topologyId, null));
             Response response;
             if (versionInfos != null) {

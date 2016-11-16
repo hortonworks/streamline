@@ -47,6 +47,19 @@ public class TopologyComponent extends AbstractStorable {
     private String name = StringUtils.EMPTY;
     private Config config;
 
+    public TopologyComponent() {
+
+    }
+
+    public TopologyComponent(TopologyComponent other) {
+        setId(other.getId());
+        setTopologyId(other.getTopologyId());
+        setTopologyComponentBundleId(other.getTopologyComponentBundleId());
+        setVersionId(other.getVersionId());
+        setName(other.getName());
+        setConfig(new Config(other.getConfig()));
+    }
+
     @JsonIgnore
     @Override
     public PrimaryKey getPrimaryKey() {

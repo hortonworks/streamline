@@ -740,49 +740,49 @@ public class StreamCatalogService {
         // topology editor metadata
         TopologyEditorMetadata metadata = getTopologyEditorMetadata(topologyId, oldVersionId);
         if (metadata != null) {
-            addTopologyEditorMetadata(topologyId, newVersionId, metadata);
+            addTopologyEditorMetadata(topologyId, newVersionId, new TopologyEditorMetadata(metadata));
         }
 
         // branch rules
         Collection<BranchRuleInfo> branchRuleInfos = listBranchRules(topologyIdVersionIdQueryParams);
         for (BranchRuleInfo branchRuleInfo: branchRuleInfos) {
-            addBranchRule(topologyId, newVersionId, branchRuleInfo);
+            addBranchRule(topologyId, newVersionId, new BranchRuleInfo(branchRuleInfo));
         }
 
         // windowed rules
         Collection<WindowInfo> windowInfos = listWindows(topologyIdVersionIdQueryParams);
         for (WindowInfo windowInfo: windowInfos) {
-            addWindow(topologyId, newVersionId, windowInfo);
+            addWindow(topologyId, newVersionId, new WindowInfo(windowInfo));
         }
 
         // rules
         Collection<RuleInfo> ruleInfos = listRules(topologyIdVersionIdQueryParams);
         for (RuleInfo ruleInfo: ruleInfos) {
-            addRule(topologyId, newVersionId, ruleInfo);
+            addRule(topologyId, newVersionId, new RuleInfo(ruleInfo));
         }
 
         // sources, output streams
         Collection<TopologySource> sources = listTopologySources(topologyIdVersionIdQueryParams);
         for (TopologySource source : sources) {
-            addTopologySource(topologyId, newVersionId, source);
+            addTopologySource(topologyId, newVersionId, new TopologySource(source));
         }
 
         // processors, output streams
         Collection<TopologyProcessor> processors = listTopologyProcessors(topologyIdVersionIdQueryParams);
         for (TopologyProcessor processor: processors) {
-            addTopologyProcessor(topologyId, newVersionId, processor);
+            addTopologyProcessor(topologyId, newVersionId, new TopologyProcessor(processor));
         }
 
         // add sinks
         Collection<TopologySink> sinks = listTopologySinks(topologyIdVersionIdQueryParams);
         for (TopologySink sink : sinks) {
-            addTopologySink(topologyId, newVersionId, sink);
+            addTopologySink(topologyId, newVersionId, new TopologySink(sink));
         }
 
         // add edges
         Collection<TopologyEdge> edges = listTopologyEdges(topologyIdVersionIdQueryParams);
         for (TopologyEdge edge: edges) {
-            addTopologyEdge(topologyId, newVersionId, edge);
+            addTopologyEdge(topologyId, newVersionId, new TopologyEdge(edge));
         }
     }
 
@@ -1333,7 +1333,8 @@ public class StreamCatalogService {
                 }
             })));
         } else if (outputComponent.getOutputStreamIds() != null) {
-            streamInfos = getOutputStreams(outputComponent.getTopologyId(), outputComponent.getOutputStreamIds());
+            streamInfos = getOutputStreams(outputComponent.getTopologyId(), outputComponent.getVersionId(),
+                    outputComponent.getOutputStreamIds());
         } else {
             streamInfos = Collections.emptyList();
             outputComponent.setOutputStreamIds(Collections.<Long>emptyList());
@@ -1342,11 +1343,11 @@ public class StreamCatalogService {
         return streamInfos;
     }
 
-    private List<StreamInfo> getOutputStreams(Long topologyId, List<Long> outputStreamIds) {
+    private List<StreamInfo> getOutputStreams(Long topologyId, Long versionId, List<Long> outputStreamIds) {
         List<StreamInfo> streamInfos = new ArrayList<>();
         for (Long outputStreamId : outputStreamIds) {
             StreamInfo streamInfo;
-            if ((streamInfo = getStreamInfo(topologyId, outputStreamId)) == null) {
+            if ((streamInfo = getStreamInfo(topologyId, outputStreamId, versionId)) == null) {
                 throw new IllegalArgumentException("Output stream with id '" + outputStreamId + "' does not exist.");
             }
             streamInfos.add(streamInfo);
@@ -1411,7 +1412,7 @@ public class StreamCatalogService {
     private List<StreamInfo> addOutputStreams(Long topologyId, Long versionId, List<StreamInfo> streams) {
         List<StreamInfo> streamInfos = new ArrayList<>();
         for (StreamInfo outputStream : streams) {
-            streamInfos.add(addStreamInfo(topologyId, versionId, new StreamInfo(outputStream)));
+            streamInfos.add(addStreamInfo(topologyId, versionId, outputStream));
         }
         return streamInfos;
     }
