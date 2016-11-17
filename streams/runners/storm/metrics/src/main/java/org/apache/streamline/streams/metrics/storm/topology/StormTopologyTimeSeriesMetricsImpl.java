@@ -2,6 +2,7 @@ package org.apache.streamline.streams.metrics.storm.topology;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
+import org.apache.streamline.streams.layout.component.Component;
 import org.apache.streamline.streams.layout.component.TopologyLayout;
 import org.apache.streamline.streams.metrics.TimeSeriesQuerier;
 import org.apache.streamline.streams.metrics.storm.StormRestAPIClient;
@@ -36,48 +37,51 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
     }
 
     @Override
-    public Map<Long, Double> getCompleteLatency(TopologyLayout topology, String sourceId, long from, long to) {
+    public Map<Long, Double> getCompleteLatency(TopologyLayout topology, Component component, long from, long to) {
         assertTimeSeriesQuerierIsSet();
 
         String stormTopologyName = StormTopologyUtil.findOrGenerateTopologyName(client, topology);
+        String stormComponentName = getComponentName(component);
 
-        return queryMetrics(stormTopologyName, sourceId, StormMappedMetric.completeLatency, from, to);
+        return queryMetrics(stormTopologyName, stormComponentName, StormMappedMetric.completeLatency, from, to);
     }
 
     @Override
-    public Map<String, Map<Long, Double>> getkafkaTopicOffsets(TopologyLayout topology, String sourceId, long from, long to) {
+    public Map<String, Map<Long, Double>> getkafkaTopicOffsets(TopologyLayout topology, Component component, long from, long to) {
         assertTimeSeriesQuerierIsSet();
 
         String stormTopologyName = StormTopologyUtil.findOrGenerateTopologyName(client, topology);
+        String stormComponentName = getComponentName(component);
 
-        String topicName = findKafkaTopicName(topology, sourceId);
+        String topicName = findKafkaTopicName(topology, component);
         if (topicName == null) {
             throw new IllegalStateException("Cannot find Kafka topic name from source config - topology name: " +
-                    topology.getName() + " / source : " + sourceId);
+                    topology.getName() + " / source : " + component.getName());
         }
 
         StormMappedMetric[] metrics = { StormMappedMetric.logsize, StormMappedMetric.offset, StormMappedMetric.lag };
 
         Map<String, Map<Long, Double>> kafkaOffsets = new HashMap<>();
         for (StormMappedMetric metric : metrics) {
-            kafkaOffsets.put(metric.name(), queryKafkaMetrics(stormTopologyName, sourceId, metric, topicName, from, to));
+            kafkaOffsets.put(metric.name(), queryKafkaMetrics(stormTopologyName, stormComponentName, metric, topicName, from, to));
         }
 
         return kafkaOffsets;
     }
 
     @Override
-    public Map<String, Map<Long, Double>> getComponentStats(TopologyLayout topology, String componentId, long from, long to) {
+    public Map<String, Map<Long, Double>> getComponentStats(TopologyLayout topology, Component component, long from, long to) {
         assertTimeSeriesQuerierIsSet();
 
         String stormTopologyName = StormTopologyUtil.findOrGenerateTopologyName(client, topology);
+        String stormComponentName = getComponentName(component);
 
         StormMappedMetric[] metrics = { StormMappedMetric.inputRecords, StormMappedMetric.outputRecords,
                 StormMappedMetric.failedRecords, StormMappedMetric.processedTime, StormMappedMetric.recordsInWaitQueue };
 
         Map<String, Map<Long, Double>> componentStats = new HashMap<>();
         for (StormMappedMetric metric : metrics) {
-            componentStats.put(metric.name(), queryMetrics(stormTopologyName, componentId, metric, from, to));
+            componentStats.put(metric.name(), queryMetrics(stormTopologyName, stormComponentName, metric, from, to));
         }
 
         return componentStats;
@@ -89,7 +93,11 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
         }
     }
 
-    private String findKafkaTopicName(TopologyLayout topology, String sourceId) {
+    private String getComponentName(Component component) {
+        return component.getId() + "-" + component.getName();
+    }
+
+    private String findKafkaTopicName(TopologyLayout topology, Component component) {
         String kafkaTopicName = null;
         try {
             Map<String, Object> topologyConfig = topology.getConfig().getProperties();
@@ -100,7 +108,7 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
                 String uiName = (String) dataSource.get(TopologyLayoutConstants.JSON_KEY_UINAME);
                 String type = (String) dataSource.get(TopologyLayoutConstants.JSON_KEY_TYPE);
 
-                if (!uiName.equals(sourceId)) {
+                if (!uiName.equals(component.getName())) {
                     continue;
                 }
 
