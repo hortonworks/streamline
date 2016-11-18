@@ -23,6 +23,7 @@ import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.Topology;
 import org.apache.streamline.streams.catalog.TopologyComponent;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import org.apache.streamline.streams.metrics.service.TopologyMetricsService;
 import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,9 +55,11 @@ public class MetricsResource {
     private static final Logger LOG = LoggerFactory.getLogger(MetricsResource.class);
 
     private final StreamCatalogService catalogService;
+    private final TopologyMetricsService metricsService;
 
-    public MetricsResource(StreamCatalogService service) {
-        this.catalogService = service;
+    public MetricsResource(StreamCatalogService catalogService, TopologyMetricsService metricsService) {
+        this.catalogService = catalogService;
+        this.metricsService = metricsService;
     }
 
     @GET
@@ -66,7 +69,7 @@ public class MetricsResource {
         try {
             Topology topology = catalogService.getTopology(id);
             if (topology != null) {
-                Map<String, TopologyMetrics.ComponentMetric> topologyMetrics = catalogService.getTopologyMetrics(topology);
+                Map<String, TopologyMetrics.ComponentMetric> topologyMetrics = metricsService.getTopologyMetrics(topology);
                 return WSUtils.respond(topologyMetrics, OK, SUCCESS);
             }
         } catch (Exception ex) {
@@ -94,7 +97,7 @@ public class MetricsResource {
             Topology topology = catalogService.getTopology(id);
             TopologyComponent topologyComponent = catalogService.getTopologyComponent(topologyComponentId);
             if (topology != null && topologyComponent != null) {
-                Map<Long, Double> metrics = catalogService.getCompleteLatency(topology, topologyComponent, from, to);
+                Map<Long, Double> metrics = metricsService.getCompleteLatency(topology, topologyComponent, from, to);
                 return WSUtils.respond(metrics, OK, SUCCESS);
             } else if (topology == null) {
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, "Topology: " + id.toString());
@@ -126,7 +129,7 @@ public class MetricsResource {
             Topology topology = catalogService.getTopology(id);
             TopologyComponent topologyComponent = catalogService.getTopologyComponent(topologyComponentId);
             if (topology != null && topologyComponent != null) {
-                Map<String, Map<Long, Double>> metrics = catalogService.getComponentStats(topology, topologyComponent, from, to);
+                Map<String, Map<Long, Double>> metrics = metricsService.getComponentStats(topology, topologyComponent, from, to);
                 return WSUtils.respond(metrics, OK, SUCCESS);
             } else if (topology == null) {
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, "Topology: " + id.toString());
@@ -158,7 +161,7 @@ public class MetricsResource {
             Topology topology = catalogService.getTopology(id);
             TopologyComponent topologyComponent = catalogService.getTopologyComponent(topologyComponentId);
             if (topology != null && topologyComponent != null) {
-                Map<String, Map<Long, Double>> metrics = catalogService.getKafkaTopicOffsets(topology, topologyComponent, from, to);
+                Map<String, Map<Long, Double>> metrics = metricsService.getKafkaTopicOffsets(topology, topologyComponent, from, to);
                 return WSUtils.respond(metrics, OK, SUCCESS);
             } else if (topology == null) {
                 return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, "Topology: " + id.toString());
@@ -190,7 +193,7 @@ public class MetricsResource {
         }
 
         try {
-            Map<String, Map<Long, Double>> metrics = catalogService.getMetrics(metricName, parameters, from, to);
+            Map<String, Map<Long, Double>> metrics = metricsService.getMetrics(metricName, parameters, from, to);
             return WSUtils.respond(metrics, OK, SUCCESS);
         } catch (Exception ex) {
             LOG.error("Got exception", ex);

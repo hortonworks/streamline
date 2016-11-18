@@ -6,7 +6,7 @@ modules:
   - name: streams
     className: org.apache.streamline.streams.service.StreamsModule
     config:
-      topologyActionsImpl: org.apache.streamline.streams.layout.storm.StormTopologyActionsImpl
+      topologyActionsImpl: org.apache.streamline.streams.actions.storm.topology.StormTopologyActionsImpl
       topologyMetricsImpl: org.apache.streamline.streams.metrics.storm.topology.StormTopologyMetricsImpl
       #change the below to the path on your local machine
       streamlineStormJar: /tmp/streamline-runtime-storm-0.1.0-SNAPSHOT.jar

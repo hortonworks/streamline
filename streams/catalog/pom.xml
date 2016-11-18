@@ -28,10 +28,6 @@
         </dependency>
         <dependency>
             <groupId>org.apache.streamline</groupId>
-            <artifactId>streamline-metrics</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.streamline</groupId>
             <artifactId>streamline-cluster</artifactId>
         </dependency>
         <dependency>

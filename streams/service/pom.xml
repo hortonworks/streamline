@@ -22,11 +22,15 @@
         </dependency>
         <dependency>
             <groupId>org.apache.streamline</groupId>
-            <artifactId>streamline-layout-storm</artifactId>
+            <artifactId>streamline-actions</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.streamline</groupId>
-            <artifactId>streamline-metrics-storm</artifactId>
+            <artifactId>streamline-layout</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.streamline</groupId>
+            <artifactId>streamline-metrics</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.streamline</groupId>
@@ -53,6 +57,18 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.streamline</groupId>
+            <artifactId>streamline-actions-storm</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.streamline</groupId>
+            <artifactId>streamline-layout-storm</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.streamline</groupId>
+            <artifactId>streamline-metrics-storm</artifactId>
         </dependency>
     </dependencies>
 

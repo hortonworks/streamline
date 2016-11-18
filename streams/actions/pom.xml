@@ -9,19 +9,18 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>streamline-metrics</artifactId>
+    <artifactId>streamline-actions</artifactId>
+
     <dependencies>
-        <dependency>
-            <groupId>org.apache.streamline</groupId>
-            <artifactId>common</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.apache.streamline</groupId>
             <artifactId>streamline-layout</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.apache.streamline</groupId>
             <artifactId>streamline-catalog</artifactId>
         </dependency>
     </dependencies>
+
 </project>
