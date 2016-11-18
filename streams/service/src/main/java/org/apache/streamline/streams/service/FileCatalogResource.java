@@ -109,8 +109,7 @@ public class FileCatalogResource {
                             @FormDataParam("file") final FormDataContentDisposition contentDispositionHeader,
                             @FormDataParam("fileInfo") final FileInfo fileInfo) throws IOException {
         log.info("Received fileInfo: [{}]", fileInfo);
-        FileInfo updatedFile = addOrUpdateFile(inputStream, fileInfo);
-
+        FileInfo updatedFile = addFile(inputStream, fileInfo);
         return WSUtils.respondEntity(updatedFile, CREATED);
     }
 
@@ -127,19 +126,20 @@ public class FileCatalogResource {
     @Timed
     @PUT
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Path("/files")
-    public Response updateFile(@FormDataParam("file") final InputStream inputStream,
+    @Path("/files/{id}")
+    public Response updateFile(@PathParam("id") Long fileId,
+                               @FormDataParam("file") final InputStream inputStream,
                                @FormDataParam("file") final FormDataContentDisposition contentDispositionHeader,
                                @FormDataParam("fileInfo") final FileInfo fileInfo)
         throws IOException {
         log.info("Received fileInfo: [{}]", fileInfo);
         String oldFileStorageName = null;
-        final FileInfo existingFile = catalogService.getFile(fileInfo.getId());
+        final FileInfo existingFile = catalogService.getFile(fileId);
         if(existingFile != null) {
             oldFileStorageName = existingFile.getStoredFileName();
         }
 
-        final FileInfo updatedFile = addOrUpdateFile(inputStream, fileInfo);
+        final FileInfo updatedFile = addOrUpdateFile(fileId, inputStream, fileInfo);
 
         if(oldFileStorageName != null) {
             final boolean deleted = catalogService.deleteFileFromStorage(oldFileStorageName);
@@ -149,14 +149,28 @@ public class FileCatalogResource {
         return WSUtils.respondEntity(updatedFile, CREATED);
     }
 
-    protected FileInfo addOrUpdateFile(InputStream inputStream, FileInfo fileInfo) throws IOException {
-        final String updatedFileStorageName = getFileStorageName(fileInfo.getName());
-        fileInfo.setStoredFileName(updatedFileStorageName);
-        log.info("Uploading File with fileInfo [{}]", fileInfo);
-        final String uploadedFileStoragePath = catalogService.uploadFileToStorage(inputStream, updatedFileStorageName);
-        log.info("Received File with fileInfo is uploaded to [{}]", uploadedFileStoragePath);
-        fileInfo.setTimestamp(System.currentTimeMillis());
-        return catalogService.addOrUpdateFile(fileInfo);
+    protected FileInfo addFile(InputStream inputStream, FileInfo fileInfo) {
+        uploadFile(inputStream, fileInfo);
+        return catalogService.addFile(fileInfo);
+    }
+
+    protected FileInfo addOrUpdateFile(Long fileId, InputStream inputStream, FileInfo fileInfo) {
+        uploadFile(inputStream, fileInfo);
+        return catalogService.addOrUpdateFile(fileId, fileInfo);
+    }
+
+    private void uploadFile(InputStream inputStream, FileInfo fileInfo) {
+        try {
+            final String updatedFileStorageName = getFileStorageName(fileInfo.getName());
+            fileInfo.setStoredFileName(updatedFileStorageName);
+            log.info("Uploading File with fileInfo [{}]", fileInfo);
+            final String uploadedFileStoragePath = catalogService.uploadFileToStorage(inputStream, updatedFileStorageName);
+            log.info("Received File with fileInfo is uploaded to [{}]", uploadedFileStoragePath);
+            fileInfo.setTimestamp(System.currentTimeMillis());
+        } catch (IOException ex) {
+            log.error("Got exception while uploading file");
+            throw new RuntimeException("Got exception while uploading file", ex);
+        }
     }
 
     @GET

@@ -54,6 +54,7 @@ import org.apache.streamline.storage.Storable;
 import org.apache.streamline.storage.StorableKey;
 import org.apache.streamline.storage.StorageManager;
 import org.apache.streamline.storage.exception.StorageException;
+import org.apache.streamline.storage.util.StorageUtils;
 import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.catalog.BranchRuleInfo;
 import org.apache.streamline.streams.catalog.Cluster;
@@ -658,6 +659,12 @@ public class StreamCatalogService {
         return topologies;
     }
 
+    public Collection<Topology> listTopologies(List<QueryParam> queryParams) {
+        Collection<Topology> topologies = this.dao.find(TOPOLOGY_NAMESPACE, queryParams);
+        topologies.forEach(t -> t.setVersionTimestamp(getVersionTimestamp(t.getVersionId())));
+        return topologies;
+    }
+
     public Long getCurrentVersionId(Long topologyId) {
         Optional<TopologyVersionInfo> versionInfo = getCurrentTopologyVersionInfo(topologyId);
         return versionInfo.isPresent() ? versionInfo.get().getId() : -1L;
@@ -690,6 +697,7 @@ public class StreamCatalogService {
         TopologyVersionInfo versionInfo = addCurrentTopologyVersionInfo(topology.getId(), timestamp);
         LOG.debug("Added version info {}", versionInfo);
         topology.setVersionId(versionInfo.getId());
+        validateTopology(topology);
         this.dao.add(topology);
         LOG.debug("Added topology {}", topology);
         return topology;
@@ -867,6 +875,7 @@ public class StreamCatalogService {
         topology.setVersionId(versionId);
         long timestamp = System.currentTimeMillis();
         topology.setVersionTimestamp(timestamp);
+        validateTopology(topology);
         this.dao.addOrUpdate(topology);
         updateVersionTimestamp(versionId, timestamp);
         return topology;
@@ -1625,6 +1634,28 @@ public class StreamCatalogService {
         return id;
     }
 
+    /*
+     * Handle this check at application layer since in-memory storage
+     * does not contain unique key constraint.
+     *
+     * Other checks can be added later.
+     */
+    private void validateTopology(Topology topology) {
+        StorageUtils.ensureUniqueName(topology, this::listTopologies, topology.getName());
+    }
+
+    private void validateTopologySource(TopologySource topologySource) {
+        StorageUtils.ensureUniqueName(topologySource, this::listTopologySources, topologySource.getName());
+    }
+
+    private void validateTopologySink(TopologySink topologySink) {
+        StorageUtils.ensureUniqueName(topologySink, this::listTopologySinks, topologySink.getName());
+    }
+
+    private void validateTopologyProcessor(TopologyProcessor topologyProcessor) {
+        StorageUtils.ensureUniqueName(topologyProcessor, this::listTopologyProcessors, topologyProcessor.getName());
+    }
+
     public TopologySource addTopologySource(Long topologyId, TopologySource topologySource) {
         return addTopologySource(topologyId, getCurrentVersionId(topologyId), topologySource);
     }
@@ -1637,6 +1668,7 @@ public class StreamCatalogService {
         }
         topologySource.setVersionId(versionId);
         topologySource.setTopologyId(topologyId);
+        validateTopologySource(topologySource);
         List<StreamInfo> streamInfos = addTopologyOutputComponent(topologySource);
         addSourceStreamMapping(topologySource, topologySource.getOutputStreamIds());
         topologySource.setOutputStreams(streamInfos);
@@ -1683,6 +1715,7 @@ public class StreamCatalogService {
         topologySource.setId(sourceId);
         topologySource.setVersionId(currentTopologyVersionId);
         topologySource.setTopologyId(topologyId);
+        validateTopologySource(topologySource);
         dao.addOrUpdate(topologySource);
         List<Long> newList = Collections.emptyList();
         if (topologySource.getOutputStreamIds() != null) {
@@ -1731,7 +1764,7 @@ public class StreamCatalogService {
         return fillSourceStreams(dao.<TopologySource>list(TOPOLOGY_SOURCE_NAMESPACE));
     }
 
-    public Collection<TopologySource> listTopologySources(List<QueryParam> params) throws Exception {
+    public Collection<TopologySource> listTopologySources(List<QueryParam> params) {
         return fillSourceStreams(dao.<TopologySource>find(TOPOLOGY_SOURCE_NAMESPACE, params));
     }
 
@@ -1898,6 +1931,7 @@ public class StreamCatalogService {
         }
         topologySink.setVersionId(versionId);
         topologySink.setTopologyId(topologyId);
+        validateTopologySink(topologySink);
         dao.add(topologySink);
         topologySink.setVersionTimestamp(updateVersionTimestamp(versionId).getTimestamp());
         return topologySink;
@@ -1908,6 +1942,7 @@ public class StreamCatalogService {
         topologySink.setId(id);
         topologySink.setVersionId(currentTopologyVersionId);
         topologySink.setTopologyId(topologyId);
+        validateTopologySink(topologySink);
         dao.addOrUpdate(topologySink);
         topologySink.setVersionTimestamp(updateVersionTimestamp(currentTopologyVersionId).getTimestamp());
         return topologySink;
@@ -1936,7 +1971,7 @@ public class StreamCatalogService {
         return dao.list(TOPOLOGY_SINK_NAMESPACE);
     }
 
-    public Collection<TopologySink> listTopologySinks(List<QueryParam> params) throws Exception {
+    public Collection<TopologySink> listTopologySinks(List<QueryParam> params) {
         return dao.find(TOPOLOGY_SINK_NAMESPACE, params);
     }
 
@@ -1969,6 +2004,7 @@ public class StreamCatalogService {
         }
         topologyProcessor.setVersionId(versionId);
         topologyProcessor.setTopologyId(topologyId);
+        validateTopologyProcessor(topologyProcessor);
         List<StreamInfo> streamInfos = addTopologyOutputComponent(topologyProcessor);
         addProcessorStreamMapping(topologyProcessor, topologyProcessor.getOutputStreamIds());
         topologyProcessor.setOutputStreams(streamInfos);
@@ -1981,6 +2017,7 @@ public class StreamCatalogService {
         topologyProcessor.setId(id);
         topologyProcessor.setVersionId(currentTopologyVersionId);
         topologyProcessor.setTopologyId(topologyId);
+        validateTopologyProcessor(topologyProcessor);
         dao.addOrUpdate(topologyProcessor);
         List<Long> newList = Collections.emptyList();
         if (topologyProcessor.getOutputStreamIds() != null) {
@@ -2016,7 +2053,7 @@ public class StreamCatalogService {
         return fillProcessorStreams(dao.<TopologyProcessor>list(TOPOLOGY_PROCESSOR_NAMESPACE));
     }
 
-    public Collection<TopologyProcessor> listTopologyProcessors(List<QueryParam> params) throws Exception {
+    public Collection<TopologyProcessor> listTopologyProcessors(List<QueryParam> params) {
         return fillProcessorStreams(dao.<TopologyProcessor>find(TOPOLOGY_PROCESSOR_NAMESPACE, params));
     }
 

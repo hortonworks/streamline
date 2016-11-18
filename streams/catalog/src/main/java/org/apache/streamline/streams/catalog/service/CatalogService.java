@@ -26,14 +26,17 @@ import org.apache.streamline.registries.tag.client.TagClient;
 import org.apache.streamline.storage.Storable;
 import org.apache.streamline.storage.StorableKey;
 import org.apache.streamline.storage.StorageManager;
+import org.apache.streamline.storage.util.StorageUtils;
 import org.apache.streamline.streams.catalog.FileInfo;
 import org.apache.commons.io.IOUtils;
+import org.apache.streamline.common.exception.DuplicateEntityException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -109,15 +112,28 @@ public class CatalogService {
         return dao.remove(new StorableKey(FILE_NAMESPACE, file.getPrimaryKey()));
     }
 
-    public FileInfo addOrUpdateFile(FileInfo file) {
+    // handle this check at application layer since in-memory storage etc does not contain unique key constraint
+    private void validateFileInfo(FileInfo fileInfo) {
+        StorageUtils.ensureUniqueName(fileInfo, this::listFiles, fileInfo.getName());
+    }
+
+    public FileInfo addFile(FileInfo file) {
         if (file.getId() == null) {
             file.setId(dao.nextId(FILE_NAMESPACE));
         }
         if (file.getTimestamp() == null) {
             file.setTimestamp(System.currentTimeMillis());
         }
+        validateFileInfo(file);
         dao.addOrUpdate(file);
+        return file;
+    }
 
+    public FileInfo addOrUpdateFile(Long fileId, FileInfo file) {
+        file.setId(fileId);
+        file.setTimestamp(System.currentTimeMillis());
+        validateFileInfo(file);
+        this.dao.addOrUpdate(file);
         return file;
     }
 

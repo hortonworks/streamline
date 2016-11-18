@@ -19,17 +19,23 @@
 package org.apache.streamline.storage.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.streamline.common.QueryParam;
+import org.apache.streamline.common.exception.DuplicateEntityException;
 import org.apache.streamline.storage.Storable;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 /**
- * Utility methods for the core package.
+ * Utility methods for the storage package.
  */
-public final class CoreUtils {
+public final class StorageUtils {
 
 
-    private CoreUtils() {
+    private StorageUtils() {
     }
 
     public static <T extends Storable> T jsonToStorable(String json, Class<T> clazz) throws IOException {
@@ -39,6 +45,22 @@ public final class CoreUtils {
 
     public static String storableToJson(Storable storable) throws IOException {
         return storable != null ? new ObjectMapper().writeValueAsString(storable) : null;
+    }
+
+    public interface ListStorablesFn {
+        Collection<? extends Storable> apply(List<QueryParam> params);
+    }
+
+    public static void ensureUniqueName(Storable storable, ListStorablesFn listFn, String entityName) {
+        Collection<? extends Storable> storables = listFn.apply(
+                Collections.singletonList(new QueryParam("name", entityName)));
+        Optional<Long> entities = storables.stream()
+                .map(Storable::getId)
+                .filter(x -> !x.equals(storable.getId()))
+                .findAny();
+        if (entities.isPresent()) {
+            throw new DuplicateEntityException("Entity with name '" + entityName + "' already exists");
+        }
     }
 
 }

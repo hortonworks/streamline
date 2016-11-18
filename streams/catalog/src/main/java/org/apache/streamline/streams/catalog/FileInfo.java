@@ -32,6 +32,7 @@ import java.util.Map;
 public class FileInfo extends AbstractStorable {
     public static final String NAME_SPACE = "files";
     public static final String ID = "id";
+    public static final String NAME = "name";
 
     /**
      * Unique Id for a jar instance. This is the primary key column.

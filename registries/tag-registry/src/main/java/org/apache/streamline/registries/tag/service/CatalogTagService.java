@@ -5,6 +5,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.streamline.common.QueryParam;
+import org.apache.streamline.common.exception.DuplicateEntityException;
+import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.registries.tag.Tag;
 import org.apache.streamline.registries.tag.TagStorableMapping;
 import org.apache.streamline.registries.tag.TaggedEntity;
@@ -12,6 +14,7 @@ import org.apache.streamline.storage.Storable;
 import org.apache.streamline.storage.StorableKey;
 import org.apache.streamline.storage.StorageManager;
 import org.apache.commons.io.IOUtils;
+import org.apache.streamline.storage.util.StorageUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,6 +57,11 @@ public class CatalogTagService implements TagService {
         return classes;
     }
 
+    // handle this check at application layer since in-memory storage etc does not contain unique key constraint
+    private void validateTag(Tag tag) {
+        StorageUtils.ensureUniqueName(tag, this::listTags, tag.getName());
+    }
+
     @Override
     public Tag addTag(Tag tag) {
         if (tag.getId() == null) {
@@ -62,6 +70,7 @@ public class CatalogTagService implements TagService {
         if (tag.getTimestamp() == null) {
             tag.setTimestamp(System.currentTimeMillis());
         }
+        validateTag(tag);
         checkCycles(tag, tag.getTags());
         dao.add(tag);
         addTagsForStorable(getTaggedEntity(tag), tag.getTags());
@@ -103,6 +112,7 @@ public class CatalogTagService implements TagService {
         if (tag.getTimestamp() == null) {
             tag.setTimestamp(System.currentTimeMillis());
         }
+        validateTag(tag);
         List<Tag> existingTags = getTags(getTaggedEntity(tag));
         List<Tag> tagsToBeAdded = getTagsToBeAdded(existingTags, tag.getTags());
         List<Tag> tagsToBeRemoved = getTagsToBeRemoved(existingTags, tag.getTags());
