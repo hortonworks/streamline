@@ -76,10 +76,11 @@ export default class ProcessorNodeForm extends Component {
 
     render() {
         let childElement = this.props.getChildElement();
+        let streamObj = this.state.streamObj instanceof Array ? this.state.streamObj[0] : this.state.streamObj;
         return (
             <Tabs id="ProcessorForm" defaultActiveKey={1} className="modal-tabs">
                 <Tab eventKey={1} title="CONFIGURATION">
-                    <StreamsSidebar ref="StreamSidebarInput" streamObj={this.state.streamObj} streamType="input" />
+                    <StreamsSidebar ref="StreamSidebarInput" streamObj={streamObj} streamType="input" />
                     {childElement}
                     <StreamsSidebar ref="StreamSidebarOutput" streamObj={this.state.outputStreamObj} streamType="output" />
                 </Tab>

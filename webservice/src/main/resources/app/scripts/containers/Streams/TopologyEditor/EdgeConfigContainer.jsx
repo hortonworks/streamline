@@ -39,7 +39,9 @@ export default class EdgeConfigContainer extends Component {
             grouping: data.grouping ? data.grouping : 'SHUFFLE',
             rules: [],
             streamsArr: [],
-            groupingsArr: [{value: "SHUFFLE", label: "SHUFFLE"}],
+            groupingsArr: [{value: "SHUFFLE", label: "SHUFFLE"},{value: "FIELDS", label: "FIELDS"}],
+            groupingFieldsArr: [],
+            groupingFields: data.groupingFields ? data.groupingFields : [],
             rulesArr: [],
             showRules: false,
             showError: false,
@@ -63,6 +65,7 @@ export default class EdgeConfigContainer extends Component {
                                 let streamsArr = [];
                                 let fields = this.state.isEdit ? {} : node.outputStreams[0].fields;
                                 let streamId = this.state.isEdit ? this.state.streamId : node.outputStreams[0].streamId;
+                                let groupingFieldsArr = [];
                                 node.outputStreams.map((s)=>{
                                         streamsArr.push({
                                                 label: s.streamId,
@@ -73,7 +76,16 @@ export default class EdgeConfigContainer extends Component {
                                         if(this.props.data.streamName === s.streamId)
                                                 fields = s.fields;
                                 });
-                                this.setState({sourceNode: result.entity, streamsArr: streamsArr, streamId: streamId, streamFields: JSON.stringify(fields, null, "  ")});
+                                fields.map((f)=>{
+                                    groupingFieldsArr.push({value: f.name, label: f.name});
+                                });
+                                this.setState({
+                                    sourceNode: result.entity,
+                                    streamsArr: streamsArr,
+                                    streamId: streamId,
+                                    streamFields: JSON.stringify(fields, null, "  "),
+                                    groupingFieldsArr: groupingFieldsArr
+                                });
                                 if(nodeType === 'rule') {
                                         node.config.properties.rules.map((id)=>{
                                         rulesPromiseArr.push(TopologyREST.getNode(this.topologyId, 'rules', id));
@@ -121,14 +133,28 @@ export default class EdgeConfigContainer extends Component {
             this.setState({rules: []});
         }
     }
+   handleGroupingFieldsChange(arr) {
+       let groupingFields = [];
+       if(arr && arr.length) {
+           arr.map((f)=>{
+               groupingFields.push(f.value);
+           });
+           this.setState({groupingFields: groupingFields});
+       } else {
+           this.setState({groupingFields: ''});
+       }
+   }
 
     validate(){
-        let {streamId, grouping, rules, showRules} = this.state;
+        let {streamId, grouping, rules, showRules, groupingFields} = this.state;
         let validDataFlag = true;
         if(streamId.trim() === '' || grouping.trim === ''){
             validDataFlag = false;
         }
         if(showRules && rules.length === 0){
+            validDataFlag = false;
+        }
+        if(grouping === 'FIELDS' && groupingFields === '') {
             validDataFlag = false;
         }
         if(!validDataFlag)
@@ -137,7 +163,7 @@ export default class EdgeConfigContainer extends Component {
     }
 
     handleSave(){
-        let {streamId, streamsArr, rules, sourceNode} = this.state;
+        let {streamId, streamsArr, rules, sourceNode, grouping, groupingFields} = this.state;
         let {topologyId} = this.props.data;
         let streamObj = _.find(streamsArr, {value: streamId});
         let nodeType = this.props.data.edge.source.currentType.toLowerCase();
@@ -146,11 +172,13 @@ export default class EdgeConfigContainer extends Component {
             toId: this.props.data.edge.target.nodeId,
             streamGroupings: [{
                     streamId: streamObj.id,
-                    grouping: 'SHUFFLE'
+                    grouping: grouping
             }]
         };
-                if(nodeType === 'window' || nodeType === 'rule'){
-                        if(sourceNode.config.properties.rules && sourceNode.config.properties.rules.length > 0){
+        if(grouping === "FIELDS")
+            edgeData.streamGroupings[0].fields = groupingFields;
+        if(nodeType === 'window' || nodeType === 'rule'){
+            if(sourceNode.config.properties.rules && sourceNode.config.properties.rules.length > 0){
                 let rulesPromiseArr = [];
                 let saveRulesPromiseArr = [];
                                 let type = nodeType === 'window' ? 'windows' : 'rules';
@@ -221,7 +249,7 @@ export default class EdgeConfigContainer extends Component {
         }
 
     render(){
-        let {showRules, rules, rulesArr, streamId, streamsArr, grouping, groupingsArr} = this.state;
+        let {showRules, rules, rulesArr, streamId, streamsArr, grouping, groupingsArr, groupingFields, groupingFieldsArr} = this.state;
         const jsonoptions = {
             lineNumbers: true,
             mode: "application/json",
@@ -279,6 +307,22 @@ export default class EdgeConfigContainer extends Component {
                         />
                     </div>
                 </div>
+                {grouping === 'FIELDS' ?
+               <div className="form-group">
+                   <label>Select Fields <span className="text-danger">*</span></label>
+                   <div>
+                       <Select
+                           value={groupingFields}
+                           options={groupingFieldsArr}
+                           onChange={this.handleGroupingFieldsChange.bind(this)}
+                           multi={true}
+                           required={true}
+                           disabled={groupingFieldsArr.length ? false : true}
+                       />
+                   </div>
+               </div>
+               : null
+               }
             </form>
         );
     }

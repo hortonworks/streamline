@@ -57,7 +57,7 @@ public class AvroKafkaSpoutScheme implements MultiScheme {
                 if (avroStreamsSnapshotDeserializer == null) {
                     AvroStreamsSnapshotDeserializer deserializer = new AvroStreamsSnapshotDeserializer();
                     Map<String, Object> config = new HashMap<>();
-                    config.put(SchemaRegistryClient.Options.SCHEMA_REGISTRY_URL, schemaRegistryUrl);
+                    config.put(SchemaRegistryClient.Configuration.SCHEMA_REGISTRY_URL.name(), schemaRegistryUrl);
                     deserializer.init(config);
                     avroStreamsSnapshotDeserializer = deserializer;
                 }

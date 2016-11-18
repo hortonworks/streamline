@@ -60,7 +60,8 @@ public class AvroStreamsSnapshotDeserializerTest {
                     return schema;
                 }
             };
-            Map<String, String> config = Collections.singletonMap(SchemaRegistryClient.Options.SCHEMA_REGISTRY_URL, "http://localhost:8080/api/v1");
+            Map<String, String> config = Collections.singletonMap(SchemaRegistryClient.Configuration.SCHEMA_REGISTRY_URL.name(),
+                                                                  "http://localhost:8080/api/v1");
             avroStreamsSnapshotDeserializer.init(config);
 
             SchemaMetadata schemaMetadata = new SchemaMetadata.Builder("topic-1").type("avro").schemaGroup("kafka").build();

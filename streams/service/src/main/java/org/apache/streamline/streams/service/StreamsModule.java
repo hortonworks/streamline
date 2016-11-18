@@ -75,7 +75,8 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
     }
 
     private SchemaRegistryClient createSchemaRegistryClient() {
-        Map<String, ?> conf = Collections.singletonMap(SchemaRegistryClient.Options.SCHEMA_REGISTRY_URL, config.get("schemaRegistryUrl"));
+        Map<String, ?> conf = Collections.singletonMap(SchemaRegistryClient.Configuration.SCHEMA_REGISTRY_URL.name(),
+                                                       config.get("schemaRegistryUrl"));
         return new SchemaRegistryClient(conf);
     }
 

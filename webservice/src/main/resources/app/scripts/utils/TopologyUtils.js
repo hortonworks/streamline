@@ -931,6 +931,7 @@ const getEdgeData = function(data, topologyId, callback) {
                         let obj = {
                                 streamName: result.entity.streamId,
                                 grouping: data.streamGrouping.grouping,
+                                groupingFields: data.streamGrouping.fields,
                                 edgeData: data
                         }
                         callback(obj);

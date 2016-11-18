@@ -174,7 +174,7 @@ export default class TagsContainer extends Component {
 	}
 
 	handleDelete(id){
-		let BaseContainer = this.props.callbackHandler();
+                let BaseContainer = this.refs.BaseContainer;
 		BaseContainer.refs.Confirm.show({
 			title: 'Are you sure you want to delete ?'
 		}).then((confirmBox)=>{

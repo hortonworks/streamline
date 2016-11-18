@@ -49,21 +49,21 @@ class CustPieChart extends PieChart{
         class: 'pie-latency',
         'text-anchor': 'middle'
       })
-
+    const latencyDefaultTxt = Utils.secToMinConverter(this.props.latency , "graph").split('/');
     const tspan = text.append('tspan')
       .attr({
         'font-size': "28",
         'fill' : "#323133",
           y: 20,
       })
-      .text(this.props.latency)
+      .text(latencyDefaultTxt[0])
 
     const secText = text.append('tspan')
     .attr({
       fill : "#6d6f72",
       "font-size" : 10
     })
-      .text("sec" )
+    .text(' '+latencyDefaultTxt[1])
 
     if(!this.props.empty){
       this.container.selectAll('path')
@@ -75,8 +75,8 @@ class CustPieChart extends PieChart{
           secText.text(val[1])
         })
         .on('mouseleave', (d) => {
-          tspan.text(this.props.latency);
-          secText.text('sec')
+          tspan.text(latencyDefaultTxt[0]);
+          secText.text(' '+latencyDefaultTxt[1])
         })
     }
   }
@@ -128,12 +128,12 @@ class TopologyItems extends Component {
                     </div>
                     <div className="pull-right">
                         <div className="stream-actions">
-                            <DropdownButton noCaret title={ellipseIcon} id="dropdown" bsStyle="link" className="dropdown-toggle" onSelect={this.onActionClick}>
-                                <MenuItem eventKey={`refresh/${topology.id}`}>
+                            <DropdownButton noCaret title={ellipseIcon} id="dropdown" bsStyle="link" className="dropdown-toggle">
+                                <MenuItem onClick={this.onActionClick.bind(this ,"refresh/"+topology.id)}>
                                     <i className="fa fa-refresh"></i>
                                     &nbsp;Refresh
                                 </MenuItem>
-                                <MenuItem eventKey={`delete/${topology.id}`}>
+                                <MenuItem onClick={this.onActionClick.bind(this ,"delete/"+topology.id)}>
                                     <i className="fa fa-trash"></i>
                                     &nbsp;Delete
                                 </MenuItem>
@@ -358,9 +358,8 @@ class TopologyListingContainer extends Component {
     }
 
     actionHandler = (eventKey, id) => {
-        event.preventDefault();
         const key = eventKey.split('/');
-        switch (key[0]) {
+        switch (key[0].toString()) {
             case "refresh":
                 this.fetchSingleTopology(id);
                 break;
@@ -383,7 +382,8 @@ class TopologyListingContainer extends Component {
     }
 
     onSortByClicked = (eventKey) => {
-      TopologyREST.getAllTopology(eventKey).then((topology) => {
+      const sortKey = (eventKey.toString() === "name") ? "name&ascending=true" : eventKey;
+      TopologyREST.getAllTopology(sortKey).then((topology) => {
         if (topology.responseCode !== 1000) {
             FSReactToastr.error(
                 <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
@@ -400,8 +400,7 @@ class TopologyListingContainer extends Component {
     }
 
     onActionMenuClicked = (eventKey) => {
-      event.preventDefault();
-      switch(eventKey){
+      switch(eventKey.toString()){
         case "create" : this.handleAddTopology();
           break;
         case "import" : console.log("Write the method to handled click")
@@ -464,15 +463,14 @@ class TopologyListingContainer extends Component {
                           <DropdownButton title={`Sort: ${this.state.sorted.text}`}
                             id="sortDropdown"
                             className="sortDropdown "
-                            onSelect={this.onSortByClicked}
                           >
-                              <MenuItem eventKey={`name`}>
+                              <MenuItem onClick={this.onSortByClicked.bind(this,"name")}>
                                   &nbsp;Name
                               </MenuItem>
-                              <MenuItem eventKey={`last_updated`}>
+                              <MenuItem onClick={this.onSortByClicked.bind(this,"last_updated")}>
                                   &nbsp;Last Update
                               </MenuItem>
-                              <MenuItem eventKey={`status`}>
+                              <MenuItem onClick={this.onSortByClicked.bind(this,"status")}>
                                   &nbsp;Status
                               </MenuItem>
                           </DropdownButton>
@@ -481,12 +479,11 @@ class TopologyListingContainer extends Component {
                             <DropdownButton title={"CREATE"}
                               id="actionDropdown"
                               className="actionDropdown"
-                              onSelect={this.onActionMenuClicked}
                             >
-                                <MenuItem eventKey={`create`}>
+                                <MenuItem onClick={this.onActionMenuClicked.bind(this,"create")}>
                                     &nbsp;New Application
                                 </MenuItem>
-                                <MenuItem eventKey={`import`}>
+                                <MenuItem onClick={this.onActionMenuClicked.bind(this,"import")}>
                                     &nbsp;Import Application
                                 </MenuItem>
                             </DropdownButton>
@@ -505,7 +502,7 @@ class TopologyListingContainer extends Component {
 }
                 </div>
                 {
-                  (splitData.length !== 0)
+                  (filteredEntities.length > 6)
                     ? <Paginate
                       len={filteredEntities.length}
                       splitData={splitData}

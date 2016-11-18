@@ -274,8 +274,10 @@ export default class TopologyGraphComponent extends Component {
         setEdgeData(obj) {
                 let thisGraph = this;
                 let name = obj.streamName;
-                if(name.length > 15)
-                        name = name.slice(0, 15) + '...';
+                if(name.length > 18)
+                        name = name.slice(0, 17) + '...';
+
+            if(thisGraph.editMode) {
                 this.edgeStream.html('<div><p><strong>Stream:</strong> '+name+'</p>'+
                                 '<p><strong>Grouping:</strong> '+obj.grouping+'</p>'+
                                 '<p><button class="btn btn-xs btn-success editEdge"><i class="fa fa-pencil"></i> Edit</button> '+
@@ -284,7 +286,7 @@ export default class TopologyGraphComponent extends Component {
                 this.edgeStream.style('display', 'block');
                 d3.select('.editEdge')
                         .on("click", function() {
-                                this.getEdgeConfigModal(this.topologyId, obj.edgeData, this.edges, this.updateGraph, null, obj.streamName, obj.grouping);
+                                this.getEdgeConfigModal(this.topologyId, obj.edgeData, this.edges, this.updateGraph, null, obj.streamName, obj.grouping, obj.groupingFields);
                                 this.edgeStream.style('display', 'none');
                         }.bind(this));
                 d3.select('.deleteEdge')
@@ -292,6 +294,12 @@ export default class TopologyGraphComponent extends Component {
                                 this.deleteEdge(this.internalFlags.selectedEdge);
                                 this.edgeStream.style('display', 'none');
                         }.bind(this));
+            } else {
+		this.edgeStream.html('<div><p><strong>Stream:</strong> '+name+'</p>'+
+                                '<strong>Grouping:</strong> '+obj.grouping+
+                                '</div>');
+                this.edgeStream.style('display', 'block');
+            }
         }
 
 	// mousedown on node
@@ -507,6 +515,20 @@ export default class TopologyGraphComponent extends Component {
 			.attr("stroke-opacity", "0.0001")
 			.attr("stroke-width", "10")
 			.attr("data-name", function(d){ return d.source.nodeId +'-'+d.target.nodeId; })
+                        .on("mouseover", function(d) {
+                                if(!thisGraph.editMode) {
+                                        let elem = document.querySelectorAll('.visible-link[d="'+this.getAttribute('d')+'"]')[0];
+                                        let d3path = d3.select(elem);
+                                        d3.select('.edge-stream').attr('x', thisGraph.getBoundingBoxCenter(d3path)[0]-100);
+                    d3.select('.edge-stream').attr('y', thisGraph.getBoundingBoxCenter(d3path)[1]);
+                    TopologyUtils.getEdgeData(d, thisGraph.topologyId, thisGraph.setEdgeData.bind(thisGraph));
+                                }
+                        })
+                        .on("mouseout", function(d) {
+                                if(!thisGraph.editMode) {
+                                        thisGraph.edgeStream.style('display', 'none');
+                                }
+                        })
 			.on("mousedown", function(d){
 				if(thisGraph.editMode) {
 					let elem = document.querySelectorAll('.visible-link[d="'+this.getAttribute('d')+'"]')[0];

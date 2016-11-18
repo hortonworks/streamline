@@ -75,7 +75,7 @@ export default class CustomProcessorContainer extends Component {
 	}
 
 	handleDelete(id) {
-		let BaseContainer = this.props.callbackHandler();
+                let BaseContainer = this.refs.BaseContainer;
 		BaseContainer.refs.Confirm.show({
 			title: 'Are you sure you want to delete this processor?'
 		}).then((confirmBox)=>{
@@ -209,6 +209,7 @@ export default class CustomProcessorContainer extends Component {
                     onCancel={this.handleCancel.bind(this)}
                     onSave={this.handleSave.bind(this)}
                     id={this.state.processorId}
+                    route = {this.props.route}
                 />
 				}
 				</BaseContainer>
