@@ -70,6 +70,7 @@ done
 
 
 add_bundle /streams/componentbundles/SOURCE $bootstrap_dir/kafka-topology-component
+add_bundle /streams/componentbundles/SOURCE $bootstrap_dir/hdfs-spout-topology-component
 add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/rule-topology-component
 add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/window-topology-component
 add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/parser-topology-component

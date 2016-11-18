@@ -2,6 +2,7 @@ package org.apache.streamline.streams.catalog.topology.component;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.google.common.collect.ImmutableMap;
 import org.apache.streamline.common.Config;
 import org.apache.streamline.streams.catalog.RuleInfo;
@@ -37,6 +38,7 @@ import org.apache.streamline.streams.layout.component.impl.splitjoin.StageAction
 import org.apache.streamline.streams.layout.component.impl.splitjoin.StageProcessor;
 import org.apache.streamline.streams.layout.component.rule.Rule;
 import org.apache.streamline.streams.catalog.topology.TopologyComponentBundle;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,6 +58,7 @@ import static org.apache.streamline.common.ComponentTypes.SPLIT;
 import static org.apache.streamline.common.ComponentTypes.STAGE;
 import static org.apache.streamline.common.ComponentTypes.WINDOW;
 
+import static org.apache.streamline.common.ComponentTypes.*;
 import static java.util.AbstractMap.SimpleImmutableEntry;
 
 /**
@@ -172,6 +175,7 @@ public class TopologyComponentFactory {
     private Map<String, Provider<StreamlineSource>> createSourceProviders() {
         ImmutableMap.Builder<String, Provider<StreamlineSource>> builder = ImmutableMap.builder();
         builder.put(kafkaSourceProvider());
+        builder.put(hdfsSourceProvider());
         return builder.build();
     }
 
@@ -244,6 +248,16 @@ public class TopologyComponentFactory {
             }
         };
         return new SimpleImmutableEntry<>(KAFKA, provider);
+    }
+
+    private Map.Entry<String, Provider<StreamlineSource>> hdfsSourceProvider() {
+        Provider<StreamlineSource> provider = new Provider<StreamlineSource>() {
+            @Override
+            public StreamlineSource create(TopologyComponent component) {
+                return new StreamlineSource();
+            }
+        };
+        return new SimpleImmutableEntry<>(HDFS_SOURCE, provider);
     }
 
     private Map.Entry<String, Provider<StreamlineProcessor>> normalizationProcessorProvider() {
