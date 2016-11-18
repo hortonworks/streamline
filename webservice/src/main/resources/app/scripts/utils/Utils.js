@@ -189,6 +189,22 @@ const genFields = function(fieldsJSON, _fieldName = [], FormData = {}){
     return fields;
 }
 
+const scrollMe = function(element, to, duration) {
+  if (duration <= 0) return;
+  var difference = to - element.scrollTop;
+  var perTick = difference / duration * 10;
+
+  const timer = setTimeout(function() {
+    element.scrollTop = element.scrollTop + perTick;
+    if (element.scrollTop == to){
+      clearTimeout(timer);
+      return;
+    }
+    scrollMe(element, to, duration - 10);
+  }, 10);
+}
+
+
 export default {
 	sortArray,
 	numberToMilliseconds,
@@ -201,5 +217,6 @@ export default {
         sortByKey,
         secToMinConverter,
         genFields,
-        kFormatter
+        kFormatter,
+        scrollMe
 };

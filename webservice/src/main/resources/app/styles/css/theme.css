@@ -1114,8 +1114,12 @@ label {
   right: 22px;
 }
 /* Select 2 */
-.Select-menu-outer {
-  z-index: 999;
+.menu-outer-top .Select-menu-outer {
+    top:auto;
+    bottom: 35px!important;
+}
+.Select-control{
+  overflow: auto;
 }
 .Select--multi .Select-value {
   background-color: #676767;
@@ -1259,6 +1263,10 @@ label {
   margin-top: 5px;
   margin-bottom: 0px;
 }
-.styleWindowDN > .dropdown{
-  display: inline-block;
+.headContentText{
+  display: inline;
+  height: 50px;
+  font-size: 16px;
+  line-height: 51px;
+  margin-left: 15px;
 }

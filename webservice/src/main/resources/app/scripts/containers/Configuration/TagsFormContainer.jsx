@@ -36,7 +36,7 @@ export default class TagsFormContainer extends Component {
 
 	handleValueChange(e){
 		let obj = {};
-		obj[e.target.name] = e.target.value;
+                obj[e.target.name.trim()] = e.target.value.trim();
 		this.setState(obj);
 	}
 

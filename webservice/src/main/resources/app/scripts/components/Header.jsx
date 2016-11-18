@@ -16,8 +16,7 @@ export default class Header extends Component {
   }
 
   clickHandler = (eventKey) => {
-    event.preventDefault();
-    switch(eventKey){
+    switch(eventKey.toString()){
       case "3.1" : this.context.router.push("applications")
         break;
       case "3.2" : window.location = this.registryURL+'schema-registry';
@@ -46,33 +45,33 @@ export default class Header extends Component {
           <Navbar.Toggle />
         </Navbar.Header>
         <Navbar.Collapse>
-          <Nav onSelect={this.clickHandler}>
+          <Nav>
             <NavDropdown id="dash_dropdown"  eventKey="3" title={bigIcon} noCaret>
-              <MenuItem eventKey="3.1">
+              <MenuItem onClick={this.clickHandler.bind(this,"3.1")}>
                 <i className="fa fa-sitemap"></i>
                   &nbsp;My Application
               </MenuItem>
-              <MenuItem eventKey="3.2">
+              <MenuItem onClick={this.clickHandler.bind(this,"3.2")}>
                 <i className="fa fa-file-code-o"></i>
                   &nbsp;Schema Registry
               </MenuItem>
             </NavDropdown>
           </Nav>
-          <Navbar.Text pullLeft className="whiteText">
+          <div className="whiteText headContentText">
                 {this.props.headerContent}
-          </Navbar.Text>
-          <Nav pullRight onSelect={this.clickHandler}>
+          </div>
+          <Nav pullRight>
             <NavDropdown id="configuration" eventKey="4" title={config} noCaret>
-              <MenuItem eventKey="4.1">Custom Processor</MenuItem>
-              <MenuItem eventKey="4.2">Tags</MenuItem>
-              <MenuItem eventKey="4.3">Files</MenuItem>
+              <MenuItem onClick={this.clickHandler.bind(this,"4.1")}>Custom Processor</MenuItem>
+              <MenuItem onClick={this.clickHandler.bind(this,"4.2")}>Tags</MenuItem>
+              <MenuItem onClick={this.clickHandler.bind(this,"4.3")}>Files</MenuItem>
             </NavDropdown>
             <NavDropdown id="userDropdown" eventKey="5" title={userIcon}>
-              <MenuItem eventKey="5.1">Action</MenuItem>
-              <MenuItem eventKey="5.2">Another action</MenuItem>
-                <MenuItem eventKey="5.3">Something else here</MenuItem>
+              <MenuItem>Action</MenuItem>
+              <MenuItem>Another action</MenuItem>
+                <MenuItem>Something else here</MenuItem>
                 <MenuItem divider />
-                <MenuItem eventKey="5.4">Separated link</MenuItem>
+                <MenuItem>Separated link</MenuItem>
             </NavDropdown>
           </Nav>
         </Navbar.Collapse>

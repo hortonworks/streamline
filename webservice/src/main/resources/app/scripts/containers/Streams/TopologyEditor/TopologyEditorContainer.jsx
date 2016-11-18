@@ -78,7 +78,7 @@ class EditorGraph extends Component{
     }));
   }
   render(){
-    const actualHeight = (window.innerHeight - (this.props.viewMode ? 260 : 100))+'px';
+    const actualHeight = (window.innerHeight - (this.props.viewMode ? 360 : 100))+'px';
     const { connectDropTarget , viewMode, topologyId, graphData, getModalScope, setModalContent, getEdgeConfigModal} = this.props;
     const { boxes, bundleArr } = this.state;
     return connectDropTarget(
@@ -535,8 +535,8 @@ class TopologyEditorContainer extends Component {
       this.refs.NodeModal.hide();
     }
   }
-  showEdgeConfigModal(topologyId, newEdge, edges, callback, node, streamName, grouping) {
-    this.edgeConfigData = {topologyId: topologyId, edge: newEdge, edges: edges, callback: callback, streamName: streamName, grouping: grouping};
+  showEdgeConfigModal(topologyId, newEdge, edges, callback, node, streamName, grouping, groupingFields) {
+    this.edgeConfigData = {topologyId: topologyId, edge: newEdge, edges: edges, callback: callback, streamName: streamName, grouping: grouping, groupingFields: groupingFields};
     this.edgeConfigTitle = newEdge.source.uiname + '-' + newEdge.target.uiname;
     let nodeType = newEdge.source.currentType.toLowerCase();
     if(node && node.outputStreams.length === 1 && nodeType !== 'rule') {

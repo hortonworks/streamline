@@ -20,28 +20,7 @@ class TopologyViewMode extends Component{
   modeChange = () => {
     this.props.handleModeChange(false);
   }
-  windowDropdownClicked = (eventKey) => {
-    const num = Number(eventKey)
-    this.setState({minSelected : num})
-    switch(num){
-      case 10 : console.log("first click " ,eventKey)
-        break;
-      case 20 : console.log("second click", eventKey)
-        break;
-      default : break;
-    }
-  }
-  componentDidUpdate(){
-    this.btnClassChange();
-  }
-  componentDidMount(){
-    this.btnClassChange();
-  }
-  btnClassChange = () => {
-    const windowDropdown = document.querySelector('.windowDropdown');
-    windowDropdown.setAttribute("class","windowDropdown btn btn-default margin-right");
-    windowDropdown.parentElement.setAttribute("class","dropdown")
-  }
+
   render(){
     const {minSelected} = this.state;
     const {topologyName,isAppRunning,unknown,killTopology,deployTopology,topologyMetric,timestamp} = this.props;
@@ -65,18 +44,6 @@ class TopologyViewMode extends Component{
               <span className="text-muted">Version:</span>
                 1
             </span>
-            <DropdownButton title={`Windows: ${minSelected}`}
-              id="windowDropdown"
-              className="windowDropdown "
-              onSelect={this.windowDropdownClicked}
-            >
-                <MenuItem eventKey={`10`}>
-                    &nbsp;10 Mins
-                </MenuItem>
-                <MenuItem eventKey={`20`}>
-                    &nbsp;20 Mins
-                </MenuItem>
-            </DropdownButton>
 
           {isAppRunning ?
               <button type="button" className="btn btn-default" onClick={killTopology}>STOP</button>
@@ -127,7 +94,7 @@ class TopologyViewMode extends Component{
         </div>
         <div className="stat-tiles with-margin">
             <h6>WORKERS</h6>
-            <h1>{topologyMetric.workersTotal || 0}</h1>
+            <h1>{metricWrap.workersTotal || 0}</h1>
         </div>
         <div className="stat-tiles">
             <h6>EXCUTORS</h6>

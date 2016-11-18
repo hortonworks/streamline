@@ -348,6 +348,10 @@ export default class WindowingAggregateNodeForm extends Component {
 	}
 	addOutputFields(){
 		if(this.state.editMode){
+      const el = document.querySelector('.processor-modal-form ');
+      const targetHt = el.scrollHeight;
+      Utils.scrollMe(el,(targetHt+100),2000);
+
 			let fieldsArr = this.state.outputFieldsArr;
 			fieldsArr.push({args: '', functionName: '', outputFieldName: ''});
 			this.setState({outputFieldsArr: fieldsArr});
@@ -650,6 +654,7 @@ export default class WindowingAggregateNodeForm extends Component {
                                                                 <div key={i} className="row form-group">
                                                                         <div className="col-sm-5">
                                                                                 <Select
+                                                                                        className={outputFieldsArr.length-1 === i ? "menu-outer-top" : ''}
                                                                                         value={obj.args}
                                                                                         options={keysList}
                                                                                         onChange={this.handleFieldChange.bind(this, 'args', i)}
@@ -662,6 +667,7 @@ export default class WindowingAggregateNodeForm extends Component {
                                                                         </div>
                                                                         <div className="col-sm-5">
                                                                                 <Select
+                                                                                        className={outputFieldsArr.length-1 === i ? "menu-outer-top" : ''}
                                                                                         value={obj.functionName}
                                                                                         options={functionListArr}
                                                                                         onChange={this.handleFieldChange.bind(this, 'functionName', i)}

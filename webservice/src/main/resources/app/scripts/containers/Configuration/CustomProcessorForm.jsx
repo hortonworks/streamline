@@ -1,5 +1,6 @@
 import React, {Component}from 'react';
 import ReactDOM from 'react-dom';
+import { withRouter} from 'react-router';
 import _ from 'lodash';
 import { Table, Thead, Th, Tr, Td, unsafe } from 'reactable';
 import {BtnDelete, BtnEdit} from '../../components/ActionButtons';
@@ -19,6 +20,7 @@ import BaseContainer from '../BaseContainer';
 import CommonNotification from '../../utils/CommonNotification';
 
 
+
 CodeMirror.registerHelper("lint", "json", function(text) {
   var found = [];
   var {parser} = jsonlint;
@@ -33,7 +35,7 @@ CodeMirror.registerHelper("lint", "json", function(text) {
   return found;
 });
 
-export default class CustomProcessorForm extends Component {
+class CustomProcessorForm extends Component {
 
 	defaultObj = {
 		streamingEngine: 'STORM',
@@ -50,11 +52,14 @@ export default class CustomProcessorForm extends Component {
 
 	constructor(props) {
 		super(props);
-		this.state = JSON.parse(JSON.stringify(this.defaultObj));
+    this.extendObj = Object.assign({},this.defaultObj,{fieldsChk : true})
+                this.state = JSON.parse(JSON.stringify(this.extendObj));
 		this.idCount = 1;
 		if(props.id)
 			this.fetchProcessor(props.id);
 		this.modalContent = ()=>{};
+    this.nextRoutes = '';
+    this.navigateFlag = false;
 	}
 
 	fetchProcessor(id) {
@@ -83,6 +88,28 @@ export default class CustomProcessorForm extends Component {
 			})
 	}
 
+  componentDidMount() {
+    this.props.router.setRouteLeaveHook(this.props.route, this.routerWillLeave)
+  }
+
+  routerWillLeave = (nextLocation) => {
+    this.validateData();
+    this.nextRoutes = nextLocation.pathname;
+    (!this.navigateFlag) ? this.refs.leaveConfigProcessor.show() : ''
+    return this.navigateFlag;
+  }
+
+  confirmLeave(flag) {
+    if(flag){
+      this.navigateFlag = true;
+      this.setState({fieldsChk : false})
+      this.refs.leaveConfigProcessor.hide();
+      this.props.router.push(this.nextRoutes);
+    } else {
+      this.setState({fieldsChk : true})
+      this.refs.leaveConfigProcessor.hide();
+    }
+  }
 
 	handleValueChange(e) {
 		let obj = {};
@@ -152,12 +179,26 @@ export default class CustomProcessorForm extends Component {
 	validateData() {
 		let validDataFlag = true;
 		let {streamingEngine, name, description, customProcessorImpl, jarFileName,
-                        topologyComponentUISpecification, inputSchema} = this.state;
+                        topologyComponentUISpecification, inputSchema,fieldsChk} = this.state;
 		let outputStreams = this.refs.OutputSchemaContainer.getOutputStreams();
 
+    const emptyVal = [name,description,customProcessorImpl,jarFileName,topologyComponentUISpecification,inputSchema];
+
 		if(streamingEngine === '' || name === '' || description === '' || customProcessorImpl === '' ||
-                        jarFileName === '' || inputSchema === '' || outputStreams.length === 0 || topologyComponentUISpecification.length === 0)
-			validDataFlag = false;
+        jarFileName === '' || inputSchema === '' || outputStreams.length === 0 ||
+         topologyComponentUISpecification.length === 0){
+          if(fieldsChk){
+            let filterVal = emptyVal.filter(val => {
+                return val.length !== 0
+            });
+            (filterVal.length !== emptyVal.length)
+                ?  (filterVal.length === 0 && outputStreams.length === 1)
+                    ? this.navigateFlag = true
+                    : this.setState({fieldsChk : false},function(){this.navigateFlag = false})
+                : this.navigateFlag = true;
+          }
+          validDataFlag = false;
+    }
 		return validDataFlag;
 	}
 
@@ -180,7 +221,7 @@ export default class CustomProcessorForm extends Component {
         let {fieldName, uiName, isOptional, type, defaultValue, isUserInput, tooltip} = o;
         return {fieldName, uiName, isOptional, type,	defaultValue, isUserInput, tooltip};
 			});
-      
+
       let customProcessorInfo = {streamingEngine, name, description, customProcessorImpl, inputSchema, outputStreamToSchema, topologyComponentUISpecification: {fields: configFieldsArr}, jarFileName: jarFileName.name};
 
 			var formData = new FormData();
@@ -369,8 +410,19 @@ export default class CustomProcessorForm extends Component {
 			<Modal ref="ConfigFieldModal" data-title={this.state.modalTitle} data-resolve={this.handleSaveConfigFieldModal.bind(this)}>
 				{this.modalContent()}
 			</Modal>
+      <Modal
+        ref="leaveConfigProcessor"
+        data-title="Confirm Box"
+        dialogClassName="confirm-box"
+        data-resolve={this.confirmLeave.bind(this, true)}
+        data-reject={this.confirmLeave.bind(this, false)} >
+          {<p>Your Processor Config setting is not saved! Are you sure you want to leave ?</p>}
+      </Modal>
 			</div>
 			)
 	}
 
 }
+
+
+export default withRouter(CustomProcessorForm)

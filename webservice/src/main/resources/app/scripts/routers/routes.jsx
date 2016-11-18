@@ -29,7 +29,7 @@ export default (
     <IndexRoute name="All Streams" component={TopologyListContainer} onEnter={onEnter} />
   <Route path="metrics" name="Metrics" component={MetricsContainer} onEnter={onEnter}/>
   <Route path="applications" name="All Streams" onEnter={onEnter}>
-	<IndexRoute name="My Applications" component={TopologyListContainer} onEnter={onEnter} />
+    <IndexRoute name="All Streams" component={TopologyListContainer} onEnter={onEnter} />
     <Route path=":id" name="Application Editor" component={TopologyEditorContainer} onEnter={onEnter}/>
   </Route>
   <Route path="custom-processor" name="Custom Processor" component={CustomProcessorContainer} onEnter={onEnter}/>

@@ -2,7 +2,7 @@ import React, {Component, PropTypes}from 'react';
 
 export default class StreamSidebar extends Component {
     static propTypes = {
-        streamObj: PropTypes.object.isRequired,
+        // streamObj: PropTypes.object.isRequired,
         streamType: PropTypes.string.isRequired //input or output
     }
 

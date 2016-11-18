@@ -118,7 +118,7 @@ export default class CustomNodeForm extends Component {
 					.then((node)=>{
 						self.nodeData = node.entity;
 						self.setState({showSchema: true});
-                        this.context.ParentForm.setState({outputStreamObj:node.entity.outputStreams})
+                        this.context.ParentForm.setState({outputStreamObj:node.entity.outputStreams[0]})
 					})
 			})
 	}
@@ -156,7 +156,7 @@ export default class CustomNodeForm extends Component {
 		let validDataFlag = true;
 
 		this.state.userInputs.map((o)=>{
-			if(!o.isOptional && this.state[o.name] === '') {
+                        if(!o.isOptional && this.state[o.fieldName] === '') {
 				validDataFlag = false;
 				o.isInvalid = true;
 			}
