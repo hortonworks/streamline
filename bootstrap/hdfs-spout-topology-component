@@ -1,7 +1,7 @@
 {
   "type": "SOURCE",
-  "name": "Hdfs Source",
-  "subType": "HDFS-SOURCE",
+  "name": "Hdfs Spout",
+  "subType": "HDFS",
   "streamingEngine": "STORM",
   "builtin": true,
   "transformationClass": "org.apache.streamline.streams.layout.storm.HdfsSpoutFluxComponent",
@@ -96,9 +96,9 @@
         "uiName": "Output Field Names",
         "fieldName": "OutputFields",
         "isOptional": false,
-        "tooltip": "Comma Separated names for output fields. Number of fields can depend on file format. TEXT format has single default field called 'line'.",
-        "type": "string",
-        "defaultValue": "line"
+        "tooltip": "Field names can depend on file format. TEXT format has single default field called 'line'.",
+        "type": "array.string",
+        "defaultValue": null
       },
       {
         "uiName": "Parallelism",
