@@ -56,7 +56,7 @@
       {
         "uiName": "Commit Frequency Count",
         "fieldName": "CommitFrequencyCount",
-        "isOptional": false,
+        "isOptional": true,
         "tooltip": "Records progress in the lock file after specified number of records are processed. Setting it to 0 disables this.",
         "type": "number",
         "defaultValue": 20000
@@ -64,7 +64,7 @@
       {
         "uiName": "Commit Frequency Secs",
         "fieldName": "CommitFrequencySec",
-        "isOptional": false,
+        "isOptional": true,
         "tooltip": "Records progress in the lock file after specified secs have elapsed. Must be greater than 0.",
         "type": "number",
         "defaultValue": 10
@@ -72,7 +72,7 @@
       {
         "uiName": "Max Outstanding",
         "fieldName": "MaxOutstanding",
-        "isOptional": false,
+        "isOptional": true,
         "tooltip": "Limits the number of unACKed tuples by pausing tuple generation (if ACKers are used in the topology)",
         "type": "number",
         "defaultValue": 10000
@@ -80,14 +80,14 @@
       {
         "uiName": "Lock Timeout Seconds",
         "fieldName": "LockTimeoutSec",
-        "isOptional": false,
+        "isOptional": true,
         "tooltip": "Duration of inactivity after which a lock file is considered to be abandoned and ready for another spout to take ownership",
         "type": "number"
       },
       {
         "uiName": "Ignore Suffix",
         "fieldName": "setIgnoreSuffix",
-        "isOptional": false,
+        "isOptional": true,
         "tooltip": "File names with this suffix in the source dir will not be processed",
         "type": "string",
         "defaultValue": ".ignore"
