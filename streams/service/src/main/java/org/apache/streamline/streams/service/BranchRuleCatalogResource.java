@@ -39,7 +39,7 @@ import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessa
  * the corresponding {@link Rule} object and saved in the catalog db.
  * </p>
  */
-@Path("/api/v1/catalog/topologies/{topologyId}/branchrules")
+@Path("/v1/catalog/topologies/{topologyId}/branchrules")
 @Produces(MediaType.APPLICATION_JSON)
 public class BranchRuleCatalogResource {
     private final StreamCatalogService catalogService;
