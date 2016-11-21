@@ -17,8 +17,7 @@
  */
 package org.apache.streamline.streams.runtime.storm.bolt.query;
 
-//     : test on storm cluster with proper topo
-//     : flux enablement
+// todo: flux enablement
 //     : test on streamline
 // todo: add stream:keyName support in select
 
@@ -61,7 +60,7 @@ public class WindowedQueryBolt extends BaseWindowedBolt {
     private boolean streamLineStyleProjection = false;
 
     // Use streamId, source component name OR field in tuple to distinguish incoming tuple streams
-    public enum  StreamSelector { STREAM, SOURCE_COMPONENT }
+    public enum  StreamSelector { STREAM, SOURCE }
     private final StreamSelector streamSelectorType;
 
 
@@ -75,7 +74,7 @@ public class WindowedQueryBolt extends BaseWindowedBolt {
      */
     public WindowedQueryBolt(StreamSelector type, String streamId, String key) {
         // todo: support other types of stream selectors
-        if( type!=StreamSelector.STREAM && type!=StreamSelector.SOURCE_COMPONENT )
+        if (type!=StreamSelector.STREAM && type!=StreamSelector.SOURCE)
             throw new IllegalArgumentException(type.name());
         streamSelectorType = type;
         streamJoinOrder.add(streamId);
@@ -114,7 +113,7 @@ public class WindowedQueryBolt extends BaseWindowedBolt {
     public WindowedQueryBolt leftJoin(String stream, String key, String priorStream) {
         hashedInputs.put(stream, new HashMap<Object, ArrayList<TupleImpl>>());
         JoinInfo joinInfo = joinCriteria.get(priorStream);
-        if( joinInfo==null )
+        if ( joinInfo==null )
             throw new IllegalArgumentException("Stream '" + priorStream + "' was not previously declared");
         joinCriteria.put(stream, new JoinInfo(key, priorStream, joinInfo, JoinType.LEFT));
         streamJoinOrder.add(stream);
@@ -209,7 +208,7 @@ public class WindowedQueryBolt extends BaseWindowedBolt {
         for (Tuple t : tuples) {
             TupleImpl tuple = (TupleImpl) t;
             String streamId = getStreamSelector(tuple);
-            if( ! streamId.equals(firstStream) ) {
+            if ( ! streamId.equals(firstStream) ) {
                 Object key = getKeyField(streamId, tuple);
                 ArrayList<TupleImpl> recs = hashedInputs.get(streamId).get(key);
                 if(recs == null) {
@@ -255,7 +254,7 @@ public class WindowedQueryBolt extends BaseWindowedBolt {
         JoinAccumulator result = new JoinAccumulator();
         for (ResultRecord rec : probe.getRecords()) {
             Object probeKey = rec.getField(joinInfo.otherStream, probeKeyName);
-            if(probeKey!=null) {
+            if (probeKey!=null) {
                 ArrayList<TupleImpl> matchingBuildRecs = buildInput.get(probeKey);
                 if(matchingBuildRecs!=null) {
                     for (TupleImpl matchingRec : matchingBuildRecs) {
@@ -274,9 +273,9 @@ public class WindowedQueryBolt extends BaseWindowedBolt {
         JoinAccumulator result = new JoinAccumulator();
         for (ResultRecord rec : probe.getRecords()) {
             Object probeKey = rec.getField(joinInfo.otherStream, probeKeyName);
-            if(probeKey!=null) {
+            if (probeKey!=null) {
                 ArrayList<TupleImpl> matchingBuildRecs = buildInput.get(probeKey); // ok if its return null
-                if(matchingBuildRecs!=null && !matchingBuildRecs.isEmpty() ) {
+                if (matchingBuildRecs!=null && !matchingBuildRecs.isEmpty() ) {
                     for (TupleImpl matchingRec : matchingBuildRecs) {
                         ResultRecord mergedRecord = new ResultRecord(rec, matchingRec, finalJoin);
                         result.insert(mergedRecord);
@@ -324,7 +323,7 @@ public class WindowedQueryBolt extends BaseWindowedBolt {
         switch (streamSelectorType) {
             case STREAM:
                 return ti.getSourceStreamId();
-            case SOURCE_COMPONENT:
+            case SOURCE:
                 return ti.getSourceComponent();
             default:
                 throw new RuntimeException(streamSelectorType + " stream selector type not yet supported");
@@ -404,7 +403,7 @@ public class WindowedQueryBolt extends BaseWindowedBolt {
 
         public Object getField(String stream, String[] nestedFieldName) {
             for (TupleImpl tuple : tupleList) {
-                if(tuple.getSourceStreamId().equals(stream))
+                if(getStreamSelector(tuple).equals(stream))
                     return getNestedField(nestedFieldName, tuple);
             }
             return null;
@@ -431,12 +430,17 @@ public class WindowedQueryBolt extends BaseWindowedBolt {
         ArrayList<Object> result = new ArrayList<>(projectionKeys.length);
         // Todo: optimize this computation... perhaps inner loop can be outside to avoid rescanning tuples
         for ( int i = 0; i < projectionKeys.length; i++ ) {
+            boolean missingField = true;
             for ( TupleImpl tuple : tuples ) {
                 Object field = getNestedField(projectionKeys[i], tuple ) ;
                 if (field != null) {
                     result.add(field);
+                    missingField=false;
                     break;
                 }
+            }
+            if(missingField) { // add a null for missing fields (usually in case of outer joins)
+                result.add(null);
             }
         }
         return result;
@@ -455,7 +459,7 @@ public class WindowedQueryBolt extends BaseWindowedBolt {
                 if (field != null) {
                     projection.put(flattenedKey, field);
                     break;
-                }
+}
             }
         }
         ArrayList<Object> resultRow = new ArrayList<>();
@@ -464,6 +468,4 @@ public class WindowedQueryBolt extends BaseWindowedBolt {
         return resultRow;
     }
 }
-//
-//
-//result.add(slEvent);
+
