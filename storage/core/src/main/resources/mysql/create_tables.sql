@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS topology_editor_metadata (
     versionId BIGINT NOT NULL,
     data TEXT NOT NULL,
     timestamp BIGINT,
-    PRIMARY KEY (topologyId),
+    PRIMARY KEY (topologyId, versionId),
     FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
 );
 

@@ -122,6 +122,7 @@ import static org.apache.streamline.common.util.WSUtils.CURRENT_VERSION;
 import static org.apache.streamline.common.util.WSUtils.currentVersionQueryParam;
 import static org.apache.streamline.common.util.WSUtils.versionIdQueryParam;
 import static org.apache.streamline.streams.catalog.TopologyEdge.StreamGrouping;
+import static org.apache.streamline.streams.catalog.TopologyVersionInfo.VERSION_PREFIX;
 
 /**
  * A service layer where we could put our business logic.
@@ -542,6 +543,17 @@ public class StreamCatalogService {
         return dao.find(TOPOLOGY_VERSIONINFO_NAMESPACE, queryParams);
     }
 
+    // latest version before the CURRENT version
+    public Optional<TopologyVersionInfo> getLatestVersionInfo(Long topologyId) {
+        Collection<TopologyVersionInfo> versions =
+                listTopologyVersionInfos(WSUtils.buildTopologyIdAwareQueryParams(topologyId, null));
+        return  versions.stream()
+                .filter(v -> !v.getName().equals(CURRENT_VERSION))
+                .max((versionInfo1, versionInfo2) -> {
+                    // compares the number part from version strings like V1, V2 ...
+                    return versionInfo1.getVersionNumber() - versionInfo2.getVersionNumber();
+                });
+    }
     public TopologyVersionInfo getTopologyVersionInfo(Long versionId) {
         TopologyVersionInfo topologyVersionInfo = new TopologyVersionInfo();
         topologyVersionInfo.setId(versionId);
@@ -2189,7 +2201,7 @@ public class StreamCatalogService {
         } else if (StringUtils.isEmpty(ruleInfo.getSql())) {
             throw new IllegalArgumentException("Either streams or sql string should be specified.");
         }
-        parseSql(rule, ruleInfo.getSql(), ruleInfo.getTopologyId());
+        parseSql(rule, ruleInfo.getSql(), ruleInfo.getTopologyId(), ruleInfo.getVersionId());
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(rule);
     }
@@ -2201,7 +2213,7 @@ public class StreamCatalogService {
         rule.setDescription(ruleInfo.getDescription());
         rule.setActions(ruleInfo.getActions());
         String sql = getSqlString(Arrays.asList(ruleInfo.getStream()), null, ruleInfo.getCondition(), null);
-        parseSql(rule, sql, ruleInfo.getTopologyId());
+        parseSql(rule, sql, ruleInfo.getTopologyId(), ruleInfo.getVersionId());
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(rule);
     }
@@ -2221,7 +2233,7 @@ public class StreamCatalogService {
                 windowInfo.getProjections(),
                 windowInfo.getCondition(),
                 windowInfo.getGroupbykeys());
-        parseSql(rule, sql, windowInfo.getTopologyId());
+        parseSql(rule, sql, windowInfo.getTopologyId(), windowInfo.getVersionId());
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(rule);
     }
@@ -2275,9 +2287,9 @@ public class StreamCatalogService {
     }
 
 
-    private void parseSql(Rule rule, String sql, Long topologyId) {
+    private void parseSql(Rule rule, String sql, Long topologyId, Long versionId) {
         // parse
-        RuleParser ruleParser = new RuleParser(this, sql, topologyId);
+        RuleParser ruleParser = new RuleParser(this, sql, topologyId, versionId);
         ruleParser.parse();
         rule.setStreams(new HashSet<>(Collections2.transform(ruleParser.getStreams(), new Function<Stream, String>() {
             @Override

@@ -1,6 +1,7 @@
 package org.apache.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.commons.lang.StringUtils;
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.storage.PrimaryKey;
 import org.apache.streamline.storage.StorableKey;
@@ -15,6 +16,7 @@ import java.util.Map;
 public class TopologyVersionInfo extends AbstractStorable {
     public static final String NAME_SPACE = "topology_versioninfos";
     public static final String ID = "id";
+    public static final String VERSION_PREFIX = "V";
 
     private Long id;
     private Long topologyId;
@@ -78,6 +80,14 @@ public class TopologyVersionInfo extends AbstractStorable {
 
     public void setTimestamp(Long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    @JsonIgnore
+    public Integer getVersionNumber() {
+        if (StringUtils.isEmpty(name) || !name.startsWith(VERSION_PREFIX)) {
+            throw new IllegalArgumentException("Cannot get version number from " + name);
+        }
+        return Integer.parseInt(name.substring(name.indexOf(VERSION_PREFIX) + 1));
     }
 
     @Override

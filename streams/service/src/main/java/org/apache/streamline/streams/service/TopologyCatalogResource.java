@@ -47,6 +47,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,6 +62,7 @@ import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessa
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_VERSION_NOT_FOUND;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
+import static org.apache.streamline.streams.catalog.TopologyVersionInfo.VERSION_PREFIX;
 
 
 @Path("/v1/catalog")
@@ -279,6 +281,18 @@ public class TopologyCatalogResource {
             }
             // update the current version with the new version info.
             versionInfo.setTopologyId(topologyId);
+            Optional<TopologyVersionInfo> latest = catalogService.getLatestVersionInfo(topologyId);
+            int suffix;
+            if (latest.isPresent()) {
+                suffix = latest.get().getVersionNumber() + 1;
+            } else {
+                suffix = 1;
+            }
+            versionInfo.setName(VERSION_PREFIX + suffix);
+            if (versionInfo.getDescription() == null) {
+                Date date = new Date();
+                versionInfo.setDescription("version @ " + date);
+            }
             TopologyVersionInfo savedVersion = catalogService.addOrUpdateTopologyVersionInfo(
                     currentVersion.get().getId(), versionInfo);
             catalogService.cloneTopologyVersion(topologyId, savedVersion.getId());

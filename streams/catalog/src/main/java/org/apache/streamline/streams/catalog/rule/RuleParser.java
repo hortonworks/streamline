@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableList;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.streams.catalog.RuleInfo;
 import org.apache.streamline.streams.catalog.StreamInfo;
+import org.apache.streamline.streams.catalog.TopologyVersionInfo;
 import org.apache.streamline.streams.catalog.UDFInfo;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.layout.component.Stream;
@@ -53,6 +54,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.apache.streamline.streams.layout.component.rule.expression.FieldExpression.STAR;
 
@@ -70,11 +72,13 @@ public class RuleParser {
     private final Set<String> referredUdfs = new HashSet<>();
     private final String sql;
     private final long topologyId;
+    private final long versionId;
 
-    public RuleParser(StreamCatalogService catalogService, String sql, long topologyId) {
+    public RuleParser(StreamCatalogService catalogService, String sql, long topologyId, long versionId) {
         this.catalogService = catalogService;
         this.sql = sql;
         this.topologyId = topologyId;
+        this.versionId = versionId;
         for (UDFInfo udfInfo: catalogService.listUDFs()) {
             catalogUdfs.put(udfInfo.getName().toUpperCase(),
                     new Udf(udfInfo.getName(), udfInfo.getClassName(), udfInfo.getType()));
@@ -189,19 +193,15 @@ public class RuleParser {
 
     // stream assumed to be unique within a topology
     private Stream getStream(final String streamName) throws Exception {
-        Collection<StreamInfo> streamInfos = Collections2.filter(getStreamInfos(),
-                new Predicate<StreamInfo>() {
-                    @Override
-                    public boolean apply(StreamInfo input) {
-                        return input.getStreamId().equalsIgnoreCase(streamName);
-                    }
-                });
+        List<StreamInfo> streamInfos = getStreamInfos().stream()
+                .filter(s -> s.getStreamId().equalsIgnoreCase(streamName))
+                .collect(Collectors.toList());
         if (streamInfos.isEmpty()) {
             throw new IllegalArgumentException("Stream '" + streamName + "' does not exist");
         } else if (streamInfos.size() != 1) {
             throw new IllegalArgumentException("Stream '" + streamName + "' is not unique");
         } else {
-            StreamInfo streamInfo = streamInfos.iterator().next();
+            StreamInfo streamInfo = streamInfos.get(0);
             return new Stream(streamInfo.getStreamId(), streamInfo.getFields());
         }
     }
@@ -209,6 +209,7 @@ public class RuleParser {
     private Collection<StreamInfo> getStreamInfos() throws Exception {
         return catalogService.listStreamInfos(ImmutableList.<QueryParam>builder()
                 .add(new QueryParam(RuleInfo.TOPOLOGY_ID, String.valueOf(topologyId)))
+                .add(new QueryParam(StreamInfo.VERSIONID, String.valueOf(versionId)))
                 .build());
     }
 
@@ -229,6 +230,7 @@ public class RuleParser {
                 ", referredUdfs=" + referredUdfs +
                 ", sql='" + sql + '\'' +
                 ", topologyId=" + topologyId +
+                ", versionId=" + versionId +
                 '}';
     }
 }

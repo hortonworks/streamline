@@ -68,8 +68,9 @@ public class RuleParserTest {
         ruleInfo.setName("Test");
         ruleInfo.setDescription("test rule");
         ruleInfo.setTopologyId(1L);
+        ruleInfo.setVersionId(1L);
         ruleInfo.setSql("select temperature as temp from teststream where humidity > 80");
-        RuleParser ruleParser = new RuleParser(mockCatalogService, ruleInfo.getSql(), ruleInfo.getTopologyId());
+        RuleParser ruleParser = new RuleParser(mockCatalogService, ruleInfo.getSql(), ruleInfo.getTopologyId(), ruleInfo.getVersionId());
         ruleParser.parse();
         assertEquals(new Condition(new BinaryExpression(Operator.GREATER_THAN,
                         new FieldExpression(Schema.Field.of("humidity", Schema.Type.LONG)),
@@ -106,8 +107,9 @@ public class RuleParserTest {
         ruleInfo.setName("Test");
         ruleInfo.setDescription("test rule");
         ruleInfo.setTopologyId(1L);
+        ruleInfo.setVersionId(1L);
         ruleInfo.setSql("select temperature from teststream where eventType <> 'Normal'");
-        RuleParser ruleParser = new RuleParser(mockCatalogService, ruleInfo.getSql(), ruleInfo.getTopologyId());
+        RuleParser ruleParser = new RuleParser(mockCatalogService, ruleInfo.getSql(), ruleInfo.getTopologyId(), ruleInfo.getVersionId());
         ruleParser.parse();
         assertTrue(ruleParser.getCondition().getExpression() instanceof BinaryExpression);
         assertTrue(((BinaryExpression) ruleParser.getCondition().getExpression()).getSecond() instanceof Literal);
@@ -131,8 +133,9 @@ public class RuleParserTest {
         ruleInfo.setName("Test");
         ruleInfo.setDescription("test rule");
         ruleInfo.setTopologyId(1L);
+        ruleInfo.setVersionId(1L);
         ruleInfo.setSql("select temperature as \"temp_TEST\" from teststream where humidity > 80");
-        RuleParser ruleParser = new RuleParser(mockCatalogService, ruleInfo.getSql(), ruleInfo.getTopologyId());
+        RuleParser ruleParser = new RuleParser(mockCatalogService, ruleInfo.getSql(), ruleInfo.getTopologyId(), ruleInfo.getVersionId());
         ruleParser.parse();
         assertEquals(new Condition(new BinaryExpression(Operator.GREATER_THAN,
                         new FieldExpression(Schema.Field.of("humidity", Schema.Type.LONG)),
@@ -173,8 +176,9 @@ public class RuleParserTest {
         ruleInfo.setName("Test");
         ruleInfo.setDescription("test rule");
         ruleInfo.setTopologyId(1L);
+        ruleInfo.setVersionId(1L);
         ruleInfo.setSql("select stddevp(temperature) from teststream");
-        RuleParser ruleParser = new RuleParser(mockCatalogService, ruleInfo.getSql(), ruleInfo.getTopologyId());
+        RuleParser ruleParser = new RuleParser(mockCatalogService, ruleInfo.getSql(), ruleInfo.getTopologyId(), ruleInfo.getVersionId());
         ruleParser.parse();
         System.out.println(ruleParser.getProjection());
         assertEquals(1, ruleParser.getStreams().size());
