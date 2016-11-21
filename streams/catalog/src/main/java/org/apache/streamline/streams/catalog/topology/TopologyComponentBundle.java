@@ -34,7 +34,8 @@ public class TopologyComponentBundle implements Storable {
         LINK,
         SINK,
         ACTION,
-        TRANSFORM
+        TRANSFORM,
+        TOPOLOGY
     }
 
     /**
