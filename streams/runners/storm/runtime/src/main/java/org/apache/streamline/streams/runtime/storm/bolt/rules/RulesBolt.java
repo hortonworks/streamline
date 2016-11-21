@@ -101,7 +101,7 @@ public class RulesBolt extends BaseRichBolt {
     }
 
     private StreamlineEvent getStreamlineEventWithStream(StreamlineEvent event, Tuple tuple) {
-        return new StreamlineEventImpl(event.getFieldsAndValues(),
+        return new StreamlineEventImpl(event,
                 event.getDataSourceId(), event.getId(),
                 event.getHeader(), tuple.getSourceStreamId(), event.getAuxiliaryFieldsAndValues());
     }

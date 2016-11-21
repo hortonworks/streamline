@@ -94,7 +94,7 @@ public class JoinActionRuntime extends AbstractSplitJoinActionRuntime {
     }
 
     private StreamlineEvent getStreamlineEvent(StreamlineEvent event, String stream) {
-        return new StreamlineEventImpl(event.getFieldsAndValues(), event.getDataSourceId(), event.getId(), event.getHeader(), stream, event.getAuxiliaryFieldsAndValues());
+        return new StreamlineEventImpl(event, event.getDataSourceId(), event.getId(), event.getHeader(), stream, event.getAuxiliaryFieldsAndValues());
     }
 
     protected EventGroup groupEvents(StreamlineEvent event) {

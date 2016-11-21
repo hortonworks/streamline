@@ -68,7 +68,7 @@ public class NormalizationBolt extends AbstractProcessorBolt {
     public void process(Tuple inputTuple, StreamlineEvent event) throws Exception {
         LOG.debug("Normalizing received StreamlineEvent: [{}] with tuple: [{}]", event, inputTuple);
         //todo this bolt will be replaced with custom baseprocessor bolt.
-        StreamlineEventImpl eventWithStream = new StreamlineEventImpl(event.getFieldsAndValues(), event.getDataSourceId(),
+        StreamlineEventImpl eventWithStream = new StreamlineEventImpl(event, event.getDataSourceId(),
                 event.getId(), event.getHeader(), inputTuple.getSourceStreamId());
         List<Result> outputEvents = normalizationProcessorRuntime.process(eventWithStream);
         LOG.debug("Emitting events to collector: [{}]", outputEvents);

@@ -234,7 +234,7 @@ public class NormalizationBoltTest {
     public void testGroovyWithCustomObjects() throws IOException {
         Binding binding = new Binding();
         binding.setVariable("device", new Device("device-"+System.currentTimeMillis()));
-        for (Map.Entry<String, Object> entry : INPUT_STREAMLINE_EVENT.getFieldsAndValues().entrySet()) {
+        for (Map.Entry<String, Object> entry : INPUT_STREAMLINE_EVENT.entrySet()) {
             binding.setVariable(entry.getKey(), entry.getValue());
         }
         binding.setVariable("__outputSchema", OUTPUT_SCHEMA_FIELDS);

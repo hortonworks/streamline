@@ -44,8 +44,7 @@ public class MergeTransformRuntime implements TransformRuntime {
 
     @Override
     public List<StreamlineEvent> execute(StreamlineEvent input) {
-        Map<String, Object> merged = new HashMap<>();
-        merged.putAll(input.getFieldsAndValues());
+        Map<String, Object> merged = new HashMap<>(input);
         for (Map.Entry<String, ?> entry : mergeTransform.getDefaults().entrySet()) {
             if (!merged.containsKey(entry.getKey())) {
                 merged.put(entry.getKey(), entry.getValue());
