@@ -175,7 +175,7 @@ public abstract class AbstractFluxComponent implements FluxComponent {
     }
 
     protected List getConfigMethodWithRefArg (String[] configMethodNames,
-                                             String[] refIds) {
+                                              String[] refIds) {
         List configMethods = new ArrayList();
         if ((configMethodNames != null) && (refIds != null) &&
                 (configMethodNames.length == refIds.length) && (refIds.length > 0)) {
