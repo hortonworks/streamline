@@ -71,7 +71,7 @@ public class StreamlineEventAdapter implements Notification {
 
     @Override
     public Map<String, Object> getFieldsAndValues() {
-        return event.getFieldsAndValues();
+        return event;
     }
 
     @Override

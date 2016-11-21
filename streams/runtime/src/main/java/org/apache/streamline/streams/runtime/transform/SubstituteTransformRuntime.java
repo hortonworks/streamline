@@ -69,8 +69,8 @@ public class SubstituteTransformRuntime implements TransformRuntime {
 
     private List<StreamlineEvent> substitute(StreamlineEvent input) {
         Map<String, Object> substitutedFieldsAndValues = new HashMap<>();
-        StrSubstitutor substitutor = new StrSubstitutor(input.getFieldsAndValues());
-        for(Map.Entry<String, Object> entry: input.getFieldsAndValues().entrySet()) {
+        StrSubstitutor substitutor = new StrSubstitutor(input);
+        for(Map.Entry<String, Object> entry: input.entrySet()) {
             if(shouldSubstitue(entry.getKey(), entry.getValue())) {
                 substitutedFieldsAndValues.put(entry.getKey(), substitutor.replace(entry.getValue()));
             } else {

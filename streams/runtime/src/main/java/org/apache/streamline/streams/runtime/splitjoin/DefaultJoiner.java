@@ -43,9 +43,7 @@ public class DefaultJoiner implements Joiner {
             if(subEvent.getAuxiliaryFieldsAndValues() != null) {
                 auxiliaryFieldValues.putAll(subEvent.getAuxiliaryFieldsAndValues());
             }
-            if(subEvent.getFieldsAndValues() != null) {
-                fieldValues.putAll(subEvent.getFieldsAndValues());
-            }
+            fieldValues.putAll(subEvent);
         }
 
         return new StreamlineEventImpl(fieldValues, eventGroup.getDataSourceId(),
