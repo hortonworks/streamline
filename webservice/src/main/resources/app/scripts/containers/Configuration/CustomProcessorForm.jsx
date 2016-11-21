@@ -233,8 +233,9 @@ class CustomProcessorForm extends Component {
 			} else {
 				return CustomProcessorREST.postProcessor({body: formData});
 			}
-
-		}
+		} else {
+      return false;
+    }
 	}
 
 	handleInputSchemaChange(json){
@@ -425,4 +426,4 @@ class CustomProcessorForm extends Component {
 }
 
 
-export default withRouter(CustomProcessorForm)
+export default withRouter(CustomProcessorForm, { withRef: true })

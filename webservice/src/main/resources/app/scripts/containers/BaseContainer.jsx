@@ -6,7 +6,6 @@ import {Confirm} from '../components/FSModal'
 
 import 'animate.css/animate.css';
 import 'styles/css/bootstrap.css';
-import 'react-structured-filter/lib/react-structured-filter.css';
 import 'react-select/dist/react-select.css';
 import 'react-bootstrap-switch/dist/css/bootstrap3/react-bootstrap-switch.min.css';
 import 'styles/css/toastr.min.css';
