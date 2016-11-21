@@ -60,6 +60,5 @@ public abstract class AbstractFileStorageTest {
             actual.add(nextLine);
         }
         Assert.assertEquals(lines, actual);
-
     }
 }

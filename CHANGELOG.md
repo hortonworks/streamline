@@ -1,4 +1,6 @@
 ## 0.1.4
+ * STREAMLINE-506: TopologyEditor Settings API.
+ * STREAMLINE-424: HDFS Spout support.
  * STREAMLINE-498: Storm Runner Time-series API should handle the difference between component name from Streamline and Storm
  * STREAMLINE-462: Refactor Rules Processor.
  * STREAMLINE-484: UI - Change the Topology Editor as per the mocks.

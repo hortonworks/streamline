@@ -41,7 +41,7 @@ import static org.apache.streamline.common.util.WSUtils.buildTopologyIdAndVersio
  * the corresponding {@link Rule} object and saved in the catalog db.
  * </p>
  */
-@Path("/api/v1/catalog")
+@Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class BranchRuleCatalogResource {
     private final StreamCatalogService catalogService;

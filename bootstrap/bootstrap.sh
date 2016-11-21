@@ -70,6 +70,7 @@ done
 
 
 add_bundle /streams/componentbundles/SOURCE $bootstrap_dir/kafka-topology-component
+add_bundle /streams/componentbundles/SOURCE $bootstrap_dir/hdfs-spout-topology-component
 add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/rule-topology-component
 add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/window-topology-component
 add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/parser-topology-component
@@ -81,6 +82,7 @@ add_bundle /streams/componentbundles/SINK $bootstrap_dir/opentsdb-sink-topology-
 add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/branch-topology-component
 add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/split-topology-component
 add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/join-topology-component
+add_bundle /streams/componentbundles/TOPOLOGY $bootstrap_dir/storm-topology-component
 #post /streams/componentbundles/PROCESSOR $bootstrap_dir/stage-topology-component
 #post /streams/componentbundles/ACTION $bootstrap_dir/transform-action-topology-component
 #post /streams/componentbundles/TRANSFORM $bootstrap_dir/projection-transform-topology-component

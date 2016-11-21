@@ -55,16 +55,18 @@ export default class CustomProcessorContainer extends Component {
 	}
 
 	handleSave() {
-		this.refs.CustomProcessorForm.handleSave().then((processor)=>{
-				if(processor.responseCode !== 1000){
+    if(this.refs.CustomProcessorForm.getWrappedInstance().validateData()){
+      this.refs.CustomProcessorForm.getWrappedInstance().handleSave().then((processor)=>{
+        if(processor.responseCode !== 1000){
           FSReactToastr.error(
               <CommonNotification flag="error" content={processors.responseMessage}/>, '', toastOpt)
-				} else {
-					FSReactToastr.success(<strong>Processor {this.state.processorId ? "updated" : "added"} successfully</strong>)
-					this.fetchData();
-					this.handleCancel();
-				}
-			})
+        } else {
+          FSReactToastr.success(<strong>Processor {this.state.processorId ? "updated" : "added"} successfully</strong>)
+          this.fetchData();
+          this.handleCancel();
+        }
+      })
+    }
 	}
 
 	handleEdit(id) {

@@ -1,0 +1,35 @@
+{
+  "type": "TOPOLOGY",
+  "name": "Storm topology",
+  "subType": "TOPOLOGY",
+  "streamingEngine": "STORM",
+  "builtin": true,
+  "transformationClass": "dummy",
+  "topologyComponentUISpecification": {
+    "fields": [
+      {
+        "uiName": "Number of workers",
+        "fieldName": "topology.workers",
+        "isOptional": true,
+        "tooltip": "How many processes should be spawned around the cluster to execute this topology",
+        "type": "number",
+        "defaultValue": 1
+      },
+      {
+        "uiName": "Number of ackers",
+        "fieldName": "topology.acker.executors",
+        "isOptional": true,
+        "tooltip": "The number of executors to spawn for ackers",
+        "type": "number",
+        "defaultValue": 1
+      },
+      {
+        "uiName": "Worker JVM options",
+        "fieldName": "worker.childopts",
+        "isOptional": true,
+        "tooltip": "The jvm options provided to workers ",
+        "type": "string"
+      }
+    ]
+  }
+}

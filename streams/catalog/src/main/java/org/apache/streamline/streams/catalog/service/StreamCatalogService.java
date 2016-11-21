@@ -2495,6 +2495,10 @@ public class StreamCatalogService {
     private void loadTransformationClassForBundle (TopologyComponentBundle topologyComponentBundle, InputStream bundleJar) {
         if (topologyComponentBundle.getStreamingEngine().equals(TopologyLayoutConstants.STORM_STREAMING_ENGINE)) {
             if (topologyComponentBundle.getBuiltin()) {
+                // no transformation class validations for top level topology type
+                if (topologyComponentBundle.getType() == TopologyComponentBundle.TopologyComponentType.TOPOLOGY) {
+                    return;
+                }
                 try {
                     FluxComponent fluxComponent = (FluxComponent) Class.forName(topologyComponentBundle.getTransformationClass()).newInstance();
                 } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {

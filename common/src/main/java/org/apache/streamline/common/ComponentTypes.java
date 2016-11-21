@@ -19,6 +19,7 @@ public class ComponentTypes {
     public static final String OPENTSDB = "OPENTSDB";
     public static final String HBASE = "HBASE";
     public static final String HDFS = "HDFS";
+    public static final String HDFS_SOURCE = "HDFS-SOURCE";
     public static final String NOTIFICATION = "NOTIFICATION";
 
 }

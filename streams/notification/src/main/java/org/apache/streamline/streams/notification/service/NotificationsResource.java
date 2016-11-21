@@ -55,7 +55,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 /**
  * REST endpoint for notifications
  */
-@Path("/api/v1/notification")
+@Path("/v1/notification")
 @Produces(MediaType.APPLICATION_JSON)
 public class NotificationsResource {
     private static final Logger LOG = LoggerFactory.getLogger(NotificationsResource.class);
