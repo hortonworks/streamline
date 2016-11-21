@@ -19,7 +19,6 @@
 package org.apache.streamline.streams.catalog.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -29,15 +28,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.streamline.streams.layout.component.StreamlineComponent;
-import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
 import org.apache.streamline.streams.layout.storm.FluxComponent;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.common.util.FileStorage;
-import org.apache.streamline.common.util.JsonSchemaValidator;
 import org.apache.streamline.common.util.ProxyUtil;
 import org.apache.streamline.storage.Storable;
 import org.apache.streamline.storage.StorableKey;
@@ -64,29 +58,20 @@ import org.apache.streamline.streams.catalog.TopologySource;
 import org.apache.streamline.streams.catalog.TopologySourceStreamMapping;
 import org.apache.streamline.streams.catalog.UDFInfo;
 import org.apache.streamline.streams.catalog.WindowInfo;
-import org.apache.streamline.streams.catalog.configuration.ConfigFileType;
-import org.apache.streamline.streams.catalog.configuration.ConfigFileWriter;
 import org.apache.streamline.streams.catalog.processor.CustomProcessorInfo;
 import org.apache.streamline.streams.catalog.rule.RuleParser;
-import org.apache.streamline.streams.catalog.topology.TopologyLayoutValidator;
-import org.apache.streamline.streams.catalog.topology.component.TopologyDagBuilder;
 import org.apache.streamline.streams.cluster.discovery.ServiceNodeDiscoverer;
 import org.apache.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import org.apache.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
 import org.apache.streamline.streams.layout.component.Stream;
-import org.apache.streamline.streams.layout.component.TopologyActions;
-import org.apache.streamline.streams.layout.component.TopologyDag;
-import org.apache.streamline.streams.layout.component.TopologyLayout;
 import org.apache.streamline.streams.layout.component.rule.Rule;
-import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
 import org.apache.streamline.streams.rule.UDAF;
 import org.apache.streamline.streams.rule.UDAF2;
 import com.google.common.io.ByteStreams;
 import org.apache.streamline.streams.catalog.topology.TopologyComponentBundle;
 import org.apache.streamline.streams.catalog.topology.TopologyComponentUISpecification;
 import org.apache.streamline.streams.layout.exception.ComponentConfigException;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -98,14 +83,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -114,7 +95,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.UUID;
 
-import static java.util.stream.Collectors.toList;
 import static org.apache.streamline.streams.catalog.TopologyEdge.StreamGrouping;
 
 /**
@@ -147,23 +127,13 @@ public class StreamCatalogService {
     private static final String UDF_NAMESPACE = new UDFInfo().getNameSpace();
 
     private final StorageManager dao;
-    private final TopologyActions topologyActions;
-    private final TopologyMetrics topologyMetrics;
     private final FileStorage fileStorage;
-    private final TopologyDagBuilder topologyDagBuilder;
-    private final ConfigFileWriter configFileWriter;
 
     public StreamCatalogService(StorageManager dao,
-                                TopologyActions topologyActions,
-                                TopologyMetrics topologyMetrics,
                                 FileStorage fileStorage) {
         this.dao = dao;
         dao.registerStorables(getStorableClasses());
-        this.topologyActions = topologyActions;
-        this.topologyMetrics = topologyMetrics;
         this.fileStorage = fileStorage;
-        this.topologyDagBuilder = new TopologyDagBuilder(this);
-        this.configFileWriter = new ConfigFileWriter();
     }
 
     public static Collection<Class<? extends Storable>> getStorableClasses() {
@@ -560,213 +530,6 @@ public class StreamCatalogService {
             }
         }
         return topologyComponent;
-    }
-
-    public Topology validateTopology(URL schema, Long topologyId)
-            throws Exception {
-        Topology ds = new Topology();
-        ds.setId(topologyId);
-        Topology result = this.dao.get(ds.getStorableKey());
-        boolean isValidAsPerSchema;
-        if (result != null) {
-            String json = result.getConfig();
-            // first step is to validate against json schema provided
-            isValidAsPerSchema = JsonSchemaValidator
-                    .isValidJsonAsPerSchema(schema, json);
-
-            if (!isValidAsPerSchema) {
-                throw new ComponentConfigException("Topology with id "
-                        + topologyId + " failed to validate against json "
-                        + "schema");
-            }
-            // if first step succeeds, proceed to other validations that
-            // cannot be covered using json schema
-            TopologyLayoutValidator validator = new TopologyLayoutValidator(json);
-            validator.validate();
-
-            // finally pass it on for streaming engine based config validations
-            this.topologyActions.validate(getTopologyLayout(result));
-        }
-        return result;
-    }
-
-    public void deployTopology(Topology topology) throws Exception {
-        TopologyDag dag = topologyDagBuilder.getDag(topology);
-        topology.setTopologyDag(dag);
-        LOG.debug("Deploying topology {}", topology);
-        setUpClusterArtifacts(topology);
-        setUpExtraJars(topology);
-        topologyActions.deploy(getTopologyLayout(topology));
-    }
-
-    private void setUpExtraJars(Topology topology) throws IOException {
-        StormTopologyExtraJarsHandler extraJarsHandler = new StormTopologyExtraJarsHandler(this);
-        topology.getTopologyDag().traverse(extraJarsHandler);
-        Path extraJarsLocation = topologyActions.getExtraJarsLocation(getTopologyLayout(topology));
-        makeEmptyDir(extraJarsLocation);
-        Set<String> extraJars = new HashSet<>();
-        extraJars.addAll(extraJarsHandler.getExtraJars());
-        extraJars.addAll(getBundleJars(getTopologyLayout(topology)));
-        downloadAndCopyJars(extraJars, extraJarsLocation);
-    }
-
-    private Set<String> getBundleJars (TopologyLayout topologyLayout) throws IOException {
-        TopologyComponentBundleJarHandler topologyComponentBundleJarHandler = new TopologyComponentBundleJarHandler(this);
-        topologyLayout.getTopologyDag().traverse(topologyComponentBundleJarHandler);
-        Set<TopologyComponentBundle> bundlesToDeploy = topologyComponentBundleJarHandler.getTopologyComponentBundleSet();
-        Set<String> bundleJars = new HashSet<>();
-        for (TopologyComponentBundle topologyComponentBundle: bundlesToDeploy) {
-            bundleJars.add(topologyComponentBundle.getBundleJar());
-        }
-        return bundleJars;
-    }
-
-    private void downloadAndCopyJars (Set<String> jarsToDownload, Path destinationPath) throws IOException {
-        Set<String> copiedJars = new HashSet<>();
-        for (String jar: jarsToDownload) {
-            if (!copiedJars.contains(jar)) {
-                File destPath = Paths.get(destinationPath.toString(), Paths.get(jar).getFileName().toString()).toFile();
-                try (InputStream src = fileStorage.downloadFile(jar);
-                     FileOutputStream dest = new FileOutputStream(destPath)
-                ) {
-                    IOUtils.copy(src, dest);
-                    copiedJars.add(jar);
-                    LOG.debug("Jar {} copied to {}", jar, destPath);
-                }
-            }
-        }
-    }
-
-    private void setUpClusterArtifacts(Topology topology) throws IOException {
-        String config = topology.getConfig();
-        ObjectMapper objectMapper = new ObjectMapper();
-        Map jsonMap = objectMapper.readValue(config, Map.class);
-        Path artifactsDir = topologyActions.getArtifactsLocation(getTopologyLayout(topology));
-        makeEmptyDir(artifactsDir);
-        if (jsonMap != null) {
-            List<Object> serviceList = (List<Object>) jsonMap.get(TopologyLayoutConstants.JSON_KEY_SERVICES);
-            if (serviceList != null) {
-                List<Service> services = objectMapper.readValue(objectMapper.writeValueAsString(serviceList),
-                        new TypeReference<List<Service>>() {
-                        });
-
-                for (Service service : services) {
-                    Collection<ServiceConfiguration> configurations = listServiceConfigurations(service.getId());
-
-                    for (ServiceConfiguration configuration : configurations) {
-                        writeConfigurationFile(objectMapper, artifactsDir, configuration);
-                    }
-                }
-            }
-        }
-    }
-
-    private void makeEmptyDir(Path path) throws IOException {
-        if (path.toFile().exists()) {
-            if (path.toFile().isDirectory()) {
-                FileUtils.cleanDirectory(path.toFile());
-            } else {
-                final String errorMessage = String
-                    .format("Location '%s' must be a directory.", path);
-                LOG.error(errorMessage);
-                throw new IOException(errorMessage);
-            }
-        } else if (!path.toFile().mkdirs()) {
-            LOG.error("Could not create dir {}", path);
-            throw new IOException("Could not create dir: " + path);
-        }
-    }
-
-    // Only known configuration files will be saved to local
-    private void writeConfigurationFile(ObjectMapper objectMapper, Path artifactsDir,
-        ServiceConfiguration configuration) throws IOException {
-        String filename = configuration.getFilename();
-        if (filename != null && !filename.isEmpty()) {
-            // Configuration itself is aware of file name
-            ConfigFileType fileType = ConfigFileType.getFileTypeFromFileName(filename);
-
-            if (fileType != null) {
-                File destPath = Paths.get(artifactsDir.toString(), filename).toFile();
-
-                Map<String, Object> conf = objectMapper.readValue(configuration.getConfiguration(), Map.class);
-
-                try {
-                    configFileWriter.writeConfigToFile(fileType, conf, destPath);
-                    LOG.debug("Resource {} written to {}", filename, destPath);
-                } catch (IllegalArgumentException e) {
-                    LOG.warn("Don't know how to write resource {} skipping...", filename);
-                }
-            }
-        }
-    }
-
-    public void killTopology(Topology topology) throws Exception {
-        topologyActions.kill(getTopologyLayout(topology));
-    }
-
-    public void suspendTopology(Topology topology) throws Exception {
-        topologyActions.suspend(getTopologyLayout(topology));
-    }
-
-    public void resumeTopology(Topology topology) throws Exception {
-        topologyActions.resume(getTopologyLayout(topology));
-    }
-
-    public TopologyActions.Status topologyStatus(Topology topology) throws Exception {
-        return this.topologyActions.status(getTopologyLayout(topology));
-    }
-
-    public Map<String, TopologyMetrics.ComponentMetric> getTopologyMetrics(Topology topology) throws IOException {
-        return this.topologyMetrics.getMetricsForTopology(getTopologyLayout(topology));
-    }
-
-    public Map<Long, Double> getCompleteLatency(Topology topology, TopologyComponent component, long from, long to) throws Exception {
-        return this.topologyMetrics.getCompleteLatency(getTopologyLayout(topology), getComponentLayout(component), from, to);
-    }
-
-    public Map<String, Map<Long, Double>> getComponentStats(Topology topology, TopologyComponent component, Long from, Long to) throws IOException {
-        return this.topologyMetrics.getComponentStats(getTopologyLayout(topology), getComponentLayout(component), from, to);
-    }
-
-    public Map<String, Map<Long, Double>> getKafkaTopicOffsets(Topology topology, TopologyComponent component, Long from, Long to) throws IOException {
-        return this.topologyMetrics.getkafkaTopicOffsets(getTopologyLayout(topology), getComponentLayout(component), from, to);
-    }
-
-    public Map<String, Map<Long, Double>> getMetrics(String metricName, String parameters, Long from, Long to) {
-        return this.topologyMetrics.getTimeSeriesQuerier().getRawMetrics(metricName, parameters, from, to);
-    }
-
-    public TopologyMetrics.TopologyMetric getTopologyMetric(Topology topology) throws IOException {
-        return this.topologyMetrics.getTopologyMetric(getTopologyLayout(topology));
-    }
-
-    public List<Pair<String, Double>> getTopNAndOtherComponentsLatency(Topology topology, int nOfTopN) throws IOException {
-        Map<String, TopologyMetrics.ComponentMetric> metricsForTopology = this.topologyMetrics
-            .getMetricsForTopology(getTopologyLayout(topology));
-
-        List<Pair<String, Double>> topNAndOther = new ArrayList<>();
-
-        List<ImmutablePair<String, Double>> latencyOrderedComponents = metricsForTopology.entrySet().stream()
-            .map((x) -> new ImmutablePair<>(x.getKey(), x.getValue().getProcessedTime()))
-            // reversed sort
-            .sorted((c1, c2) -> {
-                if (c2.getValue() == null) {
-                    // assuming c1 is bigger
-                    return -1;
-                } else {
-                    return c2.getValue().compareTo(c1.getValue());
-                }
-            })
-            .collect(toList());
-
-        latencyOrderedComponents.stream().limit(nOfTopN).forEachOrdered(topNAndOther::add);
-        double sumLatencyOthers = latencyOrderedComponents.stream()
-            .skip(nOfTopN).filter((x) -> x.getValue() != null)
-            .mapToDouble(Pair::getValue).sum();
-
-        topNAndOther.add(new ImmutablePair<>("Others", sumLatencyOthers));
-
-        return topNAndOther;
     }
 
     public Collection<TopologyComponentBundle.TopologyComponentType> listTopologyComponentBundleTypes() {
@@ -1880,23 +1643,6 @@ public class StreamCatalogService {
         }
 
         return cluster;
-    }
-
-    private TopologyLayout getTopologyLayout(Topology topology) throws IOException {
-        return new TopologyLayout(topology.getId(), topology.getName(),
-                topology.getConfig(), topology.getTopologyDag());
-    }
-
-    private org.apache.streamline.streams.layout.component.Component getComponentLayout(TopologyComponent component) {
-        StreamlineComponent componentLayout = new StreamlineComponent() {
-            @Override
-            public void accept(TopologyDagVisitor visitor) {
-                throw new UnsupportedOperationException("Not intended to be called here.");
-            }
-        };
-        componentLayout.setId(component.getId().toString());
-        componentLayout.setName(component.getName());
-        return componentLayout;
     }
 
     private Service initializeService(Cluster cluster, String serviceName) {

@@ -20,13 +20,14 @@ package org.apache.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.util.WSUtils;
+import org.apache.streamline.streams.actions.TopologyActions;
+import org.apache.streamline.streams.actions.topology.service.TopologyActionsService;
+import org.apache.streamline.streams.catalog.CatalogToLayoutConverter;
 import org.apache.streamline.streams.catalog.Topology;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.streams.layout.component.TopologyActions;
+import org.apache.streamline.streams.metrics.service.TopologyMetricsService;
 import org.apache.streamline.streams.metrics.storm.topology.StormNotReachableException;
 import org.apache.streamline.streams.metrics.storm.topology.TopologyNotAliveException;
 import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
@@ -71,11 +72,16 @@ public class TopologyCatalogResource {
     public static final String CP_INFO_PARAM_NAME = "customProcessorInfo";
     private static final Integer DEFAULT_N_OF_TOP_N_LATENCY = 3;
     private final StreamCatalogService catalogService;
+    private final TopologyActionsService actionsService;
+    private final TopologyMetricsService metricsService;
     private final URL SCHEMA = Thread.currentThread().getContextClassLoader()
             .getResource("assets/schemas/topology.json");
 
-    public TopologyCatalogResource(StreamCatalogService catalogService) {
+    public TopologyCatalogResource(StreamCatalogService catalogService, TopologyActionsService actionsService,
+                                   TopologyMetricsService metricsService) {
         this.catalogService = catalogService;
+        this.actionsService = actionsService;
+        this.metricsService = metricsService;
     }
 
     @GET
@@ -197,7 +203,7 @@ public class TopologyCatalogResource {
         try {
             Topology result = catalogService.getTopology(topologyId);
             if (result != null) {
-                TopologyActions.Status status = catalogService.topologyStatus(result);
+                TopologyActions.Status status = actionsService.topologyStatus(CatalogToLayoutConverter.getTopologyLayout(result));
                 return WSUtils.respond(status, OK, SUCCESS);
             }
         } catch (Exception ex) {
@@ -230,7 +236,7 @@ public class TopologyCatalogResource {
             Topology result = catalogService.getTopology(topologyId);
             if (result != null) {
 //TODO: fix     catalogService.validateTopology(SCHEMA, topologyId);
-                catalogService.deployTopology(result);
+                actionsService.deployTopology(result);
                 return WSUtils.respond(result, OK, SUCCESS);
             }
         } catch (Exception ex) {
@@ -247,7 +253,7 @@ public class TopologyCatalogResource {
         try {
             Topology result = catalogService.getTopology(topologyId);
             if (result != null) {
-                catalogService.killTopology(result);
+                actionsService.killTopology(CatalogToLayoutConverter.getTopologyLayout(result));
                 return WSUtils.respond(result, OK, SUCCESS);
             }
         } catch (Exception ex) {
@@ -263,7 +269,7 @@ public class TopologyCatalogResource {
         try {
             Topology result = catalogService.getTopology(topologyId);
             if (result != null) {
-                catalogService.suspendTopology(result);
+                actionsService.suspendTopology(CatalogToLayoutConverter.getTopologyLayout(result));
                 return WSUtils.respond(result, OK, SUCCESS);
             }
         } catch (Exception ex) {
@@ -279,7 +285,7 @@ public class TopologyCatalogResource {
         try {
             Topology result = catalogService.getTopology(topologyId);
             if (result != null) {
-                catalogService.resumeTopology(result);
+                actionsService.resumeTopology(CatalogToLayoutConverter.getTopologyLayout(result));
                 return WSUtils.respond(result, OK, SUCCESS);
             }
         } catch (Exception ex) {
@@ -323,8 +329,8 @@ public class TopologyCatalogResource {
 
         TopologyCatalogWithMetric topologyCatalogWithMetric;
         try {
-            TopologyMetrics.TopologyMetric topologyMetric = catalogService.getTopologyMetric(topology);
-            List<Pair<String, Double>> latenciesTopN = catalogService.getTopNAndOtherComponentsLatency(topology, latencyTopN);
+            TopologyMetrics.TopologyMetric topologyMetric = metricsService.getTopologyMetric(topology);
+            List<Pair<String, Double>> latenciesTopN = metricsService.getTopNAndOtherComponentsLatency(topology, latencyTopN);
             topologyCatalogWithMetric = new TopologyCatalogWithMetric(topology, TopologyRunningStatus.RUNNING, topologyMetric, latenciesTopN);
         } catch (TopologyNotAliveException e) {
             topologyCatalogWithMetric = new TopologyCatalogWithMetric(topology, TopologyRunningStatus.NOT_RUNNING, null, null);

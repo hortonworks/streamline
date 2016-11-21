@@ -25,6 +25,7 @@
         <module>schemaevolver</module>
         <module>functions</module>
         <module>cluster</module>
+        <module>actions</module>
     </modules>
 
 

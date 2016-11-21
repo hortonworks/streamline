@@ -40,6 +40,10 @@ public class TopologyLayout {
         return config;
     }
 
+    /**
+     * The topology DAG. This is internally generated and used for
+     * deployment.
+     */
     public TopologyDag getTopologyDag() {
         return topologyDag;
     }

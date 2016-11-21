@@ -1,4 +1,6 @@
-package org.apache.streamline.streams.layout.component;
+package org.apache.streamline.streams.actions;
+
+import org.apache.streamline.streams.layout.component.TopologyLayout;
 
 import java.nio.file.Path;
 import java.util.Map;

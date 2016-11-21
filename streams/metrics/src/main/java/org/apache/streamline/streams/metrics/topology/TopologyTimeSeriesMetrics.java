@@ -21,7 +21,7 @@ public interface TopologyTimeSeriesMetrics {
     /**
      * Retrieve "complete latency" on source.
      *
-     * @param topology  topology catalog instance
+     * @param topology  topology layout instance
      * @param component component layout instance
      * @param from      beginning of the time period: timestamp (in milliseconds)
      * @param to        end of the time period: timestamp (in milliseconds)

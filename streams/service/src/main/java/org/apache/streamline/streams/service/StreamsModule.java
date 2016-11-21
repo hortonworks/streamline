@@ -11,13 +11,15 @@ import org.apache.streamline.registries.parser.client.ParserClient;
 import org.apache.streamline.registries.tag.client.TagClient;
 import org.apache.streamline.storage.StorageManager;
 import org.apache.streamline.storage.StorageManagerAware;
+import org.apache.streamline.streams.actions.TopologyActions;
+import org.apache.streamline.streams.actions.topology.service.TopologyActionsService;
 import org.apache.streamline.streams.catalog.service.CatalogService;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.exception.ConfigException;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.streamline.streams.layout.component.TopologyActions;
 import org.apache.streamline.streams.layout.storm.StormTopologyLayoutConstants;
 import org.apache.streamline.streams.metrics.TimeSeriesQuerier;
+import org.apache.streamline.streams.metrics.service.TopologyMetricsService;
 import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
 import org.apache.streamline.streams.notification.service.NotificationServiceImpl;
 import org.apache.streamline.streams.notification.service.NotificationsResource;
@@ -50,9 +52,13 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
     @Override
     public List<Object> getResources() {
         List<Object> result = new ArrayList<>();
-        final StreamCatalogService streamcatalogService;
+        final StreamCatalogService streamCatalogService;
+        final TopologyActionsService topologyActionsService;
+        final TopologyMetricsService topologyMetricsService;
         try {
-            streamcatalogService = new StreamCatalogService(storageManager, getTopologyActionsImpl(), getTopologyMetricsImpl(), fileStorage);
+            streamCatalogService = new StreamCatalogService(storageManager, fileStorage);
+            topologyActionsService = new TopologyActionsService(getTopologyActionsImpl(), streamCatalogService, fileStorage);
+            topologyMetricsService = new TopologyMetricsService(getTopologyMetricsImpl(), streamCatalogService);
         } catch (ConfigException e) {
             throw new RuntimeException(e);
         }
@@ -60,17 +66,17 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         TagClient tagClient = new TagClient(catalogRootUrl);
         ParserClient parserClient = new ParserClient(catalogRootUrl);
         final CatalogService catalogService = new CatalogService(storageManager, fileStorage, tagClient, parserClient);
-        result.add(new MetricsResource(streamcatalogService));
-        result.addAll(getClusterRelatedResources(streamcatalogService));
+        result.add(new MetricsResource(streamCatalogService, topologyMetricsService));
+        result.addAll(getClusterRelatedResources(streamCatalogService));
         result.add(new FileCatalogResource(catalogService));
-        result.addAll(getTopologyRelatedResources(streamcatalogService));
-        result.add(new RuleCatalogResource(streamcatalogService));
-        result.add(new UDFCatalogResource(streamcatalogService, fileStorage));
-        result.addAll(getNotificationsRelatedResources(streamcatalogService));
-        result.add(new WindowCatalogResource(streamcatalogService));
+        result.addAll(getTopologyRelatedResources(streamCatalogService, topologyActionsService, topologyMetricsService));
+        result.add(new RuleCatalogResource(streamCatalogService));
+        result.add(new UDFCatalogResource(streamCatalogService, fileStorage));
+        result.addAll(getNotificationsRelatedResources(streamCatalogService));
+        result.add(new WindowCatalogResource(streamCatalogService));
         result.add(new SchemaResource(createSchemaRegistryClient()));
-        result.addAll(getServiceMetadataResources(streamcatalogService));
-        watchFiles(streamcatalogService);
+        result.addAll(getServiceMetadataResources(streamCatalogService));
+        watchFiles(streamCatalogService);
         return result;
     }
 
@@ -85,23 +91,25 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         this.storageManager = storageManager;
     }
 
-    private List<Object> getTopologyRelatedResources(StreamCatalogService streamcatalogService) {
+    private List<Object> getTopologyRelatedResources(StreamCatalogService streamCatalogService, TopologyActionsService topologyActionsService,
+                                                     TopologyMetricsService topologyMetricsService) {
         List<Object> result = new ArrayList<>();
-        final TopologyCatalogResource topologyCatalogResource = new TopologyCatalogResource(streamcatalogService);
+        final TopologyCatalogResource topologyCatalogResource = new TopologyCatalogResource(streamCatalogService, topologyActionsService,
+                topologyMetricsService);
         result.add(topologyCatalogResource);
-        final TopologyComponentBundleResource topologyComponentResource = new TopologyComponentBundleResource(streamcatalogService);
+        final TopologyComponentBundleResource topologyComponentResource = new TopologyComponentBundleResource(streamCatalogService);
         result.add(topologyComponentResource);
-        final TopologyStreamCatalogResource topologyStreamCatalogResource = new TopologyStreamCatalogResource(streamcatalogService);
+        final TopologyStreamCatalogResource topologyStreamCatalogResource = new TopologyStreamCatalogResource(streamCatalogService);
         result.add(topologyStreamCatalogResource);
-        final TopologyEditorMetadataResource topologyEditorMetadataResource = new TopologyEditorMetadataResource(streamcatalogService);
+        final TopologyEditorMetadataResource topologyEditorMetadataResource = new TopologyEditorMetadataResource(streamCatalogService);
         result.add(topologyEditorMetadataResource);
-        final TopologySourceCatalogResource topologySourceCatalogResource = new TopologySourceCatalogResource(streamcatalogService);
+        final TopologySourceCatalogResource topologySourceCatalogResource = new TopologySourceCatalogResource(streamCatalogService);
         result.add(topologySourceCatalogResource);
-        final TopologySinkCatalogResource topologySinkCatalogResource = new TopologySinkCatalogResource(streamcatalogService);
+        final TopologySinkCatalogResource topologySinkCatalogResource = new TopologySinkCatalogResource(streamCatalogService);
         result.add(topologySinkCatalogResource);
-        final TopologyProcessorCatalogResource topologyProcessorCatalogResource = new TopologyProcessorCatalogResource(streamcatalogService);
+        final TopologyProcessorCatalogResource topologyProcessorCatalogResource = new TopologyProcessorCatalogResource(streamCatalogService);
         result.add(topologyProcessorCatalogResource);
-        final TopologyEdgeCatalogResource topologyEdgeCatalogResource = new TopologyEdgeCatalogResource(streamcatalogService);
+        final TopologyEdgeCatalogResource topologyEdgeCatalogResource = new TopologyEdgeCatalogResource(streamCatalogService);
         result.add(topologyEdgeCatalogResource);
         return result;
     }

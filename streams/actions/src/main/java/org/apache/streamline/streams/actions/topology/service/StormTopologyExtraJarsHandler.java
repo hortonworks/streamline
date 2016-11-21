@@ -1,7 +1,8 @@
-package org.apache.streamline.streams.catalog.service;
+package org.apache.streamline.streams.actions.topology.service;
 
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.streams.catalog.UDFInfo;
+import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.layout.component.Edge;
 import org.apache.streamline.streams.layout.component.StreamlineProcessor;
 import org.apache.streamline.streams.layout.component.StreamlineSink;

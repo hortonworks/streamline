@@ -1,5 +1,6 @@
-package org.apache.streamline.streams.catalog.service;
+package org.apache.streamline.streams.actions.topology.service;
 
+import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.catalog.topology.TopologyComponentBundle;
 import org.apache.streamline.streams.layout.component.Edge;
 import org.apache.streamline.streams.layout.component.StreamlineComponent;

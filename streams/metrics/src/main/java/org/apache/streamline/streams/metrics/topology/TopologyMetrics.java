@@ -1,10 +1,8 @@
 package org.apache.streamline.streams.metrics.topology;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.streamline.streams.exception.ConfigException;
 import org.apache.streamline.streams.layout.component.TopologyLayout;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,7 +24,7 @@ public interface TopologyMetrics extends TopologyTimeSeriesMetrics {
     /**
      * Retrieves topology metric for Streamline topology/
      *
-     * @param topology topology catalog instance. Implementations should find actual runtime topology with provided topology.
+     * @param topology topology layout instance. Implementations should find actual runtime topology with provided topology.
      * @return TopologyMetrics
      */
     TopologyMetric getTopologyMetric(TopologyLayout topology);
@@ -34,7 +32,7 @@ public interface TopologyMetrics extends TopologyTimeSeriesMetrics {
     /**
      * Retrieves metrics data for Streamline topology.
      *
-     * @param topology topology catalog instance. Implementations should find actual runtime topology with provided topology.
+     * @param topology topology layout instance. Implementations should find actual runtime topology with provided topology.
      * @return pair of (component name, ComponentMetric instance).
      * Implementations should ensure that component name is same to UI name of component
      * so that it can be matched to Streamline topology.
