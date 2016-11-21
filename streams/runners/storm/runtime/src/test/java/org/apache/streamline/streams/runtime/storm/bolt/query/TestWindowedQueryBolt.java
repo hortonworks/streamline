@@ -128,7 +128,7 @@ public class TestWindowedQueryBolt {
         bolt.prepare(null, null, collector);
         bolt.execute(window);
         printResults(collector);
-        Assert.assertEquals( userStream.size(), collector.actualResults.size() );
+        Assert.assertEquals( cityStream.size(), collector.actualResults.size() );
     }
 
     @Test
@@ -212,7 +212,7 @@ public class TestWindowedQueryBolt {
         ArrayList<Tuple> storesStream = makeStream("stores", storeFields, stores);
         ArrayList<Tuple> cityStream = makeStream("cities", cityFields, cities);
 
-        TupleWindow window = makeTupleWindow(userStream,  cityStream, storesStream);
+        TupleWindow window = makeTupleWindow(userStream, cityStream, storesStream);
 
         WindowedQueryBolt bolt = new WindowedQueryBolt(WindowedQueryBolt.StreamSelector.STREAM, "users", userFields[2])
                 .leftJoin("stores", "city", "users")
@@ -264,7 +264,7 @@ public class TestWindowedQueryBolt {
         for (List<Object> rec : collector.actualResults) {
             System.out.print(++counter +  ") ");
             for (Object field : rec) {
-                Map<String, Object> data = ((StreamlineEvent)field).getFieldsAndValues();
+                Map<String, Object> data = ((StreamlineEvent)field);
                 data.forEach((k,v)-> {
                     System.out.print(k + ":" + v + ", ");
                 } );

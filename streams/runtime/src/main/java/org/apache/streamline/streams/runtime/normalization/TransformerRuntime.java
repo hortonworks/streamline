@@ -47,7 +47,7 @@ public class TransformerRuntime {
     public Object execute(StreamlineEvent event) throws NormalizationException {
         try {
             String inputFieldName = transformer.getInputField().getName();
-            if (!event.getFieldsAndValues().containsKey(inputFieldName)) {
+            if (!event.containsKey(inputFieldName)) {
                 throw new IllegalArgumentException("StreamlineEvent does not have input field: " + inputFieldName);
             }
 
@@ -63,7 +63,7 @@ public class TransformerRuntime {
                     throw new NormalizationException("Computed value is not of expected type: " + type);
                 }
             } else {
-                value = event.getFieldsAndValues().get(inputFieldName);
+                value = event.get(inputFieldName);
                 LOG.debug("Input field value returned: {}", value);
             }
             return value;

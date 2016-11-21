@@ -65,7 +65,7 @@ public class NormalizationProcessorRuntime implements ProcessorRuntime {
         if (normalizationRuntime != null) {
             try {
                 outputEvent =  normalizationRuntime.execute(event);
-                schemaValidator.validate(outputEvent.getFieldsAndValues());
+                schemaValidator.validate(outputEvent);
             } catch (NormalizationException e) {
                 throw new RuntimeException(e);
             }

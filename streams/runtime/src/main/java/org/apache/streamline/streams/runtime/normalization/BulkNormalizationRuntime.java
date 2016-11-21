@@ -68,7 +68,7 @@ public class BulkNormalizationRuntime extends NormalizationRuntime {
                 throw new NormalizationException(e);
             }
         } else {
-            result = event.getFieldsAndValues();
+            result = event;
             LOG.info("Nothing to normalize as normalization script is not configured");
         }
 

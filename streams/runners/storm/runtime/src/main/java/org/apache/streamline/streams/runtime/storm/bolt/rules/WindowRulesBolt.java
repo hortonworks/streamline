@@ -144,7 +144,7 @@ public class WindowRulesBolt extends BaseWindowedBolt {
     }
 
     private StreamlineEvent getStreamlineEventWithStream(StreamlineEvent event, Tuple tuple) {
-        return new StreamlineEventImpl(event.getFieldsAndValues(),
+        return new StreamlineEventImpl(event,
                 event.getDataSourceId(), event.getId(),
                 event.getHeader(), tuple.getSourceStreamId(), event.getAuxiliaryFieldsAndValues());
     }

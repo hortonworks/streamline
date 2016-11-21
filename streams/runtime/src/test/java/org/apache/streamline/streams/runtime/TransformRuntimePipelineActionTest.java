@@ -62,9 +62,9 @@ public class TransformRuntimePipelineActionTest {
             resultEvents.addAll(result.events);
         }
         assertEquals(1, resultEvents.size());
-        assertEquals(2, resultEvents.get(0).getFieldsAndValues().size());
-        assertEquals("THREE", resultEvents.get(0).getFieldsAndValues().get("3"));
-        assertEquals("two", resultEvents.get(0).getFieldsAndValues().get("2"));
+        assertEquals(2, resultEvents.get(0).size());
+        assertEquals("THREE", resultEvents.get(0).get("3"));
+        assertEquals("two", resultEvents.get(0).get("2"));
     }
 
     @Test
@@ -90,9 +90,9 @@ public class TransformRuntimePipelineActionTest {
             resultEvents.addAll(result.events);
         }
         assertEquals(1, resultEvents.size());
-        assertEquals(3, resultEvents.get(0).getFieldsAndValues().size());
-        assertEquals("THREE", resultEvents.get(0).getFieldsAndValues().get("3"));
-        assertEquals("one plus one", resultEvents.get(0).getFieldsAndValues().get("2"));
-        assertEquals("one plus one plus one plus one", resultEvents.get(0).getFieldsAndValues().get("4"));
+        assertEquals(3, resultEvents.get(0).size());
+        assertEquals("THREE", resultEvents.get(0).get("3"));
+        assertEquals("one plus one", resultEvents.get(0).get("2"));
+        assertEquals("one plus one plus one plus one", resultEvents.get(0).get("4"));
     }
 }

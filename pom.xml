@@ -50,7 +50,7 @@
         <phoenix.version>4.4.0-HBase-1.1</phoenix.version>
         <redis.lettuce.version>3.4.2.Final</redis.lettuce.version>
         <scala.version>2.10.5</scala.version>
-        <schema-registry.version>0.1.0</schema-registry.version>
+        <schema-registry.version>0.1.0-SNAPSHOT</schema-registry.version>
         <slf4j.version>1.7.12</slf4j.version>
         <storm.version>1.1.0-SNAPSHOT</storm.version>
         <woodstox-core-asl.version>4.4.1</woodstox-core-asl.version>

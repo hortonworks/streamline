@@ -7,7 +7,7 @@ import java.util.Map;
  * This can also be referred in the notification to know which events produced
  * the notification.
  */
-public interface StreamlineEvent   {
+public interface StreamlineEvent  extends Map<String,Object> {
 
     // Default value chosen to be blank and not the default used in storm since wanted to keep it independent of storm.
     String DEFAULT_SOURCE_STREAM = "default";// Default value chosen to be blank and not the default used in storm since wanted to keep it independent of storm.
@@ -20,12 +20,12 @@ public interface StreamlineEvent   {
      */
     String PRIMITIVE_PAYLOAD_FIELD = "org.apache.streamline.streams.payload.primitive.field";
 
-    /**
-     * The key values in the event.
-     *
-     * @return the key value map
-     */
-    Map<String, Object> getFieldsAndValues();
+//    /**
+//     * The key values in the event.
+//     *
+//     * @return the key value map
+//     */
+//    Map<String, Object> getFieldsAndValues();
 
 
     /**

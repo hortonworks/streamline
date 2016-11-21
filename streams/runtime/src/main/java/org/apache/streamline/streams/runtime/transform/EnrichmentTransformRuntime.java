@@ -54,7 +54,6 @@ public class EnrichmentTransformRuntime implements TransformRuntime {
     @Override
     public List<StreamlineEvent> execute(StreamlineEvent event) {
         List<String> fieldsToBeEnriched = enrichmentTransform.getFieldsToBeEnriched();
-        Map<String, Object> fieldsAndValues = event.getFieldsAndValues();
         Map<String, Object> auxiliaryFieldsAndValues = event.getAuxiliaryFieldsAndValues();
         Map<String, Object> enrichments = (Map<String, Object>) auxiliaryFieldsAndValues.get(EnrichmentTransform.ENRICHMENTS_FIELD_NAME);
         if (enrichments == null) {
@@ -63,7 +62,7 @@ public class EnrichmentTransformRuntime implements TransformRuntime {
         }
 
         for (String fieldName : fieldsToBeEnriched) {
-            Object value = fieldsAndValues.get(fieldName);
+            Object value = event.get(fieldName);
             if (value != null) {
                 Object enrichedValue = cachedDataProvider.get(value);
                 log.debug("Enriched value [{}] for key [{}] with value [{}]", enrichedValue, fieldName, value);

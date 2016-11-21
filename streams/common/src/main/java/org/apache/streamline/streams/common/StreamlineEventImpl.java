@@ -14,7 +14,7 @@ import java.util.UUID;
 /**
  * A default implementation of StreamlineEvent.
  */
-public class StreamlineEventImpl implements StreamlineEvent {
+public class StreamlineEventImpl  extends HashMap<String,Object> implements StreamlineEvent {
     // Default value chosen to be blank and not the default used in storm since wanted to keep it independent of storm.
     public final static String DEFAULT_SOURCE_STREAM = "default";
     // special event to trigger evaluation of group by
@@ -22,7 +22,6 @@ public class StreamlineEventImpl implements StreamlineEvent {
 
     private final Map<String, Object> header;
     private final String sourceStream;
-    private final Map<String, Object> fieldsAndValues;
     private final Map<String, Object> auxiliaryFieldsAndValues;
     private final String dataSourceId;
     private final String id;
@@ -76,7 +75,9 @@ public class StreamlineEventImpl implements StreamlineEvent {
      * Creates an StreamlineEvent with given keyValues, dataSourceId, id, header and sourceStream.
      */
     public StreamlineEventImpl(Map<String, Object> keyValues, String dataSourceId, String id, Map<String, Object> header, String sourceStream, Map<String, Object> auxiliaryFieldsAndValues) {
-        this.fieldsAndValues = keyValues;
+        super();
+        if(keyValues!=null)
+            putAll(keyValues);
         this.dataSourceId = dataSourceId;
         this.id = id;
         this.header = header;
@@ -84,11 +85,15 @@ public class StreamlineEventImpl implements StreamlineEvent {
         this.auxiliaryFieldsAndValues = (auxiliaryFieldsAndValues != null ? new HashMap<>(auxiliaryFieldsAndValues) : new HashMap<String, Object>());
     }
 
-
-    @Override
-    public Map<String, Object> getFieldsAndValues() {
-        return Collections.unmodifiableMap(fieldsAndValues);
+    public StreamlineEventImpl(StreamlineEventImpl other) {
+        super(other);
+        this.header = other.header;
+        this.sourceStream = other.sourceStream;
+        this.auxiliaryFieldsAndValues = other.auxiliaryFieldsAndValues;
+        this.dataSourceId = other.dataSourceId;
+        this.id = other.id;
     }
+
 
     @Override
     public Map<String, Object> getAuxiliaryFieldsAndValues() {
@@ -134,25 +139,23 @@ public class StreamlineEventImpl implements StreamlineEvent {
      */
     @Override
     public StreamlineEvent addFieldsAndValues(Map<String, Object> fieldsAndValues) {
-        Map<String, Object> kv = new HashMap<>();
-        kv.putAll(getFieldsAndValues());
-        kv.putAll(fieldsAndValues);
-        return new StreamlineEventImpl(kv, this.getDataSourceId(), this.getHeader(), this.getSourceStream());
+        StreamlineEvent result = new StreamlineEventImpl(this);
+        result.putAll(fieldsAndValues);
+        return result;
     }
+
 
     /**
      * Returns a new Streamline event with the given headers added to the existing headers.
      * All the other fields are copied from this event.
-     *
      * @param headers the map of fieldsAndValues to add or overwrite
      * @return the new StreamlineEvent
      */
     @Override
     public StreamlineEvent addHeaders(Map<String, Object> headers) {
-        Map<String, Object> kv = new HashMap<>();
-        kv.putAll(getHeader());
-        kv.putAll(headers);
-        return new StreamlineEventImpl(this.getFieldsAndValues(), this.getDataSourceId(), kv, this.getSourceStream());
+        StreamlineEventImpl result = new StreamlineEventImpl(this);
+        result.header.putAll(headers);
+        return result;
     }
 
     @Override
@@ -185,7 +188,7 @@ public class StreamlineEventImpl implements StreamlineEvent {
         return "StreamlineEventImpl{" +
                 "header=" + header +
                 ", sourceStream='" + sourceStream + '\'' +
-                ", fieldsAndValues=" + fieldsAndValues +
+                ", fieldsAndValues=" + super.toString() +
                 ", auxiliaryFieldsAndValues=" + auxiliaryFieldsAndValues +
                 ", dataSourceId='" + dataSourceId + '\'' +
                 ", id='" + id + '\'' +

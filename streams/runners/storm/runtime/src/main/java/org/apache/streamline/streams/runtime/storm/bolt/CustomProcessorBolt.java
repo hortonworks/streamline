@@ -188,7 +188,7 @@ public class CustomProcessorBolt extends BaseRichBolt {
             final Object tupleField = input.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
             if (tupleField instanceof StreamlineEvent) {
                 StreamlineEvent event = (StreamlineEvent) tupleField;
-                for (Result result: customProcessorRuntime.process(new StreamlineEventImpl(event.getFieldsAndValues(), event.getDataSourceId(), event
+                for (Result result: customProcessorRuntime.process(new StreamlineEventImpl(event, event.getDataSourceId(), event
                         .getId(), event.getHeader(), input.getSourceStreamId()))) {
                     for (StreamlineEvent e: result.events) {
                         collector.emit(result.stream, input, new Values(e));

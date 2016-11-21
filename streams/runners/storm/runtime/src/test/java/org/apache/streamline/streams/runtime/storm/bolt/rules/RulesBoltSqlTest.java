@@ -71,7 +71,7 @@ public class RulesBoltSqlTest extends RulesBoltTest {
             mockOutputCollector.emit(rulesProcessor.getRules().get(1).getOutputStreamNameForAction(rulesProcessor.getRules().get(1).getActions().iterator().next()),
                                      mockTuple, actualValues = withCapture());
             times = 1;    // rule 2 triggers
-            Assert.assertEquals(PROJECTED_STREAMLINE_EVENT.getFieldsAndValues(), ((StreamlineEvent)actualValues.get(0)).getFieldsAndValues());
+            Assert.assertEquals(PROJECTED_STREAMLINE_EVENT, ((StreamlineEvent)actualValues.get(0)));
             mockOutputCollector.ack(mockTuple);
             times = 1;
         }};

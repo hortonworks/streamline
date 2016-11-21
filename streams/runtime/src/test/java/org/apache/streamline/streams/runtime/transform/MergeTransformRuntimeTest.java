@@ -49,7 +49,7 @@ public class MergeTransformRuntimeTest {
         List<StreamlineEvent> result = transformRuntime.execute(event);
         System.out.println(result);
         assertEquals(1, result.size());
-        assertEquals("two", result.get(0).getFieldsAndValues().get("2"));
-        assertEquals("THREE", result.get(0).getFieldsAndValues().get("3"));
+        assertEquals("two", result.get(0).get("2"));
+        assertEquals("THREE", result.get(0).get("3"));
     }
 }

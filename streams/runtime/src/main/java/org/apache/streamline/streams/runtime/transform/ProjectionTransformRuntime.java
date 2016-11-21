@@ -52,7 +52,7 @@ public class ProjectionTransformRuntime implements TransformRuntime {
     private List<StreamlineEvent> doTransform(StreamlineEvent input) {
         Map<String, Object> result = new HashMap<>();
         for (String field : projectionTransform.getProjectionFields()) {
-            result.put(field, input.getFieldsAndValues().get(field));
+            result.put(field, input.get(field));
         }
         return Collections.<StreamlineEvent>singletonList(new StreamlineEventImpl(result, input.getDataSourceId()));
     }
