@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS parser_info ("id" BIGINT NOT NULL, "name" VARCHAR(256) ,"version" BIGINT, "className" VARCHAR , "jarStoragePath" VARCHAR ,"parserSchema" VARCHAR, "timestamp"  BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
 CREATE TABLE IF NOT EXISTS files ("id" BIGINT NOT NULL, "name" VARCHAR(256) ,"version" BIGINT, "auxiliaryInfo" VARCHAR ,"storedFileName" VARCHAR , "timestamp"  BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
-CREATE TABLE IF NOT EXISTS topologies ("id" BIGINT NOT NULL, "versionId" BIGINT NOT NULL, "name" VARCHAR (256), "config" VARCHAR, CONSTRAINT pk PRIMARY KEY ("id", "versionId"))
+CREATE TABLE IF NOT EXISTS topologies ("id" BIGINT NOT NULL, "versionId" BIGINT NOT NULL, "name" VARCHAR (256), "namespaceId" BIGINT, "config" VARCHAR, CONSTRAINT pk PRIMARY KEY ("id", "versionId"))
 CREATE TABLE IF NOT EXISTS topology_component_bundles("id" BIGINT NOT NULL, "name" VARCHAR(256), "type" VARCHAR, "subType" VARCHAR, "streamingEngine" VARCHAR, "topologyComponentUISpecification" VARCHAR, "schemaClass" VARCHAR, "transformationClass" VARCHAR, "timestamp"  BIGINT, "bundleJar" VARCHAR, "builtin" CHAR(4), CONSTRAINT pk PRIMARY KEY ("id"))
 CREATE TABLE IF NOT EXISTS topology_editor_metadata ("topologyId" BIGINT NOT NULL, "versionId" BIGINT NOT NULL, "data" VARCHAR, "timestamp"  BIGINT, CONSTRAINT pk PRIMARY KEY ("topologyId", "versionId"))
 CREATE TABLE IF NOT EXISTS tag ("id" BIGINT NOT NULL, "name" VARCHAR(256), "description" VARCHAR(256), "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))

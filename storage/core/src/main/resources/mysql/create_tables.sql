@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS topologies (
     id BIGINT AUTO_INCREMENT NOT NULL,
     versionId BIGINT NOT NULL,
     name VARCHAR(256) NOT NULL,
+    namespaceId BIGINT NOT NULL,
     config TEXT NOT NULL,
     PRIMARY KEY (id, versionId),
     FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)

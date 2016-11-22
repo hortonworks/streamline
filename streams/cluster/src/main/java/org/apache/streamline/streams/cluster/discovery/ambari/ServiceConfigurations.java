@@ -13,7 +13,8 @@ public enum ServiceConfigurations {
   HBASE("hbase-env", "hbase-policy", "hbase-site"),
   HIVE("hive-env", "hive-interactive-env", "hive-interactive-site",
       "hivemetastore-site", "hiveserver2-interactive-site",
-      "hiveserver2-site","hive-site");
+      "hiveserver2-site","hive-site"),
+  AMBARI_METRICS("ams-env", "ams-site");
 
   private final String[] confNames;
 

@@ -214,13 +214,13 @@ public class RestIntegrationTest {
             new ResourceTestElement(createTopologyEditorMetadata(1l, "{\"x\":5,\"y\":6}"),
                     createTopologyEditorMetadata(1l, "{\"x\":6,\"y\":5}"), "1", rootUrl + "system/topologyeditormetadata")
                     .withDependentResource(topologyResourceToTest).withFieldsToIgnore(Collections.singletonList("versionId")),
+            new ResourceTestElement(createNamespace(1L, "testNamespace"), createNamespace(1L, "testNewNamespace"), "1", rootUrl + "namespaces")
             /* Some issue with sending multi part for requests using this client and hence this test case is ignored for now. Fix later.
             new ResourceTestElement(createTopologyComponent(1l, "kafkaSpoutComponent", TopologyComponentBundle.TopologyComponentType.SOURCE, "KAFKA"), createTopologyComponent(1l, "kafkaSpoutComponentPut", TopologyComponentBundle.TopologyComponentType.SOURCE, "KAFKA") , "1", rootUrl + "streams/componentbundles/SOURCE"),
             new ResourceTestElement(createTopologyComponent(2l, "parserProcessor", TopologyComponentBundle.TopologyComponentType.PROCESSOR, "PARSER"), createTopologyComponent(2l, "parserProcessorPut", TopologyComponentBundle.TopologyComponentType.PROCESSOR, "PARSER"), "2", rootUrl + "streams/componentbundles/PROCESSOR"),
             new ResourceTestElement(createTopologyComponent(3l, "hbaseSink", TopologyComponentBundle.TopologyComponentType.SINK, "HBASE"), createTopologyComponent(3l, "hbaseSinkPut", TopologyComponentBundle.TopologyComponentType.SINK, "HBASE"), "3", rootUrl + "streams/componentbundles/SINK"),
             new ResourceTestElement(createTopologyComponent(4l, "shuffleGroupingLink", TopologyComponentBundle.TopologyComponentType.LINK, "SHUFFLE"), createTopologyComponent(4l, "shuffleGroupingLinkPut", TopologyComponentBundle.TopologyComponentType.LINK, "SHUFFLE"), "4", rootUrl + "streams/componentbundles/LINK"),
             */
-            new ResourceTestElement(createNamespace(1L, "testNamespace"), createNamespace(1L, "testNewNamespace"), "1", rootUrl + "namespaces")
             // parser is commented as parser takes a jar as input along with the parserInfo instance and so it needs a multipart request.
             /* we can't apply new way to throw webservice related exception from parser-registry module
              but it will be removed via STREAMLINE-435 so just commenting this out for now
@@ -885,6 +885,7 @@ public class RestIntegrationTest {
         topology.setId(id);
         topology.setVersionId(1L);
         topology.setName(name);
+        topology.setNamespaceId(1L);
         topology.setConfig("{}");
         topology.setVersionTimestamp(System.currentTimeMillis());
         return topology;

@@ -170,22 +170,6 @@ public class MetricsResource {
         }
     }
 
-    @GET
-    @Path("/raw")
-    @Timed
-    public Response getMetrics(@QueryParam("metricName") String metricName,
-                               @QueryParam("parameters") String parameters,
-                               @QueryParam("from") Long from,
-                               @QueryParam("to") Long to) {
-        if (metricName == null) {
-            throw BadRequestException.missingParameter("metricName");
-        }
-        assertTimeRange(from, to);
-
-        Map<String, Map<Long, Double>> metrics = catalogService.getMetrics(metricName, parameters, from, to);
-        return WSUtils.respondEntity(metrics, OK);
-    }
-
     private void assertTimeRange(@QueryParam("from") Long from, @QueryParam("to") Long to) {
         if (from == null) {
             throw BadRequestException.missingParameter("from");
