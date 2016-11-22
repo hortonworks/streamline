@@ -279,6 +279,9 @@ public class TopologyCatalogResource {
             if (!currentVersion.isPresent()) {
                 throw new IllegalArgumentException("Current version is not available for topology id: " + topologyId);
             }
+            if (versionInfo == null) {
+                versionInfo = new TopologyVersionInfo();
+            }
             // update the current version with the new version info.
             versionInfo.setTopologyId(topologyId);
             Optional<TopologyVersionInfo> latest = catalogService.getLatestVersionInfo(topologyId);

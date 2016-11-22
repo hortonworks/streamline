@@ -54,6 +54,19 @@ public class Topology implements Storable {
      */
     private TopologyDag topologyDag;
 
+    public Topology() {
+    }
+
+    public Topology(Topology other) {
+        setId(other.getId());
+        setVersionId(other.getVersionId());
+        setName(other.getName());
+        setConfig(other.getConfig());
+        setTimestamp(other.getTimestamp());
+        // this will be re-generated during deployment.
+        topologyDag = null;
+    }
+
     @JsonIgnore
     public TopologyDag getTopologyDag() {
         return topologyDag;

@@ -681,6 +681,24 @@ public class StreamCatalogService {
             removeTopologyEdge(topologyId, edge.getId(), versionId);
         }
 
+        // remove rules
+        Collection<RuleInfo> ruleInfos = listRules(topologyIdVersionIdQueryParams);
+        for (RuleInfo ruleInfo: ruleInfos) {
+            removeRule(topologyId, ruleInfo.getId(), versionId);
+        }
+
+        // remove windowed rules
+        Collection<WindowInfo> windowInfos = listWindows(topologyIdVersionIdQueryParams);
+        for (WindowInfo windowInfo: windowInfos) {
+            removeWindow(topologyId, windowInfo.getId(), versionId);
+        }
+
+        // remove branch rules
+        Collection<BranchRuleInfo> branchRuleInfos = listBranchRules(topologyIdVersionIdQueryParams);
+        for (BranchRuleInfo branchRuleInfo: branchRuleInfos) {
+            removeBranchRule(topologyId, branchRuleInfo.getId(), versionId);
+        }
+
         // remove sinks
         Collection<TopologySink> sinks = listTopologySinks(topologyIdVersionIdQueryParams);
         for (TopologySink sink : sinks) {
@@ -705,24 +723,6 @@ public class StreamCatalogService {
             removeStreamInfo(topologyId, streamInfo.getId(), versionId);
         }
 
-        // remove rules
-        Collection<RuleInfo> ruleInfos = listRules(topologyIdVersionIdQueryParams);
-        for (RuleInfo ruleInfo: ruleInfos) {
-            removeRule(topologyId, ruleInfo.getId(), versionId);
-        }
-
-        // remove windowed rules
-        Collection<WindowInfo> windowInfos = listWindows(topologyIdVersionIdQueryParams);
-        for (WindowInfo windowInfo: windowInfos) {
-            removeWindow(topologyId, windowInfo.getId(), versionId);
-        }
-
-        // remove branch rules
-        Collection<BranchRuleInfo> branchRuleInfos = listBranchRules(topologyIdVersionIdQueryParams);
-        for (BranchRuleInfo branchRuleInfo: branchRuleInfos) {
-            removeBranchRule(topologyId, branchRuleInfo.getId(), versionId);
-        }
-
         // remove topology editor metadata
         removeTopologyEditorMetadata(topologyId, versionId);
     }
@@ -735,7 +735,7 @@ public class StreamCatalogService {
         Topology topology = getTopology(topologyId, versionId);
         if (topology != null) {
             try {
-                topology = addTopology(topology);
+                topology = addTopology(new Topology(topology));
                 copyTopologyDependencies(topologyId, versionId, topology.getVersionId());
             } catch (Exception ex) {
                 LOG.error("Got exception while copying topology dependencies", ex);
@@ -758,24 +758,6 @@ public class StreamCatalogService {
             addTopologyEditorMetadata(topologyId, newVersionId, new TopologyEditorMetadata(metadata));
         }
 
-        // branch rules
-        Collection<BranchRuleInfo> branchRuleInfos = listBranchRules(topologyIdVersionIdQueryParams);
-        for (BranchRuleInfo branchRuleInfo: branchRuleInfos) {
-            addBranchRule(topologyId, newVersionId, new BranchRuleInfo(branchRuleInfo));
-        }
-
-        // windowed rules
-        Collection<WindowInfo> windowInfos = listWindows(topologyIdVersionIdQueryParams);
-        for (WindowInfo windowInfo: windowInfos) {
-            addWindow(topologyId, newVersionId, new WindowInfo(windowInfo));
-        }
-
-        // rules
-        Collection<RuleInfo> ruleInfos = listRules(topologyIdVersionIdQueryParams);
-        for (RuleInfo ruleInfo: ruleInfos) {
-            addRule(topologyId, newVersionId, new RuleInfo(ruleInfo));
-        }
-
         // sources, output streams
         Collection<TopologySource> sources = listTopologySources(topologyIdVersionIdQueryParams);
         for (TopologySource source : sources) {
@@ -792,6 +774,24 @@ public class StreamCatalogService {
         Collection<TopologySink> sinks = listTopologySinks(topologyIdVersionIdQueryParams);
         for (TopologySink sink : sinks) {
             addTopologySink(topologyId, newVersionId, new TopologySink(sink));
+        }
+
+        // branch rules
+        Collection<BranchRuleInfo> branchRuleInfos = listBranchRules(topologyIdVersionIdQueryParams);
+        for (BranchRuleInfo branchRuleInfo: branchRuleInfos) {
+            addBranchRule(topologyId, newVersionId, new BranchRuleInfo(branchRuleInfo));
+        }
+
+        // windowed rules
+        Collection<WindowInfo> windowInfos = listWindows(topologyIdVersionIdQueryParams);
+        for (WindowInfo windowInfo: windowInfos) {
+            addWindow(topologyId, newVersionId, new WindowInfo(windowInfo));
+        }
+
+        // rules
+        Collection<RuleInfo> ruleInfos = listRules(topologyIdVersionIdQueryParams);
+        for (RuleInfo ruleInfo: ruleInfos) {
+            addRule(topologyId, newVersionId, new RuleInfo(ruleInfo));
         }
 
         // add edges
@@ -1398,7 +1398,7 @@ public class StreamCatalogService {
         Sets.SetView<Long> streamIdsToAdd = Sets.difference(ImmutableSet.copyOf(newList), ImmutableSet.copyOf(existing));
         removeSourceStreamMapping(topologySource, Lists.newArrayList(streamIdsToRemove));
         addSourceStreamMapping(topologySource, Lists.newArrayList(streamIdsToAdd));
-        return getTopologySource(topologyid, sourceId);
+        return getTopologySource(topologyid, sourceId, currentTopologyVersionId);
     }
 
     private List<Long> updateOutputStreams(TopologyOutputComponent outputComponent) {
@@ -1687,7 +1687,7 @@ public class StreamCatalogService {
         Sets.SetView<Long> streamIdsToAdd = Sets.difference(ImmutableSet.copyOf(newList), ImmutableSet.copyOf(existing));
         removeProcessorStreamMapping(topologyProcessor, Lists.newArrayList(streamIdsToRemove));
         addProcessorStreamMapping(topologyProcessor, Lists.newArrayList(streamIdsToAdd));
-        return getTopologyProcessor(currentTopologyVersionId, id);
+        return getTopologyProcessor(topologyid, id, currentTopologyVersionId);
     }
 
     public TopologyProcessor removeTopologyProcessor(Long topologyId, Long processorId) {
@@ -2036,7 +2036,7 @@ public class StreamCatalogService {
     public RuleInfo addOrUpdateRule(Long topologyid, Long ruleId, RuleInfo ruleInfo) throws Exception {
         Long currentTopologyVersionId = getCurrentVersionId(topologyid);
         ruleInfo.setId(ruleId);
-        ruleInfo.setTopologyId(currentTopologyVersionId);
+        ruleInfo.setVersionId(currentTopologyVersionId);
         ruleInfo.setTopologyId(topologyid);
         String parsedRuleStr = parseAndSerialize(ruleInfo);
         LOG.debug("ParsedRuleStr {}", parsedRuleStr);
