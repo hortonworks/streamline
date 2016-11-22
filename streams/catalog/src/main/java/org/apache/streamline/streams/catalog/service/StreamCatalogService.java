@@ -81,6 +81,8 @@ import org.apache.streamline.streams.catalog.UDFInfo;
 import org.apache.streamline.streams.catalog.WindowInfo;
 import org.apache.streamline.streams.catalog.configuration.ConfigFileType;
 import org.apache.streamline.streams.catalog.configuration.ConfigFileWriter;
+import org.apache.streamline.streams.catalog.container.TopologyActionsContainer;
+import org.apache.streamline.streams.catalog.container.TopologyMetricsContainer;
 import org.apache.streamline.streams.catalog.processor.CustomProcessorInfo;
 import org.apache.streamline.streams.catalog.rule.RuleParser;
 import org.apache.streamline.streams.catalog.topology.TopologyComponentBundle;
@@ -173,23 +175,26 @@ public class StreamCatalogService {
 
     
     private final StorageManager dao;
-    private final TopologyActions topologyActions;
-    private final TopologyMetrics topologyMetrics;
+    private final TopologyActionsContainer topologyActionsContainer;
+    private final TopologyMetricsContainer topologyMetricsContainer;
     private final FileStorage fileStorage;
     private final TopologyDagBuilder topologyDagBuilder;
     private final ConfigFileWriter configFileWriter;
 
-    public StreamCatalogService(StorageManager dao,
-                                TopologyActions topologyActions,
-                                TopologyMetrics topologyMetrics,
-                                FileStorage fileStorage) {
+    public StreamCatalogService(StorageManager dao, FileStorage fileStorage, Map<String, Object> configuration) {
         this.dao = dao;
         dao.registerStorables(getStorableClasses());
-        this.topologyActions = topologyActions;
-        this.topologyMetrics = topologyMetrics;
         this.fileStorage = fileStorage;
         this.topologyDagBuilder = new TopologyDagBuilder(this);
         this.configFileWriter = new ConfigFileWriter();
+
+        Map<String, String> conf = new HashMap<>();
+        for (Map.Entry<String, Object> confEntry : configuration.entrySet()) {
+            Object value = confEntry.getValue();
+            conf.put(confEntry.getKey(), value == null ? null : value.toString());
+        }
+        this.topologyActionsContainer = new TopologyActionsContainer(this, conf);
+        this.topologyMetricsContainer = new TopologyMetricsContainer(this);
     }
 
     public static Collection<Class<? extends Storable>> getStorableClasses() {
@@ -889,8 +894,10 @@ public class StreamCatalogService {
             TopologyLayoutValidator validator = new TopologyLayoutValidator(json);
             validator.validate();
 
+            TopologyActions topologyActions = getTopologyActionsInstance(ds);
+
             // finally pass it on for streaming engine based config validations
-            this.topologyActions.validate(getTopologyLayout(result));
+            topologyActions.validate(getTopologyLayout(result));
         }
         return result;
     }
@@ -899,9 +906,10 @@ public class StreamCatalogService {
         TopologyDag dag = topologyDagBuilder.getDag(topology);
         topology.setTopologyDag(dag);
         ensureValid(dag);
+        TopologyActions topologyActions = getTopologyActionsInstance(topology);
         LOG.debug("Deploying topology {}", topology);
-        setUpClusterArtifacts(topology);
-        setUpExtraJars(topology);
+        setUpClusterArtifacts(topology, topologyActions);
+        setUpExtraJars(topology, topologyActions);
         topologyActions.deploy(getTopologyLayout(topology));
     }
 
@@ -1123,7 +1131,7 @@ public class StreamCatalogService {
         return importTopology(exported);
     }
 
-    private void setUpExtraJars(Topology topology) throws IOException {
+    private void setUpExtraJars(Topology topology, TopologyActions topologyActions) throws IOException {
         StormTopologyExtraJarsHandler extraJarsHandler = new StormTopologyExtraJarsHandler(this);
         topology.getTopologyDag().traverse(extraJarsHandler);
         Path extraJarsLocation = topologyActions.getExtraJarsLocation(getTopologyLayout(topology));
@@ -1161,38 +1169,7 @@ public class StreamCatalogService {
         }
     }
 
-    private void setUpResources(Topology topology, Set<String> extraResources) throws IOException {
-        Path artifactsDir = topologyActions.getArtifactsLocation(getTopologyLayout(topology));
-        Path resourceDir = Paths.get(artifactsDir.toString(), "resources");
-        makeEmptyDir(resourceDir);
-
-        Set<String> copiedResources = new HashSet<>();
-        for (String resource : extraResources) {
-            if (!copiedResources.contains(resource)) {
-                File destPath = Paths.get(resourceDir.toString(), resource).toFile();
-                List<QueryParam> queryParams = new ArrayList<>();
-                queryParams.add(new QueryParam("name", resource));
-
-                Collection<FileInfo> fileInfos = listFiles(queryParams);
-                if (fileInfos.isEmpty())
-                    throw new IllegalArgumentException("File is not available with name : " + resource);
-
-                String fileName = "";
-                for (FileInfo file : fileInfos)
-                    fileName = file.getStoredFileName();
-
-                try (InputStream src = fileStorage.downloadFile(fileName);
-                     FileOutputStream dest = new FileOutputStream(destPath)
-                ) {
-                    IOUtils.copy(src, dest);
-                    copiedResources.add(resource);
-                    LOG.debug("Resource {} copied to {}", resource, destPath);
-                }
-            }
-        }
-    }
-
-    private void setUpClusterArtifacts(Topology topology) throws IOException {
+    private void setUpClusterArtifacts(Topology topology, TopologyActions topologyActions) throws IOException {
         String config = topology.getConfig();
         ObjectMapper objectMapper = new ObjectMapper();
         Map jsonMap = objectMapper.readValue(config, Map.class);
@@ -1255,48 +1232,54 @@ public class StreamCatalogService {
     }
 
     public void killTopology(Topology topology) throws Exception {
+        TopologyActions topologyActions = getTopologyActionsInstance(topology);
         topologyActions.kill(getTopologyLayout(topology));
     }
 
     public void suspendTopology(Topology topology) throws Exception {
+        TopologyActions topologyActions = getTopologyActionsInstance(topology);
         topologyActions.suspend(getTopologyLayout(topology));
     }
 
     public void resumeTopology(Topology topology) throws Exception {
+        TopologyActions topologyActions = getTopologyActionsInstance(topology);
         topologyActions.resume(getTopologyLayout(topology));
     }
 
     public TopologyActions.Status topologyStatus(Topology topology) throws Exception {
-        return this.topologyActions.status(getTopologyLayout(topology));
+        TopologyActions topologyActions = getTopologyActionsInstance(topology);
+        return topologyActions.status(getTopologyLayout(topology));
     }
 
     public Map<String, TopologyMetrics.ComponentMetric> getTopologyMetrics(Topology topology) throws IOException {
-        return this.topologyMetrics.getMetricsForTopology(getTopologyLayout(topology));
+        TopologyMetrics topologyMetrics = getTopologyMetricsInstance(topology);
+        return topologyMetrics.getMetricsForTopology(getTopologyLayout(topology));
     }
 
     public Map<Long, Double> getCompleteLatency(Topology topology, TopologyComponent component, long from, long to) throws Exception {
-        return this.topologyMetrics.getCompleteLatency(getTopologyLayout(topology), getComponentLayout(component), from, to);
+        TopologyMetrics topologyMetrics = getTopologyMetricsInstance(topology);
+        return topologyMetrics.getCompleteLatency(getTopologyLayout(topology), getComponentLayout(component), from, to);
     }
 
     public TopologyTimeSeriesMetrics.TimeSeriesComponentMetric getComponentStats(Topology topology, TopologyComponent component, Long from, Long to) throws IOException {
-        return this.topologyMetrics.getComponentStats(getTopologyLayout(topology), getComponentLayout(component), from, to);
+        TopologyMetrics topologyMetrics = getTopologyMetricsInstance(topology);
+        return topologyMetrics.getComponentStats(getTopologyLayout(topology), getComponentLayout(component), from, to);
     }
 
     public Map<String, Map<Long, Double>> getKafkaTopicOffsets(Topology topology, TopologyComponent component, Long from, Long to) throws IOException {
-        return this.topologyMetrics.getkafkaTopicOffsets(getTopologyLayout(topology), getComponentLayout(component), from, to);
-    }
-
-    public Map<String, Map<Long, Double>> getMetrics(String metricName, String parameters, Long from, Long to) {
-        return this.topologyMetrics.getTimeSeriesQuerier().getRawMetrics(metricName, parameters, from, to);
+        TopologyMetrics topologyMetrics = getTopologyMetricsInstance(topology);
+        return topologyMetrics.getkafkaTopicOffsets(getTopologyLayout(topology), getComponentLayout(component), from, to);
     }
 
     public TopologyMetrics.TopologyMetric getTopologyMetric(Topology topology) throws IOException {
-        return this.topologyMetrics.getTopologyMetric(getTopologyLayout(topology));
+        TopologyMetrics topologyMetrics = getTopologyMetricsInstance(topology);
+        return topologyMetrics.getTopologyMetric(getTopologyLayout(topology));
     }
 
     public List<Pair<String, Double>> getTopNAndOtherComponentsLatency(Topology topology, int nOfTopN) throws IOException {
-        Map<String, TopologyMetrics.ComponentMetric> metricsForTopology = this.topologyMetrics
-                .getMetricsForTopology(getTopologyLayout(topology));
+        TopologyMetrics topologyMetrics = getTopologyMetricsInstance(topology);
+        Map<String, TopologyMetrics.ComponentMetric> metricsForTopology = topologyMetrics
+            .getMetricsForTopology(getTopologyLayout(topology));
 
         List<Pair<String, Double>> topNAndOther = new ArrayList<>();
 
@@ -2636,6 +2619,7 @@ public class StreamCatalogService {
         rule.setReferredUdfs(ruleParser.getReferredUdfs());
     }
 
+
     public Collection<UDFInfo> listUDFs() {
         return this.dao.list(UDF_NAMESPACE);
     }
@@ -2912,7 +2896,9 @@ public class StreamCatalogService {
     public Namespace removeNamespace(Long namespaceId) {
         Namespace namespace = new Namespace();
         namespace.setId(namespaceId);
-        return this.dao.remove(new StorableKey(NAMESPACE_NAMESPACE, namespace.getPrimaryKey()));
+        Namespace ret = this.dao.remove(new StorableKey(NAMESPACE_NAMESPACE, namespace.getPrimaryKey()));
+        invalidateTopologyActionsMetricsInstances(namespaceId);
+        return ret;
     }
 
     public Namespace addOrUpdateNamespace(Long namespaceId, Namespace namespace) {
@@ -2945,12 +2931,15 @@ public class StreamCatalogService {
 
     public NamespaceServiceClusterMapping removeServiceClusterMapping(Long namespaceId, String serviceName, Long clusterId) {
         StorableKey key = getStorableKeyForNamespaceServiceClusterMapping(namespaceId, serviceName, clusterId);
-        return this.dao.remove(key);
+        NamespaceServiceClusterMapping ret = this.dao.remove(key);
+        invalidateTopologyActionsMetricsInstances(namespaceId);
+        return ret;
     }
 
     public NamespaceServiceClusterMapping addOrUpdateServiceClusterMapping(
             NamespaceServiceClusterMapping newMapping) {
         this.dao.addOrUpdate(newMapping);
+        invalidateTopologyActionsMetricsInstances(newMapping.getNamespaceId());
         return newMapping;
     }
 
@@ -2963,8 +2952,43 @@ public class StreamCatalogService {
         return new StorableKey(NAMESPACE_SERVICE_CLUSTER_MAPPING_NAMESPACE,
                 mapping.getPrimaryKey());
     }
-    
+
     private Collection<FileInfo> listFiles(List<QueryParam> queryParams) {
-        return dao.find( FileInfo.NAME_SPACE, queryParams);
+        return dao.find(FileInfo.NAME_SPACE, queryParams);
+    }
+
+    private TopologyActions getTopologyActionsInstance(Topology ds) {
+        Namespace namespace = getNamespace(ds.getNamespaceId());
+        if (namespace == null) {
+            throw new RuntimeException("Corresponding namespace not found: " + ds.getNamespaceId());
+        }
+
+        TopologyActions topologyActions = topologyActionsContainer.findInstance(namespace);
+        if (topologyActions == null) {
+            throw new RuntimeException("Can't find Topology Actions for such namespace " + ds.getNamespaceId());
+        }
+        return topologyActions;
+    }
+
+    private TopologyMetrics getTopologyMetricsInstance(Topology ds) {
+        Namespace namespace = getNamespace(ds.getNamespaceId());
+        if (namespace == null) {
+            throw new RuntimeException("Corresponding namespace not found: " + ds.getNamespaceId());
+        }
+
+        TopologyMetrics topologyMetrics = topologyMetricsContainer.findInstance(namespace);
+        if (topologyMetrics == null) {
+            throw new RuntimeException("Can't find Topology Metrics for such namespace " + ds.getNamespaceId());
+        }
+        return topologyMetrics;
+    }
+
+    private void invalidateTopologyActionsMetricsInstances(Long namespaceId) {
+        try {
+            topologyActionsContainer.invalidateInstance(namespaceId);
+            topologyMetricsContainer.invalidateInstance(namespaceId);
+        } catch (Throwable e) {
+            // swallow
+        }
     }
 }

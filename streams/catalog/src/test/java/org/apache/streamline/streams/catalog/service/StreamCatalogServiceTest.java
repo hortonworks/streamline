@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertFalse;
@@ -38,19 +39,10 @@ public class StreamCatalogServiceTest {
     private StorageManager dao;
 
     @Injectable
-    private TopologyActions topologyActions;
-
-    @Injectable
-    private TopologyMetrics topologyMetrics;
-
-    @Injectable
     private FileStorage fileStorage;
 
     @Injectable
-    private TopologyDagBuilder topologyDagBuilder;
-
-    @Injectable
-    private ConfigFileWriter configFileWriter;
+    private Map<String, Object> configuration;
 
     @Test
     public void testListTopologiesProvidesVersionedTimestamp_STREAMLINE_526() {
