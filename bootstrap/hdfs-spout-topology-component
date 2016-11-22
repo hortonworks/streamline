@@ -82,7 +82,8 @@
         "fieldName": "LockTimeoutSec",
         "isOptional": true,
         "tooltip": "Duration of inactivity after which a lock file is considered to be abandoned and ready for another spout to take ownership",
-        "type": "number"
+        "type": "number",
+        "defaultValue": 300
       },
       {
         "uiName": "Ignore Suffix",
