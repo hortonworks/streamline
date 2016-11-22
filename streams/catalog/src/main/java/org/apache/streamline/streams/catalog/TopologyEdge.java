@@ -19,6 +19,8 @@
 package org.apache.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.streamline.common.Schema;
@@ -90,6 +92,7 @@ public class TopologyEdge extends AbstractStorable {
     private Long fromId;
     private Long toId;
     private List<StreamGrouping> streamGroupings;
+    private Long versionTimestamp;
 
     public TopologyEdge() {
     }
@@ -103,7 +106,21 @@ public class TopologyEdge extends AbstractStorable {
         if (other.getStreamGroupings() != null) {
             setStreamGroupings(other.getStreamGroupings().stream().map(StreamGrouping::new).collect(Collectors.toList()));
         }
+        setVersionTimestamp(other.getVersionTimestamp());
     }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("timestamp")
+    public Long getVersionTimestamp() {
+        return versionTimestamp;
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("timestamp")
+    public void setVersionTimestamp(Long timestamp) {
+        this.versionTimestamp = timestamp;
+    }
+
 
     @JsonIgnore
     @Override
