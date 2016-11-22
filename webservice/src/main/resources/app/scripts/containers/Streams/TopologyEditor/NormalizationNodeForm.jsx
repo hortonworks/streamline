@@ -5,7 +5,6 @@ import Select from 'react-select';
 import {Panel, Popover, OverlayTrigger, Tabs, Tab} from 'react-bootstrap';
 import FSReactToastr from '../../../components/FSReactToastr';
 import TopologyREST from '../../../rest/TopologyREST';
-import OutputSchema from '../../../components/OutputSchemaComponent';
 import Editable from '../../../components/Editable';
 
 export default class NormalizationNodeForm extends Component {
@@ -15,6 +14,7 @@ export default class NormalizationNodeForm extends Component {
 		editMode: PropTypes.bool.isRequired,
 		nodeType: PropTypes.string.isRequired,
 		topologyId: PropTypes.string.isRequired,
+                versionId: PropTypes.number.isRequired,
 		targetNodes: PropTypes.array.isRequired,
 		linkShuffleOptions: PropTypes.array.isRequired,
 		currentEdges: PropTypes.array.isRequired
@@ -45,19 +45,19 @@ export default class NormalizationNodeForm extends Component {
 	}
 
 	fetchData() {
-		let {topologyId, nodeType, nodeData, currentEdges} = this.props;
+                let {topologyId, versionId, nodeType, nodeData, currentEdges} = this.props;
 		let edgePromiseArr = [];
 
 		currentEdges.map(edge=>{
 			if(edge.target.nodeId === nodeData.nodeId){
-				edgePromiseArr.push(TopologyREST.getNode(topologyId, 'edges', edge.edgeId));
+                                edgePromiseArr.push(TopologyREST.getNode(topologyId, versionId, 'edges', edge.edgeId));
 			}
 		})
 
 		Promise.all(edgePromiseArr)
 			.then(edgeResults=>{
 				let promiseArr = [
-					TopologyREST.getNode(topologyId, nodeType, nodeData.nodeId)
+                                        TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId)
 				];
 				let streamIdArr = []
 				edgeResults.map(result=>{
@@ -65,7 +65,7 @@ export default class NormalizationNodeForm extends Component {
 						result.entity.streamGroupings.map(streamObj=>{
 							if(streamIdArr.indexOf(streamObj.streamId) === -1){
 								streamIdArr.push(streamObj.streamId);
-								promiseArr.push(TopologyREST.getNode(topologyId, 'streams', streamObj.streamId))
+                                                                promiseArr.push(TopologyREST.getNode(topologyId, versionId, 'streams', streamObj.streamId))
 							}
 						})
 					}
@@ -128,13 +128,13 @@ export default class NormalizationNodeForm extends Component {
 
         saveStream() {
                 let self = this;
-                let {topologyId, nodeType} = this.props;
+                let {topologyId, versionId, nodeType} = this.props;
                 let passStreamData = { streamId: 'normalization_stream_'+this.nodeData.id, fields: []};
-                TopologyREST.createNode(topologyId, 'streams', {body: JSON.stringify(passStreamData)})
+                TopologyREST.createNode(topologyId, versionId, 'streams', {body: JSON.stringify(passStreamData)})
                         .then(result=>{
                                 self.nodeData.outputStreamIds = [];
                                 self.nodeData.outputStreamIds.push(result.entity.id);
-                                TopologyREST.updateNode(topologyId, nodeType, self.nodeData.id, {body: JSON.stringify(self.nodeData)})
+                                TopologyREST.updateNode(topologyId, versionId, nodeType, self.nodeData.id, {body: JSON.stringify(self.nodeData)})
                                         .then((node)=>{
                                                 self.nodeData = node.entity;
                                                 self.setState({showSchema: true});
@@ -419,22 +419,22 @@ export default class NormalizationNodeForm extends Component {
 	}
 
 	handleSave(name){
-		let {topologyId, nodeType} = this.props;
+                let {topologyId, versionId, nodeType} = this.props;
 		let data = this.getData();
 		let nodeId = this.nodeData.id;
 
-		return TopologyREST.getNode(topologyId, nodeType, nodeId)
+                return TopologyREST.getNode(topologyId, versionId, nodeType, nodeId)
 			.then(result=>{
 				let newData = result.entity;
 				newData.config.properties = data;
 				newData.name = name;
-                                let outputStreamData = { streamId: newData.outputStreams[0].streamId , fields: this.state.outputSchemaFields};
-                                return TopologyREST.updateNode(topologyId, 'streams', newData.outputStreams[0].id, {body: JSON.stringify(outputStreamData)})
-                                        .then((stream)=>{
-                                                newData.outputStreamIds = [];
-                                                newData.outputStreamIds.push(stream.entity.id);
-                                                return TopologyREST.updateNode(topologyId, nodeType, nodeId, {body: JSON.stringify(newData)})
-                                        })
+                let outputStreamData = { streamId: newData.outputStreams[0].streamId , fields: this.state.outputSchemaFields};
+                return TopologyREST.updateNode(topologyId, versionId, 'streams', newData.outputStreams[0].id, {body: JSON.stringify(outputStreamData)})
+                    .then((stream)=>{
+                        newData.outputStreamIds = [];
+                        newData.outputStreamIds.push(stream.entity.id);
+                        return TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(newData)})
+                    })
 			})
 	}
 
@@ -580,20 +580,8 @@ export default class NormalizationNodeForm extends Component {
 							</div>
 						</Panel>
 					</Tab>
-                                        <Tab eventKey={2} title="Output Streams" unmountOnExit={true}>
-                                                {showSchema ?
-						<OutputSchema
-							ref="schema"
-							topologyId={topologyId}
-							editMode={editMode}
-							nodeId={nodeData.nodeId}
-							nodeType={nodeType}
-							targetNodes={targetNodes}
-							linkShuffleOptions={linkShuffleOptions}
-                                                        canAdd={false}
-                                                        canDelete={false}
-						/>
-                                                : null}
+                        <Tab eventKey={2} title="Output Streams" unmountOnExit={true}>
+
 					</Tab>
 				</Tabs>
 			</div>

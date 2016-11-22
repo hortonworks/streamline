@@ -4,21 +4,25 @@ import {baseUrl} from '../utils/Constants';
 import { CustomFetch } from '../utils/Overrides';
 
 const TopologyREST = {
-  getAllTopology(sort,options) {
+        getAllTopology(sort,options) {
 		options = options || {};
 		options.method = options.method || 'GET';
-                return CustomFetch(baseUrl+'topologies?withMetric=true&sort='+sort+'&latencyTopN=3',options)
+        return CustomFetch(baseUrl+'topologies?withMetric=true&sort='+sort+'&latencyTopN=3',options)
 			.then( (response) => {
 		  		return response.json();
 		  	})
 	},
-  getTopology(id, options) {
+        getTopology(id, versionId, options) {
 		options = options || {};
 		options.method = options.method || 'GET';
-                return fetch(baseUrl+'topologies/'+id+"?withMetric=true&latencyTopN=3", options)
+                let url = baseUrl+'topologies/'+id+"?withMetric=true&latencyTopN=3";
+                if(versionId){
+                        url = baseUrl+'topologies/'+id+"/versions/"+versionId+"?withMetric=true&latencyTopN=3";
+                }
+        return fetch(url, options)
 			.then( (response) => {
 		  		return response.json();
-                        })
+            })
 	},
 	postTopology(options) {
 		options = options || {};
@@ -32,14 +36,18 @@ const TopologyREST = {
 		  		return response.json();
 		  	})
 	},
-	putTopology(id, options) {
+        putTopology(id, versionId, options) {
 		options = options || {};
 		options.method = options.method || 'PUT';
 		options.headers = options.headers || {
           'Content-Type' : 'application/json',
           'Accept' : 'application/json'
         };
-		return fetch(baseUrl+'topologies/'+id, options)
+        let url = baseUrl+'topologies/'+id;
+                // if(versionId){
+                // 	url = baseUrl+'topologies/'+id+"/versions/"+versionId;
+                // }
+                return fetch(url, options)
 			.then( (response) => {
 		  		return response.json();
 		  	})
@@ -52,26 +60,38 @@ const TopologyREST = {
 		  		return response.json();
 		  	})
 	},
-	deployTopology(id, options) {
+        deployTopology(id, versionId, options) {
 		options = options || {};
 		options.method = options.method || 'POST';
-		return CustomFetch(baseUrl+'topologies/'+id+'/actions/deploy', options)
+                let url = baseUrl+'topologies/'+id+'/actions/deploy';
+                if(versionId){
+                        url = baseUrl+'topologies/'+id+"/versions/"+versionId+'/actions/deploy';
+                }
+                return CustomFetch(url, options)
 			.then( (response) => {
 		  		return response.json();
 		  	})
 	},
-	killTopology(id, options) {
+        killTopology(id, versionId, options) {
 		options = options || {};
 		options.method = options.method || 'POST';
-		return CustomFetch(baseUrl+'topologies/'+id+'/actions/kill', options)
+                let url = baseUrl+'topologies/'+id+'/actions/kill';
+                if(versionId){
+                        url = baseUrl+'topologies/'+id+"/versions/"+versionId+'/actions/kill';
+                }
+                return CustomFetch(url, options)
 			.then( (response) => {
 		  		return response.json();
 		  	})
 	},
-	validateTopology(id, options) {
+        validateTopology(id, versionId, options) {
 		options = options || {};
 		options.method = options.method || 'POST';
-		return fetch(baseUrl+'topologies/'+id+'/actions/validate', options)
+                let url = baseUrl+'topologies/'+id+'/actions/validate';
+                if(versionId){
+                        url = baseUrl+'topologies/'+id+"/versions/"+versionId+'/actions/validate';
+                }
+                return fetch(url, options)
 			.then( (response) => {
 		  		return response.json();
 		  	})
@@ -108,13 +128,17 @@ const TopologyREST = {
 		  		return response.json();
                         })
 	},
-	getMetaInfo(id, options) {
+        getMetaInfo(id, versionId, options) {
 		options = options || {};
 		options.method = options.method || 'GET';
-		return fetch(baseUrl+'system/topologyeditormetadata/'+id, options)
+                let url = baseUrl+'system/topologyeditormetadata/'+id;
+                if(versionId){
+                        url = baseUrl+'system/versions/'+versionId+'/topologyeditormetadata/'+id;
+                }
+                return fetch(url, options)
 			.then( (response) => {
 		  		return response.json();
-                        })
+            })
 	},
 	postMetaInfo(options) {
 		options = options || {};
@@ -126,19 +150,23 @@ const TopologyREST = {
 		return fetch(baseUrl+'system/topologyeditormetadata', options)
 			.then( (response) => {
 		  		return response.json();
-                        })
+            })
 	},
-	putMetaInfo(id, options) {
+        putMetaInfo(id, versionId, options) {
 		options = options || {};
 		options.method = options.method || 'PUT';
 		options.headers = options.headers || {
           'Content-Type' : 'application/json',
           'Accept' : 'application/json'
         };
-		return fetch(baseUrl+'system/topologyeditormetadata/'+id, options)
+        let url = baseUrl+'system/topologyeditormetadata/'+id;
+                // if(versionId){
+                // 	url = baseUrl+'system/versions/'+versionId+'/topologyeditormetadata/'+id;
+                // }
+                return fetch(url, options)
 			.then( (response) => {
 		  		return response.json();
-                        })
+            })
 	},
 	deleteMetaInfo(id, options) {
 		options = options || {};
@@ -148,34 +176,46 @@ const TopologyREST = {
 		  		return response.json();
 		  	})
 	},
-	createNode(topologyId, nodeType, options) {
+        createNode(topologyId, versionId, nodeType, options) {
 		options = options || {};
 		options.method = options.method || 'POST';
 		options.headers = options.headers || {
           'Content-Type' : 'application/json',
           'Accept' : 'application/json'
         };
-		return fetch(baseUrl+'topologies/'+topologyId+'/'+nodeType, options)
+        let url = baseUrl+'topologies/'+topologyId+'/'+nodeType;
+                // if(versionId){
+                // 	url = baseUrl+'topologies/'+topologyId+'/versions/'+versionId+'/'+nodeType;
+                // }
+                return fetch(url, options)
 			.then( (response) => {
 		  		return response.json();
 		  	})
 	},
-	getNode(topologyId, nodeType, nodeId, options) {
+    getNode(topologyId, versionId, nodeType, nodeId, options) {
 		options = options || {};
 		options.method = options.method || 'GET';
-		return fetch(baseUrl+'topologies/'+topologyId+'/'+nodeType+'/'+nodeId, options)
+        let url = baseUrl+'topologies/'+topologyId+'/'+nodeType+'/'+nodeId;
+                if(versionId){
+                        url = baseUrl+'topologies/'+topologyId+'/versions/'+versionId+'/'+nodeType+'/'+nodeId;
+                }
+        return fetch(url, options)
 			.then( (response) => {
 		  		return response.json();
 		  	})
 	},
-	updateNode(topologyId, nodeType, nodeId, options) {
+        updateNode(topologyId, versionId, nodeType, nodeId, options) {
 		options = options || {};
 		options.method = options.method || 'PUT';
 		options.headers = options.headers || {
           'Content-Type' : 'application/json',
           'Accept' : 'application/json'
         };
-		return fetch(baseUrl+'topologies/'+topologyId+'/'+nodeType+'/'+nodeId, options)
+        let url = baseUrl+'topologies/'+topologyId+'/'+nodeType+'/'+nodeId;
+                // if(versionId){
+                // 	url = baseUrl+'topologies/'+topologyId+'/versions/'+versionId+'/'+nodeType+'/'+nodeId;
+                // }
+                return fetch(url, options)
 			.then( (response) => {
 		  		return response.json();
 		  	})
@@ -183,15 +223,20 @@ const TopologyREST = {
 	deleteNode(topologyId, nodeType, nodeId, options) {
 		options = options || {};
 		options.method = options.method || 'DELETE';
-		return fetch(baseUrl+'topologies/'+topologyId+'/'+nodeType+'/'+nodeId, options)
+                let url = baseUrl+'topologies/'+topologyId+'/'+nodeType+'/'+nodeId;
+                return fetch(url, options)
 			.then( (response) => {
 		  		return response.json();
 		  	})
 	},
-	getAllNodes(id, nodeType, options) {
+    getAllNodes(id, versionId, nodeType, options) {
 		options = options || {};
 		options.method = options.method || 'GET';
-		return fetch(baseUrl+'topologies/'+id+'/'+nodeType, options)
+                let url = baseUrl+'topologies/'+id+'/'+nodeType;
+                if(versionId){
+                        url = baseUrl+'topologies/'+id+'/versions/'+versionId+'/'+nodeType;
+                }
+        return fetch(url, options)
 			.then( (response) => {
 		  		return response.json();
 		  	})
@@ -203,6 +248,38 @@ const TopologyREST = {
 			.then( (response) => {
 		  		return response.json();
 		  	})
+    },
+    getAllVersions(id, options) {
+        options = options || {};
+        options.method = options.method || 'GET';
+        return fetch(baseUrl+'topologies/'+id+'/versions', options)
+            .then( (response) => {
+                                return response.json();
+                        })
+    },
+    saveTopologyVersion(id, options) {
+        options = options || {};
+        options.method = options.method || 'POST';
+        options.headers = options.headers || {
+            'Content-Type' : 'application/json',
+            'Accept' : 'application/json'
+        };
+        return fetch(baseUrl+'topologies/'+id+'/versions/save', options)
+            .then( (response) => {
+                    return response.json();
+            })
+	},
+	activateTopologyVersion(topologyId, versionId, options){
+		options = options || {};
+        options.method = options.method || 'POST';
+        options.headers = options.headers || {
+            'Content-Type' : 'application/json',
+            'Accept' : 'application/json'
+        };
+        return fetch(baseUrl+'topologies/'+topologyId+'/versions/'+versionId+'/activate', options)
+            .then( (response) => {
+                return response.json();
+            })
 	}
 }
 

@@ -5,7 +5,10 @@ import {Link} from 'react-router';
 import moment from 'moment';
 import {
     DropdownButton,
-    MenuItem
+    MenuItem,
+    InputGroup,
+    OverlayTrigger,
+    Tooltip
 } from 'react-bootstrap';
 
 import Utils from '../../../utils/Utils';
@@ -20,40 +23,78 @@ class TopologyViewMode extends Component{
   modeChange = () => {
     this.props.handleModeChange(false);
   }
+  handleSelectVersion(eventKey, event) {
+    let versionId = event.target.dataset.versionId;
+    this.props.handleVersionChange(versionId);
+  }
+
+  getTitleFromId(id){
+    if(id && this.props.versionsArr != undefined){
+      let obj = this.props.versionsArr.find((o)=>{return o.id == id;})
+      if(obj){
+        return obj.name;
+      }
+    } else {
+      return '';
+    }
+  }
 
   render(){
     const {minSelected} = this.state;
-    const {topologyName,isAppRunning,unknown,killTopology,deployTopology,topologyMetric,timestamp} = this.props;
+    const {topologyName,isAppRunning,unknown,killTopology,deployTopology,setCurrentVersion,topologyMetric,timestamp, topologyVersion, versionsArr = []} = this.props;
     const {misc} = topologyMetric;
     const metricWrap = misc || {}
     const latencyText = Utils.secToMinConverter(topologyMetric.latency,"graph").split('/')
     const emittedText = Utils.kFormatter(metricWrap.emitted).toString();
     const transferred = Utils.kFormatter(metricWrap.transferred).toString();
+    let versionName = this.getTitleFromId(topologyVersion);
     return(
       <div>
         <div className="page-title-box row">
-          <div className="col-sm-3">
+          <div className="col-sm-4">
             <h4 className="page-heading">{topologyName}</h4>
           </div>
-          <div className="col-sm-9 styleWindowDN text-right">
-            <span className="static-label margin-right">
-              <span className="text-muted">Last Change:</span>
-               {Utils.splitTimeStamp(timestamp)}
-            </span>
-            <span className="static-label margin-right">
-              <span className="text-muted">Version:</span>
-                1
-            </span>
-
-          {isAppRunning ?
-              <button type="button" className="btn btn-default" onClick={killTopology}>STOP</button>
-            :
-            (unknown !== "UNKNOWN") ?
-                <button type="button" className="btn btn-default" onClick={deployTopology}>START</button>
-             : null
+          <div className="col-sm-4">
+            <div className="input-group">
+                <span className="input-group-addon">Last Change</span>
+                <input type="text" className="form-control" value={Utils.splitTimeStamp(timestamp)} disabled />
+            </div>
+          </div>
+          <div className="col-sm-2">
+            <InputGroup>
+              <span className="input-group-addon">Version</span>
+              <DropdownButton title={versionName || ''} pullRight id="version-dropdown" onSelect={this.handleSelectVersion.bind(this)}>
+                {
+                  versionsArr.map((v, i)=>{
+                    return <MenuItem eventKey={i} key={i} data-version-id={v.id}>{v.name}</MenuItem>
+                  })
+                }
+              </DropdownButton>
+            </InputGroup>
+          </div>
+          {versionName.toLowerCase() == 'current' ?
+            <div className="col-sm-2 styleWindowDN text-right">
+            {isAppRunning ?
+                <button type="button" className="btn btn-default" onClick={killTopology}>STOP</button>
+              :
+              (unknown !== "UNKNOWN") ?
+                  <button type="button" className="btn btn-default displayNone" onClick={deployTopology}>START</button>
+               : null
+            }
+               <button style={{marginLeft: '10px'}} type="button" className="btn btn-success" onClick={this.modeChange}>EDIT</button>
+            </div>
+          : <div className="col-sm-2 styleWindowDN text-right">
+              <OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip">Set this version as current version. If another version of topology is deployed, kill it first to set this one.</Tooltip>}>
+                <button 
+                  type="button" 
+                  className="btn btn-default" 
+                  onClick={setCurrentVersion} 
+                  disabled={isAppRunning}>
+                  Set Current Version
+                </button>
+              </OverlayTrigger>
+            </div>
           }
-            &nbsp;<button type="button" className="btn btn-success" onClick={this.modeChange}>EDIT</button>
-        </div>
       </div>
       <div className="view-tiles clearfix">
         <div className="stat-tiles">

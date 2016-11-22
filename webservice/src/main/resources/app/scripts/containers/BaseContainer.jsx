@@ -38,10 +38,6 @@ export default class BaseContainer extends Component {
             >
               {this.props.children}
             </section>
-            <Footer
-              routes={routes}
-              breadcrumbData={this.props.breadcrumbData}
-            />
             <Confirm ref="Confirm"/>
         </div>
     );

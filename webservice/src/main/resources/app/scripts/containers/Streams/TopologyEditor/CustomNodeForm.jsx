@@ -6,7 +6,6 @@ import {Tabs, Tab, Radio} from 'react-bootstrap';
 import FSReactToastr from '../../../components/FSReactToastr';
 import TopologyREST from '../../../rest/TopologyREST';
 import CustomProcessorREST from '../../../rest/CustomProcessorREST';
-import OutputSchema from '../../../components/OutputSchemaComponent';
 
 export default class CustomNodeForm extends Component {
 	static propTypes = {
@@ -47,10 +46,10 @@ export default class CustomNodeForm extends Component {
 	}
 
 	fetchData(id, defaultParallelism) {
-		let {topologyId, nodeType, nodeData} = this.props;
+                let {topologyId, nodeType, nodeData, versionId} = this.props;
 		let promiseArr = [
 			CustomProcessorREST.getProcessor(id),
-			TopologyREST.getNode(topologyId, nodeType, nodeData.nodeId)
+                        TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId)
 		];
 
 		Promise.all(promiseArr)
@@ -91,7 +90,7 @@ export default class CustomNodeForm extends Component {
 
 	saveStreams(outputStreamToSchema){
 		let self = this;
-		let {topologyId, nodeType} = this.props;
+                let {topologyId, nodeType, versionId} = this.props;
 		let streamIds = _.keys(outputStreamToSchema),
 			streamData = {},
 			streams = [],
@@ -105,7 +104,7 @@ export default class CustomNodeForm extends Component {
 		});
 
 		streams.map((s)=>{
-			promiseArr.push(TopologyREST.createNode(topologyId, 'streams', {body: JSON.stringify(s)}));
+                        promiseArr.push(TopologyREST.createNode(topologyId, versionId, 'streams', {body: JSON.stringify(s)}));
 		});
 
 		Promise.all(promiseArr)
@@ -114,7 +113,7 @@ export default class CustomNodeForm extends Component {
 				results.map(result=>{
 						self.nodeData.outputStreamIds.push(result.entity.id);
 					})
-				TopologyREST.updateNode(topologyId, nodeType, self.nodeData.id, {body: JSON.stringify(this.nodeData)})
+                                TopologyREST.updateNode(topologyId, versionId, nodeType, self.nodeData.id, {body: JSON.stringify(this.nodeData)})
 					.then((node)=>{
 						self.nodeData = node.entity;
 						self.setState({showSchema: true});
@@ -174,7 +173,7 @@ export default class CustomNodeForm extends Component {
 		this.nodeData.config.properties = data;
 		this.nodeData.name = name;
 
-		return TopologyREST.updateNode(topologyId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)})
+                return TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)})
 	}
 
 	render() {

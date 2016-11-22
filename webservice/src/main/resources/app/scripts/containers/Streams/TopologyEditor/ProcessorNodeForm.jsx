@@ -14,6 +14,7 @@ export default class ProcessorNodeForm extends Component {
         editMode: PropTypes.bool.isRequired,
         nodeType: PropTypes.string.isRequired,
         topologyId: PropTypes.string.isRequired,
+        versionId: PropTypes.number.isRequired,
         sourceNodes: PropTypes.array.isRequired
     };
 
@@ -41,9 +42,9 @@ export default class ProcessorNodeForm extends Component {
     }
 
     fetchData(){
-        let {topologyId, nodeType, nodeData} = this.props;
+        let {topologyId, versionId, nodeType, nodeData} = this.props;
         let promiseArr = [
-            TopologyREST.getAllNodes(topologyId, 'edges')
+            TopologyREST.getAllNodes(topologyId, versionId, 'edges')
         ];
         Promise.all(promiseArr)
             .then(results=>{
@@ -51,7 +52,7 @@ export default class ProcessorNodeForm extends Component {
                     results[0].entities.map((edge)=>{
                         if(edge.toId === nodeData.nodeId && this.sourceNodesId.indexOf(edge.fromId) !== -1){
                             //TODO - Once we support multiple input streams, need to fix this.
-                            TopologyREST.getNode(topologyId, 'streams', edge.streamGroupings[0].streamId)
+                            TopologyREST.getNode(topologyId, versionId, 'streams', edge.streamGroupings[0].streamId)
                                 .then(streamResult=>{
                                     this.setState({streamObj: streamResult.entity})
                                     // this.refs.StreamSidebarInput.update(streamResult.entity);

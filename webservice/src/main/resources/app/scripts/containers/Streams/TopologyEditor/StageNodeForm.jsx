@@ -5,7 +5,6 @@ import Select from 'react-select';
 import {Panel, Tabs, Tab} from 'react-bootstrap';
 import FSReactToastr from '../../../components/FSReactToastr';
 import TopologyREST from '../../../rest/TopologyREST';
-import OutputSchema from '../../../components/OutputSchemaComponent'
 
 export default class StageFormNode extends Component{
 	static propTypes = {
@@ -14,6 +13,7 @@ export default class StageFormNode extends Component{
 		editMode: PropTypes.bool.isRequired,
 		nodeType: PropTypes.string.isRequired,
 		topologyId: PropTypes.string.isRequired,
+                versionId: PropTypes.number.isRequired,
 		targetNodes: PropTypes.array.isRequired,
 		linkShuffleOptions: PropTypes.array.isRequired,
 		currentEdges: PropTypes.array.isRequired
@@ -52,9 +52,9 @@ export default class StageFormNode extends Component{
 	}
 
 	fetchData() {
-		let {topologyId, nodeType, nodeData} = this.props;
+                let {topologyId, versionId, nodeType, nodeData} = this.props;
 		let promiseArr = [
-			TopologyREST.getNode(topologyId, nodeType, nodeData.nodeId)
+                        TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId)
 		];
 		let stateObj = {};
 
@@ -86,12 +86,12 @@ export default class StageFormNode extends Component{
 	}
 
 	fetchFieldsFromSource(){
-		let {topologyId, currentEdges, nodeData} = this.props;
+                let {topologyId, versionId, currentEdges, nodeData} = this.props;
 		let promiseArr = [], streamPromiseArr = [];
 		let fields = [];
 		currentEdges.map(edge=>{
 			if(edge.target.nodeId === nodeData.nodeId){
-				promiseArr.push(TopologyREST.getNode(topologyId, 'edges', edge.edgeId));
+                                promiseArr.push(TopologyREST.getNode(topologyId, versionId, 'edges', edge.edgeId));
 			}
 		})
 		Promise.all(promiseArr)
@@ -108,7 +108,7 @@ export default class StageFormNode extends Component{
 					}
 				})
 				streamIds.map(id=>{
-					streamPromiseArr.push(TopologyREST.getNode(topologyId, 'streams', id))
+                                        streamPromiseArr.push(TopologyREST.getNode(topologyId, versionId, 'streams', id))
 				})
 				Promise.all(streamPromiseArr)
 					.then(streamResults=>{
@@ -190,10 +190,10 @@ export default class StageFormNode extends Component{
 	}
 
 	handleSave(name){
-		let {topologyId, nodeType} = this.props;
+                let {topologyId, versionId, nodeType} = this.props;
 		let {parallelism, transformFields, transform, entryExpirationInterval, entryRefreshInterval, maxCacheSize} = this.state;
 		let nodeId = this.nodeData.id;
-		return TopologyREST.getNode(topologyId, nodeType, nodeId)
+                return TopologyREST.getNode(topologyId, versionId, nodeType, nodeId)
 			.then(data=>{
 				let stageConfigData = data.entity.config.properties["stage-config"];
 				if(!stageConfigData){
@@ -228,7 +228,7 @@ export default class StageFormNode extends Component{
 				data.entity.config.properties.parallelism = parallelism;
 				data.entity.name = name;
 
-				return TopologyREST.updateNode(topologyId, nodeType, nodeId, {body: JSON.stringify(data.entity)});
+                                return TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(data.entity)});
 			})
 	}
 
@@ -334,15 +334,7 @@ export default class StageFormNode extends Component{
 						</form>
 					</Tab>
 					<Tab eventKey={2} title="Output Streams">
-						<OutputSchema
-							topologyId={topologyId}
-							editMode={editMode}
-							nodeId={nodeData.nodeId}
-							nodeType={nodeType}
-							targetNodes={targetNodes}
-							linkShuffleOptions={linkShuffleOptions}
-							maxStreamSize={1}
-						/>
+
 					</Tab>
 				</Tabs>
 			</div>

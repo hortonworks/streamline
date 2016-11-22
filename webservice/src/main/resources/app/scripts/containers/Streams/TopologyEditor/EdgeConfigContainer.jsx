@@ -31,6 +31,7 @@ export default class EdgeConfigContainer extends Component {
         let {data} = props;
         let streamsArr = [];
         this.topologyId = data.topologyId;
+        this.versionId = data.versionId;
         this.target = data.target;
 
         let obj = {
@@ -45,8 +46,8 @@ export default class EdgeConfigContainer extends Component {
             rulesArr: [],
             showRules: false,
             showError: false,
-                        sourceNode: {},
-                        isEdit: data.edge.edgeId ? true : false
+            sourceNode: {},
+            isEdit: data.edge.edgeId ? true : false
         }
         this.state = obj;
         this.setData();
@@ -55,61 +56,61 @@ export default class EdgeConfigContainer extends Component {
     setData() {
         let rules = [],
 		rulesArr = [],
-            rulesPromiseArr = [],
-            showRules = false,
-            nodeType = this.props.data.edge.source.currentType.toLowerCase();
+        rulesPromiseArr = [],
+        showRules = false,
+        nodeType = this.props.data.edge.source.currentType.toLowerCase();
 
-                TopologyREST.getNode(this.topologyId, TopologyUtils.getNodeType(this.props.data.edge.source.parentType), this.props.data.edge.source.nodeId)
-                        .then((result)=>{
-                                let node = result.entity;
-                                let streamsArr = [];
-                                let fields = this.state.isEdit ? {} : node.outputStreams[0].fields;
-                                let streamId = this.state.isEdit ? this.state.streamId : node.outputStreams[0].streamId;
-                                let groupingFieldsArr = [];
-                                node.outputStreams.map((s)=>{
-                                        streamsArr.push({
-                                                label: s.streamId,
-                                                value: s.streamId,
-                                                id: s.id,
-                                                fields: s.fields
-                                        });
-                                        if(this.props.data.streamName === s.streamId)
-                                                fields = s.fields;
-                                });
-                                fields.map((f)=>{
-                                    groupingFieldsArr.push({value: f.name, label: f.name});
-                                });
-                                this.setState({
-                                    sourceNode: result.entity,
-                                    streamsArr: streamsArr,
-                                    streamId: streamId,
-                                    streamFields: JSON.stringify(fields, null, "  "),
-                                    groupingFieldsArr: groupingFieldsArr
-                                });
-                                if(nodeType === 'rule') {
-                                        node.config.properties.rules.map((id)=>{
-                                        rulesPromiseArr.push(TopologyREST.getNode(this.topologyId, 'rules', id));
-                                        });
-                                        Promise.all(rulesPromiseArr)
-                                                .then((results)=>{
-                                                        results.map((result)=>{
-                                                                let data = result.entity;
-                                                                rulesArr.push({
-                                                                label: data.name,
-                                                                value: data.name,
-                                                                id: data.id
-                                                                });
-                                                                data.actions.map((actionObj)=>{
-                                                                        if(actionObj.name === this.props.data.edge.target.uiname) {
-                                                                                rules.push(data.name);
-                                                                        }
-                                                                });
-                                                        });
-                                                showRules =  true;
-                                                this.setState({showRules: showRules, rulesArr: rulesArr, rules: rules});
+        TopologyREST.getNode(this.topologyId, this.versionId, TopologyUtils.getNodeType(this.props.data.edge.source.parentType), this.props.data.edge.source.nodeId)
+            .then((result)=>{
+                let node = result.entity;
+                let streamsArr = [];
+                let fields = this.state.isEdit ? {} : node.outputStreams[0].fields;
+                let streamId = this.state.isEdit ? this.state.streamId : node.outputStreams[0].streamId;
+                let groupingFieldsArr = [];
+                node.outputStreams.map((s)=>{
+                    streamsArr.push({
+                        label: s.streamId,
+                        value: s.streamId,
+                        id: s.id,
+                        fields: s.fields
+                    });
+                    if(this.props.data.streamName === s.streamId)
+                        fields = s.fields;
+                });
+                fields.map((f)=>{
+                    groupingFieldsArr.push({value: f.name, label: f.name});
+                });
+                this.setState({
+                    sourceNode: result.entity,
+                    streamsArr: streamsArr,
+                    streamId: streamId,
+                    streamFields: JSON.stringify(fields, null, "  "),
+                    groupingFieldsArr: groupingFieldsArr
+                });
+                if(nodeType === 'rule') {
+                    node.config.properties.rules.map((id)=>{
+                    rulesPromiseArr.push(TopologyREST.getNode(this.topologyId, this.versionId, 'rules', id));
+                });
+                Promise.all(rulesPromiseArr)
+                .then((results)=>{
+                    results.map((result)=>{
+                        let data = result.entity;
+                        rulesArr.push({
+                        label: data.name,
+                        value: data.name,
+                        id: data.id
+                        });
+                        data.actions.map((actionObj)=>{
+                            if(actionObj.name === this.props.data.edge.target.uiname) {
+                                rules.push(data.name);
+                            }
+                        });
+                    });
+                    showRules =  true;
+                    this.setState({showRules: showRules, rulesArr: rulesArr, rules: rules});
                 })
-		}
-    });
+            }
+        });
     }
 
     handleStreamChange(obj){
@@ -164,15 +165,15 @@ export default class EdgeConfigContainer extends Component {
 
     handleSave(){
         let {streamId, streamsArr, rules, sourceNode, grouping, groupingFields} = this.state;
-        let {topologyId} = this.props.data;
+        let {topologyId, versionId} = this.props.data;
         let streamObj = _.find(streamsArr, {value: streamId});
         let nodeType = this.props.data.edge.source.currentType.toLowerCase();
         let edgeData = {
             fromId: this.props.data.edge.source.nodeId,
             toId: this.props.data.edge.target.nodeId,
             streamGroupings: [{
-                    streamId: streamObj.id,
-                    grouping: grouping
+                streamId: streamObj.id,
+                grouping: grouping
             }]
         };
         if(grouping === "FIELDS")
@@ -181,9 +182,9 @@ export default class EdgeConfigContainer extends Component {
             if(sourceNode.config.properties.rules && sourceNode.config.properties.rules.length > 0){
                 let rulesPromiseArr = [];
                 let saveRulesPromiseArr = [];
-                                let type = nodeType === 'window' ? 'windows' : 'rules';
-                                        sourceNode.config.properties.rules.map((id)=>{
-                    rulesPromiseArr.push(TopologyREST.getNode(topologyId, type, id));
+                let type = nodeType === 'window' ? 'windows' : 'rules';
+                sourceNode.config.properties.rules.map((id)=>{
+                    rulesPromiseArr.push(TopologyREST.getNode(topologyId, versionId, type, id));
                 })
                 Promise.all(rulesPromiseArr)
                     .then((results)=>{
@@ -195,58 +196,56 @@ export default class EdgeConfigContainer extends Component {
                                     outputStreams: [streamObj.value]
                                 };
                                 if(this.props.data.edge.target.currentType.toLowerCase() === 'notification'){
-                                                                        actionObj.outputFieldsAndDefaults = sourceNode.config.properties.fieldValues || {};
-                                                                        actionObj.notifierName = sourceNode.config.properties.notifierName || '';
+                                    actionObj.outputFieldsAndDefaults = sourceNode.config.properties.fieldValues || {};
+                                    actionObj.notifierName = sourceNode.config.properties.notifierName || '';
                                     actionObj.__type = "org.apache.streamline.streams.layout.component.rule.action.NotifierAction";
                                 } else {
                                     actionObj.__type = "org.apache.streamline.streams.layout.component.rule.action.TransformAction";
                                     actionObj.transforms = [];
                                 }
-                                                                let obj = _.find(data.actions, {name: actionObj.name});
-                                                                if(rules.indexOf(data.name) > -1 && !obj) {
-                                                                        data.actions.push(actionObj);
-                                                                } else if(rules.indexOf(data.name) === -1 && obj) {
-                                                                        data.actions = [];
-                                                                }
-                                                                saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, type, data.id, {body: JSON.stringify(data)}));
+                                    let obj = _.find(data.actions, {name: actionObj.name});
+                                    if(rules.indexOf(data.name) > -1 && !obj) {
+                                        data.actions.push(actionObj);
+                                    } else if(rules.indexOf(data.name) === -1 && obj) {
+                                        data.actions = [];
+                                    }
+                                    saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, type, data.id, {body: JSON.stringify(data)}));
                             } else if(type === 'windows') {
                                 let actionObj = {
                                     name: this.props.data.edge.target.uiname,
                                     outputStreams: [streamObj.value]
                                 };
                                 if(this.props.data.edge.target.currentType.toLowerCase() === 'notification'){
-                                                                        actionObj.outputFieldsAndDefaults = sourceNode.config.properties.fieldValues || {};
-                                                                        actionObj.notifierName = sourceNode.config.properties.notifierName || '';
+                                    actionObj.outputFieldsAndDefaults = sourceNode.config.properties.fieldValues || {};
+                                    actionObj.notifierName = sourceNode.config.properties.notifierName || '';
                                     actionObj.__type = "org.apache.streamline.streams.layout.component.rule.action.NotifierAction";
                                 } else {
                                     actionObj.__type = "org.apache.streamline.streams.layout.component.rule.action.TransformAction";
                                     actionObj.transforms = [];
                                 }
                                 data.actions.push(actionObj);
-                                saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, type, data.id, {body: JSON.stringify(data)}))
+                                saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, type, data.id, {body: JSON.stringify(data)}))
                             }
                         })
                         Promise.all(saveRulesPromiseArr).then((savedResults)=>{});
                     })
             }
         }
-
-                if(this.state.isEdit) {
-                        TopologyREST.updateNode(topologyId, 'edges', this.props.data.edge.edgeId, {body: JSON.stringify(edgeData)}).then((edge)=>{
-              let edgeObj = _.find(this.props.data.edges, {edgeId: this.props.data.edge.edgeId});
+        if(this.state.isEdit) {
+            TopologyREST.updateNode(topologyId, versionId, 'edges', this.props.data.edge.edgeId, {body: JSON.stringify(edgeData)}).then((edge)=>{
+            let edgeObj = _.find(this.props.data.edges, {edgeId: this.props.data.edge.edgeId});
               edgeObj.streamGrouping = edge.entity.streamGroupings[0];
             });
-
-                } else {
-                        TopologyREST.createNode(topologyId, 'edges', {body: JSON.stringify(edgeData)}).then((edge)=>{
+        } else {
+            TopologyREST.createNode(topologyId, versionId, 'edges', {body: JSON.stringify(edgeData)}).then((edge)=>{
                 this.props.data.edge.edgeId = edge.entity.id;
                 this.props.data.edge.streamGrouping = edge.entity.streamGroupings[0];
                 this.props.data.edges.push(this.props.data.edge);
                 //call the callback to update the graph
                 this.props.data.callback();
             });
-	}
-        }
+       }
+    }
 
     render(){
         let {showRules, rules, rulesArr, streamId, streamsArr, grouping, groupingsArr, groupingFields, groupingFieldsArr} = this.state;

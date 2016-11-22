@@ -84,12 +84,12 @@ const isValidConnection = function(sourceNode, targetNode){
         return validConnection;
 }
 
-const createNode = function(topologyId, data, callback, metaInfo, paths, edges, internalFlags, uinamesList){
+const createNode = function(topologyId, versionId, data, callback, metaInfo, paths, edges, internalFlags, uinamesList){
 	let promiseArr = [];
 
 	data.map((o)=>{
 		let nodeType = this.getNodeType(o.parentType);
-                let customName = o.uiname;
+        let customName = o.uiname;
 
 		//Dynamic Names of nodes
 		while(uinamesList.indexOf(o.uiname) !== -1){
@@ -119,12 +119,12 @@ const createNode = function(topologyId, data, callback, metaInfo, paths, edges, 
 		let obj = {
 			name: o.uiname,
 			config: {},
-                        topologyComponentBundleId:o.topologyComponentBundleId
+                topologyComponentBundleId:o.topologyComponentBundleId
 		}
-                if(o.parentType === 'PROCESSOR'){
+        if(o.parentType === 'PROCESSOR'){
 			obj["outputStreamIds"] = [];
 		}
-		promiseArr.push(TopologyREST.createNode(topologyId, nodeType, {body: JSON.stringify(obj)}));
+                promiseArr.push(TopologyREST.createNode(topologyId, versionId, nodeType, {body: JSON.stringify(obj)}));
 	});
 
 	//Make calls to create node or nodes
@@ -133,23 +133,23 @@ const createNode = function(topologyId, data, callback, metaInfo, paths, edges, 
 
 			results.map((o,i)=>{
 				if(o.responseCode !== 1000){
-          FSReactToastr.error(
-              <CommonNotification flag="error" content={o.responseMessage}/>, '', toastOpt)
+				FSReactToastr.error(
+				<CommonNotification flag="error" content={o.responseMessage}/>, '', toastOpt)
 				} else {
 					data[i].nodeId = o.entity.id;
 				}
 				if(i > 0){
 					//Creating edge link
-					this.createEdge(data[i-1], data[i], paths, edges, internalFlags, callback, topologyId);
+                    this.createEdge(data[i-1], data[i], paths, edges, internalFlags, callback, topologyId, versionId);
 				}
 			});
 
-			this.saveMetaInfo(topologyId, data, metaInfo, callback);
+            this.saveMetaInfo(topologyId, versionId, data, metaInfo, callback);
 		})
 
 }
 
-const saveMetaInfo = function(topologyId, nodes, metaInfo, callback){
+const saveMetaInfo = function(topologyId, versionId, nodes, metaInfo, callback){
     if(nodes){
         nodes.map((o)=>{
             let obj = {
@@ -166,7 +166,7 @@ const saveMetaInfo = function(topologyId, nodes, metaInfo, callback){
 		data: JSON.stringify(metaInfo)
 	};
 
-	TopologyREST.putMetaInfo(topologyId, {body: JSON.stringify(data)})
+        TopologyREST.putMetaInfo(topologyId, versionId, {body: JSON.stringify(data)})
 		.then(()=>{
             if(callback) {
                 //call the callback to update the graph
@@ -175,7 +175,7 @@ const saveMetaInfo = function(topologyId, nodes, metaInfo, callback){
 		})
 }
 
-const updateMetaInfo = function(topologyId, node, metaInfo){
+const updateMetaInfo = function(topologyId, versionId, node, metaInfo){
 	let metaArr = metaInfo[this.getNodeType(node.parentType)];
 	let oldMetaObj = metaArr.filter((o)=>{return o.id === node.nodeId});
 	if(oldMetaObj.length !== 0){
@@ -187,9 +187,15 @@ const updateMetaInfo = function(topologyId, node, metaInfo){
 		} else {
 			delete oldMetaObj.streamId;
 		}
-		let data = { topologyId: topologyId, data: JSON.stringify(metaInfo) };
-		TopologyREST.putMetaInfo(topologyId, {body: JSON.stringify(data)});
+        } else {
+                metaArr.push({
+                        x: node.x,
+                        y: node.y,
+                        id: node.nodeId
+                });
 	}
+        let data = { topologyId: topologyId, data: JSON.stringify(metaInfo) };
+    TopologyREST.putMetaInfo(topologyId, versionId, {body: JSON.stringify(data)});
 }
 
 const removeNodeFromMeta = function(metaInfo, currentNode){
@@ -209,7 +215,7 @@ const removeNodeFromMeta = function(metaInfo, currentNode){
 	return metaInfo;
 }
 
-const createEdge = function(mouseDownNode, d, paths, edges, internalFlags, callback, topologyId, getEdgeConfigModal){
+const createEdge = function(mouseDownNode, d, paths, edges, internalFlags, callback, topologyId, versionId, getEdgeConfigModal){
 	if(this.isValidConnection(mouseDownNode, d)){
 		let newEdge = {
 			source: mouseDownNode,
@@ -222,18 +228,18 @@ const createEdge = function(mouseDownNode, d, paths, edges, internalFlags, callb
 			return d.source === newEdge.source && d.target === newEdge.target;
 		});
 		if (!filtRes[0].length) {
-                TopologyREST.getNode(topologyId, this.getNodeType(newEdge.source.parentType), newEdge.source.nodeId)
-                    .then((result)=>{
-                        let nodeData = result.entity;
-                        if(newEdge.source.currentType.toLowerCase() === 'window' || newEdge.source.currentType.toLowerCase() === 'rule'){
-                                nodeData.type = newEdge.source.currentType.toUpperCase();
-                        }
-                        if(getEdgeConfigModal){
-                                getEdgeConfigModal(topologyId, newEdge, edges, callback, nodeData);
-                        } else {
-                                console.error("Cannot find getEdgeConfigModal: from createEdge:TopologyUtils");
-                        }
-                        })
+            TopologyREST.getNode(topologyId, versionId, this.getNodeType(newEdge.source.parentType), newEdge.source.nodeId)
+                .then((result)=>{
+                    let nodeData = result.entity;
+                    if(newEdge.source.currentType.toLowerCase() === 'window' || newEdge.source.currentType.toLowerCase() === 'rule'){
+                            nodeData.type = newEdge.source.currentType.toUpperCase();
+                    }
+                    if(getEdgeConfigModal){
+                            getEdgeConfigModal(topologyId, versionId, newEdge, edges, callback, nodeData);
+                    } else {
+                            console.error("Cannot find getEdgeConfigModal: from createEdge:TopologyUtils");
+                    }
+                })
 		}
 	} else {
     FSReactToastr.error(
@@ -255,7 +261,7 @@ const getNodeType = function(parentType){
 	}
 }
 
-const deleteNode = function(topologyId, currentNode, nodes, edges, internalFlags, updateGraphMethod, metaInfo, uinamesList){
+const deleteNode = function(topologyId, versionId, currentNode, nodes, edges, internalFlags, updateGraphMethod, metaInfo, uinamesList){
 	let promiseArr = [],
 		nodePromiseArr = [],
 		callback = null,
@@ -275,7 +281,7 @@ const deleteNode = function(topologyId, currentNode, nodes, edges, internalFlags
 		}
 
 		//Get data of current node
-		nodePromiseArr.push(TopologyREST.getNode(topologyId, this.getNodeType(currentNode.parentType), currentNode.nodeId))
+                nodePromiseArr.push(TopologyREST.getNode(topologyId, versionId, this.getNodeType(currentNode.parentType), currentNode.nodeId))
 
 		//Get data of connected nodes
 		//Incase of source => get Parser
@@ -283,11 +289,11 @@ const deleteNode = function(topologyId, currentNode, nodes, edges, internalFlags
                 if(currentType.toLowerCase() === 'split'){
 			let connectingEdges = edges.filter((obj)=>{ return obj.source == currentNode; });
 			connectingEdges.map((o, i)=>{
-				nodePromiseArr.push(TopologyREST.getNode(topologyId, this.getNodeType(o.target.parentType), o.target.nodeId))
+                                nodePromiseArr.push(TopologyREST.getNode(topologyId, versionId, this.getNodeType(o.target.parentType), o.target.nodeId))
                                 if(i === 0 && currentType.toLowerCase() === 'split'){
 					//All stages connects to only one Join
 					let stageJoinNodes = edges.filter((obj)=>{ return obj.source == o.target; });
-					nodePromiseArr.push(TopologyREST.getNode(topologyId, this.getNodeType(stageJoinNodes[0].target.parentType), stageJoinNodes[0].target.nodeId))
+                                        nodePromiseArr.push(TopologyREST.getNode(topologyId, versionId, this.getNodeType(stageJoinNodes[0].target.parentType), stageJoinNodes[0].target.nodeId))
 				}
 			})
 		}
@@ -299,7 +305,7 @@ const deleteNode = function(topologyId, currentNode, nodes, edges, internalFlags
                 connectingNodes.map((o,i)=>{
                     if(o.source.currentType.toLowerCase() === 'rule' || o.source.currentType.toLowerCase() === 'window'){
                         let type = o.source.currentType.toLowerCase() === 'rule' ? 'rules' : 'windows';
-                        TopologyREST.getAllNodes(topologyId, type).then((results)=>{
+                        TopologyREST.getAllNodes(topologyId, versionId, type).then((results)=>{
                             results.entities.map((nodeObj)=>{
                                 let actionsArr = nodeObj.actions,
                                     actions = [],
@@ -313,7 +319,7 @@ const deleteNode = function(topologyId, currentNode, nodes, edges, internalFlags
                                 });
                                 if(hasAction) {
                                     nodeObj.actions = actions;
-                                    actionsPromiseArr.push(TopologyREST.updateNode(topologyId, type, nodeObj.id, {body: JSON.stringify(nodeObj)}));
+                                    actionsPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, type, nodeObj.id, {body: JSON.stringify(nodeObj)}));
                                 }
                             });
                         });
@@ -408,7 +414,7 @@ const deleteNode = function(topologyId, currentNode, nodes, edges, internalFlags
 					topologyId: topologyId,
 					data: JSON.stringify(metaInfo)
 				};
-				promiseArr.push(TopologyREST.putMetaInfo(topologyId, {body: JSON.stringify(metaData)}));
+                                promiseArr.push(TopologyREST.putMetaInfo(topologyId, versionId, {body: JSON.stringify(metaData)}));
 
                                 //Delete current node
 				promiseArr.push(TopologyREST.deleteNode(topologyId, this.getNodeType(currentNode.parentType), currentNode.nodeId));
@@ -453,10 +459,10 @@ const getEdges = function(allEdges, currentNode){
 	});
 }
 
-const deleteEdge = function(selectedEdge, topologyId, internalFlags, edges, updateGraphMethod){
+const deleteEdge = function(selectedEdge, topologyId, versionId, internalFlags, edges, updateGraphMethod){
     let promiseArr = [TopologyREST.deleteNode(topologyId, 'edges', selectedEdge.edgeId)];
     if(selectedEdge.source.currentType.toLowerCase() === 'rule' || selectedEdge.source.currentType.toLowerCase() === 'window'){
-            promiseArr.push(TopologyREST.getNode(topologyId, 'processors', selectedEdge.source.nodeId));
+        promiseArr.push(TopologyREST.getNode(topologyId, versionId, 'processors', selectedEdge.source.nodeId));
     }
     Promise.all(promiseArr)
         .then((results)=>{
@@ -467,7 +473,7 @@ const deleteEdge = function(selectedEdge, topologyId, internalFlags, edges, upda
                 let type = selectedEdge.source.currentType.toLowerCase() === 'window' ? 'windows' : 'rules';
                 if(ruleProcessorNode.config.properties.rules){
                         ruleProcessorNode.config.properties.rules.map(ruleId=>{
-                                rulePromises.push(TopologyREST.getNode(topologyId, type, ruleId));
+                                rulePromises.push(TopologyREST.getNode(topologyId, versionId, type, ruleId));
                         })
                 }
                 Promise.all(rulePromises)
@@ -475,21 +481,21 @@ const deleteEdge = function(selectedEdge, topologyId, internalFlags, edges, upda
                         rulesResults.map(ruleEntity=>{
                             let rule = ruleEntity.entity;
                             if(rule.actions){
-                                    //If source rule has target notification inside rule action,
-                                    //then remove and update the rules/window.
-                                    let index = null;
-                                    rule.actions.map((a, i)=>{
-                                        if(a.name === selectedEdge.target.uiname){
-                                            index = i;
+                                //If source rule has target notification inside rule action,
+                                //then remove and update the rules/window.
+                                let index = null;
+                                rule.actions.map((a, i)=>{
+                                    if(a.name === selectedEdge.target.uiname){
+                                        index = i;
 									}
-							})
-                                        if(index !== null){
-                                            rule.actions.splice(index, 1);
-                                            TopologyREST.updateNode(topologyId, type, rule.id, {body: JSON.stringify(rule)});
-                                                                }
-                                    }
+                                                                })
+                                if(index !== null){
+                                    rule.actions.splice(index, 1);
+                                    TopologyREST.updateNode(topologyId, versionId, type, rule.id, {body: JSON.stringify(rule)});
+                                }
+                            }
 						})
-			})
+                                        })
                 }
             edges.splice(edges.indexOf(selectedEdge), 1);
             internalFlags.selectedEdge = null;
@@ -570,10 +576,10 @@ const defineLinePath = function(p1, p2, flag){
 const showNodeModal = function(ModalScope, setModalContent, node, updateGraphMethod, allNodes, edges, linkShuffleOptions){
 	let currentEdges = this.getEdges(edges, node);
 	let scope = ModalScope(node);
-	setModalContent(node, updateGraphMethod, this.getConfigContainer(node, scope.configData, scope.editMode, scope.topologyId, currentEdges, allNodes, linkShuffleOptions));
+        setModalContent(node, updateGraphMethod, this.getConfigContainer(node, scope.configData, scope.editMode, scope.topologyId, scope.versionId, currentEdges, allNodes, linkShuffleOptions));
 }
 
-const getConfigContainer = function(node, configData, editMode, topologyId, currentEdges, allNodes, linkShuffleOptions){
+const getConfigContainer = function(node, configData, editMode, topologyId, versionId, currentEdges, allNodes, linkShuffleOptions){
 	let nodeType = this.getNodeType(node.parentType);
 	let sourceNodes = [], targetNodes = [];
         currentEdges.map((e)=>{
@@ -588,26 +594,28 @@ const getConfigContainer = function(node, configData, editMode, topologyId, curr
     if(node.parentType === 'SOURCE'){
         return () => {
             return <SourceNodeForm
-                                ref="ConfigModal"
-                                nodeData={node}
-                                configData={configData}
-                                editMode={editMode}
-                                nodeType={nodeType}
-                                topologyId={topologyId}
-                                targetNodes={targetNodes}
-                                linkShuffleOptions={linkShuffleOptions}
-                        />;
+                ref="ConfigModal"
+                nodeData={node}
+                configData={configData}
+                editMode={editMode}
+                nodeType={nodeType}
+                topologyId={topologyId}
+                versionId={versionId}
+                targetNodes={targetNodes}
+                linkShuffleOptions={linkShuffleOptions}
+                />;
 		}
     } else if(node.parentType === 'SINK'){
         return () => {
             return <SinkNodeForm
-                                ref="ConfigModal"
-                                nodeData={node}
-                                configData={configData}
-                                editMode={editMode}
-                                nodeType={nodeType}
-                                topologyId={topologyId}
-                                sourceNodes={sourceNodes}
+                ref="ConfigModal"
+                nodeData={node}
+                configData={configData}
+                editMode={editMode}
+                nodeType={nodeType}
+                topologyId={topologyId}
+                versionId={versionId}
+                sourceNodes={sourceNodes}
             />;
         }
     } else if(node.parentType === 'PROCESSOR'){
@@ -621,6 +629,7 @@ const getConfigContainer = function(node, configData, editMode, topologyId, curr
                     editMode={editMode}
                     nodeType={nodeType}
                     topologyId={topologyId}
+                    versionId={versionId}
                     sourceNode={sourceNodes}
                     targetNodes={targetNodes}
                     linkShuffleOptions={linkShuffleOptions}
@@ -634,6 +643,7 @@ const getConfigContainer = function(node, configData, editMode, topologyId, curr
                     editMode={editMode}
                     nodeType={nodeType}
                     topologyId={topologyId}
+                    versionId={versionId}
                     sourceNode={sourceNodes[0]}
                     targetNodes={targetNodes}
                     linkShuffleOptions={linkShuffleOptions}
@@ -647,6 +657,7 @@ const getConfigContainer = function(node, configData, editMode, topologyId, curr
                     editMode={editMode}
                     nodeType={nodeType}
                     topologyId={topologyId}
+                    versionId={versionId}
                     targetNodes={targetNodes}
                     linkShuffleOptions={linkShuffleOptions}
                     currentEdges={currentEdges}
@@ -660,6 +671,7 @@ const getConfigContainer = function(node, configData, editMode, topologyId, curr
                     editMode={editMode}
                     nodeType={nodeType}
                     topologyId={topologyId}
+                    versionId={versionId}
                     sourceNode={sourceNodes[0]}
                     targetNodes={targetNodes}
                     linkShuffleOptions={linkShuffleOptions}
@@ -673,6 +685,7 @@ const getConfigContainer = function(node, configData, editMode, topologyId, curr
                     editMode={editMode}
                     nodeType={nodeType}
                     topologyId={topologyId}
+                    versionId={versionId}
                     targetNodes={targetNodes}
                     linkShuffleOptions={linkShuffleOptions}
                     currentEdges={currentEdges}
@@ -686,6 +699,7 @@ const getConfigContainer = function(node, configData, editMode, topologyId, curr
                     editMode={editMode}
                     nodeType={nodeType}
                     topologyId={topologyId}
+                    versionId={versionId}
                     sourceNode={sourceNodes[0]}
                     targetNodes={targetNodes}
                     linkShuffleOptions={linkShuffleOptions}
@@ -699,6 +713,7 @@ const getConfigContainer = function(node, configData, editMode, topologyId, curr
                     editMode={editMode}
                     nodeType={nodeType}
                     topologyId={topologyId}
+                    versionId={versionId}
                     sourceNode={sourceNodes[0]}
                     targetNodes={targetNodes}
                     linkShuffleOptions={linkShuffleOptions}
@@ -713,6 +728,7 @@ const getConfigContainer = function(node, configData, editMode, topologyId, curr
                 editMode={editMode}
                 nodeType={nodeType}
                 topologyId={topologyId}
+                versionId={versionId}
                 sourceNodes={sourceNodes}
                 getChildElement={childElement}
             />;
@@ -720,18 +736,18 @@ const getConfigContainer = function(node, configData, editMode, topologyId, curr
     }
 }
 
-const MouseUpAction = function(topologyId, d3node, d, metaInfo, internalFlags, constants, dragLine, paths, allNodes, edges, linkShuffleOptions, updateGraphMethod, elementType, getModalScope, setModalContent, rectangles, getEdgeConfigModal){
+const MouseUpAction = function(topologyId, versionId, d3node, d, metaInfo, internalFlags, constants, dragLine, paths, allNodes, edges, linkShuffleOptions, updateGraphMethod, elementType, getModalScope, setModalContent, rectangles, getEdgeConfigModal){
 	// reset the internalFlags
 	internalFlags.shiftNodeDrag = false;
 	d3node.classed(constants.connectClass, false);
 
 	var mouseDownNode = internalFlags.mouseDownNode;
 
-        //cannot connect from unconfigured node
-        if(!internalFlags.addEdgeFromNode) {
-                internalFlags.addEdgeFromNode = true;
-                return;
-        }
+    //cannot connect from unconfigured node
+    if(!internalFlags.addEdgeFromNode) {
+        internalFlags.addEdgeFromNode = true;
+        return;
+    }
 
 	// if (!mouseDownNode) return;
 
@@ -739,8 +755,8 @@ const MouseUpAction = function(topologyId, d3node, d, metaInfo, internalFlags, c
 
 	if (mouseDownNode && mouseDownNode !== d) {
 		// we're in a different node: create new edge for mousedown edge and add to graph
-                this.createEdge(mouseDownNode, d, paths, edges, internalFlags, updateGraphMethod, topologyId, getEdgeConfigModal);
-		this.updateMetaInfo(topologyId, d, metaInfo);
+        this.createEdge(mouseDownNode, d, paths, edges, internalFlags, updateGraphMethod, topologyId, versionId, getEdgeConfigModal);
+                this.updateMetaInfo(topologyId, versionId, d, metaInfo);
 	} else {
 		if(elementType === 'rectangle'){
 			// we're in the same node
@@ -750,10 +766,10 @@ const MouseUpAction = function(topologyId, d3node, d, metaInfo, internalFlags, c
 			} else {
 				// clicked, not dragged
 				if(d3.event && d3.event.type === 'dblclick'){
-                                        let hasSource = edges.filter((e)=>{return e.target.nodeId === d.nodeId});
-                                        if(d.parentType === 'SOURCE' || hasSource.length) {
-                                                this.showNodeModal(getModalScope, setModalContent, d, updateGraphMethod, allNodes, edges, linkShuffleOptions);
-                                        }
+                    let hasSource = edges.filter((e)=>{return e.target.nodeId === d.nodeId});
+                    if(d.parentType === 'SOURCE' || hasSource.length) {
+                        this.showNodeModal(getModalScope, setModalContent, d, updateGraphMethod, allNodes, edges, linkShuffleOptions);
+                    }
 				} else {
 					// we're in the same node
 					if (internalFlags.selectedEdge) {
@@ -909,13 +925,13 @@ const getNodeImgRectClass = function(data){
 	}
 }
 
-const updateParallelismCount = function(topologyId, nodeData){
+const updateParallelismCount = function(topologyId, versionId, nodeData){
 	let currentType = this.getNodeType(nodeData.parentType);
-	TopologyREST.getNode(topologyId, currentType, nodeData.nodeId)
+        TopologyREST.getNode(topologyId, versionId, currentType, nodeData.nodeId)
 		.then((result)=>{
 			let data = result.entity;
 			data.config.properties.parallelism = nodeData.parallelismCount;
-			TopologyREST.updateNode(topologyId, currentType, nodeData.nodeId, {body: JSON.stringify(data)})
+                        TopologyREST.updateNode(topologyId, versionId, currentType, nodeData.nodeId, {body: JSON.stringify(data)})
 				.then((newNodeData)=>{console.log("Updated Parallelism Count For "+newNodeData.entity.name);})
 		})
 }
@@ -925,17 +941,17 @@ const topologyFilter = function(entities , filterValue){
     return entities.filter(filteredList => !filterValue || matchFilter.test(filteredList.topology.name))
 }
 
-const getEdgeData = function(data, topologyId, callback) {
-        TopologyREST.getNode(topologyId, 'streams', data.streamGrouping.streamId)
-                .then((result)=>{
-                        let obj = {
-                                streamName: result.entity.streamId,
-                                grouping: data.streamGrouping.grouping,
-                                groupingFields: data.streamGrouping.fields,
-                                edgeData: data
-                        }
-                        callback(obj);
-                })
+const getEdgeData = function(data, topologyId, versionId, callback) {
+    TopologyREST.getNode(topologyId, versionId, 'streams', data.streamGrouping.streamId)
+        .then((result)=>{
+            let obj = {
+                streamName: result.entity.streamId,
+                grouping: data.streamGrouping.grouping,
+                groupingFields: data.streamGrouping.fields,
+                edgeData: data
+            }
+            callback(obj);
+        })
 }
 
 export default {

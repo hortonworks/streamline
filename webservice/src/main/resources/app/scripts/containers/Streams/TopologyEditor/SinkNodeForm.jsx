@@ -16,6 +16,7 @@ export default class SinkNodeForm extends Component {
         editMode: PropTypes.bool.isRequired,
         nodeType: PropTypes.string.isRequired,
         topologyId: PropTypes.string.isRequired,
+        versionId: PropTypes.number.isRequired,
         sourceNodes: PropTypes.array.isRequired
     };
 
@@ -35,15 +36,15 @@ export default class SinkNodeForm extends Component {
     }
 
     fetchData(){
-        let {topologyId, nodeType, nodeData, sourceNodes} = this.props;
+        let {topologyId, versionId, nodeType, nodeData, sourceNodes} = this.props;
         let sourceNodeType = null;
         let promiseArr = [
-            TopologyREST.getNode(topologyId, nodeType, nodeData.nodeId),
-            TopologyREST.getAllNodes(topologyId, 'edges'),
+            TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId),
+            TopologyREST.getAllNodes(topologyId, versionId, 'edges'),
         ];
         if(sourceNodes.length > 0){
             sourceNodeType = TopologyUtils.getNodeType(sourceNodes[0].parentType);
-            promiseArr.push(TopologyREST.getNode(topologyId, sourceNodeType, sourceNodes[0].nodeId));
+            promiseArr.push(TopologyREST.getNode(topologyId, versionId, sourceNodeType, sourceNodes[0].nodeId));
         }
         Promise.all(promiseArr)
             .then(results=>{
@@ -52,7 +53,7 @@ export default class SinkNodeForm extends Component {
                     results[1].entities.map((edge)=>{
                         if(edge.toId === nodeData.nodeId && this.sourceNodesId.indexOf(edge.fromId) !== -1){
                             //TODO - Once we support multiple input streams, need to fix this.
-                            TopologyREST.getNode(topologyId, 'streams', edge.streamGroupings[0].streamId)
+                            TopologyREST.getNode(topologyId, versionId, 'streams', edge.streamGroupings[0].streamId)
                                 .then(streamResult=>{
                                     this.setState({streamObj: streamResult.entity});
                                 })
@@ -68,7 +69,7 @@ export default class SinkNodeForm extends Component {
                     this.sourceChildNodeType = sourceNodes[0].currentType.toLowerCase() === 'window' ? 'windows' : 'rules';
                     if(this.sourceNodeData.config.properties && this.sourceNodeData.config.properties.rules && this.sourceNodeData.config.properties.rules.length > 0){
                         this.sourceNodeData.config.properties.rules.map((id)=>{
-                            sourcePromiseArr.push(TopologyREST.getNode(topologyId, this.sourceChildNodeType, id));
+                            sourcePromiseArr.push(TopologyREST.getNode(topologyId, versionId, this.sourceChildNodeType, id));
                         })
                     }
                     Promise.all(sourcePromiseArr)
@@ -89,13 +90,13 @@ export default class SinkNodeForm extends Component {
     }
 
     handleSave(name){
-        let {topologyId, nodeType, nodeData} = this.props;
+        let {topologyId, versionId, nodeType, nodeData} = this.props;
         let nodeId = this.nodeData.id;
         let data = this.refs.Form.state.FormData;
         this.nodeData.config.properties = data;
         let oldName = this.nodeData.name;
         this.nodeData.name = name;
-        let promiseArr = [TopologyREST.updateNode(topologyId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)})];
+        let promiseArr = [TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)})];
         if(this.allSourceChildNodeData && this.allSourceChildNodeData.length > 0){
             this.allSourceChildNodeData.map((childData)=>{
                 let child = childData.entity;
@@ -106,7 +107,7 @@ export default class SinkNodeForm extends Component {
                         obj.outputFieldsAndDefaults = this.nodeData.config.properties.fieldValues || {};
                         obj.notifierName = this.nodeData.config.properties.notifierName || '';
                     }
-                    promiseArr.push(TopologyREST.updateNode(topologyId, this.sourceChildNodeType, child.id, {body: JSON.stringify(child)}));
+                    promiseArr.push(TopologyREST.updateNode(topologyId, versionId, this.sourceChildNodeType, child.id, {body: JSON.stringify(child)}));
                 } else {
                     console.error("Missing actions object for "+name);
                 }

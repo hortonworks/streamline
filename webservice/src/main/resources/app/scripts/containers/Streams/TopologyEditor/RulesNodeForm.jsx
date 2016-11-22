@@ -7,7 +7,6 @@ import { Table, Thead, Th, Tr, Td, unsafe } from 'reactable';
 import Modal, {Confirm} from '../../../components/FSModal';
 import FSReactToastr from '../../../components/FSReactToastr';
 import TopologyREST from '../../../rest/TopologyREST';
-import OutputSchema from '../../../components/OutputSchemaComponent';
 import {BtnDelete, BtnEdit} from '../../../components/ActionButtons';
 import RulesForm from './RulesForm';
 import {pageSize} from '../../../utils/Constants';
@@ -18,6 +17,7 @@ export default class RulesNodeForm extends Component {
 		editMode: PropTypes.bool.isRequired,
 		nodeType: PropTypes.string.isRequired,
 		topologyId: PropTypes.string.isRequired,
+                versionId: PropTypes.number.isRequired,
 		sourceNode: PropTypes.array.isRequired,
 		targetNodes: PropTypes.array.isRequired,
 		linkShuffleOptions: PropTypes.array.isRequired
@@ -37,11 +37,11 @@ export default class RulesNodeForm extends Component {
 	}
 
 	fetchData() {
-		let {topologyId, nodeType, nodeData} = this.props;
+                let {topologyId, versionId, nodeType, nodeData} = this.props;
 		let promiseArr = [
-			TopologyREST.getNode(topologyId, nodeType, nodeData.nodeId),
-			TopologyREST.getAllNodes(topologyId, 'edges'),
-			TopologyREST.getAllNodes(topologyId, 'streams')
+                        TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId),
+                        TopologyREST.getAllNodes(topologyId, versionId, 'edges'),
+                        TopologyREST.getAllNodes(topologyId, versionId, 'streams')
 		];
 
 		Promise.all(promiseArr)
@@ -52,7 +52,7 @@ export default class RulesNodeForm extends Component {
 
 				let promise = [];
 				rules.map(id=>{
-					promise.push(TopologyREST.getNode(topologyId, 'rules', id));
+                                        promise.push(TopologyREST.getNode(topologyId, versionId, 'rules', id));
 				})
 
 				Promise.all(promise)
@@ -97,16 +97,16 @@ export default class RulesNodeForm extends Component {
 	}
 
         saveStreams() {
-            let {topologyId, nodeType} = this.props;
+            let {topologyId, versionId, nodeType} = this.props;
             let promiseForStreams = [];
             this.parsedStreams.map((s, i)=>{
 			let streamData = {
-                                streamId: 'rule_processor_'+(this.nodeData.id)+'_stream_'+(i+1),
-                                fields: s.fields
-                        };
+                streamId: 'rule_processor_'+(this.nodeData.id)+'_stream_'+(i+1),
+                fields: s.fields
+            };
 			//TODO - Need to find out exact streams that needs to be created and save only those
 			if((i+1) > this.nodeData.outputStreams.length)
-				promiseForStreams.push(TopologyREST.createNode(topologyId, 'streams', {body: JSON.stringify(streamData)}));
+                                promiseForStreams.push(TopologyREST.createNode(topologyId, versionId, 'streams', {body: JSON.stringify(streamData)}));
                         });
             Promise.all(promiseForStreams)
                 .then(results=>{
@@ -116,7 +116,7 @@ export default class RulesNodeForm extends Component {
                         this.streamData = s.entity;
                         this.context.ParentForm.setState({outputStreamObj:this.streamData})
                     });
-                    TopologyREST.updateNode(topologyId, nodeType, this.nodeData.id, {body: JSON.stringify(this.nodeData)})
+                    TopologyREST.updateNode(topologyId, versionId, nodeType, this.nodeData.id, {body: JSON.stringify(this.nodeData)})
                         .then((node)=>{
                             this.nodeData = node.entity;
                             this.setState({outputStreams: node.entity.outputStreams});
@@ -129,16 +129,16 @@ export default class RulesNodeForm extends Component {
 	}
 
 	handleSave(name){
-		let {topologyId, nodeType} = this.props;
+                let {topologyId, versionId, nodeType} = this.props;
 		let promiseArr = [
-			TopologyREST.getNode(topologyId, nodeType, this.nodeData.id)
+                        TopologyREST.getNode(topologyId, versionId, nodeType, this.nodeData.id)
 		];
 		return Promise.all(promiseArr)
 			.then(results=>{
 				this.nodeData = results[0].entity;
 				this.nodeData.name = name;
 				//Update rule processor
-				return TopologyREST.updateNode(topologyId, nodeType, this.nodeData.id, {body: JSON.stringify(this.nodeData)});
+                                return TopologyREST.updateNode(topologyId, versionId, nodeType, this.nodeData.id, {body: JSON.stringify(this.nodeData)});
 			})
 	}
 
@@ -159,7 +159,7 @@ export default class RulesNodeForm extends Component {
 	}
 
 	handleDeleteRule(id){
-		let {topologyId, nodeType, nodeData} = this.props;
+                let {topologyId, versionId, nodeType, nodeData} = this.props;
 		this.refs.Confirm.show({
 			title: 'Are you sure you want to delete rule ?'
 		}).then((confirmBox)=>{
@@ -168,7 +168,7 @@ export default class RulesNodeForm extends Component {
 			let rules = this.nodeData.config.properties.rules;
 			rules.splice(rules.indexOf(id), 1);
 
-			promiseArr.push(TopologyREST.updateNode(topologyId, nodeType, nodeData.nodeId, {body: JSON.stringify(this.nodeData)}));
+                        promiseArr.push(TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.nodeId, {body: JSON.stringify(this.nodeData)}));
 
 			Promise.all(promiseArr)
 				.then(result=>{
@@ -191,7 +191,7 @@ export default class RulesNodeForm extends Component {
 	}
 
 	render() {
-		let {topologyId, editMode, nodeType, nodeData, targetNodes, linkShuffleOptions} = this.props;
+                let {topologyId, versionId, editMode, nodeType, nodeData, targetNodes, linkShuffleOptions} = this.props;
 		let {rules} = this.state;
 		return (
                         <div className="modal-form processor-modal-form form-overflow">
@@ -237,6 +237,7 @@ export default class RulesNodeForm extends Component {
 					<RulesForm
 						ref="RuleForm"
 						topologyId={topologyId}
+                                                versionId={versionId}
 						ruleObj={this.state.ruleObj}
 						nodeData={this.nodeData}
 						nodeType={nodeType}

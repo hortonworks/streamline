@@ -336,39 +336,38 @@ class TopologyListingContainer extends Component {
     }
 
     deleteSingleTopology = (id) => {
-        this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete ?'}).then((confirmBox) => {
-            TopologyREST.deleteTopology(id).then((topology) => {
-                TopologyREST.deleteMetaInfo(id);
-                this.fetchData();
-                confirmBox.cancel();
-                if (topology.responseCode !== 1000) {
-                    FSReactToastr.error(
-                        <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
-                } else {
-                    FSReactToastr.success(
-                        <strong>Topology deleted successfully</strong>
-                    )
-                    console.log("topology has been deleted ", id)
-                }
-            }).catch((err) => {
-                FSReactToastr.error(
-                    <CommonNotification flag="error" content={err}/>, '', toastOpt)
-            })
+      this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete ?'}).then((confirmBox) => {
+        TopologyREST.deleteTopology(id).then((topology) => {
+          // TopologyREST.deleteMetaInfo(id);
+          this.fetchData();
+          confirmBox.cancel();
+          if (topology.responseCode !== 1000) {
+            FSReactToastr.error(
+              <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
+          } else {
+            FSReactToastr.success(
+                <strong>Topology deleted successfully</strong>
+            )
+          }
+        }).catch((err) => {
+          FSReactToastr.error(
+            <CommonNotification flag="error" content={err}/>, '', toastOpt)
         })
+      })
     }
 
     actionHandler = (eventKey, id) => {
-        const key = eventKey.split('/');
-        switch (key[0].toString()) {
-            case "refresh":
-                this.fetchSingleTopology(id);
-                break;
-            case "delete":
-                this.deleteSingleTopology(id);
-                break;
-            default:
-                break;
-        }
+      const key = eventKey.split('/');
+      switch (key[0].toString()) {
+        case "refresh":
+          this.fetchSingleTopology(id);
+          break;
+        case "delete":
+          this.deleteSingleTopology(id);
+          break;
+        default:
+          break;
+      }
     }
 
     slideInput = (e) => {
@@ -449,7 +448,7 @@ class TopologyListingContainer extends Component {
                                       className={`inputAnimateIn ${(slideInput) ? "inputAnimateOut" : ''}`}
                                       onBlur={this.slideInputOut}
                                     />
-                                    <InputGroup.Addon>
+                                    <InputGroup.Addon className="page-search">
                                         <Button type="button"
                                           onClick={this.slideInput}
                                         >
@@ -502,7 +501,7 @@ class TopologyListingContainer extends Component {
 }
                 </div>
                 {
-                  (filteredEntities.length > 6)
+                  (filteredEntities.length > pageSize)
                     ? <Paginate
                       len={filteredEntities.length}
                       splitData={splitData}

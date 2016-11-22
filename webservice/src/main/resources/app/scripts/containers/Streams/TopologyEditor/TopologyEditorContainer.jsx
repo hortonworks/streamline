@@ -79,7 +79,7 @@ class EditorGraph extends Component{
   }
   render(){
     const actualHeight = (window.innerHeight - (this.props.viewMode ? 360 : 100))+'px';
-    const { connectDropTarget , viewMode, topologyId, graphData, getModalScope, setModalContent, getEdgeConfigModal} = this.props;
+    const { versionsArr, connectDropTarget , viewMode, topologyId, versionId, graphData, getModalScope, setModalContent, getEdgeConfigModal} = this.props;
     const { boxes, bundleArr } = this.state;
     return connectDropTarget(
       <div>
@@ -89,6 +89,8 @@ class EditorGraph extends Component{
             height={parseInt(actualHeight, 10)}
             data={graphData}
             topologyId={topologyId}
+            versionId={versionId}
+            versionsArr={versionsArr}
             viewMode={viewMode}
             getModalScope={getModalScope}
             setModalContent={setModalContent}
@@ -122,6 +124,8 @@ class TopologyEditorContainer extends Component {
       ]
     };
     this.topologyId = this.props.params.id;
+    this.versionId = 1;
+    this.versionName = '';
     this.customProcessors = [];
     this.fetchData();
     this.nextRoutes = '';
@@ -183,79 +187,91 @@ class TopologyEditorContainer extends Component {
     bundleArr:null
   }
 
-  fetchData(){
+  fetchData(versionId){
     let promiseArr = [];
 
-    promiseArr.push(TopologyREST.getTopology(this.topologyId));
-    promiseArr.push(TopologyREST.getSourceComponent());
-    promiseArr.push(TopologyREST.getProcessorComponent());
-    promiseArr.push(TopologyREST.getSinkComponent());
-    promiseArr.push(TopologyREST.getLinkComponent());
-    promiseArr.push(TopologyREST.getAllNodes(this.topologyId, 'sources'));
-    promiseArr.push(TopologyREST.getAllNodes(this.topologyId, 'processors'));
-    promiseArr.push(TopologyREST.getAllNodes(this.topologyId, 'sinks'));
-    promiseArr.push(TopologyREST.getAllNodes(this.topologyId, 'edges'));
-    promiseArr.push(TopologyREST.getMetaInfo(this.topologyId));
+    TopologyREST.getTopology(this.topologyId, versionId)
+      .then((result)=>{
+        var data = result.entity;
+        if(!versionId)
+          versionId = data.topology.versionId;
+        promiseArr.push(TopologyREST.getSourceComponent());
+        promiseArr.push(TopologyREST.getProcessorComponent());
+        promiseArr.push(TopologyREST.getSinkComponent());
+        promiseArr.push(TopologyREST.getLinkComponent());
+        promiseArr.push(TopologyREST.getAllNodes(this.topologyId, versionId, 'sources'));
+        promiseArr.push(TopologyREST.getAllNodes(this.topologyId, versionId, 'processors'));
+        promiseArr.push(TopologyREST.getAllNodes(this.topologyId, versionId, 'sinks'));
+        promiseArr.push(TopologyREST.getAllNodes(this.topologyId, versionId, 'edges'));
+        promiseArr.push(TopologyREST.getMetaInfo(this.topologyId, versionId));
+        promiseArr.push(TopologyREST.getAllVersions(this.topologyId));
 
-    Promise.all(promiseArr)
-      .then((resultsArr)=>{
-        let allNodes = [];
-        let data = resultsArr[0].entity;
-        this.topologyName = data.topology.name;
-        this.topologyConfig = JSON.parse(data.topology.config);
-        this.topologyMetric = data.metric || {misc : (data.metric === undefined) ? '' : metric.misc};
+        Promise.all(promiseArr)
+          .then((resultsArr)=>{
+            let allNodes = [];
+            this.topologyName = data.topology.name;
+            this.topologyConfig = JSON.parse(data.topology.config);
+            this.topologyMetric = data.metric || {misc : (data.metric === undefined) ? '' : metric.misc};
 
-        let unknown = data.running;
-        let isAppRunning = false;
-        let status = '';
-        if(this.topologyMetric.status){
-          status = this.topologyMetric.status;
-          if(status === 'ACTIVE' || status === 'INACTIVE')
-            isAppRunning = true;
-        }
+            let unknown = data.running;
+            let isAppRunning = false;
+            let status = '';
+            if(this.topologyMetric.status){
+              status = this.topologyMetric.status;
+              if(status === 'ACTIVE' || status === 'INACTIVE')
+                isAppRunning = true;
+            }
 
-        this.sourceConfigArr = resultsArr[1].entities;
-        this.processorConfigArr = resultsArr[2].entities;
-        this.sinkConfigArr = resultsArr[3].entities;
-        this.linkConfigArr = resultsArr[4].entities;
+            this.sourceConfigArr = resultsArr[0].entities;
+            this.processorConfigArr = resultsArr[1].entities;
+            this.sinkConfigArr = resultsArr[2].entities;
+            this.linkConfigArr = resultsArr[3].entities;
 
-        this.graphData.linkShuffleOptions = TopologyUtils.setShuffleOptions(this.linkConfigArr);
+            this.graphData.linkShuffleOptions = TopologyUtils.setShuffleOptions(this.linkConfigArr);
 
-        let sourcesNode = resultsArr[5].entities || [];
-        let processorsNode = resultsArr[6].entities || [];
-        let sinksNode = resultsArr[7].entities || [];
-        let edgesArr = resultsArr[8].entities || [];
+            let sourcesNode = resultsArr[4].entities || [];
+            let processorsNode = resultsArr[5].entities || [];
+            let sinksNode = resultsArr[6].entities || [];
+            let edgesArr = resultsArr[7].entities || [];
 
-        this.graphData.metaInfo = JSON.parse(resultsArr[9].entity.data);
+            this.graphData.metaInfo = JSON.parse(resultsArr[8].entity.data);
 
-        this.graphData.nodes = TopologyUtils.syncNodeData(sourcesNode, processorsNode, sinksNode, this.graphData.metaInfo,
-          this.sourceConfigArr, this.processorConfigArr, this.sinkConfigArr);
+            let versions = resultsArr[9].entities || [];
 
-        this.graphData.uinamesList = [];
-        this.graphData.nodes.map(node=>{ this.graphData.uinamesList.push(node.uiname); })
+            this.graphData.nodes = TopologyUtils.syncNodeData(sourcesNode, processorsNode, sinksNode, this.graphData.metaInfo,
+              this.sourceConfigArr, this.processorConfigArr, this.sinkConfigArr);
 
-        this.graphData.edges = TopologyUtils.syncEdgeData(edgesArr, this.graphData.nodes);
+            this.graphData.uinamesList = [];
+            this.graphData.nodes.map(node=>{ this.graphData.uinamesList.push(node.uiname); })
 
-        this.setState({
-          timestamp : data.topology.timestamp,
-          topologyName: this.topologyName,
-          topologyMetric: this.topologyMetric,
-          isAppRunning: isAppRunning,
-          topologyStatus: status,
-          bundleArr: {
-            sourceBundle: this.sourceConfigArr,
-            processorsBundle: this.processorConfigArr,
-            sinksBundle: this.sinkConfigArr
-          },
-          unknown
-        });
-        this.customProcessors = this.getCustomProcessors();
-        //If topology's timestamp is less then 20 seconds, changing view mode to edit mode
-        let timeElapsedForTopology = ((new Date().getTime() - data.topology.timestamp)  / 1000 );
-        if(timeElapsedForTopology < 20){
-          this.viewMode = false;
-        }
+            this.graphData.edges = TopologyUtils.syncEdgeData(edgesArr, this.graphData.nodes);
+            this.versionId = versionId ? versionId : data.topology.versionId;
+            this.versionName = versions.find((o)=>{return o.id == this.versionId}).name;
+
+            this.setState({
+              timestamp : data.topology.timestamp,
+              topologyName: this.topologyName,
+              topologyMetric: this.topologyMetric,
+              isAppRunning: isAppRunning,
+              topologyStatus: status,
+              topologyVersion: this.versionId,
+              versionsArr: versions,
+              bundleArr: {
+                sourceBundle: this.sourceConfigArr,
+                processorsBundle: this.processorConfigArr,
+                sinksBundle: this.sinkConfigArr
+              },
+              unknown
+            });
+            this.customProcessors = this.getCustomProcessors();
+            //If topology's timestamp is less then 20 seconds, changing view mode to edit mode
+            let timeElapsedForTopology = ((new Date().getTime() - data.topology.timestamp)  / 1000 );
+            if(timeElapsedForTopology < 20){
+              this.viewMode = false;
+            }
+          });
       });
+
     this.graphData = {
       nodes: [],
       edges: [],
@@ -274,6 +290,9 @@ class TopologyEditorContainer extends Component {
   }
   handleModeChange(value){
     this.viewMode = value;
+  }
+  handleVersionChange(value) {
+    this.fetchData(value);
   }
   showConfig(){
     this.refs.TopologyConfigModal.show();
@@ -302,7 +321,7 @@ class TopologyEditorContainer extends Component {
         name: topologyName,
         config: JSON.stringify(this.topologyConfig)
       }
-      TopologyREST.putTopology(this.topologyId, {body: JSON.stringify(data)})
+      TopologyREST.putTopology(this.topologyId, this.versionId, {body: JSON.stringify(data)})
         .then(topology=>{
           if(topology.responseCode !== 1000){
       FSReactToastr.error(
@@ -342,7 +361,8 @@ class TopologyEditorContainer extends Component {
   getModalScope(node){
     let obj = {
       editMode: !this.viewMode,
-      topologyId: this.topologyId
+      topologyId: this.topologyId,
+      versionId: this.versionId
     }, config = [];
     switch(node.parentType){
       case 'SOURCE':
@@ -390,7 +410,7 @@ class TopologyEditorContainer extends Component {
     }).then((confirmBox)=>{
       document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay";
       this.setState({topologyStatus: 'DEPLOYING...'})
-      TopologyREST.validateTopology(this.topologyId)
+      TopologyREST.validateTopology(this.topologyId, this.versionId)
         .then(result=>{
           if(result.responseCode !== 1000){
             FSReactToastr.error(
@@ -399,7 +419,7 @@ class TopologyEditorContainer extends Component {
             document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay displayNone";
             this.setState({topologyStatus: status});
           } else {
-            TopologyREST.deployTopology(this.topologyId)
+            TopologyREST.deployTopology(this.topologyId, this.versionId)
               .then(topology=>{
                 if(topology.responseCode !== 1000){
                   FSReactToastr.error(
@@ -409,7 +429,7 @@ class TopologyEditorContainer extends Component {
                   this.setState({topologyStatus: status});
                 } else {
                   FSReactToastr.success(<strong>Topology Deployed Successfully</strong>);
-                  TopologyREST.getTopology(this.topologyId)
+                  TopologyREST.getTopology(this.topologyId, this.versionId)
                     .then((result)=>{
                       let data = result.entity;
                       this.topologyMetric = data.metric || {misc: (data.metric === undefined) ? '' : metric.misc};
@@ -417,6 +437,11 @@ class TopologyEditorContainer extends Component {
                       document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay displayNone";
                       this.setState({topologyMetric: this.topologyMetric, isAppRunning: true, topologyStatus: status});
                     });
+                  let versionData = {
+                      name: 'V'+this.state.topologyVersion,
+                      description: 'version description auto generated'
+                  };
+                  TopologyREST.saveTopologyVersion(this.state.topologyVersion, {body: JSON.stringify(versionData)})
                 }
               })
           }
@@ -440,7 +465,7 @@ class TopologyEditorContainer extends Component {
             this.setState({topologyStatus: status});
           } else {
             FSReactToastr.success(<strong>Topology Killed Successfully</strong>);
-            TopologyREST.getTopology(this.topologyId)
+            TopologyREST.getTopology(this.topologyId, this.versionId)
               .then((result)=>{
                 let data = result.entity;
                 this.topologyMetric = data.metric || {misc: (data.metric === undefined) ? '' : metric.misc};
@@ -535,8 +560,8 @@ class TopologyEditorContainer extends Component {
       this.refs.NodeModal.hide();
     }
   }
-  showEdgeConfigModal(topologyId, newEdge, edges, callback, node, streamName, grouping, groupingFields) {
-    this.edgeConfigData = {topologyId: topologyId, edge: newEdge, edges: edges, callback: callback, streamName: streamName, grouping: grouping, groupingFields: groupingFields};
+  showEdgeConfigModal(topologyId, versionId, newEdge, edges, callback, node, streamName, grouping, groupingFields) {
+    this.edgeConfigData = {topologyId: topologyId, versionId: versionId, edge: newEdge, edges: edges, callback: callback, streamName: streamName, grouping: grouping, groupingFields: groupingFields};
     this.edgeConfigTitle = newEdge.source.uiname + '-' + newEdge.target.uiname;
     let nodeType = newEdge.source.currentType.toLowerCase();
     if(node && node.outputStreams.length === 1 && nodeType !== 'rule') {
@@ -554,7 +579,7 @@ class TopologyEditorContainer extends Component {
                 let rulesPromiseArr = [];
                 let saveRulesPromiseArr = [];
           node.config.properties.rules.map((id)=>{
-                    rulesPromiseArr.push(TopologyREST.getNode(topologyId, 'windows', id));
+                    rulesPromiseArr.push(TopologyREST.getNode(topologyId, versionId, 'windows', id));
                 })
                 Promise.all(rulesPromiseArr)
                     .then((results)=>{
@@ -573,13 +598,13 @@ class TopologyEditorContainer extends Component {
                                     actionObj.transforms = [];
                                 }
                                 data.actions.push(actionObj);
-                                saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, 'windows', data.id, {body: JSON.stringify(data)}))
+                                saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'windows', data.id, {body: JSON.stringify(data)}))
                         })
                         Promise.all(saveRulesPromiseArr).then((savedResults)=>{});
                     })
             }
         }
-      TopologyREST.createNode(topologyId, 'edges', {body: JSON.stringify(edgeData)})
+      TopologyREST.createNode(topologyId, versionId, 'edges', {body: JSON.stringify(edgeData)})
         .then((edge)=>{
             newEdge.edgeId = edge.entity.id;
             newEdge.streamGrouping = edge.entity.streamGroupings[0];
@@ -633,6 +658,23 @@ class TopologyEditorContainer extends Component {
     this.refs.EditorGraph.refs.child.decoratedComponentInstance
       .refs.TopologyGraph.decoratedComponentInstance.zoomAction(zoomType);
   }
+  setCurrentVersion(){
+    this.refs.BaseContainer.refs.Confirm.show({
+      title: 'Are you sure you want to set this version as your current one?'
+    }).then((confirmBox)=>{
+      TopologyREST.activateTopologyVersion(this.topologyId, this.versionId)
+        .then(result=>{
+          if(result.responseCode !== 1000){
+            FSReactToastr.error(
+              <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
+          } else {
+            FSReactToastr.success(<strong>Activated to current version successfully</strong>);
+            this.fetchData();
+          }
+        })
+      confirmBox.cancel();
+    },()=>{})
+  }
   render() {
     let nodeType = this.node ? this.node.currentType : '';
     return (
@@ -644,6 +686,8 @@ class TopologyEditorContainer extends Component {
               killTopology = {this.killTopology.bind(this)}
               deployTopology = {this.deployTopology.bind(this)}
               handleModeChange = {this.handleModeChange.bind(this)}
+              handleVersionChange = {this.handleVersionChange.bind(this)}
+              setCurrentVersion = {this.setCurrentVersion.bind(this)}
             />
           <div id="viewMode" className="graph-bg">
               <EditorGraph
@@ -651,6 +695,8 @@ class TopologyEditorContainer extends Component {
                 graphData={this.graphData}
                 viewMode={this.viewMode}
                 topologyId={this.topologyId}
+                versionId={this.versionId}
+                versionsArr={this.state.versionsArr}
                 getModalScope={this.getModalScope.bind(this)}
                 setModalContent={this.setModalContent.bind(this)}
                 customProcessors={this.customProcessors}
@@ -681,6 +727,8 @@ class TopologyEditorContainer extends Component {
                   graphData={this.graphData}
                   viewMode={this.viewMode}
                   topologyId={this.topologyId}
+                  versionId={this.versionId}
+                  versionsArr={this.state.versionsArr}
                   getModalScope={this.getModalScope.bind(this)}
                   setModalContent={this.setModalContent.bind(this)}
                   customProcessors={this.customProcessors}
@@ -690,9 +738,11 @@ class TopologyEditorContainer extends Component {
                 <div className="topology-footer">
                   {this.viewMode ?
                     (this.state.unknown !== "UNKNOWN")
-                      ? <OverlayTrigger key={1} placement="top" overlay={<Tooltip id="tooltip">Edit</Tooltip>}>
-                          <a href="javascript:void(0);" className="hb lg success pull-right show-node-list" onClick={this.handleModeChange.bind(this, false)}><i className="fa fa-pencil"></i></a>
-                        </OverlayTrigger>
+                      ? (this.versionName.toLowerCase() == 'current')
+                          ? <OverlayTrigger key={1} placement="top" overlay={<Tooltip id="tooltip">Edit</Tooltip>}>
+                              <a href="javascript:void(0);" className="hb lg success pull-right show-node-list" onClick={this.handleModeChange.bind(this, false)}><i className="fa fa-pencil"></i></a>
+                            </OverlayTrigger>
+                          : ''
                       : ''
                     :
                     (this.state.isAppRunning ?
@@ -716,7 +766,7 @@ class TopologyEditorContainer extends Component {
           </div>
         }
         <Modal ref="TopologyConfigModal" data-title="Topology Configuration" data-resolve={this.handleSaveConfig.bind(this)}>
-          <TopologyConfig ref="topologyConfig" topologyId={this.topologyId} data={this.topologyConfig} topologyName={this.state.topologyName} viewMode={this.viewMode}/>
+          <TopologyConfig ref="topologyConfig" topologyId={this.topologyId} versionId={this.versionId} data={this.topologyConfig} topologyName={this.state.topologyName} viewMode={this.viewMode}/>
         </Modal>
         <Modal ref="NodeModal"
           bsSize={this.processorNode ? "large" : null}

@@ -9,44 +9,44 @@ import _ from 'lodash';
 import Utils from '../../../utils/Utils';
 
 const nodeSource = {
-	beginDrag(props, monitor, component) {
-		const { left, top } = props;
-		return { left, top };
-	}
+    beginDrag(props, monitor, component) {
+        const { left, top } = props;
+        return { left, top };
+    }
 };
 
 function collect(connect, monitor) {
-	return {
-		connectDragSource: connect.dragSource(),
-		isDragging: monitor.isDragging()
-	};
+    return {
+        connectDragSource: connect.dragSource(),
+        isDragging: monitor.isDragging()
+    };
 }
 
 @DragSource(ItemTypes.ComponentNodes, nodeSource, collect)
 export default class ComponentNodeContainer extends Component {
-	static propTypes = {
-		connectDragSource: PropTypes.func.isRequired,
-		isDragging: PropTypes.bool.isRequired,
-		left: PropTypes.number.isRequired,
-		top: PropTypes.number.isRequired,
-		hideSourceOnDrag: PropTypes.bool.isRequired,
-	};
+    static propTypes = {
+        connectDragSource: PropTypes.func.isRequired,
+        isDragging: PropTypes.bool.isRequired,
+        left: PropTypes.number.isRequired,
+        top: PropTypes.number.isRequired,
+        hideSourceOnDrag: PropTypes.bool.isRequired,
+    };
 
-	constructor(props){
-		super(props);
-		this.state = {
+    constructor(props){
+        super(props);
+        this.state = {
             datasources: props.bundleArr.sourceBundle,
             processors: props.bundleArr.processorsBundle,
             sinks: props.bundleArr.sinksBundle
-		};
-	}
+        };
+    }
 
-	render(){
+    render(){
         const { hideSourceOnDrag, left, top, isDragging } = this.props;
-	    if (isDragging && hideSourceOnDrag) {
-	      return null;
-	    }
-		return (
+        if (isDragging && hideSourceOnDrag) {
+          return null;
+        }
+        return (
             <div className="component-panel right">
               <div className="panel-wrapper">
                 <h6 className="component-title">Source</h6>
@@ -61,6 +61,7 @@ export default class ComponentNodeContainer extends Component {
                                 nodeType={source.subType}
                                 hideSourceOnDrag={false}
                                 topologyComponentBundleId={source.id}
+                                defaultImagePath='styles/img/icon-source.png'
                             />
                         )
                     })}
@@ -80,18 +81,20 @@ export default class ComponentNodeContainer extends Component {
                                 nodeType="Custom"
                                 hideSourceOnDrag={false}
                                 topologyComponentBundleId={processor.id}
+                                defaultImagePath='styles/img/icon-processor.png'
                             />
                         )
                     } else {
                         return (
                             <NodeContainer
-                                    key={i}
-                                    imgPath={"styles/img/icon-"+processor.subType.toLowerCase()+".png"}
-                                    name={processor.subType}
-                                    type={processor.type}
-                                    nodeType={processor.subType}
-                                    hideSourceOnDrag={false}
-                                    topologyComponentBundleId={processor.id}
+                                key={i}
+                                imgPath={"styles/img/icon-"+processor.subType.toLowerCase()+".png"}
+                                name={processor.subType}
+                                type={processor.type}
+                                nodeType={processor.subType}
+                                hideSourceOnDrag={false}
+                                topologyComponentBundleId={processor.id}
+                                defaultImagePath='styles/img/icon-processor.png'
                             />
                         )
                     }
@@ -109,13 +112,14 @@ export default class ComponentNodeContainer extends Component {
                             nodeType={sink.subType}
                             hideSourceOnDrag={false}
                             topologyComponentBundleId={sink.id}
+                            defaultImagePath='styles/img/icon-sink.png'
                         />
                     )
                 })}
                 </ul>
               </div>
 
-			</div>
-		)
-	}
+            </div>
+        )
+    }
 }

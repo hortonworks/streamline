@@ -14,7 +14,8 @@ export default class SourceNodeForm extends Component {
         configData: PropTypes.object.isRequired,
         editMode: PropTypes.bool.isRequired,
         nodeType: PropTypes.string.isRequired,
-        topologyId: PropTypes.string.isRequired
+        topologyId: PropTypes.string.isRequired,
+        versionId: PropTypes.number.isRequired
     };
 
     constructor(props) {
@@ -36,8 +37,8 @@ export default class SourceNodeForm extends Component {
     }
 
     fetchData(){
-        let {topologyId, nodeType, nodeData} = this.props;
-        TopologyREST.getNode(topologyId, nodeType, nodeData.nodeId)
+        let {topologyId, versionId, nodeType, nodeData} = this.props;
+        TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId)
             .then(results=>{
                 this.nodeData = results.entity;
                 let stateObj = {};
@@ -53,12 +54,12 @@ export default class SourceNodeForm extends Component {
     }
 
     createStream(){
-        let {topologyId, nodeType} = this.props;
+        let {topologyId, versionId, nodeType} = this.props;
         let streamData = { streamId: this.props.configData.subType.toLowerCase()+'_stream_'+this.nodeData.id, fields: []};
-        TopologyREST.createNode(topologyId, 'streams', {body: JSON.stringify(streamData)})
+        TopologyREST.createNode(topologyId, versionId, 'streams', {body: JSON.stringify(streamData)})
             .then(result=>{
                 this.nodeData.outputStreamIds = [result.entity.id];
-                TopologyREST.updateNode(topologyId, nodeType, this.nodeData.id, {body: JSON.stringify(this.nodeData)})
+                TopologyREST.updateNode(topologyId, versionId, nodeType, this.nodeData.id, {body: JSON.stringify(this.nodeData)})
                     .then((node)=>{
                         this.nodeData = node.entity;
                         this.streamObj = this.nodeData.outputStreams[0];
@@ -77,7 +78,7 @@ export default class SourceNodeForm extends Component {
     }
 
     handleSave(name){
-        let {topologyId, nodeType} = this.props;
+        let {topologyId, versionId, nodeType} = this.props;
         let nodeId = this.nodeData.id;
         let data = this.refs.Form.state.FormData;
         this.nodeData.config.properties = data;
@@ -89,8 +90,8 @@ export default class SourceNodeForm extends Component {
             topologyId: topologyId
         }]
         let promiseArr = [
-            TopologyREST.updateNode(topologyId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)}),
-            TopologyREST.updateNode(topologyId, 'streams', this.nodeData.outputStreams[0].id, {body: JSON.stringify(this.streamObj)})
+            TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)}),
+            TopologyREST.updateNode(topologyId, versionId, 'streams', this.nodeData.outputStreams[0].id, {body: JSON.stringify(this.streamObj)})
         ];
         return Promise.all(promiseArr);
     }

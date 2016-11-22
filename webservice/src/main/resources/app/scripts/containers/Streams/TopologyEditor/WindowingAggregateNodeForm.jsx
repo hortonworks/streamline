@@ -6,7 +6,6 @@ import {Tabs, Tab} from 'react-bootstrap';
 import FSReactToastr from '../../../components/FSReactToastr';
 import TopologyREST from '../../../rest/TopologyREST';
 import AggregateUdfREST from '../../../rest/AggregateUdfREST';
-import OutputSchema from '../../../components/OutputSchemaComponent';
 import Utils from '../../../utils/Utils';
 import CommonNotification from '../../../utils/CommonNotification';
 import {toastOpt} from '../../../utils/Constants'
@@ -17,6 +16,7 @@ export default class WindowingAggregateNodeForm extends Component {
 		editMode: PropTypes.bool.isRequired,
 		nodeType: PropTypes.string.isRequired,
 		topologyId: PropTypes.string.isRequired,
+        versionId: PropTypes.number.isRequired,
 		sourceNode: PropTypes.object.isRequired,
 		targetNodes: PropTypes.array.isRequired,
 		linkShuffleOptions: PropTypes.array.isRequired,
@@ -25,7 +25,7 @@ export default class WindowingAggregateNodeForm extends Component {
 
 	constructor(props) {
 		super(props);
-                this.sourceNodesId = [props.sourceNode.nodeId];
+        this.sourceNodesId = [props.sourceNode.nodeId];
         this.ruleTargetNodes = [];
 		let {editMode} = props;
 		this.fetchData();
@@ -53,24 +53,24 @@ export default class WindowingAggregateNodeForm extends Component {
 			functionListArr: [],
 			outputStreamId: '',
             outputStreamFields: [],
-                argumentError : false
+            argumentError : false
 		};
 		this.state = obj;
 	}
 
 	fetchData(){
-                let {topologyId, nodeType, nodeData, currentEdges, targetNodes} = this.props;
+        let {topologyId, versionId, nodeType, nodeData, currentEdges, targetNodes} = this.props;
 		let edgePromiseArr = [];
-                let ruleTargetNodes = targetNodes.filter((o)=>{return o.currentType.toLowerCase() === 'rule'});
+        let ruleTargetNodes = targetNodes.filter((o)=>{return o.currentType.toLowerCase() === 'rule'});
 		currentEdges.map(edge=>{
 			if(edge.target.nodeId === nodeData.nodeId){
-				edgePromiseArr.push(TopologyREST.getNode(topologyId, 'edges', edge.edgeId));
+                edgePromiseArr.push(TopologyREST.getNode(topologyId, versionId, 'edges', edge.edgeId));
 			}
 		})
 		Promise.all(edgePromiseArr)
 			.then(edgeResults=>{
 				let promiseArr = [
-					TopologyREST.getNode(topologyId, nodeType, nodeData.nodeId),
+                    TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId),
 					AggregateUdfREST.getAllUdfs()
 				];
 				let streamIdArr = []
@@ -79,21 +79,21 @@ export default class WindowingAggregateNodeForm extends Component {
 						result.entity.streamGroupings.map(streamObj=>{
 							if(streamIdArr.indexOf(streamObj.streamId) === -1){
 								streamIdArr.push(streamObj.streamId);
-								promiseArr.push(TopologyREST.getNode(topologyId, 'streams', streamObj.streamId))
+                                promiseArr.push(TopologyREST.getNode(topologyId, versionId, 'streams', streamObj.streamId))
 							}
 						})
 					}
 				})
-                                let rulePromiseArr = []
-                                ruleTargetNodes.map((ruleNode)=>{
-                    rulePromiseArr.push(TopologyREST.getNode(topologyId, nodeType, ruleNode.nodeId));
-                });
-                Promise.all(rulePromiseArr)
-			.then((results)=>{
-				results.map((o)=>{
-					this.ruleTargetNodes.push(o.entity);
+                let rulePromiseArr = []
+                ruleTargetNodes.map((ruleNode)=>{
+                rulePromiseArr.push(TopologyREST.getNode(topologyId, versionId, nodeType, ruleNode.nodeId));
+            });
+            Promise.all(rulePromiseArr)
+                                .then((results)=>{
+                                        results.map((o)=>{
+                                                this.ruleTargetNodes.push(o.entity);
+                                        });
 				});
-			});
 				Promise.all(promiseArr)
 					.then((results)=>{
 						this.nodeData = results[0].entity;
@@ -134,16 +134,16 @@ export default class WindowingAggregateNodeForm extends Component {
 								streamId: stateObj.outputStreamId,
 								fields: stateObj.outputStreamFields
 							}
-							TopologyREST.createNode(topologyId, 'streams', {body: JSON.stringify(dummyStreamObj)})
+                                                        TopologyREST.createNode(topologyId, versionId, 'streams', {body: JSON.stringify(dummyStreamObj)})
 								.then(streamResult => {
 									this.streamData = streamResult.entity;
-                                                                        this.context.ParentForm.setState({outputStreamObj:this.streamData})
+                                    this.context.ParentForm.setState({outputStreamObj:this.streamData})
 									this.nodeData.outputStreamIds = [this.streamData.id];
-									TopologyREST.updateNode(topologyId, nodeType, nodeData.nodeId, {body: JSON.stringify(this.nodeData)})
+                                                                        TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.nodeId, {body: JSON.stringify(this.nodeData)})
 								})
 						}
 						if(this.windowId){
-							TopologyREST.getNode(topologyId, 'windows', this.windowId)
+                            TopologyREST.getNode(topologyId, versionId, 'windows', this.windowId)
 								.then((windowResult)=>{
 									let windowData = windowResult.entity;
 									if(windowData.projections.length === 0){
@@ -199,12 +199,12 @@ export default class WindowingAggregateNodeForm extends Component {
 								actions: [],
 								groupbykeys:[]
 							}
-							TopologyREST.createNode(topologyId, 'windows', {body: JSON.stringify(dummyWindowObj)})
+                                                        TopologyREST.createNode(topologyId, versionId, 'windows', {body: JSON.stringify(dummyWindowObj)})
 								.then((windowResult)=>{
 									this.windowId = windowResult.entity.id;
 									this.nodeData.config.properties.parallelism = 1;
 									this.nodeData.config.properties.rules = [this.windowId];
-									TopologyREST.updateNode(topologyId, nodeType, nodeData.nodeId, {body: JSON.stringify(this.nodeData)});
+                                                                        TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.nodeId, {body: JSON.stringify(this.nodeData)});
 									this.setState(stateObj);
 								})
 						}
@@ -398,7 +398,7 @@ export default class WindowingAggregateNodeForm extends Component {
 	handleSave(name){
 		let {selectedKeys, windowNum, slidingNum, outputFieldsArr, durationType, slidingDurationType,
 			intervalType, streamsList, parallelism} = this.state;
-		let {topologyId, nodeType, nodeData} = this.props;
+        let {topologyId, versionId, nodeType, nodeData} = this.props;
 		let windowObj = {
 			name: 'window_auto_generated',
 			description: 'window description auto generated',
@@ -462,39 +462,39 @@ export default class WindowingAggregateNodeForm extends Component {
 			}
 		}
 		if(this.windowId){
-			return TopologyREST.getNode(topologyId, 'windows', this.windowId)
-                        .then((result)=>{
-                                let data = result.entity;
-                                windowObj.actions = result.entity.actions || [];
+                return TopologyREST.getNode(topologyId, versionId, 'windows', this.windowId)
+                .then((result)=>{
+                let data = result.entity;
+                windowObj.actions = result.entity.actions || [];
 
-                                if(this.props.sourceNode.currentType.toLowerCase() === 'rule' ||
-                                        this.props.sourceNode.currentType.toLowerCase() === 'window') {
-                                        let type = this.props.sourceNode.currentType.toLowerCase() === 'rule' ? 'rules' : 'windows';
-                                        let nodeName = this.nodeData.name;
-                                        TopologyREST.getAllNodes(topologyId, type).then((results)=>{
-                                                results.entities.map((nodeObj)=>{
+                if(this.props.sourceNode.currentType.toLowerCase() === 'rule' ||
+                    this.props.sourceNode.currentType.toLowerCase() === 'window') {
+                    let type = this.props.sourceNode.currentType.toLowerCase() === 'rule' ? 'rules' : 'windows';
+                    let nodeName = this.nodeData.name;
+                    TopologyREST.getAllNodes(topologyId, versionId, type).then((results)=>{
+                        results.entities.map((nodeObj)=>{
 							let actionObj = nodeObj.actions.find((a)=>{
 								return a.name === nodeName;
-                                                        });
+                                });
 							if(actionObj) {
 								actionObj.name = name;
-								TopologyREST.updateNode(topologyId, type, nodeObj.id, {body: JSON.stringify(nodeObj)});
+                                                                TopologyREST.updateNode(topologyId, versionId, type, nodeObj.id, {body: JSON.stringify(nodeObj)});
 							}
 						});
-                                        });
-                                }
+                    });
+                }
 
-                                return TopologyREST.updateNode(topologyId, 'windows', this.windowId, {body: JSON.stringify(windowObj)})
-                                .then(windowResult=>{
-                                        return this.updateNode(windowResult, name);
-                                })
+                return TopologyREST.updateNode(topologyId, versionId, 'windows', this.windowId, {body: JSON.stringify(windowObj)})
+                        .then(windowResult=>{
+                        return this.updateNode(windowResult, name);
                         })
+                })
 		}
 	}
 	updateNode(windowObj, name){
 		let {parallelism, outputStreamFields} = this.state;
-		let {topologyId, nodeType, nodeData} = this.props;
-		return TopologyREST.getNode(topologyId, nodeType, nodeData.nodeId)
+                let {topologyId, versionId, nodeType, nodeData} = this.props;
+                return TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId)
 				.then(result=>{
 					let data = result.entity;
 					if(windowObj && windowObj.responseCode === 1000){
@@ -508,15 +508,15 @@ export default class WindowingAggregateNodeForm extends Component {
 							fields: outputStreamFields
 						}
 						let promiseArr = [
-							TopologyREST.updateNode(topologyId, nodeType, nodeData.nodeId, {body: JSON.stringify(data)}),
-							TopologyREST.updateNode(topologyId, 'streams', this.streamData.id, {body: JSON.stringify(streamData)})
+                                                        TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.nodeId, {body: JSON.stringify(data)}),
+                                                        TopologyREST.updateNode(topologyId, versionId, 'streams', this.streamData.id, {body: JSON.stringify(streamData)})
                         ]
                         this.ruleTargetNodes.map((ruleNode)=>{
 						let streamObj = {
 							streamId: ruleNode.outputStreams[0].streamId,
 							fields: outputStreamFields
 						}
-				promiseArr.push(TopologyREST.updateNode(topologyId, 'streams', ruleNode.outputStreams[0].id, {body: JSON.stringify(streamObj)}));
+                                promiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'streams', ruleNode.outputStreams[0].id, {body: JSON.stringify(streamObj)}));
                         });
                         return Promise.all(promiseArr);
                             } else {

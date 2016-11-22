@@ -115,6 +115,9 @@ footer {
 .modal-body {
   padding: 0px;
 }
+.modal-topology-version .modal-body {
+  padding: 15px;
+}
 .modal-tabs {}
 .modal-tabs .nav-tabs {
   background-color: #f0f0f0;
@@ -1025,10 +1028,11 @@ label {
   -o-transition: all 1s ease-in-out;
   transition: all 1s ease-in-out;
 }
-.page-title-box .input-group{
+/*.page-title-box .input-group{
   overflow: hidden;
 }
-.page-title-box .input-group-addon{
+*/
+.page-search.input-group-addon{
   padding: 0;
   z-index: 10;
   border:none;
@@ -1039,11 +1043,11 @@ label {
   cursor: text;
   width: 90%;
 }
-.dropdown-toggle{
+/*.dropdown-toggle{
   font-size: 24px;
   color: #838383;
   padding-top: 0;
-}
+}*/
 @media (min-width: 768px) {
     .page-title-box input.inputAnimateIn {
         margin-left:87%;

@@ -6,7 +6,6 @@ import {Panel, Tab, Tabs} from 'react-bootstrap';
 import FSReactToastr from '../../../components/FSReactToastr';
 import FileREST from '../../../rest/FileREST';
 import TopologyREST from '../../../rest/TopologyREST';
-import OutputSchema from '../../../components/OutputSchemaComponent';
 
 export default class JoinNodeForm extends Component {
 	static propTypes = {
@@ -15,6 +14,7 @@ export default class JoinNodeForm extends Component {
 		editMode: PropTypes.bool.isRequired,
 		nodeType: PropTypes.string.isRequired,
 		topologyId: PropTypes.string.isRequired,
+                versionId: PropTypes.number.isRequired,
 		sourceNode: PropTypes.object.isRequired,
 		targetNodes: PropTypes.array.isRequired,
 		linkShuffleOptions: PropTypes.array.isRequired
@@ -49,10 +49,10 @@ export default class JoinNodeForm extends Component {
 	}
 
 	fetchData() {
-		let {topologyId, nodeType, nodeData} = this.props;
+                let {topologyId, versionId, nodeType, nodeData} = this.props;
 		let promiseArr = [
 			FileREST.getAllFiles(),
-			TopologyREST.getNode(topologyId, nodeType, nodeData.nodeId)
+                        TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId)
 		];
 
 		Promise.all(promiseArr)
@@ -127,10 +127,10 @@ export default class JoinNodeForm extends Component {
 	}
 
 	handleSave(name){
-		let {topologyId, nodeType} = this.props;
+                let {topologyId, versionId, nodeType} = this.props;
 		let {fileId, joinerClassName, parallelism, eventExpiryInterval, groupExpiryInterval} = this.state;
 		let nodeId = this.nodeData.id;
-		return TopologyREST.getNode(topologyId, nodeType, nodeId)
+                return TopologyREST.getNode(topologyId, versionId, nodeType, nodeId)
 			.then(data=>{
 				let joinConfigData = data.entity.config.properties["join-config"];
 				if(!joinConfigData){
@@ -149,7 +149,7 @@ export default class JoinNodeForm extends Component {
 				data.entity.config.properties.parallelism = parallelism;
 				data.entity.name = name;
 
-				return TopologyREST.updateNode(topologyId, nodeType, nodeId, {body: JSON.stringify(data.entity)})
+                                return TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(data.entity)})
 			})
 	}
 
@@ -235,15 +235,7 @@ export default class JoinNodeForm extends Component {
 						</form>
 					</Tab>
 					<Tab eventKey={2} title="Output Streams">
-						<OutputSchema
-							topologyId={topologyId}
-							editMode={editMode}
-							nodeId={nodeData.nodeId}
-							nodeType={nodeType}
-							targetNodes={targetNodes}
-							linkShuffleOptions={linkShuffleOptions}
-							maxStreamSize={1}
-						/>
+
 					</Tab>
 				</Tabs>
 			</div>

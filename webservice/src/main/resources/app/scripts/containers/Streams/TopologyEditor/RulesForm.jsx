@@ -307,15 +307,16 @@ class RuleFormula extends Component {
 export default class RulesForm extends Component {
 	constructor(props){
 		super(props);
-                let {name = '', description = '', sql = '', actions = [], condition = ''} = props.ruleObj;
-                this.state = { name, description, sql, actions, condition,
+        let {name = '', description = '', sql = '', actions = [], condition = ''} = props.ruleObj;
+        this.state = { name, description, sql, actions, condition,
 			showOptionalFields: false, ruleType: true, showNameError: false, showDescriptionError: false};
 		if(this.props.ruleObj.id){
 			this.getNode(this.props.ruleObj.id);
 		}
 	}
 	getNode(ruleId){
-		TopologyREST.getNode(this.props.topologyId, 'rules', ruleId)
+                let {topologyId, versionId} = this.props;
+                TopologyREST.getNode(topologyId, versionId, 'rules', ruleId)
 			.then(rule=>{
 				let {name, description, sql, actions} = rule.entity;
 				this.setState({name, description, sql, actions})
@@ -359,9 +360,9 @@ export default class RulesForm extends Component {
 		}
 	}
 	handleSave(){
-                let {topologyId, ruleObj, nodeData, nodeType, parsedStreams} = this.props;
+        let {topologyId, versionId, ruleObj, nodeData, nodeType, parsedStreams} = this.props;
 		let {name, description, ruleType, sql, actions} = this.state;
-                let ruleData = {}, condition = "", streams = [], selectedFields = [];
+        let ruleData = {}, condition = "", streams = [], selectedFields = [];
 		if(ruleType){
 			//if general rule, than take from RuleFormula
                         condition = this.refs.RuleFormula.conditionStr;
@@ -390,12 +391,12 @@ export default class RulesForm extends Component {
 		let promiseArr = [];
 		if(ruleObj.id){
 			//update rule
-			promiseArr.push(TopologyREST.updateNode(topologyId, 'rules', ruleObj.id, {body: JSON.stringify(ruleData)}));
+                        promiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'rules', ruleObj.id, {body: JSON.stringify(ruleData)}));
 		} else {
 			//create rule
-			promiseArr.push(TopologyREST.createNode(topologyId, 'rules', {body: JSON.stringify(ruleData)}));
+                        promiseArr.push(TopologyREST.createNode(topologyId, versionId, 'rules', {body: JSON.stringify(ruleData)}));
 		}
-		promiseArr.push(TopologyREST.getNode(topologyId, nodeType, nodeData.id));
+                promiseArr.push(TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.id));
 		return Promise.all(promiseArr)
 			.then(results=>{
 				let result = results[0];
@@ -412,14 +413,14 @@ export default class RulesForm extends Component {
 			})
 	}
 	updateNode(ruleData, ruleProcessorData){
-		let {topologyId, ruleObj, nodeData, nodeType} = this.props;
+                let {topologyId, versionId, ruleObj, nodeData, nodeType} = this.props;
 		let promiseArr = [];
 		//Add into node if its newly created rule
 		if(!ruleObj.id){
 			let rulesArr = ruleProcessorData.config.properties.rules || [];
 			rulesArr.push(ruleData.id);
 			ruleProcessorData.config.properties.rules = rulesArr;
-			promiseArr.push(TopologyREST.updateNode(topologyId, nodeType, nodeData.id, {body: JSON.stringify(ruleProcessorData)}));
+                        promiseArr.push(TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.id, {body: JSON.stringify(ruleProcessorData)}));
 		}
 		return Promise.all(promiseArr)
 			.then(results=>{

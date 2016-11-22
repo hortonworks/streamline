@@ -53,7 +53,7 @@ export default class TopologyConfigContainer extends Component {
 			name: this.props.topologyName,
 			config: JSON.stringify(configObj)
 		}
-		return TopologyREST.putTopology(this.props.topologyId, {body: JSON.stringify(data)})
+                return TopologyREST.putTopology(this.props.topologyId, this.props.versionId, {body: JSON.stringify(data)})
 	}
 	
 	render(){
