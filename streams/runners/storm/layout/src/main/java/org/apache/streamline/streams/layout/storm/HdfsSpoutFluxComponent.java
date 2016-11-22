@@ -60,8 +60,9 @@ public class HdfsSpoutFluxComponent extends AbstractFluxComponent {
                 KEY_OUTPUT_FIELDS,
                 KEY_COMMIT_FREQUENCY_SEC
         };
+        conf.put("withOutputFields", new String[]{"streamline-event"} ); // as it only emits StreamlineEvent tuples
 
-        List configMethods = getConfigMethodsYaml(configMethodNames,  configKeys);;
+        List configMethods = getConfigMethodsYaml(configMethodNames,  configKeys);
         component = createComponent(spoutId, spoutClassName, null, null, configMethods);
         addParallelismToComponent();
     }

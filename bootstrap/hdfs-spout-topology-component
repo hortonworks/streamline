@@ -20,7 +20,7 @@
         "isOptional": false,
         "tooltip": "Allowed values: text / seq",
         "type": "string",
-        "defaultValue": "text"
+        "defaultValue": "org.apache.streamline.streams.runtime.storm.spout.JsonFileReader"
       },
       {
         "uiName": "Source Dir",
@@ -50,7 +50,7 @@
         "uiName": "Lock Dir",
         "fieldName": "LockDir",
         "isOptional": true,
-        "tooltip": "Lock files (used for synchronization among multiple spout instances) will be created in this location",
+        "tooltip": "Lock files (used to synchronize multiple reader instances) will be created in this location. Defaults to a '.lock' subdirectory under the source directory.",
         "type": "string"
       },
       {
@@ -91,14 +91,6 @@
         "tooltip": "File names with this suffix in the source dir will not be processed",
         "type": "string",
         "defaultValue": ".ignore"
-      },
-      {
-        "uiName": "Output Field Names",
-        "fieldName": "OutputFields",
-        "isOptional": false,
-        "tooltip": "Field names can depend on file format. TEXT format has single default field called 'line'.",
-        "type": "array.string",
-        "defaultValue": null
       },
       {
         "uiName": "Parallelism",
