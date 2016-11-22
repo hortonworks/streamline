@@ -27,12 +27,23 @@ CREATE TABLE IF NOT EXISTS files (
     UNIQUE KEY `jars_UK_name_version` (name, version)
 );
 
+CREATE TABLE IF NOT EXISTS topology_versioninfos (
+  id BIGINT AUTO_INCREMENT NOT NULL,
+  topologyId BIGINT NOT NULL,
+  name VARCHAR(256) NOT NULL,
+  description TEXT NOT NULL,
+  timestamp  BIGINT,
+  PRIMARY KEY (id)
+);
+
 CREATE TABLE IF NOT EXISTS topologies (
     id BIGINT AUTO_INCREMENT NOT NULL,
+    versionId BIGINT NOT NULL,
     name VARCHAR(256) NOT NULL,
     config TEXT NOT NULL,
     timestamp  BIGINT,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id, versionId),
+    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
 );
 
 CREATE TABLE IF NOT EXISTS topology_component_bundles (
@@ -52,9 +63,11 @@ CREATE TABLE IF NOT EXISTS topology_component_bundles (
 
 CREATE TABLE IF NOT EXISTS topology_editor_metadata (
     topologyId BIGINT NOT NULL,
+    versionId BIGINT NOT NULL,
     data TEXT NOT NULL,
     timestamp BIGINT,
-    PRIMARY KEY (topologyId)
+    PRIMARY KEY (topologyId, versionId),
+    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
 );
 
 CREATE TABLE IF NOT EXISTS tag (
@@ -75,12 +88,14 @@ CREATE TABLE IF NOT EXISTS tag_storable_mapping (
 
 CREATE TABLE IF NOT EXISTS streaminfo (
     id BIGINT AUTO_INCREMENT NOT NULL,
+    versionId BIGINT NOT NULL,
     topologyId BIGINT NOT NULL,
     streamId VARCHAR(255) NOT NULL,
     fieldsData TEXT NOT NULL,
     timestamp BIGINT,
-    UNIQUE KEY `UK_streamId` (topologyId, streamId),
-    PRIMARY KEY (id)
+    UNIQUE KEY `UK_streamId` (topologyId, versionId, streamId),
+    PRIMARY KEY (id, versionId),
+    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
 );
 
 CREATE TABLE IF NOT EXISTS notifierinfos (
@@ -97,63 +112,77 @@ CREATE TABLE IF NOT EXISTS notifierinfos (
 
 CREATE TABLE IF NOT EXISTS topology_components (
     id BIGINT AUTO_INCREMENT NOT NULL,
+    versionId BIGINT NOT NULL,
     topologyId BIGINT,
     topologyComponentBundleId BIGINT,
     name VARCHAR(256),
     configData TEXT,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id, versionId)
 );
 
 CREATE TABLE IF NOT EXISTS topology_sources (
     id BIGINT AUTO_INCREMENT NOT NULL,
+    versionId BIGINT NOT NULL,
     topologyId BIGINT NOT NULL,
     topologyComponentBundleId BIGINT NOT NULL,
     name VARCHAR(256) NOT NULL,
     configData TEXT NOT NULL,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id, versionId),
+    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
 );
 
 CREATE TABLE IF NOT EXISTS topology_source_stream_mapping (
     sourceId BIGINT NOT NULL,
+    versionId BIGINT NOT NULL,
     streamId BIGINT NOT NULL,
-    PRIMARY KEY (sourceId, streamId)
+    PRIMARY KEY (sourceId, versionId, streamId),
+    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
 );
 
 CREATE TABLE IF NOT EXISTS topology_sinks (
     id BIGINT AUTO_INCREMENT NOT NULL,
+    versionId BIGINT NOT NULL,
     topologyId BIGINT NOT NULL,
     topologyComponentBundleId BIGINT NOT NULL,
     name VARCHAR(256) NOT NULL,
     configData TEXT NOT NULL,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id, versionId),
+    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
 );
 
 CREATE TABLE IF NOT EXISTS topology_processors (
     id BIGINT AUTO_INCREMENT NOT NULL,
+    versionId BIGINT NOT NULL,
     topologyId BIGINT NOT NULL,
     topologyComponentBundleId BIGINT NOT NULL,
     name VARCHAR(256) NOT NULL,
     configData TEXT NOT NULL,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id, versionId),
+    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
 );
 
 CREATE TABLE IF NOT EXISTS topology_processor_stream_mapping (
     processorId BIGINT NOT NULL,
+    versionId BIGINT NOT NULL,
     streamId BIGINT NOT NULL,
-    PRIMARY KEY (processorId, streamId)
+    PRIMARY KEY (processorId, versionId, streamId),
+    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
 );
 
 CREATE TABLE IF NOT EXISTS topology_edges (
     id BIGINT AUTO_INCREMENT NOT NULL,
+    versionId BIGINT NOT NULL,
     topologyId BIGINT NOT NULL,
     fromId BIGINT NOT NULL,
     toId BIGINT NOT NULL,
     streamGroupingsData TEXT NOT NULL,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id, versionId),
+    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
 );
 
 CREATE TABLE IF NOT EXISTS ruleinfos (
     id BIGINT AUTO_INCREMENT NOT NULL,
+    versionId BIGINT NOT NULL,
     topologyId BIGINT NOT NULL,
     name VARCHAR(256) NOT NULL,
     description VARCHAR(256) NOT NULL,
@@ -163,11 +192,13 @@ CREATE TABLE IF NOT EXISTS ruleinfos (
     parsedRuleStr TEXT NOT NULL,
     window TEXT NOT NULL,
     actions TEXT NOT NULL,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id, versionId),
+    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
 );
 
 CREATE TABLE IF NOT EXISTS branchruleinfos (
     id BIGINT AUTO_INCREMENT NOT NULL,
+    versionId BIGINT NOT NULL,
     topologyId BIGINT NOT NULL,
     name VARCHAR(256) NOT NULL,
     description VARCHAR(256) NOT NULL,
@@ -175,11 +206,13 @@ CREATE TABLE IF NOT EXISTS branchruleinfos (
     `condition` TEXT NOT NULL,
     parsedRuleStr TEXT NOT NULL,
     actions TEXT NOT NULL,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id, versionId),
+    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
 );
 
 CREATE TABLE IF NOT EXISTS windowinfos (
     id BIGINT AUTO_INCREMENT NOT NULL,
+    versionId BIGINT NOT NULL,
     topologyId BIGINT NOT NULL,
     name VARCHAR(256) NOT NULL,
     description VARCHAR(256) NOT NULL,
@@ -190,7 +223,8 @@ CREATE TABLE IF NOT EXISTS windowinfos (
     actions TEXT NOT NULL,
     projections TEXT NULL,
     groupbykeys TEXT NULL,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id, versionId),
+    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
 );
 
 CREATE TABLE IF NOT EXISTS udfs (

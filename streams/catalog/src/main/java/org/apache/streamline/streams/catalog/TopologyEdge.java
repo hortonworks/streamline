@@ -26,9 +26,11 @@ import org.apache.streamline.storage.PrimaryKey;
 import org.apache.streamline.storage.catalog.AbstractStorable;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.apache.streamline.streams.layout.component.Stream.Grouping;
 
@@ -41,6 +43,14 @@ public class TopologyEdge extends AbstractStorable {
 
         // for jackson
         private StreamGrouping() {
+        }
+
+        public StreamGrouping(StreamGrouping other) {
+            this.streamId = other.getStreamId();
+            this.grouping = other.getGrouping();
+            if (other.getFields() != null) {
+                this.fields = new ArrayList<>(other.getFields());
+            }
         }
 
         public Long getStreamId() {
@@ -67,6 +77,7 @@ public class TopologyEdge extends AbstractStorable {
 
     public static final String NAMESPACE = "topology_edges";
     public static final String ID = "id";
+    public static final String VERSIONID = "versionId";
     public static final String TOPOLOGYID = "topologyId";
     public static final String FROMID = "fromId";
     public static final String TOID = "toId";
@@ -74,10 +85,25 @@ public class TopologyEdge extends AbstractStorable {
     public static final String STREAMGROUPINGSDATA = "streamGroupingsData";
 
     private Long id;
+    private Long versionId;
     private Long topologyId;
     private Long fromId;
     private Long toId;
     private List<StreamGrouping> streamGroupings;
+
+    public TopologyEdge() {
+    }
+
+    public TopologyEdge(TopologyEdge other) {
+        setId(other.getId());
+        setVersionId(other.getVersionId());
+        setTopologyId(other.getTopologyId());
+        setFromId(other.getFromId());
+        setToId(other.getToId());
+        if (other.getStreamGroupings() != null) {
+            setStreamGroupings(other.getStreamGroupings().stream().map(StreamGrouping::new).collect(Collectors.toList()));
+        }
+    }
 
     @JsonIgnore
     @Override
@@ -89,7 +115,8 @@ public class TopologyEdge extends AbstractStorable {
     @Override
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<>();
-        fieldToObjectMap.put(new Schema.Field("id", Schema.Type.LONG), this.id);
+        fieldToObjectMap.put(new Schema.Field(ID, Schema.Type.LONG), this.id);
+        fieldToObjectMap.put(new Schema.Field(VERSIONID, Schema.Type.LONG), this.versionId);
         return new PrimaryKey(fieldToObjectMap);
     }
 
@@ -100,6 +127,14 @@ public class TopologyEdge extends AbstractStorable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getVersionId() {
+        return versionId;
+    }
+
+    public void setVersionId(Long versionId) {
+        this.versionId = versionId;
     }
 
     public Long getTopologyId() {
@@ -157,6 +192,7 @@ public class TopologyEdge extends AbstractStorable {
     public Schema getSchema() {
         return Schema.of(
                 Schema.Field.of(ID, Schema.Type.LONG),
+                Schema.Field.of(VERSIONID, Schema.Type.LONG),
                 Schema.Field.of(TOPOLOGYID, Schema.Type.LONG),
                 Schema.Field.of(FROMID, Schema.Type.LONG),
                 Schema.Field.of(TOID, Schema.Type.LONG),
@@ -167,11 +203,12 @@ public class TopologyEdge extends AbstractStorable {
     public String toString() {
         return "TopologyEdge{" +
                 "id=" + id +
+                ", versionId=" + versionId +
                 ", topologyId=" + topologyId +
                 ", fromId=" + fromId +
                 ", toId=" + toId +
                 ", streamGroupings=" + streamGroupings +
-                '}';
+                "} " + super.toString();
     }
 
     @Override
@@ -184,5 +221,24 @@ public class TopologyEdge extends AbstractStorable {
             throw new RuntimeException(e);
         }
         return map;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        TopologyEdge edge = (TopologyEdge) o;
+
+        if (id != null ? !id.equals(edge.id) : edge.id != null) return false;
+        return versionId != null ? versionId.equals(edge.versionId) : edge.versionId == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (versionId != null ? versionId.hashCode() : 0);
+        return result;
     }
 }

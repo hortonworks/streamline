@@ -19,12 +19,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class WindowInfo extends AbstractStorable {
     public static final String NAMESPACE = "windowinfos";
 
     public static final String ID = "id";
+    public static final String VERSIONID = "versionId";
     public static final String TOPOLOGY_ID = "topologyId";
     public static final String NAME = "name";
     public static final String DESCRIPTION = "description";
@@ -37,6 +39,7 @@ public class WindowInfo extends AbstractStorable {
     public static final String GROUPBYKEYS = "groupbykeys";
 
     private Long id;
+    private Long versionId;
     private Long topologyId;
     private String name = StringUtils.EMPTY;
     private String description = StringUtils.EMPTY;
@@ -48,6 +51,31 @@ public class WindowInfo extends AbstractStorable {
     private List<Projection> projections;
     private List<String> groupbykeys;
 
+    public WindowInfo() {
+    }
+
+    public WindowInfo(WindowInfo other) {
+        setId(other.getId());
+        setVersionId(other.getVersionId());
+        setTopologyId(other.getTopologyId());
+        setName(other.getName());
+        setDescription(other.getDescription());
+        if (other.getStreams() != null) {
+            setStreams(new ArrayList<>(other.getStreams()));
+        }
+        setCondition(other.getCondition());
+        setParsedRuleStr(other.getParsedRuleStr());
+        setWindow(new Window(other.getWindow()));
+        if (other.getActions() != null) {
+            setActions(other.getActions().stream().map(Action::new).collect(Collectors.toList()));
+        }
+        if (other.getProjections() != null) {
+            setProjections(other.getProjections().stream().map(Projection::new).collect(Collectors.toList()));
+        }
+        if (other.getGroupbykeys() != null) {
+            setGroupbykeys(new ArrayList<>(other.getGroupbykeys()));
+        }
+    }
     /**
      * A Projection can be either an expression or a function with zero or more args.
      * <ol>
@@ -78,6 +106,15 @@ public class WindowInfo extends AbstractStorable {
         public Projection() {
         }
 
+        public Projection(Projection other) {
+            this.expr = other.expr;
+            this.functionName = other.functionName;
+            if (other.args != null) {
+                this.args = new ArrayList<>(other.args);
+            }
+            this.outputFieldName = other.outputFieldName;
+        }
+
         public Projection(String expr, String functionName, List<String> args, String outputFieldName) {
             this.expr = expr;
             this.functionName = functionName;
@@ -106,7 +143,8 @@ public class WindowInfo extends AbstractStorable {
     @Override
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<Schema.Field, Object>();
-        fieldToObjectMap.put(new Schema.Field("id", Schema.Type.LONG), this.id);
+        fieldToObjectMap.put(new Schema.Field(ID, Schema.Type.LONG), this.id);
+        fieldToObjectMap.put(new Schema.Field(VERSIONID, Schema.Type.LONG), this.versionId);
         return new PrimaryKey(fieldToObjectMap);
     }
 
@@ -122,6 +160,14 @@ public class WindowInfo extends AbstractStorable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getVersionId() {
+        return versionId;
+    }
+
+    public void setVersionId(Long versionId) {
+        this.versionId = versionId;
     }
 
     public String getName() {
@@ -217,6 +263,7 @@ public class WindowInfo extends AbstractStorable {
     public Schema getSchema() {
         return Schema.of(
                 Schema.Field.of(ID, Schema.Type.LONG),
+                Schema.Field.of(VERSIONID, Schema.Type.LONG),
                 Schema.Field.of(TOPOLOGY_ID, Schema.Type.LONG),
                 Schema.Field.of(NAME, Schema.Type.STRING),
                 Schema.Field.of(DESCRIPTION, Schema.Type.STRING),
@@ -250,6 +297,7 @@ public class WindowInfo extends AbstractStorable {
     @Override
     public Storable fromMap(Map<String, Object> map) {
         setId((Long) map.get(ID));
+        setVersionId((Long) map.get(VERSIONID));
         setTopologyId((Long) map.get(TOPOLOGY_ID));
         setName((String) map.get(NAME));
         setDescription((String) map.get(DESCRIPTION));
@@ -289,5 +337,24 @@ public class WindowInfo extends AbstractStorable {
             throw new RuntimeException(e);
         }
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        WindowInfo that = (WindowInfo) o;
+
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+        return versionId != null ? versionId.equals(that.versionId) : that.versionId == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (versionId != null ? versionId.hashCode() : 0);
+        return result;
     }
 }

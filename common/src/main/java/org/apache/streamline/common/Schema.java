@@ -171,6 +171,12 @@ public class Schema implements Serializable {
 
         }
 
+        public Field(Field other) {
+            name = other.getName();
+            type = other.getType();
+            optional = other.isOptional();
+        }
+
         public static Field of(String name, Type type) {
             return new Field(name, type);
         }

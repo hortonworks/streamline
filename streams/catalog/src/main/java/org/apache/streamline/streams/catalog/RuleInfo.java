@@ -32,9 +32,11 @@ import org.apache.streamline.streams.layout.component.rule.expression.Window;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * A rule as represented in the UI layout
@@ -44,6 +46,7 @@ public class RuleInfo extends AbstractStorable {
     public static final String NAMESPACE = "ruleinfos";
 
     public static final String ID = "id";
+    public static final String VERSIONID = "versionId";
     public static final String TOPOLOGY_ID = "topologyId";
     public static final String NAME = "name";
     public static final String DESCRIPTION = "description";
@@ -55,6 +58,7 @@ public class RuleInfo extends AbstractStorable {
     public static final String ACTIONS = "actions";
 
     private Long id;
+    private Long versionId;
     private Long topologyId;
     private String name;
     private String description;
@@ -75,11 +79,32 @@ public class RuleInfo extends AbstractStorable {
     public RuleInfo() {
     }
 
+    public RuleInfo(RuleInfo other) {
+        setId(other.getId());
+        setVersionId(other.getVersionId());
+        setTopologyId(other.getTopologyId());
+        setName(other.getName());
+        setDescription(other.getDescription());
+        setCondition(other.getCondition());
+        setSql(other.getSql());
+        setParsedRuleStr(other.getParsedRuleStr());
+        if (other.getWindow() != null) {
+            setWindow(new Window(other.getWindow()));
+        }
+        if (other.getStreams() != null) {
+            setStreams(new ArrayList<>(other.getStreams()));
+        }
+        if (other.getActions() != null) {
+            setActions(other.getActions().stream().map(Action::new).collect(Collectors.toList()));
+        }
+    }
+
     @JsonIgnore
     @Override
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<>();
-        fieldToObjectMap.put(new Schema.Field("id", Schema.Type.LONG), this.id);
+        fieldToObjectMap.put(new Schema.Field(ID, Schema.Type.LONG), this.id);
+        fieldToObjectMap.put(new Schema.Field(VERSIONID, Schema.Type.LONG), this.versionId);
         return new PrimaryKey(fieldToObjectMap);
     }
 
@@ -95,6 +120,14 @@ public class RuleInfo extends AbstractStorable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getVersionId() {
+        return versionId;
+    }
+
+    public void setVersionId(Long versionId) {
+        this.versionId = versionId;
     }
 
     public String getName() {
@@ -182,6 +215,7 @@ public class RuleInfo extends AbstractStorable {
     public Schema getSchema() {
         return Schema.of(
                 Schema.Field.of(ID, Schema.Type.LONG),
+                Schema.Field.of(VERSIONID, Schema.Type.LONG),
                 Schema.Field.of(TOPOLOGY_ID, Schema.Type.LONG),
                 Schema.Field.of(NAME, Schema.Type.STRING),
                 Schema.Field.of(DESCRIPTION, Schema.Type.STRING),
@@ -212,6 +246,7 @@ public class RuleInfo extends AbstractStorable {
     @Override
     public Storable fromMap(Map<String, Object> map) {
         setId((Long) map.get(ID));
+        setVersionId((Long) map.get(VERSIONID));
         setTopologyId((Long) map.get(TOPOLOGY_ID));
         setName((String) map.get(NAME));
         setDescription((String) map.get(DESCRIPTION));
@@ -250,14 +285,14 @@ public class RuleInfo extends AbstractStorable {
         RuleInfo ruleInfo = (RuleInfo) o;
 
         if (id != null ? !id.equals(ruleInfo.id) : ruleInfo.id != null) return false;
-        return topologyId != null ? topologyId.equals(ruleInfo.topologyId) : ruleInfo.topologyId == null;
+        return versionId != null ? versionId.equals(ruleInfo.versionId) : ruleInfo.versionId == null;
 
     }
 
     @Override
     public int hashCode() {
         int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (topologyId != null ? topologyId.hashCode() : 0);
+        result = 31 * result + (versionId != null ? versionId.hashCode() : 0);
         return result;
     }
 
@@ -265,15 +300,16 @@ public class RuleInfo extends AbstractStorable {
     public String toString() {
         return "RuleInfo{" +
                 "id=" + id +
+                ", versionId=" + versionId +
                 ", topologyId=" + topologyId +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", streams=" + streams +
-                ", condition=" + condition +
+                ", condition='" + condition + '\'' +
                 ", sql='" + sql + '\'' +
                 ", parsedRuleStr='" + parsedRuleStr + '\'' +
                 ", window=" + window +
                 ", actions=" + actions +
-                "}";
+                "} " + super.toString();
     }
 }

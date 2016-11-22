@@ -28,9 +28,11 @@ import java.util.Map;
 public class TopologySourceStreamMapping extends AbstractStorable {
     public static final String NAMESPACE = "topology_source_stream_mapping";
     public static final String FIELD_SOURCE_ID = "sourceId";
+    public static final String FIELD_VERSION_ID = "versionId";
     public static final String FIELD_STREAM_ID = "streamId";
 
     private Long sourceId;
+    private Long versionId;
     private Long streamId;
 
 
@@ -39,8 +41,9 @@ public class TopologySourceStreamMapping extends AbstractStorable {
 
     }
 
-    public TopologySourceStreamMapping(Long sourceId, Long streamId) {
+    public TopologySourceStreamMapping(Long sourceId, Long versionId, Long streamId) {
         this.sourceId = sourceId;
+        this.versionId = versionId;
         this.streamId = streamId;
     }
 
@@ -53,6 +56,7 @@ public class TopologySourceStreamMapping extends AbstractStorable {
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<>();
         fieldToObjectMap.put(Schema.Field.of(FIELD_SOURCE_ID, Schema.Type.LONG), this.sourceId);
+        fieldToObjectMap.put(Schema.Field.of(FIELD_VERSION_ID, Schema.Type.LONG), this.versionId);
         fieldToObjectMap.put(new Schema.Field(FIELD_STREAM_ID, Schema.Type.LONG), this.streamId);
         return new PrimaryKey(fieldToObjectMap);
     }
@@ -64,6 +68,14 @@ public class TopologySourceStreamMapping extends AbstractStorable {
 
     public void setSourceId(Long sourceId) {
         this.sourceId = sourceId;
+    }
+
+    public Long getVersionId() {
+        return versionId;
+    }
+
+    public void setVersionId(Long versionId) {
+        this.versionId = versionId;
     }
 
     public Long getStreamId() {
@@ -82,6 +94,7 @@ public class TopologySourceStreamMapping extends AbstractStorable {
         TopologySourceStreamMapping that = (TopologySourceStreamMapping) o;
 
         if (sourceId != null ? !sourceId.equals(that.sourceId) : that.sourceId != null) return false;
+        if (versionId != null ? !versionId.equals(that.versionId) : that.versionId != null) return false;
         return streamId != null ? streamId.equals(that.streamId) : that.streamId == null;
 
     }
@@ -89,6 +102,7 @@ public class TopologySourceStreamMapping extends AbstractStorable {
     @Override
     public int hashCode() {
         int result = sourceId != null ? sourceId.hashCode() : 0;
+        result = 31 * result + (versionId != null ? versionId.hashCode() : 0);
         result = 31 * result + (streamId != null ? streamId.hashCode() : 0);
         return result;
     }
@@ -97,7 +111,8 @@ public class TopologySourceStreamMapping extends AbstractStorable {
     public String toString() {
         return "TopologySourceStreamMapping{" +
                 "sourceId=" + sourceId +
+                ", versionId=" + versionId +
                 ", streamId=" + streamId +
-                '}';
+                "} " + super.toString();
     }
 }

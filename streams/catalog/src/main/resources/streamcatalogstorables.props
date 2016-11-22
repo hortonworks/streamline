@@ -15,3 +15,4 @@ org.apache.streamline.streams.catalog.UDFInfo
 org.apache.streamline.streams.catalog.RuleInfo
 org.apache.streamline.streams.catalog.WindowInfo
 org.apache.streamline.streams.catalog.topology.TopologyComponentBundle
+org.apache.streamline.streams.catalog.TopologyVersionInfo

@@ -80,9 +80,6 @@ public class InMemoryStorageManager implements StorageManager {
             storageMap.putIfAbsent(namespace, new ConcurrentHashMap<PrimaryKey, Storable>());
             nameSpaceClassMap.putIfAbsent(namespace, storable.getClass());
         }
-        if (!storageMap.get(namespace).containsKey(id)) {
-            nextId(namespace);
-        }
         storageMap.get(namespace).put(id, storable);
     }
 

@@ -14,12 +14,24 @@ import java.util.Map;
 public class TopologyEditorMetadata extends AbstractStorable {
     public static final String NAME_SPACE = "topology_editor_metadata";
     public static final String TOPOLOGY_ID = "topologyId";
+    public static final String VERSION_ID = "versionId";
     public static final String DATA = "data";
     public static final String TIMESTAMP = "timestamp";
 
     private Long topologyId;
+    private Long versionId;
     private String data;
     private Long timestamp;
+
+    public TopologyEditorMetadata() {
+    }
+
+    public TopologyEditorMetadata(TopologyEditorMetadata other) {
+        setTopologyId(other.getTopologyId());
+        setVersionId(other.getVersionId());
+        setData(other.getData());
+        setTimestamp(other.getTimestamp());
+    }
 
     public void setTopologyId(Long topologyId) {
         this.topologyId = topologyId;
@@ -45,11 +57,20 @@ public class TopologyEditorMetadata extends AbstractStorable {
         return timestamp;
     }
 
+    public Long getVersionId() {
+        return versionId;
+    }
+
+    public void setVersionId(Long versionId) {
+        this.versionId = versionId;
+    }
+
     @Override
     @JsonIgnore
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<>();
         fieldToObjectMap.put(new Schema.Field(TOPOLOGY_ID, Schema.Type.LONG), this.topologyId);
+        fieldToObjectMap.put(new Schema.Field(VERSION_ID, Schema.Type.LONG), this.versionId);
         return new PrimaryKey(fieldToObjectMap);
     }
 
@@ -63,9 +84,10 @@ public class TopologyEditorMetadata extends AbstractStorable {
     public String toString() {
         return "TopologyEditorMetadata{" +
                 "topologyId=" + topologyId +
+                ", versionId=" + versionId +
                 ", data='" + data + '\'' +
                 ", timestamp=" + timestamp +
-                '}';
+                "}";
     }
 
     @Override
@@ -73,17 +95,17 @@ public class TopologyEditorMetadata extends AbstractStorable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        TopologyEditorMetadata topologyEditorMetadata = (TopologyEditorMetadata) o;
+        TopologyEditorMetadata metadata = (TopologyEditorMetadata) o;
 
-        if (topologyId != null ? !topologyId.equals(topologyEditorMetadata.topologyId) : topologyEditorMetadata.topologyId != null) return false;
-        return !(data != null ? !data.equals(topologyEditorMetadata.data) : topologyEditorMetadata.data != null);
+        if (topologyId != null ? !topologyId.equals(metadata.topologyId) : metadata.topologyId != null) return false;
+        return versionId != null ? versionId.equals(metadata.versionId) : metadata.versionId == null;
 
     }
 
     @Override
     public int hashCode() {
         int result = topologyId != null ? topologyId.hashCode() : 0;
-        result = 31 * result + (data != null ? data.hashCode() : 0);
+        result = 31 * result + (versionId != null ? versionId.hashCode() : 0);
         return result;
     }
 

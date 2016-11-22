@@ -207,7 +207,10 @@ public class RestIntegrationTest {
                     .withMultiPart().withEntitiyNameHeader("notifierConfig").withFileNameHeader("notifierJarFile")
                     .withFileToUpload("testnotifier.jar"),
             new ResourceTestElement(createTopology(1l, "iotasTopology"), createTopology(1l, "iotasTopologyPut"), "1", rootUrl + "topologies"),
-            new ResourceTestElement(createTopologyEditorMetadata(1l, "{\"x\":5,\"y\":6}"), createTopologyEditorMetadata(1l, "{\"x\":6,\"y\":5}"), "1", rootUrl + "system/topologyeditormetadata"),
+            new ResourceTestElement(createTopologyEditorMetadata(1l, "{\"x\":5,\"y\":6}"),
+                    createTopologyEditorMetadata(1l, "{\"x\":6,\"y\":5}"), "1", rootUrl + "system/topologyeditormetadata")
+                    .withDependentResource(new ResourceTestElement(createTopology(1l, "iotasTopology"), createTopology(1l, "iotasTopologyPut"), "1", rootUrl + "topologies"))
+            .withFieldsToIgnore(Collections.singletonList("versionId")),
             /* Some issue with sending multi part for requests using this client and hence this test case is ignored for now. Fix later.
             new ResourceTestElement(createTopologyComponent(1l, "kafkaSpoutComponent", TopologyComponentBundle.TopologyComponentType.SOURCE, "KAFKA"), createTopologyComponent(1l, "kafkaSpoutComponentPut", TopologyComponentBundle.TopologyComponentType.SOURCE, "KAFKA") , "1", rootUrl + "streams/componentbundles/SOURCE"),
             new ResourceTestElement(createTopologyComponent(2l, "parserProcessor", TopologyComponentBundle.TopologyComponentType.PROCESSOR, "PARSER"), createTopologyComponent(2l, "parserProcessorPut", TopologyComponentBundle.TopologyComponentType.PROCESSOR, "PARSER"), "2", rootUrl + "streams/componentbundles/PROCESSOR"),
@@ -827,6 +830,7 @@ public class RestIntegrationTest {
     private Topology createTopology (Long id, String name) {
         Topology topology = new Topology();
         topology.setId(id);
+        topology.setVersionId(1L);
         topology.setName(name);
         topology.setConfig("{}");
         topology.setTimestamp(System.currentTimeMillis());

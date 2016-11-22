@@ -23,6 +23,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class TopologySink extends TopologyComponent {
     public static final String NAMESPACE = "topology_sinks";
 
+    public TopologySink() {
+    }
+
+    public TopologySink(TopologySink other) {
+        super(other);
+    }
+
     @JsonIgnore
     @Override
     public String getNameSpace() {

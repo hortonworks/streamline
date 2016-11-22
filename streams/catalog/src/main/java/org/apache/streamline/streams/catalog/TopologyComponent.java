@@ -33,6 +33,7 @@ public class TopologyComponent extends AbstractStorable {
     public static final String NAMESPACE = "topology_components";
 
     public static final String ID = "id";
+    public static final String VERSIONID = "versionId";
     public static final String TOPOLOGYID = "topologyId";
     public static final String TOPOLOGY_COMPONENT_BUNDLE_ID = "topologyComponentBundleId";
     public static final String NAME = "name";
@@ -42,14 +43,29 @@ public class TopologyComponent extends AbstractStorable {
     private Long id;
     private Long topologyId = -1L;
     private Long topologyComponentBundleId = -1L;
+    private Long versionId = -1L;
     private String name = StringUtils.EMPTY;
     private Config config;
+
+    public TopologyComponent() {
+
+    }
+
+    public TopologyComponent(TopologyComponent other) {
+        setId(other.getId());
+        setTopologyId(other.getTopologyId());
+        setTopologyComponentBundleId(other.getTopologyComponentBundleId());
+        setVersionId(other.getVersionId());
+        setName(other.getName());
+        setConfig(new Config(other.getConfig()));
+    }
 
     @JsonIgnore
     @Override
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<>();
-        fieldToObjectMap.put(new Schema.Field("id", Schema.Type.LONG), this.id);
+        fieldToObjectMap.put(new Schema.Field(ID, Schema.Type.LONG), this.id);
+        fieldToObjectMap.put(new Schema.Field(VERSIONID, Schema.Type.LONG), this.versionId);
         return new PrimaryKey(fieldToObjectMap);
     }
 
@@ -63,6 +79,7 @@ public class TopologyComponent extends AbstractStorable {
     public Schema getSchema() {
         return Schema.of(
                 Schema.Field.of(ID, Schema.Type.LONG),
+                Schema.Field.of(VERSIONID, Schema.Type.LONG),
                 Schema.Field.of(TOPOLOGYID, Schema.Type.LONG),
                 Schema.Field.of(TOPOLOGY_COMPONENT_BUNDLE_ID, Schema.Type.LONG),
                 Schema.Field.of(NAME, Schema.Type.STRING),
@@ -76,6 +93,14 @@ public class TopologyComponent extends AbstractStorable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getVersionId() {
+        return versionId;
+    }
+
+    public void setVersionId(Long versionId) {
+        this.versionId = versionId;
     }
 
     public Long getTopologyId() {
@@ -139,4 +164,22 @@ public class TopologyComponent extends AbstractStorable {
         return map;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        TopologyComponent that = (TopologyComponent) o;
+
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+        return versionId != null ? versionId.equals(that.versionId) : that.versionId == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (versionId != null ? versionId.hashCode() : 0);
+        return result;
+    }
 }

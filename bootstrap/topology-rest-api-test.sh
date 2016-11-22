@@ -69,7 +69,9 @@ normOutputStreamId=$(getId $out)
 # --
 # Create kafka data source
 # --
-echo -e "\n------ create kafka data source"
+out=$(curl -s -X GET -H "Content-Type: application/json" -H "Cache-Control: no-cache" "${catalogurl}/streams/componentbundles/SOURCE?subType=KAFKA")
+bundleId=$(getId $out)
+echo -e "\n------ create kafka data source, bundle id: ${bundleId}"
 out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
     "name": "kafkaDataSource",
     "config": {
@@ -82,8 +84,8 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
             "refreshFreqSecs": 60
         }
     },
-    "type": "KAFKA",
-    "outputStreamIds": ['"$streamid1"']
+    "topologyComponentBundleId": '"${bundleId}"',
+    "outputStreamIds": ['"$streamid1"', '$parserStream']
 }' "${catalogurl}/topologies/$topologyid/sources")
 
 echo $out
@@ -105,7 +107,9 @@ kinesisstream=$(getId $out)
 # --
 # Create kinesis data source
 # --
-echo -e "\n------"
+out=$(curl -s -X GET -H "Content-Type: application/json" -H "Cache-Control: no-cache" "${catalogurl}/streams/componentbundles/SOURCE?subType=KAFKA")
+bundleId=$(getId $out)
+echo -e "\n------ create Kinesis data source, bundle id: ${bundleId}"
 out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
     "name": "kinesisDataSource",
     "config": {
@@ -117,7 +121,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
             "region": "US_WEST_2"
         }
     },
-    "type": "KINESIS",
+    "topologyComponentBundleId": '"${bundleId}"',
     "outputStreamIds": ['"$kinesisstream"']
 }' "${catalogurl}/topologies/$topologyid/sources")
 
@@ -140,7 +144,9 @@ eventhubstream=$(getId $out)
 # --
 # Create eventhub data source
 # --
-echo -e "\n------"
+out=$(curl -s -X GET -H "Content-Type: application/json" -H "Cache-Control: no-cache" "${catalogurl}/streams/componentbundles/SOURCE?subType=KAFKA")
+bundleId=$(getId $out)
+echo -e "\n------ create Eventhub data source, bundle id: ${bundleId}"
 out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
     "name": "eventhubDataSource",
     "config": {
@@ -158,7 +164,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
             "consumerGroupName": "group1"
         }
     },
-    "type": "EVENTHUB",
+    "topologyComponentBundleId": '"${bundleId}"',
     "outputStreamIds": ['"$eventhubstream"']
 }' "${catalogurl}/topologies/$topologyid/sources")
 
@@ -317,7 +323,9 @@ rulid3=$(getId $out)
 # --
 # Create Rule processor
 # --
-echo -e "\n------"
+out=$(curl -s -X GET -H "Content-Type: application/json" -H "Cache-Control: no-cache" "${catalogurl}/streams/componentbundles/PROCESSOR?subType=RULE")
+bundleId=$(getId $out)
+echo -e "\n------ create Rule, bundle id: ${bundleId}"
 out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
     "name": "RuleProcessor",
     "config": {
@@ -325,7 +333,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
             "rules": ['$ruleid','$windowruleid','$rulid2']
         }
     },
-    "type": "RULE",
+    "topologyComponentBundleId": '"${bundleId}"',
     "outputStreamIds": ['$streamid3']
 }' "${catalogurl}/topologies/$topologyid/processors")
 
@@ -335,7 +343,9 @@ ruleprocessorid=$(getId $out)
 # --
 # Create Windowed processor
 # --
-echo -e "\n------"
+out=$(curl -s -X GET -H "Content-Type: application/json" -H "Cache-Control: no-cache" "${catalogurl}/streams/componentbundles/PROCESSOR?subType=WINDOW")
+bundleId=$(getId $out)
+echo -e "\n------ create Windowed rule, bundle id: ${bundleId}"
 out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
     "name": "Windowed processor",
     "config": {
@@ -343,7 +353,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
             "rules": ['$rulid3']
         }
     },
-    "type": "WINDOW",
+    "topologyComponentBundleId": '"${bundleId}"',
     "outputStreamIds": ['$streamid3']
 }' "${catalogurl}/topologies/$topologyid/processors")
 
@@ -357,10 +367,12 @@ notifierJar=$(curl -s "${catalogurl}/notifiers?name=email_notifier" | grep -oE '
 # --
 # Create notification sink
 # --
-echo -e "\n------"
+out=$(curl -s -X GET -H "Content-Type: application/json" -H "Cache-Control: no-cache" "${catalogurl}/streams/componentbundles/SINK?subType=NOTIFICATION")
+bundleId=$(getId $out)
+echo -e "\n------ create Notification, bundle id: ${bundleId}"
 out=$(curl -s  -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
         "name": "notificationsink",
-        "type": "NOTIFICATION",
+        "topologyComponentBundleId": '"${bundleId}"',
         "config": {
             "properties" : {
           "notifierName": "email_notifier",
@@ -396,12 +408,14 @@ notificationsinkid=$(getId $out)
 # ------------------------------------------------------------------------
 # Normalization
 # ------------------------------------------------------------------------
-echo -e "\n---- Create Fine grained normalization processor --"
+out=$(curl -s -X GET -H "Content-Type: application/json" -H "Cache-Control: no-cache" "${catalogurl}/streams/componentbundles/PROCESSOR?subType=NORMALIZATION")
+bundleId=$(getId $out)
+echo -e "\n---- Create Fine grained normalization processor, bundle id: ${bundleId} --"
 out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
     "name": "FinegrainedNormalizationProcessor",
     "config": {
         "properties": {
-          "normalizationProcessorType": "fineGrained",
+          "type": "fineGrained",
           "normalizationConfig": {
           "'$parserStream'": {
           "__type": "org.apache.streamline.streams.layout.component.impl.normalization.FieldBasedNormalizationConfig",
@@ -438,19 +452,21 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
         }
       }
     },
-    "type": "NORMALIZATION",
+    "topologyComponentBundleId": '"${bundleId}"',
     "outputStreamIds": ["'$normOutputStreamId'"]
 }' "${catalogurl}/topologies/$topologyid/processors")
 
 echo $out
 fgNormProcId=$(getId $out)
 
-echo -e "\n------ Create Bulk normalization processor --------------"
+out=$(curl -s -X GET -H "Content-Type: application/json" -H "Cache-Control: no-cache" "${catalogurl}/streams/componentbundles/PROCESSOR?subType=NORMALIZATION")
+bundleId=$(getId $out)
+echo -e "\n---- Create Bulk normalization processor, bundle id: ${bundleId} --"
 out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache"  -d '{
     "name": "BulkNormalizationProcessor",
     "config": {
         "properties": {
-          "normalizationProcessorType": "bulk",
+          "type": "bulk",
           "normalizationConfig": {
             "'$parserStream'": {
             "__type": "org.apache.streamline.streams.layout.component.impl.normalization.BulkNormalizationConfig",
@@ -459,7 +475,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
           }
         }
     },
-    "type": "NORMALIZATION",
+    "topologyComponentBundleId": '"${bundleId}"',
     "outputStreamIds": ["'$normOutputStreamId'"]
 }' "${catalogurl}/topologies/$topologyid/processors")
 

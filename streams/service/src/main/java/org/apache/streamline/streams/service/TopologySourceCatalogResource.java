@@ -40,17 +40,19 @@ import java.util.List;
 
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
+import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_VERSION_NOT_FOUND;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.apache.streamline.common.util.WSUtils.buildTopologyIdAndVersionIdAwareQueryParams;
 
 /**
  * Source component within an StreamlineTopology
  */
-@Path("/v1/catalog/topologies/{topologyId}/sources")
+@Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class TopologySourceCatalogResource {
     private final StreamCatalogService catalogService;
@@ -88,10 +90,25 @@ public class TopologySourceCatalogResource {
      * </pre>
      */
     @GET
+    @Path("/topologies/{topologyId}/sources")
     @Timed
     public Response listTopologySources(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) {
-        List<QueryParam> queryParams = WSUtils.buildTopologyIdAwareQueryParams(topologyId, uriInfo);
+        Long currentVersionId = catalogService.getCurrentVersionId(topologyId);
+        return listTopologySources(
+                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, currentVersionId, uriInfo));
+    }
 
+    @GET
+    @Path("/topologies/{topologyId}/versions/{versionId}/sources")
+    @Timed
+    public Response listTopologySourcesForVersion(@PathParam("topologyId") Long topologyId,
+                                                  @PathParam("versionId") Long versionId,
+                                                  @Context UriInfo uriInfo) {
+        return listTopologySources(
+                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, versionId, uriInfo));
+    }
+
+    private Response listTopologySources(List<QueryParam> queryParams) {
         try {
             Collection<TopologySource> sources = catalogService.listTopologySources(queryParams);
             if (sources != null) {
@@ -100,13 +117,12 @@ public class TopologySourceCatalogResource {
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
-
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, queryParams.toString());
     }
 
     /**
      * <p>
-     * Gets a specific topology source by Id. For example,
+     * Gets the 'CURRENT' version of specific topology source by Id. For example,
      * </p>
      * <b>GET /api/v1/catalog/topologies/:TOPOLOGY_ID/sources/:SOURCE_ID</b>
      * <pre>
@@ -131,18 +147,36 @@ public class TopologySourceCatalogResource {
      * </pre>
      */
     @GET
-    @Path("/{id}")
+    @Path("/topologies/{topologyId}/sources/{id}")
     @Timed
     public Response getTopologySourceById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sourceId) {
         try {
-            TopologySource source = catalogService.getTopologySource(sourceId);
-            if (source != null && source.getTopologyId().equals(topologyId)) {
+            TopologySource source = catalogService.getTopologySource(topologyId, sourceId);
+            if (source != null) {
                 return WSUtils.respond(source, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, buildMessageForCompositeId(topologyId, sourceId));
+    }
+
+    @GET
+    @Path("/topologies/{topologyId}/versions/{versionId}/sources/{id}")
+    @Timed
+    public Response getTopologySourceByIdAndVersion(@PathParam("topologyId") Long topologyId,
+                                                    @PathParam("id") Long sourceId,
+                                                    @PathParam("versionId") Long versionId) {
+        try {
+            TopologySource source = catalogService.getTopologySource(topologyId, sourceId, versionId);
+            if (source != null) {
+                return WSUtils.respond(source, OK, SUCCESS);
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+        return WSUtils.respond(NOT_FOUND, ENTITY_VERSION_NOT_FOUND, buildMessageForCompositeId(topologyId, sourceId),
+                versionId.toString());
     }
 
     /**
@@ -190,6 +224,7 @@ public class TopologySourceCatalogResource {
      * </pre>
      */
     @POST
+    @Path("/topologies/{topologyId}/sources")
     @Timed
     public Response addTopologySource(@PathParam("topologyId") Long topologyId, TopologySource topologySource) {
         try {
@@ -241,7 +276,7 @@ public class TopologySourceCatalogResource {
      * </pre>
      */
     @PUT
-    @Path("/{id}")
+    @Path("/topologies/{topologyId}/sources/{id}")
     @Timed
     public Response addOrUpdateTopologySource(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sourceId,
                                               TopologySource topologySource) {
@@ -280,11 +315,11 @@ public class TopologySourceCatalogResource {
      * </pre>
      */
     @DELETE
-    @Path("/{id}")
+    @Path("/topologies/{topologyId}/sources/{id}")
     @Timed
     public Response removeTopologySource(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sourceId) {
         try {
-            TopologySource topologySource = catalogService.removeTopologySource(sourceId);
+            TopologySource topologySource = catalogService.removeTopologySource(topologyId, sourceId);
             if (topologySource != null) {
                 return WSUtils.respond(topologySource, OK, SUCCESS);
             } else {

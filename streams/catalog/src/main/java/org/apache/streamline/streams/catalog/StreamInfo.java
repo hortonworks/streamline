@@ -30,9 +30,11 @@ import org.apache.streamline.storage.Storable;
 import org.apache.streamline.storage.catalog.AbstractStorable;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Catalog db entity for mapping output stream information
@@ -40,6 +42,7 @@ import java.util.Map;
 public class StreamInfo extends AbstractStorable {
     public static final String NAMESPACE = "streaminfo";
     public static final String ID = "id";
+    public static final String VERSIONID = "versionId";
     public static final String STREAMID = "streamId";
     public static final String FIELDSDATA = "fieldsData";
     public static final String TIMESTAMP = "timestamp";
@@ -48,6 +51,8 @@ public class StreamInfo extends AbstractStorable {
 
     // unique storage level id
     private Long id;
+
+    private Long versionId;
 
     // the stream identifier string
     private String streamId;
@@ -61,6 +66,21 @@ public class StreamInfo extends AbstractStorable {
     // db insert/update timestamp
     private Long timestamp;
 
+    public StreamInfo() {
+    }
+
+    // copy ctor
+    public StreamInfo(StreamInfo other) {
+        setId(other.getId());
+        setVersionId(other.getVersionId());
+        setStreamId(other.getStreamId());
+        setTopologyId(other.getTopologyId());
+        if (other.getFields() != null) {
+            setFields(other.getFields().stream().map(Field::new).collect(Collectors.toList()));
+        }
+        setTimestamp(other.getTimestamp());
+    }
+
     @JsonIgnore
     @Override
     public String getNameSpace() {
@@ -71,7 +91,8 @@ public class StreamInfo extends AbstractStorable {
     @Override
     public PrimaryKey getPrimaryKey() {
         Map<Field, Object> fieldToObjectMap = new HashMap<>();
-        fieldToObjectMap.put(new Schema.Field("id", Schema.Type.LONG), this.id);
+        fieldToObjectMap.put(new Schema.Field(ID, Schema.Type.LONG), this.id);
+        fieldToObjectMap.put(new Schema.Field(VERSIONID, Schema.Type.LONG), this.versionId);
         return new PrimaryKey(fieldToObjectMap);
     }
 
@@ -80,6 +101,7 @@ public class StreamInfo extends AbstractStorable {
     public Schema getSchema() {
         return Schema.of(
                 Field.of(ID, Schema.Type.LONG),
+                Field.of(VERSIONID, Schema.Type.LONG),
                 Field.of(STREAMID, Schema.Type.STRING),
                 Field.of(FIELDSDATA, Schema.Type.STRING), // fields are serialized into fieldsdata
                 Field.of(TIMESTAMP, Schema.Type.LONG),
@@ -94,6 +116,14 @@ public class StreamInfo extends AbstractStorable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getVersionId() {
+        return versionId;
+    }
+
+    public void setVersionId(Long versionId) {
+        this.versionId = versionId;
     }
 
     public String getStreamId() {
@@ -159,20 +189,14 @@ public class StreamInfo extends AbstractStorable {
         StreamInfo that = (StreamInfo) o;
 
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (streamId != null ? !streamId.equals(that.streamId) : that.streamId != null) return false;
-        if (topologyId != null ? !topologyId.equals(that.topologyId) : that.topologyId != null) return false;
-        if (fields != null ? !fields.equals(that.fields) : that.fields != null) return false;
-        return timestamp != null ? timestamp.equals(that.timestamp) : that.timestamp == null;
+        return versionId != null ? versionId.equals(that.versionId) : that.versionId == null;
 
     }
 
     @Override
     public int hashCode() {
         int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (streamId != null ? streamId.hashCode() : 0);
-        result = 31 * result + (topologyId != null ? topologyId.hashCode() : 0);
-        result = 31 * result + (fields != null ? fields.hashCode() : 0);
-        result = 31 * result + (timestamp != null ? timestamp.hashCode() : 0);
+        result = 31 * result + (versionId != null ? versionId.hashCode() : 0);
         return result;
     }
 
@@ -180,11 +204,12 @@ public class StreamInfo extends AbstractStorable {
     public String toString() {
         return "StreamInfo{" +
                 "id=" + id +
+                ", versionId=" + versionId +
                 ", streamId='" + streamId + '\'' +
                 ", topologyId=" + topologyId +
                 ", fields=" + fields +
                 ", timestamp=" + timestamp +
-                "}";
+                "} " + super.toString();
     }
 
     @Override
@@ -202,6 +227,7 @@ public class StreamInfo extends AbstractStorable {
     @Override
     public Storable fromMap(Map<String, Object> map) {
         setId((Long) map.get(ID));
+        setVersionId((Long) map.get(VERSIONID));
         setStreamId((String) map.get(STREAMID));
         setTopologyId((Long) map.get(TOPOLOGYID));
         setTimestamp((Long)map.get(TIMESTAMP));

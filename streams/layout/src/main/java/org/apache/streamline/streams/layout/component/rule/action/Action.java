@@ -40,6 +40,14 @@ public class Action implements Serializable {
      */
     protected final Set<String> outputStreams = new HashSet<>();
 
+    public Action() {
+    }
+
+    public Action(Action other) {
+        setName(other.getName());
+        setOutputStreams(new HashSet<>(other.getOutputStreams()));
+    }
+
     public String getName() {
         return name;
     }

@@ -40,17 +40,19 @@ import java.util.List;
 
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
+import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_VERSION_NOT_FOUND;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.apache.streamline.common.util.WSUtils.buildTopologyIdAndVersionIdAwareQueryParams;
 
 /**
  * Sink component within an StreamlineTopology
  */
-@Path("/v1/catalog/topologies/{topologyId}/sinks")
+@Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class TopologySinkCatalogResource {
     private final StreamCatalogService catalogService;
@@ -85,10 +87,25 @@ public class TopologySinkCatalogResource {
      * </pre>
      */
     @GET
+    @Path("/topologies/{topologyId}/sinks")
     @Timed
     public Response listTopologySinks(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) {
-        List<QueryParam> queryParams = WSUtils.buildTopologyIdAwareQueryParams(topologyId, uriInfo);
+        Long currentVersionId = catalogService.getCurrentVersionId(topologyId);
+        return listTopologySinks(
+                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, currentVersionId, uriInfo));
+    }
 
+    @GET
+    @Path("/topologies/{topologyId}/versions/{versionId}/sinks")
+    @Timed
+    public Response listTopologySinksForVersion(@PathParam("topologyId") Long topologyId,
+                                                  @PathParam("versionId") Long versionId,
+                                                  @Context UriInfo uriInfo) {
+        return listTopologySinks(
+                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, versionId, uriInfo));
+    }
+
+    private Response listTopologySinks(List<QueryParam> queryParams) {
         try {
             Collection<TopologySink> sinks = catalogService.listTopologySinks(queryParams);
             if (sinks != null) {
@@ -97,13 +114,13 @@ public class TopologySinkCatalogResource {
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
-
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, queryParams.toString());
     }
 
+
     /**
      * <p>
-     * Gets a specific topology sink by Id. For example,
+     * Gets the 'CURRENT' version of specific topology sink by Id. For example,
      * </p>
      * <b>GET /api/v1/catalog/topologies/:TOPOLOGY_ID/sources/:SINK_ID</b>
      * <pre>
@@ -125,18 +142,36 @@ public class TopologySinkCatalogResource {
      * </pre>
      */
     @GET
-    @Path("/{id}")
+    @Path("/topologies/{topologyId}/sinks/{id}")
     @Timed
     public Response getTopologySinkById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sinkId) {
         try {
-            TopologySink sink = catalogService.getTopologySink(sinkId);
-            if (sink != null && sink.getTopologyId().equals(topologyId)) {
+            TopologySink sink = catalogService.getTopologySink(topologyId, sinkId);
+            if (sink != null) {
                 return WSUtils.respond(sink, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, buildMessageForCompositeId(topologyId, sinkId));
+    }
+
+    @GET
+    @Path("/topologies/{topologyId}/versions/{versionId}/sinks/{id}")
+    @Timed
+    public Response getTopologySinkByIdAndVersion(@PathParam("topologyId") Long topologyId,
+                                                    @PathParam("id") Long sourceId,
+                                                    @PathParam("versionId") Long versionId) {
+        try {
+            TopologySink sink = catalogService.getTopologySink(topologyId, sourceId, versionId);
+            if (sink != null) {
+                return WSUtils.respond(sink, OK, SUCCESS);
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+        return WSUtils.respond(NOT_FOUND, ENTITY_VERSION_NOT_FOUND, buildMessageForCompositeId(topologyId, sourceId),
+                versionId.toString());
     }
 
     /**
@@ -175,6 +210,7 @@ public class TopologySinkCatalogResource {
      * </pre>
      */
     @POST
+    @Path("/topologies/{topologyId}/sinks")
     @Timed
     public Response addTopologySink(@PathParam("topologyId") Long topologyId, TopologySink topologySink) {
         try {
@@ -220,7 +256,7 @@ public class TopologySinkCatalogResource {
      * </pre>
      */
     @PUT
-    @Path("/{id}")
+    @Path("/topologies/{topologyId}/sinks/{id}")
     @Timed
     public Response addOrUpdateTopologySink(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sinkId,
                                               TopologySink topologySink) {
@@ -256,11 +292,11 @@ public class TopologySinkCatalogResource {
      * </pre>
      */
     @DELETE
-    @Path("/{id}")
+    @Path("/topologies/{topologyId}/sinks/{id}")
     @Timed
     public Response removeTopologySink(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sinkId) {
         try {
-            TopologySink topologySink = catalogService.removeTopologySink(sinkId);
+            TopologySink topologySink = catalogService.removeTopologySink(topologyId, sinkId);
             if (topologySink != null) {
                 return WSUtils.respond(topologySink, OK, SUCCESS);
             } else {

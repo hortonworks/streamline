@@ -92,7 +92,7 @@ public class MetricsResource {
 
         try {
             Topology topology = catalogService.getTopology(id);
-            TopologyComponent topologyComponent = catalogService.getTopologyComponent(topologyComponentId);
+            TopologyComponent topologyComponent = catalogService.getTopologyComponent(id, topologyComponentId);
             if (topology != null && topologyComponent != null) {
                 Map<Long, Double> metrics = catalogService.getCompleteLatency(topology, topologyComponent, from, to);
                 return WSUtils.respond(metrics, OK, SUCCESS);
@@ -124,7 +124,7 @@ public class MetricsResource {
 
         try {
             Topology topology = catalogService.getTopology(id);
-            TopologyComponent topologyComponent = catalogService.getTopologyComponent(topologyComponentId);
+            TopologyComponent topologyComponent = catalogService.getTopologyComponent(id, topologyComponentId);
             if (topology != null && topologyComponent != null) {
                 Map<String, Map<Long, Double>> metrics = catalogService.getComponentStats(topology, topologyComponent, from, to);
                 return WSUtils.respond(metrics, OK, SUCCESS);
@@ -156,7 +156,7 @@ public class MetricsResource {
 
         try {
             Topology topology = catalogService.getTopology(id);
-            TopologyComponent topologyComponent = catalogService.getTopologyComponent(topologyComponentId);
+            TopologyComponent topologyComponent = catalogService.getTopologyComponent(id, topologyComponentId);
             if (topology != null && topologyComponent != null) {
                 Map<String, Map<Long, Double>> metrics = catalogService.getKafkaTopicOffsets(topology, topologyComponent, from, to);
                 return WSUtils.respond(metrics, OK, SUCCESS);

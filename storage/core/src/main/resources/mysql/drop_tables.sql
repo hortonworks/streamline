@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS parser_info;
 DROP TABLE IF EXISTS files;
+DROP TABLE IF EXISTS topology_versioninfos;
 DROP TABLE IF EXISTS topologies;
 DROP TABLE IF EXISTS topology_editor_metadata;
 DROP TABLE IF EXISTS tag;

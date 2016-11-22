@@ -25,6 +25,13 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 public class TopologyProcessor extends TopologyOutputComponent {
     public static final String NAMESPACE = "topology_processors";
 
+    public TopologyProcessor() {
+    }
+
+    public TopologyProcessor(TopologyOutputComponent other) {
+        super(other);
+    }
+
     @JsonIgnore
     @Override
     public String getNameSpace() {

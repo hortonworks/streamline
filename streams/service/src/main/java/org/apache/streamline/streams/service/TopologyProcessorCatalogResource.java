@@ -40,17 +40,19 @@ import java.util.List;
 
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
+import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_VERSION_NOT_FOUND;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.apache.streamline.common.util.WSUtils.buildTopologyIdAndVersionIdAwareQueryParams;
 
 /**
  * Processor component within an StreamlineTopology
  */
-@Path("/v1/catalog/topologies/{topologyId}/processors")
+@Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class TopologyProcessorCatalogResource {
     private final StreamCatalogService catalogService;
@@ -86,25 +88,39 @@ public class TopologyProcessorCatalogResource {
      * </pre>
      */
     @GET
+    @Path("/topologies/{topologyId}/processors")
     @Timed
     public Response listTopologyProcessors(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) {
-        List<QueryParam> queryParams = WSUtils.buildTopologyIdAwareQueryParams(topologyId, uriInfo);
+        Long currentVersionId = catalogService.getCurrentVersionId(topologyId);
+        return listTopologyProcessors(
+                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, currentVersionId, uriInfo));
+    }
 
+    @GET
+    @Path("/topologies/{topologyId}/versions/{versionId}/processors")
+    @Timed
+    public Response listTopologyProcessorsForVersion(@PathParam("topologyId") Long topologyId,
+                                                  @PathParam("versionId") Long versionId,
+                                                  @Context UriInfo uriInfo) {
+        return listTopologyProcessors(
+                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, versionId, uriInfo));
+    }
+
+    private Response listTopologyProcessors(List<QueryParam> queryParams) {
         try {
-            Collection<TopologyProcessor> processors = catalogService.listTopologyProcessors(queryParams);
-            if (processors != null) {
-                return WSUtils.respond(processors, OK, SUCCESS);
+            Collection<TopologyProcessor> sources = catalogService.listTopologyProcessors(queryParams);
+            if (sources != null) {
+                return WSUtils.respond(sources, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
-
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, queryParams.toString());
     }
 
     /**
      * <p>
-     * Gets a specific topology processor by Id. For example,
+     * Gets the 'CURRENT' version of specific topology processor by Id. For example,
      * </p>
      * <b>GET /api/v1/catalog/topologies/:TOPOLOGY_ID/processors/:PROCESSOR_ID</b>
      * <pre>
@@ -127,12 +143,12 @@ public class TopologyProcessorCatalogResource {
      * </pre>
      */
     @GET
-    @Path("/{id}")
+    @Path("/topologies/{topologyId}/processors/{id}")
     @Timed
     public Response getTopologyProcessorById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long processorId) {
         try {
-            TopologyProcessor source = catalogService.getTopologyProcessor(processorId);
-            if (source != null && source.getTopologyId().equals(topologyId)) {
+            TopologyProcessor source = catalogService.getTopologyProcessor(topologyId, processorId);
+            if (source != null) {
                 return WSUtils.respond(source, OK, SUCCESS);
             }
         } catch (Exception ex) {
@@ -141,6 +157,23 @@ public class TopologyProcessorCatalogResource {
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, buildMessageForCompositeId(topologyId, processorId));
     }
 
+    @GET
+    @Path("/topologies/{topologyId}/versions/{versionId}/processors/{id}")
+    @Timed
+    public Response getTopologyProcessorByIdAndVersion(@PathParam("topologyId") Long topologyId,
+                                                    @PathParam("id") Long processorId,
+                                                    @PathParam("versionId") Long versionId) {
+        try {
+            TopologyProcessor processor = catalogService.getTopologyProcessor(topologyId, processorId, versionId);
+            if (processor != null) {
+                return WSUtils.respond(processor, OK, SUCCESS);
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+        return WSUtils.respond(NOT_FOUND, ENTITY_VERSION_NOT_FOUND, buildMessageForCompositeId(topologyId, processorId),
+                versionId.toString());
+    }
     /**
      * <p>
      * Creates a topology processor. For example,
@@ -181,6 +214,7 @@ public class TopologyProcessorCatalogResource {
      * </pre>
      */
     @POST
+    @Path("/topologies/{topologyId}/processors")
     @Timed
     public Response addTopologyProcessor(@PathParam("topologyId") Long topologyId, TopologyProcessor topologyProcessor) {
         try {
@@ -228,12 +262,13 @@ public class TopologyProcessorCatalogResource {
      * </pre>
      */
     @PUT
-    @Path("/{id}")
+    @Path("/topologies/{topologyId}/processors/{id}")
     @Timed
     public Response addOrUpdateTopologyProcessor(@PathParam("topologyId") Long topologyId, @PathParam("id") Long processorId,
                                               TopologyProcessor topologyProcessor) {
         try {
-            TopologyProcessor createdTopologyProcessor = catalogService.addOrUpdateTopologyProcessor(topologyId, processorId, topologyProcessor);
+            TopologyProcessor createdTopologyProcessor = catalogService.addOrUpdateTopologyProcessor(
+                    topologyId, processorId, topologyProcessor);
             return WSUtils.respond(createdTopologyProcessor, CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -265,11 +300,11 @@ public class TopologyProcessorCatalogResource {
      * </pre>
      */
     @DELETE
-    @Path("/{id}")
+    @Path("/topologies/{topologyId}/processors/{id}")
     @Timed
     public Response removeTopologyProcessor(@PathParam("topologyId") Long topologyId, @PathParam("id") Long processorId) {
         try {
-            TopologyProcessor topologyProcessor = catalogService.removeTopologyProcessor(processorId);
+            TopologyProcessor topologyProcessor = catalogService.removeTopologyProcessor(topologyId, processorId);
             if (topologyProcessor != null) {
                 return WSUtils.respond(topologyProcessor, OK, SUCCESS);
             } else {

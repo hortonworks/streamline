@@ -29,8 +29,10 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
+import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_VERSION_NOT_FOUND;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
+import static org.apache.streamline.common.util.WSUtils.buildTopologyIdAndVersionIdAwareQueryParams;
 
 /**
  * REST resource for managing branch rules.
@@ -39,7 +41,7 @@ import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessa
  * the corresponding {@link Rule} object and saved in the catalog db.
  * </p>
  */
-@Path("/v1/catalog/topologies/{topologyId}/branchrules")
+@Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class BranchRuleCatalogResource {
     private final StreamCatalogService catalogService;
@@ -71,13 +73,29 @@ public class BranchRuleCatalogResource {
      * </pre>
      */
     @GET
+    @Path("/topologies/{topologyId}/branchrules")
     @Timed
     public Response listTopologyBranchRules(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) {
-        List<QueryParam> queryParams = WSUtils.buildTopologyIdAwareQueryParams(topologyId, uriInfo);
+        Long currentVersionId = catalogService.getCurrentVersionId(topologyId);
+        return listTopologyBranchRules(
+                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, currentVersionId, uriInfo));
+    }
+
+    @GET
+    @Path("/topologies/{topologyId}/versions/{versionId}/branchrules")
+    @Timed
+    public Response listTopologySourcesForVersion(@PathParam("topologyId") Long topologyId,
+                                                  @PathParam("versionId") Long versionId,
+                                                  @Context UriInfo uriInfo) {
+        return listTopologyBranchRules(
+                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, versionId, uriInfo));
+    }
+
+    private Response listTopologyBranchRules(List<QueryParam> queryParams) {
         try {
-            Collection<BranchRuleInfo> brRuleInfos = catalogService.listBranchRules(queryParams);
-            if (brRuleInfos != null) {
-                return WSUtils.respond(brRuleInfos, OK, SUCCESS);
+            Collection<BranchRuleInfo> branchRuleInfos = catalogService.listBranchRules(queryParams);
+            if (branchRuleInfos != null) {
+                return WSUtils.respond(branchRuleInfos, OK, SUCCESS);
             }
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -105,11 +123,11 @@ public class BranchRuleCatalogResource {
      * </pre>
      */
     @GET
-    @Path("/{id}")
+    @Path("/topologies/{topologyId}/branchrules/{id}")
     @Timed
     public Response getTopologyBranchRuleById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId) {
         try {
-            BranchRuleInfo brRuleInfo = catalogService.getBranchRule(ruleId);
+            BranchRuleInfo brRuleInfo = catalogService.getBranchRule(topologyId, ruleId);
             if (brRuleInfo != null && brRuleInfo.getTopologyId().equals(topologyId)) {
                 return WSUtils.respond(brRuleInfo, OK, SUCCESS);
             }
@@ -118,6 +136,25 @@ public class BranchRuleCatalogResource {
         }
         return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, buildMessageForCompositeId(topologyId, ruleId));
     }
+
+    @GET
+    @Path("/topologies/{topologyId}/versions/{versionId}/branchrules/{id}")
+    @Timed
+    public Response getTopologyBranchRuleByIdAndVersion(@PathParam("topologyId") Long topologyId,
+                                                        @PathParam("id") Long ruleId,
+                                                        @PathParam("versionId") Long versionId) {
+        try {
+            BranchRuleInfo branchRuleInfo = catalogService.getBranchRule(topologyId, ruleId, versionId);
+            if (branchRuleInfo != null) {
+                return WSUtils.respond(branchRuleInfo, OK, SUCCESS);
+            }
+        } catch (Exception ex) {
+            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        }
+        return WSUtils.respond(NOT_FOUND, ENTITY_VERSION_NOT_FOUND, buildMessageForCompositeId(topologyId, ruleId),
+                versionId.toString());
+    }
+
 
     /**
      * <p>
@@ -157,6 +194,7 @@ public class BranchRuleCatalogResource {
      *      the TopologyStreamCatalogResource (/api/v1/catalog/topologies/{topologyId}/streams) api.</li>
      */
     @POST
+    @Path("/topologies/{topologyId}/branchrules")
     @Timed
     public Response addTopologyRule(@PathParam("topologyId") Long topologyId, BranchRuleInfo brRuleInfo) {
         try {
@@ -196,7 +234,7 @@ public class BranchRuleCatalogResource {
      * </pre>
      */
     @PUT
-    @Path("/{id}")
+    @Path("/topologies/{topologyId}/branchrules/{id}")
     @Timed
     public Response addOrUpdateRule(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId,
                                     BranchRuleInfo brRuleInfo) {
@@ -230,11 +268,11 @@ public class BranchRuleCatalogResource {
      * </pre>
      */
     @DELETE
-    @Path("/{id}")
+    @Path("/topologies/{topologyId}/branchrules/{id}")
     @Timed
     public Response removeRule(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId) {
         try {
-            BranchRuleInfo ruleInfo = catalogService.removeBranchRule(ruleId);
+            BranchRuleInfo ruleInfo = catalogService.removeBranchRule(topologyId, ruleId);
             if (ruleInfo != null) {
                 return WSUtils.respond(ruleInfo, OK, SUCCESS);
             } else {
