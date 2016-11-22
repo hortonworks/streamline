@@ -193,8 +193,7 @@ public class TopologyCatalogResource {
                 return WSUtils.respond(BAD_REQUEST,
                         BAD_REQUEST_PARAM_MISSING, Topology.CONFIG);
             }
-            Topology createdTopology = catalogService.addTopology
-                    (topology);
+            Topology createdTopology = catalogService.addTopology(topology);
             return WSUtils.respond(createdTopology, CREATED, SUCCESS);
         } catch (Exception ex) {
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
@@ -279,6 +278,9 @@ public class TopologyCatalogResource {
             if (!currentVersion.isPresent()) {
                 throw new IllegalArgumentException("Current version is not available for topology id: " + topologyId);
             }
+            if (versionInfo == null) {
+                versionInfo = new TopologyVersionInfo();
+            }
             // update the current version with the new version info.
             versionInfo.setTopologyId(topologyId);
             Optional<TopologyVersionInfo> latest = catalogService.getLatestVersionInfo(topologyId);
@@ -290,8 +292,7 @@ public class TopologyCatalogResource {
             }
             versionInfo.setName(VERSION_PREFIX + suffix);
             if (versionInfo.getDescription() == null) {
-                Date date = new Date();
-                versionInfo.setDescription("version @ " + date);
+                versionInfo.setDescription("");
             }
             TopologyVersionInfo savedVersion = catalogService.addOrUpdateTopologyVersionInfo(
                     currentVersion.get().getId(), versionInfo);
@@ -554,7 +555,7 @@ public class TopologyCatalogResource {
                 case STATUS:
                     return c1.getRunning().compareTo(c2.getRunning());
                 case LAST_UPDATED:
-                    return c1.getTopology().getTimestamp().compareTo(c2.getTopology().getTimestamp());
+                    return c1.getTopology().getVersionTimestamp().compareTo(c2.getTopology().getVersionTimestamp());
                 default:
                     throw new IllegalStateException("Not supported SortType: " + sortType);
                 }

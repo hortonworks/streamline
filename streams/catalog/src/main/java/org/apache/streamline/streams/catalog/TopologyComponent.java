@@ -19,6 +19,8 @@
 package org.apache.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.streamline.common.Config;
 import org.apache.streamline.common.Schema;
@@ -46,6 +48,8 @@ public class TopologyComponent extends AbstractStorable {
     private Long versionId = -1L;
     private String name = StringUtils.EMPTY;
     private Config config;
+    // this is not saved in storage but REST apis includes version timestamp here
+    private Long versionTimestamp;
 
     public TopologyComponent() {
 
@@ -58,6 +62,7 @@ public class TopologyComponent extends AbstractStorable {
         setVersionId(other.getVersionId());
         setName(other.getName());
         setConfig(new Config(other.getConfig()));
+        setVersionTimestamp(other.getVersionTimestamp());
     }
 
     @JsonIgnore
@@ -162,6 +167,18 @@ public class TopologyComponent extends AbstractStorable {
             throw new RuntimeException(e);
         }
         return map;
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("timestamp")
+    public Long getVersionTimestamp() {
+        return versionTimestamp;
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("timestamp")
+    public void setVersionTimestamp(Long timestamp) {
+        this.versionTimestamp = timestamp;
     }
 
     @Override

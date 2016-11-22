@@ -2,6 +2,7 @@ package org.apache.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
@@ -50,6 +51,7 @@ public class WindowInfo extends AbstractStorable {
     private List<Action> actions;
     private List<Projection> projections;
     private List<String> groupbykeys;
+    private Long versionTimestamp;
 
     public WindowInfo() {
     }
@@ -75,7 +77,21 @@ public class WindowInfo extends AbstractStorable {
         if (other.getGroupbykeys() != null) {
             setGroupbykeys(new ArrayList<>(other.getGroupbykeys()));
         }
+        setVersionTimestamp(other.getVersionTimestamp());
     }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("timestamp")
+    public Long getVersionTimestamp() {
+        return versionTimestamp;
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("timestamp")
+    public void setVersionTimestamp(Long versionTimestamp) {
+        this.versionTimestamp = versionTimestamp;
+    }
+
     /**
      * A Projection can be either an expression or a function with zero or more args.
      * <ol>

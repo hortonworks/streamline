@@ -41,7 +41,6 @@ CREATE TABLE IF NOT EXISTS topologies (
     versionId BIGINT NOT NULL,
     name VARCHAR(256) NOT NULL,
     config TEXT NOT NULL,
-    timestamp  BIGINT,
     PRIMARY KEY (id, versionId),
     FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
 );
@@ -92,7 +91,6 @@ CREATE TABLE IF NOT EXISTS streaminfo (
     topologyId BIGINT NOT NULL,
     streamId VARCHAR(255) NOT NULL,
     fieldsData TEXT NOT NULL,
-    timestamp BIGINT,
     UNIQUE KEY `UK_streamId` (topologyId, versionId, streamId),
     PRIMARY KEY (id, versionId),
     FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)

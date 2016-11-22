@@ -85,7 +85,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
         }
     },
     "topologyComponentBundleId": '"${bundleId}"',
-    "outputStreamIds": ['"$streamid1"']
+    "outputStreamIds": ['"$streamid1"', '$parserStream']
 }' "${catalogurl}/topologies/$topologyid/sources")
 
 echo $out
