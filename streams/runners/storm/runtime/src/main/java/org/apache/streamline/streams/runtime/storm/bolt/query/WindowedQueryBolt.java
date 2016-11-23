@@ -17,9 +17,6 @@
  */
 package org.apache.streamline.streams.runtime.storm.bolt.query;
 
-// todo: flux enablement
-//     : test on streamline
-// todo: add stream:keyName support in select
 
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
@@ -76,9 +73,6 @@ public class WindowedQueryBolt extends BaseWindowedBolt {
      * @param key the fieldName to use as key for the stream (used for performing joins)
      */
     public WindowedQueryBolt(StreamSelector type, String streamId, String key) {
-        // todo: support other types of stream selectors
-        if (type!=StreamSelector.STREAM && type!=StreamSelector.SOURCE)
-            throw new IllegalArgumentException(type.name());
         streamSelectorType = type;
         streamJoinOrder.add(streamId);
         joinCriteria.put(streamId, new JoinInfo(key) );
@@ -94,15 +88,8 @@ public class WindowedQueryBolt extends BaseWindowedBolt {
      *    Invalid ex:  new WindowedQueryBolt(s1,k1). join(s3,k3, s2). join(s2,k2, s1);
      */
     public WindowedQueryBolt join(String stream, String key, String priorStream) {
-        hashedInputs.put(stream, new HashMap<Object, ArrayList<TupleImpl>>());
-        JoinInfo joinInfo = joinCriteria.get(priorStream);
-        if( joinInfo==null )
-            throw new IllegalArgumentException("Stream '" + priorStream + "' was not previously declared");
-        joinCriteria.put(stream, new JoinInfo(key, priorStream, joinInfo, JoinType.INNER) );
-        streamJoinOrder.add(stream);
-        return this;
+        return join_common(stream, key, priorStream, JoinType.INNER);
     }
-
 
     /**
      * Performs left Join.
@@ -114,15 +101,19 @@ public class WindowedQueryBolt extends BaseWindowedBolt {
      *    Invalid ex:  new WindowedQueryBolt(s1,k1). leftJoin(s3,k3, s2). leftJoin(s2,k2, s1);
      */
     public WindowedQueryBolt leftJoin(String stream, String key, String priorStream) {
+        return join_common(stream, key, priorStream, JoinType.LEFT);
+    }
+
+
+    private WindowedQueryBolt join_common(String stream, String key, String priorStream, JoinType joinType) {
         hashedInputs.put(stream, new HashMap<Object, ArrayList<TupleImpl>>());
         JoinInfo joinInfo = joinCriteria.get(priorStream);
-        if ( joinInfo==null )
+        if( joinInfo==null )
             throw new IllegalArgumentException("Stream '" + priorStream + "' was not previously declared");
-        joinCriteria.put(stream, new JoinInfo(key, priorStream, joinInfo, JoinType.LEFT));
+        joinCriteria.put(stream, new JoinInfo(key, priorStream, joinInfo, joinType) );
         streamJoinOrder.add(stream);
         return this;
     }
-
 
     /**
      * Performs projection. i.e. Specifies the keys to include in the output.
@@ -499,7 +490,7 @@ public class WindowedQueryBolt extends BaseWindowedBolt {
                 if (field != null) {
                     projection.put(flattenedKey, field);
                     break;
-}
+                }
             }
         }
         ArrayList<Object> resultRow = new ArrayList<>();
