@@ -323,7 +323,7 @@ label {
   background-color: #fff;
   margin-bottom: 20px;
   position: relative;
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
+  /*box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);*/
 }
 .stream-box.NOTRUNNING:before {
   content: "";
@@ -333,7 +333,7 @@ label {
   left: 0px;
   z-index: 9;
   width: 3px;
-  background: #ffbb33;
+  /*background: #ffbb33;*/
 }
 .stream-box.KILLED:before {
   content: "";
@@ -343,7 +343,7 @@ label {
   left: 0px;
   z-index: 9;
   width: 3px;
-  background: #ef6162;
+  /*background: #ef6162;*/
 }
 .stream-box.INACTIVE:before {
   content: "";
@@ -353,7 +353,7 @@ label {
   left: 0px;
   z-index: 9;
   width: 3px;
-  background: #feba33;
+  /*background: #feba33;*/
 }
 .stream-box .stream-head {
   position: relative;
@@ -364,6 +364,14 @@ label {
     margin: 0px 0px 5px;
     font-weight: 400;
     font-size: 17.5px;
+}
+.stream-box .stream-head h4 i.KILLED{
+  color: #f46060;
+  margin-right: 3px;
+}
+.stream-box .stream-head h4 i.NOTRUNNING{
+  color: #ffba30;
+  margin-right: 3px;
 }
 .stream-box .stream-head h5 {
     color: #96999c;
@@ -380,7 +388,14 @@ label {
         background-color: #feba33;
 }
 .stream-box .stream-head .stream-actions a {
+  margin-left:10px;
   color: #838383;
+}
+.stream-box .stream-head .stream-actions a.close{
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  font-size: 20px;
 }
 .stream-actions .dropdown-menu{
   top:28px;
@@ -389,6 +404,12 @@ label {
 .stream-box .stream-body {
     padding: 0px 7.5px;
     position: relative;
+}
+.stream-actions{
+  display: none;
+}
+.stream-box:hover .stream-actions{
+  display: block;
 }
 .stream-components{
   min-height: 115px;
@@ -399,7 +420,7 @@ label {
   padding-bottom: 5px;
   margin-top: 15px;
   margin-bottom: 20px;
-  border-bottom: 2px #c0c0c0 solid;
+  /*border-bottom: 2px #c0c0c0 solid;*/
 }
 .stream-components h5 span {
   color: #818386;
@@ -438,11 +459,11 @@ label {
 
 /* Hexagon Buttons */
 .hb {
-        display: inline-block;
-        position:relative;
-        text-align: center;
-        z-index: 0;
-        line-height: 20px;
+  display: inline-block;
+  position:relative;
+  text-align: center;
+  z-index: 0;
+  line-height: 20px;
 }
 .hb,
 .hb:before,
@@ -1032,7 +1053,7 @@ label {
   overflow: hidden;
 }
 */
-.page-search.input-group-addon{
+.page-title-box .input-group-addon{
   padding: 0;
   z-index: 10;
   border:none;
@@ -1274,8 +1295,13 @@ label {
   line-height: 51px;
   margin-left: 15px;
 }
-span.last-change,
 span.version{
   margin-right: 20px;
-  color: #868686;
+  color: #818386;
+}
+.boxGap{
+  margin-right: 5px;
+}
+.process-all-label {
+  margin-top: 10px;
 }

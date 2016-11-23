@@ -564,7 +564,7 @@ class TopologyEditorContainer extends Component {
     this.edgeConfigData = {topologyId: topologyId, versionId: versionId, edge: newEdge, edges: edges, callback: callback, streamName: streamName, grouping: grouping, groupingFields: groupingFields};
     this.edgeConfigTitle = newEdge.source.uiname + '-' + newEdge.target.uiname;
     let nodeType = newEdge.source.currentType.toLowerCase();
-    if(node && node.outputStreams.length === 1 && nodeType !== 'rule') {
+    if(node && node.outputStreams.length === 1 && nodeType !== 'rule' && nodeType !== 'branch'){
       let edgeData = {
         fromId: newEdge.source.nodeId,
         toId: newEdge.target.nodeId,

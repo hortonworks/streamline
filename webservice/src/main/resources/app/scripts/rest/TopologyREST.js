@@ -280,7 +280,15 @@ const TopologyREST = {
             .then( (response) => {
                 return response.json();
             })
-	}
+	},
+	getTopologyConfig(options) {
+	    options = options || {};
+	    options.method = options.method || 'GET';
+        return fetch(baseUrl+'streams/componentbundles/TOPOLOGY', options)
+	      .then( (response) => {
+	          return response.json();
+            })
+	  }
 }
 
 export default TopologyREST

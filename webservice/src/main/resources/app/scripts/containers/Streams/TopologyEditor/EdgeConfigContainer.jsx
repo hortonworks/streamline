@@ -87,9 +87,10 @@ export default class EdgeConfigContainer extends Component {
                     streamFields: JSON.stringify(fields, null, "  "),
                     groupingFieldsArr: groupingFieldsArr
                 });
-                if(nodeType === 'rule') {
+                if(nodeType === 'rule' || nodeType === 'branch') {
+                    let type = nodeType === 'rule' ? 'rules' : 'branchrules';
                     node.config.properties.rules.map((id)=>{
-                    rulesPromiseArr.push(TopologyREST.getNode(this.topologyId, this.versionId, 'rules', id));
+                    rulesPromiseArr.push(TopologyREST.getNode(this.topologyId, this.versionId, type, id));
                 });
                 Promise.all(rulesPromiseArr)
                 .then((results)=>{
@@ -106,8 +107,12 @@ export default class EdgeConfigContainer extends Component {
                             }
                         });
                     });
+                    if(nodeType === 'branch') {
+                        let id = streamId.split('_')[3];
+                        var ruleObject = _.find(rulesArr, {id: parseInt(id, 10)});
+                    }
                     showRules =  true;
-                    this.setState({showRules: showRules, rulesArr: rulesArr, rules: rules});
+                    this.setState({showRules: showRules, rulesArr: rulesArr, rules: ruleObject ? ruleObject.value : rules});
                 })
             }
         });
@@ -134,7 +139,14 @@ export default class EdgeConfigContainer extends Component {
             this.setState({rules: []});
         }
     }
-   handleGroupingFieldsChange(arr) {
+    handleBranchRulesChange(obj) {
+        if(obj) {
+            let id = obj.id;
+            var streamObject = _.find(this.state.streamsArr, {value: 'branch_processor_stream_'+id});
+            this.setState({rules: obj.value, streamId: streamObject.value, streamFields: JSON.stringify(streamObject.fields, null, "  ")});
+        } else this.setState({rules: [], streamId: '', streamFields: ''});
+    }
+    handleGroupingFieldsChange(arr) {
        let groupingFields = [];
        if(arr && arr.length) {
            arr.map((f)=>{
@@ -178,11 +190,11 @@ export default class EdgeConfigContainer extends Component {
         };
         if(grouping === "FIELDS")
             edgeData.streamGroupings[0].fields = groupingFields;
-        if(nodeType === 'window' || nodeType === 'rule'){
+        if(nodeType === 'window' || nodeType === 'rule' || nodeType === 'branch'){
             if(sourceNode.config.properties.rules && sourceNode.config.properties.rules.length > 0){
                 let rulesPromiseArr = [];
                 let saveRulesPromiseArr = [];
-                let type = nodeType === 'window' ? 'windows' : 'rules';
+                let type = nodeType === 'window' ? 'windows' : (nodeType === 'rule' ? 'rules' : 'branchrules');
                 sourceNode.config.properties.rules.map((id)=>{
                     rulesPromiseArr.push(TopologyREST.getNode(topologyId, versionId, type, id));
                 })
@@ -190,7 +202,7 @@ export default class EdgeConfigContainer extends Component {
                     .then((results)=>{
                         results.map((result)=>{
                             let data = result.entity;
-                            if(type === 'rules') {
+                            if(type === 'rules' || type === 'branchrules') {
                                 let actionObj = {
                                     name: this.props.data.edge.target.uiname,
                                     outputStreams: [streamObj.value]
@@ -203,13 +215,21 @@ export default class EdgeConfigContainer extends Component {
                                     actionObj.__type = "org.apache.streamline.streams.layout.component.rule.action.TransformAction";
                                     actionObj.transforms = [];
                                 }
-                                    let obj = _.find(data.actions, {name: actionObj.name});
+                                let obj = _.find(data.actions, {name: actionObj.name});
+                                if(type === 'branchrules') {
+                                    if(rules === data.name && !obj) {
+                                        data.actions.push(actionObj);
+                                    } else if(rules !== data.name && obj) {
+                                        data.actions = [];
+                                    }
+                                } else {
                                     if(rules.indexOf(data.name) > -1 && !obj) {
                                         data.actions.push(actionObj);
                                     } else if(rules.indexOf(data.name) === -1 && obj) {
                                         data.actions = [];
                                     }
-                                    saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, type, data.id, {body: JSON.stringify(data)}));
+                                }
+                                saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, type, data.id, {body: JSON.stringify(data)}));
                             } else if(type === 'windows') {
                                 let actionObj = {
                                     name: this.props.data.edge.target.uiname,
@@ -249,6 +269,7 @@ export default class EdgeConfigContainer extends Component {
 
     render(){
         let {showRules, rules, rulesArr, streamId, streamsArr, grouping, groupingsArr, groupingFields, groupingFieldsArr} = this.state;
+        let nodeType = this.props.data.edge.source.currentType.toLowerCase();
         const jsonoptions = {
             lineNumbers: true,
             mode: "application/json",
@@ -268,6 +289,7 @@ export default class EdgeConfigContainer extends Component {
                             onChange={this.handleStreamChange.bind(this)}
                             clearable={false}
                             required={true}
+                            disabled={nodeType === 'branch' ? true : false}
                         />
                     </div>
                 </div>
@@ -281,15 +303,25 @@ export default class EdgeConfigContainer extends Component {
                 <div className="form-group">
                     <label>Rules <span className="text-danger">*</span></label>
                     <div>
-                        <Select
-                            value={rules}
-                            options={rulesArr}
-                            onChange={this.handleRulesChange.bind(this)}
-                            multi={true}
-                            clearable={false}
-                            joinValues={true}
-                            required={true}
-                        />
+                        { nodeType === 'branch' ?
+                            <Select
+                                value={rules}
+                                options={rulesArr}
+                                onChange={this.handleBranchRulesChange.bind(this)}
+                                clearable={false}
+                                required={true}
+                            />
+                        :
+                            <Select
+                                value={rules}
+                                options={rulesArr}
+                                onChange={this.handleRulesChange.bind(this)}
+                                multi={true}
+                                clearable={false}
+                                joinValues={true}
+                                required={true}
+                            />
+                        }
                     </div>
                 </div>
                 : null}

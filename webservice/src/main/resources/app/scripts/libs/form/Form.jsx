@@ -42,7 +42,7 @@ export default class FSForm extends Component {
                         ref: child.props ? (child.props._ref || i) : i,
                         key: i,
                         data: this.state.FormData,
-                        className: this.props.showRequired ? !child.props.fieldJson.isOptional ? '' : 'hidden' : child.props.fieldJson.isOptional ? '' : 'hidden' ,
+                        className: this.props.showRequired == null ? '' : this.props.showRequired ? !child.props.fieldJson.isOptional ? '' : 'hidden' : child.props.fieldJson.isOptional ? '' : 'hidden' ,
                     });
                 })}
             </Form>)

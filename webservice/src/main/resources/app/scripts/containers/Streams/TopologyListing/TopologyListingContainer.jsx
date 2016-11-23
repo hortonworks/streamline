@@ -25,6 +25,8 @@ import CommonNotification from '../../../utils/CommonNotification';
 import {toastOpt , PieChartColor} from '../../../utils/Constants';
 import PieChart from '../../../components/PieChart';
 import Paginate from '../../../components/Paginate';
+import Modal from '../../../components/FSModal';
+import AddTopology from './AddTopology'
 
 class CustPieChart extends PieChart{
   drawPie(){
@@ -91,7 +93,6 @@ class TopologyItems extends Component {
         this.props.topologyAction(eventKey, this.streamRef.dataset.id)
     }
     render() {
-        const ellipseIcon = <i className="fa fa-ellipsis-v"></i>;
         const {topologyAction, topologyList, isLoading} = this.props;
         const {topology, metric,latencyTopN} = topologyList;
         const metricWrap = metric || {
@@ -117,7 +118,12 @@ class TopologyItems extends Component {
                 <div className="stream-head clearfix">
                     <div className="pull-left">
                       <Link to={`applications/${topology.id}`}>
-                          <h4>{topology.name}</h4>
+                          <h4><i className={`fa fa-exclamation-${
+                              (metricWrap.status || 'NOTRUNNING') === "KILLED"
+                                ? 'circle KILLED'
+                                : (metricWrap.status || 'NOTRUNNING') === "NOTRUNNING"
+                                  ? 'triangle NOTRUNNING' : ''
+                            }`}></i>{topology.name}</h4>
                       </Link>
                       <h5>
                           {(metricWrap.uptime === undefined)
@@ -128,16 +134,15 @@ class TopologyItems extends Component {
                     </div>
                     <div className="pull-right">
                         <div className="stream-actions">
-                            <DropdownButton noCaret title={ellipseIcon} id="dropdown" bsStyle="link" className="dropdown-toggle">
-                                <MenuItem onClick={this.onActionClick.bind(this ,"refresh/"+topology.id)}>
-                                    <i className="fa fa-refresh"></i>
-                                    &nbsp;Refresh
-                                </MenuItem>
-                                <MenuItem onClick={this.onActionClick.bind(this ,"delete/"+topology.id)}>
-                                    <i className="fa fa-trash"></i>
-                                    &nbsp;Delete
-                                </MenuItem>
-                            </DropdownButton>
+                          <a href="javascript:void(0)" onClick={this.onActionClick.bind(this ,"refresh/"+topology.id)}>
+                            <i className="fa fa-refresh" aria-hidden="true"></i>
+                          </a>
+                          <Link to={`applications/${topology.id}`}>
+                            <i className="fa fa-pencil" aria-hidden="true"></i>
+                          </Link>
+                          <a href="javascript:void(0)" className="close" onClick={this.onActionClick.bind(this ,"delete/"+topology.id)}>
+                            <i className="fa fa-times-circle" aria-hidden="true"></i>
+                          </a>
                         </div>
                     </div>
                 </div>
@@ -157,9 +162,10 @@ class TopologyItems extends Component {
                                               title={Object.keys(d)[0]}
                                               key={v}
                                             >
+                                            <i className="fa fa-square boxGap" style={{color : PieChartColor[v]}}></i>
                                             {Utils.secToMinConverter(d[Object.keys(d)[0]],"list")}
                                             <span>&nbsp;</span>
-                                            {Utils.ellipses(Object.keys(d)[0],12)}</h5>
+                                            {Utils.ellipses(Object.keys(d)[0],9)}</h5>
                                   })
                                 }
                             </div>
@@ -186,9 +192,10 @@ class TopologyItems extends Component {
                                               title={Object.keys(d)[0]}
                                               key={v}
                                             >
+                                            <i className="fa fa-square boxGap" style={{color : PieChartColor[unitLeft.length+v]}}></i>
                                             {Utils.secToMinConverter(d[Object.keys(d)[0]],"list")}
                                             <span>&nbsp;</span>
-                                            {Utils.ellipses(Object.keys(d)[0],12)}</h5>
+                                            {Utils.ellipses(Object.keys(d)[0],9)}</h5>
                                   })
                                 }
                             </div>
@@ -304,35 +311,7 @@ class TopologyListingContainer extends Component {
     }
 
     handleAddTopology() {
-        let rootdirKeyName = 'hbaseConf';
-        let configObj = {
-            "local.parser.jar.path": "/tmp",
-            "local.notifier.jar.path": "/tmp"
-        };
-        configObj[rootdirKeyName] = {
-            "hbase.rootdir": "hdfs://localhost:9000/tmp/hbase"
-        }
-        let data = {
-            name: 'Application-Name',
-            config: JSON.stringify(configObj)
-        }
-        TopologyREST.postTopology({body: JSON.stringify(data)}).then((topology) => {
-            if (topology.responseCode !== 1000) {
-                FSReactToastr.error(
-                    <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
-            } else {
-                let metaData = {
-                    topologyId: topology.entity.id,
-                    data: JSON.stringify({sources: [], processors: [], sinks: []})
-                }
-                TopologyREST.postMetaInfo({body: JSON.stringify(metaData)}).then(() => {
-                    FSReactToastr.success(
-                        <strong>Topology added successfully</strong>
-                    )
-                    this._reactInternalInstance._context.router.push('applications/' + topology.entity.id);
-                })
-            }
-        });
+      this.AddTopologyModelRef.show();
     }
 
     deleteSingleTopology = (id) => {
@@ -430,6 +409,24 @@ class TopologyListingContainer extends Component {
     pagePosition = (index) => {
       this.setState({pageIndex : index || 0})
     }
+    handleSaveClicked = () => {
+      if(this.addTopologyRef.validate()){
+          this.addTopologyRef.handleSave().then((topology)=>{
+            if (topology.responseCode !== 1000) {
+              FSReactToastr.error(
+                  <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
+            } else {
+                this.addTopologyRef.saveMetadata(topology.entity.id).then(() => {
+                  FSReactToastr.success(
+                      <strong>Topology added successfully</strong>
+                  )
+                  this.context.router.push('applications/' + topology.entity.id);
+                })
+            }
+        })
+      }
+    }
+
     render() {
         const {entities,filterValue,isLoading,fetchLoader,slideInput,pageSize,pageIndex} = this.state;
         const filteredEntities = TopologyUtils.topologyFilter(entities, filterValue);
@@ -510,10 +507,19 @@ class TopologyListingContainer extends Component {
                     />
                   :''
                 }
+                <Modal ref={(ref) => this.AddTopologyModelRef = ref}
+                  data-title="Add Stream"
+                  data-resolve={this.handleSaveClicked}>
+                  <AddTopology ref={(ref) => this.addTopologyRef = ref}/>
+                </Modal>
             </BaseContainer>
         );
     }
 }
+
+TopologyListingContainer.contextTypes = {
+    router: React.PropTypes.object.isRequired
+};
 
 export default TopologyListingContainer;
 

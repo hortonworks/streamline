@@ -2,109 +2,75 @@ import React, {Component, PropTypes}from 'react';
 import ReactDOM, { findDOMNode } from 'react-dom';
 import {Link} from 'react-router';
 import TopologyREST from '../../../rest/TopologyREST';
+import Utils from '../../../utils/Utils';
+import Form from '../../../libs/form';
+import FSReactToastr from '../../../components/FSReactToastr';
+import {toastOpt} from '../../../utils/Constants';
+import CommonNotification from '../../../utils/CommonNotification';
 
 export default class TopologyConfigContainer extends Component {
-	constructor(props){
-		super(props);
-		let {data} = props;
-		let rootKey = 'hbaseConf';
-		let obj = {
-			rootdir: (data[rootKey] ? data[rootKey]['hbase.rootdir'] : 'hdfs://localhost:9000/tmp/hbase'),
-	        parserJar: (data['local.parser.jar.path'] ? data['local.parser.jar.path'] : '/tmp'),
-	        notifierJar: (data['local.notifier.jar.path'] ? data['local.notifier.jar.path'] : '/tmp')
-		}
-		this.state = obj;
-	}
+    static propTypes = {
+        topologyId: PropTypes.string.isRequired,
+    };
 
-	handleValueChange(e){
-		let obj = {};
-		obj[e.target.name] = e.target.value;
-		this.setState(obj);
-	}
+    constructor(props){
+        super(props)
+        this.state = {
+            formData: {},
+            formField: {}
+        }
+        this.fetchData();
+    }
 
-	getData(e){
-		let {rootdir, parserJar, notifierJar} = this.state;
-		if(rootdir !== '' && parserJar !== '' && notifierJar !== ''){
-			let data = {rootdir, parserJar, notifierJar};
-			return data;
-		}
-	}
+    fetchData = () => {
+        const {topologyId, versionId} = this.props;
+        let promiseArr = [
+            TopologyREST.getTopologyConfig(),
+            TopologyREST.getTopology(topologyId, versionId)
+        ]
+        Promise.all(promiseArr)
+          .then( result => {
+            const formField = result[0].entities[0].topologyComponentUISpecification;
+            const config = result[1].entity.topology.config;
+            this.setState({formData : JSON.parse(config), formField : formField})
+          }).catch(err => {
+            FSReactToastr.error(<CommonNotification flag="error" content={err.message}/>, '', toastOpt)
+          })
+    }
 
-	validate(){
-		let {rootdir, parserJar, notifierJar} = this.state;
-		if(rootdir !== '' && parserJar !== '' && notifierJar !== ''){
-			return true;
-		} else {
-			return false;
-		}
-	}
+    validate(){
+        let validDataFlag = true;
+        if(!this.refs.Form.validate()){
+            validDataFlag = false;
+        }
+        return validDataFlag;
+    }
 
-	handleSave(){
-		let configData = this.getData();
-		let rootdirKeyName = 'hbaseConf';
-		let configObj = {
-			"local.parser.jar.path": configData.parserJar,
-	        "local.notifier.jar.path": configData.notifierJar
-		};
-		configObj[rootdirKeyName] = {
-			"hbase.rootdir": configData.rootdir
-		}
-		let data = {
-			name: this.props.topologyName,
-			config: JSON.stringify(configObj)
-		}
-                return TopologyREST.putTopology(this.props.topologyId, this.props.versionId, {body: JSON.stringify(data)})
-	}
-	
-	render(){
-		return(
-                        <form className="modal-form config-modal-form">
-				<div className="form-group">
-                                        <label>hbase.rootdir <span className="text-danger">*</span></label>
-                                        <div>
-						<input 
-							name="rootdir"
-							placeholder="hbase.rootdir"
-							onChange={this.handleValueChange.bind(this)}
-							type="text"
-                                                        className={this.state.rootdir.trim() === '' ? "form-control invalidInput" : "form-control"}
-							value={this.state.rootdir}
-							required={true}
-                            disabled={this.props.viewMode}
-						/>
-					</div>
-				</div>
-				<div className="form-group">
-                                        <label>local.parser.jar.path <span className="text-danger">*</span></label>
-                                        <div>
-						<input 
-							name="parserJar"
-							placeholder="local.parser.jar.path"
-							onChange={this.handleValueChange.bind(this)}
-							type="text"
-                                                        className={this.state.parserJar.trim() === '' ? "form-control invalidInput" : "form-control"}
-							value={this.state.parserJar}
-							required={true}
-                            disabled={this.props.viewMode}
-						/>
-					</div>
-				</div>
-				<div className="form-group">
-                                        <label>local.notifier.jar.path <span className="text-danger">*</span></label>
-                                        <div>
-						<input 
-							name="notifierJar"
-							placeholder="local.notifier.jar.path"
-							onChange={this.handleValueChange.bind(this)}
-							type="text"
-                                                        className={this.state.notifierJar.trim() === '' ? "form-control invalidInput" : "form-control"}
-							value={this.state.notifierJar}
-							required={true}
-                            disabled={this.props.viewMode}
-						/>
-					</div>
-				</div>
-			</form>
-		);
-	}
+    handleSave(){
+        const {topologyName, topologyId, versionId} = this.props;
+        let data = this.refs.Form.state.FormData;
+        let dataObj = {
+            name: topologyName,
+            config: JSON.stringify(data)
+        }
+        return TopologyREST.putTopology(topologyId, versionId, {body: JSON.stringify(dataObj)})
+    }
+
+    render(){
+        const {formData,formField} = this.state;
+        let fields = Utils.genFields(formField.fields || [], [], formData);
+
+        return(
+            <div>
+                <Form
+                    ref="Form"
+                    FormData={formData}
+                    showRequired={null}
+                    className="modal-form config-modal-form"
+                >
+                    {fields}
+                </Form>
+            </div>
+        )
+    }
 }
