@@ -582,6 +582,8 @@ public class TopologyCatalogResource {
             topologyCatalogWithMetric = new TopologyCatalogWithMetric(topology, TopologyRunningStatus.NOT_RUNNING, null, null);
         } catch (StormNotReachableException | IOException e) {
             topologyCatalogWithMetric = new TopologyCatalogWithMetric(topology, TopologyRunningStatus.UNKNOWN, null, null);
+        } catch (Exception e ) {
+            topologyCatalogWithMetric = new TopologyCatalogWithMetric(topology, TopologyRunningStatus.UNKNOWN, null, null);
         }
         return topologyCatalogWithMetric;
     }
