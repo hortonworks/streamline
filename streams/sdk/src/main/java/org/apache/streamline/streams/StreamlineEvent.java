@@ -14,18 +14,7 @@ public interface StreamlineEvent  extends Map<String,Object> {
 
     String STREAMLINE_EVENT = "streamline-event"; // do not use . or _ in key names
 
-    /**
-     * This represents whether the received payload in StreamLine is of primitive type but it is pushed with this field
-     * in {@link #getFieldsAndValues()}
-     */
     String PRIMITIVE_PAYLOAD_FIELD = "org.apache.streamline.streams.payload.primitive.field";
-
-//    /**
-//     * The key values in the event.
-//     *
-//     * @return the key value map
-//     */
-//    Map<String, Object> getFieldsAndValues();
 
 
     /**
