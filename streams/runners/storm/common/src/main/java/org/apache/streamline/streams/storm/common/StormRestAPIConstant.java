@@ -1,7 +1,7 @@
-package org.apache.streamline.streams.metrics.storm.topology;
+package org.apache.streamline.streams.storm.common;
 
-public class StormMetricsConstant {
-    private StormMetricsConstant() {
+public class StormRestAPIConstant {
+    private StormRestAPIConstant() {
     }
 
     public static final String TOPOLOGY_JSON_UPTIME_SECS = "uptimeSeconds";

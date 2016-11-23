@@ -11,8 +11,9 @@ import org.apache.streamline.streams.layout.component.TopologyLayout;
 import org.apache.streamline.streams.metrics.TimeSeriesQuerier;
 import mockit.Expectations;
 import mockit.Mocked;
-import org.apache.streamline.streams.metrics.storm.StormRestAPIClient;
-import org.apache.streamline.streams.metrics.storm.StormTopologyUtil;
+import org.apache.streamline.streams.storm.common.StormRestAPIClient;
+import org.apache.streamline.streams.storm.common.StormRestAPIConstant;
+import org.apache.streamline.streams.storm.common.StormTopologyUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,7 +46,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
         component = getComponentLayoutForTest();
         topology = getTopologyLayoutForTest();
 
-        String generatedTopologyName = StormTopologyUtil.generateStormTopologyName(topology);
+        String generatedTopologyName = StormTopologyUtil.generateStormTopologyName(topology.getId(), topology.getName());
         mockedTopologyName = generatedTopologyName + "-old";
 
         StormRestAPIClient mockClient = createMockStormRestAPIClient(mockedTopologyName);
@@ -60,10 +61,10 @@ public class StormTopologyTimeSeriesMetricsImplTest {
                 public Map getTopologySummary() {
                     Map<String, Object> topologySummary = new HashMap<>();
                     List<Map<String, Object>> topologies = new ArrayList<>();
-                    topologySummary.put(StormMetricsConstant.TOPOLOGY_SUMMARY_JSON_TOPOLOGIES, topologies);
+                    topologySummary.put(StormRestAPIConstant.TOPOLOGY_SUMMARY_JSON_TOPOLOGIES, topologies);
                     Map<String, Object> mockTopology = new HashMap<>();
-                    mockTopology.put(StormMetricsConstant.TOPOLOGY_SUMMARY_JSON_TOPOLOGY_NAME, mockTopologyName);
-                    mockTopology.put(StormMetricsConstant.TOPOLOGY_SUMMARY_JSON_TOPOLOGY_ID_ENCODED, mockTopologyName + "-1234567890");
+                    mockTopology.put(StormRestAPIConstant.TOPOLOGY_SUMMARY_JSON_TOPOLOGY_NAME, mockTopologyName);
+                    mockTopology.put(StormRestAPIConstant.TOPOLOGY_SUMMARY_JSON_TOPOLOGY_ID_ENCODED, mockTopologyName + "-1234567890");
                     topologies.add(mockTopology);
                     return topologySummary;
                 }

@@ -27,7 +27,7 @@ import org.apache.streamline.streams.catalog.Topology;
 import org.apache.streamline.streams.catalog.TopologyVersionInfo;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.layout.component.TopologyActions;
-import org.apache.streamline.streams.metrics.storm.topology.StormNotReachableException;
+import org.apache.streamline.streams.storm.common.StormNotReachableException;
 import org.apache.streamline.streams.metrics.storm.topology.TopologyNotAliveException;
 import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
 import org.slf4j.Logger;
@@ -103,6 +103,7 @@ public class TopologyCatalogResource {
 
             return response;
         } catch (Exception ex) {
+            LOG.error("unable to fetch topologies due to {} ", ex);
             return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
     }

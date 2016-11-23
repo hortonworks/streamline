@@ -752,6 +752,11 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.streamline</groupId>
+                <artifactId>streamline-common-storm</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
                 <artifactId>streamline-notification</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
