@@ -1,0 +1,33 @@
+{
+  "type": "PROCESSOR",
+  "name": "Join bolt",
+  "subType": "Join",
+  "builtin": true,
+  "streamingEngine": "STORM",
+  "transformationClass": "org.apache.streamline.streams.layout.storm.JoinBoltFluxComponent",
+  "schemaClass": "org.apache.streamline.streams.schema.RulesProcessorSchemaEvolver",
+  "topologyComponentUISpecification": {
+    "fields": [
+      {
+        "uiName": "JoinTypes",
+        "fieldName": "jointype",
+        "isOptional": false,
+        "tooltip": "Type of join",
+        "isUserInput": false,
+        "type": "enumstring",
+        "options": [
+          "INNER",
+          "LEFT"
+        ]
+      },
+      {
+        "uiName": "Parallelism",
+        "fieldName": "parallelism",
+        "isOptional": true,
+        "tooltip": "Parallelism hint for rule bolt",
+        "type": "number",
+        "defaultValue": 1
+      }
+    ]
+  }
+}

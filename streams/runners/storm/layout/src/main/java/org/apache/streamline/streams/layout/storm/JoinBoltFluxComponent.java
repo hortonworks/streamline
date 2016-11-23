@@ -50,11 +50,18 @@ import java.util.Map;
     {"type" : "inner", "stream": "s4", "key":"k4", "with": "s2"}
   ],
   "outputKeys" : [ "k1", "k2" ],
-  "window" : { "windowLength": { "count" : 20 }, {"slidingInterval" : { "count": 10} } }
+  "window" : {"windowLength" : {"class":".Window$Count", "count":100}, "slidingInterval":{"class":".Window$Count", "count":100}, "tsField":null, "lagMs":0}
 }
  */
 
+
+//  select s1.k...
+// from  stream1
+// join  stream2 on stream2.k2 = stream1.k1
+// join  stream3 on stream3.k3 = {steam1/2}.k1
+
 public class JoinBoltFluxComponent extends AbstractFluxComponent {
+
 
     @Override
     protected void generateComponent()  {
