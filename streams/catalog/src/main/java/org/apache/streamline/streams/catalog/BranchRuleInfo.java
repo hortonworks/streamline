@@ -2,6 +2,7 @@ package org.apache.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -51,6 +52,7 @@ public class BranchRuleInfo extends AbstractStorable {
     private String condition;
     private String parsedRuleStr;
     private List<Action> actions;
+    private Long versionTimestamp;
 
     // for jackson
     public BranchRuleInfo() {
@@ -68,6 +70,19 @@ public class BranchRuleInfo extends AbstractStorable {
         if (other.getActions() != null) {
             setActions(other.getActions().stream().map(Action::new).collect(Collectors.toList()));
         }
+        setVersionTimestamp(other.getVersionTimestamp());
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("timestamp")
+    public Long getVersionTimestamp() {
+        return versionTimestamp;
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("timestamp")
+    public void setVersionTimestamp(Long versionTimestamp) {
+        this.versionTimestamp = versionTimestamp;
     }
 
     @JsonIgnore

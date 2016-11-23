@@ -46,7 +46,7 @@ public class StreamCatagoryTests {
             streamInfo.setTopologyId(1L);
             streamInfo.setStreamId("Stream-" + id);
             streamInfo.setFields(fields);
-            streamInfo.setTimestamp(System.currentTimeMillis());
+            streamInfo.setVersionTimestamp(System.currentTimeMillis());
 
             return streamInfo;
         }

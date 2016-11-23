@@ -24,6 +24,17 @@ public class TopologyVersionInfo extends AbstractStorable {
     private String description;
     private Long timestamp;
 
+    public TopologyVersionInfo() {
+    }
+
+    public TopologyVersionInfo(TopologyVersionInfo other) {
+        setId(other.getId());
+        setTopologyId(other.getTopologyId());
+        setName(other.getName());
+        setDescription(other.getDescription());
+        setTimestamp(other.getTimestamp());
+    }
+
     @JsonIgnore
     public PrimaryKey getPrimaryKey() {
         Map<Schema.Field, Object> fieldToObjectMap = new HashMap<>();

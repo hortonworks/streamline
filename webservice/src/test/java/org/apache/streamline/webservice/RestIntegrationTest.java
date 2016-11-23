@@ -833,7 +833,7 @@ public class RestIntegrationTest {
         topology.setVersionId(1L);
         topology.setName(name);
         topology.setConfig("{}");
-        topology.setTimestamp(System.currentTimeMillis());
+        topology.setVersionTimestamp(System.currentTimeMillis());
         return topology;
     }
 

@@ -1,6 +1,8 @@
 package org.apache.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.storage.PrimaryKey;
 import org.apache.streamline.storage.Storable;
@@ -46,7 +48,7 @@ public class Topology implements Storable {
     /**
      * Time at which this topology was created/updated.
      */
-    private Long timestamp;
+    private Long versionTimestamp;
 
     /**
      * The topology DAG. This is internally generated and used for
@@ -62,7 +64,7 @@ public class Topology implements Storable {
         setVersionId(other.getVersionId());
         setName(other.getName());
         setConfig(other.getConfig());
-        setTimestamp(other.getTimestamp());
+        setVersionTimestamp(other.getVersionTimestamp());
         // this will be re-generated during deployment.
         topologyDag = null;
     }
@@ -88,8 +90,7 @@ public class Topology implements Storable {
                 new Schema.Field(ID, Schema.Type.LONG),
                 new Schema.Field(VERSIONID, Schema.Type.LONG),
                 new Schema.Field(NAME, Schema.Type.STRING),
-                new Schema.Field(CONFIG, Schema.Type.STRING),
-                new Schema.Field(TIMESTAMP, Schema.Type.LONG)
+                new Schema.Field(CONFIG, Schema.Type.STRING)
         );
     }
 
@@ -112,7 +113,6 @@ public class Topology implements Storable {
         map.put(VERSIONID, this.versionId);
         map.put(NAME, this.name);
         map.put(CONFIG, this.config);
-        map.put(TIMESTAMP, this.timestamp);
         return map;
     }
 
@@ -121,7 +121,6 @@ public class Topology implements Storable {
         this.versionId = (Long) map.get(VERSIONID);
         this.name = (String) map.get(NAME);
         this.config = (String)  map.get(CONFIG);
-        this.timestamp = (Long) map.get(TIMESTAMP);
         return this;
     }
 
@@ -158,12 +157,16 @@ public class Topology implements Storable {
         this.config = config;
     }
 
-    public Long getTimestamp () {
-        return timestamp;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("timestamp")
+    public Long getVersionTimestamp() {
+        return versionTimestamp;
     }
 
-    public void setTimestamp (Long timestamp) {
-        this.timestamp = timestamp;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("timestamp")
+    public void setVersionTimestamp(Long timestamp) {
+        this.versionTimestamp = timestamp;
     }
 
     @Override
@@ -173,7 +176,6 @@ public class Topology implements Storable {
                 ", versionId=" + versionId +
                 ", name='" + name + '\'' +
                 ", config='" + config + '\'' +
-                ", timestamp=" + timestamp +
                 ", topologyDag=" + topologyDag +
                 '}';
     }
