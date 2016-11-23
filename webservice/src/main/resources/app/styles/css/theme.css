@@ -1274,3 +1274,8 @@ label {
   line-height: 51px;
   margin-left: 15px;
 }
+span.last-change,
+span.version{
+  margin-right: 20px;
+  color: #868686;
+}

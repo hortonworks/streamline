@@ -441,7 +441,7 @@ class TopologyEditorContainer extends Component {
                       name: 'V'+this.state.topologyVersion,
                       description: 'version description auto generated'
                   };
-                  TopologyREST.saveTopologyVersion(this.state.topologyVersion, {body: JSON.stringify(versionData)})
+                  TopologyREST.saveTopologyVersion(this.topologyId, {body: JSON.stringify(versionData)})
                 }
               })
           }
@@ -566,44 +566,44 @@ class TopologyEditorContainer extends Component {
     let nodeType = newEdge.source.currentType.toLowerCase();
     if(node && node.outputStreams.length === 1 && nodeType !== 'rule') {
       let edgeData = {
-            fromId: newEdge.source.nodeId,
-            toId: newEdge.target.nodeId,
-            streamGroupings: [{
-                    streamId: node.outputStreams[0].id,
-                    grouping: 'SHUFFLE'
-            }]
-        };
+        fromId: newEdge.source.nodeId,
+        toId: newEdge.target.nodeId,
+        streamGroupings: [{
+          streamId: node.outputStreams[0].id,
+          grouping: 'SHUFFLE'
+        }]
+      };
 
       if(node && nodeType === 'window'){
-          if(node.config.properties.rules && node.config.properties.rules.length > 0){
-                let rulesPromiseArr = [];
-                let saveRulesPromiseArr = [];
+        if(node.config.properties.rules && node.config.properties.rules.length > 0){
+          let rulesPromiseArr = [];
+          let saveRulesPromiseArr = [];
           node.config.properties.rules.map((id)=>{
-                    rulesPromiseArr.push(TopologyREST.getNode(topologyId, versionId, 'windows', id));
-                })
-                Promise.all(rulesPromiseArr)
-                    .then((results)=>{
-                        results.map((result)=>{
-                            let data = result.entity;
-                                let actionObj = {
-                                    name: newEdge.target.uiname,
-                                    outputStreams: [node.outputStreams[0].streamId]
-                                };
-                                if(newEdge.target.currentType.toLowerCase() === 'notification'){
-                                    actionObj.outputFieldsAndDefaults = node.config.properties.fieldValues || {};
-                                    actionObj.notifierName = node.config.properties.notifierName || '';
-                                    actionObj.__type = "org.apache.streamline.streams.layout.component.rule.action.NotifierAction";
-                                } else {
-                                    actionObj.__type = "org.apache.streamline.streams.layout.component.rule.action.TransformAction";
-                                    actionObj.transforms = [];
-                                }
-                                data.actions.push(actionObj);
-                                saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'windows', data.id, {body: JSON.stringify(data)}))
-                        })
-                        Promise.all(saveRulesPromiseArr).then((savedResults)=>{});
-                    })
-            }
+            rulesPromiseArr.push(TopologyREST.getNode(topologyId, versionId, 'windows', id));
+          })
+          Promise.all(rulesPromiseArr)
+            .then((results)=>{
+              results.map((result)=>{
+                let data = result.entity;
+                let actionObj = {
+                  name: newEdge.target.uiname,
+                  outputStreams: [node.outputStreams[0].streamId]
+                };
+                if(newEdge.target.currentType.toLowerCase() === 'notification'){
+                  actionObj.outputFieldsAndDefaults = node.config.properties.fieldValues || {};
+                  actionObj.notifierName = node.config.properties.notifierName || '';
+                  actionObj.__type = "org.apache.streamline.streams.layout.component.rule.action.NotifierAction";
+                } else {
+                  actionObj.__type = "org.apache.streamline.streams.layout.component.rule.action.TransformAction";
+                  actionObj.transforms = [];
+                }
+                data.actions.push(actionObj);
+                saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'windows', data.id, {body: JSON.stringify(data)}))
+              })
+              Promise.all(saveRulesPromiseArr)
+            })
         }
+      }
       TopologyREST.createNode(topologyId, versionId, 'edges', {body: JSON.stringify(edgeData)})
         .then((edge)=>{
             newEdge.edgeId = edge.entity.id;
@@ -612,10 +612,11 @@ class TopologyEditorContainer extends Component {
             //call the callback to update the graph
             callback();
           });
-    } else
-    this.setState({altFlag: !this.state.altFlag},()=>{
-      this.refs.EdgeConfigModal.show();
-    });
+    } else{
+      this.setState({altFlag: !this.state.altFlag},()=>{
+        this.refs.EdgeConfigModal.show();
+      });
+    }
   }
   handleSaveEdgeConfig(){
     if(this.refs.EdgeConfig.validate()) {
@@ -711,6 +712,9 @@ class TopologyEditorContainer extends Component {
               <div className="graph-region">
                 <div className="zoomWrap clearfix">
                   <div className="topology-editor-controls pull-right">
+                    <span className="version">
+                      Version: <span style={{color:'#545454'}}>{this.versionName}</span>
+                    </span>
                     <OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Zoom In</Tooltip>}>
                       <a href="javascript:void(0);" className="zoom-in" onClick={this.graphZoomAction.bind(this, 'zoom_in')}><i className="fa fa-search-plus"></i></a>
                     </OverlayTrigger>
