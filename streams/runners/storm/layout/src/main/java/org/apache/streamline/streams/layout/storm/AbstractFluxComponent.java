@@ -5,6 +5,7 @@ import org.apache.streamline.streams.layout.TopologyLayoutConstants;
 import org.apache.streamline.streams.layout.exception.ComponentConfigException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -175,10 +176,10 @@ public abstract class AbstractFluxComponent implements FluxComponent {
                 List methodArgs = new ArrayList();
                 Object value = values[i];
                 if(value.getClass().isArray()) {
-                    methodArgs.add( (Object[])value );
+                    methodArgs.addAll(Arrays.asList( (Object[])value ) );
                 } else {
                     if(value != ArgsType.NONE) {
-                        methodArgs.add(new Object[]{value});
+                        methodArgs.add(value);
                     }
                 }
 
