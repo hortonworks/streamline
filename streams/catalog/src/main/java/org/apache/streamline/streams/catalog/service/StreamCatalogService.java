@@ -40,6 +40,9 @@ import org.apache.streamline.common.ComponentTypes;
 import org.apache.streamline.streams.layout.component.StreamlineComponent;
 import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
 import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
+import org.apache.streamline.streams.catalog.Projection;
+import org.apache.streamline.streams.layout.component.StreamlineComponent;
+import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
 import org.apache.streamline.streams.layout.storm.FluxComponent;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.Schema;
@@ -2566,7 +2569,7 @@ public class StreamCatalogService {
     }
 
     private String getSqlString(List<String> streams,
-                                List<WindowInfo.Projection> projections,
+                                List<Projection> projections,
                                 String condition,
                                 List<String> groupByKeys) {
         String SQL = select(projections).orElse("SELECT * ");
@@ -2576,11 +2579,11 @@ public class StreamCatalogService {
         return SQL;
     }
 
-    private Optional<String> select(List<WindowInfo.Projection> projections) {
+    private Optional<String> select(List<Projection> projections) {
         if (projections != null) {
-            return join("SELECT ", Collections2.transform(projections, new Function<WindowInfo.Projection, String>() {
+            return join("SELECT ", Collections2.transform(projections, new Function<Projection, String>() {
                 @Override
-                public String apply(WindowInfo.Projection input) {
+                public String apply(Projection input) {
                     return input.toString();
                 }
             }));
