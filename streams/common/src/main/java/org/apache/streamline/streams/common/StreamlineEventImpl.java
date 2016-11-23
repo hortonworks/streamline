@@ -89,7 +89,7 @@ public class StreamlineEventImpl  extends HashMap<String,Object> implements Stre
         super(other);
         this.header = other.header;
         this.sourceStream = other.sourceStream;
-        this.auxiliaryFieldsAndValues = other.auxiliaryFieldsAndValues;
+        this.auxiliaryFieldsAndValues = new HashMap<String,Object>(other.auxiliaryFieldsAndValues);
         this.dataSourceId = other.dataSourceId;
         this.id = other.id;
     }

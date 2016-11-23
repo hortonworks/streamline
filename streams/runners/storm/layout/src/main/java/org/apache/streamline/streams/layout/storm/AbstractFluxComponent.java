@@ -134,18 +134,35 @@ public abstract class AbstractFluxComponent implements FluxComponent {
     protected List getConfigMethodsYaml (String[] configMethodNames, String[] configKeys) {
         List configMethods = new ArrayList();
         List<String> nonNullConfigMethodNames = new ArrayList<>();
-        List values = new ArrayList();
+        List<Object[]> values = new ArrayList<Object[]>(configKeys.length);
+
         if ((configMethodNames != null) && (configKeys != null) &&
                 (configMethodNames.length == configKeys.length) && (configKeys.length > 0)) {
             for (int i = 0; i < configKeys.length; ++i) {
                 if (conf.get(configKeys[i]) != null) {
                     nonNullConfigMethodNames.add(configMethodNames[i]);
-                    values.add(conf.get(configKeys[i]));
+                    Object args = conf.get(configKeys[i]);
+                    if(args.getClass().isArray()) {
+                        values.add( (Object[])args );
+                    } else {
+                        if(args != ArgsType.NONE) {
+                            values.add(new Object[]{args});
+                        }
+                    }
                 }
             }
-            configMethods = getConfigMethodsYaml(nonNullConfigMethodNames.toArray(new String[0]), values.toArray());
+;
+            configMethods = getConfigMethodsYaml2(nonNullConfigMethodNames.toArray(new String[0]), make2dArray(values));
         }
         return configMethods;
+    }
+
+    private Object[][] make2dArray(List<Object[]> values) {
+        Object[][] result =  new Object[values.size()][] ;
+        for (int i = 0; i < values.size(); i++) {
+            result[i] = values.get(i);
+        }
+        return result;
     }
 
     protected List getConfigMethodsYaml (String[] configMethodNames, Object[] values) {
@@ -157,9 +174,37 @@ public abstract class AbstractFluxComponent implements FluxComponent {
                 configMethod.put(StormTopologyLayoutConstants.YAML_KEY_NAME, configMethodNames[i]);
                 List methodArgs = new ArrayList();
                 Object value = values[i];
-                if(value != ArgsType.NONE) {
-                    methodArgs.add(value);
+                if(value.getClass().isArray()) {
+                    methodArgs.add( (Object[])value );
+                } else {
+                    if(value != ArgsType.NONE) {
+                        methodArgs.add(new Object[]{value});
+                    }
                 }
+
+                configMethod.put(StormTopologyLayoutConstants.YAML_KEY_ARGS, methodArgs);
+                configMethods.add(configMethod);
+            }
+
+        }
+        return configMethods;
+    }
+
+    protected List getConfigMethodsYaml2 (String[] configMethodNames, Object[][] values) {
+        List configMethods = new ArrayList();
+        if ((configMethodNames != null) && (values != null) &&
+                (configMethodNames.length == values.length) && (values.length > 0)) {
+            for (int i = 0; i < values.length; ++i) {
+                Map configMethod = new LinkedHashMap();
+                configMethod.put(StormTopologyLayoutConstants.YAML_KEY_NAME, configMethodNames[i]);
+                List methodArgs = new ArrayList();
+                Object[] value = values[i];
+                for (int j = 0; j < value.length; j++) {
+                    if(value[j] != ArgsType.NONE) {
+                        methodArgs.add(value[j]);
+                    }
+                }
+
                 configMethod.put(StormTopologyLayoutConstants.YAML_KEY_ARGS, methodArgs);
                 configMethods.add(configMethod);
             }
