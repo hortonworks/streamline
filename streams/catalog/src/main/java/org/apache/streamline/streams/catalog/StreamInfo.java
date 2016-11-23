@@ -20,6 +20,8 @@ package org.apache.streamline.streams.catalog;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
@@ -63,8 +65,7 @@ public class StreamInfo extends AbstractStorable {
     // list of fields in the stream
     private List<Field> fields;
 
-    // db insert/update timestamp
-    private Long timestamp;
+    private Long versionTimestamp;
 
     public StreamInfo() {
     }
@@ -78,7 +79,19 @@ public class StreamInfo extends AbstractStorable {
         if (other.getFields() != null) {
             setFields(other.getFields().stream().map(Field::new).collect(Collectors.toList()));
         }
-        setTimestamp(other.getTimestamp());
+        setVersionTimestamp(other.getVersionTimestamp());
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("timestamp")
+    public Long getVersionTimestamp() {
+        return versionTimestamp;
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("timestamp")
+    public void setVersionTimestamp(Long timestamp) {
+        this.versionTimestamp = timestamp;
     }
 
     @JsonIgnore
@@ -104,7 +117,6 @@ public class StreamInfo extends AbstractStorable {
                 Field.of(VERSIONID, Schema.Type.LONG),
                 Field.of(STREAMID, Schema.Type.STRING),
                 Field.of(FIELDSDATA, Schema.Type.STRING), // fields are serialized into fieldsdata
-                Field.of(TIMESTAMP, Schema.Type.LONG),
                 Field.of(TOPOLOGYID, Schema.Type.LONG)
         );
     }
@@ -165,14 +177,6 @@ public class StreamInfo extends AbstractStorable {
         });
     }
 
-    public Long getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(Long timestamp) {
-        this.timestamp = timestamp;
-    }
-
     public Long getTopologyId() {
         return topologyId;
     }
@@ -208,7 +212,6 @@ public class StreamInfo extends AbstractStorable {
                 ", streamId='" + streamId + '\'' +
                 ", topologyId=" + topologyId +
                 ", fields=" + fields +
-                ", timestamp=" + timestamp +
                 "} " + super.toString();
     }
 
@@ -230,7 +233,6 @@ public class StreamInfo extends AbstractStorable {
         setVersionId((Long) map.get(VERSIONID));
         setStreamId((String) map.get(STREAMID));
         setTopologyId((Long) map.get(TOPOLOGYID));
-        setTimestamp((Long)map.get(TIMESTAMP));
         ObjectMapper mapper = new ObjectMapper();
         String fieldsDataStr = (String) map.get(FIELDSDATA);
         if (!StringUtils.isEmpty(fieldsDataStr)) {
