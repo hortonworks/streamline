@@ -60,7 +60,7 @@ public class DefaultSplitter implements Splitter {
         headers.put(SplitActionRuntime.SPLIT_GROUP_ID, groupId);
         headers.put(SplitActionRuntime.SPLIT_PARTITION_ID, partNo);
         headers.put(SplitActionRuntime.SPLIT_TOTAL_PARTITIONS_ID, totalParts);
-        return new StreamlineEventImpl(event.getFieldsAndValues(), event.getDataSourceId(),
+        return new StreamlineEventImpl(event, event.getDataSourceId(),
                 UUID.randomUUID().toString(), headers, stream, event.getAuxiliaryFieldsAndValues());
     }
 

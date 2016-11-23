@@ -65,9 +65,9 @@ public class WindowRulesBoltTest {
                 List<List<Object>> tuples = new ArrayList<>();
                 mockCollector.emit(streamId = withCapture(), anchors = withCapture(), withCapture(tuples));
                 Assert.assertEquals("outputstream", streamId);
-                Map<String, Object> fieldsAndValues1 = ((StreamlineEvent) tuples.get(0).get(0)).getFieldsAndValues();
+                Map<String, Object> fieldsAndValues1 = ((StreamlineEvent) tuples.get(0).get(0));
                 Assert.assertEquals("min salary is 30, max salary is 100", fieldsAndValues1.get("body"));
-                Map<String, Object> fieldsAndValues2 = ((StreamlineEvent) tuples.get(1).get(0)).getFieldsAndValues();
+                Map<String, Object> fieldsAndValues2 = ((StreamlineEvent) tuples.get(1).get(0));
                 Assert.assertEquals("min salary is 110, max salary is 200", fieldsAndValues2.get("body"));
             }
         };
@@ -96,17 +96,17 @@ public class WindowRulesBoltTest {
                 Collection<Tuple> anchors;
                 List<List<Object>> tuples = new ArrayList<>();
                 mockCollector.emit(streamId = withCapture(), anchors = withCapture(), withCapture(tuples));
-                Map<String, Object> fieldsAndValues1 = ((StreamlineEvent) tuples.get(0).get(0)).getFieldsAndValues();
+                Map<String, Object> fieldsAndValues1 = ((StreamlineEvent) tuples.get(0).get(0));
                 Assert.assertEquals("count is 2, min salary is 30, max salary is 40", fieldsAndValues1.get("body"));
-                Map<String, Object> fieldsAndValues2 = ((StreamlineEvent) tuples.get(1).get(0)).getFieldsAndValues();
+                Map<String, Object> fieldsAndValues2 = ((StreamlineEvent) tuples.get(1).get(0));
                 Assert.assertEquals("count is 5, min salary is 50, max salary is 90", fieldsAndValues2.get("body"));
-                Map<String, Object> fieldsAndValues3 = ((StreamlineEvent) tuples.get(2).get(0)).getFieldsAndValues();
+                Map<String, Object> fieldsAndValues3 = ((StreamlineEvent) tuples.get(2).get(0));
                 Assert.assertEquals("count is 1, min salary is 100, max salary is 100", fieldsAndValues3.get("body"));
-                Map<String, Object> fieldsAndValues4 = ((StreamlineEvent) tuples.get(3).get(0)).getFieldsAndValues();
+                Map<String, Object> fieldsAndValues4 = ((StreamlineEvent) tuples.get(3).get(0));
                 Assert.assertEquals("count is 4, min salary is 110, max salary is 140", fieldsAndValues4.get("body"));
-                Map<String, Object> fieldsAndValues5 = ((StreamlineEvent) tuples.get(4).get(0)).getFieldsAndValues();
+                Map<String, Object> fieldsAndValues5 = ((StreamlineEvent) tuples.get(4).get(0));
                 Assert.assertEquals("count is 5, min salary is 150, max salary is 190", fieldsAndValues5.get("body"));
-                Map<String, Object> fieldsAndValues6 = ((StreamlineEvent) tuples.get(5).get(0)).getFieldsAndValues();
+                Map<String, Object> fieldsAndValues6 = ((StreamlineEvent) tuples.get(5).get(0));
                 Assert.assertEquals("count is 1, min salary is 200, max salary is 200", fieldsAndValues6.get("body"));
             }
         };
@@ -133,10 +133,10 @@ public class WindowRulesBoltTest {
                 List<List<Object>> tuples = new ArrayList<>();
                 mockCollector.emit(streamId = withCapture(), anchors = withCapture(), withCapture(tuples));
                 Assert.assertEquals(2, tuples.size());
-                Map<String, Object> fieldsAndValues = ((StreamlineEvent) tuples.get(0).get(0)).getFieldsAndValues();
+                Map<String, Object> fieldsAndValues = ((StreamlineEvent) tuples.get(0).get(0));
                 Assert.assertEquals(2, fieldsAndValues.get("deptid"));
                 Assert.assertEquals(110, fieldsAndValues.get("salary_MAX"));
-                fieldsAndValues = ((StreamlineEvent) tuples.get(1).get(0)).getFieldsAndValues();
+                fieldsAndValues = ((StreamlineEvent) tuples.get(1).get(0));
                 Assert.assertEquals(3, fieldsAndValues.get("deptid"));
                 Assert.assertEquals(160, fieldsAndValues.get("salary_MAX"));
             }
@@ -152,7 +152,7 @@ public class WindowRulesBoltTest {
                 Collection<Tuple> anchors;
                 List<List<Object>> tuples = new ArrayList<>();
                 mockCollector.emit(streamId = withCapture(), anchors = withCapture(), withCapture(tuples));
-                Map<String, Object> fieldsAndValues1 = ((StreamlineEvent) tuples.get(0).get(0)).getFieldsAndValues();
+                Map<String, Object> fieldsAndValues1 = ((StreamlineEvent) tuples.get(0).get(0));
                 Assert.assertEquals("min salary is 30, max salary is 200", fieldsAndValues1.get("body"));
             }
         };
@@ -168,7 +168,7 @@ public class WindowRulesBoltTest {
                 List<List<Object>> tuples = new ArrayList<>();
                 mockCollector.emit(streamId = withCapture(), anchors = withCapture(), withCapture(tuples));
                 Assert.assertEquals("outputstream", streamId);
-                Map<String, Object> fieldsAndValues1 = ((StreamlineEvent) tuples.get(0).get(0)).getFieldsAndValues();
+                Map<String, Object> fieldsAndValues1 = ((StreamlineEvent) tuples.get(0).get(0));
                 Assert.assertEquals(0, fieldsAndValues1.get("deptid"));
                 Assert.assertEquals(40, fieldsAndValues1.get("salary_MAX"));
             }

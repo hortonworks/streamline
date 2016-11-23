@@ -56,7 +56,7 @@ public class FieldBasedNormalizationRuntime extends NormalizationRuntime {
     }
 
     public Map<String, Object> normalize(StreamlineEvent event) throws NormalizationException {
-        Map<String, Object> outputFieldNameValuePairs = new HashMap<>(event.getFieldsAndValues());
+        Map<String, Object> outputFieldNameValuePairs = new HashMap<>(event);
 
         LOG.debug("Received streamline event {}", event);
 

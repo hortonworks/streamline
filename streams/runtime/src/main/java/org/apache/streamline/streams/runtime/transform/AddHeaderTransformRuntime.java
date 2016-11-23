@@ -40,7 +40,7 @@ public class AddHeaderTransformRuntime implements TransformRuntime {
         header.put(HEADER_FIELD_EVENT_IDS, Collections.singletonList(input.getId()));
         header.put(HEADER_FIELD_TIMESTAMP, System.currentTimeMillis());
         return Collections.<StreamlineEvent>singletonList(
-                new StreamlineEventImpl(input.getFieldsAndValues(), input.getDataSourceId(), header));
+                new StreamlineEventImpl(input, input.getDataSourceId(), header));
     }
 
     @Override

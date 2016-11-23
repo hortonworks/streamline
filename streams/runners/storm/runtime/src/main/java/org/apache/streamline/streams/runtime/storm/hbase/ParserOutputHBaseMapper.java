@@ -30,13 +30,12 @@ public class ParserOutputHBaseMapper implements HBaseMapper {
     @Override
     public ColumnList columns(Tuple tuple) {
         StreamlineEvent event = (StreamlineEvent) tuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
-        Map<String, Object> parsedMap = event.getFieldsAndValues();
 
         ColumnList columnList = new ColumnList();
-        for (String key : parsedMap.keySet()) {
+        for (String key : event.keySet()) {
             //Hbase bolt can not handle null values.
-            if (parsedMap.get(key) != null) {
-                columnList.addColumn(columnFamily, key.getBytes(Charsets.UTF_8), toBytes(parsedMap.get(key)));
+            if (event.get(key) != null) {
+                columnList.addColumn(columnFamily, key.getBytes(Charsets.UTF_8), toBytes(event.get(key)));
             }
         }
         columnList.addColumn(CF_DSRCID, event.getDataSourceId().getBytes(StandardCharsets.UTF_8), CV_DEFAULT);

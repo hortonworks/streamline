@@ -25,7 +25,7 @@ public class StreamlineEventImplTest {
 
         StreamlineEvent event = new StreamlineEventImpl(map, StringUtils.EMPTY);
 
-        assertEquals(map, event.getFieldsAndValues());
+        assertEquals(map, event);
     }
 
     @Test

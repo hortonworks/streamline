@@ -110,7 +110,7 @@ public class SqlScript extends Script<StreamlineEvent, Collection<StreamlineEven
     private Values createValues(StreamlineEvent event) {
         Values values = new Values();
         for (Schema.Field field : stormSqlFields) {
-            Object value = event.getFieldsAndValues().get(field.getName());
+            Object value = event.get(field.getName());
             if (value == null) {
                 throw new ConditionEvaluationException("Missing property " + field.getName());
             }

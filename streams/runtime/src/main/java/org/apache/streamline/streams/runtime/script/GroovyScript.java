@@ -60,20 +60,17 @@ public class GroovyScript<O> extends Script<StreamlineEvent, O, javax.script.Scr
         O evaluatedResult = null;
 
         if (event != null) {
-            final Map<String, Object> fieldsToValues = event.getFieldsAndValues();
-            if (fieldsToValues != null) {
-                try {
-                    Binding binding = createBinding(fieldsToValues);
-                    parsedScript.setBinding(binding);
-                    LOG.debug("Set script binding to [{}]", fieldsToValues);
+            try {
+                Binding binding = createBinding(event);
+                parsedScript.setBinding(binding);
+                LOG.debug("Set script binding to [{}]", event);
 
-                    evaluatedResult = (O) parsedScript.run();
+                evaluatedResult = (O) parsedScript.run();
 
-                    LOG.debug("Expression [{}] evaluated to [{}]", expression, evaluatedResult);
-                } catch (groovy.lang.MissingPropertyException e) {
-                    LOG.debug("Missing property: Expression [{}] params [{}]", expression, fieldsToValues);
-                    throw new ScriptException(e);
-                }
+                LOG.debug("Expression [{}] evaluated to [{}]", expression, evaluatedResult);
+            } catch (groovy.lang.MissingPropertyException e) {
+                LOG.debug("Missing property: Expression [{}] params [{}]", expression, event);
+                throw new ScriptException(e);
             }
         }
         return evaluatedResult;

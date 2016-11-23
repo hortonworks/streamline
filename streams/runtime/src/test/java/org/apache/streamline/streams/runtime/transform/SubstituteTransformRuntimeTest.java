@@ -46,10 +46,10 @@ public class SubstituteTransformRuntimeTest {
         TransformRuntime transformRuntime = new SubstituteTransformRuntime();
         List<StreamlineEvent> result = transformRuntime.execute(event);
         assertEquals(1, result.size());
-        assertEquals(3, result.get(0).getFieldsAndValues().size());
-        assertEquals("one", result.get(0).getFieldsAndValues().get("1"));
-        assertEquals("two", result.get(0).getFieldsAndValues().get("2"));
-        assertEquals("three", result.get(0).getFieldsAndValues().get("3"));
+        assertEquals(3, result.get(0).size());
+        assertEquals("one", result.get(0).get("1"));
+        assertEquals("two", result.get(0).get("2"));
+        assertEquals("three", result.get(0).get("3"));
     }
 
     @Test
@@ -63,10 +63,10 @@ public class SubstituteTransformRuntimeTest {
         TransformRuntime transformRuntime = new SubstituteTransformRuntime();
         List<StreamlineEvent> result = transformRuntime.execute(event);
         assertEquals(1, result.size());
-        assertEquals(3, result.get(0).getFieldsAndValues().size());
-        assertEquals("one", result.get(0).getFieldsAndValues().get("1"));
-        assertEquals("two", result.get(0).getFieldsAndValues().get("2"));
-        assertEquals("one plus two", result.get(0).getFieldsAndValues().get("3"));
+        assertEquals(3, result.get(0).size());
+        assertEquals("one", result.get(0).get("1"));
+        assertEquals("two", result.get(0).get("2"));
+        assertEquals("one plus two", result.get(0).get("3"));
     }
 
     @Test
@@ -80,10 +80,10 @@ public class SubstituteTransformRuntimeTest {
         TransformRuntime transformRuntime = new SubstituteTransformRuntime(new SubstituteTransform(Collections.singleton("3")));
         List<StreamlineEvent> result = transformRuntime.execute(event);
         assertEquals(1, result.size());
-        assertEquals(3, result.get(0).getFieldsAndValues().size());
-        assertEquals("one", result.get(0).getFieldsAndValues().get("1"));
-        assertEquals("${1} plus ${1}", result.get(0).getFieldsAndValues().get("2"));
-        assertEquals("one plus two", result.get(0).getFieldsAndValues().get("3"));
+        assertEquals(3, result.get(0).size());
+        assertEquals("one", result.get(0).get("1"));
+        assertEquals("${1} plus ${1}", result.get(0).get("2"));
+        assertEquals("one plus two", result.get(0).get("3"));
     }
 
     @Test
@@ -97,10 +97,10 @@ public class SubstituteTransformRuntimeTest {
         TransformRuntime transformRuntime = new SubstituteTransformRuntime();
         List<StreamlineEvent> result = transformRuntime.execute(event);
         assertEquals(1, result.size());
-        assertEquals(3, result.get(0).getFieldsAndValues().size());
-        assertEquals(1, result.get(0).getFieldsAndValues().get("1"));
-        assertEquals(2, result.get(0).getFieldsAndValues().get("2"));
-        assertEquals("1 plus 2", result.get(0).getFieldsAndValues().get("3"));
+        assertEquals(3, result.get(0).size());
+        assertEquals(1, result.get(0).get("1"));
+        assertEquals(2, result.get(0).get("2"));
+        assertEquals("1 plus 2", result.get(0).get("3"));
     }
 
     @Test
@@ -114,10 +114,10 @@ public class SubstituteTransformRuntimeTest {
         TransformRuntime transformRuntime = new SubstituteTransformRuntime();
         List<StreamlineEvent> result = transformRuntime.execute(event);
         assertEquals(1, result.size());
-        assertEquals(3, result.get(0).getFieldsAndValues().size());
-        assertEquals("one", result.get(0).getFieldsAndValues().get("1"));
-        assertEquals("one plus one", result.get(0).getFieldsAndValues().get("2"));
-        assertEquals("one plus one plus one", result.get(0).getFieldsAndValues().get("3"));
+        assertEquals(3, result.get(0).size());
+        assertEquals("one", result.get(0).get("1"));
+        assertEquals("one plus one", result.get(0).get("2"));
+        assertEquals("one plus one plus one", result.get(0).get("3"));
     }
 
     @Test

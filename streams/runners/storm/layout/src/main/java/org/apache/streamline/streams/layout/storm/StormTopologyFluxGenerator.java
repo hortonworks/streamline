@@ -218,7 +218,7 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
     }
 
     private Map<String, Object> getYamlComponents(FluxComponent fluxComponent, Component topologyComponent) {
-        Map<String, Object> props = new HashMap<>();
+        Map<String, Object> props = new LinkedHashMap<>();
         props.putAll(config);
         props.putAll(topologyComponent.getConfig().getProperties());
         // below line is needed becuase kafka, normalization, notification and rules flux components need design time entities
