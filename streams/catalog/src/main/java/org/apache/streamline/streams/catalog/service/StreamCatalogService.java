@@ -642,7 +642,9 @@ public class StreamCatalogService {
         topology.setId(topologyId);
         topology.setVersionId(versionId);
         Topology result = this.dao.get(topology.getStorableKey());
-        result.setVersionTimestamp(getVersionTimestamp(versionId));
+        if (result != null) {
+            result.setVersionTimestamp(getVersionTimestamp(versionId));
+        }
         return result;
     }
 
