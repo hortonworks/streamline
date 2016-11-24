@@ -61,7 +61,7 @@ public class Config extends AbstractConfig {
 
     @Override
     public String get(String key, Object defaultValue) {
-        return (String) super.get(key, defaultValue);
+        return super.get(key, defaultValue).toString();
     }
 
     @Override
