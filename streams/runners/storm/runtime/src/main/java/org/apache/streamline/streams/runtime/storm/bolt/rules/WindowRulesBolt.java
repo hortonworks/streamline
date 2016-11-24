@@ -12,15 +12,14 @@ import org.apache.streamline.streams.runtime.processor.RuleProcessorRuntime;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
-import org.apache.storm.topology.base.BaseWindowedBolt;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
 import org.apache.storm.windowing.TupleWindow;
+import org.apache.streamline.streams.runtime.storm.bolt.StreamlineWindowedBolt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,7 +27,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import static org.apache.streamline.streams.common.StreamlineEventImpl.GROUP_BY_TRIGGER_EVENT;
 import static org.apache.streamline.streams.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_DATASOURCE_IDS;
@@ -37,7 +35,7 @@ import static org.apache.streamline.streams.runtime.transform.AddHeaderTransform
 /**
  * A windowed rules bolt
  */
-public class WindowRulesBolt extends BaseWindowedBolt {
+public class WindowRulesBolt extends StreamlineWindowedBolt {
     private static final Logger LOG = LoggerFactory.getLogger(WindowRulesBolt.class);
 
     private RuleProcessorRuntime ruleProcessorRuntime;
@@ -159,39 +157,6 @@ public class WindowRulesBolt extends BaseWindowedBolt {
         }
     }
 
-    public void withWindowConfig(Window windowConfig) throws IOException {
-        if (windowConfig.getWindowLength() instanceof Window.Duration) {
-            Duration windowLength = new Duration(((Window.Duration) windowConfig.getWindowLength()).getDurationMs(), TimeUnit.MILLISECONDS);
-            if (windowConfig.getSlidingInterval() instanceof Window.Duration) {
-                Duration slidingInterval = new Duration(((Window.Duration) windowConfig.getSlidingInterval()).getDurationMs(), TimeUnit.MILLISECONDS);
-                withWindow(windowLength, slidingInterval);
-            } else if (windowConfig.getSlidingInterval() instanceof Window.Count) {
-                Count slidingInterval = new Count(((Window.Count) windowConfig.getSlidingInterval()).getCount());
-                withWindow(windowLength, slidingInterval);
-            } else {
-                withWindow(windowLength);
-            }
-        } else if (windowConfig.getWindowLength() instanceof Window.Count) {
-            Count windowLength = new Count(((Window.Count) windowConfig.getWindowLength()).getCount());
-            if (windowConfig.getSlidingInterval() instanceof Window.Duration) {
-                Duration slidingInterval = new Duration(((Window.Duration) windowConfig.getWindowLength()).getDurationMs(), TimeUnit.MILLISECONDS);
-                withWindow(windowLength, slidingInterval);
-            } else if (windowConfig.getSlidingInterval() instanceof Window.Count) {
-                Count slidingInterval = new Count(((Window.Count) windowConfig.getWindowLength()).getCount());
-                withWindow(windowLength, slidingInterval);
-            } else {
-                withWindow(windowLength);
-            }
-        }
-
-        if (windowConfig.getLagMs() != 0) {
-            withLag(new Duration(windowConfig.getLagMs(), TimeUnit.MILLISECONDS));
-        }
-
-        if (windowConfig.getTsField() != null) {
-            withTimestampField(windowConfig.getTsField());
-        }
-    }
 
     private StreamlineEvent eventWithWindowId(final StreamlineEvent event) {
         if (event == GROUP_BY_TRIGGER_EVENT) {
