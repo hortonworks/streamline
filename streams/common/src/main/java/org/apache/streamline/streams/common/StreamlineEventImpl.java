@@ -38,7 +38,7 @@ public class StreamlineEventImpl  extends HashMap<String,Object> implements Stre
      * Creates an StreamlineEvent with given keyValues, dataSourceId and id.
      */
     public StreamlineEventImpl(Map<String, Object> keyValues, String dataSourceId, String id) {
-        this(keyValues, dataSourceId, id, Collections.<String, Object>emptyMap(), DEFAULT_SOURCE_STREAM);
+        this(keyValues, dataSourceId, id, new HashMap<>(), DEFAULT_SOURCE_STREAM);
     }
 
     /**
@@ -97,7 +97,7 @@ public class StreamlineEventImpl  extends HashMap<String,Object> implements Stre
 
     @Override
     public Map<String, Object> getAuxiliaryFieldsAndValues() {
-        return Collections.unmodifiableMap(auxiliaryFieldsAndValues);
+        return auxiliaryFieldsAndValues;
     }
 
     public void addAuxiliaryFieldAndValue(String field, Object value) {
@@ -160,7 +160,7 @@ public class StreamlineEventImpl  extends HashMap<String,Object> implements Stre
 
     @Override
     public Map<String, Object> getHeader() {
-        return Collections.unmodifiableMap(header);
+        return header;
     }
 
     @Override
