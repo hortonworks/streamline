@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.Map;
 
 
-/* ---- Sample Json from UI  ---
+/* ---- Sample Json of whats expected from UI  ---
 {
 "from" : {"stream": "stream1", "key": "k1"},
 "joins" :
@@ -54,11 +54,6 @@ import java.util.Map;
 }
  */
 
-
-//  select s1.k...
-// from  stream1
-// join  stream2 on stream2.k2 = stream1.k1
-// join  stream3 on stream3.k3 = {steam1/2}.k1
 
 public class JoinBoltFluxComponent extends AbstractFluxComponent {
 

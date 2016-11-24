@@ -468,26 +468,28 @@ export default class WindowingAggregateNodeForm extends Component {
                 windowObj.actions = result.entity.actions || [];
 
                 if(this.props.sourceNode.currentType.toLowerCase() === 'rule' ||
-                    this.props.sourceNode.currentType.toLowerCase() === 'window') {
-                    let type = this.props.sourceNode.currentType.toLowerCase() === 'rule' ? 'rules' : 'windows';
+                    this.props.sourceNode.currentType.toLowerCase() === 'window' ||
+                    this.props.sourceNode.currentType.toLowerCase() === 'branch') {
+                	let t = this.props.sourceNode.currentType.toLowerCase();
+                    let type = t === 'rule' ? 'rules' : (t === 'window' ? 'windows' : 'branchrules');
                     let nodeName = this.nodeData.name;
                     TopologyREST.getAllNodes(topologyId, versionId, type).then((results)=>{
                         results.entities.map((nodeObj)=>{
 							let actionObj = nodeObj.actions.find((a)=>{
 								return a.name === nodeName;
-                                });
+                            });
 							if(actionObj) {
 								actionObj.name = name;
-                                                                TopologyREST.updateNode(topologyId, versionId, type, nodeObj.id, {body: JSON.stringify(nodeObj)});
+                                TopologyREST.updateNode(topologyId, versionId, type, nodeObj.id, {body: JSON.stringify(nodeObj)});
 							}
 						});
                     });
                 }
 
                 return TopologyREST.updateNode(topologyId, versionId, 'windows', this.windowId, {body: JSON.stringify(windowObj)})
-                        .then(windowResult=>{
-                        return this.updateNode(windowResult, name);
-                        })
+                    .then(windowResult=>{
+                    	return this.updateNode(windowResult, name);
+                    })
                 })
 		}
 	}

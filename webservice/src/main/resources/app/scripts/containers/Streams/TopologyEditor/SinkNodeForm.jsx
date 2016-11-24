@@ -66,7 +66,8 @@ export default class SinkNodeForm extends Component {
                     this.sourceNodeData = results[2].entity;
                     let sourcePromiseArr = [];
                     // sourceChildNodeType are processor nodes inner child, window or rule
-                    this.sourceChildNodeType = sourceNodes[0].currentType.toLowerCase() === 'window' ? 'windows' : 'rules';
+                    let type = sourceNodes[0].currentType.toLowerCase();
+                    this.sourceChildNodeType = type === 'window' ? 'windows' : (type === 'rule' ? 'rules' : 'branchrules');
                     if(this.sourceNodeData.config.properties && this.sourceNodeData.config.properties.rules && this.sourceNodeData.config.properties.rules.length > 0){
                         this.sourceNodeData.config.properties.rules.map((id)=>{
                             sourcePromiseArr.push(TopologyREST.getNode(topologyId, versionId, this.sourceChildNodeType, id));
@@ -109,7 +110,9 @@ export default class SinkNodeForm extends Component {
                     }
                     promiseArr.push(TopologyREST.updateNode(topologyId, versionId, this.sourceChildNodeType, child.id, {body: JSON.stringify(child)}));
                 } else {
-                    console.error("Missing actions object for "+name);
+                    if(this.sourceChildNodeType !== 'branchrules'){
+                        console.error("Missing actions object for "+name);
+                    }
                 }
             })
         }

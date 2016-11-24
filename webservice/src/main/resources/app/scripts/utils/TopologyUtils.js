@@ -471,11 +471,12 @@ const deleteEdge = function(selectedEdge, topologyId, versionId, internalFlags, 
                 //Find the connected source rule/window
                 let rulePromises = [];
                 let ruleProcessorNode = results[1].entity;
-                let type = selectedEdge.source.currentType.toLowerCase() === 'window' ? 'windows' : 'rules';
+                let t = selectedEdge.source.currentType.toLowerCase();
+                let type = t === 'window' ? 'windows' : (t === 'rule' ? 'rules' : 'branchrules');
                 if(ruleProcessorNode.config.properties.rules){
-                        ruleProcessorNode.config.properties.rules.map(ruleId=>{
-                                rulePromises.push(TopologyREST.getNode(topologyId, versionId, type, ruleId));
-                        })
+                    ruleProcessorNode.config.properties.rules.map(ruleId=>{
+                        rulePromises.push(TopologyREST.getNode(topologyId, versionId, type, ruleId));
+                    })
                 }
                 Promise.all(rulePromises)
                     .then(rulesResults=>{
@@ -776,7 +777,7 @@ const MouseUpAction = function(topologyId, versionId, d3node, d, metaInfo, inter
         if(hasSource.length && d.currentType.toLowerCase() === 'branch') {
 			FSReactToastr.warning(<strong>Edge cannot be connected to Branch.</strong>);
 		} else {
-			this.createEdge(mouseDownNode, d, paths, edges, internalFlags, updateGraphMethod, topologyId, getEdgeConfigModal);
+			this.createEdge(mouseDownNode, d, paths, edges, internalFlags, updateGraphMethod, topologyId, versionId, getEdgeConfigModal);
 		}
         this.updateMetaInfo(topologyId, versionId, d, metaInfo);
 	} else {

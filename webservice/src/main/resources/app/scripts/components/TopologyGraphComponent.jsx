@@ -174,7 +174,7 @@ export default class TopologyGraphComponent extends Component {
             clearTimeout(this.saveMetaInfoTimer);
             this.saveMetaInfoTimer = setTimeout(()=>{
 		let {topologyId, versionId, versionsArr, metaInfo} = thisGraph;
-		if(versionId){
+		if(versionId && versionsArr){
 			let versionName = versionsArr.find((o)=>{return o.id == versionId}).name;
 			if(versionName.toLowerCase() == 'current'){
 				TopologyUtils.saveMetaInfo(topologyId, versionId, null, metaInfo, null);
