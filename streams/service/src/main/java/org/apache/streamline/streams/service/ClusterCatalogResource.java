@@ -1,6 +1,7 @@
 package org.apache.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
+import org.apache.commons.lang.StringUtils;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.storage.exception.AlreadyExistsException;
@@ -9,8 +10,11 @@ import org.apache.streamline.streams.catalog.Component;
 import org.apache.streamline.streams.catalog.Service;
 import org.apache.streamline.streams.catalog.ServiceConfiguration;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import org.apache.streamline.streams.catalog.service.metadata.StormMetadataService;
 import org.apache.streamline.streams.cluster.discovery.ServiceNodeDiscoverer;
 import org.apache.streamline.streams.cluster.discovery.ambari.AmbariServiceNodeDiscoverer;
+import org.apache.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
+import org.apache.streamline.streams.service.metadata.StormMetadataResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -192,12 +196,15 @@ public class ClusterCatalogResource {
                 acquired = true;
             }
 
-            ServiceNodeDiscoverer discoverer = new AmbariServiceNodeDiscoverer(params.getAmbariRestApiRootUrl(),
+            // Not assigning to interface to apply a hack
+            AmbariServiceNodeDiscoverer discoverer = new AmbariServiceNodeDiscoverer(params.getAmbariRestApiRootUrl(),
                 params.getUsername(), params.getPassword());
 
             discoverer.init(null);
 
             retrievedCluster = catalogService.importClusterServices(discoverer, retrievedCluster);
+
+            injectStormViewAsStormConfiguration(clusterId, discoverer);
 
             ClusterServicesImportResult result = new ClusterServicesImportResult(retrievedCluster);
 
@@ -222,6 +229,24 @@ public class ClusterCatalogResource {
                 synchronized (importInProgressCluster) {
                     importInProgressCluster.remove(clusterId);
                 }
+            }
+        }
+    }
+
+    private void injectStormViewAsStormConfiguration(Long clusterId, AmbariServiceNodeDiscoverer discoverer) {
+        Service stormService = catalogService.getServiceByName(clusterId, ServiceConfigurations.STORM.name());
+        if (stormService != null) {
+            // hack: find Storm View and inject to one of ServiceConfiguration for Storm service if available
+            String stormViewURL = discoverer.getStormViewUrl();
+            if (StringUtils.isNotEmpty(stormViewURL)) {
+                ServiceConfiguration serviceConfiguration = new ServiceConfiguration();
+                serviceConfiguration.setServiceId(stormService.getId());
+                serviceConfiguration.setName(StormMetadataService.SERVICE_STORM_VIEW);
+                serviceConfiguration.setConfiguration("{\"" + StormMetadataService.STORM_VIEW_CONFIGURATION_KEY_STORM_VIEW_URL +
+                        "\":\"" + stormViewURL + "\"}");
+                serviceConfiguration.setDescription("a hack to store Storm View URL");
+
+                catalogService.addServiceConfiguration(serviceConfiguration);
             }
         }
     }

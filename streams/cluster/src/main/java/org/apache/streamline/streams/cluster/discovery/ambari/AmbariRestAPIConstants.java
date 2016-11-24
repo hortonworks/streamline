@@ -12,6 +12,9 @@ public final class AmbariRestAPIConstants {
   public static final String AMBARI_JSON_SCHEMA_COMMON_TAG = "tag";
   public static final String AMBARI_JSON_SCHEMA_COMMON_HREF = "href";
   public static final String AMBARI_JSON_SCHEMA_COMMON_PROPERTIES = "properties";
+  public static final String AMBARI_JSON_SCHEMA_COMMON_VERSIONS = "versions";
+  public static final String AMBARI_JSON_SCHEMA_COMMON_INSTANCES = "instances";
+  public static final String AMBARI_JSON_SCHEMA_COMMON_VIEW_INSTANCE_INFO = "ViewInstanceInfo";
 
 
   public static final String AMBARI_JSON_SCHEMA_SERVICE_INFO = "ServiceInfo";
@@ -22,5 +25,5 @@ public final class AmbariRestAPIConstants {
   public static final String AMBARI_JSON_SCHEMA_HOST_COMPONENTS = "host_components";
   public static final String AMBARI_JSON_SCHEMA_HOST_ROLES = "HostRoles";
   public static final String AMBARI_JSON_SCHEMA_HOST_NAME = "host_name";
-
+  public static final String AMBARI_JSON_SCHEMA_CONTEXT_PATH = "context_path";
 }

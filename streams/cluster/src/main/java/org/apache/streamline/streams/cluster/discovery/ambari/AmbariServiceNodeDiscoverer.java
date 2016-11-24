@@ -20,6 +20,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,6 +39,7 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
   public static final String SERVICES_URL = "/services";
   public static final String SERVICE_URL = "/services/%s";
   public static final String COMPONENT_URL = "/services/%s/components/%s";
+  public static final String AMBARI_VIEWS_STORM_MONITORING_URL = "/views/Storm_Monitoring";
 
   private Client client;
   private final String apiRootUrl;
@@ -154,6 +158,56 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
   @Override
   public String getActualFileName(String configType) {
     return ConfigFilePattern.getActualFileName(configType);
+  }
+
+  public String getStormViewUrl() {
+    String targetUrl = findRootUrlForView(apiRootUrl) + AMBARI_VIEWS_STORM_MONITORING_URL;
+
+    LOG.debug("storm view URI: {}", targetUrl);
+
+    Map<String, ?> responseMap = client.target(targetUrl).request(MediaType.TEXT_PLAIN_TYPE).get(Map.class);
+    List<Map<String, ?>> items = (List<Map<String, ?>>) responseMap.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_VERSIONS);
+
+    if (items.size() == 0) {
+      return null;
+    }
+
+    String versionUrl = (String) items.get(0).get("href");
+
+    responseMap = client.target(versionUrl).request(MediaType.TEXT_PLAIN_TYPE).get(Map.class);
+    items = (List<Map<String, ?>>) responseMap.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_INSTANCES);
+
+    if (items.size() == 0) {
+      return null;
+    }
+
+    String instancesUrl = (String) items.get(0).get("href");
+
+    responseMap = client.target(instancesUrl).request(MediaType.TEXT_PLAIN_TYPE).get(Map.class);
+
+    Map<String, ?> responseMap2 = (Map<String, ?>) responseMap.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_VIEW_INSTANCE_INFO);
+    String contextPath = (String) responseMap2.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_CONTEXT_PATH);
+
+    // page doesn't open without hash path from Ambari 2.4, not sure for other version
+    return findSiteUrl(apiRootUrl) + "/#/main" + contextPath;
+  }
+
+  private String findRootUrlForView(String apiRootUrl) {
+    int clustersIdx = apiRootUrl.indexOf("/clusters/");
+    if (clustersIdx == -1) {
+      throw new IllegalArgumentException("Ambari API Root URL should contains 'clusters'");
+    }
+    return apiRootUrl.substring(0, clustersIdx);
+  }
+
+  private String findSiteUrl(String apiRootUrl) {
+    try {
+      URL url = new URL(apiRootUrl);
+      return String.format("%s://%s:%s", url.getProtocol(), url.getHost(),
+              url.getPort() != -1 ? url.getPort() : url.getDefaultPort());
+    } catch (MalformedURLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private Map<String, ServiceConfigurationItem> extractLatestConfigurationItems(List<String> confNameList,
