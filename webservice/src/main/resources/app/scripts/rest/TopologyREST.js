@@ -244,6 +244,7 @@ const TopologyREST = {
 	getSchemaForKafka(topicName, options){
 		options = options || {};
 		options.method = options.method || 'GET';
+		topicName = encodeURIComponent(topicName);
 		return fetch('/api/v1/schemas/'+topicName, options)
 			.then( (response) => {
 		  		return response.json();

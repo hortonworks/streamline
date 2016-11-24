@@ -34,11 +34,29 @@ export default class ComponentNodeContainer extends Component {
 
     constructor(props){
         super(props);
+        let {bundleArr} = this.props;
+        if(!bundleArr){
+            bundleArr = {
+                sourceBundle: [],
+                processorsBundle: [],
+                sinksBundle: []
+            }
+        }
         this.state = {
-            datasources: props.bundleArr.sourceBundle,
-            processors: props.bundleArr.processorsBundle,
-            sinks: props.bundleArr.sinksBundle
+            datasources: bundleArr.sourceBundle,
+            processors: bundleArr.processorsBundle,
+            sinks: bundleArr.sinksBundle
         };
+    }
+
+    componentWillReceiveProps(nextProps, oldProps){
+        if(nextProps.bundleArr != this.props.bundleArr){
+            this.setState({
+                datasources: nextProps.bundleArr.sourceBundle,
+                processors: nextProps.bundleArr.processorsBundle,
+                sinks: nextProps.bundleArr.sinksBundle
+            });
+        }
     }
 
     render(){

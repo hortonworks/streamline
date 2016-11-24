@@ -117,7 +117,7 @@ class TopologyItems extends Component {
               data-id={topology.id} ref={(ref) => this.streamRef = ref}>
                 <div className="stream-head clearfix">
                     <div className="pull-left">
-                      <Link to={`applications/${topology.id}`}>
+                      <Link to={`applications/${topology.id}/view`}>
                           <h4><i className={`fa fa-exclamation-${
                               (metricWrap.status || 'NOTRUNNING') === "KILLED"
                                 ? 'circle KILLED'
@@ -137,7 +137,7 @@ class TopologyItems extends Component {
                           <a href="javascript:void(0)" onClick={this.onActionClick.bind(this ,"refresh/"+topology.id)}>
                             <i className="fa fa-refresh" aria-hidden="true"></i>
                           </a>
-                          <Link to={`applications/${topology.id}`}>
+                          <Link to={`applications/${topology.id}/edit`}>
                             <i className="fa fa-pencil" aria-hidden="true"></i>
                           </Link>
                           <a href="javascript:void(0)" className="close" onClick={this.onActionClick.bind(this ,"delete/"+topology.id)}>
@@ -420,7 +420,7 @@ class TopologyListingContainer extends Component {
                   FSReactToastr.success(
                       <strong>Topology added successfully</strong>
                   )
-                  this.context.router.push('applications/' + topology.entity.id);
+                  this.context.router.push('applications/' + topology.entity.id + '/edit');
                 })
             }
         })

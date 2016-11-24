@@ -5,6 +5,7 @@ import DashboardContainer from '../containers/Dashboard/DashboardContainer'
 
 import MetricsContainer from '../containers/Streams/Metrics/MetricsContainer'
 import TopologyListContainer from '../containers/Streams/TopologyListing/TopologyListingContainer'
+import TopologyViewContainer from '../containers/Streams/TopologyEditor/TopologyViewContainer'
 import TopologyEditorContainer from '../containers/Streams/TopologyEditor/TopologyEditorContainer'
 import NewsFeedContainer from '../containers/NewsFeed/NewsFeedContainer'
 import CustomProcessorContainer from '../containers/Configuration/CustomProcessorContainer'
@@ -30,7 +31,9 @@ export default (
   <Route path="metrics" name="Metrics" component={MetricsContainer} onEnter={onEnter}/>
   <Route path="applications" name="All Streams" onEnter={onEnter}>
     <IndexRoute name="All Streams" component={TopologyListContainer} onEnter={onEnter} />
-    <Route path=":id" name="Application Editor" component={TopologyEditorContainer} onEnter={onEnter}/>
+    {/*<Route path=":id" name="Application Editor" component={TopologyEditorContainer} onEnter={onEnter}/>*/}
+    <Route path=":id/view" name="Application Editor" component={TopologyViewContainer} onEnter={onEnter}/>
+    <Route path=":id/edit" name="Application Editor" component={TopologyEditorContainer} onEnter={onEnter}/>
   </Route>
   <Route path="custom-processor" name="Custom Processor" component={CustomProcessorContainer} onEnter={onEnter}/>
   <Route path="tags" name="Tags" component={TagsContainer} onEnter={onEnter}/>

@@ -41,7 +41,7 @@ class TopologyViewMode extends Component{
 
   render(){
     const {minSelected} = this.state;
-    const {topologyName,isAppRunning,unknown,killTopology,deployTopology,setCurrentVersion,topologyMetric,timestamp, topologyVersion, versionsArr = []} = this.props;
+    const {topologyId,topologyName,isAppRunning,unknown,killTopology,setCurrentVersion,topologyMetric,timestamp, topologyVersion, versionsArr = []} = this.props;
     const {misc} = topologyMetric;
     const metricWrap = misc || {}
     const latencyText = Utils.secToMinConverter(topologyMetric.latency,"graph").split('/')
@@ -76,22 +76,22 @@ class TopologyViewMode extends Component{
             <div className="col-sm-2 styleWindowDN text-right">
             {isAppRunning ?
                 <button type="button" className="btn btn-default" onClick={killTopology}>STOP</button>
-              :
-              (unknown !== "UNKNOWN") ?
-                  <button type="button" className="btn btn-default displayNone" onClick={deployTopology}>START</button>
-               : null
+              : null
             }
-               <button style={{marginLeft: '10px'}} type="button" className="btn btn-success" onClick={this.modeChange}>EDIT</button>
+               <Link style={{marginLeft: '10px'}} className="btn btn-success" to={`applications/${topologyId}/edit`}>EDIT</Link>
             </div>
           : <div className="col-sm-2 styleWindowDN text-right">
               <OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip">Set this version as current version. If another version of topology is deployed, kill it first to set this one.</Tooltip>}>
-                <button 
-                  type="button" 
-                  className="btn btn-default" 
-                  onClick={setCurrentVersion} 
-                  disabled={isAppRunning}>
-                  Set Current Version
-                </button>
+                <div style={{display: 'inline-block', cursor: 'not-allowed'}}>
+                  <button 
+                    type="button" 
+                    className="btn btn-default" 
+                    onClick={setCurrentVersion} 
+                    disabled={isAppRunning}
+                    style={isAppRunning ? {pointerEvents : 'none'} : {}}>
+                    Set Current Version
+                  </button>
+                </div>
               </OverlayTrigger>
             </div>
           }
