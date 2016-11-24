@@ -1342,6 +1342,7 @@ public class StreamCatalogService {
             return null;
         }
         fillSourceStreams(source);
+        source.setVersionTimestamp(getVersionTimestamp(versionId));
         return source;
     }
 
@@ -1645,12 +1646,6 @@ public class StreamCatalogService {
         dao.addOrUpdate(topologySink);
         topologySink.setVersionTimestamp(updateVersionTimestamp(currentTopologyVersionId).getTimestamp());
         return topologySink;
-    }
-
-    public TopologySink removeTopologySink(Long id) {
-        TopologySink topologySink = new TopologySink();
-        topologySink.setId(id);
-        return dao.remove(new StorableKey(TOPOLOGY_SINK_NAMESPACE, topologySink.getPrimaryKey()));
     }
 
     public TopologySink removeTopologySink(Long topologyId, Long sinkId) {
