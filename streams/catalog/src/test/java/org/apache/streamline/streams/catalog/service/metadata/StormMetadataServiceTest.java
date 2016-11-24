@@ -35,6 +35,8 @@ public class StormMetadataServiceTest {
     @Injectable
     Client client;
     @Injectable
+    String mainPageUrl;
+    @Injectable
     Invocation.Builder builder;
 
     @Test

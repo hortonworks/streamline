@@ -3,6 +3,8 @@ package org.apache.streamline.streams.catalog.service.metadata;
 import com.fasterxml.jackson.annotation.JsonGetter;
 
 import org.apache.streamline.streams.catalog.Component;
+import org.apache.streamline.streams.catalog.Service;
+import org.apache.streamline.streams.catalog.ServiceConfiguration;
 import org.apache.streamline.streams.catalog.exception.ServiceComponentNotFoundException;
 import org.apache.streamline.streams.catalog.exception.ServiceNotFoundException;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
@@ -12,6 +14,7 @@ import org.apache.streamline.streams.cluster.discovery.ambari.ServiceConfigurati
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -29,12 +32,18 @@ public class StormMetadataService {
     private static final String STORM_REST_API_TOPOLOGIES_KEY = "topologies";
     private static final String STORM_REST_API_TOPOLOGY_ID_KEY = "id";
 
+    // used to hack adding / getting Storm View
+    public static final String SERVICE_STORM_VIEW = "STORM_VIEW";
+    public static final String STORM_VIEW_CONFIGURATION_KEY_STORM_VIEW_URL = "storm.view.url";
+
     private Client httpClient;
     private String url;
+    private String mainPageUrl;
 
-    public StormMetadataService(Client httpClient, String url) {
+    public StormMetadataService(Client httpClient, String url, String mainPageUrl) {
         this.httpClient = httpClient;
         this.url = url;
+        this.mainPageUrl = mainPageUrl;
     }
 
     public static class Builder {
@@ -65,7 +74,33 @@ public class StormMetadataService {
         }
 
         public StormMetadataService build() throws ServiceNotFoundException, ServiceComponentNotFoundException {
-            return new StormMetadataService(newHttpClient(), getTopologySummaryRestUrl());
+            return new StormMetadataService(newHttpClient(), getTopologySummaryRestUrl(), getMainPageUrl());
+        }
+
+        private String getMainPageUrl() throws ServiceNotFoundException, ServiceComponentNotFoundException {
+            Service stormService = catalogService.getServiceByName(clusterId, STREAMS_JSON_SCHEMA_SERVICE_STORM);
+            if (stormService == null) {
+                throw new ServiceNotFoundException(clusterId, ServiceConfigurations.STORM);
+            }
+
+            String url = null;
+            ServiceConfiguration stormViewConfiguration = catalogService.getServiceConfigurationByName(stormService.getId(), SERVICE_STORM_VIEW);
+            if (stormViewConfiguration != null) {
+                try {
+                    Map<String, String> confMap = stormViewConfiguration.getConfigurationMap();
+                    url = confMap.get(STORM_VIEW_CONFIGURATION_KEY_STORM_VIEW_URL);
+                } catch (IOException e) {
+                    // fail back
+                }
+            }
+
+            if (url != null) {
+                return url;
+            } else {
+                // just use Storm UI
+                HostPort hostPort = getHostPort();
+                return "http://" + hostPort.toString();
+            }
         }
 
         private Client newHttpClient() {
@@ -113,6 +148,13 @@ public class StormMetadataService {
             }
         }
         return new Topologies(topologies);
+    }
+
+    /**
+     * @return The URL of main page for Storm UI
+     */
+    public String getMainPageUrl() {
+        return mainPageUrl;
     }
 
     /** Wrapper used to show proper JSON formatting
