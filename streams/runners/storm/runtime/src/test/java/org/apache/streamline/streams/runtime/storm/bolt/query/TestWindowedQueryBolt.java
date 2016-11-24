@@ -214,15 +214,15 @@ public class TestWindowedQueryBolt {
 
         TupleWindow window = makeTupleWindow(userStream, cityStream, storesStream);
 
-        WindowedQueryBolt bolt = new WindowedQueryBolt(WindowedQueryBolt.StreamSelector.STREAM, "users", userFields[2])
+        WindowedQueryBolt bolt = new WindowedQueryBolt(WindowedQueryBolt.StreamSelector.STREAM, "users", "city")
                 .leftJoin("stores", "city", "users")
-                .leftJoin("cities", "cityName", "stores")
-                .selectStreamLine("name,storeName,city,country");
+                .leftJoin("cities", "cityName", "stores")  // join against diff stream compared to testThreeStreamLeftJoin_1
+                .select("name,storeName,city,country");
 
         MockCollector collector = new MockCollector();
         bolt.prepare(null, null, collector);
         bolt.execute(window);
-        printResults_StreamLine(collector);
+        printResults(collector);
         Assert.assertEquals(stores.length+1, collector.actualResults.size() ); // stores.length+1 as 2 users in Bengaluru
     }
 
@@ -289,7 +289,6 @@ public class TestWindowedQueryBolt {
                 combined.addAll(streams[i]);
             }
         }
-//        Collections.shuffle(combined);
         return new TupleWindowImpl(combined, null, null);
     }
 

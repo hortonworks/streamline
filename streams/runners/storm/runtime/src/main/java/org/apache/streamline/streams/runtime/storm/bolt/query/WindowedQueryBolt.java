@@ -32,6 +32,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,13 +41,13 @@ public class WindowedQueryBolt extends StreamlineWindowedBolt {
 
     private OutputCollector collector;
 
-    ArrayList<String> streamJoinOrder = new ArrayList<>(); // order in which to join the streams
+//    ArrayList<String> streamJoinOrder = new ArrayList<>(); // order in which to join the streams
 
     // Map[StreamName -> Map[Key -> List<Tuple>]  ]
     HashMap<String, HashMap<Object, ArrayList<Tuple> >> hashedInputs = new HashMap<>(); // holds remaining streams
 
     // Map[StreamName -> JoinInfo]
-    HashMap<String, JoinInfo> joinCriteria = new HashMap<>();
+    LinkedHashMap<String, JoinInfo> joinCriteria = new LinkedHashMap<>();
     private String[][] outputKeys;  // specified via bolt.select() ... used in declaring Output fields
     private String[] dotSeparatedOutputKeyNames; // flattened (de nested) keyNames, used for naming output fields
     private boolean streamLineStyleProjection = false;
@@ -65,7 +66,6 @@ public class WindowedQueryBolt extends StreamlineWindowedBolt {
      */
     public WindowedQueryBolt(StreamSelector type, String streamId, String key) {
         streamSelectorType = type;
-        streamJoinOrder.add(streamId);
         joinCriteria.put(streamId, new JoinInfo(key) );
     }
 
@@ -102,7 +102,6 @@ public class WindowedQueryBolt extends StreamlineWindowedBolt {
         if( joinInfo==null )
             throw new IllegalArgumentException("Stream '" + priorStream + "' was not previously declared");
         joinCriteria.put(newStream, new JoinInfo(key, priorStream, joinInfo, joinType) );
-        streamJoinOrder.add(newStream);
         return this;
     }
 
@@ -111,7 +110,7 @@ public class WindowedQueryBolt extends StreamlineWindowedBolt {
      *      e.g: .select("key1, key2, key3")
      * Nested Key names are supported for nested types:
      *      e.g: .select("outerKey1.innerKey1, outerKey1.innerKey2, outerKey2.innerKey3)"
-     * Inner types (non leaf) must be Map<> in order to support lookup by keyname
+     * Inner types (non leaf) must be Map<> in order to support lookup by key name
      * This selected keys implicitly declare the output fieldNames for the bolt based.
      * @param commaSeparatedKeys
      * @return
@@ -155,8 +154,12 @@ public class WindowedQueryBolt extends StreamlineWindowedBolt {
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
         this.collector = collector;
         // initialize the hashedInputs data structure
-        for (int i = 1; i < streamJoinOrder.size(); i++) {
-            hashedInputs.put(streamJoinOrder.get(i),  new HashMap<Object, ArrayList<Tuple>>());
+        int i=0;
+        for ( String stream : joinCriteria.keySet() ) {
+            if(i>0) {
+                hashedInputs.put(stream, new HashMap<Object, ArrayList<Tuple>>());
+            }
+            ++i;
         }
         if(outputKeys==null) {
             throw new IllegalArgumentException("Must specify output fields via .select() method.");
@@ -165,7 +168,6 @@ public class WindowedQueryBolt extends StreamlineWindowedBolt {
 
     @Override
     public void execute(TupleWindow inputWindow) {
-
         // 1) Perform Join
         List<Tuple> currentWindow = inputWindow.get();
         JoinAccumulator joinResult = hashJoin(currentWindow);
@@ -190,7 +192,7 @@ public class WindowedQueryBolt extends StreamlineWindowedBolt {
 
         // 1) Build phase - Segregate tuples in the Window into streams.
         //    First stream's tuples go into probe, rest into HashMaps in hashedInputs
-        String firstStream = streamJoinOrder.get(0);
+        String firstStream = joinCriteria.keySet().iterator().next();
         for (Tuple tuple : tuples) {
             String streamId = getStreamSelector(tuple);
             if ( ! streamId.equals(firstStream) ) {
@@ -203,17 +205,21 @@ public class WindowedQueryBolt extends StreamlineWindowedBolt {
                 recs.add(tuple);
 
             }  else {
-                ResultRecord probeRecord = new ResultRecord(tuple, streamJoinOrder.size() == 1);
+                ResultRecord probeRecord = new ResultRecord(tuple, joinCriteria.size() == 1);
                 probe.insert( probeRecord );  // first stream's data goes into the probe
             }
         }
 
         // 2) Join the streams in order of streamJoinOrder
-        for (int i = 1; i < streamJoinOrder.size(); i++) {
-            String streamName = streamJoinOrder.get(i) ;
-            boolean finalJoin = (i==streamJoinOrder.size()-1);
-            probe = doJoin(probe, hashedInputs.get(streamName), joinCriteria.get(streamName), finalJoin );
+        int i=0;
+        for (String streamName : joinCriteria.keySet() ) {
+            boolean finalJoin = (i==joinCriteria.size()-1);
+            if(i>0) {
+                probe = doJoin(probe, hashedInputs.get(streamName), joinCriteria.get(streamName), finalJoin);
+            }
+            ++i;
         }
+
 
         return probe;
     }
@@ -327,6 +333,7 @@ public class WindowedQueryBolt extends StreamlineWindowedBolt {
         String[] otherKey;         // key name of the other stream
         JoinType joinType;         // nature of join
 
+        // nestedKeys uses  dot separated key names...  outer.inner.innermostKey
         public JoinInfo(String nestedKey) {
             this.nestedKeyName = nestedKey.split("\\.");
             this.otherStream = null;
