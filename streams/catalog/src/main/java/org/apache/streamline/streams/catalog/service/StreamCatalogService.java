@@ -618,11 +618,10 @@ public class StreamCatalogService {
     }
 
     private Collection<Topology> listTopologies(Long versionId) {
-        return this.dao.find(TOPOLOGY_NAMESPACE, versionIdQueryParam(versionId));
-    }
-
-    public Collection<Topology> listTopologies(List<QueryParam> queryParams) {
-        return this.dao.find(TOPOLOGY_NAMESPACE, queryParams);
+        Collection<Topology> topologies = this.dao.find(TOPOLOGY_NAMESPACE, versionIdQueryParam(versionId));
+        Long versionTimestamp = getVersionTimestamp(versionId);
+        topologies.forEach(x -> x.setVersionTimestamp(versionTimestamp));
+        return topologies;
     }
 
     public Long getCurrentVersionId(Long topologyId) {
