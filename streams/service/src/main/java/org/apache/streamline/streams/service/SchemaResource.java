@@ -61,6 +61,7 @@ public class SchemaResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getKafkaSourceSchema(@PathParam("topicName") String topicName) {
         try {
+            LOG.info("Received path: [{}]", topicName);
             // for now, takes care of kafka for topic values. We will enhance to work this to get schema for different
             // sources based on given properties.
             String schemaName = topicName + ":v";

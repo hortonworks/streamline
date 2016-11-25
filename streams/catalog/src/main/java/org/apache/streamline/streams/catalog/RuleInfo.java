@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.storage.PrimaryKey;
 import org.apache.streamline.storage.Storable;
@@ -30,7 +31,6 @@ import org.apache.streamline.storage.catalog.AbstractStorable;
 import org.apache.streamline.streams.layout.component.rule.Rule;
 import org.apache.streamline.streams.layout.component.rule.action.Action;
 import org.apache.streamline.streams.layout.component.rule.expression.Window;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -52,6 +52,7 @@ public class RuleInfo extends AbstractStorable {
     public static final String NAME = "name";
     public static final String DESCRIPTION = "description";
     public static final String STREAMS = "streams";
+    public static final String PROJECTIONS = "projections";
     public static final String CONDITION = "condition";
     public static final String SQL = "sql";
     public static final String PARSED_RULE_STR = "parsedRuleStr";
@@ -70,6 +71,7 @@ public class RuleInfo extends AbstractStorable {
      *    its translated into a select * from <stream> where <condition>
      */
     private List<String> streams;
+    private List<Projection> projections;
     private String condition;
     private String sql;
     private String parsedRuleStr;
@@ -177,6 +179,14 @@ public class RuleInfo extends AbstractStorable {
         this.topologyId = topologyId;
     }
 
+    public List<Projection> getProjections() {
+        return projections;
+    }
+
+    public void setProjections(List<Projection> projections) {
+        this.projections = projections;
+    }
+
     public String getCondition() {
         return condition;
     }
@@ -235,6 +245,7 @@ public class RuleInfo extends AbstractStorable {
                 Schema.Field.of(NAME, Schema.Type.STRING),
                 Schema.Field.of(DESCRIPTION, Schema.Type.STRING),
                 Schema.Field.of(STREAMS, Schema.Type.STRING),
+                Schema.Field.of(PROJECTIONS, Schema.Type.STRING),
                 Schema.Field.of(CONDITION, Schema.Type.STRING),
                 Schema.Field.of(SQL, Schema.Type.STRING),
                 Schema.Field.of(PARSED_RULE_STR, Schema.Type.STRING),
@@ -250,8 +261,16 @@ public class RuleInfo extends AbstractStorable {
         try {
             map.put(STREAMS, streams != null ? mapper.writeValueAsString(streams) : "");
             map.put(WINDOW, window != null ? mapper.writeValueAsString(window) : "");
-            map.put(ACTIONS, actions != null ? mapper.writerFor(new TypeReference<List<Action>>() {
-            }).writeValueAsString(actions) : "");
+
+            map.put(PROJECTIONS,
+                    projections != null
+                            ? mapper.writerFor(new TypeReference<List<Projection>>() {}).writeValueAsString(projections)
+                            : "");
+
+            map.put(ACTIONS,
+                    actions != null
+                            ? mapper.writerFor(new TypeReference<List<Action>>() {}).writeValueAsString(actions)
+                            : "");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -280,11 +299,15 @@ public class RuleInfo extends AbstractStorable {
                 Window window = mapper.readValue(windowStr, Window.class);
                 setWindow(window);
             }
+
+            String projectionsStr = (String) map.get(PROJECTIONS);
+            if (!StringUtils.isEmpty(projectionsStr)) {
+                setProjections(mapper.readValue(projectionsStr, new TypeReference<List<Projection>>() {}));
+            }
+
             String actionsStr = (String) map.get(ACTIONS);
             if (!StringUtils.isEmpty(actionsStr)) {
-                List<Action> actions = mapper.readValue(actionsStr, new TypeReference<List<Action>>() {
-                });
-                setActions(actions);
+                setActions(mapper.readValue(actionsStr, new TypeReference<List<Action>>() {}));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -320,11 +343,13 @@ public class RuleInfo extends AbstractStorable {
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", streams=" + streams +
+                ", projections=" + projections +
                 ", condition='" + condition + '\'' +
                 ", sql='" + sql + '\'' +
                 ", parsedRuleStr='" + parsedRuleStr + '\'' +
                 ", window=" + window +
                 ", actions=" + actions +
-                "} " + super.toString();
+                ", versionTimestamp=" + versionTimestamp +
+                '}';
     }
 }

@@ -44,7 +44,7 @@ import java.util.List;
  *  </ul>
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public static class Projection {
+public class Projection {
     public String expr;
     public String functionName;
     public List<String> args;

@@ -52,6 +52,7 @@ import static org.apache.streamline.common.ComponentTypes.JOIN;
 import static org.apache.streamline.common.ComponentTypes.KAFKA;
 import static org.apache.streamline.common.ComponentTypes.NORMALIZATION;
 import static org.apache.streamline.common.ComponentTypes.NOTIFICATION;
+import static org.apache.streamline.common.ComponentTypes.PROJECTION;
 import static org.apache.streamline.common.ComponentTypes.RULE;
 import static org.apache.streamline.common.ComponentTypes.BRANCH;
 import static org.apache.streamline.common.ComponentTypes.SPLIT;
@@ -190,6 +191,7 @@ public class TopologyComponentFactory {
     private Map<String, Provider<StreamlineProcessor>> createProcessorProviders() {
         ImmutableMap.Builder<String, Provider<StreamlineProcessor>> builder = ImmutableMap.builder();
         builder.put(rulesProcessorProvider());
+        builder.put(projectionProcessorProvider());
         builder.put(branchRulesProcessorProvider());
         builder.put(windowProcessorProvider());
         builder.put(normalizationProcessorProvider());
@@ -349,7 +351,15 @@ public class TopologyComponentFactory {
     }
 
     private Map.Entry<String, Provider<StreamlineProcessor>> rulesProcessorProvider() {
-        return new SimpleImmutableEntry<>(RULE, createRulesProcessorProvider(new RuleExtractor() {
+        return new SimpleImmutableEntry<>(RULE, createDefaultRulesProcessorProvider());
+    }
+
+    private Map.Entry<String, Provider<StreamlineProcessor>> projectionProcessorProvider() {
+        return new SimpleImmutableEntry<>(PROJECTION, createDefaultRulesProcessorProvider());
+    }
+
+    private Provider<StreamlineProcessor> createDefaultRulesProcessorProvider() {
+        return createRulesProcessorProvider(new RuleExtractor() {
             @Override
             public Rule getRule(Long topologyId, Long ruleId, Long versionId) throws Exception {
                 RuleInfo ruleInfo = catalogService.getRule(topologyId, ruleId, versionId);
@@ -358,8 +368,9 @@ public class TopologyComponentFactory {
                 }
                 return ruleInfo.getRule();
             }
-        }));
+        });
     }
+
 
     private Map.Entry<String, Provider<StreamlineProcessor>> branchRulesProcessorProvider() {
         return new SimpleImmutableEntry<>(BRANCH, createRulesProcessorProvider(new RuleExtractor() {

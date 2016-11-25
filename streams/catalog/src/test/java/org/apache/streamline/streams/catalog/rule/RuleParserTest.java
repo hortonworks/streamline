@@ -18,6 +18,9 @@
  */
 package org.apache.streamline.streams.catalog.rule;
 
+import mockit.Expectations;
+import mockit.Mocked;
+import mockit.integration.junit4.JMockit;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.streams.catalog.RuleInfo;
@@ -33,22 +36,26 @@ import org.apache.streamline.streams.layout.component.rule.expression.Literal;
 import org.apache.streamline.streams.layout.component.rule.expression.Operator;
 import org.apache.streamline.streams.layout.component.rule.expression.Projection;
 import org.apache.streamline.streams.layout.component.rule.expression.Udf;
-import mockit.Expectations;
-import mockit.Mocked;
-import mockit.integration.junit4.JMockit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(JMockit.class)
 public class RuleParserTest {
+    private static final Logger LOG = LoggerFactory.getLogger(RuleParserTest.class);
+
     @Mocked private StreamCatalogService mockCatalogService;
     @Mocked private StreamInfo mockStreamInfo;
 
@@ -180,12 +187,60 @@ public class RuleParserTest {
         ruleInfo.setSql("select stddevp(temperature) from teststream");
         RuleParser ruleParser = new RuleParser(mockCatalogService, ruleInfo.getSql(), ruleInfo.getTopologyId(), ruleInfo.getVersionId());
         ruleParser.parse();
-        System.out.println(ruleParser.getProjection());
+
+        LOG.info("Projection: [{}]", ruleParser.getProjection());
+
         assertEquals(1, ruleParser.getStreams().size());
+
         assertEquals(new Stream("teststream", Arrays.asList(Schema.Field.of("temperature", Schema.Type.LONG),
-                Schema.Field.of("humidity", Schema.Type.LONG))),
-                ruleParser.getStreams().get(0));
+                                                            Schema.Field.of("humidity", Schema.Type.LONG))),
+                     ruleParser.getStreams().get(0));
+
         assertNull(ruleParser.getGroupBy());
         assertNull(ruleParser.getHaving());
+    }
+
+    @Test
+    public void testParseUDF1() throws Exception {
+        final UDFInfo myFunc = new UDFInfo();
+        myFunc.setClassName("foo.class.name");
+        myFunc.setDescription("My function");
+        myFunc.setId(Math.abs(new Random().nextLong()));
+        myFunc.setJarStoragePath("/udfstorage/");
+        myFunc.setName("myFunc");
+        myFunc.setType(Udf.Type.FUNCTION);
+
+        new Expectations() {{
+            mockCatalogService.listStreamInfos(withAny(new ArrayList<QueryParam>()));
+            result=mockStreamInfo;
+            mockCatalogService.listUDFs();
+            result= Collections.singleton(myFunc);
+            mockStreamInfo.getStreamId();
+            result="teststream";
+            mockStreamInfo.getFields();
+            result= Arrays.asList(Schema.Field.of("temperature", Schema.Type.LONG),
+                                  Schema.Field.of("humidity", Schema.Type.LONG));
+        }};
+
+        RuleInfo ruleInfo = new RuleInfo();
+        ruleInfo.setId(1L);
+        ruleInfo.setName("Test");
+        ruleInfo.setDescription("test rule");
+        ruleInfo.setTopologyId(1L);
+        ruleInfo.setVersionId(1L);
+        ruleInfo.setSql("select myFunc(temperature) from teststream");
+        RuleParser ruleParser = new RuleParser(mockCatalogService, ruleInfo.getSql(), ruleInfo.getTopologyId(), ruleInfo.getVersionId());
+        ruleParser.parse();
+
+        LOG.info("Projection: [{}]", ruleParser.getProjection());
+        assertNotNull(ruleParser.getProjection());
+
+        assertEquals(1, ruleParser.getStreams().size());
+        assertEquals(new Stream("teststream", Arrays.asList(Schema.Field.of("temperature", Schema.Type.LONG),
+                                                            Schema.Field.of("humidity", Schema.Type.LONG))),
+                     ruleParser.getStreams().get(0));
+        assertNull(ruleParser.getGroupBy());
+        assertNull(ruleParser.getHaving());
+
     }
 }
