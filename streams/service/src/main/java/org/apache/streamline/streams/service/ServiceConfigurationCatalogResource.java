@@ -3,11 +3,12 @@ package org.apache.streamline.streams.service;
 import com.codahale.metrics.annotation.Timed;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.util.WSUtils;
-import org.apache.streamline.storage.exception.AlreadyExistsException;
 import org.apache.streamline.streams.catalog.Cluster;
 import org.apache.streamline.streams.catalog.Service;
 import org.apache.streamline.streams.catalog.ServiceConfiguration;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import org.apache.streamline.streams.service.exception.request.EntityAlreadyExistsException;
+import org.apache.streamline.streams.service.exception.request.EntityNotFoundException;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -25,14 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_BY_NAME_NOT_FOUND;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 
 @Path("/v1/catalog")
@@ -53,16 +47,12 @@ public class ServiceConfigurationCatalogResource {
     public Response listServiceConfigurations(@PathParam("serviceId") Long serviceId, @Context UriInfo uriInfo) {
         List<QueryParam> queryParams = buildServiceIdAwareQueryParams(serviceId, uriInfo);
 
-        try {
-            Collection<ServiceConfiguration> configurations = catalogService.listServiceConfigurations(queryParams);
-            if (configurations != null) {
-                return WSUtils.respond(configurations, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        Collection<ServiceConfiguration> configurations = catalogService.listServiceConfigurations(queryParams);
+        if (configurations != null) {
+            return WSUtils.respondEntities(configurations, OK);
         }
 
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, queryParams.toString());
+        throw EntityNotFoundException.byFilter(queryParams.toString());
     }
 
     /**
@@ -75,44 +65,37 @@ public class ServiceConfigurationCatalogResource {
         @PathParam("serviceName") String serviceName, @Context UriInfo uriInfo) {
         Cluster cluster = catalogService.getClusterByName(clusterName);
         if (cluster == null) {
-            return WSUtils.respond(NOT_FOUND, ENTITY_BY_NAME_NOT_FOUND, "cluster name " + clusterName);
+            throw EntityNotFoundException.byName("cluster name " + clusterName);
         }
 
         Service service = catalogService.getServiceByName(cluster.getId(), serviceName);
         if (service == null) {
-            return WSUtils.respond(NOT_FOUND, ENTITY_BY_NAME_NOT_FOUND, "service name " + serviceName);
+            throw EntityNotFoundException.byName("service name " + serviceName);
         }
 
         List<QueryParam> queryParams = buildServiceIdAwareQueryParams(service.getId(), uriInfo);
 
-        try {
-            Collection<ServiceConfiguration> configurations = catalogService.listServiceConfigurations(queryParams);
-            if (configurations != null) {
-                return WSUtils.respond(configurations, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        Collection<ServiceConfiguration> configurations = catalogService.listServiceConfigurations(queryParams);
+        if (configurations != null) {
+            return WSUtils.respondEntities(configurations, OK);
         }
 
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, queryParams.toString());
+        throw EntityNotFoundException.byFilter(queryParams.toString());
     }
 
     @GET
     @Path("/services/{serviceId}/configurations/{id}")
     @Timed
     public Response getConfigurationById(@PathParam("serviceId") Long serviceId, @PathParam("id") Long configurationId) {
-        try {
-            ServiceConfiguration configuration = catalogService.getServiceConfiguration(configurationId);
-            if (configuration != null) {
-                if (configuration.getServiceId() == null || !configuration.getServiceId().equals(serviceId)) {
-                    return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, "service: " + serviceId.toString());
-                }
-                return WSUtils.respond(configuration, OK, SUCCESS);
+        ServiceConfiguration configuration = catalogService.getServiceConfiguration(configurationId);
+        if (configuration != null) {
+            if (configuration.getServiceId() == null || !configuration.getServiceId().equals(serviceId)) {
+                throw EntityNotFoundException.byId("service: " + serviceId.toString());
             }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+            return WSUtils.respondEntity(configuration, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, buildMessageForCompositeId(serviceId, configurationId));
+
+        throw EntityNotFoundException.byId(buildMessageForCompositeId(serviceId, configurationId));
     }
 
     @GET
@@ -122,23 +105,20 @@ public class ServiceConfigurationCatalogResource {
         @PathParam("serviceName") String serviceName, @PathParam("configurationName") String configurationName) {
         Cluster cluster = catalogService.getClusterByName(clusterName);
         if (cluster == null) {
-            return WSUtils.respond(NOT_FOUND, ENTITY_BY_NAME_NOT_FOUND, "cluster name " + clusterName);
+            throw EntityNotFoundException.byName("cluster name " + clusterName);
         }
 
         Service service = catalogService.getServiceByName(cluster.getId(), serviceName);
         if (service == null) {
-            return WSUtils.respond(NOT_FOUND, ENTITY_BY_NAME_NOT_FOUND, "service name " + serviceName);
+            throw EntityNotFoundException.byName("service name " + serviceName);
         }
 
-        try {
-            ServiceConfiguration configuration = catalogService.getServiceConfigurationByName(service.getId(), configurationName);
-            if (configuration != null) {
-                return WSUtils.respond(configuration, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        ServiceConfiguration configuration = catalogService.getServiceConfigurationByName(service.getId(), configurationName);
+        if (configuration != null) {
+            return WSUtils.respondEntity(configuration, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, buildMessageForCompositeName(clusterName, serviceName, configurationName));
+
+        throw EntityNotFoundException.byName(buildMessageForCompositeName(clusterName, serviceName, configurationName));
     }
 
     @POST
@@ -148,24 +128,20 @@ public class ServiceConfigurationCatalogResource {
         // just overwrite the service id to given path param
         serviceConfiguration.setServiceId(serviceId);
 
-        try {
-            Service service = catalogService.getService(serviceId);
-            if (service == null) {
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, "service: " + serviceId.toString());
-            }
-
-            String configurationName = serviceConfiguration.getName();
-            ServiceConfiguration result = catalogService.getServiceConfigurationByName(serviceId, configurationName);
-            if (result != null) {
-                throw new AlreadyExistsException("ServiceConfiguration entity already exists with service id " +
-                    serviceId + " and configuration name " + configurationName);
-            }
-
-            ServiceConfiguration createdConfiguration = catalogService.addServiceConfiguration(serviceConfiguration);
-            return WSUtils.respond(createdConfiguration, CREATED, SUCCESS);
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        Service service = catalogService.getService(serviceId);
+        if (service == null) {
+            throw EntityNotFoundException.byId("service: " + serviceId.toString());
         }
+
+        String configurationName = serviceConfiguration.getName();
+        ServiceConfiguration result = catalogService.getServiceConfigurationByName(serviceId, configurationName);
+        if (result != null) {
+            throw EntityAlreadyExistsException.byName("service id " +
+                serviceId + " and configuration name " + configurationName);
+        }
+
+        ServiceConfiguration createdConfiguration = catalogService.addServiceConfiguration(serviceConfiguration);
+        return WSUtils.respondEntity(createdConfiguration, CREATED);
     }
 
     @PUT
@@ -178,32 +154,24 @@ public class ServiceConfigurationCatalogResource {
 
         Service service = catalogService.getService(serviceId);
         if (service == null) {
-            return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, "service: " + serviceId.toString());
+            throw EntityNotFoundException.byId("service: " + serviceId.toString());
         }
 
-        try {
-            ServiceConfiguration createdConfiguration = catalogService.addOrUpdateServiceConfiguration(serviceId,
-                serviceConfiguration);
-            return WSUtils.respond(createdConfiguration, CREATED, SUCCESS);
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
-        }
+        ServiceConfiguration createdConfiguration = catalogService.addOrUpdateServiceConfiguration(serviceId,
+            serviceConfiguration);
+        return WSUtils.respondEntity(createdConfiguration, CREATED);
     }
 
     @DELETE
     @Path("/services/{serviceId}/configurations/{id}")
     @Timed
     public Response removeServiceConfiguration(@PathParam("id") Long serviceConfigurationId) {
-        try {
-            ServiceConfiguration removedConfiguration = catalogService.removeServiceConfiguration(serviceConfigurationId);
-            if (removedConfiguration != null) {
-                return WSUtils.respond(removedConfiguration, OK, SUCCESS);
-            } else {
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, serviceConfigurationId.toString());
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        ServiceConfiguration removedConfiguration = catalogService.removeServiceConfiguration(serviceConfigurationId);
+        if (removedConfiguration != null) {
+            return WSUtils.respondEntity(removedConfiguration, OK);
         }
+
+        throw EntityNotFoundException.byId(serviceConfigurationId.toString());
     }
 
     @PUT
@@ -214,13 +182,9 @@ public class ServiceConfigurationCatalogResource {
         // overwrite service id to given path param
         serviceConfiguration.setServiceId(serviceId);
 
-        try {
-            ServiceConfiguration newConfiguration = catalogService.addOrUpdateServiceConfiguration(serviceId,
-                serviceConfigurationId, serviceConfiguration);
-            return WSUtils.respond(newConfiguration, OK, SUCCESS);
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
-        }
+        ServiceConfiguration newConfiguration = catalogService.addOrUpdateServiceConfiguration(serviceId,
+            serviceConfigurationId, serviceConfiguration);
+        return WSUtils.respondEntity(newConfiguration, CREATED);
     }
 
     private List<QueryParam> buildServiceIdAwareQueryParams(Long serviceId, UriInfo uriInfo) {

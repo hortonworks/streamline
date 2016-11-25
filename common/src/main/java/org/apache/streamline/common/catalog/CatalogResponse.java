@@ -10,6 +10,7 @@ import java.util.Collection;
  * A wrapper entity for passing entities and status back to the client.
  * </p>
  *
+ * FIXME: This is used only from parser-registry and should be removed after STREAMLINE-435 is merged to master
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CatalogResponse {
@@ -24,16 +25,15 @@ public class CatalogResponse {
         ENTITY_NOT_FOUND(1101, "Entity with id [%s] not found.", 1),
         EXCEPTION(1102, "An exception with message [%s] was thrown while processing request.", 1),
         BAD_REQUEST_PARAM_MISSING(1103, "Bad request. Param [%s] is missing or empty.", 1),
-        DATASOURCE_TYPE_FILTER_NOT_FOUND(1104, "Datasource not found for type [%s], query params [%s].", 2),
         ENTITY_NOT_FOUND_FOR_FILTER(1105, "Entity not found for query params [%s].", 1),
         PARSER_SCHEMA_FOR_ENTITY_NOT_FOUND(1106, "Parser schema not found for entity with id [%s].", 1),
-        DATASOURCE_SCHEMA_NOT_UNIQUE(1107, "Datasource has [%s] datafeeds and cannot be mapped to a unique schema.", 1),
         CUSTOM_PROCESSOR_ONLY(1108, "Custom endpoint supported only for processors.", 0),
         UNSUPPORTED_MEDIA_TYPE(1109, "Unsupported Media Type", 0),
         BAD_REQUEST(1110, "Bad Request", 0),
         IMPORT_ALREADY_IN_PROGRESS(1111, "Cluster [%s] is already in progress of import.", 1),
         ENTITY_BY_NAME_NOT_FOUND(1112, "Entity with name [%s] not found.", 1),
-        ENTITY_VERSION_NOT_FOUND(1113, "Entity with id [%s] and version [%s] not found.", 2);
+        ENTITY_VERSION_NOT_FOUND(1113, "Entity with id [%s] and version [%s] not found.", 2),
+        ENTITY_BY_NAME_ALREADY_EXIST(1114, "Entity with name [%s] already exists.", 1);
 
         private final int code;
         private final String msg;
