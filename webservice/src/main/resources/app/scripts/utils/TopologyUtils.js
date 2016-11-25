@@ -133,11 +133,11 @@ const createNode = function(topologyId, versionId, data, callback, metaInfo, pat
 		.then((results)=>{
 
 			results.map((o,i)=>{
-				if(o.responseCode !== 1000){
+				if(o.responseMessage !== undefined){
 				FSReactToastr.error(
 				<CommonNotification flag="error" content={o.responseMessage}/>, '', toastOpt)
 				} else {
-					data[i].nodeId = o.entity.id;
+					data[i].nodeId = o.id;
 				}
 				if(i > 0){
 					//Creating edge link
@@ -231,7 +231,7 @@ const createEdge = function(mouseDownNode, d, paths, edges, internalFlags, callb
 		if (!filtRes[0].length) {
             TopologyREST.getNode(topologyId, versionId, this.getNodeType(newEdge.source.parentType), newEdge.source.nodeId)
                 .then((result)=>{
-                    let nodeData = result.entity;
+                    let nodeData = result;
                     if(newEdge.source.currentType.toLowerCase() === 'window' || newEdge.source.currentType.toLowerCase() === 'rule'){
                             nodeData.type = newEdge.source.currentType.toUpperCase();
                     }
@@ -331,7 +331,7 @@ const deleteNode = function(topologyId, versionId, currentNode, nodes, edges, in
 	        Promise.all(actionsPromiseArr).
 	            then((results)=>{
 	                for(let i = 0; i < results.length; i++){
-	                    if(results[i].responseCode !== 1000){
+	                    if(results[i].responseMessage !== undefined){
 	                        FSReactToastr.error(<CommonNotification flag="error" content={results[i].responseMessage}/>, '', toastOpt)
 	                    }
 	                }
@@ -339,10 +339,10 @@ const deleteNode = function(topologyId, versionId, currentNode, nodes, edges, in
 
 			Promise.all(nodePromiseArr)
 			.then(results=>{
-				let nodeData = results[0].entity;
+				let nodeData = results[0];
 				//Delete streams of all nodes
 				results.map(result=>{
-					let node = result.entity;
+					let node = result;
 					if(node.outputStreams){
 						node.outputStreams.map(stream=>{
 							if(stream.id){
@@ -440,7 +440,7 @@ const deleteNode = function(topologyId, versionId, currentNode, nodes, edges, in
 					Promise.all(promiseArr)
 						.then((results)=>{
 							for(let i = 0; i < results.length; i++){
-								if(results[i].responseCode !== 1000){
+								if(results[i].responseMessage !== undefined){
                   FSReactToastr.error(
                       <CommonNotification flag="error" content={results[i].responseMessage}/>, '', toastOpt)
 								}
@@ -461,16 +461,25 @@ const getEdges = function(allEdges, currentNode){
 }
 
 const deleteEdge = function(selectedEdge, topologyId, versionId, internalFlags, edges, updateGraphMethod){
-    let promiseArr = [TopologyREST.deleteNode(topologyId, 'edges', selectedEdge.edgeId)];
+    let promiseArr = [TopologyREST.deleteNode(topologyId, 'edges', selectedEdge.edgeId),
+				TopologyREST.getNode(topologyId, versionId, 'processors', selectedEdge.target.nodeId)];
     if(selectedEdge.source.currentType.toLowerCase() === 'rule' || selectedEdge.source.currentType.toLowerCase() === 'window'){
         promiseArr.push(TopologyREST.getNode(topologyId, versionId, 'processors', selectedEdge.source.nodeId));
     }
     Promise.all(promiseArr)
         .then((results)=>{
-            if(results.length === 2){
-                //Find the connected source rule/window
+		if(selectedEdge.target.currentType.toLowerCase() === 'join' ) {
+			let joinProcessorNode = results[1];
+			if(_.keys(joinProcessorNode.config.properties).length > 0) {
+				joinProcessorNode.config.properties.joins = [];
+				joinProcessorNode.config.properties.from = {};
+				TopologyREST.updateNode(topologyId, versionId, 'processors', joinProcessorNode.id, {body: JSON.stringify(joinProcessorNode)});
+			}
+            }
+            if(results.length === 3){
+		//Find the connected source rule/window
                 let rulePromises = [];
-                let ruleProcessorNode = results[1].entity;
+                let ruleProcessorNode = results[2];
                 let t = selectedEdge.source.currentType.toLowerCase();
                 let type = t === 'window' ? 'windows' : (t === 'rule' ? 'rules' : 'branchrules');
                 if(ruleProcessorNode.config.properties.rules){
@@ -481,7 +490,7 @@ const deleteEdge = function(selectedEdge, topologyId, versionId, internalFlags, 
                 Promise.all(rulePromises)
                     .then(rulesResults=>{
                         rulesResults.map(ruleEntity=>{
-                            let rule = ruleEntity.entity;
+                            let rule = ruleEntity;
                             if(rule.actions){
                                 //If source rule has target notification inside rule action,
                                 //then remove and update the rules/window.
@@ -702,9 +711,10 @@ const getConfigContainer = function(node, configData, editMode, topologyId, vers
                     nodeType={nodeType}
                     topologyId={topologyId}
                     versionId={versionId}
-                    sourceNode={sourceNodes[0]}
+                    sourceNode={sourceNodes}
                     targetNodes={targetNodes}
                     linkShuffleOptions={linkShuffleOptions}
+                    currentEdges={currentEdges}
                 />};
             break;
             case 'WINDOW': //Windowing
@@ -954,10 +964,10 @@ const updateParallelismCount = function(topologyId, versionId, nodeData){
 	let currentType = this.getNodeType(nodeData.parentType);
         TopologyREST.getNode(topologyId, versionId, currentType, nodeData.nodeId)
 		.then((result)=>{
-			let data = result.entity;
+			let data = result;
 			data.config.properties.parallelism = nodeData.parallelismCount;
                         TopologyREST.updateNode(topologyId, versionId, currentType, nodeData.nodeId, {body: JSON.stringify(data)})
-				.then((newNodeData)=>{console.log("Updated Parallelism Count For "+newNodeData.entity.name);})
+				.then((newNodeData)=>{console.log("Updated Parallelism Count For "+newNodeData.name);})
 		})
 }
 
@@ -970,7 +980,7 @@ const getEdgeData = function(data, topologyId, versionId, callback) {
     TopologyREST.getNode(topologyId, versionId, 'streams', data.streamGrouping.streamId)
         .then((result)=>{
             let obj = {
-                streamName: result.entity.streamId,
+                streamName: result.streamId,
                 grouping: data.streamGrouping.grouping,
                 groupingFields: data.streamGrouping.fields,
                 edgeData: data

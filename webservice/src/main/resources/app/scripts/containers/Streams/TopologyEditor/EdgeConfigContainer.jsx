@@ -62,7 +62,7 @@ export default class EdgeConfigContainer extends Component {
 
         TopologyREST.getNode(this.topologyId, this.versionId, TopologyUtils.getNodeType(this.props.data.edge.source.parentType), this.props.data.edge.source.nodeId)
             .then((result)=>{
-                let node = result.entity;
+                let node = result;
                 let streamsArr = [];
                 let fields = this.state.isEdit ? {} : node.outputStreams[0].fields;
                 let streamId = this.state.isEdit ? this.state.streamId : node.outputStreams[0].streamId;
@@ -81,7 +81,7 @@ export default class EdgeConfigContainer extends Component {
                     groupingFieldsArr.push({value: f.name, label: f.name});
                 });
                 this.setState({
-                    sourceNode: result.entity,
+                    sourceNode: result,
                     streamsArr: streamsArr,
                     streamId: streamId,
                     streamFields: JSON.stringify(fields, null, "  "),
@@ -95,7 +95,7 @@ export default class EdgeConfigContainer extends Component {
                 Promise.all(rulesPromiseArr)
                 .then((results)=>{
                     results.map((result)=>{
-                        let data = result.entity;
+                        let data = result;
                         rulesArr.push({
                         label: data.name,
                         value: data.name,
@@ -201,7 +201,7 @@ export default class EdgeConfigContainer extends Component {
                 Promise.all(rulesPromiseArr)
                     .then((results)=>{
                         results.map((result)=>{
-                            let data = result.entity;
+                            let data = result;
                             if(type === 'rules' || type === 'branchrules') {
                                 let actionObj = {
                                     name: this.props.data.edge.target.uiname,
@@ -254,12 +254,12 @@ export default class EdgeConfigContainer extends Component {
         if(this.state.isEdit) {
             TopologyREST.updateNode(topologyId, versionId, 'edges', this.props.data.edge.edgeId, {body: JSON.stringify(edgeData)}).then((edge)=>{
             let edgeObj = _.find(this.props.data.edges, {edgeId: this.props.data.edge.edgeId});
-              edgeObj.streamGrouping = edge.entity.streamGroupings[0];
+              edgeObj.streamGrouping = edge.streamGroupings[0];
             });
         } else {
             TopologyREST.createNode(topologyId, versionId, 'edges', {body: JSON.stringify(edgeData)}).then((edge)=>{
-                this.props.data.edge.edgeId = edge.entity.id;
-                this.props.data.edge.streamGrouping = edge.entity.streamGroupings[0];
+                this.props.data.edge.edgeId = edge.id;
+                this.props.data.edge.streamGrouping = edge.streamGroupings[0];
                 this.props.data.edges.push(this.props.data.edge);
                 //call the callback to update the graph
                 this.props.data.callback();

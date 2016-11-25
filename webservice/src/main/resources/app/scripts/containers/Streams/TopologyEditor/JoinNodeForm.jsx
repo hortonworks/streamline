@@ -2,9 +2,8 @@ import React, {Component, PropTypes}from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import Select from 'react-select';
-import {Panel, Tab, Tabs} from 'react-bootstrap';
+import Utils from '../../../utils/Utils';
 import FSReactToastr from '../../../components/FSReactToastr';
-import FileREST from '../../../rest/FileREST';
 import TopologyREST from '../../../rest/TopologyREST';
 
 export default class JoinNodeForm extends Component {
@@ -14,231 +13,661 @@ export default class JoinNodeForm extends Component {
 		editMode: PropTypes.bool.isRequired,
 		nodeType: PropTypes.string.isRequired,
 		topologyId: PropTypes.string.isRequired,
-                versionId: PropTypes.number.isRequired,
-		sourceNode: PropTypes.object.isRequired,
+        versionId: PropTypes.number.isRequired,
+                sourceNode: PropTypes.array.isRequired,
 		targetNodes: PropTypes.array.isRequired,
-		linkShuffleOptions: PropTypes.array.isRequired
+                linkShuffleOptions: PropTypes.array.isRequired,
+                currentEdges: PropTypes.array.isRequired
 	};
 
 	constructor(props) {
 		super(props);
-		let {configData, editMode} = props;
+                let {editMode, sourceNode} = props;
 		this.fetchData();
-		if(typeof configData.config === 'string'){
-			configData.config = JSON.parse(configData.config)
-		}
-		let config = configData.config;
-		let parallelismObj = config.filter((f)=>{ return f.name === 'parallelism'});
-		if(parallelismObj.length){
-			parallelismObj = parallelismObj[0]
-		}
+
+                this.sourceNodesId = [];
+
+                sourceNode.map((n)=>{
+                        this.sourceNodesId.push(n.nodeId);
+                });
+
+                let configDataFields = props.configData.topologyComponentUISpecification.fields;
+                let joinOptions = _.find(configDataFields, {fieldName: 'jointype'}).options;
+                let joinTypes = [];
+                joinOptions.map((o)=>{
+                        joinTypes.push({value: o, label: o});
+                });
+
 		var obj = {
 			parallelism: 1,
 			editMode: editMode,
-			fileArr: [],
-			fileName: '',
-			fileId:'',
-			joinerClassName: '',
-			groupExpiryInterval: '',
-			eventExpiryInterval: '',
-			showError: false,
-			showErrorLabel: false,
-			changedFields: []
+                        fieldList: [],
+                        intervalType: ".Window$Duration",
+                        intervalTypeArr: [
+                                {value: ".Window$Duration", label: "Time"},
+                                {value: ".Window$Count", label: "Count"}
+                        ],
+                        windowNum: '',
+                        slidingNum: '',
+                        durationType: "Seconds",
+                        slidingDurationType: "Seconds",
+                        durationTypeArr: [
+                                {value: "Seconds", label: "Seconds"},
+                                {value: "Minutes", label: "Minutes"},
+                                {value: "Hours", label: "Hours"},
+                        ],
+                        outputKeys: [],
+                        outputStreamFields: [],
+                        joinFromStreamName: '',
+                        joinFromStreamKey: '',
+                        joinFromStreamKeys: [],
+                        joinTypes: joinTypes,
+                        joinStreams: [],
+                        inputStreamsArr: []
 		};
 		this.state = obj;
 	}
 
 	fetchData() {
-                let {topologyId, versionId, nodeType, nodeData} = this.props;
-		let promiseArr = [
-			FileREST.getAllFiles(),
-                        TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId)
-		];
+        let {topologyId, versionId, nodeType, nodeData, currentEdges} = this.props;
+                let edgePromiseArr = [];
+                let promiseArr = [TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId)];
+                currentEdges.map(edge=>{
+                        if(edge.target.nodeId === nodeData.nodeId){
+                                edgePromiseArr.push(TopologyREST.getNode(topologyId, versionId, 'edges', edge.edgeId));
+                        }
+                })
 
-		Promise.all(promiseArr)
-			.then((results)=>{
-				let fileData= results[0].entities,
-					arr = [],
-					stateObj = {};
-				results[0].entities.map((entity)=>{
-						arr.push({
-							id: entity.id,
-							value: entity.id,
-							label: entity.name
-						});
-				});
-				stateObj.fileArr = arr;
-
-				this.nodeData = results[1].entity;
-				let {parallelism} = this.nodeData.config.properties;
-				stateObj.parallelism = parallelism || 1;
-
-				let config = this.nodeData.config.properties['join-config'];
-				if(config){
-					let {joinerClassName, jarId, groupExpiryInterval, eventExpiryInterval} = config;
-					stateObj.joinerClassName = joinerClassName || '';
-					stateObj.fileId = jarId || '';
-					stateObj.groupExpiryInterval = groupExpiryInterval || '';
-					stateObj.eventExpiryInterval = eventExpiryInterval || '';
+                Promise.all(edgePromiseArr)
+                        .then(edgeResults=>{
+                                edgeResults.map((edge)=>{
+                                        if(edge.toId === nodeData.nodeId && this.sourceNodesId.indexOf(edge.fromId) !== -1){
+                                                promiseArr.push(TopologyREST.getNode(topologyId, versionId, 'streams', edge.streamGroupings[0].streamId));
+                                        }
+                                })
+                                Promise.all(promiseArr)
+                                        .then((results)=>{
+                                                this.nodeData = results[0];
+                                                let configFields = this.nodeData.config.properties;
+                                                let inputStreams = [], joinStreams = [];
+                                                let fields = [];
+                        results.map((result, i)=>{
+				if(i > 0) {
+                                        inputStreams.push(result);
+                                result.fields.map((f)=>{
+						if(fields.indexOf(f) === -1)
+						fields.push(f);
+					});
 				}
-				this.setState(stateObj);
+                        });
+                        //create rows for joins
+                        inputStreams.map((s, i)=>{
+				if(i > 0) {
+					joinStreams.push({
+						id: (i - 1),
+						type: '',
+						stream: '',
+						key: '',
+						with: '',
+						streamOptions: [],
+						keyOptions: [],
+						withOptions: []
+					});
+				}
+                        });
+
+                        let stateObj = {
+                                                        fieldList: fields,
+                                                        parallelism: configFields.parallelism || 1,
+                                                        outputKeys: configFields.outputKeys,
+                                                        inputStreamsArr: inputStreams,
+                                                        joinStreams: joinStreams
+                                                }
+                                        //set value for first row
+                                                if(configFields.from) {
+                                                        let fromObject = configFields.from;
+                                                        stateObj.joinFromStreamName = fromObject.stream ? fromObject.stream : '';
+                                                        stateObj.joinFromStreamKey = fromObject.key ? fromObject.key : '';
+                                                        let selectedStream = _.find(inputStreams, {streamId: fromObject.stream});
+                                                        if(selectedStream)
+                                                                stateObj.joinFromStreamKeys = selectedStream.fields;
+                                                        if(fromObject.stream) {
+                                                                let joinStreamOptions = inputStreams.filter((s)=>{return s.streamId !== fromObject.stream});
+                                                                let obj = inputStreams.find((s)=>{return s.streamId === fromObject.stream});
+                                                                if(joinStreams.length) {
+                                                                        joinStreams[0].streamOptions = joinStreamOptions;
+                                                                        joinStreams[0].withOptions = [obj];
+                                                                        joinStreams[0].keyOptions = selectedStream.fields;
+                                                                }
+                                                        }
+                                                }
+                                        //set values of joins if saved
+                                        if(configFields.joins) {
+                        configFields.joins.map((o, id)=>{
+				joinStreams[id].type = o.type;
+				joinStreams[id].stream = o.stream;
+				joinStreams[id].key = o.key;
+				joinStreams[id].with = o.with;
+				let streamObj = inputStreams.find((s)=>{return s.streamId !== o.stream});
+				let selectedStream = _.find(inputStreams, {streamId: o.stream});
+				let streamOptions = [];
+                                                        let withOptions = [];
+                                                        withOptions.push(streamObj);
+
+                                                        configFields.joins.map((s, i)=>{
+                                                                if(i <= id) {
+                                                                        let obj = inputStreams.find((stream)=>{return stream.streamId === s.stream;});
+                                                                        withOptions.push(obj);
+                                                                }
+                                                        });
+                                                        streamOptions = _.difference(inputStreams, [...withOptions]);
+                                                        let nextStream = joinStreams[id + 1];
+                                                        if(nextStream) {
+                                                                nextStream.streamOptions = streamOptions;
+                                                                nextStream.withOptions = withOptions;
+                                                                nextStream.keyOptions = selectedStream.fields;
+                                                        }
+                        });
+                    }
+                        if(configFields.window){
+                                                        if(configFields.window.windowLength.class === '.Window$Duration'){
+                                                                stateObj.intervalType = '.Window$Duration';
+                                                                let obj = Utils.millisecondsToNumber(configFields.window.windowLength.durationMs);
+                                                                stateObj.windowNum = obj.number;
+                                                                stateObj.durationType = obj.type;
+                                                                if(configFields.window.slidingInterval){
+                                                                        let obj = Utils.millisecondsToNumber(configFields.window.slidingInterval.durationMs);
+                                                                        stateObj.slidingNum = obj.number;
+                                                                        stateObj.slidingDurationType = obj.type;
+                                                                }
+                                                        } else if(configFields.window.windowLength.class === '.Window$Count'){
+                                                                stateObj.intervalType = '.Window$Count';
+                                                                stateObj.windowNum = configFields.window.windowLength.count;
+                                                                if(configFields.window.slidingInterval){
+                                                                        stateObj.slidingNum = configFields.window.slidingInterval.count;
+                                                                }
+                                                        }
+                                                }
+                                                if(this.nodeData.outputStreams && this.nodeData.outputStreams.length > 0){
+                                                        this.streamData = this.nodeData.outputStreams[0];
+                                                        stateObj.outputStreamId = this.nodeData.outputStreams[0].streamId;
+                                                        stateObj.outputStreamFields = JSON.parse(JSON.stringify(this.nodeData.outputStreams[0].fields));
+                                                        this.context.ParentForm.setState({outputStreamObj:this.streamData})
+                                                } else {
+                                                        stateObj.outputStreamId = 'join_processor_stream_'+this.nodeData.id;
+                                                        stateObj.outputStreamFields = [];
+                                                        let dummyStreamObj = {
+                                                                streamId: stateObj.outputStreamId,
+                                                                fields: stateObj.outputStreamFields
+                                                        }
+                                                        TopologyREST.createNode(topologyId, versionId, 'streams', {body: JSON.stringify(dummyStreamObj)})
+                                                                .then(streamResult => {
+                                                                        this.streamData = streamResult;
+                                                                        this.context.ParentForm.setState({outputStreamObj:this.streamData})
+                                                                        this.nodeData.outputStreamIds = [this.streamData.id];
+                                                                        TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.nodeId, {body: JSON.stringify(this.nodeData)})
+                                                                })
+                                                }
+                                                this.setState(stateObj);
+                    })
 			})
 	}
 
-	handleFileChange(obj) {
-		let changedFields = this.state.changedFields;
-		if(changedFields.indexOf("fileId") === -1)
-			changedFields.push("fileId");
+        handleFieldsChange(arr) {
+                let {outputKeys, outputStreamFields} = this.state;
+                let tempArr = [];
+                outputStreamFields.map(field=>{
+                        if(outputKeys.indexOf(field.name) === -1){
+                                tempArr.push(field);
+                        }
+                })
+                tempArr.push(...arr);
+                this.streamData.fields = tempArr;
+                let keys = [];
+                if(arr && arr.length){
+                        for(let k of arr){
+                                keys.push(k.name);
+                        }
+                        this.setState({outputKeys: keys, outputStreamFields: tempArr});
+                } else {
+                        this.setState({outputKeys: [], outputStreamFields: tempArr});
+                }
+        this.context.ParentForm.setState({outputStreamObj:this.streamData})
+        }
+
+        handleIntervalChange(obj){
 		if(obj){
-			this.setState({fileName: obj.label, fileId: obj.id, changedFields: changedFields, showError: true, showErrorLabel: false});
+                        this.setState({intervalType: obj.value});
 		} else {
-			this.setState({fileName: '', fileId: '', changedFields: changedFields, showError: true,	showErrorLabel: false});
+                        this.setState({intervalType: ""});
 		}
 	}
 
-	handleValueChange(e) {
-		let obj = {
-			changedFields: this.state.changedFields,
-			showError: true,
-			showErrorLabel: false
-		};
-		obj[e.target.name] = e.target.value === '' ? '' : e.target.type === "number" ? Math.abs(e.target.value) : e.target.value;
-		if(obj.changedFields.indexOf(e.target.name) === -1)
-			obj.changedFields.push(e.target.name);
+        handleDurationChange(obj){
+                if(obj){
+                        this.setState({durationType: obj.value, slidingDurationType: obj.value});
+                } else {
+                        this.setState({durationType: "", slidingDurationType: ""});
+                }
+        }
+
+        handleSlidingDurationChange(obj){
+                if(obj){
+                        this.setState({slidingDurationType: obj.value});
+                } else {
+                        this.setState({slidingDurationType: ""});
+                }
+        }
+
+        handleValueChange(e){
+                let obj = {};
+                let name = e.target.name;
+                let value = e.target.type === "number" ? Math.abs(e.target.value) : e.target.value;
+                obj[name] = value;
+                if(name === 'windowNum'){
+                        obj['slidingNum'] = value;
+                }
 		this.setState(obj);
 	}
 
+        handleJoinFromStreamChange(obj) {
+                if(obj) {
+                        let {inputStreamsArr, joinStreams} = this.state;
+                        let joinStreamOptions = inputStreamsArr.filter((s)=>{return s.streamId !== obj.streamId});
+                        if(joinStreams.length) {
+                                joinStreams.map((s)=>{
+                                        s.stream = '';
+                                        s.key = '';
+                                        s.with = '';
+                                        s.streamOptions = [];
+                                        s.keyOptions = [];
+                                        s.withOptions = [];
+                                });
+                                joinStreams[0].streamOptions = joinStreamOptions;
+                                joinStreams[0].withOptions = [obj];
+                        }
+                        this.setState({joinFromStreamName: obj.streamId, joinFromStreamKeys: obj.fields, joinFromStreamKey: '', joinStreams: joinStreams});
+                } else {
+                        this.setState({joinFromStreamName: '', joinFromStreamKeys: [], joinFromStreamKey: ''});
+                }
+        }
+        handleJoinFromKeyChange(obj) {
+                if(obj) {
+                        this.setState({joinFromStreamKey: obj.name});
+                } else {
+                        this.setState({joinFromStreamKey: ''});
+                }
+        }
+        handleJoinTypeChange(key, obj){
+                let {joinStreams} = this.state;
+                if(obj) {
+                        joinStreams[key].type = obj.value;
+                        this.setState({joinStreams: joinStreams});
+                } else {
+                        joinStreams[key].type = '';
+                        this.setState({joinStreams: joinStreams});
+                }
+        }
+        handleJoinStreamChange(key, obj){
+                let {inputStreamsArr, joinStreams, joinFromStreamName} = this.state;
+                if(obj) {
+                        joinStreams[key].stream = obj.streamId;
+                        joinStreams[key].keyOptions = obj.fields;
+                        let streamOptions = [];
+                        let withOptions = [];
+                        let streamObj = inputStreamsArr.find((stream)=>{return stream.streamId === joinFromStreamName;});
+                        withOptions.push(streamObj);
+                        joinStreams.map((s, i)=>{
+                                if(i <= key) {
+                                        let obj = inputStreamsArr.find((stream)=>{return stream.streamId === s.stream;});
+                                        withOptions.push(obj);
+                                }
+                                if(i > key) {
+                                        s.stream = '';
+                                        s.key = '';
+                                        s.with = '';
+                                        s.streamOptions = [];
+                                        s.keyOptions = [];
+                                        s.withOptions = [];
+                                }
+                        });
+                        streamOptions = _.difference(inputStreamsArr, [...withOptions]);
+                        let nextStream = joinStreams[key + 1];
+                        if(nextStream) {
+                                nextStream.streamOptions = streamOptions;
+                                nextStream.withOptions = withOptions;
+                                nextStream.key = '';
+                                nextStream.keyOptions = [];
+                        }
+                        this.setState({joinStreams: joinStreams});
+                } else {
+                        joinStreams[key].stream = '';
+                        joinStreams[key].keyOptions = [];
+                        this.setState({joinStreams: joinStreams});
+                }
+        }
+        handleJoinKeyChange(key, obj){
+                let {joinStreams} = this.state;
+                if(obj) {
+                        joinStreams[key].key = obj.name;
+                        this.setState({joinStreams: joinStreams});
+                } else {
+                        joinStreams[key].key = '';
+                        this.setState({joinStreams: joinStreams});
+                }
+        }
+        handleJoinWithChange(key, obj){
+                let {joinStreams} = this.state;
+                if(obj) {
+                        joinStreams[key].with = obj.streamId;
+                        this.setState({joinStreams: joinStreams});
+                } else {
+                        joinStreams[key].with = '';
+                        this.setState({joinStreams: joinStreams});
+                }
+        }
+
 	validateData(){
-		let {fileId, joinerClassName, eventExpiryInterval, groupExpiryInterval, changedFields} = this.state;
-		let validateDataFlag = true;
-		if(joinerClassName === '' || fileId === '' || eventExpiryInterval === '' || groupExpiryInterval === ''){
-			validateDataFlag = false;
+                let {outputKeys, windowNum, joinStreams} = this.state;
+                let validData = true;
+                if(outputKeys.length === 0 || windowNum === ''){
+                        validData = false;
 		}
-		if(joinerClassName === '' && changedFields.indexOf("joinerClassName") === -1)
-				changedFields.push("joinerClassName");
-		if(fileId === '' && changedFields.indexOf("fileId") === -1)
-				changedFields.push("fileId");
-		if(eventExpiryInterval === '' && changedFields.indexOf("eventExpiryInterval") === -1)
-				changedFields.push("eventExpiryInterval");
-		if(groupExpiryInterval === '' && changedFields.indexOf("groupExpiryInterval") === -1)
-				changedFields.push("groupExpiryInterval");
-		this.setState({showError: true, showErrorLabel: true, changedFields: changedFields});
-		return validateDataFlag;
+                joinStreams.map((s)=>{
+                        if(s.stream === '' || s.type === '' || s.key === '' || s.with === '') {
+                                validData = false;
+                        }
+                });
+                return validData;
 	}
 
 	handleSave(name){
-                let {topologyId, versionId, nodeType} = this.props;
-		let {fileId, joinerClassName, parallelism, eventExpiryInterval, groupExpiryInterval} = this.state;
+        let {topologyId, versionId, nodeType} = this.props;
+                let {outputKeys, windowNum, slidingNum, durationType, slidingDurationType, intervalType, parallelism,
+                        outputStreamFields, joinFromStreamName, joinFromStreamKey, joinStreams} = this.state;
+                let configObj = {
+                        from: {
+                                stream: joinFromStreamName,
+                                key: joinFromStreamKey
+                        },
+                        joins: [],
+                        outputKeys: outputKeys,
+                        window: {
+                                windowLength:{
+                                        class: intervalType,
+                                },
+                                slidingInterval: {
+                                        class: intervalType
+                                },
+                                tsField: null,
+                                lagMs: 0
+                        }
+                };
+                let promiseArr = [];
+
+                joinStreams.map((s)=>{
+                        configObj.joins.push({
+                                type: s.type,
+                                stream: s.stream,
+                                key: s.key,
+                                with: s.with
+                        });
+                });
+
+                if(intervalType === '.Window$Duration'){
+                        configObj.window.windowLength.durationMs = Utils.numberToMilliseconds(windowNum, durationType);
+                        if(slidingNum !== ''){
+                                configObj.window.slidingInterval = {
+                                        class: intervalType,
+                                        durationMs: Utils.numberToMilliseconds(slidingNum, slidingDurationType)
+                                };
+                        }
+                } else if (intervalType === '.Window$Count'){
+                        configObj.window.windowLength.count = windowNum;
+                        if(slidingNum !== ''){
+                                configObj.window.slidingInterval = {
+                                        class: intervalType,
+                                        count: slidingNum
+                                };
+                        }
+                }
 		let nodeId = this.nodeData.id;
-                return TopologyREST.getNode(topologyId, versionId, nodeType, nodeId)
+        return TopologyREST.getNode(topologyId, versionId, nodeType, nodeId)
 			.then(data=>{
-				let joinConfigData = data.entity.config.properties["join-config"];
-				if(!joinConfigData){
-					joinConfigData = {
-						name: 'join-action',
-						outputStreams: [],
-						__type: 'org.apache.streamline.streams.layout.component.impl.splitjoin.JoinAction'
-					};
-				}
-				joinConfigData.jarId = fileId;
-				joinConfigData.joinerClassName = joinerClassName;
-				joinConfigData.eventExpiryInterval = eventExpiryInterval;
-				joinConfigData.groupExpiryInterval = groupExpiryInterval;
-
-				data.entity.config.properties["join-config"] = joinConfigData;
-				data.entity.config.properties.parallelism = parallelism;
-				data.entity.name = name;
-
-                                return TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(data.entity)})
+                                data.config.properties = configObj;
+                                data.config.properties.parallelism = parallelism;
+                                data.outputStreams[0].fields = outputStreamFields;
+                                data.name = name;
+                                // let streamData = {
+                                //         streamId: this.streamData.streamId,
+                                //         fields: outputStreamFields
+                                // };
+                                let promiseArr = [
+                                        TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(data)}),
+                                        // TopologyREST.updateNode(topologyId, versionId, 'streams', this.streamData.id, {body: JSON.stringify(streamData)})
+                                        ]
+                return Promise.all(promiseArr);
 			})
 	}
 
 	render() {
 		let {topologyId, nodeType, nodeData, targetNodes, linkShuffleOptions} = this.props;
-		let {fileId, fileArr, joinerClassName, editMode, eventExpiryInterval, groupExpiryInterval, parallelism, showError, changedFields} = this.state;
+                let { editMode, showError, fieldList, outputKeys, parallelism, intervalType, intervalTypeArr, windowNum, slidingNum,
+            durationType, slidingDurationType, durationTypeArr, joinFromStreamName, joinFromStreamKey, inputStreamsArr,
+		joinTypes} = this.state;
 		return (
 			<div>
-				<Tabs id="joinForm" defaultActiveKey={1} className="schema-tabs">
-					<Tab eventKey={1} title="Configuration">
-						<form className="form-horizontal">
-							<div className="form-group">
-								<label className="col-sm-3 control-label">Jar*</label>
-								<div className="col-sm-6">
-									<Select
-										value={fileId}
-										options={fileArr}
-										onChange={this.handleFileChange.bind(this)}
-										required={true}
-										disabled={!editMode}
-									/>
-								</div>
+                                <form className="modal-form processor-modal-form form-overflow">
+                                        <div className="form-group">
+                                                <div className="row">
+                                                        <div className="col-sm-5">
+                                                                <Select
+                                                                        value={joinFromStreamName}
+                                                                        options={inputStreamsArr}
+                                                                        onChange={this.handleJoinFromStreamChange.bind(this)}
+                                                                        required={true}
+                                                                        disabled={!editMode}
+                                                                        clearable={false}
+                                                                        backspaceRemoves={false}
+                                                                        valueKey="streamId"
+                                                                        labelKey="streamId"
+                                                                />
 							</div>
-							<div className="form-group">
-								<label className="col-sm-3 control-label">Joiner Class*</label>
-								<div className="col-sm-6">
-									<input
-										name="joinerClassName"
-										value={joinerClassName}
-										onChange={this.handleValueChange.bind(this)}
-										type="text"
-										className={editMode && showError && changedFields.indexOf("joinerClassName") !== -1 && this.state.joinerClassName === '' ? "form-control invalidInput" : "form-control"}
-										required={true}
-										disabled={!editMode}
-									/>
-								</div>
+                                                        <div className="col-sm-5">
+                                                                <Select
+                                                                        value={joinFromStreamKey}
+                                                                        options={this.state.joinFromStreamKeys}
+                                                                        onChange={this.handleJoinFromKeyChange.bind(this)}
+                                                                        required={true}
+                                                                        disabled={!editMode || joinFromStreamName === ''}
+                                                                        clearable={false}
+                                                                        backspaceRemoves={false}
+                                                                        valueKey="name"
+                                                                        labelKey="name"
+                                                                />
 							</div>
-							<div className="form-group">
-								<label className="col-sm-3 control-label">Group Expiry Interval*</label>
-								<div className="col-sm-6">
+                                                        {this.state.joinStreams.length ?
+                                                        <div className="col-sm-2" style={{marginTop: '8px'}}>
+                                                                <label> With</label>
+                                                        </div>
+                                                        : ''
+                                                        }
+                                                </div>
+                                        </div>
+                                        {
+                                                this.state.joinStreams.map((s, i)=>{
+                                                        return (
+                                                                        <div className="form-group" key={i}>
+                                                                                <div className="row">
+                                                                                        <div className="col-sm-2">
+                                                                                                <Select
+                                                                                                        value={s.type}
+                                                                                                        options={joinTypes}
+                                                                                                        onChange={this.handleJoinTypeChange.bind(this, i)}
+                                                                                                        required={true}
+                                                                                                        disabled={!editMode}
+                                                                                                        clearable={false}
+                                                                                                        backspaceRemoves={false}
+                                                                                                />
+                                                                                        </div>
+                                                                                        <div className="col-sm-3">
+                                                                                                <Select
+                                                                                                        value={s.stream}
+                                                                                                        options={s.streamOptions}
+                                                                                                        onChange={this.handleJoinStreamChange.bind(this, i)}
+                                                                                                        required={true}
+                                                                                                        disabled={!editMode || s.streamOptions.length === 0}
+                                                                                                        clearable={false}
+                                                                                                        backspaceRemoves={false}
+                                                                                                        valueKey="streamId"
+                                                                                                        labelKey="streamId"
+                                                                                                />
+                                                                                        </div>
+                                                                                        <div className="col-sm-3">
+                                                                                                <Select
+                                                                                                        value={s.key}
+                                                                                                        options={s.keyOptions}
+                                                                                                        onChange={this.handleJoinKeyChange.bind(this, i)}
+                                                                                                        required={true}
+                                                                                                        disabled={!editMode || s.stream === '' || s.keyOptions.length === 0}
+                                                                                                        clearable={false}
+                                                                                                        backspaceRemoves={false}
+                                                                                                        valueKey="name"
+                                                                                                        labelKey="name"
+                                                                                                />
+                                                                                        </div>
+                                                                                        <div className="col-sm-1" style={{marginTop: '8px'}}>
+                                                                                                <label>With</label>
+                                                                                        </div>
+                                                                                        <div className="col-sm-3">
+                                                                                                <Select
+                                                                                                        value={s.with}
+                                                                                                        options={s.withOptions}
+                                                                                                        onChange={this.handleJoinWithChange.bind(this, i)}
+                                                                                                        required={true}
+                                                                                                        disabled={!editMode || s.withOptions.length === 0}
+                                                                                                        clearable={false}
+                                                                                                        backspaceRemoves={false}
+                                                                                                        valueKey="streamId"
+                                                                                                        labelKey="streamId"
+                                                                                                />
+                                                                                        </div>
+                                                                                </div>
+                                                                        </div>
+                                                        );
+                                                })
+                                        }
+                                        <div className="form-group">
+                                                <label>Window Interval Type <span className="text-danger">*</span></label>
+                                                <div>
+                                                        <Select
+                                                                value={intervalType}
+                                                                options={intervalTypeArr}
+                                                                onChange={this.handleIntervalChange.bind(this)}
+                                                                required={true}
+                                                                disabled={!editMode}
+                                                                clearable={false}
+                                                        />
+                                                </div>
+                                        </div>
+                                        <div className="form-group">
+                                                        <label>Window Interval <span className="text-danger">*</span></label>
+                                                        <div className="row">
+                                                                <div className="col-sm-5">
 									<input
-										name="groupExpiryInterval"
-										value={groupExpiryInterval}
+                                                                                name="windowNum"
+                                                                                value={windowNum}
 										onChange={this.handleValueChange.bind(this)}
 										type="number"
-										className={editMode && showError && changedFields.indexOf("groupExpiryInterval") !== -1 && this.state.groupExpiryInterval === '' ? "form-control invalidInput" : "form-control"}
+                                                                                className="form-control"
+                                                                                required={true}
 										disabled={!editMode}
 										min="0"
 										inputMode="numeric"
 									/>
 								</div>
-							</div>
-							<div className="form-group">
-								<label className="col-sm-3 control-label">Event Expiry Interval*</label>
-								<div className="col-sm-6">
-									<input
-										name="eventExpiryInterval"
-										value={eventExpiryInterval}
-										onChange={this.handleValueChange.bind(this)}
-										type="number"
-										className={editMode && showError && changedFields.indexOf("eventExpiryInterval") !== -1 && this.state.eventExpiryInterval === '' ? "form-control invalidInput" : "form-control"}
+                                                                {intervalType === '.Window$Duration' ?
+                                                                        <div className="col-sm-5">
+                                                                        <Select
+                                                                                value={durationType}
+                                                                                options={durationTypeArr}
+                                                                                onChange={this.handleDurationChange.bind(this)}
+                                                                                required={true}
 										disabled={!editMode}
-										min="0"
-										inputMode="numeric"
+                                                                                clearable={false}
 									/>
-								</div>
+                                                                        </div>
+                                                                : null}
 							</div>
-							<div className="form-group">
-								<label className="col-sm-3 control-label">Parallelism</label>
-								<div className="col-sm-6">
+                                                </div>
+                                                <div className="form-group">
+                                                        <label>Sliding Interval</label>
+                                                        <div className="row">
+                                                                <div className="col-sm-5">
 									<input
-										name="parallelism"
-										value={parallelism}
+                                                                                name="slidingNum"
+                                                                                value={slidingNum}
 										onChange={this.handleValueChange.bind(this)}
 										type="number"
 										className="form-control"
+                                                                                required={true}
 										disabled={!editMode}
 										min="0"
 										inputMode="numeric"
-									/>
-								</div>
+                                                                />
 							</div>
-						</form>
-					</Tab>
-					<Tab eventKey={2} title="Output Streams">
-
-					</Tab>
-				</Tabs>
+                                                        {intervalType === '.Window$Duration' ?
+                                                        <div className="col-sm-5">
+                                                                <Select
+                                                                        value={slidingDurationType}
+                                                                        options={durationTypeArr}
+                                                                        onChange={this.handleSlidingDurationChange.bind(this)}
+                                                                        required={true}
+                                                                        disabled={!editMode}
+                                                                        clearable={false}
+                                                                />
+                                                        </div>
+                                                        : null}
+                                                </div>
+                                        </div>
+                                        <div className="form-group">
+                                                <label>Parallelism</label>
+                                                <div>
+                                                        <input
+                                                                name="parallelism"
+                                                                value={parallelism}
+                                                                onChange={this.handleValueChange.bind(this)}
+                                                                type="number"
+                                                                className="form-control"
+                                                                required={true}
+                                                                disabled={!editMode}
+                                                                min="0"
+                                                                inputMode="numeric"
+                                                        />
+                                                </div>
+                                        </div>
+                                        <div className="form-group">
+                                                <label>Output Fields <span className="text-danger">*</span></label>
+                                                <div className="">
+                                                        <Select
+                                                                className="menu-outer-top"
+                                                                value={outputKeys}
+                                                                options={fieldList}
+                                                                onChange={this.handleFieldsChange.bind(this)}
+                                                                multi={true}
+                                                                required={true}
+                                                                disabled={!editMode}
+                                                                valueKey="name"
+                                                                labelKey="name"
+                                                        />
+                                                </div>
+                                        </div>
+                                </form>
 			</div>
 		)
 	}
 }
+
+JoinNodeForm.contextTypes = {
+        ParentForm: React.PropTypes.object
+};

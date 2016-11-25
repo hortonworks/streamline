@@ -36,7 +36,7 @@ export default class TagsContainer extends Component {
 	fetchData(){
 		TagREST.getAllTags()
 			.then((tags)=>{
-				if(tags.responseCode !== 1000){
+                                if(tags.responseMessage !== undefined){
           FSReactToastr.error(
               <CommonNotification flag="error" content={tags.responseMessage}/>, '', toastOpt)
 				} else {
@@ -147,7 +147,7 @@ export default class TagsContainer extends Component {
 		if(this.refs.addTag.validateData()){
 			this.refs.addTag.handleSave()
 				.then(tag=>{
-					if(tag.responseCode !== 1000){
+                                        if(tag.responseMessage !== undefined){
             FSReactToastr.error(
                 <CommonNotification flag="error" content={tag.responseMessage}/>, '', toastOpt)
 					} else {
@@ -182,7 +182,7 @@ export default class TagsContainer extends Component {
 				.then((tags)=>{
 					this.fetchData();
 					confirmBox.cancel();
-					if(tags.responseCode !== 1000){
+                                        if(tags.responseMessage !== undefined){
             FSReactToastr.error(
                 <CommonNotification flag="error" content={tags.responseMessage}/>, '', toastOpt)
 					} else {
@@ -234,7 +234,7 @@ export default class TagsContainer extends Component {
 
 		TagREST.putTag(movedItem.id, {body: JSON.stringify(data)})
 			.then((tags)=>{
-				if(tags.responseCode !== 1000){
+                                if(tags.responseMessage !== undefined){
           FSReactToastr.error(
               <CommonNotification flag="error" content={tags.responseMessage}/>, '', toastOpt)
 				} else {

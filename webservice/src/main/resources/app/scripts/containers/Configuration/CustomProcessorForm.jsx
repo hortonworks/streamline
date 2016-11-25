@@ -65,7 +65,7 @@ class CustomProcessorForm extends Component {
 	fetchProcessor(id) {
 		CustomProcessorREST.getProcessor(id)
 			.then((processor)=>{
-				if(processor.responseCode !== 1000){
+                                if(processor.responseMessage !== undefined){
           FSReactToastr.error(
               <CommonNotification flag="error" content={processor.responseMessage}/>, '', toastOpt)
 				} else {

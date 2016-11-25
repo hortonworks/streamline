@@ -318,7 +318,7 @@ export default class RulesForm extends Component {
                 let {topologyId, versionId} = this.props;
                 TopologyREST.getNode(topologyId, versionId, 'rules', ruleId)
 			.then(rule=>{
-				let {name, description, sql, actions} = rule.entity;
+                                let {name, description, sql, actions} = rule;
 				this.setState({name, description, sql, actions})
 			})
 	}
@@ -400,15 +400,15 @@ export default class RulesForm extends Component {
 		return Promise.all(promiseArr)
 			.then(results=>{
 				let result = results[0];
-				if(result.responseCode !== 1000){
+                                if(result.responseMessage !== undefined){
           FSReactToastr.error(
               <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt)
 					return false;
 				} else {
-					let msg = result.entity.name + " " + (ruleObj.id ? "updated" : "added") + ' successfully';
+                                        let msg = result.name + " " + (ruleObj.id ? "updated" : "added") + ' successfully';
 					FSReactToastr.success(<strong>{msg}</strong>);
 					//Update node with rule
-					return this.updateNode(result.entity, results[1].entity);
+                                        return this.updateNode(result, results[1]);
 				}
 			})
 	}

@@ -97,13 +97,13 @@ export class kafkaTopic extends BaseField {
         let resultArr = [];
         TopologyREST.getSchemaForKafka(topicName)
             .then(result=>{
-                if(result.responseCode !== 1000){
+                if(result.responseMessage !== undefined){
                     this.refs.input.className = "form-control invalidInput";
                     this.context.Form.state.Errors[this.props.valuePath] = 'Topic name is not present.';
                     this.context.Form.setState(this.context.Form.state);
                 } else {
                     this.refs.input.className = "form-control";
-                    resultArr = result.entity;
+                    resultArr = result;
                     if(typeof resultArr === 'string'){
                         resultArr = JSON.parse(resultArr);
                     }

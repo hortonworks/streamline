@@ -186,80 +186,85 @@ class TopologyEditorContainer extends Component {
 
     TopologyREST.getTopology(this.topologyId, versionId)
       .then((result)=>{
-        var data = result.entity;
-        if(!versionId)
-          versionId = data.topology.versionId;
-        promiseArr.push(TopologyREST.getSourceComponent());
-        promiseArr.push(TopologyREST.getProcessorComponent());
-        promiseArr.push(TopologyREST.getSinkComponent());
-        promiseArr.push(TopologyREST.getLinkComponent());
-        promiseArr.push(TopologyREST.getAllNodes(this.topologyId, versionId, 'sources'));
-        promiseArr.push(TopologyREST.getAllNodes(this.topologyId, versionId, 'processors'));
-        promiseArr.push(TopologyREST.getAllNodes(this.topologyId, versionId, 'sinks'));
-        promiseArr.push(TopologyREST.getAllNodes(this.topologyId, versionId, 'edges'));
-        promiseArr.push(TopologyREST.getMetaInfo(this.topologyId, versionId));
-        promiseArr.push(TopologyREST.getAllVersions(this.topologyId));
+        if(result.responseMessage !== undefined){
+          FSReactToastr.error(<CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt)
+        } else {
+          var data = result;
+          if(!versionId){
+            versionId = data.topology.versionId;
+          }
+          promiseArr.push(TopologyREST.getSourceComponent());
+          promiseArr.push(TopologyREST.getProcessorComponent());
+          promiseArr.push(TopologyREST.getSinkComponent());
+          promiseArr.push(TopologyREST.getLinkComponent());
+          promiseArr.push(TopologyREST.getAllNodes(this.topologyId, versionId, 'sources'));
+          promiseArr.push(TopologyREST.getAllNodes(this.topologyId, versionId, 'processors'));
+          promiseArr.push(TopologyREST.getAllNodes(this.topologyId, versionId, 'sinks'));
+          promiseArr.push(TopologyREST.getAllNodes(this.topologyId, versionId, 'edges'));
+          promiseArr.push(TopologyREST.getMetaInfo(this.topologyId, versionId));
+          promiseArr.push(TopologyREST.getAllVersions(this.topologyId));
 
-        Promise.all(promiseArr)
-          .then((resultsArr)=>{
-            let allNodes = [];
-            this.topologyName = data.topology.name;
-            this.topologyConfig = JSON.parse(data.topology.config);
-            this.topologyMetric = data.metric || {misc : (data.metric === undefined) ? '' : metric.misc};
+          Promise.all(promiseArr)
+            .then((resultsArr)=>{
+              let allNodes = [];
+              this.topologyName = data.topology.name;
+              this.topologyConfig = JSON.parse(data.topology.config);
+              this.topologyMetric = data.metric || {misc : (data.metric === undefined) ? '' : metric.misc};
 
-            let unknown = data.running;
-            let isAppRunning = false;
-            let status = '';
-            if(this.topologyMetric.status){
-              status = this.topologyMetric.status;
-              if(status === 'ACTIVE' || status === 'INACTIVE')
-                isAppRunning = true;
-            }
+              let unknown = data.running;
+              let isAppRunning = false;
+              let status = '';
+              if(this.topologyMetric.status){
+                status = this.topologyMetric.status;
+                if(status === 'ACTIVE' || status === 'INACTIVE')
+                  isAppRunning = true;
+              }
 
-            this.sourceConfigArr = resultsArr[0].entities;
-            this.processorConfigArr = resultsArr[1].entities;
-            this.sinkConfigArr = resultsArr[2].entities;
-            this.linkConfigArr = resultsArr[3].entities;
+              this.sourceConfigArr = resultsArr[0].entities;
+              this.processorConfigArr = resultsArr[1].entities;
+              this.sinkConfigArr = resultsArr[2].entities;
+              this.linkConfigArr = resultsArr[3].entities;
 
-            this.graphData.linkShuffleOptions = TopologyUtils.setShuffleOptions(this.linkConfigArr);
+              this.graphData.linkShuffleOptions = TopologyUtils.setShuffleOptions(this.linkConfigArr);
 
-            let sourcesNode = resultsArr[4].entities || [];
-            let processorsNode = resultsArr[5].entities || [];
-            let sinksNode = resultsArr[6].entities || [];
-            let edgesArr = resultsArr[7].entities || [];
+              let sourcesNode = resultsArr[4].entities || [];
+              let processorsNode = resultsArr[5].entities || [];
+              let sinksNode = resultsArr[6].entities || [];
+              let edgesArr = resultsArr[7].entities || [];
 
-            this.graphData.metaInfo = JSON.parse(resultsArr[8].entity.data);
+              this.graphData.metaInfo = JSON.parse(resultsArr[8].data);
 
-            let versions = resultsArr[9].entities || [];
-            Utils.sortArray(versions, 'name', true);
+              let versions = resultsArr[9].entities || [];
+              Utils.sortArray(versions, 'name', true);
 
-            this.graphData.nodes = TopologyUtils.syncNodeData(sourcesNode, processorsNode, sinksNode, this.graphData.metaInfo,
-            this.sourceConfigArr, this.processorConfigArr, this.sinkConfigArr);
+              this.graphData.nodes = TopologyUtils.syncNodeData(sourcesNode, processorsNode, sinksNode, this.graphData.metaInfo,
+              this.sourceConfigArr, this.processorConfigArr, this.sinkConfigArr);
 
-            this.graphData.uinamesList = [];
-            this.graphData.nodes.map(node=>{ this.graphData.uinamesList.push(node.uiname); })
+              this.graphData.uinamesList = [];
+              this.graphData.nodes.map(node=>{ this.graphData.uinamesList.push(node.uiname); })
 
-            this.graphData.edges = TopologyUtils.syncEdgeData(edgesArr, this.graphData.nodes);
-            this.versionId = versionId ? versionId : data.topology.versionId;
-            this.versionName = versions.find((o)=>{return o.id == this.versionId}).name;
+              this.graphData.edges = TopologyUtils.syncEdgeData(edgesArr, this.graphData.nodes);
+              this.versionId = versionId ? versionId : data.topology.versionId;
+              this.versionName = versions.find((o)=>{return o.id == this.versionId}).name;
 
-            this.setState({
-              timestamp : data.topology.timestamp,
-              topologyName: this.topologyName,
-              topologyMetric: this.topologyMetric,
-              isAppRunning: isAppRunning,
-              topologyStatus: status,
-              topologyVersion: this.versionId,
-              versionsArr: versions,
-              bundleArr: {
-                sourceBundle: this.sourceConfigArr,
-                processorsBundle: this.processorConfigArr,
-                sinksBundle: this.sinkConfigArr
-              },
-              unknown
+              this.setState({
+                timestamp : data.topology.timestamp,
+                topologyName: this.topologyName,
+                topologyMetric: this.topologyMetric,
+                isAppRunning: isAppRunning,
+                topologyStatus: status,
+                topologyVersion: this.versionId,
+                versionsArr: versions,
+                bundleArr: {
+                  sourceBundle: this.sourceConfigArr,
+                  processorsBundle: this.processorConfigArr,
+                  sinksBundle: this.sinkConfigArr
+                },
+                unknown
+              });
+              this.customProcessors = this.getCustomProcessors();
             });
-            this.customProcessors = this.getCustomProcessors();
-          });
+        }
       });
 
     this.graphData = {
@@ -307,13 +312,13 @@ class TopologyEditorContainer extends Component {
       }
       TopologyREST.putTopology(this.topologyId, this.versionId, {body: JSON.stringify(data)})
         .then(topology=>{
-          if(topology.responseCode !== 1000){
+          if(topology.responseMessage !== undefined){
       FSReactToastr.error(
         <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
           } else {
             FSReactToastr.success(<strong>Topology name updated successfully</strong>);
-            this.topologyName = topology.entity.name;
-            this.topologyConfig = JSON.parse(topology.entity.config);
+            this.topologyName = topology.name;
+            this.topologyConfig = JSON.parse(topology.config);
           }
           this.refs.topologyNameEditable.hideEditor();
         })
@@ -330,13 +335,13 @@ class TopologyEditorContainer extends Component {
       this.refs.topologyConfig.handleSave()
         .then(config=>{
           this.refs.TopologyConfigModal.hide();
-          if(config.responseCode !== 1000){
+          if(config.responseMessage !== undefined){
       FSReactToastr.error(
         <CommonNotification flag="error" content={config.responseMessage}/>, '', toastOpt)
           } else {
             FSReactToastr.success(<strong>Configuration updated successfully</strong>)
-            this.topologyName = config.entity.name;
-            this.topologyConfig = JSON.parse(config.entity.config);
+            this.topologyName = config.name;
+            this.topologyConfig = JSON.parse(config.config);
             this.setState({topologyName: this.topologyName});
           }
         });
@@ -355,7 +360,7 @@ class TopologyEditorContainer extends Component {
         obj.configData = config;
       break;
       case 'PROCESSOR':
-        config = this.processorConfigArr.filter((o)=>{ return o.subType === node.currentType.toUpperCase()})
+        config = this.processorConfigArr.filter((o)=>{ return o.subType.toUpperCase() === node.currentType.toUpperCase()})
         //Check for custom processor
         if(node.currentType.toLowerCase() === 'custom'){
           let index = null;
@@ -396,7 +401,7 @@ class TopologyEditorContainer extends Component {
       this.setState({topologyStatus: 'DEPLOYING...'})
       TopologyREST.validateTopology(this.topologyId, this.versionId)
         .then(result=>{
-          if(result.responseCode !== 1000){
+          if(result.responseMessage !== undefined){
             FSReactToastr.error(
               <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt)
             let status = this.topologyMetric.status || 'NOT RUNNING';
@@ -405,7 +410,7 @@ class TopologyEditorContainer extends Component {
           } else {
             TopologyREST.deployTopology(this.topologyId, this.versionId)
               .then(topology=>{
-                if(topology.responseCode !== 1000){
+                if(topology.responseMessage !== undefined){
                   FSReactToastr.error(
                     <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
                   let status = this.topologyMetric.status || 'NOT RUNNING';
@@ -415,7 +420,7 @@ class TopologyEditorContainer extends Component {
                   FSReactToastr.success(<strong>Topology Deployed Successfully</strong>);
                   TopologyREST.getTopology(this.topologyId, this.versionId)
                     .then((result)=>{
-                      let data = result.entity;
+                      let data = result;
                       this.topologyMetric = data.metric || {misc: (data.metric === undefined) ? '' : metric.misc};
                       let status = this.topologyMetric.status || '';
                       document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay displayNone";
@@ -441,7 +446,7 @@ class TopologyEditorContainer extends Component {
       this.setState({topologyStatus: 'KILLING...'})
       TopologyREST.killTopology(this.topologyId)
         .then(topology=>{
-          if(topology.responseCode !== 1000){
+          if(topology.responseMessage !== undefined){
             FSReactToastr.error(
               <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
             let status = this.topologyMetric.status || 'NOT RUNNING';
@@ -451,7 +456,7 @@ class TopologyEditorContainer extends Component {
             FSReactToastr.success(<strong>Topology Killed Successfully</strong>);
             TopologyREST.getTopology(this.topologyId, this.versionId)
               .then((result)=>{
-                let data = result.entity;
+                let data = result;
                 this.topologyMetric = data.metric || {misc: (data.metric === undefined) ? '' : metric.misc};
                 let status = this.topologyMetric.status || '';
                 document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay displayNone";
@@ -515,7 +520,7 @@ class TopologyEditorContainer extends Component {
           if(savedNode instanceof Array){
             savedNode = savedNode[0];
           }
-          if(savedNode.responseCode !== 1000){
+          if(savedNode.responseMessage !== undefined){
             FSReactToastr.error(
               <CommonNotification flag="error" content={savedNode.responseMessage}/>, '', toastOpt)
           } else {
@@ -523,12 +528,12 @@ class TopologyEditorContainer extends Component {
             let i = this.graphData.uinamesList.indexOf(this.node.uiname);
             if(this.node.currentType === 'Custom') {
               let obj = _.find(this.graphData.metaInfo.customNames, {uiname: this.node.uiname});
-              obj.uiname = savedNode.entity.name;
-              this.node.uiname = savedNode.entity.name;
+              obj.uiname = savedNode.name;
+              this.node.uiname = savedNode.name;
               TopologyUtils.updateMetaInfo(this.topologyId, this.node, this.graphData.metaInfo);
             }
-            this.node.uiname = savedNode.entity.name;
-            this.node.parallelismCount = savedNode.entity.config.properties.parallelism || 1;
+            this.node.uiname = savedNode.name;
+            this.node.parallelismCount = savedNode.config.properties.parallelism || 1;
             if(i > -1)
               this.graphData.uinamesList[i] = this.node.uiname;
 
@@ -568,7 +573,7 @@ class TopologyEditorContainer extends Component {
           Promise.all(rulesPromiseArr)
             .then((results)=>{
               results.map((result)=>{
-                let data = result.entity;
+                let data = result;
                 let actionObj = {
                   name: newEdge.target.uiname,
                   outputStreams: [node.outputStreams[0].streamId]
@@ -590,8 +595,8 @@ class TopologyEditorContainer extends Component {
       }
       TopologyREST.createNode(topologyId, versionId, 'edges', {body: JSON.stringify(edgeData)})
         .then((edge)=>{
-            newEdge.edgeId = edge.entity.id;
-            newEdge.streamGrouping = edge.entity.streamGroupings[0];
+            newEdge.edgeId = edge.id;
+            newEdge.streamGrouping = edge.streamGroupings[0];
             edges.push(newEdge);
             //call the callback to update the graph
             callback();

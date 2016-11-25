@@ -61,8 +61,8 @@ export default class NormalizationNodeForm extends Component {
 				];
 				let streamIdArr = []
 				edgeResults.map(result=>{
-					if(result.entity.streamGroupings){
-						result.entity.streamGroupings.map(streamObj=>{
+                                        if(result.streamGroupings){
+                                                result.streamGroupings.map(streamObj=>{
 							if(streamIdArr.indexOf(streamObj.streamId) === -1){
 								streamIdArr.push(streamObj.streamId);
                                                                 promiseArr.push(TopologyREST.getNode(topologyId, versionId, 'streams', streamObj.streamId))
@@ -72,13 +72,13 @@ export default class NormalizationNodeForm extends Component {
 				})
 				Promise.all(promiseArr)
 					.then((results)=>{
-						this.nodeData = results[0].entity;
+                                                this.nodeData = results[0];
 						let properties = this.nodeData.config.properties;
 						let outputStreamsArr = [];
                                                 let showSchema = false;
 						results.map((result, i)=>{
 							if(i > 0){
-								outputStreamsArr.push(result.entity);
+                                                                outputStreamsArr.push(result);
 							}
 						})
 
@@ -133,10 +133,10 @@ export default class NormalizationNodeForm extends Component {
                 TopologyREST.createNode(topologyId, versionId, 'streams', {body: JSON.stringify(passStreamData)})
                         .then(result=>{
                                 self.nodeData.outputStreamIds = [];
-                                self.nodeData.outputStreamIds.push(result.entity.id);
+                                self.nodeData.outputStreamIds.push(result.id);
                                 TopologyREST.updateNode(topologyId, versionId, nodeType, self.nodeData.id, {body: JSON.stringify(self.nodeData)})
                                         .then((node)=>{
-                                                self.nodeData = node.entity;
+                                                self.nodeData = node;
                                                 self.setState({showSchema: true});
                                         })
                         })
@@ -425,14 +425,14 @@ export default class NormalizationNodeForm extends Component {
 
                 return TopologyREST.getNode(topologyId, versionId, nodeType, nodeId)
 			.then(result=>{
-				let newData = result.entity;
+                                let newData = result;
 				newData.config.properties = data;
 				newData.name = name;
                 let outputStreamData = { streamId: newData.outputStreams[0].streamId , fields: this.state.outputSchemaFields};
                 return TopologyREST.updateNode(topologyId, versionId, 'streams', newData.outputStreams[0].id, {body: JSON.stringify(outputStreamData)})
                     .then((stream)=>{
                         newData.outputStreamIds = [];
-                        newData.outputStreamIds.push(stream.entity.id);
+                        newData.outputStreamIds.push(stream.id);
                         return TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(newData)})
                     })
 			})

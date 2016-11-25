@@ -1233,7 +1233,7 @@ label {
   font-size: 16px;
 }
 .outputCaption > label,
-.form-group > label{
+.form-group label{
   font-size: 12px;
   color: #606060;
 }

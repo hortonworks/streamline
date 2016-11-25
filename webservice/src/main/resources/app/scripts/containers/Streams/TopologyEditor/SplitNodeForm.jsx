@@ -67,7 +67,7 @@ export default class SplitNodeForm extends Component {
 				});
 				stateObj.fileArr = arr;
 
-				this.nodeData = results[1].entity;
+                                this.nodeData = results[1];
 				let {parallelism} = this.nodeData.config.properties;
 				stateObj.parallelism = parallelism || 1;
 
@@ -124,7 +124,7 @@ export default class SplitNodeForm extends Component {
 		let nodeId = this.nodeData.id;
                 return TopologyREST.getNode(topologyId, versionId, nodeType, nodeId)
 			.then(data=>{
-				let splitConfigData = data.entity.config.properties["split-config"];
+                                let splitConfigData = data.config.properties["split-config"];
 				if(!splitConfigData){
 					splitConfigData = {
 						name: 'split-action',
@@ -135,11 +135,11 @@ export default class SplitNodeForm extends Component {
 				splitConfigData.jarId = fileId;
 				splitConfigData.splitterClassName = splitterClassName;
 
-				data.entity.config.properties["split-config"] = splitConfigData;
-				data.entity.config.properties.parallelism = parallelism;
-				data.entity.name = name;
+                                data.config.properties["split-config"] = splitConfigData;
+                                data.config.properties.parallelism = parallelism;
+                                data.name = name;
 
-                                return TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(data.entity)})
+                                return TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(data)})
 			})
 	}
 

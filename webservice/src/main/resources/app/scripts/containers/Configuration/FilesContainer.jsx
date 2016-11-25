@@ -29,7 +29,7 @@ export default class FilesContainer extends Component {
 	fetchData() {
 		FileREST.getAllFiles()
 			.then((files)=>{
-				if(files.responseCode !== 1000){
+                                if(files.responseMessage !== undefined){
           FSReactToastr.error(
               <CommonNotification flag="error" content={files.responseMessage}/>, '', toastOpt)
 				} else {
@@ -53,7 +53,7 @@ export default class FilesContainer extends Component {
 				.then((file)=>{
 					this.fetchData();
 					this.refs.Modal.hide();
-					if(file.responseCode !== 1000){
+                                        if(file.responseMessage !== undefined){
             FSReactToastr.error(
                 <CommonNotification flag="error" content={file.responseMessage}/>, '', toastOpt)
 					} else {
@@ -72,7 +72,7 @@ export default class FilesContainer extends Component {
 				.then((file)=>{
 					this.fetchData();
 					confirmBox.cancel();
-					if(file.responseCode !== 1000){
+                                        if(file.responseMessage !== undefined){
             FSReactToastr.error(
                 <CommonNotification flag="error" content={file.responseMessage}/>, '', toastOpt)
 					} else {

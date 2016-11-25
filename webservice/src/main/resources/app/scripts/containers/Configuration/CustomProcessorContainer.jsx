@@ -30,7 +30,7 @@ export default class CustomProcessorContainer extends Component {
 	fetchData() {
 		CustomProcessorREST.getAllProcessors()
 			.then((processors)=>{
-				if(processors.responseCode !== 1000){
+                                if(processors.responseMessage !== undefined){
           FSReactToastr.error(
               <CommonNotification flag="error" content={processors.responseMessage}/>, '', toastOpt)
 				} else {
@@ -57,7 +57,7 @@ export default class CustomProcessorContainer extends Component {
 	handleSave() {
     if(this.refs.CustomProcessorForm.getWrappedInstance().validateData()){
       this.refs.CustomProcessorForm.getWrappedInstance().handleSave().then((processor)=>{
-        if(processor.responseCode !== 1000){
+        if(processor.responseMessage !== undefined){
           FSReactToastr.error(
               <CommonNotification flag="error" content={processors.responseMessage}/>, '', toastOpt)
         } else {
@@ -85,7 +85,7 @@ export default class CustomProcessorContainer extends Component {
 				.then((processor)=>{
 					this.fetchData();
 					confirmBox.cancel();
-					if(processor.responseCode !== 1000){
+                                        if(processor.responseMessage !== undefined){
             FSReactToastr.error(
                 <CommonNotification flag="error" content={processors.responseMessage}/>, '', toastOpt)
 					} else {

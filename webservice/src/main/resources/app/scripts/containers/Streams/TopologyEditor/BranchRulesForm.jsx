@@ -297,7 +297,7 @@ export default class RulesForm extends Component {
 		let {topologyId, versionId} = this.props;
 		TopologyREST.getNode(topologyId, versionId, 'branchrules', ruleId)
 			.then(rule=>{
-				let {name, description, condition, actions} = rule.entity;
+                                let {name, description, condition, actions} = rule;
 				this.setState({name, description, condition, actions})
 			})
 	}
@@ -357,24 +357,24 @@ export default class RulesForm extends Component {
 		return Promise.all(promiseArr)
 			.then(results=>{
 				let result = results[0];
-				if(result.responseCode !== 1000){
+                                if(result.responseMessage !== undefined){
   					FSReactToastr.error(<CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt)
 					return false;
 				} else {
-					let msg = result.entity.name + " " + (ruleObj.id ? "updated" : "added") + ' successfully';
+                                        let msg = result.name + " " + (ruleObj.id ? "updated" : "added") + ' successfully';
 					FSReactToastr.success(<strong>{msg}</strong>);
 					streamData = {
-						streamId: 'branch_processor_stream_'+(results[0].entity.id),
+                                                streamId: 'branch_processor_stream_'+(results[0].id),
 						fields: parsedStream.fields
 					};
 					return TopologyREST.createNode(topologyId, versionId, 'streams', {body: JSON.stringify(streamData)})
 						.then((streamResult)=>{
-							if(streamResult.responseCode !== 1000){
+                                                        if(streamResult.responseMessage !== undefined){
 								FSReactToastr.error(<CommonNotification flag="error" content={streamResult.responseMessage}/>, '', toastOpt)
 								return false;
 							} else {
 								//Update node with rule
-								return this.updateNode(result.entity, results[1].entity, streamResult.entity);
+                                                                return this.updateNode(result, results[1], streamResult);
 							}
 						})
 

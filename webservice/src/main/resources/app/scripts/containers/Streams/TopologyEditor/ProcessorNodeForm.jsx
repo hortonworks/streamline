@@ -28,7 +28,8 @@ export default class ProcessorNodeForm extends Component {
         this.outputStreamObj = {};
         this.state = {
             streamObj: {},
-            outputStreamObj: {}
+            outputStreamObj: {},
+            inputStreamOptions: []
         };
     }
     getChildContext() {
@@ -49,15 +50,22 @@ export default class ProcessorNodeForm extends Component {
         Promise.all(promiseArr)
             .then(results=>{
                 if(results[0].entities){
+                    var streamsPromiseArr = [],
+                        inputStreams = [],
+                        inputStreamOptions = [];
                     results[0].entities.map((edge)=>{
                         if(edge.toId === nodeData.nodeId && this.sourceNodesId.indexOf(edge.fromId) !== -1){
-                            //TODO - Once we support multiple input streams, need to fix this.
-                            TopologyREST.getNode(topologyId, versionId, 'streams', edge.streamGroupings[0].streamId)
-                                .then(streamResult=>{
-                                    this.setState({streamObj: streamResult.entity})
-                                    // this.refs.StreamSidebarInput.update(streamResult.entity);
-                                })
+                            streamsPromiseArr.push(TopologyREST.getNode(topologyId, versionId, 'streams', edge.streamGroupings[0].streamId));
                         }
+                    })
+                    Promise.all(streamsPromiseArr)
+                    .then((streamResults)=>{
+                        streamResults.map((result)=>{
+                            let s = result;
+                            inputStreams.push(s);
+                        });
+                        this.setState({streamObj: inputStreams[0], inputStreamOptions: inputStreams});
+                        // this.refs.StreamSidebarInput.update(streamResult);
                     })
                 }
             })
@@ -77,11 +85,11 @@ export default class ProcessorNodeForm extends Component {
 
     render() {
         let childElement = this.props.getChildElement();
-        let streamObj = this.state.streamObj instanceof Array ? this.state.streamObj[0] : this.state.streamObj;
+        let streamObj = this.state.streamObj;
         return (
             <Tabs id="ProcessorForm" defaultActiveKey={1} className="modal-tabs">
                 <Tab eventKey={1} title="CONFIGURATION">
-                    <StreamsSidebar ref="StreamSidebarInput" streamObj={streamObj} streamType="input" />
+                    <StreamsSidebar ref="StreamSidebarInput" streamObj={streamObj} inputStreamOptions={this.state.inputStreamOptions} streamType="input" />
                     {childElement}
                     <StreamsSidebar ref="StreamSidebarOutput" streamObj={this.state.outputStreamObj} streamType="output" />
                 </Tab>
@@ -94,5 +102,5 @@ export default class ProcessorNodeForm extends Component {
 }
 
 ProcessorNodeForm.childContextTypes = {
-    ParentForm: React.PropTypes.object,
+    ParentForm: React.PropTypes.object
 };

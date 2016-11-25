@@ -29,7 +29,7 @@ class AddTopology extends Component{
 
   fetchData = () => {
     TopologyREST.getTopologyConfig().then(config => {
-      if (config.responseCode !== 1000) {
+      if (config.responseMessage !== undefined) {
         FSReactToastr.error(
             <CommonNotification flag="error" content={config.responseMessage}/>, '', toastOpt)
       } else {

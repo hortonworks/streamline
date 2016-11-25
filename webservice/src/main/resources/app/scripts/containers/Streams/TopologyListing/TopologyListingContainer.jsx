@@ -262,7 +262,7 @@ class TopologyListingContainer extends Component {
     fetchData() {
       const sortKey = this.state.sorted.key;
         TopologyREST.getAllTopology(sortKey).then((topology) => {
-            if (topology.responseCode !== 1000) {
+            if (topology.responseMessage !== undefined) {
                 FSReactToastr.error(
                     <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
             } else {
@@ -288,7 +288,7 @@ class TopologyListingContainer extends Component {
         }
         this.setState({isLoading: flagUpdate});
         TopologyREST.getTopology(id).then((topology) => {
-            this.updateSingleTopology(topology.entity, id)
+            this.updateSingleTopology(topology, id)
             flagUpdate = {
                 loader: false,
                 idCheck: id
@@ -320,7 +320,7 @@ class TopologyListingContainer extends Component {
           // TopologyREST.deleteMetaInfo(id);
           this.fetchData();
           confirmBox.cancel();
-          if (topology.responseCode !== 1000) {
+          if (topology.responseMessage !== undefined) {
             FSReactToastr.error(
               <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
           } else {
@@ -362,7 +362,7 @@ class TopologyListingContainer extends Component {
     onSortByClicked = (eventKey) => {
       const sortKey = (eventKey.toString() === "name") ? "name&ascending=true" : eventKey;
       TopologyREST.getAllTopology(sortKey).then((topology) => {
-        if (topology.responseCode !== 1000) {
+        if (topology.responseMessage !== undefined) {
             FSReactToastr.error(
                 <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
         } else {
@@ -412,15 +412,15 @@ class TopologyListingContainer extends Component {
     handleSaveClicked = () => {
       if(this.addTopologyRef.validate()){
           this.addTopologyRef.handleSave().then((topology)=>{
-            if (topology.responseCode !== 1000) {
+            if (topology.responseMessage !== undefined) {
               FSReactToastr.error(
                   <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
             } else {
-                this.addTopologyRef.saveMetadata(topology.entity.id).then(() => {
+                this.addTopologyRef.saveMetadata(topology.id).then(() => {
                   FSReactToastr.success(
                       <strong>Topology added successfully</strong>
                   )
-                  this.context.router.push('applications/' + topology.entity.id + '/edit');
+                  this.context.router.push('applications/' + topology.id + '/edit');
                 })
             }
         })

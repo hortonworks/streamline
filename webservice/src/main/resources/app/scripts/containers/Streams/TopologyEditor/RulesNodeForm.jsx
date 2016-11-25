@@ -46,8 +46,8 @@ export default class RulesNodeForm extends Component {
 
 		Promise.all(promiseArr)
 			.then((results)=>{
-				this.nodeData = results[0].entity;
-				let configFields = results[0].entity.config.properties;
+                                this.nodeData = results[0];
+                                let configFields = results[0].config.properties;
 				let {rules = [], parallelism = 1} = configFields;
 
 				let promise = [];
@@ -59,7 +59,7 @@ export default class RulesNodeForm extends Component {
 					.then(results=>{
 						let ruleArr = [];
 						results.map(result=>{
-							ruleArr.push(result.entity);
+                                                        ruleArr.push(result);
 						})
 						this.setState({rules: ruleArr});
 					})
@@ -112,14 +112,14 @@ export default class RulesNodeForm extends Component {
                 .then(results=>{
                     this.nodeData.outputStreamIds = this.nodeData.outputStreams.map((s)=>{return s.id;}) || [];
                     results.map((s)=>{
-                        this.nodeData.outputStreamIds.push(s.entity.id);
-                        this.streamData = s.entity;
+                        this.nodeData.outputStreamIds.push(s.id);
+                        this.streamData = s;
                         this.context.ParentForm.setState({outputStreamObj:this.streamData})
                     });
                     TopologyREST.updateNode(topologyId, versionId, nodeType, this.nodeData.id, {body: JSON.stringify(this.nodeData)})
                         .then((node)=>{
-                            this.nodeData = node.entity;
-                            this.setState({outputStreams: node.entity.outputStreams});
+                            this.nodeData = node;
+                            this.setState({outputStreams: node.outputStreams});
                         })
                 })
         }
@@ -135,7 +135,7 @@ export default class RulesNodeForm extends Component {
 		];
 		return Promise.all(promiseArr)
 			.then(results=>{
-				this.nodeData = results[0].entity;
+                                this.nodeData = results[0];
 				this.nodeData.name = name;
 				//Update rule processor
                                 return TopologyREST.updateNode(topologyId, versionId, nodeType, this.nodeData.id, {body: JSON.stringify(this.nodeData)});

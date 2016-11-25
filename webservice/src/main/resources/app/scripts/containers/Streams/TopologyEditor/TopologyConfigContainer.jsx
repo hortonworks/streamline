@@ -31,7 +31,7 @@ export default class TopologyConfigContainer extends Component {
         Promise.all(promiseArr)
           .then( result => {
             const formField = result[0].entities[0].topologyComponentUISpecification;
-            const config = result[1].entity.topology.config;
+            const config = result[1].topology.config;
             this.setState({formData : JSON.parse(config), formField : formField})
           }).catch(err => {
             FSReactToastr.error(<CommonNotification flag="error" content={err.message}/>, '', toastOpt)
