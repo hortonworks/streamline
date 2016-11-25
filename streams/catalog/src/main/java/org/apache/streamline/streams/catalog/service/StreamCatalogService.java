@@ -34,9 +34,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.streamline.streams.layout.component.StreamlineComponent;
-import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
-import org.apache.streamline.streams.layout.storm.FluxComponent;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.common.util.FileStorage;
@@ -81,9 +78,14 @@ import org.apache.streamline.streams.cluster.discovery.ServiceNodeDiscoverer;
 import org.apache.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import org.apache.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
+import org.apache.streamline.streams.layout.component.OutputComponent;
 import org.apache.streamline.streams.layout.component.Stream;
+import org.apache.streamline.streams.layout.component.StreamlineComponent;
+import org.apache.streamline.streams.layout.component.StreamlineProcessor;
+import org.apache.streamline.streams.layout.component.StreamlineSource;
 import org.apache.streamline.streams.layout.component.TopologyActions;
 import org.apache.streamline.streams.layout.component.TopologyDag;
+import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
 import org.apache.streamline.streams.layout.component.TopologyLayout;
 import org.apache.streamline.streams.layout.component.rule.Rule;
 import org.apache.streamline.streams.layout.exception.ComponentConfigException;
@@ -107,7 +109,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -122,7 +123,6 @@ import static org.apache.streamline.common.util.WSUtils.CURRENT_VERSION;
 import static org.apache.streamline.common.util.WSUtils.currentVersionQueryParam;
 import static org.apache.streamline.common.util.WSUtils.versionIdQueryParam;
 import static org.apache.streamline.streams.catalog.TopologyEdge.StreamGrouping;
-import static org.apache.streamline.streams.catalog.TopologyVersionInfo.VERSION_PREFIX;
 
 /**
  * A service layer where we could put our business logic.
@@ -880,10 +880,33 @@ public class StreamCatalogService {
     public void deployTopology(Topology topology) throws Exception {
         TopologyDag dag = topologyDagBuilder.getDag(topology);
         topology.setTopologyDag(dag);
+        ensureValid(dag);
         LOG.debug("Deploying topology {}", topology);
         setUpClusterArtifacts(topology);
         setUpExtraJars(topology);
         topologyActions.deploy(getTopologyLayout(topology));
+    }
+
+    /* Should have
+     * at-least 1 processor
+     * OR
+     * at-least 1 source with an edge.
+     */
+    private void ensureValid(TopologyDag dag) {
+        if (dag.getComponents().isEmpty()) {
+            throw new IllegalStateException("Empty topology");
+        }
+        java.util.Optional<OutputComponent> processor = dag.getOutputComponents().stream()
+                .filter(x -> x instanceof StreamlineProcessor)
+                .findFirst();
+        if (!processor.isPresent()) {
+            java.util.Optional<OutputComponent> sourceWithOutgoingEdge = dag.getOutputComponents().stream()
+                    .filter(x -> x instanceof StreamlineSource && !dag.getEdgesFrom(x).isEmpty())
+                    .findFirst();
+            if (!sourceWithOutgoingEdge.isPresent()) {
+                throw new IllegalStateException("Topology does not contain a processor or a source with an outgoing edge");
+            }
+        }
     }
 
     private void setUpExtraJars(Topology topology) throws IOException {
