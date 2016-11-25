@@ -1,4 +1,6 @@
 ## 0.1.4
+ * STREAMLINE-500: Generalize the way of handling exception on service.
+ * STREAMLINE-533: UI - Join Processor.
  * STREAMLINE-510: Basic validation before deploying a topology.
  * STREAMLINE-506: TopologyEditor Settings API.
  * STREAMLINE-424: HDFS Spout support.
