@@ -188,6 +188,7 @@ CREATE TABLE IF NOT EXISTS ruleinfos (
     `condition` TEXT NULL,
     `sql` TEXT NULL,
     parsedRuleStr TEXT NOT NULL,
+    projections TEXT NOT NULL,
     window TEXT NOT NULL,
     actions TEXT NOT NULL,
     PRIMARY KEY (id, versionId),

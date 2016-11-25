@@ -296,13 +296,18 @@ public class UDFCatalogResource {
     }
 
     private void updateTypeInfo(UDFInfo udfInfo, Class<?> clazz) {
-        udfInfo.setReturnType(getReturnType(clazz));
-        udfInfo.setArgTypes(getArgTypes(clazz));
+        if (udfInfo.isAggregate()) {
+            udfInfo.setReturnType(getReturnType(clazz, "result"));
+            udfInfo.setArgTypes(getArgTypes(clazz, "add"));
+        } else {
+            udfInfo.setReturnType(getReturnType(clazz, "evaluate"));
+            udfInfo.setArgTypes(getArgTypes(clazz, "evaluate"));
+        }
     }
 
-    private Schema.Type getReturnType(Class<?> clazz) {
+    private Schema.Type getReturnType(Class<?> clazz, String methodName) {
         try {
-            Method resultMethod = findMethod(clazz, "result");
+            Method resultMethod = findMethod(clazz, methodName);
             if (resultMethod != null) {
                 return Schema.fromJavaType(resultMethod.getReturnType());
             }
@@ -312,8 +317,8 @@ public class UDFCatalogResource {
         return null;
     }
 
-    private List<String> getArgTypes(Class<?> clazz) {
-        Method addMethod = findMethod(clazz, "add");
+    private List<String> getArgTypes(Class<?> clazz, String methodname) {
+        Method addMethod = findMethod(clazz, methodname);
         if (addMethod == null) {
             return Collections.emptyList();
         }

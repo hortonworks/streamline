@@ -15,14 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.streams.rule;
+package org.apache.streamline.streams.udf;
+
+import org.apache.streamline.streams.rule.UDF;
 
 /**
- * This is an interface for implementing user defined functions for a single argument.
- *
- * @param <O> type of the result
- * @param <I> type of the input argument
+ * Identity function which returns the passed value.
  */
-public interface UDF<O, I> {
-    O evaluate(I i);
+public class Identity<I> implements UDF<I, I> {
+
+    @Override
+    public I evaluate(I i) {
+        return i;
+    }
 }

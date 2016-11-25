@@ -2525,13 +2525,13 @@ public class StreamCatalogService {
         rule.setDescription(ruleInfo.getDescription());
         rule.setWindow(ruleInfo.getWindow());
         rule.setActions(ruleInfo.getActions());
+
         if (ruleInfo.getStreams() != null && !ruleInfo.getStreams().isEmpty()) {
-            ruleInfo.setSql(
-                    getSqlString(ruleInfo.getStreams(), null, ruleInfo.getCondition(), null));
+            ruleInfo.setSql(getSqlString(ruleInfo.getStreams(), ruleInfo.getProjections(), ruleInfo.getCondition(), null));
         } else if (StringUtils.isEmpty(ruleInfo.getSql())) {
             throw new IllegalArgumentException("Either streams or sql string should be specified.");
         }
-        parseSql(rule, ruleInfo.getSql(), ruleInfo.getTopologyId(), ruleInfo.getVersionId());
+        updateRuleWithSql(rule, ruleInfo.getSql(), ruleInfo.getTopologyId(), ruleInfo.getVersionId());
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(rule);
     }
@@ -2543,7 +2543,7 @@ public class StreamCatalogService {
         rule.setDescription(ruleInfo.getDescription());
         rule.setActions(ruleInfo.getActions());
         String sql = getSqlString(Arrays.asList(ruleInfo.getStream()), null, ruleInfo.getCondition(), null);
-        parseSql(rule, sql, ruleInfo.getTopologyId(), ruleInfo.getVersionId());
+        updateRuleWithSql(rule, sql, ruleInfo.getTopologyId(), ruleInfo.getVersionId());
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(rule);
     }
@@ -2563,7 +2563,7 @@ public class StreamCatalogService {
                 windowInfo.getProjections(),
                 windowInfo.getCondition(),
                 windowInfo.getGroupbykeys());
-        parseSql(rule, sql, windowInfo.getTopologyId(), windowInfo.getVersionId());
+        updateRuleWithSql(rule, sql, windowInfo.getTopologyId(), windowInfo.getVersionId());
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(rule);
     }
@@ -2616,11 +2616,12 @@ public class StreamCatalogService {
         }
     }
 
-
-    private void parseSql(Rule rule, String sql, Long topologyId, Long versionId) {
+    private void updateRuleWithSql(Rule rule, String sql, Long topologyId, Long versionId) {
         // parse
         RuleParser ruleParser = new RuleParser(this, sql, topologyId, versionId);
         ruleParser.parse();
+
+        // update rule with parsed sql constructs
         rule.setStreams(new HashSet<>(Collections2.transform(ruleParser.getStreams(), new Function<Stream, String>() {
             @Override
             public String apply(Stream input) {
