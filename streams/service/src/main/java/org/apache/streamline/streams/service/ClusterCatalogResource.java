@@ -1,6 +1,7 @@
 package org.apache.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.util.WSUtils;
@@ -28,6 +29,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -36,6 +38,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -61,14 +64,24 @@ public class ClusterCatalogResource {
         List<QueryParam> queryParams = new ArrayList<>();
         MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
         Collection<Cluster> clusters;
+        Boolean detail = false;
+
         if (params.isEmpty()) {
             clusters = catalogService.listClusters();
         } else {
-            queryParams = WSUtils.buildQueryParameters(params);
+            MultivaluedMap<String, String> copiedParams = new MultivaluedHashMap<>();
+            copiedParams.putAll(params);
+            List<String> detailOption = copiedParams.remove("detail");
+            if (detailOption != null && !detailOption.isEmpty()) {
+                detail = BooleanUtils.toBooleanObject(detailOption.get(0));
+            }
+
+            queryParams = WSUtils.buildQueryParameters(copiedParams);
             clusters = catalogService.listClusters(queryParams);
         }
+
         if (clusters != null) {
-            return WSUtils.respondEntities(clusters, OK);
+            return buildClustersGetResponse(clusters, detail);
         }
 
         throw EntityNotFoundException.byFilter(queryParams.toString());
@@ -77,10 +90,11 @@ public class ClusterCatalogResource {
     @GET
     @Path("/clusters/{id}")
     @Timed
-    public Response getClusterById(@PathParam("id") Long clusterId) {
+    public Response getClusterById(@PathParam("id") Long clusterId,
+                                   @javax.ws.rs.QueryParam("detail") Boolean detail) {
         Cluster result = catalogService.getCluster(clusterId);
         if (result != null) {
-            return WSUtils.respondEntity(result, OK);
+            return buildClusterGetResponse(result, detail);
         }
 
         throw EntityNotFoundException.byId(clusterId.toString());
@@ -89,10 +103,11 @@ public class ClusterCatalogResource {
     @GET
     @Path("/clusters/name/{clusterName}")
     @Timed
-    public Response getClusterByName(@PathParam("clusterName") String clusterName) {
+    public Response getClusterByName(@PathParam("clusterName") String clusterName,
+                                     @javax.ws.rs.QueryParam("detail") Boolean detail) {
         Cluster result = catalogService.getClusterByName(clusterName);
         if (result != null) {
-            return WSUtils.respondEntity(result, OK);
+            return buildClusterGetResponse(result, detail);
         }
 
         throw EntityNotFoundException.byName(clusterName);
@@ -168,20 +183,7 @@ public class ClusterCatalogResource {
 
             injectStormViewAsStormConfiguration(clusterId, discoverer);
 
-            ClusterServicesImportResult result = new ClusterServicesImportResult(retrievedCluster);
-
-            for (Service service : catalogService.listServices(clusterId)) {
-                Collection<ServiceConfiguration> configurations = catalogService.listServiceConfigurations(service.getId());
-                Collection<Component> components = catalogService.listComponents(service.getId());
-
-                ClusterServicesImportResult.ServiceWithComponents s = new ClusterServicesImportResult.ServiceWithComponents(
-                    service);
-                s.setComponents(components);
-                s.setConfigurations(configurations);
-
-                result.addService(s);
-            }
-
+            ClusterServicesImportResult result = buildClusterServicesImportResult(retrievedCluster);
             return WSUtils.respondEntity(result, OK);
         } finally {
             if (acquired) {
@@ -190,6 +192,43 @@ public class ClusterCatalogResource {
                 }
             }
         }
+    }
+
+    private Response buildClustersGetResponse(Collection<Cluster> clusters, Boolean detail) {
+        if (BooleanUtils.isTrue(detail)) {
+            List<ClusterServicesImportResult> clustersWithServices = clusters.stream()
+                    .map(c -> buildClusterServicesImportResult(c))
+                    .collect(Collectors.toList());
+            return WSUtils.respondEntities(clustersWithServices, OK);
+        } else {
+            return WSUtils.respondEntities(clusters, OK);
+        }
+    }
+
+    private Response buildClusterGetResponse(Cluster cluster, Boolean detail) {
+        if (BooleanUtils.isTrue(detail)) {
+            ClusterServicesImportResult clusterWithServices = buildClusterServicesImportResult(cluster);
+            return WSUtils.respondEntity(clusterWithServices, OK);
+        } else {
+            return WSUtils.respondEntity(cluster, OK);
+        }
+    }
+
+    private ClusterServicesImportResult buildClusterServicesImportResult(Cluster cluster) {
+        ClusterServicesImportResult result = new ClusterServicesImportResult(cluster);
+
+        for (Service service : catalogService.listServices(cluster.getId())) {
+            Collection<ServiceConfiguration> configurations = catalogService.listServiceConfigurations(service.getId());
+            Collection<Component> components = catalogService.listComponents(service.getId());
+
+            ClusterServicesImportResult.ServiceWithComponents s =
+                new ClusterServicesImportResult.ServiceWithComponents(service);
+            s.setComponents(components);
+            s.setConfigurations(configurations);
+
+            result.addService(s);
+        }
+        return result;
     }
 
     private void injectStormViewAsStormConfiguration(Long clusterId, AmbariServiceNodeDiscoverer discoverer) {
