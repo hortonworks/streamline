@@ -13,6 +13,7 @@ import org.glassfish.jersey.client.ClientConfig;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,9 +24,11 @@ import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.ST
 import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.STATS_JSON_EXECUTED_TUPLES;
 import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.STATS_JSON_FAILED_TUPLES;
 import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.STATS_JSON_PROCESS_LATENCY;
+import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.STATS_JSON_TOPOLOGY_ERROR_COUNT;
 import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.STATS_JSON_TRANSFERRED_TUPLES;
 import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.TOPOLOGY_JSON_BOLTS;
 import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.TOPOLOGY_JSON_BOLT_ID;
+import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.TOPOLOGY_JSON_COMPONENT_ERRORS;
 import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.TOPOLOGY_JSON_EXECUTORS_TOTAL;
 import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.TOPOLOGY_JSON_SPOUTS;
 import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.TOPOLOGY_JSON_SPOUT_ID;
@@ -79,6 +82,8 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
         Long executorTotal = ((Number) responseMap.get(TOPOLOGY_JSON_EXECUTORS_TOTAL)).longValue();
 
         List<Map<String, ?>> topologyStatsList = (List<Map<String, ?>>) responseMap.get(TOPOLOGY_JSON_STATS);
+        List<Map<String, ?>> spouts = (List<Map<String,?>>) responseMap.get(TOPOLOGY_JSON_SPOUTS);
+        List<Map<String, ?>> bolts = (List<Map<String,?>>) responseMap.get(TOPOLOGY_JSON_BOLTS);
 
         // pick smallest time window
         Map<String, ?> topologyStatsMap = null;
@@ -101,15 +106,45 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
         // Storm specific metrics
         Long emittedTotal = getLongValueOrDefault(topologyStatsMap, STATS_JSON_EMITTED_TUPLES, 0L);
         Long transferred = getLongValueOrDefault(topologyStatsMap, STATS_JSON_TRANSFERRED_TUPLES, 0L);
+        Long errorsTotal = getErrorCountFromAllComponents(topologyId, spouts, bolts);
 
         Map<String, Number> miscMetrics = new HashMap<>();
         miscMetrics.put(TOPOLOGY_JSON_WORKERS_TOTAL, workerTotal);
         miscMetrics.put(TOPOLOGY_JSON_EXECUTORS_TOTAL, executorTotal);
         miscMetrics.put(STATS_JSON_EMITTED_TUPLES, emittedTotal);
         miscMetrics.put(STATS_JSON_TRANSFERRED_TUPLES, transferred);
+        miscMetrics.put(STATS_JSON_TOPOLOGY_ERROR_COUNT, errorsTotal);
 
         return new TopologyMetric(FRAMEWORK, topology.getName(), status, uptimeSeconds, window,
             acked * 1.0 / window, completeLatency, failedRecords, miscMetrics);
+    }
+
+    private long getErrorCountFromAllComponents(String topologyId, List<Map<String, ?>> spouts, List<Map<String, ?>> bolts) {
+        long totalErrorCount = 0;
+
+        List<String> componentIds = new ArrayList<>();
+
+        if (spouts != null) {
+            for (Map<String, ?> spout : spouts) {
+                componentIds.add((String) spout.get(TOPOLOGY_JSON_SPOUT_ID));
+            }
+        }
+
+        if (bolts != null) {
+            for (Map<String, ?> bolt : bolts) {
+                componentIds.add((String) bolt.get(TOPOLOGY_JSON_BOLT_ID));
+            }
+        }
+
+        for (String componentId : componentIds) {
+            Map componentStats = client.getComponent(topologyId, componentId);
+            List<?> componentErrors = (List<?>) componentStats.get(TOPOLOGY_JSON_COMPONENT_ERRORS);
+            if (componentErrors != null && !componentErrors.isEmpty()) {
+                totalErrorCount += componentErrors.size();
+            }
+        }
+
+        return totalErrorCount;
     }
 
     /**
@@ -226,6 +261,7 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
     }
 
     private String getComponentNameInStreamline(String componentNameInStorm) {
-        return componentNameInStorm.substring(componentNameInStorm.indexOf('-'));
+        // removes (ID + '-')
+        return componentNameInStorm.substring(componentNameInStorm.indexOf('-') + 1);
     }
 }
