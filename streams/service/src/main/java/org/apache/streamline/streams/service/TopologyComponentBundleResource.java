@@ -26,6 +26,10 @@ import org.apache.streamline.streams.catalog.processor.CustomProcessorInfo;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.catalog.topology.TopologyComponentBundle;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.streamline.streams.layout.exception.ComponentConfigException;
+import org.apache.streamline.streams.service.exception.request.BadRequestException;
+import org.apache.streamline.streams.service.exception.request.CustomProcessorOnlyException;
+import org.apache.streamline.streams.service.exception.request.EntityNotFoundException;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.slf4j.Logger;
@@ -51,6 +55,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.BAD_REQUEST_PARAM_MISSING;
 import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
@@ -92,16 +97,13 @@ public class TopologyComponentBundleResource {
     @Path("/componentbundles")
     @Timed
     public Response listTopologyComponentBundleTypes () {
-        try {
-            Collection<TopologyComponentBundle.TopologyComponentType>
-                    topologyComponents = catalogService.listTopologyComponentBundleTypes();
-            if (topologyComponents != null) {
-                return WSUtils.respond(topologyComponents, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        Collection<TopologyComponentBundle.TopologyComponentType>
+                topologyComponents = catalogService.listTopologyComponentBundleTypes();
+        if (topologyComponents != null) {
+            return WSUtils.respondEntities(topologyComponents, OK);
         }
-        return WSUtils.respond(Collections.emptyList(), NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER);
+
+        throw EntityNotFoundException.byFilter("");
     }
 
     /**
@@ -115,19 +117,16 @@ public class TopologyComponentBundleResource {
     @Timed
     public Response listTopologyComponentBundlesForTypeWithFilter (@PathParam ("component") TopologyComponentBundle.TopologyComponentType componentType,
                                                                    @Context UriInfo uriInfo) {
-        List<QueryParam> queryParams = new ArrayList<QueryParam>();
-        try {
-            MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
-            queryParams = WSUtils.buildQueryParameters(params);
-            Collection<TopologyComponentBundle> topologyComponentBundles = catalogService
-                    .listTopologyComponentBundlesForTypeWithFilter(componentType, queryParams);
-            if (topologyComponentBundles != null) {
-                return WSUtils.respond(topologyComponentBundles, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        List<QueryParam> queryParams;
+        MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
+        queryParams = WSUtils.buildQueryParameters(params);
+        Collection<TopologyComponentBundle> topologyComponentBundles = catalogService
+                .listTopologyComponentBundlesForTypeWithFilter(componentType, queryParams);
+        if (topologyComponentBundles != null) {
+            return WSUtils.respondEntities(topologyComponentBundles, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, queryParams.toString());
+
+        throw EntityNotFoundException.byFilter(queryParams.toString());
     }
 
     /**
@@ -142,16 +141,12 @@ public class TopologyComponentBundleResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTopologyComponentBundleById (@PathParam("component") TopologyComponentBundle.TopologyComponentType componentType, @PathParam ("id")
     Long id) {
-        try {
-            TopologyComponentBundle result = catalogService
-                    .getTopologyComponentBundle(id);
-            if (result != null) {
-                return WSUtils.respond(result, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        TopologyComponentBundle result = catalogService.getTopologyComponentBundle(id);
+        if (result != null) {
+            return WSUtils.respondEntity(result, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, id.toString());
+
+        throw EntityNotFoundException.byId(id.toString());
     }
 
     /**
@@ -163,7 +158,7 @@ public class TopologyComponentBundleResource {
     @POST
     @Path("/componentbundles/{component}")
     @Timed
-    public Response addTopologyComponentBundle (@PathParam("component") TopologyComponentBundle.TopologyComponentType componentType, FormDataMultiPart form) {
+    public Response addTopologyComponentBundle (@PathParam("component") TopologyComponentBundle.TopologyComponentType componentType, FormDataMultiPart form) throws IOException, ComponentConfigException {
         InputStream bundleJar = null;
         try {
             String bundleJsonString = this.getFormDataFromMultiPartRequestAs(String.class, form,
@@ -171,25 +166,22 @@ public class TopologyComponentBundleResource {
             TopologyComponentBundle topologyComponentBundle = new ObjectMapper().readValue(bundleJsonString, TopologyComponentBundle.class);
             if (topologyComponentBundle == null) {
                 LOG.debug(TOPOLOGY_COMPONENT_BUNDLE_PARAM_NAME + " is missing or invalid");
-                return WSUtils.respond(BAD_REQUEST, BAD_REQUEST_PARAM_MISSING, TOPOLOGY_COMPONENT_BUNDLE_PARAM_NAME);
+                throw BadRequestException.missingParameter(TOPOLOGY_COMPONENT_BUNDLE_PARAM_NAME);
             }
             if (!topologyComponentBundle.getBuiltin()) {
                 bundleJar = this.getFormDataFromMultiPartRequestAs(InputStream.class, form, BUNDLE_JAR_FILE_PARAM_NAME);
                 if (bundleJar == null) {
                     LOG.debug(BUNDLE_JAR_FILE_PARAM_NAME + " is missing or invalid");
-                    return WSUtils.respond(BAD_REQUEST, BAD_REQUEST_PARAM_MISSING, BUNDLE_JAR_FILE_PARAM_NAME);
+                    throw BadRequestException.missingParameter(BUNDLE_JAR_FILE_PARAM_NAME);
                 }
             }
-            Response response = validateTopologyBundle(topologyComponentBundle);
-            if (response != null) {
-                return response;
-            }
+            validateTopologyBundle(topologyComponentBundle);
             topologyComponentBundle.setType(componentType);
             TopologyComponentBundle createdBundle = catalogService.addTopologyComponentBundle(topologyComponentBundle, bundleJar);
-            return WSUtils.respond(createdBundle, CREATED, SUCCESS);
+            return WSUtils.respondEntity(createdBundle, CREATED);
         } catch (Exception e) {
             LOG.debug("Error occured while adding topology component bundle", e);
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, e.getMessage());
+            throw e;
         } finally {
             try {
                 if (bundleJar != null) {
@@ -212,32 +204,29 @@ public class TopologyComponentBundleResource {
     @Timed
     public Response addOrUpdateTopologyComponentBundle (@PathParam("component")
                                                         TopologyComponentBundle.TopologyComponentType componentType, @PathParam("id") Long id,
-                                                        FormDataMultiPart form) {
+                                                        FormDataMultiPart form) throws IOException, ComponentConfigException {
         InputStream bundleJar = null;
         try {
             String bundleJsonString = this.getFormDataFromMultiPartRequestAs(String.class, form, TOPOLOGY_COMPONENT_BUNDLE_PARAM_NAME);
             TopologyComponentBundle topologyComponentBundle = new ObjectMapper().readValue(bundleJsonString, TopologyComponentBundle.class);
             if (topologyComponentBundle == null) {
                 LOG.debug(TOPOLOGY_COMPONENT_BUNDLE_PARAM_NAME + " is missing or invalid");
-                return WSUtils.respond(BAD_REQUEST, BAD_REQUEST_PARAM_MISSING, TOPOLOGY_COMPONENT_BUNDLE_PARAM_NAME);
+                throw BadRequestException.missingParameter(TOPOLOGY_COMPONENT_BUNDLE_PARAM_NAME);
             }
             if (!topologyComponentBundle.getBuiltin()) {
                 bundleJar = this.getFormDataFromMultiPartRequestAs(InputStream.class, form, BUNDLE_JAR_FILE_PARAM_NAME);
                 if (bundleJar == null) {
                     LOG.debug(BUNDLE_JAR_FILE_PARAM_NAME + " is missing or invalid");
-                    return WSUtils.respond(BAD_REQUEST, BAD_REQUEST_PARAM_MISSING, BUNDLE_JAR_FILE_PARAM_NAME);
+                    throw BadRequestException.missingParameter(BUNDLE_JAR_FILE_PARAM_NAME);
                 }
             }
-            Response response = validateTopologyBundle(topologyComponentBundle);
-            if (response != null) {
-                return response;
-            }
+            validateTopologyBundle(topologyComponentBundle);
             topologyComponentBundle.setType(componentType);
             TopologyComponentBundle updatedBundle = catalogService.addOrUpdateTopologyComponentBundle(id, topologyComponentBundle, bundleJar);
-            return WSUtils.respond(updatedBundle, OK, SUCCESS);
+            return WSUtils.respondEntity(updatedBundle, OK);
         } catch (Exception e) {
             LOG.debug("Error occured while updating topology component bundle", e);
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, e.getMessage());
+            throw e;
         } finally {
             try {
                 if (bundleJar != null) {
@@ -258,17 +247,13 @@ public class TopologyComponentBundleResource {
     @Path("/componentbundles/{component}/{id}")
     @Timed
     public Response removeTopologyComponentBundle (@PathParam("component") TopologyComponentBundle.TopologyComponentType componentType, @PathParam ("id")
-    Long id) {
-        try {
-            TopologyComponentBundle removedTopologyComponentBundle = catalogService.removeTopologyComponentBundle(id);
-            if (removedTopologyComponentBundle != null) {
-                return WSUtils.respond(removedTopologyComponentBundle, OK, SUCCESS);
-            } else {
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, id.toString());
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+    Long id) throws IOException {
+        TopologyComponentBundle removedTopologyComponentBundle = catalogService.removeTopologyComponentBundle(id);
+        if (removedTopologyComponentBundle != null) {
+            return WSUtils.respondEntity(removedTopologyComponentBundle, OK);
         }
+
+        throw EntityNotFoundException.byId(id.toString());
     }
 
     @Timed
@@ -276,21 +261,17 @@ public class TopologyComponentBundleResource {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @Path("/componentbundles/{processor}/custom/{fileName}")
     public Response downloadCustomProcessorFile (@PathParam("processor") TopologyComponentBundle.TopologyComponentType componentType, @PathParam
-            ("fileName") String fileName) {
-        try {
-            if (!TopologyComponentBundle.TopologyComponentType.PROCESSOR.equals(componentType)) {
-                return WSUtils.respond(NOT_FOUND, CUSTOM_PROCESSOR_ONLY);
-            }
-            final InputStream inputStream = catalogService.getFileFromJarStorage(fileName);
-            if (inputStream != null) {
-                StreamingOutput streamOutput = WSUtils.wrapWithStreamingOutput(inputStream);
-                return Response.ok(streamOutput).build();
-            }
-        } catch (Exception ex) {
-            LOG.debug(ex.getMessage(), ex);
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+            ("fileName") String fileName) throws IOException {
+        if (!TopologyComponentBundle.TopologyComponentType.PROCESSOR.equals(componentType)) {
+            throw new CustomProcessorOnlyException();
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, fileName);
+        final InputStream inputStream = catalogService.getFileFromJarStorage(fileName);
+        if (inputStream != null) {
+            StreamingOutput streamOutput = WSUtils.wrapWithStreamingOutput(inputStream);
+            return Response.ok(streamOutput).build();
+        }
+
+        throw EntityNotFoundException.byId(fileName);
     }
 
     /**
@@ -299,32 +280,28 @@ public class TopologyComponentBundleResource {
     @GET
     @Path("/componentbundles/{processor}/custom")
     @Timed
-    public Response listCustomProcessorsWithFilters (@PathParam("processor") TopologyComponentBundle.TopologyComponentType componentType, @Context UriInfo uriInfo) {
+    public Response listCustomProcessorsWithFilters (@PathParam("processor") TopologyComponentBundle.TopologyComponentType componentType, @Context UriInfo uriInfo) throws IOException {
         if (!TopologyComponentBundle.TopologyComponentType.PROCESSOR.equals(componentType)) {
-            return WSUtils.respond(NOT_FOUND, CUSTOM_PROCESSOR_ONLY);
+            throw new CustomProcessorOnlyException();
         }
         List<QueryParam> queryParams;
-        try {
-            MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
-            queryParams = WSUtils.buildQueryParameters(params);
-            Collection<CustomProcessorInfo> customProcessorInfos = catalogService.listCustomProcessorsFromBundleWithFilter(queryParams);
-            if (customProcessorInfos != null) {
-                return WSUtils.respond(customProcessorInfos, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            LOG.debug(ex.getMessage(), ex);
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
+        queryParams = WSUtils.buildQueryParameters(params);
+        Collection<CustomProcessorInfo> customProcessorInfos = catalogService.listCustomProcessorsFromBundleWithFilter(queryParams);
+        if (customProcessorInfos != null) {
+            return WSUtils.respondEntities(customProcessorInfos, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, queryParams.toString());
+
+        throw EntityNotFoundException.byFilter(queryParams.toString());
     }
 
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/componentbundles/{processor}/custom")
     @Timed
-    public Response addCustomProcessor (@PathParam("processor") TopologyComponentBundle.TopologyComponentType componentType, FormDataMultiPart form) {
+    public Response addCustomProcessor (@PathParam("processor") TopologyComponentBundle.TopologyComponentType componentType, FormDataMultiPart form) throws IOException, ComponentConfigException {
         if (!TopologyComponentBundle.TopologyComponentType.PROCESSOR.equals(componentType)) {
-            return  WSUtils.respond(NOT_FOUND, CUSTOM_PROCESSOR_ONLY);
+            throw new CustomProcessorOnlyException();
         }
         InputStream jarFile = null;
         try {
@@ -333,14 +310,14 @@ public class TopologyComponentBundleResource {
             String missingParam = (jarFile == null ? JAR_FILE_PARAM_NAME : (customProcessorInfoStr == null ? CP_INFO_PARAM_NAME : null));
             if (missingParam != null) {
                 LOG.debug(missingParam + " is missing or invalid while adding custom processor");
-                return WSUtils.respond(BAD_REQUEST, BAD_REQUEST_PARAM_MISSING, missingParam);
+                throw BadRequestException.missingParameter(missingParam);
             }
             CustomProcessorInfo customProcessorInfo = new ObjectMapper().readValue(customProcessorInfoStr, CustomProcessorInfo.class);
             CustomProcessorInfo createdCustomProcessor = catalogService.addCustomProcessorInfoAsBundle(customProcessorInfo, jarFile);
-            return WSUtils.respond(createdCustomProcessor, CREATED, SUCCESS);
+            return WSUtils.respondEntity(createdCustomProcessor, CREATED);
         } catch (Exception e) {
             LOG.debug("Exception thrown while trying to add a custom processor", e);
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, e.getMessage());
+            throw e;
         } finally {
             try {
                 jarFile.close();
@@ -354,9 +331,10 @@ public class TopologyComponentBundleResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/componentbundles/{processor}/custom")
     @Timed
-    public Response updateCustomProcessor (@PathParam("processor") TopologyComponentBundle.TopologyComponentType componentType, FormDataMultiPart form) {
+    public Response updateCustomProcessor (@PathParam("processor") TopologyComponentBundle.TopologyComponentType componentType, FormDataMultiPart form)
+            throws IOException, ComponentConfigException {
         if (!TopologyComponentBundle.TopologyComponentType.PROCESSOR.equals(componentType)) {
-            return WSUtils.respond(NOT_FOUND, CUSTOM_PROCESSOR_ONLY);
+            throw new CustomProcessorOnlyException();
         }
         InputStream jarFile = null;
         try {
@@ -365,14 +343,14 @@ public class TopologyComponentBundleResource {
             String missingParam = (jarFile == null ? JAR_FILE_PARAM_NAME : (customProcessorInfoStr == null ? CP_INFO_PARAM_NAME : null));
             if (missingParam != null) {
                 LOG.debug(missingParam + " is missing or invalid while adding/updating custom processor");
-                return WSUtils.respond(BAD_REQUEST, BAD_REQUEST_PARAM_MISSING, missingParam);
+                throw BadRequestException.missingParameter(missingParam);
             }
             CustomProcessorInfo customProcessorInfo = new ObjectMapper().readValue(customProcessorInfoStr, CustomProcessorInfo.class);
             CustomProcessorInfo updatedCustomProcessor = catalogService.updateCustomProcessorInfoAsBundle(customProcessorInfo, jarFile);
-            return WSUtils.respond(updatedCustomProcessor, OK, SUCCESS);
+            return WSUtils.respondEntity(updatedCustomProcessor, OK);
         } catch (Exception e) {
             LOG.debug("Exception thrown while trying to add/update a custom processor", e);
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, e.getMessage());
+            throw e;
         } finally {
             try {
                 jarFile.close();
@@ -386,45 +364,39 @@ public class TopologyComponentBundleResource {
     @Path("/componentbundles/{processor}/custom/{name}")
     @Timed
     public Response removeCustomProcessorInfo (@PathParam("processor") TopologyComponentBundle.TopologyComponentType componentType, @PathParam ("name") String
-            name) {
+            name) throws IOException {
         if (!TopologyComponentBundle.TopologyComponentType.PROCESSOR.equals(componentType)) {
-            return WSUtils.respond(NOT_FOUND, CUSTOM_PROCESSOR_ONLY);
+            throw new CustomProcessorOnlyException();
         }
-        try {
-            CustomProcessorInfo removedCustomProcessorInfo = catalogService.removeCustomProcessorInfoAsBundle(name);
-            if (removedCustomProcessorInfo != null) {
-                return WSUtils.respond(removedCustomProcessorInfo, OK, SUCCESS);
-            } else {
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, name);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        CustomProcessorInfo removedCustomProcessorInfo = catalogService.removeCustomProcessorInfoAsBundle(name);
+        if (removedCustomProcessorInfo != null) {
+            return WSUtils.respondEntity(removedCustomProcessorInfo, OK);
         }
+
+        throw EntityNotFoundException.byName(name);
     }
 
-    private Response validateTopologyBundle (TopologyComponentBundle topologyComponentBundle) {
-        Response response = null;
+    private void validateTopologyBundle (TopologyComponentBundle topologyComponentBundle) {
+        Optional<String> missingParam = Optional.empty();
         if (StringUtils.isEmpty(topologyComponentBundle.getName())) {
-            response = WSUtils.respond(BAD_REQUEST,
-                    BAD_REQUEST_PARAM_MISSING, TopologyComponentBundle.NAME);
+            missingParam = Optional.of(TopologyComponentBundle.NAME);
         }
         if (StringUtils.isEmpty(topologyComponentBundle.getStreamingEngine())) {
-            response = WSUtils.respond(BAD_REQUEST,
-                    BAD_REQUEST_PARAM_MISSING, TopologyComponentBundle.STREAMING_ENGINE);
+            missingParam = Optional.of(TopologyComponentBundle.STREAMING_ENGINE);
         }
         if (StringUtils.isEmpty(topologyComponentBundle.getSubType())) {
-            response = WSUtils.respond(BAD_REQUEST,
-                    BAD_REQUEST_PARAM_MISSING, TopologyComponentBundle.SUB_TYPE);
+            missingParam = Optional.of(TopologyComponentBundle.SUB_TYPE);
         }
         if (StringUtils.isEmpty(topologyComponentBundle.getTransformationClass())) {
-            response = WSUtils.respond(BAD_REQUEST,
-                    BAD_REQUEST_PARAM_MISSING, TopologyComponentBundle.TRANSFORMATION_CLASS);
+            missingParam = Optional.of(TopologyComponentBundle.TRANSFORMATION_CLASS);
         }
         if (topologyComponentBundle.getTopologyComponentUISpecification() == null) {
-            response = WSUtils.respond(BAD_REQUEST,
-                    BAD_REQUEST_PARAM_MISSING, TopologyComponentBundle.UI_SPECIFICATION);
+            missingParam = Optional.of(TopologyComponentBundle.UI_SPECIFICATION);
         }
-        return response;
+
+        if (missingParam.isPresent()) {
+            throw BadRequestException.missingParameter(missingParam.get());
+        }
     }
 
     private <T> T getFormDataFromMultiPartRequestAs (Class<T> clazz, FormDataMultiPart form, String paramName) {

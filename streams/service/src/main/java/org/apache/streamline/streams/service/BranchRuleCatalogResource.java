@@ -7,6 +7,7 @@ import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.BranchRuleInfo;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.layout.component.rule.Rule;
+import org.apache.streamline.streams.service.exception.request.EntityNotFoundException;
 
 import java.util.Collection;
 import java.util.List;
@@ -75,7 +76,7 @@ public class BranchRuleCatalogResource {
     @GET
     @Path("/topologies/{topologyId}/branchrules")
     @Timed
-    public Response listTopologyBranchRules(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) {
+    public Response listTopologyBranchRules(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) throws Exception {
         Long currentVersionId = catalogService.getCurrentVersionId(topologyId);
         return listTopologyBranchRules(
                 buildTopologyIdAndVersionIdAwareQueryParams(topologyId, currentVersionId, uriInfo));
@@ -86,21 +87,18 @@ public class BranchRuleCatalogResource {
     @Timed
     public Response listTopologySourcesForVersion(@PathParam("topologyId") Long topologyId,
                                                   @PathParam("versionId") Long versionId,
-                                                  @Context UriInfo uriInfo) {
+                                                  @Context UriInfo uriInfo) throws Exception {
         return listTopologyBranchRules(
                 buildTopologyIdAndVersionIdAwareQueryParams(topologyId, versionId, uriInfo));
     }
 
-    private Response listTopologyBranchRules(List<QueryParam> queryParams) {
-        try {
-            Collection<BranchRuleInfo> branchRuleInfos = catalogService.listBranchRules(queryParams);
-            if (branchRuleInfos != null) {
-                return WSUtils.respond(branchRuleInfos, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+    private Response listTopologyBranchRules(List<QueryParam> queryParams) throws Exception {
+        Collection<BranchRuleInfo> branchRuleInfos = catalogService.listBranchRules(queryParams);
+        if (branchRuleInfos != null) {
+            return WSUtils.respondEntities(branchRuleInfos, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, queryParams.toString());
+
+        throw EntityNotFoundException.byFilter(queryParams.toString());
     }
 
     /**
@@ -125,16 +123,13 @@ public class BranchRuleCatalogResource {
     @GET
     @Path("/topologies/{topologyId}/branchrules/{id}")
     @Timed
-    public Response getTopologyBranchRuleById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId) {
-        try {
-            BranchRuleInfo brRuleInfo = catalogService.getBranchRule(topologyId, ruleId);
-            if (brRuleInfo != null && brRuleInfo.getTopologyId().equals(topologyId)) {
-                return WSUtils.respond(brRuleInfo, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+    public Response getTopologyBranchRuleById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId) throws Exception {
+        BranchRuleInfo brRuleInfo = catalogService.getBranchRule(topologyId, ruleId);
+        if (brRuleInfo != null && brRuleInfo.getTopologyId().equals(topologyId)) {
+            return WSUtils.respondEntity(brRuleInfo, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, buildMessageForCompositeId(topologyId, ruleId));
+
+        throw EntityNotFoundException.byId(buildMessageForCompositeId(topologyId, ruleId));
     }
 
     @GET
@@ -142,16 +137,13 @@ public class BranchRuleCatalogResource {
     @Timed
     public Response getTopologyBranchRuleByIdAndVersion(@PathParam("topologyId") Long topologyId,
                                                         @PathParam("id") Long ruleId,
-                                                        @PathParam("versionId") Long versionId) {
-        try {
-            BranchRuleInfo branchRuleInfo = catalogService.getBranchRule(topologyId, ruleId, versionId);
-            if (branchRuleInfo != null) {
-                return WSUtils.respond(branchRuleInfo, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+                                                        @PathParam("versionId") Long versionId) throws Exception {
+        BranchRuleInfo branchRuleInfo = catalogService.getBranchRule(topologyId, ruleId, versionId);
+        if (branchRuleInfo != null) {
+            return WSUtils.respondEntity(branchRuleInfo, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_VERSION_NOT_FOUND, buildMessageForCompositeId(topologyId, ruleId),
+
+        throw EntityNotFoundException.byVersion(buildMessageForCompositeId(topologyId, ruleId),
                 versionId.toString());
     }
 
@@ -196,13 +188,9 @@ public class BranchRuleCatalogResource {
     @POST
     @Path("/topologies/{topologyId}/branchrules")
     @Timed
-    public Response addTopologyRule(@PathParam("topologyId") Long topologyId, BranchRuleInfo brRuleInfo) {
-        try {
-            BranchRuleInfo createdBranchRuleInfo = catalogService.addBranchRule(topologyId, brRuleInfo);
-            return WSUtils.respond(createdBranchRuleInfo, CREATED, SUCCESS);
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
-        }
+    public Response addTopologyRule(@PathParam("topologyId") Long topologyId, BranchRuleInfo brRuleInfo) throws Exception {
+        BranchRuleInfo createdBranchRuleInfo = catalogService.addBranchRule(topologyId, brRuleInfo);
+        return WSUtils.respondEntity(createdBranchRuleInfo, CREATED);
     }
 
     /**
@@ -237,13 +225,9 @@ public class BranchRuleCatalogResource {
     @Path("/topologies/{topologyId}/branchrules/{id}")
     @Timed
     public Response addOrUpdateRule(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId,
-                                    BranchRuleInfo brRuleInfo) {
-        try {
-            BranchRuleInfo createdRuleInfo = catalogService.addOrUpdateBranchRule(topologyId, ruleId, brRuleInfo);
-            return WSUtils.respond(createdRuleInfo, CREATED, SUCCESS);
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
-        }
+                                    BranchRuleInfo brRuleInfo) throws Exception {
+        BranchRuleInfo createdRuleInfo = catalogService.addOrUpdateBranchRule(topologyId, ruleId, brRuleInfo);
+        return WSUtils.respondEntity(createdRuleInfo, CREATED);
     }
 
 
@@ -270,17 +254,13 @@ public class BranchRuleCatalogResource {
     @DELETE
     @Path("/topologies/{topologyId}/branchrules/{id}")
     @Timed
-    public Response removeRule(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId) {
-        try {
-            BranchRuleInfo ruleInfo = catalogService.removeBranchRule(topologyId, ruleId);
-            if (ruleInfo != null) {
-                return WSUtils.respond(ruleInfo, OK, SUCCESS);
-            } else {
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, ruleId.toString());
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+    public Response removeRule(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId) throws Exception {
+        BranchRuleInfo ruleInfo = catalogService.removeBranchRule(topologyId, ruleId);
+        if (ruleInfo != null) {
+            return WSUtils.respondEntity(ruleInfo, OK);
         }
+
+        throw EntityNotFoundException.byId(buildMessageForCompositeId(topologyId, ruleId));
     }
 
     private String buildMessageForCompositeId(Long topologyId, Long ruleId) {

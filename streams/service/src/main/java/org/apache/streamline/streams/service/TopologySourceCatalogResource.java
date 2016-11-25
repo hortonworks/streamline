@@ -23,6 +23,7 @@ import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.TopologySource;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import org.apache.streamline.streams.service.exception.request.EntityNotFoundException;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -38,15 +39,9 @@ import javax.ws.rs.core.UriInfo;
 import java.util.Collection;
 import java.util.List;
 
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_VERSION_NOT_FOUND;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static org.apache.streamline.common.util.WSUtils.buildTopologyIdAndVersionIdAwareQueryParams;
 
 /**
@@ -92,7 +87,7 @@ public class TopologySourceCatalogResource {
     @GET
     @Path("/topologies/{topologyId}/sources")
     @Timed
-    public Response listTopologySources(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) {
+    public Response listTopologySources(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) throws Exception {
         Long currentVersionId = catalogService.getCurrentVersionId(topologyId);
         return listTopologySources(
                 buildTopologyIdAndVersionIdAwareQueryParams(topologyId, currentVersionId, uriInfo));
@@ -103,21 +98,18 @@ public class TopologySourceCatalogResource {
     @Timed
     public Response listTopologySourcesForVersion(@PathParam("topologyId") Long topologyId,
                                                   @PathParam("versionId") Long versionId,
-                                                  @Context UriInfo uriInfo) {
+                                                  @Context UriInfo uriInfo) throws Exception {
         return listTopologySources(
                 buildTopologyIdAndVersionIdAwareQueryParams(topologyId, versionId, uriInfo));
     }
 
-    private Response listTopologySources(List<QueryParam> queryParams) {
-        try {
-            Collection<TopologySource> sources = catalogService.listTopologySources(queryParams);
-            if (sources != null) {
-                return WSUtils.respond(sources, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+    private Response listTopologySources(List<QueryParam> queryParams) throws Exception {
+        Collection<TopologySource> sources = catalogService.listTopologySources(queryParams);
+        if (sources != null) {
+            return WSUtils.respondEntities(sources, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, queryParams.toString());
+
+        throw EntityNotFoundException.byFilter(queryParams.toString());
     }
 
     /**
@@ -150,15 +142,12 @@ public class TopologySourceCatalogResource {
     @Path("/topologies/{topologyId}/sources/{id}")
     @Timed
     public Response getTopologySourceById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sourceId) {
-        try {
-            TopologySource source = catalogService.getTopologySource(topologyId, sourceId);
-            if (source != null) {
-                return WSUtils.respond(source, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        TopologySource source = catalogService.getTopologySource(topologyId, sourceId);
+        if (source != null) {
+            return WSUtils.respondEntity(source, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, buildMessageForCompositeId(topologyId, sourceId));
+
+        throw EntityNotFoundException.byId(buildMessageForCompositeId(topologyId, sourceId));
     }
 
     @GET
@@ -167,15 +156,12 @@ public class TopologySourceCatalogResource {
     public Response getTopologySourceByIdAndVersion(@PathParam("topologyId") Long topologyId,
                                                     @PathParam("id") Long sourceId,
                                                     @PathParam("versionId") Long versionId) {
-        try {
-            TopologySource source = catalogService.getTopologySource(topologyId, sourceId, versionId);
-            if (source != null) {
-                return WSUtils.respond(source, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        TopologySource source = catalogService.getTopologySource(topologyId, sourceId, versionId);
+        if (source != null) {
+            return WSUtils.respondEntity(source, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_VERSION_NOT_FOUND, buildMessageForCompositeId(topologyId, sourceId),
+
+        throw EntityNotFoundException.byVersion(buildMessageForCompositeId(topologyId, sourceId),
                 versionId.toString());
     }
 
@@ -227,12 +213,8 @@ public class TopologySourceCatalogResource {
     @Path("/topologies/{topologyId}/sources")
     @Timed
     public Response addTopologySource(@PathParam("topologyId") Long topologyId, TopologySource topologySource) {
-        try {
-            TopologySource createdSource = catalogService.addTopologySource(topologyId, topologySource);
-            return WSUtils.respond(createdSource, CREATED, SUCCESS);
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
-        }
+        TopologySource createdSource = catalogService.addTopologySource(topologyId, topologySource);
+        return WSUtils.respondEntity(createdSource, CREATED);
     }
 
     /**
@@ -280,12 +262,8 @@ public class TopologySourceCatalogResource {
     @Timed
     public Response addOrUpdateTopologySource(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sourceId,
                                               TopologySource topologySource) {
-        try {
-            TopologySource createdTopologySource = catalogService.addOrUpdateTopologySource(topologyId, sourceId, topologySource);
-            return WSUtils.respond(createdTopologySource, CREATED, SUCCESS);
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
-        }
+        TopologySource createdTopologySource = catalogService.addOrUpdateTopologySource(topologyId, sourceId, topologySource);
+        return WSUtils.respondEntity(createdTopologySource, CREATED);
     }
 
     /**
@@ -318,16 +296,12 @@ public class TopologySourceCatalogResource {
     @Path("/topologies/{topologyId}/sources/{id}")
     @Timed
     public Response removeTopologySource(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sourceId) {
-        try {
-            TopologySource topologySource = catalogService.removeTopologySource(topologyId, sourceId);
-            if (topologySource != null) {
-                return WSUtils.respond(topologySource, OK, SUCCESS);
-            } else {
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, sourceId.toString());
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        TopologySource topologySource = catalogService.removeTopologySource(topologyId, sourceId);
+        if (topologySource != null) {
+            return WSUtils.respondEntity(topologySource, OK);
         }
+
+        throw EntityNotFoundException.byId(buildMessageForCompositeId(topologyId, sourceId));
     }
 
     private String buildMessageForCompositeId(Long topologyId, Long sourceId) {

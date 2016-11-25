@@ -1,10 +1,10 @@
 package org.apache.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
-import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.TopologyEditorMetadata;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import org.apache.streamline.streams.service.exception.request.EntityNotFoundException;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -16,18 +16,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Collection;
-import java.util.List;
 
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_VERSION_NOT_FOUND;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
-import static org.apache.streamline.common.util.WSUtils.buildTopologyIdAndVersionIdAwareQueryParams;
+import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 
 @Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
@@ -42,86 +34,65 @@ public class TopologyEditorMetadataResource {
     @Path("/system/topologyeditormetadata")
     @Timed
     public Response listTopologyEditorMetadata () {
-        try {
-            Collection<TopologyEditorMetadata> result = catalogService.listTopologyEditorMetadata();
-            if (result != null) {
-                return WSUtils.respond(result, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        Collection<TopologyEditorMetadata> result = catalogService.listTopologyEditorMetadata();
+        if (result != null) {
+            return WSUtils.respondEntities(result, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND);
+
+        throw EntityNotFoundException.byFilter("");
     }
 
     @GET
     @Path("/system/topologyeditormetadata/{id}")
     @Timed
     public Response getTopologyEditorMetadataByTopologyId (@PathParam("id") Long topologyId) {
-        try {
-            TopologyEditorMetadata result = catalogService.getTopologyEditorMetadata(topologyId);
-            if (result != null) {
-                return WSUtils.respond(result, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        TopologyEditorMetadata result = catalogService.getTopologyEditorMetadata(topologyId);
+        if (result != null) {
+            return WSUtils.respondEntity(result, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, topologyId.toString());
+
+        throw EntityNotFoundException.byId(topologyId.toString());
     }
 
     @GET
     @Path("/system/versions/{versionId}/topologyeditormetadata/{id}/")
     @Timed
     public Response getTopologyEditorMetadataByTopologyIdAndVersionId(@PathParam("versionId") Long versionId,
-            @PathParam("id") Long topologyId) {
-        try {
-            TopologyEditorMetadata result = catalogService.getTopologyEditorMetadata(topologyId, versionId);
-            if (result != null) {
-                return WSUtils.respond(result, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+                                                                      @PathParam("id") Long topologyId) {
+        TopologyEditorMetadata result = catalogService.getTopologyEditorMetadata(topologyId, versionId);
+        if (result != null) {
+            return WSUtils.respondEntity(result, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_VERSION_NOT_FOUND, topologyId.toString(), versionId.toString());
+
+        throw EntityNotFoundException.byVersion(topologyId.toString(), versionId.toString());
     }
 
     @POST
     @Path("/system/topologyeditormetadata")
     @Timed
     public Response addTopologyEditorMetadata (TopologyEditorMetadata topologyEditorMetadata) {
-        try {
-            TopologyEditorMetadata addedTopologyEditorMetadata = catalogService.addTopologyEditorMetadata(
-                    topologyEditorMetadata.getTopologyId(), topologyEditorMetadata);
-            return WSUtils.respond(addedTopologyEditorMetadata, CREATED, SUCCESS);
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
-        }
+        TopologyEditorMetadata addedTopologyEditorMetadata = catalogService.addTopologyEditorMetadata(
+                topologyEditorMetadata.getTopologyId(), topologyEditorMetadata);
+        return WSUtils.respondEntity(addedTopologyEditorMetadata, CREATED);
     }
 
     @DELETE
     @Path("/system/topologyeditormetadata/{id}")
     @Timed
     public Response removeTopologyEditorMetadata (@PathParam("id") Long topologyId) {
-        try {
-            TopologyEditorMetadata removedTopologyEditorMetadata = catalogService.removeTopologyEditorMetadata(topologyId);
-            if (removedTopologyEditorMetadata != null) {
-                return WSUtils.respond(removedTopologyEditorMetadata, OK, SUCCESS);
-            } else {
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, topologyId.toString());
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        TopologyEditorMetadata removedTopologyEditorMetadata = catalogService.removeTopologyEditorMetadata(topologyId);
+        if (removedTopologyEditorMetadata != null) {
+            return WSUtils.respondEntity(removedTopologyEditorMetadata, OK);
         }
+
+        throw EntityNotFoundException.byId(topologyId.toString());
     }
 
     @PUT
     @Path("/system/topologyeditormetadata/{id}")
     @Timed
     public Response addOrUpdateTopologyEditorMetadata (@PathParam("id") Long topologyId, TopologyEditorMetadata topologyEditorMetadata) {
-        try {
-            TopologyEditorMetadata newTopologyEditorMetadata = catalogService.addOrUpdateTopologyEditorMetadata(topologyId, topologyEditorMetadata);
-            return WSUtils.respond(topologyEditorMetadata, OK, SUCCESS);
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
-        }
+        TopologyEditorMetadata newTopologyEditorMetadata = catalogService.addOrUpdateTopologyEditorMetadata(topologyId, topologyEditorMetadata);
+        return WSUtils.respondEntity(topologyEditorMetadata, OK);
     }
 }

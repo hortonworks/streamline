@@ -6,6 +6,7 @@ import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.RuleInfo;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.layout.component.rule.Rule;
+import org.apache.streamline.streams.service.exception.request.EntityNotFoundException;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -21,14 +22,7 @@ import javax.ws.rs.core.UriInfo;
 import java.util.Collection;
 import java.util.List;
 
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_VERSION_NOT_FOUND;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.streamline.common.util.WSUtils.buildTopologyIdAndVersionIdAwareQueryParams;
 
@@ -79,7 +73,7 @@ public class RuleCatalogResource {
     @GET
     @Path("/topologies/{topologyId}/rules")
     @Timed
-    public Response listTopologyRules(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) {
+    public Response listTopologyRules(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) throws Exception {
         Long currentVersionId = catalogService.getCurrentVersionId(topologyId);
         return listTopologyRules(
                 buildTopologyIdAndVersionIdAwareQueryParams(topologyId, currentVersionId, uriInfo));
@@ -90,21 +84,18 @@ public class RuleCatalogResource {
     @Timed
     public Response listTopologySourcesForVersion(@PathParam("topologyId") Long topologyId,
                                                   @PathParam("versionId") Long versionId,
-                                                  @Context UriInfo uriInfo) {
+                                                  @Context UriInfo uriInfo) throws Exception {
         return listTopologyRules(
                 buildTopologyIdAndVersionIdAwareQueryParams(topologyId, versionId, uriInfo));
     }
 
-    private Response listTopologyRules(List<QueryParam> queryParams) {
-        try {
-            Collection<RuleInfo> ruleInfos = catalogService.listRules(queryParams);
-            if (ruleInfos != null) {
-                return WSUtils.respond(ruleInfos, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+    private Response listTopologyRules(List<QueryParam> queryParams) throws Exception {
+        Collection<RuleInfo> ruleInfos = catalogService.listRules(queryParams);
+        if (ruleInfos != null) {
+            return WSUtils.respondEntities(ruleInfos, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, queryParams.toString());
+
+        throw EntityNotFoundException.byFilter(queryParams.toString());
     }
 
 
@@ -132,16 +123,13 @@ public class RuleCatalogResource {
     @GET
     @Path("/topologies/{topologyId}/rules/{id}")
     @Timed
-    public Response getTopologyRuleById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId) {
-        try {
-            RuleInfo ruleInfo = catalogService.getRule(topologyId, ruleId);
-            if (ruleInfo != null) {
-                return WSUtils.respond(ruleInfo, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+    public Response getTopologyRuleById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId) throws Exception {
+        RuleInfo ruleInfo = catalogService.getRule(topologyId, ruleId);
+        if (ruleInfo != null) {
+            return WSUtils.respondEntity(ruleInfo, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, buildMessageForCompositeId(topologyId, ruleId));
+
+        throw EntityNotFoundException.byId(buildMessageForCompositeId(topologyId, ruleId));
     }
 
     @GET
@@ -149,16 +137,13 @@ public class RuleCatalogResource {
     @Timed
     public Response getTopologyRuleByIdAndVersion(@PathParam("topologyId") Long topologyId,
                                                   @PathParam("id") Long ruleId,
-                                                  @PathParam("versionId") Long versionId) {
-        try {
-            RuleInfo ruleInfo = catalogService.getRule(topologyId, ruleId, versionId);
-            if (ruleInfo != null) {
-                return WSUtils.respond(ruleInfo, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+                                                  @PathParam("versionId") Long versionId) throws Exception {
+        RuleInfo ruleInfo = catalogService.getRule(topologyId, ruleId, versionId);
+        if (ruleInfo != null) {
+            return WSUtils.respondEntity(ruleInfo, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_VERSION_NOT_FOUND, buildMessageForCompositeId(topologyId, ruleId),
+
+        throw EntityNotFoundException.byVersion(buildMessageForCompositeId(topologyId, ruleId),
                 versionId.toString());
     }
 
@@ -203,13 +188,10 @@ public class RuleCatalogResource {
     @POST
     @Path("/topologies/{topologyId}/rules")
     @Timed
-    public Response addTopologyRule(@PathParam("topologyId") Long topologyId, RuleInfo ruleInfo) {
-        try {
-            RuleInfo createdRuleInfo = catalogService.addRule(topologyId, ruleInfo);
-            return WSUtils.respond(createdRuleInfo, CREATED, SUCCESS);
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
-        }
+    public Response addTopologyRule(@PathParam("topologyId") Long topologyId, RuleInfo ruleInfo)
+        throws Exception {
+        RuleInfo createdRuleInfo = catalogService.addRule(topologyId, ruleInfo);
+        return WSUtils.respondEntity(createdRuleInfo, CREATED);
     }
 
     /**
@@ -245,13 +227,9 @@ public class RuleCatalogResource {
     @Path("/topologies/{topologyId}/rules/{id}")
     @Timed
     public Response addOrUpdateRule(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId,
-                                                 RuleInfo ruleInfo) {
-        try {
-            RuleInfo createdRuleInfo = catalogService.addOrUpdateRule(topologyId, ruleId, ruleInfo);
-            return WSUtils.respond(createdRuleInfo, CREATED, SUCCESS);
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
-        }
+                                                 RuleInfo ruleInfo) throws Exception {
+        RuleInfo createdRuleInfo = catalogService.addOrUpdateRule(topologyId, ruleId, ruleInfo);
+        return WSUtils.respondEntity(createdRuleInfo, CREATED);
     }
 
 
@@ -279,17 +257,13 @@ public class RuleCatalogResource {
     @DELETE
     @Path("/topologies/{topologyId}/rules/{id}")
     @Timed
-    public Response removeRule(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId) {
-        try {
-            RuleInfo ruleInfo = catalogService.removeRule(topologyId, ruleId);
-            if (ruleInfo != null) {
-                return WSUtils.respond(ruleInfo, OK, SUCCESS);
-            } else {
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, ruleId.toString());
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+    public Response removeRule(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId) throws Exception {
+        RuleInfo ruleInfo = catalogService.removeRule(topologyId, ruleId);
+        if (ruleInfo != null) {
+            return WSUtils.respondEntity(ruleInfo, OK);
         }
+
+        throw EntityNotFoundException.byId(ruleId.toString());
     }
 
     private String buildMessageForCompositeId(Long topologyId, Long ruleId) {

@@ -15,12 +15,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_BY_NAME_NOT_FOUND;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 
 @Path("/v1/catalog")
@@ -35,10 +29,11 @@ public class HiveMetadataResource {
     @GET
     @Path("/clusters/name/{clusterName}/services/hive/databases")
     @Timed
-    public Response getDatabasesByClusterName(@PathParam("clusterName") String clusterName) {
+    public Response getDatabasesByClusterName(@PathParam("clusterName") String clusterName)
+        throws Exception {
         final Cluster cluster = catalogService.getClusterByName(clusterName);
         if (cluster == null) {
-            return WSUtils.respond(NOT_FOUND, ENTITY_BY_NAME_NOT_FOUND, "cluster name " + clusterName);
+            throw org.apache.streamline.streams.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
         }
         return getDatabasesByClusterId(cluster.getId());
     }
@@ -46,23 +41,23 @@ public class HiveMetadataResource {
     @GET
     @Path("/clusters/{clusterId}/services/hive/databases")
     @Timed
-    public Response getDatabasesByClusterId(@PathParam("clusterId") Long clusterId) {
+    public Response getDatabasesByClusterId(@PathParam("clusterId") Long clusterId)
+        throws Exception {
         try(final HiveMetadataService hiveMetadataService = HiveMetadataService.newInstance(catalogService, clusterId)) {
-            return WSUtils.respond(hiveMetadataService.getHiveDatabases(), OK, SUCCESS);
+            return WSUtils.respondEntity(hiveMetadataService.getHiveDatabases(), OK);
         } catch (EntityNotFoundException ex) {
-            return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, ex.getMessage());
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+            throw org.apache.streamline.streams.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
         }
     }
 
     @GET
     @Path("/clusters/name/{clusterName}/services/hive/databases/{dbName}/tables")
     @Timed
-    public Response getDatabaseTablesByClusterName(@PathParam("clusterName") String clusterName, @PathParam("dbName") String dbName) {
+    public Response getDatabaseTablesByClusterName(@PathParam("clusterName") String clusterName, @PathParam("dbName") String dbName)
+        throws Exception {
         final Cluster cluster = catalogService.getClusterByName(clusterName);
         if (cluster == null) {
-            return WSUtils.respond(NOT_FOUND, ENTITY_BY_NAME_NOT_FOUND, "cluster name " + clusterName);
+            throw org.apache.streamline.streams.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
         }
         return getDatabaseTablesByClusterId(cluster.getId(), dbName);
     }
@@ -70,13 +65,12 @@ public class HiveMetadataResource {
     @GET
     @Path("/clusters/{clusterId}/services/hive/databases/{dbName}/tables")
     @Timed
-    public Response getDatabaseTablesByClusterId(@PathParam("clusterId") Long clusterId, @PathParam("dbName") String dbName) {
+    public Response getDatabaseTablesByClusterId(@PathParam("clusterId") Long clusterId, @PathParam("dbName") String dbName)
+        throws Exception {
         try(final HiveMetadataService hiveMetadataService = HiveMetadataService.newInstance(catalogService, clusterId)) {
-            return WSUtils.respond(hiveMetadataService.getHiveTables(dbName), OK, SUCCESS);
+            return WSUtils.respondEntity(hiveMetadataService.getHiveTables(dbName), OK);
         } catch (EntityNotFoundException ex) {
-            return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, ex.getMessage());
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+            throw org.apache.streamline.streams.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
         }
     }
 }

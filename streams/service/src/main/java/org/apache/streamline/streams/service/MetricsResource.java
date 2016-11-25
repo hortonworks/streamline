@@ -24,6 +24,8 @@ import org.apache.streamline.streams.catalog.Topology;
 import org.apache.streamline.streams.catalog.TopologyComponent;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
+import org.apache.streamline.streams.service.exception.request.BadRequestException;
+import org.apache.streamline.streams.service.exception.request.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,15 +36,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.util.Map;
 
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.BAD_REQUEST_PARAM_MISSING;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 
 /**
@@ -62,18 +58,14 @@ public class MetricsResource {
     @GET
     @Path("/topologies/{id}")
     @Timed
-    public Response getTopologyMetricsById(@PathParam("id") Long id) {
-        try {
-            Topology topology = catalogService.getTopology(id);
-            if (topology != null) {
-                Map<String, TopologyMetrics.ComponentMetric> topologyMetrics = catalogService.getTopologyMetrics(topology);
-                return WSUtils.respond(topologyMetrics, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            LOG.error("Got exception", ex);
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+    public Response getTopologyMetricsById(@PathParam("id") Long id) throws Exception {
+        Topology topology = catalogService.getTopology(id);
+        if (topology != null) {
+            Map<String, TopologyMetrics.ComponentMetric> topologyMetrics = catalogService.getTopologyMetrics(topology);
+            return WSUtils.respondEntity(topologyMetrics, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, id.toString());
+
+        throw EntityNotFoundException.byId(id.toString());
     }
 
     @GET
@@ -82,29 +74,19 @@ public class MetricsResource {
     public Response getCompleteLatency(@PathParam("id") Long id,
                                        @PathParam("topologyComponentId") Long topologyComponentId,
                                        @QueryParam("from") Long from,
-                                       @QueryParam("to") Long to) {
-        if (from == null) {
-            return WSUtils.respond(BAD_REQUEST, BAD_REQUEST_PARAM_MISSING, "from");
-        }
-        if (to == null) {
-            return WSUtils.respond(BAD_REQUEST, BAD_REQUEST_PARAM_MISSING, "to");
-        }
+                                       @QueryParam("to") Long to) throws Exception {
+        assertTimeRange(from, to);
 
-        try {
-            Topology topology = catalogService.getTopology(id);
-            TopologyComponent topologyComponent = catalogService.getTopologyComponent(id, topologyComponentId);
-            if (topology != null && topologyComponent != null) {
-                Map<Long, Double> metrics = catalogService.getCompleteLatency(topology, topologyComponent, from, to);
-                return WSUtils.respond(metrics, OK, SUCCESS);
-            } else if (topology == null) {
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, "Topology: " + id.toString());
-            } else {
-                // topologyComponent == null
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, "TopologyComponent: " + id.toString());
-            }
-        } catch (Exception ex) {
-            LOG.error("Got exception", ex);
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        Topology topology = catalogService.getTopology(id);
+        TopologyComponent topologyComponent = catalogService.getTopologyComponent(id, topologyComponentId);
+        if (topology != null && topologyComponent != null) {
+            Map<Long, Double> metrics = catalogService.getCompleteLatency(topology, topologyComponent, from, to);
+            return WSUtils.respondEntity(metrics, OK);
+        } else if (topology == null) {
+            throw EntityNotFoundException.byId("Topology: " + id.toString());
+        } else {
+            // topologyComponent == null
+            throw EntityNotFoundException.byId("TopologyComponent: " + id.toString());
         }
     }
 
@@ -114,29 +96,19 @@ public class MetricsResource {
     public Response getComponentStats(@PathParam("id") Long id,
                                       @PathParam("topologyComponentId") Long topologyComponentId,
                                       @QueryParam("from") Long from,
-                                      @QueryParam("to") Long to) {
-        if (from == null) {
-            return WSUtils.respond(BAD_REQUEST, BAD_REQUEST_PARAM_MISSING, "from");
-        }
-        if (to == null) {
-            return WSUtils.respond(BAD_REQUEST, BAD_REQUEST_PARAM_MISSING, "to");
-        }
+                                      @QueryParam("to") Long to) throws IOException {
+        assertTimeRange(from, to);
 
-        try {
-            Topology topology = catalogService.getTopology(id);
-            TopologyComponent topologyComponent = catalogService.getTopologyComponent(id, topologyComponentId);
-            if (topology != null && topologyComponent != null) {
-                Map<String, Map<Long, Double>> metrics = catalogService.getComponentStats(topology, topologyComponent, from, to);
-                return WSUtils.respond(metrics, OK, SUCCESS);
-            } else if (topology == null) {
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, "Topology: " + id.toString());
-            } else {
-                // topologyComponent == null
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, "TopologyComponent: " + id.toString());
-            }
-        } catch (Exception ex) {
-            LOG.error("Got exception", ex);
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        Topology topology = catalogService.getTopology(id);
+        TopologyComponent topologyComponent = catalogService.getTopologyComponent(id, topologyComponentId);
+        if (topology != null && topologyComponent != null) {
+            Map<String, Map<Long, Double>> metrics = catalogService.getComponentStats(topology, topologyComponent, from, to);
+            return WSUtils.respondEntity(metrics, OK);
+        } else if (topology == null) {
+            throw EntityNotFoundException.byId("Topology: " + id.toString());
+        } else {
+            // topologyComponent == null
+            throw EntityNotFoundException.byId("TopologyComponent: " + id.toString());
         }
     }
 
@@ -146,29 +118,19 @@ public class MetricsResource {
     public Response getKafkaTopicOffsets(@PathParam("id") Long id,
                                          @PathParam("topologyComponentId") Long topologyComponentId,
                                          @QueryParam("from") Long from,
-                                         @QueryParam("to") Long to) {
-        if (from == null) {
-            return WSUtils.respond(BAD_REQUEST, BAD_REQUEST_PARAM_MISSING, "from");
-        }
-        if (to == null) {
-            return WSUtils.respond(BAD_REQUEST, BAD_REQUEST_PARAM_MISSING, "to");
-        }
+                                         @QueryParam("to") Long to) throws IOException {
+        assertTimeRange(from, to);
 
-        try {
-            Topology topology = catalogService.getTopology(id);
-            TopologyComponent topologyComponent = catalogService.getTopologyComponent(id, topologyComponentId);
-            if (topology != null && topologyComponent != null) {
-                Map<String, Map<Long, Double>> metrics = catalogService.getKafkaTopicOffsets(topology, topologyComponent, from, to);
-                return WSUtils.respond(metrics, OK, SUCCESS);
-            } else if (topology == null) {
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, "Topology: " + id.toString());
-            } else {
-                // topologyComponent == null
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, "TopologyComponent: " + id.toString());
-            }
-        } catch (Exception ex) {
-            LOG.error("Got exception", ex);
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        Topology topology = catalogService.getTopology(id);
+        TopologyComponent topologyComponent = catalogService.getTopologyComponent(id, topologyComponentId);
+        if (topology != null && topologyComponent != null) {
+            Map<String, Map<Long, Double>> metrics = catalogService.getKafkaTopicOffsets(topology, topologyComponent, from, to);
+            return WSUtils.respondEntity(metrics, OK);
+        } else if (topology == null) {
+            throw EntityNotFoundException.byId("Topology: " + id.toString());
+        } else {
+            // topologyComponent == null
+            throw EntityNotFoundException.byId("TopologyComponent: " + id.toString());
         }
     }
 
@@ -180,21 +142,20 @@ public class MetricsResource {
                                @QueryParam("from") Long from,
                                @QueryParam("to") Long to) {
         if (metricName == null) {
-            return WSUtils.respond(BAD_REQUEST, BAD_REQUEST_PARAM_MISSING, "metricName");
+            throw BadRequestException.missingParameter("metricName");
         }
+        assertTimeRange(from, to);
+
+        Map<String, Map<Long, Double>> metrics = catalogService.getMetrics(metricName, parameters, from, to);
+        return WSUtils.respondEntity(metrics, OK);
+    }
+
+    private void assertTimeRange(@QueryParam("from") Long from, @QueryParam("to") Long to) {
         if (from == null) {
-            return WSUtils.respond(BAD_REQUEST, BAD_REQUEST_PARAM_MISSING, "from");
+            throw BadRequestException.missingParameter("from");
         }
         if (to == null) {
-            return WSUtils.respond(BAD_REQUEST, BAD_REQUEST_PARAM_MISSING, "to");
-        }
-
-        try {
-            Map<String, Map<Long, Double>> metrics = catalogService.getMetrics(metricName, parameters, from, to);
-            return WSUtils.respond(metrics, OK, SUCCESS);
-        } catch (Exception ex) {
-            LOG.error("Got exception", ex);
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+            throw BadRequestException.missingParameter("to");
         }
     }
 }

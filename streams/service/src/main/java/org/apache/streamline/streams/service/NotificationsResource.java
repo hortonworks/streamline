@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.notification.service;
+package org.apache.streamline.streams.service;
 
 /**
  * Created by aiyer on 10/4/15.
@@ -27,6 +27,8 @@ import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.notification.Notification;
+import org.apache.streamline.streams.notification.service.NotificationService;
+import org.apache.streamline.streams.service.exception.request.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,12 +46,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 
 /**
@@ -70,16 +66,12 @@ public class NotificationsResource {
     @Path("/notifications/{id}")
     @Timed
     public Response getNotificationById(@PathParam("id") String id) {
-        try {
-            Notification result = notificationService.getNotification(id);
-            if (result != null) {
-                return WSUtils.respond(result, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            LOG.error("Got exception", ex);
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        Notification result = notificationService.getNotification(id);
+        if (result != null) {
+            return WSUtils.respondEntity(result, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, id);
+
+        throw EntityNotFoundException.byId(id);
     }
 
     @GET
@@ -87,24 +79,19 @@ public class NotificationsResource {
     @Timed
     public Response listNotifications(@Context UriInfo uriInfo) {
         List<QueryParam> queryParams = new ArrayList<>();
-        try {
-            MultivaluedMap<String, String> uriInfoParams = uriInfo.getQueryParameters();
-            Collection<Notification> notifications = null;
-            if (!uriInfoParams.isEmpty()) {
-                queryParams = WSUtils.buildQueryParameters(uriInfoParams);
-            } else {
-                LOG.info("Query params empty, will use default criteria to return notifications.");
-            }
-            notifications = notificationService.findNotifications(queryParams);
-            if (notifications != null && !notifications.isEmpty()) {
-                return WSUtils.respond(notifications, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            LOG.error("Got exception", ex);
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        MultivaluedMap<String, String> uriInfoParams = uriInfo.getQueryParameters();
+        Collection<Notification> notifications = null;
+        if (!uriInfoParams.isEmpty()) {
+            queryParams = WSUtils.buildQueryParameters(uriInfoParams);
+        } else {
+            LOG.info("Query params empty, will use default criteria to return notifications.");
+        }
+        notifications = notificationService.findNotifications(queryParams);
+        if (notifications != null && !notifications.isEmpty()) {
+            return WSUtils.respondEntities(notifications, OK);
         }
 
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, queryParams.toString());
+        throw EntityNotFoundException.byFilter(queryParams.toString());
     }
 
     @PUT
@@ -112,29 +99,20 @@ public class NotificationsResource {
     @Timed
     public Response updateNotificationStatus(@PathParam("id") String notificationId,
                                              @PathParam("status") Notification.Status status) {
-        try {
-            Notification updateNotification = notificationService.updateNotificationStatus(notificationId, status);
-            return WSUtils.respond(updateNotification, OK, SUCCESS);
-        } catch (Exception ex) {
-            LOG.error("Got exception", ex);
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
-        }
+        Notification updateNotification = notificationService.updateNotificationStatus(notificationId, status);
+        return WSUtils.respondEntity(updateNotification, OK);
     }
 
     @GET
     @Path("/events/{id}")
     @Timed
     public Response getEventById(@PathParam("id") String id) {
-        try {
-            StreamlineEvent result = notificationService.getEvent(id);
-            if (result != null) {
-                return WSUtils.respond(result, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            LOG.error("Got exception", ex);
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        StreamlineEvent result = notificationService.getEvent(id);
+        if (result != null) {
+            return WSUtils.respondEntity(result, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, id);
+
+        throw EntityNotFoundException.byId(id);
     }
 
 }

@@ -19,10 +19,11 @@
 package org.apache.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.FileInfo;
 import org.apache.streamline.streams.catalog.service.CatalogService;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.streamline.streams.service.exception.request.EntityNotFoundException;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
@@ -47,12 +48,7 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.UUID;
 
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 
 /**
@@ -73,18 +69,14 @@ public class FileCatalogResource {
     @Path("/files")
     @Timed
     public Response listFiles(@Context UriInfo uriInfo) {
-        try {
-            Collection<FileInfo> files = null;
-            MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
-            if (params == null || params.isEmpty()) {
-                files = catalogService.listFiles();
-            } else {
-                files = catalogService.listFiles(WSUtils.buildQueryParameters(params));
-            }
-            return WSUtils.respond(files, OK, SUCCESS);
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        Collection<FileInfo> files = null;
+        MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
+        if (params == null || params.isEmpty()) {
+            files = catalogService.listFiles();
+        } else {
+            files = catalogService.listFiles(WSUtils.buildQueryParameters(params));
         }
+        return WSUtils.respondEntities(files, OK);
     }
 
     /**
@@ -115,16 +107,11 @@ public class FileCatalogResource {
     @Path("/files")
     public Response addFile(@FormDataParam("file") final InputStream inputStream,
                             @FormDataParam("file") final FormDataContentDisposition contentDispositionHeader,
-                            @FormDataParam("fileInfo") final FileInfo fileInfo) {
+                            @FormDataParam("fileInfo") final FileInfo fileInfo) throws IOException {
+        log.info("Received fileInfo: [{}]", fileInfo);
+        FileInfo updatedFile = addOrUpdateFile(inputStream, fileInfo);
 
-        try {
-            log.info("Received fileInfo: [{}]", fileInfo);
-            FileInfo updatedFile = addOrUpdateFile(inputStream, fileInfo);
-
-            return WSUtils.respond(updatedFile, CREATED, SUCCESS);
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
-        }
+        return WSUtils.respondEntity(updatedFile, CREATED);
     }
 
     protected String getFileStorageName(String fileName) {
@@ -143,26 +130,23 @@ public class FileCatalogResource {
     @Path("/files")
     public Response updateFile(@FormDataParam("file") final InputStream inputStream,
                                @FormDataParam("file") final FormDataContentDisposition contentDispositionHeader,
-                               @FormDataParam("fileInfo") final FileInfo fileInfo) {
-        try {
-            log.info("Received fileInfo: [{}]", fileInfo);
-            String oldFileStorageName = null;
-            final FileInfo existingFile = catalogService.getFile(fileInfo.getId());
-            if(existingFile != null) {
-                oldFileStorageName = existingFile.getStoredFileName();
-            }
-
-            final FileInfo updatedFile = addOrUpdateFile(inputStream, fileInfo);
-
-            if(oldFileStorageName != null) {
-                final boolean deleted = catalogService.deleteFileFromStorage(oldFileStorageName);
-                logDeletionMessage(oldFileStorageName, deleted);
-            }
-
-            return WSUtils.respond(updatedFile, CREATED, SUCCESS);
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+                               @FormDataParam("fileInfo") final FileInfo fileInfo)
+        throws IOException {
+        log.info("Received fileInfo: [{}]", fileInfo);
+        String oldFileStorageName = null;
+        final FileInfo existingFile = catalogService.getFile(fileInfo.getId());
+        if(existingFile != null) {
+            oldFileStorageName = existingFile.getStoredFileName();
         }
+
+        final FileInfo updatedFile = addOrUpdateFile(inputStream, fileInfo);
+
+        if(oldFileStorageName != null) {
+            final boolean deleted = catalogService.deleteFileFromStorage(oldFileStorageName);
+            logDeletionMessage(oldFileStorageName, deleted);
+        }
+
+        return WSUtils.respondEntity(updatedFile, CREATED);
     }
 
     protected FileInfo addOrUpdateFile(InputStream inputStream, FileInfo fileInfo) throws IOException {
@@ -179,16 +163,12 @@ public class FileCatalogResource {
     @Path("/files/{id}")
     @Timed
     public Response getFile(@PathParam("id") Long fileId) {
-        try {
-            FileInfo result = catalogService.getFile(fileId);
-            if (result != null) {
-                return WSUtils.respond(result, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        FileInfo result = catalogService.getFile(fileId);
+        if (result != null) {
+            return WSUtils.respondEntity(result, OK);
         }
 
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, fileId.toString());
+        throw EntityNotFoundException.byId(fileId.toString());
     }
 
     /**
@@ -199,22 +179,22 @@ public class FileCatalogResource {
     @DELETE
     @Path("/files/{id}")
     @Timed
-    public Response removeFile(@PathParam("id") Long fileId) {
+    public Response removeFile(@PathParam("id") Long fileId) throws IOException {
         try {
             FileInfo removedFile = catalogService.removeFile(fileId);
             log.info("Removed File entry is [{}]", removedFile);
             if (removedFile != null) {
                 boolean removed = catalogService.deleteFileFromStorage(removedFile.getStoredFileName());
                 logDeletionMessage(removedFile.getStoredFileName(), removed);
-                return WSUtils.respond(removedFile, OK, SUCCESS);
-            } else {
-                log.info("File entry with id [{}] is not found", fileId);
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, fileId.toString());
+                return WSUtils.respondEntity(removedFile, OK);
             }
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             log.error("Encountered error in removing file with id [{}]", fileId, ex);
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+            throw ex;
         }
+
+        log.info("File entry with id [{}] is not found", fileId);
+        throw EntityNotFoundException.byId(fileId.toString());
     }
 
     protected void logDeletionMessage(String removedFileName, boolean removed) {
@@ -230,18 +210,14 @@ public class FileCatalogResource {
     @GET
     @Produces({"application/octet-stream", "application/json"})
     @Path("/files/download/{fileId}")
-    public Response downloadFile(@PathParam("fileId") Long fileId) {
-        try {
-            FileInfo file = catalogService.getFile(fileId);
-            if (file != null) {
-                StreamingOutput streamOutput = WSUtils.wrapWithStreamingOutput(catalogService.downloadFileFromStorage(file.getStoredFileName()));
-                return Response.ok(streamOutput).build();
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+    public Response downloadFile(@PathParam("fileId") Long fileId) throws IOException {
+        FileInfo file = catalogService.getFile(fileId);
+        if (file != null) {
+            StreamingOutput streamOutput = WSUtils.wrapWithStreamingOutput(catalogService.downloadFileFromStorage(file.getStoredFileName()));
+            return Response.ok(streamOutput).build();
         }
 
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, fileId.toString());
+        throw EntityNotFoundException.byId(fileId.toString());
     }
 
 }
