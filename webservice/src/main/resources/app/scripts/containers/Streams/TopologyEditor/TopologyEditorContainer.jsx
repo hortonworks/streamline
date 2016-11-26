@@ -530,7 +530,7 @@ class TopologyEditorContainer extends Component {
               let obj = _.find(this.graphData.metaInfo.customNames, {uiname: this.node.uiname});
               obj.uiname = savedNode.name;
               this.node.uiname = savedNode.name;
-              TopologyUtils.updateMetaInfo(this.topologyId, this.node, this.graphData.metaInfo);
+              TopologyUtils.updateMetaInfo(this.topologyId, this.versionId, this.node, this.graphData.metaInfo);
             }
             this.node.uiname = savedNode.name;
             this.node.parallelismCount = savedNode.config.properties.parallelism || 1;

@@ -167,7 +167,7 @@ export default class CustomNodeForm extends Component {
 	}
 
 	handleSave(name){
-		let {topologyId, nodeType} = this.props;
+		let {topologyId, nodeType, versionId} = this.props;
 		let data = this.getData();
 		let nodeId = this.nodeData.id;
 		this.nodeData.config.properties = data;

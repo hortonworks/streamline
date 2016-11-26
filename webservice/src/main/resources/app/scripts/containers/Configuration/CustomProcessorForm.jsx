@@ -92,11 +92,17 @@ class CustomProcessorForm extends Component {
     this.props.router.setRouteLeaveHook(this.props.route, this.routerWillLeave)
   }
 
+  componentWillUnmount(){
+    this.unmounted = true;
+  }
+
   routerWillLeave = (nextLocation) => {
-    this.validateData();
-    this.nextRoutes = nextLocation.pathname;
-    (!this.navigateFlag) ? this.refs.leaveConfigProcessor.show() : ''
-    return this.navigateFlag;
+    if(!this.unmounted){
+      this.validateData();
+      this.nextRoutes = nextLocation.pathname;
+      (!this.navigateFlag) ? this.refs.leaveConfigProcessor.show() : ''
+      return this.navigateFlag;
+    }
   }
 
   confirmLeave(flag) {
