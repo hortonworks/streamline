@@ -27,6 +27,8 @@ export default class Header extends Component {
         break;
       case "4.3" : this.context.router.push("files")
         break;
+      case "4.4" : this.context.router.push("service-pool")
+        break;
        default : break;
     }
   }
@@ -65,6 +67,7 @@ export default class Header extends Component {
               <MenuItem onClick={this.clickHandler.bind(this,"4.1")}>Custom Processor</MenuItem>
               <MenuItem onClick={this.clickHandler.bind(this,"4.2")}>Tags</MenuItem>
               <MenuItem onClick={this.clickHandler.bind(this,"4.3")}>Files</MenuItem>
+              <MenuItem onClick={this.clickHandler.bind(this,"4.4")}>Service Pool</MenuItem>
             </NavDropdown>
             <NavDropdown id="userDropdown" eventKey="5" title={userIcon}>
               <MenuItem>Action</MenuItem>

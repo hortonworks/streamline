@@ -204,6 +204,17 @@ const scrollMe = function(element, to, duration) {
   }, 10);
 }
 
+const validateURL = function(url){
+  let URL = url.toLowerCase(),result= false;
+  const matchStr = "/api/v1/clusters/";
+  if(URL.indexOf(matchStr) !== -1){
+    let str = URL.substr((URL.indexOf(matchStr)+matchStr.length),URL.length);
+    if(/^[a-zA-Z0-9_.-]*$/.test(str)){
+        return result = true;
+    }
+  }
+  return result;
+}
 
 export default {
 	sortArray,
@@ -218,5 +229,6 @@ export default {
         secToMinConverter,
         genFields,
         kFormatter,
-        scrollMe
+        scrollMe,
+        validateURL
 };
