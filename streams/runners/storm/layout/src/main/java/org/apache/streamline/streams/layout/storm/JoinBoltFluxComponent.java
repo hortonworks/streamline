@@ -50,7 +50,8 @@ import java.util.Map;
     {"type" : "inner", "stream": "s4", "key":"k4", "with": "s2"}
   ],
   "outputKeys" : [ "k1", "k2" ],
-  "window" : {"windowLength" : {"class":".Window$Count", "count":100}, "slidingInterval":{"class":".Window$Count", "count":100}, "tsField":null, "lagMs":0}
+  "window" : {"windowLength" : {"class":".Window$Count", "count":100}, "slidingInterval":{"class":".Window$Count", "count":100}, "tsField":null, "lagMs":0},
+  "outputStream" : "joinedStream1"
 }
  */
 
@@ -99,11 +100,23 @@ public class JoinBoltFluxComponent extends AbstractFluxComponent {
                     throw new IllegalArgumentException("Unsupported Join type: " + joinType);
             }
         }
-        if( conf.containsKey("outputKeys") )
+        if( conf.containsKey("outputKeys") ) {
             result.add("selectStreamLine");
+        } else {
+            throw new IllegalArgumentException("'outputKeys' config is required and cannot be null");
+        }
 
-        if( conf.containsKey("window") )
+        if( conf.containsKey("window") ) {
             result.add("withWindowConfig");
+        } else {
+            throw new IllegalArgumentException("'window' config is required and cannot be null");
+        }
+
+        if( conf.containsKey("outputStream")) {
+            result.add("withOutputStream");
+        } else {
+            throw new IllegalArgumentException("'outputStream' is required and cannot be null");
+        }
 
         return result.toArray(new String[]{});
     }
@@ -129,6 +142,10 @@ public class JoinBoltFluxComponent extends AbstractFluxComponent {
         // window config
         String windowID = addWindowToComponents((Map<String, Object>) conf.get("window"));
         result.add( new Object[]{ getRefYaml(windowID) } );
+
+        // output stream name
+        String outputStreamName = conf.get("outputStream").toString();
+        result.add( new String[]{outputStreamName} );
 
         return result.toArray(new Object[]{});
     }

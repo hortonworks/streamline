@@ -41,8 +41,6 @@ public class WindowedQueryBolt extends StreamlineWindowedBolt {
 
     private OutputCollector collector;
 
-//    ArrayList<String> streamJoinOrder = new ArrayList<>(); // order in which to join the streams
-
     // Map[StreamName -> Map[Key -> List<Tuple>]  ]
     HashMap<String, HashMap<Object, ArrayList<Tuple> >> hashedInputs = new HashMap<>(); // holds remaining streams
 
@@ -51,6 +49,7 @@ public class WindowedQueryBolt extends StreamlineWindowedBolt {
     private String[][] outputKeys;  // specified via bolt.select() ... used in declaring Output fields
     private String[] dotSeparatedOutputKeyNames; // flattened (de nested) keyNames, used for naming output fields
     private boolean streamLineStyleProjection = false;
+    private String outputStreamName;
 
     // Use streamId, source component name OR field in tuple to distinguish incoming tuple streams
     public enum  StreamSelector { STREAM, SOURCE }
@@ -68,6 +67,16 @@ public class WindowedQueryBolt extends StreamlineWindowedBolt {
         streamSelectorType = type;
         joinCriteria.put(streamId, new JoinInfo(key) );
     }
+
+    /**
+     * Defines the name of the output stream
+     * Note: This method 'appears' Streamline specific. See if it needs to be migrated to Storm
+     */
+    public WindowedQueryBolt withOutputStream(String streamName) {
+        this.outputStreamName = streamName;
+        return this;
+    }
+
 
     /**
      * Performs inner Join.
@@ -94,7 +103,6 @@ public class WindowedQueryBolt extends StreamlineWindowedBolt {
     public WindowedQueryBolt leftJoin(String newStream, String key, String priorStream) {
         return join_common(newStream, key, priorStream, JoinType.LEFT);
     }
-
 
     private WindowedQueryBolt join_common(String newStream, String key, String priorStream, JoinType joinType) {
         hashedInputs.put(newStream, new HashMap<Object, ArrayList<Tuple>>());
@@ -133,7 +141,7 @@ public class WindowedQueryBolt extends StreamlineWindowedBolt {
      */
     public WindowedQueryBolt selectStreamLine(String commaSeparatedKeys) {
         streamLineStyleProjection = true;
-        //prefix each key with "streamline-event."
+        // prefix each key with "streamline-event."
         String prefixedKeyNames = convertToStreamLineKeys(commaSeparatedKeys);
         return select(prefixedKeyNames);
     }
@@ -147,7 +155,11 @@ public class WindowedQueryBolt extends StreamlineWindowedBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declare(new Fields(dotSeparatedOutputKeyNames));
+        if (outputStreamName!=null) { // StreamLine specific code
+            declarer.declareStream(outputStreamName, new Fields(StreamlineEvent.STREAMLINE_EVENT));
+        } else {
+            declarer.declare(new Fields(dotSeparatedOutputKeyNames));
+        }
     }
 
     @Override
@@ -175,7 +187,10 @@ public class WindowedQueryBolt extends StreamlineWindowedBolt {
         // 2) Emit results
         for (ResultRecord resultRecord : joinResult.getRecords()) {
             ArrayList<Object> outputTuple = resultRecord.getOutputFields();
-            collector.emit( outputTuple );
+            if ( outputStreamName==null )
+                collector.emit( outputTuple );
+            else
+                collector.emit( outputStreamName, outputTuple );
         }
     }
 

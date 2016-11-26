@@ -47,7 +47,8 @@ public class JoinBoltFluxComponentTest {
                 "    {\"type\" : \"inner\", \"stream\": \"s4\", \"key\":\"k4\", \"with\": \"s2\"}\n" +
                 "  ],\n" +
                 "  \"outputKeys\" : [ \"k1\", \"k2\" ],\n" +
-                "  \"window\" : {\"windowLength\":{\"class\":\".Window$Count\",\"count\":100},\"slidingInterval\":{\"class\":\".Window$Count\",\"count\":100},\"tsField\":null,\"lagMs\":0}\n" +
+                "  \"window\" : {\"windowLength\":{\"class\":\".Window$Count\",\"count\":100},\"slidingInterval\":{\"class\":\".Window$Count\",\"count\":100},\"tsField\":null,\"lagMs\":0},\n" +
+                "  \"outputStream\" : \"outStream1\"}\n" +
                 "}";
 
         Map<String, Object> props = new ObjectMapper().readValue(json, new TypeReference<HashMap<String, Object>>(){});
