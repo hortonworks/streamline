@@ -21,6 +21,13 @@
         ]
       },
       {
+        "uiName": "Output Stream",
+        "fieldName": "outputStream",
+        "isOptional": false,
+        "tooltip": "Name of output stream",
+        "type": "string"
+      },
+      {
         "uiName": "Parallelism",
         "fieldName": "parallelism",
         "isOptional": true,
