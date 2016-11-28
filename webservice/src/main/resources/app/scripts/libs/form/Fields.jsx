@@ -334,11 +334,9 @@ export class enumobject extends BaseField {
         return (
             <div className={className}>
                 <FormGroup>
-                    <Col componentClass={ControlLabel} sm={2}>{this.props.label}</Col>
-                    <Col sm={10}>
-                        {this.getField()}
-                        <p className="text-danger">{this.context.Form.state.Errors[this.props.valuePath]}</p>
-                    </Col>
+                    <label>{this.props.label}</label>
+                    {this.getField()}
+                    <p className="text-danger">{this.context.Form.state.Errors[this.props.valuePath]}</p>
                 </FormGroup>
                 {optionsFields.map((child, i) => {
                     return React.cloneElement(child, {

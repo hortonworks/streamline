@@ -262,6 +262,8 @@ class ServicePoolContainer extends Component{
             if (result[0].responseMessage !== undefined) {
                 FSReactToastr.error(
                     <CommonNotification flag="error" content={result[0].responseMessage}/>, '', toastOpt)
+                let obj = Object.assign(isLoading ,{idCheck : '',loader : false});
+                this.setState({isLoading : obj});
             } else {
                 const id = result[0].id;
                 this.importAmbariCluster(id);
@@ -427,7 +429,7 @@ class ServicePoolContainer extends Component{
           ? <div className="fullScreenLoader">
                   <div className="loading-img text-center loaderWrap">
                       <img src="styles/img/start-loader.gif" alt="loading" />
-                      <p>Be patience this process will take a while!</p>
+                      <p>Please be patient. This process will take a while!</p>
                   </div>
             </div>
           : ''

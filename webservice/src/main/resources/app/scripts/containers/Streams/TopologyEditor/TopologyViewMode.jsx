@@ -54,13 +54,22 @@ class TopologyViewMode extends Component{
           <div className="col-sm-4">
             <h4 className="page-heading">{topologyName}</h4>
           </div>
-          <div className="col-sm-4">
-            <div className="input-group">
-                <span className="input-group-addon">Last Change</span>
-                <input type="text" className="form-control" value={Utils.splitTimeStamp(timestamp)} disabled />
-            </div>
+          <div className="col-sm-6 text-right">
+              <div className="filter-label">
+                <span className="text-muted">Last Change:</span> <span style={{color:'#545454'}}>{Utils.splitTimeStamp(timestamp)}</span>
+              </div>
+              <div className="filter-label">
+                <span className="text-muted">Version:</span>
+                <DropdownButton bsStyle="link" title={versionName || ''} pullRight id="version-dropdown" onSelect={this.handleSelectVersion.bind(this)}>
+                {
+                  versionsArr.map((v, i)=>{
+                    return <MenuItem eventKey={i} key={i} data-version-id={v.id}>{v.name}</MenuItem>
+                  })
+                }
+              </DropdownButton>
+              </div>
           </div>
-          <div className="col-sm-2">
+          {/*<div className="col-sm-2">
             <InputGroup>
               <span className="input-group-addon">Version</span>
               <DropdownButton title={versionName || ''} pullRight id="version-dropdown" onSelect={this.handleSelectVersion.bind(this)}>
@@ -71,7 +80,7 @@ class TopologyViewMode extends Component{
                 }
               </DropdownButton>
             </InputGroup>
-          </div>
+          </div>*/}
           {versionName.toLowerCase() == 'current' ?
             <div className="col-sm-2 styleWindowDN text-right">
             {isAppRunning ?

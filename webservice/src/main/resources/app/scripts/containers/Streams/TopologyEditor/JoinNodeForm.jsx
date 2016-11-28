@@ -285,6 +285,11 @@ export default class JoinNodeForm extends Component {
                                 });
                                 joinStreams[0].streamOptions = joinStreamOptions;
                                 joinStreams[0].withOptions = [obj];
+                                if(joinStreams.length === 1) {
+                                    joinStreams[0].stream = joinStreamOptions[0].streamId;
+                                    joinStreams[0].with = obj.streamId;
+                                    joinStreams[0].keyOptions = joinStreamOptions[0].fields;
+                                }
                         }
                         this.setState({joinFromStreamName: obj.streamId, joinFromStreamKeys: obj.fields, joinFromStreamKey: '', joinStreams: joinStreams});
                 } else {
@@ -401,7 +406,8 @@ export default class JoinNodeForm extends Component {
                                 },
                                 tsField: null,
                                 lagMs: 0
-                        }
+                        },
+                        outputStream: this.streamData.streamId
                 };
                 let promiseArr = [];
 
@@ -458,9 +464,9 @@ export default class JoinNodeForm extends Component {
 		return (
 			<div>
                                 <form className="modal-form processor-modal-form form-overflow">
-                                        <div className="form-group">
-                                                <div className="row">
-                                                        <div className="col-sm-5">
+                                        <div className="form-group row">
+                                                        <div className="col-sm-3">
+                                                                <label>Select Stream</label>
                                                                 <Select
                                                                         value={joinFromStreamName}
                                                                         options={inputStreamsArr}
@@ -473,7 +479,8 @@ export default class JoinNodeForm extends Component {
                                                                         labelKey="streamId"
                                                                 />
 							</div>
-                                                        <div className="col-sm-5">
+                                                        <div className="col-sm-3">
+                                                                <label>Select Field {this.state.joinStreams.length ? (<strong>with</strong>) : ''}</label>
                                                                 <Select
                                                                         value={joinFromStreamKey}
                                                                         options={this.state.joinFromStreamKeys}
@@ -486,20 +493,29 @@ export default class JoinNodeForm extends Component {
                                                                         labelKey="name"
                                                                 />
 							</div>
-                                                        {this.state.joinStreams.length ?
-                                                        <div className="col-sm-2" style={{marginTop: '8px'}}>
-                                                                <label> With</label>
-                                                        </div>
-                                                        : ''
-                                                        }
-                                                </div>
                                         </div>
+                                        {this.state.joinStreams.length ?
+                                        <div className="form-group row no-margin">
+                                            <div className="col-sm-3">
+                                                <label>Join Type</label>
+                                            </div>
+                                            <div className="col-sm-3">
+                                                <label>Select Stream</label>
+                                            </div>
+                                            <div className="col-sm-3">
+                                                <label>Select Field</label>
+                                            </div>
+                                            <div className="col-sm-3">
+                                                <label><strong>With</strong> Stream</label>
+                                            </div>
+                                        </div>
+                                        : ''
+                                        }
                                         {
                                                 this.state.joinStreams.map((s, i)=>{
                                                         return (
-                                                                        <div className="form-group" key={i}>
-                                                                                <div className="row">
-                                                                                        <div className="col-sm-2">
+                                                                        <div className="form-group row" key={i}>
+                                                                                        <div className="col-sm-3">
                                                                                                 <Select
                                                                                                         value={s.type}
                                                                                                         options={joinTypes}
@@ -536,9 +552,6 @@ export default class JoinNodeForm extends Component {
                                                                                                         labelKey="name"
                                                                                                 />
                                                                                         </div>
-                                                                                        <div className="col-sm-1" style={{marginTop: '8px'}}>
-                                                                                                <label>With</label>
-                                                                                        </div>
                                                                                         <div className="col-sm-3">
                                                                                                 <Select
                                                                                                         value={s.with}
@@ -552,14 +565,14 @@ export default class JoinNodeForm extends Component {
                                                                                                         labelKey="streamId"
                                                                                                 />
                                                                                         </div>
-                                                                                </div>
                                                                         </div>
                                                         );
                                                 })
                                         }
                                         <div className="form-group">
-                                                <label>Window Interval Type <span className="text-danger">*</span></label>
-                                                <div>
+                                            <div className="row">
+                                                <div className="col-sm-6">
+                                                        <label>Window Interval Type <span className="text-danger">*</span></label>
                                                         <Select
                                                                 value={intervalType}
                                                                 options={intervalTypeArr}
@@ -569,55 +582,71 @@ export default class JoinNodeForm extends Component {
                                                                 clearable={false}
                                                         />
                                                 </div>
-                                        </div>
-                                        <div className="form-group">
-                                                        <label>Window Interval <span className="text-danger">*</span></label>
-                                                        <div className="row">
-                                                                <div className="col-sm-5">
-									<input
-                                                                                name="windowNum"
-                                                                                value={windowNum}
-										onChange={this.handleValueChange.bind(this)}
-										type="number"
-                                                                                className="form-control"
-                                                                                required={true}
-										disabled={!editMode}
-										min="0"
-										inputMode="numeric"
-									/>
-								</div>
-                                                                {intervalType === '.Window$Duration' ?
-                                                                        <div className="col-sm-5">
-                                                                        <Select
-                                                                                value={durationType}
-                                                                                options={durationTypeArr}
-                                                                                onChange={this.handleDurationChange.bind(this)}
-                                                                                required={true}
-										disabled={!editMode}
-                                                                                clearable={false}
-									/>
-                                                                        </div>
-                                                                : null}
-							</div>
+                                                <div className="col-sm-6">
+                                                    <label>Parallelism</label>
+                                                    <input
+                                                        name="parallelism"
+                                                        value={parallelism}
+                                                        onChange={this.handleValueChange.bind(this)}
+                                                        type="number"
+                                                        className="form-control"
+                                                        required={true}
+                                                        disabled={!editMode}
+                                                        min="0"
+                                                        inputMode="numeric"
+                                                    />
                                                 </div>
-                                                <div className="form-group">
-                                                        <label>Sliding Interval</label>
-                                                        <div className="row">
-                                                                <div className="col-sm-5">
-									<input
-                                                                                name="slidingNum"
-                                                                                value={slidingNum}
-										onChange={this.handleValueChange.bind(this)}
-										type="number"
-										className="form-control"
-                                                                                required={true}
-										disabled={!editMode}
-										min="0"
-										inputMode="numeric"
-                                                                />
-							</div>
+                                            </div>
+                                        </div>
+                                        <div className="form-group row">
+                                            <div className="col-sm-6">
+                                                <label>Window Interval <span className="text-danger">*</span></label>
+                                                    <div className="row">
+                                                        <div className="col-sm-6">
+                                                                                               <input
+                                                                name="windowNum"
+                                                                value={windowNum}
+                                                                onChange={this.handleValueChange.bind(this)}
+                                                                type="number"
+                                                                className="form-control"
+                                                                required={true}
+                                                                disabled={!editMode}
+                                                                min="0"
+                                                                inputMode="numeric"
+                                                                                               />
+                                                                                        </div>
                                                         {intervalType === '.Window$Duration' ?
-                                                        <div className="col-sm-5">
+                                                            <div className="col-sm-6">
+                                                                <Select
+                                                                    value={durationType}
+                                                                    options={durationTypeArr}
+                                                                    onChange={this.handleDurationChange.bind(this)}
+                                                                    required={true}
+                                                                    disabled={!editMode}
+                                                                    clearable={false}
+                                                                                                   />
+                                                            </div>
+                                                        : null}
+                                                    </div>
+                                            </div>
+                                            <div className="col-sm-6">
+                                                <label>Sliding Interval</label>
+                                                <div className="row">
+                                                    <div className="col-sm-6">
+                                                        <input
+                                                            name="slidingNum"
+                                                            value={slidingNum}
+                                                            onChange={this.handleValueChange.bind(this)}
+                                                            type="number"
+                                                            className="form-control"
+                                                            required={true}
+                                                            disabled={!editMode}
+                                                            min="0"
+                                                            inputMode="numeric"
+                                                        />
+                                                    </div>
+                                                    {intervalType === '.Window$Duration' ?
+                                                        <div className="col-sm-6">
                                                                 <Select
                                                                         value={slidingDurationType}
                                                                         options={durationTypeArr}
@@ -627,28 +656,14 @@ export default class JoinNodeForm extends Component {
                                                                         clearable={false}
                                                                 />
                                                         </div>
-                                                        : null}
+                                                    : null}
                                                 </div>
                                         </div>
-                                        <div className="form-group">
-                                                <label>Parallelism</label>
-                                                <div>
-                                                        <input
-                                                                name="parallelism"
-                                                                value={parallelism}
-                                                                onChange={this.handleValueChange.bind(this)}
-                                                                type="number"
-                                                                className="form-control"
-                                                                required={true}
-                                                                disabled={!editMode}
-                                                                min="0"
-                                                                inputMode="numeric"
-                                                        />
-                                                </div>
                                         </div>
                                         <div className="form-group">
                                                 <label>Output Fields <span className="text-danger">*</span></label>
-                                                <div className="">
+                                                <div className="row">
+                                                <div className="col-sm-12">
                                                         <Select
                                                                 className="menu-outer-top"
                                                                 value={outputKeys}
@@ -660,6 +675,7 @@ export default class JoinNodeForm extends Component {
                                                                 valueKey="name"
                                                                 labelKey="name"
                                                         />
+                                                </div>
                                                 </div>
                                         </div>
                                 </form>

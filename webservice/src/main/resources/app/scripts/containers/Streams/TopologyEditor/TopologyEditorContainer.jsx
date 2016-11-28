@@ -78,7 +78,7 @@ class EditorGraph extends Component{
   }
   render(){
     const actualHeight = (window.innerHeight - (this.props.viewMode ? 360 : 100))+'px';
-    const { versionsArr, connectDropTarget , viewMode, topologyId, versionId, graphData, getModalScope, setModalContent, getEdgeConfigModal} = this.props;
+    const { versionsArr, connectDropTarget , viewMode, topologyId, versionId, graphData, getModalScope, setModalContent, getEdgeConfigModal, setLastChange} = this.props;
     const { boxes, bundleArr } = this.state;
     return connectDropTarget(
       <div>
@@ -94,6 +94,7 @@ class EditorGraph extends Component{
             getModalScope={getModalScope}
             setModalContent={setModalContent}
             getEdgeConfigModal={getEdgeConfigModal}
+            setLastChange={setLastChange}
           />
           {state.showComponentNodeContainer ?
             <ComponentNodeContainer
@@ -125,6 +126,7 @@ class TopologyEditorContainer extends Component {
     this.topologyId = this.props.params.id;
     this.versionId = 1;
     this.versionName = '';
+    this.lastUpdatedTime = '';
     this.customProcessors = [];
     this.fetchData();
     this.nextRoutes = '';
@@ -193,6 +195,7 @@ class TopologyEditorContainer extends Component {
           if(!versionId){
             versionId = data.topology.versionId;
           }
+          this.lastUpdatedTime = new Date(result.topology.timestamp);
           promiseArr.push(TopologyREST.getSourceComponent());
           promiseArr.push(TopologyREST.getProcessorComponent());
           promiseArr.push(TopologyREST.getSinkComponent());
@@ -342,6 +345,7 @@ class TopologyEditorContainer extends Component {
             FSReactToastr.success(<strong>Configuration updated successfully</strong>)
             this.topologyName = config.name;
             this.topologyConfig = JSON.parse(config.config);
+            this.lastUpdatedTime = new Date(config.timestamp);
             this.setState({topologyName: this.topologyName});
           }
         });
@@ -418,6 +422,8 @@ class TopologyEditorContainer extends Component {
                   this.setState({topologyStatus: status});
                 } else {
                   FSReactToastr.success(<strong>Topology Deployed Successfully</strong>);
+                  this.lastUpdatedTime = new Date(topology.timestamp);
+                  this.setState({altFlag: !this.state.altFlag});
                   TopologyREST.getTopology(this.topologyId, this.versionId)
                     .then((result)=>{
                       let data = result;
@@ -453,6 +459,7 @@ class TopologyEditorContainer extends Component {
             document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay displayNone";
             this.setState({topologyStatus: status});
           } else {
+            this.lastUpdatedTime = new Date(topology.timestamp);
             FSReactToastr.success(<strong>Topology Killed Successfully</strong>);
             TopologyREST.getTopology(this.topologyId, this.versionId)
               .then((result)=>{
@@ -524,6 +531,8 @@ class TopologyEditorContainer extends Component {
             FSReactToastr.error(
               <CommonNotification flag="error" content={savedNode.responseMessage}/>, '', toastOpt)
           } else {
+            this.lastUpdatedTime = new Date(savedNode.timestamp);
+            this.setState({altFlag: !this.state.altFlag});
             this.node.isConfigured = true;
             let i = this.graphData.uinamesList.indexOf(this.node.uiname);
             if(this.node.currentType === 'Custom') {
@@ -598,6 +607,8 @@ class TopologyEditorContainer extends Component {
             newEdge.edgeId = edge.id;
             newEdge.streamGrouping = edge.streamGroupings[0];
             edges.push(newEdge);
+            this.lastUpdatedTime = new Date(edge.timestamp);
+            this.setState({altFlag: !this.state.altFlag});
             //call the callback to update the graph
             callback();
           });
@@ -644,6 +655,12 @@ class TopologyEditorContainer extends Component {
     this.refs.EditorGraph.refs.child.decoratedComponentInstance
       .refs.TopologyGraph.decoratedComponentInstance.zoomAction(zoomType);
   }
+  setLastChange(timestamp){
+    if(timestamp){
+      this.lastUpdatedTime = new Date(timestamp);
+    }
+    this.setState({altFlag: !this.state.altFlag});
+  }
   render() {
     let nodeType = this.node ? this.node.currentType : '';
     return (
@@ -653,6 +670,9 @@ class TopologyEditorContainer extends Component {
             <div className="graph-region">
               <div className="zoomWrap clearfix">
                 <div className="topology-editor-controls pull-right">
+                  <span className="version">
+                    Last Change: <span style={{color:'#545454'}}>{Utils.splitTimeStamp(this.lastUpdatedTime)}</span>
+                  </span>
                   <span className="version">
                     Version: <span style={{color:'#545454'}}>{this.versionName}</span>
                   </span>
@@ -679,6 +699,7 @@ class TopologyEditorContainer extends Component {
                 customProcessors={this.customProcessors}
                 bundleArr={this.state.bundleArr}
                 getEdgeConfigModal={this.showEdgeConfigModal.bind(this)}
+                setLastChange={this.setLastChange.bind(this)}
               />
               <div className="topology-footer">
                 {this.state.isAppRunning ?
@@ -703,8 +724,8 @@ class TopologyEditorContainer extends Component {
           <TopologyConfig ref="topologyConfig" topologyId={this.topologyId} versionId={this.versionId} data={this.topologyConfig} topologyName={this.state.topologyName} viewMode={this.viewMode}/>
         </Modal>
         <Modal ref="NodeModal"
-          bsSize={this.processorNode ? "large" : null}
-          dialogClassName="modal-fixed-height"
+          bsSize={this.processorNode && nodeType.toLowerCase() !== 'join' ? "large" : null}
+          dialogClassName={nodeType.toLowerCase() === 'join' ? "modal-xl" : "modal-fixed-height"}
           data-title={
             <Editable
               ref="editableNodeName"
