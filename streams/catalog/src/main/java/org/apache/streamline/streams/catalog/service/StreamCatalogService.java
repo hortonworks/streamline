@@ -23,6 +23,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -34,6 +36,13 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.streamline.common.ComponentTypes;
+import org.apache.streamline.streams.catalog.topology.component.TopologyCloneVisitor;
+import org.apache.streamline.streams.layout.component.StreamlineComponent;
+import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
+import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
+import org.apache.streamline.streams.layout.storm.FluxComponent;
+import org.apache.streamline.common.Config;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.common.util.FileStorage;
@@ -85,11 +94,12 @@ import org.apache.streamline.streams.layout.component.StreamlineProcessor;
 import org.apache.streamline.streams.layout.component.StreamlineSource;
 import org.apache.streamline.streams.layout.component.TopologyActions;
 import org.apache.streamline.streams.layout.component.TopologyDag;
+import org.apache.streamline.streams.catalog.topology.TopologyData;
+import org.apache.streamline.streams.catalog.topology.component.TopologyExportVisitor;
 import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
 import org.apache.streamline.streams.layout.component.TopologyLayout;
 import org.apache.streamline.streams.layout.component.rule.Rule;
 import org.apache.streamline.streams.layout.exception.ComponentConfigException;
-import org.apache.streamline.streams.layout.storm.FluxComponent;
 import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
 import org.apache.streamline.streams.rule.UDAF;
 import org.apache.streamline.streams.rule.UDAF2;
@@ -105,17 +115,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Matcher;
 
 import static java.util.stream.Collectors.toList;
@@ -907,6 +907,219 @@ public class StreamCatalogService {
                 throw new IllegalStateException("Topology does not contain a processor or a source with an outgoing edge");
             }
         }
+    }
+    public String exportTopology(Topology topology) throws Exception {
+        Preconditions.checkNotNull(topology);
+
+        TopologyData topologyData = new TopologyData();
+        TopologyExportVisitor exportVisitor = new TopologyExportVisitor(topology.getId(), topologyData, this);
+
+        topologyData.setName(topology.getName());
+        topologyData.setConfig(topology.getConfig());
+
+        TopologyDag topologyDag = topology.getTopologyDag();
+        if (topologyDag != null) {
+            topologyDag.traverse(exportVisitor);
+        }
+        topologyData.setMetadata(getTopologyEditorMetadata(topology.getId()));
+
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(topologyData);
+    }
+
+    public Topology importTopology(TopologyData topologyData) throws Exception {
+        Preconditions.checkNotNull(topologyData);
+
+        Topology newTopology = new Topology();
+        newTopology.setName(topologyData.getTopologyName());
+        newTopology.setConfig(topologyData.getConfig());
+        addTopology(newTopology);
+
+        List<TopologySource> topologySources = topologyData.getSources();
+        Map<Long, Long> idMapping = new HashMap<>();
+        Map<Long, Long> ruleIdMapping = new HashMap<>();
+        Map<Long, Long> windowIdMapping = new HashMap<>();
+        Map<Long, Long> branchRuleIdMapping = new HashMap<>();
+        Map<Long, Long> addedStreams = new HashMap<>();
+
+        for (TopologySource topologySource : topologySources) {
+            List<Long> topologySourceOutputStreamIds = new ArrayList<>();
+            for (StreamInfo outputStream : topologySource.getOutputStreams()) {
+                if (!addedStreams.containsKey(outputStream.getId())) {
+                    Long currentStreamId = outputStream.getId();
+                    outputStream.setId(null);
+                    StreamInfo addedStreamInfo = addStreamInfo(newTopology.getId(), outputStream);
+                    addedStreams.put(currentStreamId, addedStreamInfo.getId());
+                    topologySourceOutputStreamIds.add(addedStreamInfo.getId());
+                }
+            }
+            topologySource.setOutputStreams(new ArrayList<>());
+            topologySource.setOutputStreamIds(topologySourceOutputStreamIds);
+        }
+
+        for (TopologyProcessor topologyProcessor : topologyData.getProcessors()) {
+            List<Long> topologyProcessorOutputStreamIds = new ArrayList<>();
+            for (StreamInfo outputStream : topologyProcessor.getOutputStreams()) {
+                if (!addedStreams.containsKey(outputStream.getId())) {
+                    Long currentStreamId = outputStream.getId();
+                    outputStream.setId(null);
+                    StreamInfo addedStreamInfo = addStreamInfo(newTopology.getId(), outputStream);
+                    addedStreams.put(currentStreamId, addedStreamInfo.getId());
+                    topologyProcessorOutputStreamIds.add(addedStreamInfo.getId());
+                }
+            }
+            topologyProcessor.setOutputStreams(new ArrayList<>());
+            topologyProcessor.setOutputStreamIds(topologyProcessorOutputStreamIds);
+        }
+
+        for (RuleInfo rule : topologyData.getRules()) {
+            Long currentId = rule.getId();
+            rule.setId(null);
+            RuleInfo addedRule = addRule(newTopology.getId(), rule);
+            ruleIdMapping.put(currentId, addedRule.getId());
+        }
+
+        for (WindowInfo window : topologyData.getWindows()) {
+            Long currentId = window.getId();
+            window.setId(null);
+            WindowInfo addedWindow = addWindow(newTopology.getId(), window);
+            windowIdMapping.put(currentId, addedWindow.getId());
+        }
+
+        for (BranchRuleInfo branchRule : topologyData.getBranchRules()) {
+            Long currentId = branchRule.getId();
+            branchRule.setId(null);
+            BranchRuleInfo addedBranchRule = addBranchRule(newTopology.getId(), branchRule);
+            branchRuleIdMapping.put(currentId, addedBranchRule.getId());
+        }
+
+        for (TopologySource topologySource : topologySources) {
+            topologySource.setTopologyId(newTopology.getId());
+            Long currentId = topologySource.getId();
+            topologySource.setId(null);
+
+            Config config = topologySource.getConfig();
+            if (config.getProperties().containsKey(RulesProcessor.CONFIG_KEY_RULES)) {
+                List<Long> ruleIds = new ObjectMapper().convertValue(
+                        config.getAny(RulesProcessor.CONFIG_KEY_RULES),
+                        new TypeReference<List<Long>>() {
+                        });
+                TopologyComponentBundle topologyComponentBundle = getTopologyComponentBundle(
+                        topologySource.getTopologyComponentBundleId());
+
+            }
+            addTopologySource(newTopology.getId(), topologySource);
+            idMapping.put(currentId, topologySource.getId());
+        }
+
+        for (TopologyProcessor topologyProcessor : topologyData.getProcessors()) {
+            topologyProcessor.setTopologyId(newTopology.getId());
+            Long currentId = topologyProcessor.getId();
+            topologyProcessor.setId(null);
+
+            Config config = topologyProcessor.getConfig();
+            if (config.getProperties().containsKey(RulesProcessor.CONFIG_KEY_RULES)) {
+                List<Long> ruleIds = new ObjectMapper().convertValue(
+                        config.getAny(RulesProcessor.CONFIG_KEY_RULES),
+                        new TypeReference<List<Long>>() {
+                        });
+                TopologyComponentBundle topologyComponentBundle = getTopologyComponentBundle(
+                        topologyProcessor.getTopologyComponentBundleId());
+
+                List<Long> updatedRuleIds = new ArrayList<>();
+                String type = topologyComponentBundle.getSubType();
+                if (type.equals(ComponentTypes.RULE)) {
+                    for (Long ruleId : ruleIds) {
+                        updatedRuleIds.add(ruleIdMapping.get(ruleId));
+                    }
+                } else if (type.equals(ComponentTypes.BRANCH)) {
+                    for (Long ruleId : ruleIds) {
+                        updatedRuleIds.add(branchRuleIdMapping.get(ruleId));
+                    }
+
+                } else if (type.equals(ComponentTypes.WINDOW)) {
+                    for (Long ruleId : ruleIds) {
+                        updatedRuleIds.add(windowIdMapping.get(ruleId));
+                    }
+                }
+                config.setAny(RulesProcessor.CONFIG_KEY_RULES, updatedRuleIds);
+            }
+            addTopologyProcessor(newTopology.getId(), topologyProcessor);
+            idMapping.put(currentId, topologyProcessor.getId());
+        }
+
+        for (TopologySink topologySink : topologyData.getSinks()) {
+            topologySink.setTopologyId(newTopology.getId());
+            Long currentId = topologySink.getId();
+            topologySink.setId(null);
+            addTopologySink(newTopology.getId(), topologySink);
+            idMapping.put(currentId, topologySink.getId());
+        }
+
+        for (TopologyEdge topologyEdge : topologyData.getEdges()) {
+            List<StreamGrouping> streamGroupings = topologyEdge.getStreamGroupings();
+            for (StreamGrouping streamGrouping : streamGroupings) {
+                Long newStreamId = addedStreams.get(streamGrouping.getStreamId());
+                streamGrouping.setStreamId(newStreamId);
+            }
+            topologyEdge.setId(null);
+            topologyEdge.setTopologyId(newTopology.getId());
+            topologyEdge.setFromId(idMapping.get(topologyEdge.getFromId()));
+            topologyEdge.setToId(idMapping.get(topologyEdge.getToId()));
+            addTopologyEdge(newTopology.getId(), topologyEdge);
+        }
+
+        TopologyEditorMetadata topologyEditorMetadata = topologyData.getTopologyEditorMetadata();
+        topologyEditorMetadata.setTopologyId(newTopology.getId());
+        TopologyGraphData topologyGraphData = new ObjectMapper().readValue(topologyEditorMetadata.getData(), TopologyGraphData.class);
+        for (TopologyComponentGraphData topologyComponentGraphData : topologyGraphData.getSources()) {
+            topologyComponentGraphData.setId(idMapping.get(topologyComponentGraphData.getId()));
+        }
+        for (TopologyComponentGraphData topologyComponentGraphData : topologyGraphData.getSinks()) {
+            topologyComponentGraphData.setId(idMapping.get(topologyComponentGraphData.getId()));
+        }
+        for (TopologyComponentGraphData topologyComponentGraphData : topologyGraphData.getProcessors()) {
+            topologyComponentGraphData.setId(idMapping.get(topologyComponentGraphData.getId()));
+        }
+
+        topologyEditorMetadata.setData(new ObjectMapper().writeValueAsString(topologyGraphData));
+        addTopologyEditorMetadata(newTopology.getId(), topologyData.getTopologyEditorMetadata());
+        return newTopology;
+    }
+
+    public Topology cloneTopology(Topology topology) throws Exception {
+        Topology clonedTopology = new Topology();
+        clonedTopology.setName(topology.getName());
+        clonedTopology.setConfig(topology.getConfig());
+        addTopology(clonedTopology);
+
+        TopologyDagBuilder clonedTopologyDagBuilder = new TopologyDagBuilder(this);
+        TopologyCloneVisitor topologyCloneVisitor = new TopologyCloneVisitor(
+                topology.getId(),
+                clonedTopology.getId(),
+                this);
+        if (topology.getTopologyDag() != null) {
+            topology.getTopologyDag().traverse(topologyCloneVisitor);
+        }
+
+        clonedTopology.setTopologyDag(clonedTopologyDagBuilder.getDag(clonedTopology));
+
+        TopologyEditorMetadata topologyEditorMetadata = new TopologyEditorMetadata(getTopologyEditorMetadata(topology.getId()));
+        topologyEditorMetadata.setTopologyId(clonedTopology.getId());
+        TopologyGraphData topologyGraphData = new ObjectMapper().readValue(topologyEditorMetadata.getData(), TopologyGraphData.class);
+        Map<Long, Long> idMapping = topologyCloneVisitor.getIdMapping();
+        for (TopologyComponentGraphData topologyComponentGraphData : topologyGraphData.getSources()) {
+            topologyComponentGraphData.setId(idMapping.get(topologyComponentGraphData.getId()));
+        }
+        for (TopologyComponentGraphData topologyComponentGraphData : topologyGraphData.getSinks()) {
+            topologyComponentGraphData.setId(idMapping.get(topologyComponentGraphData.getId()));
+        }
+        for (TopologyComponentGraphData topologyComponentGraphData : topologyGraphData.getProcessors()) {
+            topologyComponentGraphData.setId(idMapping.get(topologyComponentGraphData.getId()));
+        }
+        topologyEditorMetadata.setData(new ObjectMapper().writeValueAsString(topologyGraphData));
+
+        return clonedTopology;
     }
 
     private void setUpExtraJars(Topology topology) throws IOException {
