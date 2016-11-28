@@ -79,6 +79,7 @@ add_bundle /streams/componentbundles/SINK $bootstrap_dir/hdfs-topology-component
 add_bundle /streams/componentbundles/SINK $bootstrap_dir/hbase-topology-component
 add_bundle /streams/componentbundles/SINK $bootstrap_dir/notification-topology-component
 add_bundle /streams/componentbundles/SINK $bootstrap_dir/opentsdb-sink-topology-component
+add_bundle /streams/componentbundles/SINK $bootstrap_dir/jdbc-sink-topology-component
 add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/branch-topology-component
 add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/join-bolt-topology-component
 add_bundle /streams/componentbundles/TOPOLOGY $bootstrap_dir/storm-topology-component
