@@ -11,13 +11,13 @@ import java.util.Map;
 
 import static org.apache.storm.hbase.common.Utils.toBytes;
 
-public class ParserOutputHBaseMapper implements HBaseMapper {
+public class StreamlineEventHBaseMapper implements HBaseMapper {
     private final byte[] columnFamily;
     //TODO need to support counter fields
     private static final byte[] CF_DSRCID = "d".getBytes(StandardCharsets.UTF_8);
     private static final byte[] CV_DEFAULT = "1".getBytes(StandardCharsets.UTF_8);
 
-    public ParserOutputHBaseMapper(String columnFamily) {
+    public StreamlineEventHBaseMapper(String columnFamily) {
         this.columnFamily = columnFamily.getBytes(Charsets.UTF_8);
     }
 
