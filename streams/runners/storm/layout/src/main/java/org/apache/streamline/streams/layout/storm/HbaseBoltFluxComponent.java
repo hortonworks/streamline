@@ -23,14 +23,16 @@ public class HbaseBoltFluxComponent extends AbstractFluxComponent {
         Map ref = getRefYaml(hbaseMapperRef);
         boltConstructorArgs.add(ref);
         List<String> configMethodNames = new ArrayList<>();
-        List values = new ArrayList();
+        List<Object> values = new ArrayList<>();
         if (conf.get(TopologyLayoutConstants.JSON_KEY_WRITE_TO_WAL) != null) {
             configMethodNames.add("writeToWAL");
             values.add(conf.get(TopologyLayoutConstants.JSON_KEY_WRITE_TO_WAL));
         }
+        /*
+         * configKey is mandatory for hbase bolt. The topology config is expected to contain
+         * "hbaseConf" with the required hbase config.
+         */
         configMethodNames.add("withConfigKey");
-        // IOT-203: We are not exposing configKey in hbase component since the value is what really matters and it is captured in topology level config which
-        // translates to storm topology level config. UI uses the same key as below for the value of hbase config object in topology level config json
         values.add("hbaseConf");
         List configMethods = getConfigMethodsYaml(configMethodNames.toArray(new String[0]), values.toArray());
         component = createComponent(boltId, boltClassName, null, boltConstructorArgs, configMethods);
@@ -41,8 +43,7 @@ public class HbaseBoltFluxComponent extends AbstractFluxComponent {
         String hbaseMapperComponentId = "hbaseMapper" + UUID_FOR_COMPONENTS;
 
         // currently only ParserOutputHbaseMapper is supported.
-        String hbaseMapperClassName = "org.apache.streamline.streams.runtime.storm.hbase" +
-                ".ParserOutputHBaseMapper";
+        String hbaseMapperClassName = "org.apache.streamline.streams.runtime.storm.hbase.StreamlineEventHBaseMapper";
 
         //constructor args
         String[] constructorArgNames = {

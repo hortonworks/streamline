@@ -20,7 +20,7 @@ import java.util.Map;
 import static com.google.common.base.Charsets.UTF_8;
 
 @RunWith(JMockit.class)
-public class ParserOutputHBaseMapperTest {
+public class StreamlineEventHBaseMapperTest {
 
     private static final String ROW_KEY_FIELD = "rowKey";
     private static final String COLUMN_FAMILY= "columnFamily";
@@ -31,7 +31,7 @@ public class ParserOutputHBaseMapperTest {
     private static final StreamlineEvent TEST_EVENT = new StreamlineEventImpl(TEST_PARSED_MAP, "dsrcid1", ROW_KEY_FIELD);
 
 
-    private ParserOutputHBaseMapper mapper = new ParserOutputHBaseMapper(COLUMN_FAMILY);
+    private StreamlineEventHBaseMapper mapper = new StreamlineEventHBaseMapper(COLUMN_FAMILY);
     private @Mocked Tuple mockTuple;
 
     @Before
