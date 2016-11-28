@@ -294,5 +294,5 @@ CREATE TABLE IF NOT EXISTS namespace_service_cluster_mapping (
     namespaceId BIGINT NOT NULL,
     serviceName VARCHAR(256) NOT NULL,
     clusterId BIGINT NOT NULL,
-    PRIMARY KEY (processorId, serviceName, clusterId)
+    PRIMARY KEY (namespaceId, serviceName, clusterId)
 );

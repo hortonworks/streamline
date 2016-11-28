@@ -129,7 +129,18 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Matcher;
 
 import static java.util.stream.Collectors.toList;
@@ -1170,23 +1181,24 @@ public class StreamCatalogService {
     }
 
     private void setUpClusterArtifacts(Topology topology, TopologyActions topologyActions) throws IOException {
-        String config = topology.getConfig();
+        Namespace namespace = getNamespace(topology.getNamespaceId());
+        if (namespace == null) {
+            throw new RuntimeException("Corresponding namespace not found: " + topology.getNamespaceId());
+        }
+
         ObjectMapper objectMapper = new ObjectMapper();
-        Map jsonMap = objectMapper.readValue(config, Map.class);
         Path artifactsDir = topologyActions.getArtifactsLocation(getTopologyLayout(topology));
         makeEmptyDir(artifactsDir);
-        if (jsonMap != null) {
-            List<Object> serviceList = (List<Object>) jsonMap.get(TopologyLayoutConstants.JSON_KEY_SERVICES);
-            if (serviceList != null) {
-                List<Service> services = objectMapper.readValue(objectMapper.writeValueAsString(serviceList),
-                                                                new TypeReference<List<Service>>() {
-                                                                });
 
-                for (Service service : services) {
-                    Collection<ServiceConfiguration> configurations = listServiceConfigurations(service.getId());
-
-                    for (ServiceConfiguration configuration : configurations) {
-                        writeConfigurationFile(objectMapper, artifactsDir, configuration);
+        Collection<NamespaceServiceClusterMapping> serviceClusterMappings = listServiceClusterMapping(namespace.getId());
+        for (NamespaceServiceClusterMapping serviceClusterMapping : serviceClusterMappings) {
+            Service service = getServiceByName(serviceClusterMapping.getClusterId(),
+                    serviceClusterMapping.getServiceName());
+            if (service != null) {
+                Collection<ServiceConfiguration> serviceConfigurations = listServiceConfigurations(service.getId());
+                if (serviceConfigurations != null) {
+                    for (ServiceConfiguration serviceConfiguration : serviceConfigurations) {
+                        writeConfigurationFile(objectMapper, artifactsDir, serviceConfiguration);
                     }
                 }
             }

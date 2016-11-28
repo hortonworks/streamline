@@ -89,6 +89,7 @@ public class TopologyMetricsContainer extends NamespaceAwareContainer<TopologyMe
     }
 
     private Map<String, String> buildStormTopologyMetricsConfigMap(Namespace namespace, String streamingEngine) {
+        // Assuming that a namespace has one mapping of streaming engine
         Service streamingEngineService = getFirstOccurenceServiceForNamespace(namespace, streamingEngine);
         if (streamingEngineService == null) {
             throw new RuntimeException("Streaming Engine " + streamingEngine + " is not associated to the namespace " +
@@ -107,6 +108,7 @@ public class TopologyMetricsContainer extends NamespaceAwareContainer<TopologyMe
     }
 
     private Map<String, String> buildAMSTimeSeriesQuerierConfigMap(Namespace namespace, String timeSeriesDB) {
+        // Assuming that a namespace has one mapping of time-series DB service
         Service timeSeriesDBService = getFirstOccurenceServiceForNamespace(namespace, timeSeriesDB);
         if (timeSeriesDBService == null) {
             throw new RuntimeException("Time-series DB " + timeSeriesDB + " is not associated to the namespace " +

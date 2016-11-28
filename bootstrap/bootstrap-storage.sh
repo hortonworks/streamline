@@ -48,7 +48,7 @@ echo "DB TYPE: ${DB_TYPE}"
 echo "JDBC_DRIVER_CLASS: ${JDBC_DRIVER_CLASS}"
 echo "JDBC_URL: ${JDBC_URL}"
 
-if [ $DB_TYPE="phoenix" ];
+if [ "$DB_TYPE" == "phoenix" ];
 then
   DELIM="\n"
 else

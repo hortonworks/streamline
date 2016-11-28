@@ -57,6 +57,7 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
     }
 
     private Map<String, String> buildStormTopologyActionsConfigMap(Namespace namespace, String streamingEngine) {
+        // Assuming that a namespace has one mapping of streaming engine
         Service streamingEngineService = getFirstOccurenceServiceForNamespace(namespace, streamingEngine);
         if (streamingEngineService == null) {
             throw new RuntimeException("Streaming Engine " + streamingEngine + " is not associated to the namespace " +
