@@ -97,6 +97,10 @@ public abstract class AbstractConfig implements Serializable {
         return (boolean) get(key, defaultValue);
     }
 
+    public boolean contains(String key) {
+        return properties.containsKey(key);
+    }
+
     public Map<String, Object> getProperties() {
         return new HashMap<>(properties);
     }

@@ -94,4 +94,9 @@ public class RulesProcessor extends StreamlineProcessor {     //TODO: Rename to 
                 "rules=" + rules +
                 '}';
     }
+
+    @Override
+    public void accept(TopologyDagVisitor visitor) {
+        visitor.visit(this);
+    }
 }
