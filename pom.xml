@@ -47,7 +47,7 @@
         <kafkaArtifact>kafka_2.10</kafkaArtifact>
         <kryo.version>2.21</kryo.version>
         <mysql-connector-java.version>5.1.38</mysql-connector-java.version>
-        <phoenix.version>4.4.0-HBase-1.1</phoenix.version>
+        <phoenix.version>4.7.0.2.5.0.0-1245</phoenix.version>
         <redis.lettuce.version>3.4.2.Final</redis.lettuce.version>
         <scala.version>2.10.5</scala.version>
         <schema-registry.version>0.1.0-SNAPSHOT</schema-registry.version>
