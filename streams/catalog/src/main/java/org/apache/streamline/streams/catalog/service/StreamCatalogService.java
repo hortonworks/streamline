@@ -1961,12 +1961,12 @@ public class StreamCatalogService {
     }
 
     public TopologyEdge removeTopologyEdge(Long topologyId, Long edgeId, Long versionId) {
-        TopologyEdge topologyEdge = new TopologyEdge();
-        topologyEdge.setId(edgeId);
-        topologyEdge.setVersionId(versionId);
-        TopologyEdge removedEdge = dao.remove(new StorableKey(TOPOLOGY_EDGE_NAMESPACE, topologyEdge.getPrimaryKey()));
-        removedEdge.setVersionTimestamp(updateVersionTimestamp(versionId).getTimestamp());
-        return removedEdge;
+        TopologyEdge topologyEdge = getTopologyEdge(topologyId, edgeId, versionId);
+        if (topologyEdge != null) {
+            topologyEdge = dao.remove(new StorableKey(TOPOLOGY_EDGE_NAMESPACE, topologyEdge.getPrimaryKey()));
+            topologyEdge.setVersionTimestamp(updateVersionTimestamp(versionId).getTimestamp());
+        }
+        return topologyEdge;
     }
 
     public Collection<TopologyEdge> listTopologyEdges() {
