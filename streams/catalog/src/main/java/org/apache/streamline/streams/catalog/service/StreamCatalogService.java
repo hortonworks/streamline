@@ -881,7 +881,7 @@ public class StreamCatalogService {
         TopologyDag dag = topologyDagBuilder.getDag(topology);
         topology.setTopologyDag(dag);
         ensureValid(dag);
-        LOG.debug("Deploying topology {}", topology);
+        LOG.info("Deploying topology {}", topology);
         setUpClusterArtifacts(topology);
         setUpExtraJars(topology);
         topologyActions.deploy(getTopologyLayout(topology));
