@@ -265,6 +265,7 @@ public class RuleInfo extends AbstractStorable {
         setTopologyId((Long) map.get(TOPOLOGY_ID));
         setName((String) map.get(NAME));
         setDescription((String) map.get(DESCRIPTION));
+        setCondition((String) map.get(CONDITION));
         setSql((String) map.get(SQL));
         setParsedRuleStr((String) map.get(PARSED_RULE_STR));
         try {
