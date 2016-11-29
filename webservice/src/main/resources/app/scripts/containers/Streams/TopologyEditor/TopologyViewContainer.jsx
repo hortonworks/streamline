@@ -17,6 +17,7 @@ import TopologyUtils from '../../../utils/TopologyUtils';
 import Modal from '../../../components/FSModal';
 import CommonNotification from '../../../utils/CommonNotification';
 import TopologyViewMode from './TopologyViewMode';
+import MetricsContainer from '../Metrics/MetricsContainer';
 
 function collect(connect, monitor) {
   return {
@@ -68,7 +69,7 @@ class TopologyEditorContainer extends Component {
     this.customProcessors = [];
     this.fetchData();
   }
-  componentDidUpdate(){
+  componentDidMount(){
     document.getElementsByTagName('body')[0].className='';
     document.querySelector('.wrapper').setAttribute("class","container wrapper animated fadeIn ");
   }
@@ -345,6 +346,13 @@ class TopologyEditorContainer extends Component {
           data-resolve={this.handleSaveNodeModal.bind(this)}>
           {this.modalContent()}
         </Modal>
+        {false && this.state.isAppRunning && this.graphData.nodes.length > 0 ? 
+          <MetricsContainer
+            topologyId={this.topologyId}
+            components={this.graphData.nodes}
+          />
+          : 
+        null}
       </BaseContainer>
     )
   }

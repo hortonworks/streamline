@@ -210,7 +210,22 @@ export class arraystring extends BaseField {
         return super.validate(this.props.data[this.props.value])
     }
     getField = () => {
-        return <Creatable onChange={this.handleChange} multi={true} disabled={this.context.Form.props.readOnly} {...this.props.fieldAttr} value={this.props.data[this.props.value]}/>
+        const arr = [];
+        let dataArr = this.props.data[this.props.value];
+        if(dataArr && dataArr instanceof Array){
+            dataArr.map((value)=>{
+                arr.push({value: value});
+            })
+        }
+        return <Creatable
+            onChange={this.handleChange}
+            multi={true}
+            disabled={this.context.Form.props.readOnly}
+            {...this.props.fieldAttr}
+            valueKey="value"
+            labelKey="value"
+            value={arr}
+        />
     }
 }
 
@@ -276,6 +291,11 @@ export class arrayobject extends BaseField {
         const {Form} = this.context;
         Form.setState(Form.state);
     }
+    onRemove(index){
+        this.props.data[this.props.value].splice(index, 1);
+        const {Form} = this.context;
+        Form.setState(Form.state);
+    }
     render() {
         const {className} = this.props;
         return (
@@ -289,20 +309,32 @@ export class arrayobject extends BaseField {
         const fields = this.props.fieldJson.fields;
         this.props.data[this.props.value] = this.props.data[this.props.value] || [{}];
         return this.props.data[this.props.value].map((d, i) => {
+            const splitElem = i > 0 ? <hr/> : null;
+            const removeElem = <i className="fa fa-trash delete-icon" onClick={this.onRemove.bind(this, i)}></i>
             const optionsFields = Utils.genFields(fields, [...this.props.valuePath.split('.'), i], d)
-            return optionsFields.map((child, i) => {
-                return React.cloneElement(child, {
-                    ref: child.props ? (child.props._ref || i) : i,
-                    key: i,
-                    data: d
-                });
-            })})
+            return [splitElem, removeElem,
+                    optionsFields.map((child, i) => {
+                        return React.cloneElement(child, {
+                            ref: child.props ? (child.props._ref || i) : i,
+                            key: i,
+                            data: d
+                        });
+                    })
+                ]
+        })
     }
 }
 
 export class enumobject extends BaseField {
     constructor(props){
         super(props)
+        if(props.list){
+            this.data = props.data;
+        }else{
+            this.data = this.props.data[this.props.value]
+        }
+    }
+    componentWillUpdate(props){
         if(props.list){
             this.data = props.data;
         }else{
@@ -322,7 +354,7 @@ export class enumobject extends BaseField {
     }
     getField = () => {
         const value = Object.keys(this.data)[0];
-        return <Select onChange={this.handleChange} {...this.props.fieldAttr} value={value}/>
+        return <Select clearable={false} onChange={this.handleChange} {...this.props.fieldAttr} value={value}/>
     }
     render() {
         const value = Object.keys(this.data)[0];
@@ -360,6 +392,11 @@ export class arrayenumobject extends BaseField {
         const {Form} = this.context;
         Form.setState(Form.state);
     }
+    onRemove(index){
+        this.props.data[this.props.value].splice(index, 1);
+        const {Form} = this.context;
+        Form.setState(Form.state);
+    }
     validate = () => {
         const {Form} = this.context;
         return Form.validate.call(this);
@@ -379,7 +416,13 @@ export class arrayenumobject extends BaseField {
             [this.props.fieldJson.options[0].fieldName] : {}
         }];
         return this.props.data[this.props.value].map((d, i) => {
-            return <EnumObject {...this.props} ref={this.props.valuePath+'.'+i} key={i} data={d} valuePath={[...this.props.valuePath.split('.'), i].join('.')} list={true}/>
+            const splitElem = i > 0 ? <hr/> : null;
+            const removeElem = <i className="fa fa-trash delete-icon" onClick={this.onRemove.bind(this, i)}></i>
+            return (
+                [splitElem,
+                removeElem,
+                <EnumObject {...this.props} ref={this.props.valuePath+'.'+i} key={i} data={d} valuePath={[...this.props.valuePath.split('.'), i].join('.')} list={true}/>]
+            )
         })
     }
 }

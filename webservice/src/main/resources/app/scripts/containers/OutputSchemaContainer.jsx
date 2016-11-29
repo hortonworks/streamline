@@ -36,7 +36,7 @@ export default class OutputSchemaContainer extends Component {
 		else this.state = {
 				activeTab: 1,
 				streamData: [{
-					streamId: 'Stream-1',
+                                        streamId: 'Stream_1',
 					fields: JSON.stringify([{
 						"name": "childField1",
 						"type": "INTEGER"
@@ -66,14 +66,14 @@ export default class OutputSchemaContainer extends Component {
 			return;
 		if(key === "addNewTab") {
 			//Dynamic Names of streams
-			let newStreamId = 'Stream-1';
+                        let newStreamId = 'Stream_1';
 			while(this.streamNamesList.indexOf(newStreamId) !== -1){
 				let arr = newStreamId.split('-');
 				let count = 1;
 				if(arr.length > 1){
 					count = parseInt(arr[1], 10) + 1;
 				}
-				newStreamId = arr[0]+'-'+count;
+                                newStreamId = arr[0]+'_'+count;
 			}
 			this.streamNamesList.push(newStreamId);
 			//
@@ -122,6 +122,10 @@ export default class OutputSchemaContainer extends Component {
 			this.refs.streamNameEditable.setState({errorMsg: "Stream-id cannot have space in between"});
 			this.validateFlag = false;
 			return false;
+                } else if(name.search('-') !== -1){
+                        this.refs.streamNameEditable.setState({errorMsg: "Stream-id cannot contain a hyphen"});
+                        this.validateFlag = false;
+                        return false;
 		} else if(this.streamNamesList.indexOf(name) !== -1){
 			this.refs.streamNameEditable.setState({errorMsg: "Stream-id is already present. Please use some other id."});
 			this.validateFlag = false;
