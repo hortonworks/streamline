@@ -88,9 +88,9 @@ storageProviderConfiguration:
 
 # Time series DB querier configuration
 #timeSeriesDBConfiguration:
-#  className: "org.apache.streamline.metrics.streams.storm.ambari.AmbariMetricsServiceWithStormQuerier"
+#  className: "org.apache.streamline.streams.metrics.storm.ambari.AmbariMetricsServiceWithStormQuerier"
 #  properties:
-#    - collectorApiUrl: "http://localhost:6188/ws/v1/timeline/metrics"
+#    collectorApiUrl: "http://localhost:6188/ws/v1/timeline/metrics"
 
 # use the simple server factory if you only want to run on a single port
 #server:
