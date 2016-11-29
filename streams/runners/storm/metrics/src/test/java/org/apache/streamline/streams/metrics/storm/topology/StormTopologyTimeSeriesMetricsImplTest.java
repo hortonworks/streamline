@@ -11,6 +11,7 @@ import org.apache.streamline.streams.layout.component.TopologyLayout;
 import org.apache.streamline.streams.metrics.TimeSeriesQuerier;
 import mockit.Expectations;
 import mockit.Mocked;
+import org.apache.streamline.streams.metrics.topology.TopologyTimeSeriesMetrics;
 import org.apache.streamline.streams.storm.common.StormRestAPIClient;
 import org.apache.streamline.streams.storm.common.StormRestAPIConstant;
 import org.apache.streamline.streams.storm.common.StormTopologyUtil;
@@ -168,6 +169,18 @@ public class StormTopologyTimeSeriesMetricsImplTest {
         expected.put(StormMappedMetric.failedRecords.name(), generateTestPointsMap());
         expected.put(StormMappedMetric.processedTime.name(), generateTestPointsMap());
         expected.put(StormMappedMetric.recordsInWaitQueue.name(), generateTestPointsMap());
+        expected.put(StormMappedMetric.ackedRecords.name(), generateTestPointsMap());
+
+        final TopologyTimeSeriesMetrics.TimeSeriesComponentMetric expectedMetric =
+                new TopologyTimeSeriesMetrics.TimeSeriesComponentMetric(component.getName(),
+                        expected.get(StormMappedMetric.inputRecords.name()),
+                        expected.get(StormMappedMetric.outputRecords.name()),
+                        expected.get(StormMappedMetric.failedRecords.name()),
+                        expected.get(StormMappedMetric.processedTime.name()),
+                        expected.get(StormMappedMetric.recordsInWaitQueue.name()),
+                        Collections.singletonMap(StormMappedMetric.ackedRecords.name(),
+                                expected.get(StormMappedMetric.ackedRecords.name()))
+                );
 
         new Expectations() {{
             mockTimeSeriesQuerier.getMetrics(
@@ -219,10 +232,21 @@ public class StormTopologyTimeSeriesMetricsImplTest {
             );
 
             result = expected.get(StormMappedMetric.recordsInWaitQueue.name());
+
+            mockTimeSeriesQuerier.getMetrics(
+                    withEqual(mockedTopologyName),
+                    withEqual(component.getId() + "-" + component.getName()),
+                    withEqual(StormMappedMetric.ackedRecords.getStormMetricName()),
+                    withEqual(StormMappedMetric.ackedRecords.getAggregateFunction()),
+                    withEqual(from), withEqual(to)
+            );
+
+            result = expected.get(StormMappedMetric.ackedRecords.name());
         }};
 
-        Map<String, Map<Long, Double>> actual = stormTopologyTimeSeriesMetrics.getComponentStats(topology, component, from, to);
-        assertEquals(expected, actual);
+        TopologyTimeSeriesMetrics.TimeSeriesComponentMetric actual =
+                stormTopologyTimeSeriesMetrics.getComponentStats(topology, component, from, to);
+        assertEquals(expectedMetric, actual);
     }
 
     private TopologyLayout getTopologyLayoutForTest() throws IOException {

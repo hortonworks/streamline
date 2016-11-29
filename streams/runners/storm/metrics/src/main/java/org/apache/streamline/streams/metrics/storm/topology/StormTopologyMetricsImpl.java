@@ -206,7 +206,7 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
      * {@inheritDoc}
      */
     @Override
-    public Map<String, Map<Long, Double>> getComponentStats(TopologyLayout topology, Component component, long from, long to) {
+    public TimeSeriesComponentMetric getComponentStats(TopologyLayout topology, Component component, long from, long to) {
         return timeSeriesMetrics.getComponentStats(topology, component, from, to);
     }
 
