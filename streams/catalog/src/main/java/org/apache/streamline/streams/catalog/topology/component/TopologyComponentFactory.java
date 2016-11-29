@@ -193,9 +193,6 @@ public class TopologyComponentFactory {
         builder.put(branchRulesProcessorProvider());
         builder.put(windowProcessorProvider());
         builder.put(normalizationProcessorProvider());
-        builder.put(splitProcessorProvider());
-        builder.put(joinProcessorProvider());
-        builder.put(stageProcessorProvider());
         return builder.build();
     }
 
