@@ -1,5 +1,7 @@
 org.apache.streamline.streams.catalog.Component
 org.apache.streamline.streams.catalog.Cluster
+org.apache.streamline.streams.catalog.Service
+org.apache.streamline.streams.catalog.ServiceConfiguration
 org.apache.streamline.streams.catalog.TopologyEditorMetadata
 org.apache.streamline.streams.catalog.Topology
 org.apache.streamline.streams.catalog.StreamInfo
