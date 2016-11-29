@@ -2,6 +2,7 @@
  * STREAMLINE-500: Generalize the way of handling exception on service.
  * STREAMLINE-533: UI - Join Processor.
  * STREAMLINE-510: Basic validation before deploying a topology.
+ * STREAMLINE-379: Add Druid Sink
  * STREAMLINE-506: TopologyEditor Settings API.
  * STREAMLINE-424: HDFS Spout support.
  * STREAMLINE-498: Storm Runner Time-series API should handle the difference between component name from Streamline and Storm
