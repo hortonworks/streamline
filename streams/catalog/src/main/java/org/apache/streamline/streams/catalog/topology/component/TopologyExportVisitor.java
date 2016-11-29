@@ -1,32 +1,32 @@
 package org.apache.streamline.streams.catalog.topology.component;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import org.apache.streamline.common.ComponentTypes;
-
-import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.streams.catalog.BranchRuleInfo;
 import org.apache.streamline.streams.catalog.RuleInfo;
-import org.apache.streamline.streams.catalog.StreamInfo;
+import org.apache.streamline.streams.catalog.TopologyEdge;
+import org.apache.streamline.streams.catalog.TopologyProcessor;
+import org.apache.streamline.streams.catalog.TopologySink;
+import org.apache.streamline.streams.catalog.TopologySource;
 import org.apache.streamline.streams.catalog.WindowInfo;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.catalog.topology.TopologyComponentBundle;
 import org.apache.streamline.streams.catalog.topology.TopologyData;
-import org.apache.streamline.streams.layout.component.*;
-import org.apache.streamline.streams.catalog.TopologySource;
-import org.apache.streamline.streams.catalog.TopologySink;
-import org.apache.streamline.streams.catalog.TopologyProcessor;
-import org.apache.streamline.streams.catalog.TopologyEdge;
-
-import org.apache.streamline.streams.layout.component.rule.Rule;
+import org.apache.streamline.streams.layout.component.Edge;
+import org.apache.streamline.streams.layout.component.StreamlineComponent;
+import org.apache.streamline.streams.layout.component.StreamlineProcessor;
+import org.apache.streamline.streams.layout.component.StreamlineSink;
+import org.apache.streamline.streams.layout.component.StreamlineSource;
+import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
 import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
+import org.apache.streamline.streams.layout.component.rule.Rule;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by schendamaraikannan on 11/2/16.
+ * Visitor that fills the topology entities into a {@link TopologyData} object for exporting the topology
  */
 public final class TopologyExportVisitor extends TopologyDagVisitor {
     private final Long topologyId;
@@ -93,6 +93,7 @@ public final class TopologyExportVisitor extends TopologyDagVisitor {
                 topologyId,
                 Long.parseLong(rulesProcessor.getId()));
         topologyData.addProcessor(topologyProcessor);
+        storeBundleIdToType(rulesProcessor);
     }
 
     public void visit(StreamlineSource source) {
@@ -100,6 +101,7 @@ public final class TopologyExportVisitor extends TopologyDagVisitor {
                 topologyId,
                 Long.parseLong(source.getId()));
         topologyData.addSource(topologySource);
+        storeBundleIdToType(source);
     }
 
     public void visit(StreamlineSink sink) {
@@ -108,34 +110,27 @@ public final class TopologyExportVisitor extends TopologyDagVisitor {
                 Long.parseLong(sink.getId()));
 
         topologyData.addSink(topologySink);
+        storeBundleIdToType(sink);
     }
-
 
     public void visit(StreamlineProcessor processor) {
         TopologyProcessor topologyProcessor = streamCatalogService.getTopologyProcessor(
                 topologyId,
                 Long.parseLong(processor.getId()));
         topologyData.addProcessor(topologyProcessor);
+        storeBundleIdToType(processor);
     }
 
-    public void visit(Edge edge) {
-        List<QueryParam> queryParams = new ArrayList<>();
-        queryParams.add(new QueryParam("fromId", edge.getFrom().getId()));
-        queryParams.add(new QueryParam("toId", edge.getTo().getId()));
 
-        try {
-            Collection<TopologyEdge> topologyEdges = streamCatalogService.listTopologyEdges(queryParams);
-            /*
-                The topology edge collection is guaranteed to be unique because we do a duplicate check
-                when adding an edge.
-             */
-            topologyData.addEdge(topologyEdges.iterator().next());
-        } catch (Exception e) {
-            throw new RuntimeException(
-                    String.format(
-                            "Unexpected exception while trying to retrieve topology edge from %s to %s",
-                            edge.getFrom().getId(),
-                            edge.getTo().getId()), e);
-        }
+    public void visit(Edge edge) {
+        TopologyEdge topologyEdge = streamCatalogService.getTopologyEdge(topologyId, Long.parseLong(edge.getId()));
+        topologyData.addEdge(topologyEdge);
+    }
+
+    private void storeBundleIdToType(StreamlineComponent component) {
+        TopologyComponentBundle bundle = streamCatalogService.getTopologyComponentBundle(
+                Long.parseLong(component.getTopologyComponentBundleId()));
+        Preconditions.checkNotNull(bundle, "No bundle with id: " + component.getTopologyComponentBundleId());
+        topologyData.addBundleIdToType(component.getTopologyComponentBundleId(), bundle.getSubType());
     }
 }

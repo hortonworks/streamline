@@ -29,23 +29,25 @@ import java.util.Set;
  * at the start or the end of the edge.
  */
 public class Edge implements TopologyDagComponent {
+    private String id;
     private OutputComponent from;
     private InputComponent to;
     private final Set<StreamGrouping> streamGroupings;
 
     public Edge() {
-        this(null, null, Collections.<StreamGrouping>emptySet());
+        this(null, null, null, Collections.<StreamGrouping>emptySet());
     }
 
-    public Edge(OutputComponent from, InputComponent to, String streamId, Stream.Grouping grouping) {
-        this(from, to, new StreamGrouping(from.getOutputStream(streamId), grouping));
+    public Edge(String id, OutputComponent from, InputComponent to, String streamId, Stream.Grouping grouping) {
+        this(id, from, to, new StreamGrouping(from.getOutputStream(streamId), grouping));
     }
 
-    public Edge(OutputComponent from, InputComponent to, StreamGrouping streamGrouping) {
-        this(from, to, Collections.singleton(streamGrouping));
+    public Edge(String id, OutputComponent from, InputComponent to, StreamGrouping streamGrouping) {
+        this(id, from, to, Collections.singleton(streamGrouping));
     }
 
-    public Edge(OutputComponent from, InputComponent to, Set<StreamGrouping> streamGroupings) {
+    public Edge(String id, OutputComponent from, InputComponent to, Set<StreamGrouping> streamGroupings) {
+        this.id = id;
         this.from = from;
         this.to = to;
         this.streamGroupings = new HashSet<>(streamGroupings);
@@ -85,6 +87,14 @@ public class Edge implements TopologyDagComponent {
 
     public Set<StreamGrouping> getStreamGroupings() {
         return Collections.unmodifiableSet(streamGroupings);
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     @Override

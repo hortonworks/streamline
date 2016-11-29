@@ -1,5 +1,6 @@
 package org.apache.streamline.streams.catalog.topology;
 
+import java.util.HashMap;
 import java.util.List;
 import com.google.common.base.Preconditions;
 import org.apache.streamline.streams.catalog.BranchRuleInfo;
@@ -12,9 +13,11 @@ import org.apache.streamline.streams.catalog.TopologySink;
 import org.apache.streamline.streams.catalog.WindowInfo;
 
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
- * Created by schendamaraikannan on 11/1/16.
+ * Wrapper class holding the various topology entities for export/import.
  */
 public final class TopologyData {
     private String topologyName;
@@ -26,13 +29,32 @@ public final class TopologyData {
     private List<RuleInfo> rules = new ArrayList<>();
     private List<WindowInfo> windows = new ArrayList<>();
     private List<BranchRuleInfo> branchRules = new ArrayList<>();
+    private Map<String, String> bundleIdToType = new HashMap<>();
     private TopologyEditorMetadata topologyEditorMetadata;
+
+    public TopologyData() {
+    }
+
+    // copy ctor
+    public TopologyData(TopologyData other) {
+        topologyName = other.getTopologyName();
+        config = other.getConfig();
+        sources = other.sources.stream().map(TopologySource::new).collect(Collectors.toList());
+        sinks = other.sinks.stream().map(TopologySink::new).collect(Collectors.toList());
+        processors = other.processors.stream().map(TopologyProcessor::new).collect(Collectors.toList());
+        edges = other.edges.stream().map(TopologyEdge::new).collect(Collectors.toList());
+        rules = other.rules.stream().map(RuleInfo::new).collect(Collectors.toList());
+        windows = other.windows.stream().map(WindowInfo::new).collect(Collectors.toList());
+        branchRules = other.branchRules.stream().map(BranchRuleInfo::new).collect(Collectors.toList());
+        bundleIdToType = new HashMap<>(other.getBundleIdToType());
+        topologyEditorMetadata = new TopologyEditorMetadata(other.getTopologyEditorMetadata());
+    }
 
     public String getTopologyName() {
         return topologyName;
     }
 
-    public void setName(String name) {
+    public void setTopologyName(String name) {
         Preconditions.checkNotNull(name);
 
         this.topologyName = name;
@@ -121,5 +143,13 @@ public final class TopologyData {
 
     public void setMetadata(TopologyEditorMetadata metadata) {
         this.topologyEditorMetadata = metadata;
+    }
+
+    public Map<String, String> getBundleIdToType() {
+        return bundleIdToType;
+    }
+
+    public void addBundleIdToType(String bundleId, String type) {
+        bundleIdToType.put(bundleId, type);
     }
 }

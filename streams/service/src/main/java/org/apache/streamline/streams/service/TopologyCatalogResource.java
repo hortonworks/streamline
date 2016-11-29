@@ -182,27 +182,30 @@ public class TopologyCatalogResource {
     @Path("/topologies/{topologyId}")
     @Timed
     public Response removeTopology(@PathParam("topologyId") Long topologyId,
-                                   @javax.ws.rs.QueryParam("recurse") boolean recurse,
-                                   @javax.ws.rs.QueryParam("allVersions") boolean allVersions) {
-        if (allVersions) {
-            return removeAllTopologyVersions(topologyId, recurse);
+                                   @javax.ws.rs.QueryParam("onlyCurrent") boolean onlyCurrent) {
+        if (onlyCurrent) {
+            return removeCurrentTopologyVersion(topologyId);
         } else {
-            return removeCurrentTopologyVersion(topologyId, recurse);
+            return removeAllTopologyVersions(topologyId);
         }
     }
 
-    private Response removeAllTopologyVersions(Long topologyId, boolean recurse) {
+    private Response removeAllTopologyVersions(Long topologyId) {
         Collection<TopologyVersionInfo> versions = catalogService.listTopologyVersionInfos(
                 WSUtils.topologyVersionsQueryParam(topologyId));
-        List<Topology> removed = new ArrayList<>();
+        Long currentVersionId = catalogService.getCurrentVersionId(topologyId);
+        Topology res = null;
         for (TopologyVersionInfo version : versions) {
-            removed.add(catalogService.removeTopology(topologyId, version.getId(), recurse));
+            Topology removed = catalogService.removeTopology(topologyId, version.getId(), true);
+            if (removed.getVersionId().equals(currentVersionId)) {
+                res = removed;
+            }
         }
-        return WSUtils.respondEntities(removed, OK);
+        return WSUtils.respondEntity(res, OK);
     }
 
-    private Response removeCurrentTopologyVersion(Long topologyId, boolean recurse) {
-        Topology removedTopology = catalogService.removeTopology(topologyId, recurse);
+    private Response removeCurrentTopologyVersion(Long topologyId) {
+        Topology removedTopology = catalogService.removeTopology(topologyId, true);
         if (removedTopology != null) {
             return WSUtils.respondEntity(removedTopology, OK);
         }
@@ -488,7 +491,7 @@ public class TopologyCatalogResource {
     }
 
     @POST
-    @Path("/topologies/actions/")
+    @Path("/topologies/actions/import")
     @Timed
     public Response importTopology(TopologyData topologyData) throws Exception {
         Topology importedTopology = catalogService.importTopology(topologyData);

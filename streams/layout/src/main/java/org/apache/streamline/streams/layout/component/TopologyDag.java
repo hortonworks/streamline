@@ -29,6 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Represents the topology DAG with edges between input and output components.
@@ -71,29 +72,29 @@ public class TopologyDag implements Serializable {
 
     // single stream, shuffle grouping
     public void addEdge(OutputComponent from, InputComponent to) {
-        addEdge(from, to, getDefaultStreamId(from));
+        addEdge(UUID.randomUUID().toString(), from, to, getDefaultStreamId(from));
     }
 
     // specify stream, shuffle grouping
-    public void addEdge(OutputComponent from, InputComponent to, String streamId) {
-        addEdge(from, to, streamId, Stream.Grouping.SHUFFLE);
+    public void addEdge(String id, OutputComponent from, InputComponent to, String streamId) {
+        addEdge(id, from, to, streamId, Stream.Grouping.SHUFFLE);
     }
 
     // specify stream and grouping
-    public void addEdge(OutputComponent from, InputComponent to, String streamId, Stream.Grouping grouping) {
-        addEdge(from, to, new StreamGrouping(from.getOutputStream(streamId), grouping));
+    public void addEdge(String id, OutputComponent from, InputComponent to, String streamId, Stream.Grouping grouping) {
+        addEdge(id, from, to, new StreamGrouping(from.getOutputStream(streamId), grouping));
     }
 
     public void addEdge(Edge edge) {
         for (StreamGrouping streamGrouping : edge.getStreamGroupings()) {
-            addEdge(edge.getFrom(), edge.getTo(), streamGrouping);
+            addEdge(edge.getId(), edge.getFrom(), edge.getTo(), streamGrouping);
         }
     }
 
     // specify stream grouping
-    public void addEdge(OutputComponent from, InputComponent to, StreamGrouping streamGrouping) {
+    public void addEdge(String id, OutputComponent from, InputComponent to, StreamGrouping streamGrouping) {
         ensureValid(from, to);
-        doAddEdge(from, to, streamGrouping);
+        doAddEdge(id, from, to, streamGrouping);
     }
 
     public void removeEdge(OutputComponent from, InputComponent to) {
@@ -224,7 +225,7 @@ public class TopologyDag implements Serializable {
         }
     }
 
-    private void doAddEdge(OutputComponent from, InputComponent to, StreamGrouping streamGrouping) {
+    private void doAddEdge(String id, OutputComponent from, InputComponent to, StreamGrouping streamGrouping) {
         List<Edge> edges = dag.get(from);
         if (edges == null) {
             edges = new ArrayList<>();
@@ -237,7 +238,7 @@ public class TopologyDag implements Serializable {
                 return;
             }
         }
-        edges.add(new Edge(from, to, streamGrouping));
+        edges.add(new Edge(id, from, to, streamGrouping));
     }
 
     private String getDefaultStreamId(OutputComponent source) {
