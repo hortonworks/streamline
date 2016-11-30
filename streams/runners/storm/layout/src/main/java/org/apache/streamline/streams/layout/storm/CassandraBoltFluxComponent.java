@@ -21,6 +21,7 @@ import com.google.common.base.Joiner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,46 +29,72 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Sample Json for cassandra configuration
- * {
- * "flushFrequencyInMilliSecs": 1000,
- * "tableName": "temperature",
- * "columns": [
- * {
- * "columnName": "weather_station_id",
- * "fieldName": "weather_station_id"
- * },
- * {
- * "columnName": "event_time",
- * "fieldName": "event_time"
- * },
- * {
- * "columnName": "temperature",
- * "fieldName": "temperature"
+ * This class is used for generating respective flux component for given Cassandra sink configuration.
+ *
+ * Sample Json for cassandra sink configuration
+ * <pre>
+ * {@code
+ *    {
+ *     "flushFrequencyInMilliSecs": 1000,
+ *     "tableName": "temperature",
+ *     "columns": [
+ *       {
+ *         "columnName": "weather_station_id",
+ *         "fieldName": "weatherStationId"
+ *       },
+ *       {
+ *         "columnName": "event_time",
+ *         "fieldName": "eventTime"
+ *       },
+ *       {
+ *         "columnName": "temperature",
+ *         "fieldName": "temperature"
+ *       }
+ *     ],
+ *     "cassandraEndpointConfig" : {
+ *       "cassandra.username" :"sato",
+ *       "cassandra.password" :"passwd",
+ *       "cassandra.keyspace" :"ks",
+ *       "cassandra.nodes" :"cassandra-srv-1, cassandra-srv-2",
+ *       "cassandra.port" :9042,
+ *       "cassandra.batch.size.rows" :1000,
+ *       "cassandra.retryPolicy" :"com.datastax.driver.core.policies.DefaultRetryPolicy",
+ *       "cassandra.output.consistencyLevel" :"QUORUM",
+ *       "cassandra.reconnectionPolicy.baseDelayMs" :1000,
+ *       "cassandra.reconnectionPolicy.maxDelayMs" :6000
+ *     }
+ *    }
  * }
- * ]
- * }
+ * </pre>
  */
 public class CassandraBoltFluxComponent extends AbstractFluxComponent {
+
+    private static final String CASSANDRA_BOLT_CLASS = "org.apache.streamline.streams.runtime.storm.cassandra.StreamlineCassandraBolt";
+    private static final String MAPPER_BUILDER_CLASS = "org.apache.storm.cassandra.query.builder.BoundCQLStatementMapperBuilder";
+    private static final String FIELD_SELECTOR_CLASS_NAME = "org.apache.streamline.streams.runtime.storm.cassandra.StreamlineFieldSelector";
+
+    private static final String COLUMN_NAME_KEY = "columnName";
+    private static final String FIELD_NAME_KEY = "fieldName";
+    private static final String TABLE_NAME_KEY = "tableName";
+    private static final String COLUMNS_KEY = "columns";
 
     @Override
     protected void generateComponent() {
         String boltClassId = "StreamlineCassandraBolt-" + UUID_FOR_COMPONENTS;
-        String boltClassName = "org.apache.streamline.streams.runtime.storm.cassandra.StreamlineCassandraBolt";
 
         List<Object> constructorArgs = new ArrayList<>();
-        constructorArgs.add(getRefYaml(createCassandraCqlMapperBuilder()));
-        constructorArgs.add(conf.get("flushFrequencyInMilliSecs"));
+        constructorArgs.add(getRefYaml(addCassandraCqlMapperBuilder()));
+        constructorArgs.add(conf.get("flushFrequencyInSecs"));
 
-        Map configMethod = getConfigMethodWithRefArgs("withCassandraConfig", Arrays.asList(addCassandraConfig()));
+        Map configMethod = getConfigMethodWithRefArgs("withCassandraConfig", Collections.singletonList(addCassandraConfig()));
 
-        component = createComponent(boltClassId, boltClassName, null, constructorArgs, Arrays.asList(configMethod));
+        component = createComponent(boltClassId, CASSANDRA_BOLT_CLASS, null, constructorArgs, Collections.singletonList(configMethod));
 
         addParallelismToComponent();
     }
 
     private String addCassandraConfig() {
-        String mapClassId = "map-"+UUID_FOR_COMPONENTS;
+        String mapClassId = "map-" + UUID_FOR_COMPONENTS;
         Map<String, Object> cassandraEndpointConfig = (Map<String, Object>) conf.get("cassandraEndpointConfig");
         List<Map<String, Object>> configMethods = new ArrayList<>();
         for (Map.Entry<String, Object> entry : cassandraEndpointConfig.entrySet()) {
@@ -81,18 +108,17 @@ public class CassandraBoltFluxComponent extends AbstractFluxComponent {
         return mapClassId;
     }
 
-    private String createCassandraCqlMapperBuilder() {
+    private String addCassandraCqlMapperBuilder() {
         String mapperClassId = "boundCQLStatementMapperBuilder-" + UUID_FOR_COMPONENTS;
-        String mapperClass = "org.apache.storm.cassandra.query.builder.BoundCQLStatementMapperBuilder";
 
-        String tableName = (String) conf.get("tableName");
-        List<Map<String, String>> columns = (List<Map<String, String>>) conf.get("columns");
-        List<String> columnNames = columns.stream().map(column -> column.get("columnName")).collect(Collectors.toList());
+        String tableName = (String) conf.get(TABLE_NAME_KEY);
+        List<Map<String, String>> columns = (List<Map<String, String>>) conf.get(COLUMNS_KEY);
+        List<String> columnNames = columns.stream().map(column -> column.get(COLUMN_NAME_KEY)).collect(Collectors.toList());
         List<String> fieldSelectorIds = createFieldSelectors(columns);
 
         String cql = createInsertToCql(tableName, columnNames);
         Map configMethod = getConfigMethodWithRefArgs("bind", fieldSelectorIds);
-        addToComponents(createComponent(mapperClassId, mapperClass, null, Arrays.asList(cql), Arrays.asList(configMethod)));
+        addToComponents(createComponent(mapperClassId, MAPPER_BUILDER_CLASS, null, Arrays.asList(cql), Arrays.asList(configMethod)));
 
         return mapperClassId;
     }
@@ -117,26 +143,22 @@ public class CassandraBoltFluxComponent extends AbstractFluxComponent {
                              tableName,
                              Joiner.on(", ").join(columnNames),
                              Joiner.on(", ").join(columnNames.stream()
-                                                         .map(x -> "?")
-                                                         .collect(Collectors.toList()))
+                                                          .map(x -> "?")
+                                                          .collect(Collectors.toList()))
         );
     }
 
     private List<String> createFieldSelectors(List<Map<String, String>> columns) {
-        String fieldSelectorClass = "org.apache.streamline.streams.runtime.storm.cassandra.StreamlineFieldSelector";
         String idStr = "FieldSelector-" + UUID_FOR_COMPONENTS + "-";
         int ct = 0;
         List<String> fieldSelectorIds = new ArrayList<>(columns.size());
         for (Map<String, String> column : columns) {
             String fieldSelectorId = idStr + (++ct);
-            List<String> constructorArgs = Arrays.asList(column.get("columnName"), column.get("fieldName"));
-            addToComponents(createComponent(fieldSelectorId, fieldSelectorClass, null, constructorArgs, null));
+            List<String> constructorArgs = Arrays.asList(column.get(COLUMN_NAME_KEY), column.get(FIELD_NAME_KEY));
+            addToComponents(createComponent(fieldSelectorId, FIELD_SELECTOR_CLASS_NAME, null, constructorArgs, null));
             fieldSelectorIds.add(fieldSelectorId);
         }
         return fieldSelectorIds;
     }
 
-    private String createCqlMapper() {
-        return null;
-    }
 }

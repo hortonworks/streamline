@@ -12,7 +12,7 @@
         "fieldName": "flushFrequencyInMilliSecs",
         "isOptional": true,
         "tooltip": "Flush frequency in milli seconds",
-        "type": "long",
+        "type": "number",
         "defaultValue": 10000
       },
       {
@@ -93,7 +93,7 @@
             "fieldName": "cassandra.port",
             "tooltip": "Port number for Cassandra cluster",
             "isOptional": false,
-            "type": "int",
+            "type": "number",
             "defaultValue": null
           },
           {
