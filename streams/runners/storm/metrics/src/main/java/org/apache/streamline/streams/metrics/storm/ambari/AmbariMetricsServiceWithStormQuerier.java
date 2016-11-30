@@ -156,7 +156,6 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
                 .queryParam("hostname", "")
                 .queryParam("metricNames", actualMetricName)
                 .queryParam("startTime", String.valueOf(from))
-                .queryParam("precision", "seconds")
                 .queryParam("endTime", String.valueOf(to))
                 .queryParam("seriesAggregateFunction", aggrFunction.name())
                 .build();
