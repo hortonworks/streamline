@@ -151,7 +151,9 @@ export default class TopologyGraphComponent extends Component {
                 });
 
 		svg.on("mousedown", function(d) {
-            thisGraph.setLastChange(null);
+            if(thisGraph.setLastChange){
+            	thisGraph.setLastChange(null);
+            }
 			thisGraph.svgMouseDown.call(thisGraph, d);
 		});
 

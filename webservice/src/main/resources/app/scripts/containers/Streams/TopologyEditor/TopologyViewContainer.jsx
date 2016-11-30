@@ -346,7 +346,7 @@ class TopologyEditorContainer extends Component {
           data-resolve={this.handleSaveNodeModal.bind(this)}>
           {this.modalContent()}
         </Modal>
-        {false && this.state.isAppRunning && this.graphData.nodes.length > 0 ? 
+        {this.state.isAppRunning && this.graphData.nodes.length > 0 ? 
           <MetricsContainer
             topologyId={this.topologyId}
             components={this.graphData.nodes}

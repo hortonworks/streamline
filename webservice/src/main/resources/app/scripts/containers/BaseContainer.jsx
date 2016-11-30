@@ -6,6 +6,7 @@ import {Confirm} from '../components/FSModal'
 
 import 'animate.css/animate.css';
 import 'styles/css/bootstrap.css';
+import 'bootstrap-daterangepicker/daterangepicker.css';
 import 'react-select/dist/react-select.css';
 import 'react-bootstrap-switch/dist/css/bootstrap3/react-bootstrap-switch.min.css';
 import 'styles/css/toastr.min.css';

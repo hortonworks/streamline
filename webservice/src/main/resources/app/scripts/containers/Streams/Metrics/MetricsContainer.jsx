@@ -3,22 +3,17 @@ import ReactDOM from 'react-dom';
 import BaseContainer from '../../BaseContainer';
 import {Link} from 'react-router';
 import { Button, PanelGroup, Panel} from 'react-bootstrap';
-
+import DatetimeRangePicker from 'react-bootstrap-datetimerangepicker';
 import MetricsREST from '../../../rest/MetricsREST';
 import TimeSeriesChart from '../../../components/TimeSeriesChart';
 import d3 from 'd3';
-
+import moment from 'moment';
 
 export default class MetricsContainer extends Component {
 	constructor(props){
 		super();
-                const fromTime = new Date().setDate(new Date().getDate() - 1),
-                        toTime = new Date().getTime();
                 this.state = {
                         selectedComponentId: props.components[0].nodeId,
-                        fromTime: fromTime,
-                        toTime: toTime,
-                        chartXRange: [new Date(fromTime), new Date(toTime)],
                         expandRecord: true,
                         loadingRecord: true,
                         expandLatencyQueue: false,
@@ -31,7 +26,19 @@ export default class MetricsContainer extends Component {
                         inputOutputData: [],
                         failedData: [],
                         queueData: [],
-                        latency: []
+                        latency: [],
+                        startDate: moment().subtract(30, 'minutes'),
+                        endDate: moment(),
+                        ranges: {
+                            'Last 30 Minutes': [moment().subtract(30, 'minutes'), moment()],
+                            'Last 1 Hour': [moment().subtract(1, 'hours'), moment()],
+                            'Last 3 Hours': [moment().subtract(3, 'hours'), moment()],
+                            'Last 6 Hours': [moment().subtract(6, 'hours'), moment()],
+                            'Last 12 Hours': [moment().subtract(12, 'hours'), moment()],
+                            'Last 24 Hours': [moment().subtract(1, 'days'), moment()],
+                            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                            'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                        },
                 }
         }
         componentDidMount(){
@@ -48,10 +55,10 @@ export default class MetricsContainer extends Component {
                     this.setState(obj);
                 }
 
-                const {selectedComponentId, fromTime, toTime} = this.state;
+                const {selectedComponentId, startDate, endDate} = this.state;
 
                 const topologyId = this.props.topologyId;
-                MetricsREST.getComponentStatsMetrics(topologyId, selectedComponentId, fromTime, toTime)
+                MetricsREST.getComponentStatsMetrics(topologyId, selectedComponentId, startDate.toDate().getTime(), endDate.toDate().getTime())
                         .then((res) => {
                                 if(res.responseMessage !== undefined){
                                         FSReactToastr.error(<CommonNotification flag="error" content={res.responseMessage}/>, '', toastOpt)
@@ -79,7 +86,7 @@ export default class MetricsContainer extends Component {
                                         this.setState({inputOutputData: inputOutputData, failedData: failedData, queueData: queueData, loadingRecord: false});
                                 }
                         })
-                MetricsREST.getComponentLatencyMetrics(topologyId, selectedComponentId, fromTime, toTime)
+                MetricsREST.getComponentLatencyMetrics(topologyId, selectedComponentId, startDate.toDate().getTime(), endDate.toDate().getTime())
                         .then((res) => {
                                 if(res.responseMessage !== undefined){
                                         FSReactToastr.error(<CommonNotification flag="error" content={res.responseMessage}/>, '', toastOpt)
@@ -114,7 +121,7 @@ export default class MetricsContainer extends Component {
                         data={data}
                         height={this.state.graphHeight}
                         setXDomain={function(){
-                                this.x.domain(self.state.chartXRange);
+                                this.x.domain([self.state.startDate.toDate(), self.state.endDate.toDate()]);
                         }}
                         setYDomain={function(){
                                 const min = d3.min(this.mapedData, (c) => {
@@ -156,7 +163,8 @@ export default class MetricsContainer extends Component {
                                         const newChartXRange = this.brush.extent();
                                         // this.x.domain(newChartXRange);
                                         // this.props.drawBrush.call(this);
-                                        self.setState({chartXRange: newChartXRange});
+                                        self.setState({startDate: moment(newChartXRange[0]),
+                                            endDate: moment(newChartXRange[1])});
                                 }
                         }}
                         showTooltip={function(d){
@@ -174,12 +182,14 @@ export default class MetricsContainer extends Component {
                         }}
                 />
         }
-        handleApply = (e, datePicker) => {
-                this.setState({
-                        fromTime: datePicker.startDate.toDate().getTime(),
-                        toTime: datePicker.endDate.toDate().getTime(),
-                })
-	}
+    handleEvent = (e, datePicker) => {
+        this.setState({
+            startDate: datePicker.startDate,
+            endDate: datePicker.endDate,
+        },()=>{
+            this.fetchData(["Record","LatencyQueue"]);
+        })
+    }
     handleFilterChange = (e) => {
         this.setState({selectedComponentId: e.target.value},()=>{
             this.fetchData(["Record","LatencyQueue"]);
@@ -187,9 +197,24 @@ export default class MetricsContainer extends Component {
     }
  	render() {
 		const loader = <i className="fa fa-spinner fa-spin fa-3x" aria-hidden="true" style={{marginTop: '50px'}}></i>
-		const {inputOutputData, queueData, failedData, latencyData, fromTime, toTime} = this.state;
-		const startDate = new Date(fromTime)
-		const endDate = new Date(toTime)
+		const {inputOutputData, queueData, failedData, latencyData} = this.state;
+        const locale = {
+          format: 'YYYY-MM-DD HH:mm:ss',
+          separator: ' - ',
+          applyLabel: 'Apply',
+          cancelLabel: 'Cancel',
+          weekLabel: 'W',
+          customRangeLabel: 'Custom Range',
+          daysOfWeek: moment.weekdaysMin(),
+          monthNames: moment.monthsShort(),
+          firstDay: moment.localeData().firstDayOfWeek(),
+        };
+        let start = this.state.startDate.format('YYYY-MM-DD HH:mm:ss');
+        let end = this.state.endDate.format('YYYY-MM-DD HH:mm:ss');
+        let label = start + ' - ' + end;
+        if (start === end) {
+          label = start;
+        }
 	    return (
 		<div>
 			<div className="form-horizontal">
@@ -202,10 +227,29 @@ export default class MetricsContainer extends Component {
                                             })}
                                         </select>
                                     </div>
-                                    <label className="col-sm-3 control-label">Date/Time Range Filter:</label>
-
-                                    <div className="col-sm-1">
-                                        <button className="btn btn-success"><i className="fa fa-refresh"></i></button>
+                                    <label className="col-sm-2 col-sm-offset-2 control-label">Date/Time Range Filter:</label>
+                                    <div className="col-sm-4">
+                                        <DatetimeRangePicker
+                                            timePicker
+                                            timePicker24Hour
+                                            showDropdowns
+                                            timePickerSeconds
+                                            locale={locale}
+                                            startDate={this.state.startDate}
+                                            endDate={this.state.endDate}
+                                            ranges={this.state.ranges}
+                                            onApply={this.handleEvent}
+                                            opens="left"
+                                        >
+                                            <div className="input-group">
+                                              <input type="text" className="form-control" value={label}/>
+                                                <span className="input-group-btn">
+                                                    <Button className="default date-range-toggle">
+                                                      <i className="fa fa-calendar"/>
+                                                    </Button>
+                                                </span>
+                                            </div>
+                                        </DatetimeRangePicker>
                                     </div>
                                 </div>
                             </div>
@@ -244,22 +288,6 @@ export default class MetricsContainer extends Component {
                                                         </div>
                                                 </div>
                                         </Panel>
-                                        {/*<Panel header="Memory Usage" eventKey="MemoryUsage" collapsible expanded={this.state.expandMemoryUsage} onSelect={this.onPanelSelect}>
-                                                <div className="row col-md-6" style={{height:'150px', 'textAlign': 'center'}}>
-                                                        {this.state.loadingMemoryUsage ? loader : this.getGraph()}
-                                                </div>
-                                                <div className="row col-md-6" style={{height:'150px', 'textAlign': 'center'}}>
-                                                        {this.state.loadingMemoryUsage ? loader : this.getGraph()}
-                                                </div>
-                                        </Panel>
-                                        <Panel header="GC" eventKey="GC" collapsible expanded={this.state.expandGC} onSelect={this.onPanelSelect}>
-                                                <div className="row col-md-6" style={{height:'150px', 'textAlign': 'center'}}>
-                                                        {this.state.loadingGC ? loader : this.getGraph()}
-                                                </div>
-                                                <div className="row col-md-6" style={{height:'150px', 'textAlign': 'center'}}>
-                                                        {this.state.loadingGC ? loader : this.getGraph()}
-                                                </div>
-                                        </Panel>*/}
                                 </PanelGroup>
                         </div>
 	    )

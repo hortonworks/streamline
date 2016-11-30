@@ -332,7 +332,7 @@ TimeSeriesChart.defaultProps = {
         var html = '<span><i class="fa fa-calendar" aria-hidden="true"></i> '+d[this.props.xAttr].toLocaleDateString() + '</span><br><span><i class="fa fa-clock-o" aria-hidden="true"></i> '+d[this.props.xAttr].toLocaleTimeString() + '</span><table class="tooltipTable" width="100%"><tbody>';
         _.each(d, (val, key) => {
             if (key != this.props.xAttr)
-                html += '<tr><td>' + key + ' </td><td> ' + val + '</td></tr>';
+                html += '<tr><td><i class="fa fa-minus" style="color:'+this.props.color(key)+'"></i>' + key + ' </td><td> ' + val + '</td></tr>';
         });
         html += '</tbody></table>';
         this.tooltip.html(html);

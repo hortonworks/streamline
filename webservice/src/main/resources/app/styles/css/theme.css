@@ -1496,7 +1496,7 @@ rect.extent{
   padding: 10px;
   font-size: 10px;
   color: black;
-  background: rgba(180,180,180,0.5);
+  background: rgba(185,185,185,0.8);
 }
 
 .tooltipTable  td {

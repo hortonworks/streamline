@@ -43,18 +43,18 @@ export default class ComponentNodeContainer extends Component {
             }
         }
         this.state = {
-            datasources: bundleArr.sourceBundle,
-            processors: bundleArr.processorsBundle,
-            sinks: bundleArr.sinksBundle
+            datasources: Utils.sortArray(bundleArr.sourceBundle, 'subType', true),
+            processors: Utils.sortArray(bundleArr.processorsBundle, 'subType', true),
+            sinks: Utils.sortArray(bundleArr.sinksBundle, 'subType', true)
         };
     }
 
     componentWillReceiveProps(nextProps, oldProps){
         if(nextProps.bundleArr != this.props.bundleArr){
             this.setState({
-                datasources: nextProps.bundleArr.sourceBundle,
-                processors: nextProps.bundleArr.processorsBundle,
-                sinks: nextProps.bundleArr.sinksBundle
+                datasources: Utils.sortArray(nextProps.bundleArr.sourceBundle, 'subType', true),
+                processors: Utils.sortArray(nextProps.bundleArr.processorsBundle, 'subType', true),
+                sinks: Utils.sortArray(nextProps.bundleArr.sinksBundle, 'subType', true)
             });
         }
     }

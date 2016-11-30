@@ -424,19 +424,38 @@ class TopologyEditorContainer extends Component {
                   FSReactToastr.success(<strong>Topology Deployed Successfully</strong>);
                   this.lastUpdatedTime = new Date(topology.timestamp);
                   this.setState({altFlag: !this.state.altFlag});
-                  TopologyREST.getTopology(this.topologyId, this.versionId)
-                    .then((result)=>{
-                      let data = result;
-                      this.topologyMetric = data.metric || {misc: (data.metric === undefined) ? '' : metric.misc};
-                      let status = this.topologyMetric.status || '';
-                      document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay displayNone";
-                      this.setState({topologyMetric: this.topologyMetric, isAppRunning: true, topologyStatus: status});
-                    });
                   let versionData = {
                       name: 'V'+this.state.topologyVersion,
                       description: 'version description auto generated'
                   };
                   TopologyREST.saveTopologyVersion(this.topologyId, {body: JSON.stringify(versionData)})
+                    .then((versionResponse)=>{
+                      let versions = this.state.versionsArr;
+                      let savedVersion = _.find(versions, {id: versionResponse.id});
+                      savedVersion.name = versionResponse.name;
+
+                      TopologyREST.getTopology(this.topologyId)
+                        .then((result)=>{
+                          let data = result;
+                          this.topologyMetric = data.metric || {misc: (data.metric === undefined) ? '' : metric.misc};
+                          this.versionId = data.topology.versionId;
+                          versions.push({
+                            id: data.topology.versionId,
+                            topologyId:this.topologyId,
+                            name: "CURRENT",
+                            description: ""
+                          });
+                          let status = this.topologyMetric.status || '';
+                          document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay displayNone";
+                          this.setState({
+                            topologyMetric: this.topologyMetric,
+                            isAppRunning: true,
+                            topologyStatus: status,
+                            topologyVersion: data.topology.versionId,
+                            versionsArr: versions
+                          });
+                        });
+                    })
                 }
               })
           }
