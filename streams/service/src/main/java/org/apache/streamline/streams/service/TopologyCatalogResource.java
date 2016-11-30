@@ -56,6 +56,7 @@ import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.streamline.streams.catalog.TopologyVersionInfo.VERSION_PREFIX;
+import static org.apache.streamline.streams.service.TopologySortType.LAST_UPDATED;
 
 
 @Path("/v1/catalog")
@@ -65,6 +66,8 @@ public class TopologyCatalogResource {
     public static final String JAR_FILE_PARAM_NAME = "jarFile";
     public static final String CP_INFO_PARAM_NAME = "customProcessorInfo";
     private static final Integer DEFAULT_N_OF_TOP_N_LATENCY = 3;
+    private static final String DEFAULT_SORT_TYPE = LAST_UPDATED.name();
+    private static final Boolean DEFAULT_SORT_ORDER_ASCENDING = false;
 
     private final URL SCHEMA = Thread.currentThread().getContextClassLoader()
             .getResource("assets/schemas/topology.json");
@@ -80,6 +83,7 @@ public class TopologyCatalogResource {
     @Timed
     public Response listTopologies (@javax.ws.rs.QueryParam("withMetric") Boolean withMetric,
                                     @javax.ws.rs.QueryParam("sort") String sortType,
+                                    @javax.ws.rs.QueryParam("ascending") Boolean ascending,
                                     @javax.ws.rs.QueryParam("latencyTopN") Integer latencyTopN) {
         Collection<Topology> topologies = catalogService.listTopologies();
         Response response;
@@ -87,8 +91,15 @@ public class TopologyCatalogResource {
             if (withMetric == null || !withMetric) {
                 response = WSUtils.respondEntities(topologies, OK);
             } else {
+                if (sortType == null) {
+                    sortType = DEFAULT_SORT_TYPE;
+                }
+                if (ascending == null) {
+                    ascending = DEFAULT_SORT_ORDER_ASCENDING;
+                }
+
                 List<TopologyCatalogWithMetric> topologiesWithMetric = enrichMetricToTopologies(
-                        topologies, sortType, latencyTopN);
+                        topologies, sortType, ascending, latencyTopN);
                 response = WSUtils.respondEntities(topologiesWithMetric, OK);
             }
         } else {
@@ -457,7 +468,7 @@ public class TopologyCatalogResource {
     }
 
     private List<TopologyCatalogWithMetric> enrichMetricToTopologies(
-            Collection<Topology> topologies, String sortType, Integer latencyTopN) {
+            Collection<Topology> topologies, String sortType, Boolean ascending, Integer latencyTopN) {
         // need to also provide Topology Metric
         List<TopologyCatalogWithMetric> topologiesWithMetric = new ArrayList<>(topologies.size());
         for (Topology topology : topologies) {
@@ -465,22 +476,25 @@ public class TopologyCatalogResource {
             topologiesWithMetric.add(topologyCatalogWithMetric);
         }
 
-        if (sortType != null) {
-            return topologiesWithMetric.stream().sorted((c1, c2) -> {
-                switch (TopologySortType.valueOf(sortType.toUpperCase())) {
-                    case NAME:
-                        return c1.getTopology().getName().compareTo(c2.getTopology().getName());
-                    case STATUS:
-                        return c1.getRunning().compareTo(c2.getRunning());
-                    case LAST_UPDATED:
-                        return c1.getTopology().getVersionTimestamp().compareTo(c2.getTopology().getVersionTimestamp());
-                    default:
-                        throw new IllegalStateException("Not supported SortType: " + sortType);
-                }
-            }).collect(toList());
-        } else {
-            return topologiesWithMetric;
-        }
+        return topologiesWithMetric.stream().sorted((c1, c2) -> {
+            int compared;
+
+            switch (TopologySortType.valueOf(sortType.toUpperCase())) {
+                case NAME:
+                    compared = c1.getTopology().getName().compareTo(c2.getTopology().getName());
+                    break;
+                case STATUS:
+                    compared = c1.getRunning().compareTo(c2.getRunning());
+                    break;
+                case LAST_UPDATED:
+                    compared = c1.getTopology().getVersionTimestamp().compareTo(c2.getTopology().getVersionTimestamp());
+                    break;
+                default:
+                    throw new IllegalStateException("Not supported SortType: " + sortType);
+            }
+
+            return ascending ? compared : (compared * -1);
+        }).collect(toList());
     }
 
     private TopologyCatalogWithMetric enrichMetricToTopology(Topology topology, Integer latencyTopN) {
