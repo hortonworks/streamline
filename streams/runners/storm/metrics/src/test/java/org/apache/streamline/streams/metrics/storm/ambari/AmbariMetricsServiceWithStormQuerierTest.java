@@ -63,7 +63,6 @@ public class AmbariMetricsServiceWithStormQuerierTest {
                 .withQueryParam("hostname", equalTo(""))
                 .withQueryParam("metricNames", equalTo("topology.testTopology.testComponent.%.--test.metric.name"))
                 .withQueryParam("startTime", equalTo("1234"))
-                .withQueryParam("precision", equalTo("seconds"))
                 .withQueryParam("endTime", equalTo("5678"))
                 .withQueryParam("seriesAggregateFunction", equalTo("SUM")));
     }
@@ -88,7 +87,6 @@ public class AmbariMetricsServiceWithStormQuerierTest {
                 .withQueryParam("hostname", equalTo(""))
                 .withQueryParam("metricNames", equalTo("topology.testTopology.testComponent.%.--complete-latency.%"))
                 .withQueryParam("startTime", equalTo("1234"))
-                .withQueryParam("precision", equalTo("seconds"))
                 .withQueryParam("endTime", equalTo("5678"))
                 .withQueryParam("seriesAggregateFunction", equalTo("AVG")));
     }
@@ -109,8 +107,7 @@ public class AmbariMetricsServiceWithStormQuerierTest {
                 .withQueryParam("appId", equalTo("appId"))
                 .withQueryParam("metricNames", equalTo("metric"))
                 .withQueryParam("startTime", equalTo("1234"))
-                .withQueryParam("endTime", equalTo("5678"))
-                .withQueryParam("precision", equalTo("seconds")));
+                .withQueryParam("endTime", equalTo("5678")));
     }
 
 
