@@ -1,0 +1,30 @@
+{
+  "flushFrequencyInMilliSecs": 1000,
+  "tableName": "temperature",
+  "columns": [
+    {
+      "columnName": "weather_station_id",
+      "fieldName": "weatherStationId"
+    },
+    {
+      "columnName": "event_time",
+      "fieldName": "eventTime"
+    },
+    {
+      "columnName": "temperature",
+      "fieldName": "temperature"
+    }
+  ],
+  "cassandraEndpointConfig" : {
+    "cassandra.username" :"USER",
+    "cassandra.password" :"passwd",
+    "cassandra.keyspace" :"ks",
+    "cassandra.nodes" :"cassandra-srv-1, cassandra-srv-2",
+    "cassandra.port" :9042,
+    "cassandra.batch.size.rows" :1000,
+    "cassandra.retryPolicy" :"com.datastax.driver.core.policies.DefaultRetryPolicy",
+    "cassandra.output.consistencyLevel" :"QUORUM",
+    "cassandra.reconnectionPolicy.baseDelayMs" :1000,
+    "cassandra.reconnectionPolicy.maxDelayMs" :6000
+  }
+}

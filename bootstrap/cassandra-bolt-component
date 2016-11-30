@@ -1,0 +1,152 @@
+{
+  "type": "SINK",
+  "name": "Cassandra Bolt",
+  "subType": "CASSANDRA",
+  "builtin": true,
+  "streamingEngine": "STORM",
+  "transformationClass": "org.apache.streamline.streams.layout.storm.CassandraBoltFluxComponent",
+  "topologyComponentUISpecification": {
+    "fields": [
+      {
+        "uiName": "flushFrequencyInMilliSecs",
+        "fieldName": "flushFrequencyInMilliSecs",
+        "isOptional": true,
+        "tooltip": "Flush frequency in milli seconds",
+        "type": "long",
+        "defaultValue": 10000
+      },
+      {
+        "uiName": "Table Name",
+        "fieldName": "tableName",
+        "isOptional": false,
+        "tooltip": "Cassandra table to write to",
+        "type": "string"
+      },
+      {
+        "uiName": "Columns",
+        "fieldName": "columns",
+        "tooltip": "Columns with fields",
+        "isOptional": false,
+        "type": "array.object",
+        "defaultValue": null,
+        "fields": [
+          {
+            "uiName": "Column Name",
+            "fieldName": "columnName",
+            "tooltip": "Name of the column",
+            "isOptional": false,
+            "type": "string",
+            "defaultValue": null
+          },
+          {
+            "uiName": "Field Name",
+            "fieldName": "fieldName",
+            "tooltip": "Name of the tuple field",
+            "isOptional": false,
+            "type": "string",
+            "defaultValue": null
+          }
+        ]
+      },
+      {
+        "uiName": "Cassandra Configuration",
+        "fieldName": "cassandraConfig",
+        "tooltip": "Cassandra cluster configuration",
+        "isOptional": false,
+        "type": "object",
+        "defaultValue": null,
+        "fields": [
+          {
+            "uiName": "User Name",
+            "fieldName": "cassandra.username",
+            "tooltip": "User name to connect to Cassandra cluster",
+            "isOptional": false,
+            "type": "string",
+            "defaultValue": null
+          },
+          {
+            "uiName": "Password",
+            "fieldName": "cassandra.password",
+            "tooltip": "Password to connect to Cassandra cluster",
+            "isOptional": false,
+            "type": "string",
+            "defaultValue": null
+          },
+          {
+            "uiName": "KeySpace",
+            "fieldName": "cassandra.keyspace",
+            "tooltip": "Keyspace in which table exists",
+            "isOptional": false,
+            "type": "string",
+            "defaultValue": null
+          },
+          {
+            "uiName": "nodes",
+            "fieldName": "cassandra.nodes",
+            "tooltip": "List of nodes separated by ,",
+            "isOptional": false,
+            "type": "string",
+            "defaultValue": null
+          },
+          {
+            "uiName": "port",
+            "fieldName": "cassandra.port",
+            "tooltip": "Port number for Cassandra cluster",
+            "isOptional": false,
+            "type": "int",
+            "defaultValue": null
+          },
+          {
+            "uiName": "Rows Batch size",
+            "fieldName": "cassandra.batch.size.rows",
+            "tooltip": "Number of rows for a single batch",
+            "isOptional": false,
+            "type": "number",
+            "defaultValue": null
+          },
+          {
+            "uiName": "Retry Policy",
+            "fieldName": "cassandra.retryPolicy",
+            "tooltip": "Retry policy classname",
+            "isOptional": false,
+            "type": "string",
+            "defaultValue": "com.datastax.driver.core.policies.DefaultRetryPolicy"
+          },
+          {
+            "uiName": "Consistency Level",
+            "fieldName": "cassandra.output.consistencyLevel",
+            "tooltip": "Consistency level at which data is inserted",
+            "isOptional": false,
+            "type": "enumstring",
+            "defaultValue": "QUORUM",
+            "options": ["ANY", "ONE", "TWO", "THREE", "QUORUM", "ALL", "LOCAL_QUORUM", "EACH_QUORUM", "SERIAL", "LOCAL_SERIAL", "LOCAL_ONE"]
+          },
+          {
+            "uiName": "Reconnection base delay",
+            "fieldName": "cassandra.reconnectionPolicy.baseDelayMs",
+            "tooltip": "Reconnection base delay in milli seconds",
+            "isOptional": false,
+            "type": "number",
+            "defaultValue": null
+          },
+          {
+            "uiName": "Reconnection maximum delay",
+            "fieldName": "cassandra.reconnectionPolicy.maxDelayMs",
+            "tooltip": "Reconnection maximum delay in milli seconds",
+            "isOptional": false,
+            "type": "number",
+            "defaultValue": null
+          },
+        ]
+      },
+      {
+        "uiName": "Parallelism",
+        "fieldName": "parallelism",
+        "isOptional": true,
+        "tooltip": "Parallelism hint for cassandra sink",
+        "type": "number",
+        "defaultValue": 1
+      }
+    ]
+  }
+}

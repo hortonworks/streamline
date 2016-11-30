@@ -460,6 +460,11 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.storm</groupId>
+                <artifactId>storm-cassandra</artifactId>
+                <version>${storm.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.storm</groupId>
                 <artifactId>storm-hbase</artifactId>
                 <version>${storm.version}</version>
                 <exclusions>

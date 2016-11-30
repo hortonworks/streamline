@@ -11,6 +11,10 @@
 
     <artifactId>streamline-runtime-storm</artifactId>
 
+    <properties>
+        <cassandra.driver.core.version>2.1.7.1</cassandra.driver.core.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.streamline</groupId>
@@ -98,6 +102,16 @@
             <groupId>org.apache.calcite.avatica</groupId>
             <artifactId>avatica</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.storm</groupId>
+            <artifactId>storm-cassandra</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.datastax.cassandra</groupId>
+            <artifactId>cassandra-driver-core</artifactId>
+            <version>${cassandra.driver.core.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.storm</groupId>
             <artifactId>storm-hbase</artifactId>
