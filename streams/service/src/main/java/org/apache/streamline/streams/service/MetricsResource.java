@@ -19,11 +19,13 @@
 package org.apache.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.Topology;
 import org.apache.streamline.streams.catalog.TopologyComponent;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
+import org.apache.streamline.streams.metrics.topology.TopologyTimeSeriesMetrics;
 import org.apache.streamline.streams.service.exception.request.BadRequestException;
 import org.apache.streamline.streams.service.exception.request.EntityNotFoundException;
 import org.slf4j.Logger;
@@ -37,6 +39,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static javax.ws.rs.core.Response.Status.OK;
@@ -62,6 +67,36 @@ public class MetricsResource {
         Topology topology = catalogService.getTopology(id);
         if (topology != null) {
             Map<String, TopologyMetrics.ComponentMetric> topologyMetrics = catalogService.getTopologyMetrics(topology);
+            return WSUtils.respondEntity(topologyMetrics, OK);
+        }
+
+        throw EntityNotFoundException.byId(id.toString());
+    }
+
+    @GET
+    @Path("/topologies/timeseries/{id}")
+    @Timed
+    public Response getTopologyMetricsViaTimeSeriesById(@PathParam("id") Long id,
+                                                        @QueryParam("from") Long from,
+                                                        @QueryParam("to") Long to) throws Exception {
+        assertTimeRange(from, to);
+
+        Topology topology = catalogService.getTopology(id);
+        if (topology != null) {
+            List<TopologyComponent> topologyComponents = new ArrayList<>();
+            topologyComponents.addAll(catalogService.listTopologySources());
+            topologyComponents.addAll(catalogService.listTopologyProcessors());
+            topologyComponents.addAll(catalogService.listTopologySinks());
+
+            Map<String, TopologyTimeSeriesMetrics.TimeSeriesComponentMetric> topologyMetrics = new HashMap<>();
+            topologyComponents.stream().map(c -> {
+                try {
+                    return Pair.of(c, catalogService.getComponentStats(topology, c, from, to));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }).forEach(m -> topologyMetrics.put(m.getKey().getId().toString(), m.getValue()));
+
             return WSUtils.respondEntity(topologyMetrics, OK);
         }
 
@@ -102,7 +137,8 @@ public class MetricsResource {
         Topology topology = catalogService.getTopology(id);
         TopologyComponent topologyComponent = catalogService.getTopologyComponent(id, topologyComponentId);
         if (topology != null && topologyComponent != null) {
-            Map<String, Map<Long, Double>> metrics = catalogService.getComponentStats(topology, topologyComponent, from, to);
+            TopologyTimeSeriesMetrics.TimeSeriesComponentMetric metrics =
+                    catalogService.getComponentStats(topology, topologyComponent, from, to);
             return WSUtils.respondEntity(metrics, OK);
         } else if (topology == null) {
             throw EntityNotFoundException.byId("Topology: " + id.toString());

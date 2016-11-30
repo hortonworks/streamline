@@ -91,6 +91,7 @@ import org.apache.streamline.streams.layout.component.rule.Rule;
 import org.apache.streamline.streams.layout.exception.ComponentConfigException;
 import org.apache.streamline.streams.layout.storm.FluxComponent;
 import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
+import org.apache.streamline.streams.metrics.topology.TopologyTimeSeriesMetrics;
 import org.apache.streamline.streams.rule.UDAF;
 import org.apache.streamline.streams.rule.UDAF2;
 import org.slf4j.Logger;
@@ -1034,7 +1035,7 @@ public class StreamCatalogService {
         return this.topologyMetrics.getCompleteLatency(getTopologyLayout(topology), getComponentLayout(component), from, to);
     }
 
-    public Map<String, Map<Long, Double>> getComponentStats(Topology topology, TopologyComponent component, Long from, Long to) throws IOException {
+    public TopologyTimeSeriesMetrics.TimeSeriesComponentMetric getComponentStats(Topology topology, TopologyComponent component, Long from, Long to) throws IOException {
         return this.topologyMetrics.getComponentStats(getTopologyLayout(topology), getComponentLayout(component), from, to);
     }
 
