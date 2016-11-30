@@ -31,6 +31,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -184,6 +185,11 @@ public class PreparedStatementBuilder {
 
     private void setPreparedStatementParams(PreparedStatement preparedStatement,
                                               Schema.Type type, int index, Object val) throws SQLException {
+        if (val == null) {
+            preparedStatement.setNull(index, getSqlType(type));
+            return;
+        }
+
         switch (type) {
             case BOOLEAN:
                 preparedStatement.setBoolean(index, (Boolean) val);
@@ -216,6 +222,36 @@ public class PreparedStatementBuilder {
             case ARRAY:
                 preparedStatement.setObject(index, val);    //TODO check this
                 break;
+        }
+    }
+
+    private int getSqlType(Schema.Type type) {
+        switch (type) {
+            case BOOLEAN:
+                return Types.BOOLEAN;
+            case BYTE:
+                return Types.TINYINT;
+            case SHORT:
+                return Types.SMALLINT;
+            case INTEGER:
+                return Types.INTEGER;
+            case LONG:
+                return Types.BIGINT;
+            case FLOAT:
+                return Types.REAL;
+            case DOUBLE:
+                return Types.DOUBLE;
+            case STRING:
+                // it might be a VARCHAR or LONGVARCHAR
+                return Types.VARCHAR;
+            case BINARY:
+                // it might be a VARBINARY or LONGVARBINARY
+                return Types.VARBINARY;
+            case NESTED:
+            case ARRAY:
+                return Types.JAVA_OBJECT;
+            default:
+                throw new IllegalArgumentException("Not supported type: " + type);
         }
     }
 }

@@ -273,7 +273,7 @@ CREATE TABLE IF NOT EXISTS components (
   name VARCHAR(256) NOT NULL,
   hosts TEXT NOT NULL,
   protocol VARCHAR(256),
-  port BIGINT,
+  port INTEGER,
   timestamp BIGINT,
   PRIMARY KEY (id)
 );
