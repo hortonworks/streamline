@@ -13,6 +13,7 @@ import TagsContainer from '../containers/Configuration/TagsContainer'
 import FilesContainer from '../containers/Configuration/FilesContainer'
 import state from '../app_state';
 import ServicePoolContainer  from '../containers/Service/ServicePoolContainer';
+import EnvironmentContainer from '../containers/Environment/EnvironmentContainer';
 
 const onEnter = (nextState, replace, callback) => {
 	var sidebarRoute = nextState.routes[1];
@@ -41,6 +42,7 @@ export default (
   <Route path="files" name="Files" component={FilesContainer} onEnter={onEnter}/>
   <Route path="news-feed" name="News Feed" component={NewsFeedContainer} onEnter={onEnter}/>
   <Route path="service-pool" name="Service Pool" component={ServicePoolContainer} onEnter={onEnter}/>
+  <Route path="environments" name="Environments" component={EnvironmentContainer} onEnter={onEnter}/>
   </Route>
 
 )
