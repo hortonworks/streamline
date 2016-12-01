@@ -14,6 +14,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import java.util.Collections;
+
 import static javax.ws.rs.core.Response.Status.OK;
 
 @Path("/v1/catalog")
@@ -54,7 +56,7 @@ public class StormMetadataResource {
     public Response getMainPageByClusterId(@PathParam("clusterId") Long clusterId) {
         try {
             StormMetadataService stormMetadataService = new StormMetadataService.Builder(catalogService, clusterId).build();
-            return WSUtils.respondEntity(stormMetadataService.getMainPageUrl(), OK);
+            return WSUtils.respondEntity(Collections.singletonMap("url", stormMetadataService.getMainPageUrl()), OK);
         } catch (EntityNotFoundException ex) {
             throw org.apache.streamline.streams.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
         }
