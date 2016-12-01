@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS services ("id" BIGINT NOT NULL, "clusterId" BIGINT, "
 CREATE TABLE IF NOT EXISTS service_configurations ("id" BIGINT NOT NULL, "serviceId" BIGINT, "name" VARCHAR, "configuration" VARCHAR, "description" VARCHAR, "filename" VARCHAR, "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
 CREATE TABLE IF NOT EXISTS components ("id" BIGINT NOT NULL, "serviceId" BIGINT, "name" VARCHAR, "hosts" VARCHAR, "protocol" VARCHAR, "port" INTEGER, "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
 CREATE TABLE IF NOT EXISTS namespaces ("id" BIGINT NOT NULL, "name" VARCHAR, "streamingEngine" VARCHAR, "timeSeriesDB" VARCHAR, "description" VARCHAR, "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
-CREATE TABLE IF NOT EXISTS namespace_service_cluster_mapping ("namespaceId" BIGINT NOT NULL, "serviceName" VARCHAR NOT NULL, "clusterId" BIGINT, CONSTRAINT pk PRIMARY KEY ("processorId", "serviceName", "clusterId"))
+CREATE TABLE IF NOT EXISTS namespace_service_cluster_mapping ("namespaceId" BIGINT NOT NULL, "serviceName" VARCHAR NOT NULL, "clusterId" BIGINT NOT NULL, CONSTRAINT pk PRIMARY KEY ("namespaceId", "serviceName", "clusterId"))
 CREATE TABLE IF NOT EXISTS sequence_table ("id" VARCHAR, "parser_info" BIGINT, "files" BIGINT, "topology_versioninfos" BIGINT, "topologies" BIGINT, "topology_component_bundles" BIGINT, "topology_components" BIGINT, "tag" BIGINT,  "streaminfo" BIGINT, "notifierinfos" BIGINT, "topology_sources" BIGINT, "topology_sinks" BIGINT, "topology_processors" BIGINT, "topology_edges" BIGINT, "ruleinfos" BIGINT, "windowinfos" BIGINT, "udfs" BIGINT, "clusters" BIGINT, "services" BIGINT, "service_configurations" BIGINT,"branchruleinfos" BIGINT, "components" BIGINT, "namespaces" BIGINT CONSTRAINT pk PRIMARY KEY ("id"))
 
 CREATE SEQUENCE IF NOT EXISTS parser_info_sequence
@@ -48,3 +48,4 @@ CREATE SEQUENCE IF NOT EXISTS clusters_sequence
 CREATE SEQUENCE IF NOT EXISTS services_sequence
 CREATE SEQUENCE IF NOT EXISTS service_configurations_sequence
 CREATE SEQUENCE IF NOT EXISTS components_sequence
+CREATE SEQUENCE IF NOT EXISTS namespaces_sequence

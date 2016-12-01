@@ -19,3 +19,5 @@ org.apache.streamline.streams.catalog.WindowInfo
 org.apache.streamline.streams.catalog.BranchRuleInfo
 org.apache.streamline.streams.catalog.topology.TopologyComponentBundle
 org.apache.streamline.streams.catalog.TopologyVersionInfo
+org.apache.streamline.streams.catalog.Namespace
+org.apache.streamline.streams.catalog.NamespaceServiceClusterMapping
