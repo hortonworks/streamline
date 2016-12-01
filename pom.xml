@@ -31,7 +31,7 @@
         <commons-lang3.version>3.4</commons-lang3.version>
         <commons.version>2.5</commons.version>
         <curator.version>2.11.0</curator.version>
-        <dropwizard.version>0.9.0-rc4</dropwizard.version>
+        <dropwizard.version>1.0.5</dropwizard.version>
         <firebase-client.version>1.0.7</firebase-client.version>
         <groovy.version>2.4.5</groovy.version>
         <guava.version>18.0</guava.version>
@@ -60,7 +60,7 @@
         <aws-java-sdk.version>1.10.77</aws-java-sdk.version>
 
         <!-- Runtime Scope Dependencies -->
-        <logback.version>1.1.3</logback.version>
+        <logback.version>1.1.7</logback.version>
 
         <!-- Test Scope Dependencies -->
         <h2.version>1.4.188</h2.version>
