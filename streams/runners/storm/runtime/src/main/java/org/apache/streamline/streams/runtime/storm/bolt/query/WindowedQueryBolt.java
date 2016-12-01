@@ -134,16 +134,40 @@ public class WindowedQueryBolt extends StreamlineWindowedBolt {
         return this;
     }
 
-    /** Similar to select(), but has two differences:
-     *    - each key in 'commaSeparatedKeys' is automatically prefixed with 'streamline-event.'
+    /**  This a convenience method specifically for Streamline that allows users to skip specifying the
+     *      'streamline-event.' prefix for every join key and projection key repeatedly
+     *   Similar to select(), but has 3 differences:
      *    - the projected tuple is a StreamlineEvent object instead of regular Storm tuple
+     *    - each key in 'commaSeparatedKeys' is automatically prefixed with 'streamline-event.'
+     *    - updates each key in joinCriteria with prefix 'streamline-event.'
      *  Note: This will be kept Streamline specific and wont be migrated to Storm.
      */
     public WindowedQueryBolt selectStreamLine(String commaSeparatedKeys) {
-        streamLineStyleProjection = true;
         // prefix each key with "streamline-event."
         String prefixedKeyNames = convertToStreamLineKeys(commaSeparatedKeys);
+        prefixJoinCriteriaKeys(); // update the join keys
+        streamLineStyleProjection = true;
         return select(prefixedKeyNames);
+    }
+
+    /** Prefixes each key in the joinCriteria with "streamline-event." and preserves original insertion order
+     *   Note: This will be kept Streamline specific and wont be migrated to Storm.
+     */
+    private void prefixJoinCriteriaKeys() {
+        for (JoinInfo ji : joinCriteria.values()) {
+            ji.nestedKeyName = splice(StreamlineEvent.STREAMLINE_EVENT, ji.nestedKeyName);
+            if ( ji.otherKey!=null )
+                ji.otherKey = splice(StreamlineEvent.STREAMLINE_EVENT, ji.otherKey);
+        }
+    }
+
+    private String[] splice(String head, String[] tail) {
+        String[] result = new String[tail.length+1];
+        result[0]=head;
+        for (int i = 0; i < tail.length; i++) {
+            result[i+1] = tail[i];
+        }
+        return result;
     }
 
     // prefixes each key with 'streamline-event.'
