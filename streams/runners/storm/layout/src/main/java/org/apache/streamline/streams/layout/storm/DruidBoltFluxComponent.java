@@ -17,8 +17,11 @@
  */
 package org.apache.streamline.streams.layout.storm;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import org.apache.streamline.streams.StreamlineEvent;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,12 +66,13 @@ public class DruidBoltFluxComponent extends AbstractFluxComponent {
         String componentId = "druidDruidBeamFactory" + UUID_FOR_COMPONENTS;
         String className = "org.apache.streamline.streams.layout.storm.DruidBeamFactoryImpl";
 
+        List<String> constructorArgs = Lists.newArrayList(getJsonString(conf.get(KEY_AGGR_LIST)));
+
         String[] configMethodNames = {
                 "setIndexService", "setDiscoveryPath", "setDataSource",
                 "setTranquilityZKconnect", "setDimensions", "setTimestampField",
                 "setClusterReplication", "setClusterPartitions", "setWindowPeriod",
-                "setIndexRetryPeriod", "setSegmentGranularity", "setQueryGranularity",
-                "setAggregatorInfo" };
+                "setIndexRetryPeriod", "setSegmentGranularity", "setQueryGranularity" };
 
         String[] configKeys = {
                 KEY_INDEX_SERVICE,
@@ -82,27 +86,34 @@ public class DruidBoltFluxComponent extends AbstractFluxComponent {
                 KEY_WINDOW_PERIOD,
                 KEY_INDEX_RETRY_PERIOD,
                 KEY_SEGMENT_GRANULARITY,
-                KEY_QUERY_GRANULARITY,
-                KEY_AGGR_LIST
+                KEY_QUERY_GRANULARITY
         };
 
         List configMethods = getConfigMethodsYaml(configMethodNames, configKeys);
-        addToComponents(createComponent(componentId, className, null, null, configMethods));
+        addToComponents(createComponent(componentId, className, null, constructorArgs, configMethods));
         return componentId;
+    }
+
+    private String getJsonString(Object object) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            return mapper.writeValueAsString(object);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Exception while parsing the aggregratorInfo");
+        }
     }
 
     private String addTupleDruidEventMapperComponent() {
         String componentId = "druidTupleDruidEventMapper" + UUID_FOR_COMPONENTS;
         String className = "org.apache.storm.druid.bolt.TupleDruidEventMapper";
-        final List<Object> constructorArgs = new ArrayList<>();
-        addArgValue(constructorArgs, StreamlineEvent.STREAMLINE_EVENT);
+        List<String> constructorArgs = Lists.newArrayList(StreamlineEvent.STREAMLINE_EVENT);
         addToComponents(createComponent(componentId, className, null, constructorArgs, null));
         return componentId;
     }
 
     private String addDruidConfigBuilderComponent() {
         String builderComponentId = "druidConfig" + UUID_FOR_COMPONENTS;
-        String builderClassName = "org.apache.storm.druid.bolt.DruidConfig.Builder";
+        String builderClassName = "org.apache.storm.druid.bolt.DruidConfig$Builder";
 
         String[] configKeys = {
                 KEY_BATCH_SIZE, KEY_PENDING_BATCHES, KEY_LINGER_MILLS,
