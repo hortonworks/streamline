@@ -41,12 +41,17 @@ public class StormTopologyActionsImpl implements TopologyActions {
     private static final Logger LOG = LoggerFactory.getLogger(StormTopologyActionsImpl.class);
     public static final int DEFAULT_WAIT_TIME_SEC = 30;
 
+    private static final String NIMBUS_SEEDS = "nimbus.seeds";
+    private static final String NIMBUS_PORT = "nimbus.port";
+
     private String stormArtifactsLocation = "/tmp/storm-artifacts/";
     private String stormCliPath = "storm";
     private String stormJarLocation;
     private String catalogRootUrl;
     private String javaJarCommand;
     private StormRestAPIClient client;
+    private String nimbusSeeds;
+    private Integer nimbusPort;
     private Map<String, String> conf;
 
     public StormTopologyActionsImpl() {
@@ -81,6 +86,8 @@ public class StormTopologyActionsImpl implements TopologyActions {
             }
             Client restClient = ClientBuilder.newClient(new ClientConfig());
             this.client = new StormRestAPIClient(restClient, stormApiRootUrl);
+            nimbusSeeds = conf.get(NIMBUS_SEEDS);
+            nimbusPort = Integer.valueOf(conf.get(NIMBUS_PORT));
         }
         File f = new File (stormArtifactsLocation);
         f.mkdirs();
@@ -96,6 +103,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
         commands.add("jar");
         commands.add(jarToDeploy.toString());
         commands.addAll(getExtraJarsArg(topology));
+        commands.addAll(getNimbusConf());
         commands.add("org.apache.storm.flux.Flux");
         commands.add("--remote");
         commands.add(fileName);
@@ -124,6 +132,20 @@ public class StormTopologyActionsImpl implements TopologyActions {
             args.add("--jars");
             args.add(Joiner.on(",").join(jars));
         }
+        return args;
+    }
+
+    private List<String> getNimbusConf() {
+        List<String> args = new ArrayList<>();
+
+        // FIXME: Can't find how to pass list to nimbus.seeds for Storm CLI
+        // Maybe we need to fix Storm to parse string when expected parameter type is list
+        args.add("-c");
+        args.add("nimbus.host=" + nimbusSeeds.split(",")[0]);
+
+        args.add("-c");
+        args.add("nimbus.port=" + String.valueOf(nimbusPort));
+
         return args;
     }
 
@@ -293,7 +315,6 @@ public class StormTopologyActionsImpl implements TopologyActions {
         }
         components.add(yamlComponent);
     }
-
 
     private ShellProcessResult executeShellProcess (List<String> commands) throws  Exception {
         LOG.debug("Executing command: {}", Joiner.on(" ").join(commands));

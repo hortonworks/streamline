@@ -24,6 +24,8 @@ DROP TABLE IF EXISTS clusters
 DROP TABLE IF EXISTS services
 DROP TABLE IF EXISTS service_configurations
 DROP TABLE IF EXISTS components
+DROP TABLE IF EXISTS namespaces
+DROP TABLE IF EXISTS namespace_service_cluster_mapping
 DROP SEQUENCE IF EXISTS parser_info_sequence
 DROP SEQUENCE IF EXISTS topology_versioninfos_sequence
 DROP SEQUENCE IF EXISTS topologies_sequence
@@ -44,3 +46,4 @@ DROP SEQUENCE IF EXISTS clusters_sequence
 DROP SEQUENCE IF EXISTS services_sequence
 DROP SEQUENCE IF EXISTS service_configurations_sequence
 DROP SEQUENCE IF EXISTS components_sequence
+DROP SEQUENCE IF EXISTS namespaces_sequence
