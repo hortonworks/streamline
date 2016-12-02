@@ -828,6 +828,11 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.streamline</groupId>
+                <artifactId>dashboard-registry</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
                 <artifactId>webservice</artifactId>
                 <version>${project.version}</version>
             </dependency>

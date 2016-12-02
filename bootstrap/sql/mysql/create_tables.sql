@@ -3,6 +3,50 @@
 
 -- THE NAMES OF THE TABLE COLUMNS MUST MATCH THE NAMES OF THE CORRESPONDING CLASS MODEL FIELDS;
 
+CREATE TABLE IF NOT EXISTS dashboard (
+  id BIGINT AUTO_INCREMENT NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  description VARCHAR(256) NOT NULL,
+  data TEXT NOT NULL,
+  timestamp  BIGINT,
+  UNIQUE KEY `UK_name` (name),
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS widget (
+  id BIGINT AUTO_INCREMENT NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  description VARCHAR(256) NOT NULL,
+  type VARCHAR(256) NOT NULL,
+  data TEXT NOT NULL,
+  timestamp  BIGINT,
+  dashboardId  BIGINT NOT NULL,
+  UNIQUE KEY `UK_name` (name),
+  FOREIGN KEY (dashboardId) REFERENCES dashboard(id),
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS datasource (
+  id BIGINT AUTO_INCREMENT NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  description VARCHAR(256) NOT NULL,
+  type VARCHAR(256) NOT NULL,
+  url VARCHAR(256) NOT NULL,
+  data TEXT NOT NULL,
+  timestamp  BIGINT,
+  dashboardId  BIGINT NOT NULL,
+  UNIQUE KEY `UK_name` (name),
+  FOREIGN KEY (dashboardId) REFERENCES dashboard(id),
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS widget_datasource_mapping (
+  widgetId BIGINT NOT NULL,
+  datasourceId BIGINT NOT NULL,
+  FOREIGN KEY (widgetId) REFERENCES widget(id),
+  FOREIGN KEY (datasourceId) REFERENCES datasource(id),
+  PRIMARY KEY (widgetId, datasourceId)
+);
 
 CREATE TABLE IF NOT EXISTS parser_info (
     id BIGINT AUTO_INCREMENT NOT NULL,
