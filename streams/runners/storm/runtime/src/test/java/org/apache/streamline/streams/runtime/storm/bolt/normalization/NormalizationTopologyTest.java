@@ -8,6 +8,7 @@ import org.apache.storm.ILocalCluster;
 import org.apache.storm.LocalCluster;
 import org.apache.storm.generated.StormTopology;
 import org.apache.storm.topology.TopologyBuilder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Test to run storm topology containing NormalizationProcessor.
  */
+@Ignore
 public class NormalizationTopologyTest {
     private static final Logger log = LoggerFactory.getLogger(NormalizationTopologyTest.class);
 
