@@ -1024,25 +1024,19 @@ public class StreamCatalogService {
                     TopologyComponentBundle.TopologyComponentType.PROCESSOR,
                     topologyData.getBundleIdToType().get(topologyProcessor.getTopologyComponentBundleId().toString()));
             topologyProcessor.setTopologyComponentBundleId(bundle.getId());
-            Object ruleList = topologyProcessor.getConfig().getAny(RulesProcessor.CONFIG_KEY_RULES);
-            List<Long> ruleIds = new ObjectMapper().convertValue(ruleList, new TypeReference<List<Long>>() {
+            Optional<Object> ruleListObj = topologyProcessor.getConfig().getAnyOptional(RulesProcessor.CONFIG_KEY_RULES);
+            ruleListObj.ifPresent(ruleList -> {
+                List<Long> ruleIds = new ObjectMapper().convertValue(ruleList, new TypeReference<List<Long>>() {});
+                List<Long> updatedRuleIds = new ArrayList<>();
+                if (bundle.getSubType().equals(ComponentTypes.RULE)) {
+                    ruleIds.forEach(ruleId -> updatedRuleIds.add(oldToNewRuleIds.get(ruleId)));
+                } else if (bundle.getSubType().equals(ComponentTypes.BRANCH)) {
+                    ruleIds.forEach(ruleId -> updatedRuleIds.add(oldToNewBranchRuleIds.get(ruleId)));
+                } else if (bundle.getSubType().equals(ComponentTypes.WINDOW)) {
+                    ruleIds.forEach(ruleId -> updatedRuleIds.add(oldToNewWindowIds.get(ruleId)));
+                }
+                topologyProcessor.getConfig().setAny(RulesProcessor.CONFIG_KEY_RULES, updatedRuleIds);
             });
-            List<Long> updatedRuleIds = new ArrayList<>();
-            if (bundle.getSubType().equals(ComponentTypes.RULE)) {
-                for (Long ruleId : ruleIds) {
-                    updatedRuleIds.add(oldToNewRuleIds.get(ruleId));
-                }
-            } else if (bundle.getSubType().equals(ComponentTypes.BRANCH)) {
-                for (Long ruleId : ruleIds) {
-                    updatedRuleIds.add(oldToNewBranchRuleIds.get(ruleId));
-                }
-
-            } else if (bundle.getSubType().equals(ComponentTypes.WINDOW)) {
-                for (Long ruleId : ruleIds) {
-                    updatedRuleIds.add(oldToNewWindowIds.get(ruleId));
-                }
-            }
-            topologyProcessor.getConfig().setAny(RulesProcessor.CONFIG_KEY_RULES, updatedRuleIds);
             addTopologyProcessor(newTopology.getId(), topologyProcessor);
             oldToNewComponentIds.put(oldComponentId, topologyProcessor.getId());
         }
@@ -1104,7 +1098,9 @@ public class StreamCatalogService {
 
     public Topology cloneTopology(Topology topology) throws Exception {
         Preconditions.checkNotNull(topology, "Topology does not exist");
-        return importTopology(new TopologyData(doExportTopology(topology)));
+        TopologyData exported = new TopologyData(doExportTopology(topology));
+        exported.setTopologyName(exported.getTopologyName() + "-clone");
+        return importTopology(exported);
     }
 
     private void setUpExtraJars(Topology topology) throws IOException {

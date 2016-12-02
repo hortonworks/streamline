@@ -20,25 +20,25 @@ package org.apache.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.Topology;
 import org.apache.streamline.streams.catalog.TopologyVersionInfo;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.streamline.common.util.WSUtils;
-import org.apache.streamline.streams.catalog.Topology;
-import org.apache.streamline.streams.catalog.topology.TopologyData;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import org.apache.streamline.streams.catalog.topology.TopologyData;
 import org.apache.streamline.streams.layout.component.TopologyActions;
 import org.apache.streamline.streams.metrics.storm.topology.TopologyNotAliveException;
 import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
 import org.apache.streamline.streams.service.exception.request.BadRequestException;
 import org.apache.streamline.streams.service.exception.request.EntityNotFoundException;
 import org.apache.streamline.streams.storm.common.StormNotReachableException;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -48,8 +48,11 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -463,14 +466,21 @@ public class TopologyCatalogResource {
         throw EntityNotFoundException.byVersion(topologyId.toString(), versionId.toString());
     }
 
-    @POST
+    @GET
     @Path("/topologies/{topologyId}/actions/export")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @Timed
     public Response exportTopology(@PathParam("topologyId") Long topologyId) throws Exception {
-        Topology originalTopology = catalogService.getTopology(topologyId);
-        if (originalTopology != null) {
-            String clonedTopology = catalogService.exportTopology(originalTopology);
-            return WSUtils.respondEntity(clonedTopology, OK);
+        Topology topology = catalogService.getTopology(topologyId);
+        if (topology != null) {
+            String exportedTopology = catalogService.exportTopology(topology);
+            if (!StringUtils.isEmpty(exportedTopology)) {
+                InputStream is = new ByteArrayInputStream(exportedTopology.getBytes(StandardCharsets.UTF_8));
+                return Response.status(OK)
+                        .entity(is)
+                        .header("Content-Disposition", "attachment; filename=\"" + topology.getName() + ".json\"")
+                        .build();
+            }
         }
 
         throw EntityNotFoundException.byId(topologyId.toString());
@@ -490,10 +500,16 @@ public class TopologyCatalogResource {
         throw EntityNotFoundException.byId(topologyId.toString());
     }
 
+    /**
+     * curl -X POST 'http://localhost:8080/api/v1/catalog/topologies/actions/import' -F file=@/tmp/topology.json
+     */
     @POST
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/topologies/actions/import")
     @Timed
-    public Response importTopology(TopologyData topologyData) throws Exception {
+    public Response importTopology(@FormDataParam("file") final InputStream inputStream)
+            throws Exception {
+        TopologyData topologyData = new ObjectMapper().readValue(inputStream, TopologyData.class);
         Topology importedTopology = catalogService.importTopology(topologyData);
         return WSUtils.respondEntity(importedTopology, OK);
     }
