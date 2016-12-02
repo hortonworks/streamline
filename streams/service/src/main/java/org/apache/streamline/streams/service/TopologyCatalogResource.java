@@ -25,6 +25,10 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.Topology;
 import org.apache.streamline.streams.catalog.TopologyVersionInfo;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.streamline.common.util.WSUtils;
+import org.apache.streamline.streams.catalog.Topology;
+import org.apache.streamline.streams.catalog.topology.TopologyData;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.layout.component.TopologyActions;
 import org.apache.streamline.streams.metrics.storm.topology.TopologyNotAliveException;
@@ -465,6 +469,41 @@ public class TopologyCatalogResource {
         }
 
         throw EntityNotFoundException.byVersion(topologyId.toString(), versionId.toString());
+    }
+
+    @POST
+    @Path("/topologies/{topologyId}/actions/export")
+    @Timed
+    public Response exportTopology(@PathParam("topologyId") Long topologyId) throws Exception {
+        Topology originalTopology = catalogService.getTopology(topologyId);
+        if (originalTopology != null) {
+            String clonedTopology = catalogService.exportTopology(originalTopology);
+            return WSUtils.respondEntity(clonedTopology, OK);
+        }
+
+        throw EntityNotFoundException.byId(topologyId.toString());
+    }
+
+
+    @POST
+    @Path("/topologies/{topologyId}/actions/clone")
+    @Timed
+    public Response cloneTopology(@PathParam("topologyId") Long topologyId) throws Exception {
+        Topology originalTopology = catalogService.getTopology(topologyId);
+        if (originalTopology != null) {
+            Topology clonedTopology = catalogService.cloneTopology(originalTopology);
+            return WSUtils.respondEntity(clonedTopology, OK);
+        }
+
+        throw EntityNotFoundException.byId(topologyId.toString());
+    }
+
+    @POST
+    @Path("/topologies/actions/")
+    @Timed
+    public Response importTopology(TopologyData topologyData) throws Exception {
+        Topology importedTopology = catalogService.importTopology(topologyData);
+        return WSUtils.respondEntity(importedTopology, OK);
     }
 
     private List<TopologyCatalogWithMetric> enrichMetricToTopologies(
