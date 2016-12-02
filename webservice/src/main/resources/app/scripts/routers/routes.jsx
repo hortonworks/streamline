@@ -17,11 +17,9 @@ import EnvironmentContainer from '../containers/Environment/EnvironmentContainer
 
 const onEnter = (nextState, replace, callback) => {
 	var sidebarRoute = nextState.routes[1];
-	if(sidebarRoute){
-		state.sidebar = {
-			show: false,
-			activeItem: sidebarRoute.name
-		}
+        if(sidebarRoute && sidebarRoute.name === 'All Streams'){
+                state.sidebar_activeKey = 1;
+    state.sidebar_toggleFlag = false;
 	}
 	callback();
 }

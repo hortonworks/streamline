@@ -127,12 +127,12 @@ class ServicePoolContainer extends Component{
     this.btnClassChange();
   }
   btnClassChange = () => {
-    const container = document.querySelector('.wrapper')
-    container.setAttribute("class","container wrapper animated fadeIn ");
+    const container = document.querySelector('.content-wrapper')
+    container.setAttribute("class","content-wrapper animated fadeIn ");
   }
   componentWillUnmount(){
-    const container = document.querySelector('.wrapper')
-    container.setAttribute("class","container-fluid wrapper animated fadeIn ");
+    const container = document.querySelector('.content-wrapper')
+    container.setAttribute("class","content-wrapper animated fadeIn ");
   }
   addBtnClicked = () => {
     const {showInputErr} = this.state;
@@ -332,6 +332,13 @@ class ServicePoolContainer extends Component{
   pagePosition = (index) => {
     this.setState({pageIndex : index || 0})
   }
+  getHeaderContent() {
+    return (
+      <span>
+        Configuration <span className="title-separator">/</span> {this.props.routes[this.props.routes.length-1].name}
+      </span>
+    );
+  }
 
   render(){
     const {routes} = this.props;
@@ -376,7 +383,7 @@ class ServicePoolContainer extends Component{
     }
 
     return(
-      <BaseContainer ref="BaseContainer" routes={routes} headerContent={routes[routes.length - 1].name}>
+      <BaseContainer ref="BaseContainer" routes={routes} headerContent={this.getHeaderContent()}>
         <div className="row row-margin-bottom">
             <div className="col-md-8 col-md-offset-2">
                 <div className="input-group">

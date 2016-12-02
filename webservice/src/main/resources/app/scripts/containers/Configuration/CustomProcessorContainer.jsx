@@ -116,12 +116,19 @@ export default class CustomProcessorContainer extends Component {
     this.btnClassChange();
   }
   btnClassChange = () => {
-    const container = document.querySelector('.wrapper')
-    container.setAttribute("class","container wrapper animated fadeIn ");
+    const container = document.querySelector('.content-wrapper')
+    container.setAttribute("class","content-wrapper");
   }
   componentWillUnmount(){
-    const container = document.querySelector('.wrapper')
-    container.setAttribute("class","container-fluid wrapper animated fadeIn ");
+    const container = document.querySelector('.content-wrapper')
+    container.setAttribute("class","content-wrapper");
+  }
+  getHeaderContent() {
+    return (
+      <span>
+        Configuration <span className="title-separator">/</span> {this.props.routes[this.props.routes.length-1].name}
+      </span>
+    );
   }
 
 	render() {
@@ -132,7 +139,7 @@ export default class CustomProcessorContainer extends Component {
       <BaseContainer
         ref="BaseContainer"
         routes={this.props.routes}
-        headerContent={this.props.routes[this.props.routes.length-1].name}
+        headerContent={this.getHeaderContent()}
       >
 				{this.state.showListing ?
 					<div>
@@ -149,6 +156,7 @@ export default class CustomProcessorContainer extends Component {
                                   />
                                   <InputGroup.Addon>
                                       <Button type="button"
+                                        className="searchBtn"
                                         onClick={this.slideInput}
                                       >
                                         <i className="fa fa-search"></i>
@@ -157,14 +165,13 @@ export default class CustomProcessorContainer extends Component {
                               </InputGroup>
                           </FormGroup>
                         </div>
-                        <div className="col-md-2 col-sm-3 text-right">
-                          <button className="btn btn-success"
-                            type="button"
-                            onClick={this.handleAdd.bind(this)}
-                          >
-                            <i className="fa fa-plus-circle"></i>
-                            &nbsp;Add Processor
-                          </button>
+                        <div id="add-environment">
+                          <a href="javascript:void(0);"
+                            className="hb success actionDropdown"
+                            data-target="#addEnvironment"
+                              onClick={this.handleAdd.bind(this)}>
+                              <i className="fa fa-plus"></i>
+                          </a>
                         </div>
                     </div>
                   </div>

@@ -133,16 +133,16 @@ class TopologyEditorContainer extends Component {
     this.navigateFlag = false;
   }
   componentDidUpdate(){
-    document.getElementsByTagName('body')[0].className='graph-bg';
-    document.querySelector('.wrapper').setAttribute("class","container-fluid wrapper animated fadeIn ");
+    document.getElementsByTagName('body')[0].classList.add('graph-bg');
+    document.querySelector('.content-wrapper').setAttribute("class","content-wrapper animated fadeIn ");
   }
   componentWillMount(){
     state.showComponentNodeContainer = true;
   }
   componentWillUnmount(){
-    document.getElementsByTagName('body')[0].className='';
+    document.getElementsByTagName('body')[0].classList.remove('graph-bg');
     document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay displayNone";
-    document.querySelector('.wrapper').setAttribute("class","container-fluid wrapper animated fadeIn ");
+    document.querySelector('.content-wrapper').setAttribute("class","content-wrapper animated fadeIn ");
   }
 
   componentDidMount() {

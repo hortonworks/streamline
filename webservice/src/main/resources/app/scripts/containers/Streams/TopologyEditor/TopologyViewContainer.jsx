@@ -69,14 +69,8 @@ class TopologyEditorContainer extends Component {
     this.customProcessors = [];
     this.fetchData();
   }
-  componentDidMount(){
-    document.getElementsByTagName('body')[0].className='';
-    document.querySelector('.wrapper').setAttribute("class","container wrapper animated fadeIn ");
-  }
   componentWillUnmount(){
-    document.getElementsByTagName('body')[0].className='';
     document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay displayNone";
-    document.querySelector('.wrapper').setAttribute("class","container-fluid wrapper animated fadeIn ");
   }
 
   @observable viewMode = true;
@@ -290,7 +284,7 @@ class TopologyEditorContainer extends Component {
   getTopologyHeader() {
     return (
       <span>
-        <Link to="/">All Streams</Link> / View: {this.state.topologyName}
+        <Link to="/">All Streams</Link> <span className="title-separator">/</span> View: {this.state.topologyName}
       </span>
     );
   }

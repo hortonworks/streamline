@@ -92,10 +92,10 @@ class TopologyViewMode extends Component{
           : <div className="col-sm-2 styleWindowDN text-right">
               <OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip">Set this version as current version. If another version of topology is deployed, kill it first to set this one.</Tooltip>}>
                 <div style={{display: 'inline-block', cursor: 'not-allowed'}}>
-                  <button 
-                    type="button" 
-                    className="btn btn-default" 
-                    onClick={setCurrentVersion} 
+                  <button
+                    type="button"
+                    className="btn btn-default"
+                    onClick={setCurrentVersion}
                     disabled={isAppRunning}
                     style={isAppRunning ? {pointerEvents : 'none'} : {}}>
                     Set Current Version
@@ -140,7 +140,7 @@ class TopologyViewMode extends Component{
         </div>
         <div className="stat-tiles with-margin">
             <h6>ERRORS</h6>
-            <h1>{metricWrap.failedRecords || 0}</h1>
+            <h1>{metricWrap.errors || 0}</h1>
         </div>
         <div className="stat-tiles with-margin">
             <h6>WORKERS</h6>

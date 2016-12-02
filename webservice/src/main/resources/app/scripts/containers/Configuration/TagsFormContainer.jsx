@@ -78,6 +78,7 @@ export default class TagsFormContainer extends Component {
 							className="form-control"
 							value={this.state.name}
 							required={true}
+              autoFocus="true"
 						/>
 					</div>
                                         {/*this.state.name === '' ?

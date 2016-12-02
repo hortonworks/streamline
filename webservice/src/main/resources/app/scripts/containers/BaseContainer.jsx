@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import Sidebar from '../components/Sidebar';
 import {Link} from 'react-router';
 import {Confirm} from '../components/FSModal'
 
@@ -31,12 +32,8 @@ export default class BaseContainer extends Component {
               onLandingPage={this.props.onLandingPage}
               headerContent={this.props.headerContent}
             />
-            <section className={
-                this.props.onLandingPage === "true" ?
-                "landing-wrapper container" :
-                "container-fluid wrapper animated fadeIn"
-              }
-            >
+            <Sidebar/>
+            <section className="content-wrapper">
               {this.props.children}
             </section>
             <Confirm ref="Confirm"/>

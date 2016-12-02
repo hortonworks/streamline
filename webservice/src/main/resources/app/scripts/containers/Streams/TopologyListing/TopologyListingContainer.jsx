@@ -92,6 +92,11 @@ class TopologyItems extends Component {
     onActionClick = (eventKey) => {
         this.props.topologyAction(eventKey, this.streamRef.dataset.id)
     }
+    streamBoxClick = (id,event) => {
+      if(event.target.nodeName !== 'I'){
+        this.context.router.push('applications/'+id+'/view');
+      }
+    }
     render() {
         const {topologyAction, topologyList, isLoading} = this.props;
         const {topology, metric,latencyTopN} = topologyList;
@@ -111,10 +116,11 @@ class TopologyItems extends Component {
 
         return (
             <div className="col-sm-4">
-              <div className={`stream-box ${ (isLoading.loader && (isLoading.idCheck === topology.id))
+                <div className={`stream-box ${ (isLoading.loader && (isLoading.idCheck === topology.id))
                                 ? ''
                                 : metricWrap.status || 'NOTRUNNING'}`}
-              data-id={topology.id} ref={(ref) => this.streamRef = ref}>
+              data-id={topology.id} ref={(ref) => this.streamRef = ref}
+              onClick={this.streamBoxClick.bind(this,topology.id)}>
                 <div className="stream-head clearfix">
                     <div className="pull-left">
                       <Link to={`applications/${topology.id}/view`}>
@@ -217,7 +223,7 @@ class TopologyItems extends Component {
                             </div>
                             <div className="stream-stats">
                                 <h6>Errors</h6>
-                                <h5 className="color-error">{metricWrap.failedRecords || 0}</h5>
+                                <h5 className="color-error">{metricWrap.misc.errors || 0}</h5>
                             </div>
                             <div className="stream-stats">
                                 <h6>Workers</h6>
@@ -231,7 +237,7 @@ class TopologyItems extends Component {
                     </div>
                 }
 
-            </div>
+              </div>
             </div>
         );
     }
@@ -241,6 +247,10 @@ TopologyItems.propTypes = {
     topologyList: React.PropTypes.object.isRequired,
     topologyAction: React.PropTypes.func.isRequired
 }
+
+TopologyItems.contextTypes = {
+    router: React.PropTypes.object.isRequired
+};
 
 class TopologyListingContainer extends Component {
     constructor(props) {
@@ -259,7 +269,7 @@ class TopologyListingContainer extends Component {
             },
             fetchLoader : true,
             pageIndex : 0,
-            pageSize : 6,
+            pageSize : 9,
         }
 
         this.fetchData();
@@ -386,6 +396,7 @@ class TopologyListingContainer extends Component {
     }
 
     actionHandler = (eventKey, id) => {
+      event.stopPropagation();
       const key = eventKey.split('/');
       switch (key[0].toString()) {
         case "refresh":
@@ -415,7 +426,12 @@ class TopologyListingContainer extends Component {
       (_.isEmpty(input.value)) ? this.setState({slideInput  : false}) : ''
     }
 
-    onSortByClicked = (eventKey) => {
+    onSortByClicked = (eventKey,el) => {
+      const liList = el.target.parentElement.parentElement.children;
+      for(let i = 0;i < liList.length ; i++){
+        liList[i].setAttribute('class','');
+      }
+      el.target.parentElement.setAttribute("class","active");
       const sortKey = (eventKey.toString() === "name") ? "name&ascending=true" : eventKey;
       TopologyREST.getAllTopology(sortKey).then((topology) => {
         if (topology.responseMessage !== undefined) {
@@ -434,6 +450,7 @@ class TopologyListingContainer extends Component {
     }
 
     onActionMenuClicked = (eventKey) => {
+      event.stopPropagation();
       switch(eventKey.toString()){
         case "create" : this.handleAddTopology();
           break;
@@ -450,17 +467,17 @@ class TopologyListingContainer extends Component {
     }
     btnClassChange = () => {
       const actionMenu = document.querySelector('.actionDropdown');
-      actionMenu.setAttribute("class","actionDropdown btn btn-success ");
+      actionMenu.setAttribute("class","actionDropdown hb success ");
       actionMenu.parentElement.setAttribute("class","dropdown");
       const sortDropdown = document.querySelector('.sortDropdown');
-      sortDropdown.setAttribute("class","sortDropdown btn btn-default");
+      sortDropdown.setAttribute("class","sortDropdown");
       sortDropdown.parentElement.setAttribute("class","dropdown")
-      const container = document.querySelector('.wrapper')
-      container.setAttribute("class","container wrapper animated fadeIn ");
+      const container = document.querySelector('.content-wrapper')
+      container.setAttribute("class","content-wrapper ");
     }
     componentWillUnmount(){
-      const container = document.querySelector('.wrapper')
-      container.setAttribute("class","container-fluid wrapper animated fadeIn ");
+      const container = document.querySelector('.content-wrapper')
+      container.setAttribute("class","content-wrapper  ");
     }
     pagePosition = (index) => {
       this.setState({pageIndex : index || 0})
@@ -487,9 +504,25 @@ class TopologyListingContainer extends Component {
         const {entities,filterValue,isLoading,fetchLoader,slideInput,pageSize,pageIndex} = this.state;
         const filteredEntities = TopologyUtils.topologyFilter(entities, filterValue);
         const splitData = _.chunk(filteredEntities,pageSize) || [];
+        const btnIcon = <i className="fa fa-plus"></i>;
+        const sortTitle = <span>Sort:<span style={{color: "#006ea0"}}>&nbsp;{this.state.sorted.text}</span></span>
 
         return (
             <BaseContainer ref="BaseContainer" routes={this.props.routes} headerContent={this.props.routes[this.props.routes.length - 1].name}>
+                <div id="add-environment">
+                  <DropdownButton title={btnIcon}
+                      id="actionDropdown"
+                      className="actionDropdown hb success"
+                      noCaret
+                    >
+                        <MenuItem onClick={this.onActionMenuClicked.bind(this,"create")}>
+                            &nbsp;New Application
+                        </MenuItem>
+                        <MenuItem onClick={this.onActionMenuClicked.bind(this,"import")}>
+                            &nbsp;Import Application
+                        </MenuItem>
+                    </DropdownButton>
+                </div>
                 <div className="row">
                     <div className="page-title-box clearfix">
                         <div className="col-md-4 col-md-offset-5 text-right">
@@ -503,6 +536,7 @@ class TopologyListingContainer extends Component {
                                     />
                                     <InputGroup.Addon className="page-search">
                                         <Button type="button"
+                                          className="searchBtn"
                                           onClick={this.slideInput}
                                         >
                                           <i className="fa fa-search"></i>
@@ -511,15 +545,16 @@ class TopologyListingContainer extends Component {
                                 </InputGroup>
                             </FormGroup>
                         </div>
+
                         <div className="col-md-2 text-center">
-                          <DropdownButton title={`Sort: ${this.state.sorted.text}`}
+                          <DropdownButton title={sortTitle}
                             id="sortDropdown"
                             className="sortDropdown "
                           >
                               <MenuItem onClick={this.onSortByClicked.bind(this,"name")}>
                                   &nbsp;Name
                               </MenuItem>
-                              <MenuItem onClick={this.onSortByClicked.bind(this,"last_updated")}>
+                              <MenuItem active onClick={this.onSortByClicked.bind(this,"last_updated")}>
                                   &nbsp;Last Update
                               </MenuItem>
                               <MenuItem onClick={this.onSortByClicked.bind(this,"status")}>
@@ -527,18 +562,7 @@ class TopologyListingContainer extends Component {
                               </MenuItem>
                           </DropdownButton>
                         </div>
-                        <div className="col-md-1 col-sm-3 text-right">
-                            <DropdownButton title={"CREATE"}
-                              id="actionDropdown"
-                              className="actionDropdown"
-                            >
-                                <MenuItem onClick={this.onActionMenuClicked.bind(this,"create")}>
-                                    &nbsp;New Application
-                                </MenuItem>
-                                <MenuItem onClick={this.onActionMenuClicked.bind(this,"import")}>
-                                    &nbsp;Import Application
-                                </MenuItem>
-                            </DropdownButton>
+                        <div className="col-md-1 col-sm-3 text-left">
                         </div>
                     </div>
                 </div>

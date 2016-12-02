@@ -179,21 +179,6 @@ class EnvironmentContainer extends Component{
     });
   }
 
-  componentDidUpdate(){
-    this.btnClassChange();
-  }
-  componentDidMount(){
-    this.btnClassChange();
-  }
-  btnClassChange = () => {
-    const container = document.querySelector('.wrapper')
-    container.setAttribute("class","container wrapper position-relative animated fadeIn ");
-  }
-  componentWillUnmount(){
-    const container = document.querySelector('.wrapper')
-    container.setAttribute("class","container-fluid wrapper animated fadeIn ");
-  }
-
   addEnvironmentBtn = () => {
     this.setState({namespaceIdToEdit: null},()=>{
       this.addEvtModel.show();
@@ -278,19 +263,29 @@ class EnvironmentContainer extends Component{
     })
   }
 
+  getHeaderContent() {
+    return (
+      <span>
+        Configuration <span className="title-separator">/</span> {this.props.routes[this.props.routes.length-1].name}
+      </span>
+    );
+  }
+
   render(){
     const {entities,pageSize,pageIndex,fetchLoader,isLoading,clusterName, namespaceIdToEdit} = this.state;
     const {routes} = this.props;
     const splitData = _.chunk(entities,pageSize) || [];
     const modelTitle = <span>New Environment <i className="fa fa-info-circle"></i></span>
     return(
-      <BaseContainer ref="BaseContainer" routes={routes} headerContent={routes[routes.length - 1].name}>
-        <a href="javascript:void(0);"
-          className="hb success" id="add-environment"
-          data-target="#addEnvironment"
-          onClick={this.addEnvironmentBtn}>
-            <i className="fa fa-plus"></i>
-        </a>
+      <BaseContainer ref="BaseContainer" routes={routes} headerContent={this.getHeaderContent()}>
+        <div id="add-environment">
+          <a href="javascript:void(0);"
+            className="hb success actionDropdown"
+            data-target="#addEnvironment"
+            onClick={this.addEnvironmentBtn}>
+              <i className="fa fa-plus"></i>
+          </a>
+        </div>
         <div className="row">
             {
               fetchLoader
