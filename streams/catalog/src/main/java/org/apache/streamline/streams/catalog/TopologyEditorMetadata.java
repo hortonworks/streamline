@@ -1,11 +1,14 @@
 package org.apache.streamline.streams.catalog;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.storage.PrimaryKey;
 import org.apache.streamline.storage.catalog.AbstractStorable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -113,5 +116,114 @@ public class TopologyEditorMetadata extends AbstractStorable {
     @Override
     public Long getId() {
         return super.getId();
+    }
+
+
+    /**
+     * positions of components in UI
+     */
+    public static class TopologyComponentUICordinates {
+        private Double x;
+        private Double y;
+        private Long id;
+
+        @JsonCreator
+        public TopologyComponentUICordinates() {
+
+        }
+
+        public Double getX() {
+            return x;
+        }
+
+        public Double getY() {
+            return y;
+        }
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setX(Double x) {
+            this.x = x;
+        }
+
+        public void setY(Double y) {
+            this.y = y;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+    }
+
+    public static class GraphTransform {
+        private List<Double> dragCoords;
+        private Double zoomScale;
+
+        @JsonCreator
+        public GraphTransform() {
+        }
+
+        public List<Double> getDragCoords() {
+            return dragCoords;
+        }
+
+        public void setDragCoords(List<Double> dragCoords) {
+            if (dragCoords != null) {
+                this.dragCoords = new ArrayList<>(dragCoords);
+            }
+        }
+
+        public Double getZoomScale() {
+            return zoomScale;
+        }
+
+        public void setZoomScale(Double zoomScale) {
+            this.zoomScale = zoomScale;
+        }
+    }
+
+    public static class TopologyUIData {
+        private List<TopologyComponentUICordinates> sources;
+        private List<TopologyComponentUICordinates> sinks;
+        private List<TopologyComponentUICordinates> processors;
+        private GraphTransform graphTransforms;
+
+        @JsonCreator
+        public TopologyUIData() {
+        }
+
+        public List<TopologyComponentUICordinates> getSources() {
+            return sources;
+        }
+
+        public void setSources(List<TopologyComponentUICordinates> sources) {
+            this.sources = sources;
+        }
+
+        public List<TopologyComponentUICordinates> getSinks() {
+            return sinks;
+        }
+
+        public void setSinks(List<TopologyComponentUICordinates> sinks) {
+            this.sinks = sinks;
+        }
+
+        public List<TopologyComponentUICordinates> getProcessors() {
+            return processors;
+        }
+
+        public void setProcessors(List<TopologyComponentUICordinates> processors) {
+            this.processors = processors;
+        }
+
+        public GraphTransform getGraphTransforms() {
+            return graphTransforms;
+        }
+
+        public void setGraphTransforms(GraphTransform graphTranforms) {
+            this.graphTransforms = graphTranforms;
+        }
     }
 }

@@ -127,7 +127,6 @@ public class WSUtils {
 
     public static List<QueryParam> topologyVersionsQueryParam(Long topologyId) {
         List<QueryParam> params = buildTopologyIdAwareQueryParams(topologyId, null);
-        params.addAll(currentVersionQueryParam());
         return params;
     }
 

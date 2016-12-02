@@ -102,6 +102,7 @@ public class TopologyComponentFactory {
 
     public Edge getStreamlineEdge(TopologyEdge topologyEdge) {
         Edge edge = new Edge();
+        edge.setId(topologyEdge.getId().toString());
         edge.setFrom(getOutputComponent(topologyEdge));
         edge.setTo(getInputComponent(topologyEdge));
         Set<StreamGrouping> streamGroupings = new HashSet<>();
