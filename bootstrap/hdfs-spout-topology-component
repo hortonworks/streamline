@@ -28,7 +28,8 @@
         "isOptional": false,
         "tooltip": "Directory to read files from",
         "type": "string",
-        "defaultValue": "/tmp/sourcefiles/"
+        "defaultValue": "/tmp/sourcefiles/",
+        "hint": "schema"
       },
       {
         "uiName": "Archive Dir",

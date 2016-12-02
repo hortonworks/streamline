@@ -35,7 +35,8 @@
         "fieldName": "topic",
         "isOptional": false,
         "tooltip": "Kafka topic to read data from",
-        "type": "string"
+        "type": "string",
+        "hint": "schema"
       },
       {
         "uiName": "Zookeeper root node",

@@ -80,6 +80,7 @@ public class TopologyComponentUISpecification {
         private static final String DEFAULT_VALUE = "defaultValue";
         private static final String FIELDS = "fields";
         private static final String OPTIONS = "options";
+        private static final String HINT = "hint";
         private String uiName;
         private String fieldName;
         private boolean isUserInput = true;
@@ -89,6 +90,8 @@ public class TopologyComponentUISpecification {
         private Object defaultValue;
         private List<UIField> fields;
         private List options;
+        // A field to hint UI any special handling. For example, password field, email field, schema field, etc
+        private String hint;
 
         public UIField () {}
 
@@ -102,6 +105,7 @@ public class TopologyComponentUISpecification {
             this.tooltip = uiField.tooltip;
             this.type = uiField.type;
             this.uiName = uiField.uiName;
+            this.hint = uiField.hint;
         }
         public String getUiName() {
             return uiName;
@@ -175,6 +179,14 @@ public class TopologyComponentUISpecification {
             this.options = options;
         }
 
+        public String getHint() {
+            return hint;
+        }
+
+        public void setHint(String hint) {
+            this.hint = hint;
+        }
+
         @Override
         public String toString() {
             return "UIField{" +
@@ -187,6 +199,7 @@ public class TopologyComponentUISpecification {
                     ", defaultValue=" + defaultValue +
                     ", fields=" + fields +
                     ", options=" + options +
+                    ", hint=" + hint +
                     '}';
         }
 
@@ -205,7 +218,8 @@ public class TopologyComponentUISpecification {
             if (type != uiField.type) return false;
             if (defaultValue != null ? !defaultValue.equals(uiField.defaultValue) : uiField.defaultValue != null) return false;
             if (fields != null ? !fields.equals(uiField.fields) : uiField.fields != null) return false;
-            return !(options != null ? !options.equals(uiField.options) : uiField.options != null);
+            if (options != null ? !options.equals(uiField.options) : uiField.options != null) return false;
+            return !(hint != null ? !hint.equals(uiField.hint) : uiField.hint != null);
 
         }
 
@@ -220,6 +234,7 @@ public class TopologyComponentUISpecification {
             result = 31 * result + (defaultValue != null ? defaultValue.hashCode() : 0);
             result = 31 * result + (fields != null ? fields.hashCode() : 0);
             result = 31 * result + (options != null ? options.hashCode() : 0);
+            result = 31 * result + (hint != null ? hint.hashCode() : 0);
             return result;
         }
 

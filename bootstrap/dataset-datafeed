@@ -1,6 +1,0 @@
-{
-   "name" : "twitter-datafeed",
-   "type" : "KAFKA-2",
-   "dataSourceId" : 2,
-   "parserId" : 2
-}

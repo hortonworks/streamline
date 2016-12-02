@@ -73,7 +73,6 @@ add_bundle /streams/componentbundles/SOURCE $bootstrap_dir/kafka-topology-compon
 add_bundle /streams/componentbundles/SOURCE $bootstrap_dir/hdfs-spout-topology-component
 add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/rule-topology-component
 add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/window-topology-component
-add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/parser-topology-component
 add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/normalization-processor-topology-component
 add_bundle /streams/componentbundles/SINK $bootstrap_dir/hdfs-topology-component
 add_bundle /streams/componentbundles/SINK $bootstrap_dir/hbase-topology-component
