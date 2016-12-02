@@ -1,4 +1,9 @@
 ## 0.1.4
+ * STREAMLINE-461: upgraded dropwizard to 1.0.5 and logback to 1.1.7 and verified logging works.
+ * STREAMLINE-501: Backend: Introduce Namespace and NamespaceServiceCluster Mapping
+ * STREAMLINE-136: Support FieldsGrouping through topology editor.
+ * STREAMLINE-543: Time-series AMS querier: Adjust precision automatically based on time range
+ * STREAMLINE-541: Time-series DB version of Topology Metrics API.
  * STREAMLINE-500: Generalize the way of handling exception on service.
  * STREAMLINE-533: UI - Join Processor.
  * STREAMLINE-510: Basic validation before deploying a topology.
