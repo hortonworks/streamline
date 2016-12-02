@@ -706,7 +706,7 @@ label {
     z-index: 99;
 }
 .displayNone {
-    display: none;
+    display: none !important;
 }
 .topology-status {
     display: inline-block;

@@ -134,13 +134,19 @@ class TopologyItems extends Component {
                     </div>
                     <div className="pull-right">
                         <div className="stream-actions">
-                          <a href="javascript:void(0)" onClick={this.onActionClick.bind(this ,"refresh/"+topology.id)}>
+                          <a href="javascript:void(0)" title="Refresh" onClick={this.onActionClick.bind(this ,"refresh/"+topology.id)}>
                             <i className="fa fa-refresh" aria-hidden="true"></i>
                           </a>
-                          <Link to={`applications/${topology.id}/edit`}>
+                          <Link to={`applications/${topology.id}/edit`} title="Edit">
                             <i className="fa fa-pencil" aria-hidden="true"></i>
                           </Link>
-                          <a href="javascript:void(0)" className="close" onClick={this.onActionClick.bind(this ,"delete/"+topology.id)}>
+                          <a href="javascript:void(0)" title="Clone" onClick={this.onActionClick.bind(this ,"clone/"+topology.id)}>
+                            <i className="fa fa-clone" aria-hidden="true"></i>
+                          </a>
+                          <a href="javascript:void(0)" title="Export" onClick={this.onActionClick.bind(this ,"export/"+topology.id)}>
+                            <i className="fa fa-share-square-o" aria-hidden="true"></i>
+                          </a>
+                          <a href="javascript:void(0)" title="Delete" className="close" onClick={this.onActionClick.bind(this ,"delete/"+topology.id)}>
                             <i className="fa fa-times-circle" aria-hidden="true"></i>
                           </a>
                         </div>
@@ -314,6 +320,28 @@ class TopologyListingContainer extends Component {
       this.AddTopologyModelRef.show();
     }
 
+    handleImportTopology = (e) => {
+      if(!e.target.files.length || (e.target.files.length && e.target.files[0].name.indexOf('.json') < 0)){
+        FSReactToastr.error(<CommonNotification flag="error" content="please select the .json file type.."/>, '', toastOpt)
+  			return;
+  		}
+  		let fileObj = e.target.files[0];
+      if(fileObj){
+        let formData = new FormData();
+        formData.append('file', fileObj);
+        
+        TopologyREST.importTopology({body:formData})
+          .then(importResponse => {
+            if (importResponse.responseMessage !== undefined) {
+              FSReactToastr.error(<CommonNotification flag="error" content={importResponse.responseMessage}/>, '', toastOpt)
+            } else {
+              this.fetchData();
+              FSReactToastr.success(<strong>File has been imported successfully</strong>)
+            }
+          });
+      }
+    }
+
     deleteSingleTopology = (id) => {
       this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete ?'}).then((confirmBox) => {
         TopologyREST.deleteTopology(id).then((topology) => {
@@ -335,11 +363,39 @@ class TopologyListingContainer extends Component {
       })
     }
 
+    cloneTopologyAction = (id) => {
+      this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to clone the topology ?'}).then((confirmBox) => {
+        TopologyREST.cloneTopology(id).then((topology) => {
+          this.fetchData();
+          confirmBox.cancel();
+          if (topology.responseMessage !== undefined) {
+            FSReactToastr.error(<CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
+          } else {
+            FSReactToastr.success(<strong>Topology cloned successfully</strong>)
+          }
+        })
+      })
+    }
+
+    exportTopologyAction = (id) => {
+      this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to export the topology ?'}).then((confirmBox) => {
+        this.refs.ExportTopology.href = TopologyREST.getExportTopologyURL(id);
+        this.refs.ExportTopology.click();
+        confirmBox.cancel();
+      })
+    }
+
     actionHandler = (eventKey, id) => {
       const key = eventKey.split('/');
       switch (key[0].toString()) {
         case "refresh":
           this.fetchSingleTopology(id);
+          break;
+        case "clone":
+          this.cloneTopologyAction(id);
+          break;
+        case "export":
+          this.exportTopologyAction(id);
           break;
         case "delete":
           this.deleteSingleTopology(id);
@@ -381,7 +437,7 @@ class TopologyListingContainer extends Component {
       switch(eventKey.toString()){
         case "create" : this.handleAddTopology();
           break;
-        case "import" : console.log("Write the method to handled click")
+        case "import" : this.importFileRef.click();
           break;
          default : break;
       }
@@ -512,6 +568,15 @@ class TopologyListingContainer extends Component {
                   data-resolve={this.handleSaveClicked}>
                   <AddTopology ref={(ref) => this.addTopologyRef = ref}/>
                 </Modal>
+                <input type="file"
+                  ref={(ref) => this.importFileRef = ref}
+                  className="displayNone"
+                  accept=".json"
+                  name="files"
+                  title="Upload File"
+                  onChange={this.handleImportTopology}
+                />
+                <a className="btn-download" ref="ExportTopology" hidden download href=""></a>
             </BaseContainer>
         );
     }

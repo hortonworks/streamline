@@ -151,6 +151,12 @@
 
         <!-- Test dependencies -->
         <dependency>
+            <groupId>org.apache.streamline</groupId>
+            <artifactId>streamline-examples-processors</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jmockit</groupId>
             <artifactId>jmockit</artifactId>
             <version>${jmockit.version}</version>

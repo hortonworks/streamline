@@ -94,6 +94,7 @@ class AddTopology extends Component{
               required="true"
               className={validInput ? "form-control" : "form-control invalidInput"}
               onKeyUp={this.handleOnChange}
+              autoFocus="true"
             />
           </div>
           <Form

@@ -324,6 +324,7 @@ TimeSeriesChart.defaultProps = {
         var i = bisectDate(this.props.data, x0, 1);
         var d0 = this.props.data[i - 1];
         var d1 = this.props.data[i] || this.props.data[i-1];
+        if(d0 == undefined || d1 == undefined) return undefined;
         var d = x0 - d0[self.props.xAttr] > d1[self.props.xAttr] - x0 ? d1 : d0;
 
         return d;

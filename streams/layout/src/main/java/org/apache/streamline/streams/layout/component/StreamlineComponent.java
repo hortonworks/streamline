@@ -99,6 +99,16 @@ public abstract class StreamlineComponent implements Component {
         return Collections.emptySet();
     }
 
+    /**
+     * Subclasses can override to return any resources they
+     * want to be shipped with the topology.
+     *
+     * @return the set of extra jars.
+     */
+    public Set<String> getExtraResources() {
+        return Collections.emptySet();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

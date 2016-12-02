@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 /**
  * The base class for any type of configuration.
@@ -37,6 +38,10 @@ public abstract class AbstractConfig implements Serializable {
 
     public <T> T getAny(String key) {
         return (T) getObject(key);
+    }
+
+    public <T> Optional<T> getAnyOptional(String key) {
+        return Optional.ofNullable((T) properties.get(key));
     }
 
     // for unit tests
@@ -95,6 +100,10 @@ public abstract class AbstractConfig implements Serializable {
 
     public boolean getBoolean(String key, boolean defaultValue) {
         return (boolean) get(key, defaultValue);
+    }
+
+    public boolean contains(String key) {
+        return properties.containsKey(key);
     }
 
     public Map<String, Object> getProperties() {
