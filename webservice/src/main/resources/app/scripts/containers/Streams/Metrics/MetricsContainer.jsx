@@ -27,6 +27,7 @@ export default class MetricsContainer extends Component {
                         // loadingGC: false,
                         graphHeight: 150,
                         inputOutputData: [],
+                        ackedData: [],
                         failedData: [],
                         queueData: [],
                         latency: [],
@@ -68,14 +69,19 @@ export default class MetricsContainer extends Component {
                                         this.setState({loadingRecord: false});
                                 } else {
                                         const inputOutputData = [];
+                                        const ackedData = [];
                                         const failedData = [];
                                         const queueData = [];
-                                        const {outputRecords, inputRecords, recordsInWaitQueue, failedRecords} = res
+                                        const {outputRecords, inputRecords, recordsInWaitQueue, failedRecords, misc} = res
                                         for(const key in outputRecords){
                                                 inputOutputData.push({
                                                         date: new Date(parseInt(key)),
                                                         Input: inputRecords[key] || 0,
                                                         Output: outputRecords[key] || 0,
+                                                })
+                                                ackedData.push({
+                                                        date: new Date(parseInt(key)),
+                                                        Acked: misc.ackedRecords[key] || 0,
                                                 })
                                                 failedData.push({
                                                         date: new Date(parseInt(key)),
@@ -86,7 +92,7 @@ export default class MetricsContainer extends Component {
                                                         Wait: recordsInWaitQueue[key] || 0,
                                                 })
                                         }
-                                        this.setState({inputOutputData: inputOutputData, failedData: failedData, queueData: queueData, loadingRecord: false});
+                                        this.setState({inputOutputData: inputOutputData,ackedData: ackedData, failedData: failedData, queueData: queueData, loadingRecord: false});
                                 }
                         })
                 MetricsREST.getComponentLatencyMetrics(topologyId, selectedComponentId, startDate.toDate().getTime(), endDate.toDate().getTime())
@@ -171,17 +177,35 @@ export default class MetricsContainer extends Component {
                                 }
                         }}
                         showTooltip={function(d){
-                                /*const index = this.props.data.indexOf(d);
-                                const {graph2} = self.refs;
-                                TimeSeriesChart.defaultProps.showTooltip.call(graph2, graph2.props.data[index])*/
+                                const index = this.props.data.indexOf(d);
+                                const {inputOutput, ackedTuples, FailedTuples, Latency, Queue} = self.refs;
+                                if(inputOutput && inputOutput.props.data[index] !== undefined && self.state.expandRecord){
+                                    TimeSeriesChart.defaultProps.showTooltip.call(inputOutput, inputOutput.props.data[index])
+                                }
+                                if(ackedTuples && ackedTuples.props.data[index] !== undefined && self.state.expandRecord){
+                                    TimeSeriesChart.defaultProps.showTooltip.call(ackedTuples, ackedTuples.props.data[index])
+                                }
+                                if(FailedTuples && FailedTuples.props.data[index] !== undefined && self.state.expandRecord){
+                                    TimeSeriesChart.defaultProps.showTooltip.call(FailedTuples, FailedTuples.props.data[index])
+                                }
+                                if(Latency && Latency.props.data[index] !== undefined && self.state.expandLatencyQueue){
+                                    TimeSeriesChart.defaultProps.showTooltip.call(Latency, Latency.props.data[index])
+                                }
+                                if(Queue && Queue.props.data[index] !== undefined && self.state.expandLatencyQueue){
+                                    TimeSeriesChart.defaultProps.showTooltip.call(Queue, Queue.props.data[index])
+                                }
 
-                                TimeSeriesChart.defaultProps.showTooltip.call(this, d)
+                                // TimeSeriesChart.defaultProps.showTooltip.call(this, d)
                         }}
                         hideTooltip={function(){
-                                /*const {graph2} = self.refs;
-                                TimeSeriesChart.defaultProps.hideTooltip.call(graph2)*/
+                                const {inputOutput, ackedTuples, FailedTuples, Latency, Queue} = self.refs;
+                                if(inputOutput) TimeSeriesChart.defaultProps.hideTooltip.call(inputOutput)
+                                if(ackedTuples) TimeSeriesChart.defaultProps.hideTooltip.call(ackedTuples)
+                                if(FailedTuples) TimeSeriesChart.defaultProps.hideTooltip.call(FailedTuples)
+                                if(Latency) TimeSeriesChart.defaultProps.hideTooltip.call(Latency)
+                                if(Queue) TimeSeriesChart.defaultProps.hideTooltip.call(Queue)
 
-                                TimeSeriesChart.defaultProps.hideTooltip.call(this)
+                                // TimeSeriesChart.defaultProps.hideTooltip.call(this)
                         }}
                 />
         }
@@ -200,7 +224,7 @@ export default class MetricsContainer extends Component {
     }
  	render() {
 		const loader = <i className="fa fa-spinner fa-spin fa-3x" aria-hidden="true" style={{marginTop: '50px'}}></i>
-		const {inputOutputData, queueData, failedData, latencyData} = this.state;
+        const {inputOutputData, queueData, ackedData, failedData, latencyData} = this.state;
         const locale = {
           format: 'YYYY-MM-DD HH:mm:ss',
           separator: ' - ',
@@ -258,19 +282,19 @@ export default class MetricsContainer extends Component {
                             </div>
                                 <PanelGroup>
                                         <Panel header="Record" eventKey="Record" collapsible expanded={this.state.expandRecord} onSelect={this.onPanelSelect}>
-                                                <div className="row col-md-6" style={{'textAlign': 'center'}}>
+                                                <div className="row col-md-4" style={{'textAlign': 'center'}}>
                                                         <h5>Input/Output</h5>
                                                         <div style={{height:'150px'}}>
                                                                 {this.state.loadingRecord ? loader : this.getGraph('inputOutput', inputOutputData)}
                                                         </div>
                                                 </div>
-                                                {/*<div className="row col-md-4" style={{'textAlign': 'center'}}>
-                                                                                                <h5>Acked Tuples</h5>
-                                                                                                <div style={{height:'150px', 'textAlign': 'center'}}>
-                                                                                                        {this.state.loadingRecord ? loader : this.getGraph('ackedTuples', [])}
-                                                                                                </div>
-                                                                                        </div>*/}
-                                                <div className="row col-md-6" style={{'textAlign': 'center'}}>
+                                                <div className="row col-md-4" style={{'textAlign': 'center'}}>
+                                                        <h5>Acked Tuples</h5>
+                                                        <div style={{height:'150px', 'textAlign': 'center'}}>
+                                                                {this.state.loadingRecord ? loader : this.getGraph('ackedTuples', ackedData)}
+                                                        </div>
+                                                </div>
+                                                <div className="row col-md-4" style={{'textAlign': 'center'}}>
                                                         <h5>Failed Tuples</h5>
                                                         <div style={{height:'150px', 'textAlign': 'center'}}>
                                                                 {this.state.loadingRecord ? loader : this.getGraph('FailedTuples', failedData)}
