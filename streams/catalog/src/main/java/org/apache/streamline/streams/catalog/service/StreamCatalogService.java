@@ -50,6 +50,7 @@ import org.apache.streamline.streams.catalog.Cluster;
 import org.apache.streamline.streams.catalog.Component;
 import org.apache.streamline.streams.catalog.Namespace;
 import org.apache.streamline.streams.catalog.NamespaceServiceClusterMapping;
+import org.apache.streamline.streams.catalog.FileInfo;
 import org.apache.streamline.streams.catalog.NotifierInfo;
 import org.apache.streamline.streams.catalog.RuleInfo;
 import org.apache.streamline.streams.catalog.Service;
@@ -947,6 +948,37 @@ public class StreamCatalogService {
                     IOUtils.copy(src, dest);
                     copiedJars.add(jar);
                     LOG.debug("Jar {} copied to {}", jar, destPath);
+                }
+            }
+        }
+    }
+
+    private void setUpResources(Topology topology, Set<String> extraResources) throws IOException {
+        Path artifactsDir = topologyActions.getArtifactsLocation(getTopologyLayout(topology));
+        Path resourceDir = Paths.get(artifactsDir.toString(), "resources");
+        makeEmptyDir(resourceDir);
+
+        Set<String> copiedResources = new HashSet<>();
+        for (String resource : extraResources) {
+            if (!copiedResources.contains(resource)) {
+                File destPath = Paths.get(resourceDir.toString(), resource).toFile();
+                List<QueryParam> queryParams = new ArrayList<>();
+                queryParams.add(new QueryParam("name", resource));
+
+                Collection<FileInfo> fileInfos = listFiles(queryParams);
+                if (fileInfos.isEmpty())
+                    throw new IllegalArgumentException("File is not available with name : " + resource);
+
+                String fileName = "";
+                for (FileInfo file : fileInfos)
+                    fileName = file.getStoredFileName();
+
+                try (InputStream src = fileStorage.downloadFile(fileName);
+                     FileOutputStream dest = new FileOutputStream(destPath)
+                ) {
+                    IOUtils.copy(src, dest);
+                    copiedResources.add(resource);
+                    LOG.debug("Resource {} copied to {}", resource, destPath);
                 }
             }
         }
@@ -2721,5 +2753,9 @@ public class StreamCatalogService {
         mapping.setClusterId(clusterId);
         return new StorableKey(NAMESPACE_SERVICE_CLUSTER_MAPPING_NAMESPACE,
                 mapping.getPrimaryKey());
+    }
+    
+    private Collection<FileInfo> listFiles(List<QueryParam> queryParams) {
+        return dao.find( FileInfo.NAME_SPACE, queryParams);
     }
 }
