@@ -119,11 +119,6 @@
             <destName>streamline.yaml</destName>
         </file>
         <file>
-            <source>${project.basedir}./simulator/src/main/resources/nest-streamline-messages</source>
-            <outputDirectory>/examples/topology/resources</outputDirectory>
-            <destName>nest-streamline-messages</destName>
-        </file>
-        <file>
             <source>${project.basedir}./webservice/conf/streamline-env.sh</source>
             <outputDirectory>/conf</outputDirectory>
             <destName>streamline-env.sh</destName>
