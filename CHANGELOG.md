@@ -1,4 +1,5 @@
 ## 0.1.4
+ * STREAMLINE-518: storm-jdbc bundle spec and flux transformation class.
  * STREAMLINE-314: CustomProcessor should provide a Generic Processors for writing JS, ruby, python ec..
  * STREAMLINE-551: .selectStreamLine() now also auto-prefixes all the join keys with 'streamline-event'.
  * STREAMLINE-461: upgraded dropwizard to 1.0.5 and logback to 1.1.7 and verified logging works.
