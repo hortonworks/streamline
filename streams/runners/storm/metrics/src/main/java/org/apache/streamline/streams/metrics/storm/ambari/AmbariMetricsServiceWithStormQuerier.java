@@ -41,6 +41,7 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
             "__process-latency", "__execute-count", "__execute-latency"
     );
     public static final String DEFAULT_APP_ID = "nimbus";
+    public static final String WILDCARD_ALL_COMPONENTS = "%";
 
     private Client client;
     private URI collectorApiUri;
@@ -66,6 +67,12 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
             }
         }
         client = ClientBuilder.newClient(new ClientConfig());
+    }
+
+    @Override
+    public Map<Long, Double> getTopologyLevelMetrics(String topologyName, String metricName,
+                                                     AggregateFunction aggrFunction, long from, long to) {
+        return getMetrics(topologyName, WILDCARD_ALL_COMPONENTS, metricName, aggrFunction, from, to);
     }
 
     /**

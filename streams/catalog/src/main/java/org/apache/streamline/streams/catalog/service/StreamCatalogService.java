@@ -1265,6 +1265,10 @@ public class StreamCatalogService {
         return this.topologyMetrics.getCompleteLatency(getTopologyLayout(topology), getComponentLayout(component), from, to);
     }
 
+    public TopologyTimeSeriesMetrics.TimeSeriesComponentMetric getTopologyStats(Topology topology, Long from, Long to) throws IOException {
+        return this.topologyMetrics.getTopologyStats(getTopologyLayout(topology), from, to);
+    }
+
     public TopologyTimeSeriesMetrics.TimeSeriesComponentMetric getComponentStats(Topology topology, TopologyComponent component, Long from, Long to) throws IOException {
         return this.topologyMetrics.getComponentStats(getTopologyLayout(topology), getComponentLayout(component), from, to);
     }
@@ -2948,8 +2952,9 @@ public class StreamCatalogService {
         return new StorableKey(NAMESPACE_SERVICE_CLUSTER_MAPPING_NAMESPACE,
                 mapping.getPrimaryKey());
     }
-    
+
     private Collection<FileInfo> listFiles(List<QueryParam> queryParams) {
         return dao.find( FileInfo.NAME_SPACE, queryParams);
     }
+
 }

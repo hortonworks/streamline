@@ -20,6 +20,18 @@ public interface TimeSeriesQuerier {
     void init (Map<String, String> conf) throws ConfigException;
 
     /**
+     * Query metrics to time-series DB. The result should aggregate all components metrics to one (meaning topology level).
+     *
+     * @param topologyName  topology name (not ID)
+     * @param metricName    metric name
+     * @param aggrFunction  function to apply while aggregating task level series
+     * @param from          beginning of the time period: timestamp (in milliseconds)
+     * @param to            end of the time period: timestamp (in milliseconds)
+     * @return Map of data points which are paired to (timestamp, value)
+     */
+    Map<Long, Double> getTopologyLevelMetrics(String topologyName, String metricName, AggregateFunction aggrFunction, long from, long to);
+
+    /**
      * Query metrics to time-series DB.
      *
      * @param topologyName  topology name (not ID)

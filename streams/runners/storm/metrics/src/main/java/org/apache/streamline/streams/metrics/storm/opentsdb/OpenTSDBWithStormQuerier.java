@@ -3,6 +3,7 @@ package org.apache.streamline.streams.metrics.storm.opentsdb;
 import com.google.common.base.Joiner;
 import org.apache.streamline.streams.exception.ConfigException;
 import org.apache.streamline.streams.metrics.AbstractTimeSeriesQuerier;
+import org.apache.streamline.streams.metrics.TimeSeriesQuerier;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.uri.internal.JerseyUriBuilder;
 import org.slf4j.Logger;
@@ -47,6 +48,11 @@ public class OpenTSDBWithStormQuerier extends AbstractTimeSeriesQuerier {
             }
         }
         client = ClientBuilder.newClient(new ClientConfig());
+    }
+
+    @Override
+    public Map<Long, Double> getTopologyLevelMetrics(String topologyName, String metricName, AggregateFunction aggrFunction, long from, long to) {
+        throw new UnsupportedOperationException("OpenTSDBWithStormQuerier only supports raw query");
     }
 
     /**

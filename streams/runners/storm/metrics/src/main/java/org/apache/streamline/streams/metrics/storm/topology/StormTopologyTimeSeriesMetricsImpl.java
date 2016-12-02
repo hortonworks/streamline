@@ -21,6 +21,10 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
     private final StormRestAPIClient client;
     private TimeSeriesQuerier timeSeriesQuerier;
     private final ObjectMapper mapper = new ObjectMapper();
+    public static final StormMappedMetric[] STATS_METRICS = new StormMappedMetric[]{
+            StormMappedMetric.inputRecords, StormMappedMetric.outputRecords, StormMappedMetric.ackedRecords,
+            StormMappedMetric.failedRecords, StormMappedMetric.processedTime, StormMappedMetric.recordsInWaitQueue
+    };
 
     public StormTopologyTimeSeriesMetricsImpl(StormRestAPIClient client) {
         this.client = client;
@@ -43,7 +47,7 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
         String stormTopologyName = StormTopologyUtil.findOrGenerateTopologyName(client, topology.getId(), topology.getName());
         String stormComponentName = getComponentName(component);
 
-        return queryMetrics(stormTopologyName, stormComponentName, StormMappedMetric.completeLatency, from, to);
+        return queryComponentMetrics(stormTopologyName, stormComponentName, StormMappedMetric.completeLatency, from, to);
     }
 
     @Override
@@ -70,31 +74,44 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
     }
 
     @Override
+    public TimeSeriesComponentMetric getTopologyStats(TopologyLayout topology, long from, long to) {
+        assertTimeSeriesQuerierIsSet();
+
+        String stormTopologyName = StormTopologyUtil.findOrGenerateTopologyName(client, topology.getId(), topology.getName());
+
+        Map<String, Map<Long, Double>> stats = new HashMap<>();
+        for (StormMappedMetric metric : STATS_METRICS) {
+            stats.put(metric.name(), queryTopologyMetrics(stormTopologyName, metric, from, to));
+        }
+
+        return buildTimeSeriesComponentMetric(topology.getName(), stats);
+    }
+
+    @Override
     public TimeSeriesComponentMetric getComponentStats(TopologyLayout topology, Component component, long from, long to) {
         assertTimeSeriesQuerierIsSet();
 
         String stormTopologyName = StormTopologyUtil.findOrGenerateTopologyName(client, topology.getId(), topology.getName());
         String stormComponentName = getComponentName(component);
 
-        StormMappedMetric[] metrics = {
-                StormMappedMetric.inputRecords, StormMappedMetric.outputRecords, StormMappedMetric.ackedRecords,
-                StormMappedMetric.failedRecords, StormMappedMetric.processedTime, StormMappedMetric.recordsInWaitQueue
-        };
-
-        Map<String, Map<Long, Double>> componentStats = new HashMap<>();
-        for (StormMappedMetric metric : metrics) {
-            componentStats.put(metric.name(), queryMetrics(stormTopologyName, stormComponentName, metric, from, to));
+        Map<String, Map<Long, Double>> stats = new HashMap<>();
+        for (StormMappedMetric metric : STATS_METRICS) {
+            stats.put(metric.name(), queryComponentMetrics(stormTopologyName, stormComponentName, metric, from, to));
         }
 
-        Map<String, Map<Long, Double>> misc = new HashMap<>();
-        misc.put(StormMappedMetric.ackedRecords.name(), componentStats.get(StormMappedMetric.ackedRecords.name()));
+        return buildTimeSeriesComponentMetric(component.getName(), stats);
+    }
 
-        TimeSeriesComponentMetric metric = new TimeSeriesComponentMetric(component.getName(),
-                componentStats.get(StormMappedMetric.inputRecords.name()),
-                componentStats.get(StormMappedMetric.outputRecords.name()),
-                componentStats.get(StormMappedMetric.failedRecords.name()),
-                componentStats.get(StormMappedMetric.processedTime.name()),
-                componentStats.get(StormMappedMetric.recordsInWaitQueue.name()),
+    private TimeSeriesComponentMetric buildTimeSeriesComponentMetric(String name, Map<String, Map<Long, Double>> stats) {
+        Map<String, Map<Long, Double>> misc = new HashMap<>();
+        misc.put(StormMappedMetric.ackedRecords.name(), stats.get(StormMappedMetric.ackedRecords.name()));
+
+        TimeSeriesComponentMetric metric = new TimeSeriesComponentMetric(name,
+                stats.get(StormMappedMetric.inputRecords.name()),
+                stats.get(StormMappedMetric.outputRecords.name()),
+                stats.get(StormMappedMetric.failedRecords.name()),
+                stats.get(StormMappedMetric.processedTime.name()),
+                stats.get(StormMappedMetric.recordsInWaitQueue.name()),
                 misc);
 
         return metric;
@@ -140,12 +157,17 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
         return kafkaTopicName;
     }
 
-    private Map<Long, Double> queryMetrics(String stormTopologyName, String sourceId, StormMappedMetric mappedMetric, long from, long to) {
+    private Map<Long, Double> queryTopologyMetrics(String stormTopologyName, StormMappedMetric mappedMetric, long from, long to) {
+        Map<Long, Double> metrics = timeSeriesQuerier.getTopologyLevelMetrics(stormTopologyName,
+                mappedMetric.getStormMetricName(), mappedMetric.getAggregateFunction(), from, to);
+        return new TreeMap<>(metrics);
+    }
+
+    private Map<Long, Double> queryComponentMetrics(String stormTopologyName, String sourceId, StormMappedMetric mappedMetric, long from, long to) {
         Map<Long, Double> metrics = timeSeriesQuerier.getMetrics(stormTopologyName, sourceId, mappedMetric.getStormMetricName(),
                 mappedMetric.getAggregateFunction(), from, to);
         return new TreeMap<>(metrics);
     }
-
 
     private Map<Long, Double> queryKafkaMetrics(String stormTopologyName, String sourceId, StormMappedMetric mappedMetric,
                                                   String kafkaTopic, long from, long to) {

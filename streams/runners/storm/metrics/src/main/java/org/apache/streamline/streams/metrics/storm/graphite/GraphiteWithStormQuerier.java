@@ -42,6 +42,7 @@ public class GraphiteWithStormQuerier extends AbstractTimeSeriesQuerier {
             "__complete-latency", "__emit-count", "__ack-count", "__fail-count",
             "__process-latency", "__execute-count", "__execute-latency"
     );
+    public static final String WILDCARD_ALL_COMPONENTS = "*";
 
     private Client client;
     private URI renderApiUrl;
@@ -66,6 +67,12 @@ public class GraphiteWithStormQuerier extends AbstractTimeSeriesQuerier {
             }
         }
         client = ClientBuilder.newClient(new ClientConfig());
+    }
+
+    @Override
+    public Map<Long, Double> getTopologyLevelMetrics(String topologyName, String metricName,
+                                                     AggregateFunction aggrFunction, long from, long to) {
+        return getMetrics(topologyName, WILDCARD_ALL_COMPONENTS, metricName, aggrFunction, from, to);
     }
 
     /**
