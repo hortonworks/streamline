@@ -23,3 +23,5 @@ DROP TABLE IF EXISTS clusters;
 DROP TABLE IF EXISTS services;
 DROP TABLE IF EXISTS service_configurations;
 DROP TABLE IF EXISTS components;
+DROP TABLE IF EXISTS namespaces;
+DROP TABLE IF EXISTS namespace_service_cluster_mapping;

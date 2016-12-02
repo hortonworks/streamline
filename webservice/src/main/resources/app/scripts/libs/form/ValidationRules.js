@@ -9,7 +9,7 @@ let ValidationRules = {
                 if(value.length === 0){
                     return 'Required!';
                 }
-            } else if(value.trim() == '' || _.isUndefined(value)){
+            } else if(value == '' || (typeof value == 'string' && value.trim() == '') || _.isUndefined(value)){
                 return 'Required!';
             }
         }

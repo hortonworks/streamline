@@ -1399,8 +1399,13 @@ span.version{
 }
 
 /* Environment */
-.no-padding-top {
+.position-relative {
+  position: relative !important;
+}
+.environment-body {
   padding-top: 0px !important;
+  height: 500px !important;
+  overflow-y: auto;
 }
 .col-environment {
   width: 20%;
@@ -1409,6 +1414,7 @@ span.version{
   min-height: 1px;
   padding-right: 15px;
   padding-left: 15px;
+  margin-top: 10px;
 }
 .environment-title {
   color: #8b8b8b;
@@ -1421,6 +1427,29 @@ span.version{
 }
 .environment-components > li > img {
   width: 52px;
+}
+#add-environment {
+  position: absolute;
+  right: 50px;
+  z-index: 9;
+  top: -20px;
+}
+#addEnvironment .modal-footer {
+  background-color: #fff;
+}
+.environment-modal-title {
+  color: #5a5a5a;
+  text-transform: uppercase;
+}
+.environment-modal-widget {
+  padding: 15px;
+  background-color: #fafafa;
+}
+
+.filter-label {
+  display: inline-block;
+  color: #676767;
+  margin: 7px 21px 0px 0px;
 }
 .common-overflow::-webkit-scrollbar {
     width: 2px;
@@ -1471,7 +1500,6 @@ span.version{
   color: #676767;
   margin: 7px 21px 0px 0px;
 }
-
 .axis > path {
     fill: none;
     stroke: black;
@@ -1510,4 +1538,15 @@ rect.extent{
   color: #dc1414;
   margin-right: 2px;
   cursor: pointer;
+}
+.environment-box .service-body{
+  height: auto;
+  overflow: auto;
+}
+.activeImg{
+  border-color: #1191c2 !important;
+  filter: none !important;
+}
+.service-title{
+  padding : 0 15px;
 }

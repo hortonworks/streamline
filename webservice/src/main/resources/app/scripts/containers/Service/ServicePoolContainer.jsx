@@ -8,7 +8,6 @@ import {
     MenuItem,
     Button
 } from 'react-bootstrap';
-import d3 from 'd3';
 import Modal from '../../components/FSModal';
 
 /* import common utils*/
@@ -262,8 +261,8 @@ class ServicePoolContainer extends Component{
             if (result[0].responseMessage !== undefined) {
                 FSReactToastr.error(
                     <CommonNotification flag="error" content={result[0].responseMessage}/>, '', toastOpt)
-                let obj = Object.assign(isLoading ,{idCheck : '',loader : false});
-                this.setState({isLoading : obj});
+                      let obj = Object.assign(isLoading ,{idCheck : '',loader : false});
+                      this.setState({isLoading : obj});
             } else {
                 const id = result[0].id;
                 this.importAmbariCluster(id);

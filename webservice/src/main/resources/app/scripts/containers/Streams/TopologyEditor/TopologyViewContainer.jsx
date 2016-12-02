@@ -37,7 +37,7 @@ class EditorGraph extends Component{
     let left = window.innerWidth - 300;
   }
   render(){
-    const actualHeight = (window.innerHeight - 360)+'px';
+    const actualHeight = '270px';
     const { versionsArr, connectDropTarget, viewMode, topologyId, versionId, graphData, getModalScope, setModalContent} = this.props;
     return connectDropTarget(
       <div>

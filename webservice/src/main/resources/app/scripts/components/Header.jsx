@@ -29,6 +29,8 @@ export default class Header extends Component {
         break;
       case "4.4" : this.context.router.push("service-pool")
         break;
+      case "4.5" : this.context.router.push("environments")
+        break;
        default : break;
     }
   }
@@ -68,6 +70,7 @@ export default class Header extends Component {
               <MenuItem onClick={this.clickHandler.bind(this,"4.2")}>Tags</MenuItem>
               <MenuItem onClick={this.clickHandler.bind(this,"4.3")}>Files</MenuItem>
               <MenuItem onClick={this.clickHandler.bind(this,"4.4")}>Service Pool</MenuItem>
+              <MenuItem onClick={this.clickHandler.bind(this,"4.5")}>Environments</MenuItem>
             </NavDropdown>
             <NavDropdown id="userDropdown" eventKey="5" title={userIcon}>
               <MenuItem>Action</MenuItem>
