@@ -13,10 +13,12 @@
         <module>common</module>
         <module>cache</module>
         <module>storage</module>
-        <module>simulator</module>
         <module>webservice</module>
         <module>streams</module>
         <module>registries</module>
+
+        <!--examples-->
+        <module>examples/processors</module>
     </modules>
 
     <properties>
@@ -870,6 +872,18 @@
                 </exclusions>
             </dependency>
             <!-- Test Scope Dependencies -->
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>streams-sdk</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>streamline-examples-processors</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
             <dependency>
                 <groupId>com.github.tomakehurst</groupId>
                 <artifactId>wiremock-standalone</artifactId>

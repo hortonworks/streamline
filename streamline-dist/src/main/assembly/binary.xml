@@ -47,10 +47,10 @@
             <fileMode>0755</fileMode>
         </fileSet>
         <fileSet>
-            <directory>${project.basedir}./registries/parser-registry/target</directory>
-            <outputDirectory>/examples/topology/parsers</outputDirectory>
+            <directory>${project.basedir}./examples/processors/target</directory>
+            <outputDirectory>/examples/processors</outputDirectory>
             <includes>
-                <include>parser*jar</include>
+                <include>streamline-examples-processors*jar</include>
             </includes>
         </fileSet>
         <fileSet>
