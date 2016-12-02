@@ -4,11 +4,10 @@ import org.apache.storm.generated.GlobalStreamId;
 import org.apache.storm.grouping.CustomStreamGrouping;
 import org.apache.storm.task.WorkerTopologyContext;
 import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.common.StreamlineEventImpl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -20,10 +19,11 @@ import java.util.Map;
  */
 public class FieldsGroupingAsCustomGrouping implements CustomStreamGrouping {
     private static final String NESTED_FIELD_SPLIT_REGEX = "\\.";
-    private final String[] groupingFields;
+    private final List<String> groupingFields;
     private List<Integer> targetTasks;
-    public FieldsGroupingAsCustomGrouping(String... groupingFields) {
-        this.groupingFields = groupingFields;
+    public FieldsGroupingAsCustomGrouping(List<String> groupingFields) {
+        this.groupingFields = Collections.unmodifiableList(groupingFields);
+
     }
     @Override
     public void prepare(WorkerTopologyContext context, GlobalStreamId stream, List<Integer> targetTasks) {
@@ -34,7 +34,7 @@ public class FieldsGroupingAsCustomGrouping implements CustomStreamGrouping {
     public List<Integer> chooseTasks(int taskId, List<Object> values) {
         List<Integer> result = new ArrayList<>();
         StreamlineEvent streamlineEvent = (StreamlineEvent) values.get(0);
-        List<Object> groupByObjects = new ArrayList<>(groupingFields.length);
+        List<Object> groupByObjects = new ArrayList<>(groupingFields.size());
         for (String groupingField: groupingFields) {
             groupByObjects.add(getGroupingValue(streamlineEvent, groupingField));
         }
