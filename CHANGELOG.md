@@ -1,4 +1,5 @@
 ## 0.1.4
+ * STREAMLINE-551: .selectStreamLine() now also auto-prefixes all the join keys with 'streamline-event'.
  * STREAMLINE-461: upgraded dropwizard to 1.0.5 and logback to 1.1.7 and verified logging works.
  * STREAMLINE-501: Backend: Introduce Namespace and NamespaceServiceCluster Mapping
  * STREAMLINE-136: Support FieldsGrouping through topology editor.
