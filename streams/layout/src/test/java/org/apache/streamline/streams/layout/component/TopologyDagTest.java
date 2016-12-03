@@ -126,7 +126,7 @@ public class TopologyDagTest {
         Processor processor = new StreamlineProcessor(Collections.singleton(stream3));
 
         topology.add(src).add(processor).add(sink);
-        topology.addEdge(src, processor, stream2.getId());
+        topology.addEdge("id", src, processor, stream2.getId());
         topology.addEdge(processor, sink);
 
         assertEquals(1, topology.getEdges(src).size());

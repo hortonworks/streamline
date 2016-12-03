@@ -37,6 +37,7 @@ import org.apache.storm.ILocalCluster;
 import org.apache.storm.LocalCluster;
 import org.apache.storm.generated.StormTopology;
 import org.apache.storm.topology.TopologyBuilder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +65,7 @@ public class SplitJoinTopologyTest {
     private static final Stream STAGE_OUTPUT_STREAM = new Stream("stage-output-stream", SJ_SCHEMA);
 
     @Test
+    @Ignore
     public void testSplitJoinTopology() throws Exception {
         submitTopology();
     }

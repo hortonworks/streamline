@@ -13,10 +13,12 @@
         <module>common</module>
         <module>cache</module>
         <module>storage</module>
-        <module>simulator</module>
         <module>webservice</module>
         <module>streams</module>
         <module>registries</module>
+
+        <!--examples-->
+        <module>examples/processors</module>
     </modules>
 
     <properties>
@@ -31,12 +33,12 @@
         <commons-lang3.version>3.4</commons-lang3.version>
         <commons.version>2.5</commons.version>
         <curator.version>2.11.0</curator.version>
-        <dropwizard.version>0.9.0-rc4</dropwizard.version>
+        <dropwizard.version>1.0.5</dropwizard.version>
         <firebase-client.version>1.0.7</firebase-client.version>
         <groovy.version>2.4.5</groovy.version>
         <guava.version>18.0</guava.version>
         <hadoop.version>2.7.1</hadoop.version>
-        <hbase.version>1.1.2.2.3.98.0-63</hbase.version>
+        <hbase.version>1.1.2.2.5.0.0-1245</hbase.version>
         <HikariCP-java6.version>2.2.5</HikariCP-java6.version>
         <hive.version>2.1.0</hive.version>
         <jackson.version>2.7.3</jackson.version>
@@ -47,19 +49,20 @@
         <kafkaArtifact>kafka_2.10</kafkaArtifact>
         <kryo.version>2.21</kryo.version>
         <mysql-connector-java.version>5.1.38</mysql-connector-java.version>
-        <phoenix.version>4.4.0-HBase-1.1</phoenix.version>
+        <phoenix.version>4.7.0.2.5.0.0-1245</phoenix.version>
         <redis.lettuce.version>3.4.2.Final</redis.lettuce.version>
         <scala.version>2.10.5</scala.version>
         <schema-registry.version>0.1.0-SNAPSHOT</schema-registry.version>
         <slf4j.version>1.7.12</slf4j.version>
         <storm.version>1.1.0-SNAPSHOT</storm.version>
         <woodstox-core-asl.version>4.4.1</woodstox-core-asl.version>
+        <druid.tranquility.version>0.8.2</druid.tranquility.version>
 
         <!-- Provided Scope Dependencies -->
         <aws-java-sdk.version>1.10.77</aws-java-sdk.version>
 
         <!-- Runtime Scope Dependencies -->
-        <logback.version>1.1.3</logback.version>
+        <logback.version>1.1.7</logback.version>
 
         <!-- Test Scope Dependencies -->
         <h2.version>1.4.188</h2.version>
@@ -459,6 +462,11 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.storm</groupId>
+                <artifactId>storm-cassandra</artifactId>
+                <version>${storm.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.storm</groupId>
                 <artifactId>storm-hbase</artifactId>
                 <version>${storm.version}</version>
                 <exclusions>
@@ -479,6 +487,11 @@
                         <artifactId>slf4j-log4j12</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.storm</groupId>
+                <artifactId>storm-jdbc</artifactId>
+                <version>${storm.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.storm</groupId>
@@ -864,6 +877,18 @@
                 </exclusions>
             </dependency>
             <!-- Test Scope Dependencies -->
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>streamline-sdk</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>streamline-examples-processors</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
             <dependency>
                 <groupId>com.github.tomakehurst</groupId>
                 <artifactId>wiremock-standalone</artifactId>

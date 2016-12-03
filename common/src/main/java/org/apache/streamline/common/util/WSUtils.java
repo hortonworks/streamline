@@ -19,6 +19,7 @@
 package org.apache.streamline.common.util;
 
 import com.google.common.io.ByteStreams;
+import org.apache.streamline.common.CollectionResponse;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.catalog.CatalogResponse;
 
@@ -48,21 +49,39 @@ public class WSUtils {
     private WSUtils() {
     }
 
+    @Deprecated
     public static Response respond(Collection<?> entities, Response.Status status, CatalogResponse.ResponseMessage msg, String... formatArgs) {
+        // FIXME: This is used only from parser-registry and should be removed after STREAMLINE-435 is merged to master
         return Response.status(status)
-                .entity(CatalogResponse.newResponse(msg).entities(entities).format(formatArgs))
-                .build();
+            .entity(CatalogResponse.newResponse(msg).entities(entities).format(formatArgs))
+            .build();
     }
 
+    @Deprecated
     public static Response respond(Object entity, Response.Status status, CatalogResponse.ResponseMessage msg, String... formatArgs) {
+        // FIXME: This is used only from parser-registry and should be removed after STREAMLINE-435 is merged to master
         return Response.status(status)
-                .entity(CatalogResponse.newResponse(msg).entity(entity).format(formatArgs))
-                .build();
+            .entity(CatalogResponse.newResponse(msg).entity(entity).format(formatArgs))
+            .build();
     }
 
+    @Deprecated
     public static Response respond(Response.Status status, CatalogResponse.ResponseMessage msg, String... formatArgs) {
+        // FIXME: This is used only from parser-registry and should be removed after STREAMLINE-435 is merged to master
         return Response.status(status)
-                .entity(CatalogResponse.newResponse(msg).entity(null).format(formatArgs))
+            .entity(CatalogResponse.newResponse(msg).entity(null).format(formatArgs))
+            .build();
+    }
+
+    public static Response respondEntities(Collection<?> entities, Response.Status status) {
+        return Response.status(status)
+            .entity(CollectionResponse.newResponse().entities(entities).build())
+            .build();
+    }
+
+    public static Response respondEntity(Object entity, Response.Status status) {
+        return Response.status(status)
+                .entity(entity)
                 .build();
     }
 
@@ -108,7 +127,6 @@ public class WSUtils {
 
     public static List<QueryParam> topologyVersionsQueryParam(Long topologyId) {
         List<QueryParam> params = buildTopologyIdAwareQueryParams(topologyId, null);
-        params.addAll(currentVersionQueryParam());
         return params;
     }
 

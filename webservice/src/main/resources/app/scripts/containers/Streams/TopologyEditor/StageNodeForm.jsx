@@ -60,8 +60,8 @@ export default class StageFormNode extends Component{
 
 		Promise.all(promiseArr)
 			.then((results)=>{
-				this.nodeData = results[0].entity;
-				let {parallelism} = results[0].entity.config.properties;
+                                this.nodeData = results[0];
+                                let {parallelism} = results[0].config.properties;
 				stateObj.parallelism = parallelism || 1;
 
 				let config = this.nodeData.config.properties['stage-config'];
@@ -98,7 +98,7 @@ export default class StageFormNode extends Component{
 			.then(results=>{
 				let streamIds = [];
 				results.map(result=>{
-					let {streamGroupings} = result.entity;
+                                        let {streamGroupings} = result;
 					if(streamGroupings){
 						streamGroupings.map(stream=>{
 							if(streamIds.indexOf(stream.streamId) === -1){
@@ -113,8 +113,8 @@ export default class StageFormNode extends Component{
 				Promise.all(streamPromiseArr)
 					.then(streamResults=>{
 						streamResults.map(stream=>{
-							if(stream.entity.fields){
-								stream.entity.fields.map(fieldObj=>{
+                                                        if(stream.fields){
+                                                                stream.fields.map(fieldObj=>{
 									if(fields.indexOf(fieldObj.name) === -1){
 										fields.push({value: fieldObj.name, label: fieldObj.name});
 									}
@@ -195,7 +195,7 @@ export default class StageFormNode extends Component{
 		let nodeId = this.nodeData.id;
                 return TopologyREST.getNode(topologyId, versionId, nodeType, nodeId)
 			.then(data=>{
-				let stageConfigData = data.entity.config.properties["stage-config"];
+                                let stageConfigData = data.config.properties["stage-config"];
 				if(!stageConfigData){
 					stageConfigData = {
 						name: "stage-action",
@@ -224,11 +224,11 @@ export default class StageFormNode extends Component{
 				}
 				stageConfigData.transforms.push(transformObj);
 
-				data.entity.config.properties["stage-config"] = stageConfigData;
-				data.entity.config.properties.parallelism = parallelism;
-				data.entity.name = name;
+                                data.config.properties["stage-config"] = stageConfigData;
+                                data.config.properties.parallelism = parallelism;
+                                data.name = name;
 
-                                return TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(data.entity)});
+                                return TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(data)});
 			})
 	}
 

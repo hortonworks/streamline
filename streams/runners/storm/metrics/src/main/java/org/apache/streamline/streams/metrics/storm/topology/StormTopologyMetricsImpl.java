@@ -162,18 +162,10 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
 
         Map<String, ComponentMetric> metricMap = new HashMap<>();
         List<Map<String, ?>> spouts = (List<Map<String, ?>>) responseMap.get(TOPOLOGY_JSON_SPOUTS);
-        for (Map<String, ?> spout : spouts) {
-            String spoutName = (String) spout.get(TOPOLOGY_JSON_SPOUT_ID);
-            ComponentMetric metric = extractMetric(spoutName, spout);
-            metricMap.put(metric.getComponentName(), metric);
-        }
+        extractMetrics(metricMap, spouts, TOPOLOGY_JSON_SPOUT_ID);
 
         List<Map<String, ?>> bolts = (List<Map<String, ?>>) responseMap.get(TOPOLOGY_JSON_BOLTS);
-        for (Map<String, ?> bolt : bolts) {
-            String boltName = (String) bolt.get(TOPOLOGY_JSON_BOLT_ID);
-            ComponentMetric metric = extractMetric(boltName, bolt);
-            metricMap.put(metric.getComponentName(), metric);
-        }
+        extractMetrics(metricMap, bolts, TOPOLOGY_JSON_BOLT_ID);
 
         return metricMap;
     }
@@ -214,8 +206,17 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
      * {@inheritDoc}
      */
     @Override
-    public Map<String, Map<Long, Double>> getComponentStats(TopologyLayout topology, Component component, long from, long to) {
+    public TimeSeriesComponentMetric getComponentStats(TopologyLayout topology, Component component, long from, long to) {
         return timeSeriesMetrics.getComponentStats(topology, component, from, to);
+    }
+
+    private void extractMetrics(Map<String, ComponentMetric> metricMap, List<Map<String, ?>> components, String topologyJsonID) {
+        for (Map<String, ?> component : components) {
+            String name = (String) component.get(topologyJsonID);
+            String componentId = getComponentIDInStreamline(name);
+            ComponentMetric metric = extractMetric(name, component);
+            metricMap.put(componentId, metric);
+        }
     }
 
     private ComponentMetric extractMetric(String componentName, Map<String, ?> componentMap) {
@@ -258,6 +259,11 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
             }
         }
         return defaultValue;
+    }
+
+    private String getComponentIDInStreamline(String componentNameInStorm) {
+        // removes all starting from first '-'
+        return componentNameInStorm.substring(componentNameInStorm.indexOf('-'));
     }
 
     private String getComponentNameInStreamline(String componentNameInStorm) {

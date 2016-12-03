@@ -44,7 +44,11 @@ public class TopologyEdge extends AbstractStorable {
         private List<String> fields;
 
         // for jackson
-        private StreamGrouping() {
+        public StreamGrouping() {
+        }
+
+        public void setStreamId(Long streamId) {
+            this.streamId = streamId;
         }
 
         public StreamGrouping(StreamGrouping other) {
@@ -59,8 +63,18 @@ public class TopologyEdge extends AbstractStorable {
             return streamId;
         }
 
+        public void setGrouping(Grouping grouping) {
+            this.grouping = grouping;
+        }
+
         public Grouping getGrouping() {
             return grouping;
+        }
+
+        public void setFields(List<String> fields) {
+            if (fields != null) {
+                this.fields = new ArrayList<>(fields);
+            }
         }
 
         public List<String> getFields() {

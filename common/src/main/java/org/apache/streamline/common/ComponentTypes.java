@@ -22,5 +22,6 @@ public class ComponentTypes {
     public static final String HDFS = "HDFS";
     public static final String HDFS_SOURCE = "HDFS-SOURCE";
     public static final String NOTIFICATION = "NOTIFICATION";
+    public static final String MULTILANG = "MULTILANG";
 
 }

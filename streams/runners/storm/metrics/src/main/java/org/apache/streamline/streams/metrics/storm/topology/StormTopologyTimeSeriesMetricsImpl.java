@@ -70,21 +70,34 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
     }
 
     @Override
-    public Map<String, Map<Long, Double>> getComponentStats(TopologyLayout topology, Component component, long from, long to) {
+    public TimeSeriesComponentMetric getComponentStats(TopologyLayout topology, Component component, long from, long to) {
         assertTimeSeriesQuerierIsSet();
 
         String stormTopologyName = StormTopologyUtil.findOrGenerateTopologyName(client, topology.getId(), topology.getName());
         String stormComponentName = getComponentName(component);
 
-        StormMappedMetric[] metrics = { StormMappedMetric.inputRecords, StormMappedMetric.outputRecords,
-                StormMappedMetric.failedRecords, StormMappedMetric.processedTime, StormMappedMetric.recordsInWaitQueue };
+        StormMappedMetric[] metrics = {
+                StormMappedMetric.inputRecords, StormMappedMetric.outputRecords, StormMappedMetric.ackedRecords,
+                StormMappedMetric.failedRecords, StormMappedMetric.processedTime, StormMappedMetric.recordsInWaitQueue
+        };
 
         Map<String, Map<Long, Double>> componentStats = new HashMap<>();
         for (StormMappedMetric metric : metrics) {
             componentStats.put(metric.name(), queryMetrics(stormTopologyName, stormComponentName, metric, from, to));
         }
 
-        return componentStats;
+        Map<String, Map<Long, Double>> misc = new HashMap<>();
+        misc.put(StormMappedMetric.ackedRecords.name(), componentStats.get(StormMappedMetric.ackedRecords.name()));
+
+        TimeSeriesComponentMetric metric = new TimeSeriesComponentMetric(component.getName(),
+                componentStats.get(StormMappedMetric.inputRecords.name()),
+                componentStats.get(StormMappedMetric.outputRecords.name()),
+                componentStats.get(StormMappedMetric.failedRecords.name()),
+                componentStats.get(StormMappedMetric.processedTime.name()),
+                componentStats.get(StormMappedMetric.recordsInWaitQueue.name()),
+                misc);
+
+        return metric;
     }
 
     private void assertTimeSeriesQuerierIsSet() {

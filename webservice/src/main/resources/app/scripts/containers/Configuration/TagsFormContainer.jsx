@@ -20,11 +20,11 @@ export default class TagsFormContainer extends Component {
 	fetchData(id){
 		TagREST.getTag(id)
 			.then((tags)=>{
-				if(tags.responseCode !== 1000){
+                                if(tags.responseMessage !== undefined){
           FSReactToastr.error(
               <CommonNotification flag="error" content={tags.responseMessage}/>, '', toastOpt)
 				} else {
-					let {name, description, tagIds} = tags.entity;
+                                        let {name, description, tagIds} = tags;
 					this.setState({name, description, tagIds});
 				}
 			})
@@ -78,6 +78,7 @@ export default class TagsFormContainer extends Component {
 							className="form-control"
 							value={this.state.name}
 							required={true}
+              autoFocus="true"
 						/>
 					</div>
                                         {/*this.state.name === '' ?

@@ -27,18 +27,13 @@ export default class FileFormContainer extends Component {
 	fetchFile(id){
 		FileREST.getFile(id)
 			.then((file)=>{
-				if(file.responseCode === 1000){
-					let {name, version, storedFileName} = file.entity;
+                                if(file.responseMessage !== undefined){
+                                        FSReactToastr.error(<CommonNotification flag="error" content={file.responseMessage}/>, '', toastOpt)
+                                } else {
+                                        let {name, version, storedFileName} = file;
 					let obj = {name, version, storedFileName};
 					this.setState(obj);
-				} else {
-          FSReactToastr.error(
-              <CommonNotification flag="error" content={file.responseMessage}/>, '', toastOpt)
 				}
-			})
-			.catch((err)=>{
-        FSReactToastr.error(
-            <CommonNotification flag="error" content={err}/>, '', toastOpt)
 			})
 	}
 

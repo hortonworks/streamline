@@ -7,7 +7,6 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.Schema;
-import org.apache.streamline.common.catalog.CatalogResponse;
 import org.apache.streamline.common.exception.ParserException;
 import org.apache.streamline.common.util.FileStorage;
 import org.apache.streamline.common.util.FileUtil;
@@ -16,6 +15,8 @@ import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.UDFInfo;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.streamline.streams.service.exception.request.EntityNotFoundException;
+import org.apache.streamline.streams.service.exception.request.UnsupportedMediaTypeException;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -29,7 +30,6 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.ProcessingException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -54,16 +54,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.UNSUPPORTED_MEDIA_TYPE;
 
 @Path("/v1/catalog/streams")
 @Produces(MediaType.APPLICATION_JSON)
@@ -109,23 +101,19 @@ public class UDFCatalogResource {
     @Timed
     public Response listUDFs(@Context UriInfo uriInfo) {
         List<QueryParam> queryParams = new ArrayList<>();
-        try {
-            MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
-            Collection<UDFInfo> udfs;
-            if (params.isEmpty()) {
-                udfs = catalogService.listUDFs();
-            } else {
-                queryParams = WSUtils.buildQueryParameters(params);
-                udfs = catalogService.listUDFs(queryParams);
-            }
-            if (udfs != null) {
-                return WSUtils.respond(udfs, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
+        Collection<UDFInfo> udfs;
+        if (params.isEmpty()) {
+            udfs = catalogService.listUDFs();
+        } else {
+            queryParams = WSUtils.buildQueryParameters(params);
+            udfs = catalogService.listUDFs(queryParams);
+        }
+        if (udfs != null) {
+            return WSUtils.respondEntities(udfs, OK);
         }
 
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, queryParams.toString());
+        throw EntityNotFoundException.byFilter(queryParams.toString());
     }
 
     /**
@@ -152,15 +140,12 @@ public class UDFCatalogResource {
     @Path("/udfs/{id}")
     @Timed
     public Response getUDFById(@PathParam("id") Long id) {
-        try {
-            UDFInfo result = catalogService.getUDF(id);
-            if (result != null) {
-                return WSUtils.respond(result, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        UDFInfo result = catalogService.getUDF(id);
+        if (result != null) {
+            return WSUtils.respondEntity(result, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, id.toString());
+
+        throw EntityNotFoundException.byId(id.toString());
     }
 
     /**
@@ -177,21 +162,16 @@ public class UDFCatalogResource {
     public Response addUDF(@FormDataParam("udfJarFile") final InputStream inputStream,
                            @FormDataParam("udfJarFile") final FormDataContentDisposition contentDispositionHeader,
                            @FormDataParam("udfConfig") final FormDataBodyPart udfConfig,
-                           @FormDataParam("builtin") final boolean builtin) {
-        try {
-            LOG.debug("Media type {}", udfConfig.getMediaType());
-            if (!udfConfig.getMediaType().equals(MediaType.APPLICATION_JSON_TYPE)) {
-                return WSUtils.respond(UNSUPPORTED_MEDIA_TYPE, CatalogResponse.ResponseMessage.UNSUPPORTED_MEDIA_TYPE);
-            }
-            UDFInfo udfInfo = udfConfig.getValueAs(UDFInfo.class);
-            processUdf(inputStream, udfInfo, true, builtin);
-            UDFInfo createdUdfInfo = catalogService.addUDF(udfInfo);
-            return WSUtils.respond(createdUdfInfo, CREATED, SUCCESS);
-        } catch (ProcessingException ex) {
-            return WSUtils.respond(BAD_REQUEST, CatalogResponse.ResponseMessage.BAD_REQUEST);
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+                           @FormDataParam("builtin") final boolean builtin) throws Exception {
+        MediaType mediaType = udfConfig.getMediaType();
+        LOG.debug("Media type {}", mediaType);
+        if (!mediaType.equals(MediaType.APPLICATION_JSON_TYPE)) {
+            throw new UnsupportedMediaTypeException(mediaType.toString());
         }
+        UDFInfo udfInfo = udfConfig.getValueAs(UDFInfo.class);
+        processUdf(inputStream, udfInfo, true, builtin);
+        UDFInfo createdUdfInfo = catalogService.addUDF(udfInfo);
+        return WSUtils.respondEntity(createdUdfInfo, CREATED);
     }
 
     /**
@@ -218,16 +198,12 @@ public class UDFCatalogResource {
     @Path("/udfs/{id}")
     @Timed
     public Response removeUDF(@PathParam("id") Long id) {
-        try {
-            UDFInfo removedUDF = catalogService.removeUDF(id);
-            if (removedUDF != null) {
-                return WSUtils.respond(removedUDF, OK, SUCCESS);
-            } else {
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, id.toString());
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        UDFInfo removedUDF = catalogService.removeUDF(id);
+        if (removedUDF != null) {
+            return WSUtils.respondEntity(removedUDF, OK);
         }
+
+        throw EntityNotFoundException.byId(id.toString());
     }
 
     /**
@@ -260,21 +236,17 @@ public class UDFCatalogResource {
                                    @FormDataParam("udfJarFile") final InputStream inputStream,
                                    @FormDataParam("udfJarFile") final FormDataContentDisposition contentDispositionHeader,
                                    @FormDataParam("udfConfig") final FormDataBodyPart udfConfig,
-                                   @FormDataParam("builtin") final boolean builtin) {
-        try {
-            LOG.debug("Media type {}", udfConfig.getMediaType());
-            if (!udfConfig.getMediaType().equals(MediaType.APPLICATION_JSON_TYPE)) {
-                return WSUtils.respond(UNSUPPORTED_MEDIA_TYPE, CatalogResponse.ResponseMessage.UNSUPPORTED_MEDIA_TYPE);
-            }
-            UDFInfo udfInfo = udfConfig.getValueAs(UDFInfo.class);
-            processUdf(inputStream, udfInfo, false, builtin);
-            UDFInfo newUdfInfo = catalogService.addOrUpdateUDF(udfId, udfInfo);
-            return WSUtils.respond(newUdfInfo, OK, SUCCESS);
-        } catch (ProcessingException ex) {
-            return WSUtils.respond(BAD_REQUEST, CatalogResponse.ResponseMessage.BAD_REQUEST);
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+                                   @FormDataParam("builtin") final boolean builtin)
+        throws Exception {
+        MediaType mediaType = udfConfig.getMediaType();
+        LOG.debug("Media type {}", mediaType);
+        if (!mediaType.equals(MediaType.APPLICATION_JSON_TYPE)) {
+            throw new UnsupportedMediaTypeException(mediaType.toString());
         }
+        UDFInfo udfInfo = udfConfig.getValueAs(UDFInfo.class);
+        processUdf(inputStream, udfInfo, false, builtin);
+        UDFInfo newUdfInfo = catalogService.addOrUpdateUDF(udfId, udfInfo);
+        return WSUtils.respondEntity(newUdfInfo, CREATED);
     }
 
     /**
@@ -287,18 +259,15 @@ public class UDFCatalogResource {
     @GET
     @Produces({"application/java-archive", "application/json"})
     @Path("/udfs/download/{udfId}")
-    public Response downloadUdf(@PathParam("udfId") Long udfId) {
-        try {
-            UDFInfo udfInfo = catalogService.getUDF(udfId);
-            if (udfInfo != null) {
-                StreamingOutput streamOutput = WSUtils.wrapWithStreamingOutput(
-                        catalogService.downloadFileFromStorage(udfInfo.getJarStoragePath()));
-                return Response.ok(streamOutput).build();
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+    public Response downloadUdf(@PathParam("udfId") Long udfId) throws IOException {
+        UDFInfo udfInfo = catalogService.getUDF(udfId);
+        if (udfInfo != null) {
+            StreamingOutput streamOutput = WSUtils.wrapWithStreamingOutput(
+                    catalogService.downloadFileFromStorage(udfInfo.getJarStoragePath()));
+            return Response.ok(streamOutput).build();
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, udfId.toString());
+
+        throw EntityNotFoundException.byId(udfId.toString());
     }
 
     private void processUdf(InputStream inputStream,

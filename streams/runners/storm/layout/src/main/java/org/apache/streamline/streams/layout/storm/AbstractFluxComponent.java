@@ -473,6 +473,13 @@ public abstract class AbstractFluxComponent implements FluxComponent {
         args.add(value);
     }
 
+    protected void addArgValue(final List<Object> args, Object value) {
+        if (value == null) {
+            throw new IllegalArgumentException("Value for can not be null");
+        }
+        args.add(value);
+    }
+
     protected void addArg(final List<Object> args, String key, Object defaultValue) {
         Object value = conf.get(key);
         if (value != null) {

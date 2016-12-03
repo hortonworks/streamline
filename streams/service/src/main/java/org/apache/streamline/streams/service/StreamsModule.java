@@ -20,7 +20,6 @@ import org.apache.streamline.streams.layout.storm.StormTopologyLayoutConstants;
 import org.apache.streamline.streams.metrics.TimeSeriesQuerier;
 import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
 import org.apache.streamline.streams.notification.service.NotificationServiceImpl;
-import org.apache.streamline.streams.notification.service.NotificationsResource;
 import org.apache.registries.schemaregistry.client.SchemaRegistryClient;
 import org.apache.streamline.streams.service.metadata.HBaseMetadataResource;
 import org.apache.streamline.streams.service.metadata.HiveMetadataResource;
@@ -71,6 +70,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         result.add(new WindowCatalogResource(streamcatalogService));
         result.add(new SchemaResource(createSchemaRegistryClient()));
         result.addAll(getServiceMetadataResources(streamcatalogService));
+        result.add(new NamespaceCatalogResource(streamcatalogService));
         watchFiles(streamcatalogService);
         return result;
     }

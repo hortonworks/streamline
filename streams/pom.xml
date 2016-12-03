@@ -12,6 +12,7 @@
     <artifactId>streams</artifactId>
     <packaging>pom</packaging>
     <modules>
+        <module>sdk</module>
         <module>common</module>
         <module>catalog</module>
         <module>layout</module>
@@ -19,12 +20,12 @@
         <module>notification</module>
         <module>notifier</module>
         <module>runtime</module>
-        <module>sdk</module>
         <module>service</module>
         <module>runners</module>
         <module>schemaevolver</module>
         <module>functions</module>
         <module>cluster</module>
+        <module>multilang</module>
     </modules>
 
 

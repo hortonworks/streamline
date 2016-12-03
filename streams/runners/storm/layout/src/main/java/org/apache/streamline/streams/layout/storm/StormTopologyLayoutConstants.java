@@ -53,4 +53,6 @@ public final class StormTopologyLayoutConstants {
             "failed_to_parse_tuples_stream";
     public static final String YAML_KEY_STREAM_ID = "streamId";
     public final static String YAML_KEY_PARALLELISM = "parallelism";
+    public final static String YAML_KEY_CUSTOM_GROUPING_CLASS = "customClass";
+    public final static String YAML_KEY_CUSTOM_GROUPING_CLASSNAME = "org.apache.streamline.streams.runtime.storm.grouping.FieldsGroupingAsCustomGrouping";
 }

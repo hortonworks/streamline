@@ -151,6 +151,9 @@ export default class TopologyGraphComponent extends Component {
                 });
 
 		svg.on("mousedown", function(d) {
+            if(thisGraph.setLastChange){
+            	thisGraph.setLastChange(null);
+            }
 			thisGraph.svgMouseDown.call(thisGraph, d);
 		});
 
@@ -173,10 +176,10 @@ export default class TopologyGraphComponent extends Component {
             };
             clearTimeout(this.saveMetaInfoTimer);
             this.saveMetaInfoTimer = setTimeout(()=>{
-		let {topologyId, versionId, versionsArr, metaInfo} = thisGraph;
+                let {topologyId, versionId, versionsArr, metaInfo, editMode} = thisGraph;
 		if(versionId && versionsArr){
 			let versionName = versionsArr.find((o)=>{return o.id == versionId}).name;
-			if(versionName.toLowerCase() == 'current'){
+                        if(versionName.toLowerCase() == 'current' && editMode){
 				TopologyUtils.saveMetaInfo(topologyId, versionId, null, metaInfo, null);
 			}
 		}
@@ -240,10 +243,10 @@ export default class TopologyGraphComponent extends Component {
 	            };
 	            clearTimeout(this.saveMetaInfoTimer);
 	            this.saveMetaInfoTimer = setTimeout(()=>{
-	            	let {topologyId, versionId, versionsArr, metaInfo} = thisGraph;
+                        let {topologyId, versionId, versionsArr, metaInfo, editMode} = thisGraph;
 					if(versionId && versionsArr){
 						let versionName = versionsArr.find((o)=>{return o.id == versionId}).name;
-						if(versionName.toLowerCase() == 'current'){
+                                                if(versionName.toLowerCase() == 'current' && editMode){
 							TopologyUtils.saveMetaInfo(topologyId, versionId, null, metaInfo, null);
 						}
 					}
@@ -354,18 +357,18 @@ export default class TopologyGraphComponent extends Component {
 
 	// mouseup on nodes
 	rectangleMouseUp(d3node, d) {
-        let {topologyId, versionId, internalFlags, constants, dragLine, paths, edges, rectangles, getModalScope, setModalContent, nodes, linkShuffleOptions, metaInfo, getEdgeConfigModal} = this;
+        let {topologyId, versionId, internalFlags, constants, dragLine, paths, edges, rectangles, getModalScope, setModalContent, nodes, linkShuffleOptions, metaInfo, getEdgeConfigModal, setLastChange} = this;
                 return TopologyUtils.MouseUpAction(topologyId, versionId, d3node, d, metaInfo, internalFlags,
 			constants, dragLine, paths, nodes, edges, linkShuffleOptions, this.updateGraph.bind(this), 
-                        'rectangle', getModalScope, setModalContent, rectangles, getEdgeConfigModal);
+                        'rectangle', getModalScope, setModalContent, rectangles, getEdgeConfigModal, setLastChange);
 	}
 
 	// mouseup on circle
 	circleMouseUp(d3node, d) {
-        let {topologyId, versionId, internalFlags, constants, dragLine, paths, edges, rectangles, getModalScope, setModalContent, nodes, linkShuffleOptions, metaInfo, getEdgeConfigModal} = this;
+        let {topologyId, versionId, internalFlags, constants, dragLine, paths, edges, rectangles, getModalScope, setModalContent, nodes, linkShuffleOptions, metaInfo, getEdgeConfigModal, setLastChange} = this;
                 return TopologyUtils.MouseUpAction(topologyId, versionId, d3node, d, metaInfo, internalFlags,
 			constants, dragLine, paths, nodes, edges, linkShuffleOptions, this.updateGraph.bind(this),
-                        'circle', getModalScope, setModalContent, rectangles, getEdgeConfigModal);
+                        'circle', getModalScope, setModalContent, rectangles, getEdgeConfigModal, setLastChange);
 	}
 
 	// mousedown on main svg
@@ -393,7 +396,7 @@ export default class TopologyGraphComponent extends Component {
 	}
 
     createNode(delta, itemObj){
-                let {internalFlags, constants, nodes, topologyId, versionId, metaInfo, paths, edges, uinamesList} = this;
+                let {internalFlags, constants, nodes, topologyId, versionId, metaInfo, paths, edges, uinamesList, setLastChange} = this;
         let {imgUrl, parentType, name, currentType, topologyComponentBundleId} = itemObj;
 		internalFlags.graphMouseDown = true;
         d3.event = event;
@@ -417,7 +420,7 @@ export default class TopologyGraphComponent extends Component {
 			let stageJoinArr = this.createStageJoinNode(d);
 			createNodeArr.push(...stageJoinArr);
 		}
-                TopologyUtils.createNode(topologyId, versionId, createNodeArr, this.updateGraph.bind(this), metaInfo, paths, edges, internalFlags, uinamesList);
+                TopologyUtils.createNode(topologyId, versionId, createNodeArr, this.updateGraph.bind(this), metaInfo, paths, edges, internalFlags, uinamesList, setLastChange);
 		internalFlags.graphMouseDown = false;
 	}
 
@@ -469,13 +472,13 @@ export default class TopologyGraphComponent extends Component {
 	}
 
 	deleteNode(selectedNode){
-        let {topologyId, versionId, nodes, edges, internalFlags, updateGraph, metaInfo, uinamesList} = this;
-        TopologyUtils.deleteNode(topologyId, versionId, selectedNode, nodes, edges, internalFlags, updateGraph.bind(this), metaInfo, uinamesList);
+        let {topologyId, versionId, nodes, edges, internalFlags, updateGraph, metaInfo, uinamesList, setLastChange} = this;
+        TopologyUtils.deleteNode(topologyId, versionId, selectedNode, nodes, edges, internalFlags, updateGraph.bind(this), metaInfo, uinamesList, setLastChange);
 	}
 
 	deleteEdge(selectedEdge){
-        let {topologyId, versionId, internalFlags, edges, updateGraph} = this;
-        TopologyUtils.deleteEdge(selectedEdge, topologyId, versionId, internalFlags, edges, updateGraph.bind(this));
+        let {topologyId, versionId, internalFlags, edges, updateGraph, setLastChange} = this;
+        TopologyUtils.deleteEdge(selectedEdge, topologyId, versionId, internalFlags, edges, updateGraph.bind(this), setLastChange);
         this.edgeStream.style('display', 'none');
 	}
 
@@ -633,7 +636,7 @@ export default class TopologyGraphComponent extends Component {
                     d.parallelismCount = value <= 0 ? 0 : value;
                     clearTimeout(thisGraph.clickTimeout);
                     thisGraph.clickTimeout = setTimeout(function(){
-                        TopologyUtils.updateParallelismCount(thisGraph.topologyId, this.versionId, d);
+                        TopologyUtils.updateParallelismCount(thisGraph.topologyId, this.versionId, d, this.setLastChange);
                     },500)
                     thisGraph.updateGraph();
                 }
@@ -646,7 +649,7 @@ export default class TopologyGraphComponent extends Component {
                     d.parallelismCount = value <= 0 ? 0 : value;
                     clearTimeout(thisGraph.clickTimeout);
                     thisGraph.clickTimeout = setTimeout(function(){
-                        TopologyUtils.updateParallelismCount(thisGraph.topologyId, this.versionId, d);
+                        TopologyUtils.updateParallelismCount(thisGraph.topologyId, this.versionId, d, this.setLastChange);
                     },500)
                     thisGraph.updateGraph();
                 }
@@ -772,6 +775,7 @@ export default class TopologyGraphComponent extends Component {
 		this.getModalScope = this.props.getModalScope;
 		this.setModalContent = this.props.setModalContent;
         this.getEdgeConfigModal = this.props.getEdgeConfigModal;
+        this.setLastChange = this.props.setLastChange;
 		if(this.renderFlag){
             d3.select("." + this.constants.graphClass)
                 .attr("transform", "translate(" + this.graphTransforms.dragCoords + ")" + "scale(" + this.graphTransforms.zoomScale + ")");

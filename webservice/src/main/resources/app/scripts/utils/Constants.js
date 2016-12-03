@@ -13,14 +13,14 @@ const Components = {
 	Datasource: { value: "Datasource"},
 	Datasources: [
                 { name:"Device", label:"Device", imgPath: "styles/img/icon-device.png", connectsTo: ["Parser"], hideOnUI:"true" },
-                { name:"Kafka", label:"Kafka", imgPath: "styles/img/icon-kafka.png", connectsTo: ["Rule", "Custom", "Normalization", "Split", "Hdfs", "Hbase", "Window", "Branch"] },
+                { name:"Kafka", label:"Kafka", imgPath: "styles/img/icon-kafka.png", connectsTo: ["Rule", "Custom", "Normalization", "Split", "Join", "Hdfs", "Hbase", "Window", "Branch"] },
                 { name:"Kinesis", label:"Kinesis", imgPath: "styles/img/icon-kinesis.png", connectsTo: ["Parser"], hideOnUI:"true" },
                 { name:"Event", label:"Event", imgPath: "styles/img/icon-event.png", connectsTo: ["Parser"], hideOnUI:"true" }
 	],
 	Processor: { value: "Processor"},
 	Processors: [
                 { name: "Parser", label:"Parser", imgPath: "styles/img/icon-parser.png", connectsTo: ["Rule", "Custom", "Normalization", "Split", "Hdfs", "Hbase", "Window" , "Branch"], hideOnUI:"true" },
-                { name: "Rule", label:"Rule", imgPath: "styles/img/icon-rule.png", connectsTo: ["Rule", "Custom", "Normalization", "Split", "Hdfs", "Hbase", "Notification", "Window", "Branch"] },
+                { name: "Rule", label:"Rule", imgPath: "styles/img/icon-rule.png", connectsTo: ["Rule", "Custom", "Normalization", "Split", "Join", "Hdfs", "Hbase", "Notification", "Window", "Branch"] },
                 { name: "Custom", label:"Custom", imgPath: "styles/img/icon-custom.png", connectsTo: ["Rule", "Custom", "Normalization", "Split", "Hdfs", "Hbase", "Notification", "Window", "Branch"] },
                 { name: "Normalization", label:"Normalization", imgPath: "styles/img/icon-normalization.png", connectsTo: ["Rule", "Custom", "Normalization", "Split", "Hdfs", "Hbase", "Notification", "Window", "Branch"] },
                 { name: "Split", label:"Split", imgPath: "styles/img/icon-split.png", connectsTo: ["Stage"] },

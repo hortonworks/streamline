@@ -57,8 +57,8 @@ export default class CustomNodeForm extends Component {
 				let {name, description, customProcessorImpl, imageFileName,	jarFileName,
 					inputSchema, outputStreamToSchema, configFields} = results[0].entities[0];
 
-				this.nodeData = results[1].entity;
-				let properties = results[1].entity.config.properties;
+                                this.nodeData = results[1];
+                                let properties = results[1].config.properties;
 				if(!properties.parallelism) properties.parallelism=defaultParallelism;
 
 				let stateObj = {
@@ -111,13 +111,13 @@ export default class CustomNodeForm extends Component {
 			.then(results=>{
 				self.nodeData.outputStreamIds = [];
 				results.map(result=>{
-						self.nodeData.outputStreamIds.push(result.entity.id);
+                                                self.nodeData.outputStreamIds.push(result.id);
 					})
                                 TopologyREST.updateNode(topologyId, versionId, nodeType, self.nodeData.id, {body: JSON.stringify(this.nodeData)})
 					.then((node)=>{
-						self.nodeData = node.entity;
+                                                self.nodeData = node;
 						self.setState({showSchema: true});
-                        this.context.ParentForm.setState({outputStreamObj:node.entity.outputStreams[0]})
+                        this.context.ParentForm.setState({outputStreamObj:node.outputStreams[0]})
 					})
 			})
 	}
@@ -167,7 +167,7 @@ export default class CustomNodeForm extends Component {
 	}
 
 	handleSave(name){
-		let {topologyId, nodeType} = this.props;
+		let {topologyId, nodeType, versionId} = this.props;
 		let data = this.getData();
 		let nodeId = this.nodeData.id;
 		this.nodeData.config.properties = data;

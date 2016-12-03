@@ -47,8 +47,8 @@ export default class BranchNodeForm extends Component {
 
         Promise.all(promiseArr)
             .then((results)=>{
-                this.nodeData = results[0].entity;
-                let configFields = results[0].entity.config.properties;
+                this.nodeData = results[0];
+                let configFields = results[0].config.properties;
                 let {rules = [], parallelism = 1} = configFields;
 
                 let promise = [];
@@ -60,7 +60,7 @@ export default class BranchNodeForm extends Component {
                     .then(results=>{
                         let ruleArr = [];
                         results.map(result=>{
-                            ruleArr.push(result.entity);
+                            ruleArr.push(result);
                         })
                         this.setState({rules: ruleArr});
                     })
@@ -102,7 +102,7 @@ export default class BranchNodeForm extends Component {
         ];
         return Promise.all(promiseArr)
                 .then(results=>{
-                    this.nodeData = results[0].entity;
+                    this.nodeData = results[0];
                     this.nodeData.name = name;
                     this.nodeData.config.properties.processAll = this.state.processAll;
                     //Update branch

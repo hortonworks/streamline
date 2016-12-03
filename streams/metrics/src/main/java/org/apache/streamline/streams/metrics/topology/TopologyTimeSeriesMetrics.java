@@ -49,13 +49,6 @@ public interface TopologyTimeSeriesMetrics {
 
     /**
      * Retrieve "component stats" on component.
-     * <p/>
-     * This method retrieves five metrics,<br/>
-     * 1) "inputRecords": Count of input records<br/>
-     * 2) "outputRecords": Count of output records<br/>
-     * 3) "failedRecords": Count of failed records<br/>
-     * 4) "processedTime": Latency of processed time (processing one event)<br/>
-     * 5) "recordsInWaitQueue": Count of records waiting in queue<br/>
      *
      * @param topology      topology catalog instance
      * @param component     component layout instance
@@ -63,10 +56,128 @@ public interface TopologyTimeSeriesMetrics {
      * @param to            end of the time period: timestamp (in milliseconds)
      * @return Map of metric name and Map of data points which are paired to (timestamp, value).
      */
-    Map<String, Map<Long, Double>> getComponentStats(TopologyLayout topology, Component component, long from, long to);
+    TimeSeriesComponentMetric getComponentStats(TopologyLayout topology, Component component, long from, long to);
 
     /**
      * Get instance of TimeSeriesQuerier.
      */
     TimeSeriesQuerier getTimeSeriesQuerier();
+
+
+    /**
+     * Data structure of Metrics for each component on topology.
+     * Fields are extracted from common metrics among various streaming frameworks.
+     *
+     * Implementors of TopologyTimeSeriesMetrics are encouraged to provide fields' value as many as possible.
+     * If field is not available for that streaming framework, implementator can leave it as null or default value.
+     */
+    class TimeSeriesComponentMetric {
+        private final String componentName;
+        private final Map<Long, Double> inputRecords;
+        private final Map<Long, Double> outputRecords;
+        private final Map<Long, Double> failedRecords;
+        private final Map<Long, Double> processedTime;
+        private final Map<Long, Double> recordsInWaitQueue;
+        private final Map<String, Map<Long, Double>> misc;
+
+        /**
+         * Constructor.
+         * @param componentName 'component name' for Streamline.
+         *                      If component name for streaming framework is different from component name for Streamline,
+         *                      implementation of TopologyTimeSeriesMetrics should match the relation.
+         * @param inputRecords  Count of input records.
+         * @param outputRecords Count of output records.
+         * @param failedRecords Count of failed records.
+         * @param processedTime Average latency of processed time (processing one record).
+         * @param recordsInWaitQueue    Count of records which are waiting in a queue.
+         * @param misc          Additional metrics which are framework specific.
+         */
+        public TimeSeriesComponentMetric(String componentName, Map<Long, Double> inputRecords,
+                                         Map<Long, Double> outputRecords, Map<Long, Double> failedRecords,
+                                         Map<Long, Double> processedTime, Map<Long, Double> recordsInWaitQueue,
+                                         Map<String, Map<Long, Double>> misc) {
+            this.componentName = componentName;
+            this.inputRecords = inputRecords;
+            this.outputRecords = outputRecords;
+            this.failedRecords = failedRecords;
+            this.processedTime = processedTime;
+            this.recordsInWaitQueue = recordsInWaitQueue;
+            this.misc = misc;
+        }
+
+        public String getComponentName() {
+            return componentName;
+        }
+
+        public Map<Long, Double> getInputRecords() {
+            return inputRecords;
+        }
+
+        public Map<Long, Double> getOutputRecords() {
+            return outputRecords;
+        }
+
+        public Map<Long, Double> getFailedRecords() {
+            return failedRecords;
+        }
+
+        public Map<Long, Double> getProcessedTime() {
+            return processedTime;
+        }
+
+        public Map<Long, Double> getRecordsInWaitQueue() {
+            return recordsInWaitQueue;
+        }
+
+        public Map<String, Map<Long, Double>> getMisc() {
+            return misc;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof TimeSeriesComponentMetric)) return false;
+
+            TimeSeriesComponentMetric that = (TimeSeriesComponentMetric) o;
+
+            if (getComponentName() != null ? !getComponentName().equals(that.getComponentName()) : that.getComponentName() != null)
+                return false;
+            if (getInputRecords() != null ? !getInputRecords().equals(that.getInputRecords()) : that.getInputRecords() != null)
+                return false;
+            if (getOutputRecords() != null ? !getOutputRecords().equals(that.getOutputRecords()) : that.getOutputRecords() != null)
+                return false;
+            if (getFailedRecords() != null ? !getFailedRecords().equals(that.getFailedRecords()) : that.getFailedRecords() != null)
+                return false;
+            if (getProcessedTime() != null ? !getProcessedTime().equals(that.getProcessedTime()) : that.getProcessedTime() != null)
+                return false;
+            if (getRecordsInWaitQueue() != null ? !getRecordsInWaitQueue().equals(that.getRecordsInWaitQueue()) : that.getRecordsInWaitQueue() != null)
+                return false;
+            return getMisc() != null ? getMisc().equals(that.getMisc()) : that.getMisc() == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = getComponentName() != null ? getComponentName().hashCode() : 0;
+            result = 31 * result + (getInputRecords() != null ? getInputRecords().hashCode() : 0);
+            result = 31 * result + (getOutputRecords() != null ? getOutputRecords().hashCode() : 0);
+            result = 31 * result + (getFailedRecords() != null ? getFailedRecords().hashCode() : 0);
+            result = 31 * result + (getProcessedTime() != null ? getProcessedTime().hashCode() : 0);
+            result = 31 * result + (getRecordsInWaitQueue() != null ? getRecordsInWaitQueue().hashCode() : 0);
+            result = 31 * result + (getMisc() != null ? getMisc().hashCode() : 0);
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return "TimeSeriesComponentMetric{" +
+                    "componentName='" + componentName + '\'' +
+                    ", inputRecords=" + inputRecords +
+                    ", outputRecords=" + outputRecords +
+                    ", failedRecords=" + failedRecords +
+                    ", processedTime=" + processedTime +
+                    ", recordsInWaitQueue=" + recordsInWaitQueue +
+                    ", misc=" + misc +
+                    '}';
+        }
+    }
 }

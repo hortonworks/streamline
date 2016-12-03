@@ -1,5 +1,7 @@
 org.apache.streamline.streams.catalog.Component
 org.apache.streamline.streams.catalog.Cluster
+org.apache.streamline.streams.catalog.Service
+org.apache.streamline.streams.catalog.ServiceConfiguration
 org.apache.streamline.streams.catalog.TopologyEditorMetadata
 org.apache.streamline.streams.catalog.Topology
 org.apache.streamline.streams.catalog.StreamInfo
@@ -14,5 +16,8 @@ org.apache.streamline.streams.catalog.TopologyEdge
 org.apache.streamline.streams.catalog.UDFInfo
 org.apache.streamline.streams.catalog.RuleInfo
 org.apache.streamline.streams.catalog.WindowInfo
+org.apache.streamline.streams.catalog.BranchRuleInfo
 org.apache.streamline.streams.catalog.topology.TopologyComponentBundle
 org.apache.streamline.streams.catalog.TopologyVersionInfo
+org.apache.streamline.streams.catalog.Namespace
+org.apache.streamline.streams.catalog.NamespaceServiceClusterMapping

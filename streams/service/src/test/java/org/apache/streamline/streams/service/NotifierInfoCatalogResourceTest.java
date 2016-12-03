@@ -1,5 +1,6 @@
 package org.apache.streamline.streams.service;
 
+import org.apache.streamline.common.CollectionResponse;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.catalog.CatalogResponse;
 import org.apache.streamline.common.util.FileStorage;
@@ -73,11 +74,10 @@ public class NotifierInfoCatalogResourceTest {
             }
         };
 
-        CatalogResponse catalogResponse = (CatalogResponse) resource.listNotifiers(mockUriInfo).getEntity();
+        CollectionResponse collectionResponse = (CollectionResponse) resource.listNotifiers(mockUriInfo).getEntity();
 
-        assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), catalogResponse.getResponseCode());
-        assertEquals(1, catalogResponse.getEntities().size());
-        assertEquals(notifierInfo, catalogResponse.getEntities().iterator().next());
+        assertEquals(1, collectionResponse .getEntities().size());
+        assertEquals(notifierInfo, collectionResponse.getEntities().iterator().next());
     }
 
     @Test
@@ -90,10 +90,8 @@ public class NotifierInfoCatalogResourceTest {
             }
         };
 
-        CatalogResponse catalogResponse = (CatalogResponse) resource.getNotifierById(1L).getEntity();
-
-        assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), catalogResponse.getResponseCode());
-        assertEquals(notifierInfo, catalogResponse.getEntity());
+        NotifierInfo result = (NotifierInfo) resource.getNotifierById(1L).getEntity();
+        assertEquals(notifierInfo, result);
     }
 
     @Test
@@ -114,13 +112,12 @@ public class NotifierInfoCatalogResourceTest {
             }
         };
 
-        CatalogResponse catalogResponse = (CatalogResponse) resource.addNotifier(
+        NotifierInfo result = (NotifierInfo) resource.addNotifier(
                 mockInputStream,
                 mockFormDataContentDisposition,
                 mockFormDataBodyPart).getEntity();
 
-        assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), catalogResponse.getResponseCode());
-        assertEquals(notifierInfo, catalogResponse.getEntity());
+        assertEquals(notifierInfo, result);
     }
 
 }

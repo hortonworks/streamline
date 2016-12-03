@@ -1,5 +1,16 @@
 ## 0.1.4
+ * STREAMLINE-518: storm-jdbc bundle spec and flux transformation class.
+ * STREAMLINE-314: CustomProcessor should provide a Generic Processors for writing JS, ruby, python ec..
+ * STREAMLINE-551: .selectStreamLine() now also auto-prefixes all the join keys with 'streamline-event'.
+ * STREAMLINE-461: upgraded dropwizard to 1.0.5 and logback to 1.1.7 and verified logging works.
+ * STREAMLINE-501: Backend: Introduce Namespace and NamespaceServiceCluster Mapping
+ * STREAMLINE-136: Support FieldsGrouping through topology editor.
+ * STREAMLINE-543: Time-series AMS querier: Adjust precision automatically based on time range
+ * STREAMLINE-541: Time-series DB version of Topology Metrics API.
+ * STREAMLINE-500: Generalize the way of handling exception on service.
+ * STREAMLINE-533: UI - Join Processor.
  * STREAMLINE-510: Basic validation before deploying a topology.
+ * STREAMLINE-379: Add Druid Sink
  * STREAMLINE-506: TopologyEditor Settings API.
  * STREAMLINE-424: HDFS Spout support.
  * STREAMLINE-498: Storm Runner Time-series API should handle the difference between component name from Streamline and Storm

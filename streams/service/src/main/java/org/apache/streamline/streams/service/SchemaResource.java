@@ -18,10 +18,12 @@
 package org.apache.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
-import org.apache.streamline.common.util.WSUtils;
-import org.apache.registries.schemaregistry.errors.SchemaNotFoundException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.registries.schemaregistry.SchemaVersionInfo;
 import org.apache.registries.schemaregistry.client.SchemaRegistryClient;
+import org.apache.registries.schemaregistry.errors.SchemaNotFoundException;
+import org.apache.streamline.common.util.WSUtils;
+import org.apache.streamline.streams.service.exception.request.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,11 +34,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 
 /**
@@ -59,7 +56,8 @@ public class SchemaResource {
     @Path("/{topicName}")
     @Timed
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getKafkaSourceSchema(@PathParam("topicName") String topicName) {
+    public Response getKafkaSourceSchema(@PathParam("topicName") String topicName)
+        throws JsonProcessingException {
         try {
             LOG.info("Received path: [{}]", topicName);
             // for now, takes care of kafka for topic values. We will enhance to work this to get schema for different
@@ -72,14 +70,14 @@ public class SchemaResource {
                 schema = avroStreamsSchemaConverter.convertAvro(schema);
             }
             LOG.debug("######### Converted schema: ", schema);
-            return WSUtils.respond(schema, OK, SUCCESS);
+            return WSUtils.respondEntity(schema, OK);
         } catch (SchemaNotFoundException e) {
             // ignore and log error
             LOG.error("Schema not found for name: [{}]", topicName, e);
-            return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, topicName);
-        } catch (Exception ex) {
+            throw EntityNotFoundException.byId(topicName);
+        } catch (JsonProcessingException ex) {
             LOG.error("Error occurred while retrieving schema with name [{}]", topicName, ex);
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+            throw ex;
         }
     }
 

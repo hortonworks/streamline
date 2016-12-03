@@ -1,10 +1,15 @@
 package org.apache.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.storage.PrimaryKey;
+import org.apache.streamline.storage.Storable;
 import org.apache.streamline.storage.catalog.AbstractStorable;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +19,15 @@ import java.util.Map;
  */
 public class Component extends AbstractStorable {
     private static final String NAMESPACE = "components";
+
+    public static final String ID = "id";
+    public static final String SERVICEID = "serviceId";
+    public static final String NAME = "name";
+    public static final String HOSTS = "hosts";
+    public static final String PROTOCOL = "protocol";
+    public static final String PORT = "port";
+    public static final String TIMESTAMP = "timestamp";
+
 
     private Long id;
     private Long serviceId;
@@ -162,4 +176,54 @@ public class Component extends AbstractStorable {
             ", timestamp=" + timestamp +
             '}';
     }
+
+    @JsonIgnore
+    @Override
+    public Schema getSchema() {
+        return Schema.of(
+                Schema.Field.of(ID, Schema.Type.LONG),
+                Schema.Field.of(SERVICEID, Schema.Type.LONG),
+                Schema.Field.of(NAME, Schema.Type.STRING),
+                Schema.Field.of(HOSTS, Schema.Type.STRING),
+                Schema.Field.of(PROTOCOL, Schema.Type.STRING),
+                Schema.Field.of(PORT, Schema.Type.INTEGER),
+                Schema.Field.of(TIMESTAMP, Schema.Type.LONG)
+        );
+    }
+
+
+    @Override
+    public Map<String, Object> toMap() {
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, Object> map = super.toMap();
+        try {
+            map.put(HOSTS, hosts != null ? mapper.writeValueAsString(hosts) : "");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return map;
+    }
+
+    @Override
+    public Storable fromMap(Map<String, Object> map) {
+        setId((Long) map.get(ID));
+        setServiceId((Long) map.get(SERVICEID));
+        setName((String) map.get(NAME));
+        setProtocol((String) map.get(PROTOCOL));
+        setPort((Integer) map.get(PORT));
+        setTimestamp((Long) map.get(TIMESTAMP));
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            String hostsStr = (String) map.get(HOSTS);
+            if (!StringUtils.isEmpty(hostsStr)) {
+                List<String> hosts = mapper.readValue(hostsStr, new TypeReference<List<String>>() {
+                });
+                setHosts(hosts);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return this;
+    }
+
 }

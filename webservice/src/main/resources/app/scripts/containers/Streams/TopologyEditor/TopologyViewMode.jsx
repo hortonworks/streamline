@@ -54,13 +54,22 @@ class TopologyViewMode extends Component{
           <div className="col-sm-4">
             <h4 className="page-heading">{topologyName}</h4>
           </div>
-          <div className="col-sm-4">
-            <div className="input-group">
-                <span className="input-group-addon">Last Change</span>
-                <input type="text" className="form-control" value={Utils.splitTimeStamp(timestamp)} disabled />
-            </div>
+          <div className="col-sm-6 text-right">
+              <div className="filter-label">
+                <span className="text-muted">Last Change:</span> <span style={{color:'#545454'}}>{Utils.splitTimeStamp(timestamp)}</span>
+              </div>
+              <div className="filter-label">
+                <span className="text-muted">Version:</span>
+                <DropdownButton bsStyle="link" title={versionName || ''} pullRight id="version-dropdown" onSelect={this.handleSelectVersion.bind(this)}>
+                {
+                  versionsArr.map((v, i)=>{
+                    return <MenuItem eventKey={i} key={i} data-version-id={v.id}>{v.name}</MenuItem>
+                  })
+                }
+              </DropdownButton>
+              </div>
           </div>
-          <div className="col-sm-2">
+          {/*<div className="col-sm-2">
             <InputGroup>
               <span className="input-group-addon">Version</span>
               <DropdownButton title={versionName || ''} pullRight id="version-dropdown" onSelect={this.handleSelectVersion.bind(this)}>
@@ -71,7 +80,7 @@ class TopologyViewMode extends Component{
                 }
               </DropdownButton>
             </InputGroup>
-          </div>
+          </div>*/}
           {versionName.toLowerCase() == 'current' ?
             <div className="col-sm-2 styleWindowDN text-right">
             {isAppRunning ?
@@ -83,10 +92,10 @@ class TopologyViewMode extends Component{
           : <div className="col-sm-2 styleWindowDN text-right">
               <OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip">Set this version as current version. If another version of topology is deployed, kill it first to set this one.</Tooltip>}>
                 <div style={{display: 'inline-block', cursor: 'not-allowed'}}>
-                  <button 
-                    type="button" 
-                    className="btn btn-default" 
-                    onClick={setCurrentVersion} 
+                  <button
+                    type="button"
+                    className="btn btn-default"
+                    onClick={setCurrentVersion}
                     disabled={isAppRunning}
                     style={isAppRunning ? {pointerEvents : 'none'} : {}}>
                     Set Current Version
@@ -131,7 +140,7 @@ class TopologyViewMode extends Component{
         </div>
         <div className="stat-tiles with-margin">
             <h6>ERRORS</h6>
-            <h1>{metricWrap.failedRecords || 0}</h1>
+            <h1>{metricWrap.errors || 0}</h1>
         </div>
         <div className="stat-tiles with-margin">
             <h6>WORKERS</h6>

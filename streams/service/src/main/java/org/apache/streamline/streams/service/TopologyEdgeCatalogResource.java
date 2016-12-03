@@ -23,6 +23,7 @@ import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.TopologyEdge;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import org.apache.streamline.streams.service.exception.request.EntityNotFoundException;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -38,14 +39,7 @@ import javax.ws.rs.core.UriInfo;
 import java.util.Collection;
 import java.util.List;
 
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_VERSION_NOT_FOUND;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.streamline.common.util.WSUtils.buildTopologyIdAndVersionIdAwareQueryParams;
 
@@ -90,7 +84,7 @@ public class TopologyEdgeCatalogResource {
     @GET
     @Path("/topologies/{topologyId}/edges")
     @Timed
-    public Response listTopologyEdges(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) {
+    public Response listTopologyEdges(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) throws Exception {
         Long currentVersionId = catalogService.getCurrentVersionId(topologyId);
         return listTopologyEdges(
                 buildTopologyIdAndVersionIdAwareQueryParams(topologyId, currentVersionId, uriInfo));
@@ -100,22 +94,19 @@ public class TopologyEdgeCatalogResource {
     @Path("/topologies/{topologyId}/versions/{versionId}/edges")
     @Timed
     public Response listTopologyEdgesForVersion(@PathParam("topologyId") Long topologyId,
-                                                  @PathParam("versionId") Long versionId,
-                                                  @Context UriInfo uriInfo) {
+                                                @PathParam("versionId") Long versionId,
+                                                @Context UriInfo uriInfo) throws Exception {
         return listTopologyEdges(
                 buildTopologyIdAndVersionIdAwareQueryParams(topologyId, versionId, uriInfo));
     }
 
-    private Response listTopologyEdges(List<QueryParam> queryParams) {
-        try {
-            Collection<TopologyEdge> edges = catalogService.listTopologyEdges(queryParams);
-            if (edges != null) {
-                return WSUtils.respond(edges, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+    private Response listTopologyEdges(List<QueryParam> queryParams) throws Exception {
+        Collection<TopologyEdge> edges = catalogService.listTopologyEdges(queryParams);
+        if (edges != null) {
+            return WSUtils.respondEntities(edges, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, queryParams.toString());
+
+        throw EntityNotFoundException.byFilter(queryParams.toString());
     }
 
     /**
@@ -146,32 +137,26 @@ public class TopologyEdgeCatalogResource {
     @Path("/topologies/{topologyId}/edges/{id}")
     @Timed
     public Response getTopologyEdgeById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long edgeId) {
-        try {
-            TopologyEdge edge = catalogService.getTopologyEdge(topologyId, edgeId);
-            if (edge != null) {
-                return WSUtils.respond(edge, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        TopologyEdge edge = catalogService.getTopologyEdge(topologyId, edgeId);
+        if (edge != null) {
+            return WSUtils.respondEntity(edge, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, buildMessageForCompositeId(topologyId, edgeId));
+
+        throw EntityNotFoundException.byId(buildMessageForCompositeId(topologyId, edgeId));
     }
 
     @GET
     @Path("/topologies/{topologyId}/versions/{versionId}/edges/{id}")
     @Timed
     public Response getTopologyEdgeByIdAndVersion(@PathParam("topologyId") Long topologyId,
-                                                    @PathParam("id") Long edgeId,
-                                                    @PathParam("versionId") Long versionId) {
-        try {
-            TopologyEdge edge = catalogService.getTopologyEdge(topologyId, edgeId, versionId);
-            if (edge != null) {
-                return WSUtils.respond(edge, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+                                                  @PathParam("id") Long edgeId,
+                                                  @PathParam("versionId") Long versionId) {
+        TopologyEdge edge = catalogService.getTopologyEdge(topologyId, edgeId, versionId);
+        if (edge != null) {
+            return WSUtils.respondEntity(edge, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_VERSION_NOT_FOUND, buildMessageForCompositeId(topologyId, edgeId),
+
+        throw EntityNotFoundException.byVersion(buildMessageForCompositeId(topologyId, edgeId),
                 versionId.toString());
     }
 
@@ -212,12 +197,8 @@ public class TopologyEdgeCatalogResource {
     @Path("/topologies/{topologyId}/edges")
     @Timed
     public Response addTopologyEdge(@PathParam("topologyId") Long topologyId, TopologyEdge edge) {
-        try {
-            TopologyEdge createdEdge = catalogService.addTopologyEdge(topologyId, edge);
-            return WSUtils.respond(createdEdge, CREATED, SUCCESS);
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
-        }
+        TopologyEdge createdEdge = catalogService.addTopologyEdge(topologyId, edge);
+        return WSUtils.respondEntity(createdEdge, CREATED);
     }
 
     /**
@@ -255,13 +236,9 @@ public class TopologyEdgeCatalogResource {
     @Path("/topologies/{topologyId}/edges/{id}")
     @Timed
     public Response addOrUpdateTopologyEdge(@PathParam("topologyId") Long topologyId, @PathParam("id") Long edgeId,
-                                                 TopologyEdge edge) {
-        try {
-            TopologyEdge createdEdge = catalogService.addOrUpdateTopologyEdge(topologyId, edgeId, edge);
-            return WSUtils.respond(createdEdge, CREATED, SUCCESS);
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
-        }
+                                            TopologyEdge edge) {
+        TopologyEdge createdEdge = catalogService.addOrUpdateTopologyEdge(topologyId, edgeId, edge);
+        return WSUtils.respondEntity(createdEdge, CREATED);
     }
 
     /**
@@ -292,16 +269,12 @@ public class TopologyEdgeCatalogResource {
     @Path("/topologies/{topologyId}/edges/{id}")
     @Timed
     public Response removeTopologyEdge(@PathParam("topologyId") Long topologyId, @PathParam("id") Long edgeId) {
-        try {
-            TopologyEdge removedEdge = catalogService.removeTopologyEdge(topologyId, edgeId);
-            if (removedEdge != null) {
-                return WSUtils.respond(removedEdge, OK, SUCCESS);
-            } else {
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, edgeId.toString());
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        TopologyEdge removedEdge = catalogService.removeTopologyEdge(topologyId, edgeId);
+        if (removedEdge != null) {
+            return WSUtils.respondEntity(removedEdge, OK);
         }
+
+        throw EntityNotFoundException.byId(edgeId.toString());
     }
 
     private String buildMessageForCompositeId(Long topologyId, Long edgeId) {

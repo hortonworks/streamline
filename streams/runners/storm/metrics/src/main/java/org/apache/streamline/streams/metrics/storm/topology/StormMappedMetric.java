@@ -9,6 +9,7 @@ enum StormMappedMetric {
     completeLatency("__complete-latency", TimeSeriesQuerier.AggregateFunction.AVG),
     inputRecords("__execute-count", TimeSeriesQuerier.AggregateFunction.SUM),
     outputRecords("__emit-count", TimeSeriesQuerier.AggregateFunction.SUM),
+    ackedRecords("__ack-count", TimeSeriesQuerier.AggregateFunction.SUM),
     failedRecords("__fail-count", TimeSeriesQuerier.AggregateFunction.SUM),
     processedTime("__process-latency", TimeSeriesQuerier.AggregateFunction.AVG),
     recordsInWaitQueue("__receive.population", TimeSeriesQuerier.AggregateFunction.AVG),

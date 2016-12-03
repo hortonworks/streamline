@@ -48,14 +48,14 @@ export default class SinkNodeForm extends Component {
         }
         Promise.all(promiseArr)
             .then(results=>{
-                this.nodeData = results[0].entity;
+                this.nodeData = results[0];
                 if(results[1].entities){
                     results[1].entities.map((edge)=>{
                         if(edge.toId === nodeData.nodeId && this.sourceNodesId.indexOf(edge.fromId) !== -1){
                             //TODO - Once we support multiple input streams, need to fix this.
                             TopologyREST.getNode(topologyId, versionId, 'streams', edge.streamGroupings[0].streamId)
                                 .then(streamResult=>{
-                                    this.setState({streamObj: streamResult.entity});
+                                    this.setState({streamObj: streamResult});
                                 })
                         }
                     })
@@ -63,7 +63,7 @@ export default class SinkNodeForm extends Component {
                 this.setState({formData: this.nodeData.config.properties})
                 if(sourceNodes.length > 0){
                     //Finding the source node and updating actions for rules/windows
-                    this.sourceNodeData = results[2].entity;
+                    this.sourceNodeData = results[2];
                     let sourcePromiseArr = [];
                     // sourceChildNodeType are processor nodes inner child, window or rule
                     let type = sourceNodes[0].currentType.toLowerCase();
@@ -100,7 +100,7 @@ export default class SinkNodeForm extends Component {
         let promiseArr = [TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)})];
         if(this.allSourceChildNodeData && this.allSourceChildNodeData.length > 0){
             this.allSourceChildNodeData.map((childData)=>{
-                let child = childData.entity;
+                let child = childData;
                 let obj = child.actions.find((o)=>{return o.name == oldName});
                 if(obj){
                     obj.name = name;

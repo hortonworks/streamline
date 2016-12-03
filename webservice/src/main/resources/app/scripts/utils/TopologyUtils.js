@@ -85,7 +85,7 @@ const isValidConnection = function(sourceNode, targetNode){
         return validConnection;
 }
 
-const createNode = function(topologyId, versionId, data, callback, metaInfo, paths, edges, internalFlags, uinamesList){
+const createNode = function(topologyId, versionId, data, callback, metaInfo, paths, edges, internalFlags, uinamesList, setLastChange){
 	let promiseArr = [];
 
 	data.map((o)=>{
@@ -133,18 +133,18 @@ const createNode = function(topologyId, versionId, data, callback, metaInfo, pat
 		.then((results)=>{
 
 			results.map((o,i)=>{
-				if(o.responseCode !== 1000){
+				if(o.responseMessage !== undefined){
 				FSReactToastr.error(
 				<CommonNotification flag="error" content={o.responseMessage}/>, '', toastOpt)
 				} else {
-					data[i].nodeId = o.entity.id;
+					data[i].nodeId = o.id;
 				}
 				if(i > 0){
 					//Creating edge link
                     this.createEdge(data[i-1], data[i], paths, edges, internalFlags, callback, topologyId, versionId);
 				}
 			});
-
+                        setLastChange(results[0].timestamp);
             this.saveMetaInfo(topologyId, versionId, data, metaInfo, callback);
 		})
 
@@ -216,7 +216,7 @@ const removeNodeFromMeta = function(metaInfo, currentNode){
 	return metaInfo;
 }
 
-const createEdge = function(mouseDownNode, d, paths, edges, internalFlags, callback, topologyId, versionId, getEdgeConfigModal){
+const createEdge = function(mouseDownNode, d, paths, edges, internalFlags, callback, topologyId, versionId, getEdgeConfigModal, setLastChange){
 	if(this.isValidConnection(mouseDownNode, d)){
 		let newEdge = {
 			source: mouseDownNode,
@@ -231,7 +231,8 @@ const createEdge = function(mouseDownNode, d, paths, edges, internalFlags, callb
 		if (!filtRes[0].length) {
             TopologyREST.getNode(topologyId, versionId, this.getNodeType(newEdge.source.parentType), newEdge.source.nodeId)
                 .then((result)=>{
-                    let nodeData = result.entity;
+                        setLastChange(result.timestamp);
+                    let nodeData = result;
                     if(newEdge.source.currentType.toLowerCase() === 'window' || newEdge.source.currentType.toLowerCase() === 'rule'){
                             nodeData.type = newEdge.source.currentType.toUpperCase();
                     }
@@ -262,196 +263,133 @@ const getNodeType = function(parentType){
 	}
 }
 
-const deleteNode = function(topologyId, versionId, currentNode, nodes, edges, internalFlags, updateGraphMethod, metaInfo, uinamesList){
+const deleteNode = function(topologyId, versionId, currentNode, nodes, edges, internalFlags, updateGraphMethod, metaInfo, uinamesList, setLastChange){
 	let promiseArr = [],
 		nodePromiseArr = [],
 		callback = null,
 		currentType = currentNode.currentType;
 
-  //       if(currentType.toLowerCase() === 'join'){
-		// 	//Check for join
-		// 	FSReactToastr.warning(<strong>Join can only be deleted if Split is deleted</strong>);
-		// } else {
-			//Check for stage to not allow delete if only one stage is present
-   //          if(currentType.toLowerCase() === 'stage'){
-			// 	let stageProcessors = nodes.filter((o)=>{return o.currentType === currentType});
-			// 	if(stageProcessors.length === 1){
-			// 		FSReactToastr.warning(<strong>Stage can only be deleted if Split is deleted</strong>);
-			// 		return false;
-			// 	}
-			// }
+                //Get data of current node
+        nodePromiseArr.push(TopologyREST.getNode(topologyId, versionId, this.getNodeType(currentNode.parentType), currentNode.nodeId))
 
-			//Get data of current node
-	        nodePromiseArr.push(TopologyREST.getNode(topologyId, versionId, this.getNodeType(currentNode.parentType), currentNode.nodeId))
+                //Find out if the source of the current node is rules/windows
+                //then update those processor by removing actions from it.
+        let connectingNodes = edges.filter((obj)=>{ return obj.target == currentNode; });
+        let actionsPromiseArr = [];
+        connectingNodes.map((o,i)=>{
+            if(o.source.currentType.toLowerCase() === 'rule' || o.source.currentType.toLowerCase() === 'window' ||
+                o.source.currentType.toLowerCase() === 'branch'){
+                let type = o.source.currentType.toLowerCase() === 'rule' ? 'rules' : (o.source.currentType.toLowerCase() === 'branch' ? 'branchrules' : 'windows');
+                TopologyREST.getAllNodes(topologyId, versionId, type).then((results)=>{
+                    results.entities.map((nodeObj)=>{
+                        let actionsArr = nodeObj.actions,
+                            actions = [],
+                            hasAction = false;
+                        actionsArr.map((a)=>{
+                            if(a.name !== currentNode.uiname){
+                                actions.push(a);
+                            } else {
+                                hasAction = true;
+                            }
+                        });
+                        if(hasAction) {
+                            nodeObj.actions = actions;
+                            actionsPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, type, nodeObj.id, {body: JSON.stringify(nodeObj)}));
+                        }
+                    });
+                });
+            }
+        })
 
-			//Get data of connected nodes
-			//Incase of source => get Parser
-			//Incase of split => get all stage and only one join
-	  //       if(currentType.toLowerCase() === 'split'){
-			// 	let connectingEdges = edges.filter((obj)=>{ return obj.source == currentNode; });
-			// 	connectingEdges.map((o, i)=>{
-	  //               nodePromiseArr.push(TopologyREST.getNode(topologyId, versionId, this.getNodeType(o.target.parentType), o.target.nodeId))
-	  //               if(i === 0 && currentType.toLowerCase() === 'split'){
-			// 			//All stages connects to only one Join
-			// 			let stageJoinNodes = edges.filter((obj)=>{ return obj.source == o.target; });
-	  //                   nodePromiseArr.push(TopologyREST.getNode(topologyId, versionId, this.getNodeType(stageJoinNodes[0].target.parentType), stageJoinNodes[0].target.nodeId))
-			// 		}
-			// 	})
-			// }
+        Promise.all(actionsPromiseArr).
+            then((results)=>{
+                for(let i = 0; i < results.length; i++){
+                    if(results[i].responseMessage !== undefined){
+                        FSReactToastr.error(<CommonNotification flag="error" content={results[i].responseMessage}/>, '', toastOpt)
+                    }
+                }
+            });
 
-			//Find out if the source of the current node is rules/windows
-			//then update those processor by removing actions from it.
-	        let connectingNodes = edges.filter((obj)=>{ return obj.target == currentNode; });
-	        let actionsPromiseArr = [];
-	        connectingNodes.map((o,i)=>{
-	            if(o.source.currentType.toLowerCase() === 'rule' || o.source.currentType.toLowerCase() === 'window' ||
-	            	o.source.currentType.toLowerCase() === 'branch'){
-	                let type = o.source.currentType.toLowerCase() === 'rule' ? 'rules' : (o.source.currentType.toLowerCase() === 'branch' ? 'branchrules' : 'windows');
-	                TopologyREST.getAllNodes(topologyId, versionId, type).then((results)=>{
-	                    results.entities.map((nodeObj)=>{
-	                        let actionsArr = nodeObj.actions,
-	                            actions = [],
-	                            hasAction = false;
-	                        actionsArr.map((a)=>{
-	                            if(a.name !== currentNode.uiname){
-	                                actions.push(a);
-	                            } else {
-	                                hasAction = true;
-	                            }
-	                        });
-	                        if(hasAction) {
-	                            nodeObj.actions = actions;
-	                            actionsPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, type, nodeObj.id, {body: JSON.stringify(nodeObj)}));
-	                        }
-	                    });
-	                });
-	            }
-	        })
-
-	        Promise.all(actionsPromiseArr).
-	            then((results)=>{
-	                for(let i = 0; i < results.length; i++){
-	                    if(results[i].responseCode !== 1000){
-	                        FSReactToastr.error(<CommonNotification flag="error" content={results[i].responseMessage}/>, '', toastOpt)
-	                    }
-	                }
-	            });
-
-			Promise.all(nodePromiseArr)
-			.then(results=>{
-				let nodeData = results[0].entity;
-				//Delete streams of all nodes
-				results.map(result=>{
-					let node = result.entity;
-					if(node.outputStreams){
-						node.outputStreams.map(stream=>{
-							if(stream.id){
-								promiseArr.push(TopologyREST.deleteNode(topologyId, 'streams', stream.id));
-							}
-						})
-					}
-				})
+                Promise.all(nodePromiseArr)
+                .then(results=>{
+                        let nodeData = results[0];
+                        setLastChange(results[0].timestamp);
+                        //Delete streams of all nodes
+                        results.map(result=>{
+                                let node = result;
+                                if(node.outputStreams){
+                                        node.outputStreams.map(stream=>{
+                                                if(stream.id){
+                                                        promiseArr.push(TopologyREST.deleteNode(topologyId, 'streams', stream.id));
+                                                }
+                                        })
+                                }
+                        })
 
 
-				//Delete Rules incase of Rule Processor
-				if(nodeData.type === 'RULE'){
-					if(nodeData.config.properties.rules){
-						nodeData.config.properties.rules.map(ruleId=>{
-							promiseArr.push(TopologyREST.deleteNode(topologyId, 'rules', ruleId));
-						})
-					}
+                        //Delete Rules incase of Rule Processor
+                        if(nodeData.type === 'RULE'){
+                                if(nodeData.config.properties.rules){
+                                        nodeData.config.properties.rules.map(ruleId=>{
+                                                promiseArr.push(TopologyREST.deleteNode(topologyId, 'rules', ruleId));
+                                        })
 				}
+                        }
 
-				//Delete Window incase of Rule Processor
-				if(nodeData.type === 'WINDOW'){
-					if(nodeData.config.properties.rules){
-						nodeData.config.properties.rules.map(ruleId=>{
-							promiseArr.push(TopologyREST.deleteNode(topologyId, 'windows', ruleId));
-						})
-					}
+                        //Delete Window incase of Rule Processor
+                        if(nodeData.type === 'WINDOW'){
+                                if(nodeData.config.properties.rules){
+                                        nodeData.config.properties.rules.map(ruleId=>{
+                                                promiseArr.push(TopologyREST.deleteNode(topologyId, 'windows', ruleId));
+                                        })
 				}
+                        }
 
-				//Remove metadata of to-be-deleted node
-				//Make delete call
-				// function performAction(metaInfo, edgeTargetObj, promiseArr, topologyId, targetArr){
-				// 	metaInfo = this.removeNodeFromMeta(metaInfo, edgeTargetObj);
-				// 	promiseArr.push(TopologyREST.deleteNode(topologyId, this.getNodeType(edgeTargetObj.parentType), edgeTargetObj.nodeId));
-				// 	targetArr.push(edgeTargetObj);
-				// }
-				//Delete other related nodes
-				//For Device => Parser
-				//For Split => Stage and Join
-				// let targetArr = [];
-    //                             if(currentType.toLowerCase() === 'split'){
-				// 	let connectingEdges = edges.filter((obj)=>{ return obj.source == currentNode; });
-				// 	connectingEdges.map((o, i)=>{
-				// 		performAction.call(this, metaInfo, o.target, promiseArr, topologyId, targetArr);
-    //                                             if(i === 0 && currentType.toLowerCase() === 'split'){
-				// 			//All stages connects to only one Join
-				// 			let stageJoinNodes = edges.filter((obj)=>{ return obj.source == o.target; });
-				// 			performAction.call(this, metaInfo, stageJoinNodes[0].target, promiseArr, topologyId, targetArr);
-				// 		}
-				// 	})
-				// }
+                        //Delete Links
+                        let edgeArr = this.getEdges(edges, currentNode);
 
-				//Delete Links
-				let edgeArr = this.getEdges(edges, currentNode);
-				// targetArr.map((o)=>{
-				// 	let removeEdges = this.getEdges(edges, o);
-				// 	removeEdges.map((o)=>{
-				// 		let temp = edgeArr.filter((l)=>{return l.edgeId === o.edgeId});
-				// 		if(temp.length === 0){
-				// 			edgeArr.push(o);
-				// 		}
-				// 	});
-				// })
-				edgeArr.map((o)=>{
-					promiseArr.push(TopologyREST.deleteNode(topologyId, 'edges', o.edgeId));
-				});
+                        edgeArr.map((o)=>{
+                                promiseArr.push(TopologyREST.deleteNode(topologyId, 'edges', o.edgeId));
+                        });
 
-				//Delete data from metadata
-				metaInfo = this.removeNodeFromMeta(metaInfo, currentNode);
-				let metaData = {
-					topologyId: topologyId,
-					data: JSON.stringify(metaInfo)
-				};
-                                promiseArr.push(TopologyREST.putMetaInfo(topologyId, versionId, {body: JSON.stringify(metaData)}));
+                        //Delete data from metadata
+                        metaInfo = this.removeNodeFromMeta(metaInfo, currentNode);
+                        let metaData = {
+                                topologyId: topologyId,
+                                data: JSON.stringify(metaInfo)
+                        };
+                            promiseArr.push(TopologyREST.putMetaInfo(topologyId, versionId, {body: JSON.stringify(metaData)}));
 
-                                //Delete current node
-				promiseArr.push(TopologyREST.deleteNode(topologyId, this.getNodeType(currentNode.parentType), currentNode.nodeId));
+            //Delete current node
+                        promiseArr.push(TopologyREST.deleteNode(topologyId, this.getNodeType(currentNode.parentType), currentNode.nodeId));
 
-				//If needed to reset any processor on delete - it comes here or in callback
-				callback = function(){
-					// Graph related Operations
-					uinamesList.splice(uinamesList.indexOf(currentNode.uiname), 1);
-					nodes.splice(nodes.indexOf(currentNode), 1);
-					this.spliceLinksForNode(currentNode, edges);
-					// targetArr.map((o)=>{
-					// 	uinamesList.splice(uinamesList.indexOf(o.uiname), 1);
-					// 	nodes.splice(nodes.indexOf(o), 1);
-					// 	this.spliceLinksForNode(o, edges);
-					// })
-					internalFlags.selectedNode = null;
-					updateGraphMethod();
-				}.bind(this)
+                        //If needed to reset any processor on delete - it comes here or in callback
+                        callback = function(){
+                                // Graph related Operations
+                                uinamesList.splice(uinamesList.indexOf(currentNode.uiname), 1);
+                                nodes.splice(nodes.indexOf(currentNode), 1);
+                                this.spliceLinksForNode(currentNode, edges);
+                                internalFlags.selectedNode = null;
+                                updateGraphMethod();
+                        }.bind(this)
 
-				if(promiseArr.length > 0){
-					//Make calls to delete node or nodes
-					Promise.all(promiseArr)
-						.then((results)=>{
-							for(let i = 0; i < results.length; i++){
-								if(results[i].responseCode !== 1000){
-                  FSReactToastr.error(
-                      <CommonNotification flag="error" content={results[i].responseMessage}/>, '', toastOpt)
-								}
-							}
-							//call the callback
-							callback();
-						})
-				}
+                        if(promiseArr.length > 0){
+                                //Make calls to delete node or nodes
+                                Promise.all(promiseArr)
+                                        .then((results)=>{
+                                                for(let i = 0; i < results.length; i++){
+                                                        if(results[i].responseMessage !== undefined){
+              FSReactToastr.error(
+                  <CommonNotification flag="error" content={results[i].responseMessage}/>, '', toastOpt)
+                                                        }
+                                                }
+                                                //call the callback
+                                                callback();
+                                        })
+                        }
 
-			})
-	// }
+                })
+
 }
 
 const getEdges = function(allEdges, currentNode){
@@ -460,17 +398,27 @@ const getEdges = function(allEdges, currentNode){
 	});
 }
 
-const deleteEdge = function(selectedEdge, topologyId, versionId, internalFlags, edges, updateGraphMethod){
-    let promiseArr = [TopologyREST.deleteNode(topologyId, 'edges', selectedEdge.edgeId)];
+const deleteEdge = function(selectedEdge, topologyId, versionId, internalFlags, edges, updateGraphMethod, setLastChange){
+    let promiseArr = [TopologyREST.deleteNode(topologyId, 'edges', selectedEdge.edgeId),
+				TopologyREST.getNode(topologyId, versionId, 'processors', selectedEdge.target.nodeId)];
     if(selectedEdge.source.currentType.toLowerCase() === 'rule' || selectedEdge.source.currentType.toLowerCase() === 'window'){
         promiseArr.push(TopologyREST.getNode(topologyId, versionId, 'processors', selectedEdge.source.nodeId));
     }
     Promise.all(promiseArr)
         .then((results)=>{
-            if(results.length === 2){
-                //Find the connected source rule/window
+                setLastChange(results[0].timestamp);
+		if(selectedEdge.target.currentType.toLowerCase() === 'join' ) {
+			let joinProcessorNode = results[1];
+			if(_.keys(joinProcessorNode.config.properties).length > 0) {
+				joinProcessorNode.config.properties.joins = [];
+				joinProcessorNode.config.properties.from = {};
+				TopologyREST.updateNode(topologyId, versionId, 'processors', joinProcessorNode.id, {body: JSON.stringify(joinProcessorNode)});
+			}
+            }
+            if(results.length === 3){
+		//Find the connected source rule/window
                 let rulePromises = [];
-                let ruleProcessorNode = results[1].entity;
+                let ruleProcessorNode = results[2];
                 let t = selectedEdge.source.currentType.toLowerCase();
                 let type = t === 'window' ? 'windows' : (t === 'rule' ? 'rules' : 'branchrules');
                 if(ruleProcessorNode.config.properties.rules){
@@ -481,7 +429,7 @@ const deleteEdge = function(selectedEdge, topologyId, versionId, internalFlags, 
                 Promise.all(rulePromises)
                     .then(rulesResults=>{
                         rulesResults.map(ruleEntity=>{
-                            let rule = ruleEntity.entity;
+                            let rule = ruleEntity;
                             if(rule.actions){
                                 //If source rule has target notification inside rule action,
                                 //then remove and update the rules/window.
@@ -702,9 +650,10 @@ const getConfigContainer = function(node, configData, editMode, topologyId, vers
                     nodeType={nodeType}
                     topologyId={topologyId}
                     versionId={versionId}
-                    sourceNode={sourceNodes[0]}
+                    sourceNode={sourceNodes}
                     targetNodes={targetNodes}
                     linkShuffleOptions={linkShuffleOptions}
+                    currentEdges={currentEdges}
                 />};
             break;
             case 'WINDOW': //Windowing
@@ -754,7 +703,7 @@ const getConfigContainer = function(node, configData, editMode, topologyId, vers
     }
 }
 
-const MouseUpAction = function(topologyId, versionId, d3node, d, metaInfo, internalFlags, constants, dragLine, paths, allNodes, edges, linkShuffleOptions, updateGraphMethod, elementType, getModalScope, setModalContent, rectangles, getEdgeConfigModal){
+const MouseUpAction = function(topologyId, versionId, d3node, d, metaInfo, internalFlags, constants, dragLine, paths, allNodes, edges, linkShuffleOptions, updateGraphMethod, elementType, getModalScope, setModalContent, rectangles, getEdgeConfigModal, setLastChange){
 	// reset the internalFlags
 	internalFlags.shiftNodeDrag = false;
 	d3node.classed(constants.connectClass, false);
@@ -777,7 +726,7 @@ const MouseUpAction = function(topologyId, versionId, d3node, d, metaInfo, inter
         if(hasSource.length && d.currentType.toLowerCase() === 'branch') {
 			FSReactToastr.warning(<strong>Edge cannot be connected to Branch.</strong>);
 		} else {
-			this.createEdge(mouseDownNode, d, paths, edges, internalFlags, updateGraphMethod, topologyId, versionId, getEdgeConfigModal);
+                        this.createEdge(mouseDownNode, d, paths, edges, internalFlags, updateGraphMethod, topologyId, versionId, getEdgeConfigModal, setLastChange);
 		}
         this.updateMetaInfo(topologyId, versionId, d, metaInfo);
 	} else {
@@ -950,14 +899,16 @@ const getNodeImgRectClass = function(data){
 	}
 }
 
-const updateParallelismCount = function(topologyId, versionId, nodeData){
+const updateParallelismCount = function(topologyId, versionId, nodeData, setLastChange){
 	let currentType = this.getNodeType(nodeData.parentType);
         TopologyREST.getNode(topologyId, versionId, currentType, nodeData.nodeId)
 		.then((result)=>{
-			let data = result.entity;
+			let data = result;
 			data.config.properties.parallelism = nodeData.parallelismCount;
                         TopologyREST.updateNode(topologyId, versionId, currentType, nodeData.nodeId, {body: JSON.stringify(data)})
-				.then((newNodeData)=>{console.log("Updated Parallelism Count For "+newNodeData.entity.name);})
+                                .then((newNodeData)=>{
+                                        setLastChange(newNodeData.timestamp);
+                                })
 		})
 }
 
@@ -970,7 +921,7 @@ const getEdgeData = function(data, topologyId, versionId, callback) {
     TopologyREST.getNode(topologyId, versionId, 'streams', data.streamGrouping.streamId)
         .then((result)=>{
             let obj = {
-                streamName: result.entity.streamId,
+                streamName: result.streamId,
                 grouping: data.streamGrouping.grouping,
                 groupingFields: data.streamGrouping.fields,
                 edgeData: data

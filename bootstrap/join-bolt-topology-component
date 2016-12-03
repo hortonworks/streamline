@@ -1,7 +1,7 @@
 {
   "type": "PROCESSOR",
   "name": "Join bolt",
-  "subType": "Join",
+  "subType": "JOIN",
   "builtin": true,
   "streamingEngine": "STORM",
   "transformationClass": "org.apache.streamline.streams.layout.storm.JoinBoltFluxComponent",
@@ -19,6 +19,13 @@
           "INNER",
           "LEFT"
         ]
+      },
+      {
+        "uiName": "Output Stream",
+        "fieldName": "outputStream",
+        "isOptional": false,
+        "tooltip": "Name of output stream",
+        "type": "string"
       },
       {
         "uiName": "Parallelism",

@@ -6,21 +6,6 @@
     </property>
     
     <property>
-      <name>hbase.bucketcache.ioengine</name>
-      <value></value>
-    </property>
-    
-    <property>
-      <name>hbase.bucketcache.percentage.in.combinedcache</name>
-      <value></value>
-    </property>
-    
-    <property>
-      <name>hbase.bucketcache.size</name>
-      <value></value>
-    </property>
-    
-    <property>
       <name>hbase.bulkload.staging.dir</name>
       <value>/apps/hbase/staging</value>
     </property>
@@ -126,6 +111,11 @@
     </property>
     
     <property>
+      <name>hbase.master.ui.readonly</name>
+      <value>false</value>
+    </property>
+    
+    <property>
       <name>hbase.region.server.rpc.scheduler.factory.class</name>
       <value>org.apache.hadoop.hbase.ipc.PhoenixRpcSchedulerFactory</value>
     </property>
@@ -157,7 +147,7 @@
     
     <property>
       <name>hbase.rootdir</name>
-      <value>hdfs://ambari-server.iotas.com:8020/apps/hbase/data</value>
+      <value>hdfs://jlim-hdp2-5-1.openstacklocal:8020/apps/hbase/data</value>
     </property>
     
     <property>
@@ -202,7 +192,7 @@
     
     <property>
       <name>hbase.zookeeper.quorum</name>
-      <value>ambari-server.iotas.com,ambari-slave2.iotas.com,ambari-slave1.iotas.com</value>
+      <value>jlim-hdp2-5-3.openstacklocal,jlim-hdp2-5-2.openstacklocal,jlim-hdp2-5-1.openstacklocal</value>
     </property>
     
     <property>
@@ -212,7 +202,7 @@
     
     <property>
       <name>hfile.block.cache.size</name>
-      <value>0.40</value>
+      <value>0.4</value>
     </property>
     
     <property>
@@ -223,6 +213,11 @@
     <property>
       <name>phoenix.query.timeoutMs</name>
       <value>60000</value>
+    </property>
+    
+    <property>
+      <name>zookeeper.recovery.retry</name>
+      <value>6</value>
     </property>
     
     <property>

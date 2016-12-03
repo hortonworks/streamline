@@ -35,7 +35,7 @@ public interface TopologyMetrics extends TopologyTimeSeriesMetrics {
      * Retrieves metrics data for Streamline topology.
      *
      * @param topology topology catalog instance. Implementations should find actual runtime topology with provided topology.
-     * @return pair of (component name, ComponentMetric instance).
+     * @return pair of (component id, ComponentMetric instance).
      * Implementations should ensure that component name is same to UI name of component
      * so that it can be matched to Streamline topology.
      */

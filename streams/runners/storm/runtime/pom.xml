@@ -11,6 +11,10 @@
 
     <artifactId>streamline-runtime-storm</artifactId>
 
+    <properties>
+        <cassandra.driver.core.version>2.1.7.1</cassandra.driver.core.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.streamline</groupId>
@@ -100,7 +104,21 @@
         </dependency>
         <dependency>
             <groupId>org.apache.storm</groupId>
+            <artifactId>storm-cassandra</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.datastax.cassandra</groupId>
+            <artifactId>cassandra-driver-core</artifactId>
+            <version>${cassandra.driver.core.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.storm</groupId>
             <artifactId>storm-hbase</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.storm</groupId>
+            <artifactId>storm-jdbc</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.hbase</groupId>
@@ -136,6 +154,12 @@
         </dependency>
 
         <!-- Test dependencies -->
+        <dependency>
+            <groupId>org.apache.streamline</groupId>
+            <artifactId>streamline-examples-processors</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.jmockit</groupId>
             <artifactId>jmockit</artifactId>

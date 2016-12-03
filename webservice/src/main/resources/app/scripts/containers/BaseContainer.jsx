@@ -1,11 +1,13 @@
 import React, {Component} from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import Sidebar from '../components/Sidebar';
 import {Link} from 'react-router';
 import {Confirm} from '../components/FSModal'
 
 import 'animate.css/animate.css';
 import 'styles/css/bootstrap.css';
+import 'bootstrap-daterangepicker/daterangepicker.css';
 import 'react-select/dist/react-select.css';
 import 'react-bootstrap-switch/dist/css/bootstrap3/react-bootstrap-switch.min.css';
 import 'styles/css/toastr.min.css';
@@ -30,12 +32,8 @@ export default class BaseContainer extends Component {
               onLandingPage={this.props.onLandingPage}
               headerContent={this.props.headerContent}
             />
-            <section className={
-                this.props.onLandingPage === "true" ?
-                "landing-wrapper container" :
-                "container-fluid wrapper animated fadeIn"
-              }
-            >
+            <Sidebar/>
+            <section className="content-wrapper">
               {this.props.children}
             </section>
             <Confirm ref="Confirm"/>

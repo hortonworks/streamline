@@ -116,13 +116,14 @@ public class TestWindowedQueryBolt {
         Assert.assertEquals( userStream.size(), collector.actualResults.size() );
     }
 
+
     @Test
     public void testNestedKeys_StreamLine() throws Exception {
         ArrayList<Tuple> userStream = makeStreamLineEventStream("users", userFields, users);
         ArrayList<Tuple> cityStream = makeStreamLineEventStream("city", cityFields, cities);
         TupleWindow window = makeTupleWindow(userStream, cityStream);
-        WindowedQueryBolt bolt = new WindowedQueryBolt(WindowedQueryBolt.StreamSelector.STREAM, "users", SL_PREFIX + "city")
-                .join("city", SL_PREFIX + "cityName", "users")
+        WindowedQueryBolt bolt = new WindowedQueryBolt(WindowedQueryBolt.StreamSelector.STREAM, "users", "city")
+                .join("city", "cityName", "users")
                 .selectStreamLine("name,city,country");
         MockCollector collector = new MockCollector();
         bolt.prepare(null, null, collector);

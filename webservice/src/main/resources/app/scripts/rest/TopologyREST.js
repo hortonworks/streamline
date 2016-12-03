@@ -289,7 +289,26 @@ const TopologyREST = {
 	      .then( (response) => {
 	          return response.json();
             })
-	  }
+        },
+        cloneTopology(id, options) {
+                options = options || {};
+                options.method = options.method || 'POST';
+                return fetch(baseUrl+'topologies/'+id+'/actions/clone', options)
+                        .then( (response) => {
+				return response.json();
+			})
+        },
+        getExportTopologyURL(id, options) {
+            return baseUrl+'topologies/'+id+'/actions/export';
+        },
+  importTopology(options) {
+                options = options || {};
+                options.method = options.method || 'POST';
+                return fetch(baseUrl+'topologies/actions/import', options)
+                        .then( (response) => {
+				return response.json();
+			})
+        },
 }
 
 export default TopologyREST

@@ -92,6 +92,11 @@ class TopologyItems extends Component {
     onActionClick = (eventKey) => {
         this.props.topologyAction(eventKey, this.streamRef.dataset.id)
     }
+    streamBoxClick = (id,event) => {
+      if(event.target.nodeName !== 'I'){
+        this.context.router.push('applications/'+id+'/view');
+      }
+    }
     render() {
         const {topologyAction, topologyList, isLoading} = this.props;
         const {topology, metric,latencyTopN} = topologyList;
@@ -111,10 +116,11 @@ class TopologyItems extends Component {
 
         return (
             <div className="col-sm-4">
-              <div className={`stream-box ${ (isLoading.loader && (isLoading.idCheck === topology.id))
+                <div className={`stream-box ${ (isLoading.loader && (isLoading.idCheck === topology.id))
                                 ? ''
                                 : metricWrap.status || 'NOTRUNNING'}`}
-              data-id={topology.id} ref={(ref) => this.streamRef = ref}>
+              data-id={topology.id} ref={(ref) => this.streamRef = ref}
+              onClick={this.streamBoxClick.bind(this,topology.id)}>
                 <div className="stream-head clearfix">
                     <div className="pull-left">
                       <Link to={`applications/${topology.id}/view`}>
@@ -134,13 +140,19 @@ class TopologyItems extends Component {
                     </div>
                     <div className="pull-right">
                         <div className="stream-actions">
-                          <a href="javascript:void(0)" onClick={this.onActionClick.bind(this ,"refresh/"+topology.id)}>
+                          <a href="javascript:void(0)" title="Refresh" onClick={this.onActionClick.bind(this ,"refresh/"+topology.id)}>
                             <i className="fa fa-refresh" aria-hidden="true"></i>
                           </a>
-                          <Link to={`applications/${topology.id}/edit`}>
+                          <Link to={`applications/${topology.id}/edit`} title="Edit">
                             <i className="fa fa-pencil" aria-hidden="true"></i>
                           </Link>
-                          <a href="javascript:void(0)" className="close" onClick={this.onActionClick.bind(this ,"delete/"+topology.id)}>
+                          <a href="javascript:void(0)" title="Clone" onClick={this.onActionClick.bind(this ,"clone/"+topology.id)}>
+                            <i className="fa fa-clone" aria-hidden="true"></i>
+                          </a>
+                          <a href="javascript:void(0)" title="Export" onClick={this.onActionClick.bind(this ,"export/"+topology.id)}>
+                            <i className="fa fa-share-square-o" aria-hidden="true"></i>
+                          </a>
+                          <a href="javascript:void(0)" title="Delete" className="close" onClick={this.onActionClick.bind(this ,"delete/"+topology.id)}>
                             <i className="fa fa-times-circle" aria-hidden="true"></i>
                           </a>
                         </div>
@@ -211,7 +223,7 @@ class TopologyItems extends Component {
                             </div>
                             <div className="stream-stats">
                                 <h6>Errors</h6>
-                                <h5 className="color-error">{metricWrap.failedRecords || 0}</h5>
+                                <h5 className="color-error">{metricWrap.misc.errors || 0}</h5>
                             </div>
                             <div className="stream-stats">
                                 <h6>Workers</h6>
@@ -225,7 +237,7 @@ class TopologyItems extends Component {
                     </div>
                 }
 
-            </div>
+              </div>
             </div>
         );
     }
@@ -235,6 +247,10 @@ TopologyItems.propTypes = {
     topologyList: React.PropTypes.object.isRequired,
     topologyAction: React.PropTypes.func.isRequired
 }
+
+TopologyItems.contextTypes = {
+    router: React.PropTypes.object.isRequired
+};
 
 class TopologyListingContainer extends Component {
     constructor(props) {
@@ -253,7 +269,7 @@ class TopologyListingContainer extends Component {
             },
             fetchLoader : true,
             pageIndex : 0,
-            pageSize : 6,
+            pageSize : 9,
         }
 
         this.fetchData();
@@ -262,7 +278,7 @@ class TopologyListingContainer extends Component {
     fetchData() {
       const sortKey = this.state.sorted.key;
         TopologyREST.getAllTopology(sortKey).then((topology) => {
-            if (topology.responseCode !== 1000) {
+            if (topology.responseMessage !== undefined) {
                 FSReactToastr.error(
                     <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
             } else {
@@ -288,7 +304,7 @@ class TopologyListingContainer extends Component {
         }
         this.setState({isLoading: flagUpdate});
         TopologyREST.getTopology(id).then((topology) => {
-            this.updateSingleTopology(topology.entity, id)
+            this.updateSingleTopology(topology, id)
             flagUpdate = {
                 loader: false,
                 idCheck: id
@@ -314,13 +330,35 @@ class TopologyListingContainer extends Component {
       this.AddTopologyModelRef.show();
     }
 
+    handleImportTopology = (e) => {
+      if(!e.target.files.length || (e.target.files.length && e.target.files[0].name.indexOf('.json') < 0)){
+        FSReactToastr.error(<CommonNotification flag="error" content="please select the .json file type.."/>, '', toastOpt)
+  			return;
+  		}
+  		let fileObj = e.target.files[0];
+      if(fileObj){
+        let formData = new FormData();
+        formData.append('file', fileObj);
+        
+        TopologyREST.importTopology({body:formData})
+          .then(importResponse => {
+            if (importResponse.responseMessage !== undefined) {
+              FSReactToastr.error(<CommonNotification flag="error" content={importResponse.responseMessage}/>, '', toastOpt)
+            } else {
+              this.fetchData();
+              FSReactToastr.success(<strong>File has been imported successfully</strong>)
+            }
+          });
+      }
+    }
+
     deleteSingleTopology = (id) => {
       this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete ?'}).then((confirmBox) => {
         TopologyREST.deleteTopology(id).then((topology) => {
           // TopologyREST.deleteMetaInfo(id);
           this.fetchData();
           confirmBox.cancel();
-          if (topology.responseCode !== 1000) {
+          if (topology.responseMessage !== undefined) {
             FSReactToastr.error(
               <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
           } else {
@@ -335,11 +373,40 @@ class TopologyListingContainer extends Component {
       })
     }
 
+    cloneTopologyAction = (id) => {
+      this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to clone the topology ?'}).then((confirmBox) => {
+        TopologyREST.cloneTopology(id).then((topology) => {
+          this.fetchData();
+          confirmBox.cancel();
+          if (topology.responseMessage !== undefined) {
+            FSReactToastr.error(<CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
+          } else {
+            FSReactToastr.success(<strong>Topology cloned successfully</strong>)
+          }
+        })
+      })
+    }
+
+    exportTopologyAction = (id) => {
+      this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to export the topology ?'}).then((confirmBox) => {
+        this.refs.ExportTopology.href = TopologyREST.getExportTopologyURL(id);
+        this.refs.ExportTopology.click();
+        confirmBox.cancel();
+      })
+    }
+
     actionHandler = (eventKey, id) => {
+      event.stopPropagation();
       const key = eventKey.split('/');
       switch (key[0].toString()) {
         case "refresh":
           this.fetchSingleTopology(id);
+          break;
+        case "clone":
+          this.cloneTopologyAction(id);
+          break;
+        case "export":
+          this.exportTopologyAction(id);
           break;
         case "delete":
           this.deleteSingleTopology(id);
@@ -359,10 +426,15 @@ class TopologyListingContainer extends Component {
       (_.isEmpty(input.value)) ? this.setState({slideInput  : false}) : ''
     }
 
-    onSortByClicked = (eventKey) => {
+    onSortByClicked = (eventKey,el) => {
+      const liList = el.target.parentElement.parentElement.children;
+      for(let i = 0;i < liList.length ; i++){
+        liList[i].setAttribute('class','');
+      }
+      el.target.parentElement.setAttribute("class","active");
       const sortKey = (eventKey.toString() === "name") ? "name&ascending=true" : eventKey;
       TopologyREST.getAllTopology(sortKey).then((topology) => {
-        if (topology.responseCode !== 1000) {
+        if (topology.responseMessage !== undefined) {
             FSReactToastr.error(
                 <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
         } else {
@@ -378,10 +450,11 @@ class TopologyListingContainer extends Component {
     }
 
     onActionMenuClicked = (eventKey) => {
+      event.stopPropagation();
       switch(eventKey.toString()){
         case "create" : this.handleAddTopology();
           break;
-        case "import" : console.log("Write the method to handled click")
+        case "import" : this.importFileRef.click();
           break;
          default : break;
       }
@@ -394,17 +467,17 @@ class TopologyListingContainer extends Component {
     }
     btnClassChange = () => {
       const actionMenu = document.querySelector('.actionDropdown');
-      actionMenu.setAttribute("class","actionDropdown btn btn-success ");
+      actionMenu.setAttribute("class","actionDropdown hb success ");
       actionMenu.parentElement.setAttribute("class","dropdown");
       const sortDropdown = document.querySelector('.sortDropdown');
-      sortDropdown.setAttribute("class","sortDropdown btn btn-default");
+      sortDropdown.setAttribute("class","sortDropdown");
       sortDropdown.parentElement.setAttribute("class","dropdown")
-      const container = document.querySelector('.wrapper')
-      container.setAttribute("class","container wrapper animated fadeIn ");
+      const container = document.querySelector('.content-wrapper')
+      container.setAttribute("class","content-wrapper ");
     }
     componentWillUnmount(){
-      const container = document.querySelector('.wrapper')
-      container.setAttribute("class","container-fluid wrapper animated fadeIn ");
+      const container = document.querySelector('.content-wrapper')
+      container.setAttribute("class","content-wrapper  ");
     }
     pagePosition = (index) => {
       this.setState({pageIndex : index || 0})
@@ -412,15 +485,15 @@ class TopologyListingContainer extends Component {
     handleSaveClicked = () => {
       if(this.addTopologyRef.validate()){
           this.addTopologyRef.handleSave().then((topology)=>{
-            if (topology.responseCode !== 1000) {
+            if (topology.responseMessage !== undefined) {
               FSReactToastr.error(
                   <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
             } else {
-                this.addTopologyRef.saveMetadata(topology.entity.id).then(() => {
+                this.addTopologyRef.saveMetadata(topology.id).then(() => {
                   FSReactToastr.success(
                       <strong>Topology added successfully</strong>
                   )
-                  this.context.router.push('applications/' + topology.entity.id + '/edit');
+                  this.context.router.push('applications/' + topology.id + '/edit');
                 })
             }
         })
@@ -431,9 +504,25 @@ class TopologyListingContainer extends Component {
         const {entities,filterValue,isLoading,fetchLoader,slideInput,pageSize,pageIndex} = this.state;
         const filteredEntities = TopologyUtils.topologyFilter(entities, filterValue);
         const splitData = _.chunk(filteredEntities,pageSize) || [];
+        const btnIcon = <i className="fa fa-plus"></i>;
+        const sortTitle = <span>Sort:<span style={{color: "#006ea0"}}>&nbsp;{this.state.sorted.text}</span></span>
 
         return (
             <BaseContainer ref="BaseContainer" routes={this.props.routes} headerContent={this.props.routes[this.props.routes.length - 1].name}>
+                <div id="add-environment">
+                  <DropdownButton title={btnIcon}
+                      id="actionDropdown"
+                      className="actionDropdown hb success"
+                      noCaret
+                    >
+                        <MenuItem onClick={this.onActionMenuClicked.bind(this,"create")}>
+                            &nbsp;New Application
+                        </MenuItem>
+                        <MenuItem onClick={this.onActionMenuClicked.bind(this,"import")}>
+                            &nbsp;Import Application
+                        </MenuItem>
+                    </DropdownButton>
+                </div>
                 <div className="row">
                     <div className="page-title-box clearfix">
                         <div className="col-md-4 col-md-offset-5 text-right">
@@ -447,6 +536,7 @@ class TopologyListingContainer extends Component {
                                     />
                                     <InputGroup.Addon className="page-search">
                                         <Button type="button"
+                                          className="searchBtn"
                                           onClick={this.slideInput}
                                         >
                                           <i className="fa fa-search"></i>
@@ -455,15 +545,16 @@ class TopologyListingContainer extends Component {
                                 </InputGroup>
                             </FormGroup>
                         </div>
+
                         <div className="col-md-2 text-center">
-                          <DropdownButton title={`Sort: ${this.state.sorted.text}`}
+                          <DropdownButton title={sortTitle}
                             id="sortDropdown"
                             className="sortDropdown "
                           >
                               <MenuItem onClick={this.onSortByClicked.bind(this,"name")}>
                                   &nbsp;Name
                               </MenuItem>
-                              <MenuItem onClick={this.onSortByClicked.bind(this,"last_updated")}>
+                              <MenuItem active onClick={this.onSortByClicked.bind(this,"last_updated")}>
                                   &nbsp;Last Update
                               </MenuItem>
                               <MenuItem onClick={this.onSortByClicked.bind(this,"status")}>
@@ -471,18 +562,7 @@ class TopologyListingContainer extends Component {
                               </MenuItem>
                           </DropdownButton>
                         </div>
-                        <div className="col-md-1 col-sm-3 text-right">
-                            <DropdownButton title={"CREATE"}
-                              id="actionDropdown"
-                              className="actionDropdown"
-                            >
-                                <MenuItem onClick={this.onActionMenuClicked.bind(this,"create")}>
-                                    &nbsp;New Application
-                                </MenuItem>
-                                <MenuItem onClick={this.onActionMenuClicked.bind(this,"import")}>
-                                    &nbsp;Import Application
-                                </MenuItem>
-                            </DropdownButton>
+                        <div className="col-md-1 col-sm-3 text-left">
                         </div>
                     </div>
                 </div>
@@ -512,6 +592,15 @@ class TopologyListingContainer extends Component {
                   data-resolve={this.handleSaveClicked}>
                   <AddTopology ref={(ref) => this.addTopologyRef = ref}/>
                 </Modal>
+                <input type="file"
+                  ref={(ref) => this.importFileRef = ref}
+                  className="displayNone"
+                  accept=".json"
+                  name="files"
+                  title="Upload File"
+                  onChange={this.handleImportTopology}
+                />
+                <a className="btn-download" ref="ExportTopology" hidden download href=""></a>
             </BaseContainer>
         );
     }

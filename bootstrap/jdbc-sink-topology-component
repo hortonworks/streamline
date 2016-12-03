@@ -1,0 +1,54 @@
+{
+  "type": "SINK",
+  "name": "JDBC Sink",
+  "subType": "JDBC_SINK",
+  "builtin": true,
+  "streamingEngine": "STORM",
+  "transformationClass": "org.apache.streamline.streams.layout.storm.JDBCBoltFluxComponent",
+  "topologyComponentUISpecification": {
+    "fields": [
+      {
+        "uiName": "Driver class name",
+        "fieldName": "dataSourceClassName",
+        "isOptional": false,
+        "tooltip": "The driver class name. E.g. com.mysql.jdbc.jdbc2.optional.MysqlDataSource",
+        "type": "string"
+      },
+      {
+        "uiName": "JDBC Url",
+        "fieldName": "dataSource.url",
+        "isOptional": false,
+        "tooltip": "JDBC Url, E.g. jdbc:mysql://localhost:3306/test",
+        "type": "string"
+      },
+      {
+        "uiName": "Username",
+        "fieldName": "dataSource.user",
+        "isOptional": false,
+        "tooltip": "Database username",
+        "type": "string"
+      },
+      {
+        "uiName": "Password",
+        "fieldName": "dataSource.password",
+        "isOptional": false,
+        "tooltip": "Database password",
+        "type": "string"
+      },
+      {
+        "uiName": "Table name",
+        "fieldName": "tableName",
+        "isOptional": false,
+        "tooltip": "The table name",
+        "type": "string"
+      },
+      {
+        "uiName":"Column names",
+        "fieldName": "columns",
+        "tooltip": "The names of the database columns",
+        "isOptional": false,
+        "type": "array.string"
+      }
+    ]
+  }
+}

@@ -40,7 +40,7 @@ export default class SourceNodeForm extends Component {
         let {topologyId, versionId, nodeType, nodeData} = this.props;
         TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId)
             .then(results=>{
-                this.nodeData = results.entity;
+                this.nodeData = results;
                 let stateObj = {};
                 if(this.nodeData.outputStreams.length === 0){
                     this.createStream();
@@ -58,10 +58,10 @@ export default class SourceNodeForm extends Component {
         let streamData = { streamId: this.props.configData.subType.toLowerCase()+'_stream_'+this.nodeData.id, fields: []};
         TopologyREST.createNode(topologyId, versionId, 'streams', {body: JSON.stringify(streamData)})
             .then(result=>{
-                this.nodeData.outputStreamIds = [result.entity.id];
+                this.nodeData.outputStreamIds = [result.id];
                 TopologyREST.updateNode(topologyId, versionId, nodeType, this.nodeData.id, {body: JSON.stringify(this.nodeData)})
                     .then((node)=>{
-                        this.nodeData = node.entity;
+                        this.nodeData = node;
                         this.streamObj = this.nodeData.outputStreams[0];
                         this.setState({streamObj: this.streamObj});
                     })

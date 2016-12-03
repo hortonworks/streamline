@@ -17,6 +17,7 @@ import TopologyUtils from '../../../utils/TopologyUtils';
 import Modal from '../../../components/FSModal';
 import CommonNotification from '../../../utils/CommonNotification';
 import TopologyViewMode from './TopologyViewMode';
+import MetricsContainer from '../Metrics/MetricsContainer';
 
 function collect(connect, monitor) {
   return {
@@ -36,7 +37,7 @@ class EditorGraph extends Component{
     let left = window.innerWidth - 300;
   }
   render(){
-    const actualHeight = (window.innerHeight - 360)+'px';
+    const actualHeight = '270px';
     const { versionsArr, connectDropTarget, viewMode, topologyId, versionId, graphData, getModalScope, setModalContent} = this.props;
     return connectDropTarget(
       <div>
@@ -68,14 +69,8 @@ class TopologyEditorContainer extends Component {
     this.customProcessors = [];
     this.fetchData();
   }
-  componentDidUpdate(){
-    document.getElementsByTagName('body')[0].className='';
-    document.querySelector('.wrapper').setAttribute("class","container wrapper animated fadeIn ");
-  }
   componentWillUnmount(){
-    document.getElementsByTagName('body')[0].className='';
     document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay displayNone";
-    document.querySelector('.wrapper').setAttribute("class","container-fluid wrapper animated fadeIn ");
   }
 
   @observable viewMode = true;
@@ -97,80 +92,87 @@ class TopologyEditorContainer extends Component {
 
     TopologyREST.getTopology(this.topologyId, versionId)
       .then((result)=>{
-        var data = result.entity;
-        if(!versionId)
-          versionId = data.topology.versionId;
-        promiseArr.push(TopologyREST.getSourceComponent());
-        promiseArr.push(TopologyREST.getProcessorComponent());
-        promiseArr.push(TopologyREST.getSinkComponent());
-        promiseArr.push(TopologyREST.getLinkComponent());
-        promiseArr.push(TopologyREST.getAllNodes(this.topologyId, versionId, 'sources'));
-        promiseArr.push(TopologyREST.getAllNodes(this.topologyId, versionId, 'processors'));
-        promiseArr.push(TopologyREST.getAllNodes(this.topologyId, versionId, 'sinks'));
-        promiseArr.push(TopologyREST.getAllNodes(this.topologyId, versionId, 'edges'));
-        promiseArr.push(TopologyREST.getMetaInfo(this.topologyId, versionId));
-        promiseArr.push(TopologyREST.getAllVersions(this.topologyId));
+        if(result.responseMessage !== undefined){
+          FSReactToastr.error(<CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt)
+        } else {
+          var data = result;
+          if(!versionId){
+            versionId = data.topology.versionId;
+          }
+          promiseArr.push(TopologyREST.getSourceComponent());
+          promiseArr.push(TopologyREST.getProcessorComponent());
+          promiseArr.push(TopologyREST.getSinkComponent());
+          promiseArr.push(TopologyREST.getLinkComponent());
+          promiseArr.push(TopologyREST.getAllNodes(this.topologyId, versionId, 'sources'));
+          promiseArr.push(TopologyREST.getAllNodes(this.topologyId, versionId, 'processors'));
+          promiseArr.push(TopologyREST.getAllNodes(this.topologyId, versionId, 'sinks'));
+          promiseArr.push(TopologyREST.getAllNodes(this.topologyId, versionId, 'edges'));
+          promiseArr.push(TopologyREST.getMetaInfo(this.topologyId, versionId));
+          promiseArr.push(TopologyREST.getAllVersions(this.topologyId));
 
-        Promise.all(promiseArr)
-          .then((resultsArr)=>{
-            let allNodes = [];
-            this.topologyName = data.topology.name;
-            this.topologyConfig = JSON.parse(data.topology.config);
-            this.topologyMetric = data.metric || {misc : (data.metric === undefined) ? '' : metric.misc};
+          Promise.all(promiseArr)
+            .then((resultsArr)=>{
+              let allNodes = [];
+              this.topologyName = data.topology.name;
+              this.topologyConfig = JSON.parse(data.topology.config);
+              this.topologyMetric = data.metric || {misc : (data.metric === undefined) ? '' : metric.misc};
 
-            let unknown = data.running;
-            let isAppRunning = false;
-            let status = '';
-            if(this.topologyMetric.status){
-              status = this.topologyMetric.status;
-              if(status === 'ACTIVE' || status === 'INACTIVE')
-                isAppRunning = true;
-            }
+              let unknown = data.running;
+              let isAppRunning = false;
+              let status = '';
+              if(this.topologyMetric.status){
+                status = this.topologyMetric.status;
+                if(status === 'ACTIVE' || status === 'INACTIVE')
+                  isAppRunning = true;
+              }
 
-            this.sourceConfigArr = resultsArr[0].entities;
-            this.processorConfigArr = resultsArr[1].entities;
-            this.sinkConfigArr = resultsArr[2].entities;
-            this.linkConfigArr = resultsArr[3].entities;
+              this.sourceConfigArr = resultsArr[0].entities;
+              this.processorConfigArr = resultsArr[1].entities;
+              this.sinkConfigArr = resultsArr[2].entities;
+              this.linkConfigArr = resultsArr[3].entities;
 
-            this.graphData.linkShuffleOptions = TopologyUtils.setShuffleOptions(this.linkConfigArr);
+              this.graphData.linkShuffleOptions = TopologyUtils.setShuffleOptions(this.linkConfigArr);
 
-            let sourcesNode = resultsArr[4].entities || [];
-            let processorsNode = resultsArr[5].entities || [];
-            let sinksNode = resultsArr[6].entities || [];
-            let edgesArr = resultsArr[7].entities || [];
+              let sourcesNode = resultsArr[4].entities || [];
+              let processorsNode = resultsArr[5].entities || [];
+              let sinksNode = resultsArr[6].entities || [];
+              let edgesArr = resultsArr[7].entities || [];
 
-            this.graphData.metaInfo = JSON.parse(resultsArr[8].entity.data);
+              this.graphData.metaInfo = JSON.parse(resultsArr[8].data);
 
-            let versions = resultsArr[9].entities || [];
-            Utils.sortArray(versions, 'name', true);
+              let versions = resultsArr[9].entities || [];
+              Utils.sortArray(versions, 'name', false);
+              //Moving last element from array to first ("CURRENT" version needs to come first)
+              versions.splice(0,0,versions.splice(versions.length-1,1)[0])
 
-            this.graphData.nodes = TopologyUtils.syncNodeData(sourcesNode, processorsNode, sinksNode, this.graphData.metaInfo,
-            this.sourceConfigArr, this.processorConfigArr, this.sinkConfigArr);
+              this.graphData.nodes = TopologyUtils.syncNodeData(sourcesNode, processorsNode, sinksNode, this.graphData.metaInfo,
+              this.sourceConfigArr, this.processorConfigArr, this.sinkConfigArr);
 
-            this.graphData.uinamesList = [];
-            this.graphData.nodes.map(node=>{ this.graphData.uinamesList.push(node.uiname); })
+              this.graphData.uinamesList = [];
+              this.graphData.nodes.map(node=>{ this.graphData.uinamesList.push(node.uiname); })
 
-            this.graphData.edges = TopologyUtils.syncEdgeData(edgesArr, this.graphData.nodes);
-            this.versionId = versionId ? versionId : data.topology.versionId;
-            this.versionName = versions.find((o)=>{return o.id == this.versionId}).name;
+              this.graphData.edges = TopologyUtils.syncEdgeData(edgesArr, this.graphData.nodes);
+              this.versionId = versionId ? versionId : data.topology.versionId;
+              this.versionName = versions.find((o)=>{return o.id == this.versionId}).name;
 
-            this.setState({
-              timestamp : data.topology.timestamp,
-              topologyName: this.topologyName,
-              topologyMetric: this.topologyMetric,
-              isAppRunning: isAppRunning,
-              topologyStatus: status,
-              topologyVersion: this.versionId,
-              versionsArr: versions,
-              bundleArr: {
-                sourceBundle: this.sourceConfigArr,
-                processorsBundle: this.processorConfigArr,
-                sinksBundle: this.sinkConfigArr
-              },
-              unknown
+              this.setState({
+                timestamp : data.topology.timestamp,
+                topologyName: this.topologyName,
+                topologyMetric: this.topologyMetric,
+                isAppRunning: isAppRunning,
+                topologyStatus: status,
+                topologyVersion: this.versionId,
+                versionsArr: versions,
+                bundleArr: {
+                  sourceBundle: this.sourceConfigArr,
+                  processorsBundle: this.processorConfigArr,
+                  sinksBundle: this.sinkConfigArr
+                },
+                unknown
+              });
+              this.customProcessors = this.getCustomProcessors();
             });
-            this.customProcessors = this.getCustomProcessors();
-          });
+        }
       });
 
     this.graphData = {
@@ -245,7 +247,7 @@ class TopologyEditorContainer extends Component {
       this.setState({topologyStatus: 'KILLING...'})
       TopologyREST.killTopology(this.topologyId)
         .then(topology=>{
-          if(topology.responseCode !== 1000){
+          if(topology.responseMessage !== undefined){
             FSReactToastr.error(
               <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
             let status = this.topologyMetric.status || 'NOT RUNNING';
@@ -254,7 +256,7 @@ class TopologyEditorContainer extends Component {
             FSReactToastr.success(<strong>Topology Killed Successfully</strong>);
             TopologyREST.getTopology(this.topologyId, this.versionId)
               .then((result)=>{
-                let data = result.entity;
+                let data = result;
                 this.topologyMetric = data.metric || {misc: (data.metric === undefined) ? '' : metric.misc};
                 let status = this.topologyMetric.status || '';
                 this.setState({topologyMetric: this.topologyMetric, isAppRunning: false, topologyStatus: status});
@@ -282,7 +284,7 @@ class TopologyEditorContainer extends Component {
   getTopologyHeader() {
     return (
       <span>
-        <Link to="/">All Streams</Link> / View: {this.state.topologyName}
+        <Link to="/">All Streams</Link> <span className="title-separator">/</span> View: {this.state.topologyName}
       </span>
     );
   }
@@ -292,7 +294,7 @@ class TopologyEditorContainer extends Component {
     }).then((confirmBox)=>{
       TopologyREST.activateTopologyVersion(this.topologyId, this.versionId)
         .then(result=>{
-          if(result.responseCode !== 1000){
+          if(result.responseMessage !== undefined){
             FSReactToastr.error(
               <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
           } else {
@@ -338,6 +340,13 @@ class TopologyEditorContainer extends Component {
           data-resolve={this.handleSaveNodeModal.bind(this)}>
           {this.modalContent()}
         </Modal>
+        {this.state.isAppRunning && this.graphData.nodes.length > 0 ? 
+          <MetricsContainer
+            topologyId={this.topologyId}
+            components={this.graphData.nodes}
+          />
+          : 
+        null}
       </BaseContainer>
     )
   }

@@ -26,6 +26,7 @@ import org.apache.streamline.streams.layout.component.OutputComponent;
 import org.apache.streamline.streams.layout.component.Stream;
 import org.apache.streamline.streams.layout.component.StreamGrouping;
 import org.apache.streamline.streams.layout.component.impl.KafkaSource;
+import org.apache.streamline.streams.layout.component.impl.MultiLangProcessor;
 import org.apache.streamline.streams.layout.component.impl.NotificationSink;
 import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
 import org.apache.streamline.streams.layout.component.impl.normalization.NormalizationConfig;
@@ -58,6 +59,7 @@ import static org.apache.streamline.common.ComponentTypes.BRANCH;
 import static org.apache.streamline.common.ComponentTypes.SPLIT;
 import static org.apache.streamline.common.ComponentTypes.STAGE;
 import static org.apache.streamline.common.ComponentTypes.WINDOW;
+import static org.apache.streamline.common.ComponentTypes.MULTILANG;
 
 import static org.apache.streamline.common.ComponentTypes.*;
 import static java.util.AbstractMap.SimpleImmutableEntry;
@@ -101,6 +103,7 @@ public class TopologyComponentFactory {
 
     public Edge getStreamlineEdge(TopologyEdge topologyEdge) {
         Edge edge = new Edge();
+        edge.setId(topologyEdge.getId().toString());
         edge.setFrom(getOutputComponent(topologyEdge));
         edge.setTo(getInputComponent(topologyEdge));
         Set<StreamGrouping> streamGroupings = new HashSet<>();
@@ -195,9 +198,7 @@ public class TopologyComponentFactory {
         builder.put(branchRulesProcessorProvider());
         builder.put(windowProcessorProvider());
         builder.put(normalizationProcessorProvider());
-        builder.put(splitProcessorProvider());
-        builder.put(joinProcessorProvider());
-        builder.put(stageProcessorProvider());
+        builder.put(multilangProcessorProvider());
         return builder.build();
     }
 
@@ -438,4 +439,15 @@ public class TopologyComponentFactory {
         };
         return new SimpleImmutableEntry<>(NOTIFICATION, provider);
     }
+
+    private Map.Entry<String, Provider<StreamlineProcessor>> multilangProcessorProvider() {
+        Provider<StreamlineProcessor> provider = new Provider<StreamlineProcessor>() {
+            @Override
+            public StreamlineProcessor create(TopologyComponent component) {
+                return new MultiLangProcessor();
+            }
+        };
+        return new SimpleImmutableEntry<>(MULTILANG, provider);
+    }
+
 }

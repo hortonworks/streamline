@@ -47,10 +47,10 @@
             <fileMode>0755</fileMode>
         </fileSet>
         <fileSet>
-            <directory>${project.basedir}./registries/parser-registry/target</directory>
-            <outputDirectory>/examples/topology/parsers</outputDirectory>
+            <directory>${project.basedir}./examples/processors/target</directory>
+            <outputDirectory>/examples/processors</outputDirectory>
             <includes>
-                <include>parser*jar</include>
+                <include>streamline-examples-processors*jar</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -117,11 +117,6 @@
             <source>${project.basedir}./webservice/conf/streamline.yaml</source>
             <outputDirectory>/conf</outputDirectory>
             <destName>streamline.yaml</destName>
-        </file>
-        <file>
-            <source>${project.basedir}./simulator/src/main/resources/nest-streamline-messages</source>
-            <outputDirectory>/examples/topology/resources</outputDirectory>
-            <destName>nest-streamline-messages</destName>
         </file>
         <file>
             <source>${project.basedir}./webservice/conf/streamline-env.sh</source>

@@ -217,6 +217,7 @@ public class BranchRuleInfo extends AbstractStorable {
         setTopologyId((Long) map.get(TOPOLOGY_ID));
         setName((String) map.get(NAME));
         setDescription((String) map.get(DESCRIPTION));
+        setCondition((String) map.get(CONDITION));
         setParsedRuleStr((String) map.get(PARSED_RULE_STR));
         setStream((String) map.get(STREAM));
         try {
