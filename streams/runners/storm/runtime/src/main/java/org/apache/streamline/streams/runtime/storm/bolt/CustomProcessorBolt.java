@@ -28,6 +28,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -188,10 +189,13 @@ public class CustomProcessorBolt extends BaseRichBolt {
             final Object tupleField = input.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
             if (tupleField instanceof StreamlineEvent) {
                 StreamlineEvent event = (StreamlineEvent) tupleField;
-                for (Result result: customProcessorRuntime.process(new StreamlineEventImpl(event, event.getDataSourceId(), event
-                        .getId(), event.getHeader(), input.getSourceStreamId()))) {
-                    for (StreamlineEvent e: result.events) {
-                        collector.emit(result.stream, input, new Values(e));
+                List<Result> results = customProcessorRuntime.process(new StreamlineEventImpl(event, event.getDataSourceId(), event
+                        .getId(), event.getHeader(), input.getSourceStreamId()));
+                if (results != null) {
+                    for (Result result : results) {
+                        for (StreamlineEvent e : result.events) {
+                            collector.emit(result.stream, input, new Values(e));
+                        }
                     }
                 }
             } else {
