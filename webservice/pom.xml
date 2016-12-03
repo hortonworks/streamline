@@ -81,7 +81,7 @@
         <!-- test dependency -->
         <dependency>
             <groupId>org.apache.streamline</groupId>
-            <artifactId>streams-sdk</artifactId>
+            <artifactId>streamline-sdk</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
