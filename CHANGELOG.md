@@ -1,4 +1,6 @@
 ## 0.1.4
+ * STREAMLINE-525 Backend: include configuration files to topology jar while deploying topology based on namespace
+ * STREAMLINE-512 Backend: apply Topology's namespace to "Topology Action" and "Topology Metrics"
  * STREAMLINE-535: Tag REST API should follow STREAMLINE-500 changes
  * STREAMLINE-518: storm-jdbc bundle spec and flux transformation class.
  * STREAMLINE-314: CustomProcessor should provide a Generic Processors for writing JS, ruby, python ec..
