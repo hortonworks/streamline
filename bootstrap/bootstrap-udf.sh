@@ -50,6 +50,10 @@ echo "topn"
 curl -s -X POST "http://${host}:${port}/api/v1/catalog/streams/udfs" -F udfJarFile=@${jarFile} -F udfConfig='{"name":"TOPN", "displayName": "TOPN", "description": "Top N", "type":"AGGREGATE", "className":"org.apache.streamline.streams.udaf.Topn"};type=application/json'
 echo
 
+echo "identity"
+curl -s -X POST "http://${host}:${port}/api/v1/catalog/streams/udfs" -F udfJarFile=@${jarFile} -F udfConfig='{"name":"IDENTITY", "displayName": "Identity", "description": "Identity function", "type":"FUNCTION", "className":"org.apache.streamline.streams.udf.Identity"};type=application/json'
+echo
+
 # Dummy entries for built in functions so that it shows up in the UI
 echo "Adding dummy entries for builtin functions"
 curl -s -X POST "http://${host}:${port}/api/v1/catalog/streams/udfs" -F udfConfig='{"name":"MIN", "displayName": "MIN", "description": "Minimum", "type":"AGGREGATE", "argTypes":["BOOLEAN|BYTE|SHORT|INTEGER|LONG|FLOAT|DOUBLE|STRING"], "className":"builtin"};type=application/json' -F builtin=true

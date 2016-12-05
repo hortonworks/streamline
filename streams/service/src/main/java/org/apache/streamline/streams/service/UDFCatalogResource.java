@@ -282,11 +282,11 @@ public class UDFCatalogResource {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             File tmpFile;
             try (DigestInputStream dis = new DigestInputStream(inputStream, md)) {
-                tmpFile = FileUtil.writeInputStreamToTempFile(inputStream, ".jar");
+                tmpFile = FileUtil.writeInputStreamToTempFile(dis, ".jar");
             }
-            Map<String, Class<?>> udafs = catalogService.loadUdafsFromJar(tmpFile);
-            validateUDF(new HashSet<>(ProxyUtil.canonicalNames(udafs.values())), udfInfo, checkDuplicate);
-            updateTypeInfo(udfInfo, udafs.get(udfInfo.getClassName()));
+            Map<String, Class<?>> udfs = catalogService.loadUdfsFromJar(tmpFile);
+            validateUDF(new HashSet<>(ProxyUtil.canonicalNames(udfs.values())), udfInfo, checkDuplicate);
+            updateTypeInfo(udfInfo, udfs.get(udfInfo.getClassName()));
             String digest = Hex.encodeHexString(md.digest());
             LOG.debug("Digest: {}", digest);
             udfInfo.setDigest(digest);
@@ -296,13 +296,18 @@ public class UDFCatalogResource {
     }
 
     private void updateTypeInfo(UDFInfo udfInfo, Class<?> clazz) {
-        udfInfo.setReturnType(getReturnType(clazz));
-        udfInfo.setArgTypes(getArgTypes(clazz));
+        if (udfInfo.isAggregate()) {
+            udfInfo.setReturnType(getReturnType(clazz, "result"));
+            udfInfo.setArgTypes(getArgTypes(clazz, "add"));
+        } else {
+            udfInfo.setReturnType(getReturnType(clazz, "evaluate"));
+            udfInfo.setArgTypes(getArgTypes(clazz, "evaluate"));
+        }
     }
 
-    private Schema.Type getReturnType(Class<?> clazz) {
+    private Schema.Type getReturnType(Class<?> clazz, String methodName) {
         try {
-            Method resultMethod = findMethod(clazz, "result");
+            Method resultMethod = findMethod(clazz, methodName);
             if (resultMethod != null) {
                 return Schema.fromJavaType(resultMethod.getReturnType());
             }
@@ -312,8 +317,8 @@ public class UDFCatalogResource {
         return null;
     }
 
-    private List<String> getArgTypes(Class<?> clazz) {
-        Method addMethod = findMethod(clazz, "add");
+    private List<String> getArgTypes(Class<?> clazz, String methodname) {
+        Method addMethod = findMethod(clazz, methodname);
         if (addMethod == null) {
             return Collections.emptyList();
         }

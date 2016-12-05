@@ -59,6 +59,7 @@ public class SchemaResource {
     public Response getKafkaSourceSchema(@PathParam("topicName") String topicName)
         throws JsonProcessingException {
         try {
+            LOG.info("Received path: [{}]", topicName);
             // for now, takes care of kafka for topic values. We will enhance to work this to get schema for different
             // sources based on given properties.
             String schemaName = topicName + ":v";
