@@ -114,7 +114,7 @@ public class WindowedQueryBolt extends StreamlineWindowedBolt {
     }
 
     /**
-     * Performs projection. i.e. Specifies the keys to include in the output.
+     * Specify projection keys. i.e. Specifies the keys to include in the output.
      *      e.g: .select("key1, key2, key3")
      * Nested Key names are supported for nested types:
      *      e.g: .select("outerKey1.innerKey1, outerKey1.innerKey2, outerKey2.innerKey3)"
@@ -179,7 +179,7 @@ public class WindowedQueryBolt extends StreamlineWindowedBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        if (outputStreamName!=null) { // StreamLine specific code
+        if (outputStreamName!=null) { // Note: StreamLine specific code
             declarer.declareStream(outputStreamName, new Fields(StreamlineEvent.STREAMLINE_EVENT));
         } else {
             declarer.declare(new Fields(dotSeparatedOutputKeyNames));
@@ -485,10 +485,11 @@ public class WindowedQueryBolt extends StreamlineWindowedBolt {
         // Todo: note to self: may be able to optimize this ... perhaps inner loop can be outside to avoid rescanning tuples
         for ( int i = 0; i < projectionKeys.length; i++ ) {
             String flattenedKey = dotSeparatedOutputKeyNames[i];
+            String outputKeyName = flattenedKey.substring(flattenedKey.indexOf('.')+1); // drop the "streamline-event." prefix
             for ( Tuple cell : tuplesRow ) {
                 Object field = getNestedField(projectionKeys[i], cell) ;
                 if (field != null) {
-                    projection.put(flattenedKey, field);
+                    projection.put(outputKeyName, field);
                     break;
                 }
             }
