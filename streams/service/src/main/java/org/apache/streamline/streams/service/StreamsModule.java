@@ -49,12 +49,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
     @Override
     public List<Object> getResources() {
         List<Object> result = new ArrayList<>();
-        final StreamCatalogService streamcatalogService;
-        try {
-            streamcatalogService = new StreamCatalogService(storageManager, getTopologyActionsImpl(), getTopologyMetricsImpl(), fileStorage);
-        } catch (ConfigException e) {
-            throw new RuntimeException(e);
-        }
+        final StreamCatalogService streamcatalogService = new StreamCatalogService(storageManager, fileStorage, config);
         String catalogRootUrl = (String) config.get(Constants.CONFIG_CATALOG_ROOT_URL);
         TagClient tagClient = new TagClient(catalogRootUrl);
         ParserClient parserClient = new ParserClient(catalogRootUrl);

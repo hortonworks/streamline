@@ -203,7 +203,7 @@ public class NamespaceCatalogResource {
   @Path("/namespaces/{id}/mapping")
   @Timed
   public Response mapServiceToClusterInNamespace(@PathParam("id") Long namespaceId,
-      NamespaceServiceClusterMapping mapping) {
+            NamespaceServiceClusterMapping mapping) {
     Namespace namespace = catalogService.getNamespace(namespaceId);
     if (namespace == null) {
       throw EntityNotFoundException.byId(namespaceId.toString());
@@ -223,8 +223,7 @@ public class NamespaceCatalogResource {
       return WSUtils.respondEntity(mapping, OK);
     }
 
-    throw EntityNotFoundException.byId("Namespace: " + namespaceId + " / Service name: " + serviceName +
-            " / cluster id: " + clusterId);
+    throw EntityNotFoundException.byId(buildMessageForCompositeId(namespaceId, serviceName, clusterId));
   }
 
   @DELETE
@@ -289,4 +288,13 @@ public class NamespaceCatalogResource {
       mappings.add(mapping);
     }
   }
+
+  private String buildMessageForCompositeId(Long namespaceId, String serviceName) {
+    return "Namespace: " + namespaceId.toString() + " / serviceName: " + serviceName;
+  }
+
+  private String buildMessageForCompositeId(Long namespaceId, String serviceName, Long clusterId) {
+    return "Namespace: " + namespaceId.toString() + " / serviceName: " + serviceName + " / clusterId: " + clusterId;
+  }
+
 }

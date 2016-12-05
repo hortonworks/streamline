@@ -12,7 +12,7 @@ public enum ComponentPropertyPattern {
   // So what port to pick is subject to change for the future use cases
   NAMENODE("dfs.http.address"),
   SECONDARY_NAMENODE("dfs.secondary.http.address"),
-  DATANODE("dfs.datanode.http.address", Pattern.compile("()[0-9\\\\.]+:([0-9]+)")),
+  DATANODE("dfs.datanode.http.address", Pattern.compile("()[a-zA-Z0-9_\\-\\\\.]+:([0-9]+)")),
 
   // HBASE
   HBASE_MASTER("hbase.master.port"),
@@ -28,12 +28,15 @@ public enum ComponentPropertyPattern {
 
   // HIVE
   HIVE_SERVER("hive.server2.thrift.port"),
-  HIVE_METASTORE("hive.metastore.uris", Pattern.compile("([a-zA-Z]+)://[a-zA-Z0-9_-]*:([0-9]+)")),
+  HIVE_METASTORE("hive.metastore.uris", Pattern.compile("([a-zA-Z]+)://[a-zA-Z0-9_\\-\\\\.]*:([0-9]+)")),
 
   // KAFKA
   // protocol (plaintext, ssl, kerberos, etc?), host (can be empty), port
   // https://cwiki.apache.org/confluence/display/KAFKA/Multiple+Listeners+for+Kafka+Brokers
-  KAFKA_BROKER("listeners", Pattern.compile("([a-zA-Z]+)://[a-zA-Z0-9_-]*:([0-9]+)"));
+  KAFKA_BROKER("listeners", Pattern.compile("([a-zA-Z]+)://[a-zA-Z0-9_\\-\\\\.]*:([0-9]+)")),
+
+  // AMBARI_METRICS
+  METRICS_COLLECTOR("timeline.metrics.service.webapp.address", Pattern.compile("()[a-zA-Z0-9_\\-\\\\.]*:([0-9]+)"));
 
   private final String connectionConfName;
   private final Pattern parsePattern;
