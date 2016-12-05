@@ -7,6 +7,7 @@ import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.storage.exception.AlreadyExistsException;
 import org.apache.streamline.streams.catalog.Namespace;
 import org.apache.streamline.streams.catalog.NamespaceServiceClusterMapping;
+import org.apache.streamline.streams.catalog.Topology;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.common.exception.service.exception.request.BadRequestException;
 import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
@@ -29,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -120,12 +122,24 @@ public class NamespaceCatalogResource {
   @Path("/namespaces/{id}")
   @Timed
   public Response removeNamespace(@PathParam("id") Long namespaceId) {
+    assertNoTopologyRefersNamespace(namespaceId);
+
     Namespace removed = catalogService.removeNamespace(namespaceId);
     if (removed != null) {
       return WSUtils.respondEntity(removed, OK);
     }
 
     throw EntityNotFoundException.byId(namespaceId.toString());
+  }
+
+  private void assertNoTopologyRefersNamespace(Long namespaceId) {
+    Collection<Topology> topologies = catalogService.listTopologies();
+    boolean anyTopologyUseNamespace = topologies.stream()
+            .anyMatch(t -> Objects.equals(t.getNamespaceId(), namespaceId));
+
+    if (anyTopologyUseNamespace) {
+      throw BadRequestException.message("Topology refers the namespace trying to remove - namespace id: " + namespaceId);
+    }
   }
 
   @PUT
