@@ -171,8 +171,8 @@ const genFields = function(fieldsJSON, _fieldName = [], FormData = {}){
             if(!d.isOptional){
                 validators.push('required');
             }
-            if(d.isKafkaTopicValidation){
-                validators.push('kafkaTopicValidation')
+            if(d.hint !== undefined && d.hint.toLowerCase() === "email"){
+              validators.push('email');
             }
             fields.push(<Comp
                 label={d.uiName}

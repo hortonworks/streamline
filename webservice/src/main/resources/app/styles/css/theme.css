@@ -90,6 +90,9 @@ footer {
 .main-sidebar a:focus {
   text-decoration: none;
 }
+.container.wrapper {
+  padding-top: 70px;
+}
 /* Header */
 .main-header {
   position: fixed;
@@ -1453,22 +1456,25 @@ span.version{
 .environment-components > li {
   float: left;
   color: #6f6f6f;
-  margin-right: 8px;
-  margin-bottom: 8px;
+  margin: 1%;
   text-align: center;
   text-transform: uppercase;
   font-size: 12px;
+  width: 18%;
 }
 .service-components > li > img,
 .environment-components > li > img {
   display: block;
-  padding: 8px;
-  margin-bottom: 3px;
-  width: 56px;
+  padding: 10px;
+  margin-bottom: 2px;
+  width: 100%;
   border: 1px #d8d8d8 solid;
   border-radius: 8px;
   -webkit-filter: grayscale(100%);
   filter: grayscale(100%);
+}
+.service-components li:nth-child(5n+6) {
+    clear: left;
 }
 .service-components > li:hover > img,
 .environment-components > li:hover > img {
@@ -1503,12 +1509,10 @@ span.version{
   font-size: 16px;
 }
 .environment-components > li {
-  margin-right: 6px;
-  margin-bottom: 6px;
-  font-size: 11px;
+  width: 31%;
 }
-.environment-components > li > img {
-  width: 52px;
+.environment-components li:nth-child(3n+4) {
+    clear: left;
 }
 #add-environment {
   position: absolute;
@@ -1914,4 +1918,26 @@ rect.extent{
   background-color: transparent;
   border-color: transparent;
   box-shadow:none;
+}
+.schema-list li {
+  color: #fff;
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+.schema-list li span.output-type {
+  display: block;
+  color: #fff;
+  font-size: 8px;
+  line-height: 12px
+}
+.schema-tooltip {
+  max-height: 400px;
+  overflow-y: auto;
+}
+.schema-tooltip h3 {
+  margin: 0px;
+}
+.input-schema, .output-schema {
+  float: left;
+  width: 100px;
 }

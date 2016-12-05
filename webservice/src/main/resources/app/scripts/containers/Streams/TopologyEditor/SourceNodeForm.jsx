@@ -22,12 +22,6 @@ export default class SourceNodeForm extends Component {
         super(props);
         this.fetchData();
         this.configJSON = props.configData.topologyComponentUISpecification.fields;
-        if(props.configData.subType.toLowerCase() === 'kafka'){
-            let topicFieldJSON = this.configJSON.find((f)=>{return f. fieldName =='topic'})
-            if(topicFieldJSON){
-                topicFieldJSON.type = 'kafkaTopic';
-            }
-        }
         this.state = {
             formData: {},
             streamObj: {},

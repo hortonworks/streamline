@@ -6,6 +6,7 @@ import { ItemTypes, Components, toastOpt } from '../../../utils/Constants';
 import BaseContainer from '../../BaseContainer';
 import {Link , withRouter} from 'react-router';
 import TopologyREST from '../../../rest/TopologyREST';
+import EnvironmentREST from '../../../rest/EnvironmentREST';
 import {OverlayTrigger, Tooltip, Accordion, Panel} from 'react-bootstrap';
 import TopologyGraphComponent from '../../../components/TopologyGraphComponent';
 import FSReactToastr from '../../../components/FSReactToastr';
@@ -69,8 +70,13 @@ class TopologyEditorContainer extends Component {
     this.customProcessors = [];
     this.fetchData();
   }
+  componentDidMount(){
+    document.querySelector('.content-wrapper').setAttribute("class","container wrapper");
+  }
+
   componentWillUnmount(){
     document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay displayNone";
+    document.querySelector('.wrapper').setAttribute("class","content-wrapper");
   }
 
   @observable viewMode = true;
@@ -84,7 +90,8 @@ class TopologyEditorContainer extends Component {
     isAppRunning: false,
     topologyStatus: '',
     unknown: '',
-    bundleArr:null
+    bundleArr:null,
+    availableTimeSeriesDb: false
   }
 
   fetchData(versionId){
@@ -99,6 +106,7 @@ class TopologyEditorContainer extends Component {
           if(!versionId){
             versionId = data.topology.versionId;
           }
+
           promiseArr.push(TopologyREST.getSourceComponent());
           promiseArr.push(TopologyREST.getProcessorComponent());
           promiseArr.push(TopologyREST.getSinkComponent());
@@ -109,6 +117,7 @@ class TopologyEditorContainer extends Component {
           promiseArr.push(TopologyREST.getAllNodes(this.topologyId, versionId, 'edges'));
           promiseArr.push(TopologyREST.getMetaInfo(this.topologyId, versionId));
           promiseArr.push(TopologyREST.getAllVersions(this.topologyId));
+          promiseArr.push(EnvironmentREST.getNameSpace(data.topology.namespaceId));
 
           Promise.all(promiseArr)
             .then((resultsArr)=>{
@@ -145,6 +154,16 @@ class TopologyEditorContainer extends Component {
               //Moving last element from array to first ("CURRENT" version needs to come first)
               versions.splice(0,0,versions.splice(versions.length-1,1)[0])
 
+              let namespaceData = resultsArr[10];
+              if(namespaceData.mappings.length){
+                let mapObj = namespaceData.mappings.find((m)=>{
+                  return m.serviceName.toLowerCase() === 'storm';
+                });
+                if(mapObj){
+                  this.stormClusterId = mapObj.clusterId;
+                }
+              }
+
               this.graphData.nodes = TopologyUtils.syncNodeData(sourcesNode, processorsNode, sinksNode, this.graphData.metaInfo,
               this.sourceConfigArr, this.processorConfigArr, this.sinkConfigArr);
 
@@ -162,7 +181,9 @@ class TopologyEditorContainer extends Component {
                 isAppRunning: isAppRunning,
                 topologyStatus: status,
                 topologyVersion: this.versionId,
+                stormClusterId: this.stormClusterId,
                 versionsArr: versions,
+                availableTimeSeriesDb: namespaceData.namespace.timeSeriesDB ? true : false,
                 bundleArr: {
                   sourceBundle: this.sourceConfigArr,
                   processorsBundle: this.processorConfigArr,
@@ -308,8 +329,19 @@ class TopologyEditorContainer extends Component {
   handleSaveNodeModal(){
     this.refs.NodeModal.hide();
   }
+  getTitleFromId(id){
+    if(id && this.props.versionsArr != undefined){
+      let obj = this.props.versionsArr.find((o)=>{return o.id == id;})
+      if(obj){
+        return obj.name;
+      }
+    } else {
+      return '';
+    }
+  }
   render() {
     let nodeType = this.node ? this.node.currentType : '';
+    let versionName = this.getTitleFromId(this.versionId);
     return (
       <BaseContainer ref="BaseContainer" routes={this.props.routes} onLandingPage="false" breadcrumbData={this.breadcrumbData} headerContent={this.getTopologyHeader()}>
         <div>
@@ -319,6 +351,7 @@ class TopologyEditorContainer extends Component {
             killTopology = {this.killTopology.bind(this)}
             handleVersionChange = {this.handleVersionChange.bind(this)}
             setCurrentVersion = {this.setCurrentVersion.bind(this)}
+            stormClusterId={this.state.stormClusterId}
           />
           <div id="viewMode" className="graph-bg">
             <EditorGraph
@@ -340,7 +373,7 @@ class TopologyEditorContainer extends Component {
           data-resolve={this.handleSaveNodeModal.bind(this)}>
           {this.modalContent()}
         </Modal>
-        {this.state.isAppRunning && this.graphData.nodes.length > 0 ? 
+        {this.state.isAppRunning && this.graphData.nodes.length > 0 && versionName.toLowerCase() == 'current' && this.state.availableTimeSeriesDb ? 
           <MetricsContainer
             topologyId={this.topologyId}
             components={this.graphData.nodes}

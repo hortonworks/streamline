@@ -10,13 +10,14 @@ import EnvironmentREST from '../rest/EnvironmentREST';
 
 const ItemsMapping = (props) => {
     const {item,itemClicked} = props;
+    let name = item.name.replace('_',' ');
     return(
       <li>
         <img onClick={itemClicked}
-          data-id={`${item.clusterId}_${item.name}`}
+          data-id={`${item.clusterId}@${item.name}`}
           className=''
           src={`styles/img/icon-${item.name.toLowerCase()}.png`}/>
-          {item.name}
+          {name}
       </li>
     )
 }
@@ -28,7 +29,7 @@ class AddEnvironmentItems extends Component{
   onItemClicked = (e) => {
     const {mapSelection} = this.props;
     const targetEl = e.target;
-    const params = targetEl.attributes["data-id"].value.split('_');
+    const params = targetEl.attributes["data-id"].value.split('@');
     const classStr = targetEl.attributes["class"].value.trim();
 
 
@@ -104,7 +105,7 @@ class AddEnvironment extends Component{
               this.nameRef.value = result.namespace.name;
               this.descRef.value = result.namespace.description;
               result.mappings.map((o)=>{
-                document.querySelector('[data-id="'+o.clusterId+'_'+o.serviceName+'"]').className="activeImg";
+                document.querySelector('[data-id="'+o.clusterId+'@'+o.serviceName+'"]').className="activeImg";
                 this.mapSelectionHandler(o);
               })
             }
@@ -120,24 +121,35 @@ class AddEnvironment extends Component{
   validation = () => {
     const formNodes = this.refs.addEvtModelRef.children;
     let errArr = [];
-    const filter = (nodes) => {
-        for(let i = 0 ; i < nodes.length ; i++){
-            if(nodes[i].children){
-              for(let j = 0 ; j < nodes[i].children.length ; j++){
-                if(nodes[i].children[j].nodeName === "INPUT"){
-                    if(nodes[i].children[j].value.trim() === ''){
-                        nodes[i].children[j].setAttribute('class', "form-control invalidInput");
-                        errArr.push(j) ;
-                    }else{
-                      nodes[i].children[j].setAttribute('class', "form-control");
-                    }
-                }
-              }
-            }
+    if(this.nameRef.value.trim() == ''){
+      errArr.push("error");
+      this.nameRef.setAttribute('class', "form-control invalidInput");
+    } else {
+      this.nameRef.setAttribute('class', "form-control");
+    }
+
+    if(this.descRef.value.trim() == ''){
+      errArr.push("error");
+      this.descRef.setAttribute('class', "form-control invalidInput");
+    } else {
+      this.descRef.setAttribute('class', "form-control");
+    }
+
+    let missingStorm = true;
+    _.keys(this.selectionList).map(key =>{
+      this.selectionList[key].map((o)=>{
+        if(o.serviceName.toLowerCase() === 'storm'){
+          missingStorm = false;
         }
-        return (errArr.length === 0) ? true : false;
-      }
-    return filter(formNodes);
+      })
+    });
+    if(missingStorm){
+      this.refs.missingStorm.className = 'text-danger';
+      errArr.push("error");
+    } else {
+      this.refs.missingStorm.className = '';
+    }
+    return (errArr.length === 0) ? true : false;
   }
 
   handleSave = () => {
@@ -154,9 +166,13 @@ class AddEnvironment extends Component{
       });
       const obj = {
         name : evt_name,
-        description : desc
+        description : desc,
+        streamingEngine: 'STORM'
       };
       tempData = _.flatten(tempData);
+      if(tempData.find((o)=>{return o.serviceName.toLowerCase() == 'ambari_metrics'})){
+        obj['timeSeriesDB'] = 'AMBARI_METRICS';
+      }
       return {obj,tempData};
     }
   }
@@ -180,7 +196,7 @@ class AddEnvironment extends Component{
             })
         });
         if(t_clusterId !== undefined){
-          document.querySelector('[data-id="'+t_clusterId+'_'+dataObj.serviceName+'"]').className="";
+          document.querySelector('[data-id="'+t_clusterId+'@'+dataObj.serviceName+'"]').className="";
           this.selectionList[t_clusterId].splice(t_index,1);
         }
       }
@@ -217,6 +233,7 @@ class AddEnvironment extends Component{
             />
         </div>
         <h4 className="environment-modal-title">Select Services</h4>
+        <small ref="missingStorm"> (Atleast one streaming engine (eg: STORM) must be selected.)</small>
         <div className="row">
           {
             fetchLoader

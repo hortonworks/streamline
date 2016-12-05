@@ -930,6 +930,35 @@ const getEdgeData = function(data, topologyId, versionId, callback) {
         })
 }
 
+const getNodeStreams = function(topologyId, versionId, nodeId, parentType, edges, callback) {
+    let streamData = {
+        inputSchema: [],
+        outputSchema: []
+    };
+    let nodeType = this.getNodeType(parentType);
+    let promiseArr = [TopologyREST.getNode(topologyId, versionId, nodeType, nodeId)];
+
+    let connectingEdges = edges.filter((obj)=>{ return obj.target.nodeId == nodeId; });
+    connectingEdges.map((e)=>{
+        promiseArr.push(TopologyREST.getNode(topologyId, versionId, 'streams', e.streamGrouping.streamId));
+    });
+
+    Promise.all(promiseArr)
+        .then(results => {
+            results.map((s, i)=>{
+                if(i === 0){
+                    if(s.outputStreams.length) {
+                        streamData.outputSchema = s.outputStreams[0].fields;
+                    }
+                } else {
+                    streamData.inputSchema = [...streamData.inputSchema, ... s.fields];
+                }
+            })
+            streamData.inputSchema = _.uniqWith(streamData.inputSchema, _.isEqual);
+            callback(streamData);
+        })
+}
+
 export default {
 	defineMarkers,
 	isValidConnection,
@@ -961,5 +990,6 @@ export default {
 	getNodeImgRectClass,
     updateParallelismCount,
     topologyFilter,
-    getEdgeData
+    getEdgeData,
+    getNodeStreams
 };

@@ -73,13 +73,9 @@ text.id {
 }
 
 .d3-tip {
-  line-height: 1;
-  font-weight: bold;
   padding: 12px;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(120, 120, 120, 0.95);
   color: #fff;
-  border-radius: 2px;
-  font-size: 12px;
 }
 
 .modal-tip {
@@ -98,6 +94,20 @@ text.id {
   position: absolute;
   text-align: center;
 }
+.d3-tip.e:after {
+  right: 100%;
+  top: 50%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+  border-color: rgba(120, 120, 120, 0);
+  border-right-color: rgba(120,120,120,0.95);
+  border-width: 15px;
+  margin-top: -15px;
+}
 
 /* Style northward tooltips differently */
 .d3-tip.n:after {
@@ -107,7 +117,7 @@ text.id {
 }
 
 .d3-tip ul {padding:0; margin:0; list-style: none;}
-.d3-tip ul li {font-size: 12px; line-height: 20px;}
+.d3-tip ul li {line-height: 20px;}
 .table-backgrid>thead>tr>th>a {
   color:#707980;
 }

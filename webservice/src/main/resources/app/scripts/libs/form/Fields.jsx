@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import { Button, Form, FormGroup, Col, FormControl, Checkbox, Radio, ControlLabel } from 'react-bootstrap';
+import { Button, Form, FormGroup, Col, FormControl, Checkbox, Radio, ControlLabel ,Popover,OverlayTrigger} from 'react-bootstrap';
 import Select, { Creatable } from 'react-select';
 import validation from './ValidationRules';
 import _ from 'lodash';
@@ -25,6 +25,7 @@ export class BaseField extends Component {
         Form.setState(Form.state);
         return !errorMsg;
     }
+
     render() {
         const {className} = this.props
         return (
@@ -48,52 +49,22 @@ export class string extends BaseField {
         const {Form} = this.context;
         this.props.data[this.props.value] = value;
         Form.setState(Form.state, () => {
-            this.validate()
+          if(this.validate() && (this.props.fieldJson.hint !== undefined && this.props.fieldJson.hint.toLowerCase() === "schema")){
+            this.getSchema(value);
+          }
         });
     }
-    validate () {
-        return super.validate(this.props.data[this.props.value])
-    }
-    getField = () => {
-        return <input
-            type="text"
-            className={this.context.Form.state.Errors[this.props.valuePath] ? "form-control invalidInput" : "form-control"}
-            ref="input"
-            value={this.props.data[this.props.value] || ''}
-            disabled={this.context.Form.props.readOnly}
-            {...this.props.attrs}
-            onChange={this.handleChange}
-        />
-    }
-}
 
-export class kafkaTopic extends BaseField {
-    constructor(props){
-        super(props);
-    }
-
-    handleChange () {
-        const value = this.refs.input.value;
-        const {Form} = this.context;
-        this.props.data[this.props.value] = value;
-        Form.setState(Form.state);
-        if(super.validate(value)){
-            // this.validate()
-            this.handleTopic()
-        }
-    }
-
-    handleTopic(){
-        let value = this.refs.input.value;
-        if(value != ''){
+    getSchema(val){
+        if(val != ''){
             clearTimeout(this.topicTimer);
             this.topicTimer = setTimeout(()=>{
-                this.getSchemaFromTopic(value);
+                this.getSchemaFromName(val);
             }, 700)
         }
     }
 
-    getSchemaFromTopic(topicName){
+    getSchemaFromName(topicName){
         let resultArr = [];
         TopologyREST.getSchemaForKafka(topicName)
             .then(result=>{
@@ -115,22 +86,36 @@ export class kafkaTopic extends BaseField {
     }
 
     validate () {
-        const err = this.context.Form.state.Errors[this.props.valuePath] || '';
-        if(err != ''){
-            return false;
-        }
-        return super.validate(this.refs.input.value);
+        return super.validate(this.props.data[this.props.value])
     }
+
     getField = () => {
-        return <input
-            type="text"
-            className={this.context.Form.state.Errors[this.props.valuePath] ? "form-control invalidInput" : "form-control"}
-            ref="input"
-            value={this.props.data[this.props.value]}
-            disabled={this.context.Form.props.readOnly}
-            {...this.props.attrs}
-            onChange={this.handleChange.bind(this)}
-        />
+      const popoverContent = (
+        <Popover id="popover-trigger-hover-focus">
+          {this.props.fieldJson.tooltip}
+        </Popover>
+      );
+      return  <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
+                  <input
+                      type={
+                        this.props.fieldJson.hint !== undefined
+                          ? this.props.fieldJson.hint.toLowerCase() === "password"
+                            ? "password"
+                            : this.props.fieldJson.hint.toLowerCase() === "email"
+                              ? "email"
+                              : this.props.fieldJson.hint.toLowerCase() === "textarea"
+                                ? "textarea"
+                                : "text"
+                          :"text"
+                      }
+                      className={this.context.Form.state.Errors[this.props.valuePath] ? "form-control invalidInput" : "form-control"}
+                      ref="input"
+                      value={this.props.data[this.props.value] || ''}
+                      disabled={this.context.Form.props.readOnly}
+                      {...this.props.attrs}
+                      onChange={this.handleChange}
+                  />
+              </OverlayTrigger>
     }
 }
 
@@ -146,7 +131,15 @@ export class number extends BaseField {
         return super.validate(this.props.data[this.props.value])
     }
     getField = () => {
-        return <input type="number" className={this.context.Form.state.Errors[this.props.valuePath] ? "form-control invalidInput" : "form-control"} ref="input" value={this.props.data[this.props.value]} disabled={this.context.Form.props.readOnly} {...this.props.attrs} onChange={this.handleChange}/>
+      const popoverContent = (
+        <Popover id="popover-trigger-hover-focus">
+          {this.props.fieldJson.tooltip}
+        </Popover>
+      );
+
+      return <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
+              <input type="number" className={this.context.Form.state.Errors[this.props.valuePath] ? "form-control invalidInput" : "form-control"} ref="input" value={this.props.data[this.props.value]} disabled={this.context.Form.props.readOnly} {...this.props.attrs} onChange={this.handleChange}/>
+             </OverlayTrigger>
     }
 }
 
@@ -163,8 +156,14 @@ export class boolean extends BaseField {
     }
     render(){
         const {className} = this.props;
+        const popoverContent = (
+          <Popover id="popover-trigger-hover-focus">
+            {this.props.fieldJson.tooltip}
+          </Popover>
+        );
         return <FormGroup className={className}>
             <label>
+              <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
                 <input
                     type="checkbox"
                     ref="input"
@@ -175,6 +174,7 @@ export class boolean extends BaseField {
                     style={{marginRight: '10px'}}
                     className={this.context.Form.state.Errors[this.props.valuePath] ? "invalidInput" : ""}
                 />
+              </OverlayTrigger>
                 {this.props.label} {this.props.validation && this.props.validation.indexOf('required') !== -1 ? <span className="text-danger">*</span> : null}
             </label>
         </FormGroup>
@@ -192,6 +192,11 @@ export class enumstring extends BaseField {
         return super.validate(this.props.data[this.props.value])
     }
     getField = () => {
+      const popoverContent = (
+        <Popover id="popover-trigger-hover-focus">
+          {this.props.fieldJson.tooltip}
+        </Popover>
+      );
         return <Select onChange={this.handleChange} {...this.props.fieldAttr} disabled={this.context.Form.props.readOnly} value={this.props.data[this.props.value]}/>
     }
 }
@@ -243,6 +248,11 @@ export class arrayenumstring extends BaseField {
         return super.validate(this.props.data[this.props.value])
     }
     getField = () => {
+      const popoverContent = (
+        <Popover id="popover-trigger-hover-focus">
+          {this.props.fieldJson.tooltip}
+        </Popover>
+      );
         return <Select onChange={this.handleChange} multi={true} disabled={this.context.Form.props.readOnly} {...this.props.fieldAttr} value={this.props.data[this.props.value]}/>
     }
 }

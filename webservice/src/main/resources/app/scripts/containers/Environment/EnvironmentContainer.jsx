@@ -27,7 +27,8 @@ import AddEnvironment from '../../components/AddEnvironment';
 
 const MappingItem = (props) => {
   const {item} = props;
-  return (<li><img src={`styles/img/icon-${item.serviceName.toLowerCase()}.png`} />{item.serviceName}</li>)
+  const name = item.serviceName.replace('_',' ');
+  return (<li><img src={`styles/img/icon-${item.serviceName.toLowerCase()}.png`} />{name}</li>)
 }
 
 const EnvironmentItems = (props) => {

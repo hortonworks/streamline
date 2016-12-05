@@ -12,13 +12,30 @@ import {
 } from 'react-bootstrap';
 
 import Utils from '../../../utils/Utils';
+import TopologyREST from '../../../rest/TopologyREST';
+import EnvironmentREST from '../../../rest/EnvironmentREST';
+import ClusterREST from '../../../rest/ClusterREST';
 
 class TopologyViewMode extends Component{
   constructor(props){
     super(props)
     this.state = {
-      minSelected : 10
+      minSelected : 10,
+      stormViewUrl: ''
     }
+
+  }
+  componentWillReceiveProps(props) {
+    if(props.stormClusterId)
+      this.fetchData(props.stormClusterId);
+  }
+  fetchData(stormClusterId) {
+    ClusterREST.getStormViewUrl(stormClusterId)
+    .then((obj)=>{
+      if(obj.url) {
+        this.setState({stormViewUrl: obj.url});
+      }
+    });
   }
   modeChange = () => {
     this.props.handleModeChange(false);
@@ -40,7 +57,7 @@ class TopologyViewMode extends Component{
   }
 
   render(){
-    const {minSelected} = this.state;
+    const {minSelected, stormViewUrl} = this.state;
     const {topologyId,topologyName,isAppRunning,unknown,killTopology,setCurrentVersion,topologyMetric,timestamp, topologyVersion, versionsArr = []} = this.props;
     const {misc} = topologyMetric;
     const metricWrap = misc || {}
@@ -69,27 +86,14 @@ class TopologyViewMode extends Component{
               </DropdownButton>
               </div>
           </div>
-          {/*<div className="col-sm-2">
-            <InputGroup>
-              <span className="input-group-addon">Version</span>
-              <DropdownButton title={versionName || ''} pullRight id="version-dropdown" onSelect={this.handleSelectVersion.bind(this)}>
-                {
-                  versionsArr.map((v, i)=>{
-                    return <MenuItem eventKey={i} key={i} data-version-id={v.id}>{v.name}</MenuItem>
-                  })
-                }
-              </DropdownButton>
-            </InputGroup>
-          </div>*/}
-          {versionName.toLowerCase() == 'current' ?
-            <div className="col-sm-2 styleWindowDN text-right">
-            {isAppRunning ?
-                <button type="button" className="btn btn-default" onClick={killTopology}>STOP</button>
-              : null
-            }
-               <Link style={{marginLeft: '10px'}} className="btn btn-success" to={`applications/${topologyId}/edit`}>EDIT</Link>
-            </div>
-          : <div className="col-sm-2 styleWindowDN text-right">
+          <div className="col-sm-2 styleWindowDN text-right">
+            { stormViewUrl.length ?
+              <a href={stormViewUrl} target="_blank" className="btn btn-default"><img src="styles/img/storm-btn.png" width="20" /></a>
+            : null }
+            {versionName.toLowerCase() == 'current' ?
+              [<button type="button" key={1} className={!isAppRunning ? "displayNone btn btn-default" : "btn btn-default" } onClick={killTopology}>STOP</button>,
+              <Link style={{marginLeft: '10px'}} key={2} className="btn btn-success" to={`applications/${topologyId}/edit`}>EDIT</Link>]
+            :
               <OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip">Set this version as current version. If another version of topology is deployed, kill it first to set this one.</Tooltip>}>
                 <div style={{display: 'inline-block', cursor: 'not-allowed'}}>
                   <button
@@ -102,8 +106,8 @@ class TopologyViewMode extends Component{
                   </button>
                 </div>
               </OverlayTrigger>
-            </div>
-          }
+            }
+          </div>
       </div>
       <div className="view-tiles clearfix">
         <div className="stat-tiles">
@@ -147,7 +151,7 @@ class TopologyViewMode extends Component{
             <h1>{metricWrap.workersTotal || 0}</h1>
         </div>
         <div className="stat-tiles">
-            <h6>EXCUTORS</h6>
+            <h6>EXECUTORS</h6>
             <h1>{metricWrap.executorsTotal || 0}</h1>
         </div>
       </div>

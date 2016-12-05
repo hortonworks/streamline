@@ -25,8 +25,9 @@ import Paginate from '../../components/Paginate';
 
 const ServiceItems = (props) =>{
   const {item} = props;
+  let name = item.name.replace('_',' ');
   return(
-    <li><img src={`styles/img/icon-${item.name.toLowerCase()}.png`}/>{item.name}</li>
+    <li><img src={`styles/img/icon-${item.name.toLowerCase()}.png`}/>{name}</li>
   )
 }
 
@@ -315,7 +316,7 @@ class ServicePoolContainer extends Component{
           } else {
             this.setState({isLoading : obj}, () => {this.fetchData()});
             FSReactToastr.success(
-                <strong>cluster has been added successfully</strong>
+                <strong>Cluster has been added successfully</strong>
             )
           }
         }

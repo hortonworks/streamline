@@ -4,7 +4,13 @@ import { ItemTypes, Components } from '../utils/Constants';
 import { DragDropContext, DropTarget } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import d3 from 'd3';
+import d3Tip from 'd3-tip';
+import $ from 'jquery';
+import jQuery from 'jquery';
 import TopologyUtils from '../utils/TopologyUtils'
+
+window.$ = $;
+window.jQuery = jQuery;
 
 const componentTarget = {
 	drop(props, monitor, component) {
@@ -112,6 +118,14 @@ export default class TopologyGraphComponent extends Component {
                     '<p><strong>Grouping:</strong> </p>'+
                     '<p><button class="btn btn-xs btn-warning editEdge">Edit</button>'+
                     '<button class="btn btn-xs btn-warning deleteEdge">Delete</button></p>');
+
+        this.toolTip = d3Tip()
+            .attr('class', 'd3-tip')
+            .offset([0, 10])
+            .direction('e')
+            .html('');
+        svgG.call(this.toolTip);
+        $('.container.wrapper').append($('body > .d3-tip'));
 
 		this.drag = d3.behavior.drag()
 			.origin(function(d) {
@@ -320,6 +334,32 @@ export default class TopologyGraphComponent extends Component {
                 '</div>');
             this.edgeStream.style('display', 'block');
         }
+    }
+
+    showNodeStreams(d, node, data) {
+	if(data.inputSchema.length === 0 && data.outputSchema.length === 0) {
+		this.toolTip.hide();
+		return;
+	}
+	var thisGraph = this;
+	var inputFieldsHtml = '', outputFieldsHtml = '';
+	data.inputSchema.map((s)=>{
+                                        return (inputFieldsHtml += '<li>'+s.name+(s.optional ? '':'<span class="text-danger">*</span>')+
+                                                '<span class="output-type">'+s.type+'</span></li>');
+                                });
+	data.outputSchema.map((s)=>{
+                                        return (outputFieldsHtml += '<li>'+s.name+(s.optional ? '':'<span class="text-danger">*</span>')+
+                                                '<span class="output-type">'+s.type+'</span></li>');
+                                });
+        thisGraph.toolTip
+                .html(function(d){
+                return ('<div class="schema-tooltip clearfix"><h3>Schema</h3>'+
+                        (inputFieldsHtml === '' ? '' : '<div class="input-schema"><h4>Input</h4><ul class="schema-list">'+inputFieldsHtml+'</ul></div>')+
+                        (outputFieldsHtml === '' ? '' : '<div class="output-schema"><h4>Output</h4><ul class="schema-list">'+outputFieldsHtml+'</ul></div>')+
+                        '</div>'
+                        );
+                });
+        thisGraph.toolTip.show(data, node);
     }
 
 	// mousedown on node
@@ -605,8 +645,20 @@ export default class TopologyGraphComponent extends Component {
             .attr("class", function(d){ return 'node-rectangle ' + TopologyUtils.getNodeRectClass(d);})
             .attr("filter", function(d){ if(!d.isConfigured) return "url(#grayscale)"; else return ""; })
             .attr("filter", function(d){ return "url(#dropshadow)"; })
-            .on("mouseover", function(d){ if(thisGraph.editMode) d3.select(this.parentElement).select('text.fa.fa-times').style('display','block'); })
-            .on("mouseout", function(d){ if(thisGraph.editMode) d3.select(this.parentElement).select('text.fa.fa-times').style('display','none'); })
+            .on("mouseover", function(d){
+                if(thisGraph.editMode) {
+                        d3.select(this.parentElement).select('text.fa.fa-times').style('display','block');
+                } else {
+                        TopologyUtils.getNodeStreams(thisGraph.topologyId, thisGraph.versionId, d.nodeId, d.parentType, thisGraph.edges, thisGraph.showNodeStreams.bind(thisGraph, d, this));
+                }
+            })
+            .on("mouseout", function(d){
+                if(thisGraph.editMode){
+                        d3.select(this.parentElement).select('text.fa.fa-times').style('display','none');
+                        } else {
+                                thisGraph.toolTip.hide();
+                        }
+            })
             .on('mousedown', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d); })
             .on('mouseup', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);})
             .on('dblclick', function(d){
@@ -618,8 +670,18 @@ export default class TopologyGraphComponent extends Component {
         newGs.append("image").attr("xlink:href", function(d){return d.imageURL;})
             .attr("width", constants.rectangleHeight - 15).attr("height", constants.rectangleHeight - 15).attr("x", 8).attr("y", 7)
             .attr("filter", function(d){ return "url(#grayscale)"; })
-            .on("mouseover", function(d){ if(thisGraph.editMode) d3.select(this.parentElement).select('text.fa.fa-times').style('display','block'); })
-            .on("mouseout", function(d){ if(thisGraph.editMode) d3.select(this.parentElement).select('text.fa.fa-times').style('display','none'); })
+            .on("mouseover", function(d){
+		if(thisGraph.editMode) {
+			d3.select(this.parentElement).select('text.fa.fa-times').style('display','block');
+		} else {
+			TopologyUtils.getNodeStreams(thisGraph.topologyId, thisGraph.versionId, d.nodeId, d.parentType, thisGraph.edges, thisGraph.showNodeStreams.bind(thisGraph, d, d3.select(this.parentElement).select('rect')));
+		}
+            })
+            .on("mouseout", function(d){
+		if(thisGraph.editMode) {
+		 d3.select(this.parentElement).select('text.fa.fa-times').style('display','none');
+		}
+            })
             .on('mousedown', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);})
             .on('mouseup', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);})
             .on('dblclick', function(d){
@@ -708,9 +770,19 @@ export default class TopologyGraphComponent extends Component {
                     .attr("filter", function(d){ if(!d.isConfigured){ return "url(#grayscale)"; } else return ""; })
                     .attr("dx", function(d){ return (constants.rectangleHeight); })
                     .attr("dy", function(d){ return ((constants.rectangleHeight / 2) - 2); })
-				.on("mouseover", function(d){ if(thisGraph.editMode) d3.select(this.parentElement).select('text.fa.fa-times').style('display','block'); })
-				.on("mouseout", function(d){ if(thisGraph.editMode) d3.select(this.parentElement).select('text.fa.fa-times').style('display','none'); })
-                    .on('mousedown', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);})
+                                .on("mouseover", function(d){
+					if(thisGraph.editMode) {
+					 d3.select(this.parentElement).select('text.fa.fa-times').style('display','block');
+					} else {
+				TopologyUtils.getNodeStreams(thisGraph.topologyId, thisGraph.versionId, d.nodeId, d.parentType, thisGraph.edges, thisGraph.showNodeStreams.bind(thisGraph, d, d3.select(this.parentElement).select('rect')));
+			}
+                                })
+                                .on("mouseout", function(d){
+                                        if(thisGraph.editMode) {
+                                                d3.select(this.parentElement).select('text.fa.fa-times').style('display','none');
+                                        }
+                                })
+                .on('mousedown', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);})
 				.on('mouseup', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);})
                     .on('dblclick', function(d){
 					thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);
@@ -735,8 +807,18 @@ export default class TopologyGraphComponent extends Component {
                 .attr("filter", function(d){ if(!d.isConfigured){ return "url(#grayscale)"; } else return ""; })
                 .attr("dx", function(d){ return (constants.rectangleHeight); })
                 .attr("dy", function(d){ return ((constants.rectangleHeight - 7)); })
-                .on("mouseover", function(d){ if(thisGraph.editMode) d3.select(this.parentElement).select('text.fa.fa-times').style('display','block'); })
-                .on("mouseout", function(d){ if(thisGraph.editMode) d3.select(this.parentElement).select('text.fa.fa-times').style('display','none'); })
+                .on("mouseover", function(d){
+			if(thisGraph.editMode) {
+				d3.select(this.parentElement).select('text.fa.fa-times').style('display','block');
+			} else {
+				TopologyUtils.getNodeStreams(thisGraph.topologyId, thisGraph.versionId, d.nodeId, d.parentType, thisGraph.edges, thisGraph.showNodeStreams.bind(thisGraph, d, d3.select(this.parentElement).select('rect')));
+			}
+                })
+                .on("mouseout", function(d){
+			if(thisGraph.editMode) {
+				d3.select(this.parentElement).select('text.fa.fa-times').style('display','none');
+			}
+                })
                 .on('mousedown', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);})
                 .on('mouseup', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);})
                 .on('dblclick', function(d){

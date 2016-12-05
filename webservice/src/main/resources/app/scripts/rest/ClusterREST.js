@@ -67,6 +67,14 @@ const ClusterREST = {
           return response.json();
         })
   },
+  getStormViewUrl(clusterId, options){
+    options = options || {};
+    options.method = options.method || 'GET';
+    return fetch(baseUrl+clusterBaseURL+'/'+clusterId+'/services/storm/mainpage/url', options)
+      .then( (response) => {
+          return response.json();
+        });
+  }
 }
 
 export default ClusterREST;
