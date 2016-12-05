@@ -1,12 +1,12 @@
-package org.apache.streamline.streams.service.exception;
+package org.apache.streamline.common.exception.service.exception;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-public abstract class StreamServiceException extends RuntimeException {
+public abstract class WebServiceException extends RuntimeException {
   protected Response response;
 
-  protected StreamServiceException(Response.Status status, String msg) {
+  protected WebServiceException(Response.Status status, String msg) {
     super(msg);
     response = Response.status(status)
         .entity(convertToErrorResponseMessage(msg))
@@ -14,7 +14,7 @@ public abstract class StreamServiceException extends RuntimeException {
         .build();
   }
 
-  protected StreamServiceException(Response.Status status, String msg, Throwable cause) {
+  protected WebServiceException(Response.Status status, String msg, Throwable cause) {
     super(msg, cause);
     response = Response.status(status)
         .entity(convertToErrorResponseMessage(msg))

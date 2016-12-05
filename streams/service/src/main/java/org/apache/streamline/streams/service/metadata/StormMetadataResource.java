@@ -33,7 +33,7 @@ public class StormMetadataResource {
     public Response getTopologiesByClusterName(@PathParam("clusterName") String clusterName) {
         final Cluster cluster = catalogService.getClusterByName(clusterName);
         if (cluster == null) {
-            throw org.apache.streamline.streams.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
+            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
         }
         return getTopologiesByClusterId(cluster.getId());
     }
@@ -46,7 +46,7 @@ public class StormMetadataResource {
             StormMetadataService stormMetadataService = new StormMetadataService.Builder(catalogService, clusterId).build();
             return WSUtils.respondEntity(stormMetadataService.getTopologies(), OK);
         } catch (EntityNotFoundException ex) {
-            throw org.apache.streamline.streams.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
+            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
         }
     }
 
@@ -58,7 +58,7 @@ public class StormMetadataResource {
             StormMetadataService stormMetadataService = new StormMetadataService.Builder(catalogService, clusterId).build();
             return WSUtils.respondEntity(Collections.singletonMap("url", stormMetadataService.getMainPageUrl()), OK);
         } catch (EntityNotFoundException ex) {
-            throw org.apache.streamline.streams.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
+            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
         }
     }
 }

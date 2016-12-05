@@ -35,7 +35,7 @@ public class HBaseMetadataResource {
         throws Exception {
         final Cluster cluster = catalogService.getClusterByName(clusterName);
         if (cluster == null) {
-            throw org.apache.streamline.streams.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
+            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
         }
         return getNamespacesByClusterId(cluster.getId());
     }
@@ -48,7 +48,7 @@ public class HBaseMetadataResource {
         try (HBaseMetadataService hbaseMetadataService = HBaseMetadataService.newInstance(catalogService, clusterId)) {
             return WSUtils.respondEntity(hbaseMetadataService.getHBaseNamespaces(), OK);
         } catch (EntityNotFoundException ex) {
-            throw org.apache.streamline.streams.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
+            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
         }
     }
 
@@ -61,7 +61,7 @@ public class HBaseMetadataResource {
         throws Exception {
         final Cluster cluster = catalogService.getClusterByName(clusterName);
         if (cluster == null) {
-            throw org.apache.streamline.streams.service.exception.request.EntityNotFoundException.byName(clusterName);
+            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byName(clusterName);
         }
         return getTablesByClusterId(cluster.getId());
     }
@@ -73,7 +73,7 @@ public class HBaseMetadataResource {
         try (HBaseMetadataService hbaseMetadataService = HBaseMetadataService.newInstance(catalogService, clusterId)) {
             return WSUtils.respondEntity(hbaseMetadataService.getHBaseTables(), OK);
         } catch (EntityNotFoundException ex) {
-            throw org.apache.streamline.streams.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
+            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
         }
     }
 
@@ -86,7 +86,7 @@ public class HBaseMetadataResource {
         throws Exception {
         final Cluster cluster = catalogService.getClusterByName(clusterName);
         if (cluster == null) {
-            throw org.apache.streamline.streams.service.exception.request.EntityNotFoundException.byName(clusterName);
+            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byName(clusterName);
         }
         return getNamespaceTablesByClusterId(cluster.getId(), namespace);
     }
@@ -99,7 +99,7 @@ public class HBaseMetadataResource {
         try (HBaseMetadataService hbaseMetadataService = HBaseMetadataService.newInstance(catalogService, clusterId)) {
             return WSUtils.respondEntity(hbaseMetadataService.getHBaseTables(namespace), OK);
         } catch (EntityNotFoundException ex) {
-            throw org.apache.streamline.streams.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
+            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
         }
     }
 

@@ -24,7 +24,7 @@ import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.streams.notification.service.NotificationService;
-import org.apache.streamline.streams.service.exception.request.EntityNotFoundException;
+import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

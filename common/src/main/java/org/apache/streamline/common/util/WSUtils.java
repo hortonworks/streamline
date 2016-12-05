@@ -67,7 +67,6 @@ public class WSUtils {
 
     @Deprecated
     public static Response respond(Response.Status status, CatalogResponse.ResponseMessage msg, String... formatArgs) {
-        // FIXME: This is used only from parser-registry and should be removed after STREAMLINE-435 is merged to master
         return Response.status(status)
             .entity(CatalogResponse.newResponse(msg).entity(null).format(formatArgs))
             .build();

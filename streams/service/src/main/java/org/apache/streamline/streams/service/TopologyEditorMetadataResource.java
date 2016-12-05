@@ -4,7 +4,7 @@ import com.codahale.metrics.annotation.Timed;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.TopologyEditorMetadata;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.streams.service.exception.request.EntityNotFoundException;
+import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -19,7 +19,6 @@ import java.util.Collection;
 
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
 
 @Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)

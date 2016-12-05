@@ -13,10 +13,10 @@ import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.catalog.service.metadata.StormMetadataService;
 import org.apache.streamline.streams.cluster.discovery.ambari.AmbariServiceNodeDiscoverer;
 import org.apache.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
-import org.apache.streamline.streams.service.exception.request.BadRequestException;
-import org.apache.streamline.streams.service.exception.request.ClusterImportAlreadyInProgressException;
-import org.apache.streamline.streams.service.exception.request.EntityAlreadyExistsException;
-import org.apache.streamline.streams.service.exception.request.EntityNotFoundException;
+import org.apache.streamline.common.exception.service.exception.request.BadRequestException;
+import org.apache.streamline.common.exception.service.exception.request.ClusterImportAlreadyInProgressException;
+import org.apache.streamline.common.exception.service.exception.request.EntityAlreadyExistsException;
+import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

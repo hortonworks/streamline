@@ -8,8 +8,8 @@ import org.apache.streamline.storage.exception.AlreadyExistsException;
 import org.apache.streamline.streams.catalog.Namespace;
 import org.apache.streamline.streams.catalog.NamespaceServiceClusterMapping;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.streams.service.exception.request.BadRequestException;
-import org.apache.streamline.streams.service.exception.request.EntityNotFoundException;
+import org.apache.streamline.common.exception.service.exception.request.BadRequestException;
+import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.CREATED;

@@ -6,11 +6,11 @@ import org.apache.streamline.common.util.FileStorage;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.NotifierInfo;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.streams.service.exception.request.UnsupportedMediaTypeException;
+import org.apache.streamline.common.exception.service.exception.request.UnsupportedMediaTypeException;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.apache.streamline.streams.service.exception.request.EntityNotFoundException;
+import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

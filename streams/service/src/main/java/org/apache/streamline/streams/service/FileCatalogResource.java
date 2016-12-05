@@ -23,7 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.FileInfo;
 import org.apache.streamline.streams.catalog.service.CatalogService;
-import org.apache.streamline.streams.service.exception.request.EntityNotFoundException;
+import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;

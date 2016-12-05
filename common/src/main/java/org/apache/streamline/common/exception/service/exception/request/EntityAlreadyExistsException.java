@@ -1,10 +1,10 @@
-package org.apache.streamline.streams.service.exception.request;
+package org.apache.streamline.common.exception.service.exception.request;
 
-import org.apache.streamline.streams.service.exception.StreamServiceException;
+import org.apache.streamline.common.exception.service.exception.WebServiceException;
 
 import javax.ws.rs.core.Response;
 
-public class EntityAlreadyExistsException extends StreamServiceException {
+public class EntityAlreadyExistsException extends WebServiceException {
   private static final String BY_ID_MESSAGE = "Entity with id [%s] already exists.";
   private static final String BY_NAME_MESSAGE = "Entity with name [%s] already exists.";
 

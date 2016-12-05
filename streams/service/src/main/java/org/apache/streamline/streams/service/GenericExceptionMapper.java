@@ -1,8 +1,8 @@
 package org.apache.streamline.streams.service;
 
-import org.apache.streamline.streams.service.exception.StreamServiceException;
-import org.apache.streamline.streams.service.exception.request.BadRequestException;
-import org.apache.streamline.streams.service.exception.server.UnhandledServerException;
+import org.apache.streamline.common.exception.service.exception.WebServiceException;
+import org.apache.streamline.common.exception.service.exception.request.BadRequestException;
+import org.apache.streamline.common.exception.service.exception.server.UnhandledServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,8 +20,8 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
   public Response toResponse(Throwable ex) {
     if (ex instanceof ProcessingException) {
       return BadRequestException.of().getResponse();
-    } else if (ex instanceof StreamServiceException) {
-      return ((StreamServiceException) ex).getResponse();
+    } else if (ex instanceof WebServiceException) {
+      return ((WebServiceException) ex).getResponse();
     }
 
     logUnhandledException(ex);

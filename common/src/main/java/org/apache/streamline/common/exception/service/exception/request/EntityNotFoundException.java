@@ -1,14 +1,15 @@
-package org.apache.streamline.streams.service.exception.request;
+package org.apache.streamline.common.exception.service.exception.request;
 
-import org.apache.streamline.streams.service.exception.StreamServiceException;
+import org.apache.streamline.common.exception.service.exception.WebServiceException;
 
 import javax.ws.rs.core.Response;
 
-public class EntityNotFoundException extends StreamServiceException {
+public class EntityNotFoundException extends WebServiceException {
   private static final String BY_ID_MESSAGE = "Entity with id [%s] not found.";
   private static final String BY_NAME_MESSAGE = "Entity with name [%s] not found.";
   private static final String BY_FILTER_MESSAGE = "Entity not found for query params [%s].";
   private static final String BY_VERSION_MESSAGE = "Entity with id [%s] and version [%s] not found.";
+  private static final String BY_PARSER_SCHEMA_MESSAGE = "Parser schema not found for entity with id [%s].";
 
   private EntityNotFoundException(String message) {
     super(Response.Status.NOT_FOUND, message);
@@ -50,6 +51,14 @@ public class EntityNotFoundException extends StreamServiceException {
     return new EntityNotFoundException(buildMessageByVersion(id, version), cause);
   }
 
+  public static EntityNotFoundException byParserSchema(String id) {
+    return new EntityNotFoundException(buildMessageByParserSchema(id));
+  }
+
+  public static EntityNotFoundException byParserSchema(String id, Throwable cause) {
+    return new EntityNotFoundException(buildMessageByParserSchema(id), cause);
+  }
+
   private static String buildMessageByID(String id) {
     return String.format(BY_ID_MESSAGE, id);
   }
@@ -64,5 +73,9 @@ public class EntityNotFoundException extends StreamServiceException {
 
   private static String buildMessageByVersion(String id, String version) {
     return String.format(BY_VERSION_MESSAGE, id, version);
+  }
+
+  private static String buildMessageByParserSchema(String id) {
+    return String.format(BY_PARSER_SCHEMA_MESSAGE, id);
   }
 }

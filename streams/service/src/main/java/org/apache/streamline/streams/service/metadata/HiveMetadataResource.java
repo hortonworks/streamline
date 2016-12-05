@@ -33,7 +33,7 @@ public class HiveMetadataResource {
         throws Exception {
         final Cluster cluster = catalogService.getClusterByName(clusterName);
         if (cluster == null) {
-            throw org.apache.streamline.streams.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
+            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
         }
         return getDatabasesByClusterId(cluster.getId());
     }
@@ -46,7 +46,7 @@ public class HiveMetadataResource {
         try(final HiveMetadataService hiveMetadataService = HiveMetadataService.newInstance(catalogService, clusterId)) {
             return WSUtils.respondEntity(hiveMetadataService.getHiveDatabases(), OK);
         } catch (EntityNotFoundException ex) {
-            throw org.apache.streamline.streams.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
+            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
         }
     }
 
@@ -57,7 +57,7 @@ public class HiveMetadataResource {
         throws Exception {
         final Cluster cluster = catalogService.getClusterByName(clusterName);
         if (cluster == null) {
-            throw org.apache.streamline.streams.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
+            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
         }
         return getDatabaseTablesByClusterId(cluster.getId(), dbName);
     }
@@ -70,7 +70,7 @@ public class HiveMetadataResource {
         try(final HiveMetadataService hiveMetadataService = HiveMetadataService.newInstance(catalogService, clusterId)) {
             return WSUtils.respondEntity(hiveMetadataService.getHiveTables(dbName), OK);
         } catch (EntityNotFoundException ex) {
-            throw org.apache.streamline.streams.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
+            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
         }
     }
 }

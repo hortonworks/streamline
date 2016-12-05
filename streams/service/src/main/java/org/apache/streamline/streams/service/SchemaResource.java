@@ -23,7 +23,7 @@ import org.apache.registries.schemaregistry.SchemaVersionInfo;
 import org.apache.registries.schemaregistry.client.SchemaRegistryClient;
 import org.apache.registries.schemaregistry.errors.SchemaNotFoundException;
 import org.apache.streamline.common.util.WSUtils;
-import org.apache.streamline.streams.service.exception.request.EntityNotFoundException;
+import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

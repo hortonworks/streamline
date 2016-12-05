@@ -1,10 +1,10 @@
-package org.apache.streamline.streams.service.exception.request;
+package org.apache.streamline.common.exception.service.exception.request;
 
-import org.apache.streamline.streams.service.exception.StreamServiceException;
+import org.apache.streamline.common.exception.service.exception.WebServiceException;
 
 import javax.ws.rs.core.Response;
 
-public class BadRequestException extends StreamServiceException {
+public class BadRequestException extends WebServiceException {
   private static final String DEFAULT_MESSAGE = "Bad request.";
   private static final String PARAMETER_MISSING_MESSAGE = "Bad request. Param [%s] is missing or empty.";
 

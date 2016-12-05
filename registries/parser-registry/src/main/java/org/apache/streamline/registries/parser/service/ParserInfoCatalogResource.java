@@ -21,6 +21,7 @@ package org.apache.streamline.registries.parser.service;
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.streamline.common.Schema;
+import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.registries.parser.ParserInfo;
 import org.apache.commons.lang3.StringUtils;
@@ -74,83 +75,63 @@ public class ParserInfoCatalogResource {
     @Timed
     // TODO add a way to query/filter and/or page results
     public Response listParsers(@Context UriInfo uriInfo) {
-        try {
-            Collection<ParserInfo> parserInfos = null;
-            MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
-            if (params == null || params.isEmpty()) {
-                parserInfos = parserInfoCatalogService.listParsers();
-            } else {
-                parserInfos = parserInfoCatalogService.listParsers(WSUtils.buildQueryParameters(params));
-            }
-            return WSUtils.respond(parserInfos, OK, SUCCESS);
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        Collection<ParserInfo> parserInfos = null;
+        MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
+        if (params == null || params.isEmpty()) {
+            parserInfos = parserInfoCatalogService.listParsers();
+        } else {
+            parserInfos = parserInfoCatalogService.listParsers(WSUtils.buildQueryParameters(params));
         }
+        return WSUtils.respondEntities(parserInfos, OK);
     }
 
     @GET
     @Path("/parsers/{id}/schema")
     @Timed
     public Response getParserSchema(@PathParam("id") Long parserId) {
-        try {
-            ParserInfo parserInfo = doGetParserInfoById(parserId);
-            if (parserInfo != null) {
-                Schema result = parserInfo.getParserSchema();
-                if (result != null) {
-                    return WSUtils.respond(result, OK, SUCCESS);
-                }
+        ParserInfo parserInfo = doGetParserInfoById(parserId);
+        if (parserInfo != null) {
+            Schema result = parserInfo.getParserSchema();
+            if (result != null) {
+                return WSUtils.respondEntity(result, OK);
             }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
         }
 
-        return WSUtils.respond(NOT_FOUND, PARSER_SCHEMA_FOR_ENTITY_NOT_FOUND, parserId.toString());
+        throw EntityNotFoundException.byParserSchema(parserId.toString());
     }
 
     @GET
     @Path("/parsers/{id}")
     @Timed
     public Response getParserInfoById(@PathParam("id") Long parserId) {
-        try {
-            ParserInfo result = doGetParserInfoById(parserId);
-            if (result != null) {
-                return WSUtils.respond(result, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        ParserInfo result = doGetParserInfoById(parserId);
+        if (result != null) {
+            return WSUtils.respondEntity(result, OK);
         }
 
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, parserId.toString());
+        throw EntityNotFoundException.byId(parserId.toString());
     }
 
     @DELETE
     @Path("/parsers/{id}")
     @Timed
-    public Response removeParser(@PathParam("id") Long parserId) {
-        try {
-            ParserInfo removedParser = parserInfoCatalogService.removeParser(parserId);
-            if (removedParser != null) {
-                return WSUtils.respond(removedParser, OK, SUCCESS);
-            } else {
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, parserId.toString());
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+    public Response removeParser(@PathParam("id") Long parserId) throws IOException {
+        ParserInfo removedParser = parserInfoCatalogService.removeParser(parserId);
+        if (removedParser != null) {
+            return WSUtils.respondEntity(removedParser, OK);
         }
+
+        throw EntityNotFoundException.byId(parserId.toString());
     }
-
-
 
     //Test curl command curl -X POST -i -F parserJar=@parsers-0.1.0-SNAPSHOT.jar http://localhost:8080/api/v1/catalog/parsers/upload-verify
     @Timed
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/parsers/upload-verify")
-    public Response verifyParserUpload(@FormDataParam("parserJar") final InputStream inputStream) {
+    public Response verifyParserUpload(@FormDataParam("parserJar") final InputStream inputStream) throws IOException {
         try {
-            return WSUtils.respond(parserInfoCatalogService.verifyParserUpload(inputStream), Response.Status.OK, SUCCESS);
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+            return WSUtils.respondEntity(parserInfoCatalogService.verifyParserUpload(inputStream), Response.Status.OK);
         } finally {
             try {
                 inputStream.close();
@@ -166,7 +147,7 @@ public class ParserInfoCatalogResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/parsers")
     public Response addParser(@FormDataParam("parserJar") final InputStream inputStream, @FormDataParam("parserJar") final FormDataContentDisposition contentDispositionHeader,
-                              @FormDataParam("parserInfo") final String parserInfoStr, @FormDataParam("schemaFromParserJar") boolean schemaFromParserJar) {
+                              @FormDataParam("parserInfo") final String parserInfoStr, @FormDataParam("schemaFromParserJar") boolean schemaFromParserJar) throws IOException {
 
         try {
             ParserInfo parserInfo = objectMapper.readValue(parserInfoStr, ParserInfo.class);
@@ -174,9 +155,7 @@ public class ParserInfoCatalogResource {
             String jarStoragePath = prefix + UUID.randomUUID().toString() + ".jar";
             parserInfo.setJarStoragePath(jarStoragePath);
             ParserInfo result = parserInfoCatalogService.addParser(parserInfo, schemaFromParserJar, inputStream);
-            return WSUtils.respond(result, CREATED, SUCCESS);
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+            return WSUtils.respondEntity(result, CREATED);
         } finally {
             try {
                 inputStream.close();
@@ -194,18 +173,14 @@ public class ParserInfoCatalogResource {
     @GET
     @Produces({"application/java-archive", "application/json"})
     @Path("/parsers/download/{parserId}")
-    public Response downloadParserJar(@PathParam("parserId") Long parserId) {
-        try {
-            ParserInfo parserInfo = doGetParserInfoById(parserId);
-            if (parserInfo != null) {
-                StreamingOutput streamOutput = WSUtils.wrapWithStreamingOutput(parserInfoCatalogService.getParserJar(parserInfo));
-                return Response.ok(streamOutput).build();
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+    public Response downloadParserJar(@PathParam("parserId") Long parserId) throws IOException {
+        ParserInfo parserInfo = doGetParserInfoById(parserId);
+        if (parserInfo != null) {
+            StreamingOutput streamOutput = WSUtils.wrapWithStreamingOutput(parserInfoCatalogService.getParserJar(parserInfo));
+            return Response.ok(streamOutput).build();
         }
 
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, parserId.toString());
+        throw EntityNotFoundException.byId(parserId.toString());
     }
 
 

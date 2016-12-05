@@ -1,10 +1,10 @@
-package org.apache.streamline.streams.service.exception.request;
+package org.apache.streamline.common.exception.service.exception.request;
 
-import org.apache.streamline.streams.service.exception.StreamServiceException;
+import org.apache.streamline.common.exception.service.exception.WebServiceException;
 
 import javax.ws.rs.core.Response;
 
-public class ParserSchemaForEntityNotFoundException extends StreamServiceException {
+public class ParserSchemaForEntityNotFoundException extends WebServiceException {
   private static final String MESSAGE = "Parser schema not found for entity with id [%s].";
 
   public ParserSchemaForEntityNotFoundException(String id) {

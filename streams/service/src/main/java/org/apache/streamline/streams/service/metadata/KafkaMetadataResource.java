@@ -36,7 +36,7 @@ public class KafkaMetadataResource {
         throws Exception {
         final Cluster cluster = catalogService.getClusterByName(clusterName);
         if (cluster == null) {
-            throw org.apache.streamline.streams.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
+            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
         }
         return getBrokersByClusterId(cluster.getId());
     }
@@ -48,7 +48,7 @@ public class KafkaMetadataResource {
         try(final KafkaMetadataService kafkaMetadataService = KafkaMetadataService.newInstance(catalogService, clusterId)) {
             return WSUtils.respondEntity(kafkaMetadataService.getBrokerHostPortFromStreamsJson(clusterId), OK);
         } catch (EntityNotFoundException ex) {
-            throw org.apache.streamline.streams.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
+            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
         }
     }
 
@@ -59,7 +59,7 @@ public class KafkaMetadataResource {
         throws Exception {
         final Cluster cluster = catalogService.getClusterByName(clusterName);
         if (cluster == null) {
-            throw org.apache.streamline.streams.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
+            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
         }
         return getTopicsByClusterId(cluster.getId());
     }
@@ -71,7 +71,7 @@ public class KafkaMetadataResource {
         try(final KafkaMetadataService kafkaMetadataService = KafkaMetadataService.newInstance(catalogService, clusterId)) {
             return WSUtils.respondEntity(kafkaMetadataService.getTopicsFromZk(), OK);
         } catch (EntityNotFoundException ex) {
-            throw org.apache.streamline.streams.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
+            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
         }
     }
 }

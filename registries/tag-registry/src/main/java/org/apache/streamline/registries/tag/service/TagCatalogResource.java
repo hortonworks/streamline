@@ -2,6 +2,7 @@ package org.apache.streamline.registries.tag.service;
 
 import com.codahale.metrics.annotation.Timed;
 import org.apache.streamline.common.QueryParam;
+import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.registries.tag.Tag;
 import org.apache.streamline.registries.tag.TaggedEntity;
@@ -107,22 +108,18 @@ public class TagCatalogResource {
     @Timed
     public Response listTags(@Context UriInfo uriInfo) {
         List<QueryParam> queryParams = new ArrayList<>();
-        try {
-            MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
-            Collection<Tag> tags;
-            if (params.isEmpty()) {
-                tags = tagService.listTags();
-            } else {
-                queryParams = WSUtils.buildQueryParameters(params);
-                tags = tagService.listTags(queryParams);
-            }
-            if (tags != null)
-                return WSUtils.respond(makeTagDto(tags), OK, SUCCESS);
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
+        Collection<Tag> tags;
+        if (params.isEmpty()) {
+            tags = tagService.listTags();
+        } else {
+            queryParams = WSUtils.buildQueryParameters(params);
+            tags = tagService.listTags(queryParams);
         }
+        if (tags != null)
+            return WSUtils.respondEntities(makeTagDto(tags), OK);
 
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND_FOR_FILTER, queryParams.toString());
+        throw EntityNotFoundException.byFilter(queryParams.toString());
     }
 
     /**
@@ -151,15 +148,12 @@ public class TagCatalogResource {
     @Path("/tags/{id}")
     @Timed
     public Response getTagById(@PathParam("id") Long tagId) {
-        try {
-            Tag result = tagService.getTag(tagId);
-            if (result != null) {
-                return WSUtils.respond(makeTagDto(result), OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        Tag result = tagService.getTag(tagId);
+        if (result != null) {
+            return WSUtils.respondEntity(makeTagDto(result), OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, tagId.toString());
+
+        throw EntityNotFoundException.byId(tagId.toString());
     }
 
     /**
@@ -223,12 +217,8 @@ public class TagCatalogResource {
     @Path("/tags")
     @Timed
     public Response addTag(TagDto tagDto) {
-        try {
-            Tag createdTag = tagService.addTag(makeTag(tagDto));
-            return WSUtils.respond(makeTagDto(createdTag), CREATED, SUCCESS);
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
-        }
+        Tag createdTag = tagService.addTag(makeTag(tagDto));
+        return WSUtils.respondEntity(makeTagDto(createdTag), CREATED);
     }
 
 
@@ -270,16 +260,12 @@ public class TagCatalogResource {
     @Path("/tags/{id}")
     @Timed
     public Response removeTag(@PathParam("id") Long tagId) {
-        try {
-            Tag removedTag = tagService.removeTag(tagId);
-            if (removedTag != null) {
-                return WSUtils.respond(makeTagDto(removedTag), OK, SUCCESS);
-            } else {
-                return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, removedTag.toString());
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        Tag removedTag = tagService.removeTag(tagId);
+        if (removedTag != null) {
+            return WSUtils.respondEntity(makeTagDto(removedTag), OK);
         }
+
+        throw EntityNotFoundException.byId(removedTag.toString());
     }
 
     /**
@@ -315,12 +301,8 @@ public class TagCatalogResource {
     @Path("/tags/{id}")
     @Timed
     public Response addOrUpdateTag(@PathParam("id") Long tagId, TagDto tagDto) {
-        try {
-            Tag newTag = tagService.addOrUpdateTag(tagId, makeTag(tagDto));
-            return WSUtils.respond(makeTagDto(newTag), OK, SUCCESS);
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
-        }
+        Tag newTag = tagService.addOrUpdateTag(tagId, makeTag(tagDto));
+        return WSUtils.respondEntity(makeTagDto(newTag), OK);
     }
 
     /**
@@ -345,18 +327,13 @@ public class TagCatalogResource {
     @Path("/tags/{id}/entities/{namespace}/{entity-id}")
     @Timed
     public Response addTagForEntity(@PathParam("id") Long tagId, @PathParam("namespace") String namespace, @PathParam("entity-id") Long entityId) {
-        try {
-            Tag tag = tagService.getTag(tagId);
-            if(tag != null) {
-                tagService.addTagsForStorable(new TaggedEntity(namespace, entityId), Collections.singletonList(tag));
-                return WSUtils.respond(CREATED, SUCCESS);
-            }
-            else {
-                return WSUtils.respond(BAD_REQUEST, ENTITY_NOT_FOUND, tagId.toString());
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        Tag tag = tagService.getTag(tagId);
+        if(tag != null) {
+            tagService.addTagsForStorable(new TaggedEntity(namespace, entityId), Collections.singletonList(tag));
+            return WSUtils.respond(CREATED, SUCCESS);
         }
+
+        throw EntityNotFoundException.byId(tagId.toString());
     }
 
     /**
@@ -381,18 +358,13 @@ public class TagCatalogResource {
     @Path("/tags/{id}/entities/{namespace}/{entity-id}")
     @Timed
     public Response removeTagFromEntity(@PathParam("id") Long tagId, @PathParam("namespace") String namespace, @PathParam("entity-id") Long entityId) {
-        try {
-            Tag tag = tagService.getTag(tagId);
-            if(tag !=null ) {
-                tagService.removeTagsFromStorable(new TaggedEntity(namespace, entityId), Collections.singletonList(tag));
-                return WSUtils.respond(CREATED, SUCCESS);
-            }
-            else {
-                return WSUtils.respond(BAD_REQUEST, ENTITY_NOT_FOUND, tagId.toString());
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        Tag tag = tagService.getTag(tagId);
+        if(tag !=null ) {
+            tagService.removeTagsFromStorable(new TaggedEntity(namespace, entityId), Collections.singletonList(tag));
+            return WSUtils.respond(CREATED, SUCCESS);
         }
+
+        throw EntityNotFoundException.byId(tagId.toString());
     }
 
     /**
@@ -420,15 +392,12 @@ public class TagCatalogResource {
     @Path("/tags/{id}/entities")
     @Timed
     public Response getTaggedEntities(@PathParam("id") Long tagId) {
-        try {
-            List<TaggedEntity> result = tagService.getEntities(tagId, true);
-            if (result != null) {
-                return WSUtils.respond(result, OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        List<TaggedEntity> result = tagService.getEntities(tagId, true);
+        if (result != null) {
+            return WSUtils.respondEntities(result, OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, tagId.toString());
+
+        throw EntityNotFoundException.byId(tagId.toString());
     }
 
     /**
@@ -457,15 +426,12 @@ public class TagCatalogResource {
     @Path("/taggedentities/{namespace}/{id}/tags")
     @Timed
     public Response getTagsForEntity(@PathParam("namespace") String namespace, @PathParam("id") Long entityId) {
-        try {
-            List<Tag> tags = tagService.getTags(new TaggedEntity(namespace, entityId));
-            if (tags != null) {
-                return WSUtils.respond(makeTagDto(tags), OK, SUCCESS);
-            }
-        } catch (Exception ex) {
-            return WSUtils.respond(INTERNAL_SERVER_ERROR, EXCEPTION, ex.getMessage());
+        List<Tag> tags = tagService.getTags(new TaggedEntity(namespace, entityId));
+        if (tags != null) {
+            return WSUtils.respondEntities(makeTagDto(tags), OK);
         }
-        return WSUtils.respond(NOT_FOUND, ENTITY_NOT_FOUND, entityId.toString());
+
+        throw EntityNotFoundException.byId(entityId.toString());
     }
 
     private Collection<TagDto> makeTagDto(Collection<Tag> tags) {

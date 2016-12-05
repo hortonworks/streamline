@@ -1,10 +1,10 @@
-package org.apache.streamline.streams.service.exception.request;
+package org.apache.streamline.common.exception.service.exception.request;
 
-import org.apache.streamline.streams.service.exception.StreamServiceException;
+import org.apache.streamline.common.exception.service.exception.WebServiceException;
 
 import javax.ws.rs.core.Response;
 
-public class CustomProcessorOnlyException extends StreamServiceException {
+public class CustomProcessorOnlyException extends WebServiceException {
   private static final String MESSAGE = "Custom endpoint supported only for processors.";
 
   public CustomProcessorOnlyException() {

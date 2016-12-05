@@ -1,10 +1,10 @@
-package org.apache.streamline.streams.service.exception.server;
+package org.apache.streamline.common.exception.service.exception.server;
 
-import org.apache.streamline.streams.service.exception.StreamServiceException;
+import org.apache.streamline.common.exception.service.exception.WebServiceException;
 
 import javax.ws.rs.core.Response;
 
-public class UnhandledServerException extends StreamServiceException {
+public class UnhandledServerException extends WebServiceException {
   private static final String MESSAGE = "An exception with message [%s] was thrown while processing request.";
 
   public UnhandledServerException(String exceptionMessage) {
