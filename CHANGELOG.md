@@ -1,4 +1,5 @@
 ## 0.1.4
+ * STREAMLINE-535: Tag REST API should follow STREAMLINE-500 changes
  * STREAMLINE-518: storm-jdbc bundle spec and flux transformation class.
  * STREAMLINE-314: CustomProcessor should provide a Generic Processors for writing JS, ruby, python ec..
  * STREAMLINE-551: .selectStreamLine() now also auto-prefixes all the join keys with 'streamline-event'.
