@@ -22,7 +22,6 @@
         <module>runtime</module>
         <module>service</module>
         <module>runners</module>
-        <module>schemaevolver</module>
         <module>functions</module>
         <module>cluster</module>
         <module>multilang</module>
