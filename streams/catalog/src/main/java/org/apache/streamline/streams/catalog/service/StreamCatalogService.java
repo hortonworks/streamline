@@ -171,9 +171,7 @@ public class StreamCatalogService {
     private static final ArrayList<Class<?>> UDF_CLASSES = Lists.newArrayList(UDAF.class, UDAF2.class, UDF.class, UDF2.class,
                                                                               UDF3.class, UDF4.class, UDF5.class, UDF6.class, UDF7.class);
 
-    private static final ArrayList<Class<?>> UDF_CLASSES = Lists.newArrayList(UDAF.class, UDAF2.class, UDF.class, UDF2.class,
-                                                                              UDF3.class, UDF4.class, UDF5.class, UDF6.class, UDF7.class);
-
+    
     private final StorageManager dao;
     private final TopologyActions topologyActions;
     private final TopologyMetrics topologyMetrics;
