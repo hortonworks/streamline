@@ -30,9 +30,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Storm implementation of the TopologyActions interface
@@ -133,14 +136,23 @@ public class StormTopologyActionsImpl implements TopologyActions {
             File[] artifacts = artifactsLocation.toFile().listFiles();
             if (artifacts != null && artifacts.length > 0) {
                 Path newJar = Files.copy(jarFile, artifactsLocation.resolve(jarFile.getFileName()));
-                for (File artifact : artifacts) {
-                    if (artifact.isFile()) {
-                        executeShellProcess(
-                                ImmutableList.of(javaJarCommand, "uf", newJar.toString(),
-                                        "-C", artifactsLocation.toString(), artifact.getName()));
-                        LOG.debug("Added file {} to jar {}", artifact, jarFile);
-                    }
-                }
+
+                List<String> artifactFileNames = Arrays.stream(artifacts).filter(File::isFile)
+                        .map(File::getName).collect(toList());
+                List<String> commands = new ArrayList<>();
+
+                commands.add(javaJarCommand);
+                commands.add("uf");
+                commands.add(newJar.toString());
+
+                artifactFileNames.stream().forEachOrdered(name -> {
+                    commands.add("-C");
+                    commands.add(artifactsLocation.toString());
+                    commands.add(name);
+                });
+
+                executeShellProcess(commands);
+                LOG.debug("Added files {} to jar {}", artifactFileNames, jarFile);
                 return newJar;
             }
         } else {
