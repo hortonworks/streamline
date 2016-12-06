@@ -2696,40 +2696,55 @@ public class StreamCatalogService {
 
         List<String> availableServices = serviceNodeDiscoverer.getServices();
 
-        for (ServiceConfigurations svcConfMap : ServiceConfigurations.values()) {
-            String serviceName = svcConfMap.name();
+        availableServices.parallelStream()
+                .filter(ServiceConfigurations::contains)
+                .forEach(serviceName -> {
+                    LOG.debug("service start {}", serviceName);
 
-            if (availableServices.contains(serviceName)) {
-                Map<String, Object> flattenConfigurations = new HashMap<>();
-                Map<String, Map<String, Object>> configurations = serviceNodeDiscoverer.getConfigurations(serviceName);
+                    Map<String, Object> flattenConfigurations = new HashMap<>();
+                    Map<String, Map<String, Object>> configurations = serviceNodeDiscoverer.getConfigurations(serviceName);
 
-                Service service = initializeService(cluster, serviceName);
-                addService(service);
+                    Service service = initializeService(cluster, serviceName);
+                    addService(service);
 
-                for (Map.Entry<String, Map<String, Object>> confTypeToConfiguration : configurations
-                        .entrySet()) {
-                    String confType = confTypeToConfiguration.getKey();
-                    Map<String, Object> configuration = confTypeToConfiguration.getValue();
-                    String actualFileName = serviceNodeDiscoverer.getActualFileName(confType);
+                    LOG.debug("service added {}", serviceName);
 
-                    ServiceConfiguration serviceConfiguration = initializeServiceConfiguration(objectMapper,
-                                                                                               service.getId(), confType, actualFileName, configuration);
+                    configurations.entrySet().parallelStream()
+                            .forEach(entry -> {
+                                try {
+                                    String confType = entry.getKey();
+                                    Map<String, Object> configuration = entry.getValue();
 
-                    addServiceConfiguration(serviceConfiguration);
-                    flattenConfigurations.putAll(configuration);
-                }
+                                    LOG.debug("conf-type start {}", confType);
 
-                List<String> components = serviceNodeDiscoverer.getComponents(serviceName);
-                for (String componentName : components) {
-                    List<String> hosts = serviceNodeDiscoverer.getComponentNodes(serviceName, componentName);
-                    Component component = initializeComponent(service, componentName, hosts);
+                                    String actualFileName = serviceNodeDiscoverer.getActualFileName(confType);
 
-                    setProtocolAndPortIfAvailable(flattenConfigurations, component);
+                                    ServiceConfiguration serviceConfiguration = initializeServiceConfiguration(objectMapper,
+                                            service.getId(), confType, actualFileName, configuration);
 
-                    addComponent(component);
-                }
-            }
-        }
+                                    addServiceConfiguration(serviceConfiguration);
+                                    flattenConfigurations.putAll(configuration);
+
+                                    LOG.debug("conf-type end {}", confType);
+                                } catch (Exception e) {
+                                    throw new RuntimeException(e);
+                                }
+                            });
+
+                    List<String> components = serviceNodeDiscoverer.getComponents(serviceName);
+                    components.parallelStream().forEach(componentName -> {
+                        LOG.debug("component start {}", componentName);
+
+                        List<String> hosts = serviceNodeDiscoverer.getComponentNodes(serviceName, componentName);
+                        Component component = initializeComponent(service, componentName, hosts);
+
+                        setProtocolAndPortIfAvailable(flattenConfigurations, component);
+
+                        addComponent(component);
+
+                        LOG.debug("component end {}", componentName);
+                    });
+        });
 
         return cluster;
     }
