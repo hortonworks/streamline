@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static javax.ws.rs.core.Response.Status.OK;
 
@@ -132,8 +133,8 @@ public class MetricsResource {
             topologyComponents.addAll(catalogService.listTopologyProcessors(queryParams));
             topologyComponents.addAll(catalogService.listTopologySinks(queryParams));
 
-            Map<String, TopologyTimeSeriesMetrics.TimeSeriesComponentMetric> topologyMetrics = new HashMap<>();
-            topologyComponents.stream().map(c -> {
+            Map<String, TopologyTimeSeriesMetrics.TimeSeriesComponentMetric> topologyMetrics = new ConcurrentHashMap<>();
+            topologyComponents.parallelStream().map(c -> {
                 try {
                     return Pair.of(c, catalogService.getComponentStats(topology, c, from, to));
                 } catch (IOException e) {

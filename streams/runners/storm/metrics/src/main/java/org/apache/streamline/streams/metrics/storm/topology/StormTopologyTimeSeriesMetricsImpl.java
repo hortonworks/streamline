@@ -9,10 +9,13 @@ import org.apache.streamline.streams.metrics.topology.TopologyTimeSeriesMetrics;
 import org.apache.streamline.streams.storm.common.StormRestAPIClient;
 import org.apache.streamline.streams.storm.common.StormTopologyUtil;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Storm implementation of the TopologyTimeSeriesMetrics interface
@@ -80,9 +83,8 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
         String stormTopologyName = StormTopologyUtil.findOrGenerateTopologyName(client, topology.getId(), topology.getName());
 
         Map<String, Map<Long, Double>> stats = new HashMap<>();
-        for (StormMappedMetric metric : STATS_METRICS) {
-            stats.put(metric.name(), queryTopologyMetrics(stormTopologyName, metric, from, to));
-        }
+        Arrays.asList(STATS_METRICS).parallelStream()
+                .forEach(m -> stats.put(m.name(), queryTopologyMetrics(stormTopologyName, m, from, to)));
 
         return buildTimeSeriesComponentMetric(topology.getName(), stats);
     }
@@ -94,12 +96,11 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
         String stormTopologyName = StormTopologyUtil.findOrGenerateTopologyName(client, topology.getId(), topology.getName());
         String stormComponentName = getComponentName(component);
 
-        Map<String, Map<Long, Double>> stats = new HashMap<>();
-        for (StormMappedMetric metric : STATS_METRICS) {
-            stats.put(metric.name(), queryComponentMetrics(stormTopologyName, stormComponentName, metric, from, to));
-        }
+        Map<String, Map<Long, Double>> componentStats = new ConcurrentHashMap<>();
+        Arrays.asList(STATS_METRICS).parallelStream()
+                .forEach(m -> componentStats.put(m.name(), queryComponentMetrics(stormTopologyName, stormComponentName, m, from, to)));
 
-        return buildTimeSeriesComponentMetric(component.getName(), stats);
+        return buildTimeSeriesComponentMetric(component.getName(), componentStats);
     }
 
     private TimeSeriesComponentMetric buildTimeSeriesComponentMetric(String name, Map<String, Map<Long, Double>> stats) {
