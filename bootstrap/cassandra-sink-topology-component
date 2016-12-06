@@ -70,6 +70,7 @@
             "tooltip": "Password to connect to Cassandra cluster",
             "isOptional": false,
             "type": "string",
+            "hint": "password",
             "defaultValue": null
           },
           {

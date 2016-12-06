@@ -58,7 +58,8 @@
             "fieldName": "password",
             "isOptional": false,
             "tooltip": "Password for email server",
-            "type": "string"
+            "type": "string",
+            "hint": "password"
           },
           {
             "uiName": "Host",
@@ -128,14 +129,16 @@
             "fieldName": "from",
             "isOptional": false,
             "tooltip": "From email id",
-            "type": "string"
+            "type": "string",
+            "hint": "email"
           },
           {
             "uiName": "To email id",
             "fieldName": "to",
             "isOptional": false,
             "tooltip": "To email id",
-            "type": "string"
+            "type": "string",
+            "hint": "email"
           },
           {
             "uiName": "Email subject",

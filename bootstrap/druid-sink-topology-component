@@ -80,14 +80,16 @@
         "fieldName": "dimensions",
         "tooltip": "Datasource dimensions",
         "isOptional": false,
-        "type": "array.string"
+        "type": "array.string",
+        "hint": "inputFields"
       },
       {
         "uiName": "Timestamp Field Name",
         "fieldName": "timestampField",
         "isOptional": false,
         "tooltip": "Timestamp Field Name",
-        "type": "string"
+        "type": "string",
+        "hint": "eventTime"
       },
       {
         "uiName": "Druid partitions",

@@ -1,7 +1,0 @@
-{
-   "id":1,
-   "parserId" : 1,
-   "dataSourceId" : 1,
-   "name" : "nest-datafeed",
-   "type" : "KAFKA"
-}
