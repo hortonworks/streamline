@@ -18,7 +18,6 @@
 package org.apache.streamline.streams.service;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.streamline.streams.service.AvroStreamsSchemaConverter;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -40,11 +39,10 @@ public class AvroStreamsSchemaConverterTest {
     }
 
     private void _testAvroToStreamsSchemaConversion(String avroSchemaLoc, String streamsSchemaLoc) throws IOException {
-        AvroStreamsSchemaConverter avroStreamsSchemaConverter = new AvroStreamsSchemaConverter();
         try (InputStream deviceAvroSchemaStream = AvroStreamsSchemaConverterTest.class.getResourceAsStream(avroSchemaLoc);
              InputStream deviceStreamsSchemaStream = AvroStreamsSchemaConverterTest.class.getResourceAsStream(streamsSchemaLoc)) {
             String avroSchema = IOUtils.toString(deviceAvroSchemaStream);
-            String streamsSchema = avroStreamsSchemaConverter.convertAvro(avroSchema);
+            String streamsSchema = AvroStreamsSchemaConverter.convertAvro(avroSchema);
 
             LOG.info("streamsSchema = #{}#", streamsSchema);
 

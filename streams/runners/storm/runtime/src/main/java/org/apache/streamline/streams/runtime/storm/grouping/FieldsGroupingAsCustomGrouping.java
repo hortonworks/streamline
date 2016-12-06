@@ -4,6 +4,7 @@ import org.apache.storm.generated.GlobalStreamId;
 import org.apache.storm.grouping.CustomStreamGrouping;
 import org.apache.storm.task.WorkerTopologyContext;
 import org.apache.streamline.streams.StreamlineEvent;
+import org.apache.streamline.streams.runtime.storm.StreamlineRuntimeUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,7 +19,6 @@ import java.util.Map;
  * the same downstream task
  */
 public class FieldsGroupingAsCustomGrouping implements CustomStreamGrouping {
-    private static final String NESTED_FIELD_SPLIT_REGEX = "\\.";
     private final List<String> groupingFields;
     private List<Integer> targetTasks;
     public FieldsGroupingAsCustomGrouping(List<String> groupingFields) {
@@ -36,21 +36,10 @@ public class FieldsGroupingAsCustomGrouping implements CustomStreamGrouping {
         StreamlineEvent streamlineEvent = (StreamlineEvent) values.get(0);
         List<Object> groupByObjects = new ArrayList<>(groupingFields.size());
         for (String groupingField: groupingFields) {
-            groupByObjects.add(getGroupingValue(streamlineEvent, groupingField));
+            groupByObjects.add(StreamlineRuntimeUtil.getFieldValue(streamlineEvent, groupingField));
         }
         int taskIndex = Arrays.deepHashCode(groupByObjects.toArray()) % targetTasks.size();
         result.add(targetTasks.get(taskIndex));
         return result;
-    }
-
-    private static Object getGroupingValue(StreamlineEvent streamlineEvent, String groupingField) {
-        Map fieldValues = streamlineEvent;
-        String[] nestedKeys = groupingField.split(NESTED_FIELD_SPLIT_REGEX);
-        for (int i = 0; i < (nestedKeys.length - 1); ++i) {
-            if (fieldValues == null)
-                break;
-            fieldValues = (Map) fieldValues.get(nestedKeys[i]);
-        }
-        return fieldValues != null ? fieldValues.get(nestedKeys[nestedKeys.length - 1]) : null;
     }
 }

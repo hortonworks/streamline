@@ -19,7 +19,6 @@
 package org.apache.streamline.streams.layout.component.impl;
 
 import org.apache.streamline.streams.layout.component.StreamlineProcessor;
-import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
 
 import java.util.Collections;
 import java.util.Set;

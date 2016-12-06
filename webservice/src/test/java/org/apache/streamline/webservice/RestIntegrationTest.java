@@ -44,6 +44,7 @@ import org.apache.streamline.streams.catalog.topology.TopologyComponentBundle;
 import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import org.apache.commons.io.IOUtils;
+import org.apache.streamline.streams.service.TopologyComponentBundleResource;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.BodyPart;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -515,8 +516,8 @@ public class RestIntegrationTest {
         FileDataBodyPart jarFileBodyPart = new FileDataBodyPart(TopologyCatalogResource.JAR_FILE_PARAM_NAME, getCpJarFile(), MediaType
                 .APPLICATION_OCTET_STREAM_TYPE);*/
         MultiPart multiPart = new MultiPart(MediaType.MULTIPART_FORM_DATA_TYPE);
-        multiPart.bodyPart(new StreamDataBodyPart(TopologyCatalogResource.JAR_FILE_PARAM_NAME, JAR_FILE_STREAM));
-        multiPart.bodyPart(new FormDataBodyPart(TopologyCatalogResource.CP_INFO_PARAM_NAME, customProcessorInfo, MediaType.APPLICATION_JSON_TYPE));
+        multiPart.bodyPart(new StreamDataBodyPart(TopologyComponentBundleResource.JAR_FILE_PARAM_NAME, JAR_FILE_STREAM));
+        multiPart.bodyPart(new FormDataBodyPart(TopologyComponentBundleResource.CP_INFO_PARAM_NAME, customProcessorInfo, MediaType.APPLICATION_JSON_TYPE));
         client.target(prefixUrl).request(MediaType.MULTIPART_FORM_DATA_TYPE).post(Entity.entity(multiPart, multiPart.getMediaType()));
         for (int i = 0; i < getUrls.size(); ++i) {
             String getUrl = getUrls.get(i);

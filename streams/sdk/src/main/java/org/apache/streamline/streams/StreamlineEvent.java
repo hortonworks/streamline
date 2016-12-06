@@ -16,6 +16,7 @@ public interface StreamlineEvent  extends Map<String,Object> {
 
     String PRIMITIVE_PAYLOAD_FIELD = "org.apache.streamline.streams.payload.primitive.field";
 
+    String NESTED_FIELD_SPLIT_REGEX = "\\.";
 
     /**
      * Auxiliary fields and values. Different Actions can add transformed or new fields and values without changing the original

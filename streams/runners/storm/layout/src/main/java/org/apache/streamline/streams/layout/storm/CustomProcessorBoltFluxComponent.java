@@ -25,7 +25,7 @@ public class CustomProcessorBoltFluxComponent extends AbstractFluxComponent {
     protected void generateComponent () {
         String boltId = "customProcessorBolt" + UUID_FOR_COMPONENTS;
         String boltClassName = "org.apache.streamline.streams.runtime.storm.bolt.CustomProcessorBolt";
-        String[] configMethodNames = {"customProcessorImpl", "outputSchema", "inputSchema", "config", "jarFileName", "localJarPath"};
+        String[] configMethodNames = {"customProcessorImpl", "outputSchema", "inputSchema", "config"};
         Object[] values = new Object[configMethodNames.length];
         values[0] = conf.get(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_IMPL);
         try {
@@ -37,8 +37,6 @@ public class CustomProcessorBoltFluxComponent extends AbstractFluxComponent {
             LOG.error(message);
             throw new RuntimeException(message, e);
         }
-        values[4] = conf.get(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_JAR_FILENAME);
-        values[5] = conf.get(TopologyLayoutConstants.JSON_KEY_LOCAL_JAR_PATH);
         List configMethods = getConfigMethodsYaml(configMethodNames, values);
         component = createComponent(boltId, boltClassName, null, null, configMethods);
         addParallelismToComponent();

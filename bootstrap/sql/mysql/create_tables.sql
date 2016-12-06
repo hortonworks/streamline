@@ -121,6 +121,7 @@ CREATE TABLE IF NOT EXISTS topology_component_bundles (
     timestamp  BIGINT,
     bundleJar TEXT,
     builtin CHAR(4),
+    mavenDeps TEXT,
     PRIMARY KEY (id)
 );
 

@@ -577,6 +577,8 @@ public class Schema implements Serializable {
             return Type.INTEGER;
         } else if (value instanceof Boolean) {
             return Type.BOOLEAN;
+        } else if (value instanceof byte[]) {
+            return Type.BINARY;
         } else if (value instanceof List) {
             return Type.ARRAY;
         } else if (value instanceof Map) {
@@ -603,6 +605,8 @@ public class Schema implements Serializable {
             return Type.INTEGER;
         } else if (clazz.equals(Boolean.class)) {
             return Type.BOOLEAN;
+        } else if (clazz.equals(byte[].class)) {
+            return Type.BINARY;
         } else if (clazz.equals(List.class)) {
             return Type.ARRAY;
         } else if (clazz.equals(Map.class)) {

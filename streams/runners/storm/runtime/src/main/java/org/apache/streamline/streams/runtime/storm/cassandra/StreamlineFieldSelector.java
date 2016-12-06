@@ -17,13 +17,10 @@
  */
 package org.apache.streamline.streams.runtime.storm.cassandra;
 
-import com.datastax.driver.core.utils.UUIDs;
-import org.apache.storm.cassandra.query.Column;
 import org.apache.storm.cassandra.query.selector.FieldSelector;
 import org.apache.storm.tuple.ITuple;
 import org.apache.streamline.streams.StreamlineEvent;
 
-import java.io.Serializable;
 
 /**
  *

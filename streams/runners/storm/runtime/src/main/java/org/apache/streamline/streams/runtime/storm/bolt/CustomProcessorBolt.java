@@ -2,16 +2,12 @@ package org.apache.streamline.streams.runtime.storm.bolt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.streamline.common.Schema;
-import org.apache.streamline.common.util.ProxyUtil;
 import org.apache.streamline.common.util.Utils;
 import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
-import org.apache.streamline.streams.catalog.CatalogRestClient;
 import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.exception.ProcessingException;
-import org.apache.streamline.streams.layout.storm.StormTopologyLayoutConstants;
 import org.apache.streamline.streams.runtime.CustomProcessorRuntime;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
@@ -23,10 +19,7 @@ import org.apache.storm.tuple.Values;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,8 +30,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class CustomProcessorBolt extends BaseRichBolt {
     private static final Logger LOG = LoggerFactory.getLogger(CustomProcessorBolt.class);
-    private CatalogRestClient client;
-    private ProxyUtil<CustomProcessorRuntime> customProcessorProxyUtil;
     private static final ConcurrentHashMap<String, CustomProcessorRuntime> customProcessorConcurrentHashMap = new ConcurrentHashMap<>();
     private OutputCollector collector;
     private CustomProcessorRuntime customProcessorRuntime;
@@ -46,30 +37,9 @@ public class CustomProcessorBolt extends BaseRichBolt {
     private Map<String, Object> config;
     private Schema inputSchema;
     private Map<String, Schema> outputSchema = new HashMap<>();
-    private String localJarPath;
-    private String jarFileName;
 
     public CustomProcessorBolt customProcessorImpl (String customProcessorImpl) {
         this.customProcessorImpl = customProcessorImpl;
-        return this;
-    }
-    /**
-     * Associate the jar file name to be downloaded
-     * @param jarFileName
-     * @return
-     */
-    public CustomProcessorBolt jarFileName (String jarFileName) {
-        this.jarFileName = jarFileName;
-        return this;
-    }
-
-    /**
-     * Associate a local file system path where jar should be downloaded
-     * @param localJarPath
-     * @return
-     */
-    public CustomProcessorBolt localJarPath (String localJarPath) {
-        this.localJarPath = localJarPath;
         return this;
     }
 
@@ -166,19 +136,6 @@ public class CustomProcessorBolt extends BaseRichBolt {
             LOG.error(message);
             throw new RuntimeException(message);
         }
-        if (StringUtils.isEmpty(localJarPath)) {
-            message = "Local path for downloading custom processor jar not provided.";
-            LOG.error(message);
-            throw new IllegalArgumentException(message);
-        }
-        if (StringUtils.isEmpty(jarFileName)) {
-            message = "Jar file name to download is not provided.";
-            LOG.error(message);
-            throw new IllegalArgumentException(message);
-        }
-        String catalogRootURL = stormConf.get(StormTopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL).toString();
-        this.client = new CatalogRestClient(catalogRootURL);
-        this.customProcessorProxyUtil = new ProxyUtil<>(CustomProcessorRuntime.class);
         customProcessorRuntime = getCustomProcessorRuntime();
         customProcessorRuntime.initialize(config);
     }
@@ -231,16 +188,12 @@ public class CustomProcessorBolt extends BaseRichBolt {
     }
 
     private CustomProcessorRuntime getCustomProcessorRuntime() {
-        String key = jarFileName + customProcessorImpl;
-        CustomProcessorRuntime customProcessorRuntime = customProcessorConcurrentHashMap.get(key);
+        CustomProcessorRuntime customProcessorRuntime = customProcessorConcurrentHashMap.get(customProcessorImpl);
         if (customProcessorRuntime == null) {
-            InputStream customProcessorJar = client.getCustomProcessorJar(jarFileName);
-            String jarPath = String.format("%s%s%s", localJarPath, File.separator, jarFileName);
             try {
-                IOUtils.copy(customProcessorJar, new FileOutputStream(new File(jarPath)));
-                customProcessorRuntime = customProcessorProxyUtil.loadClassFromJar(jarPath, customProcessorImpl);
-                customProcessorConcurrentHashMap.put(key, customProcessorRuntime);
-            } catch (Exception e) {
+                customProcessorRuntime = (CustomProcessorRuntime) Class.forName(customProcessorImpl).newInstance();
+                customProcessorConcurrentHashMap.put(customProcessorImpl, customProcessorRuntime);
+            } catch (ClassNotFoundException|InstantiationException|IllegalAccessException e) {
                 throw new RuntimeException("Failed to load custom processor: " + customProcessorImpl, e);
             }
         }

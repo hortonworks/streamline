@@ -5,6 +5,7 @@
   "streamingEngine": "STORM",
   "builtin": true,
   "transformationClass": "org.apache.streamline.streams.layout.storm.HdfsSpoutFluxComponent",
+  "mavenDeps": "org.apache.storm:storm-hdfs:STORM_VERSION^org.slf4j:slf4j-log4j12^org.apache.hadoop:hadoop-common",
   "topologyComponentUISpecification": {
     "fields": [
       {

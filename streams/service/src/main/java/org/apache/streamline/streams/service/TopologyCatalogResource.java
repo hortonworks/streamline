@@ -72,8 +72,6 @@ import static org.apache.streamline.streams.service.TopologySortType.LAST_UPDATE
 @Produces(MediaType.APPLICATION_JSON)
 public class TopologyCatalogResource {
     private static final Logger LOG = LoggerFactory.getLogger(TopologyCatalogResource.class);
-    public static final String JAR_FILE_PARAM_NAME = "jarFile";
-    public static final String CP_INFO_PARAM_NAME = "customProcessorInfo";
     private static final Integer DEFAULT_N_OF_TOP_N_LATENCY = 3;
     private static final String DEFAULT_SORT_TYPE = LAST_UPDATED.name();
     private static final Boolean DEFAULT_SORT_ORDER_ASCENDING = false;

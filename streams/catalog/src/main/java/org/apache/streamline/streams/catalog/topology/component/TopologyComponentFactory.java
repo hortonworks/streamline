@@ -181,7 +181,6 @@ public class TopologyComponentFactory {
     private Map<String, Provider<StreamlineSource>> createSourceProviders() {
         ImmutableMap.Builder<String, Provider<StreamlineSource>> builder = ImmutableMap.builder();
         builder.put(kafkaSourceProvider());
-        builder.put(hdfsSourceProvider());
         return builder.build();
     }
 
@@ -253,16 +252,6 @@ public class TopologyComponentFactory {
             }
         };
         return new SimpleImmutableEntry<>(KAFKA, provider);
-    }
-
-    private Map.Entry<String, Provider<StreamlineSource>> hdfsSourceProvider() {
-        Provider<StreamlineSource> provider = new Provider<StreamlineSource>() {
-            @Override
-            public StreamlineSource create(TopologyComponent component) {
-                return new StreamlineSource();
-            }
-        };
-        return new SimpleImmutableEntry<>(HDFS_SOURCE, provider);
     }
 
     private Map.Entry<String, Provider<StreamlineProcessor>> normalizationProcessorProvider() {
