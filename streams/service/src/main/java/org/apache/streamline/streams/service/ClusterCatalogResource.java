@@ -7,6 +7,8 @@ import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.Cluster;
 import org.apache.streamline.streams.catalog.Component;
+import org.apache.streamline.streams.catalog.Namespace;
+import org.apache.streamline.streams.catalog.NamespaceServiceClusterMapping;
 import org.apache.streamline.streams.catalog.Service;
 import org.apache.streamline.streams.catalog.ServiceConfiguration;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
@@ -37,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -131,6 +134,8 @@ public class ClusterCatalogResource {
     @Path("/clusters/{id}")
     @Timed
     public Response removeCluster(@PathParam("id") Long clusterId) {
+        assertNoNamespaceRefersCluster(clusterId);
+
         Cluster removedCluster = catalogService.removeCluster(clusterId);
         if (removedCluster != null) {
             return WSUtils.respondEntity(removedCluster, OK);
@@ -245,6 +250,23 @@ public class ClusterCatalogResource {
                 serviceConfiguration.setDescription("a hack to store Storm View URL");
 
                 catalogService.addServiceConfiguration(serviceConfiguration);
+            }
+        }
+    }
+
+    private void assertNoNamespaceRefersCluster(Long clusterId) {
+        Collection<Namespace> namespaces = catalogService.listNamespaces();
+        if (namespaces != null) {
+            for (Namespace namespace : namespaces) {
+                Collection<NamespaceServiceClusterMapping> mappings =
+                        catalogService.listServiceClusterMapping(namespace.getId());
+                if (mappings != null) {
+                    boolean matched = mappings.stream().anyMatch(m -> Objects.equals(m.getClusterId(), clusterId));
+                    if (matched) {
+                        throw BadRequestException.message("Namespace refers the cluster trying to remove - cluster id: " +
+                                clusterId);
+                    }
+                }
             }
         }
     }

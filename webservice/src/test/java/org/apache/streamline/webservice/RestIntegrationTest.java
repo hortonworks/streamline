@@ -59,6 +59,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -687,6 +688,75 @@ public class RestIntegrationTest {
         return namespace;
     }
 
+    private Topology storeTestTopology(Client client, Long topologyId, String topologyName, Long namespaceId) {
+        Topology topology = createTopology(topologyId, topologyName, namespaceId);
+        String topologyBaseUrl = rootUrl + String.format("topologies");
+        client.target(topologyBaseUrl).request().post(Entity.json(topology));
+        return topology;
+    }
+
+    @Test
+    public void testRemoveNamespaceButTopologyRefersThatNamespace() {
+        Client client = ClientBuilder.newClient(new ClientConfig());
+
+        Long namespaceId = 999L;
+        String namespaceName = "nstest";
+        storeTestNamespace(client, namespaceId, namespaceName);
+
+        Long namespaceId2 = 999L;
+        String namespaceName2 = "nstest";
+        storeTestNamespace(client, namespaceId2, namespaceName2);
+
+        Long topologyId = 1L;
+        String topologyName = "topotest";
+        storeTestTopology(client, topologyId, topologyName, namespaceId);
+
+        Long topologyId2 = 2L;
+        String topologyName2 = "topotest2";
+        storeTestTopology(client, topologyId2, topologyName2, namespaceId2);
+
+        String removeNamespaceUrl = rootUrl + "namespaces/" + namespaceId;
+        Response response = client.target(removeNamespaceUrl).request().delete();
+        Assert.assertEquals(new BadRequestException().getResponse().getStatus(), response.getStatus());
+
+        // cleanup
+        removeTopology(client, topologyId2);
+        removeTopology(client, topologyId);
+        removeNamespace(client, namespaceId2);
+        removeNamespace(client, namespaceId);
+    }
+
+    @Test
+    public void testRemoveClusterButNamespaceRefersThatCluster() {
+        Client client = ClientBuilder.newClient(new ClientConfig());
+
+        Long clusterId = 9L;
+        storeTestCluster(client, clusterId);
+
+        Long clusterId2 = 10L;
+        storeTestCluster(client, clusterId2);
+
+        Long namespaceId = 999L;
+        String namespaceName = "nstest";
+        storeTestNamespace(client, namespaceId, namespaceName);
+
+        NamespaceServiceClusterMapping mapping = new NamespaceServiceClusterMapping(namespaceId, "STORM", clusterId);
+        mapNamespaceServiceCluster(client, mapping);
+
+        NamespaceServiceClusterMapping mapping2 = new NamespaceServiceClusterMapping(namespaceId, "KAFKA", clusterId2);
+        mapNamespaceServiceCluster(client, mapping2);
+
+        String removeClusterUrl = rootUrl + "clusters/" + clusterId;
+        Response response = client.target(removeClusterUrl).request().delete();
+        Assert.assertEquals(new BadRequestException().getResponse().getStatus(), response.getStatus());
+
+        // cleanup
+        removeNamespaceMappings(client, namespaceId);
+        removeNamespace(client, namespaceId);
+        removeCluster(client, clusterId2);
+        removeCluster(client, clusterId);
+    }
+
     /**
      * For each QueryParamsResourceTestElement it first try to send all get
      * requests and verifies the response. It then loads all resources via post
@@ -878,11 +948,15 @@ public class RestIntegrationTest {
     }
 
     private Topology createTopology (Long id, String name) {
+        return createTopology(id, name, 1L);
+    }
+
+    private Topology createTopology (Long id, String name, Long namespaceId) {
         Topology topology = new Topology();
         topology.setId(id);
         topology.setVersionId(1L);
         topology.setName(name);
-        topology.setNamespaceId(1L);
+        topology.setNamespaceId(namespaceId);
         topology.setConfig("{}");
         topology.setVersionTimestamp(System.currentTimeMillis());
         return topology;
@@ -946,4 +1020,18 @@ public class RestIntegrationTest {
         client.target(rootUrl + String.format("clusters/%d/services/%d/components/%d", clusterId, serviceId, componentId))
             .request().delete();
     }
+
+    private void removeNamespace(Client client, Long namespaceId) {
+        client.target(rootUrl + String.format("namespaces/%d", namespaceId)).request().delete();
+    }
+
+    private void removeTopology(Client client, Long topologyId) {
+        client.target(rootUrl + String.format("topologies/%d", topologyId)).request().delete();
+    }
+
+    private void removeNamespaceMappings(Client client, Long namespaceId) {
+        client.target(rootUrl + String.format("namespaces/%d/mapping", namespaceId)).request().delete();
+    }
+
+
 }

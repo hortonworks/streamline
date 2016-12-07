@@ -16,6 +16,14 @@ public class BadRequestException extends WebServiceException {
     super(Response.Status.BAD_REQUEST, message, cause);
   }
 
+  public static BadRequestException message(String message) {
+    return new BadRequestException(message);
+  }
+
+  public static BadRequestException message(String message, Throwable cause) {
+    return new BadRequestException(message, cause);
+  }
+
   public static BadRequestException of() {
     return new BadRequestException(DEFAULT_MESSAGE);
   }
