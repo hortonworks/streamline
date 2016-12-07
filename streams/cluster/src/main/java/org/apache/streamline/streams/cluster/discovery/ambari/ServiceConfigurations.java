@@ -25,4 +25,14 @@ public enum ServiceConfigurations {
   public String[] getConfNames() {
     return confNames;
   }
+
+  public static boolean contains(String serviceName) {
+    try {
+      ServiceConfigurations.valueOf(serviceName);
+    } catch (IllegalArgumentException e) {
+      return false;
+    }
+
+    return true;
+  }
 }
