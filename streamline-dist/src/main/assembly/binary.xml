@@ -22,7 +22,6 @@
     <formats>
         <format>tar.gz</format>
         <format>zip</format>
-        <format>dir</format>
     </formats>
 
     <!-- put deps in the lib folder -->
