@@ -22,7 +22,6 @@
     <formats>
         <format>tar.gz</format>
         <format>zip</format>
-        <format>dir</format>
     </formats>
 
     <!-- put deps in the lib folder -->
@@ -109,17 +108,17 @@
             $STREAMLINE_HOME/conf
         -->
         <file>
-            <source>${project.basedir}./webservice/conf/streamline-dev.yaml</source>
+            <source>${project.basedir}./conf/streamline-dev.yaml</source>
             <outputDirectory>/conf</outputDirectory>
             <destName>streamline-dev.yaml</destName>
         </file>
         <file>
-            <source>${project.basedir}./webservice/conf/streamline.yaml</source>
+            <source>${project.basedir}./conf/streamline.yaml</source>
             <outputDirectory>/conf</outputDirectory>
             <destName>streamline.yaml</destName>
         </file>
         <file>
-            <source>${project.basedir}./webservice/conf/streamline-env.sh</source>
+            <source>${project.basedir}./conf/streamline-env.sh</source>
             <outputDirectory>/conf</outputDirectory>
             <destName>streamline-env.sh</destName>
         </file>

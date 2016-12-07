@@ -16,6 +16,8 @@ public class StorageProviderConfigurationReader {
   public static final String DB_PROPERTIES = "db.properties";
   public static final String DATA_SOURCE_CLASS_NAME = "dataSourceClassName";
   public static final String DATA_SOURCE_URL = "dataSource.url";
+  public static final String DATA_SOURCE_USER = "dataSource.user";
+  public static final String DATA_SOURCE_PASSWORD = "dataSource.password";
   public static final String JDBC_URL = "jdbcUrl";
   public static final String JDBC_DRIVER_CLASS = "jdbcDriverClass";
   public static final String PHOENIX = "phoenix";
@@ -89,8 +91,9 @@ public class StorageProviderConfigurationReader {
   private static void handleMySQLProperties(Map<String, Object> dbProperties) {
     String jdbcDriverClass = (String) dbProperties.get(DATA_SOURCE_CLASS_NAME);
     String jdbcUrl = (String) dbProperties.get(DATA_SOURCE_URL);
-
-    System.out.println(String.format("%s\t%s\t%s", MYSQL, jdbcDriverClass, jdbcUrl));
+    String user = (String) dbProperties.get(DATA_SOURCE_USER);
+    String password = (String) dbProperties.get(DATA_SOURCE_PASSWORD);
+    System.out.println(String.format("%s\t%s\t%s\t%s\t%s", MYSQL, jdbcDriverClass, jdbcUrl, user, password));
   }
 
   /**
