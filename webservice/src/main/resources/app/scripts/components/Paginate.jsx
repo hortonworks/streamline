@@ -46,26 +46,28 @@ class Paginate extends Component{
 
 
     return(
-      <div className="stream-pagination">
-        {
-          (list.length > 0)
-            ? <span>
-                <a href="javascript:void(0)" onClick={this.prev}>
-                  <i className="fa fa-chevron-left" aria-hidden="true"></i>
-                </a>
-                <span>{
-                    (pastVal === 0 ? 1 : pastVal)
-                    +" - "+ (index === (list.length)
-                              ? fullList
-                              : index === (list.length-1)
+      <div className="row">
+        <div className={`stream-pagination ${ (list[index].length < pagesize) ? 'navbar-fixed-bottom' : ''}`}>
+          {
+            (list.length > 0)
+              ? <span>
+                  <a href="javascript:void(0)" onClick={this.prev}>
+                    <i className="fa fa-chevron-left" aria-hidden="true"></i>
+                  </a>
+                  <span>{
+                      (pastVal === 0 ? 1 : pastVal)
+                      +" - "+ (index === (list.length)
                                 ? fullList
-                                : ((pagesize*index) + pagesize))
-                  } of {fullList}</span>
-                <a href="javascript:void(0)" onClick={this.next}>
-                  <i className="fa fa-chevron-right" aria-hidden="true"></i>
-                </a>
-              </span> : ''
-        }
+                                : index === (list.length-1)
+                                  ? fullList
+                                  : ((pagesize*index) + pagesize))
+                    } of {fullList}</span>
+                  <a href="javascript:void(0)" onClick={this.next}>
+                    <i className="fa fa-chevron-right" aria-hidden="true"></i>
+                  </a>
+                </span> : ''
+          }
+        </div>
       </div>
     );
   }

@@ -109,20 +109,6 @@ export default class CustomProcessorContainer extends Component {
     const input = document.querySelector('.inputAnimateIn');
     (_.isEmpty(input.value)) ? this.setState({slideInput  : false}) : ''
   }
-  componentDidUpdate(){
-    this.btnClassChange();
-  }
-  componentDidMount(){
-    this.btnClassChange();
-  }
-  btnClassChange = () => {
-    const container = document.querySelector('.content-wrapper')
-    container.setAttribute("class","content-wrapper");
-  }
-  componentWillUnmount(){
-    const container = document.querySelector('.content-wrapper')
-    container.setAttribute("class","content-wrapper");
-  }
   getHeaderContent() {
     return (
       <span>

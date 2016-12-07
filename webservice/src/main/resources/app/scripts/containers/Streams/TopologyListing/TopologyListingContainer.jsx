@@ -339,7 +339,7 @@ class TopologyListingContainer extends Component {
       if(fileObj){
         let formData = new FormData();
         formData.append('file', fileObj);
-        
+
         TopologyREST.importTopology({body:formData})
           .then(importResponse => {
             if (importResponse.responseMessage !== undefined) {
@@ -472,12 +472,6 @@ class TopologyListingContainer extends Component {
       const sortDropdown = document.querySelector('.sortDropdown');
       sortDropdown.setAttribute("class","sortDropdown");
       sortDropdown.parentElement.setAttribute("class","dropdown")
-      const container = document.querySelector('.content-wrapper')
-      container.setAttribute("class","content-wrapper ");
-    }
-    componentWillUnmount(){
-      const container = document.querySelector('.content-wrapper')
-      container.setAttribute("class","content-wrapper  ");
     }
     pagePosition = (index) => {
       this.setState({pageIndex : index || 0})

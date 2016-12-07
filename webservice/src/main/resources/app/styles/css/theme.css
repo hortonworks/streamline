@@ -15,7 +15,7 @@ body {
   background-color: #f0f0f0;
   font-family: 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
-  padding-bottom: 30px;
+  /*padding-bottom: 30px;*/
 }
 #viewMode.graph-bg,
 body.graph-bg {
@@ -75,8 +75,8 @@ footer {
 }
 
 .content-wrapper {
-  padding-left: 7.5px;
-  padding-right: 7.5px;
+  padding-left: 20px;
+  padding-right: 80px;
   padding-top: 70px;
   margin-left: 240px;
   -webkit-transition: -webkit-transform .3s ease-in-out,margin .3s ease-in-out;

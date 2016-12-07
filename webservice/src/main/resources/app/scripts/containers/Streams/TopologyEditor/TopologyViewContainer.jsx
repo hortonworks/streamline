@@ -70,13 +70,9 @@ class TopologyEditorContainer extends Component {
     this.customProcessors = [];
     this.fetchData();
   }
-  componentDidMount(){
-    document.querySelector('.content-wrapper').setAttribute("class","container wrapper");
-  }
 
   componentWillUnmount(){
     document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay displayNone";
-    document.querySelector('.wrapper').setAttribute("class","content-wrapper");
   }
 
   @observable viewMode = true;
@@ -378,7 +374,7 @@ class TopologyEditorContainer extends Component {
             topologyName={this.state.topologyName}
             components={this.graphData.nodes}
           />
-          : 
+          :
         null}
       </BaseContainer>
     )
