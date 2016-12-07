@@ -91,8 +91,8 @@ public class SQLScriptRunner {
 
         String url = commandLine.getOptionValue(OPTION_JDBC_URL);
         String driver = commandLine.getOptionValue(OPTION_JDBC_DRIVER_CLASS);
-        String user = commandLine.getOptionValue(OPTION_JDBC_USER);
-        String password = commandLine.getOptionValue(OPTION_JDBC_PASSWORD);
+        String user = commandLine.hasOption(OPTION_JDBC_USER) ? commandLine.getOptionValue(OPTION_JDBC_USER) : "";
+        String password = commandLine.hasOption(OPTION_JDBC_PASSWORD) ? commandLine.getOptionValue(OPTION_JDBC_PASSWORD) : "";
         String[] scripts = commandLine.getOptionValues(OPTION_SCRIPT_PATH);
         String delimiter = commandLine.getOptionValue(OPTION_QUERY_DELIMITER);
 
