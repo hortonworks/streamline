@@ -206,6 +206,14 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
      * {@inheritDoc}
      */
     @Override
+    public TimeSeriesComponentMetric getTopologyStats(TopologyLayout topology, long from, long to) {
+        return timeSeriesMetrics.getTopologyStats(topology, from, to);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public TimeSeriesComponentMetric getComponentStats(TopologyLayout topology, Component component, long from, long to) {
         return timeSeriesMetrics.getComponentStats(topology, component, from, to);
     }

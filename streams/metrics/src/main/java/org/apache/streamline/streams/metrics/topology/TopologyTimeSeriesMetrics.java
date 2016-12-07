@@ -19,6 +19,18 @@ public interface TopologyTimeSeriesMetrics {
     void setTimeSeriesQuerier(TimeSeriesQuerier timeSeriesQuerier);
 
     /**
+     * Retrieve "topology stats" on topology.
+     * Implementator should aggregate all components' metrics values to make topology stats.
+     * The return value is a TimeSeriesComponentMetric which value of componentName is dummy or topology name.
+     *
+     * @param topology      topology catalog instance
+     * @param from          beginning of the time period: timestamp (in milliseconds)
+     * @param to            end of the time period: timestamp (in milliseconds)
+     * @return Map of metric name and Map of data points which are paired to (timestamp, value).
+     */
+    TimeSeriesComponentMetric getTopologyStats(TopologyLayout topology, long from, long to);
+
+    /**
      * Retrieve "complete latency" on source.
      *
      * @param topology  topology catalog instance
@@ -62,7 +74,6 @@ public interface TopologyTimeSeriesMetrics {
      * Get instance of TimeSeriesQuerier.
      */
     TimeSeriesQuerier getTimeSeriesQuerier();
-
 
     /**
      * Data structure of Metrics for each component on topology.

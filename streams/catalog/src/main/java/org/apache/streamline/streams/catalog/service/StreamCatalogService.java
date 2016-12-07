@@ -1273,6 +1273,10 @@ public class StreamCatalogService {
         return topologyMetrics.getCompleteLatency(getTopologyLayout(topology), getComponentLayout(component), from, to);
     }
 
+    public TopologyTimeSeriesMetrics.TimeSeriesComponentMetric getTopologyStats(Topology topology, Long from, Long to) throws IOException {
+        return this.topologyMetrics.getTopologyStats(getTopologyLayout(topology), from, to);
+    }
+
     public TopologyTimeSeriesMetrics.TimeSeriesComponentMetric getComponentStats(Topology topology, TopologyComponent component, Long from, Long to) throws IOException {
         TopologyMetrics topologyMetrics = getTopologyMetricsInstance(topology);
         return topologyMetrics.getComponentStats(getTopologyLayout(topology), getComponentLayout(component), from, to);
@@ -3003,4 +3007,5 @@ public class StreamCatalogService {
             // swallow
         }
     }
+
 }
