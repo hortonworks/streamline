@@ -12,10 +12,10 @@ modules:
       streamlineStormJar: /tmp/streamline-runtime-storm-0.1.0-SNAPSHOT.jar
       stormHomeDir: /usr/local/Cellar/storm/0.10.0/
       stormApiRootUrl: "http://localhost:8888/api/v1"
-      # schema registry configuration
-      schemaRegistryUrl: "http://localhost:9090/api/v1"
       # Use this to turn on/off notifications rest api
       notificationsRestDisable: true
+      # schema registry configuration
+      schemaRegistryUrl: "http://localhost:9090/api/v1"
       #Custom processor upload configuration
       #customProcessorWatchPath: "/tmp"
       #customProcessorUploadFailPath: "/tmp/failed"
@@ -23,25 +23,24 @@ modules:
 
 catalogRootUrl: "http://localhost:8080/api/v1/catalog"
 # Filesystem based jar storage
-fileStorageConfiguration:
- className: "org.apache.streamline.common.util.LocalFileSystemStorage"
- properties:
-   directory: "/tmp"
+#fileStorageConfiguration:
+#  className: "org.apache.streamline.common.util.LocalFileSystemStorage"
+#  properties:
+#    directory: "/tmp"
 
 # HDFS based Jar storage
-# fileStorageConfiguration:
-#   className: "org.apache.streamline.common.util.HdfsFileStorage"
-#   properties:
-#     fsUrl: "file:///"
-#     directory: "/tmp/test-hdfs"
+fileStorageConfiguration:
+  className: "org.apache.streamline.common.util.HdfsFileStorage"
+  properties:
+    fsUrl: "hdfs://localhost:9000"
+    directory: "/tmp/test-hdfs"
 
 # storage provider configuration
+# providerClass can be inmemory and jdbc.
 #
 # Example configuration for inmemory is:
-
-storageProviderConfiguration:
-  providerClass: "org.apache.streamline.storage.impl.memory.InMemoryStorageManager"
-
+#storageProviderConfiguration:
+# providerClass: "org.apache.streamline.storage.impl.memory.InMemoryStorageManager"
 #
 # Example configuration for phoenix based JDBC driver
 #storageProviderConfiguration:
@@ -54,6 +53,7 @@ storageProviderConfiguration:
 #     jdbcUrl: "jdbc:phoenix:localhost:2181"
 #
 # MySQL based jdbc provider configuration is:
+# to add user and password please follow below convention
 #storageProviderConfiguration:
 # providerClass: "org.apache.streamline.storage.impl.jdbc.JdbcStorageManager"
 # properties:
@@ -62,77 +62,41 @@ storageProviderConfiguration:
 #   db.properties:
 #     dataSourceClassName: "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
 #     dataSource.url: "jdbc:mysql://localhost/test"
+#     dataSource.user: "streamline_user"
+#     dataSource.password: "streamline_password"
 #
-# Atlas based provider configuration is:
-#storageProviderConfiguration:
-# providerClass: "org.apache.streamline.storage.atlas.AtlasStoreManager"
-# properties:
-#   atlas.graph.storage.backend: "berkeleyje"
-#   atlas.graph.storage.directory: "/var/data/streamline/graph/berkley"
-#   atlas.graph.index.search.backend: "elasticsearch"
-#   atlas.graph.index.search.directory: "/var/data/streamline/graph/elasticsearch"
-#   atlas.graph.index.search.elasticsearch.client-only: false
-#   atlas.graph.index.search.elasticsearch.local-mode: true
-#   atlas.graph.index.search.elasticsearch.create.sleep: 4000
-#   atlas.DeleteHandler.impl: "org.apache.atlas.repository.graph.HardDeleteHandler"
-#   atlas.EntityAuditRepository.impl: "org.apache.atlas.repository.audit.NoopEntityAuditRepository"
 
 storageProviderConfiguration:
- providerClass: "org.apache.streamline.storage.impl.memory.InMemoryStorageManager"
+ providerClass: "org.apache.streamline.storage.impl.jdbc.JdbcStorageManager"
+ properties:
+   db.type: "phoenix"
+   queryTimeoutInSecs: 30
+   db.properties:
+     jdbcDriverClass: "org.apache.phoenix.jdbc.PhoenixDriver"
+     jdbcUrl: "jdbc:phoenix:localhost:2181"
+
 
 # Time series DB querier configuration
 #timeSeriesDBConfiguration:
-#  className: ""org.apache.streamline.streams.metrics.storm.ambari.AmbariMetricsServiceWithStormQuerier"
+#  className: "org.apache.streamline.streams.metrics.storm.ambari.AmbariMetricsServiceWithStormQuerier"
 #  properties:
 #    collectorApiUrl: "http://localhost:6188/ws/v1/timeline/metrics"
 
-# use the simple server factory if you only want to run on a single port
-#server:
-#  providerClass: simple
-#  connector:
-#    providerClass: http
-#    port: 8080
 
 server:
   rootPath: '/api/*'
-#  softNofileLimit: 1000
-#  hardNofileLimit: 1000
   applicationConnectors:
     - type: http
       port: 8080
-#    - type: https
-#      port: 8443
-#      keyStorePath: example.keystore
-#      keyStorePassword: example
-#      validateCerts: false
-# this requires the alpn-boot library on the JVM's boot classpath
-#    - type: spdy3
-#      port: 8445
-#      keyStorePath: example.keystore
-#      keyStorePassword: example
-#      validateCerts: false
-  adminConnectors:
-    - type: http
-      port: 8081
-#    - type: https
-#      port: 8444
-#      keyStorePath: example.keystore
-#      keyStorePassword: example
-#      validateCerts: false
 
 # Logging settings.
 logging:
-
   # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
   level: INFO
-
   # Logger-specific levels.
   loggers:
-
     # Sets the level for 'com.example.app' to DEBUG.
     org.apache.streamline: DEBUG
-
-
   appenders:
     - type: console
 #    - type: file
@@ -143,20 +107,3 @@ logging:
 #      archivedFileCount: 7
 #      timeZone: UTC
 #      maxFileSize: 10MB
-
-#jerseyClient:
-#  minThreads: 1
-#  maxThreads: 16
-#  workQueueSize: 1000
-#  gzipEnabled: true
-#  gzipEnabledForRequests: true
-#  chunkedEncodingEnabled: true
-#  timeout: 1000ms
-#  connectionTimeout: 1000ms
-#  timeToLive: 1h
-#  cookiesEnabled: false
-#  maxConnections: 10
-#  maxConnectionsPerRoute: 1024
-#  keepAlive: 0ms
-#  retries: 10
-#  userAgent: Storm-Client
