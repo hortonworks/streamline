@@ -341,7 +341,6 @@ class TopologyEditorContainer extends Component {
   }
   render() {
     let nodeType = this.node ? this.node.currentType : '';
-    let versionName = this.getTitleFromId(this.versionId);
     return (
       <BaseContainer ref="BaseContainer" routes={this.props.routes} onLandingPage="false" breadcrumbData={this.breadcrumbData} headerContent={this.getTopologyHeader()}>
         <div>
@@ -373,9 +372,10 @@ class TopologyEditorContainer extends Component {
           data-resolve={this.handleSaveNodeModal.bind(this)}>
           {this.modalContent()}
         </Modal>
-        {this.state.isAppRunning && this.graphData.nodes.length > 0 && versionName.toLowerCase() == 'current' && this.state.availableTimeSeriesDb ? 
+        {this.state.isAppRunning && this.graphData.nodes.length > 0 && this.versionName.toLowerCase() == 'current' && this.state.availableTimeSeriesDb ?
           <MetricsContainer
             topologyId={this.topologyId}
+            topologyName={this.state.topologyName}
             components={this.graphData.nodes}
           />
           : 

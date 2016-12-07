@@ -746,7 +746,7 @@ class TopologyEditorContainer extends Component {
         </Modal>
         <Modal ref="NodeModal"
           bsSize={this.processorNode && nodeType.toLowerCase() !== 'join' ? "large" : null}
-          dialogClassName={nodeType.toLowerCase() === 'join' ? "modal-xl" : "modal-fixed-height"}
+          dialogClassName={nodeType.toLowerCase() === 'join' || nodeType.toLowerCase() === 'window' ? "modal-xl" : "modal-fixed-height"}
           data-title={
             <Editable
               ref="editableNodeName"

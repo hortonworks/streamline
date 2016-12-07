@@ -80,7 +80,8 @@
         "fieldName": "dimensions",
         "tooltip": "Datasource dimensions",
         "isOptional": false,
-        "type": "array.string",
+        "type": "array.enumstring",
+        "options": [],
         "hint": "inputFields"
       },
       {
@@ -88,7 +89,8 @@
         "fieldName": "timestampField",
         "isOptional": false,
         "tooltip": "Timestamp Field Name",
-        "type": "string",
+        "type": "enumstring",
+        "options": [],
         "hint": "eventTime"
       },
       {

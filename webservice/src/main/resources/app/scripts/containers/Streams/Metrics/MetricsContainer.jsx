@@ -11,12 +11,14 @@ import CommonNotification from '../../../utils/CommonNotification';
 import { toastOpt } from '../../../utils/Constants';
 import d3 from 'd3';
 import moment from 'moment';
+import Select from 'react-select';
 
 export default class MetricsContainer extends Component {
 	constructor(props){
 		super();
                 this.state = {
-                        selectedComponentId: props.components[0].nodeId,
+                        selectedComponentId: '',
+                        selectedComponentName: '',
                         expandRecord: true,
                         loadingRecord: true,
                         expandLatencyQueue: false,
@@ -62,6 +64,9 @@ export default class MetricsContainer extends Component {
                 const {selectedComponentId, startDate, endDate} = this.state;
 
                 const topologyId = this.props.topologyId;
+
+            if(selectedComponentId !== '') {
+
                 MetricsREST.getComponentStatsMetrics(topologyId, selectedComponentId, startDate.toDate().getTime(), endDate.toDate().getTime())
                         .then((res) => {
                                 if(res.responseMessage !== undefined){
@@ -115,6 +120,46 @@ export default class MetricsContainer extends Component {
                                     })
                                 }
                         })
+            } else {
+                MetricsREST.getTopologyMetrics(topologyId, startDate.toDate().getTime(), endDate.toDate().getTime())
+                    .then((res)=>{
+                        if(res.responseMessage !== undefined){
+                            FSReactToastr.error(<CommonNotification flag="error" content={res.responseMessage}/>, '', toastOpt)
+                            this.setState({loadingRecord: false, loadingLatencyQueue: false});
+                        } else {
+                            const inputOutputData = [];
+                            const ackedData = [];
+                            const failedData = [];
+                            const queueData = [];
+                            const processTimeData = [];
+                            const {outputRecords, inputRecords, recordsInWaitQueue, failedRecords, misc, processedTime} = res
+                            for(const key in outputRecords){
+                                inputOutputData.push({
+                                    date: new Date(parseInt(key)),
+                                    Input: inputRecords[key] || 0,
+                                    Output: outputRecords[key] || 0,
+                                })
+                                ackedData.push({
+                                    date: new Date(parseInt(key)),
+                                    Acked: misc.ackedRecords[key] || 0,
+                                })
+                                failedData.push({
+                                    date: new Date(parseInt(key)),
+                                    Failed: failedRecords[key] || 0,
+                                })
+                                queueData.push({
+                                    date: new Date(parseInt(key)),
+                                    Wait: recordsInWaitQueue[key] || 0,
+                                })
+                                processTimeData.push({
+                                    date: new Date(parseInt(key)),
+                                    Latency: processedTime[key],
+                                })
+                            }
+                            this.setState({inputOutputData: inputOutputData,ackedData: ackedData, failedData: failedData, queueData: queueData, loadingRecord: false, loadingLatencyQueue: false, processTimeData: processTimeData});
+                        }
+                    })
+            }
         }
         onPanelSelect = (key) => {
                 const selected = !this.state['expand'+key]
@@ -218,13 +263,19 @@ export default class MetricsContainer extends Component {
         })
     }
     handleFilterChange = (e) => {
-        this.setState({selectedComponentId: e.target.value},()=>{
-            this.fetchData(["Record","LatencyQueue"]);
-        });
+        if(e) {
+            this.setState({selectedComponentId: e.nodeId, selectedComponentName: e.uiname},()=>{
+                this.fetchData(["Record","LatencyQueue"]);
+            });
+        } else {
+            this.setState({selectedComponentId: '', selectedComponentName: ''},()=>{
+                this.fetchData(["Record","LatencyQueue"]);
+            });
+        }
     }
  	render() {
 		const loader = <i className="fa fa-spinner fa-spin fa-3x" aria-hidden="true" style={{marginTop: '50px'}}></i>
-        const {inputOutputData, queueData, ackedData, failedData, latencyData} = this.state;
+        const {inputOutputData, queueData, ackedData, failedData, latencyData, processTimeData, selectedComponentId, selectedComponentName} = this.state;
         const locale = {
           format: 'YYYY-MM-DD HH:mm:ss',
           separator: ' - ',
@@ -248,11 +299,15 @@ export default class MetricsContainer extends Component {
                                 <div className="form-group">
                                     <label className="col-sm-2 control-label">Component Filter:</label>
                                     <div className="col-sm-2">
-                                        <select className="form-control" onChange={this.handleFilterChange}>
-                                            {this.props.components.map((d,i) => {
-						                      return <option key={i} value={d.nodeId}>{d.uiname}</option>
-                                            })}
-                                        </select>
+                                        <Select
+                                            value={selectedComponentId}
+                                            onChange={this.handleFilterChange}
+                                            options={this.props.components}
+                                            placeholder="Select Component"
+                                            clearable={true}
+                                            valueKey="nodeId"
+                                            labelKey="uiname"
+                                        />
                                     </div>
                                     <label className="col-sm-2 col-sm-offset-2 control-label">Date/Time Range Filter:</label>
                                     <div className="col-sm-4">
@@ -281,7 +336,7 @@ export default class MetricsContainer extends Component {
                                 </div>
                             </div>
                                 <PanelGroup>
-                                        <Panel header="Record" eventKey="Record" collapsible expanded={this.state.expandRecord} onSelect={this.onPanelSelect}>
+                                        <Panel header={selectedComponentName.length > 0 ? "Record ("+selectedComponentName+")" : "Record ("+this.props.topologyName+")"} eventKey="Record" collapsible expanded={this.state.expandRecord} onSelect={this.onPanelSelect}>
                                                 <div className="row col-md-4" style={{'textAlign': 'center'}}>
                                                         <h5>Input/Output</h5>
                                                         <div style={{height:'150px'}}>
@@ -301,11 +356,11 @@ export default class MetricsContainer extends Component {
                                                         </div>
                                                 </div>
                                         </Panel>
-                                        <Panel header="Latency / Queue" eventKey="LatencyQueue" collapsible expanded={this.state.expandLatencyQueue} onSelect={this.onPanelSelect}>
+                                        <Panel header={selectedComponentName.length > 0 ? "Latency / Queue ("+selectedComponentName+")" : "Processed Time / Queue"} eventKey="LatencyQueue" collapsible expanded={this.state.expandLatencyQueue} onSelect={this.onPanelSelect}>
                                                 <div className="row col-md-6" style={{'textAlign': 'center'}}>
-                                                        <h5>Latency</h5>
+                                                        <h5>{selectedComponentName.length > 0 ? 'Latency' : 'Processed Time'}</h5>
                                                         <div style={{height:'150px', 'textAlign': 'center'}}>
-                                                                {this.state.loadingLatencyQueue ? loader : this.getGraph('Latency', latencyData)}
+                                                                {this.state.loadingLatencyQueue ? loader : (selectedComponentName.length > 0 ? this.getGraph('Latency', latencyData) : this.getGraph('Latency', processTimeData))}
                                                         </div>
                                                 </div>
                                                 <div className="row col-md-6" style={{'textAlign': 'center'}}>

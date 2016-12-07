@@ -41,6 +41,14 @@ const MetricsREST = {
 				return response.json();
 			})
         },
+        getTopologyMetrics(topologyId, fromTime, toTime, options) {
+                options = options || {};
+                options.method = options.method || 'GET';
+                return fetch(url+'/'+topologyId+'/timeseries?from='+fromTime+'&to='+toTime, options)
+                        .then( (response) => {
+                                return response.json();
+                        })
+        }
 
 }
 

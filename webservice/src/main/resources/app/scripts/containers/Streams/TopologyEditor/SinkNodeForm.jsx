@@ -131,8 +131,9 @@ export default class SinkNodeForm extends Component {
 
     render() {
         let {configData} = this.props;
-        let formData = this.state.formData;
-        let fields = Utils.genFields(configData.topologyComponentUISpecification.fields, [], formData);
+        let {formData, streamObj = {}} = this.state;
+
+        let fields = Utils.genFields(configData.topologyComponentUISpecification.fields, [], formData,streamObj.fields);
         const form = <Form
                         ref="Form"
                         readOnly={!this.props.editMode}
@@ -142,7 +143,7 @@ export default class SinkNodeForm extends Component {
                     >
                         {fields}
                     </Form>
-        const inputSidebar = <StreamsSidebar ref="StreamSidebar" streamObj={this.state.streamObj} streamType="input" />
+        const inputSidebar = <StreamsSidebar ref="StreamSidebar" streamObj={streamObj} streamType="input" />
         return (
             <Tabs id="SinkForm" activeKey={this.state.activeTabKey} className="modal-tabs" onSelect={this.onSelectTab}>
                 <Tab eventKey={1} title="REQUIRED">

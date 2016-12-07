@@ -53,9 +53,11 @@ export default class WindowingAggregateNodeForm extends Component {
 			functionListArr: [],
 			outputStreamId: '',
             outputStreamFields: [],
-            argumentError : false
+            argumentError : false,
+            outputArr : []
 		};
 		this.state = obj;
+    this.outputData = [];
 	}
 
 	fetchData(){
@@ -271,6 +273,7 @@ export default class WindowingAggregateNodeForm extends Component {
 	}
 
 	handleFieldChange(name, index, obj){
+    const {outputArr} = this.state;
 		let fieldsArr = this.state.outputFieldsArr;
 		let oldData = JSON.parse(JSON.stringify(fieldsArr[index]));
 		if(name === 'outputFieldName'){
@@ -290,42 +293,63 @@ export default class WindowingAggregateNodeForm extends Component {
 					fieldsArr[index].outputFieldName = fieldsArr[index].args+appendingName;
 				}
 		}
-		let outputStreamFields = this.getOutputFieldsForStream(oldData, fieldsArr[index]);
-		this.streamData.fields = outputStreamFields;
-                this.context.ParentForm.setState({outputStreamObj:this.streamData})
-		this.setState({outputFieldsArr: fieldsArr, outputStreamFields: outputStreamFields});
+
+    let outputStreamFields = this.getOutputFieldsForStream(oldData, fieldsArr[index]);
+    outputStreamFields.then((res) => {
+      this.streamData.fields = res;
+      this.context.ParentForm.setState({outputStreamObj:this.streamData});
+      this.setState({ outputStreamFields: res});
+    });
+
+    this.setState({outputFieldsArr: fieldsArr});
 	}
 
-	getOutputFieldsForStream(oldObj, newDataObj){
-		let streamsArr = JSON.parse(JSON.stringify(this.state.outputStreamFields));
-		let obj = null;
-		if(oldObj.outputFieldName !== ''){
-			obj = streamsArr.filter((field)=>{return field.name === oldObj.outputFieldName;})[0];
-		} else {
-			obj = streamsArr.filter((field)=>{return field.name === oldObj.args;})[0];
-		}
-		if(obj){
-			let fieldObj = this.state.keysList.find((field)=>{return field.name == newDataObj.args});
-			if(newDataObj.functionName !== ''){
-				obj.name = newDataObj.outputFieldName;
-				obj.type = this.getReturnType(newDataObj.functionName, fieldObj);
-			} else if(oldObj.functionName !== ''){
-				obj.name = newDataObj.outputFieldName;
-				obj.type = this.getReturnType(newDataObj.functionName, fieldObj);
-			}
-		} else {
-			let o = streamsArr.filter((field)=>{return field.name === newDataObj.outputFieldName;});
-			if(o.length === 0){
-				let fieldObj = this.state.keysList.find((field)=>{return field.name == newDataObj.args});
-				streamsArr.push({
-					name: newDataObj.outputFieldName,
-					type: this.getReturnType(newDataObj.functionName, fieldObj),
-					optional: false
-				})
-			}
-		}
-		return streamsArr;
-	}
+  getOutputFieldsForStream(oldObj, newDataObj){
+    let streamsArr = this.state.outputStreamFields;
+    let obj = null;
+    if(oldObj.outputFieldName !== ''){
+      obj = this.outputData.filter((field)=>{return field.name === oldObj.outputFieldName;})[0];
+    } else {
+      obj = this.outputData.filter((field)=>{return field.name === oldObj.args;})[0];
+    }
+    if(obj){
+      let fieldObj = this.state.keysList.find((field)=>{return field.name == newDataObj.args});
+      if(newDataObj.functionName !== ''){
+        obj.name = newDataObj.outputFieldName;
+        obj.type = this.getReturnType(newDataObj.functionName, fieldObj);
+      } else if(oldObj.functionName !== ''){
+        obj.name = newDataObj.outputFieldName;
+        obj.type = this.getReturnType(newDataObj.functionName, fieldObj);
+      }
+    } else {
+      let o = this.outputData.filter((field)=>{return field.name === newDataObj.outputFieldName;});
+      if(o.length === 0){
+        let fieldObj = this.state.keysList.find((field)=>{return field.name == newDataObj.args});
+        this.outputData.push({
+          name: newDataObj.outputFieldName,
+          type: this.getReturnType(newDataObj.functionName, fieldObj),
+          optional: false
+        })
+      }
+    }
+    let flag = false,resolve;
+    this.outputData.map(x => {
+        return x.name.indexOf('_') === -1 ? flag = false : flag = true;
+    });
+    if(flag){
+      this.setState({outputArr : this.outputData},() => {
+        const filtered = this.outputData.filter((d) => {
+          return this.state.outputStreamFields.indexOf(d) === -1
+        });
+        resolve(streamsArr.concat(filtered));
+      });
+    }
+    const outputAction = new Promise((res,rej) => {
+      resolve = res;
+    })
+    return outputAction;
+  }
+
 	getReturnType(functionName, fieldObj){
 		let obj = this.udfList.find((o)=>{
 			return o.name === functionName;
@@ -359,6 +383,7 @@ export default class WindowingAggregateNodeForm extends Component {
 	}
 	deleteFieldRow(index){
 		if(this.state.editMode){
+      let outputArr = this.state.outputArr;
 			let fieldsArr = this.state.outputFieldsArr;
 			let outputStreamFields = this.state.outputStreamFields;
 			let o = fieldsArr[index];
@@ -372,9 +397,10 @@ export default class WindowingAggregateNodeForm extends Component {
 				}
 			}
 			fieldsArr.splice(index, 1);
+      outputArr.splice(index, 1);
 			this.streamData.fields = outputStreamFields;
                         this.context.ParentForm.setState({outputStreamObj:this.streamData})
-			this.setState({outputFieldsArr: fieldsArr, outputStreamFields: outputStreamFields});
+                        this.setState({outputFieldsArr: fieldsArr, outputStreamFields: outputStreamFields,outputArr:outputArr});
 		}
 	}
 
@@ -644,17 +670,21 @@ export default class WindowingAggregateNodeForm extends Component {
                                                         (argumentError) ? <label className="color-error">The Aggregate Function is not supported by input</label> : ''
                                                 }
                                                 <div className="row">
-                                                        <div className="col-sm-5 outputCaption">
+                                                        <div className="col-sm-3 outputCaption">
                                                                 <label>Input</label>
                                                         </div>
-                                                        <div className="col-sm-5 outputCaption">
+                                                        <div className="col-sm-3 outputCaption">
                                                                 <label>Aggregate Function</label>
-							</div>
-						</div>
+                                                                                                  </div>
+
+                                                        <div className="col-sm-3 outputCaption">
+                                                                <label>Output</label>
+                                                        </div>
+                                                                                    </div>
                                                 {outputFieldsArr.map((obj, i)=>{
                                                         return(
                                                                 <div key={i} className="row form-group">
-                                                                        <div className="col-sm-5">
+                                                                        <div className="col-sm-3">
                                                                                 <Select
                                                                                         className={outputFieldsArr.length-1 === i ? "menu-outer-top" : ''}
                                                                                         value={obj.args}
@@ -667,7 +697,7 @@ export default class WindowingAggregateNodeForm extends Component {
                                                                                         clearable={false}
                                                                                 />
                                                                         </div>
-                                                                        <div className="col-sm-5">
+                                                                        <div className="col-sm-3">
                                                                                 <Select
                                                                                         className={outputFieldsArr.length-1 === i ? "menu-outer-top" : ''}
                                                                                         value={obj.functionName}
@@ -677,6 +707,18 @@ export default class WindowingAggregateNodeForm extends Component {
                                                                                         disabled={!editMode}
                                                                                         valueKey="name"
                                                                                         labelKey="displayName"
+                                                                                />
+                                                                        </div>
+                                                                        <div className="col-sm-3">
+                                                                                <input
+                                                                                        name="outputFieldName"
+                                                                                        value={obj.outputFieldName}
+                                                                                        ref="outputFieldName"
+                                                                                        onChange={this.handleFieldChange.bind(this, 'outputFieldName', i)}
+                                                                                        type="text"
+                                                                                        className="form-control"
+                                                                                        required={true}
+                                                                                        disabled={!editMode}
                                                                                 />
                                                                         </div>
                                                                         {editMode ?
@@ -691,19 +733,7 @@ export default class WindowingAggregateNodeForm extends Component {
                                                                                         : null}
                                                                                 </div>
                                                                         :null}
-                                                                        {/*<div className="col-sm-4">
-                                                                                {i === 0 ? <label>Output</label>: null}
-                                                                                <input
-                                                                                        name="outputFieldName"
-                                                                                        value={obj.outputFieldName}
-                                                                                        ref="outputFieldName"
-                                                                                        onChange={this.handleFieldChange.bind(this, 'outputFieldName', i)}
-                                                                                        type="text"
-                                                                                        className="form-control"
-                                                                                        required={true}
-                                                                                        disabled={!editMode}
-                                                                                />
-                                                                        </div>*/}
+
                                                                 </div>
                                                         )
                                                 })}

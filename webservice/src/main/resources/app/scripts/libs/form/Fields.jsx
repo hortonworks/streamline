@@ -192,11 +192,6 @@ export class enumstring extends BaseField {
         return super.validate(this.props.data[this.props.value])
     }
     getField = () => {
-      const popoverContent = (
-        <Popover id="popover-trigger-hover-focus">
-          {this.props.fieldJson.tooltip}
-        </Popover>
-      );
         return <Select onChange={this.handleChange} {...this.props.fieldAttr} disabled={this.context.Form.props.readOnly} value={this.props.data[this.props.value]}/>
     }
 }
@@ -248,11 +243,6 @@ export class arrayenumstring extends BaseField {
         return super.validate(this.props.data[this.props.value])
     }
     getField = () => {
-      const popoverContent = (
-        <Popover id="popover-trigger-hover-focus">
-          {this.props.fieldJson.tooltip}
-        </Popover>
-      );
         return <Select onChange={this.handleChange} multi={true} disabled={this.context.Form.props.readOnly} {...this.props.fieldAttr} value={this.props.data[this.props.value]}/>
     }
 }

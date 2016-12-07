@@ -102,7 +102,7 @@ export default class TopologyGraphComponent extends Component {
 			.attr("stroke-dasharray", "5, 5")
 			.style('marker-end', 'url(#mark-end-arrow)');
 
-		// svg nodes and edges 
+                // svg nodes and edges
 		this.paths = svgG.append("g").attr('class','link-group').selectAll("g");
 		this.rectangles = svgG.append("g").selectAll("g");
 
@@ -399,7 +399,7 @@ export default class TopologyGraphComponent extends Component {
 	rectangleMouseUp(d3node, d) {
         let {topologyId, versionId, internalFlags, constants, dragLine, paths, edges, rectangles, getModalScope, setModalContent, nodes, linkShuffleOptions, metaInfo, getEdgeConfigModal, setLastChange} = this;
                 return TopologyUtils.MouseUpAction(topologyId, versionId, d3node, d, metaInfo, internalFlags,
-			constants, dragLine, paths, nodes, edges, linkShuffleOptions, this.updateGraph.bind(this), 
+                        constants, dragLine, paths, nodes, edges, linkShuffleOptions, this.updateGraph.bind(this),
                         'rectangle', getModalScope, setModalContent, rectangles, getEdgeConfigModal, setLastChange);
 	}
 
@@ -850,10 +850,12 @@ export default class TopologyGraphComponent extends Component {
 		this.edges = data.edges;
 		this.metaInfo = data.metaInfo;
 		this.linkShuffleOptions = data.linkShuffleOptions;
-        this.graphTransforms = data.metaInfo.graphTransforms || {
-			dragCoords: [0,0],
-			zoomScale: 0.8
-		};
+    this.graphTransforms = this.props.viewMode
+                            ? {
+						dragCoords: [120,50],
+						zoomScale: 0.8
+					}
+                            : data.metaInfo.graphTransforms || { dragCoords: [0,0],	zoomScale: 0.8};
 		this.getModalScope = this.props.getModalScope;
 		this.setModalContent = this.props.setModalContent;
         this.getEdgeConfigModal = this.props.getEdgeConfigModal;

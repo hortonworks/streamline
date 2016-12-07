@@ -131,9 +131,39 @@ const kFormatter = function(num){
   return num > 999 ? (num/1000).toFixed(1) + 'k' : num
 }
 
-const genFields = function(fieldsJSON, _fieldName = [], FormData = {}){
+const eventTimeData = function(inputFields){
+  const eventTimeArr = inputFields.filter((k,i) =>{
+    return k.type === "LONG";
+  }).map((v) => {
+    return {
+      fieldName : v.name,
+      uiName : v.name
+    }
+  });
+  eventTimeArr.push({fieldName : "processingTime" , uiName : "processingTime"});
+  return eventTimeArr;
+}
+
+const inputFieldsData = function(inputFields){
+  const inputFieldsArr = inputFields.map(v => {
+    return {
+      fieldName : v.name,
+      uiName : v.name
+    }
+  });
+  return inputFieldsArr;
+}
+
+const genFields = function(fieldsJSON, _fieldName = [], FormData = {},inputFields = []){
     const fields = [];
     fieldsJSON.forEach((d, i) => {
+        if(d.hint !== undefined){
+          if(d.hint.toLowerCase()  === "inputfields"){
+              d.options = inputFieldsData(inputFields);
+          }else if(d.hint.toLowerCase()  === "eventtime"){
+              d.options = eventTimeData(inputFields);
+          }
+        }
         const Comp = Fields[d.type.split('.').join('')] || null;
         let _name = [..._fieldName, d.fieldName];
         if(Comp){

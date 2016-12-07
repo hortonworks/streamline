@@ -92,7 +92,7 @@ class EnvironmentCards extends Component {
             <div className="service-body environment-body clearfix common-overflow">
                 {
                   _.keys(mappings).length === 0
-                    ? <p>No mapping</p>
+                    ? <div className="col-sm-12"><h4 className="text-center">No Mapping</h4></div>
                     : _.keys(mappings).map((key , i) => {
                          return <EnvironmentItems key={i} mapData={mappings[key]} name ={clusterName[key]} />
                     })
