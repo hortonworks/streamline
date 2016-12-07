@@ -17,6 +17,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.apache.streamline</groupId>
+            <artifactId>cache</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
         </dependency>
