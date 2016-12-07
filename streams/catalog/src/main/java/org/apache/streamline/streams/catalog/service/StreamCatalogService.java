@@ -1274,7 +1274,8 @@ public class StreamCatalogService {
     }
 
     public TopologyTimeSeriesMetrics.TimeSeriesComponentMetric getTopologyStats(Topology topology, Long from, Long to) throws IOException {
-        return this.topologyMetrics.getTopologyStats(getTopologyLayout(topology), from, to);
+        TopologyMetrics topologyMetrics = getTopologyMetricsInstance(topology);
+        return topologyMetrics.getTopologyStats(getTopologyLayout(topology), from, to);
     }
 
     public TopologyTimeSeriesMetrics.TimeSeriesComponentMetric getComponentStats(Topology topology, TopologyComponent component, Long from, Long to) throws IOException {

@@ -1,4 +1,6 @@
 ## 0.1.4
+ * STREAMLINE-558: Time-series DB version of Topology Metrics API (aggregated ver.) 
+ * STREAMLINE-477: Provide Cache Support for Custom Processors.
  * STREAMLINE-525 Backend: include configuration files to topology jar while deploying topology based on namespace
  * STREAMLINE-512 Backend: apply Topology's namespace to "Topology Action" and "Topology Metrics"
  * STREAMLINE-535: Tag REST API should follow STREAMLINE-500 changes
