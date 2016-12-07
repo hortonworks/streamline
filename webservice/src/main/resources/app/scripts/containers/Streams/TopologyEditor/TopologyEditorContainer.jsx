@@ -195,6 +195,7 @@ class TopologyEditorContainer extends Component {
           if(!versionId){
             versionId = data.topology.versionId;
           }
+          this.namespaceId = data.topology.namespaceId;
           this.lastUpdatedTime = new Date(result.topology.timestamp);
           promiseArr.push(TopologyREST.getSourceComponent());
           promiseArr.push(TopologyREST.getProcessorComponent());
@@ -311,7 +312,8 @@ class TopologyEditorContainer extends Component {
     if(this.validateName(topologyName)){
       let data = {
         name: topologyName,
-        config: JSON.stringify(this.topologyConfig)
+        config: JSON.stringify(this.topologyConfig),
+        namespaceId: this.namespaceId
       }
       TopologyREST.putTopology(this.topologyId, this.versionId, {body: JSON.stringify(data)})
         .then(topology=>{

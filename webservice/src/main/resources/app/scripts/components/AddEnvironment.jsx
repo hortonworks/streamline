@@ -53,7 +53,7 @@ class AddEnvironmentItems extends Component{
       <div className="col-md-4">
       <div className="environment-modal-widget">
           <h5 className="environment-title no-margin-top">{cluster.name}</h5>
-          <ul className="service-components clearfix">
+          <ul className="select-env-service clearfix">
             {
               serviceWrap.length === 0
               ? <p>No Services</p>

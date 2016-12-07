@@ -1447,36 +1447,38 @@ span.version{
   overflow-y: auto;
 }
 .service-components,
+.select-env-service,
 .environment-components {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 .service-components > li,
+.select-env-service > li,
 .environment-components > li {
   float: left;
   color: #6f6f6f;
-  margin: 1%;
+  margin-right: 8px;
+  margin-bottom: 8px;
   text-align: center;
   text-transform: uppercase;
   font-size: 12px;
-  width: 18%;
+  width: 56px;
 }
 .service-components > li > img,
+.select-env-service > li > img,
 .environment-components > li > img {
   display: block;
-  padding: 10px;
-  margin-bottom: 2px;
-  width: 100%;
+  padding: 8px;
+  margin-bottom: 3px;
+  width: 56px;
   border: 1px #d8d8d8 solid;
   border-radius: 8px;
   -webkit-filter: grayscale(100%);
   filter: grayscale(100%);
 }
-.service-components li:nth-child(5n+6) {
-    clear: left;
-}
 .service-components > li:hover > img,
+.select-env-service > li:hover > img,
 .environment-components > li:hover > img {
   border-color: #1191c2;
   -webkit-filter: none;
@@ -1509,7 +1511,18 @@ span.version{
   font-size: 16px;
 }
 .environment-components > li {
-  width: 31%;
+  margin-right: 6px;
+  margin-bottom: 6px;
+  font-size: 11px;
+}
+.environment-components > li > img {
+  width: 52px;
+}
+.service-components li:nth-child(6n+7) {
+  clear: left;
+}
+.select-env-service li:nth-child(2n+3) {
+    clear: left;
 }
 .environment-components li:nth-child(3n+4) {
     clear: left;

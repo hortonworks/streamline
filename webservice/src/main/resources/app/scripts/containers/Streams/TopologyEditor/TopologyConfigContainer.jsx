@@ -32,6 +32,7 @@ export default class TopologyConfigContainer extends Component {
           .then( result => {
             const formField = result[0].entities[0].topologyComponentUISpecification;
             const config = result[1].topology.config;
+            this.namespaceId = result[1].topology.namespaceId;
             this.setState({formData : JSON.parse(config), formField : formField})
           }).catch(err => {
             FSReactToastr.error(<CommonNotification flag="error" content={err.message}/>, '', toastOpt)
@@ -51,7 +52,8 @@ export default class TopologyConfigContainer extends Component {
         let data = this.refs.Form.state.FormData;
         let dataObj = {
             name: topologyName,
-            config: JSON.stringify(data)
+            config: JSON.stringify(data),
+            namespaceId: this.namespaceId
         }
         return TopologyREST.putTopology(topologyId, versionId, {body: JSON.stringify(dataObj)})
     }
