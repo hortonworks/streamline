@@ -554,7 +554,9 @@ class TopologyEditorContainer extends Component {
           } else {
             this.lastUpdatedTime = new Date(savedNode.timestamp);
             this.setState({altFlag: !this.state.altFlag});
-            this.node.isConfigured = true;
+            if(_.keys(savedNode.config.properties).length > 0) {
+              this.node.isConfigured = true;
+            }
             let i = this.graphData.uinamesList.indexOf(this.node.uiname);
             if(this.node.currentType === 'Custom') {
               let obj = _.find(this.graphData.metaInfo.customNames, {uiname: this.node.uiname});

@@ -51,6 +51,7 @@ export default class TopologyGraphComponent extends Component {
 
 	componentWillUnmount(){
 		d3.select('body').on("keydown", null).on("keyup", null);
+                this.toolTip.hide();
 	}
 
 	state = {
@@ -174,6 +175,11 @@ export default class TopologyGraphComponent extends Component {
 		svg.on("mouseup", function(d) {
 			thisGraph.svgMouseUp.call(thisGraph, d);
 		});
+
+                svg.on("mousemove", function(d) {
+                        if(d3.event.target.nodeName === 'svg')
+                                thisGraph.toolTip.hide();
+                })
 
         // listen for dragging - also used for zoom in/out via buttons
         this.dragSvg = d3.behavior.zoom().scaleExtent([0, 8]).on("zoom", function(){

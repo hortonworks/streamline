@@ -805,6 +805,9 @@ const generateNodeData = function(nodes, componentBundle, metadata, resultArr){
                 let componentObj = componentBundle.filter(c=>{return c.id === nodes[i].topologyComponentBundleId})[0];
                 let currentType = this.capitalizeFirstLetter(componentObj.subType);
 		let configuredFlag = _.keys(nodes[i].config.properties).length > 0 ? true : false;
+        if(currentType === 'Window' && _.keys(nodes[i].config.properties).length === 1) {
+            configuredFlag = false;
+        }
 
 		let currentMetaObj = metadata.filter((o)=>{return o.id === nodes[i].id});
 		if(currentMetaObj.length === 0){
@@ -946,11 +949,11 @@ const getNodeStreams = function(topologyId, versionId, nodeId, parentType, edges
     Promise.all(promiseArr)
         .then(results => {
             results.map((s, i)=>{
-                if(i === 0){
+                if(i === 0 && parentType !== 'SINK'){
                     if(s.outputStreams.length) {
                         streamData.outputSchema = s.outputStreams[0].fields;
                     }
-                } else {
+                } else if (i > 0) {
                     streamData.inputSchema = [...streamData.inputSchema, ... s.fields];
                 }
             })

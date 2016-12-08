@@ -204,7 +204,6 @@ export default class WindowingAggregateNodeForm extends Component {
                                                         TopologyREST.createNode(topologyId, versionId, 'windows', {body: JSON.stringify(dummyWindowObj)})
 								.then((windowResult)=>{
                                                                         this.windowId = windowResult.id;
-									this.nodeData.config.properties.parallelism = 1;
 									this.nodeData.config.properties.rules = [this.windowId];
                                                                         TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.nodeId, {body: JSON.stringify(this.nodeData)});
 									this.setState(stateObj);

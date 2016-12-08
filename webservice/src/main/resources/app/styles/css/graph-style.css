@@ -76,6 +76,7 @@ text.id {
   padding: 12px;
   background: rgba(120, 120, 120, 0.95);
   color: #fff;
+  z-index: 9;
 }
 
 .modal-tip {

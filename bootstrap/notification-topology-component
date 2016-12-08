@@ -160,7 +160,8 @@
             "fieldName": "body",
             "isOptional": false,
             "tooltip":"Email body",
-            "type": "string"
+            "type": "string",
+            "hint": "textarea"
           }
         ]
       },

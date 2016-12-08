@@ -71,7 +71,7 @@ class TopologyViewMode extends Component{
           <div className="col-sm-4">
             <h4 className="page-heading">{topologyName}</h4>
           </div>
-          <div className="col-sm-6 text-right">
+          <div className="col-sm-5 text-right">
               <div className="filter-label">
                 <span className="text-muted">Last Change:</span> <span style={{color:'#545454'}}>{Utils.splitTimeStamp(timestamp)}</span>
               </div>
@@ -86,7 +86,7 @@ class TopologyViewMode extends Component{
               </DropdownButton>
               </div>
           </div>
-          <div className="col-sm-2 styleWindowDN text-right">
+          <div className="col-sm-3 styleWindowDN text-right">
             { stormViewUrl.length ?
               <a href={stormViewUrl} target="_blank" className="btn btn-default"><img src="styles/img/storm-btn.png" width="20" /></a>
             : null }
