@@ -81,12 +81,6 @@
         <!-- test dependency -->
         <dependency>
             <groupId>org.apache.streamline</groupId>
-            <artifactId>streamline-sdk</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.streamline</groupId>
             <artifactId>streamline-examples-processors</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
