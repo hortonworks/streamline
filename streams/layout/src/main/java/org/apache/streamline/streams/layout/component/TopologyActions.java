@@ -43,6 +43,11 @@ public interface TopologyActions {
      */
     Path getExtraJarsLocation(TopologyLayout topology);
 
+    /**
+     * the topology id which is running in runtime streaming engine
+     */
+    String getRuntimeTopologyId(TopologyLayout topology);
+
     interface Status {
         String getStatus();
         Map<String, String> getExtra();

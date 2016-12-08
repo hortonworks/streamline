@@ -185,7 +185,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
     @Override
     public void kill (TopologyLayout topology) throws Exception {
-        String stormTopologyId = StormTopologyUtil.findStormTopologyId(client, topology.getId());
+        String stormTopologyId = getRuntimeTopologyId(topology);
 
         boolean killed = client.killTopology(stormTopologyId, DEFAULT_WAIT_TIME_SEC);
         if (!killed) {
@@ -210,7 +210,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
     @Override
     public void suspend (TopologyLayout topology) throws Exception {
-        String stormTopologyId = StormTopologyUtil.findStormTopologyId(client, topology.getId());
+        String stormTopologyId = getRuntimeTopologyId(topology);
 
         boolean suspended = client.deactivateTopology(stormTopologyId);
         if (!suspended) {
@@ -221,7 +221,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
     @Override
     public void resume (TopologyLayout topology) throws Exception {
-        String stormTopologyId = StormTopologyUtil.findStormTopologyId(client, topology.getId());
+        String stormTopologyId = getRuntimeTopologyId(topology);
 
         boolean resumed = client.activateTopology(stormTopologyId);
         if (!resumed) {
@@ -232,7 +232,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
     @Override
     public Status status(TopologyLayout topology) throws Exception {
-        String stormTopologyId = StormTopologyUtil.findStormTopologyId(client, topology.getId());
+        String stormTopologyId = getRuntimeTopologyId(topology);
 
         Map topologyStatus = client.getTopology(stormTopologyId);
 
@@ -255,6 +255,11 @@ public class StormTopologyActionsImpl implements TopologyActions {
     @Override
     public Path getExtraJarsLocation(TopologyLayout topology) {
         return Paths.get(stormArtifactsLocation, generateStormTopologyName(topology), "jars");
+    }
+
+    @Override
+    public String getRuntimeTopologyId(TopologyLayout topology) {
+        return StormTopologyUtil.findStormTopologyId(client, topology.getId());
     }
 
     private String createYamlFile (TopologyLayout topology) throws Exception {

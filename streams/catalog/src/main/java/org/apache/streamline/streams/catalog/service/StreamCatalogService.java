@@ -1272,6 +1272,11 @@ public class StreamCatalogService {
         return topologyActions.status(getTopologyLayout(topology));
     }
 
+    public String getRuntimeTopologyId(Topology topology) throws IOException {
+        TopologyActions topologyActions = getTopologyActionsInstance(topology);
+        return topologyActions.getRuntimeTopologyId(getTopologyLayout(topology));
+    }
+
     public Map<String, TopologyMetrics.ComponentMetric> getTopologyMetrics(Topology topology) throws IOException {
         TopologyMetrics topologyMetrics = getTopologyMetricsInstance(topology);
         return topologyMetrics.getMetricsForTopology(getTopologyLayout(topology));
