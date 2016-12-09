@@ -104,8 +104,11 @@ public class NotificationBolt extends BaseRichBolt {
         }
         notificationService = new NotificationServiceImpl(notificationConf, new HBaseNotificationStore(hbaseConf));
 
-        String jarPath = String.format("%s%s%s", stormConf.get(LOCAL_NOTIFIER_JAR_PATH).toString(),
-                                       File.separator, notificationSink.getNotifierJarFileName());
+        String jarPath = "";
+        if (stormConf.containsKey(LOCAL_NOTIFIER_JAR_PATH)) {
+            jarPath = String.format("%s%s%s", stormConf.get(LOCAL_NOTIFIER_JAR_PATH).toString(),
+                    File.separator, notificationSink.getNotifierJarFileName());
+        }
 
         Properties props = new Properties();
         props.putAll(convertMapValuesToString(notificationSink.getNotifierProperties()));
