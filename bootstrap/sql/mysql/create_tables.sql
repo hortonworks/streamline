@@ -297,4 +297,3 @@ CREATE TABLE IF NOT EXISTS components (
   timestamp BIGINT,
   PRIMARY KEY (id)
 );
-

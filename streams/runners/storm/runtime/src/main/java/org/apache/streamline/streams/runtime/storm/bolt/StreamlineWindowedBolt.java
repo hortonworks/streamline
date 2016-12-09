@@ -1,6 +1,7 @@
 package org.apache.streamline.streams.runtime.storm.bolt;
 
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.storm.topology.base.BaseWindowedBolt;
 import org.apache.streamline.streams.layout.component.rule.expression.Window;
 
@@ -40,8 +41,8 @@ public abstract class StreamlineWindowedBolt extends BaseWindowedBolt {
             withLag(new Duration(windowConfig.getLagMs(), TimeUnit.MILLISECONDS));
         }
 
-        if (windowConfig.getTsField() != null) {
-            withTimestampField(windowConfig.getTsField());
+        if (!StringUtils.isEmpty(windowConfig.getTsField())) {
+            withTimestampExtractor(new StreamlineTimestampExtractor(windowConfig.getTsField()));
         }
     }
 }
