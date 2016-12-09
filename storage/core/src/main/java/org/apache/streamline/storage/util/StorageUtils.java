@@ -25,9 +25,9 @@ import org.apache.streamline.storage.Storable;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Utility methods for the storage package.
@@ -47,19 +47,16 @@ public final class StorageUtils {
         return storable != null ? new ObjectMapper().writeValueAsString(storable) : null;
     }
 
-    public interface ListStorablesFn {
-        Collection<? extends Storable> apply(List<QueryParam> params);
-    }
-
-    public static void ensureUniqueName(Storable storable, ListStorablesFn listFn, String entityName) {
-        Collection<? extends Storable> storables = listFn.apply(
-                Collections.singletonList(new QueryParam("name", entityName)));
+    public static void ensureUnique(Storable storable,
+                                    Function<List<QueryParam>, Collection<? extends Storable>> listFn,
+                                    List<QueryParam> queryParams) {
+        Collection<? extends Storable> storables = listFn.apply(queryParams);
         Optional<Long> entities = storables.stream()
                 .map(Storable::getId)
                 .filter(x -> !x.equals(storable.getId()))
                 .findAny();
         if (entities.isPresent()) {
-            throw new DuplicateEntityException("Entity with name '" + entityName + "' already exists");
+            throw new DuplicateEntityException("Entity with '" + queryParams + "' already exists");
         }
     }
 

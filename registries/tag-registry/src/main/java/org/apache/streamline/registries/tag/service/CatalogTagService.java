@@ -59,7 +59,7 @@ public class CatalogTagService implements TagService {
 
     // handle this check at application layer since in-memory storage etc does not contain unique key constraint
     private void validateTag(Tag tag) {
-        StorageUtils.ensureUniqueName(tag, this::listTags, tag.getName());
+        StorageUtils.ensureUnique(tag, this::listTags, QueryParam.params("name", tag.getName()));
     }
 
     @Override

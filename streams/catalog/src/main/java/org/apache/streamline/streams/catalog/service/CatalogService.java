@@ -114,7 +114,7 @@ public class CatalogService {
 
     // handle this check at application layer since in-memory storage etc does not contain unique key constraint
     private void validateFileInfo(FileInfo fileInfo) {
-        StorageUtils.ensureUniqueName(fileInfo, this::listFiles, fileInfo.getName());
+        StorageUtils.ensureUnique(fileInfo, this::listFiles, QueryParam.params("name", fileInfo.getName()));
     }
 
     public FileInfo addFile(FileInfo file) {
