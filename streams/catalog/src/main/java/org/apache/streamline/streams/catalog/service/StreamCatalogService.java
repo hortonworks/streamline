@@ -1641,19 +1641,26 @@ public class StreamCatalogService {
      * Other checks can be added later.
      */
     private void validateTopology(Topology topology) {
-        StorageUtils.ensureUniqueName(topology, this::listTopologies, topology.getName());
+        StorageUtils.ensureUnique(topology, this::listTopologies,
+                QueryParam.params(Topology.NAME, topology.getName()));
     }
 
     private void validateTopologySource(TopologySource topologySource) {
-        StorageUtils.ensureUniqueName(topologySource, this::listTopologySources, topologySource.getName());
+        StorageUtils.ensureUnique(topologySource, this::listTopologySources,
+                QueryParam.params(TopologySource.TOPOLOGYID, topologySource.getTopologyId().toString(),
+                        TopologySource.NAME, topologySource.getName()));
     }
 
     private void validateTopologySink(TopologySink topologySink) {
-        StorageUtils.ensureUniqueName(topologySink, this::listTopologySinks, topologySink.getName());
+        StorageUtils.ensureUnique(topologySink, this::listTopologySinks,
+                QueryParam.params(TopologySink.TOPOLOGYID, topologySink.getTopologyId().toString(),
+                        TopologySink.NAME, topologySink.getName()));
     }
 
     private void validateTopologyProcessor(TopologyProcessor topologyProcessor) {
-        StorageUtils.ensureUniqueName(topologyProcessor, this::listTopologyProcessors, topologyProcessor.getName());
+        StorageUtils.ensureUnique(topologyProcessor, this::listTopologyProcessors,
+                QueryParam.params(TopologyProcessor.TOPOLOGYID, topologyProcessor.getTopologyId().toString(),
+                        TopologyProcessor.NAME, topologyProcessor.getName()));
     }
 
     public TopologySource addTopologySource(Long topologyId, TopologySource topologySource) {
