@@ -2,6 +2,7 @@ package org.apache.streamline.streams.catalog.topology.component;
 
 
 import org.apache.streamline.common.QueryParam;
+import org.apache.streamline.registries.model.client.MLModelRegistryClient;
 import org.apache.streamline.streams.catalog.Topology;
 import org.apache.streamline.streams.catalog.TopologyComponent;
 import org.apache.streamline.streams.catalog.TopologyEdge;
@@ -18,9 +19,9 @@ public class TopologyDagBuilder {
     private final StreamCatalogService catalogService;
     private final TopologyComponentFactory factory;
 
-    public TopologyDagBuilder(StreamCatalogService catalogService) {
+    public TopologyDagBuilder(StreamCatalogService catalogService, MLModelRegistryClient modelRegistryClient) {
         this.catalogService = catalogService;
-        factory = new TopologyComponentFactory(catalogService);
+        factory = new TopologyComponentFactory(catalogService, modelRegistryClient);
     }
 
     public TopologyDag getDag(Topology topology) {

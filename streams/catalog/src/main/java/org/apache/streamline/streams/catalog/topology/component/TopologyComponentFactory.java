@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.streamline.common.Config;
+import org.apache.streamline.registries.model.client.MLModelRegistryClient;
 import org.apache.streamline.streams.catalog.RuleInfo;
 import org.apache.streamline.streams.catalog.BranchRuleInfo;
 import org.apache.streamline.streams.catalog.StreamInfo;
@@ -29,6 +30,7 @@ import org.apache.streamline.streams.layout.component.impl.KafkaSource;
 import org.apache.streamline.streams.layout.component.impl.MultiLangProcessor;
 import org.apache.streamline.streams.layout.component.impl.NotificationSink;
 import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
+import org.apache.streamline.streams.layout.component.impl.model.ModelProcessor;
 import org.apache.streamline.streams.layout.component.impl.normalization.NormalizationConfig;
 import org.apache.streamline.streams.layout.component.impl.normalization.NormalizationProcessor;
 import org.apache.streamline.streams.layout.component.impl.splitjoin.JoinAction;
@@ -73,9 +75,11 @@ public class TopologyComponentFactory {
 
     private final Map<Class<?>, Map<String, ?>> providerMap;
     private final StreamCatalogService catalogService;
+    private final MLModelRegistryClient modelRegistryClient;
 
-    public TopologyComponentFactory(StreamCatalogService catalogService) {
+    public TopologyComponentFactory(StreamCatalogService catalogService, MLModelRegistryClient modelRegistryClient) {
         this.catalogService = catalogService;
+        this.modelRegistryClient = modelRegistryClient;
         ImmutableMap.Builder<Class<?>, Map<String, ?>> builder = ImmutableMap.builder();
         builder.put(StreamlineSource.class, createSourceProviders());
         builder.put(StreamlineProcessor.class, createProcessorProviders());
@@ -199,6 +203,7 @@ public class TopologyComponentFactory {
         builder.put(windowProcessorProvider());
         builder.put(normalizationProcessorProvider());
         builder.put(multilangProcessorProvider());
+        builder.put(modelProcessorProvider());
         return builder.build();
     }
 
@@ -339,12 +344,24 @@ public class TopologyComponentFactory {
                 ObjectMapper objectMapper = new ObjectMapper();
                 StageAction stageAction = objectMapper.convertValue(stageConfig, StageAction.class);
                 StageProcessor stageProcessor = new StageProcessor();
-                stageProcessor.addOutputStreams(createOutputStreams((TopologyOutputComponent) component));
                 stageProcessor.setStageAction(stageAction);
                 return stageProcessor;
             }
         };
         return new SimpleImmutableEntry<>(STAGE, provider);
+    }
+
+    private Map.Entry<String, Provider<StreamlineProcessor>> modelProcessorProvider() {
+        Provider<StreamlineProcessor> provider = new Provider<StreamlineProcessor>() {
+            @Override
+            public StreamlineProcessor create(TopologyComponent component) {
+                String modelName = component.getConfig().get(ModelProcessor.CONFIG_MODEL_NAME);
+                ModelProcessor modelProcessor = new ModelProcessor();
+                modelProcessor.setPmml(modelRegistryClient.getMLModelContents(modelName));
+                return modelProcessor;
+            }
+        };
+        return new SimpleImmutableEntry<>(PMML_MODEL, provider);
     }
 
     private interface RuleExtractor {

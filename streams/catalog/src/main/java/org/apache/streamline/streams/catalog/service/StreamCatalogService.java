@@ -23,7 +23,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
@@ -37,20 +36,13 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.streamline.common.ComponentTypes;
-import org.apache.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
-import org.apache.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
-import org.apache.streamline.streams.catalog.cluster.ClusterImporter;
-import org.apache.streamline.streams.layout.component.StreamlineComponent;
-import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
-import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
-import org.apache.streamline.streams.catalog.Projection;
-import org.apache.streamline.streams.layout.storm.FluxComponent;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.common.util.FileStorage;
 import org.apache.streamline.common.util.JsonSchemaValidator;
 import org.apache.streamline.common.util.ProxyUtil;
 import org.apache.streamline.common.util.WSUtils;
+import org.apache.streamline.registries.model.client.MLModelRegistryClient;
 import org.apache.streamline.storage.Storable;
 import org.apache.streamline.storage.StorableKey;
 import org.apache.streamline.storage.StorageManager;
@@ -60,10 +52,11 @@ import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.catalog.BranchRuleInfo;
 import org.apache.streamline.streams.catalog.Cluster;
 import org.apache.streamline.streams.catalog.Component;
+import org.apache.streamline.streams.catalog.FileInfo;
 import org.apache.streamline.streams.catalog.Namespace;
 import org.apache.streamline.streams.catalog.NamespaceServiceClusterMapping;
-import org.apache.streamline.streams.catalog.FileInfo;
 import org.apache.streamline.streams.catalog.NotifierInfo;
+import org.apache.streamline.streams.catalog.Projection;
 import org.apache.streamline.streams.catalog.RuleInfo;
 import org.apache.streamline.streams.catalog.Service;
 import org.apache.streamline.streams.catalog.ServiceConfiguration;
@@ -81,6 +74,7 @@ import org.apache.streamline.streams.catalog.TopologySourceStreamMapping;
 import org.apache.streamline.streams.catalog.TopologyVersionInfo;
 import org.apache.streamline.streams.catalog.UDFInfo;
 import org.apache.streamline.streams.catalog.WindowInfo;
+import org.apache.streamline.streams.catalog.cluster.ClusterImporter;
 import org.apache.streamline.streams.catalog.configuration.ConfigFileType;
 import org.apache.streamline.streams.catalog.configuration.ConfigFileWriter;
 import org.apache.streamline.streams.catalog.container.TopologyActionsContainer;
@@ -89,21 +83,25 @@ import org.apache.streamline.streams.catalog.processor.CustomProcessorInfo;
 import org.apache.streamline.streams.catalog.rule.RuleParser;
 import org.apache.streamline.streams.catalog.topology.TopologyComponentBundle;
 import org.apache.streamline.streams.catalog.topology.TopologyComponentUISpecification;
+import org.apache.streamline.streams.catalog.topology.TopologyData;
 import org.apache.streamline.streams.catalog.topology.TopologyLayoutValidator;
 import org.apache.streamline.streams.catalog.topology.component.TopologyDagBuilder;
+import org.apache.streamline.streams.catalog.topology.component.TopologyExportVisitor;
 import org.apache.streamline.streams.cluster.discovery.ServiceNodeDiscoverer;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
 import org.apache.streamline.streams.layout.component.OutputComponent;
 import org.apache.streamline.streams.layout.component.Stream;
+import org.apache.streamline.streams.layout.component.StreamlineComponent;
 import org.apache.streamline.streams.layout.component.StreamlineProcessor;
 import org.apache.streamline.streams.layout.component.StreamlineSource;
 import org.apache.streamline.streams.layout.component.TopologyActions;
 import org.apache.streamline.streams.layout.component.TopologyDag;
-import org.apache.streamline.streams.catalog.topology.TopologyData;
-import org.apache.streamline.streams.catalog.topology.component.TopologyExportVisitor;
+import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
 import org.apache.streamline.streams.layout.component.TopologyLayout;
+import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
 import org.apache.streamline.streams.layout.component.rule.Rule;
 import org.apache.streamline.streams.layout.exception.ComponentConfigException;
+import org.apache.streamline.streams.layout.storm.FluxComponent;
 import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
 import org.apache.streamline.streams.metrics.topology.TopologyTimeSeriesMetrics;
 import org.apache.streamline.streams.rule.UDAF;
@@ -117,8 +115,6 @@ import org.apache.streamline.streams.rule.UDF6;
 import org.apache.streamline.streams.rule.UDF7;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.apache.streamline.streams.catalog.TopologyEditorMetadata.TopologyUIData;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -140,14 +136,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ForkJoinPool;
-import java.util.regex.Matcher;
 
 import static java.util.stream.Collectors.toList;
 import static org.apache.streamline.common.util.WSUtils.CURRENT_VERSION;
 import static org.apache.streamline.common.util.WSUtils.currentVersionQueryParam;
 import static org.apache.streamline.common.util.WSUtils.versionIdQueryParam;
 import static org.apache.streamline.streams.catalog.TopologyEdge.StreamGrouping;
+import static org.apache.streamline.streams.catalog.TopologyEditorMetadata.TopologyUIData;
 
 /**
  * A service layer where we could put our business logic.
@@ -193,11 +188,12 @@ public class StreamCatalogService {
     private final ConfigFileWriter configFileWriter;
     private final ClusterImporter clusterImporter;
 
-    public StreamCatalogService(StorageManager dao, FileStorage fileStorage, Map<String, Object> configuration) {
+    public StreamCatalogService(StorageManager dao, FileStorage fileStorage, MLModelRegistryClient modelRegistryClient, Map<String, Object> configuration) {
         this.dao = dao;
         dao.registerStorables(getStorableClasses());
+        dao.registerStorables(getStorableClasses());
         this.fileStorage = fileStorage;
-        this.topologyDagBuilder = new TopologyDagBuilder(this);
+        this.topologyDagBuilder = new TopologyDagBuilder(this, modelRegistryClient);
         this.configFileWriter = new ConfigFileWriter();
 
         Map<String, String> conf = new HashMap<>();
@@ -1182,11 +1178,15 @@ public class StreamCatalogService {
         StormTopologyExtraJarsHandler extraJarsHandler = new StormTopologyExtraJarsHandler(this);
         topology.getTopologyDag().traverse(extraJarsHandler);
         Path extraJarsLocation = topologyActions.getExtraJarsLocation(getTopologyLayout(topology));
+        Path artifactsLocation = topologyActions.getArtifactsLocation(getTopologyLayout(topology));
         makeEmptyDir(extraJarsLocation);
-        Set<String> extraJars = new HashSet<>();
-        extraJars.addAll(extraJarsHandler.getExtraJars());
-        extraJars.addAll(getBundleJars(getTopologyLayout(topology)));
-        downloadAndCopyJars(extraJars, extraJarsLocation);
+
+        Set<String> extraJARs = new HashSet<>();
+        extraJARs.addAll(extraJarsHandler.getExtraJars());
+        extraJARs.addAll(getBundleJars(getTopologyLayout(topology)));
+        downloadAndCopyJars(extraJARs, extraJarsLocation);
+
+        downloadAndCopyJars(extraJarsHandler.getExtraResources(), artifactsLocation);
     }
 
     private Set<String> getBundleJars (TopologyLayout topologyLayout) throws IOException {
@@ -1200,17 +1200,17 @@ public class StreamCatalogService {
         return bundleJars;
     }
 
-    private void downloadAndCopyJars (Set<String> jarsToDownload, Path destinationPath) throws IOException {
-        Set<String> copiedJars = new HashSet<>();
-        for (String jar: jarsToDownload) {
-            if (!copiedJars.contains(jar)) {
-                File destPath = Paths.get(destinationPath.toString(), Paths.get(jar).getFileName().toString()).toFile();
-                try (InputStream src = fileStorage.downloadFile(jar);
+    private void downloadAndCopyJars (Set<String> resourcesToDownload, Path destinationPath) throws IOException {
+        Set<String> copiedResources = new HashSet<>();
+        for (String resource: resourcesToDownload) {
+            if (!copiedResources.contains(resource)) {
+                File destPath = Paths.get(destinationPath.toString(), Paths.get(resource).getFileName().toString()).toFile();
+                try (InputStream src = fileStorage.downloadFile(resource);
                      FileOutputStream dest = new FileOutputStream(destPath)
                 ) {
                     IOUtils.copy(src, dest);
-                    copiedJars.add(jar);
-                    LOG.debug("Jar {} copied to {}", jar, destPath);
+                    copiedResources.add(resource);
+                    LOG.debug("Resource {} copied to {}", resource, destPath);
                 }
             }
         }

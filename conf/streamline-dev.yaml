@@ -3,6 +3,8 @@ modules:
     className: org.apache.streamline.registries.tag.service.TagRegistryModule
   - name: dashboard-registry
     className: org.apache.streamline.registries.dashboard.service.DashboardRegistryModule
+  - name: model-registry
+    className: org.apache.streamline.registries.model.service.MLModelRegistryModule
   - name: streams
     className: org.apache.streamline.streams.service.StreamsModule
     config:
@@ -89,6 +91,7 @@ server:
   adminConnectors:
     - type: http
       port: 8081
+
 # Logging settings.
 logging:
   # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.

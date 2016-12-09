@@ -1,17 +1,18 @@
 {
-  "type": "PROCESSOR",
-  "name": "Model Evaluation Bolt",
-  "subType": "ModelEvaluation",
-  "builtin": true,
-  "streamingEngine": "STORM",
-  "transformationClass": "org.apache.streamline.streams.runtime.storm.bolt.model.ModelEvaluationFluxComponent",
-  "fields": [
-        {
-          "uiName": "ModelName",
-          "fieldName": "modelName",
-          "isOptional": false,
-          "tooltip": "Name of the model",
-          "type": "string",
-        }
-      ]
+	"type": "PROCESSOR",
+	"name": "PMML Model Evaluation Bolt",
+	"subType": "PMML_MODEL",
+	"builtin": true,
+	"streamingEngine": "STORM",
+	"transformationClass": "org.apache.streamline.streams.layout.storm.MLModelEvaluationFluxComponent",
+	"topologyComponentUISpecification": {
+		"fields": [{
+			"uiName": "ModelName",
+			"fieldName": "name",
+			"isOptional": false,
+			"tooltip": "Name of the model",
+			"type": "string",
+			"hint": "model"
+		}]
+	}
 }

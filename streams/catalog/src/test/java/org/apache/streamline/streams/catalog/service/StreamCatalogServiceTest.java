@@ -2,26 +2,19 @@ package org.apache.streamline.streams.catalog.service;
 
 import mockit.Expectations;
 import mockit.Injectable;
-import mockit.Mocked;
-import mockit.NonStrictExpectations;
 import mockit.Tested;
 import mockit.integration.junit4.JMockit;
 import org.apache.streamline.common.util.FileStorage;
-import org.apache.streamline.storage.PrimaryKey;
+import org.apache.streamline.registries.model.client.MLModelRegistryClient;
 import org.apache.streamline.storage.StorableKey;
 import org.apache.streamline.storage.StorageManager;
 import org.apache.streamline.streams.catalog.Topology;
 import org.apache.streamline.streams.catalog.TopologyVersionInfo;
-import org.apache.streamline.streams.catalog.configuration.ConfigFileWriter;
-import org.apache.streamline.streams.catalog.topology.component.TopologyDagBuilder;
-import org.apache.streamline.streams.layout.component.TopologyActions;
-import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -40,6 +33,9 @@ public class StreamCatalogServiceTest {
 
     @Injectable
     private FileStorage fileStorage;
+
+    @Injectable
+    private MLModelRegistryClient modelRegistryClient;
 
     @Injectable
     private Map<String, Object> configuration;
