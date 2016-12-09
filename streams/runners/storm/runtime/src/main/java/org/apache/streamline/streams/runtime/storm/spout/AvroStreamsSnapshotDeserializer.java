@@ -18,9 +18,9 @@
 package org.apache.streamline.streams.runtime.storm.spout;
 
 import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.registries.schemaregistry.SchemaMetadata;
-import org.apache.registries.schemaregistry.serdes.avro.AvroSnapshotDeserializer;
-import org.apache.registries.schemaregistry.serde.SerDesException;
+import com.hortonworks.registries.schemaregistry.SchemaMetadata;
+import com.hortonworks.registries.schemaregistry.serdes.avro.AvroSnapshotDeserializer;
+import com.hortonworks.registries.schemaregistry.serde.SerDesException;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericEnumSymbol;
 import org.apache.avro.generic.GenericFixed;

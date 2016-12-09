@@ -19,9 +19,9 @@ package org.apache.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.apache.registries.schemaregistry.SchemaVersionInfo;
-import org.apache.registries.schemaregistry.client.SchemaRegistryClient;
-import org.apache.registries.schemaregistry.errors.SchemaNotFoundException;
+import com.hortonworks.registries.schemaregistry.SchemaVersionInfo;
+import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
+import com.hortonworks.registries.schemaregistry.errors.SchemaNotFoundException;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import org.slf4j.Logger;

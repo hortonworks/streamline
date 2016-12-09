@@ -145,11 +145,11 @@
             <artifactId>flux-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.registries</groupId>
+            <groupId>com.hortonworks.registries</groupId>
             <artifactId>schema-registry-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.registries</groupId>
+            <groupId>com.hortonworks.registries</groupId>
             <artifactId>schema-registry-serdes</artifactId>
         </dependency>
 

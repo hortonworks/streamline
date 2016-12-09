@@ -20,7 +20,7 @@ import org.apache.streamline.streams.layout.storm.StormTopologyLayoutConstants;
 import org.apache.streamline.streams.metrics.TimeSeriesQuerier;
 import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
 import org.apache.streamline.streams.notification.service.NotificationServiceImpl;
-import org.apache.registries.schemaregistry.client.SchemaRegistryClient;
+import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
 import org.apache.streamline.streams.service.metadata.HBaseMetadataResource;
 import org.apache.streamline.streams.service.metadata.HiveMetadataResource;
 import org.apache.streamline.streams.service.metadata.KafkaMetadataResource;

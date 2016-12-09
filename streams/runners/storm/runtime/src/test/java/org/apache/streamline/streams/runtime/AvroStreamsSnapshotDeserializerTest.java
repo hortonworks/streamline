@@ -18,12 +18,12 @@
 package org.apache.streamline.streams.runtime;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.registries.schemaregistry.SchemaIdVersion;
+import com.hortonworks.registries.schemaregistry.SchemaIdVersion;
 import org.apache.streamline.streams.runtime.storm.spout.AvroStreamsSnapshotDeserializer;
-import org.apache.registries.schemaregistry.SchemaMetadata;
-import org.apache.registries.schemaregistry.SchemaVersionKey;
-import org.apache.registries.schemaregistry.serdes.avro.AvroSnapshotSerializer;
-import org.apache.registries.schemaregistry.client.SchemaRegistryClient;
+import com.hortonworks.registries.schemaregistry.SchemaMetadata;
+import com.hortonworks.registries.schemaregistry.SchemaVersionKey;
+import com.hortonworks.registries.schemaregistry.serdes.avro.AvroSnapshotSerializer;
+import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
