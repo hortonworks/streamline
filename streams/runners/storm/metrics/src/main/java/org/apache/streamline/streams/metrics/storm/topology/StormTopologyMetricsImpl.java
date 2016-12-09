@@ -271,7 +271,7 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
 
     private String getComponentIDInStreamline(String componentNameInStorm) {
         // removes all starting from first '-'
-        return componentNameInStorm.substring(componentNameInStorm.indexOf('-'));
+        return componentNameInStorm.substring(0, componentNameInStorm.indexOf('-'));
     }
 
     private String getComponentNameInStreamline(String componentNameInStorm) {

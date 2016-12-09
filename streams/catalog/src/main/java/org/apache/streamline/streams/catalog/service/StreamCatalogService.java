@@ -1272,6 +1272,11 @@ public class StreamCatalogService {
         return topologyActions.status(getTopologyLayout(topology));
     }
 
+    public String getRuntimeTopologyId(Topology topology) throws IOException {
+        TopologyActions topologyActions = getTopologyActionsInstance(topology);
+        return topologyActions.getRuntimeTopologyId(getTopologyLayout(topology));
+    }
+
     public Map<String, TopologyMetrics.ComponentMetric> getTopologyMetrics(Topology topology) throws IOException {
         TopologyMetrics topologyMetrics = getTopologyMetricsInstance(topology);
         return topologyMetrics.getMetricsForTopology(getTopologyLayout(topology));
@@ -1310,7 +1315,7 @@ public class StreamCatalogService {
         List<Pair<String, Double>> topNAndOther = new ArrayList<>();
 
         List<ImmutablePair<String, Double>> latencyOrderedComponents = metricsForTopology.entrySet().stream()
-                .map((x) -> new ImmutablePair<>(x.getKey(), x.getValue().getProcessedTime()))
+                .map((x) -> new ImmutablePair<>(x.getValue().getComponentName(), x.getValue().getProcessedTime()))
                 // reversed sort
                 .sorted((c1, c2) -> {
                     if (c2.getValue() == null) {
