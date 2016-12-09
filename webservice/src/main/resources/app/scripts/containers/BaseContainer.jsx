@@ -6,7 +6,6 @@ import {Link} from 'react-router';
 import {Confirm} from '../components/FSModal'
 
 import 'animate.css/animate.css';
-import 'styles/css/bootstrap.css';
 import 'bootstrap-daterangepicker/daterangepicker.css';
 import 'react-select/dist/react-select.css';
 import 'react-bootstrap-switch/dist/css/bootstrap3/react-bootstrap-switch.min.css';
@@ -33,7 +32,7 @@ export default class BaseContainer extends Component {
               headerContent={this.props.headerContent}
             />
             <Sidebar/>
-            <section className="content-wrapper">
+            <section className="content-wrapper editorHandler">
               {this.props.children}
             </section>
             <Confirm ref="Confirm"/>

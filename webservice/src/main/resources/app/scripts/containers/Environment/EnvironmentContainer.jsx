@@ -32,8 +32,17 @@ const MappingItem = (props) => {
 }
 
 const EnvironmentItems = (props) => {
-  const {mapData,name} = props;
-
+  let {mapData,name} = props;
+  let a = [], b = [];
+  mapData.map((m)=>{
+    if(m.serviceName.length > 8){
+      b.push(m);
+    } else {
+      a.push(m);
+    }
+  })
+  Array.prototype.push.apply(a, b);
+  mapData = a;
   return (
     <div>
       <h5 className="environment-title">{name}</h5>
@@ -281,7 +290,7 @@ class EnvironmentContainer extends Component{
       <BaseContainer ref="BaseContainer" routes={routes} headerContent={this.getHeaderContent()}>
         <div id="add-environment">
           <a href="javascript:void(0);"
-            className="hb success actionDropdown"
+            className="hb lg success actionDropdown"
             data-target="#addEnvironment"
             onClick={this.addEnvironmentBtn}>
               <i className="fa fa-plus"></i>

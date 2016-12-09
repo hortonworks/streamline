@@ -59,17 +59,31 @@ class TopologyViewMode extends Component{
   render(){
     const {minSelected, stormViewUrl} = this.state;
     const {topologyId,topologyName,isAppRunning,unknown,killTopology,setCurrentVersion,topologyMetric,timestamp, topologyVersion, versionsArr = []} = this.props;
-    const {misc} = topologyMetric;
-    const metricWrap = misc || {}
-    const latencyText = Utils.secToMinConverter(topologyMetric.latency,"graph").split('/')
-    const emittedText = Utils.kFormatter(metricWrap.emitted).toString();
-    const transferred = Utils.kFormatter(metricWrap.transferred).toString();
+    const {metric} = topologyMetric || { metric : (metric === undefined) ? '' : topologyMetric.metric};
+    const metricWrap = metric;
+    const {misc} = metricWrap || {misc : (metricWrap === '') ? '' : metricWrap.misc};
+    const latencyText = Utils.secToMinConverter(metric.latency,"graph").split('/')
+    const emittedText = Utils.kFormatter(misc.emitted).toString();
+    const transferred = Utils.kFormatter(misc.transferred).toString();
     let versionName = this.getTitleFromId(topologyVersion);
     return(
       <div>
         <div className="page-title-box row">
           <div className="col-sm-4">
-            <h4 className="page-heading">{topologyName}</h4>
+              <h4 className={`topology-name ${
+                (metricWrap.status || 'NOTRUNNING') === "KILLED"
+                  ? 'circle KILLED'
+                  : (metricWrap.status || 'NOTRUNNING') === "NOTRUNNING"
+                    ? 'NOTRUNNING' : ''
+                }`}>
+                <i className={`fa fa-exclamation-${
+                  (metricWrap.status || 'NOTRUNNING') === "KILLED"
+                    ? 'circle'
+                    : (metricWrap.status || 'NOTRUNNING') === "NOTRUNNING"
+                      ? 'triangle' : ''
+                }`}></i>{window.outerWidth < 1440 ? Utils.ellipses(topologyName,15) : topologyName }
+                <small>{this.props.nameSpaceName}</small>
+              </h4>
           </div>
           <div className="col-sm-5 text-right">
               <div className="filter-label">
@@ -144,15 +158,15 @@ class TopologyViewMode extends Component{
         </div>
         <div className="stat-tiles with-margin">
             <h6>ERRORS</h6>
-            <h1>{metricWrap.errors || 0}</h1>
+            <h1>{misc.errors || 0}</h1>
         </div>
         <div className="stat-tiles with-margin">
             <h6>WORKERS</h6>
-            <h1>{metricWrap.workersTotal || 0}</h1>
+            <h1>{misc.workersTotal || 0}</h1>
         </div>
         <div className="stat-tiles">
             <h6>EXECUTORS</h6>
-            <h1>{metricWrap.executorsTotal || 0}</h1>
+            <h1>{misc.executorsTotal || 0}</h1>
         </div>
       </div>
     </div>

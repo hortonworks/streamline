@@ -39,15 +39,34 @@ class PoolItemsCard extends Component{
   onActionClick = (eventKey) => {
       this.props.poolActionClicked(eventKey, this.clusterRef.dataset.id)
   }
+
+  checkRefId = (id) => {
+    const index = this.props.refIdArr.findIndex((x) => {
+      return x === id;
+    });
+    return index !== -1 ? true : false;
+  }
+
   render(){
-    const {clusterList, isLoading} = this.props;
+    const {clusterList, loader} = this.props;
     const {cluster,services} = clusterList;
-    const serviceWrap = services || {
+    const tempArr = services || {
         service: (services === undefined)
             ? ''
             : services.service
     };
+    let serviceWrap = [];
+    let t = [];
+    tempArr.map((s)=>{
+      if(s.service.name.length > 8){
+        t.push(s);
+      } else {
+        serviceWrap.push(s);
+      }
+    })
+    Array.prototype.push.apply(serviceWrap, t);
     const ellipseIcon = <i className="fa fa-ellipsis-v"></i>;
+
     return(
       <div className="col-md-4">
             <div className="service-box" data-id={cluster.id} ref={(ref) => this.clusterRef = ref}>
@@ -67,15 +86,24 @@ class PoolItemsCard extends Component{
                     </div>
                 </div>
                 <div className="service-body clearfix common-overflow">
-                 <ul className="service-components">
-                      {
-                        serviceWrap.length !== 0
-                        ? serviceWrap.map((items, i) => {
-                            return <ServiceItems key={i} item={items.service}/>
-                          })
-                        : <p>No services</p>
-                      }
-                  </ul>
+                  {
+                    (this.checkRefId(cluster.id))
+                    ? <div className="service-components">
+                        <div className="loading-img text-center">
+                            <img src="styles/img/start-loader.gif" alt="loading" />
+                        </div>
+                      </div>
+                    :  <ul className="service-components">
+                          {
+                            serviceWrap.length !== 0
+                            ? serviceWrap.map((items, i) => {
+                                return <ServiceItems key={i} item={items.service}/>
+                              })
+                            : <p>No services</p>
+                          }
+                      </ul>
+                  }
+
                 </div>
             </div>
         </div>
@@ -92,10 +120,10 @@ class ServicePoolContainer extends Component{
     super(props)
     this.state = {
       entities : [],
-      isLoading: {
-          loader: false,
-          idCheck: ''
-      },
+      loader: false,
+      refIdArr: [],
+      idCheck: '',
+      showFields : false,
       showInputErr : true,
       clusterData : {},
       fetchLoader : true,
@@ -165,11 +193,9 @@ class ServicePoolContainer extends Component{
   }
 
   handleUpdateCluster = (ID) => {
-    const id = +ID;
-    let flagUpdate = {
-        idCheck: id
-    }
-    this.setState({isLoading: flagUpdate});
+    const tempArr = this.state.refIdArr;
+    tempArr.push(+ID);
+    this.setState({refIdArr: tempArr,showFields : true,idCheck : +ID});
     this.adminFormModel.show();
   }
 
@@ -213,7 +239,7 @@ class ServicePoolContainer extends Component{
             }
         }
         if(errArr.length === 0){
-          if(this.state.isLoading.idCheck.length !== 0){
+          if(this.state.idCheck.length !== 0 && this.state.showFields){
             const url = this.refs.userUrl.value.trim();
             if(!Utils.validateURL(url)){
               this.refs.userUrl.setAttribute('class', "form-control invalidInput");
@@ -230,55 +256,56 @@ class ServicePoolContainer extends Component{
   }
 
   fetchFormdata = () => {
-    let tempCluster = {},tempLoader = {},name = '';
-    const {isLoading,clusterData} = this.state;
+    let tempCluster = {},name = '';
+    const {idCheck,clusterData,showFields} = this.state;
     const userName = this.refs.username.value.trim();
     const passWord = this.refs.userpass.value.trim();
-    if(isLoading.idCheck.length !== 0){
+    if(idCheck.length !== 0 && showFields){
       const url = this.refs.userUrl.value.trim();
       name = this.sliceClusterUrl(url);
       tempCluster = Object.assign(clusterData,{clusterName : name ,ambariUrl : url});
     }
-    tempLoader = Object.assign(isLoading,{loader : true});
     tempCluster = Object.assign(clusterData , {username : userName,password : passWord});
-    this.setState({clusterData : tempCluster,isLoading : tempLoader});
+    this.setState({clusterData : tempCluster});
+  }
+
+  fetchClusterDetail = () => {
+    const { clusterData,refIdArr} = this.state;
+    const {clusterName} = clusterData;
+    let data = {
+      name : clusterName,
+      description : "This is an auto generated description"
+    };
+    ClusterREST.postCluster({body : JSON.stringify(data)})
+      .then((cluster) => {
+        if (cluster.responseMessage !== undefined) {
+            FSReactToastr.error(
+                <CommonNotification flag="error" content={cluster.responseMessage}/>, '', toastOpt)
+                  this.setState({loader : false});
+        } else {
+            const id = cluster.id;
+            const tempArr = refIdArr;
+            tempArr.push(id);
+            this.setState({refIdArr : tempArr,loader : false,idCheck : ''}, () =>{
+              this.importAmbariCluster(id);
+              this.fetchData()
+            });
+        }
+      });
   }
 
   adminSaveClicked = () => {
     if(this.validateForm()){
-      const { clusterData,isLoading} = this.state;
-      const {clusterName} = clusterData;
-      let promiseArr = [];
-      if(isLoading.idCheck.length === 0){
-        let data = {
-          name : clusterName,
-          description : "This is an auto generated description"
-        }
-        promiseArr.push(ClusterREST.postCluster({body : JSON.stringify(data)}))
-      }
-      if(promiseArr.length !== 0){
-        Promise.all(promiseArr)
-          .then(result => {
-            if (result[0].responseMessage !== undefined) {
-                FSReactToastr.error(
-                    <CommonNotification flag="error" content={result[0].responseMessage}/>, '', toastOpt)
-                      let obj = Object.assign(isLoading ,{idCheck : '',loader : false});
-                      this.setState({isLoading : obj});
-            } else {
-                const id = result[0].id;
-                this.importAmbariCluster(id);
-            }
-          });
-      }else{
-        this.importAmbariCluster();
-      }
+      const {idCheck,showFields} = this.state;
+      (showFields) ? this.importAmbariCluster() : this.fetchClusterDetail();
+      this.adminFormModel.hide();
+      this.setState({showFields : false});
     }
   }
 
   importAmbariCluster = (id) => {
-    const {clusterData,isLoading} = this.state;
+    const {clusterData,idCheck,refIdArr} = this.state;
     const {ambariUrl,username, password} = clusterData;
-    const {idCheck} = isLoading;
     const clusterID = id ;
     const importClusterData = {
       clusterId : clusterID || idCheck,
@@ -286,7 +313,6 @@ class ServicePoolContainer extends Component{
       username : username,
       password : password
     }
-    this.adminFormModel.hide();
 
     // Post call for import cluster from ambari
     ClusterREST.postAmbariCluster({body : JSON.stringify(importClusterData)})
@@ -294,39 +320,49 @@ class ServicePoolContainer extends Component{
         let obj = {};
         if (ambarClusters.message !== undefined) {
             FSReactToastr.error(<CommonNotification flag="error" content={ambarClusters.message}/>, '', toastOpt);
-            ClusterREST.deleteCluster(clusterID);
-            obj = Object.assign(isLoading ,{idCheck : '',loader : false});
-            this.setState({isLoading : obj});
+            ClusterREST.deleteCluster(clusterID || idCheck);
+            const tempDataArray = this.spliceTempArr(clusterID || idCheck);
+            this.setState({loader : false,idCheck : '',refIdArr : tempDataArray});
         }else{
           const result = ambarClusters;
-          obj = Object.assign(isLoading ,{idCheck : '',loader : false});
-
+          let entitiesWrap = [];
           if(idCheck){
             //Update Single Cluster
-            let entitiesWrap = [];
             const elPosition = this.state.entities.map(function(x) {
                 return x.cluster.id;
             }).indexOf(idCheck);
             entitiesWrap = this.state.entities;
             entitiesWrap[elPosition] = result;
-            this.setState({isLoading : obj, entities: entitiesWrap});
             FSReactToastr.success(
                 <strong>process has been completed successfully</strong>
             )
           } else {
-            this.setState({isLoading : obj}, () => {this.fetchData()});
             FSReactToastr.success(
                 <strong>Cluster has been added successfully</strong>
             )
           }
+          const tempDataArray = this.spliceTempArr(clusterID || idCheck);
+
+          this.setState({loader : false,idCheck : '', entities: entitiesWrap, refIdArr : tempDataArray}, () => this.fetchData());
         }
     });
   }
 
+  spliceTempArr = (id) => {
+    const tempArr = this.state.refIdArr;
+    const index = tempArr.findIndex((x) => {
+      return x === id;
+    });
+    if(index !== -1){
+      tempArr.splice(index , 1);
+    }
+    return tempArr;
+  }
+
   adminCancelClicked = () => {
-    const {idCheck} = this.state.isLoading;
-    const obj = Object.assign(this.state.isLoading , {idCheck : ''});
-    this.setState({isLoading : obj});
+    const {idCheck} = this.state;
+    const tempDataArray = this.spliceTempArr(idCheck);
+    this.setState({idCheck : '',showFields : false,refIdArr:tempDataArray});
     this.adminFormModel.hide();
   }
 
@@ -343,12 +379,12 @@ class ServicePoolContainer extends Component{
 
   render(){
     const {routes} = this.props;
-    const {showInputErr,entities,isLoading,fetchLoader,pageSize,pageIndex} = this.state;
+    const {showInputErr,entities,showFields,fetchLoader,pageSize,pageIndex,refIdArr,loader} = this.state;
     const splitData = _.chunk(entities,pageSize) || [];
     const adminFormFields = () =>{
       return <form className="modal-form config-modal-form" ref="modelForm">
         {
-          isLoading.idCheck.length !== 0
+          loader || showFields
           ?  <div className="form-group">
                 <label>Url<span className="text-danger">*</span></label>
                   <input type="text"
@@ -367,7 +403,7 @@ class ServicePoolContainer extends Component{
                   className="form-control"
                   placeholder="Enter your Name"
                   ref="username"
-                  autoFocus={isLoading.idCheck.length !== 0 ? false : true}
+                  autoFocus={showFields ? false : true}
                 />
                 <p className="text-danger"></p>
             </div>
@@ -410,8 +446,13 @@ class ServicePoolContainer extends Component{
               ? ''
               : (splitData.length === 0)
                 ? <NoData/>
-                : splitData[pageIndex].map((list) => {
-                    return <PoolItemsCard key={list.cluster.id} clusterList={list} poolActionClicked={this.poolActionClicked} isLoading={isLoading}/>
+              : splitData[pageIndex].map((list) => {
+                    return <PoolItemsCard key={list.cluster.id}
+                            clusterList={list}
+                            poolActionClicked={this.poolActionClicked}
+                            refIdArr={refIdArr}
+                            loader = {loader}
+                            />
                 })
             }
         </div>
@@ -431,16 +472,6 @@ class ServicePoolContainer extends Component{
           data-reject={this.adminCancelClicked}>
           {adminFormFields()}
         </Modal>
-        {
-          isLoading.loader
-          ? <div className="fullScreenLoader">
-                  <div className="loading-img text-center loaderWrap">
-                      <img src="styles/img/start-loader.gif" alt="loading" />
-                      <p>Please be patient. This process will take a while!</p>
-                  </div>
-            </div>
-          : ''
-        }
       </BaseContainer>
     )
   }

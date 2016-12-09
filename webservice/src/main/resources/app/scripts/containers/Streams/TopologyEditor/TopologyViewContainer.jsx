@@ -99,6 +99,7 @@ class TopologyEditorContainer extends Component {
           FSReactToastr.error(<CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt)
         } else {
           var data = result;
+          this.nameSpace = data.namespaceName;
           if(!versionId){
             versionId = data.topology.versionId;
           }
@@ -120,7 +121,7 @@ class TopologyEditorContainer extends Component {
               let allNodes = [];
               this.topologyName = data.topology.name;
               this.topologyConfig = JSON.parse(data.topology.config);
-              this.topologyMetric = data.metric || {misc : (data.metric === undefined) ? '' : metric.misc};
+              this.topologyMetric = data.runtime || {metric : (data.runtime === undefined) ? '' : (runtime.metric === undefined) ? '' : runtime.metric};
 
               let unknown = data.running;
               let isAppRunning = false;
@@ -274,7 +275,7 @@ class TopologyEditorContainer extends Component {
             TopologyREST.getTopology(this.topologyId, this.versionId)
               .then((result)=>{
                 let data = result;
-                this.topologyMetric = data.metric || {misc: (data.metric === undefined) ? '' : metric.misc};
+                this.topologyMetric = data.runtime || {misc: (data.metric === undefined) ? '' : metric.misc};
                 let status = this.topologyMetric.status || '';
                 this.setState({topologyMetric: this.topologyMetric, isAppRunning: false, topologyStatus: status});
               })
@@ -347,6 +348,7 @@ class TopologyEditorContainer extends Component {
             handleVersionChange = {this.handleVersionChange.bind(this)}
             setCurrentVersion = {this.setCurrentVersion.bind(this)}
             stormClusterId={this.state.stormClusterId}
+            nameSpaceName = {this.nameSpace}
           />
           <div id="viewMode" className="graph-bg">
             <EditorGraph

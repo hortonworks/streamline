@@ -153,7 +153,7 @@ export default class CustomProcessorContainer extends Component {
                         </div>
                         <div id="add-environment">
                           <a href="javascript:void(0);"
-                            className="hb success actionDropdown"
+                            className="hb lg success actionDropdown"
                             data-target="#addEnvironment"
                               onClick={this.handleAdd.bind(this)}>
                               <i className="fa fa-plus"></i>

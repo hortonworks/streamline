@@ -99,12 +99,16 @@ class TopologyItems extends Component {
     }
     render() {
         const {topologyAction, topologyList, isLoading} = this.props;
-        const {topology, metric,latencyTopN} = topologyList;
+        const {topology, runtime = {},namespaceName} = topologyList;
+        const {metric,latencyTopN} = runtime;
         const metricWrap = metric || {
             misc: (metric === undefined)
                 ? ''
                 : metric.misc
         };
+        const {misc} = metricWrap;
+        const emittedText = Utils.kFormatter(misc.emitted).toString();
+        const transferred = Utils.kFormatter(misc.transferred).toString();
         let latencyWrap = latencyTopN || [];
         let graphData = [], graphVal=0;
         latencyWrap.map((d,v) => {
@@ -129,7 +133,9 @@ class TopologyItems extends Component {
                                 ? 'circle KILLED'
                                 : (metricWrap.status || 'NOTRUNNING') === "NOTRUNNING"
                                   ? 'triangle NOTRUNNING' : ''
-                            }`}></i>{topology.name}</h4>
+                            }`}></i>{window.outerWidth < 1440 ? Utils.ellipses(topology.name,15) : topology.name }
+                            <small>{namespaceName}</small>
+                          </h4>
                       </Link>
                       <h5>
                           {(metricWrap.uptime === undefined)
@@ -215,11 +221,25 @@ class TopologyItems extends Component {
                         <div className="row row-margin-top">
                             <div className="stream-stats">
                                 <h6>Emitted</h6>
-                                <h5>{metricWrap.misc.emitted || 0}</h5>
+                                <h5>{
+                                    (emittedText.indexOf('k') < 1
+                                    ? emittedText
+                                    : emittedText.substr(0,emittedText.indexOf('k')))
+                                     || 0
+                                  }
+                                  <small>{emittedText.indexOf('.') < 1 ? '' : 'k'}</small>
+                                </h5>
                             </div>
                             <div className="stream-stats">
                                 <h6>Transferred</h6>
-                                <h5>{metricWrap.misc.transferred || 0}</h5>
+                                <h5>{
+                                    (transferred.indexOf('k') < 1
+                                    ? transferred
+                                    : transferred.substr(0, transferred.indexOf('k')))
+                                    || 0
+                                  }
+                                  <small>{transferred.indexOf('.') < 1 ? '' : 'k'}</small>
+                                </h5>
                             </div>
                             <div className="stream-stats">
                                 <h6>Errors</h6>
@@ -288,7 +308,7 @@ class TopologyListingContainer extends Component {
         }).catch((err) => {
             this.setState({fetchLoader : false});
             FSReactToastr.error(
-                <CommonNotification flag="error" content={err}/>, '', toastOpt)
+                <CommonNotification flag="error" content={err.message}/>, '', toastOpt)
         });
     }
 
@@ -312,7 +332,7 @@ class TopologyListingContainer extends Component {
             this.setState({isLoading: flagUpdate})
         }).catch((err) => {
             FSReactToastr.error(
-                <CommonNotification flag="error" content={err}/>, '', toastOpt)
+                <CommonNotification flag="error" content={err.message}/>, '', toastOpt)
         });
     }
 
@@ -368,7 +388,7 @@ class TopologyListingContainer extends Component {
           }
         }).catch((err) => {
           FSReactToastr.error(
-            <CommonNotification flag="error" content={err}/>, '', toastOpt)
+            <CommonNotification flag="error" content={err.message}/>, '', toastOpt)
         })
       })
     }
@@ -467,7 +487,7 @@ class TopologyListingContainer extends Component {
     }
     btnClassChange = () => {
       const actionMenu = document.querySelector('.actionDropdown');
-      actionMenu.setAttribute("class","actionDropdown hb success ");
+      actionMenu.setAttribute("class","actionDropdown hb lg success ");
       actionMenu.parentElement.setAttribute("class","dropdown");
       const sortDropdown = document.querySelector('.sortDropdown');
       sortDropdown.setAttribute("class","sortDropdown");
@@ -506,7 +526,7 @@ class TopologyListingContainer extends Component {
                 <div id="add-environment">
                   <DropdownButton title={btnIcon}
                       id="actionDropdown"
-                      className="actionDropdown hb success"
+                      className="actionDropdown hb lg success"
                       noCaret
                     >
                         <MenuItem onClick={this.onActionMenuClicked.bind(this,"create")}>
@@ -563,7 +583,7 @@ class TopologyListingContainer extends Component {
                 <div className="row">
                     {
                       (this.state.fetchLoader)
-                      ? ''
+                      ? <NoData/>
                       : (splitData.length === 0)
                         ? <NoData/>
                         : splitData[pageIndex].map((list) => {

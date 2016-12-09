@@ -7,7 +7,7 @@ const TopologyREST = {
         getAllTopology(sort,options) {
 		options = options || {};
 		options.method = options.method || 'GET';
-        return CustomFetch(baseUrl+'topologies?withMetric=true&sort='+sort+'&latencyTopN=3',options)
+        return CustomFetch(baseUrl+'topologies?detail=true&sort='+sort+'&latencyTopN=3',options)
 			.then( (response) => {
 		  		return response.json();
 		  	})
@@ -15,9 +15,9 @@ const TopologyREST = {
         getTopology(id, versionId, options) {
 		options = options || {};
 		options.method = options.method || 'GET';
-                let url = baseUrl+'topologies/'+id+"?withMetric=true&latencyTopN=3";
+                let url = baseUrl+'topologies/'+id+"?detail=true&latencyTopN=3";
                 if(versionId){
-                        url = baseUrl+'topologies/'+id+"/versions/"+versionId+"?withMetric=true&latencyTopN=3";
+                        url = baseUrl+'topologies/'+id+"/versions/"+versionId+"?detail=true&latencyTopN=3";
                 }
         return fetch(url, options)
 			.then( (response) => {

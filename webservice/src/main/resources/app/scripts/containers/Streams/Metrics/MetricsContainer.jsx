@@ -274,7 +274,7 @@ export default class MetricsContainer extends Component {
         }
     }
  	render() {
-		const loader = <i className="fa fa-spinner fa-spin fa-3x" aria-hidden="true" style={{marginTop: '50px'}}></i>
+                const loader = <img src="styles/img/start-loader.gif" alt="loading" style={{width : "100px",marginTop : "30px"}} />
         const {inputOutputData, queueData, ackedData, failedData, latencyData, processTimeData, selectedComponentId, selectedComponentName} = this.state;
         const locale = {
           format: 'YYYY-MM-DD HH:mm:ss',

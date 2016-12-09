@@ -44,11 +44,21 @@ class AddEnvironmentItems extends Component{
   render(){
     const {clusterList} = this.props;
     const {cluster,services} = clusterList;
-    const serviceWrap = services || [{
+    const tempArr = services || [{
         service: (services === undefined)
             ? ''
             : services.service
     }];
+    let serviceWrap = [];
+    let t = [];
+    tempArr.map((s)=>{
+      if(s.service.name.length > 8){
+        t.push(s);
+      } else {
+        serviceWrap.push(s);
+      }
+    })
+    Array.prototype.push.apply(serviceWrap, t);
     return(
       <div className="col-md-4">
       <div className="environment-modal-widget">

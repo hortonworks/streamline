@@ -75,10 +75,20 @@ footer {
 }
 
 .content-wrapper {
-  padding-left: 20px;
-  padding-right: 80px;
+  padding-left: 70px;
+  padding-right: 70px;
   padding-top: 70px;
-  margin-left: 240px;
+  margin-left: 230px;
+  -webkit-transition: -webkit-transform .3s ease-in-out,margin .3s ease-in-out;
+  -moz-transition: -moz-transform .3s ease-in-out,margin .3s ease-in-out;
+  -o-transition: -o-transform .3s ease-in-out,margin .3s ease-in-out;
+  transition: transform .3s ease-in-out,margin .3s ease-in-out;
+}
+.contentEditor-wrapper {
+  padding-left: 70px;
+  padding-right: 10px;
+  padding-top: 70px;
+  margin-left: 230px;
   -webkit-transition: -webkit-transform .3s ease-in-out,margin .3s ease-in-out;
   -moz-transition: -moz-transform .3s ease-in-out,margin .3s ease-in-out;
   -o-transition: -o-transform .3s ease-in-out,margin .3s ease-in-out;
@@ -174,6 +184,11 @@ a.dropdown-toggle ~ ul.dropdown-menu{
   height: 450px;
   overflow-y: auto;
 }
+.modal-content {
+  -webkit-box-shadow: 0 0px 10px rgba(0, 0, 0, .3);
+  box-shadow: 0 0px 10px rgba(0, 0, 0, .3);
+  border : none;
+}
 .modal-backdrop {
   background-color: #999;
 }
@@ -184,7 +199,7 @@ a.dropdown-toggle ~ ul.dropdown-menu{
 }
 .modal-footer {
   border-top: none;
-  background-color: #eef0ef;
+  /*background-color: #eef0ef;*/
   border-radius: 0px 0px 5px 5px;
 }
 .modal-header {
@@ -262,7 +277,7 @@ label {
   border-color: #C00;
 }
 .modal-sidebar-right {
-  background-color: #f9f9f9;
+  border-left: 2px #fafafa solid;
   width: 200px;
   position: absolute;
   top: 0px;
@@ -271,7 +286,7 @@ label {
   padding: 0px 20px !important;;
 }
 .modal-sidebar-left {
-  background-color: #f9f9f9;
+  border-right: 2px #fafafa solid;
   width: 200px;
   position: absolute;
   top: 0;
@@ -447,6 +462,16 @@ label {
     font-weight: 400;
     font-size: 17.5px;
 }
+.stream-box .stream-head h4 small {
+    background-color: #aeaeae;
+    color: #fff;
+    margin-left: 5px;
+    padding: 2px 5px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    font-size: 10px;
+}
+.stream-box .stream-head a {text-decoration:none}
 .stream-box .stream-head h4 i.KILLED{
   color: #f46060;
   margin-right: 3px;
@@ -562,6 +587,7 @@ label {
   text-align: center;
   z-index: 0;
   line-height: 20px;
+  border:none;
 }
 .hb,
 .hb:before,
@@ -641,16 +667,16 @@ label {
         border-right:1px solid #288432;
 }
 .hb.lg {
-        line-height: 38px;
+  /*line-height: 38px;*/
 }
 .hb.lg,
 .hb.lg:before,
 .hb.lg:after {
-        height: 31px;
-    width: 54px;
+   height: 26px;
+   width: 45px;
 }
 .hb.lg i {
-        font-size: 24px;
+   font-size: 20px;
 }
 .user-list {
   padding: 0px;
@@ -748,7 +774,7 @@ label {
     height: 500px !important;
     width:75px;
     top: 50%;
-    margin-left: -10px;
+    margin-left: -70px;
     transform: translateY(-50%);
     background-color: #fff;
     padding: 10px 0;
@@ -1188,7 +1214,7 @@ label {
 }
 @media (min-width: 1280px) {
     .page-title-box input.inputAnimateIn {
-        margin-left:93%;
+        margin-left:91%;
     }
     .page-title-box input.inputAnimateOut{
       width: 90%;
@@ -1518,15 +1544,6 @@ span.version{
 .environment-components > li > img {
   width: 52px;
 }
-.service-components li:nth-child(6n+7) {
-  clear: left;
-}
-.select-env-service li:nth-child(2n+3) {
-    clear: left;
-}
-.environment-components li:nth-child(3n+4) {
-    clear: left;
-}
 #add-environment {
   position: absolute;
   right: 90px;
@@ -1808,7 +1825,11 @@ rect.extent{
   .sidebar-mini.sidebar-collapse .content-wrapper,
   .sidebar-mini.sidebar-collapse .right-side,
   .sidebar-mini.sidebar-collapse .main-footer {
-    margin-left: 60px !important;
+    margin-left: 50px !important;
+    z-index: 840;
+  }
+  .sidebar-mini.sidebar-collapse .contentEditor-wrapper{
+    margin-left: 50px !important;
     z-index: 840;
   }
   .sidebar-mini.sidebar-collapse .main-sidebar {
@@ -1953,4 +1974,24 @@ rect.extent{
 .input-schema, .output-schema {
   float: left;
   width: 100px;
+}
+.topology-name small {
+  background-color: #aeaeae;
+  color: #fff;
+  margin-left: 5px;
+  padding: 2px 5px;
+  border-radius: 10px;
+  font-size: 10px;
+}
+.topology-name i {
+  margin-right: 3px;
+}
+.topology-name.NOTRUNNING i {
+  color: #ffba30;
+}
+.topology-name.KILLED i {
+  color: #f46060;
+}
+.topology-name.INACTIVE i {
+  color: #feba33;
 }

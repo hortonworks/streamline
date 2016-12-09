@@ -31,15 +31,13 @@ export default class Header extends Component {
             <div className="headContentText">
               {this.props.headerContent}
             </div>
-            <Nav pullRight>
-              <NavDropdown id="userDropdown" eventKey="5" title={userIcon}>
-                <MenuItem>Action</MenuItem>
-                <MenuItem>Another action</MenuItem>
-                  <MenuItem>Something else here</MenuItem>
-                  <MenuItem divider />
-                  <MenuItem>Separated link</MenuItem>
-              </NavDropdown>
-            </Nav>
+            <ul className="nav pull-right">
+              <li>
+                <a role="button" href="javascript:void(0);">
+                  {userIcon}
+                </a>
+              </li>
+            </ul>
           </div>
         </nav>
       </header>
