@@ -512,16 +512,19 @@ public class TopologyCatalogResource {
     }
 
     /**
-     * curl -X POST 'http://localhost:8080/api/v1/catalog/topologies/actions/import' -F file=@/tmp/topology.json
+     * curl -X POST 'http://localhost:8080/api/v1/catalog/topologies/actions/import' -F file=@/tmp/topology.json -F namespaceId=1
      */
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/topologies/actions/import")
     @Timed
-    public Response importTopology(@FormDataParam("file") final InputStream inputStream)
-            throws Exception {
+    public Response importTopology(@FormDataParam("file") final InputStream inputStream,
+                                   @FormDataParam("namespaceId") final Long namespaceId) throws Exception {
+        if (namespaceId == null) {
+            throw new IllegalArgumentException("Missing namespaceId");
+        }
         TopologyData topologyData = new ObjectMapper().readValue(inputStream, TopologyData.class);
-        Topology importedTopology = catalogService.importTopology(topologyData);
+        Topology importedTopology = catalogService.importTopology(namespaceId, topologyData);
         return WSUtils.respondEntity(importedTopology, OK);
     }
 
