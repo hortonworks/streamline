@@ -38,7 +38,7 @@ export default (
   <Route path="custom-processor" name="Custom Processor" component={CustomProcessorContainer} onEnter={onEnter}/>
   <Route path="tags" name="Tags" component={TagsContainer} onEnter={onEnter}/>
   <Route path="files" name="Files" component={FilesContainer} onEnter={onEnter}/>
-  <Route path="news-feed" name="News Feed" component={NewsFeedContainer} onEnter={onEnter}/>
+  <Route path="dashboard" name="Dashboard" component={DashboardContainer} onEnter={onEnter}/>
   <Route path="service-pool" name="Service Pool" component={ServicePoolContainer} onEnter={onEnter}/>
   <Route path="environments" name="Environments" component={EnvironmentContainer} onEnter={onEnter}/>
   </Route>

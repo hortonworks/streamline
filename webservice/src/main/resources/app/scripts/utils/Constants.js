@@ -3,6 +3,7 @@ const pageSize = 25;
 const notifyTextLimit = 90;
 const toastOpt = {timeOut:0,closeButton:true,tapToDismiss:false,extendedTimeOut:0};
 const registryPort = "9090";
+const dashboardURL = "http://localhost:8888"
 const PieChartColor = ["#006ea0","#77b0bd","#b7cfdb","#9dd1e9"];
 const ItemTypes = {
   ComponentNodes: 'box',
@@ -49,5 +50,6 @@ export {
   notifyTextLimit,
   toastOpt,
   PieChartColor,
-  registryPort
+  registryPort,
+  dashboardURL
 };
