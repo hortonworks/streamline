@@ -43,7 +43,8 @@ CREATE TABLE IF NOT EXISTS topologies (
     namespaceId BIGINT NOT NULL,
     config TEXT NOT NULL,
     PRIMARY KEY (id, versionId),
-    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
+    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id),
+    FOREIGN KEY (namespaceId) REFERENCES namespaces(id)
 );
 
 CREATE TABLE IF NOT EXISTS topology_component_bundles (
@@ -292,7 +293,7 @@ CREATE TABLE IF NOT EXISTS namespaces (
 
 CREATE TABLE IF NOT EXISTS namespace_service_cluster_mapping (
     namespaceId BIGINT NOT NULL,
-    serviceName VARCHAR(256) NOT NULL,
+    serviceName VARCHAR(255) NOT NULL,
     clusterId BIGINT NOT NULL,
     PRIMARY KEY (namespaceId, serviceName, clusterId)
 );

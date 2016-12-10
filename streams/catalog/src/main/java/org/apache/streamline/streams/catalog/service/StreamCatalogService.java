@@ -1128,12 +1128,13 @@ public class StreamCatalogService {
         return newTopology;
     }
 
-    public Topology importTopology(TopologyData topologyData) throws Exception {
+    public Topology importTopology(Long namespaceId, TopologyData topologyData) throws Exception {
         Preconditions.checkNotNull(topologyData);
         Topology newTopology = new Topology();
         try {
             newTopology.setName(topologyData.getTopologyName());
             newTopology.setConfig(topologyData.getConfig());
+            newTopology.setNamespaceId(namespaceId);
             addTopology(newTopology);
             doImportTopology(newTopology, topologyData);
         } catch (Exception ex) {
@@ -1148,7 +1149,7 @@ public class StreamCatalogService {
         Preconditions.checkNotNull(topology, "Topology does not exist");
         TopologyData exported = new TopologyData(doExportTopology(topology));
         exported.setTopologyName(exported.getTopologyName() + "-clone");
-        return importTopology(exported);
+        return importTopology(topology.getNamespaceId(), exported);
     }
 
     private void setUpExtraJars(Topology topology, TopologyActions topologyActions) throws IOException {
