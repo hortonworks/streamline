@@ -26,7 +26,8 @@ import {toastOpt , PieChartColor} from '../../../utils/Constants';
 import PieChart from '../../../components/PieChart';
 import Paginate from '../../../components/Paginate';
 import Modal from '../../../components/FSModal';
-import AddTopology from './AddTopology'
+import AddTopology from './AddTopology';
+import ImportTopology from './ImportTopology';
 
 class CustPieChart extends PieChart{
   drawPie(){
@@ -350,26 +351,8 @@ class TopologyListingContainer extends Component {
       this.AddTopologyModelRef.show();
     }
 
-    handleImportTopology = (e) => {
-      if(!e.target.files.length || (e.target.files.length && e.target.files[0].name.indexOf('.json') < 0)){
-        FSReactToastr.error(<CommonNotification flag="error" content="please select the .json file type.."/>, '', toastOpt)
-  			return;
-  		}
-  		let fileObj = e.target.files[0];
-      if(fileObj){
-        let formData = new FormData();
-        formData.append('file', fileObj);
-
-        TopologyREST.importTopology({body:formData})
-          .then(importResponse => {
-            if (importResponse.responseMessage !== undefined) {
-              FSReactToastr.error(<CommonNotification flag="error" content={importResponse.responseMessage}/>, '', toastOpt)
-            } else {
-              this.fetchData();
-              FSReactToastr.success(<strong>File has been imported successfully</strong>)
-            }
-          });
-      }
+    handleImportTopology() {
+      this.ImportTopologyModelRef.show();
     }
 
     deleteSingleTopology = (id) => {
@@ -474,7 +457,7 @@ class TopologyListingContainer extends Component {
       switch(eventKey.toString()){
         case "create" : this.handleAddTopology();
           break;
-        case "import" : this.importFileRef.click();
+        case "import" : this.handleImportTopology();
           break;
          default : break;
       }
@@ -509,6 +492,20 @@ class TopologyListingContainer extends Component {
                   )
                   this.context.router.push('applications/' + topology.id + '/edit');
                 })
+            }
+        })
+      }
+    }
+
+    handleImportSave = () => {
+      if(this.importTopologyRef.validate()){
+          this.importTopologyRef.handleSave().then((topology)=>{
+            if (topology.responseMessage !== undefined) {
+              FSReactToastr.error(
+                  <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
+            } else {
+                FSReactToastr.success(<strong>Topology imported successfully</strong>)
+                this.context.router.push('applications/' + topology.id + '/edit');
             }
         })
       }
@@ -606,14 +603,11 @@ class TopologyListingContainer extends Component {
                   data-resolve={this.handleSaveClicked}>
                   <AddTopology ref={(ref) => this.addTopologyRef = ref}/>
                 </Modal>
-                <input type="file"
-                  ref={(ref) => this.importFileRef = ref}
-                  className="displayNone"
-                  accept=".json"
-                  name="files"
-                  title="Upload File"
-                  onChange={this.handleImportTopology}
-                />
+                <Modal ref={(ref) => this.ImportTopologyModelRef = ref}
+                  data-title="Import Stream"
+                  data-resolve={this.handleImportSave}>
+                  <ImportTopology ref={(ref) => this.importTopologyRef = ref}/>
+                </Modal>
                 <a className="btn-download" ref="ExportTopology" hidden download href=""></a>
             </BaseContainer>
         );
