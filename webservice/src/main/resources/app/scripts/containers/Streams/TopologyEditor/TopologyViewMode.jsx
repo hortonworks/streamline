@@ -59,7 +59,7 @@ class TopologyViewMode extends Component{
   render(){
     const {minSelected, stormViewUrl} = this.state;
     const {topologyId,topologyName,isAppRunning,unknown,killTopology,setCurrentVersion,topologyMetric,timestamp, topologyVersion, versionsArr = []} = this.props;
-    const {metric} = topologyMetric || { metric : (metric === undefined) ? '' : topologyMetric.metric};
+    const {metric} = topologyMetric || { metric : (topologyMetric === '') ? '' : topologyMetric.metric};
     const metricWrap = metric;
     const {misc} = metricWrap || {misc : (metricWrap === '') ? '' : metricWrap.misc};
     const latencyText = Utils.secToMinConverter(metric.latency,"graph").split('/')

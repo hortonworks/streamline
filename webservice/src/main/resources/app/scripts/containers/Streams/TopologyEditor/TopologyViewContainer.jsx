@@ -121,13 +121,14 @@ class TopologyEditorContainer extends Component {
               let allNodes = [];
               this.topologyName = data.topology.name;
               this.topologyConfig = JSON.parse(data.topology.config);
-              this.topologyMetric = data.runtime || {metric : (data.runtime === undefined) ? '' : (runtime.metric === undefined) ? '' : runtime.metric};
+              this.topologyMetric = data.runtime || {metric : ''};
+              // this.topologyMetric = this.runtimeObj.metric || {misc : (this.runtimeObj.metric === undefined) ? '' : this.runtimeObj.metric.misc};
 
               let unknown = data.running;
               let isAppRunning = false;
               let status = '';
-              if(this.topologyMetric.status){
-                status = this.topologyMetric.status;
+              if(this.topologyMetric.metric.status){
+                status = this.topologyMetric.metric.status;
                 if(status === 'ACTIVE' || status === 'INACTIVE')
                   isAppRunning = true;
               }
@@ -268,15 +269,15 @@ class TopologyEditorContainer extends Component {
           if(topology.responseMessage !== undefined){
             FSReactToastr.error(
               <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
-            let status = this.topologyMetric.status || 'NOT RUNNING';
+            let status = this.topologyMetric.metric.status || 'NOT RUNNING';
             this.setState({topologyStatus: status});
           } else {
             FSReactToastr.success(<strong>Topology Killed Successfully</strong>);
             TopologyREST.getTopology(this.topologyId, this.versionId)
               .then((result)=>{
                 let data = result;
-                this.topologyMetric = data.runtime || {misc: (data.metric === undefined) ? '' : metric.misc};
-                let status = this.topologyMetric.status || '';
+                this.topologyMetric = data.runtime || {metric : ''};
+                let status = this.topologyMetric.metric.status || '';
                 this.setState({topologyMetric: this.topologyMetric, isAppRunning: false, topologyStatus: status});
               })
           }

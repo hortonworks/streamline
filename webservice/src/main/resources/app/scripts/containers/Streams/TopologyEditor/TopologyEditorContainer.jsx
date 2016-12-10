@@ -213,8 +213,8 @@ class TopologyEditorContainer extends Component {
               let allNodes = [];
               this.topologyName = data.topology.name;
               this.topologyConfig = JSON.parse(data.topology.config);
-              this.runtimeObj = data.runtime || {metric : (data.runtime.metric === undefined) ? '' : data.runtime.metric};
-              this.topologyMetric = this.runtimeObj.metric || {misc : (this.runtimeObj.metric === undefined) ? '' : metric.misc};
+              this.runtimeObj = data.runtime || {metric : (data.runtime === undefined) ? '' : data.runtime.metric};
+              this.topologyMetric = this.runtimeObj.metric || {misc : (this.runtimeObj.metric === undefined) ? '' : this.runtimeObj.metric.misc};
 
               let unknown = data.running;
               let isAppRunning = false;
@@ -440,8 +440,8 @@ class TopologyEditorContainer extends Component {
                       TopologyREST.getTopology(this.topologyId)
                         .then((result)=>{
                           let data = result;
-                          this.runtimeObj = data.runtime || {metric : (data.runtime.metric === undefined) ? '' : data.runtime.metric};
-                          this.topologyMetric = this.runtimeObj.metric || {misc : (this.runtimeObj.metric === undefined) ? '' : metric.misc};
+                          this.runtimeObj = data.runtime || {metric : (data.runtime === undefined) ? '' : data.runtime.metric};
+                          this.topologyMetric = this.runtimeObj.metric || {misc : (this.runtimeObj.metric === undefined) ? '' : this.runtimeObj.metric.misc};
                           this.versionId = data.topology.versionId;
                           versions.push({
                             id: data.topology.versionId,
@@ -488,8 +488,8 @@ class TopologyEditorContainer extends Component {
               .then((result)=>{
                 let data = result;
                 this.topologyConfig = JSON.parse(data.topology.config);
-                this.runtimeObj = data.runtime || {metric : (data.runtime.metric === undefined) ? '' : data.runtime.metric};
-                this.topologyMetric = this.runtimeObj.metric || {misc : (this.runtimeObj.metric === undefined) ? '' : metric.misc};
+                this.runtimeObj = data.runtime || {metric : (data.runtime === undefined) ? '' : data.runtime.metric};
+                this.topologyMetric = this.runtimeObj.metric || {misc : (this.runtimeObj.metric === undefined) ? '' : this.runtimeObj.metric.misc};
                 let status = this.topologyMetric.status || '';
                 document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay displayNone";
                 this.setState({topologyMetric: this.topologyMetric, isAppRunning: false, topologyStatus: status});
