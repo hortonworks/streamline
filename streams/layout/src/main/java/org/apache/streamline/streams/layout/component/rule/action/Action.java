@@ -32,7 +32,7 @@ import java.util.Set;
  *
  */
 @JsonTypeInfo(use= JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY, property="__type")
-public class Action implements Serializable {
+public abstract class Action implements Serializable {
     protected String name = "default";
 
     /**
@@ -47,6 +47,8 @@ public class Action implements Serializable {
         setName(other.getName());
         setOutputStreams(new HashSet<>(other.getOutputStreams()));
     }
+
+    public abstract Action copy();
 
     public String getName() {
         return name;

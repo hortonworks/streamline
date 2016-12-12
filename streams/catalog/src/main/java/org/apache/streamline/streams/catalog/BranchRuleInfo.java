@@ -68,7 +68,7 @@ public class BranchRuleInfo extends AbstractStorable {
         setCondition(other.getCondition());
         setParsedRuleStr(other.getParsedRuleStr());
         if (other.getActions() != null) {
-            setActions(other.getActions().stream().map(Action::new).collect(Collectors.toList()));
+            setActions(other.getActions().stream().map(Action::copy).collect(Collectors.toList()));
         }
         setVersionTimestamp(other.getVersionTimestamp());
     }

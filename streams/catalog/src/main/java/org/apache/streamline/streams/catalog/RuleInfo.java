@@ -99,7 +99,7 @@ public class RuleInfo extends AbstractStorable {
             setStreams(new ArrayList<>(other.getStreams()));
         }
         if (other.getActions() != null) {
-            setActions(other.getActions().stream().map(Action::new).collect(Collectors.toList()));
+            setActions(other.getActions().stream().map(Action::copy).collect(Collectors.toList()));
         }
         setVersionTimestamp(other.getVersionTimestamp());
     }

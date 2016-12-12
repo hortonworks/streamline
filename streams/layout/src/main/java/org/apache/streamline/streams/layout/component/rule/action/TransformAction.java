@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * {@link Action} to apply the given transformations and send them to the given output streams.
@@ -38,6 +39,11 @@ public class TransformAction extends Action {
 
     public TransformAction(List<Transform> transforms) {
         this(transforms, Collections.<String>emptyList());
+    }
+
+    protected TransformAction(TransformAction other) {
+        super(other);
+        transforms.addAll(other.transforms.stream().map(Transform::new).collect(Collectors.toList()));
     }
 
     public TransformAction(List<Transform> transforms, Collection<String> outputStreams) {
@@ -54,6 +60,11 @@ public class TransformAction extends Action {
 
     public List<Transform> getTransforms() {
         return transforms;
+    }
+
+    @Override
+    public TransformAction copy() {
+        return new TransformAction(this);
     }
 
     @Override

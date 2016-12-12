@@ -31,11 +31,15 @@ public class Transform implements Serializable {
     protected final String name;
 
     protected Transform() {
-        this(null);
+        this.name = null;
     }
 
     public Transform(String name) {
         this.name = name;
+    }
+
+    public Transform(Transform other) {
+        this.name = other.name;
     }
 
     public String getName() {

@@ -68,7 +68,7 @@ public class WindowInfo extends AbstractStorable {
         setParsedRuleStr(other.getParsedRuleStr());
         setWindow(new Window(other.getWindow()));
         if (other.getActions() != null) {
-            setActions(other.getActions().stream().map(Action::new).collect(Collectors.toList()));
+            setActions(other.getActions().stream().map(Action::copy).collect(Collectors.toList()));
         }
         if (other.getProjections() != null) {
             setProjections(other.getProjections().stream().map(Projection::new).collect(Collectors.toList()));
