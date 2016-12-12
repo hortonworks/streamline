@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS files (
     name VARCHAR(255) NOT NULL,
     version BIGINT NOT NULL,
     storedFileName TEXT NOT NULL,
-    auxiliaryInfo TEXT,
+    description TEXT,
     timestamp  BIGINT,
     PRIMARY KEY (id),
     UNIQUE KEY `jars_UK_name_version` (name, version)
@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS topologies (
     id BIGINT AUTO_INCREMENT NOT NULL,
     versionId BIGINT NOT NULL,
     name VARCHAR(256) NOT NULL,
+    description TEXT,
     namespaceId BIGINT NOT NULL,
     config TEXT NOT NULL,
     PRIMARY KEY (id, versionId),
@@ -91,7 +92,7 @@ CREATE TABLE IF NOT EXISTS topology_editor_metadata (
 CREATE TABLE IF NOT EXISTS tag (
     id BIGINT AUTO_INCREMENT NOT NULL,
     name VARCHAR(255) NOT NULL,
-    description VARCHAR(256) NOT NULL,
+    description TEXT NOT NULL,
     timestamp BIGINT,
     UNIQUE KEY `UK_name` (name),
     PRIMARY KEY (id)
@@ -109,6 +110,7 @@ CREATE TABLE IF NOT EXISTS streaminfo (
     versionId BIGINT NOT NULL,
     topologyId BIGINT NOT NULL,
     streamId VARCHAR(255) NOT NULL,
+    description TEXT,
     fieldsData TEXT NOT NULL,
     UNIQUE KEY `UK_streamId` (topologyId, versionId, streamId),
     PRIMARY KEY (id, versionId),
@@ -118,7 +120,7 @@ CREATE TABLE IF NOT EXISTS streaminfo (
 CREATE TABLE IF NOT EXISTS notifierinfos (
      id BIGINT AUTO_INCREMENT NOT NULL,
      name VARCHAR(256) NOT NULL,
-     description VARCHAR(256) NOT NULL,
+     description TEXT NOT NULL,
      jarFileName TEXT NOT NULL,
      className TEXT NOT NULL,
      timestamp  BIGINT,
@@ -133,6 +135,7 @@ CREATE TABLE IF NOT EXISTS topology_components (
     topologyId BIGINT,
     topologyComponentBundleId BIGINT,
     name VARCHAR(256),
+    description TEXT,
     configData TEXT,
     PRIMARY KEY (id, versionId)
 );
@@ -143,6 +146,7 @@ CREATE TABLE IF NOT EXISTS topology_sources (
     topologyId BIGINT NOT NULL,
     topologyComponentBundleId BIGINT NOT NULL,
     name VARCHAR(256) NOT NULL,
+    description TEXT,
     configData TEXT NOT NULL,
     PRIMARY KEY (id, versionId),
     FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
@@ -162,6 +166,7 @@ CREATE TABLE IF NOT EXISTS topology_sinks (
     topologyId BIGINT NOT NULL,
     topologyComponentBundleId BIGINT NOT NULL,
     name VARCHAR(256) NOT NULL,
+    description TEXT,
     configData TEXT NOT NULL,
     PRIMARY KEY (id, versionId),
     FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
@@ -173,6 +178,7 @@ CREATE TABLE IF NOT EXISTS topology_processors (
     topologyId BIGINT NOT NULL,
     topologyComponentBundleId BIGINT NOT NULL,
     name VARCHAR(256) NOT NULL,
+    description TEXT,
     configData TEXT NOT NULL,
     PRIMARY KEY (id, versionId),
     FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id)
@@ -202,7 +208,7 @@ CREATE TABLE IF NOT EXISTS ruleinfos (
     versionId BIGINT NOT NULL,
     topologyId BIGINT NOT NULL,
     name VARCHAR(256) NOT NULL,
-    description VARCHAR(256) NOT NULL,
+    description TEXT NOT NULL,
     streams TEXT NULL,
     `condition` TEXT NULL,
     `sql` TEXT NULL,
@@ -219,7 +225,7 @@ CREATE TABLE IF NOT EXISTS branchruleinfos (
     versionId BIGINT NOT NULL,
     topologyId BIGINT NOT NULL,
     name VARCHAR(256) NOT NULL,
-    description VARCHAR(256) NOT NULL,
+    description TEXT NOT NULL,
     stream TEXT NOT NULL,
     `condition` TEXT NOT NULL,
     parsedRuleStr TEXT NOT NULL,
@@ -233,7 +239,7 @@ CREATE TABLE IF NOT EXISTS windowinfos (
     versionId BIGINT NOT NULL,
     topologyId BIGINT NOT NULL,
     name VARCHAR(256) NOT NULL,
-    description VARCHAR(256) NOT NULL,
+    description TEXT NOT NULL,
     streams TEXT NULL,
     `condition` TEXT NULL,
     parsedRuleStr TEXT NOT NULL,
@@ -249,7 +255,7 @@ CREATE TABLE IF NOT EXISTS udfs (
     id BIGINT AUTO_INCREMENT NOT NULL,
     name VARCHAR(256) NOT NULL,
     displayName VARCHAR(256) NOT NULL,
-    description VARCHAR(256) NOT NULL,
+    description TEXT NOT NULL,
     type  VARCHAR(256) NOT NULL,
     className  VARCHAR(256) NOT NULL,
     jarStoragePath  VARCHAR(256) NOT NULL,
@@ -262,7 +268,7 @@ CREATE TABLE IF NOT EXISTS udfs (
 CREATE TABLE IF NOT EXISTS clusters (
   id BIGINT AUTO_INCREMENT NOT NULL,
   name VARCHAR(256) NOT NULL,
-  description VARCHAR(256),
+  description TEXT,
   timestamp BIGINT,
   PRIMARY KEY (id)
 );
@@ -271,7 +277,7 @@ CREATE TABLE IF NOT EXISTS services (
   id BIGINT AUTO_INCREMENT NOT NULL,
   clusterId BIGINT NOT NULL,
   name VARCHAR(256) NOT NULL,
-  description VARCHAR(256),
+  description TEXT,
   timestamp BIGINT,
   PRIMARY KEY (id)
 );
@@ -281,7 +287,7 @@ CREATE TABLE IF NOT EXISTS service_configurations (
   serviceId BIGINT NOT NULL,
   name VARCHAR(256) NOT NULL,
   configuration TEXT NOT NULL,
-  description VARCHAR(256),
+  description TEXT,
   filename VARCHAR(256),
   timestamp BIGINT,
   PRIMARY KEY (id)
@@ -297,4 +303,3 @@ CREATE TABLE IF NOT EXISTS components (
   timestamp BIGINT,
   PRIMARY KEY (id)
 );
-
