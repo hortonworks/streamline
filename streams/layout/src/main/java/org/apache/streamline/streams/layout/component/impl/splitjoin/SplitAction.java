@@ -41,6 +41,17 @@ public class SplitAction extends Action {
         this.splitterClassName = splitterClassName;
     }
 
+    private SplitAction(SplitAction other) {
+        super(other);
+        jarId = other.jarId;
+        splitterClassName = other.splitterClassName;
+    }
+
+    @Override
+    public SplitAction copy() {
+        return new SplitAction(this);
+    }
+
     public Long getJarId() {
         return jarId;
     }

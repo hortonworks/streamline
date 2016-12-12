@@ -33,6 +33,17 @@ public class NotifierAction extends Action {
 
     public NotifierAction() { }
 
+    private NotifierAction(NotifierAction other) {
+        super(other);
+        notifierName = other.notifierName;
+        outputFieldsAndDefaults.putAll(other.outputFieldsAndDefaults);
+    }
+
+    @Override
+    public NotifierAction copy() {
+        return new NotifierAction(this);
+    }
+
     /**
      * The name of the output fields and the default values for them
      * to be emitted as a part of this action.

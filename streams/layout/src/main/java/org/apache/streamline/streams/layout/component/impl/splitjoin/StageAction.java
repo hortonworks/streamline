@@ -40,6 +40,15 @@ public class StageAction extends TransformAction {
         validateSupportedTransforms(transforms);
     }
 
+    private StageAction(StageAction other) {
+        super(other);
+    }
+
+    @Override
+    public StageAction copy() {
+        return new StageAction(this);
+    }
+
     private void validateSupportedTransforms(List<Transform> transforms) {
         for (Transform transform : transforms) {
             if(!(transform instanceof ProjectionTransform || transform instanceof EnrichmentTransform)) {

@@ -56,6 +56,19 @@ public class JoinAction extends Action {
         this(null, joinerClassName);
     }
 
+    private JoinAction(JoinAction other) {
+        super(other);
+        jarId = other.jarId;
+        joinerClassName = other.joinerClassName;
+        groupExpiryInterval = other.groupExpiryInterval;
+        eventExpiryInterval = other.eventExpiryInterval;
+    }
+
+    @Override
+    public JoinAction copy() {
+        return new JoinAction(this);
+    }
+
     public JoinAction(Long jarId, String joinerClassName) {
         this.jarId = jarId;
         this.joinerClassName = joinerClassName;
