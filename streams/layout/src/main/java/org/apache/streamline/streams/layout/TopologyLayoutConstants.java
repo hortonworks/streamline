@@ -98,7 +98,7 @@ public final class TopologyLayoutConstants {
     public final static String JSON_KEY_NOTIFIER_DEBUG = "debug";
     public final static String JSON_KEY_NOTIFIER_PROTOCOL = "protocol";
     public final static String JSON_KEY_NOTIFIER_AUTH = "auth";
-    public final static String JSON_KEY_NOTIFIER_CONFIG_KEY = "hbaseConfigKey";
+    public final static String JSON_KEY_NOTIFICATION_STORE_CLASS = "notificationStoreClassName";
     public final static String JSON_KEY_GROUPING = "grouping";
     public final static String JSON_KEY_GROUPING_FIELDS = "groupingFields";
     public final static String JSON_KEY_CUSTOM_GROUPING_IMPL = "customGroupingImpl";

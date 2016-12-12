@@ -22,6 +22,7 @@ import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.notification.Notification;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -32,6 +33,12 @@ import java.util.List;
  * </p>
  */
 public interface NotificationStore {
+    /**
+     * Initialize the notification store
+     * @param config the config
+     */
+    void init(Map<String, Object> config);
+
     /**
      * Store a notification in the notification store
      *
