@@ -1654,18 +1654,21 @@ public class StreamCatalogService {
     private void validateTopologySource(TopologySource topologySource) {
         StorageUtils.ensureUnique(topologySource, this::listTopologySources,
                 QueryParam.params(TopologySource.TOPOLOGYID, topologySource.getTopologyId().toString(),
+                        TopologySource.VERSIONID, topologySource.getVersionId().toString(),
                         TopologySource.NAME, topologySource.getName()));
     }
 
     private void validateTopologySink(TopologySink topologySink) {
         StorageUtils.ensureUnique(topologySink, this::listTopologySinks,
                 QueryParam.params(TopologySink.TOPOLOGYID, topologySink.getTopologyId().toString(),
+                        TopologySink.VERSIONID, topologySink.getVersionId().toString(),
                         TopologySink.NAME, topologySink.getName()));
     }
 
     private void validateTopologyProcessor(TopologyProcessor topologyProcessor) {
         StorageUtils.ensureUnique(topologyProcessor, this::listTopologyProcessors,
                 QueryParam.params(TopologyProcessor.TOPOLOGYID, topologyProcessor.getTopologyId().toString(),
+                        TopologyProcessor.VERSIONID, topologyProcessor.getVersionId().toString(),
                         TopologyProcessor.NAME, topologyProcessor.getName()));
     }
 
