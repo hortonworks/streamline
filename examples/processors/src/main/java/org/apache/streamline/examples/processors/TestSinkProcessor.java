@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.UUID;
 
 public class TestSinkProcessor implements CustomProcessorRuntime {
     protected static final Logger LOG = LoggerFactory.getLogger(TestSinkProcessor.class);
@@ -44,7 +45,7 @@ public class TestSinkProcessor implements CustomProcessorRuntime {
         try {
             this.config = config;
             LOG.info("Initializing with config field " + FILE_FIELD_NAME + " = " + this.config.get(FILE_FIELD_NAME).toString());
-            this.file = new FileWriter(this.config.get(FILE_FIELD_NAME).toString());
+            this.file = new FileWriter(this.config.get(FILE_FIELD_NAME).toString() + UUID.randomUUID());
         } catch(IOException e) {
             LOG.error("Failed to create file ", e);
         }
@@ -62,19 +63,20 @@ public class TestSinkProcessor implements CustomProcessorRuntime {
         try {
             LOG.debug("Processing {}", streamlineEvent);
             JSONObject json = new JSONObject();
-            json.putAll(streamlineEvent.getAuxiliaryFieldsAndValues());
+            json.putAll(streamlineEvent);
             file.write(json.toJSONString());
             file.flush();
         } catch(Exception e) {
             LOG.error("Failed to process event", e);
             throw new ProcessingException(e);
         }
-        return new ArrayList<Result>();
+        return null;
     }
 
     public void cleanup() {
         LOG.debug("Cleaning up");
         try {
+            file.flush();
             file.close();
         } catch(Exception e) {
             LOG.error("failed to close", e);
