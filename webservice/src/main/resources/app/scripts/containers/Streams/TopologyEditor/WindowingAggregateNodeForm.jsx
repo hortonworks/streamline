@@ -58,6 +58,7 @@ export default class WindowingAggregateNodeForm extends Component {
 		};
 		this.state = obj;
     this.outputData = [];
+    this.keySelected = [];
 	}
 
 	fetchData(){
@@ -160,10 +161,12 @@ export default class WindowingAggregateNodeForm extends Component {
 													o.args = o.expr;
 													delete o.expr;
 													stateObj.outputFieldsArr.push(o);
+                          this.fetchOutputFields(o,stateObj.keysList);
 												}
 											} else {
 												o.args = o.args[0];
 												stateObj.outputFieldsArr.push(o);
+                        this.fetchOutputFields(o,stateObj.keysList);
 											}
 										})
 
@@ -189,7 +192,7 @@ export default class WindowingAggregateNodeForm extends Component {
 											}
 										}
 									}
-									this.setState(stateObj);
+                                                                        this.setState(stateObj,() => {this.fetchSelectedKeys()});
 								})
 						} else {
 							//Creating window object so output streams can get it
@@ -206,13 +209,32 @@ export default class WindowingAggregateNodeForm extends Component {
                                                                         this.windowId = windowResult.id;
 									this.nodeData.config.properties.rules = [this.windowId];
                                                                         TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.nodeId, {body: JSON.stringify(this.nodeData)});
-									this.setState(stateObj);
+                                                                        this.setState(stateObj,() => {this.fetchSelectedKeys()});
 								})
 						}
 					})
 			})
 
 	}
+
+  fetchOutputFields = (outputObj,list) => {
+    let tempData = list.find((field) => {return field.name === outputObj.args});
+    this.outputData.push(
+      {
+        name: outputObj.outputFieldName,
+        type: this.getReturnType(outputObj.functionName, tempData),
+        optional: false
+      }
+    );
+  }
+
+  fetchSelectedKeys = () => {
+    const {selectedKeys,outputStreamFields} = this.state;
+    const tempData = this.state.outputStreamFields.filter((x,i) => {
+      return x.name === this.state.selectedKeys[i]
+    });
+    this.keySelected = tempData;
+  }
 
 	handleKeysChange(arr){
 		let {selectedKeys, outputStreamFields} = this.state;
@@ -223,15 +245,16 @@ export default class WindowingAggregateNodeForm extends Component {
 			}
 		})
 		tempArr.push(...arr);
+    this.keySelected = arr;
 		this.streamData.fields = tempArr;
 		let keys = [];
 		if(arr && arr.length){
 			for(let k of arr){
 				keys.push(k.name);
 			}
-			this.setState({selectedKeys: keys, outputStreamFields: tempArr});
+                        this.setState({selectedKeys: keys, outputStreamFields: tempArr,selectedKeyArr:this.keySelected});
 		} else {
-			this.setState({selectedKeys: [], outputStreamFields: tempArr});
+                        this.setState({selectedKeys: [], outputStreamFields: tempArr,selectedKeyArr:this.keySelected});
 		}
                 this.context.ParentForm.setState({outputStreamObj:this.streamData})
 	}
@@ -276,7 +299,7 @@ export default class WindowingAggregateNodeForm extends Component {
 		let fieldsArr = this.state.outputFieldsArr;
 		let oldData = JSON.parse(JSON.stringify(fieldsArr[index]));
 		if(name === 'outputFieldName'){
-			fieldsArr[index][name] = this.refs.outputFieldName.value;
+      fieldsArr[index][name] = obj.target.value;
 		} else {
 				if(obj){
 					fieldsArr[index][name] = obj.name;
@@ -292,8 +315,7 @@ export default class WindowingAggregateNodeForm extends Component {
 					fieldsArr[index].outputFieldName = fieldsArr[index].args+appendingName;
 				}
 		}
-
-    let outputStreamFields = this.getOutputFieldsForStream(oldData, fieldsArr[index]);
+    let outputStreamFields = this.getOutputFieldsForStream(oldData, fieldsArr[index],index);
     outputStreamFields.then((res) => {
       this.streamData.fields = res;
       this.context.ParentForm.setState({outputStreamObj:this.streamData});
@@ -303,7 +325,7 @@ export default class WindowingAggregateNodeForm extends Component {
     this.setState({outputFieldsArr: fieldsArr});
 	}
 
-  getOutputFieldsForStream(oldObj, newDataObj){
+  getOutputFieldsForStream(oldObj, newDataObj,index){
     let streamsArr = this.state.outputStreamFields;
     let obj = null;
     if(oldObj.outputFieldName !== ''){
@@ -324,25 +346,24 @@ export default class WindowingAggregateNodeForm extends Component {
       let o = this.outputData.filter((field)=>{return field.name === newDataObj.outputFieldName;});
       if(o.length === 0){
         let fieldObj = this.state.keysList.find((field)=>{return field.name == newDataObj.args});
-        this.outputData.push({
-          name: newDataObj.outputFieldName,
-          type: this.getReturnType(newDataObj.functionName, fieldObj),
-          optional: false
-        })
+        if(index === this.outputData.length){
+          this.outputData.push({
+            name: newDataObj.outputFieldName,
+            type: this.getReturnType(newDataObj.functionName, fieldObj),
+            optional: false
+          })
+        }else{
+          this.outputData[index].name = newDataObj.outputFieldName;
+        }
       }
     }
-    let flag = false,resolve;
-    this.outputData.map(x => {
-        return x.name.indexOf('_') === -1 ? flag = false : flag = true;
+
+    let resolve;
+    this.setState({outputArr : this.outputData},() => {
+    const data = this.keySelected.concat(this.outputData);
+       resolve(streamsArr = data);
     });
-    if(flag){
-      this.setState({outputArr : this.outputData},() => {
-        const filtered = this.outputData.filter((d) => {
-          return this.state.outputStreamFields.indexOf(d) === -1
-        });
-        resolve(streamsArr.concat(filtered));
-      });
-    }
+
     const outputAction = new Promise((res,rej) => {
       resolve = res;
     })
@@ -382,7 +403,6 @@ export default class WindowingAggregateNodeForm extends Component {
 	}
 	deleteFieldRow(index){
 		if(this.state.editMode){
-      let outputArr = this.state.outputArr;
 			let fieldsArr = this.state.outputFieldsArr;
 			let outputStreamFields = this.state.outputStreamFields;
 			let o = fieldsArr[index];
@@ -396,10 +416,10 @@ export default class WindowingAggregateNodeForm extends Component {
 				}
 			}
 			fieldsArr.splice(index, 1);
-      outputArr.splice(index, 1);
+      this.outputData.splice(index, 1);
 			this.streamData.fields = outputStreamFields;
                         this.context.ParentForm.setState({outputStreamObj:this.streamData})
-                        this.setState({outputFieldsArr: fieldsArr, outputStreamFields: outputStreamFields,outputArr:outputArr});
+                        this.setState({outputFieldsArr: fieldsArr, outputStreamFields: outputStreamFields,outputArr:this.outputData});
 		}
 	}
 
