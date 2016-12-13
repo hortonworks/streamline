@@ -139,9 +139,9 @@ public class TopologyCatalogResource {
     @Timed
     public Response getTopologyByIdAndVersion(@PathParam("topologyId") Long topologyId,
                                               @PathParam("versionId") Long versionId,
-                                              @javax.ws.rs.QueryParam("withMetric") Boolean withMetric,
+                                              @javax.ws.rs.QueryParam("detail") Boolean detail,
                                               @javax.ws.rs.QueryParam("latencyTopN") Integer latencyTopN) {
-        Response response = getTopologyByIdAndVersionId(topologyId, versionId, withMetric, latencyTopN);
+        Response response = getTopologyByIdAndVersionId(topologyId, versionId, detail, latencyTopN);
         if (response != null) {
             return response;
         }
