@@ -95,8 +95,15 @@
             </includes>
         </fileSet>
         <fileSet>
-            <directory>${project.basedir}./storage/core/src/main/resources</directory>
-            <outputDirectory>/bootstrap/sql</outputDirectory>
+            <directory>${project.basedir}./bootstrap/sql/mysql</directory>
+            <outputDirectory>/bootstrap/sql/mysql</outputDirectory>
+            <includes>
+                <include>**/*.sql</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>${project.basedir}./bootstrap/sql/phoenix</directory>
+            <outputDirectory>/bootstrap/sql/phoenix</outputDirectory>
             <includes>
                 <include>**/*.sql</include>
             </includes>
