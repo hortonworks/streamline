@@ -6,12 +6,9 @@ modules:
   - name: streams
     className: org.apache.streamline.streams.service.StreamsModule
     config:
-      topologyActionsImpl: org.apache.streamline.streams.layout.storm.StormTopologyActionsImpl
-      topologyMetricsImpl: org.apache.streamline.streams.metrics.storm.topology.StormTopologyMetricsImpl
       #change the below to the path on your local machine
       streamlineStormJar: /tmp/streamline-runtime-storm-0.1.0-SNAPSHOT.jar
       stormHomeDir: /usr/local/Cellar/storm/0.10.0/
-      stormApiRootUrl: "http://localhost:8888/api/v1"
       # schema registry configuration
       schemaRegistryUrl: "http://localhost:9090/api/v1"
       # Use this to turn on/off notifications rest api
@@ -38,10 +35,9 @@ fileStorageConfiguration:
 # storage provider configuration
 #
 # Example configuration for inmemory is:
-
-storageProviderConfiguration:
-  providerClass: "org.apache.streamline.storage.impl.memory.InMemoryStorageManager"
-
+#
+#storageProviderConfiguration:
+#  providerClass: "org.apache.streamline.storage.impl.memory.InMemoryStorageManager"
 #
 # Example configuration for phoenix based JDBC driver
 #storageProviderConfiguration:
@@ -67,12 +63,6 @@ storageProviderConfiguration:
 
 storageProviderConfiguration:
  providerClass: "org.apache.streamline.storage.impl.memory.InMemoryStorageManager"
-
-# Time series DB querier configuration
-#timeSeriesDBConfiguration:
-#  className: ""org.apache.streamline.streams.metrics.storm.ambari.AmbariMetricsServiceWithStormQuerier"
-#  properties:
-#    collectorApiUrl: "http://localhost:6188/ws/v1/timeline/metrics"
 
 # use the simple server factory if you only want to run on a single port
 #server:
