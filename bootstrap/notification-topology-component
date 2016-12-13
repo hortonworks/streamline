@@ -37,7 +37,7 @@
         "isOptional": true,
         "tooltip": "FQCN of notification store implementation",
         "type": "string",
-        "defaultValue": "org.apache.streamline.streams.notification.store.InMemoryNotificationStore"
+        "defaultValue": ""
       },
       {
         "uiName": "Properties",

@@ -12,8 +12,6 @@ modules:
       stormApiRootUrl: "http://localhost:8888/api/v1"
       # schema registry configuration
       schemaRegistryUrl: "http://localhost:9090/api/v1"
-      # Use this to turn on/off notifications rest api
-      notificationsRestDisable: true
       #Custom processor upload configuration
       #customProcessorWatchPath: "/tmp"
       #customProcessorUploadFailPath: "/tmp/failed"

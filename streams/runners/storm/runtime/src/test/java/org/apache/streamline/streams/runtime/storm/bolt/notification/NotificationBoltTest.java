@@ -109,6 +109,7 @@ public class NotificationBoltTest {
             }
         });
 
+        bolt.withNotificationStoreClass("org.apache.streamline.streams.notification.store.hbase.HBaseNotificationStore");
         notifier = new Notifier() {
             private NotificationContext myCtx;
 
@@ -193,7 +194,8 @@ public class NotificationBoltTest {
                 return new HashMap<>();
             }
         });
-
+        consoleNotificationBolt.
+                withNotificationStoreClass("org.apache.streamline.streams.notification.store.hbase.HBaseNotificationStore");
         final ConsoleNotifier consoleNotifier = new ConsoleNotifier();
         final Notification notification = new StreamlineEventAdapter(event);
         new MockUp<NotificationQueueHandler>() {

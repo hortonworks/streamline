@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -58,7 +59,7 @@ public class NotificationServiceImpl implements NotificationService {
     /**
      * the underlying notification store.
      */
-    private final NotificationStore notificationStore;
+    private final Optional<NotificationStore> notificationStore;
 
     /**
      * Uses HBaseNotificationStore by default.
@@ -68,12 +69,16 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     public NotificationServiceImpl(NotificationStore store) {
-        this(Collections.<String, Object>emptyMap(), store);
+        this(Collections.emptyMap(), store);
+    }
+
+    public NotificationServiceImpl(Map<String, Object> config) {
+        this(config, null);
     }
 
     public NotificationServiceImpl(Map<String, Object> config, NotificationStore store) {
-        LOG.info("Initializing NotificationServiceImpl with config {}", config);
-        this.notificationStore = store;
+        LOG.info("Initializing NotificationServiceImpl with config {}, notification store {}", config, store);
+        this.notificationStore = Optional.ofNullable(store);
         if(config.get(QUEUEHANDLER_THREADS) != null) {
             this.queueHandler = new NotificationQueueHandler(((Number)config.get(QUEUEHANDLER_THREADS)).intValue());
         } else {
@@ -111,7 +116,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void notify(String notifierName, Notification notification) {
         LOG.debug("Notify notifierName {}, notification {}", notifierName, notification);
-        notificationStore.store(notification);
+        notificationStore.ifPresent(s -> s.store(notification));
         Notifier notifier = notifiers.get(notifierName);
         if (notifier == null) {
             throw new NoSuchNotifierException("Notifier not found for id " + notification.getNotifierName());
@@ -122,13 +127,13 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public Notification getNotification(String notificationId) {
         LOG.debug("getNotification with notificationId {}", notificationId);
-        return notificationStore.getNotification(notificationId);
+        return notificationStore.map(s -> s.getNotification(notificationId)).orElse(null);
     }
 
     @Override
     public List<Notification> getNotifications(List<String> notificationIds) {
         LOG.debug("getNotifications with notificationIds {}", notificationIds);
-        return notificationStore.getNotifications(notificationIds);
+        return notificationStore.map(s -> s.getNotifications(notificationIds)).orElse(Collections.emptyList());
     }
 
     @Override
@@ -149,25 +154,25 @@ public class NotificationServiceImpl implements NotificationService {
             }
         }
         LOG.debug("Finding entities from notification store with criteria {}", criteria);
-        return notificationStore.findEntities(criteria);
+        return notificationStore.map(s -> s.findEntities(criteria)).orElse(Collections.emptyList());
     }
 
     @Override
     public StreamlineEvent getEvent(String eventId) {
         LOG.debug("getEvent with eventId {}", eventId);
-        return notificationStore.getEvent(eventId);
+        return notificationStore.map(s -> s.getEvent(eventId)).orElse(null);
     }
 
     @Override
     public List<StreamlineEvent> getEvents(List<String> eventIds) {
         LOG.debug("getEvents with eventIds {}", eventIds);
-        return notificationStore.getEvents(eventIds);
+        return notificationStore.map(s -> s.getEvents(eventIds)).orElse(Collections.emptyList());
     }
 
     @Override
     public Notification updateNotificationStatus(String notificationId, Notification.Status status) {
         LOG.debug("updateNotificationStatus for notificationId {}, status {}", notificationId, status);
-        return notificationStore.updateNotificationStatus(notificationId, status);
+        return notificationStore.map(s -> s.updateNotificationStatus(notificationId, status)).orElse(null);
     }
 
     @Override

@@ -25,7 +25,6 @@ import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.topology.base.BaseRichBolt;
 import org.apache.storm.tuple.Tuple;
-import org.apache.streamline.common.util.ProxyUtil;
 import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.layout.component.impl.NotificationSink;
 import org.apache.streamline.streams.notification.Notification;
@@ -33,9 +32,7 @@ import org.apache.streamline.streams.notification.NotifierConfig;
 import org.apache.streamline.streams.notification.common.NotifierConfigImpl;
 import org.apache.streamline.streams.notification.service.NotificationService;
 import org.apache.streamline.streams.notification.service.NotificationServiceImpl;
-import org.apache.streamline.streams.notification.store.InMemoryNotificationStore;
 import org.apache.streamline.streams.notification.store.NotificationStore;
-import org.apache.streamline.streams.notification.store.hbase.HBaseNotificationStore;
 import org.apache.streamline.streams.runtime.notification.StreamlineEventAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,19 +105,17 @@ public class NotificationBolt extends BaseRichBolt {
             notificationConf = Collections.emptyMap();
         }
 
-        NotificationStore notificationStore;
+        NotificationStore notificationStore = null;
         try {
             if (!StringUtils.isEmpty(notificationStoreClazz)) {
                 Class<?> clazz = Class.forName(notificationStoreClazz);
                 notificationStore = (NotificationStore) clazz.newInstance();
-            } else {
-                notificationStore = new InMemoryNotificationStore();
+                Map<String, Object> config = (Map<String, Object>) stormConf.get(NOTIFICATION_STORE_CONFIG_KEY);
+                if (config == null) {
+                    config = Collections.emptyMap();
+                }
+                notificationStore.init(config);
             }
-            Map<String, Object> config = (Map<String, Object>) stormConf.get(NOTIFICATION_STORE_CONFIG_KEY);
-            if (config == null) {
-                config = Collections.emptyMap();
-            }
-            notificationStore.init(config);
         } catch (ClassNotFoundException | InstantiationException| IllegalAccessException ex) {
             throw new RuntimeException(ex);
         }
