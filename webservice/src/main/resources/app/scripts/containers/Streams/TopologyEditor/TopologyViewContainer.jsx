@@ -366,7 +366,7 @@ class TopologyEditorContainer extends Component {
         </div>
         <Modal ref="NodeModal"
           bsSize={this.processorNode ? "large" : null}
-          dialogClassName="modal-fixed-height"
+          dialogClassName={this.viewMode ? "modal-xl" : "modal-fixed-height"}
           data-title={ this.modalTitle }
           data-resolve={this.handleSaveNodeModal.bind(this)}>
           {this.modalContent()}

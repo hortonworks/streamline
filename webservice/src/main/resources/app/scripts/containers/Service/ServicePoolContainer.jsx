@@ -99,7 +99,9 @@ class PoolItemsCard extends Component{
                             ? serviceWrap.map((items, i) => {
                                 return <ServiceItems key={i} item={items.service}/>
                               })
-                            : <p>No services</p>
+                            : <div className="col-sm-12 text-center">
+                                No Service
+                              </div>
                           }
                       </ul>
                   }
@@ -137,7 +139,8 @@ class ServicePoolContainer extends Component{
     ClusterREST.getAllCluster().then((clusters) =>{
       if (clusters.responseMessage !== undefined) {
           FSReactToastr.error(
-              <CommonNotification flag="error" content={clusters.responseMessage}/>, '', toastOpt)
+              <CommonNotification flag="error" content={clusters.responseMessage}/>, '', toastOpt);
+                this.setState({fetchLoader : false});
       } else {
         let result = clusters.entities;
         this.setState({fetchLoader : false,entities: result,pageIndex:0});
@@ -203,12 +206,17 @@ class ServicePoolContainer extends Component{
     this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete ?'}).then((confirmBox) => {
       ClusterREST.deleteCluster(id).then((cluster) => {
 
-        this.fetchData();
         confirmBox.cancel();
         if (cluster.responseMessage !== undefined) {
-          FSReactToastr.error(
-            <CommonNotification flag="error" content={cluster.responseMessage}/>, '', toastOpt)
+          if(cluster.responseMessage.indexOf('Namespace refers the cluster') !== 1){
+            FSReactToastr.info(
+              <CommonNotification flag="info" content={"This cluster has been shared with some NameSpace. So it can't be deleted."}/>, '', toastOpt)
+          }else{
+            FSReactToastr.error(
+              <CommonNotification flag="error" content={cluster.responseMessage}/>, '', toastOpt);
+          }
         } else {
+          this.fetchData();
           FSReactToastr.success(
               <strong>cluster deleted successfully</strong>
           )
@@ -442,8 +450,10 @@ class ServicePoolContainer extends Component{
         </div>
         <div className="row">
             {
-              (this.state.fetchLoader)
-              ? ''
+              (fetchLoader)
+              ? <div className="fullPageLoader">
+                  <img src="styles/img/start-loader.gif" alt="loading" />
+                </div>
               : (splitData.length === 0)
                 ? <NoData/>
               : splitData[pageIndex].map((list) => {

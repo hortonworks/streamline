@@ -552,6 +552,7 @@ export default class TopologyGraphComponent extends Component {
         }
 
 	updateGraph() {
+    let that = this;
 		var duplicateLinks = document.getElementsByClassName('visible-link')
 		while(duplicateLinks.length > 0){
 			duplicateLinks[0].remove();
@@ -560,6 +561,18 @@ export default class TopologyGraphComponent extends Component {
 			constants = thisGraph.constants,
 			internalFlags = thisGraph.internalFlags;
 
+    // change every nodes y: value for viewMode
+    if(that.props.viewMode){
+      let flag  = true;
+      thisGraph.nodes.map(x => {
+          return x.y > 400 ? flag = true :  flag = false
+      });
+      if(flag){
+        thisGraph.nodes.map(x => {
+          return x.y = (x.y/4);
+        });
+      }
+    }
 		thisGraph.paths = thisGraph.paths.data(thisGraph.edges, function(d) {
 			return String(d.source.nodeId) + "+" + String(d.target.nodeId);
 		});
@@ -858,7 +871,7 @@ export default class TopologyGraphComponent extends Component {
 		this.linkShuffleOptions = data.linkShuffleOptions;
     this.graphTransforms = this.props.viewMode
                             ? {
-						dragCoords: [120,50],
+                                                dragCoords: [0,0],
 						zoomScale: 0.8
 					}
                             : data.metaInfo.graphTransforms || { dragCoords: [0,0],	zoomScale: 0.8};

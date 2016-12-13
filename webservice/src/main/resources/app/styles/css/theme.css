@@ -777,7 +777,7 @@ label {
     margin-left: -70px;
     transform: translateY(-50%);
     background-color: #fff;
-    padding: 10px 0;
+    padding: 0 10px;
     font-size: 0.875em;
     border-radius: 0px 10px 10px 0px;
     box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
@@ -1321,8 +1321,8 @@ label {
   resize: none;
 }
 .panel-wrapper{
-  margin-top: 4px;
-  height: 474px;
+  /*margin-top: 4px;*/
+  height: 470px;
   overflow-y: auto;
   overflow-x: hidden;
   padding: 0 5px;
@@ -1340,26 +1340,38 @@ label {
 .modal-xl .processor-modal-form {
   width: 760px;
 }
-.panel-wrapper::-webkit-scrollbar,
 .form-overflow::-webkit-scrollbar {
     width: 2px;
 }
-.panel-wrapper::-webkit-scrollbar-track,
 .form-overflow::-webkit-scrollbar-track {
     -webkit-box-shadow: inset 0 0 6px rgba(101, 103, 110,0.3);
     -webkit-border-radius: 10px;
     border-radius: 10px;
 }
-.panel-wrapper::-webkit-scrollbar-thumb,
 .form-overflow::-webkit-scrollbar-thumb {
     -webkit-border-radius: 10px;
     border-radius: 10px;
     background: rgba(187, 187, 187,1);
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
 }
-.panel-wrapper::-webkit-scrollbar-thumb:window-inactive,
 .form-overflow::-webkit-scrollbar-thumb:window-inactive {
         background: rgba(204,102,51,0.4);
+}
+.panel-wrapper::-webkit-scrollbar{
+    width: 0px;
+}
+.panel-wrapper::-webkit-scrollbar-track{
+  -webkit-box-shadow: inset 0 0 6px rgba(101, 103, 110,0);
+}
+.panel-wrapper::-webkit-scrollbar-track{
+  -webkit-box-shadow: inset 0 0 6px rgba(101, 103, 110,0);
+}
+.panel-wrapper::-webkit-scrollbar-thumb{
+  background: rgba(187, 187, 187,0);
+  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0);
+}
+.panel-wrapper::-webkit-scrollbar-thumb:window-inactive{
+  background: rgba(204,102,51,0);
 }
 .form-overflow h4,
 .form-overflow > fieldset > legend{
@@ -1994,4 +2006,19 @@ rect.extent{
 }
 .topology-name.INACTIVE i {
   color: #feba33;
+}
+.btn-draggable {
+    background: url('../../../styles/img/draggable-handle.png') repeat-x left;
+    border: none;
+    background-size: 5px;
+    display: block;
+    width: 100%;
+    height: 15px;
+}
+.fullPageLoader{
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  margin-top: -60px;
+  margin-left: -60px;
 }

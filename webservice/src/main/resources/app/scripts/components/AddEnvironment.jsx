@@ -66,7 +66,9 @@ class AddEnvironmentItems extends Component{
           <ul className="select-env-service clearfix">
             {
               serviceWrap.length === 0
-              ? <p>No Services</p>
+              ? <div className="col-sm-12 text-center">
+                  No Service
+                </div>
             : serviceWrap.map((item , i) => {
                   return <ItemsMapping key={item.service.id}
                           item={item.service}
@@ -243,7 +245,11 @@ class AddEnvironment extends Component{
             />
         </div>
         <h4 className="environment-modal-title">Select Services</h4>
-        <small ref="missingStorm"> (Atleast one streaming engine (eg: STORM) must be selected.)</small>
+        {
+          entities.length !== 0
+          ? <small ref="missingStorm"> (Atleast one streaming engine (eg: STORM) must be selected.)</small>
+          : ''
+        }
         <div className="row">
           {
             fetchLoader
@@ -255,7 +261,9 @@ class AddEnvironment extends Component{
             : <div>
                 {
                   entities.length === 0
-                  ? <p>NoData</p>
+                  ? <div className="col-sm-12 text-center">
+                      No Clusters
+                    </div>
                 : entities.map( list => {
                     return <AddEnvironmentItems
                             key={list.cluster.id}

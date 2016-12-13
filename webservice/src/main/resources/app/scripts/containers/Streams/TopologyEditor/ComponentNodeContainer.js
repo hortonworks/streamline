@@ -66,6 +66,7 @@ export default class ComponentNodeContainer extends Component {
         }
         return (
             <div className="component-panel right">
+              <button className="btn-draggable"></button>
               <div className="panel-wrapper">
                 <h6 className="component-title">Source</h6>
                 <ul className="component-list">
@@ -136,7 +137,7 @@ export default class ComponentNodeContainer extends Component {
                 })}
                 </ul>
               </div>
-
+              <button className="btn-draggable"></button>
             </div>
         )
     }

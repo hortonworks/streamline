@@ -122,7 +122,7 @@ class EnvironmentContainer extends Component{
           loader: false,
           idCheck: ''
       },
-      fetchLoader : false,
+      fetchLoader : true,
       pageIndex : 0,
       pageSize : 5,
       clusterName : {},
@@ -221,6 +221,9 @@ class EnvironmentContainer extends Component{
                     FSReactToastr.error(
                         <CommonNotification flag="error" content={mapping.responseMessage}/>, '', toastOpt)
                 } else{
+                  (!this.state.namespaceIdToEdit)
+                  ? FSReactToastr.success(<strong>Environment added successfully</strong>)
+                  : FSReactToastr.success(<strong>Environment updated successfully</strong>)
                     this.addEvtModel.hide();
                     this.fetchData();
                 }
@@ -259,11 +262,16 @@ class EnvironmentContainer extends Component{
         this.fetchData();
         confirmBox.cancel();
         if (nameSpace.responseMessage !== undefined) {
-          FSReactToastr.error(
-            <CommonNotification flag="error" content={nameSpace.responseMessage}/>, '', toastOpt)
+          if(nameSpace.responseMessage.indexOf('Namespace refers the cluster') !== 1){
+            FSReactToastr.info(
+              <CommonNotification flag="info" content={"Namespace refers to some Topology. So it can't be deleted."}/>, '', toastOpt)
+          }else{
+            FSReactToastr.error(
+              <CommonNotification flag="error" content={nameSpace.responseMessage}/>, '', toastOpt);
+          }
         } else {
           FSReactToastr.success(
-              <strong>cluster deleted successfully</strong>
+              <strong>Environment deleted successfully</strong>
           )
         }
       }).catch((err) => {
@@ -285,7 +293,7 @@ class EnvironmentContainer extends Component{
     const {entities,pageSize,pageIndex,fetchLoader,isLoading,clusterName, namespaceIdToEdit} = this.state;
     const {routes} = this.props;
     const splitData = _.chunk(entities,pageSize) || [];
-    const modelTitle = <span>New Environment <i className="fa fa-info-circle"></i></span>
+    const modelTitle = <span>{namespaceIdToEdit === null ? "New " : "Edit "   }Environment <i className="fa fa-info-circle"></i></span>
     return(
       <BaseContainer ref="BaseContainer" routes={routes} headerContent={this.getHeaderContent()}>
         <div id="add-environment">
@@ -299,11 +307,9 @@ class EnvironmentContainer extends Component{
         <div className="row">
             {
               fetchLoader
-              ? <div className="col-sm-12">
-                  <div className="loading-img text-center">
+              ?   <div className="fullPageLoader">
                       <img src="styles/img/start-loader.gif" alt="loading" />
                   </div>
-                </div>
               :
                 entities.length === 0
                 ? <NoData />

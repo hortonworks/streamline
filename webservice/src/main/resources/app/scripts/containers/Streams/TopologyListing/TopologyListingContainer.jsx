@@ -300,6 +300,7 @@ class TopologyListingContainer extends Component {
       const sortKey = this.state.sorted.key;
         TopologyREST.getAllTopology(sortKey).then((topology) => {
             if (topology.responseMessage !== undefined) {
+              this.setState({fetchLoader : false});
                 FSReactToastr.error(
                     <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
             } else {
@@ -579,8 +580,10 @@ class TopologyListingContainer extends Component {
                 </div>
                 <div className="row">
                     {
-                      (this.state.fetchLoader)
-                      ? <NoData/>
+                      (fetchLoader)
+                      ? <div className="fullPageLoader">
+                          <img src="styles/img/start-loader.gif" alt="loading" />
+                        </div>
                       : (splitData.length === 0)
                         ? <NoData/>
                         : splitData[pageIndex].map((list) => {
