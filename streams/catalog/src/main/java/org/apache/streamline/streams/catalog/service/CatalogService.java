@@ -20,8 +20,6 @@ package org.apache.streamline.streams.catalog.service;
 
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.util.FileStorage;
-import org.apache.streamline.registries.parser.ParserInfo;
-import org.apache.streamline.registries.parser.client.ParserClient;
 import org.apache.streamline.registries.tag.client.TagClient;
 import org.apache.streamline.storage.Storable;
 import org.apache.streamline.storage.StorableKey;
@@ -29,14 +27,12 @@ import org.apache.streamline.storage.StorageManager;
 import org.apache.streamline.storage.util.StorageUtils;
 import org.apache.streamline.streams.catalog.FileInfo;
 import org.apache.commons.io.IOUtils;
-import org.apache.streamline.common.exception.DuplicateEntityException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -55,14 +51,12 @@ public class CatalogService {
 
     private final StorageManager dao;
     private final FileStorage fileStorage;
-    private final ParserClient parserClient;
 
 
-    public CatalogService(StorageManager dao, FileStorage fileStorage, TagClient tagClient, ParserClient parserClient) {
+    public CatalogService(StorageManager dao, FileStorage fileStorage, TagClient tagClient) {
         this.dao = dao;
         dao.registerStorables(getStorableClasses());
         this.fileStorage = fileStorage;
-        this.parserClient = parserClient;
     }
 
     public static Collection<Class<? extends Storable>> getStorableClasses() {
@@ -137,7 +131,5 @@ public class CatalogService {
         return file;
     }
 
-    public ParserInfo getParserInfo (Long parserId) {
-        return parserClient.getParserInfo(parserId);
-    }
+
 }

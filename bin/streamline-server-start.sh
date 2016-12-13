@@ -36,12 +36,28 @@ if [ ! -d "$LOG_DIR" ]; then
     mkdir -p "$LOG_DIR"
 fi
 
-# classpath addition for release
+# Exclude jars not necessary for running commands.
+regex="(-(test|src|javadoc|runtime-storm)\.jar|jar.asc)$"
+should_include_file() {
+    if [ "$INCLUDE_TEST_JARS" = true ]; then
+        return 0
+    fi
+    file=$1
+    if [ -z "$(echo "$file" | egrep "$regex")" ] ; then
+        return 0
+    else
+        return 1
+    fi
+}
 
-CLASSPATH=$base_dir/libs/webservice*.jar;
-if [ "x$EXT_CLASSPATH" = "x" ]; then
- CLASSPATH=$CLASSPATH;$EXT_CLASSPATH;
-fi
+# classpath addition for release
+for file in "$base_dir"/libs/*.jar;
+do
+    if should_include_file "$file"; then
+        CLASSPATH="$CLASSPATH":"$file"
+    fi
+done
+
 
 COMMAND=$1
 case $COMMAND in

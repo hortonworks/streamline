@@ -37,8 +37,6 @@ import java.util.Map;
 
 @RunWith(JMockit.class)
 public class CustomProcessorBoltTest {
-
-    private static final Values VALUES = new Values(MockParser.STREAMLINE_EVENT);
     private Schema inputSchema = new Schema.SchemaBuilder().field(new Schema.Field("A", Schema.Type.INTEGER)).build();
     private Schema outputSchema = new Schema.SchemaBuilder().field(new Schema.Field("A", Schema.Type.INTEGER)).build();
     private String outputStream = "stream";
