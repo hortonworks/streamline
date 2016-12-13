@@ -83,6 +83,10 @@ storageProviderConfiguration:
 #    collectorApiUrl: "http://localhost:6188/ws/v1/timeline/metrics"
 
 
+enableCors: true
+corsUrlPatterns:
+  - "/api/v1/dashboards/*"
+
 server:
   rootPath: '/api/*'
   applicationConnectors:

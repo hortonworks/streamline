@@ -81,6 +81,10 @@ storageProviderConfiguration:
 #    providerClass: http
 #    port: 8080
 
+enableCors: true
+corsUrlPatterns:
+  - "/api/v1/dashboards/*"
+
 server:
   rootPath: '/api/*'
   applicationConnectors:

@@ -41,11 +41,15 @@ import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.apache.streamline.streams.service.GenericExceptionMapper;
+import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.DispatcherType;
+import javax.servlet.FilterRegistration;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 
@@ -76,6 +80,27 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
         environment.jersey().register(GenericExceptionMapper.class);
 
         registerResources(configuration, environment);
+
+        if (configuration.isEnableCors()) {
+            List<String> urlPatterns = configuration.getCorsUrlPatterns();
+            if (urlPatterns != null && !urlPatterns.isEmpty()) {
+                enableCORS(environment, urlPatterns);
+            }
+        }
+    }
+
+    private void enableCORS(Environment environment, List<String> urlPatterns) {
+        // Enable CORS headers
+        final FilterRegistration.Dynamic cors = environment.servlets().addFilter("CORS", CrossOriginFilter.class);
+
+        // Configure CORS parameters
+        cors.setInitParameter(CrossOriginFilter.ALLOWED_ORIGINS_PARAM, "*");
+        cors.setInitParameter(CrossOriginFilter.ALLOWED_HEADERS_PARAM, "X-Requested-With,Authorization,Content-Type,Accept,Origin");
+        cors.setInitParameter(CrossOriginFilter.ALLOWED_METHODS_PARAM, "OPTIONS,GET,PUT,POST,DELETE,HEAD");
+
+        // Add URL mapping
+        String[] urls = urlPatterns.toArray(new String[urlPatterns.size()]);
+        cors.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, urls);
     }
 
     private StorageManager getCacheBackedDao(StreamlineConfiguration configuration) {

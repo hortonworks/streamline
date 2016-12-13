@@ -78,6 +78,9 @@ fileStorageConfiguration:
 storageProviderConfiguration:
  providerClass: "org.apache.streamline.storage.impl.memory.InMemoryStorageManager"
 
+enableCors: true
+corsUrlPatterns:
+  - "/api/v1/dashboards/*"
 
 server:
   rootPath: '/api/*'

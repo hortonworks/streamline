@@ -51,6 +51,11 @@ public class StreamlineConfiguration extends Configuration {
         this.storageProviderConfiguration = storageProviderConfiguration;
     }
 
+    @JsonProperty
+    private boolean enableCors;
+
+    @JsonProperty
+    private List<String> corsUrlPatterns;
 
     public String getCatalogRootUrl () {
         return catalogRootUrl;
@@ -82,5 +87,21 @@ public class StreamlineConfiguration extends Configuration {
 
     public void setModules(List<ModuleConfiguration> modules) {
         this.modules = modules;
+    }
+
+    public boolean isEnableCors() {
+        return enableCors;
+    }
+
+    public void setEnableCors(boolean enableCors) {
+        this.enableCors = enableCors;
+    }
+
+    public List<String> getCorsUrlPatterns() {
+        return corsUrlPatterns;
+    }
+
+    public void setCorsUrlPatterns(List<String> corsUrlPatterns) {
+        this.corsUrlPatterns = corsUrlPatterns;
     }
 }
