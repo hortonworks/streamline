@@ -7,7 +7,6 @@ import org.apache.streamline.common.ModuleRegistration;
 import org.apache.streamline.common.TimeSeriesDBConfiguration;
 import org.apache.streamline.common.util.FileStorage;
 import org.apache.streamline.common.util.ReflectionHelper;
-import org.apache.streamline.registries.parser.client.ParserClient;
 import org.apache.streamline.registries.tag.client.TagClient;
 import org.apache.streamline.storage.StorageManager;
 import org.apache.streamline.storage.StorageManagerAware;
@@ -52,8 +51,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         final StreamCatalogService streamcatalogService = new StreamCatalogService(storageManager, fileStorage, config);
         String catalogRootUrl = (String) config.get(Constants.CONFIG_CATALOG_ROOT_URL);
         TagClient tagClient = new TagClient(catalogRootUrl);
-        ParserClient parserClient = new ParserClient(catalogRootUrl);
-        final CatalogService catalogService = new CatalogService(storageManager, fileStorage, tagClient, parserClient);
+        final CatalogService catalogService = new CatalogService(storageManager, fileStorage, tagClient);
         result.add(new MetricsResource(streamcatalogService));
         result.addAll(getClusterRelatedResources(streamcatalogService));
         result.add(new FileCatalogResource(catalogService));

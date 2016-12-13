@@ -25,7 +25,6 @@ import com.google.common.collect.Lists;
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.common.catalog.CatalogResponse;
 import org.apache.streamline.common.test.IntegrationTest;
-import org.apache.streamline.registries.parser.ParserInfo;
 import org.apache.streamline.registries.tag.dto.TagDto;
 import org.apache.streamline.streams.catalog.Cluster;
 import org.apache.streamline.streams.catalog.Component;
@@ -218,13 +217,6 @@ public class RestIntegrationTest {
             new ResourceTestElement(createTopologyComponent(2l, "parserProcessor", TopologyComponentBundle.TopologyComponentType.PROCESSOR, "PARSER"), createTopologyComponent(2l, "parserProcessorPut", TopologyComponentBundle.TopologyComponentType.PROCESSOR, "PARSER"), "2", rootUrl + "streams/componentbundles/PROCESSOR"),
             new ResourceTestElement(createTopologyComponent(3l, "hbaseSink", TopologyComponentBundle.TopologyComponentType.SINK, "HBASE"), createTopologyComponent(3l, "hbaseSinkPut", TopologyComponentBundle.TopologyComponentType.SINK, "HBASE"), "3", rootUrl + "streams/componentbundles/SINK"),
             new ResourceTestElement(createTopologyComponent(4l, "shuffleGroupingLink", TopologyComponentBundle.TopologyComponentType.LINK, "SHUFFLE"), createTopologyComponent(4l, "shuffleGroupingLinkPut", TopologyComponentBundle.TopologyComponentType.LINK, "SHUFFLE"), "4", rootUrl + "streams/componentbundles/LINK"),
-            */
-            // parser is commented as parser takes a jar as input along with the parserInfo instance and so it needs a multipart request.
-            /* we can't apply new way to throw webservice related exception from parser-registry module
-             but it will be removed via STREAMLINE-435 so just commenting this out for now
-            new ResourceTestElement(createParserInfo(1l, "testParser"), null, "1", rootUrl + "parsers")
-                                    .withMultiPart().withEntitiyNameHeader("parserInfo").withFileNameHeader("parserJar")
-                                    .withFileToUpload("parser.jar").withFieldsToIgnore(Collections.singletonList("jarStoragePath"))
             */
     );
 
@@ -854,19 +846,6 @@ public class RestIntegrationTest {
     }
 
     //============== Helper methods to create the actual objects that the rest APIS expect as Input ==========//
-
-    private ParserInfo createParserInfo(Long id, String name) {
-        ParserInfo pi = new ParserInfo();
-        pi.setId(id);
-        pi.setName(name);
-        pi.setClassName("org.apache.streamline.registries.parser.nest.NestParser");
-        pi.setJarStoragePath("/tmp/parser.jar");
-        pi.setParserSchema(new Schema.SchemaBuilder().fields(new Schema.Field("deviceId", Schema.Type.LONG),
-                new Schema.Field("deviceName", Schema.Type.STRING)).build());
-        pi.setVersion(0l);
-        pi.setTimestamp(System.currentTimeMillis());
-        return pi;
-    }
 
     private TagDto createTag(Long id, String name, List<Long> tagIds) {
         TagDto tag = new TagDto();
