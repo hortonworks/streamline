@@ -13,9 +13,6 @@ import static org.apache.storm.hbase.common.Utils.toBytes;
 
 public class StreamlineEventHBaseMapper implements HBaseMapper {
     private final byte[] columnFamily;
-    //TODO need to support counter fields
-    private static final byte[] CF_DSRCID = "d".getBytes(StandardCharsets.UTF_8);
-    private static final byte[] CV_DEFAULT = "1".getBytes(StandardCharsets.UTF_8);
 
     public StreamlineEventHBaseMapper(String columnFamily) {
         this.columnFamily = columnFamily.getBytes(Charsets.UTF_8);
@@ -38,7 +35,6 @@ public class StreamlineEventHBaseMapper implements HBaseMapper {
                 columnList.addColumn(columnFamily, key.getBytes(Charsets.UTF_8), toBytes(event.get(key)));
             }
         }
-        columnList.addColumn(CF_DSRCID, event.getDataSourceId().getBytes(StandardCharsets.UTF_8), CV_DEFAULT);
         return columnList;
     }
 }
