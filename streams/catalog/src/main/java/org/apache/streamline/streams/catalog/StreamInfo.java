@@ -46,6 +46,7 @@ public class StreamInfo extends AbstractStorable {
     public static final String ID = "id";
     public static final String VERSIONID = "versionId";
     public static final String STREAMID = "streamId";
+    public static final String DESCRIPTION = "description";
     public static final String FIELDSDATA = "fieldsData";
     public static final String TIMESTAMP = "timestamp";
     public static final String FIELDS = "fields";
@@ -58,6 +59,9 @@ public class StreamInfo extends AbstractStorable {
 
     // the stream identifier string
     private String streamId;
+
+    // description
+    private String description;
 
     // the topology that this stream belongs to
     private Long topologyId;
@@ -75,9 +79,10 @@ public class StreamInfo extends AbstractStorable {
         setId(other.getId());
         setVersionId(other.getVersionId());
         setStreamId(other.getStreamId());
+        setDescription(other.getDescription());
         setTopologyId(other.getTopologyId());
         if (other.getFields() != null) {
-            setFields(other.getFields().stream().map(Field::new).collect(Collectors.toList()));
+            setFields(other.getFields().stream().map(Field::copy).collect(Collectors.toList()));
         }
         setVersionTimestamp(other.getVersionTimestamp());
     }
@@ -116,6 +121,7 @@ public class StreamInfo extends AbstractStorable {
                 Field.of(ID, Schema.Type.LONG),
                 Field.of(VERSIONID, Schema.Type.LONG),
                 Field.of(STREAMID, Schema.Type.STRING),
+                Field.of(DESCRIPTION, Schema.Type.STRING),
                 Field.of(FIELDSDATA, Schema.Type.STRING), // fields are serialized into fieldsdata
                 Field.of(TOPOLOGYID, Schema.Type.LONG)
         );
@@ -144,6 +150,14 @@ public class StreamInfo extends AbstractStorable {
 
     public void setStreamId(String streamId) {
         this.streamId = streamId;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public List<Field> getFields() {
@@ -210,8 +224,10 @@ public class StreamInfo extends AbstractStorable {
                 "id=" + id +
                 ", versionId=" + versionId +
                 ", streamId='" + streamId + '\'' +
+                ", description='" + description + '\'' +
                 ", topologyId=" + topologyId +
                 ", fields=" + fields +
+                ", versionTimestamp=" + versionTimestamp +
                 "} " + super.toString();
     }
 
@@ -232,6 +248,7 @@ public class StreamInfo extends AbstractStorable {
         setId((Long) map.get(ID));
         setVersionId((Long) map.get(VERSIONID));
         setStreamId((String) map.get(STREAMID));
+        setDescription((String) map.get(DESCRIPTION));
         setTopologyId((Long) map.get(TOPOLOGYID));
         ObjectMapper mapper = new ObjectMapper();
         String fieldsDataStr = (String) map.get(FIELDSDATA);

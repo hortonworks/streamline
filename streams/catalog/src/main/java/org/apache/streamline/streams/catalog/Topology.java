@@ -25,6 +25,7 @@ public class Topology implements Storable {
     public static final String NAMESPACE_ID = "namespaceId";
     public static final String CONFIG = "config";
     public static final String TIMESTAMP = "timestamp";
+    public static final String DESCRIPTION = "description";
 
     /**
      * Unique id identifying a topology. This is the composite primary key column.
@@ -40,6 +41,11 @@ public class Topology implements Storable {
      * Human readable topology name; input from user from UI.
      */
     private String name;
+
+    /**
+     * Topology description
+     */
+    private String description;
 
     /**
      * Corresponding namespace id.
@@ -69,6 +75,7 @@ public class Topology implements Storable {
         setId(other.getId());
         setVersionId(other.getVersionId());
         setName(other.getName());
+        setDescription(other.getDescription());
         setConfig(other.getConfig());
         setNamespaceId(other.getNamespaceId());
         setVersionTimestamp(other.getVersionTimestamp());
@@ -97,6 +104,7 @@ public class Topology implements Storable {
                 new Schema.Field(ID, Schema.Type.LONG),
                 new Schema.Field(VERSIONID, Schema.Type.LONG),
                 new Schema.Field(NAME, Schema.Type.STRING),
+                new Schema.Field(DESCRIPTION, Schema.Type.STRING),
                 new Schema.Field(NAMESPACE_ID, Schema.Type.LONG),
                 new Schema.Field(CONFIG, Schema.Type.STRING)
         );
@@ -120,6 +128,7 @@ public class Topology implements Storable {
         map.put(ID, this.id);
         map.put(VERSIONID, this.versionId);
         map.put(NAME, this.name);
+        map.put(DESCRIPTION, this.description);
         map.put(NAMESPACE_ID, this.namespaceId);
         map.put(CONFIG, this.config);
         return map;
@@ -129,6 +138,7 @@ public class Topology implements Storable {
         this.id = (Long) map.get(ID);
         this.versionId = (Long) map.get(VERSIONID);
         this.name = (String) map.get(NAME);
+        this.description = (String) map.get(DESCRIPTION);
         this.namespaceId = (Long) map.get(NAMESPACE_ID);
         this.config = (String)  map.get(CONFIG);
         return this;
@@ -157,6 +167,14 @@ public class Topology implements Storable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Long getNamespaceId() {

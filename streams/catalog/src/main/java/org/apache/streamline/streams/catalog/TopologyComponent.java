@@ -39,6 +39,7 @@ public class TopologyComponent extends AbstractStorable {
     public static final String TOPOLOGYID = "topologyId";
     public static final String TOPOLOGY_COMPONENT_BUNDLE_ID = "topologyComponentBundleId";
     public static final String NAME = "name";
+    public static final String DESCRIPTION = "description";
     public static final String CONFIG = "config";
     public static final String CONFIG_DATA = "configData";
 
@@ -47,6 +48,7 @@ public class TopologyComponent extends AbstractStorable {
     private Long topologyComponentBundleId = -1L;
     private Long versionId = -1L;
     private String name = StringUtils.EMPTY;
+    private String description = StringUtils.EMPTY;
     private Config config;
     // this is not saved in storage but REST apis includes version timestamp here
     private Long versionTimestamp;
@@ -61,6 +63,7 @@ public class TopologyComponent extends AbstractStorable {
         setTopologyComponentBundleId(other.getTopologyComponentBundleId());
         setVersionId(other.getVersionId());
         setName(other.getName());
+        setDescription(other.getDescription());
         setConfig(new Config(other.getConfig()));
         setVersionTimestamp(other.getVersionTimestamp());
     }
@@ -88,6 +91,7 @@ public class TopologyComponent extends AbstractStorable {
                 Schema.Field.of(TOPOLOGYID, Schema.Type.LONG),
                 Schema.Field.of(TOPOLOGY_COMPONENT_BUNDLE_ID, Schema.Type.LONG),
                 Schema.Field.of(NAME, Schema.Type.STRING),
+                Schema.Field.of(DESCRIPTION, Schema.Type.STRING),
                 Schema.Field.of(CONFIG_DATA, Schema.Type.STRING));
     }
 
@@ -130,6 +134,14 @@ public class TopologyComponent extends AbstractStorable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Config getConfig() {

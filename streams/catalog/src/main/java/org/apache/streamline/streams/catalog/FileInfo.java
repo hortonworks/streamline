@@ -64,7 +64,7 @@ public class FileInfo extends AbstractStorable {
     /**
      * Extra information about the Jar.
      */
-    private String auxiliaryInfo;
+    private String description;
 
     @Override
     @JsonIgnore
@@ -139,12 +139,12 @@ public class FileInfo extends AbstractStorable {
     /**
      * @return Extra information about this Jar which is represented in String format.
      */
-    public String getAuxiliaryInfo() {
-        return auxiliaryInfo;
+    public String getDescription() {
+        return description;
     }
 
-    public void setAuxiliaryInfo(String auxiliaryInfo) {
-        this.auxiliaryInfo = auxiliaryInfo;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override
@@ -155,7 +155,7 @@ public class FileInfo extends AbstractStorable {
                 ", storedFileName='" + storedFileName + '\'' +
                 ", version=" + version +
                 ", timestamp=" + timestamp +
-                ", auxiliaryInfo='" + auxiliaryInfo + '\'' +
+                ", description='" + description + '\'' +
                 '}'+super.toString();
     }
 
@@ -172,7 +172,7 @@ public class FileInfo extends AbstractStorable {
             return false;
         if (version != null ? !version.equals(file.version) : file.version != null) return false;
         if (timestamp != null ? !timestamp.equals(file.timestamp) : file.timestamp != null) return false;
-        return !(auxiliaryInfo != null ? !auxiliaryInfo.equals(file.auxiliaryInfo) : file.auxiliaryInfo != null);
+        return !(description != null ? !description.equals(file.description) : file.description != null);
 
     }
 
@@ -183,7 +183,7 @@ public class FileInfo extends AbstractStorable {
         result = 31 * result + (storedFileName != null ? storedFileName.hashCode() : 0);
         result = 31 * result + (version != null ? version.hashCode() : 0);
         result = 31 * result + (timestamp != null ? timestamp.hashCode() : 0);
-        result = 31 * result + (auxiliaryInfo != null ? auxiliaryInfo.hashCode() : 0);
+        result = 31 * result + (description != null ? description.hashCode() : 0);
         return result;
     }
 }

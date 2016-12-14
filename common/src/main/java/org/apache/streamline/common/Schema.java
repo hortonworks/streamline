@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 //TODO Make this class Jackson Compatible.
 public class Schema implements Serializable {
@@ -177,6 +178,10 @@ public class Schema implements Serializable {
             optional = other.isOptional();
         }
 
+        public Field copy() {
+            return new Field(this);
+        }
+
         public static Field of(String name, Type type) {
             return new Field(name, type);
         }
@@ -313,6 +318,14 @@ public class Schema implements Serializable {
             this.fields = ImmutableList.copyOf(fields);
         }
 
+        public NestedField(NestedField other) {
+            fields = other.fields.stream().map(Field::copy).collect(Collectors.toList());
+        }
+
+        public NestedField copy() {
+            return new NestedField(this);
+        }
+
         public List<Field> getFields() {
             return fields;
         }
@@ -374,6 +387,14 @@ public class Schema implements Serializable {
         private ArrayField(String name, List<Field> members, boolean optional) {
             super(name, Type.ARRAY, optional);
             this.members = ImmutableList.copyOf(members);
+        }
+
+        public ArrayField(ArrayField other) {
+            members = other.members.stream().map(Field::copy).collect(Collectors.toList());
+        }
+
+        public ArrayField copy() {
+            return new ArrayField(this);
         }
 
         public List<Field> getMembers() {
