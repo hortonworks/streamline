@@ -25,6 +25,7 @@ export default class SourceNodeForm extends Component {
         this.state = {
             formData: {},
             streamObj: {},
+            description: '',
             showRequired: true,
             activeTabKey: 1
         };
@@ -43,6 +44,7 @@ export default class SourceNodeForm extends Component {
                     stateObj.streamObj = this.streamObj;
                 }
                 stateObj.formData = this.nodeData.config.properties
+                stateObj.description = this.nodeData.description;
                 this.setState(stateObj);
             })
     }
@@ -83,6 +85,7 @@ export default class SourceNodeForm extends Component {
             id: this.nodeData.outputStreams[0].id,
             topologyId: topologyId
         }]
+        this.nodeData.description = this.state.description;
         let promiseArr = [
             TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)}),
             TopologyREST.updateNode(topologyId, versionId, 'streams', this.nodeData.outputStreams[0].id, {body: JSON.stringify(this.streamObj)})
@@ -110,6 +113,10 @@ export default class SourceNodeForm extends Component {
         }
     }
 
+    handleNotesChange(description) {
+        this.setState({description: description});
+    }
+
     render() {
         let formData = this.state.formData;
         let fields = Utils.genFields(this.configJSON, [], formData);
@@ -135,7 +142,11 @@ export default class SourceNodeForm extends Component {
                     {form}
                 </Tab>
                 <Tab eventKey={3} title="NOTES">
-                    <NotesForm />
+                    <NotesForm
+                        ref="NotesForm"
+                        description={this.state.description}
+                        onChangeDescription={this.handleNotesChange.bind(this)}
+                    />
                 </Tab>
             </Tabs>
         )

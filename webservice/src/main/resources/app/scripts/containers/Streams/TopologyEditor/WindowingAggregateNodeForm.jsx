@@ -440,7 +440,7 @@ export default class WindowingAggregateNodeForm extends Component {
 		return validData;
 	}
 
-	handleSave(name){
+        handleSave(name, description){
 		let {selectedKeys, windowNum, slidingNum, outputFieldsArr, durationType, slidingDurationType,
 			intervalType, streamsList, parallelism} = this.state;
         let {topologyId, versionId, nodeType, nodeData} = this.props;
@@ -533,12 +533,12 @@ export default class WindowingAggregateNodeForm extends Component {
 
                 return TopologyREST.updateNode(topologyId, versionId, 'windows', this.windowId, {body: JSON.stringify(windowObj)})
                     .then(windowResult=>{
-                    	return this.updateNode(windowResult, name);
+			return this.updateNode(windowResult, name, description);
                     })
                 })
 		}
 	}
-	updateNode(windowObj, name){
+        updateNode(windowObj, name, description){
 		let {parallelism, outputStreamFields} = this.state;
                 let {topologyId, versionId, nodeType, nodeData} = this.props;
                 return TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId)
@@ -550,6 +550,7 @@ export default class WindowingAggregateNodeForm extends Component {
 						data.config.properties.rules = [windowData.id];
 						data.outputStreamIds = [this.streamData.id];
 						data.name = name;
+                                                data.description = description;
 						let streamData = {
 							streamId: this.streamData.streamId,
 							fields: outputStreamFields

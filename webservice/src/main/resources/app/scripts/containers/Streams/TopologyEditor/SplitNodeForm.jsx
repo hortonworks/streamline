@@ -118,7 +118,7 @@ export default class SplitNodeForm extends Component {
 		return true;
 	}
 
-	handleSave(name){
+        handleSave(name, description){
                 let {topologyId, versionId, nodeType} = this.props;
 		let {fileId, splitterClassName, parallelism} = this.state;
 		let nodeId = this.nodeData.id;
@@ -138,6 +138,7 @@ export default class SplitNodeForm extends Component {
                                 data.config.properties["split-config"] = splitConfigData;
                                 data.config.properties.parallelism = parallelism;
                                 data.name = name;
+                                data.description = description;
 
                                 return TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(data)})
 			})

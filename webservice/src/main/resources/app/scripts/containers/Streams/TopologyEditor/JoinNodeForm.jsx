@@ -386,7 +386,7 @@ export default class JoinNodeForm extends Component {
                 return validData;
 	}
 
-	handleSave(name){
+        handleSave(name, description){
         let {topologyId, versionId, nodeType} = this.props;
                 let {outputKeys, windowNum, slidingNum, durationType, slidingDurationType, intervalType, parallelism,
                         outputStreamFields, joinFromStreamName, joinFromStreamKey, joinStreams} = this.state;
@@ -444,6 +444,7 @@ export default class JoinNodeForm extends Component {
                                 data.config.properties.parallelism = parallelism;
                                 data.outputStreams[0].fields = outputStreamFields;
                                 data.name = name;
+                                data.description = description;
                                 // let streamData = {
                                 //         streamId: this.streamData.streamId,
                                 //         fields: outputStreamFields

@@ -771,11 +771,10 @@ label {
 }
 .component-panel {
     position: fixed;
-    height: 500px !important;
+    height: auto;
     width:75px;
-    top: 50%;
+    top:60px;
     margin-left: -70px;
-    transform: translateY(-50%);
     background-color: #fff;
     padding: 0 10px;
     font-size: 0.875em;
@@ -1321,8 +1320,6 @@ label {
   resize: none;
 }
 .panel-wrapper{
-  /*margin-top: 4px;*/
-  height: 470px;
   overflow-y: auto;
   overflow-x: hidden;
   padding: 0 5px;

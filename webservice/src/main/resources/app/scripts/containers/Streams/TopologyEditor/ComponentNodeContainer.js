@@ -48,7 +48,6 @@ export default class ComponentNodeContainer extends Component {
             sinks: Utils.sortArray(bundleArr.sinksBundle, 'subType', true)
         };
     }
-
     componentWillReceiveProps(nextProps, oldProps){
         if(nextProps.bundleArr != this.props.bundleArr){
             this.setState({
@@ -65,9 +64,9 @@ export default class ComponentNodeContainer extends Component {
           return null;
         }
         return (
-            <div className="component-panel right">
+            <div className="component-panel right" style={{height : window.innerHeight - 60}}>
               <button className="btn-draggable"></button>
-              <div className="panel-wrapper">
+              <div className="panel-wrapper" style={{height : window.innerHeight - 90}}>
                 <h6 className="component-title">Source</h6>
                 <ul className="component-list">
                     {this.state.datasources.map((source, i)=>{

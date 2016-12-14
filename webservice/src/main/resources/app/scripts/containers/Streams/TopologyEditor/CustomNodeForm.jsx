@@ -166,12 +166,13 @@ export default class CustomNodeForm extends Component {
 		return validDataFlag;
 	}
 
-	handleSave(name){
+        handleSave(name, description){
 		let {topologyId, nodeType, versionId} = this.props;
 		let data = this.getData();
 		let nodeId = this.nodeData.id;
 		this.nodeData.config.properties = data;
 		this.nodeData.name = name;
+                this.nodeData.description = description;
 
                 return TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)})
 	}

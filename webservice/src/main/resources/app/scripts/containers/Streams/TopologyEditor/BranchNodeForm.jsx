@@ -95,7 +95,7 @@ export default class BranchNodeForm extends Component {
         return true;
     }
 
-    handleSave(name){
+    handleSave(name, description){
         let {topologyId, versionId, nodeType} = this.props;
         let promiseArr = [
             TopologyREST.getNode(topologyId, versionId, nodeType, this.nodeData.id)
@@ -104,6 +104,7 @@ export default class BranchNodeForm extends Component {
                 .then(results=>{
                     this.nodeData = results[0];
                     this.nodeData.name = name;
+                    this.nodeData.description = description;
                     this.nodeData.config.properties.processAll = this.state.processAll;
                     //Update branch
                     return TopologyREST.updateNode(topologyId, versionId, nodeType, this.nodeData.id, {body: JSON.stringify(this.nodeData)});

@@ -216,14 +216,16 @@ class ServicePoolContainer extends Component{
               <CommonNotification flag="error" content={cluster.responseMessage}/>, '', toastOpt);
           }
         } else {
-          this.fetchData();
-          FSReactToastr.success(
-              <strong>cluster deleted successfully</strong>
-          )
+          this.setState({fetchLoader : true}, () => {
+            this.fetchData();
+            clearTimeout(clearTimer);
+            const clearTimer = setTimeout(() => {
+              FSReactToastr.success(
+                  <strong>cluster deleted successfully</strong>
+              )
+            },500);
+          });
         }
-      }).catch((err) => {
-        FSReactToastr.error(
-          <CommonNotification flag="error" content={err.message}/>, '', toastOpt)
       })
     })
   }
@@ -333,7 +335,7 @@ class ServicePoolContainer extends Component{
             this.setState({loader : false,idCheck : '',refIdArr : tempDataArray});
         }else{
           const result = ambarClusters;
-          let entitiesWrap = [];
+          let entitiesWrap = [],sucessMsg='';
           if(idCheck){
             //Update Single Cluster
             const elPosition = this.state.entities.map(function(x) {
@@ -341,17 +343,21 @@ class ServicePoolContainer extends Component{
             }).indexOf(idCheck);
             entitiesWrap = this.state.entities;
             entitiesWrap[elPosition] = result;
-            FSReactToastr.success(
-                <strong>process has been completed successfully</strong>
-            )
+            sucessMsg = "Process has been completed successfully";
           } else {
-            FSReactToastr.success(
-                <strong>Cluster has been added successfully</strong>
-            )
+            sucessMsg = "Cluster has been added successfully";
           }
           const tempDataArray = this.spliceTempArr(clusterID || idCheck);
 
-          this.setState({loader : false,idCheck : '', entities: entitiesWrap, refIdArr : tempDataArray}, () => this.fetchData());
+          this.setState({fetchLoader : true, loader : false,idCheck : '', entities: entitiesWrap, refIdArr : tempDataArray}, () => {
+            this.fetchData();
+            clearTimeout(clearTimer);
+            const clearTimer = setTimeout(() => {
+              FSReactToastr.success(
+                  <strong>{sucessMsg}</strong>
+              )
+            },500);
+          });
         }
     });
   }
@@ -383,6 +389,16 @@ class ServicePoolContainer extends Component{
         Configuration <span className="title-separator">/</span> {this.props.routes[this.props.routes.length-1].name}
       </span>
     );
+  }
+
+  handleKeyPress = (event) => {
+    if(event.key === "Enter"){
+      if(event.target.placeholder.indexOf('URL') !== -1){
+          event.target.focus = false;
+          this.addBtnClicked();
+      }
+      this.adminFormModel.state.show ? this.adminSaveClicked() : '';
+    }
   }
 
   render(){
@@ -434,6 +450,7 @@ class ServicePoolContainer extends Component{
                 <div className="input-group">
                     <input type="text"
                       ref="addURLInput"
+                      onKeyPress={this.handleKeyPress}
                       className={`form-control ${showInputErr ? '' : 'invalidInput'}`}
                       placeholder="Enter Ambari URL"
                     />
@@ -478,6 +495,7 @@ class ServicePoolContainer extends Component{
         }
         <Modal ref={(ref) => this.adminFormModel = ref}
           data-title="Credentials"
+          onKeyPress={this.handleKeyPress}
           data-resolve={this.adminSaveClicked}
           data-reject={this.adminCancelClicked}>
           {adminFormFields()}

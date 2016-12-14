@@ -30,6 +30,7 @@ export default class SinkNodeForm extends Component {
         this.state = {
             formData: {},
             streamObj: {},
+            description: '',
             showRequired: true,
             activeTabKey: 1
         };
@@ -60,7 +61,7 @@ export default class SinkNodeForm extends Component {
                         }
                     })
                 }
-                this.setState({formData: this.nodeData.config.properties})
+                this.setState({formData: this.nodeData.config.properties, description: this.nodeData.description})
                 if(sourceNodes.length > 0){
                     //Finding the source node and updating actions for rules/windows
                     this.sourceNodeData = results[2];
@@ -97,6 +98,7 @@ export default class SinkNodeForm extends Component {
         this.nodeData.config.properties = data;
         let oldName = this.nodeData.name;
         this.nodeData.name = name;
+        this.nodeData.description = this.state.description;
         let promiseArr = [TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)})];
         if(this.allSourceChildNodeData && this.allSourceChildNodeData.length > 0){
             this.allSourceChildNodeData.map((childData)=>{
@@ -129,6 +131,10 @@ export default class SinkNodeForm extends Component {
         }
     }
 
+    handleNotesChange(description) {
+        this.setState({description: description});
+    }
+
     render() {
         let {configData} = this.props;
         let {formData, streamObj = {}} = this.state;
@@ -155,7 +161,11 @@ export default class SinkNodeForm extends Component {
                     {form}
                 </Tab>
                 <Tab eventKey={3} title="NOTES">
-                    <NotesForm />
+                    <NotesForm
+                        ref="NotesForm"
+                        description={this.state.description}
+                        onChangeDescription={this.handleNotesChange.bind(this)}
+                    />
                 </Tab>
             </Tabs>
         )

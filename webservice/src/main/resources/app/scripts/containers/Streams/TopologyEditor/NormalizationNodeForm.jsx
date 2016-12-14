@@ -418,7 +418,7 @@ export default class NormalizationNodeForm extends Component {
 		return validDataFlag;
 	}
 
-	handleSave(name){
+        handleSave(name, description){
                 let {topologyId, versionId, nodeType} = this.props;
 		let data = this.getData();
 		let nodeId = this.nodeData.id;
@@ -428,6 +428,7 @@ export default class NormalizationNodeForm extends Component {
                                 let newData = result;
 				newData.config.properties = data;
 				newData.name = name;
+                                newData.description = description;
                 let outputStreamData = { streamId: newData.outputStreams[0].streamId , fields: this.state.outputSchemaFields};
                 return TopologyREST.updateNode(topologyId, versionId, 'streams', newData.outputStreams[0].id, {body: JSON.stringify(outputStreamData)})
                     .then((stream)=>{

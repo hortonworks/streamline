@@ -70,7 +70,7 @@ export class string extends BaseField {
             .then(result=>{
                 if(result.responseMessage !== undefined){
                     this.refs.input.className = "form-control invalidInput";
-                    this.context.Form.state.Errors[this.props.valuePath] = 'Topic name is not present.';
+                    this.context.Form.state.Errors[this.props.valuePath] = 'Schema Not Found';
                     this.context.Form.setState(this.context.Form.state);
                 } else {
                     this.refs.input.className = "form-control";

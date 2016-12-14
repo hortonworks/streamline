@@ -28,6 +28,7 @@ export default class ProcessorNodeForm extends Component {
         this.outputStreamObj = {};
         this.state = {
             streamObj: {},
+            description: '',
             outputStreamObj: {},
             inputStreamOptions: []
         };
@@ -45,15 +46,17 @@ export default class ProcessorNodeForm extends Component {
     fetchData(){
         let {topologyId, versionId, nodeType, nodeData} = this.props;
         let promiseArr = [
+            TopologyREST.getNode(topologyId, versionId, 'processors', nodeData.nodeId),
             TopologyREST.getAllNodes(topologyId, versionId, 'edges')
         ];
         Promise.all(promiseArr)
             .then(results=>{
-                if(results[0].entities){
+                let description = results[0].description ? results[0].description : '';
+                if(results[1].entities){
                     var streamsPromiseArr = [],
                         inputStreams = [],
                         inputStreamOptions = [];
-                    results[0].entities.map((edge)=>{
+                    results[1].entities.map((edge)=>{
                         if(edge.toId === nodeData.nodeId && this.sourceNodesId.indexOf(edge.fromId) !== -1){
                             streamsPromiseArr.push(TopologyREST.getNode(topologyId, versionId, 'streams', edge.streamGroupings[0].streamId));
                         }
@@ -68,6 +71,7 @@ export default class ProcessorNodeForm extends Component {
                         // this.refs.StreamSidebarInput.update(streamResult);
                     })
                 }
+                this.setState({description: description});
             })
     }
 
@@ -80,7 +84,12 @@ export default class ProcessorNodeForm extends Component {
     }
 
     handleSave(name){
-        return this.refs.ProcessorChildElement.handleSave(name);
+        let description = this.state.description;
+        return this.refs.ProcessorChildElement.handleSave(name, description);
+    }
+
+    handleNotesChange(description) {
+        this.setState({description: description});
     }
 
     render() {
@@ -94,7 +103,11 @@ export default class ProcessorNodeForm extends Component {
                     <StreamsSidebar ref="StreamSidebarOutput" streamObj={this.state.outputStreamObj} streamType="output" />
                 </Tab>
                 <Tab eventKey={2} title="NOTES">
-                    <NotesForm />
+                    <NotesForm
+                        ref="NotesForm"
+                        description={this.state.description}
+                        onChangeDescription={this.handleNotesChange.bind(this)}
+                    />
                 </Tab>
             </Tabs>
         )

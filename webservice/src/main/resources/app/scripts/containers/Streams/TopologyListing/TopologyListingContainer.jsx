@@ -512,6 +512,13 @@ class TopologyListingContainer extends Component {
       }
     }
 
+    handleKeyPress = (event) => {
+      if(event.key === "Enter"){
+        this.AddTopologyModelRef.state.show ? this.handleSaveClicked() : '';
+        this.ImportTopologyModelRef.state.show ? this.handleImportSave() : '';
+      }
+    }
+
     render() {
         const {entities,filterValue,isLoading,fetchLoader,slideInput,pageSize,pageIndex} = this.state;
         const filteredEntities = TopologyUtils.topologyFilter(entities, filterValue);
@@ -603,11 +610,13 @@ class TopologyListingContainer extends Component {
                 }
                 <Modal ref={(ref) => this.AddTopologyModelRef = ref}
                   data-title="Add Stream"
+                  onKeyPress={this.handleKeyPress}
                   data-resolve={this.handleSaveClicked}>
                   <AddTopology ref={(ref) => this.addTopologyRef = ref}/>
                 </Modal>
                 <Modal ref={(ref) => this.ImportTopologyModelRef = ref}
                   data-title="Import Stream"
+                  onKeyPress={this.handleKeyPress}
                   data-resolve={this.handleImportSave}>
                   <ImportTopology ref={(ref) => this.importTopologyRef = ref}/>
                 </Modal>

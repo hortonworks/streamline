@@ -688,6 +688,15 @@ class TopologyEditorContainer extends Component {
     }
     this.setState({altFlag: !this.state.altFlag});
   }
+  handleKeyPress(event){
+    const that = this
+    if(event.key === "Enter"){
+      this.refs.TopologyConfigModal.state.show ? this.handleSaveConfig(this) : '';
+      this.refs.NodeModal.state.show ? this.handleSaveNodeModal(this) : '';
+      this.refs.leaveEditable.state.show ? this.confirmLeave(this, true) : '';
+      this.refs.EdgeConfigModal.state.show ? this.handleSaveEdgeConfig(this) : '';
+    }
+  }
   render() {
     let nodeType = this.node ? this.node.currentType : '';
     return (
@@ -747,10 +756,19 @@ class TopologyEditorContainer extends Component {
             </div>
           </div>
         </div>
-        <Modal ref="TopologyConfigModal" data-title="Topology Configuration" data-resolve={this.handleSaveConfig.bind(this)}>
-          <TopologyConfig ref="topologyConfig" topologyId={this.topologyId} versionId={this.versionId} data={this.topologyConfig} topologyName={this.state.topologyName} viewMode={this.viewMode}/>
+        <Modal ref="TopologyConfigModal"
+           data-title="Topology Configuration"
+           onKeyPress={this.handleKeyPress.bind(this)}
+           data-resolve={this.handleSaveConfig.bind(this)}>
+          <TopologyConfig ref="topologyConfig"
+            topologyId={this.topologyId}
+            versionId={this.versionId}
+            data={this.topologyConfig}
+            topologyName={this.state.topologyName}
+            viewMode={this.viewMode}/>
         </Modal>
         <Modal ref="NodeModal"
+          onKeyPress={this.handleKeyPress.bind(this)}
           bsSize={this.processorNode && nodeType.toLowerCase() !== 'join' ? "large" : null}
           dialogClassName={nodeType.toLowerCase() === 'join' || nodeType.toLowerCase() === 'window' ? "modal-xl" : "modal-fixed-height"}
           data-title={
@@ -766,16 +784,16 @@ class TopologyEditorContainer extends Component {
           data-resolve={this.handleSaveNodeModal.bind(this)}>
           {this.modalContent()}
         </Modal>
-        <Modal
-          ref="leaveEditable"
+        <Modal ref="leaveEditable"
+          onKeyPress={this.handleKeyPress.bind(this)}
           data-title="Confirm Box"
           dialogClassName="confirm-box"
           data-resolve={this.confirmLeave.bind(this, true)}
           data-reject={this.confirmLeave.bind(this, false)} >
             {<p>Are you sure want to navigate away from this page ?</p>}
         </Modal>
-        <Modal
-          ref="EdgeConfigModal"
+        <Modal ref="EdgeConfigModal"
+          onKeyPress={this.handleKeyPress.bind(this)}
           data-title={this.edgeConfigTitle}
           data-resolve={this.handleSaveEdgeConfig.bind(this)}
           data-reject={this.handleCancelEdgeConfig.bind(this)}

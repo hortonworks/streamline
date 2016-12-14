@@ -214,18 +214,22 @@ class EnvironmentContainer extends Component{
             formData.tempData.map(x =>{
               return x.namespaceId = entity.id;
             });
-
+            this.addEvtModel.hide();
             EnvironmentREST.postNameSpace(entity.id,{body : JSON.stringify(formData.tempData)})
               .then((mapping) => {
                 if (mapping.responseMessage !== undefined) {
                     FSReactToastr.error(
                         <CommonNotification flag="error" content={mapping.responseMessage}/>, '', toastOpt)
                 } else{
-                  (!this.state.namespaceIdToEdit)
-                  ? FSReactToastr.success(<strong>Environment added successfully</strong>)
-                  : FSReactToastr.success(<strong>Environment updated successfully</strong>)
-                    this.addEvtModel.hide();
+                  this.setState({fetchLoader : true}, () => {
                     this.fetchData();
+                    clearTimeout(clearTimer);
+                    const clearTimer = setTimeout(() => {
+                      (!this.state.namespaceIdToEdit)
+                        ? FSReactToastr.success(<strong>Environment added successfully</strong>)
+                        : FSReactToastr.success(<strong>Environment updated successfully</strong>);
+                    },500);
+                  });
                 }
             });
           }
@@ -259,7 +263,6 @@ class EnvironmentContainer extends Component{
     this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete ?'}).then((confirmBox) => {
       EnvironmentREST.deleteNameSpace(id).then((nameSpace) => {
 
-        this.fetchData();
         confirmBox.cancel();
         if (nameSpace.responseMessage !== undefined) {
           if(nameSpace.responseMessage.indexOf('Namespace refers the cluster') !== 1){
@@ -270,13 +273,16 @@ class EnvironmentContainer extends Component{
               <CommonNotification flag="error" content={nameSpace.responseMessage}/>, '', toastOpt);
           }
         } else {
-          FSReactToastr.success(
-              <strong>Environment deleted successfully</strong>
-          )
+          this.setState({fetchLoader : true}, () => {
+            this.fetchData();
+            clearTimeout(clearTimer);
+            const clearTimer = setTimeout(() => {
+              FSReactToastr.success(
+                  <strong>Environment deleted successfully</strong>
+              )
+            },500);
+          });
         }
-      }).catch((err) => {
-        FSReactToastr.error(
-          <CommonNotification flag="error" content={err.message}/>, '', toastOpt)
       })
     })
   }
@@ -287,6 +293,12 @@ class EnvironmentContainer extends Component{
         Configuration <span className="title-separator">/</span> {this.props.routes[this.props.routes.length-1].name}
       </span>
     );
+  }
+
+  handleKeyPress = (event) => {
+    if(event.key === "Enter"){
+      this.addEvtModel.state.show ? this.addEvtModelSaveClicked() : '';
+    }
   }
 
   render(){
@@ -335,6 +347,7 @@ class EnvironmentContainer extends Component{
         }
         <Modal ref={(ref) => this.addEvtModel = ref}
           data-title={modelTitle}
+          onKeyPress={this.handleKeyPress}
           data-resolve={this.addEvtModelSaveClicked}
           data-reject={this.addEvtModelCancelClicked}>
           <AddEnvironment ref={(ref) => this.EvtModelRef = ref} namespaceId={namespaceIdToEdit}/>
