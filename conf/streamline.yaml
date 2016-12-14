@@ -4,12 +4,9 @@ modules:
   - name: streams
     className: org.apache.streamline.streams.service.StreamsModule
     config:
-      topologyActionsImpl: org.apache.streamline.streams.layout.storm.StormTopologyActionsImpl
-      topologyMetricsImpl: org.apache.streamline.streams.metrics.storm.topology.StormTopologyMetricsImpl
       #change the below to the path on your local machine
       streamlineStormJar: /tmp/streamline-runtime-storm-0.1.0-SNAPSHOT.jar
       stormHomeDir: /usr/local/Cellar/storm/0.10.0/
-      stormApiRootUrl: "http://localhost:8888/api/v1"
       # Use this to turn on/off notifications rest api
       notificationsRestDisable: true
       # schema registry configuration
@@ -72,13 +69,6 @@ storageProviderConfiguration:
    db.properties:
      jdbcDriverClass: "org.apache.phoenix.jdbc.PhoenixDriver"
      jdbcUrl: "jdbc:phoenix:localhost:2181"
-
-
-# Time series DB querier configuration
-#timeSeriesDBConfiguration:
-#  className: "org.apache.streamline.streams.metrics.storm.ambari.AmbariMetricsServiceWithStormQuerier"
-#  properties:
-#    collectorApiUrl: "http://localhost:6188/ws/v1/timeline/metrics"
 
 
 server:
