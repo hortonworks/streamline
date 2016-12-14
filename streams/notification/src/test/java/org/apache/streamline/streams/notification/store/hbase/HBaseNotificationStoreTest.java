@@ -108,7 +108,7 @@ public class HBaseNotificationStoreTest {
                 .status(Notification.Status.NEW).build();
 
         notificationStore = new HBaseNotificationStore();
-
+        notificationStore.init(null);
     }
 
     @Test

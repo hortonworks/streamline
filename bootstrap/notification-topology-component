@@ -32,12 +32,12 @@
         "defaultValue": "org.apache.streamline.streams.notifiers.EmailNotifier"
       },
       {
-        "uiName": "Hbase config key",
-        "fieldName": "hbaseConfigKey",
+        "uiName": "Notification store class name",
+        "fieldName": "notificationStoreClassName",
         "isOptional": true,
-        "tooltip": "Config key to get hbase config from topology config",
+        "tooltip": "FQCN of notification store implementation",
         "type": "string",
-        "defaultValue": "hbase.conf"
+        "defaultValue": ""
       },
       {
         "uiName": "Properties",

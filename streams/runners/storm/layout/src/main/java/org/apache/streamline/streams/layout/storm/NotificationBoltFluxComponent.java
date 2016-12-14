@@ -36,8 +36,8 @@ public class NotificationBoltFluxComponent extends AbstractFluxComponent {
             throw new RuntimeException(ex);
         }
         List boltConstructorArgs = getConstructorArgsYaml(constructorArgNames);
-        String[] configMethodNames = {"withHBaseConfigKey"};
-        String[] configKeys = {TopologyLayoutConstants.JSON_KEY_NOTIFIER_CONFIG_KEY};
+        String[] configMethodNames = {"withNotificationStoreClass"};
+        String[] configKeys = {TopologyLayoutConstants.JSON_KEY_NOTIFICATION_STORE_CLASS};
         List configMethods = getConfigMethodsYaml(configMethodNames, configKeys);
         component = createComponent(boltId, boltClassName, null, boltConstructorArgs, configMethods);
         addParallelismToComponent();

@@ -73,12 +73,12 @@ public class HBaseNotificationStore implements NotificationStore {
     /**
      * The mapper for converting notifications
      */
-    private final NotificationMapper notificationMapper;
+    private NotificationMapper notificationMapper;
 
     /**
      * The mapper for converting StreamlineEvents
      */
-    private final StreamlineEventMapper eventMapper;
+    private StreamlineEventMapper eventMapper;
 
     /**
      * The index mappers for Notification secondary indexes
@@ -87,21 +87,18 @@ public class HBaseNotificationStore implements NotificationStore {
 
     private HBaseScanConfigBuilder hBaseScanConfigBuilder;
 
-    public HBaseNotificationStore() {
-        this(null);
-    }
-
-    public HBaseNotificationStore(Map<String, String> hbaseConfig) {
+    @Override
+    public void init(Map<String, Object> config) {
         try {
             LOG.info("Initializing HBaseNotificationStore");
             configuration = HBaseConfiguration.create();
             /*
              * Override with the passed config.
              */
-            if (hbaseConfig != null) {
-                LOG.info("Overriding default HBase config with {}", hbaseConfig);
-                for (Map.Entry<String, String> entry : hbaseConfig.entrySet()) {
-                    configuration.set(entry.getKey(), entry.getValue());
+            if (config != null) {
+                LOG.info("Overriding default HBase config with {}", config);
+                for (Map.Entry<String, ?> entry : config.entrySet()) {
+                    configuration.set(entry.getKey(), (String) entry.getValue());
                 }
             }
             connection = ConnectionFactory.createConnection(configuration);

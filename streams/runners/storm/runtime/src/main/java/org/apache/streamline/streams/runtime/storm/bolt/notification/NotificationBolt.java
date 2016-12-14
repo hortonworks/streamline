@@ -19,6 +19,7 @@
 package org.apache.streamline.streams.runtime.storm.bolt.notification;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang.StringUtils;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -31,7 +32,7 @@ import org.apache.streamline.streams.notification.NotifierConfig;
 import org.apache.streamline.streams.notification.common.NotifierConfigImpl;
 import org.apache.streamline.streams.notification.service.NotificationService;
 import org.apache.streamline.streams.notification.service.NotificationServiceImpl;
-import org.apache.streamline.streams.notification.store.hbase.HBaseNotificationStore;
+import org.apache.streamline.streams.notification.store.NotificationStore;
 import org.apache.streamline.streams.runtime.notification.StreamlineEventAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,11 +54,12 @@ public class NotificationBolt extends BaseRichBolt {
     private static final String CATALOG_ROOT_URL = "catalog.root.url";
     public static final String LOCAL_NOTIFIER_JAR_PATH = "local.notifier.jar.path";
 
+    private static final String NOTIFICATION_STORE_CONFIG_KEY = "notification.store.conf";
     private static final String NOTIFICATION_SERVICE_CONFIG_KEY = "notification.conf";
     private NotificationService notificationService;
     private BoltNotificationContext notificationContext;
-    private String hbaseConfigKey = "hbase.conf";
     private final NotificationSink notificationSink;
+    private String notificationStoreClazz = "";
 
     /**
      * The serialized JSON for the notification sink which is the design time component
@@ -85,8 +87,8 @@ public class NotificationBolt extends BaseRichBolt {
         this.notificationSink = notificationSink;
     }
 
-    public NotificationBolt withHBaseConfigKey(String key) {
-        this.hbaseConfigKey = key;
+    public NotificationBolt withNotificationStoreClass(String clazz) {
+        notificationStoreClazz = clazz;
         return this;
     }
 
@@ -95,14 +97,30 @@ public class NotificationBolt extends BaseRichBolt {
         if (!stormConf.containsKey(CATALOG_ROOT_URL)) {
             throw new IllegalArgumentException("conf must contain " + CATALOG_ROOT_URL);
         }
-        Map<String, String> hbaseConf = (Map<String, String>)stormConf.get(this.hbaseConfigKey);
+
         Map<String, Object> notificationConf = null;
         if (stormConf.get(NOTIFICATION_SERVICE_CONFIG_KEY) != null) {
             notificationConf = (Map<String, Object>) stormConf.get(NOTIFICATION_SERVICE_CONFIG_KEY);
         } else {
             notificationConf = Collections.emptyMap();
         }
-        notificationService = new NotificationServiceImpl(notificationConf, new HBaseNotificationStore(hbaseConf));
+
+        NotificationStore notificationStore = null;
+        try {
+            if (!StringUtils.isEmpty(notificationStoreClazz)) {
+                Class<?> clazz = Class.forName(notificationStoreClazz);
+                notificationStore = (NotificationStore) clazz.newInstance();
+                Map<String, Object> config = (Map<String, Object>) stormConf.get(NOTIFICATION_STORE_CONFIG_KEY);
+                if (config == null) {
+                    config = Collections.emptyMap();
+                }
+                notificationStore.init(config);
+            }
+        } catch (ClassNotFoundException | InstantiationException| IllegalAccessException ex) {
+            throw new RuntimeException(ex);
+        }
+
+        notificationService = new NotificationServiceImpl(notificationConf, notificationStore);
 
         String jarPath = "";
         if (stormConf.containsKey(LOCAL_NOTIFIER_JAR_PATH)) {
