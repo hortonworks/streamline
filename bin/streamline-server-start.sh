@@ -37,7 +37,7 @@ if [ ! -d "$LOG_DIR" ]; then
 fi
 
 # Exclude jars not necessary for running commands.
-regex="(-(test|src|javadoc|runtime-storm)\.jar|jar.asc)$"
+regex="\-(test|src|javadoc|runtime-storm).+(\.jar|\.jar\.asc)$"
 should_include_file() {
     if [ "$INCLUDE_TEST_JARS" = true ]; then
         return 0
@@ -58,6 +58,7 @@ do
     fi
 done
 
+echo "CLASSPATH: ${CLASSPATH}"
 
 COMMAND=$1
 case $COMMAND in
