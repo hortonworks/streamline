@@ -1,0 +1,4 @@
+org.apache.streamline.registries.dashboard.entites.Dashboard
+org.apache.streamline.registries.dashboard.entites.Datasource
+org.apache.streamline.registries.dashboard.entites.Widget
+org.apache.streamline.registries.dashboard.entites.WidgetDatasourceMapping

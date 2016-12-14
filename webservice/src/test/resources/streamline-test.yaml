@@ -1,6 +1,8 @@
 modules:
   - name: tag-registry
     className: org.apache.streamline.registries.tag.service.TagRegistryModule
+  - name: dashboard-registry
+    className: org.apache.streamline.registries.dashboard.service.DashboardRegistryModule
   - name: streams
     className: org.apache.streamline.streams.service.StreamsModule
     config:
@@ -73,6 +75,9 @@ fileStorageConfiguration:
 storageProviderConfiguration:
  providerClass: "org.apache.streamline.storage.impl.memory.InMemoryStorageManager"
 
+enableCors: true
+corsUrlPatterns:
+  - "/api/v1/dashboards/*"
 
 server:
   rootPath: '/api/*'
