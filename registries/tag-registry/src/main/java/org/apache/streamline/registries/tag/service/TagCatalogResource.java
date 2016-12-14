@@ -24,15 +24,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND_FOR_FILTER;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.EXCEPTION;
-import static org.apache.streamline.common.catalog.CatalogResponse.ResponseMessage.SUCCESS;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 
 /**
@@ -43,6 +37,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class TagCatalogResource {
+    public static final Map<String, String> SUCCESS_MESSAGE_ENTITY = Collections.singletonMap("responseMessage", "Success");
     private final TagService tagService;
 
     public TagCatalogResource(TagService tagService) {
@@ -58,26 +53,26 @@ public class TagCatalogResource {
      * <p>
      * <pre>
      * {
-     *  "responseCode": 1000,
-     *  "responseMessage": "Success",
-     *  "entities": [
-     *    {
-     *      "id": 1,
-     *      "name": "device",
-     *      "description": "device tag",
-     *      "timestamp": 1462865727579,
-     *      "tagIds": []
-     *    },
-     *    {
-     *      "id": 2,
-     *      "name": "thermostat",
-     *      "description": "thermostat device",
-     *      "timestamp": 1462866539146,
-     *      "tagIds": [1]
-     *    }
-     *    ..
-     *    ..
-     *  ]
+     *   "entities": [
+     *     {
+     *       "id": 3,
+     *       "name": "thermostat",
+     *       "description": "thermostat device",
+     *       "timestamp": 1481673224536,
+     *       "tagIds": [
+     *         2
+     *       ]
+     *     },
+     *     {
+     *       "id": 2,
+     *       "name": "device",
+     *       "description": "device tag",
+     *       "timestamp": 1481673156548,
+     *       "tagIds": []
+     *     }
+     *     ,
+     *     ...
+     *   ]
      * }
      * </pre>
      * <p>
@@ -88,15 +83,15 @@ public class TagCatalogResource {
      * <b>GET /api/v1/catalog/tags?name=device</b>
      * <pre>
      * {
-     *   "responseCode": 1000,
-     *   "responseMessage": "Success",
-     *   "entities": [{
-     *     "id": 1,
-     *     "name": "device",
-     *     "description": "device tag",
-     *     "timestamp": 1462865727579,
-     *     "tagIds": []
-     *   }]
+     *   "entities": [
+     *     {
+     *       "id": 2,
+     *       "name": "device",
+     *       "description": "device tag",
+     *       "timestamp": 1481673156548,
+     *       "tagIds": []
+     *     }
+     *   ]
      * }
      * </pre>
      *
@@ -129,15 +124,11 @@ public class TagCatalogResource {
      * <b>GET /api/v1/catalog/tags/1</b>
      * <pre>
      * {
-     *   "responseCode": 1000,
-     *   "responseMessage": "Success",
-     *   "entity": {
-     *     "id": 1,
-     *     "name": "device",
-     *     "description": "device tag",
-     *     "timestamp": 1462865727579,
-     *     "tagIds": []
-     *   }
+     *   "id": 2,
+     *   "name": "device",
+     *   "description": "device tag",
+     *   "timestamp": 1481673156548,
+     *   "tagIds": []
      * }
      * </pre>
      *
@@ -170,15 +161,11 @@ public class TagCatalogResource {
      * <i>Sample success response: </i>
      * <pre>
      * {
-     *   "responseCode": 1000,
-     *   "responseMessage": "Success",
-     *     "entity": {
-     *       "id": 1,
-     *       "name": "device",
-     *       "description": "device tag",
-     *       "timestamp": 1462865727579,
-     *       "tagIds": []
-     *     }
+     *   "id": 2,
+     *   "name": "device",
+     *   "description": "device tag",
+     *   "timestamp": 1481673156548,
+     *   "tagIds": []
      * }
      * </pre>
      * <p>
@@ -198,15 +185,13 @@ public class TagCatalogResource {
      * <i>Response:</i>
      * <pre>
      * {
-     *    "responseCode": 1000,
-     *    "responseMessage": "Success",
-     *    "entity": {
-     *      "id": 2,
-     *      "name": "thermostat",
-     *      "description": "thermostat device",
-     *      "timestamp": 1462866539146,
-     *      "tagIds": [1]
-     *    }
+     *   "id": 3,
+     *   "name": "thermostat",
+     *   "description": "thermostat device",
+     *   "timestamp": 1481673224536,
+     *   "tagIds": [
+     *     2
+     *   ]
      * }
      * </pre>
      *
@@ -229,15 +214,13 @@ public class TagCatalogResource {
      * <b>DELETE /api/v1/catalog/tags/3</b>
      * <pre>
      * {
-     *   "responseCode": 1000,
-     *   "responseMessage": "Success",
-     *   "entity": {
-     *     "id": 3,
-     *     "name": "weather",
-     *     "description": "weather related",
-     *     "timestamp": 1462868853582,
-     *     "tagIds": []
-     *   }
+     *   "id": 3,
+     *   "name": "thermostat",
+     *   "description": "thermostat device",
+     *   "timestamp": 1481673224536,
+     *   "tagIds": [
+     *     2
+     *   ]
      * }
      * </pre>
      * <p>
@@ -247,11 +230,9 @@ public class TagCatalogResource {
      * <b>DELETE /api/v1/catalog/tags/1</b>
      * <pre>
      * {
-     * "responseCode": 1102,
-     * "responseMessage": "An exception with message [Tag not empty, has child entities.]
-     *   was thrown while processing request. Please check webservice/ErrorCodes.md
-     *   for more details."
-     * }</pre>
+     *   "responseMessage": "An exception with message [Tag not empty, has child entities.] was thrown while processing request."
+     * }
+     * </pre>
      *
      * @param tagId the id of the tag to be deleted
      * @return the response
@@ -281,15 +262,11 @@ public class TagCatalogResource {
      * <i>Sample success response: </i>
      * <pre>
      * {
-     *   "responseCode": 1000,
-     *   "responseMessage": "Success",
-     *     "entity": {
-     *       "id": 1,
-     *       "name": "device",
-     *       "description": "updated device tag",
-     *       "timestamp": 1462870576965,
-     *       "tagIds": []
-     *     }
+     *   "id": 2,
+     *   "name": "device",
+     *   "description": "updated device tag",
+     *   "timestamp": 1481673558385,
+     *   "tagIds": []
      * }
      * </pre>
      *
@@ -313,7 +290,6 @@ public class TagCatalogResource {
      * <i>Sample success response: </i>
      * <pre>
      * {
-     *   "responseCode": 1000,
      *   "responseMessage": "Success",
      * }
      * </pre>
@@ -330,7 +306,7 @@ public class TagCatalogResource {
         Tag tag = tagService.getTag(tagId);
         if(tag != null) {
             tagService.addTagsForStorable(new TaggedEntity(namespace, entityId), Collections.singletonList(tag));
-            return WSUtils.respond(CREATED, SUCCESS);
+            return WSUtils.respondEntity(SUCCESS_MESSAGE_ENTITY, CREATED);
         }
 
         throw EntityNotFoundException.byId(tagId.toString());
@@ -343,7 +319,6 @@ public class TagCatalogResource {
      * <b>DELETE /api/v1/catalog/tags/:TAG_ID/entities/:NAME_SPACE/:ENTITY_ID</b>
      * <pre>
      * {
-     *   "responseCode": 1000,
      *   "responseMessage": "Success",
      * }
      * </pre>
@@ -361,7 +336,7 @@ public class TagCatalogResource {
         Tag tag = tagService.getTag(tagId);
         if(tag !=null ) {
             tagService.removeTagsFromStorable(new TaggedEntity(namespace, entityId), Collections.singletonList(tag));
-            return WSUtils.respond(CREATED, SUCCESS);
+            return WSUtils.respondEntity(SUCCESS_MESSAGE_ENTITY, CREATED);
         }
 
         throw EntityNotFoundException.byId(tagId.toString());
@@ -376,8 +351,6 @@ public class TagCatalogResource {
      * <b>GET /api/v1/catalog/tags/1/entities</b>
      * <pre>
      * {
-     *   "responseCode":1000,
-     *   "responseMessage":"Success",
      *   "entities":[{
      *     "id":12,
      *     "namespace":"tag"
@@ -408,8 +381,6 @@ public class TagCatalogResource {
      * <b>GET /api/v1/catalog//taggedentities/{namespace}/{id}/tags</b>
      * <pre>
      * {
-     *   "responseCode":1000,
-     *   "responseMessage":"Success",
      *   "entities":[{
      *       "id": 1,
      *       "name": "device",

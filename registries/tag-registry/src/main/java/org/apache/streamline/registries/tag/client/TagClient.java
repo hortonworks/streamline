@@ -23,7 +23,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import org.apache.streamline.common.catalog.CatalogResponse;
 import org.apache.streamline.registries.tag.Tag;
 import org.apache.streamline.registries.tag.TaggedEntity;
 import org.apache.streamline.registries.tag.dto.TagDto;
@@ -160,13 +159,8 @@ public class TagClient {
     public void addTagForEntity(TaggedEntity taggedEntity, Long tagId) {
         String entityTagUrl = String.format("%s/%s/%s/%s/%s", tagRootUrl, tagId, "entities", taggedEntity.getNamespace(), taggedEntity.getId());
         Response responseObject = client.target(entityTagUrl).request().post(Entity.json(taggedEntity));
-        String response = responseObject.readEntity(String.class);
-        int responseCode =  getResponseCode(response);
-        if (responseCode != CatalogResponse.ResponseMessage.SUCCESS.getCode()) {
-            throw new RuntimeException("Error occurred while tagging entity : "+ getResponseMessage(response));
-        }
+        handleErrorResponse(responseObject);
     }
-
 
     /**
      * Tags the entity with the given tags
@@ -180,6 +174,7 @@ public class TagClient {
         }
     }
 
+
     /**
      * Removes the given tag from the entity.
      *
@@ -189,11 +184,7 @@ public class TagClient {
     public void removeTagForEntity(TaggedEntity taggedEntity, Long tagId) {
         String entityTagUrl = String.format("%s/%s/%s/%s/%s", tagRootUrl, tagId, "entities", taggedEntity.getNamespace(), taggedEntity.getId());
         Response responseObject = client.target(entityTagUrl).request().delete();
-        String response = responseObject.readEntity(String.class);
-        int responseCode =  getResponseCode(response);
-        if (responseCode != CatalogResponse.ResponseMessage.SUCCESS.getCode()) {
-            throw new RuntimeException("Error occurred while removing tag for entity : "+ getResponseMessage(response));
-        }
+        handleErrorResponse(responseObject);
     }
 
     /**
@@ -267,55 +258,30 @@ public class TagClient {
         return getEntities(client.target(String.format("%s/%s/%s", tagRootUrl, tagId , "entities")), TaggedEntity.class);
     }
 
-    private <T> List<T> getEntities(WebTarget target, Class<T> clazz) {
-        List<T> entities = new ArrayList<>();
-        Response responseObject = target.request(MediaType.APPLICATION_JSON_TYPE).get();
+    private <T> T getEntity(Response r, Class<T> clazz) {
         try {
-            String response = responseObject.readEntity(String.class);
-            int responseCode = getResponseCode(response);
-            if (responseCode != CatalogResponse.ResponseMessage.SUCCESS.getCode()) {
-                throw new RuntimeException("Error occurred :"+ getResponseMessage(response));
-            }
+            String response = r.readEntity(String.class);
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(response, clazz);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private <T> List<T> getEntities(WebTarget target, Class<T> clazz) {
+        String response = target.request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
+        List<T> entities = new ArrayList<>();
+        try {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode node = mapper.readTree(response);
             Iterator<JsonNode> it = node.get("entities").elements();
             while (it.hasNext()) {
                 entities.add(mapper.treeToValue(it.next(), clazz));
             }
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-        return entities;
-    }
-
-    private <T> T getEntity(Response r, Class<T> clazz) {
-        try {
-            String response = r.readEntity(String.class);
-            int responseCode =  getResponseCode(response);
-            if (responseCode == CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND.getCode()) {
-                return null;
-            }
-            else if(responseCode != CatalogResponse.ResponseMessage.SUCCESS.getCode()) {
-                throw new RuntimeException("Error occurred "+ getResponseMessage(response));
-            }
-            else {
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode node = mapper.readTree(response);
-                return mapper.treeToValue(node.get("entity"), clazz);
-            }
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    private int getResponseCode(String response) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode node = mapper.readTree(response);
-            return mapper.treeToValue(node.get("responseCode"), Integer.class);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
+        return entities;
     }
 
     private String getResponseMessage(String response) {
@@ -328,7 +294,6 @@ public class TagClient {
 
         }
     }
-
 
     private Tag makeTag(TagDto tagDto) {
         if (tagDto == null)
@@ -358,5 +323,14 @@ public class TagClient {
             tags.add(makeTag(tagDto));
         }
         return tags;
+    }
+
+    private void handleErrorResponse(Response responseObject) {
+        Response.Status.Family statusFamily = responseObject.getStatusInfo().getFamily();
+        if (statusFamily == Response.Status.Family.CLIENT_ERROR ||
+                statusFamily == Response.Status.Family.SERVER_ERROR) {
+            String response = responseObject.readEntity(String.class);
+            throw new RuntimeException("Error occurred while removing tag for entity : "+ getResponseMessage(response));
+        }
     }
 }

@@ -23,7 +23,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import org.apache.streamline.common.Schema;
-import org.apache.streamline.common.catalog.CatalogResponse;
 import org.apache.streamline.common.test.IntegrationTest;
 import org.apache.streamline.registries.tag.dto.TagDto;
 import org.apache.streamline.streams.catalog.Cluster;
@@ -522,7 +521,6 @@ public class RestIntegrationTest {
             String getUrl = getUrls.get(i);
             List<CustomProcessorInfo> expectedResults = getResults.get(i);
             response = client.target(getUrl).request().get(String.class);
-            Assert.assertEquals(CatalogResponse.ResponseMessage.SUCCESS.getCode(), getResponseCode(response));
             Assert.assertEquals(expectedResults, getEntities(response, expectedResults.get(i).getClass()));
         }
     }
@@ -779,19 +777,6 @@ public class RestIntegrationTest {
                 Assert.assertEquals(expectedResults, getEntities(response, expectedResults.get(i).getClass()));
             }
         }
-    }
-
-    /**
-     * Get response code from the response string.
-     *
-     * @param response
-     * @return
-     * @throws Exception
-     */
-    public int getResponseCode(String response) throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode node = mapper.readTree(response);
-        return mapper.treeToValue(node.get("responseCode"), Integer.class);
     }
 
     private <T extends Object> List<T> getEntities(String response, Class<T> clazz) {
