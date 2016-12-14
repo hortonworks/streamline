@@ -1,6 +1,7 @@
 package org.apache.streamline.streams.metrics.storm.ambari;
 
 import com.google.common.collect.Lists;
+import org.apache.streamline.common.JsonClientUtil;
 import org.apache.streamline.streams.exception.ConfigException;
 import org.apache.streamline.streams.metrics.AbstractTimeSeriesQuerier;
 import org.glassfish.jersey.client.ClientConfig;
@@ -85,7 +86,7 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
 
         log.debug("Calling {} for querying metric", targetUri.toString());
 
-        Map<String, ?> responseMap = client.target(targetUri).request(MediaType.APPLICATION_JSON_TYPE).get(Map.class);
+        Map<String, ?> responseMap = JsonClientUtil.getEntity(client.target(targetUri), Map.class);
         List<Map<String, ?>> metrics = (List<Map<String, ?>>) responseMap.get("metrics");
 
         if (metrics.size() > 0) {
@@ -112,9 +113,8 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
 
         log.debug("Calling {} for querying metric", targetUri.toString());
 
-        Map<String, ?> responseMap = client.target(targetUri).request(MediaType.APPLICATION_JSON_TYPE).get(Map.class);
+        Map<String, ?> responseMap = JsonClientUtil.getEntity(client.target(targetUri), Map.class);
         List<Map<String, ?>> metrics = (List<Map<String, ?>>) responseMap.get("metrics");
-
 
         if (metrics.size() > 0) {
             Map<String, Map<Long, Double>> ret = new HashMap<>(metrics.size());

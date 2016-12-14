@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.streamline.common.Config;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
 import org.apache.streamline.streams.layout.component.StatusImpl;
@@ -12,6 +13,7 @@ import org.apache.streamline.streams.layout.component.TopologyDag;
 import org.apache.streamline.streams.layout.component.TopologyLayout;
 import org.apache.streamline.streams.storm.common.StormRestAPIClient;
 import org.apache.streamline.streams.storm.common.StormTopologyUtil;
+import org.apache.streamline.streams.storm.common.TopologyNotAliveException;
 import org.glassfish.jersey.client.ClientConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -222,6 +224,9 @@ public class StormTopologyActionsImpl implements TopologyActions {
     @Override
     public void resume (TopologyLayout topology) throws Exception {
         String stormTopologyId = getRuntimeTopologyId(topology);
+        if (stormTopologyId == null || stormTopologyId.isEmpty()) {
+            throw new TopologyNotAliveException("Topology not found in Storm Cluster - topology id: " + topology.getId());
+        }
 
         boolean resumed = client.activateTopology(stormTopologyId);
         if (!resumed) {
@@ -259,7 +264,11 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
     @Override
     public String getRuntimeTopologyId(TopologyLayout topology) {
-        return StormTopologyUtil.findStormTopologyId(client, topology.getId());
+        String stormTopologyId = StormTopologyUtil.findStormTopologyId(client, topology.getId());
+        if (StringUtils.isEmpty(stormTopologyId)) {
+            throw new TopologyNotAliveException("Topology not found in Storm Cluster - topology id: " + topology.getId());
+        }
+        return stormTopologyId;
     }
 
     private String createYamlFile (TopologyLayout topology) throws Exception {

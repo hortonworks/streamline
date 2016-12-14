@@ -1,6 +1,7 @@
 package org.apache.streamline.streams.metrics.storm.graphite;
 
 import com.google.common.collect.Lists;
+import org.apache.streamline.common.JsonClientUtil;
 import org.apache.streamline.streams.exception.ConfigException;
 import org.apache.streamline.streams.metrics.AbstractTimeSeriesQuerier;
 import org.apache.commons.lang.BooleanUtils;
@@ -85,7 +86,7 @@ public class GraphiteWithStormQuerier extends AbstractTimeSeriesQuerier {
 
         log.debug("Calling {} for querying metric", targetUri.toString());
 
-        List<Map<String, ?>> responseList = client.target(targetUri).request(MediaType.APPLICATION_JSON_TYPE).get(List.class);
+        List<Map<String, ?>> responseList = JsonClientUtil.getEntity(client.target(targetUri), List.class);
         if (responseList.isEmpty()) {
             return Collections.emptyMap();
         }
@@ -105,7 +106,7 @@ public class GraphiteWithStormQuerier extends AbstractTimeSeriesQuerier {
 
         log.debug("Calling {} for querying metric", targetUri.toString());
 
-        List<Map<String, ?>> responseList = client.target(targetUri).request(MediaType.APPLICATION_JSON_TYPE).get(List.class);
+        List<Map<String, ?>> responseList = JsonClientUtil.getEntity(client.target(targetUri), List.class);
         if (responseList.size() > 0) {
             Map<String, Map<Long, Double>> ret = new HashMap<>(responseList.size());
             for (Map<String, ?> metric : responseList) {

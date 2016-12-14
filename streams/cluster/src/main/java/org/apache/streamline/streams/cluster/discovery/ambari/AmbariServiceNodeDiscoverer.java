@@ -2,6 +2,8 @@ package org.apache.streamline.streams.cluster.discovery.ambari;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import org.apache.streamline.common.JsonClientUtil;
+import org.apache.streamline.common.exception.WrappedWebApplicationException;
 import org.apache.streamline.streams.cluster.discovery.ServiceNodeDiscoverer;
 import org.apache.streamline.streams.exception.ConfigException;
 import org.glassfish.jersey.client.ClientConfig;
@@ -40,6 +42,7 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
   public static final String SERVICE_URL = "/services/%s";
   public static final String COMPONENT_URL = "/services/%s/components/%s";
   public static final String AMBARI_VIEWS_STORM_MONITORING_URL = "/views/Storm_Monitoring";
+  public static final MediaType AMBARI_REST_API_MEDIA_TYPE = MediaType.TEXT_PLAIN_TYPE;
 
   private Client client;
   private final String apiRootUrl;
@@ -65,18 +68,22 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
 
     LOG.debug("services URI: {}", targetUrl);
 
-    Map<String, ?> responseMap = client.target(targetUrl).request(MediaType.TEXT_PLAIN_TYPE).get(Map.class);
-    List<Map<String, ?>> services = (List<Map<String, ?>>) responseMap.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_ITEMS);
+    try {
+      Map<String, ?> responseMap = JsonClientUtil.getEntity(client.target(targetUrl), AMBARI_REST_API_MEDIA_TYPE, Map.class);
+      List<Map<String, ?>> services = (List<Map<String, ?>>) responseMap.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_ITEMS);
 
-    if (services.size() > 0) {
-      for (Map<String, ?> service : services) {
-        Map<String, ?> componentInfo = (Map<String, ?>) service.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_SERVICE_INFO);
-        String serviceName = (String) componentInfo.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_SERVICE_NAME);
-        serviceNames.add(serviceName);
+      if (services.size() > 0) {
+        for (Map<String, ?> service : services) {
+          Map<String, ?> componentInfo = (Map<String, ?>) service.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_SERVICE_INFO);
+          String serviceName = (String) componentInfo.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_SERVICE_NAME);
+          serviceNames.add(serviceName);
+        }
       }
-    }
 
-    return serviceNames;
+      return serviceNames;
+    } catch (WebApplicationException e) {
+      throw WrappedWebApplicationException.of(e);
+    }
   }
 
   @Override public List<String> getComponents(String serviceName) {
@@ -86,7 +93,7 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
 
     LOG.debug("components URI: {}", targetUrl);
 
-    Map<String, ?> responseMap = client.target(targetUrl).request(MediaType.TEXT_PLAIN_TYPE).get(Map.class);
+    Map<String, ?> responseMap = JsonClientUtil.getEntity(client.target(targetUrl), AMBARI_REST_API_MEDIA_TYPE, Map.class);
     List<Map<String, ?>> components = (List<Map<String, ?>>) responseMap.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMPONENTS);
 
     if (components.size() > 0) {
@@ -107,9 +114,9 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
 
     LOG.debug("host components URI: {}", targetUrl);
 
-    Map<String, ?> responseMap = client.target(targetUrl).request(MediaType.TEXT_PLAIN_TYPE).get(Map.class);
+    Map<String, ?> responseMap = JsonClientUtil.getEntity(client.target(targetUrl), AMBARI_REST_API_MEDIA_TYPE, Map.class);
     List<Map<String, ?>> hostComponents = (List<Map<String, ?>>) responseMap.get(
-        AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_HOST_COMPONENTS);
+            AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_HOST_COMPONENTS);
 
     if (hostComponents.size() > 0) {
       for (Map<String, ?> hostComponent : hostComponents) {
@@ -140,19 +147,23 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
 
     LOG.debug("configurations URI: {}", targetUrl);
 
-    Map<String, ?> responseMap = client.target(targetUrl).request(MediaType.TEXT_PLAIN_TYPE).get(Map.class);
-    List<Map<String, ?>> items = (List<Map<String, ?>>) responseMap.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_ITEMS);
+    try {
+      Map<String, ?> responseMap = JsonClientUtil.getEntity(client.target(targetUrl), AMBARI_REST_API_MEDIA_TYPE, Map.class);
+      List<Map<String, ?>> items = (List<Map<String, ?>>) responseMap.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_ITEMS);
 
-    if (items.size() > 0) {
-      Map<String, ServiceConfigurationItem> confToItem = extractLatestConfigurationItems(
-          confNameList, items);
+      if (items.size() > 0) {
+        Map<String, ServiceConfigurationItem> confToItem = extractLatestConfigurationItems(
+                confNameList, items);
 
-      for (ServiceConfigurationItem confItem : confToItem.values()) {
-        configurations.put(confItem.getType(), getProperties(confItem));
+        for (ServiceConfigurationItem confItem : confToItem.values()) {
+          configurations.put(confItem.getType(), getProperties(confItem));
+        }
       }
-    }
 
-    return configurations;
+      return configurations;
+    } catch (WebApplicationException e) {
+      throw WrappedWebApplicationException.of(e);
+    }
   }
 
   @Override
@@ -165,7 +176,7 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
 
     LOG.debug("storm view URI: {}", targetUrl);
 
-    Map<String, ?> responseMap = client.target(targetUrl).request(MediaType.TEXT_PLAIN_TYPE).get(Map.class);
+    Map<String, ?> responseMap = JsonClientUtil.getEntity(client.target(targetUrl), AMBARI_REST_API_MEDIA_TYPE, Map.class);
     List<Map<String, ?>> items = (List<Map<String, ?>>) responseMap.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_VERSIONS);
 
     if (items.size() == 0) {
@@ -174,7 +185,7 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
 
     String versionUrl = (String) items.get(0).get("href");
 
-    responseMap = client.target(versionUrl).request(MediaType.TEXT_PLAIN_TYPE).get(Map.class);
+    responseMap = JsonClientUtil.getEntity(client.target(versionUrl), AMBARI_REST_API_MEDIA_TYPE, Map.class);
     items = (List<Map<String, ?>>) responseMap.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_INSTANCES);
 
     if (items.size() == 0) {
@@ -183,7 +194,7 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
 
     String instancesUrl = (String) items.get(0).get("href");
 
-    responseMap = client.target(instancesUrl).request(MediaType.TEXT_PLAIN_TYPE).get(Map.class);
+    responseMap = JsonClientUtil.getEntity(client.target(instancesUrl), AMBARI_REST_API_MEDIA_TYPE, Map.class);
 
     Map<String, ?> responseMap2 = (Map<String, ?>) responseMap.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_VIEW_INSTANCE_INFO);
     String contextPath = (String) responseMap2.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_CONTEXT_PATH);
@@ -236,14 +247,18 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
 
     LOG.debug("configuration item URI: {}", targetUrl);
 
-    Map<String, ?> responseMap = client.target(targetUrl).request(MediaType.TEXT_PLAIN_TYPE).get(Map.class);
-    List<Map<String, ?>> items = (List<Map<String, ?>>) responseMap.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_ITEMS);
+    try {
+      Map<String, ?> responseMap = JsonClientUtil.getEntity(client.target(targetUrl), AMBARI_REST_API_MEDIA_TYPE, Map.class);
+      List<Map<String, ?>> items = (List<Map<String, ?>>) responseMap.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_ITEMS);
 
-    if (items.size() > 0) {
-      return (Map<String, Object>) items.get(0).get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_PROPERTIES);
+      if (items.size() > 0) {
+        return (Map<String, Object>) items.get(0).get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_PROPERTIES);
+      }
+
+      return Collections.emptyMap();
+    } catch (WebApplicationException e) {
+      throw WrappedWebApplicationException.of(e);
     }
-
-    return Collections.emptyMap();
   }
 
   private void setupClient() {
@@ -264,7 +279,7 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations,
         MediaType mediaType) {
       return (MediaType.APPLICATION_JSON_TYPE.equals(mediaType) ||
-          MediaType.TEXT_PLAIN_TYPE.equals(mediaType));
+          AMBARI_REST_API_MEDIA_TYPE.equals(mediaType));
     }
 
     @Override

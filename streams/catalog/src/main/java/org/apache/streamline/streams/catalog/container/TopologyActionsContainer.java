@@ -19,6 +19,8 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
     private static final String COMPONENT_NAME_NIMBUS = ComponentPropertyPattern.NIMBUS.name();
     private static final String NIMBUS_SEEDS = "nimbus.seeds";
     private static final String NIMBUS_PORT = "nimbus.port";
+    public static final String STREAMLINE_STORM_JAR = "streamlineStormJar";
+    public static final String STORM_HOME_DIR = "stormHomeDir";
 
     private final Map<String, String> streamlineConf;
 
@@ -77,14 +79,16 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
         assertHostsAndPort(nimbus.getName(), nimbusHosts, nimbusPort);
 
         Map<String, String> conf = new HashMap<>();
-        // NOTE: This will be valid after STREAMLINE-504
-        conf.put(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY, buildStormRestApiRootUrl(uiHost, uiPort));
+
+        // We need to have some local configurations anyway because topology submission can't be done with REST API.
+        conf.put(STREAMLINE_STORM_JAR, streamlineConf.get(STREAMLINE_STORM_JAR));
+        conf.put(STORM_HOME_DIR, streamlineConf.get(STORM_HOME_DIR));
 
         // Since we're loading the class dynamically so we can't rely on any enums or constants from there
         conf.put(NIMBUS_SEEDS, String.join(",", nimbusHosts));
         conf.put(NIMBUS_PORT, String.valueOf(nimbusPort));
-        // We need to have local configuration anyway because topology submission can't be done with REST API.
-        conf.putAll(streamlineConf);
+        conf.put(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY, buildStormRestApiRootUrl(uiHost, uiPort));
+
         return conf;
     }
 

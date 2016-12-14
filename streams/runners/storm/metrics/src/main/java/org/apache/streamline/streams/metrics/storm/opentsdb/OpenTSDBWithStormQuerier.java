@@ -1,6 +1,7 @@
 package org.apache.streamline.streams.metrics.storm.opentsdb;
 
 import com.google.common.base.Joiner;
+import org.apache.streamline.common.JsonClientUtil;
 import org.apache.streamline.streams.exception.ConfigException;
 import org.apache.streamline.streams.metrics.AbstractTimeSeriesQuerier;
 import org.apache.streamline.streams.metrics.TimeSeriesQuerier;
@@ -73,7 +74,7 @@ public class OpenTSDBWithStormQuerier extends AbstractTimeSeriesQuerier {
 
         log.debug("Calling {} for querying metric", targetUri.toString());
 
-        List<Map<String, ?>> responseList = client.target(targetUri).request(MediaType.APPLICATION_JSON_TYPE).get(List.class);
+        List<Map<String, ?>> responseList = JsonClientUtil.getEntity(client.target(targetUri), List.class);
         if (responseList.isEmpty()) {
             return Collections.emptyMap();
         }
