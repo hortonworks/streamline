@@ -243,6 +243,7 @@ export default class RulesNodeForm extends Component {
 						nodeData={this.nodeData}
 						nodeType={nodeType}
 						parsedStreams={this.parsedStreams}
+                                                rules={rules}
 					/>
 				</Modal>
 				<Confirm ref="Confirm"/>

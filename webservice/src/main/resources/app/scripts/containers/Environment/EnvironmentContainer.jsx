@@ -221,11 +221,12 @@ class EnvironmentContainer extends Component{
                     FSReactToastr.error(
                         <CommonNotification flag="error" content={mapping.responseMessage}/>, '', toastOpt)
                 } else{
+                  const nameSpaceEditId = this.state.namespaceIdToEdit;
                   this.setState({fetchLoader : true}, () => {
                     this.fetchData();
                     clearTimeout(clearTimer);
                     const clearTimer = setTimeout(() => {
-                      (!this.state.namespaceIdToEdit)
+                      (nameSpaceEditId === null)
                         ? FSReactToastr.success(<strong>Environment added successfully</strong>)
                         : FSReactToastr.success(<strong>Environment updated successfully</strong>);
                     },500);
@@ -305,7 +306,7 @@ class EnvironmentContainer extends Component{
     const {entities,pageSize,pageIndex,fetchLoader,isLoading,clusterName, namespaceIdToEdit} = this.state;
     const {routes} = this.props;
     const splitData = _.chunk(entities,pageSize) || [];
-    const modelTitle = <span>{namespaceIdToEdit === null ? "New " : "Edit "   }Environment <i className="fa fa-info-circle"></i></span>
+    const modelTitle = <span>{namespaceIdToEdit === null ? "New " : "Edit "   }Environment{/* <i className="fa fa-info-circle"></i>*/}</span>
     return(
       <BaseContainer ref="BaseContainer" routes={routes} headerContent={this.getHeaderContent()}>
         <div id="add-environment">

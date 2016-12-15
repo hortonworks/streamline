@@ -54,11 +54,11 @@ export default class WindowingAggregateNodeForm extends Component {
 			outputStreamId: '',
             outputStreamFields: [],
             argumentError : false,
-            outputArr : []
+            outputArr : [],
+            keySelected : []
 		};
 		this.state = obj;
     this.outputData = [];
-    this.keySelected = [];
 	}
 
 	fetchData(){
@@ -229,11 +229,11 @@ export default class WindowingAggregateNodeForm extends Component {
   }
 
   fetchSelectedKeys = () => {
-    const {selectedKeys,outputStreamFields} = this.state;
-    const tempData = this.state.outputStreamFields.filter((x,i) => {
-      return x.name === this.state.selectedKeys[i]
+    const {selectedKeys,keysList} = this.state;
+    const tempData = selectedKeys.map((x,i) => {
+      return keysList.find((x)=>{return x.name == selectedKeys[i]});
     });
-    this.keySelected = tempData;
+    this.setState({keySelected : tempData});
   }
 
 	handleKeysChange(arr){
@@ -245,18 +245,17 @@ export default class WindowingAggregateNodeForm extends Component {
 			}
 		})
 		tempArr.push(...arr);
-    this.keySelected = arr;
 		this.streamData.fields = tempArr;
 		let keys = [];
 		if(arr && arr.length){
 			for(let k of arr){
 				keys.push(k.name);
 			}
-                        this.setState({selectedKeys: keys, outputStreamFields: tempArr,selectedKeyArr:this.keySelected});
+                        this.setState({selectedKeys: keys, outputStreamFields: tempArr,keySelected:arr});
 		} else {
-                        this.setState({selectedKeys: [], outputStreamFields: tempArr,selectedKeyArr:this.keySelected});
+                        this.setState({selectedKeys: [], outputStreamFields: tempArr,keySelected:arr});
 		}
-                this.context.ParentForm.setState({outputStreamObj:this.streamData})
+                this.context.ParentForm.setState({outputStreamObj:this.streamData});
 	}
 
 	handleIntervalChange(obj){
@@ -359,8 +358,9 @@ export default class WindowingAggregateNodeForm extends Component {
     }
 
     let resolve;
+
     this.setState({outputArr : this.outputData},() => {
-    const data = this.keySelected.concat(this.outputData);
+    const data = _.concat(this.state.keySelected,this.outputData);
        resolve(streamsArr = data);
     });
 

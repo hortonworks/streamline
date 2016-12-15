@@ -288,7 +288,7 @@ export default class RulesForm extends Component {
 		super(props);
 		let {name = '', description = '', actions = [], condition = ''} = props.ruleObj;
 		this.state = { name, description, actions, condition,
-			showOptionalFields: false, showNameError: false, showDescriptionError: false};
+                        showOptionalFields: false, showNameError: false, showInvalidName: false, showDescriptionError: false};
 		if(this.props.ruleObj.id){
 			this.getNode(this.props.ruleObj.id);
 		}
@@ -306,13 +306,37 @@ export default class RulesForm extends Component {
 		let name = e.target.name;
 		let value = e.target.value === '' ? '' : e.target.type !== 'number' ? e.target.value : parseInt(e.target.value, 10);
 		obj[name] = value;
-		if(name === 'name'){
-			obj['showNameError'] = (value === '');
-		} else if(name === 'description'){
+                if(name === 'description'){
 			obj['showDescriptionError'] = (value === '');
 		}
 		this.setState(obj);
 	}
+        handleNameChange(e) {
+                let obj = this.validateName(e.target.value);
+                obj[e.target.name] = e.target.value;
+                this.setState(obj);
+        }
+        validateName(name) {
+                let {rules, ruleObj} = this.props;
+                let stateObj = {showInvalidName: false, showNameError: false};
+                if(name === '') {
+                        stateObj.showNameError = true;
+                } else {
+                        let hasRules = rules.filter((o)=>{return (o.name === name);})
+                        if(hasRules.length === 1){
+                                if(ruleObj.id) {
+                                        if(hasRules[0].id !== ruleObj.id) {
+                                                stateObj.showInvalidName = true;
+                                                stateObj.showNameError = true;
+                                        }
+                                } else {
+                                        stateObj.showInvalidName = true;
+                                        stateObj.showNameError = true;
+                                }
+                        }
+                }
+                return stateObj;
+        }
 	validateData(){
 		let {name, description, condition} = this.state;
 		condition = this.refs.RuleFormula.validSQL ? this.refs.RuleFormula.conditionStr : '';
@@ -416,13 +440,14 @@ export default class RulesForm extends Component {
 						<input
 							name="name"
 							placeholder="Name"
-							onChange={this.handleValueChange.bind(this)}
+                                                        onChange={this.handleNameChange.bind(this)}
 							type="text"
 							className={this.state.showNameError ? "form-control invalidInput" : "form-control"}
 							value={this.state.name}
 							required={true}
 						/>
 					</div>
+                                        {this.state.showInvalidName ? <p className="text-danger">Name is already present.</p> : ''}
 				</div>
 				<div className="form-group">
 					<label>Description <span className="text-danger">*</span></label>

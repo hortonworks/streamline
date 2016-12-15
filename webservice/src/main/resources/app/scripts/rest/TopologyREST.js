@@ -306,8 +306,11 @@ const TopologyREST = {
                 options.method = options.method || 'POST';
                 return fetch(baseUrl+'topologies/actions/import', options)
                         .then( (response) => {
-				return response.json();
-			})
+                                                        return response.json();
+                                                })
+                                                .catch((error) => {
+                                                        return {responseMessage: "Invalid JSON"};
+                                                })
         },
 }
 

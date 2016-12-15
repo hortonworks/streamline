@@ -196,9 +196,7 @@ class ServicePoolContainer extends Component{
   }
 
   handleUpdateCluster = (ID) => {
-    const tempArr = this.state.refIdArr;
-    tempArr.push(+ID);
-    this.setState({refIdArr: tempArr,showFields : true,idCheck : +ID});
+    this.setState({showFields : true,idCheck : +ID});
     this.adminFormModel.show();
   }
 
@@ -323,16 +321,28 @@ class ServicePoolContainer extends Component{
       username : username,
       password : password
     }
-
+    const tempArr = refIdArr;
+    tempArr.push(idCheck);
+    this.setState({refIdArr : tempArr});
     // Post call for import cluster from ambari
     ClusterREST.postAmbariCluster({body : JSON.stringify(importClusterData)})
       .then((ambarClusters) => {
         let obj = {};
-        if (ambarClusters.message !== undefined) {
-            FSReactToastr.error(<CommonNotification flag="error" content={ambarClusters.message}/>, '', toastOpt);
-            ClusterREST.deleteCluster(clusterID || idCheck);
+        if (ambarClusters.responseMessage !== undefined) {
             const tempDataArray = this.spliceTempArr(clusterID || idCheck);
-            this.setState({loader : false,idCheck : '',refIdArr : tempDataArray});
+            const errorMsg = ambarClusters.responseMessage.indexOf('Bad request') !== -1
+                              ? "You have entered a wrong cluster name"
+                              : ambarClusters.responseMessage;
+            ClusterREST.deleteCluster(clusterID || idCheck)
+            .then((deletedCluster) => {
+              this.setState({loader : false,idCheck : '',refIdArr : tempDataArray}, () => {
+                this.fetchData();
+                clearTimeout(clearTimer);
+                const clearTimer = setTimeout(() => {
+                  FSReactToastr.error(<CommonNotification flag="error" content={errorMsg}/>, '', toastOpt);
+                },500);
+              });
+            });
         }else{
           const result = ambarClusters;
           let entitiesWrap = [],sucessMsg='';

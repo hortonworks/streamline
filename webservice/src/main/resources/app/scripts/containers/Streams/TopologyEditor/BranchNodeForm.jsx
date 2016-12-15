@@ -241,6 +241,7 @@ export default class BranchNodeForm extends Component {
                         nodeData={this.nodeData}
                         nodeType={nodeType}
                         parsedStream={this.parsedStream}
+                        rules={rules}
                     />
                 </Modal>
                 <Confirm ref="Confirm"/>
