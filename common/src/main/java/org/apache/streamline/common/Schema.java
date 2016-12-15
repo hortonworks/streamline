@@ -50,8 +50,10 @@ public class Schema implements Serializable {
         DOUBLE(Double.class),
         STRING(String.class),
         BINARY(byte[].class), // raw data
-        NESTED(Map.class),  // nested field
-        ARRAY(List.class);    // array field
+        NESTED(Map.class),    // nested field
+        ARRAY(List.class),    // array field
+        NUMBER(Number.class),
+        OBJECT(Object.class);
 
         private final Class<?> javaType;
 
@@ -601,12 +603,16 @@ public class Schema implements Serializable {
             return Type.DOUBLE;
         } else if (clazz.equals(Integer.class)) {
             return Type.INTEGER;
+        } else if (clazz.equals(Number.class)) {
+            return Type.NUMBER;
         } else if (clazz.equals(Boolean.class)) {
             return Type.BOOLEAN;
         } else if (clazz.equals(List.class)) {
             return Type.ARRAY;
         } else if (clazz.equals(Map.class)) {
             return Type.NESTED;
+        } else if (clazz.equals(Object.class)) {
+            return Type.OBJECT;
         }
 
         throw new ParserException("Unknown type " + clazz);
