@@ -20,6 +20,7 @@ package org.apache.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.streamline.common.util.ParallelStreamUtil;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.Topology;
 import org.apache.streamline.streams.catalog.TopologyComponent;
@@ -44,7 +45,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ForkJoinPool;
 
+import static java.util.stream.Collectors.toMap;
 import static javax.ws.rs.core.Response.Status.OK;
 
 /**
@@ -54,6 +57,9 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Produces(MediaType.APPLICATION_JSON)
 public class MetricsResource {
     private static final Logger LOG = LoggerFactory.getLogger(MetricsResource.class);
+    private static final int FORK_JOIN_POOL_PARALLELISM = 10;
+
+    private final ForkJoinPool forkJoinPool = new ForkJoinPool(FORK_JOIN_POOL_PARALLELISM);
 
     private final StreamCatalogService catalogService;
 
@@ -133,14 +139,16 @@ public class MetricsResource {
             topologyComponents.addAll(catalogService.listTopologyProcessors(queryParams));
             topologyComponents.addAll(catalogService.listTopologySinks(queryParams));
 
-            Map<String, TopologyTimeSeriesMetrics.TimeSeriesComponentMetric> topologyMetrics = new ConcurrentHashMap<>();
-            topologyComponents.parallelStream().map(c -> {
-                try {
-                    return Pair.of(c, catalogService.getComponentStats(topology, c, from, to));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }).forEach(m -> topologyMetrics.put(m.getKey().getId().toString(), m.getValue()));
+            Map<String, TopologyTimeSeriesMetrics.TimeSeriesComponentMetric> topologyMetrics = ParallelStreamUtil.execute(() ->
+                    topologyComponents.parallelStream()
+                            .map(c -> {
+                                try {
+                                    return Pair.of(c, catalogService.getComponentStats(topology, c, from, to));
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            })
+                            .collect(toMap(m -> m.getKey().getId().toString(), m -> m.getValue())), forkJoinPool);
 
             return WSUtils.respondEntity(topologyMetrics, OK);
         }

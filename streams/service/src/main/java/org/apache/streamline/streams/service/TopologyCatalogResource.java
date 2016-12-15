@@ -21,8 +21,10 @@ package org.apache.streamline.streams.service;
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Stopwatch;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.streamline.common.util.ParallelStreamUtil;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.Namespace;
 import org.apache.streamline.streams.catalog.Topology;
@@ -58,6 +60,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -76,6 +84,10 @@ public class TopologyCatalogResource {
     private static final Integer DEFAULT_N_OF_TOP_N_LATENCY = 3;
     private static final String DEFAULT_SORT_TYPE = LAST_UPDATED.name();
     private static final Boolean DEFAULT_SORT_ORDER_ASCENDING = false;
+
+    private static final int FORK_JOIN_POOL_PARALLELISM = 10;
+
+    private final ForkJoinPool forkJoinPool = new ForkJoinPool(FORK_JOIN_POOL_PARALLELISM);
 
     private final URL SCHEMA = Thread.currentThread().getContextClassLoader()
             .getResource("assets/schemas/topology.json");
@@ -529,59 +541,81 @@ public class TopologyCatalogResource {
     }
 
     private List<TopologyDetailedResponse> enrichTopologies(Collection<Topology> topologies, String sortType, Boolean ascending, Integer latencyTopN) {
-        Stream<TopologyDetailedResponse> detailedResponsesStream = topologies.stream()
-                .map(t -> enrichTopology(t, latencyTopN));
+        LOG.debug("[START] enrichTopologies");
+        Stopwatch stopwatch = Stopwatch.createStarted();
 
-        return detailedResponsesStream.sorted((c1, c2) -> {
-            int compared;
+        try {
+            List<TopologyDetailedResponse> responses = ParallelStreamUtil.execute(() ->
+                    topologies.parallelStream()
+                            .map(t -> enrichTopology(t, latencyTopN))
+                            .sorted((c1, c2) -> {
+                                int compared;
 
-            switch (TopologySortType.valueOf(sortType.toUpperCase())) {
-                case NAME:
-                    compared = c1.getTopology().getName().compareTo(c2.getTopology().getName());
-                    break;
-                case STATUS:
-                    compared = c1.getRunning().compareTo(c2.getRunning());
-                    break;
-                case LAST_UPDATED:
-                    compared = c1.getTopology().getVersionTimestamp().compareTo(c2.getTopology().getVersionTimestamp());
-                    break;
-                default:
-                    throw new IllegalStateException("Not supported SortType: " + sortType);
-            }
+                                switch (TopologySortType.valueOf(sortType.toUpperCase())) {
+                                    case NAME:
+                                        compared = c1.getTopology().getName().compareTo(c2.getTopology().getName());
+                                        break;
+                                    case STATUS:
+                                        compared = c1.getRunning().compareTo(c2.getRunning());
+                                        break;
+                                    case LAST_UPDATED:
+                                        compared = c1.getTopology().getVersionTimestamp().compareTo(c2.getTopology().getVersionTimestamp());
+                                        break;
+                                    default:
+                                        throw new IllegalStateException("Not supported SortType: " + sortType);
+                                }
 
-            return ascending ? compared : (compared * -1);
-        }).collect(toList());
+                                return ascending ? compared : (compared * -1);
+                            })
+                            .collect(toList()), forkJoinPool);
+
+            LOG.debug("[END] enrichTopologies - elapsed: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+            return responses;
+        } finally {
+            stopwatch.stop();
+        }
     }
 
     private TopologyDetailedResponse enrichTopology(Topology topology, Integer latencyTopN) {
-        if (latencyTopN == null) {
-            latencyTopN = DEFAULT_N_OF_TOP_N_LATENCY;
-        }
-
-        TopologyDetailedResponse detailedResponse;
-
-        String namespaceName = null;
-        Namespace namespace = catalogService.getNamespace(topology.getNamespaceId());
-        if (namespace != null) {
-            namespaceName = namespace.getName();
-        }
+        LOG.debug("[START] enrichTopology - topology id: {}", topology.getId());
+        Stopwatch stopwatch = Stopwatch.createStarted();
 
         try {
-            String runtimeTopologyId = catalogService.getRuntimeTopologyId(topology);
-            TopologyMetrics.TopologyMetric topologyMetric = catalogService.getTopologyMetric(topology);
-            List<Pair<String, Double>> latenciesTopN = catalogService.getTopNAndOtherComponentsLatency(topology, latencyTopN);
+            if (latencyTopN == null) {
+                latencyTopN = DEFAULT_N_OF_TOP_N_LATENCY;
+            }
 
-            detailedResponse = new TopologyDetailedResponse(topology, TopologyRunningStatus.RUNNING, namespaceName);
-            detailedResponse.setRuntime(new TopologyRuntimeResponse(runtimeTopologyId, topologyMetric, latenciesTopN));
-        } catch (TopologyNotAliveException e) {
-            detailedResponse = new TopologyDetailedResponse(topology, TopologyRunningStatus.NOT_RUNNING, namespaceName);
-        } catch (StormNotReachableException | IOException e) {
-            detailedResponse = new TopologyDetailedResponse(topology, TopologyRunningStatus.UNKNOWN, namespaceName);
-        } catch (Exception e) {
-            detailedResponse = new TopologyDetailedResponse(topology, TopologyRunningStatus.UNKNOWN, namespaceName);
+            TopologyDetailedResponse detailedResponse;
+
+            String namespaceName = null;
+            Namespace namespace = catalogService.getNamespace(topology.getNamespaceId());
+            if (namespace != null) {
+                namespaceName = namespace.getName();
+            }
+
+            try {
+                String runtimeTopologyId = catalogService.getRuntimeTopologyId(topology);
+                TopologyMetrics.TopologyMetric topologyMetric = catalogService.getTopologyMetric(topology);
+                List<Pair<String, Double>> latenciesTopN = catalogService.getTopNAndOtherComponentsLatency(topology, latencyTopN);
+
+                detailedResponse = new TopologyDetailedResponse(topology, TopologyRunningStatus.RUNNING, namespaceName);
+                detailedResponse.setRuntime(new TopologyRuntimeResponse(runtimeTopologyId, topologyMetric, latenciesTopN));
+            } catch (TopologyNotAliveException e) {
+                detailedResponse = new TopologyDetailedResponse(topology, TopologyRunningStatus.NOT_RUNNING, namespaceName);
+            } catch (StormNotReachableException | IOException e) {
+                detailedResponse = new TopologyDetailedResponse(topology, TopologyRunningStatus.UNKNOWN, namespaceName);
+            } catch (Exception e) {
+                detailedResponse = new TopologyDetailedResponse(topology, TopologyRunningStatus.UNKNOWN, namespaceName);
+            }
+
+            LOG.debug("[END] enrichTopology - topology id: {}, elapsed: {} ms", topology.getId(),
+                    stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+            return detailedResponse;
+        } finally {
+            stopwatch.stop();
         }
-
-        return detailedResponse;
     }
 
     private enum TopologyRunningStatus {

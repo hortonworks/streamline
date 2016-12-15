@@ -1,6 +1,7 @@
 package org.apache.streamline.streams.metrics.storm.topology;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.streamline.common.util.ParallelStreamUtil;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
 import org.apache.streamline.streams.layout.component.Component;
 import org.apache.streamline.streams.layout.component.TopologyLayout;
@@ -16,11 +17,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ForkJoinPool;
+
+import static java.util.stream.Collectors.toMap;
 
 /**
  * Storm implementation of the TopologyTimeSeriesMetrics interface
  */
 public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMetrics {
+    private static final int FORK_JOIN_POOL_PARALLELISM = 30;
+
+    // shared across the metrics instances
+    private static final ForkJoinPool FORK_JOIN_POOL = new ForkJoinPool(FORK_JOIN_POOL_PARALLELISM);
+
     private final StormRestAPIClient client;
     private TimeSeriesQuerier timeSeriesQuerier;
     private final ObjectMapper mapper = new ObjectMapper();
@@ -82,9 +91,11 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
 
         String stormTopologyName = StormTopologyUtil.findOrGenerateTopologyName(client, topology.getId(), topology.getName());
 
-        Map<String, Map<Long, Double>> stats = new HashMap<>();
-        Arrays.asList(STATS_METRICS).parallelStream()
-                .forEach(m -> stats.put(m.name(), queryTopologyMetrics(stormTopologyName, m, from, to)));
+        Map<String, Map<Long, Double>> stats = ParallelStreamUtil.execute(() ->
+                Arrays.asList(STATS_METRICS)
+                        .parallelStream()
+                        .collect(toMap(m -> m.name(), m -> queryTopologyMetrics(stormTopologyName, m, from, to))),
+                FORK_JOIN_POOL);
 
         return buildTimeSeriesComponentMetric(topology.getName(), stats);
     }
@@ -96,9 +107,12 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
         String stormTopologyName = StormTopologyUtil.findOrGenerateTopologyName(client, topology.getId(), topology.getName());
         String stormComponentName = getComponentName(component);
 
-        Map<String, Map<Long, Double>> componentStats = new ConcurrentHashMap<>();
-        Arrays.asList(STATS_METRICS).parallelStream()
-                .forEach(m -> componentStats.put(m.name(), queryComponentMetrics(stormTopologyName, stormComponentName, m, from, to)));
+        Map<String, Map<Long, Double>> componentStats = ParallelStreamUtil.execute(() ->
+                Arrays.asList(STATS_METRICS)
+                        .parallelStream()
+                        .collect(toMap(m -> m.name(),
+                                m -> queryComponentMetrics(stormTopologyName, stormComponentName, m, from, to))),
+                FORK_JOIN_POOL);
 
         return buildTimeSeriesComponentMetric(component.getName(), componentStats);
     }

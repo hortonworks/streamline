@@ -1,0 +1,178 @@
+package org.apache.streamline.streams.catalog.cluster;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.streamline.common.util.ParallelStreamUtil;
+import org.apache.streamline.streams.catalog.Cluster;
+import org.apache.streamline.streams.catalog.Component;
+import org.apache.streamline.streams.catalog.Service;
+import org.apache.streamline.streams.catalog.ServiceConfiguration;
+import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import org.apache.streamline.streams.cluster.discovery.ServiceNodeDiscoverer;
+import org.apache.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
+import org.apache.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ForkJoinPool;
+import java.util.regex.Matcher;
+
+public class ClusterImporter {
+    private static final Logger LOG = LoggerFactory.getLogger(ClusterImporter.class);
+    private static final int FORK_JOIN_POOL_PARALLELISM = 20;
+
+    private final StreamCatalogService catalogService;
+    private final ForkJoinPool forkJoinPool;
+
+    public ClusterImporter(StreamCatalogService catalogService) {
+        this.catalogService = catalogService;
+        this.forkJoinPool = new ForkJoinPool(FORK_JOIN_POOL_PARALLELISM);
+    }
+
+    public Cluster importCluster(ServiceNodeDiscoverer serviceNodeDiscoverer, Cluster cluster) {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        // remove all of relevant services and associated components
+        removeAllServices(cluster);
+
+        List<String> availableServices = serviceNodeDiscoverer.getServices();
+
+        ParallelStreamUtil.execute(
+                () -> handleServices(serviceNodeDiscoverer, cluster, objectMapper, availableServices),
+                forkJoinPool);
+
+        return cluster;
+    }
+
+    private Void handleServices(ServiceNodeDiscoverer serviceNodeDiscoverer, Cluster cluster, ObjectMapper objectMapper, List<String> availableServices) {
+        availableServices.parallelStream()
+                .filter(ServiceConfigurations::contains)
+                .forEach(serviceName -> {
+                    LOG.debug("service start {}", serviceName);
+
+                    Service service = addService(cluster, serviceName);
+
+                    Map<String, Object> flattenConfigurations = new ConcurrentHashMap<>();
+                    Map<String, Map<String, Object>> configurations = serviceNodeDiscoverer.getConfigurations(serviceName);
+                    handleConfigurations(serviceNodeDiscoverer, objectMapper, flattenConfigurations, configurations, service);
+
+                    List<String> components = serviceNodeDiscoverer.getComponents(serviceName);
+                    handleComponents(serviceNodeDiscoverer, serviceName, flattenConfigurations, service, components);
+                });
+
+        return null;
+    }
+
+    private void handleComponents(ServiceNodeDiscoverer serviceNodeDiscoverer, String serviceName, Map<String, Object> flattenConfigurations, Service service, List<String> components) {
+        components.parallelStream().forEach(componentName -> {
+            LOG.debug("component start {}", componentName);
+
+            List<String> hosts = serviceNodeDiscoverer.getComponentNodes(serviceName, componentName);
+            addComponent(flattenConfigurations, service, componentName, hosts);
+
+            LOG.debug("component end {}", componentName);
+        });
+    }
+
+    private void handleConfigurations(ServiceNodeDiscoverer serviceNodeDiscoverer, ObjectMapper objectMapper, Map<String, Object> flattenConfigurations, Map<String, Map<String, Object>> configurations, Service service) {
+        configurations.entrySet().parallelStream()
+                .forEach(entry -> {
+                    try {
+                        String confType = entry.getKey();
+                        Map<String, Object> configuration = entry.getValue();
+
+                        LOG.debug("conf-type start {}", confType);
+
+                        String actualFileName = serviceNodeDiscoverer.getActualFileName(confType);
+
+                        addServiceConfiguration(objectMapper, service, confType, configuration, actualFileName);
+                        flattenConfigurations.putAll(configuration);
+
+                        LOG.debug("conf-type end {}", confType);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+    }
+
+    private void addComponent(Map<String, Object> flattenConfigurations, Service service, String componentName, List<String> hosts) {
+        Component component = catalogService.initializeComponent(service, componentName, hosts);
+        setProtocolAndPortIfAvailable(flattenConfigurations, component);
+        catalogService.addComponent(component);
+    }
+
+    private void addServiceConfiguration(ObjectMapper objectMapper, Service service, String confType, Map<String, Object> configuration, String actualFileName) throws JsonProcessingException {
+        ServiceConfiguration serviceConfiguration = catalogService.initializeServiceConfiguration(objectMapper,
+                service.getId(), confType, actualFileName, configuration);
+
+        catalogService.addServiceConfiguration(serviceConfiguration);
+    }
+
+    private Service addService(Cluster cluster, String serviceName) {
+        Service service = catalogService.initializeService(cluster, serviceName);
+        catalogService.addService(service);
+        LOG.debug("service added {}", serviceName);
+        return service;
+    }
+
+    private void removeAllServices(Cluster cluster) {
+        Collection<Service> services = catalogService.listServices(cluster.getId());
+        for (Service service : services) {
+            Collection<Component> components = catalogService.listComponents(service.getId());
+            for (Component component : components) {
+                catalogService.removeComponent(component.getId());
+            }
+
+            Collection<ServiceConfiguration> configurations = catalogService.listServiceConfigurations(service.getId());
+            for (ServiceConfiguration configuration : configurations) {
+                catalogService.removeServiceConfiguration(configuration.getId());
+            }
+
+            catalogService.removeService(service.getId());
+        }
+    }
+
+    private void setProtocolAndPortIfAvailable(Map<String, Object> configurations, Component component) {
+        try {
+            ComponentPropertyPattern confMap = ComponentPropertyPattern
+                    .valueOf(component.getName());
+            Object valueObj = configurations.get(confMap.getConnectionConfName());
+            if (valueObj != null) {
+                Matcher matcher = confMap.getParsePattern().matcher(valueObj.toString());
+
+                if (matcher.matches()) {
+                    String protocol = matcher.group(1);
+                    String portStr = matcher.group(2);
+
+                    if (!protocol.isEmpty()) {
+                        component.setProtocol(protocol);
+                    }
+                    if (!portStr.isEmpty()) {
+                        try {
+                            component.setPort(Integer.parseInt(portStr));
+                        } catch (NumberFormatException e) {
+                            LOG.warn(
+                                    "Protocol/Port information [{}] for component {} doesn't seem to known format [{}]."
+                                            + "skip assigning...", valueObj, component.getName(), confMap.getParsePattern());
+
+                            // reset protocol information
+                            component.setProtocol(null);
+                        }
+                    }
+                } else {
+                    LOG.warn("Protocol/Port information [{}] for component {} doesn't seem to known format [{}]. "
+                            + "skip assigning...", valueObj, component.getName(), confMap.getParsePattern());
+                }
+            } else {
+                LOG.warn("Protocol/Port related configuration ({}) is not set", confMap.getConnectionConfName());
+            }
+        } catch (IllegalArgumentException e) {
+            // don't know port related configuration
+        }
+    }
+
+}
