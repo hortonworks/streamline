@@ -5,22 +5,21 @@ import org.apache.streamline.common.Constants;
 import org.apache.streamline.common.FileEventHandler;
 import org.apache.streamline.common.FileWatcher;
 import org.apache.streamline.common.ModuleRegistration;
-import org.apache.streamline.common.TimeSeriesDBConfiguration;
 import org.apache.streamline.common.util.FileStorage;
 import org.apache.streamline.common.util.ReflectionHelper;
 import org.apache.streamline.registries.model.client.MLModelRegistryClient;
 import org.apache.streamline.registries.tag.client.TagClient;
 import org.apache.streamline.storage.StorageManager;
 import org.apache.streamline.storage.StorageManagerAware;
+import org.apache.streamline.streams.actions.TopologyActions;
+import org.apache.streamline.streams.actions.topology.service.TopologyActionsService;
 import org.apache.streamline.streams.catalog.TopologyVersionInfo;
 import org.apache.streamline.streams.catalog.service.CatalogService;
+import org.apache.streamline.streams.catalog.service.EnvironmentService;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.streams.exception.ConfigException;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.streamline.streams.layout.component.TopologyActions;
 import org.apache.streamline.streams.layout.storm.StormTopologyLayoutConstants;
-import org.apache.streamline.streams.metrics.TimeSeriesQuerier;
-import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
+import org.apache.streamline.streams.metrics.topology.service.TopologyMetricsService;
 import org.apache.streamline.streams.notification.service.NotificationServiceImpl;
 import org.apache.streamline.streams.service.metadata.HBaseMetadataResource;
 import org.apache.streamline.streams.service.metadata.HiveMetadataResource;
@@ -52,21 +51,30 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         List<Object> result = new ArrayList<>();
         String catalogRootUrl = (String) config.get(Constants.CONFIG_CATALOG_ROOT_URL);
         MLModelRegistryClient modelRegistryClient = new MLModelRegistryClient(catalogRootUrl);
-        final StreamCatalogService streamcatalogService = new StreamCatalogService(storageManager, fileStorage, modelRegistryClient, config);
+        final StreamCatalogService streamcatalogService = new StreamCatalogService(storageManager, fileStorage, modelRegistryClient);
+        final EnvironmentService environmentService = new EnvironmentService(storageManager);
         TagClient tagClient = new TagClient(catalogRootUrl);
         final CatalogService catalogService = new CatalogService(storageManager, fileStorage, tagClient);
-        result.add(new MetricsResource(streamcatalogService));
-        result.addAll(getClusterRelatedResources(streamcatalogService));
+        final TopologyActionsService topologyActionsService = new TopologyActionsService(streamcatalogService,
+                environmentService, fileStorage, modelRegistryClient, config);
+        final TopologyMetricsService topologyMetricsService = new TopologyMetricsService(environmentService);
+
+        environmentService.addNamespaceAwareContainer(topologyActionsService);
+        environmentService.addNamespaceAwareContainer(topologyMetricsService);
+
+        result.add(new MetricsResource(streamcatalogService, topologyMetricsService));
+        result.addAll(getClusterRelatedResources(environmentService));
         result.add(new FileCatalogResource(catalogService));
-        result.addAll(getTopologyRelatedResources(streamcatalogService));
+        result.addAll(getTopologyRelatedResources(streamcatalogService, environmentService, topologyActionsService,
+                topologyMetricsService));
         result.add(new RuleCatalogResource(streamcatalogService));
         result.add(new BranchRuleCatalogResource(streamcatalogService));
         result.add(new UDFCatalogResource(streamcatalogService, fileStorage));
         result.addAll(getNotificationsRelatedResources(streamcatalogService));
         result.add(new WindowCatalogResource(streamcatalogService));
         result.add(new SchemaResource(createSchemaRegistryClient()));
-        result.addAll(getServiceMetadataResources(streamcatalogService));
-        result.add(new NamespaceCatalogResource(streamcatalogService));
+        result.addAll(getServiceMetadataResources(environmentService));
+        result.add(new NamespaceCatalogResource(streamcatalogService, environmentService));
         watchFiles(streamcatalogService);
         setupPlaceholderEntities(streamcatalogService);
         return result;
@@ -83,9 +91,11 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         this.storageManager = storageManager;
     }
 
-    private List<Object> getTopologyRelatedResources(StreamCatalogService streamcatalogService) {
+    private List<Object> getTopologyRelatedResources(StreamCatalogService streamcatalogService, EnvironmentService environmentService,
+                                                     TopologyActionsService actionsService, TopologyMetricsService metricsService) {
         List<Object> result = new ArrayList<>();
-        final TopologyCatalogResource topologyCatalogResource = new TopologyCatalogResource(streamcatalogService);
+        final TopologyCatalogResource topologyCatalogResource = new TopologyCatalogResource(streamcatalogService,
+                environmentService, actionsService, metricsService);
         result.add(topologyCatalogResource);
         final TopologyComponentBundleResource topologyComponentResource = new TopologyComponentBundleResource(streamcatalogService);
         result.add(topologyComponentResource);
@@ -104,28 +114,28 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         return result;
     }
 
-    private List<Object> getClusterRelatedResources(StreamCatalogService streamcatalogService) {
+    private List<Object> getClusterRelatedResources(EnvironmentService environmentService) {
         List<Object> result = new ArrayList<>();
-        final ClusterCatalogResource clusterCatalogResource = new ClusterCatalogResource(streamcatalogService);
+        final ClusterCatalogResource clusterCatalogResource = new ClusterCatalogResource(environmentService);
         result.add(clusterCatalogResource);
-        final ServiceCatalogResource serviceCatalogResource = new ServiceCatalogResource(streamcatalogService);
+        final ServiceCatalogResource serviceCatalogResource = new ServiceCatalogResource(environmentService);
         result.add(serviceCatalogResource);
-        final ServiceConfigurationCatalogResource serviceConfigurationCatalogResource = new ServiceConfigurationCatalogResource(streamcatalogService);
+        final ServiceConfigurationCatalogResource serviceConfigurationCatalogResource = new ServiceConfigurationCatalogResource(environmentService);
         result.add(serviceConfigurationCatalogResource);
-        final ComponentCatalogResource componentCatalogResource = new ComponentCatalogResource(streamcatalogService);
+        final ComponentCatalogResource componentCatalogResource = new ComponentCatalogResource(environmentService);
         result.add(componentCatalogResource);
         return result;
     }
 
-    private List<Object> getServiceMetadataResources(StreamCatalogService streamcatalogService) {
+    private List<Object> getServiceMetadataResources(EnvironmentService environmentService) {
         final List<Object> result = new ArrayList<>();
-        final KafkaMetadataResource kafkaMetadataResource = new KafkaMetadataResource(streamcatalogService);
+        final KafkaMetadataResource kafkaMetadataResource = new KafkaMetadataResource(environmentService);
         result.add(kafkaMetadataResource);
-        final StormMetadataResource stormMetadataResource = new StormMetadataResource(streamcatalogService);
+        final StormMetadataResource stormMetadataResource = new StormMetadataResource(environmentService);
         result.add(stormMetadataResource);
-        final HiveMetadataResource hiveMetadataResource = new HiveMetadataResource(streamcatalogService);
+        final HiveMetadataResource hiveMetadataResource = new HiveMetadataResource(environmentService);
         result.add(hiveMetadataResource);
-        final HBaseMetadataResource hbaseMetadataResource = new HBaseMetadataResource(streamcatalogService);
+        final HBaseMetadataResource hbaseMetadataResource = new HBaseMetadataResource(environmentService);
         result.add(hbaseMetadataResource);
         return result;
     }
@@ -136,37 +146,6 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         result.add(new NotificationsResource(new NotificationServiceImpl()));
         return result;
     }
-
-    private TopologyActions getTopologyActionsImpl() {
-        String className = (String) config.get(org.apache.streamline.streams.common.Constants.CONFIG_TOPOLOGY_ACTIONS_IMPL);
-        // Note that streamlineStormJar value needs to be changed in streamline.yaml
-        // based on the location of the storm module jar of Streamline project.
-        // Reason for doing it this way is storm ui right now does not
-        // support submitting a jar because of security vulnerability. Hence
-        // for now, we just run the storm jar command in a shell on machine
-        // where Streamline is deployed. It is run in StormTopologyActionsImpl
-        // class. This also adds a security vulnerability. We will change
-        // this later on using our cluster entity when its handled right in
-        // storm.
-        String jar = (String) config.get(StormTopologyLayoutConstants.STORM_JAR_LOCATION_KEY);
-        TopologyActions topologyActions;
-        try {
-            topologyActions = ReflectionHelper.newInstance(className);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-        //pass any config info that might be needed in the constructor as a map
-        Map<String, String> conf = new HashMap<>();
-        conf.put(StormTopologyLayoutConstants.STORM_JAR_LOCATION_KEY, jar);
-        conf.put(StormTopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL, (String) config.get(Constants.CONFIG_CATALOG_ROOT_URL));
-        conf.put(StormTopologyLayoutConstants.STORM_HOME_DIR, (String) config.get(StormTopologyLayoutConstants.STORM_HOME_DIR));
-        conf.put(TopologyLayoutConstants.JAVA_JAR_COMMAND, (String) config.get(TopologyLayoutConstants.JAVA_JAR_COMMAND));
-        conf.put(TopologyLayoutConstants.SCHEMA_REGISTRY_URL, (String) config.get(TopologyLayoutConstants.SCHEMA_REGISTRY_URL));
-        conf.put(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY, (String) config.get(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY));
-        topologyActions.init(conf);
-        return topologyActions;
-    }
-
 
     private void watchFiles(StreamCatalogService catalogService) {
         String customProcessorWatchPath = (String) config.get(org.apache.streamline.streams.common.Constants.CONFIG_CP_WATCH_PATH);

@@ -8,6 +8,7 @@ import org.apache.streamline.storage.exception.AlreadyExistsException;
 import org.apache.streamline.streams.catalog.Namespace;
 import org.apache.streamline.streams.catalog.NamespaceServiceClusterMapping;
 import org.apache.streamline.streams.catalog.Topology;
+import org.apache.streamline.streams.catalog.service.EnvironmentService;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.common.exception.service.exception.request.BadRequestException;
 import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
@@ -40,9 +41,11 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Produces(MediaType.APPLICATION_JSON)
 public class NamespaceCatalogResource {
   private final StreamCatalogService catalogService;
+  private final EnvironmentService environmentService;
 
-  public NamespaceCatalogResource(StreamCatalogService catalogService) {
+  public NamespaceCatalogResource(StreamCatalogService catalogService, EnvironmentService environmentService) {
     this.catalogService = catalogService;
+    this.environmentService = environmentService;
   }
 
   @GET
@@ -55,7 +58,7 @@ public class NamespaceCatalogResource {
     Boolean detail = false;
 
     if (params.isEmpty()) {
-      namespaces = catalogService.listNamespaces();
+      namespaces = environmentService.listNamespaces();
     } else {
       MultivaluedMap<String, String> copiedParams = new MultivaluedHashMap<>();
       copiedParams.putAll(params);
@@ -65,7 +68,7 @@ public class NamespaceCatalogResource {
       }
 
       queryParams = WSUtils.buildQueryParameters(copiedParams);
-      namespaces = catalogService.listNamespaces(queryParams);
+      namespaces = environmentService.listNamespaces(queryParams);
     }
     if (namespaces != null) {
       return buildNamespacesGetResponse(namespaces, detail);
@@ -79,7 +82,7 @@ public class NamespaceCatalogResource {
   @Timed
   public Response getNamespaceById(@PathParam("id") Long namespaceId,
                                    @javax.ws.rs.QueryParam("detail") Boolean detail) {
-    Namespace result = catalogService.getNamespace(namespaceId);
+    Namespace result = environmentService.getNamespace(namespaceId);
     if (result != null) {
       return buildNamespaceGetResponse(result, detail);
     }
@@ -92,7 +95,7 @@ public class NamespaceCatalogResource {
   @Timed
   public Response getNamespaceByName(@PathParam("namespaceName") String namespaceName,
                                      @javax.ws.rs.QueryParam("detail") Boolean detail) {
-    Namespace result = catalogService.getNamespaceByName(namespaceName);
+    Namespace result = environmentService.getNamespaceByName(namespaceName);
     if (result != null) {
       return buildNamespaceGetResponse(result, detail);
     }
@@ -106,12 +109,12 @@ public class NamespaceCatalogResource {
   public Response addNamespace(Namespace namespace) {
     try {
       String namespaceName = namespace.getName();
-      Namespace result = catalogService.getNamespaceByName(namespaceName);
+      Namespace result = environmentService.getNamespaceByName(namespaceName);
       if (result != null) {
         throw new AlreadyExistsException("Namespace entity already exists with name " + namespaceName);
       }
 
-      Namespace created = catalogService.addNamespace(namespace);
+      Namespace created = environmentService.addNamespace(namespace);
       return WSUtils.respondEntity(created, CREATED);
     } catch (ProcessingException ex) {
       throw BadRequestException.of();
@@ -124,7 +127,7 @@ public class NamespaceCatalogResource {
   public Response removeNamespace(@PathParam("id") Long namespaceId) {
     assertNoTopologyRefersNamespace(namespaceId);
 
-    Namespace removed = catalogService.removeNamespace(namespaceId);
+    Namespace removed = environmentService.removeNamespace(namespaceId);
     if (removed != null) {
       return WSUtils.respondEntity(removed, OK);
     }
@@ -148,7 +151,7 @@ public class NamespaceCatalogResource {
   public Response addOrUpdateNamespace(@PathParam("id") Long namespaceId,
       Namespace namespace) {
     try {
-      Namespace newNamespace = catalogService.addOrUpdateNamespace(namespaceId, namespace);
+      Namespace newNamespace = environmentService.addOrUpdateNamespace(namespaceId, namespace);
       return WSUtils.respondEntity(newNamespace, OK);
     } catch (ProcessingException ex) {
       throw BadRequestException.of();
@@ -159,12 +162,12 @@ public class NamespaceCatalogResource {
   @Path("/namespaces/{id}/mapping")
   @Timed
   public Response listServiceToClusterMappingInNamespace(@PathParam("id") Long namespaceId) {
-    Namespace namespace = catalogService.getNamespace(namespaceId);
+    Namespace namespace = environmentService.getNamespace(namespaceId);
     if (namespace == null) {
       throw EntityNotFoundException.byId(namespaceId.toString());
     }
 
-    Collection<NamespaceServiceClusterMapping> existingMappings = catalogService.listServiceClusterMapping(namespaceId);
+    Collection<NamespaceServiceClusterMapping> existingMappings = environmentService.listServiceClusterMapping(namespaceId);
     if (existingMappings != null) {
       return WSUtils.respondEntities(existingMappings, OK);
     }
@@ -177,12 +180,12 @@ public class NamespaceCatalogResource {
   @Timed
   public Response findServicesToClusterMappingInNamespace(@PathParam("id") Long namespaceId,
                                                           @PathParam("serviceName") String serviceName) {
-    Namespace namespace = catalogService.getNamespace(namespaceId);
+    Namespace namespace = environmentService.getNamespace(namespaceId);
     if (namespace == null) {
       throw EntityNotFoundException.byId("Namespace: " + namespaceId.toString());
     }
 
-    Collection<NamespaceServiceClusterMapping> mappings = catalogService.listServiceClusterMapping(namespaceId, serviceName);
+    Collection<NamespaceServiceClusterMapping> mappings = environmentService.listServiceClusterMapping(namespaceId, serviceName);
     if (mappings != null) {
       return WSUtils.respondEntities(mappings, OK);
     } else {
@@ -195,20 +198,20 @@ public class NamespaceCatalogResource {
   @Timed
   public Response setServicesToClusterInNamespace(@PathParam("id") Long namespaceId,
                                                   List<NamespaceServiceClusterMapping> mappings) {
-    Namespace namespace = catalogService.getNamespace(namespaceId);
+    Namespace namespace = environmentService.getNamespace(namespaceId);
     if (namespace == null) {
       throw EntityNotFoundException.byId(namespaceId.toString());
     }
 
     // remove any existing mapping for (namespace, service name) pairs
-    Collection<NamespaceServiceClusterMapping> existingMappings = catalogService.listServiceClusterMapping(namespaceId);
+    Collection<NamespaceServiceClusterMapping> existingMappings = environmentService.listServiceClusterMapping(namespaceId);
     if (existingMappings != null) {
-      existingMappings.forEach(m -> catalogService.removeServiceClusterMapping(m.getNamespaceId(), m.getServiceName(),
+      existingMappings.forEach(m -> environmentService.removeServiceClusterMapping(m.getNamespaceId(), m.getServiceName(),
               m.getClusterId()));
     }
 
     List<NamespaceServiceClusterMapping> newMappings = mappings.stream()
-            .map(catalogService::addOrUpdateServiceClusterMapping).collect(toList());
+            .map(environmentService::addOrUpdateServiceClusterMapping).collect(toList());
 
     return WSUtils.respondEntities(newMappings, CREATED);
   }
@@ -218,12 +221,12 @@ public class NamespaceCatalogResource {
   @Timed
   public Response mapServiceToClusterInNamespace(@PathParam("id") Long namespaceId,
             NamespaceServiceClusterMapping mapping) {
-    Namespace namespace = catalogService.getNamespace(namespaceId);
+    Namespace namespace = environmentService.getNamespace(namespaceId);
     if (namespace == null) {
       throw EntityNotFoundException.byId(namespaceId.toString());
     }
 
-    NamespaceServiceClusterMapping newMapping = catalogService.addOrUpdateServiceClusterMapping(mapping);
+    NamespaceServiceClusterMapping newMapping = environmentService.addOrUpdateServiceClusterMapping(mapping);
     return WSUtils.respondEntity(newMapping, CREATED);
   }
 
@@ -232,7 +235,7 @@ public class NamespaceCatalogResource {
   @Timed
   public Response unmapServiceToClusterInNamespace(@PathParam("id") Long namespaceId,
       @PathParam("serviceName") String serviceName, @PathParam("clusterId") Long clusterId) {
-    NamespaceServiceClusterMapping mapping = catalogService.removeServiceClusterMapping(namespaceId, serviceName, clusterId);
+    NamespaceServiceClusterMapping mapping = environmentService.removeServiceClusterMapping(namespaceId, serviceName, clusterId);
     if (mapping != null) {
       return WSUtils.respondEntity(mapping, OK);
     }
@@ -244,8 +247,8 @@ public class NamespaceCatalogResource {
   @Path("/namespaces/{id}/mapping")
   @Timed
   public Response unmapAllServicesToClusterInNamespace(@PathParam("id") Long namespaceId) {
-    List<NamespaceServiceClusterMapping> mappings = catalogService.listServiceClusterMapping(namespaceId).stream()
-            .map((x) -> catalogService.removeServiceClusterMapping(x.getNamespaceId(), x.getServiceName(),
+    List<NamespaceServiceClusterMapping> mappings = environmentService.listServiceClusterMapping(namespaceId).stream()
+            .map((x) -> environmentService.removeServiceClusterMapping(x.getNamespaceId(), x.getServiceName(),
                     x.getClusterId()))
             .collect(toList());
     return WSUtils.respondEntities(mappings, OK);
@@ -274,7 +277,7 @@ public class NamespaceCatalogResource {
 
   private NamespaceWithMapping buildNamespaceWithMapping(Namespace namespace) {
     NamespaceWithMapping nm = new NamespaceWithMapping(namespace);
-    nm.setServiceClusterMappings(catalogService.listServiceClusterMapping(namespace.getId()));
+    nm.setServiceClusterMappings(environmentService.listServiceClusterMapping(namespace.getId()));
     return nm;
   }
 

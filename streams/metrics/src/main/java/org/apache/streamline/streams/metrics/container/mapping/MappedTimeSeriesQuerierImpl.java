@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.catalog.container.mapping;
+package org.apache.streamline.streams.metrics.container.mapping;
 
 public enum MappedTimeSeriesQuerierImpl {
     STORM_AMBARI_METRICS("org.apache.streamline.streams.metrics.storm.ambari.AmbariMetricsServiceWithStormQuerier");

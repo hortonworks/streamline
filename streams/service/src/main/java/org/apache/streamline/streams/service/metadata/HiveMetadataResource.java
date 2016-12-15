@@ -3,6 +3,7 @@ package org.apache.streamline.streams.service.metadata;
 import com.codahale.metrics.annotation.Timed;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.Cluster;
+import org.apache.streamline.streams.catalog.service.EnvironmentService;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 
 import org.apache.streamline.streams.catalog.exception.EntityNotFoundException;
@@ -20,10 +21,10 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class HiveMetadataResource {
-    private final StreamCatalogService catalogService;
+    private final EnvironmentService environmentService;
 
-    public HiveMetadataResource(StreamCatalogService catalogService) {
-        this.catalogService = catalogService;
+    public HiveMetadataResource(EnvironmentService environmentService) {
+        this.environmentService = environmentService;
     }
 
     @GET
@@ -31,7 +32,7 @@ public class HiveMetadataResource {
     @Timed
     public Response getDatabasesByClusterName(@PathParam("clusterName") String clusterName)
         throws Exception {
-        final Cluster cluster = catalogService.getClusterByName(clusterName);
+        final Cluster cluster = environmentService.getClusterByName(clusterName);
         if (cluster == null) {
             throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
         }
@@ -43,7 +44,7 @@ public class HiveMetadataResource {
     @Timed
     public Response getDatabasesByClusterId(@PathParam("clusterId") Long clusterId)
         throws Exception {
-        try(final HiveMetadataService hiveMetadataService = HiveMetadataService.newInstance(catalogService, clusterId)) {
+        try(final HiveMetadataService hiveMetadataService = HiveMetadataService.newInstance(environmentService, clusterId)) {
             return WSUtils.respondEntity(hiveMetadataService.getHiveDatabases(), OK);
         } catch (EntityNotFoundException ex) {
             throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
@@ -55,7 +56,7 @@ public class HiveMetadataResource {
     @Timed
     public Response getDatabaseTablesByClusterName(@PathParam("clusterName") String clusterName, @PathParam("dbName") String dbName)
         throws Exception {
-        final Cluster cluster = catalogService.getClusterByName(clusterName);
+        final Cluster cluster = environmentService.getClusterByName(clusterName);
         if (cluster == null) {
             throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
         }
@@ -67,7 +68,7 @@ public class HiveMetadataResource {
     @Timed
     public Response getDatabaseTablesByClusterId(@PathParam("clusterId") Long clusterId, @PathParam("dbName") String dbName)
         throws Exception {
-        try(final HiveMetadataService hiveMetadataService = HiveMetadataService.newInstance(catalogService, clusterId)) {
+        try(final HiveMetadataService hiveMetadataService = HiveMetadataService.newInstance(environmentService, clusterId)) {
             return WSUtils.respondEntity(hiveMetadataService.getHiveTables(dbName), OK);
         } catch (EntityNotFoundException ex) {
             throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());

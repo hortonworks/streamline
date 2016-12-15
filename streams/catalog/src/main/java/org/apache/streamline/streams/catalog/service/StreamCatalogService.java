@@ -23,7 +23,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
@@ -31,24 +30,15 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.streamline.common.ComponentTypes;
-import org.apache.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
-import org.apache.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
-import org.apache.streamline.streams.catalog.cluster.ClusterImporter;
-import org.apache.streamline.streams.layout.component.StreamlineComponent;
-import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
 import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
 import org.apache.streamline.streams.catalog.Projection;
 import org.apache.streamline.streams.layout.storm.FluxComponent;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.common.util.FileStorage;
-import org.apache.streamline.common.util.JsonSchemaValidator;
 import org.apache.streamline.common.util.ProxyUtil;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.registries.model.client.MLModelRegistryClient;
@@ -59,15 +49,9 @@ import org.apache.streamline.storage.exception.StorageException;
 import org.apache.streamline.storage.util.StorageUtils;
 import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.catalog.BranchRuleInfo;
-import org.apache.streamline.streams.catalog.Cluster;
-import org.apache.streamline.streams.catalog.Component;
-import org.apache.streamline.streams.catalog.Namespace;
-import org.apache.streamline.streams.catalog.NamespaceServiceClusterMapping;
 import org.apache.streamline.streams.catalog.FileInfo;
 import org.apache.streamline.streams.catalog.NotifierInfo;
 import org.apache.streamline.streams.catalog.RuleInfo;
-import org.apache.streamline.streams.catalog.Service;
-import org.apache.streamline.streams.catalog.ServiceConfiguration;
 import org.apache.streamline.streams.catalog.StreamInfo;
 import org.apache.streamline.streams.catalog.Topology;
 import org.apache.streamline.streams.catalog.TopologyComponent;
@@ -82,31 +66,18 @@ import org.apache.streamline.streams.catalog.TopologySourceStreamMapping;
 import org.apache.streamline.streams.catalog.TopologyVersionInfo;
 import org.apache.streamline.streams.catalog.UDFInfo;
 import org.apache.streamline.streams.catalog.WindowInfo;
-import org.apache.streamline.streams.catalog.configuration.ConfigFileType;
-import org.apache.streamline.streams.catalog.configuration.ConfigFileWriter;
-import org.apache.streamline.streams.catalog.container.TopologyActionsContainer;
-import org.apache.streamline.streams.catalog.container.TopologyMetricsContainer;
 import org.apache.streamline.streams.catalog.processor.CustomProcessorInfo;
 import org.apache.streamline.streams.catalog.rule.RuleParser;
 import org.apache.streamline.streams.catalog.topology.TopologyComponentBundle;
 import org.apache.streamline.streams.catalog.topology.TopologyComponentUISpecification;
-import org.apache.streamline.streams.catalog.topology.TopologyLayoutValidator;
-import org.apache.streamline.streams.catalog.topology.component.TopologyDagBuilder;
-import org.apache.streamline.streams.cluster.discovery.ServiceNodeDiscoverer;
-import org.apache.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.streamline.streams.layout.component.OutputComponent;
-import org.apache.streamline.streams.layout.component.Stream;
-import org.apache.streamline.streams.layout.component.StreamlineProcessor;
-import org.apache.streamline.streams.layout.component.StreamlineSource;
-import org.apache.streamline.streams.layout.component.TopologyActions;
-import org.apache.streamline.streams.layout.component.TopologyDag;
 import org.apache.streamline.streams.catalog.topology.TopologyData;
+import org.apache.streamline.streams.catalog.topology.component.TopologyDagBuilder;
 import org.apache.streamline.streams.catalog.topology.component.TopologyExportVisitor;
-import org.apache.streamline.streams.layout.component.TopologyLayout;
+import org.apache.streamline.streams.layout.TopologyLayoutConstants;
+import org.apache.streamline.streams.layout.component.Stream;
+import org.apache.streamline.streams.layout.component.TopologyDag;
 import org.apache.streamline.streams.layout.component.rule.Rule;
 import org.apache.streamline.streams.layout.exception.ComponentConfigException;
-import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
-import org.apache.streamline.streams.metrics.topology.TopologyTimeSeriesMetrics;
 import org.apache.streamline.streams.rule.UDAF;
 import org.apache.streamline.streams.rule.UDAF2;
 import org.apache.streamline.streams.rule.UDF;
@@ -119,17 +90,12 @@ import org.apache.streamline.streams.rule.UDF7;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.streamline.streams.catalog.TopologyEditorMetadata.TopologyUIData;
-
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -141,14 +107,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ForkJoinPool;
-import java.util.regex.Matcher;
 
-import static java.util.stream.Collectors.toList;
 import static org.apache.streamline.common.util.WSUtils.CURRENT_VERSION;
 import static org.apache.streamline.common.util.WSUtils.currentVersionQueryParam;
 import static org.apache.streamline.common.util.WSUtils.versionIdQueryParam;
 import static org.apache.streamline.streams.catalog.TopologyEdge.StreamGrouping;
+import static org.apache.streamline.streams.catalog.TopologyEditorMetadata.TopologyUIData;
 
 /**
  * A service layer where we could put our business logic.
@@ -160,10 +124,6 @@ public class StreamCatalogService {
     private static final Logger LOG = LoggerFactory.getLogger(StreamCatalogService.class);
 
     // TODO: the namespace and Id generation logic should be moved inside DAO
-    private static final String CLUSTER_NAMESPACE = new Cluster().getNameSpace();
-    private static final String SERVICE_NAMESPACE = new Service().getNameSpace();
-    private static final String COMPONENT_NAMESPACE = new Component().getNameSpace();
-    private static final String SERVICE_CONFIGURATION_NAMESPACE = new ServiceConfiguration().getNameSpace();
     private static final String NOTIFIER_INFO_NAMESPACE = new NotifierInfo().getNameSpace();
     private static final String TOPOLOGY_NAMESPACE = new Topology().getNameSpace();
     private static final String TOPOLOGY_VERSIONINFO_NAMESPACE = new TopologyVersionInfo().getNameSpace();
@@ -179,36 +139,20 @@ public class StreamCatalogService {
     private static final String TOPOLOGY_BRANCHRULEINFO_NAMESPACE = new BranchRuleInfo().getNameSpace();
     private static final String TOPOLOGY_WINDOWINFO_NAMESPACE = new WindowInfo().getNameSpace();
     private static final String UDF_NAMESPACE = new UDFInfo().getNameSpace();
-    private static final String NAMESPACE_NAMESPACE = new Namespace().getNameSpace();
-    private static final String NAMESPACE_SERVICE_CLUSTER_MAPPING_NAMESPACE = new NamespaceServiceClusterMapping().getNameSpace();
 
     private static final ArrayList<Class<?>> UDF_CLASSES = Lists.newArrayList(UDAF.class, UDAF2.class, UDF.class, UDF2.class,
                                                                               UDF3.class, UDF4.class, UDF5.class, UDF6.class, UDF7.class);
     public static final long PLACEHOLDER_ID = -1L;
 
     private final StorageManager dao;
-    private final TopologyActionsContainer topologyActionsContainer;
-    private final TopologyMetricsContainer topologyMetricsContainer;
     private final FileStorage fileStorage;
     private final TopologyDagBuilder topologyDagBuilder;
-    private final ConfigFileWriter configFileWriter;
-    private final ClusterImporter clusterImporter;
 
-    public StreamCatalogService(StorageManager dao, FileStorage fileStorage, MLModelRegistryClient modelRegistryClient, Map<String, Object> configuration) {
+    public StreamCatalogService(StorageManager dao, FileStorage fileStorage, MLModelRegistryClient modelRegistryClient) {
         this.dao = dao;
         dao.registerStorables(getStorableClasses());
         this.fileStorage = fileStorage;
         this.topologyDagBuilder = new TopologyDagBuilder(this, modelRegistryClient);
-        this.configFileWriter = new ConfigFileWriter();
-
-        Map<String, String> conf = new HashMap<>();
-        for (Map.Entry<String, Object> confEntry : configuration.entrySet()) {
-            Object value = confEntry.getValue();
-            conf.put(confEntry.getKey(), value == null ? null : value.toString());
-        }
-        this.topologyActionsContainer = new TopologyActionsContainer(this, conf);
-        this.topologyMetricsContainer = new TopologyMetricsContainer(this);
-        this.clusterImporter = new ClusterImporter(this);
     }
 
     public static Collection<Class<? extends Storable>> getStorableClasses() {
@@ -224,296 +168,6 @@ public class StreamCatalogService {
         }
 
         return classes;
-    }
-
-    public Cluster addCluster(Cluster cluster) {
-        if (cluster.getId() == null) {
-            cluster.setId(this.dao.nextId(CLUSTER_NAMESPACE));
-        }
-        if (cluster.getTimestamp() == null) {
-            cluster.setTimestamp(System.currentTimeMillis());
-        }
-        this.dao.add(cluster);
-        return cluster;
-    }
-
-    public Collection<Cluster> listClusters() {
-        return this.dao.list(CLUSTER_NAMESPACE);
-    }
-
-
-    public Collection<Cluster> listClusters(List<QueryParam> params) {
-        return dao.find(CLUSTER_NAMESPACE, params);
-    }
-
-    public Cluster getCluster(Long clusterId) {
-        Cluster cluster = new Cluster();
-        cluster.setId(clusterId);
-        return this.dao.get(new StorableKey(CLUSTER_NAMESPACE, cluster.getPrimaryKey()));
-    }
-
-    public Cluster getClusterByName(String clusterName) {
-        Collection<Cluster> clusters = listClusters(Lists.newArrayList(new QueryParam("name", clusterName)));
-        if (clusters.size() > 1) {
-            LOG.warn("Multiple Clusters have same name: {} returning first match.", clusterName);
-            return clusters.iterator().next();
-        } else if (clusters.size() == 1) {
-            return clusters.iterator().next();
-        }
-        return null;
-    }
-
-    public Cluster removeCluster(Long clusterId) {
-        Cluster cluster = new Cluster();
-        cluster.setId(clusterId);
-        return dao.remove(new StorableKey(CLUSTER_NAMESPACE, cluster.getPrimaryKey()));
-    }
-
-    public Cluster addOrUpdateCluster(Long clusterId, Cluster cluster) {
-        if (cluster.getId() == null) {
-            cluster.setId(clusterId);
-        }
-        if (cluster.getTimestamp() == null) {
-            cluster.setTimestamp(System.currentTimeMillis());
-        }
-        this.dao.addOrUpdate(cluster);
-        return cluster;
-    }
-
-    public Service addService(Service service) {
-        if (service.getId() == null) {
-            service.setId(this.dao.nextId(SERVICE_NAMESPACE));
-        }
-        if (service.getTimestamp() == null) {
-            service.setTimestamp(System.currentTimeMillis());
-        }
-        this.dao.add(service);
-        return service;
-    }
-
-    public Collection<Service> listServices() {
-        return this.dao.list(SERVICE_NAMESPACE);
-    }
-
-    public Collection<Service> listServices(final Long clusterId) {
-        return this.dao.find(SERVICE_NAMESPACE, Collections.singletonList(new QueryParam("clusterId", clusterId.toString())));
-    }
-
-    public Collection<Service> listServices(List<QueryParam> params) {
-        return dao.find(SERVICE_NAMESPACE, params);
-    }
-
-    public Service getService(Long serviceId) {
-        Service service = new Service();
-        service.setId(serviceId);
-        return this.dao.get(new StorableKey(SERVICE_NAMESPACE, service.getPrimaryKey()));
-    }
-
-    public Long getServiceIdByName(Long clusterId, String serviceName) {
-        final Service service = getServiceByName(clusterId, serviceName);
-        return service == null ? null : service.getId();
-    }
-
-    public Service getServiceByName(Long clusterId, String serviceName) {
-        Collection<Service> services = listServices(
-                Lists.newArrayList(new QueryParam("clusterId", String.valueOf(clusterId)), new QueryParam("name", serviceName)));
-        if (services.size() > 1) {
-            LOG.warn("Multiple Services have same name {} in cluster {}. returning first match.", serviceName, clusterId);
-            return services.iterator().next();
-        } else if (services.size() == 1) {
-            return services.iterator().next();
-        }
-        return null;
-    }
-
-    public Service removeService(Long serviceId) {
-        Service service = new Service();
-        service.setId(serviceId);
-        return dao.remove(new StorableKey(SERVICE_NAMESPACE, service.getPrimaryKey()));
-    }
-
-    public Service addOrUpdateService(Long clusterId, Service service) {
-        return addOrUpdateService(clusterId, service.getId(), service);
-    }
-
-    public Service addOrUpdateService(Long clusterId, Long componentId, Service service) {
-        service.setClusterId(clusterId);
-        service.setId(componentId);
-        if (service.getTimestamp() == null) {
-            service.setTimestamp(System.currentTimeMillis());
-        }
-        this.dao.addOrUpdate(service);
-        return service;
-    }
-
-    public Component addComponent(Component component) {
-        if (component.getId() == null) {
-            component.setId(this.dao.nextId(COMPONENT_NAMESPACE));
-        }
-        if (component.getTimestamp() == null) {
-            component.setTimestamp(System.currentTimeMillis());
-        }
-        this.dao.add(component);
-        return component;
-    }
-
-    public Collection<Component> listComponents() {
-        return this.dao.list(COMPONENT_NAMESPACE);
-    }
-
-    public Collection<Component> listComponents(final Long serviceId) {
-        return dao.find(COMPONENT_NAMESPACE, Collections.singletonList(new QueryParam("serviceId", serviceId.toString())));
-    }
-
-    public Collection<Component> listComponents(List<QueryParam> queryParams) {
-        return dao.find(COMPONENT_NAMESPACE, queryParams);
-    }
-
-    public Component getComponent(Long componentId) {
-        Component component = new Component();
-        component.setId(componentId);
-        return this.dao.get(new StorableKey(COMPONENT_NAMESPACE, component.getPrimaryKey()));
-    }
-
-    public Component getComponentByName(Long serviceId, String componentName) {
-        Collection<Component> components = listComponents(Lists.newArrayList(
-                new QueryParam("serviceId", String.valueOf(serviceId)), new QueryParam("name", componentName)));
-        if (components.size() > 1) {
-            LOG.warn("Multiple Components have same name {} in service {}. returning first match.",
-                     componentName, serviceId);
-            return components.iterator().next();
-        } else if (components.size() == 1) {
-            return components.iterator().next();
-        }
-        return null;
-    }
-
-    public Component removeComponent(Long componentId) {
-        Component component = new Component();
-        component.setId(componentId);
-        return dao.remove(new StorableKey(COMPONENT_NAMESPACE, component.getPrimaryKey()));
-    }
-
-    public Component addOrUpdateComponent(Long serviceId, Component component) {
-        return addOrUpdateComponent(serviceId, component.getId(), component);
-    }
-
-    public Component addOrUpdateComponent(Long serviceId, Long componentId, Component component) {
-        component.setServiceId(serviceId);
-        component.setId(componentId);
-        if (component.getTimestamp() == null) {
-            component.setTimestamp(System.currentTimeMillis());
-        }
-        this.dao.addOrUpdate(component);
-        return component;
-    }
-
-    public Collection<ServiceConfiguration> listServiceConfigurations() {
-        return this.dao.list(SERVICE_CONFIGURATION_NAMESPACE);
-    }
-
-    public Collection<ServiceConfiguration> listServiceConfigurations(final Long serviceId) {
-        return dao.find(SERVICE_CONFIGURATION_NAMESPACE, Collections.singletonList(new QueryParam("serviceId", serviceId.toString())));
-    }
-
-    public Collection<ServiceConfiguration> listServiceConfigurations(
-            List<QueryParam> queryParams) {
-        return dao.find(SERVICE_CONFIGURATION_NAMESPACE, queryParams);
-    }
-
-    public ServiceConfiguration getServiceConfiguration(Long configurationId) {
-        ServiceConfiguration serviceConfiguration = new ServiceConfiguration();
-        serviceConfiguration.setId(configurationId);
-        return this.dao.get(new StorableKey(SERVICE_CONFIGURATION_NAMESPACE, serviceConfiguration.getPrimaryKey()));
-    }
-
-    public ServiceConfiguration getServiceConfigurationByName(Long serviceId, String configurationName) {
-        Collection<ServiceConfiguration> configurations = listServiceConfigurations(Lists.newArrayList(
-                new QueryParam("serviceId", String.valueOf(serviceId)), new QueryParam("name", configurationName)));
-        if (configurations.size() > 1) {
-            LOG.warn("Multiple ServiceConfigurations have same name {} in service {}. returning first match.",
-                     configurationName, serviceId);
-            return configurations.iterator().next();
-        } else if (configurations.size() == 1) {
-            return configurations.iterator().next();
-        }
-        return null;
-    }
-
-    public ServiceConfiguration removeServiceConfiguration(Long configurationId) {
-        ServiceConfiguration serviceConfiguration = new ServiceConfiguration();
-        serviceConfiguration.setId(configurationId);
-        return this.dao.remove(new StorableKey(SERVICE_CONFIGURATION_NAMESPACE, serviceConfiguration.getPrimaryKey()));
-    }
-
-    public ServiceConfiguration addServiceConfiguration(ServiceConfiguration serviceConfiguration) {
-        if (serviceConfiguration.getId() == null) {
-            serviceConfiguration.setId(this.dao.nextId(SERVICE_CONFIGURATION_NAMESPACE));
-        }
-        if (serviceConfiguration.getTimestamp() == null) {
-            serviceConfiguration.setTimestamp(System.currentTimeMillis());
-        }
-        this.dao.add(serviceConfiguration);
-        return serviceConfiguration;
-    }
-
-    public ServiceConfiguration addOrUpdateServiceConfiguration(Long serviceId,
-                                                                ServiceConfiguration serviceConfiguration) {
-        return addOrUpdateServiceConfiguration(serviceId, serviceConfiguration.getId(), serviceConfiguration);
-    }
-
-    public ServiceConfiguration addOrUpdateServiceConfiguration(Long serviceId, Long serviceConfigurationId,
-                                                                ServiceConfiguration serviceConfiguration) {
-        serviceConfiguration.setServiceId(serviceId);
-        serviceConfiguration.setId(serviceConfigurationId);
-        if (serviceConfiguration.getTimestamp() == null) {
-            serviceConfiguration.setTimestamp(System.currentTimeMillis());
-        }
-        this.dao.addOrUpdate(serviceConfiguration);
-        return serviceConfiguration;
-    }
-
-    public Map<String, Object> getDeserializedConfiguration(String clusterName, String serviceName,
-                                                            String serviceConfiguraionName) throws IOException {
-        Cluster cluster = getClusterByName(clusterName);
-        if (cluster == null) {
-            return null;
-        }
-
-        Service service = getServiceByName(cluster.getId(), serviceName);
-        if (service == null) {
-            return null;
-        }
-
-        ServiceConfiguration serviceConfiguration = getServiceConfigurationByName(service.getId(), serviceConfiguraionName);
-        if (serviceConfiguration == null) {
-            return null;
-        }
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.readValue(serviceConfiguration.getConfiguration(), Map.class);
-    }
-
-    public Object lookupConfiguration(String clusterName, String serviceName,
-                                      String serviceConfiguraionName, String configKey) throws IOException {
-        Cluster cluster = getClusterByName(clusterName);
-        if (cluster == null) {
-            return null;
-        }
-
-        Service service = getServiceByName(cluster.getId(), serviceName);
-        if (service == null) {
-            return null;
-        }
-
-        ServiceConfiguration serviceConfiguration = getServiceConfigurationByName(service.getId(), serviceConfiguraionName);
-        if (serviceConfiguration == null) {
-            return null;
-        }
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        Map<String, Object> conf = objectMapper.readValue(serviceConfiguration.getConfiguration(), Map.class);
-        return conf.get(configKey);
     }
 
     public NotifierInfo addNotifierInfo(NotifierInfo notifierInfo) {
@@ -910,69 +564,6 @@ public class StreamCatalogService {
         return topologyComponent;
     }
 
-    public Topology validateTopology(URL schema, Long topologyId)
-            throws Exception {
-        Topology ds = new Topology();
-        ds.setId(topologyId);
-        Topology result = this.dao.get(ds.getStorableKey());
-        boolean isValidAsPerSchema;
-        if (result != null) {
-            String json = result.getConfig();
-            // first step is to validate against json schema provided
-            isValidAsPerSchema = JsonSchemaValidator
-                    .isValidJsonAsPerSchema(schema, json);
-
-            if (!isValidAsPerSchema) {
-                throw new ComponentConfigException("Topology with id "
-                        + topologyId + " failed to validate against json "
-                        + "schema");
-            }
-            // if first step succeeds, proceed to other validations that
-            // cannot be covered using json schema
-            TopologyLayoutValidator validator = new TopologyLayoutValidator(json);
-            validator.validate();
-
-            TopologyActions topologyActions = getTopologyActionsInstance(ds);
-
-            // finally pass it on for streaming engine based config validations
-            topologyActions.validate(getTopologyLayout(result));
-        }
-        return result;
-    }
-
-    public void deployTopology(Topology topology) throws Exception {
-        TopologyDag dag = topologyDagBuilder.getDag(topology);
-        topology.setTopologyDag(dag);
-        ensureValid(dag);
-        TopologyActions topologyActions = getTopologyActionsInstance(topology);
-        LOG.debug("Deploying topology {}", topology);
-        setUpClusterArtifacts(topology, topologyActions);
-        String mavenArtifacts = setUpExtraJars(topology, topologyActions);
-        topologyActions.deploy(getTopologyLayout(topology), mavenArtifacts);
-    }
-
-    /* Should have
-     * at-least 1 processor
-     * OR
-     * at-least 1 source with an edge.
-     */
-    private void ensureValid(TopologyDag dag) {
-        if (dag.getComponents().isEmpty()) {
-            throw new IllegalStateException("Empty topology");
-        }
-        java.util.Optional<OutputComponent> processor = dag.getOutputComponents().stream()
-                .filter(x -> x instanceof StreamlineProcessor)
-                .findFirst();
-        if (!processor.isPresent()) {
-            java.util.Optional<OutputComponent> sourceWithOutgoingEdge = dag.getOutputComponents().stream()
-                    .filter(x -> x instanceof StreamlineSource && !dag.getEdgesFrom(x).isEmpty())
-                    .findFirst();
-            if (!sourceWithOutgoingEdge.isPresent()) {
-                throw new IllegalStateException("Topology does not contain a processor or a source with an outgoing edge");
-            }
-        }
-    }
-
     public String exportTopology(Topology topology) throws Exception {
         Preconditions.checkNotNull(topology);
         TopologyData topologyData = doExportTopology(topology);
@@ -1177,192 +768,6 @@ public class StreamCatalogService {
             namespaceId = topology.getNamespaceId();
         }
         return importTopology(namespaceId, exported);
-    }
-
-    // Copies all the extra jars needed for deploying the topology to extraJarsLocation and returns
-    // a string representing all additional maven modules needed for deploying the topology
-    private String setUpExtraJars(Topology topology, TopologyActions topologyActions) throws IOException {
-        StormTopologyExtraJarsHandler extraJarsHandler = new StormTopologyExtraJarsHandler(this);
-        topology.getTopologyDag().traverse(extraJarsHandler);
-        Path extraJarsLocation = topologyActions.getExtraJarsLocation(getTopologyLayout(topology));
-        makeEmptyDir(extraJarsLocation);
-        Set<String> extraJars = new HashSet<>();
-        extraJars.addAll(extraJarsHandler.getExtraJars());
-        extraJars.addAll(getBundleJars(extraJarsHandler.getTopologyComponentBundleSet()));
-        downloadAndCopyJars(extraJars, extraJarsLocation);
-        return extraJarsHandler.getMavenDeps();
-    }
-
-    private Set<String> getBundleJars (Set<TopologyComponentBundle> bundlesToDeploy) throws IOException {
-        Set<String> bundleJars = new HashSet<>();
-        for (TopologyComponentBundle topologyComponentBundle: bundlesToDeploy) {
-            bundleJars.add(topologyComponentBundle.getBundleJar());
-        }
-        return bundleJars;
-    }
-
-    private void downloadAndCopyJars (Set<String> jarsToDownload, Path destinationPath) throws IOException {
-        Set<String> copiedJars = new HashSet<>();
-        for (String jar: jarsToDownload) {
-            if (!copiedJars.contains(jar)) {
-                File destPath = Paths.get(destinationPath.toString(), Paths.get(jar).getFileName().toString()).toFile();
-                try (InputStream src = fileStorage.downloadFile(jar);
-                     FileOutputStream dest = new FileOutputStream(destPath)
-                ) {
-                    IOUtils.copy(src, dest);
-                    copiedJars.add(jar);
-                    LOG.debug("Jar {} copied to {}", jar, destPath);
-                }
-            }
-        }
-    }
-
-    private void setUpClusterArtifacts(Topology topology, TopologyActions topologyActions) throws IOException {
-        Namespace namespace = getNamespace(topology.getNamespaceId());
-        if (namespace == null) {
-            throw new RuntimeException("Corresponding namespace not found: " + topology.getNamespaceId());
-        }
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        Path artifactsDir = topologyActions.getArtifactsLocation(getTopologyLayout(topology));
-        makeEmptyDir(artifactsDir);
-
-        Collection<NamespaceServiceClusterMapping> serviceClusterMappings = listServiceClusterMapping(namespace.getId());
-        for (NamespaceServiceClusterMapping serviceClusterMapping : serviceClusterMappings) {
-            Service service = getServiceByName(serviceClusterMapping.getClusterId(),
-                    serviceClusterMapping.getServiceName());
-            if (service != null) {
-                Collection<ServiceConfiguration> serviceConfigurations = listServiceConfigurations(service.getId());
-                if (serviceConfigurations != null) {
-                    for (ServiceConfiguration serviceConfiguration : serviceConfigurations) {
-                        writeConfigurationFile(objectMapper, artifactsDir, serviceConfiguration);
-                    }
-                }
-            }
-        }
-    }
-
-    private void makeEmptyDir(Path path) throws IOException {
-        if (path.toFile().exists()) {
-            if (path.toFile().isDirectory()) {
-                FileUtils.cleanDirectory(path.toFile());
-            } else {
-                final String errorMessage = String.format("Location '%s' must be a directory.", path);
-                LOG.error(errorMessage);
-                throw new IOException(errorMessage);
-            }
-        } else if (!path.toFile().mkdirs()) {
-            LOG.error("Could not create dir {}", path);
-            throw new IOException("Could not create dir: " + path);
-        }
-    }
-
-    // Only known configuration files will be saved to local
-    private void writeConfigurationFile(ObjectMapper objectMapper, Path artifactsDir,
-                                        ServiceConfiguration configuration) throws IOException {
-        String filename = configuration.getFilename();
-        if (filename != null && !filename.isEmpty()) {
-            // Configuration itself is aware of file name
-            ConfigFileType fileType = ConfigFileType.getFileTypeFromFileName(filename);
-
-            if (fileType != null) {
-                File destPath = Paths.get(artifactsDir.toString(), filename).toFile();
-
-                Map<String, Object> conf = objectMapper.readValue(configuration.getConfiguration(), Map.class);
-
-                try {
-                    configFileWriter.writeConfigToFile(fileType, conf, destPath);
-                    LOG.debug("Resource {} written to {}", filename, destPath);
-                } catch (IllegalArgumentException e) {
-                    LOG.warn("Don't know how to write resource {} skipping...", filename);
-                }
-            }
-        }
-    }
-
-    public void killTopology(Topology topology) throws Exception {
-        TopologyActions topologyActions = getTopologyActionsInstance(topology);
-        topologyActions.kill(getTopologyLayout(topology));
-    }
-
-    public void suspendTopology(Topology topology) throws Exception {
-        TopologyActions topologyActions = getTopologyActionsInstance(topology);
-        topologyActions.suspend(getTopologyLayout(topology));
-    }
-
-    public void resumeTopology(Topology topology) throws Exception {
-        TopologyActions topologyActions = getTopologyActionsInstance(topology);
-        topologyActions.resume(getTopologyLayout(topology));
-    }
-
-    public TopologyActions.Status topologyStatus(Topology topology) throws Exception {
-        TopologyActions topologyActions = getTopologyActionsInstance(topology);
-        return topologyActions.status(getTopologyLayout(topology));
-    }
-
-    public String getRuntimeTopologyId(Topology topology) throws IOException {
-        TopologyActions topologyActions = getTopologyActionsInstance(topology);
-        return topologyActions.getRuntimeTopologyId(getTopologyLayout(topology));
-    }
-
-    public Map<String, TopologyMetrics.ComponentMetric> getTopologyMetrics(Topology topology) throws IOException {
-        TopologyMetrics topologyMetrics = getTopologyMetricsInstance(topology);
-        return topologyMetrics.getMetricsForTopology(getTopologyLayout(topology));
-    }
-
-    public Map<Long, Double> getCompleteLatency(Topology topology, TopologyComponent component, long from, long to) throws Exception {
-        TopologyMetrics topologyMetrics = getTopologyMetricsInstance(topology);
-        return topologyMetrics.getCompleteLatency(getTopologyLayout(topology), getComponentLayout(component), from, to);
-    }
-
-    public TopologyTimeSeriesMetrics.TimeSeriesComponentMetric getTopologyStats(Topology topology, Long from, Long to) throws IOException {
-        TopologyMetrics topologyMetrics = getTopologyMetricsInstance(topology);
-        return topologyMetrics.getTopologyStats(getTopologyLayout(topology), from, to);
-    }
-
-    public TopologyTimeSeriesMetrics.TimeSeriesComponentMetric getComponentStats(Topology topology, TopologyComponent component, Long from, Long to) throws IOException {
-        TopologyMetrics topologyMetrics = getTopologyMetricsInstance(topology);
-        return topologyMetrics.getComponentStats(getTopologyLayout(topology), getComponentLayout(component), from, to);
-    }
-
-    public Map<String, Map<Long, Double>> getKafkaTopicOffsets(Topology topology, TopologyComponent component, Long from, Long to) throws IOException {
-        TopologyMetrics topologyMetrics = getTopologyMetricsInstance(topology);
-        return topologyMetrics.getkafkaTopicOffsets(getTopologyLayout(topology), getComponentLayout(component), from, to);
-    }
-
-    public TopologyMetrics.TopologyMetric getTopologyMetric(Topology topology) throws IOException {
-        TopologyMetrics topologyMetrics = getTopologyMetricsInstance(topology);
-        return topologyMetrics.getTopologyMetric(getTopologyLayout(topology));
-    }
-
-    public List<Pair<String, Double>> getTopNAndOtherComponentsLatency(Topology topology, int nOfTopN) throws IOException {
-        TopologyMetrics topologyMetrics = getTopologyMetricsInstance(topology);
-        Map<String, TopologyMetrics.ComponentMetric> metricsForTopology = topologyMetrics
-            .getMetricsForTopology(getTopologyLayout(topology));
-
-        List<Pair<String, Double>> topNAndOther = new ArrayList<>();
-
-        List<ImmutablePair<String, Double>> latencyOrderedComponents = metricsForTopology.entrySet().stream()
-                .map((x) -> new ImmutablePair<>(x.getValue().getComponentName(), x.getValue().getProcessedTime()))
-                // reversed sort
-                .sorted((c1, c2) -> {
-                    if (c2.getValue() == null) {
-                        // assuming c1 is bigger
-                        return -1;
-                    } else {
-                        return c2.getValue().compareTo(c1.getValue());
-                    }
-                })
-                .collect(toList());
-
-        latencyOrderedComponents.stream().limit(nOfTopN).forEachOrdered(topNAndOther::add);
-        double sumLatencyOthers = latencyOrderedComponents.stream()
-                .skip(nOfTopN).filter((x) -> x.getValue() != null)
-                .mapToDouble(Pair::getValue).sum();
-
-        topNAndOther.add(new ImmutablePair<>("Others", sumLatencyOthers));
-
-        return topNAndOther;
     }
 
     public Collection<TopologyComponentBundle.TopologyComponentType> listTopologyComponentBundleTypes() {
@@ -2765,59 +2170,6 @@ public class StreamCatalogService {
         return udfInfo;
     }
 
-    public Cluster importClusterServices(ServiceNodeDiscoverer serviceNodeDiscoverer, Cluster cluster) throws Exception {
-
-        return clusterImporter.importCluster(serviceNodeDiscoverer, cluster);
-    }
-
-    public Service initializeService(Cluster cluster, String serviceName) {
-        Service service = new Service();
-        service.setId(this.dao.nextId(SERVICE_NAMESPACE));
-        service.setName(serviceName);
-        service.setClusterId(cluster.getId());
-        service.setTimestamp(System.currentTimeMillis());
-        return service;
-    }
-
-    public Component initializeComponent(Service service, String componentName, List<String> hosts) {
-        Component component = new Component();
-        component.setId(this.dao.nextId(COMPONENT_NAMESPACE));
-        component.setName(componentName);
-        component.setServiceId(service.getId());
-        component.setTimestamp(System.currentTimeMillis());
-        component.setHosts(hosts);
-        return component;
-    }
-
-    public ServiceConfiguration initializeServiceConfiguration(ObjectMapper objectMapper, Long serviceId,
-                                                                String confType, String actualFileName, Map<String, Object> configuration) throws JsonProcessingException {
-        ServiceConfiguration conf = new ServiceConfiguration();
-        conf.setId(this.dao.nextId(SERVICE_CONFIGURATION_NAMESPACE));
-        conf.setName(confType);
-        conf.setServiceId(serviceId);
-        conf.setFilename(actualFileName);
-        conf.setConfiguration(objectMapper.writeValueAsString(configuration));
-        conf.setTimestamp(System.currentTimeMillis());
-        return conf;
-    }
-
-    private TopologyLayout getTopologyLayout(Topology topology) throws IOException {
-        return new TopologyLayout(topology.getId(), topology.getName(),
-                                  topology.getConfig(), topology.getTopologyDag());
-    }
-
-    private org.apache.streamline.streams.layout.component.Component getComponentLayout(TopologyComponent component) {
-        StreamlineComponent componentLayout = new StreamlineComponent() {
-            @Override
-            public void accept(TopologyDagVisitor visitor) {
-                throw new UnsupportedOperationException("Not intended to be called here.");
-            }
-        };
-        componentLayout.setId(component.getId().toString());
-        componentLayout.setName(component.getName());
-        return componentLayout;
-    }
-
     private void loadTransformationClassForBundle (TopologyComponentBundle topologyComponentBundle, InputStream bundleJar) {
         if (topologyComponentBundle.getStreamingEngine().equals(TopologyLayoutConstants.STORM_STREAMING_ENGINE)) {
             if (topologyComponentBundle.getBuiltin()) {
@@ -2866,139 +2218,7 @@ public class StreamCatalogService {
         return bundleJarFileName;
     }
 
-    public Collection<Namespace> listNamespaces() {
-        return this.dao.list(NAMESPACE_NAMESPACE);
-    }
-
-    public Collection<Namespace> listNamespaces(List<QueryParam> params) {
-        return dao.find(NAMESPACE_NAMESPACE, params);
-    }
-
-    public Namespace getNamespace(Long namespaceId) {
-        Namespace namespace = new Namespace();
-        namespace.setId(namespaceId);
-        return this.dao.get(new StorableKey(NAMESPACE_NAMESPACE, namespace.getPrimaryKey()));
-    }
-
-    public Namespace getNamespaceByName(String namespaceName) {
-        Collection<Namespace> namespaces = listNamespaces(Lists.newArrayList(new QueryParam("name", namespaceName)));
-        if (namespaces.size() > 1) {
-            LOG.warn("Multiple Namespaces have same name: {} returning first match.", namespaceName);
-            return namespaces.iterator().next();
-        } else if (namespaces.size() == 1) {
-            return namespaces.iterator().next();
-        }
-        return null;
-    }
-
-    public Namespace addNamespace(Namespace namespace) {
-        if (namespace.getId() == null) {
-            namespace.setId(this.dao.nextId(NAMESPACE_NAMESPACE));
-        }
-        if (namespace.getTimestamp() == null) {
-            namespace.setTimestamp(System.currentTimeMillis());
-        }
-        this.dao.add(namespace);
-        return namespace;
-    }
-
-    public Namespace removeNamespace(Long namespaceId) {
-        Namespace namespace = new Namespace();
-        namespace.setId(namespaceId);
-        Namespace ret = this.dao.remove(new StorableKey(NAMESPACE_NAMESPACE, namespace.getPrimaryKey()));
-        invalidateTopologyActionsMetricsInstances(namespaceId);
-        return ret;
-    }
-
-    public Namespace addOrUpdateNamespace(Long namespaceId, Namespace namespace) {
-        if (namespace.getId() == null) {
-            namespace.setId(namespaceId);
-        }
-        if (namespace.getTimestamp() == null) {
-            namespace.setTimestamp(System.currentTimeMillis());
-        }
-        this.dao.addOrUpdate(namespace);
-        return namespace;
-    }
-
-    public Collection<NamespaceServiceClusterMapping> listServiceClusterMapping(Long namespaceId) {
-        return this.dao.find(NAMESPACE_SERVICE_CLUSTER_MAPPING_NAMESPACE,
-                Lists.newArrayList(new QueryParam("namespaceId", namespaceId.toString())));
-    }
-
-    public Collection<NamespaceServiceClusterMapping> listServiceClusterMapping(Long namespaceId, String serviceName) {
-        return this.dao.find(NAMESPACE_SERVICE_CLUSTER_MAPPING_NAMESPACE,
-                Lists.newArrayList(new QueryParam("namespaceId", namespaceId.toString()),
-                        new QueryParam("serviceName", serviceName)));
-    }
-
-    public NamespaceServiceClusterMapping getServiceClusterMapping(Long namespaceId,
-                                                                   String serviceName, Long clusterId) {
-        StorableKey key = getStorableKeyForNamespaceServiceClusterMapping(namespaceId, serviceName, clusterId);
-        return this.dao.get(key);
-    }
-
-    public NamespaceServiceClusterMapping removeServiceClusterMapping(Long namespaceId, String serviceName, Long clusterId) {
-        StorableKey key = getStorableKeyForNamespaceServiceClusterMapping(namespaceId, serviceName, clusterId);
-        NamespaceServiceClusterMapping ret = this.dao.remove(key);
-        invalidateTopologyActionsMetricsInstances(namespaceId);
-        return ret;
-    }
-
-    public NamespaceServiceClusterMapping addOrUpdateServiceClusterMapping(
-            NamespaceServiceClusterMapping newMapping) {
-        this.dao.addOrUpdate(newMapping);
-        invalidateTopologyActionsMetricsInstances(newMapping.getNamespaceId());
-        return newMapping;
-    }
-
-    private StorableKey getStorableKeyForNamespaceServiceClusterMapping(Long namespaceId, String serviceName,
-                                                                        Long clusterId) {
-        NamespaceServiceClusterMapping mapping = new NamespaceServiceClusterMapping();
-        mapping.setNamespaceId(namespaceId);
-        mapping.setServiceName(serviceName);
-        mapping.setClusterId(clusterId);
-        return new StorableKey(NAMESPACE_SERVICE_CLUSTER_MAPPING_NAMESPACE,
-                mapping.getPrimaryKey());
-    }
-
     private Collection<FileInfo> listFiles(List<QueryParam> queryParams) {
         return dao.find(FileInfo.NAME_SPACE, queryParams);
     }
-
-    private TopologyActions getTopologyActionsInstance(Topology ds) {
-        Namespace namespace = getNamespace(ds.getNamespaceId());
-        if (namespace == null) {
-            throw new RuntimeException("Corresponding namespace not found: " + ds.getNamespaceId());
-        }
-
-        TopologyActions topologyActions = topologyActionsContainer.findInstance(namespace);
-        if (topologyActions == null) {
-            throw new RuntimeException("Can't find Topology Actions for such namespace " + ds.getNamespaceId());
-        }
-        return topologyActions;
-    }
-
-    private TopologyMetrics getTopologyMetricsInstance(Topology ds) {
-        Namespace namespace = getNamespace(ds.getNamespaceId());
-        if (namespace == null) {
-            throw new RuntimeException("Corresponding namespace not found: " + ds.getNamespaceId());
-        }
-
-        TopologyMetrics topologyMetrics = topologyMetricsContainer.findInstance(namespace);
-        if (topologyMetrics == null) {
-            throw new RuntimeException("Can't find Topology Metrics for such namespace " + ds.getNamespaceId());
-        }
-        return topologyMetrics;
-    }
-
-    private void invalidateTopologyActionsMetricsInstances(Long namespaceId) {
-        try {
-            topologyActionsContainer.invalidateInstance(namespaceId);
-            topologyMetricsContainer.invalidateInstance(namespaceId);
-        } catch (Throwable e) {
-            // swallow
-        }
-    }
-
 }

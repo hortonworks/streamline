@@ -26,16 +26,19 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.streamline.common.util.ParallelStreamUtil;
 import org.apache.streamline.common.util.WSUtils;
+import org.apache.streamline.streams.actions.TopologyActions;
+import org.apache.streamline.streams.actions.topology.service.TopologyActionsService;
 import org.apache.streamline.streams.catalog.Namespace;
 import org.apache.streamline.streams.catalog.Topology;
 import org.apache.streamline.streams.catalog.TopologyVersionInfo;
+import org.apache.streamline.streams.catalog.service.EnvironmentService;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.catalog.topology.TopologyData;
-import org.apache.streamline.streams.layout.component.TopologyActions;
 import org.apache.streamline.streams.storm.common.TopologyNotAliveException;
 import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
 import org.apache.streamline.common.exception.service.exception.request.BadRequestException;
 import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import org.apache.streamline.streams.metrics.topology.service.TopologyMetricsService;
 import org.apache.streamline.streams.storm.common.StormNotReachableException;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
@@ -61,13 +64,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -92,9 +90,16 @@ public class TopologyCatalogResource {
             .getResource("assets/schemas/topology.json");
 
     private final StreamCatalogService catalogService;
+    private final EnvironmentService environmentService;
+    private final TopologyActionsService actionsService;
+    private final TopologyMetricsService metricsService;
 
-    public TopologyCatalogResource(StreamCatalogService catalogService) {
+    public TopologyCatalogResource(StreamCatalogService catalogService, EnvironmentService environmentService,
+                                   TopologyActionsService actionsService, TopologyMetricsService metricsService) {
         this.catalogService = catalogService;
+        this.environmentService = environmentService;
+        this.actionsService = actionsService;
+        this.metricsService = metricsService;
     }
 
     @GET
@@ -330,7 +335,7 @@ public class TopologyCatalogResource {
     public Response topologyStatus (@PathParam("topologyId") Long topologyId) throws Exception {
         Topology result = catalogService.getTopology(topologyId);
         if (result != null) {
-            TopologyActions.Status status = catalogService.topologyStatus(result);
+            TopologyActions.Status status = actionsService.topologyStatus(result);
             return WSUtils.respondEntity(status, OK);
         }
 
@@ -344,7 +349,7 @@ public class TopologyCatalogResource {
                                           @PathParam("versionId") Long versionId) throws Exception {
         Topology result = catalogService.getTopology(topologyId, versionId);
         if (result != null) {
-            TopologyActions.Status status = catalogService.topologyStatus(result);
+            TopologyActions.Status status = actionsService.topologyStatus(result);
             return WSUtils.respondEntity(status, OK);
         }
 
@@ -385,7 +390,7 @@ public class TopologyCatalogResource {
         Topology result = catalogService.getTopology(topologyId);
         if (result != null) {
 //TODO: fix     catalogService.validateTopology(SCHEMA, topologyId);
-            catalogService.deployTopology(result);
+            actionsService.deployTopology(result);
             return WSUtils.respondEntity(result, OK);
         }
 
@@ -400,7 +405,7 @@ public class TopologyCatalogResource {
         Topology result = catalogService.getTopology(topologyId, versionId);
         if (result != null) {
 //TODO: fix     catalogService.validateTopology(SCHEMA, topologyId);
-            catalogService.deployTopology(result);
+            actionsService.deployTopology(result);
             return WSUtils.respondEntity(result, OK);
         }
 
@@ -413,7 +418,7 @@ public class TopologyCatalogResource {
     public Response killTopology (@PathParam("topologyId") Long topologyId) throws Exception {
         Topology result = catalogService.getTopology(topologyId);
         if (result != null) {
-            catalogService.killTopology(result);
+            actionsService.killTopology(result);
             return WSUtils.respondEntity(result, OK);
         }
 
@@ -427,7 +432,7 @@ public class TopologyCatalogResource {
                                         @PathParam("versionId") Long versionId) throws Exception {
         Topology result = catalogService.getTopology(topologyId, versionId);
         if (result != null) {
-            catalogService.killTopology(result);
+            actionsService.killTopology(result);
             return WSUtils.respondEntity(result, OK);
         }
 
@@ -440,7 +445,7 @@ public class TopologyCatalogResource {
     public Response suspendTopology (@PathParam("topologyId") Long topologyId) throws Exception {
         Topology result = catalogService.getTopology(topologyId);
         if (result != null) {
-            catalogService.suspendTopology(result);
+            actionsService.suspendTopology(result);
             return WSUtils.respondEntity(result, OK);
         }
 
@@ -454,7 +459,7 @@ public class TopologyCatalogResource {
                                            @PathParam("versionId") Long versionId) throws Exception {
         Topology result = catalogService.getTopology(topologyId, versionId);
         if (result != null) {
-            catalogService.suspendTopology(result);
+            actionsService.suspendTopology(result);
             return WSUtils.respondEntity(result, OK);
         }
 
@@ -467,7 +472,7 @@ public class TopologyCatalogResource {
     public Response resumeTopology (@PathParam("topologyId") Long topologyId) throws Exception {
         Topology result = catalogService.getTopology(topologyId);
         if (result != null) {
-            catalogService.resumeTopology(result);
+            actionsService.resumeTopology(result);
             return WSUtils.respondEntity(result, OK);
         }
 
@@ -481,7 +486,7 @@ public class TopologyCatalogResource {
                                           @PathParam("versionId") Long versionId) throws Exception {
         Topology result = catalogService.getTopology(topologyId, versionId);
         if (result != null) {
-            catalogService.resumeTopology(result);
+            actionsService.resumeTopology(result);
             return WSUtils.respondEntity(result, OK);
         }
 
@@ -588,15 +593,15 @@ public class TopologyCatalogResource {
             TopologyDetailedResponse detailedResponse;
 
             String namespaceName = null;
-            Namespace namespace = catalogService.getNamespace(topology.getNamespaceId());
+            Namespace namespace = environmentService.getNamespace(topology.getNamespaceId());
             if (namespace != null) {
                 namespaceName = namespace.getName();
             }
 
             try {
-                String runtimeTopologyId = catalogService.getRuntimeTopologyId(topology);
-                TopologyMetrics.TopologyMetric topologyMetric = catalogService.getTopologyMetric(topology);
-                List<Pair<String, Double>> latenciesTopN = catalogService.getTopNAndOtherComponentsLatency(topology, latencyTopN);
+                String runtimeTopologyId = actionsService.getRuntimeTopologyId(topology);
+                TopologyMetrics.TopologyMetric topologyMetric = metricsService.getTopologyMetric(topology);
+                List<Pair<String, Double>> latenciesTopN = metricsService.getTopNAndOtherComponentsLatency(topology, latencyTopN);
 
                 detailedResponse = new TopologyDetailedResponse(topology, TopologyRunningStatus.RUNNING, namespaceName);
                 detailedResponse.setRuntime(new TopologyRuntimeResponse(runtimeTopologyId, topologyMetric, latenciesTopN));

@@ -16,6 +16,7 @@
         <module>runtime</module>
         <module>metrics</module>
         <module>common</module>
+        <module>actions</module>
     </modules>
 
 

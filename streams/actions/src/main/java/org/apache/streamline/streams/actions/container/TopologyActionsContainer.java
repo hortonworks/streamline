@@ -1,13 +1,14 @@
-package org.apache.streamline.streams.catalog.container;
+package org.apache.streamline.streams.actions.container;
 
+import org.apache.streamline.streams.actions.TopologyActions;
 import org.apache.streamline.streams.catalog.Component;
 import org.apache.streamline.streams.catalog.Namespace;
 import org.apache.streamline.streams.catalog.Service;
-import org.apache.streamline.streams.catalog.container.mapping.MappedTopologyActionsImpl;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import org.apache.streamline.streams.catalog.container.NamespaceAwareContainer;
+import org.apache.streamline.streams.actions.container.mapping.MappedTopologyActionsImpl;
+import org.apache.streamline.streams.catalog.service.EnvironmentService;
 import org.apache.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.streamline.streams.layout.component.TopologyActions;
 
 import java.util.HashMap;
 import java.util.List;
@@ -24,8 +25,8 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
 
     private final Map<String, String> streamlineConf;
 
-    public TopologyActionsContainer(StreamCatalogService catalogService, Map<String, String> streamlineConf) {
-        super(catalogService);
+    public TopologyActionsContainer(EnvironmentService environmentService, Map<String, String> streamlineConf) {
+        super(environmentService);
         this.streamlineConf = streamlineConf;
     }
 

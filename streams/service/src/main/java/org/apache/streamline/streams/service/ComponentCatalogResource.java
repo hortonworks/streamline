@@ -6,6 +6,7 @@ import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.Cluster;
 import org.apache.streamline.streams.catalog.Component;
 import org.apache.streamline.streams.catalog.Service;
+import org.apache.streamline.streams.catalog.service.EnvironmentService;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.common.exception.service.exception.request.EntityAlreadyExistsException;
 import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
@@ -33,10 +34,10 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Produces(MediaType.APPLICATION_JSON)
 
 public class ComponentCatalogResource {
-    private final StreamCatalogService catalogService;
+    private final EnvironmentService environmentService;
 
-    public ComponentCatalogResource(StreamCatalogService catalogService) {
-        this.catalogService = catalogService;
+    public ComponentCatalogResource(EnvironmentService environmentService) {
+        this.environmentService = environmentService;
     }
 
     /**
@@ -47,7 +48,7 @@ public class ComponentCatalogResource {
     @Timed
     public Response listComponents(@PathParam("serviceId") Long serviceId, @Context UriInfo uriInfo) {
         List<QueryParam> queryParams = buildServiceIdAwareQueryParams(serviceId, uriInfo);
-        Collection<Component> components = catalogService.listComponents(queryParams);
+        Collection<Component> components = environmentService.listComponents(queryParams);
         if (components != null) {
             return WSUtils.respondEntities(components, OK);
         }
@@ -63,19 +64,19 @@ public class ComponentCatalogResource {
     @Timed
     public Response listComponentsByName(@PathParam("clusterName") String clusterName,
         @PathParam("serviceName") String serviceName, @Context UriInfo uriInfo) {
-        Cluster cluster = catalogService.getClusterByName(clusterName);
+        Cluster cluster = environmentService.getClusterByName(clusterName);
         if (cluster == null) {
             throw EntityNotFoundException.byName("cluster name " + clusterName);
         }
 
-        Service service = catalogService.getServiceByName(cluster.getId(), serviceName);
+        Service service = environmentService.getServiceByName(cluster.getId(), serviceName);
         if (service == null) {
             throw EntityNotFoundException.byName("service name " + serviceName);
         }
 
         List<QueryParam> queryParams = buildServiceIdAwareQueryParams(service.getId(), uriInfo);
 
-        Collection<Component> components = catalogService.listComponents(queryParams);
+        Collection<Component> components = environmentService.listComponents(queryParams);
         if (components != null) {
             return WSUtils.respondEntities(components, OK);
         }
@@ -87,7 +88,7 @@ public class ComponentCatalogResource {
     @Path("/services/{serviceId}/components/{id}")
     @Timed
     public Response getComponentById(@PathParam("serviceId") Long serviceId, @PathParam("id") Long componentId) {
-        Component component = catalogService.getComponent(componentId);
+        Component component = environmentService.getComponent(componentId);
         if (component != null) {
             if (component.getServiceId() == null || !component.getServiceId().equals(serviceId)) {
                 throw EntityNotFoundException.byId("service: " + serviceId.toString());
@@ -103,17 +104,17 @@ public class ComponentCatalogResource {
     @Timed
     public Response getComponentByName(@PathParam("clusterName") String clusterName,
         @PathParam("serviceName") String serviceName, @PathParam("componentName") String componentName) {
-        Cluster cluster = catalogService.getClusterByName(clusterName);
+        Cluster cluster = environmentService.getClusterByName(clusterName);
         if (cluster == null) {
             throw EntityNotFoundException.byName("cluster name " + clusterName);
         }
 
-        Service service = catalogService.getServiceByName(cluster.getId(), serviceName);
+        Service service = environmentService.getServiceByName(cluster.getId(), serviceName);
         if (service == null) {
             throw EntityNotFoundException.byName("service name " + serviceName);
         }
 
-        Component component = catalogService.getComponentByName(service.getId(), componentName);
+        Component component = environmentService.getComponentByName(service.getId(), componentName);
         if (component != null) {
             return WSUtils.respondEntity(component, OK);
         }
@@ -129,19 +130,19 @@ public class ComponentCatalogResource {
         // overwrite service id to given path param
         component.setServiceId(serviceId);
 
-        Service service = catalogService.getService(serviceId);
+        Service service = environmentService.getService(serviceId);
         if (service == null) {
             throw EntityNotFoundException.byId("service: " + serviceId.toString());
         }
 
         String componentName = component.getName();
-        Component result = catalogService.getComponentByName(serviceId, componentName);
+        Component result = environmentService.getComponentByName(serviceId, componentName);
         if (result != null) {
             throw EntityAlreadyExistsException.byName("service id " + serviceId +
                 " and component name " + componentName);
         }
 
-        Component createdComponent = catalogService.addComponent(component);
+        Component createdComponent = environmentService.addComponent(component);
         return WSUtils.respondEntity(createdComponent, CREATED);
     }
 
@@ -152,12 +153,12 @@ public class ComponentCatalogResource {
         // overwrite service id to given path param
         component.setServiceId(serviceId);
 
-        Service service = catalogService.getService(serviceId);
+        Service service = environmentService.getService(serviceId);
         if (service == null) {
             throw EntityNotFoundException.byId("service: " + serviceId.toString());
         }
 
-        Component createdComponent = catalogService.addOrUpdateComponent(serviceId, component);
+        Component createdComponent = environmentService.addOrUpdateComponent(serviceId, component);
         return WSUtils.respondEntity(createdComponent, CREATED);
     }
 
@@ -165,7 +166,7 @@ public class ComponentCatalogResource {
     @Path("/services/{serviceId}/components/{id}")
     @Timed
     public Response removeComponent(@PathParam("id") Long componentId) {
-        Component removeComponent = catalogService.removeComponent(componentId);
+        Component removeComponent = environmentService.removeComponent(componentId);
         if (removeComponent != null) {
             return WSUtils.respondEntity(removeComponent, CREATED);
         }
@@ -181,7 +182,7 @@ public class ComponentCatalogResource {
         // overwrite service id to given path param
         component.setServiceId(serviceId);
 
-        Component newComponent = catalogService.addOrUpdateComponent(serviceId, componentId, component);
+        Component newComponent = environmentService.addOrUpdateComponent(serviceId, componentId, component);
         return WSUtils.respondEntity(newComponent, CREATED);
     }
 

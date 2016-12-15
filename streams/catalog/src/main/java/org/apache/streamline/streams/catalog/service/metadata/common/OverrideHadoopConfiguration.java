@@ -5,7 +5,7 @@ import org.apache.streamline.streams.catalog.exception.ServiceConfigurationNotFo
 import org.apache.streamline.streams.catalog.exception.ServiceNotFoundException;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import org.apache.streamline.streams.catalog.service.EnvironmentService;
 import org.apache.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,13 +17,13 @@ import java.util.Map;
 public class OverrideHadoopConfiguration {
     private static final Logger LOG = LoggerFactory.getLogger(OverrideHadoopConfiguration.class);
 
-    public static <T extends Configuration> T override(StreamCatalogService catalogService, Long clusterId,
-            ServiceConfigurations service, List<String> configNames, T configuration)
+    public static <T extends Configuration> T override(EnvironmentService environmentService, Long clusterId,
+                                                       ServiceConfigurations service, List<String> configNames, T configuration)
                 throws IOException, ServiceConfigurationNotFoundException, ServiceNotFoundException {
 
         for (String configName : configNames) {
-            final ServiceConfiguration serviceConfig = catalogService.getServiceConfigurationByName(
-                    getServiceIdByClusterId(catalogService, clusterId, service), configName);
+            final ServiceConfiguration serviceConfig = environmentService.getServiceConfigurationByName(
+                    getServiceIdByClusterId(environmentService, clusterId, service), configName);
 
             if (serviceConfig != null) {
                 final Map<String, String> configurationMap = serviceConfig.getConfigurationMap();
@@ -48,10 +48,10 @@ public class OverrideHadoopConfiguration {
         return configuration;
     }
 
-    private static Long getServiceIdByClusterId(StreamCatalogService catalogService, Long clusterId,
+    private static Long getServiceIdByClusterId(EnvironmentService environmentService, Long clusterId,
             ServiceConfigurations service) throws ServiceNotFoundException {
 
-        final Long serviceId = catalogService.getServiceIdByName(clusterId, service.name());
+        final Long serviceId = environmentService.getServiceIdByName(clusterId, service.name());
         if (serviceId == null) {
             throw new ServiceNotFoundException(clusterId, service);
         }
