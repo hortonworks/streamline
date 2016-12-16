@@ -61,10 +61,7 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
         activeConnections = Collections.synchronizedList(new ArrayList<Connection>());
     }
 
-    @Override
-    public void insert(Storable storable) {
-        executeUpdate(new SqlInsertQuery(storable));
-    }
+    public abstract void insert(Storable storable);
 
     public abstract void insertOrUpdate(Storable storable);
 
@@ -168,6 +165,10 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
         new QueryExecution(sqlBuilder).executeUpdate();
     }
 
+    protected Long executeUpdateWithReturningGeneratedKey(SqlQuery sqlBuilder) {
+        return new QueryExecution(sqlBuilder).executeUpdateWithReturningGeneratedKey();
+    }
+
     protected <T extends Storable> Collection<T> executeQuery(String namespace, SqlQuery sqlBuilder) {
         return new QueryExecution(sqlBuilder).executeQuery(namespace);
     }
@@ -209,6 +210,27 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
             }
         }
 
+        Long executeUpdateWithReturningGeneratedKey() {
+            try {
+                PreparedStatement pstmt = getPreparedStatementWithSetReturningGeneratedKey();
+                pstmt.executeUpdate();
+                ResultSet generatedKeys = pstmt.getGeneratedKeys();
+                if (generatedKeys.next()) {
+                    return generatedKeys.getLong(1);
+                } else {
+                    return null;
+                }
+            } catch (SQLException | ExecutionException e) {
+                throw new StorageException(e);
+            } finally {
+                // Close every opened connection if not using cache. If using cache, cache expiry manages connections
+                if (!isCacheEnabled()) {
+                    closeConn();
+                }
+            }
+
+        }
+
         void closeConn() {
             closeConnection(connection);
         }
@@ -219,10 +241,22 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
             PreparedStatementBuilder preparedStatementBuilder = null;
 
             if (isCacheEnabled()) {
-                preparedStatementBuilder = cache.get(sqlBuilder, new PreparedStatementBuilderCallable(sqlBuilder));
+                preparedStatementBuilder = cache.get(sqlBuilder, new PreparedStatementBuilderCallable(sqlBuilder, false));
             } else {
                 connection = getConnection();
-                preparedStatementBuilder = new PreparedStatementBuilder(connection, config, sqlBuilder);
+                preparedStatementBuilder = PreparedStatementBuilder.of(connection, config, sqlBuilder);
+            }
+            return preparedStatementBuilder.getPreparedStatement(sqlBuilder);
+        }
+
+        private PreparedStatement getPreparedStatementWithSetReturningGeneratedKey() throws ExecutionException, SQLException {
+            PreparedStatementBuilder preparedStatementBuilder = null;
+
+            if (isCacheEnabled()) {
+                preparedStatementBuilder = cache.get(sqlBuilder, new PreparedStatementBuilderCallable(sqlBuilder, true));
+            } else {
+                connection = getConnection();
+                preparedStatementBuilder = PreparedStatementBuilder.supportReturnGeneratedKeys(connection, config, sqlBuilder);
             }
             return preparedStatementBuilder.getPreparedStatement(sqlBuilder);
         }
@@ -230,16 +264,30 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
         /** This callable is instantiated and called the first time every key:val entry is inserted into the cache */
         private class PreparedStatementBuilderCallable implements Callable<PreparedStatementBuilder> {
             private final SqlQuery sqlBuilder;
+            private final boolean returnGeneratedKeys;
 
-            public PreparedStatementBuilderCallable(SqlQuery sqlBuilder) {
+            private PreparedStatementBuilderCallable(SqlQuery sqlBuilder, boolean returnGeneratedKeys) {
                 this.sqlBuilder = sqlBuilder;
+                this.returnGeneratedKeys = returnGeneratedKeys;
+            }
+
+            public PreparedStatementBuilderCallable of(SqlQuery sqlBuilder) {
+                return new PreparedStatementBuilderCallable(sqlBuilder, false);
+            }
+
+            public PreparedStatementBuilderCallable supportReturnGeneratedKeys(SqlQuery sqlBuilder) {
+                return new PreparedStatementBuilderCallable(sqlBuilder, true);
             }
 
             @Override
             public PreparedStatementBuilder call() throws Exception {
                 // opens a new connection which remains open for as long as this entry is in the cache
-                final PreparedStatementBuilder preparedStatementBuilder =
-                        new PreparedStatementBuilder(getConnection(), config, sqlBuilder);
+                final PreparedStatementBuilder preparedStatementBuilder;
+                if (returnGeneratedKeys) {
+                    preparedStatementBuilder = PreparedStatementBuilder.supportReturnGeneratedKeys(getConnection(), config, sqlBuilder);
+                } else {
+                    preparedStatementBuilder = PreparedStatementBuilder.of(getConnection(), config, sqlBuilder);
+                }
                 log.debug("Loading cache with [key: {}, val: {}]", sqlBuilder, preparedStatementBuilder);
                 return preparedStatementBuilder;
             }

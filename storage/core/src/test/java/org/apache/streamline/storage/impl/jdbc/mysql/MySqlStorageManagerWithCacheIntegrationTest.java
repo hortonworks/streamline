@@ -25,6 +25,7 @@ import org.apache.streamline.storage.impl.jdbc.config.ExecutionConfig;
 import org.apache.streamline.storage.impl.jdbc.config.HikariBasicConfig;
 import org.apache.streamline.storage.impl.jdbc.connection.ConnectionBuilder;
 import org.apache.streamline.storage.impl.jdbc.connection.HikariCPConnectionBuilder;
+import org.apache.streamline.storage.impl.jdbc.provider.mysql.factory.MySqlExecutor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
@@ -51,8 +52,8 @@ public abstract class MySqlStorageManagerWithCacheIntegrationTest extends JdbcSt
 
     private void setFields(ConnectionBuilder connectionBuilder, Database db) {
         JdbcStorageManagerIntegrationTest.connectionBuilder = connectionBuilder;
-        jdbcStorageManager =  createJdbcStorageManager(new MySqlExecutorForTest(newGuavaCacheBuilder(),
-                new ExecutionConfig(-1), connectionBuilder));
+        jdbcStorageManager =  createJdbcStorageManager(new MySqlExecutor(
+                new ExecutionConfig(-1), connectionBuilder, newGuavaCacheBuilder()));
         database = db;
     }
 

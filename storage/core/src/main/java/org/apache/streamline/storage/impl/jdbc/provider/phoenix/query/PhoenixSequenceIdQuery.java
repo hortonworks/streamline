@@ -63,17 +63,17 @@ public class PhoenixSequenceIdQuery {
         PhoenixSqlQuery deleteQuery = new PhoenixSqlQuery("DELETE FROM " + SEQUENCE_TABLE + " WHERE \"id\"='" + uuid + "'");
 
         try (Connection connection = connectionBuilder.getConnection()) {
-            int upsertResult = new PreparedStatementBuilder(connection, new ExecutionConfig(queryTimeoutSecs), updateQuery).getPreparedStatement(updateQuery).executeUpdate();
+            int upsertResult = PreparedStatementBuilder.of(connection, new ExecutionConfig(queryTimeoutSecs), updateQuery).getPreparedStatement(updateQuery).executeUpdate();
             log.debug("Query [{}] is executed and returns result with [{}]", updateQuery, upsertResult);
 
-            ResultSet selectResultSet = new PreparedStatementBuilder(connection, new ExecutionConfig(queryTimeoutSecs), selectQuery).getPreparedStatement(selectQuery).executeQuery();
+            ResultSet selectResultSet = PreparedStatementBuilder.of(connection, new ExecutionConfig(queryTimeoutSecs), selectQuery).getPreparedStatement(selectQuery).executeQuery();
             if (selectResultSet.next()) {
                 nextId = selectResultSet.getLong(namespace);
             } else {
                 throw new RuntimeException("No sequence-id created for the current sequence of [" + namespace + "]");
             }
             log.debug("Generated sequence id [{}] for [{}]", nextId, namespace);
-            int deleteResult = new PreparedStatementBuilder(connection, new ExecutionConfig(queryTimeoutSecs), deleteQuery).getPreparedStatement(deleteQuery).executeUpdate();
+            int deleteResult = PreparedStatementBuilder.of(connection, new ExecutionConfig(queryTimeoutSecs), deleteQuery).getPreparedStatement(deleteQuery).executeUpdate();
             if (deleteResult == 0) {
                 log.error("Could not delete entry in " + SEQUENCE_TABLE + " for value [{}]", namespace, uuid);
             } else {

@@ -21,12 +21,10 @@ package org.apache.streamline.storage.impl.jdbc.provider.mysql.factory;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.exception.StorageException;
 import org.apache.streamline.storage.impl.jdbc.config.ExecutionConfig;
 import org.apache.streamline.storage.impl.jdbc.connection.ConnectionBuilder;
 import org.apache.streamline.storage.impl.jdbc.connection.HikariCPConnectionBuilder;
 import org.apache.streamline.storage.impl.jdbc.provider.mysql.query.MySqlInsertUpdateDuplicate;
-import org.apache.streamline.storage.impl.jdbc.provider.mysql.query.MySqlQueryUtils;
 import org.apache.streamline.storage.impl.jdbc.provider.sql.factory.AbstractQueryExecutor;
 import org.apache.streamline.storage.impl.jdbc.provider.sql.query.SqlInsertQuery;
 import org.apache.streamline.storage.impl.jdbc.provider.sql.query.SqlQuery;
@@ -34,8 +32,6 @@ import org.apache.streamline.storage.impl.jdbc.provider.sql.statement.PreparedSt
 import org.apache.streamline.storage.impl.jdbc.util.Util;
 import com.zaxxer.hikari.HikariConfig;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Map;
 import java.util.Properties;
 
@@ -53,7 +49,7 @@ public class MySqlExecutor extends AbstractQueryExecutor {
      * @param config Object that contains arbitrary configuration that may be needed for any of the steps of the query execution process
      * @param connectionBuilder Object that establishes the connection to the database
      * @param cacheBuilder Guava cache configuration. The maximum number of entries in cache (open connections)
- *                     must not exceed the maximum number of open database connections allowed
+     *                     must not exceed the maximum number of open database connections allowed
      */
     public MySqlExecutor(ExecutionConfig config, ConnectionBuilder connectionBuilder, CacheBuilder<SqlQuery, PreparedStatementBuilder> cacheBuilder) {
         super(config, connectionBuilder, cacheBuilder);
@@ -63,32 +59,18 @@ public class MySqlExecutor extends AbstractQueryExecutor {
 
     @Override
     public void insert(Storable storable) {
-        executeUpdate(new SqlInsertQuery(storable));
+        insertOrUpdateHelper(storable, new SqlInsertQuery(storable));
     }
 
     @Override
     public void insertOrUpdate(final Storable storable) {
-        executeUpdate(new MySqlInsertUpdateDuplicate(storable));
+        insertOrUpdateHelper(storable, new MySqlInsertUpdateDuplicate(storable));
     }
 
     @Override
     public Long nextId(String namespace) {
-        // This only works if the table has auto-increment. The TABLE_SCHEMA part is implicitly specified in the Connection object
-        // SELECT AUTO_INCREMENT FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'temp' AND TABLE_SCHEMA = 'test'
-        Connection connection = null;
-        try {
-            connection = getConnection();
-            return getNextId(connection, namespace);
-        } catch (SQLException e) {
-            throw new StorageException(e);
-        } finally {
-            closeConnection(connection);
-        }
-    }
-
-    // Protected to be able to override it in the test framework
-    protected Long getNextId(Connection connection, String namespace) throws SQLException {
-        return MySqlQueryUtils.nextIdMySql(connection, namespace, queryTimeoutSecs);
+        // intentionally returning null
+        return null;
     }
 
     public static MySqlExecutor createExecutor(Map<String, Object> jdbcProps) {
@@ -115,6 +97,20 @@ public class MySqlExecutor extends AbstractQueryExecutor {
         HikariCPConnectionBuilder connectionBuilder = new HikariCPConnectionBuilder(hikariConfig);
         ExecutionConfig executionConfig = new ExecutionConfig(queryTimeOutInSecs);
         return new MySqlExecutor(executionConfig, connectionBuilder);
+    }
+
+    private void insertOrUpdateHelper(final Storable storable, final SqlQuery sqlQuery) {
+        try {
+            Long id = storable.getId();
+            if (id == null) {
+                id = executeUpdateWithReturningGeneratedKey(sqlQuery);
+                storable.setId(id);
+            } else {
+                executeUpdate(sqlQuery);
+            }
+        } catch (UnsupportedOperationException e) {
+            executeUpdate(sqlQuery);
+        }
     }
 
 }

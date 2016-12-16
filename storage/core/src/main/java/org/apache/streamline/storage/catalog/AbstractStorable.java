@@ -110,4 +110,9 @@ public abstract class AbstractStorable implements Storable {
         throw new UnsupportedOperationException("Not implemented");
     }
 
+    @Override
+    public void setId(Long id) {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
 }

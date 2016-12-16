@@ -31,6 +31,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
 import java.util.List;
 import java.util.Map;
@@ -58,24 +59,59 @@ public class PreparedStatementBuilder {
      * @param connection Connection used to prepare the statement
      * @param config Configuration that needs to be passed to the {@link PreparedStatement}
      * @param sqlBuilder Sql builder object for which to build the {@link PreparedStatement}
+     * @param returnGeneratedKeys Whether statement has option 'Statement.RETURN_GENERATED_KEYS' or not.
      * @throws SQLException
      */
-    public PreparedStatementBuilder(Connection connection, ExecutionConfig config,
-                                    SqlQuery sqlBuilder) throws SQLException {
+    protected PreparedStatementBuilder(Connection connection, ExecutionConfig config,
+                                    SqlQuery sqlBuilder, boolean returnGeneratedKeys) throws SQLException {
         this.connection = connection;
         this.config = config;
         this.sqlBuilder = sqlBuilder;
-        setPreparedStatement();
+        setPreparedStatement(returnGeneratedKeys);
         setNumPrepStmtParams();
     }
 
-    /** Creates the prepared statement with the parameters in place to be replaced */
-    private void setPreparedStatement() throws SQLException {
+    /**
+     * Creates a {@link PreparedStatement} for which calls to method {@code getPreparedStatement}
+     * return the {@link PreparedStatement} ready to be executed
+     *
+     * @param connection Connection used to prepare the statement
+     * @param config Configuration that needs to be passed to the {@link PreparedStatement}
+     * @param sqlBuilder Sql builder object for which to build the {@link PreparedStatement}
+     * @throws SQLException
+     */
+    public static PreparedStatementBuilder of(Connection connection, ExecutionConfig config,
+                                              SqlQuery sqlBuilder) throws SQLException {
+        return new PreparedStatementBuilder(connection, config, sqlBuilder, false);
+    }
 
+    /**
+     * Creates a {@link PreparedStatement} for which calls to method {@code getPreparedStatement}
+     * return the {@link PreparedStatement} ready to be executed.
+     * Please note that Statement.RETURN_GENERATED_KEYS is set while initializing {@link PreparedStatement}.
+     *
+     * @param connection Connection used to prepare the statement
+     * @param config Configuration that needs to be passed to the {@link PreparedStatement}
+     * @param sqlBuilder Sql builder object for which to build the {@link PreparedStatement}
+     * @throws SQLException
+     */
+    public static PreparedStatementBuilder supportReturnGeneratedKeys(Connection connection, ExecutionConfig config,
+                                                                      SqlQuery sqlBuilder) throws SQLException {
+        return new PreparedStatementBuilder(connection, config, sqlBuilder, true);
+    }
+
+    /** Creates the prepared statement with the parameters in place to be replaced */
+    private void setPreparedStatement(boolean returnGeneratedKeys) throws SQLException {
         final String parameterizedSql = sqlBuilder.getParametrizedSql();
         log.debug("Creating prepared statement for parameterized sql [{}]", parameterizedSql);
 
-        final PreparedStatement preparedStatement = connection.prepareStatement(parameterizedSql);
+        final PreparedStatement preparedStatement;
+        if (returnGeneratedKeys) {
+            preparedStatement = connection.prepareStatement(parameterizedSql, Statement.RETURN_GENERATED_KEYS);
+        } else {
+            preparedStatement = connection.prepareStatement(parameterizedSql);
+        }
+
         final int queryTimeoutSecs = config.getQueryTimeoutSecs();
         if (queryTimeoutSecs > 0) {
             preparedStatement.setQueryTimeout(queryTimeoutSecs);

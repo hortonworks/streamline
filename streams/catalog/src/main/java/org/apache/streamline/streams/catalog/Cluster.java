@@ -45,10 +45,12 @@ public class Cluster extends AbstractStorable {
     /**
      * The primary key
      */
+    @Override
     public Long getId() {
         return id;
     }
 
+    @Override
     public void setId(Long id) {
         this.id = id;
     }

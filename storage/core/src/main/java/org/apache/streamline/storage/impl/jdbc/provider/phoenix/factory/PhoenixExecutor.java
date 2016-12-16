@@ -40,6 +40,16 @@ public class PhoenixExecutor extends AbstractQueryExecutor {
 
     @Override
     public void insertOrUpdate(Storable storable) {
+        try {
+            Long id = storable.getId();
+            if (id == null) {
+                id = nextId(storable.getNameSpace());
+                storable.setId(id);
+            }
+        } catch (UnsupportedOperationException e) {
+            // no-op
+        }
+
         executeUpdate(new PhoenixUpsertQuery(storable));
     }
 

@@ -65,4 +65,9 @@ public interface Storable {
      */
     Long getId();
 
+    /**
+     * Set unique Id to the storable. This method is for putting auto generated key.
+     */
+    void setId(Long id);
+
 }

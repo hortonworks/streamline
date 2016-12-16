@@ -10,6 +10,7 @@ import org.apache.streamline.common.util.ReflectionHelper;
 import org.apache.streamline.registries.tag.client.TagClient;
 import org.apache.streamline.storage.StorageManager;
 import org.apache.streamline.storage.StorageManagerAware;
+import org.apache.streamline.streams.catalog.TopologyVersionInfo;
 import org.apache.streamline.streams.catalog.service.CatalogService;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.exception.ConfigException;
@@ -65,6 +66,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         result.addAll(getServiceMetadataResources(streamcatalogService));
         result.add(new NamespaceCatalogResource(streamcatalogService));
         watchFiles(streamcatalogService);
+        setupPlaceholderEntities(streamcatalogService);
         return result;
     }
 
@@ -222,4 +224,22 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         });
         thread.start();
     }
+
+    private void setupPlaceholderEntities(StreamCatalogService catalogService) {
+        setupPlaceholderTopologyVersionInfo(catalogService);
+    }
+
+    private void setupPlaceholderTopologyVersionInfo(StreamCatalogService catalogService) {
+        TopologyVersionInfo versionInfo = catalogService.getTopologyVersionInfo(StreamCatalogService.PLACEHOLDER_ID);
+        if (versionInfo == null) {
+            TopologyVersionInfo topologyVersionInfo = new TopologyVersionInfo();
+            topologyVersionInfo.setId(StreamCatalogService.PLACEHOLDER_ID);
+            topologyVersionInfo.setTopologyId(StreamCatalogService.PLACEHOLDER_ID);
+            topologyVersionInfo.setName("PLACEHOLDER_VERSIONINFO");
+            topologyVersionInfo.setDescription("PLACEHOLDER_VERSIONINFO");
+            topologyVersionInfo.setTimestamp(System.currentTimeMillis());
+            catalogService.addOrUpdateTopologyVersionInfo(StreamCatalogService.PLACEHOLDER_ID, topologyVersionInfo);
+        }
+    }
+
 }

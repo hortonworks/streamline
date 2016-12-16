@@ -34,6 +34,7 @@ public class ServiceConfiguration extends AbstractStorable {
     return id;
   }
 
+  @Override
   public void setId(Long id) {
     this.id = id;
   }

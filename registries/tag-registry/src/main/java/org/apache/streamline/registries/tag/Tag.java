@@ -40,10 +40,12 @@ public class Tag extends AbstractStorable {
         return new PrimaryKey(fieldToObjectMap);
     }
 
+    @Override
     public Long getId() {
         return id;
     }
 
+    @Override
     public void setId(Long id) {
         this.id = id;
     }

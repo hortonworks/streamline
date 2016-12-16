@@ -37,12 +37,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.streamline.common.ComponentTypes;
+import org.apache.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
+import org.apache.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import org.apache.streamline.streams.layout.component.StreamlineComponent;
 import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
 import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
 import org.apache.streamline.streams.catalog.Projection;
-import org.apache.streamline.streams.layout.component.StreamlineComponent;
-import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
 import org.apache.streamline.streams.layout.storm.FluxComponent;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.Schema;
@@ -91,8 +91,6 @@ import org.apache.streamline.streams.catalog.topology.TopologyComponentUISpecifi
 import org.apache.streamline.streams.catalog.topology.TopologyLayoutValidator;
 import org.apache.streamline.streams.catalog.topology.component.TopologyDagBuilder;
 import org.apache.streamline.streams.cluster.discovery.ServiceNodeDiscoverer;
-import org.apache.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
-import org.apache.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
 import org.apache.streamline.streams.layout.component.OutputComponent;
 import org.apache.streamline.streams.layout.component.Stream;
@@ -138,7 +136,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -184,8 +181,8 @@ public class StreamCatalogService {
 
     private static final ArrayList<Class<?>> UDF_CLASSES = Lists.newArrayList(UDAF.class, UDAF2.class, UDF.class, UDF2.class,
                                                                               UDF3.class, UDF4.class, UDF5.class, UDF6.class, UDF7.class);
+    public static final long PLACEHOLDER_ID = -1L;
 
-    
     private final StorageManager dao;
     private final TopologyActionsContainer topologyActionsContainer;
     private final TopologyMetricsContainer topologyMetricsContainer;
@@ -692,14 +689,22 @@ public class StreamCatalogService {
         if (topology.getId() == null) {
             topology.setId(this.dao.nextId(TOPOLOGY_NAMESPACE));
         }
+        validateTopology(topology);
+        topology.setVersionId(PLACEHOLDER_ID);
+        this.dao.add(topology);
+        LOG.debug("Added topology {}", topology);
         long timestamp = System.currentTimeMillis();
         topology.setVersionTimestamp(timestamp);
         TopologyVersionInfo versionInfo = addCurrentTopologyVersionInfo(topology.getId(), timestamp);
         LOG.debug("Added version info {}", versionInfo);
+
+        // remove topology with placeholder version first
+        removeTopology(topology.getId(), PLACEHOLDER_ID, false);
+
+        // put actual version id
         topology.setVersionId(versionInfo.getId());
-        validateTopology(topology);
+
         this.dao.add(topology);
-        LOG.debug("Added topology {}", topology);
         return topology;
     }
 

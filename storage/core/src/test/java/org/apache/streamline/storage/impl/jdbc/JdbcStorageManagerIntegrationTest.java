@@ -18,19 +18,13 @@
 
 package org.apache.streamline.storage.impl.jdbc;
 
-import com.google.common.cache.CacheBuilder;
 import org.apache.streamline.common.test.IntegrationTest;
 import org.apache.streamline.storage.AbstractStoreManagerTest;
 import org.apache.streamline.storage.Storable;
 import org.apache.streamline.storage.StorableTest;
 import org.apache.streamline.storage.StorageManager;
-import org.apache.streamline.storage.impl.jdbc.config.ExecutionConfig;
 import org.apache.streamline.storage.impl.jdbc.connection.ConnectionBuilder;
-import org.apache.streamline.storage.impl.jdbc.provider.mysql.factory.MySqlExecutor;
-import org.apache.streamline.storage.impl.jdbc.provider.mysql.query.MySqlQueryUtils;
 import org.apache.streamline.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.query.SqlQuery;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
 import org.h2.tools.RunScript;
 import org.junit.After;
 import org.junit.Assert;
@@ -111,29 +105,6 @@ public abstract class JdbcStorageManagerIntegrationTest extends AbstractStoreMan
             }
         }
     }
-
-    // ========= Class that overrides the getNextId() method to allow testing using MySql and H2 databases ==========
-
-    protected static class MySqlExecutorForTest extends MySqlExecutor {
-        public MySqlExecutorForTest(ExecutionConfig config, ConnectionBuilder connectionBuilder) {
-            super(config, connectionBuilder);
-        }
-
-        public MySqlExecutorForTest(CacheBuilder<SqlQuery, PreparedStatementBuilder> cacheBuilder,
-            ExecutionConfig config, ConnectionBuilder connectionBuilder) {
-            super(config, connectionBuilder, cacheBuilder);
-        }
-
-        @Override
-        protected Long getNextId(Connection connection, String namespace) throws SQLException {
-            if (database.equals(Database.MYSQL)) {
-                return super.nextId(namespace);
-            } else {
-                return MySqlQueryUtils.nextIdH2(connection, namespace, getConfig().getQueryTimeoutSecs());
-            }
-        }
-    }
-
 
     // ========= Private helper methods  ==========
 

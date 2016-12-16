@@ -84,10 +84,12 @@ public class FileInfo extends AbstractStorable {
      * @return Unique Id for a jar instance, which is the primary key column.
      *
      */
+    @Override
     public Long getId() {
         return id;
     }
 
+    @Override
     public void setId(Long id) {
         this.id = id;
     }

@@ -28,6 +28,7 @@ public class Service extends AbstractStorable {
     return id;
   }
 
+  @Override
   public void setId(Long id) {
     this.id = id;
   }
