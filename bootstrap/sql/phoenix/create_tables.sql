@@ -26,10 +26,13 @@ CREATE TABLE IF NOT EXISTS components ("id" BIGINT NOT NULL, "serviceId" BIGINT,
 CREATE TABLE IF NOT EXISTS namespaces ("id" BIGINT NOT NULL, "name" VARCHAR, "streamingEngine" VARCHAR, "timeSeriesDB" VARCHAR, "description" VARCHAR, "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
 CREATE TABLE IF NOT EXISTS namespace_service_cluster_mapping ("namespaceId" BIGINT NOT NULL, "serviceName" VARCHAR NOT NULL, "clusterId" BIGINT NOT NULL, CONSTRAINT pk PRIMARY KEY ("namespaceId", "serviceName", "clusterId"))
 CREATE TABLE IF NOT EXISTS dashboard ("id" BIGINT NOT NULL, "name" VARCHAR, "description" VARCHAR, "data" VARCHAR, "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
-CREATE TABLE IF NOT EXISTS widget ("id" BIGINT NOT NULL, "dashboardId" BIGINT NOT NULL, "name" VARCHAR, "description" VARCHAR, "type" VARCHAR, "data" VARCHAR, "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
-CREATE TABLE IF NOT EXISTS datasource ("id" BIGINT NOT NULL, "dashboardId" BIGINT NOT NULL, "name" VARCHAR, "description" VARCHAR, "type" VARCHAR, "url" VARCHAR, "data" VARCHAR, "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
+CREATE TABLE IF NOT EXISTS widget ("id" BIGINT NOT NULL, "dashboardId" BIGINT NOT NULL, "name" VARCHAR, "description" VARCHAR, "type" VARCHAR, "data" VARCHAR, "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id", "dashboardId"))
+CREATE TABLE IF NOT EXISTS datasource ("id" BIGINT NOT NULL, "dashboardId" BIGINT NOT NULL, "name" VARCHAR, "description" VARCHAR, "type" VARCHAR, "url" VARCHAR, "data" VARCHAR, "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id", "dashboardId"))
 CREATE TABLE IF NOT EXISTS widget_datasource_mapping ("widgetId" BIGINT NOT NULL, "datasourceId" BIGINT NOT NULL, CONSTRAINT pk PRIMARY KEY ("widgetId", "datasourceId"))
-CREATE TABLE IF NOT EXISTS sequence_table ("id" VARCHAR, "parser_info" BIGINT, "files" BIGINT, "topology_versioninfos" BIGINT, "topologies" BIGINT, "topology_component_bundles" BIGINT, "topology_components" BIGINT, "tag" BIGINT,  "streaminfo" BIGINT, "notifierinfos" BIGINT, "topology_sources" BIGINT, "topology_sinks" BIGINT, "topology_processors" BIGINT, "topology_edges" BIGINT, "ruleinfos" BIGINT, "windowinfos" BIGINT, "udfs" BIGINT, "clusters" BIGINT, "services" BIGINT, "service_configurations" BIGINT,"branchruleinfos" BIGINT, "components" BIGINT, "namespaces" BIGINT CONSTRAINT pk PRIMARY KEY ("id"), "dashboard" BIGINT CONSTRAINT pk PRIMARY KEY ("id"), "datasource" BIGINT CONSTRAINT pk PRIMARY KEY ("id"), "widget" BIGINT CONSTRAINT pk PRIMARY KEY ("id"))
+CREATE TABLE IF NOT EXISTS sequence_table ("id" VARCHAR, "parser_info" BIGINT, "files" BIGINT, "topology_versioninfos" BIGINT, "topologies" BIGINT, "topology_component_bundles" BIGINT,
+"topology_components" BIGINT, "tag" BIGINT,  "streaminfo" BIGINT, "notifierinfos" BIGINT, "topology_sources" BIGINT, "topology_sinks" BIGINT, "topology_processors" BIGINT, "topology_edges" BIGINT,
+"ruleinfos" BIGINT, "windowinfos" BIGINT, "udfs" BIGINT, "clusters" BIGINT, "services" BIGINT, "service_configurations" BIGINT,"branchruleinfos" BIGINT, "components" BIGINT,
+"namespaces" BIGINT CONSTRAINT pk PRIMARY KEY ("id"))
 
 CREATE SEQUENCE IF NOT EXISTS parser_info_sequence
 CREATE SEQUENCE IF NOT EXISTS topology_versioninfos_sequence
