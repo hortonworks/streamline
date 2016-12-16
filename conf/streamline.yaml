@@ -27,11 +27,11 @@ catalogRootUrl: "http://localhost:8080/api/v1/catalog"
 #    directory: "/tmp"
 
 # HDFS based Jar storage
+# Filesystem based jar storage
 fileStorageConfiguration:
-  className: "org.apache.streamline.common.util.HdfsFileStorage"
-  properties:
-    fsUrl: "hdfs://localhost:9000"
-    directory: "/tmp/test-hdfs"
+ className: "org.apache.streamline.common.util.LocalFileSystemStorage"
+ properties:
+   directory: "/tmp"
 
 # storage provider configuration
 # providerClass can be inmemory and jdbc.
@@ -73,6 +73,13 @@ storageProviderConfiguration:
      jdbcDriverClass: "org.apache.phoenix.jdbc.PhoenixDriver"
      jdbcUrl: "jdbc:phoenix:localhost:2181"
 
+
+pivotConfiguration:
+ port: "8083"
+ config:
+  name: "druid"
+  type: "druid"
+  host: "http://localhost:8082"
 
 enableCors: true
 corsUrlPatterns:

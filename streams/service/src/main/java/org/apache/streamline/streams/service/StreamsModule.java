@@ -165,41 +165,6 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         return topologyActions;
     }
 
-    private TopologyMetrics getTopologyMetricsImpl() throws ConfigException {
-        String className = (String) config.get(org.apache.streamline.streams.common.Constants.CONFIG_TOPOLOGY_METRICS_IMPL);
-        TopologyMetrics topologyMetrics;
-        try {
-            topologyMetrics = ReflectionHelper.newInstance(className);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-        //pass any config info that might be needed in the constructor as a map
-        Map<String, String> conf = new HashMap<>();
-        conf.put(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY, (String) config.get(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY));
-        topologyMetrics.init(conf);
-
-        TimeSeriesQuerier timeSeriesQuerier = getTimeSeriesQuerier();
-        if (timeSeriesQuerier != null) {
-            topologyMetrics.setTimeSeriesQuerier(timeSeriesQuerier);
-        }
-
-        return topologyMetrics;
-    }
-
-    private TimeSeriesQuerier getTimeSeriesQuerier() {
-        if (config.get(Constants.CONFIG_TIME_SERIES_DB) == null) {
-            return null;
-        }
-
-        try {
-            TimeSeriesDBConfiguration timeSeriesDBConfiguration = (TimeSeriesDBConfiguration) config.get(Constants.CONFIG_TIME_SERIES_DB);
-            TimeSeriesQuerier timeSeriesQuerier = ReflectionHelper.newInstance(timeSeriesDBConfiguration.getClassName());
-            timeSeriesQuerier.init(timeSeriesDBConfiguration.getProperties());
-            return timeSeriesQuerier;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     private void watchFiles(StreamCatalogService catalogService) {
         String customProcessorWatchPath = (String) config.get(org.apache.streamline.streams.common.Constants.CONFIG_CP_WATCH_PATH);

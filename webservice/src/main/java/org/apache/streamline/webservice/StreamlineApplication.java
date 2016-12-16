@@ -161,6 +161,11 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
         String catalogRootUrl = configuration.getCatalogRootUrl().replaceFirst("8080", appPort +"");
         List<ModuleConfiguration> modules = configuration.getModules();
         List<Object> resourcesToRegister = new ArrayList<>();
+
+        // add StreamlineConfigResource
+        resourcesToRegister.add(new StreamlineConfigurationResource(configuration));
+
+
         for (ModuleConfiguration moduleConfiguration: modules) {
             String moduleName = moduleConfiguration.getName();
             String moduleClassName = moduleConfiguration.getClassName();
@@ -169,8 +174,9 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
             if (moduleConfiguration.getConfig() == null) {
                 moduleConfiguration.setConfig(new HashMap<String, Object>());
             }
-            moduleConfiguration.getConfig().put(Constants.CONFIG_TIME_SERIES_DB, configuration.getTimeSeriesDBConfiguration());
-            moduleConfiguration.getConfig().put(Constants.CONFIG_CATALOG_ROOT_URL, catalogRootUrl);
+            if (moduleName.equals(Constants.CONFIG_STREAMS_MODULE)) {
+                moduleConfiguration.getConfig().put(Constants.CONFIG_CATALOG_ROOT_URL, catalogRootUrl);
+            }
             moduleRegistration.init(moduleConfiguration.getConfig(), fileStorage);
             if (moduleRegistration instanceof StorageManagerAware) {
                 LOG.info("Module [{}] is StorageManagerAware and setting StorageManager.", moduleName);
