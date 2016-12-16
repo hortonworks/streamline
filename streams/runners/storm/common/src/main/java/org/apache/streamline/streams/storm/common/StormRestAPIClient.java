@@ -1,13 +1,17 @@
 package org.apache.streamline.streams.storm.common;
 
+import org.apache.streamline.common.JsonClientUtil;
+import org.apache.streamline.common.exception.WrappedWebApplicationException;
+
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import java.io.IOException;
 import java.util.Map;
 
 public class StormRestAPIClient {
+    public static final MediaType STORM_REST_API_MEDIA_TYPE = MediaType.APPLICATION_JSON_TYPE;
     private final String stormApiRootUrl;
     private final Client client;
 
@@ -45,25 +49,29 @@ public class StormRestAPIClient {
 
     private Map doGetRequest(String requestUrl) {
         try {
-            return client.target(requestUrl).request(MediaType.APPLICATION_JSON_TYPE).get(Map.class);
+            return JsonClientUtil.getEntity(client.target(requestUrl), STORM_REST_API_MEDIA_TYPE, Map.class);
         } catch (javax.ws.rs.ProcessingException e) {
             if (e.getCause() instanceof IOException) {
                 throw new StormNotReachableException("Exception while requesting " + requestUrl, e);
             }
 
             throw e;
+        } catch (WebApplicationException e) {
+            throw WrappedWebApplicationException.of(e);
         }
     }
 
     private Map doPostRequestWithEmptyBody(String requestUrl) {
         try {
-            return client.target(requestUrl).request(MediaType.APPLICATION_JSON_TYPE).post(Entity.form(new MultivaluedHashMap<>()), Map.class);
+            return JsonClientUtil.postForm(client.target(requestUrl), new MultivaluedHashMap<>(), STORM_REST_API_MEDIA_TYPE, Map.class);
         } catch (javax.ws.rs.ProcessingException e) {
             if (e.getCause() instanceof IOException) {
                 throw new StormNotReachableException("Exception while requesting " + requestUrl, e);
             }
 
             throw e;
+        } catch (WebApplicationException e) {
+            throw WrappedWebApplicationException.of(e);
         }
     }
 

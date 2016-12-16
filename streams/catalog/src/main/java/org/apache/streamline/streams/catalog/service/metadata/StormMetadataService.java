@@ -2,6 +2,8 @@ package org.apache.streamline.streams.catalog.service.metadata;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 
+import org.apache.streamline.common.JsonClientUtil;
+import org.apache.streamline.common.exception.WrappedWebApplicationException;
 import org.apache.streamline.streams.catalog.Component;
 import org.apache.streamline.streams.catalog.Service;
 import org.apache.streamline.streams.catalog.ServiceConfiguration;
@@ -20,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
@@ -136,7 +139,7 @@ public class StormMetadataService {
      * @return List of storm topologies as returned by Storm's REST API
      */
     public Topologies getTopologies() {
-        final Map<String, ?> jsonAsMap = httpClient.target(url).request(MediaType.APPLICATION_JSON).get(Map.class);
+        final Map<String, ?> jsonAsMap = JsonClientUtil.getEntity(httpClient.target(url), Map.class);
         List<String> topologies = Collections.emptyList();
         if (jsonAsMap != null) {
             final List<Map<String, String>> topologiesSummary = (List<Map<String, String>>) jsonAsMap.get(STORM_REST_API_TOPOLOGIES_KEY);

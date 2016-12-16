@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.metrics.storm.topology;
+package org.apache.streamline.streams.storm.common;
 
 public class TopologyNotAliveException extends RuntimeException {
   public TopologyNotAliveException(String msg) {

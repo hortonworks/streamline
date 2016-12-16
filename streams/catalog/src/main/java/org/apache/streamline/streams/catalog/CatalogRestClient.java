@@ -18,19 +18,17 @@
  */
 package org.apache.streamline.streams.catalog;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.streamline.storage.Storable;
+import org.apache.streamline.common.JsonClientUtil;
+import org.apache.streamline.common.exception.WrappedWebApplicationException;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -57,44 +55,9 @@ public class CatalogRestClient {
         client.register(MultiPartFeature.class);
     }
 
-    private <T> List<T> getEntities(WebTarget target, Class<T> clazz) {
-        List<T> entities = new ArrayList<>();
-        String response = target.request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode node = mapper.readTree(response);
-            Iterator<JsonNode> it = node.get("entities").elements();
-            while (it.hasNext()) {
-                entities.add(mapper.treeToValue(it.next(), clazz));
-            }
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-        return entities;
-    }
-
-    private <T extends Storable> T getEntity(WebTarget target, Class<T> clazz) {
-        String response = target.request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
-
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode node = mapper.readTree(response);
-            return mapper.treeToValue(node.get("entity"), clazz);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-
     public NotifierInfo getNotifierInfo(String notifierName) {
         return getEntities(client.target(String.format("%s/%s/?name=%s", rootCatalogURL, NOTIFIER_URL, notifierName)),
                             NotifierInfo.class).get(0);
-    }
-
-    protected InputStream getInputStream(String fileId, String relativeUrl) {
-        return client.target(String.format("%s/%s/%s", rootCatalogURL, relativeUrl, fileId))
-                .request(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_OCTET_STREAM_TYPE, MediaType.MULTIPART_FORM_DATA_TYPE)
-                .get(InputStream.class);
     }
 
     public InputStream getCustomProcessorJar (String jarFileName) {
@@ -106,4 +69,17 @@ public class CatalogRestClient {
         return getInputStream(jarId.toString(), FILE_DOWNLOAD_URL);
     }
 
+    protected InputStream getInputStream(String fileId, String relativeUrl) {
+        try {
+            return client.target(String.format("%s/%s/%s", rootCatalogURL, relativeUrl, fileId))
+                    .request(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_OCTET_STREAM_TYPE, MediaType.MULTIPART_FORM_DATA_TYPE)
+                    .get(InputStream.class);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private <T> List<T> getEntities(WebTarget target, Class<T> clazz) {
+        return JsonClientUtil.getEntities(target, "entities", clazz);
+    }
 }

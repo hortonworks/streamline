@@ -1,5 +1,6 @@
 package org.apache.streamline.streams.metrics.storm.topology;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.streamline.streams.exception.ConfigException;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
 import org.apache.streamline.streams.layout.component.Component;
@@ -9,6 +10,7 @@ import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
 import org.apache.streamline.streams.metrics.topology.TopologyTimeSeriesMetrics;
 import org.apache.streamline.streams.storm.common.StormRestAPIClient;
 import org.apache.streamline.streams.storm.common.StormTopologyUtil;
+import org.apache.streamline.streams.storm.common.TopologyNotAliveException;
 import org.glassfish.jersey.client.ClientConfig;
 
 import javax.ws.rs.client.Client;
@@ -70,7 +72,7 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
     @Override
     public TopologyMetric getTopologyMetric(TopologyLayout topology) {
         String topologyId = StormTopologyUtil.findStormTopologyId(client, topology.getId());
-        if (topologyId == null) {
+        if (StringUtils.isEmpty(topologyId)) {
             throw new TopologyNotAliveException("Topology not found in Storm Cluster - topology id: " + topology.getId());
         }
 
@@ -153,9 +155,8 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
     @Override
     public Map<String, ComponentMetric> getMetricsForTopology(TopologyLayout topology) {
         String topologyId = StormTopologyUtil.findStormTopologyId(client, topology.getId());
-        if (topologyId == null) {
-            throw new TopologyNotAliveException("Topology not found in Storm Cluster - topology id: " +
-                    topology.getId());
+        if (StringUtils.isEmpty(topologyId)) {
+            throw new TopologyNotAliveException("Topology not found in Storm Cluster - topology id: " + topology.getId());
         }
 
         Map<String, ?> responseMap = client.getTopology(topologyId);
