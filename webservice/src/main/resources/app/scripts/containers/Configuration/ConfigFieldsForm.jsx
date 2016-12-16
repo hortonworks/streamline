@@ -116,6 +116,7 @@ export default class ConfigFieldsForm extends Component {
 							onChange={this.handleTypeChange.bind(this)}
 							value={this.state.type}
 							options={this.typeArray}
+							className={this.state.type == "" ? "invalidSelect" : ""}
 						    required={true}
 						/>
 					</div>

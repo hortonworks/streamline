@@ -297,11 +297,14 @@ class TopologyEditorContainer extends Component {
     this.setState({topologyName: name});
   }
   validateName(name){
-    if(name === ''){
+    if(name.trim === ''){
       this.refs.topologyNameEditable.setState({errorMsg: "Topology name cannot be blank"});
       return false;
-    } else if(name.search(' ') !== -1){
-      this.refs.topologyNameEditable.setState({errorMsg: "Topology name cannot have space in between"});
+    } else if(/[^A-Za-z0-9_-\s]/g.test(name)) {//matches any character that is not a alphanumeric, underscore or hyphen
+      this.refs.topologyNameEditable.setState({errorMsg: "Topology name contains invalid characters"});
+      return false;
+    } else if(!/[A-Za-z0-9]/g.test(name)) {//to check if name contains only special characters
+      this.refs.topologyNameEditable.setState({errorMsg: "Topology name is not valid"});
       return false;
     } else {
       this.refs.topologyNameEditable.setState({errorMsg: ""});

@@ -178,7 +178,11 @@ export default class BranchNodeForm extends Component {
     changeProcessAll() {
         this.setState({processAll: !this.state.processAll});
     }
-
+    handleKeyPress = (event) => {
+      if(event.key === "Enter"){
+        this.refs.BranchRuleModal.state.show ? this.handleSaveRule() : '';
+      }
+    }
     render() {
         let {topologyId, versionId, editMode, nodeType, nodeData, targetNodes, linkShuffleOptions} = this.props;
         let {rules, processAll} = this.state;
@@ -232,7 +236,11 @@ export default class BranchNodeForm extends Component {
                         </Table>
                     </div>
                 </div>
-                <Modal ref="BranchRuleModal" dialogClassName="rule-modal-fixed-height" bsSize="large" data-title={this.state.modalTitle} data-resolve={this.handleSaveRule.bind(this)}>
+                <Modal ref="BranchRuleModal"
+                  dialogClassName="rule-modal-fixed-height"
+                  bsSize="large" data-title={this.state.modalTitle}
+                  onKeyPress={this.handleKeyPress}
+                  data-resolve={this.handleSaveRule.bind(this)}>
                     <BranchRulesForm
                         ref="RuleForm"
                         topologyId={topologyId}

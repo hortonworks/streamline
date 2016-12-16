@@ -25,6 +25,7 @@ class ImportTopology extends Component{
       namespaceId: '',
       namespaceOptions: [],
       validInput : true,
+      validSelect: true,
       showRequired : true
     }
     this.fetchData();
@@ -58,9 +59,10 @@ class ImportTopology extends Component{
       this.setState({validInput: false});
     } else if(namespaceId === ''){
       validDataFlag = false;
+      this.setState({validSelect: false});
     } else{
       validDataFlag = true
-      this.setState({validInput : true});
+      this.setState({validInput : true, validSelect: true});
     }
     return validDataFlag;
   }
@@ -84,12 +86,12 @@ class ImportTopology extends Component{
   }
   handleOnChangeEnvironment = (obj) => {
     if(obj) {
-      this.setState({namespaceId: obj.id});
-    } else this.setState({namespaceId: ''});
+      this.setState({namespaceId: obj.id, validSelect: true});
+    } else this.setState({namespaceId: '', validSelect: false});
   }
 
   render(){
-    const {validInput,showRequired, namespaceId, namespaceOptions} = this.state;
+    const {validInput, validSelect, showRequired, namespaceId, namespaceOptions} = this.state;
 
     return(
       <div className="modal-form config-modal-form">
@@ -112,6 +114,7 @@ class ImportTopology extends Component{
               value={namespaceId}
               options={namespaceOptions}
               onChange={this.handleOnChangeEnvironment}
+              className={!validSelect ? 'invalidSelect' : ''}
               placeholder="Select Environment"
               required={true}
               clearable={false}

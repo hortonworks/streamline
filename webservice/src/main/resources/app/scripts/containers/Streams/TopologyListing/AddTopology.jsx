@@ -25,6 +25,7 @@ class AddTopology extends Component{
       namespaceId: '',
       namespaceOptions: [],
       validInput : true,
+      validSelect: true,
       formField:{},
       showRequired : true
     }
@@ -83,9 +84,10 @@ class AddTopology extends Component{
       this.setState({validInput : false})
     } else if(namespaceId === ''){
       validDataFlag = false;
+      this.setState({validSelect: false})
     } else{
       validDataFlag = true
-      this.setState({validInput : true});
+      this.setState({validInput : true, validSelect: true});
     }
     return validDataFlag;
   }
@@ -115,12 +117,14 @@ class AddTopology extends Component{
   }
   handleOnChangeEnvironment = (obj) => {
     if(obj) {
-      this.setState({namespaceId: obj.id});
-    } else this.setState({namespaceId: ''});
+      this.setState({namespaceId: obj.id, validSelect: true});
+    } else {
+      this.setState({namespaceId: '', validSelect: false});
+    }
   }
 
   render(){
-    const {formField, validInput,showRequired, namespaceId, namespaceOptions} = this.state;
+    const {formField, validInput,showRequired, namespaceId, namespaceOptions, validSelect} = this.state;
     const formData = {}
     let fields = Utils.genFields(formField.fields || [], [], formData);
 
@@ -156,6 +160,7 @@ class AddTopology extends Component{
               options={namespaceOptions}
               onChange={this.handleOnChangeEnvironment}
               placeholder="Select Environment"
+              className={!validSelect ? "invalidSelect" : ""}
               required={true}
               clearable={false}
               labelKey="name"

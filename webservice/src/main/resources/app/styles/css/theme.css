@@ -2019,3 +2019,11 @@ rect.extent{
   margin-top: -60px;
   margin-left: -60px;
 }
+/*==== Fix for Firefox and all cross browser ==========*/
+.form-control{
+  height: auto;
+}
+
+.invalidSelect .Select-control {
+  border-color: #d81010;
+}

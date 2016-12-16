@@ -400,7 +400,6 @@ class TopologyListingContainer extends Component {
     }
 
     actionHandler = (eventKey, id) => {
-      event.stopPropagation();
       const key = eventKey.split('/');
       switch (key[0].toString()) {
         case "refresh":
@@ -454,7 +453,6 @@ class TopologyListingContainer extends Component {
     }
 
     onActionMenuClicked = (eventKey) => {
-      event.stopPropagation();
       switch(eventKey.toString()){
         case "create" : this.handleAddTopology();
           break;

@@ -192,7 +192,13 @@ export class enumstring extends BaseField {
         return super.validate(this.props.data[this.props.value])
     }
     getField = () => {
-        return <Select onChange={this.handleChange} {...this.props.fieldAttr} disabled={this.context.Form.props.readOnly} value={this.props.data[this.props.value]}/>
+        return <Select 
+                onChange={this.handleChange} 
+                {...this.props.fieldAttr} 
+                disabled={this.context.Form.props.readOnly} 
+                value={this.props.data[this.props.value]}
+                className={this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}
+            />
     }
 }
 
@@ -222,6 +228,7 @@ export class arraystring extends BaseField {
             multi={true}
             disabled={this.context.Form.props.readOnly}
             {...this.props.fieldAttr}
+            className={this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}
             valueKey="value"
             labelKey="value"
             value={arr}
@@ -243,7 +250,14 @@ export class arrayenumstring extends BaseField {
         return super.validate(this.props.data[this.props.value])
     }
     getField = () => {
-        return <Select onChange={this.handleChange} multi={true} disabled={this.context.Form.props.readOnly} {...this.props.fieldAttr} value={this.props.data[this.props.value]}/>
+        return <Select 
+                onChange={this.handleChange} 
+                multi={true} 
+                disabled={this.context.Form.props.readOnly} 
+                {...this.props.fieldAttr} 
+                value={this.props.data[this.props.value]}
+                className={this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}
+            />
     }
 }
 

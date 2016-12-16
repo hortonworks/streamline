@@ -155,11 +155,15 @@ class AddEnvironment extends Component{
         }
       })
     });
-    if(missingStorm){
-      this.refs.missingStorm.className = 'text-danger';
-      errArr.push("error");
+    if(this.refs.missingStorm != undefined){
+      if(missingStorm){
+        this.refs.missingStorm.className = 'text-danger';
+        errArr.push("error");
+      } else {
+        this.refs.missingStorm.className = '';
+      }
     } else {
-      this.refs.missingStorm.className = '';
+      errArr.push("error");
     }
     return (errArr.length === 0) ? true : false;
   }

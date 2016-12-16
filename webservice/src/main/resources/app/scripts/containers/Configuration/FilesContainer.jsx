@@ -108,6 +108,11 @@ export default class FilesContainer extends Component {
       </span>
     );
   }
+  handleKeyPress = (event) => {
+    if(event.key === "Enter"){
+      this.refs.Modal.state.show ? this.handleSave() : '';
+    }
+  }
 	render() {
     let {entities,filterValue,slideInput} = this.state;
     const filteredEntities = Utils.filterByName(entities , filterValue);
@@ -183,7 +188,10 @@ export default class FilesContainer extends Component {
                             </div>
                         </div>
                   </div>
-					<Modal ref="Modal" data-title="Add File" data-resolve={this.handleSave.bind(this)}>
+                                        <Modal ref="Modal"
+            data-title="Add File"
+            onKeyPress={this.handleKeyPress}
+            data-resolve={this.handleSave.bind(this)}>
 						<FileFormContainer ref="addFile" />
 					  </Modal>
 				</BaseContainer>

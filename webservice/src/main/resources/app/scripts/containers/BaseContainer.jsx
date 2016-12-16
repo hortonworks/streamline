@@ -22,7 +22,13 @@ export default class BaseContainer extends Component {
       // Operations usually carried out in componentWillMount go here
       this.state = {}
   }
-
+  handleKeyPress = (event) => {
+    event.key === "Enter"
+      ? this.refs.Confirm.state.show ? this.refs.Confirm.sure() : ''
+      : event.key === "Escape"
+        ? this.refs.Confirm.state.show ? this.refs.Confirm.cancel() : ''
+        : '';
+  }
   render(){
     const routes = this.props.routes || [{path: "/", name: 'Home'}]
     return(
@@ -35,7 +41,9 @@ export default class BaseContainer extends Component {
             <section className="content-wrapper editorHandler">
               {this.props.children}
             </section>
-            <Confirm ref="Confirm"/>
+            <Confirm ref="Confirm"
+              onKeyUp={this.handleKeyPress}
+              />
         </div>
     );
   }

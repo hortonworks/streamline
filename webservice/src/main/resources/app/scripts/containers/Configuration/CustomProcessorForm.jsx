@@ -47,7 +47,8 @@ class CustomProcessorForm extends Component {
 		outputStreamToSchema: [],
     topologyComponentUISpecification: [],
 		fieldId: null,
-		modalTitle: 'Add Config  Field'
+                modalTitle: 'Add Config  Field',
+    showNameError: false
 	}
 
 	constructor(props) {
@@ -91,8 +92,8 @@ class CustomProcessorForm extends Component {
   componentDidMount() {
     this.props.router.setRouteLeaveHook(this.props.route, this.routerWillLeave)
   }
-
   componentWillUnmount(){
+    this.props.popUpFlag(false);
     this.unmounted = true;
   }
 
@@ -106,6 +107,7 @@ class CustomProcessorForm extends Component {
   }
 
   confirmLeave(flag) {
+    this.props.popUpFlag(true);
     if(flag){
       this.navigateFlag = true;
       this.setState({fieldsChk : false})
@@ -123,6 +125,23 @@ class CustomProcessorForm extends Component {
 		this.setState(obj);
 	}
 
+  handleNameChange(e) {
+    let obj = this.validateName(e.target.value);
+    obj[e.target.name] = e.target.value;
+    this.setState(obj);
+  }
+  validateName(name) {
+    let {processors} = this.props;
+    let stateObj = {showNameError: false};
+    if(name !== '') {
+      let hasProcessor = processors.filter((o)=>{return (o.name === name);})
+      if(hasProcessor.length === 1){
+          stateObj.showNameError = true;
+      }
+    }
+    return stateObj;
+  }
+
 	handleJarUpload(event) {
 		if(!event.target.files.length){
 			this.setState(JSON.parse(JSON.stringify(this.defaultObj)));
@@ -135,6 +154,7 @@ class CustomProcessorForm extends Component {
 	}
 
 	handleAddFields() {
+    this.props.popUpFlag(true);
 		this.modalContent = ()=>{
 				return <ConfigFieldsForm ref="addField" id={this.idCount++}/>
 			};
@@ -175,6 +195,7 @@ class CustomProcessorForm extends Component {
         topologyComponentUISpecification: arr
 			})
 			this.refs.ConfigFieldModal.hide();
+      this.props.popUpFlag(false);
 		}
 	}
 
@@ -189,6 +210,12 @@ class CustomProcessorForm extends Component {
 		let outputStreams = this.refs.OutputSchemaContainer.getOutputStreams();
 
     const emptyVal = [name,description,customProcessorImpl,jarFileName,topologyComponentUISpecification,inputSchema];
+    if(name !== '') {
+      let errorObj = this.validateName(name);
+      if(errorObj.showNameError) {
+        validDataFlag = false;
+      }
+    }
 
 		if(streamingEngine === '' || name === '' || description === '' || customProcessorImpl === '' ||
         jarFileName === '' || inputSchema === '' || outputStreams.length === 0 ||
@@ -248,6 +275,13 @@ class CustomProcessorForm extends Component {
 		this.setState({inputSchema: json});
 	}
 
+  handleKeyPress = (event) => {
+    if(event.key === "Enter"){
+      this.refs.leaveConfigProcessor.state.show ? this.confirmLeave(this, true) : '';
+      this.refs.ConfigFieldModal.state.show ? this.handleSaveConfigFieldModal() : '';
+    }
+  }
+
 	render() {
 		const jsonoptions = {
 			lineNumbers: true,
@@ -284,7 +318,7 @@ class CustomProcessorForm extends Component {
                             <input
                               name="name"
                               placeholder="Name"
-                              onChange={this.handleValueChange.bind(this)}
+                              onChange={this.handleNameChange.bind(this)}
                               type="text"
                               className={this.state.name.trim() == "" ? "form-control invalidInput" : "form-control"}
                               value={this.state.name}
@@ -292,6 +326,7 @@ class CustomProcessorForm extends Component {
                                 disabled = {this.props.id ? true : false}
                             />
                           </div>
+                          {this.state.showNameError ? <p className="text-danger">Processor with this name is already present</p> : ''}
                         </div>
                         <div className="form-group">
                           <label className="col-sm-2 control-label">Description <span className="text-danger">*</span></label>
@@ -414,11 +449,15 @@ class CustomProcessorForm extends Component {
                 </div>
             </div>
       </div>
-			<Modal ref="ConfigFieldModal" data-title={this.state.modalTitle} data-resolve={this.handleSaveConfigFieldModal.bind(this)}>
+                        <Modal ref="ConfigFieldModal"
+        onKeyPress={this.handleKeyPress}
+        data-title={this.state.modalTitle}
+        data-resolve={this.handleSaveConfigFieldModal.bind(this)}>
 				{this.modalContent()}
 			</Modal>
       <Modal
         ref="leaveConfigProcessor"
+        onKeyPress={this.handleKeyPress}
         data-title="Confirm Box"
         dialogClassName="confirm-box"
         data-resolve={this.confirmLeave.bind(this, true)}

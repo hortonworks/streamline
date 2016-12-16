@@ -270,6 +270,12 @@ export default class TagsContainer extends Component {
     );
   }
 
+  handleKeyPress = (event) => {
+    if(event.key === "Enter"){
+      this.refs.Modal.state.show ? this.handleSave() : '';
+    }
+  }
+
  	render() {
                 const {entities, parentId, currentId, modalTitle ,filterValue,slideInput} = this.state;
     const filterByTagName = function(entities, filterValue){
@@ -352,8 +358,13 @@ export default class TagsContainer extends Component {
                         </div>
                     </div>
               </div>
-              <Modal ref="Modal" data-title={modalTitle} data-resolve={this.handleSave.bind(this)}>
-					<TagsFormContainer ref="addTag" parentId={parentId} currentId={currentId}/>
+              <Modal ref="Modal"
+                onKeyPress={this.handleKeyPress}
+                data-title={modalTitle}
+                data-resolve={this.handleSave.bind(this)}>
+					<TagsFormContainer ref="addTag"
+                  parentId={parentId}
+                  currentId={currentId}/>
 				</Modal>
                 </BaseContainer>
 	    )

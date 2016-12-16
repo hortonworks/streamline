@@ -23,7 +23,8 @@ export default class CustomProcessorContainer extends Component {
 			entities: [],
       showListing: true,
       filterValue:'',
-      slideInput : false
+      slideInput : false,
+      childPopUpFlag : false
 		};
 	}
 
@@ -58,8 +59,11 @@ export default class CustomProcessorContainer extends Component {
     if(this.refs.CustomProcessorForm.getWrappedInstance().validateData()){
       this.refs.CustomProcessorForm.getWrappedInstance().handleSave().then((processor)=>{
         if(processor.responseMessage !== undefined){
+          let errorMsg = processor.responseMessage.indexOf('[cache-0.1.0-SNAPSHOT.jar] already exists') !== -1
+                          ? "The jar file is already exists"
+                          : processor.responseMessage;
           FSReactToastr.error(
-              <CommonNotification flag="error" content={processors.responseMessage}/>, '', toastOpt)
+              <CommonNotification flag="error" content={errorMsg}/>, '', toastOpt)
         } else {
           FSReactToastr.success(<strong>Processor {this.state.processorId ? "updated" : "added"} successfully</strong>)
           this.fetchData();
@@ -115,6 +119,25 @@ export default class CustomProcessorContainer extends Component {
         Configuration <span className="title-separator">/</span> {this.props.routes[this.props.routes.length-1].name}
       </span>
     );
+  }
+  componentDidUpdate(){
+    window.removeEventListener(this.handleKeyPress.bind(this),false);
+    if(!this.state.childPopUpFlag && this.state.showListing){
+      window.addEventListener('keyup',this.handleKeyPress.bind(this),false);
+    }
+  }
+  componentWillUnmount(){
+    window.removeEventListener(this.handleKeyPress.bind(this),false);
+  }
+  handleKeyPress(event){
+      if(!this.state.childPopUpFlag){
+        if(event.key === "Enter"){
+          this.handleSave();
+        }
+      }
+  }
+  childPopUpFlag = (opt) => {
+    this.setState({childPopUpFlag : opt});
   }
 
 	render() {
@@ -205,6 +228,8 @@ export default class CustomProcessorContainer extends Component {
                     onSave={this.handleSave.bind(this)}
                     id={this.state.processorId}
                     route = {this.props.route}
+                    processors= {this.state.entities}
+                    popUpFlag={this.childPopUpFlag}
                 />
 				}
 				</BaseContainer>

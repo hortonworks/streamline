@@ -190,7 +190,11 @@ export default class RulesNodeForm extends Component {
 			})
 		}
 	}
-
+  handleKeyPress = (event) => {
+    if(event.key === "Enter"){
+      this.refs.RuleModal.state.show ? this.handleSaveRule() : '';
+    }
+  }
 	render() {
                 let {topologyId, versionId, editMode, nodeType, nodeData, targetNodes, linkShuffleOptions} = this.props;
 		let {rules} = this.state;
@@ -234,7 +238,7 @@ export default class RulesNodeForm extends Component {
                                                 </Table>
                                         </div>
                                 </div>
-                                <Modal ref="RuleModal" dialogClassName="rule-modal-fixed-height" bsSize="large" data-title={this.state.modalTitle} data-resolve={this.handleSaveRule.bind(this)}>
+                                <Modal ref="RuleModal" onKeyPress={this.handleKeyPress} dialogClassName="rule-modal-fixed-height" bsSize="large" data-title={this.state.modalTitle} data-resolve={this.handleSaveRule.bind(this)}>
 					<RulesForm
 						ref="RuleForm"
 						topologyId={topologyId}
