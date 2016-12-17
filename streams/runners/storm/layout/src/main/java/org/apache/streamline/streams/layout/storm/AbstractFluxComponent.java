@@ -87,8 +87,8 @@ public abstract class AbstractFluxComponent implements FluxComponent {
         referencedComponents.add(componentMap);
     }
 
-    protected Map createComponent (String id, String className, List properties, List constructorArgs, List configMethods) {
-        Map component = new LinkedHashMap();
+    protected Map<String, Object> createComponent (String id, String className, List properties, List constructorArgs, List configMethods) {
+        Map<String, Object> component = new LinkedHashMap<>();
         component.put(StormTopologyLayoutConstants.YAML_KEY_ID, id);
         component.put(StormTopologyLayoutConstants.YAML_KEY_CLASS_NAME, className);
         if (properties != null && properties.size() > 0) {
@@ -135,7 +135,7 @@ public abstract class AbstractFluxComponent implements FluxComponent {
     protected List getConfigMethodsYaml (String[] configMethodNames, String[] configKeys) {
         List configMethods = new ArrayList();
         List<String> nonNullConfigMethodNames = new ArrayList<>();
-        List<Object[]> values = new ArrayList<Object[]>(configKeys.length);
+        List<Object[]> values = new ArrayList<Object[]>(configKeys == null ? 0 : configKeys.length);
 
         if ((configMethodNames != null) && (configKeys != null) &&
                 (configMethodNames.length == configKeys.length) && (configKeys.length > 0)) {
@@ -152,7 +152,6 @@ public abstract class AbstractFluxComponent implements FluxComponent {
                     }
                 }
             }
-;
             configMethods = getConfigMethodsYaml2(nonNullConfigMethodNames.toArray(new String[0]), make2dArray(values));
         }
         return configMethods;

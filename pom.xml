@@ -430,6 +430,11 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.storm</groupId>
+                <artifactId>storm-solr</artifactId>
+                <version>${storm.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.storm</groupId>
                 <artifactId>storm-pmml</artifactId>
                 <version>${storm.version}</version>
             </dependency>

@@ -200,6 +200,10 @@
         </dependency>
         <dependency>
             <groupId>org.apache.storm</groupId>
+            <artifactId>storm-solr</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.storm</groupId>
             <artifactId>flux-core</artifactId>
         </dependency>
         <dependency>
