@@ -18,7 +18,7 @@ then
   fi
 fi
 curl -X POST "http://${host}:${port}/api/v1/catalog/notifiers" -F notifierJarFile=@${jarFile} -F notifierConfig='{
-  "name": "email_notifier",
+  "name": "email_notifier.json",
   "description": "testing",
   "className": "org.apache.streamline.streams.notifiers.EmailNotifier",
   "properties": {

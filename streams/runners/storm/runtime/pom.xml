@@ -107,7 +107,6 @@
             <artifactId>cassandra-driver-core</artifactId>
             <version>${cassandra.driver.core.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.apache.storm</groupId>
             <artifactId>storm-hbase</artifactId>
@@ -125,6 +124,10 @@
                     <artifactId>jersey-client</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.storm</groupId>
+            <artifactId>storm-solr</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>

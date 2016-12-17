@@ -1,4 +1,5 @@
 ## 0.1.4
+ * STREAMLINE-515: storm-solr bundle spec and flux transformation class
  * STREAMLINE-576: Notification bolt throws NPE if local.notifier.jar.path is missing
  * STREAMLINE-548: Send requests to AMS concurrently when querying time-series Topology Metrics or Component Stats
  * STREAMLINE-558: Time-series DB version of Topology Metrics API (aggregated ver.) 
