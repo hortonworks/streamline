@@ -9,5 +9,5 @@ else
   echo "Script needs only one argument i.e. storm maven version"
   exit 1
 fi
-find $bootstrap_dir -name "*-component" | xargs sed -i.bak s/STORM_VERSION/$storm_version/g
+find $bootstrap_dir -name "*-component.json" | xargs sed -i.bak s/STORM_VERSION/$storm_version/g
 

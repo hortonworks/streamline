@@ -72,24 +72,30 @@ done
 update_storm_version_command="$bootstrap_dir/update-storm-version.sh 1.0.2.2.1.0.0-165"
 run_cmd $update_storm_version_command
 
-add_bundle /streams/componentbundles/SOURCE $bootstrap_dir/kafka-topology-component
-add_bundle /streams/componentbundles/SOURCE $bootstrap_dir/hdfs-spout-topology-component
-add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/rule-topology-component
-add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/window-topology-component
-add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/normalization-processor-topology-component
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/hdfs-topology-component
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/hbase-topology-component
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/notification-topology-component
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/opentsdb-sink-topology-component
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/jdbc-sink-topology-component
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/cassandra-sink-topology-component
-add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/branch-topology-component
-add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/join-bolt-topology-component
-add_bundle /streams/componentbundles/TOPOLOGY $bootstrap_dir/storm-topology-component
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/druid-sink-topology-component
-add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/multilang-topology-component
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/kafka-sink-topology-component
-add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/model-topology-component
+# === Source ===
+add_bundle /streams/componentbundles/SOURCE $bootstrap_dir/kafka-topology-component.json
+add_bundle /streams/componentbundles/SOURCE $bootstrap_dir/hdfs-spout-topology-component.json
+# === Processor ===
+add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/rule-topology-component.json
+add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/window-topology-component.json
+add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/normalization-processor-topology-component.json
+add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/branch-topology-component.json
+add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/join-bolt-topology-component.json
+add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/multilang-topology-component.json
+add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/model-topology-component.json
+# === Sink ===
+add_bundle /streams/componentbundles/SINK $bootstrap_dir/hdfs-topology-component.json
+add_bundle /streams/componentbundles/SINK $bootstrap_dir/hbase-topology-component.json
+add_bundle /streams/componentbundles/SINK $bootstrap_dir/notification-topology-component.json
+add_bundle /streams/componentbundles/SINK $bootstrap_dir/opentsdb-sink-topology-component.json
+add_bundle /streams/componentbundles/SINK $bootstrap_dir/jdbc-sink-topology-component.json
+add_bundle /streams/componentbundles/SINK $bootstrap_dir/cassandra-sink-topology-component.json
+add_bundle /streams/componentbundles/SINK $bootstrap_dir/druid-sink-topology-component.json
+add_bundle /streams/componentbundles/SINK $bootstrap_dir/solr-sink-topology-component.json
+add_bundle /streams/componentbundles/SINK $bootstrap_dir/kafka-sink-topology-componen.json
+# === Topology ===
+add_bundle /streams/componentbundles/TOPOLOGY $bootstrap_dir/storm-topology-component.json
+
 #add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/split-topology-component
 #post /streams/componentbundles/PROCESSOR $bootstrap_dir/stage-topology-component
 #post /streams/componentbundles/ACTION $bootstrap_dir/transform-action-topology-component
