@@ -35,6 +35,15 @@ import com.zaxxer.hikari.HikariConfig;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * SQL query executor for MySQL DB.
+ *
+ * To issue the new ID to insert and get auto issued key in concurrent manner, MySqlExecutor utilizes MySQL's
+ * auto increment feature and JDBC's getGeneratedKeys() which is described to MySQL connector doc:
+ * https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-usagenotes-last-insert-id.html
+ *
+ * If the value of id is null, we let MySQL issue new ID and get the new ID. If the value of id is not null, we just use that value.
+ */
 public class MySqlExecutor extends AbstractQueryExecutor {
 
     /**
@@ -59,17 +68,17 @@ public class MySqlExecutor extends AbstractQueryExecutor {
 
     @Override
     public void insert(Storable storable) {
-        insertOrUpdateHelper(storable, new SqlInsertQuery(storable));
+        insertOrUpdateWithUniqueId(storable, new SqlInsertQuery(storable));
     }
 
     @Override
     public void insertOrUpdate(final Storable storable) {
-        insertOrUpdateHelper(storable, new MySqlInsertUpdateDuplicate(storable));
+        insertOrUpdateWithUniqueId(storable, new MySqlInsertUpdateDuplicate(storable));
     }
 
     @Override
     public Long nextId(String namespace) {
-        // intentionally returning null
+        // We intentionally return null. Please refer the class javadoc for more details.
         return null;
     }
 
@@ -99,7 +108,7 @@ public class MySqlExecutor extends AbstractQueryExecutor {
         return new MySqlExecutor(executionConfig, connectionBuilder);
     }
 
-    private void insertOrUpdateHelper(final Storable storable, final SqlQuery sqlQuery) {
+    private void insertOrUpdateWithUniqueId(final Storable storable, final SqlQuery sqlQuery) {
         try {
             Long id = storable.getId();
             if (id == null) {

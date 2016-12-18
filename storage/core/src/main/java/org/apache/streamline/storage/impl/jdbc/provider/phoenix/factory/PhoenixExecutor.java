@@ -21,7 +21,13 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * SQL query executor for Phoenix
+ * SQL query executor for Phoenix.
+ *
+ * Phoenix doesn't support auto_increment feature, as well as JDBC's getGeneratedKeys().
+ * In order to get over, we take a workaround to {@link PhoenixSequenceIdQuery#getNextID()} which provides issuing ID
+ * in safe way.
+ *
+ * If the value of id is null, we issue a new ID and set ID to entity. If the value of id is not null, we just use that value.
  */
 public class PhoenixExecutor extends AbstractQueryExecutor {
 
