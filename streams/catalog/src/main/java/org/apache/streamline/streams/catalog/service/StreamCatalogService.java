@@ -699,13 +699,21 @@ public class StreamCatalogService {
         LOG.debug("Added version info {}", versionInfo);
 
         // remove topology with placeholder version first
-        removeTopology(topology.getId(), PLACEHOLDER_ID, false);
+        // WARN: don't use removeTopology since it also removes PLACEHOLDER topology version info!
+        removeOnlyTopologyEntity(topology.getId(), topology.getVersionId());
 
         // put actual version id
         topology.setVersionId(versionInfo.getId());
 
         this.dao.add(topology);
         return topology;
+    }
+
+    private Topology removeOnlyTopologyEntity(Long topologyId, Long versionId) {
+        Topology topologyForDelete = new Topology();
+        topologyForDelete.setId(topologyId);
+        topologyForDelete.setVersionId(versionId);
+        return dao.remove(topologyForDelete.getStorableKey());
     }
 
     // create a 'CURRENT' version for given topology id
