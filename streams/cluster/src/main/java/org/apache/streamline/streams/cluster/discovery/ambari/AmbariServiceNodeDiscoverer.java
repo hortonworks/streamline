@@ -271,6 +271,12 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
     client = ClientBuilder.newClient(clientConfig);
   }
 
+  public void validateApiUrl() {
+    // just calling getServices() to retrieve service list from Ambari REST API
+    // it also parses the response, so if API is not valid, any exceptions should be thrown
+    getServices();
+  }
+
   @Provider
   public static class JsonToMapProvider implements MessageBodyReader<Map> {
     private ObjectMapper objectMapper = new ObjectMapper();
