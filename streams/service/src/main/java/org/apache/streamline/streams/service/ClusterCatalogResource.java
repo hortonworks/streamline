@@ -4,6 +4,7 @@ import com.codahale.metrics.annotation.Timed;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.streamline.common.QueryParam;
+import org.apache.streamline.common.exception.WrappedWebApplicationException;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.Cluster;
 import org.apache.streamline.streams.catalog.Component;
@@ -37,8 +38,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -151,6 +154,29 @@ public class ClusterCatalogResource {
                                        Cluster cluster) {
         Cluster newCluster = catalogService.addOrUpdateCluster(clusterId, cluster);
         return WSUtils.respondEntity(newCluster, CREATED);
+    }
+
+    @POST
+    @Path("/cluster/import/ambari/verify/url")
+    @Timed
+    public Response verifyAmbariUrl(AmbariClusterImportParams params) {
+        // Not assigning to interface to apply a hack
+        AmbariServiceNodeDiscoverer discoverer = new AmbariServiceNodeDiscoverer(params.getAmbariRestApiRootUrl(),
+                params.getUsername(), params.getPassword());
+
+        try {
+            discoverer.init(null);
+            discoverer.validateApiUrl();
+        } catch (WrappedWebApplicationException e) {
+            throw e;
+        } catch (Throwable e) {
+            // other exceptions
+            throw BadRequestException.message("Not valid Ambari cluster Rest API URL", e);
+        }
+
+        Map<String, String> responseOK = new HashMap<>();
+        responseOK.put("responseMessage", "verified");
+        return WSUtils.respondEntity(responseOK, OK);
     }
 
     @POST
