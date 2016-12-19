@@ -47,6 +47,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
@@ -501,10 +502,10 @@ public class TopologyCatalogResource {
     @POST
     @Path("/topologies/{topologyId}/actions/clone")
     @Timed
-    public Response cloneTopology(@PathParam("topologyId") Long topologyId) throws Exception {
+    public Response cloneTopology(@PathParam("topologyId") Long topologyId, @QueryParam("namespaceId") Long namespaceId) throws Exception {
         Topology originalTopology = catalogService.getTopology(topologyId);
         if (originalTopology != null) {
-            Topology clonedTopology = catalogService.cloneTopology(originalTopology);
+            Topology clonedTopology = catalogService.cloneTopology(namespaceId, originalTopology);
             return WSUtils.respondEntity(clonedTopology, OK);
         }
 
