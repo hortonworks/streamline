@@ -28,6 +28,7 @@ import Paginate from '../../../components/Paginate';
 import Modal from '../../../components/FSModal';
 import AddTopology from './AddTopology';
 import ImportTopology from './ImportTopology';
+import CloneTopology from './CloneTopology';
 
 class CustPieChart extends PieChart{
   drawPie(){
@@ -291,6 +292,7 @@ class TopologyListingContainer extends Component {
             fetchLoader : true,
             pageIndex : 0,
             pageSize : 9,
+            cloneFromId: null
         }
 
         this.fetchData();
@@ -378,16 +380,8 @@ class TopologyListingContainer extends Component {
     }
 
     cloneTopologyAction = (id) => {
-      this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to clone the topology ?'}).then((confirmBox) => {
-        TopologyREST.cloneTopology(id).then((topology) => {
-          this.fetchData();
-          confirmBox.cancel();
-          if (topology.responseMessage !== undefined) {
-            FSReactToastr.error(<CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
-          } else {
-            FSReactToastr.success(<strong>Topology cloned successfully</strong>)
-          }
-        })
+      this.setState({cloneFromId: id}, ()=>{
+        this.CloneTopologyModelRef.show();
       })
     }
 
@@ -510,10 +504,25 @@ class TopologyListingContainer extends Component {
       }
     }
 
+    handleCloneSave = () => {
+      if(this.cloneTopologyRef.validate()){
+          this.cloneTopologyRef.handleSave().then((topology)=>{
+            if (topology.responseMessage !== undefined) {
+              FSReactToastr.error(
+                  <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
+            } else {
+                FSReactToastr.success(<strong>Topology cloned successfully</strong>)
+                this.context.router.push('applications/' + topology.id + '/edit');
+            }
+        })
+      }
+    }
+
     handleKeyPress = (event) => {
       if(event.key === "Enter"){
         this.AddTopologyModelRef.state.show ? this.handleSaveClicked() : '';
         this.ImportTopologyModelRef.state.show ? this.handleImportSave() : '';
+        this.CloneTopologyModelRef.state.show ? this.handleCloneSave() : '';
       }
     }
 
@@ -617,6 +626,12 @@ class TopologyListingContainer extends Component {
                   onKeyPress={this.handleKeyPress}
                   data-resolve={this.handleImportSave}>
                   <ImportTopology ref={(ref) => this.importTopologyRef = ref}/>
+                </Modal>
+                <Modal ref={(ref) => this.CloneTopologyModelRef = ref}
+                  data-title="Clone Stream"
+                  onKeyPress={this.handleKeyPress}
+                  data-resolve={this.handleCloneSave}>
+                  <CloneTopology topologyId={this.state.cloneFromId} ref={(ref) => this.cloneTopologyRef = ref}/>
                 </Modal>
                 <a className="btn-download" ref="ExportTopology" hidden download href=""></a>
             </BaseContainer>

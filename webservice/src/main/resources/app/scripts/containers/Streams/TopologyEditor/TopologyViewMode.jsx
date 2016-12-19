@@ -57,7 +57,7 @@ class TopologyViewMode extends Component{
   }
 
   render(){
-    const {minSelected, stormViewUrl} = this.state;
+    let {minSelected, stormViewUrl} = this.state;
     const {topologyId,topologyName,isAppRunning,unknown,killTopology,setCurrentVersion,topologyMetric,timestamp, topologyVersion, versionsArr = []} = this.props;
     const {metric} = topologyMetric || { metric : (topologyMetric === '') ? '' : topologyMetric.metric};
     const metricWrap = metric;
@@ -66,6 +66,14 @@ class TopologyViewMode extends Component{
     const emittedText = Utils.kFormatter(misc.emitted).toString();
     const transferred = Utils.kFormatter(misc.transferred).toString();
     let versionName = this.getTitleFromId(topologyVersion);
+    if(topologyMetric && topologyMetric.runtimeTopologyId && stormViewUrl.length){
+      if(stormViewUrl.indexOf('/main/views/') == -1){
+        stormViewUrl = stormViewUrl + '/topology.html?id=' + topologyMetric.runtimeTopologyId;
+      } else {
+        //Storm view requires the path to be encoded
+        stormViewUrl = stormViewUrl + '?viewpath=%23!%2Ftopology%2F' + encodeURIComponent(topologyMetric.runtimeTopologyId);
+      }
+    }
     return(
       <div>
         <div className="page-title-box row">

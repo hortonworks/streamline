@@ -290,11 +290,11 @@ const TopologyREST = {
 	          return response.json();
             })
         },
-        cloneTopology(id, options) {
-                options = options || {};
-                options.method = options.method || 'POST';
-                return fetch(baseUrl+'topologies/'+id+'/actions/clone', options)
-                        .then( (response) => {
+    cloneTopology(id, namespaceId, options) {
+        options = options || {};
+        options.method = options.method || 'POST';
+        return fetch(baseUrl+'topologies/'+id+'/actions/clone?namespaceId='+namespaceId, options)
+                .then( (response) => {
 				return response.json();
 			})
         },
