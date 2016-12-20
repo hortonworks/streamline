@@ -185,7 +185,7 @@ CREATE TABLE IF NOT EXISTS topology_components (
 );
 
 CREATE TABLE IF NOT EXISTS topology_sources (
-    id BIGINT AUTO_INCREMENT NOT NULL,
+    id BIGINT NOT NULL,
     versionId BIGINT NOT NULL,
     topologyId BIGINT NOT NULL,
     topologyComponentBundleId BIGINT NOT NULL,
@@ -205,7 +205,7 @@ CREATE TABLE IF NOT EXISTS topology_source_stream_mapping (
 );
 
 CREATE TABLE IF NOT EXISTS topology_sinks (
-    id BIGINT AUTO_INCREMENT NOT NULL,
+    id BIGINT NOT NULL,
     versionId BIGINT NOT NULL,
     topologyId BIGINT NOT NULL,
     topologyComponentBundleId BIGINT NOT NULL,
@@ -217,7 +217,7 @@ CREATE TABLE IF NOT EXISTS topology_sinks (
 );
 
 CREATE TABLE IF NOT EXISTS topology_processors (
-    id BIGINT AUTO_INCREMENT NOT NULL,
+    id BIGINT NOT NULL,
     versionId BIGINT NOT NULL,
     topologyId BIGINT NOT NULL,
     topologyComponentBundleId BIGINT NOT NULL,
