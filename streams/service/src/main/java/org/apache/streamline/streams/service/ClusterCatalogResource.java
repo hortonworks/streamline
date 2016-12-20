@@ -1,6 +1,7 @@
 package org.apache.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.streamline.common.QueryParam;
@@ -30,14 +31,17 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -53,6 +57,9 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Produces(MediaType.APPLICATION_JSON)
 public class ClusterCatalogResource {
     private static final Logger LOG = LoggerFactory.getLogger(ClusterCatalogResource.class);
+    public static final String RESPONSE_MESSAGE_BAD_INPUT_NOT_VALID_AMBARI_CLUSTER_REST_API_URL = "Bad input: Not valid Ambari cluster Rest API URL";
+    public static final String RESPONSE_MESSAGE = "responseMessage";
+    public static final String VERIFIED = "verified";
     private final StreamCatalogService catalogService;
     private static final Set<Long> importInProgressCluster = new HashSet<>();
 
@@ -164,19 +171,26 @@ public class ClusterCatalogResource {
         AmbariServiceNodeDiscoverer discoverer = new AmbariServiceNodeDiscoverer(params.getAmbariRestApiRootUrl(),
                 params.getUsername(), params.getPassword());
 
+        Map<String, Object> response;
         try {
             discoverer.init(null);
             discoverer.validateApiUrl();
+            response = Collections.singletonMap(VERIFIED, true);
         } catch (WrappedWebApplicationException e) {
-            throw e;
+            Throwable cause = e.getCause();
+            if (cause == null || !(cause instanceof WebApplicationException)) {
+                response = Collections.singletonMap(RESPONSE_MESSAGE, e.getMessage());
+            } else {
+                String message = getMessageFromAmbariAPIResponse(cause);
+                response = Collections.singletonMap(RESPONSE_MESSAGE, message);
+            }
         } catch (Throwable e) {
             // other exceptions
-            throw BadRequestException.message("Not valid Ambari cluster Rest API URL", e);
+            response = Collections.singletonMap(RESPONSE_MESSAGE,
+                    RESPONSE_MESSAGE_BAD_INPUT_NOT_VALID_AMBARI_CLUSTER_REST_API_URL);
         }
 
-        Map<String, String> responseOK = new HashMap<>();
-        responseOK.put("responseMessage", "verified");
-        return WSUtils.respondEntity(responseOK, OK);
+        return WSUtils.respondEntity(response, OK);
     }
 
     @POST
@@ -295,6 +309,32 @@ public class ClusterCatalogResource {
                 }
             }
         }
+    }
+
+    private String getMessageFromAmbariAPIResponse(Throwable cause) {
+        WebApplicationException reason = (WebApplicationException) cause;
+
+        String message = cause.getMessage();
+        try {
+            String responseBody = reason.getResponse().readEntity(String.class);
+
+            if (StringUtils.isNotEmpty(responseBody)) {
+                ObjectMapper objectMapper = new ObjectMapper();
+                try {
+                    Map jsonDict = objectMapper.readValue(responseBody, Map.class);
+                    String ambariMessage = jsonDict.get("message").toString();
+                    if (StringUtils.isNotEmpty(ambariMessage)) {
+                        message = ambariMessage;
+                    }
+                } catch (IOException e1) {
+                    // we're setting default
+                }
+            }
+        } catch (Throwable e) {
+            // we're setting default
+        }
+
+        return message;
     }
 
     private static class AmbariClusterImportParams {
