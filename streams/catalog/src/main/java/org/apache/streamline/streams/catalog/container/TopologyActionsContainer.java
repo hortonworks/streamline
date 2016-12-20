@@ -90,6 +90,10 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
         conf.put(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY, buildStormRestApiRootUrl(uiHost, uiPort));
         conf.putAll(streamlineConf);
 
+        // Topology during run-time will require few critical configs such as schemaRegistryUrl and catalogRootUrl
+        // Hence its important to pass StreamlineConfig to TopologyConfig
+        conf.putAll(streamlineConf);
+
         return conf;
     }
 
