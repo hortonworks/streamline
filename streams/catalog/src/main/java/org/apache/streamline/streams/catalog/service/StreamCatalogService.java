@@ -1653,7 +1653,7 @@ public class StreamCatalogService {
         component.setId(id);
         dao.add(component);
         dao.remove(component.getStorableKey());
-        return id;
+        return component.getId();
     }
 
     /*
