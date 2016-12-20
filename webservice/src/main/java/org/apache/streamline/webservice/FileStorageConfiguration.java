@@ -30,4 +30,5 @@ public class FileStorageConfiguration {
     public void setProperties(Map<String, String> config) {
         this.properties = config;
     }
+
 }

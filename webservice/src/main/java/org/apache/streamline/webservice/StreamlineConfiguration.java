@@ -18,7 +18,6 @@
 package org.apache.streamline.webservice;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.streamline.common.TimeSeriesDBConfiguration;
 import io.dropwizard.Configuration;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -39,7 +38,9 @@ public class StreamlineConfiguration extends Configuration {
     @NotNull
     private StorageProviderConfiguration storageProviderConfiguration;
 
-    private TimeSeriesDBConfiguration timeSeriesDBConfiguration;
+    @NotNull
+    private PivotConfiguration pivotConfiguration;
+
 
     @JsonProperty
     public StorageProviderConfiguration getStorageProviderConfiguration() {
@@ -57,6 +58,8 @@ public class StreamlineConfiguration extends Configuration {
     @JsonProperty
     private List<String> corsUrlPatterns;
 
+
+
     public String getCatalogRootUrl () {
         return catalogRootUrl;
     }
@@ -65,20 +68,16 @@ public class StreamlineConfiguration extends Configuration {
         this.catalogRootUrl = catalogRootUrl;
     }
 
+    public PivotConfiguration getPivotConfiguration () { return pivotConfiguration; }
+
+    public void setPivotUrl (PivotConfiguration pivotConfiguration) { this.pivotConfiguration = pivotConfiguration; }
+
     public FileStorageConfiguration getFileStorageConfiguration() {
         return this.fileStorageConfiguration;
     }
 
     public void setFileStorageConfiguration(FileStorageConfiguration configuration) {
         this.fileStorageConfiguration = configuration;
-    }
-
-    public TimeSeriesDBConfiguration getTimeSeriesDBConfiguration() {
-        return timeSeriesDBConfiguration;
-    }
-
-    public void setTimeSeriesDBConfiguration(TimeSeriesDBConfiguration timeSeriesDBConfiguration) {
-        this.timeSeriesDBConfiguration = timeSeriesDBConfiguration;
     }
 
     public List<ModuleConfiguration> getModules() {
@@ -104,4 +103,5 @@ public class StreamlineConfiguration extends Configuration {
     public void setCorsUrlPatterns(List<String> corsUrlPatterns) {
         this.corsUrlPatterns = corsUrlPatterns;
     }
+
 }
