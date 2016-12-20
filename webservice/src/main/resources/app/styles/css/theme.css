@@ -2023,7 +2023,9 @@ rect.extent{
 .form-control{
   height: auto;
 }
-
 .invalidSelect .Select-control {
   border-color: #d81010;
+}
+.CodeMirror-linenumbers{
+  width: 29px !important;
 }

@@ -315,9 +315,9 @@ class TopologyEditorContainer extends Component {
         .then(result=>{
           if(result.responseMessage !== undefined){
             FSReactToastr.error(
-              <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
+              <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt)
           } else {
-            FSReactToastr.success(<strong>Activated to current version successfully</strong>);
+            FSReactToastr.success(<strong>Version switched successfully</strong>);
             this.fetchData();
           }
         })

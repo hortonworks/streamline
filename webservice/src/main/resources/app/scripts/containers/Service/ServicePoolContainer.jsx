@@ -85,28 +85,27 @@ class PoolItemsCard extends Component{
                       </DropdownButton>
                     </div>
                 </div>
-                <div className="service-body clearfix common-overflow">
-                  {
-                    (this.checkRefId(cluster.id))
-                    ? <div className="service-components">
-                        <div className="loading-img text-center">
-                            <img src="styles/img/start-loader.gif" alt="loading" />
+                  <div className="service-body clearfix common-overflow">
+                    {
+                      (this.checkRefId(cluster.id))
+                      ? <div className="service-components">
+                          <div className="loading-img text-center">
+                              <img src="styles/img/start-loader.gif" alt="loading" />
+                          </div>
                         </div>
-                      </div>
-                    :  <ul className="service-components">
-                          {
-                            serviceWrap.length !== 0
-                            ? serviceWrap.map((items, i) => {
-                                return <ServiceItems key={i} item={items.service}/>
-                              })
-                            : <div className="col-sm-12 text-center">
-                                No Service
-                              </div>
-                          }
-                      </ul>
-                  }
-
-                </div>
+                      :  <ul className="service-components ">
+                            {
+                              serviceWrap.length !== 0
+                              ? serviceWrap.map((items, i) => {
+                                  return <ServiceItems key={i} item={items.service}/>
+                                })
+                              : <div className="col-sm-12 text-center">
+                                  No Service
+                                </div>
+                            }
+                        </ul>
+                    }
+                  </div>
             </div>
         </div>
     )
@@ -304,10 +303,35 @@ class ServicePoolContainer extends Component{
 
   adminSaveClicked = () => {
     if(this.validateForm()){
-      const {idCheck,showFields} = this.state;
-      (showFields) ? this.importAmbariCluster() : this.fetchClusterDetail();
-      this.adminFormModel.hide();
-      this.setState({showFields : false});
+      const {idCheck,showFields,clusterData} = this.state;
+      const {ambariUrl,username, password} = clusterData;
+      const urlVerificationData = {
+        ambariRestApiRootUrl : ambariUrl,
+        username : username,
+        password : password
+      };
+
+      ClusterREST.postAmbariClusterVerifyURL({body : JSON.stringify(urlVerificationData)})
+      .then(urlVerify => {
+        if(urlVerify.verified){
+          (showFields) ? this.importAmbariCluster() : this.fetchClusterDetail();
+          this.adminFormModel.hide();
+          this.setState({showFields : false});
+        }else{
+          let response = urlVerify.responseMessage
+          if(response !== undefined){
+              let errorMsg = response;
+              errorMsg = response.indexOf('Cluster not found') !== -1
+                          ? "Ambari cluster not found"
+                          : response.indexOf('Unable to sign in') !== -1
+                            ? "You have entered wrong username or password"
+                            : response.indexOf('Bad input') !== -1
+                              ? "Not valid Ambari API URL"
+                              : response;
+              FSReactToastr.error(<CommonNotification flag="error" content={errorMsg}/>, '', toastOpt);
+            }
+        }
+      });
     }
   }
 
@@ -329,20 +353,13 @@ class ServicePoolContainer extends Component{
       .then((ambarClusters) => {
         let obj = {};
         if (ambarClusters.responseMessage !== undefined) {
-            const tempDataArray = this.spliceTempArr(clusterID || idCheck);
-            const errorMsg = ambarClusters.responseMessage.indexOf('Bad request') !== -1
-                              ? "You have entered a wrong cluster name"
-                              : ambarClusters.responseMessage;
-            ClusterREST.deleteCluster(clusterID || idCheck)
-            .then((deletedCluster) => {
-              this.setState({loader : false,idCheck : '',refIdArr : tempDataArray}, () => {
-                this.fetchData();
-                clearTimeout(clearTimer);
-                const clearTimer = setTimeout(() => {
-                  FSReactToastr.error(<CommonNotification flag="error" content={errorMsg}/>, '', toastOpt);
-                },500);
-              });
-            });
+          this.setState({loader : false,idCheck : ''}, () => {
+            this.fetchData();
+            clearTimeout(clearTimer);
+            const clearTimer = setTimeout(() => {
+              FSReactToastr.error(<CommonNotification flag="error" content={errorMsg}/>, '', toastOpt);
+            },500);
+          });
         }else{
           const result = ambarClusters;
           let entitiesWrap = [],sucessMsg='';
@@ -403,7 +420,7 @@ class ServicePoolContainer extends Component{
 
   handleKeyPress = (event) => {
     if(event.key === "Enter"){
-      if(event.target.placeholder.indexOf('URL') !== -1){
+      if(event.target.placeholder.indexOf('http://ambari_host') !== -1){
           event.target.focus = false;
           this.addBtnClicked();
       }
@@ -423,7 +440,7 @@ class ServicePoolContainer extends Component{
                 <label>Url<span className="text-danger">*</span></label>
                   <input type="text"
                     className="form-control"
-                    placeholder="Enter your Url"
+                    placeholder="http://ambari_host:port/api/v1/cluster/CLUSTER_NAME"
                     ref="userUrl"
                     autoFocus="true"
                   />
@@ -462,7 +479,7 @@ class ServicePoolContainer extends Component{
                       ref="addURLInput"
                       onKeyPress={this.handleKeyPress}
                       className={`form-control ${showInputErr ? '' : 'invalidInput'}`}
-                      placeholder="Enter Ambari URL"
+                      placeholder="http://ambari_host:port/api/v1/cluster/CLUSTER_NAME"
                     />
                     <span className="input-group-btn">
                         <button className="btn btn-success"

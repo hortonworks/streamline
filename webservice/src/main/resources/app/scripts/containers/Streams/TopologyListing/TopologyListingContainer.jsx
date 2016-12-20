@@ -387,10 +387,25 @@ class TopologyListingContainer extends Component {
 
     exportTopologyAction = (id) => {
       this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to export the topology ?'}).then((confirmBox) => {
-        this.refs.ExportTopology.href = TopologyREST.getExportTopologyURL(id);
-        this.refs.ExportTopology.click();
-        confirmBox.cancel();
+        TopologyREST.getExportTopology(id)
+          .then((exportTopology) => {
+            if (exportTopology.responseMessage !== undefined) {
+              let errorMag = exportTopology.responseMessage.indexOf('NoSuchElementException') !== -1
+                              ? "There might be some unconfigure Nodes. so please configure it first."
+                              : exportTopology.responseMessage;
+              FSReactToastr.error(
+                  <CommonNotification flag="error" content={errorMag}/>, '', toastOpt)
+            } else {
+                this.exportTopologyDownload(id)
+            }
+          });
       })
+    }
+
+    exportTopologyDownload = (id) => {
+      this.refs.ExportTopology.href = TopologyREST.getExportTopologyURL(id);
+      this.refs.ExportTopology.click();
+      this.refs.BaseContainer.refs.Confirm.cancel();
     }
 
     actionHandler = (eventKey, id) => {
@@ -476,8 +491,11 @@ class TopologyListingContainer extends Component {
       if(this.addTopologyRef.validate()){
           this.addTopologyRef.handleSave().then((topology)=>{
             if (topology.responseMessage !== undefined) {
+              let errorMag = topology.responseMessage.indexOf('already exists') !== -1
+                              ? "Entity with the same name is already exists"
+                              : topology.responseMessage;
               FSReactToastr.error(
-                  <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
+                  <CommonNotification flag="error" content={errorMag}/>, '', toastOpt);
             } else {
                 this.addTopologyRef.saveMetadata(topology.id).then(() => {
                   FSReactToastr.success(
@@ -494,8 +512,11 @@ class TopologyListingContainer extends Component {
       if(this.importTopologyRef.validate()){
           this.importTopologyRef.handleSave().then((topology)=>{
             if (topology.responseMessage !== undefined) {
+              let errorMag = topology.responseMessage.indexOf('already exists') !== -1
+                              ? "Entity with the same name is already exists"
+                              : topology.responseMessage;
               FSReactToastr.error(
-                  <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
+                  <CommonNotification flag="error" content={errorMag}/>, '', toastOpt);
             } else {
                 FSReactToastr.success(<strong>Topology imported successfully</strong>)
                 this.context.router.push('applications/' + topology.id + '/edit');
@@ -508,8 +529,11 @@ class TopologyListingContainer extends Component {
       if(this.cloneTopologyRef.validate()){
           this.cloneTopologyRef.handleSave().then((topology)=>{
             if (topology.responseMessage !== undefined) {
+              let errorMag = topology.responseMessage.indexOf('NoSuchElementException') !== -1
+                              ? "There might be some unconfigure Nodes. so please configure it first."
+                              : topology.responseMessage;
               FSReactToastr.error(
-                  <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
+                  <CommonNotification flag="error" content={errorMag}/>, '', toastOpt)
             } else {
                 FSReactToastr.success(<strong>Topology cloned successfully</strong>)
                 this.context.router.push('applications/' + topology.id + '/edit');

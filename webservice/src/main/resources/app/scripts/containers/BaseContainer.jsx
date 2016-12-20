@@ -37,7 +37,7 @@ export default class BaseContainer extends Component {
               onLandingPage={this.props.onLandingPage}
               headerContent={this.props.headerContent}
             />
-            <Sidebar/>
+          <Sidebar routes={routes}/>
             <section className="content-wrapper editorHandler">
               {this.props.children}
             </section>

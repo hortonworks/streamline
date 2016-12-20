@@ -74,7 +74,27 @@ const ClusterREST = {
       .then( (response) => {
           return response.json();
         });
-  }
+  },
+  postAmbariClusterVerifyURL(options) {
+    options = options || {};
+    options.method = options.method || 'POST';
+    options.headers = options.headers || {
+          'Content-Type' : 'application/json',
+          'Accept' : 'application/json'
+        };
+    return CustomFetch(baseUrl+ambariBaseUrl+'/verify/url', options)
+      .then( (response) => {
+          return response.json();
+        })
+  },
+  getAllNotifier(options) {
+    options = options || {};
+    options.method = options.method || 'GET';
+                return CustomFetch(baseUrl+"notifiers", options)
+      .then( (response) => {
+          return response.json();
+    })
+  },
 }
 
 export default ClusterREST;

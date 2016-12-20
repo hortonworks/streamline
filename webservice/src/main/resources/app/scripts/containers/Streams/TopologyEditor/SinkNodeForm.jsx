@@ -8,6 +8,10 @@ import TopologyREST from '../../../rest/TopologyREST';
 import Form from '../../../libs/form';
 import StreamsSidebar from '../../../components/StreamSidebar';
 import NotesForm from '../../../components/NotesForm';
+import ClusterREST from '../../../rest/ClusterREST';
+import FSReactToastr from '../../../components/FSReactToastr';
+import {toastOpt} from '../../../utils/Constants';
+import CommonNotification from '../../../utils/CommonNotification';
 
 export default class SinkNodeForm extends Component {
     static propTypes = {
@@ -32,8 +36,10 @@ export default class SinkNodeForm extends Component {
             streamObj: {},
             description: '',
             showRequired: true,
-            activeTabKey: 1
+            activeTabKey: 1,
+            uiSpecification : []
         };
+        this.fetchNotifier();
     }
 
     fetchData(){
@@ -80,6 +86,33 @@ export default class SinkNodeForm extends Component {
                         })
                 }
             })
+    }
+
+    fetchNotifier = () => {
+      ClusterREST.getAllNotifier()
+        .then(notifier => {
+          if(notifier.responseMessage !== undefined){
+            FSReactToastr.error(
+                <CommonNotification flag="error" content={notifier.responseMessage}/>, '', toastOpt);
+          }else{
+            const obj = notifier.entities.filter(x => {
+              return x.name === "email_notifier";
+            });
+            let {configData} = this.props;
+            const {topologyComponentUISpecification} = configData;
+            let uiFields = topologyComponentUISpecification.fields || [];
+            uiFields.map(x => {
+              if(x.fieldName === "jarFileName"){
+                  x.defaultValue = obj[0].jarFileName;
+                  x.hint = "hidden";
+              }
+            });
+            this.setState({uiSpecification : uiFields});
+          }
+        }).catch(err => {
+          FSReactToastr.error(
+              <CommonNotification flag="error" content={err.message}/>, '', toastOpt);
+        });
     }
 
     validateData(){
@@ -137,9 +170,9 @@ export default class SinkNodeForm extends Component {
 
     render() {
         let {configData} = this.props;
-        let {formData, streamObj = {}} = this.state;
+        let {formData, streamObj = {},uiSpecification} = this.state;
 
-        let fields = Utils.genFields(configData.topologyComponentUISpecification.fields, [], formData,streamObj.fields);
+        let fields = Utils.genFields(uiSpecification, [], formData,streamObj.fields);
         const form = <Form
                         ref="Form"
                         readOnly={!this.props.editMode}

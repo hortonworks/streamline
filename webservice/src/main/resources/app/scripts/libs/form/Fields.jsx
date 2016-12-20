@@ -28,9 +28,14 @@ export class BaseField extends Component {
 
     render() {
         const {className} = this.props
+        const labelHint = this.props.fieldJson.hint || null;
         return (
             <FormGroup className={className}>
-                <label>{this.props.label} {this.props.validation && this.props.validation.indexOf('required') !== -1 ? <span className="text-danger">*</span> : null}</label>
+                {
+                  labelHint !== null && labelHint === "hidden"
+                    ? ''
+                    : <label>{this.props.label} {this.props.validation && this.props.validation.indexOf('required') !== -1 ? <span className="text-danger">*</span> : null}</label>
+                }
                 {this.getField()}
                 <p className="text-danger">{this.context.Form.state.Errors[this.props.valuePath]}</p>
             </FormGroup>
@@ -95,27 +100,32 @@ export class string extends BaseField {
           {this.props.fieldJson.tooltip}
         </Popover>
       );
-      return  <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
-                  <input
-                      type={
-                        this.props.fieldJson.hint !== undefined
-                          ? this.props.fieldJson.hint.toLowerCase() === "password"
-                            ? "password"
-                            : this.props.fieldJson.hint.toLowerCase() === "email"
-                              ? "email"
-                              : this.props.fieldJson.hint.toLowerCase() === "textarea"
-                                ? "textarea"
-                                : "text"
-                          :"text"
-                      }
-                      className={this.context.Form.state.Errors[this.props.valuePath] ? "form-control invalidInput" : "form-control"}
-                      ref="input"
-                      value={this.props.data[this.props.value] || ''}
-                      disabled={this.context.Form.props.readOnly}
-                      {...this.props.attrs}
-                      onChange={this.handleChange}
-                  />
-              </OverlayTrigger>
+      const inputHint = this.props.fieldJson.hint || null;
+      return (
+          inputHint !== null && inputHint === "hidden"
+          ? ''
+          : <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
+                      <input
+                          type={
+                            this.props.fieldJson.hint !== undefined
+                              ? this.props.fieldJson.hint.toLowerCase() === "password"
+                                ? "password"
+                                : this.props.fieldJson.hint.toLowerCase() === "email"
+                                  ? "email"
+                                  : this.props.fieldJson.hint.toLowerCase() === "textarea"
+                                    ? "textarea"
+                                    : "text"
+                              :"text"
+                          }
+                          className={this.context.Form.state.Errors[this.props.valuePath] ? "form-control invalidInput" : "form-control"}
+                          ref="input"
+                          value={this.props.data[this.props.value] || ''}
+                          disabled={this.context.Form.props.readOnly}
+                          {...this.props.attrs}
+                          onChange={this.handleChange}
+                      />
+            </OverlayTrigger>
+      )
     }
 }
 
@@ -192,10 +202,10 @@ export class enumstring extends BaseField {
         return super.validate(this.props.data[this.props.value])
     }
     getField = () => {
-        return <Select 
-                onChange={this.handleChange} 
-                {...this.props.fieldAttr} 
-                disabled={this.context.Form.props.readOnly} 
+        return <Select
+                onChange={this.handleChange}
+                {...this.props.fieldAttr}
+                disabled={this.context.Form.props.readOnly}
                 value={this.props.data[this.props.value]}
                 className={this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}
             />
@@ -250,11 +260,11 @@ export class arrayenumstring extends BaseField {
         return super.validate(this.props.data[this.props.value])
     }
     getField = () => {
-        return <Select 
-                onChange={this.handleChange} 
-                multi={true} 
-                disabled={this.context.Form.props.readOnly} 
-                {...this.props.fieldAttr} 
+        return <Select
+                onChange={this.handleChange}
+                multi={true}
+                disabled={this.context.Form.props.readOnly}
+                {...this.props.fieldAttr}
                 value={this.props.data[this.props.value]}
                 className={this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}
             />

@@ -187,6 +187,7 @@ export default class TopologyGraphComponent extends Component {
             d3.select("." + thisGraph.constants.graphClass)
                 .attr("transform", "translate(" + thisGraph.dragSvg.translate() + ")" + "scale(" + thisGraph.dragSvg.scale() + ")");
         }).on("zoomend", function() {
+            let sourceEvent = d3.event.sourceEvent;
             let gTranslate = thisGraph.dragSvg.translate(),
                 gScaled = thisGraph.dragSvg.scale();
 
@@ -197,12 +198,12 @@ export default class TopologyGraphComponent extends Component {
             clearTimeout(this.saveMetaInfoTimer);
             this.saveMetaInfoTimer = setTimeout(()=>{
                 let {topologyId, versionId, versionsArr, metaInfo, editMode} = thisGraph;
-		if(versionId && versionsArr){
-			let versionName = versionsArr.find((o)=>{return o.id == versionId}).name;
-                        if(versionName.toLowerCase() == 'current' && editMode){
-				TopologyUtils.saveMetaInfo(topologyId, versionId, null, metaInfo, null);
-			}
-		}
+				if(versionId && versionsArr && sourceEvent !== null){
+					let versionName = versionsArr.find((o)=>{return o.id == versionId}).name;
+	                if(versionName.toLowerCase() == 'current' && editMode){
+						TopologyUtils.saveMetaInfo(topologyId, versionId, null, metaInfo, null);
+					}
+				}
             },500)
         });
 

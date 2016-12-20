@@ -301,6 +301,14 @@ const TopologyREST = {
         getExportTopologyURL(id, options) {
             return baseUrl+'topologies/'+id+'/actions/export';
         },
+        getExportTopology(id, options) {
+          options = options || {};
+          options.method = options.method || 'GET';
+          return fetch(baseUrl+'topologies/'+id+'/actions/export',options)
+                  .then( (response) => {
+				return response.json();
+        })
+      },
   importTopology(options) {
                 options = options || {};
                 options.method = options.method || 'POST';
