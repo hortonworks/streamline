@@ -88,6 +88,7 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
         conf.put(NIMBUS_SEEDS, String.join(",", nimbusHosts));
         conf.put(NIMBUS_PORT, String.valueOf(nimbusPort));
         conf.put(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY, buildStormRestApiRootUrl(uiHost, uiPort));
+        conf.putAll(streamlineConf);
 
         return conf;
     }
