@@ -108,6 +108,20 @@
                 <include>**/*.sql</include>
             </includes>
         </fileSet>
+        <fileSet>
+            <directory>${project.basedir}./pivot/build</directory>
+            <outputDirectory>/pivot</outputDirectory>
+            <includes>
+                <include>*/*</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>${project.basedir}./pivot/bin</directory>
+            <outputDirectory>/pivot/bin</outputDirectory>
+            <includes>
+                <include>*</include>
+            </includes>
+        </fileSet>
     </fileSets>
 
     <files>
