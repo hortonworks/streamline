@@ -463,36 +463,8 @@ export default class TopologyGraphComponent extends Component {
 		};
 		nodes.push(d);
 		let createNodeArr = [d];
-        if (d.currentType.toLowerCase() === 'split'){ // Split => Stage => Join
-			let stageJoinArr = this.createStageJoinNode(d);
-			createNodeArr.push(...stageJoinArr);
-		}
-                TopologyUtils.createNode(topologyId, versionId, createNodeArr, this.updateGraph.bind(this), metaInfo, paths, edges, internalFlags, uinamesList, setLastChange);
+        TopologyUtils.createNode(topologyId, versionId, createNodeArr, this.updateGraph.bind(this), metaInfo, paths, edges, internalFlags, uinamesList, setLastChange);
 		internalFlags.graphMouseDown = false;
-	}
-
-	createStageJoinNode(d){
-		let arr = [];
-
-		let stageObj = JSON.parse(JSON.stringify(d));
-        stageObj.x += 220;
-        stageObj.uiname = 'STAGE';
-        stageObj.parentType = 'PROCESSOR';
-        stageObj.currentType = 'STAGE';
-        stageObj.imageURL = 'styles/img/icon-stage.png';
-		this.nodes.push(stageObj);
-		arr.push(stageObj);
-
-		let joinObj = JSON.parse(JSON.stringify(d));
-        joinObj.x += 440;
-        joinObj.uiname = 'JOIN';
-        joinObj.parentType = 'PROCESSOR';
-        joinObj.currentType = 'JOIN';
-        joinObj.imageURL = 'styles/img/icon-join.png';
-		this.nodes.push(joinObj);
-		arr.push(joinObj);
-
-		return arr;
 	}
 
 	// keydown on main svg
@@ -691,16 +663,16 @@ export default class TopologyGraphComponent extends Component {
             .attr("width", constants.rectangleHeight - 15).attr("height", constants.rectangleHeight - 15).attr("x", 8).attr("y", 7)
             .attr("filter", function(d){ return "url(#grayscale)"; })
             .on("mouseover", function(d){
-		if(thisGraph.editMode) {
-			d3.select(this.parentElement).select('text.fa.fa-times').style('display','block');
-		} else {
-			TopologyUtils.getNodeStreams(thisGraph.topologyId, thisGraph.versionId, d.nodeId, d.parentType, thisGraph.edges, thisGraph.showNodeStreams.bind(thisGraph, d, d3.select(this.parentElement).select('rect')));
-		}
+				if(thisGraph.editMode) {
+					d3.select(this.parentElement).select('text.fa.fa-times').style('display','block');
+				} else {
+					TopologyUtils.getNodeStreams(thisGraph.topologyId, thisGraph.versionId, d.nodeId, d.parentType, thisGraph.edges, thisGraph.showNodeStreams.bind(thisGraph, d, d3.select(this.parentElement).select('rect')));
+				}
             })
             .on("mouseout", function(d){
-		if(thisGraph.editMode) {
-		 d3.select(this.parentElement).select('text.fa.fa-times').style('display','none');
-		}
+				if(thisGraph.editMode) {
+				 d3.select(this.parentElement).select('text.fa.fa-times').style('display','none');
+				}
             })
             .on('mousedown', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);})
             .on('mouseup', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);})
@@ -718,7 +690,7 @@ export default class TopologyGraphComponent extends Component {
                     d.parallelismCount = value <= 0 ? 0 : value;
                     clearTimeout(thisGraph.clickTimeout);
                     thisGraph.clickTimeout = setTimeout(function(){
-                        TopologyUtils.updateParallelismCount(thisGraph.topologyId, this.versionId, d, this.setLastChange);
+                        TopologyUtils.updateParallelismCount(thisGraph.topologyId, this.versionId, d, thisGraph.setLastChange);
                     },500)
                     thisGraph.updateGraph();
                 }
@@ -731,7 +703,7 @@ export default class TopologyGraphComponent extends Component {
                     d.parallelismCount = value <= 0 ? 0 : value;
                     clearTimeout(thisGraph.clickTimeout);
                     thisGraph.clickTimeout = setTimeout(function(){
-                        TopologyUtils.updateParallelismCount(thisGraph.topologyId, this.versionId, d, this.setLastChange);
+                        TopologyUtils.updateParallelismCount(thisGraph.topologyId, this.versionId, d, thisGraph.setLastChange);
                     },500)
                     thisGraph.updateGraph();
                 }
@@ -780,33 +752,33 @@ export default class TopologyGraphComponent extends Component {
 
         //Label Text
         newGs.each(function(d) {
-                let gEl = d3.select(this),
-                    title = d.uiname,
-                    words = title.split(/\s+/g),
-                    nwords = words.length,
-                    nodeTitle = '';
-                let el = gEl.append("text")
-                    .attr("class", function(d){ return 'node-title '+TopologyUtils.getNodeRectClass(d);})
-                    .attr("filter", function(d){ if(!d.isConfigured){ return "url(#grayscale)"; } else return ""; })
-                    .attr("dx", function(d){ return (constants.rectangleHeight); })
-                    .attr("dy", function(d){ return ((constants.rectangleHeight / 2) - 2); })
-                                .on("mouseover", function(d){
+            let gEl = d3.select(this),
+                title = d.uiname,
+                words = title.split(/\s+/g),
+                nwords = words.length,
+                nodeTitle = '';
+            let el = gEl.append("text")
+                .attr("class", function(d){ return 'node-title '+TopologyUtils.getNodeRectClass(d);})
+                .attr("filter", function(d){ if(!d.isConfigured){ return "url(#grayscale)"; } else return ""; })
+                .attr("dx", function(d){ return (constants.rectangleHeight); })
+                .attr("dy", function(d){ return ((constants.rectangleHeight / 2) - 2); })
+                .on("mouseover", function(d){
 					if(thisGraph.editMode) {
-					 d3.select(this.parentElement).select('text.fa.fa-times').style('display','block');
+						 d3.select(this.parentElement).select('text.fa.fa-times').style('display','block');
 					} else {
-				TopologyUtils.getNodeStreams(thisGraph.topologyId, thisGraph.versionId, d.nodeId, d.parentType, thisGraph.edges, thisGraph.showNodeStreams.bind(thisGraph, d, d3.select(this.parentElement).select('rect')));
-			}
-                                })
-                                .on("mouseout", function(d){
-                                        if(thisGraph.editMode) {
-                                                d3.select(this.parentElement).select('text.fa.fa-times').style('display','none');
-                                        }
-                                })
+						TopologyUtils.getNodeStreams(thisGraph.topologyId, thisGraph.versionId, d.nodeId, d.parentType, thisGraph.edges, thisGraph.showNodeStreams.bind(thisGraph, d, d3.select(this.parentElement).select('rect')));
+					}
+                })
+     	       .on("mouseout", function(d){
+                    if(thisGraph.editMode) {
+						d3.select(this.parentElement).select('text.fa.fa-times').style('display','none');
+                    }
+                })
                 .on('mousedown', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);})
 				.on('mouseup', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);})
-                    .on('dblclick', function(d){
+                .on('dblclick', function(d){
 					thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);
-                        thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);
+                    thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);
 				})
 				.call(thisGraph.drag);
             for (var i = 0; i < words.length; i++) {

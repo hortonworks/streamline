@@ -43,7 +43,7 @@
 
 %button-primary {
   @extend %button-base;
-  background: $brand;
+  background: #40af49;
   color: $white;
 
   svg path {
@@ -51,7 +51,7 @@
   }
 
   &:hover {
-    background: darken($brand, 5%);
+    background: #389640;
   }
 
   &.active,
@@ -67,15 +67,15 @@
 
 %button-secondary {
   @extend %button-base;
-  background: rgba($brand, 0.22);
-  color: $brand;
+  background: #808080;
+  color: $white;
 
   svg path {
     fill: $brand;
   }
 
   &:hover {
-    background: rgba($brand, 0.3);
+    background: #808080;
   }
 
   &.active,

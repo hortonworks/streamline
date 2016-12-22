@@ -118,19 +118,19 @@
 
       .cancel {
         color: $white;
-        background-color: rgba($white, 0.28);
+        background-color: #808080;
 
         &:hover {
-          background-color: rgba($white, 0.36);
+          background-color: #808080;
         }
       }
 
       .save {
-        color: $brand;
-        background-color: $white;
+        color: $white;
+        background-color:  #40af49;;
 
         &:hover {
-          background-color: rgba($white, 0.92);
+          background-color: #389640;
         }
       }
     }

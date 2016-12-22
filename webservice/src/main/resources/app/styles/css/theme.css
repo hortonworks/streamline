@@ -83,6 +83,7 @@ footer {
   -moz-transition: -moz-transform .3s ease-in-out,margin .3s ease-in-out;
   -o-transition: -o-transform .3s ease-in-out,margin .3s ease-in-out;
   transition: transform .3s ease-in-out,margin .3s ease-in-out;
+  height: 100vh;
 }
 .contentEditor-wrapper {
   padding-left: 70px;

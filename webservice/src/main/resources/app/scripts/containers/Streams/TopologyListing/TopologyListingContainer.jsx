@@ -492,7 +492,7 @@ class TopologyListingContainer extends Component {
           this.addTopologyRef.handleSave().then((topology)=>{
             if (topology.responseMessage !== undefined) {
               let errorMag = topology.responseMessage.indexOf('already exists') !== -1
-                              ? "Entity with the same name is already exists"
+                              ? "Stream with the same name is already existing"
                               : topology.responseMessage;
               FSReactToastr.error(
                   <CommonNotification flag="error" content={errorMag}/>, '', toastOpt);
@@ -513,7 +513,7 @@ class TopologyListingContainer extends Component {
           this.importTopologyRef.handleSave().then((topology)=>{
             if (topology.responseMessage !== undefined) {
               let errorMag = topology.responseMessage.indexOf('already exists') !== -1
-                              ? "Entity with the same name is already exists"
+                              ? "Stream with the same name is already existing"
                               : topology.responseMessage;
               FSReactToastr.error(
                   <CommonNotification flag="error" content={errorMag}/>, '', toastOpt);
@@ -531,7 +531,9 @@ class TopologyListingContainer extends Component {
             if (topology.responseMessage !== undefined) {
               let errorMag = topology.responseMessage.indexOf('NoSuchElementException') !== -1
                               ? "There might be some unconfigure Nodes. so please configure it first."
-                              : topology.responseMessage;
+                              : topology.responseMessage.indexOf('already exists') !== -1
+                                ? "Stream with the same name is already existing"
+                                : topology.responseMessage;
               FSReactToastr.error(
                   <CommonNotification flag="error" content={errorMag}/>, '', toastOpt)
             } else {

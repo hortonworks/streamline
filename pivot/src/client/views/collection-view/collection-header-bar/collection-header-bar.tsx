@@ -230,13 +230,15 @@ export class CollectionHeaderBar extends React.Component<CollectionHeaderBarProp
       <div className="right-bar">
         { onAddItem ?
           <div className="icon-button add" onClick={this.onAddClick.bind(this)}>
-            <SvgIcon svg={require('../../../icons/full-add-framed.svg')}/>
+            {/*<SvgIcon svg={require('../../../icons/full-add-framed.svg')}/>*/}
+            <Button className="save" title="Add" type="primary"/>
           </div>
         : null }
 
         { onEditCollection ?
           <div className="icon-button edit" onClick={onEditCollection}>
-            <SvgIcon svg={require('../../../icons/full-edit.svg')}/>
+            {/*<SvgIcon svg={require('../../../icons/full-edit.svg')}/>*/}
+            <Button className="edit" title="Edit" type="primary"/>
           </div>
         : null }
 

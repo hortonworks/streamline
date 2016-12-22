@@ -115,7 +115,8 @@
 
         > rect.background {
           pointer-events: none;
-          fill: $brand;
+          /*fill: $brand;*/
+          fill: #307ebc;
         }
 
         > rect.mouse-event-target {

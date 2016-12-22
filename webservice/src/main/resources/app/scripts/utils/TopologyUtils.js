@@ -16,6 +16,7 @@ import CustomNodeForm from '../containers/Streams/TopologyEditor/CustomNodeForm'
 import NormalizationNodeForm from '../containers/Streams/TopologyEditor/NormalizationNodeForm';
 import WindowingAggregateNodeForm from '../containers/Streams/TopologyEditor/WindowingAggregateNodeForm';
 import BranchNodeForm from '../containers/Streams/TopologyEditor/BranchNodeForm';
+import ModelNodeForm from '../containers/Streams/TopologyEditor/ModelNodeForm';
 //Sinks
 import SinkNodeForm from '../containers/Streams/TopologyEditor/SinkNodeForm';
 import CommonNotification from './CommonNotification';
@@ -685,6 +686,17 @@ const getConfigContainer = function(node, configData, editMode, topologyId, vers
                     linkShuffleOptions={linkShuffleOptions}
                     graphEdges={edges}
                     updateGraphMethod={updateGraphMethod}
+                />};
+            break;
+            case 'PMML_MODEL': //Pmml
+                childElement = () => { return <ModelNodeForm
+                    ref="ProcessorChildElement"
+                    nodeData={node}
+                    configData={configData}
+                    editMode={editMode}
+                    nodeType={nodeType}
+                    topologyId={topologyId}
+                    versionId={versionId}
                 />};
             break;
         }
