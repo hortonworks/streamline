@@ -24,10 +24,13 @@ import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.util.FileUtil;
 import org.apache.streamline.common.util.ProxyUtil;
 import org.apache.streamline.common.util.WSUtils;
+import org.apache.streamline.streams.catalog.Namespace;
 import org.apache.streamline.streams.catalog.processor.CustomProcessorInfo;
+import org.apache.streamline.streams.catalog.service.EnvironmentService;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.catalog.topology.TopologyComponentBundle;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.streamline.streams.catalog.topology.component.bundle.ComponentBundleHintProvider;
 import org.apache.streamline.streams.layout.exception.ComponentConfigException;
 import org.apache.streamline.common.exception.service.exception.request.BadRequestException;
 import org.apache.streamline.common.exception.service.exception.request.CustomProcessorOnlyException;
@@ -56,7 +59,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -70,10 +75,14 @@ public class TopologyComponentBundleResource {
     public static final String CP_INFO_PARAM_NAME = "customProcessorInfo";
     public static final String BUNDLE_JAR_FILE_PARAM_NAME = "bundleJar";
     public static final String TOPOLOGY_COMPONENT_BUNDLE_PARAM_NAME = "topologyComponentBundle";
-    private StreamCatalogService catalogService;
+    private final StreamCatalogService catalogService;
+    private final EnvironmentService environmentService;
+    private final ProxyUtil<ComponentBundleHintProvider> hintProviderProxyUtil;
 
-    public TopologyComponentBundleResource(StreamCatalogService catalogService) {
+    public TopologyComponentBundleResource(StreamCatalogService catalogService, EnvironmentService environmentService) {
         this.catalogService = catalogService;
+        this.environmentService = environmentService;
+        this.hintProviderProxyUtil = new ProxyUtil<>(ComponentBundleHintProvider.class);
     }
 
     /**
@@ -376,6 +385,40 @@ public class TopologyComponentBundleResource {
         }
 
         throw EntityNotFoundException.byName(name);
+    }
+
+    @GET
+    @Path("/componentbundles/{component}/{id}/hints/namespaces/{namespaceId}")
+    @Timed
+    public Response getFieldHints(@PathParam("component") TopologyComponentBundle.TopologyComponentType componentType,
+                                  @PathParam ("id") Long id, @PathParam("namespaceId") Long namespaceId) throws Exception {
+        TopologyComponentBundle bundle = catalogService.getTopologyComponentBundle(id);
+        if (bundle == null || !bundle.getType().equals(componentType)) {
+            throw EntityNotFoundException.byId("component bundle id: " + id + " with type: " + componentType);
+        }
+
+        String providerClass = bundle.getFieldHintProviderClass();
+        if (StringUtils.isNotEmpty(providerClass)) {
+            ComponentBundleHintProvider provider;
+            if (bundle.getBuiltin()) {
+                Class<ComponentBundleHintProvider> clazz = (Class<ComponentBundleHintProvider>) Class.forName(providerClass);
+                provider = clazz.newInstance();
+            } else {
+                provider = hintProviderProxyUtil.loadClassFromJar(bundle.getBundleJar(), providerClass);
+            }
+
+            provider.init(environmentService);
+
+            Namespace namespace = environmentService.getNamespace(namespaceId);
+            if (namespace == null) {
+                throw EntityNotFoundException.byId("namespace id: " + namespaceId);
+            }
+
+            Map<String, Map<String, Object>> hints = provider.provide(namespace);
+            return WSUtils.respondEntity(hints, OK);
+        } else {
+            return WSUtils.respondEntity(Collections.emptyMap(), OK);
+        }
     }
 
     private void validateTopologyBundle (TopologyComponentBundle topologyComponentBundle) {

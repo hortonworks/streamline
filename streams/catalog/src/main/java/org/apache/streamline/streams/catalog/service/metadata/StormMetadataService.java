@@ -2,6 +2,7 @@ package org.apache.streamline.streams.catalog.service.metadata;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.streamline.common.JsonClientUtil;
 import org.apache.streamline.common.exception.WrappedWebApplicationException;
 import org.apache.streamline.streams.catalog.Component;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Client;

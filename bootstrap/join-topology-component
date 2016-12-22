@@ -4,7 +4,6 @@
   "subType": "JOIN",
   "builtin": true,
   "streamingEngine": "STORM",
-  "schemaClass": "org.apache.streamline.streams.schema.RulesProcessorSchemaEvolver",
   "transformationClass": "org.apache.streamline.streams.layout.storm.RuleBoltFluxComponent",
   "topologyComponentUISpecification": {
     "fields": [

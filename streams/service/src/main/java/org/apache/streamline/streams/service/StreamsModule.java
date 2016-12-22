@@ -97,7 +97,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         final TopologyCatalogResource topologyCatalogResource = new TopologyCatalogResource(streamcatalogService,
                 environmentService, actionsService, metricsService);
         result.add(topologyCatalogResource);
-        final TopologyComponentBundleResource topologyComponentResource = new TopologyComponentBundleResource(streamcatalogService);
+        final TopologyComponentBundleResource topologyComponentResource = new TopologyComponentBundleResource(streamcatalogService, environmentService);
         result.add(topologyComponentResource);
         final TopologyStreamCatalogResource topologyStreamCatalogResource = new TopologyStreamCatalogResource(streamcatalogService);
         result.add(topologyStreamCatalogResource);

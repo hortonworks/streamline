@@ -24,7 +24,7 @@ public class TopologyComponentBundle implements Storable {
     public static final String SUB_TYPE = "subType";
     public static final String UI_SPECIFICATION = "topologyComponentUISpecification";
     public static final String BUNDLE_JAR = "bundleJar";
-    public static final String SCHEMA_CLASS = "schemaClass";
+    public static final String FIELD_HINT_PROVIDER_CLASS = "fieldHintProviderClass";
     public static final String TRANSFORMATION_CLASS = "transformationClass";
     public static final String BUILTIN = "builtin";
     public static final String MAVEN_DEPS = "mavenDeps";
@@ -86,9 +86,9 @@ public class TopologyComponentBundle implements Storable {
     private TopologyComponentUISpecification topologyComponentUISpecification;
 
     /**
-     * A fully qualified class name that can simulate evolution of schema
+     * A fully qualified class name that can provide hint of fields.
      */
-    private String schemaClass;
+    private String fieldHintProviderClass;
 
     /**
      * A fully qualified class name that can handle transformation of
@@ -126,7 +126,7 @@ public class TopologyComponentBundle implements Storable {
                 new Schema.Field(SUB_TYPE, Schema.Type.STRING),
                 new Schema.Field(BUNDLE_JAR, Schema.Type.STRING),
                 new Schema.Field(UI_SPECIFICATION, Schema.Type.STRING),
-                Schema.Field.optional(SCHEMA_CLASS, Schema.Type.STRING),
+                Schema.Field.optional(FIELD_HINT_PROVIDER_CLASS, Schema.Type.STRING),
                 new Schema.Field(TRANSFORMATION_CLASS, Schema.Type.STRING),
                 new Schema.Field(BUILTIN, Schema.Type.STRING),
                 new Schema.Field(MAVEN_DEPS, Schema.Type.STRING)
@@ -166,7 +166,7 @@ public class TopologyComponentBundle implements Storable {
         map.put(SUB_TYPE, subType);
         map.put(BUNDLE_JAR, bundleJar);
         map.put(UI_SPECIFICATION, uiSpecification);
-        map.put(SCHEMA_CLASS, schemaClass);
+        map.put(FIELD_HINT_PROVIDER_CLASS, fieldHintProviderClass);
         map.put(TRANSFORMATION_CLASS, transformationClass);
         map.put(BUILTIN, builtin.toString());
         map.put(MAVEN_DEPS, mavenDeps);
@@ -188,7 +188,7 @@ public class TopologyComponentBundle implements Storable {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        schemaClass = (String) map.get(SCHEMA_CLASS);
+        fieldHintProviderClass = (String) map.get(FIELD_HINT_PROVIDER_CLASS);
         transformationClass = (String) map.get(TRANSFORMATION_CLASS);
         builtin = Boolean.valueOf((String) map.get(BUILTIN));
         mavenDeps = (String) map.get(MAVEN_DEPS);
@@ -259,12 +259,12 @@ public class TopologyComponentBundle implements Storable {
         this.topologyComponentUISpecification = topologyComponentUISpecification;
     }
 
-    public String getSchemaClass() {
-        return schemaClass;
+    public String getFieldHintProviderClass() {
+        return fieldHintProviderClass;
     }
 
-    public void setSchemaClass(String schemaClass) {
-        this.schemaClass = schemaClass;
+    public void setFieldHintProviderClass(String fieldHintProviderClass) {
+        this.fieldHintProviderClass = fieldHintProviderClass;
     }
 
     public String getTransformationClass () {
@@ -302,7 +302,6 @@ public class TopologyComponentBundle implements Storable {
                 ", subType='" + subType + '\'' +
                 ", bundleJar='" + bundleJar + '\'' +
                 ", topologyComponentUISpecification='" + topologyComponentUISpecification + '\'' +
-                ", schemaClass=" + schemaClass + '\'' +
                 ", transformationClass='" + transformationClass + '\'' +
                 ", builtin='" + builtin + '\'' +
                 ", mavenDeps='" + mavenDeps + '\'' +
@@ -328,7 +327,7 @@ public class TopologyComponentBundle implements Storable {
             return false;
         if (topologyComponentUISpecification != null ? !topologyComponentUISpecification.equals(that.topologyComponentUISpecification) : that.topologyComponentUISpecification!= null)
             return false;
-        if (schemaClass != null ? !schemaClass.equals(that.schemaClass) : that.schemaClass != null)
+        if (fieldHintProviderClass != null ? !fieldHintProviderClass.equals(that.fieldHintProviderClass) : that.fieldHintProviderClass != null)
             return false;
         if (builtin != null ? !builtin.equals(that.builtin) : that.builtin!= null)
             return false;
@@ -347,7 +346,7 @@ public class TopologyComponentBundle implements Storable {
         result = 31 * result + (subType != null ? subType.hashCode() : 0);
         result = 31 * result + (bundleJar != null ? bundleJar.hashCode() : 0);
         result = 31 * result + (topologyComponentUISpecification != null ? topologyComponentUISpecification.hashCode() : 0);
-        result = 31 * result + (schemaClass != null ? schemaClass.hashCode() : 0);
+        result = 31 * result + (fieldHintProviderClass != null ? fieldHintProviderClass.hashCode() : 0);
         result = 31 * result + (transformationClass != null ? transformationClass.hashCode() : 0);
         result = 31 * result + (builtin != null ? builtin.hashCode() : 0);
         result = 31 * result + (mavenDeps != null ? mavenDeps.hashCode() : 0);
