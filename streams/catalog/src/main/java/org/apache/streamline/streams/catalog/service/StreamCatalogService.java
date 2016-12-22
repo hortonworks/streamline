@@ -1149,6 +1149,12 @@ public class StreamCatalogService {
             newTopology.setConfig(topologyData.getConfig());
             newTopology.setNamespaceId(namespaceId);
             addTopology(newTopology);
+        } catch (Exception ex) {
+            LOG.error("Got exception while importing the topology", ex);
+            throw ex;
+        }
+
+        try {
             doImportTopology(newTopology, topologyData);
         } catch (Exception ex) {
             LOG.error("Got exception while importing the topology", ex);
