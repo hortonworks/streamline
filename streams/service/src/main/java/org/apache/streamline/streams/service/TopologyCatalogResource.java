@@ -603,10 +603,13 @@ public class TopologyCatalogResource {
                 detailedResponse = new TopologyDetailedResponse(topology, TopologyRunningStatus.RUNNING, namespaceName);
                 detailedResponse.setRuntime(new TopologyRuntimeResponse(runtimeTopologyId, topologyMetric, latenciesTopN));
             } catch (TopologyNotAliveException e) {
+                LOG.debug("Topology {} is not alive", topology.getId());
                 detailedResponse = new TopologyDetailedResponse(topology, TopologyRunningStatus.NOT_RUNNING, namespaceName);
             } catch (StormNotReachableException | IOException e) {
+                LOG.error("Storm is not reachable or fail to operate", e);
                 detailedResponse = new TopologyDetailedResponse(topology, TopologyRunningStatus.UNKNOWN, namespaceName);
             } catch (Exception e) {
+                LOG.error("Unhandled exception occurs while operate with Storm", e);
                 detailedResponse = new TopologyDetailedResponse(topology, TopologyRunningStatus.UNKNOWN, namespaceName);
             }
 

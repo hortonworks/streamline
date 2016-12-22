@@ -2,6 +2,8 @@ package org.apache.streamline.streams.storm.common;
 
 import org.apache.streamline.common.JsonClientUtil;
 import org.apache.streamline.common.exception.WrappedWebApplicationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Client;
@@ -11,6 +13,8 @@ import java.io.IOException;
 import java.util.Map;
 
 public class StormRestAPIClient {
+    private static final Logger LOG = LoggerFactory.getLogger(StormRestAPIClient.class);
+
     public static final MediaType STORM_REST_API_MEDIA_TYPE = MediaType.APPLICATION_JSON_TYPE;
     private final String stormApiRootUrl;
     private final Client client;
@@ -49,6 +53,7 @@ public class StormRestAPIClient {
 
     private Map doGetRequest(String requestUrl) {
         try {
+            LOG.debug("GET request to Storm cluster: " + requestUrl);
             return JsonClientUtil.getEntity(client.target(requestUrl), STORM_REST_API_MEDIA_TYPE, Map.class);
         } catch (javax.ws.rs.ProcessingException e) {
             if (e.getCause() instanceof IOException) {
@@ -63,6 +68,7 @@ public class StormRestAPIClient {
 
     private Map doPostRequestWithEmptyBody(String requestUrl) {
         try {
+            LOG.debug("POST request to Storm cluster: " + requestUrl);
             return JsonClientUtil.postForm(client.target(requestUrl), new MultivaluedHashMap<>(), STORM_REST_API_MEDIA_TYPE, Map.class);
         } catch (javax.ws.rs.ProcessingException e) {
             if (e.getCause() instanceof IOException) {
