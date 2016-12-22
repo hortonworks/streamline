@@ -39,6 +39,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.streamline.common.ComponentTypes;
 import org.apache.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import org.apache.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
+import org.apache.streamline.streams.catalog.cluster.ClusterImporter;
 import org.apache.streamline.streams.layout.component.StreamlineComponent;
 import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
 import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
@@ -139,6 +140,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ForkJoinPool;
 import java.util.regex.Matcher;
 
 import static java.util.stream.Collectors.toList;
@@ -189,6 +191,7 @@ public class StreamCatalogService {
     private final FileStorage fileStorage;
     private final TopologyDagBuilder topologyDagBuilder;
     private final ConfigFileWriter configFileWriter;
+    private final ClusterImporter clusterImporter;
 
     public StreamCatalogService(StorageManager dao, FileStorage fileStorage, Map<String, Object> configuration) {
         this.dao = dao;
@@ -204,6 +207,7 @@ public class StreamCatalogService {
         }
         this.topologyActionsContainer = new TopologyActionsContainer(this, conf);
         this.topologyMetricsContainer = new TopologyMetricsContainer(this);
+        this.clusterImporter = new ClusterImporter(this);
     }
 
     public static Collection<Class<? extends Storable>> getStorableClasses() {
@@ -2761,72 +2765,39 @@ public class StreamCatalogService {
     }
 
     public Cluster importClusterServices(ServiceNodeDiscoverer serviceNodeDiscoverer, Cluster cluster) throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
 
-        // remove all of relevant services and associated components
-        Collection<Service> services = listServices(cluster.getId());
-        for (Service service : services) {
-            Collection<Component> components = listComponents(service.getId());
-            for (Component component : components) {
-                removeComponent(component.getId());
-            }
+        return clusterImporter.importCluster(serviceNodeDiscoverer, cluster);
+    }
 
-            removeService(service.getId());
-        }
+    public Service initializeService(Cluster cluster, String serviceName) {
+        Service service = new Service();
+        service.setId(this.dao.nextId(SERVICE_NAMESPACE));
+        service.setName(serviceName);
+        service.setClusterId(cluster.getId());
+        service.setTimestamp(System.currentTimeMillis());
+        return service;
+    }
 
-        List<String> availableServices = serviceNodeDiscoverer.getServices();
+    public Component initializeComponent(Service service, String componentName, List<String> hosts) {
+        Component component = new Component();
+        component.setId(this.dao.nextId(COMPONENT_NAMESPACE));
+        component.setName(componentName);
+        component.setServiceId(service.getId());
+        component.setTimestamp(System.currentTimeMillis());
+        component.setHosts(hosts);
+        return component;
+    }
 
-        availableServices.parallelStream()
-                .filter(ServiceConfigurations::contains)
-                .forEach(serviceName -> {
-                    LOG.debug("service start {}", serviceName);
-
-                    Map<String, Object> flattenConfigurations = new HashMap<>();
-                    Map<String, Map<String, Object>> configurations = serviceNodeDiscoverer.getConfigurations(serviceName);
-
-                    Service service = initializeService(cluster, serviceName);
-                    addService(service);
-
-                    LOG.debug("service added {}", serviceName);
-
-                    configurations.entrySet().parallelStream()
-                            .forEach(entry -> {
-                                try {
-                                    String confType = entry.getKey();
-                                    Map<String, Object> configuration = entry.getValue();
-
-                                    LOG.debug("conf-type start {}", confType);
-
-                                    String actualFileName = serviceNodeDiscoverer.getActualFileName(confType);
-
-                                    ServiceConfiguration serviceConfiguration = initializeServiceConfiguration(objectMapper,
-                                            service.getId(), confType, actualFileName, configuration);
-
-                                    addServiceConfiguration(serviceConfiguration);
-                                    flattenConfigurations.putAll(configuration);
-
-                                    LOG.debug("conf-type end {}", confType);
-                                } catch (Exception e) {
-                                    throw new RuntimeException(e);
-                                }
-                            });
-
-                    List<String> components = serviceNodeDiscoverer.getComponents(serviceName);
-                    components.parallelStream().forEach(componentName -> {
-                        LOG.debug("component start {}", componentName);
-
-                        List<String> hosts = serviceNodeDiscoverer.getComponentNodes(serviceName, componentName);
-                        Component component = initializeComponent(service, componentName, hosts);
-
-                        setProtocolAndPortIfAvailable(flattenConfigurations, component);
-
-                        addComponent(component);
-
-                        LOG.debug("component end {}", componentName);
-                    });
-        });
-
-        return cluster;
+    public ServiceConfiguration initializeServiceConfiguration(ObjectMapper objectMapper, Long serviceId,
+                                                                String confType, String actualFileName, Map<String, Object> configuration) throws JsonProcessingException {
+        ServiceConfiguration conf = new ServiceConfiguration();
+        conf.setId(this.dao.nextId(SERVICE_CONFIGURATION_NAMESPACE));
+        conf.setName(confType);
+        conf.setServiceId(serviceId);
+        conf.setFilename(actualFileName);
+        conf.setConfiguration(objectMapper.writeValueAsString(configuration));
+        conf.setTimestamp(System.currentTimeMillis());
+        return conf;
     }
 
     private TopologyLayout getTopologyLayout(Topology topology) throws IOException {
@@ -2844,76 +2815,6 @@ public class StreamCatalogService {
         componentLayout.setId(component.getId().toString());
         componentLayout.setName(component.getName());
         return componentLayout;
-    }
-
-    private Service initializeService(Cluster cluster, String serviceName) {
-        Service service = new Service();
-        service.setId(this.dao.nextId(SERVICE_NAMESPACE));
-        service.setName(serviceName);
-        service.setClusterId(cluster.getId());
-        service.setTimestamp(System.currentTimeMillis());
-        return service;
-    }
-
-    private Component initializeComponent(Service service, String componentName, List<String> hosts) {
-        Component component = new Component();
-        component.setId(this.dao.nextId(COMPONENT_NAMESPACE));
-        component.setName(componentName);
-        component.setServiceId(service.getId());
-        component.setTimestamp(System.currentTimeMillis());
-        component.setHosts(hosts);
-        return component;
-    }
-
-    private ServiceConfiguration initializeServiceConfiguration(ObjectMapper objectMapper, Long serviceId,
-                                                                String confType, String actualFileName, Map<String, Object> configuration) throws JsonProcessingException {
-        ServiceConfiguration conf = new ServiceConfiguration();
-        conf.setId(this.dao.nextId(SERVICE_CONFIGURATION_NAMESPACE));
-        conf.setName(confType);
-        conf.setServiceId(serviceId);
-        conf.setFilename(actualFileName);
-        conf.setConfiguration(objectMapper.writeValueAsString(configuration));
-        conf.setTimestamp(System.currentTimeMillis());
-        return conf;
-    }
-
-    private void setProtocolAndPortIfAvailable(Map<String, Object> configurations, Component component) {
-        try {
-            ComponentPropertyPattern confMap = ComponentPropertyPattern
-                    .valueOf(component.getName());
-            Object valueObj = configurations.get(confMap.getConnectionConfName());
-            if (valueObj != null) {
-                Matcher matcher = confMap.getParsePattern().matcher(valueObj.toString());
-
-                if (matcher.matches()) {
-                    String protocol = matcher.group(1);
-                    String portStr = matcher.group(2);
-
-                    if (!protocol.isEmpty()) {
-                        component.setProtocol(protocol);
-                    }
-                    if (!portStr.isEmpty()) {
-                        try {
-                            component.setPort(Integer.parseInt(portStr));
-                        } catch (NumberFormatException e) {
-                            LOG.warn(
-                                    "Protocol/Port information [{}] for component {} doesn't seem to known format [{}]."
-                                            + "skip assigning...", valueObj, component.getName(), confMap.getParsePattern());
-
-                            // reset protocol information
-                            component.setProtocol(null);
-                        }
-                    }
-                } else {
-                    LOG.warn("Protocol/Port information [{}] for component {} doesn't seem to known format [{}]. "
-                                     + "skip assigning...", valueObj, component.getName(), confMap.getParsePattern());
-                }
-            } else {
-                LOG.warn("Protocol/Port related configuration ({}) is not set", confMap.getConnectionConfName());
-            }
-        } catch (IllegalArgumentException e) {
-            // don't know port related configuration
-        }
     }
 
     private void loadTransformationClassForBundle (TopologyComponentBundle topologyComponentBundle, InputStream bundleJar) {

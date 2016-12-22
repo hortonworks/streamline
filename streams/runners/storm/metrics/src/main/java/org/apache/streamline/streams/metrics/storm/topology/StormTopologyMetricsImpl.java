@@ -1,6 +1,14 @@
 package org.apache.streamline.streams.metrics.storm.topology;
 
 import org.apache.commons.lang3.StringUtils;
+import com.google.common.base.Stopwatch;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.util.concurrent.UncheckedExecutionException;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.streamline.common.util.ParallelStreamUtil;
 import org.apache.streamline.streams.exception.ConfigException;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
 import org.apache.streamline.streams.layout.component.Component;
@@ -12,6 +20,8 @@ import org.apache.streamline.streams.storm.common.StormRestAPIClient;
 import org.apache.streamline.streams.storm.common.StormTopologyUtil;
 import org.apache.streamline.streams.storm.common.TopologyNotAliveException;
 import org.glassfish.jersey.client.ClientConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -19,6 +29,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.STATS_JSON_ACKED_TUPLES;
 import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.STATS_JSON_COMPLETE_LATENCY;
@@ -44,10 +57,22 @@ import static org.apache.streamline.streams.storm.common.StormRestAPIConstant.TO
  * Storm implementation of the TopologyMetrics interface
  */
 public class StormTopologyMetricsImpl implements TopologyMetrics {
-    public static final String FRAMEWORK = "STORM";
+    private static final Logger LOG = LoggerFactory.getLogger(StormTopologyMetricsImpl.class);
+
+    private static final String FRAMEWORK = "STORM";
+    private static final int MAX_SIZE_TOPOLOGY_CACHE = 10;
+    private static final int MAX_SIZE_COMPONENT_CACHE = 50;
+    private static final int CACHE_DURATION_SECS = 30;
+    private static final int FORK_JOIN_POOL_PARALLELISM = 50;
+
+    // shared across the metrics instances
+    private static final ForkJoinPool FORK_JOIN_POOL = new ForkJoinPool(FORK_JOIN_POOL_PARALLELISM);
 
     private StormRestAPIClient client;
     private TopologyTimeSeriesMetrics timeSeriesMetrics;
+
+    private LoadingCache<String, Map<String, ?>> topologyRetrieveCache;
+    private LoadingCache<Pair<String, String>, Map<String, ?>> componentRetrieveCache;
 
     public StormTopologyMetricsImpl() {
     }
@@ -64,6 +89,27 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
         Client restClient = ClientBuilder.newClient(new ClientConfig());
         this.client = new StormRestAPIClient(restClient, stormApiRootUrl);
         timeSeriesMetrics = new StormTopologyTimeSeriesMetricsImpl(client);
+        topologyRetrieveCache = CacheBuilder.newBuilder()
+                .maximumSize(MAX_SIZE_TOPOLOGY_CACHE)
+                .expireAfterWrite(CACHE_DURATION_SECS, TimeUnit.SECONDS)
+                .build(new CacheLoader<String, Map<String, ?>>() {
+                    @Override
+                    public Map<String, ?> load(String stormTopologyId) {
+                        LOG.debug("retrieving topology info - topology id: {}", stormTopologyId);
+                        return client.getTopology(stormTopologyId);
+                    }
+                });
+        componentRetrieveCache = CacheBuilder.newBuilder()
+                .maximumSize(MAX_SIZE_COMPONENT_CACHE)
+                .expireAfterWrite(CACHE_DURATION_SECS, TimeUnit.SECONDS)
+                .build(new CacheLoader<Pair<String, String>, Map<String, ?>>() {
+                    @Override
+                    public Map<String, ?> load(Pair<String, String> componentIdPair) {
+                        LOG.debug("retrieving component info - topology id: {}, component id: {}",
+                                componentIdPair.getLeft(), componentIdPair.getRight());
+                        return client.getComponent(componentIdPair.getLeft(), componentIdPair.getRight());
+                    }
+                });
     }
 
     /**
@@ -76,7 +122,7 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
             throw new TopologyNotAliveException("Topology not found in Storm Cluster - topology id: " + topology.getId());
         }
 
-        Map<String, ?> responseMap = client.getTopology(topologyId);
+        Map<String, ?> responseMap = getTopologyInfo(topologyId);
 
         Long uptimeSeconds = ((Number) responseMap.get(TOPOLOGY_JSON_UPTIME_SECS)).longValue();
         String status = (String) responseMap.get(TOPOLOGY_JSON_STATUS);
@@ -121,34 +167,6 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
             acked * 1.0 / window, completeLatency, failedRecords, miscMetrics);
     }
 
-    private long getErrorCountFromAllComponents(String topologyId, List<Map<String, ?>> spouts, List<Map<String, ?>> bolts) {
-        long totalErrorCount = 0;
-
-        List<String> componentIds = new ArrayList<>();
-
-        if (spouts != null) {
-            for (Map<String, ?> spout : spouts) {
-                componentIds.add((String) spout.get(TOPOLOGY_JSON_SPOUT_ID));
-            }
-        }
-
-        if (bolts != null) {
-            for (Map<String, ?> bolt : bolts) {
-                componentIds.add((String) bolt.get(TOPOLOGY_JSON_BOLT_ID));
-            }
-        }
-
-        for (String componentId : componentIds) {
-            Map componentStats = client.getComponent(topologyId, componentId);
-            List<?> componentErrors = (List<?>) componentStats.get(TOPOLOGY_JSON_COMPONENT_ERRORS);
-            if (componentErrors != null && !componentErrors.isEmpty()) {
-                totalErrorCount += componentErrors.size();
-            }
-        }
-
-        return totalErrorCount;
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -159,7 +177,7 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
             throw new TopologyNotAliveException("Topology not found in Storm Cluster - topology id: " + topology.getId());
         }
 
-        Map<String, ?> responseMap = client.getTopology(topologyId);
+        Map<String, ?> responseMap = getTopologyInfo(topologyId);
 
         Map<String, ComponentMetric> metricMap = new HashMap<>();
         List<Map<String, ?>> spouts = (List<Map<String, ?>>) responseMap.get(TOPOLOGY_JSON_SPOUTS);
@@ -217,6 +235,46 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
     @Override
     public TimeSeriesComponentMetric getComponentStats(TopologyLayout topology, Component component, long from, long to) {
         return timeSeriesMetrics.getComponentStats(topology, component, from, to);
+    }
+
+    private long getErrorCountFromAllComponents(String topologyId, List<Map<String, ?>> spouts, List<Map<String, ?>> bolts) {
+        LOG.debug("[START] getErrorCountFromAllComponents - topology id: {}", topologyId);
+        Stopwatch stopwatch = Stopwatch.createStarted();
+
+        try {
+            List<String> componentIds = new ArrayList<>();
+
+            if (spouts != null) {
+                for (Map<String, ?> spout : spouts) {
+                    componentIds.add((String) spout.get(TOPOLOGY_JSON_SPOUT_ID));
+                }
+            }
+
+            if (bolts != null) {
+                for (Map<String, ?> bolt : bolts) {
+                    componentIds.add((String) bolt.get(TOPOLOGY_JSON_BOLT_ID));
+                }
+            }
+
+            // query to components in parallel
+            long errorCount = ParallelStreamUtil.execute(() ->
+                            componentIds.parallelStream().mapToLong(componentId -> {
+                                Map componentStats = getComponentInfo(topologyId, componentId);
+                                List<?> componentErrors = (List<?>) componentStats.get(TOPOLOGY_JSON_COMPONENT_ERRORS);
+                                if (componentErrors != null && !componentErrors.isEmpty()) {
+                                    return componentErrors.size();
+                                } else {
+                                    return 0;
+                                }
+                            }).sum(), FORK_JOIN_POOL);
+
+            LOG.debug("[END] getErrorCountFromAllComponents - topology id: {}, elapsed: {} ms", topologyId,
+                    stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+            return errorCount;
+        } finally {
+            stopwatch.stop();
+        }
     }
 
     private void extractMetrics(Map<String, ComponentMetric> metricMap, List<Map<String, ?>> components, String topologyJsonID) {
@@ -279,4 +337,69 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
         // removes (ID + '-')
         return componentNameInStorm.substring(componentNameInStorm.indexOf('-') + 1);
     }
+
+    private Map<String, ?> getTopologyInfo(String topologyId) {
+        LOG.debug("[START] getTopologyInfo - topology id: {}", topologyId);
+        Stopwatch stopwatch = Stopwatch.createStarted();
+
+        try {
+            Map<String, ?> responseMap;
+            try {
+                responseMap = topologyRetrieveCache.get(topologyId);
+            } catch (ExecutionException e) {
+                if (e.getCause() != null) {
+                    throw new RuntimeException(e.getCause());
+                } else {
+                    throw new RuntimeException(e);
+                }
+
+            } catch (UncheckedExecutionException e) {
+                if (e.getCause() != null) {
+                    throw (RuntimeException) e.getCause();
+                } else {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            LOG.debug("[END] getTopologyInfo - topology id: {}, elapsed: {} ms", topologyId,
+                    stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+            return responseMap;
+        } finally {
+            stopwatch.stop();
+        }
+    }
+
+    private Map<String, ?> getComponentInfo(String topologyId, String componentId) {
+        LOG.debug("[START] getComponentInfo - topology id: {}, component id: {}", topologyId, componentId);
+        Stopwatch stopwatch = Stopwatch.createStarted();
+
+        try {
+            Map<String, ?> responseMap;
+            try {
+                responseMap = componentRetrieveCache.get(new ImmutablePair<>(topologyId, componentId));
+            } catch (ExecutionException e) {
+                if (e.getCause() != null) {
+                    throw new RuntimeException(e.getCause());
+                } else {
+                    throw new RuntimeException(e);
+                }
+
+            } catch (UncheckedExecutionException e) {
+                if (e.getCause() != null) {
+                    throw (RuntimeException) e.getCause();
+                } else {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            LOG.debug("[END] getComponentInfo - topology id: {}, component id: {}, elapsed: {} ms", topologyId,
+                    componentId, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+            return responseMap;
+        } finally {
+            stopwatch.stop();
+        }
+    }
+
 }
