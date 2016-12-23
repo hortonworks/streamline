@@ -271,6 +271,7 @@ public class SplitJoinTest {
     CatalogRestClient mockCatalogRestClient;
 
     @Test
+    @Ignore
     public void testCustomLoadedSplitJoinInSameClassLoader() throws Exception {
 
         final String splitterClassName = MySplitter.class.getName();
