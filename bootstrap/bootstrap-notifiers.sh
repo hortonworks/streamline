@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 dir=$(dirname $0)/..
-host="${1:-localhost}"
-port="${2:-8080}"
+CATALOG_ROOT_URL="${1:-http://localhost:8080/api/v1/catalog}"
 
 # Load Notifiers
 echo "Adding Email notifier"
@@ -17,7 +16,7 @@ then
     exit 1
   fi
 fi
-curl -X POST "http://${host}:${port}/api/v1/catalog/notifiers" -F notifierJarFile=@${jarFile} -F notifierConfig='{
+curl -X POST "${CATALOG_ROOT_URL}/notifiers" -F notifierJarFile=@${jarFile} -F notifierConfig='{
   "name": "email_notifier.json",
   "description": "testing",
   "className": "org.apache.streamline.streams.notifiers.EmailNotifier",
@@ -41,7 +40,7 @@ curl -X POST "http://${host}:${port}/api/v1/catalog/notifiers" -F notifierJarFil
 echo
 
 echo "Adding Console notifier"
-curl -X POST "http://${host}:${port}/api/v1/catalog/notifiers" -F notifierJarFile=@${jarFile} -F notifierConfig='{
+curl -X POST "${CATALOG_ROOT_URL}/notifiers" -F notifierJarFile=@${jarFile} -F notifierConfig='{
   "name": "console_notifier",
   "description": "testing",
   "className": "org.apache.streamline.streams.notifiers.ConsoleNotifier"

@@ -17,56 +17,19 @@ BOOTSTRAP_DIR=`dirname ${PRG}`
 CONFIG_FILE_PATH=${BOOTSTRAP_DIR}/../conf/streamline.yaml
 
 # Which java to use
-if [ -z "$JAVA_HOME" ]; then
+if [ -z "${JAVA_HOME}" ]; then
   JAVA="java"
 else
-  JAVA="$JAVA_HOME/bin/java"
+  JAVA="${JAVA_HOME}/bin/java"
 fi
 
-CONF_READER_MAIN_CLASS=org.apache.streamline.storage.tool.StorageProviderConfigurationReader
 SCRIPT_RUNNER_MAIN_CLASS=org.apache.streamline.storage.tool.SQLScriptRunner
 CLASSPATH=${BOOTSTRAP_DIR}/lib/storage-tool-0.1.0-SNAPSHOT.jar:
 
 echo "Configuration file: ${CONFIG_FILE_PATH}"
 
-CONF_READ_OUTPUT=`exec $JAVA -cp $CLASSPATH $CONF_READER_MAIN_CLASS $CONFIG_FILE_PATH`
-
-# if it doesn't exit with code 0, just give up
-if [ $? -ne 0 ]; then
-  exit 1
-fi
-
-echo "JDBC connection informations: ${CONF_READ_OUTPUT}"
-
-declare -a OUTPUT_ARRAY=(${CONF_READ_OUTPUT})
-
-DB_TYPE=${OUTPUT_ARRAY[0]} 
-JDBC_DRIVER_CLASS=${OUTPUT_ARRAY[1]} 
-JDBC_URL=${OUTPUT_ARRAY[2]}
-JDBC_USER=${OUTPUT_ARRAY[3]:-x}
-JDBC_PASSWORD=${OUTPUT_ARRAY[4]:-x}
-
-echo "DB TYPE: ${DB_TYPE}"
-echo "JDBC_DRIVER_CLASS: ${JDBC_DRIVER_CLASS}"
-echo "JDBC_URL: ${JDBC_URL}"
-echo "JDBC_USER: ${JDBC_USER}"
-echo "JDBC_PASSWORD: ${JDBC_PASSWORD}"
-
-if [ "$DB_TYPE" == "phoenix" ];
-then
-  DELIM="\n"
-else
-  DELIM=";"
-fi
-
-echo "Script delimiter: ${DELIM}"
-
-SCRIPT_DIR="${BOOTSTRAP_DIR}/sql/${DB_TYPE}"
+SCRIPT_DIR="${BOOTSTRAP_DIR}/sql/<dbtype>"
 FILE_OPT="-f ${SCRIPT_DIR}/drop_tables.sql -f ${SCRIPT_DIR}/create_tables.sql"
 
 echo "Script files option: $FILE_OPT"
-if [ "$JDBC_USER" == "x" ] && [ "$JDBC_PASSWORD" == "x" ]; then
-    exec $JAVA -cp $CLASSPATH $SCRIPT_RUNNER_MAIN_CLASS -c $JDBC_DRIVER_CLASS -u $JDBC_URL  -d $DELIM $FILE_OPT
-else
-    exec $JAVA -cp $CLASSPATH $SCRIPT_RUNNER_MAIN_CLASS -c $JDBC_DRIVER_CLASS -u $JDBC_URL -l $JDBC_USER -p $JDBC_PASSWORD -d $DELIM $FILE_OPT
-fi
+exec ${JAVA} -cp ${CLASSPATH} ${SCRIPT_RUNNER_MAIN_CLASS} -c ${CONFIG_FILE_PATH} ${FILE_OPT}
