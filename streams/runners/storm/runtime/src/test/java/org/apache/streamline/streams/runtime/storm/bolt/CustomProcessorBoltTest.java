@@ -1,18 +1,14 @@
 package org.apache.streamline.streams.runtime.storm.bolt;
 
+import mockit.Mocked;
 import org.apache.streamline.common.Schema;
-import org.apache.streamline.common.util.ProxyUtil;
 import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
-import org.apache.streamline.streams.catalog.CatalogRestClient;
 import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.exception.ProcessingException;
-import org.apache.streamline.streams.layout.storm.StormTopologyLayoutConstants;
-import org.apache.streamline.streams.runtime.CustomProcessorRuntime;
 import org.apache.streamline.examples.processors.ConsoleCustomProcessor;
 import mockit.Expectations;
 import mockit.Injectable;
-import mockit.Mocked;
 import mockit.Tested;
 import mockit.VerificationsInOrder;
 import mockit.integration.junit4.JMockit;
@@ -26,8 +22,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,25 +38,17 @@ public class CustomProcessorBoltTest {
     private final Fields OUTPUT_FIELDS = new Fields(StreamlineEvent.STREAMLINE_EVENT);
     private final String someString = "someString";
     private final String stream = "stream";
-    final String jarFileName = "streamline-core.jar";
-    final String localJarPath = "/tmp";
 
     private @Tested
     CustomProcessorBolt customProcessorBolt;
     private @Injectable
     OutputCollector mockOutputCollector;
-    private @Injectable
-    Tuple mockTuple;
-    private @Injectable
-    CustomProcessorRuntime customProcessorRuntime;
+    private @Mocked
+    ConsoleCustomProcessor customProcessorRuntime;
     private @Injectable
     OutputFieldsDeclarer mockOutputDeclarer;
     private @Injectable
     Tuple tuple;
-    private @Mocked
-    CatalogRestClient catalogRestClient;
-    private @Mocked
-    ProxyUtil<CustomProcessorRuntime> customProcessorProxyUtil;
 
     @Before
     public void setup() throws Exception {
@@ -98,33 +84,16 @@ public class CustomProcessorBoltTest {
         customProcessorBolt.prepare(new HashMap(), null, null);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testNoLocalJarPathPrepare () throws Exception {
-        customProcessorBolt.customProcessorImpl(ConsoleCustomProcessor.class.getCanonicalName());
-        customProcessorBolt.prepare(new HashMap(), null, null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testNoJarFileName () throws Exception {
-        customProcessorBolt.customProcessorImpl(ConsoleCustomProcessor.class.getCanonicalName());
-        customProcessorBolt.localJarPath("/tmp");
-        customProcessorBolt.prepare(new HashMap(), null, null);
-    }
-
     @Test
     public void testPrepare () throws ClassNotFoundException, MalformedURLException, InstantiationException, IllegalAccessException {
         customProcessorBolt.customProcessorImpl(ConsoleCustomProcessor.class.getCanonicalName());
-        customProcessorBolt.localJarPath(localJarPath);
-        customProcessorBolt.jarFileName(jarFileName);
-        new Expectations() {{
-            catalogRestClient.getCustomProcessorJar((jarFileName)); result = new ByteArrayInputStream("some-stream".getBytes()); minTimes=0; maxTimes=1;
-            customProcessorProxyUtil.loadClassFromJar(withEqual(localJarPath + File.separator + jarFileName), ConsoleCustomProcessor.class.getCanonicalName()
-            ); result = customProcessorRuntime;  minTimes=0; maxTimes=1;
-        }};
         final Map<String, Object> config = new HashMap<>();
         customProcessorBolt.config(config);
+        new Expectations() {{
+            customProcessorRuntime.initialize(withEqual(config));
+            minTimes=1; maxTimes=1;
+        }};
         Map conf = new HashMap<>();
-        conf.put(StormTopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL, "http://localhost:8080/api/v1/catalog");
         customProcessorBolt.prepare(conf, null, null);
         new VerificationsInOrder(){{
             customProcessorRuntime.initialize(config);
@@ -145,8 +114,6 @@ public class CustomProcessorBoltTest {
 
     private void testExecute (boolean isSuccess) throws ProcessingException, ClassNotFoundException, MalformedURLException, InstantiationException, IllegalAccessException {
                 customProcessorBolt.customProcessorImpl(ConsoleCustomProcessor.class.getCanonicalName());
-        customProcessorBolt.localJarPath(localJarPath);
-        customProcessorBolt.jarFileName(jarFileName);
         customProcessorBolt.outputSchema(outputStreamToSchema);
         customProcessorBolt.inputSchema(inputSchema);
         Map<String, Object> data = new HashMap<>();
@@ -161,15 +128,6 @@ public class CustomProcessorBoltTest {
             returns(stream);
             tuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
             returns(event);
-            catalogRestClient.getCustomProcessorJar(withEqual(jarFileName));
-            result = new ByteArrayInputStream("some-stream".getBytes());
-            minTimes = 0;
-            maxTimes = 1;
-            customProcessorProxyUtil.loadClassFromJar(withEqual(localJarPath + File.separator + jarFileName), ConsoleCustomProcessor.class.getCanonicalName()
-            );
-            result = customProcessorRuntime;
-            minTimes = 0;
-            maxTimes = 1;
         }};
         if (!isSuccess) {
             new Expectations() {{
@@ -182,7 +140,6 @@ public class CustomProcessorBoltTest {
             }};
         }
         Map conf = new HashMap<>();
-        conf.put(StormTopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL, "http://localhost:8080/api/v1/catalog");
         customProcessorBolt.prepare(conf, null, mockOutputCollector);
         customProcessorBolt.execute(tuple);
         if (!isSuccess) {

@@ -22,10 +22,8 @@ import org.yaml.snakeyaml.Yaml;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -100,7 +98,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
 
     @Override
-    public void deploy (TopologyLayout topology) throws Exception {
+    public void deploy(TopologyLayout topology, String mavenArtifacts) throws Exception {
         Path jarToDeploy = addArtifactsToJar(getArtifactsLocation(topology));
         String fileName = createYamlFile(topology);
         List<String> commands = new ArrayList<String>();
@@ -108,6 +106,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
         commands.add("jar");
         commands.add(jarToDeploy.toString());
         commands.addAll(getExtraJarsArg(topology));
+        commands.addAll(getMavenArtifactsRelatedArgs(mavenArtifacts));
         commands.addAll(getNimbusConf());
         commands.add("org.apache.storm.flux.Flux");
         commands.add("--remote");
@@ -117,6 +116,17 @@ public class StormTopologyActionsImpl implements TopologyActions {
             throw new Exception("Topology could not be deployed " +
                     "successfully.");
         }
+    }
+
+    private List<String> getMavenArtifactsRelatedArgs (String mavenArtifacts) {
+        List<String> args = new ArrayList<>();
+        if (mavenArtifacts != null && !mavenArtifacts.isEmpty()) {
+            args.add("--artifacts");
+            args.add(mavenArtifacts);
+            args.add("--artifactRepositories");
+            args.add(conf.get("mavenRepoUrl"));
+        }
+        return args;
     }
 
     private List<String> getExtraJarsArg(TopologyLayout topology) {

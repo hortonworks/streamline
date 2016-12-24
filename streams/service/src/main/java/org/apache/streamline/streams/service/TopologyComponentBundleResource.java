@@ -21,6 +21,8 @@ package org.apache.streamline.streams.service;
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.streamline.common.QueryParam;
+import org.apache.streamline.common.util.FileUtil;
+import org.apache.streamline.common.util.ProxyUtil;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.processor.CustomProcessorInfo;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
@@ -30,6 +32,7 @@ import org.apache.streamline.streams.layout.exception.ComponentConfigException;
 import org.apache.streamline.common.exception.service.exception.request.BadRequestException;
 import org.apache.streamline.common.exception.service.exception.request.CustomProcessorOnlyException;
 import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import org.apache.streamline.streams.runtime.CustomProcessorRuntime;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.slf4j.Logger;
@@ -49,6 +52,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
@@ -301,6 +305,11 @@ public class TopologyComponentBundleResource {
                 throw BadRequestException.missingParameter(missingParam);
             }
             CustomProcessorInfo customProcessorInfo = new ObjectMapper().readValue(customProcessorInfoStr, CustomProcessorInfo.class);
+            if (!verifyCustomProcessorImplFromJar(jarFile, customProcessorInfo)) {
+                String message = "Custom Processor jar file is missing customProcessorImpl class " + customProcessorInfo.getCustomProcessorImpl();
+                LOG.debug(message);
+                throw BadRequestException.message(message);
+            }
             CustomProcessorInfo createdCustomProcessor = catalogService.addCustomProcessorInfoAsBundle(customProcessorInfo, jarFile);
             return WSUtils.respondEntity(createdCustomProcessor, CREATED);
         } catch (Exception e) {
@@ -334,6 +343,11 @@ public class TopologyComponentBundleResource {
                 throw BadRequestException.missingParameter(missingParam);
             }
             CustomProcessorInfo customProcessorInfo = new ObjectMapper().readValue(customProcessorInfoStr, CustomProcessorInfo.class);
+            if (!verifyCustomProcessorImplFromJar(jarFile, customProcessorInfo)) {
+                String message = "Custom Processor jar file is missing customProcessorImpl class " + customProcessorInfo.getCustomProcessorImpl();
+                LOG.debug(message);
+                throw BadRequestException.message(message);
+            }
             CustomProcessorInfo updatedCustomProcessor = catalogService.updateCustomProcessorInfoAsBundle(customProcessorInfo, jarFile);
             return WSUtils.respondEntity(updatedCustomProcessor, OK);
         } catch (Exception e) {
@@ -396,6 +410,21 @@ public class TopologyComponentBundleResource {
             }
         } catch (Exception e) {
             LOG.debug("Cannot get param " + paramName + " as" + clazz + " from multipart form" );
+        }
+        return result;
+    }
+
+    private boolean verifyCustomProcessorImplFromJar (InputStream inputStream, CustomProcessorInfo customProcessorInfo) {
+        final File tmpFile;
+        boolean result = false;
+        try {
+            tmpFile = FileUtil.writeInputStreamToTempFile(inputStream, ".jar");
+            Collection<String> impls = ProxyUtil.canonicalNames(ProxyUtil.loadAllClassesFromJar(tmpFile, CustomProcessorRuntime.class));
+            if ((impls != null) && impls.contains(customProcessorInfo.getCustomProcessorImpl())) {
+                result = true;
+            }
+        } catch (IOException e) {
+            //swallow to return false
         }
         return result;
     }

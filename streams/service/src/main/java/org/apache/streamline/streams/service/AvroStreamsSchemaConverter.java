@@ -34,7 +34,7 @@ import java.util.List;
 public class AvroStreamsSchemaConverter {
     private static final Logger LOG = LoggerFactory.getLogger(AvroStreamsSchemaConverter.class);
 
-    public String convertAvro(String schemaText) throws JsonProcessingException {
+    public static String convertAvro(String schemaText) throws JsonProcessingException {
         org.apache.avro.Schema avroSchema = new org.apache.avro.Schema.Parser().parse(schemaText);
         LOG.debug("Generating streams schema for given avro schema [{}]", schemaText);
 
@@ -50,7 +50,7 @@ public class AvroStreamsSchemaConverter {
         return new ObjectMapper().writeValueAsString(effFields);
     }
 
-    private Schema.Field generateStreamsSchemaField(org.apache.avro.Schema avroSchema) {
+    private static Schema.Field generateStreamsSchemaField(org.apache.avro.Schema avroSchema) {
         Schema.Field effField = null;
         Schema.Type fieldType = null;
         boolean isPrimitive = true;
@@ -114,7 +114,7 @@ public class AvroStreamsSchemaConverter {
         return effField;
     }
 
-    private Schema.Type getEffectiveUnionSchemas(org.apache.avro.Schema avroSchema) {
+    private static Schema.Type getEffectiveUnionSchemas(org.apache.avro.Schema avroSchema) {
         Schema.Type fieldType;
         List<org.apache.avro.Schema> avroSchemaTypes = avroSchema.getTypes();
         if (avroSchemaTypes.size() > 2) {
@@ -132,7 +132,7 @@ public class AvroStreamsSchemaConverter {
         return fieldType;
     }
 
-    private Schema.NestedField generateRecordSchema(org.apache.avro.Schema avroSchema) {
+    private static Schema.NestedField generateRecordSchema(org.apache.avro.Schema avroSchema) {
         List<org.apache.avro.Schema.Field> avroFields = avroSchema.getFields();
         List<Schema.Field> fields = new ArrayList<>();
         for (org.apache.avro.Schema.Field avroField : avroFields) {
@@ -150,7 +150,7 @@ public class AvroStreamsSchemaConverter {
         return Schema.NestedField.optional(avroSchema.getName(), fields);
     }
 
-    private Schema.Type getStreamsSchemaFieldType(org.apache.avro.Schema avroSchema) {
+    private static Schema.Type getStreamsSchemaFieldType(org.apache.avro.Schema avroSchema) {
         org.apache.avro.Schema.Type avroSchemaType = avroSchema.getType();
         Schema.Type fieldType;
         switch (avroSchemaType) {

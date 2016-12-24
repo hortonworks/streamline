@@ -1,23 +1,36 @@
 package org.apache.streamline.streams.catalog.service;
 
+import com.google.common.base.Joiner;
+import org.apache.streamline.common.ComponentTypes;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.streams.catalog.UDFInfo;
+import org.apache.streamline.streams.catalog.processor.CustomProcessorInfo;
+import org.apache.streamline.streams.catalog.topology.TopologyComponentBundle;
 import org.apache.streamline.streams.layout.component.Edge;
+import org.apache.streamline.streams.layout.component.StreamlineComponent;
 import org.apache.streamline.streams.layout.component.StreamlineProcessor;
 import org.apache.streamline.streams.layout.component.StreamlineSink;
 import org.apache.streamline.streams.layout.component.StreamlineSource;
 import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
 import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
 import org.apache.streamline.streams.layout.component.rule.Rule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class StormTopologyExtraJarsHandler extends TopologyDagVisitor {
+    private static final Logger LOG = LoggerFactory.getLogger(StormTopologyExtraJarsHandler.class);
     private final Set<String> extraJars = new HashSet<>();
     private final Set<String> resourceNames = new HashSet<>();
+    private Set<TopologyComponentBundle> topologyComponentBundleSet = new HashSet<>();
+    private List<String> mavenArtifacts = new ArrayList<>();
 
     private final StreamCatalogService catalogService;
 
@@ -42,6 +55,7 @@ public class StormTopologyExtraJarsHandler extends TopologyDagVisitor {
             }
         }
         resourceNames.addAll(rulesProcessor.getExtraResources());
+        handleBundleForStreamlineComponent(rulesProcessor);
     }
 
     @Override
@@ -50,20 +64,17 @@ public class StormTopologyExtraJarsHandler extends TopologyDagVisitor {
 
     @Override
     public void visit(StreamlineSource source) {
-        extraJars.addAll(source.getExtraJars());
-        resourceNames.addAll(source.getExtraResources());
+        handleStreamlineComponent(source);
     }
 
     @Override
     public void visit(StreamlineSink sink) {
-        extraJars.addAll(sink.getExtraJars());
-        resourceNames.addAll(sink.getExtraResources());
+        handleStreamlineComponent(sink);
     }
 
     @Override
     public void visit(StreamlineProcessor processor) {
-        extraJars.addAll(processor.getExtraJars());
-        resourceNames.addAll(processor.getExtraResources());
+        handleStreamlineComponent(processor);
     }
 
     public Set<String> getExtraJars() {
@@ -72,5 +83,45 @@ public class StormTopologyExtraJarsHandler extends TopologyDagVisitor {
 
     public Set<String> getExtraResources() {
         return resourceNames;
+    }
+
+    public Set<TopologyComponentBundle>  getTopologyComponentBundleSet () {
+        return topologyComponentBundleSet;
+    }
+
+    public String getMavenDeps () {
+        return Joiner.on(",").join(mavenArtifacts);
+    }
+
+    private void handleStreamlineComponent (StreamlineComponent streamlineComponent) {
+        extraJars.addAll(streamlineComponent.getExtraJars());
+        resourceNames.addAll(streamlineComponent.getExtraResources());
+        handleBundleForStreamlineComponent(streamlineComponent);
+    }
+
+    private void handleBundleForStreamlineComponent (StreamlineComponent streamlineComponent) {
+        TopologyComponentBundle topologyComponentBundle = catalogService.getTopologyComponentBundle(Long.parseLong(streamlineComponent.
+                getTopologyComponentBundleId()));
+        if (topologyComponentBundle == null) {
+            throw new RuntimeException("Likely to run in to issues while deployging topology since TopologyComponentBundle not found for id " +
+                    streamlineComponent.getTopologyComponentBundleId());
+        }
+        if (!topologyComponentBundle.getBuiltin()) {
+            topologyComponentBundleSet.add(topologyComponentBundle);
+        } else {
+            LOG.debug("No need to copy any jar for {} since its a builtin bundle", streamlineComponent);
+        }
+        if (topologyComponentBundle.getMavenDeps() != null) {
+            mavenArtifacts.add(topologyComponentBundle.getMavenDeps());
+        }
+        if (TopologyComponentBundle.TopologyComponentType.PROCESSOR.equals(topologyComponentBundle.getType()) && ComponentTypes.CUSTOM.equals
+                (topologyComponentBundle.getSubType())) {
+            try {
+                extraJars.add(new CustomProcessorInfo().fromTopologyComponentBundle(topologyComponentBundle).getJarFileName());
+            } catch (IOException e) {
+                LOG.warn("IOException while getting jar file name for custom processor from bundle", topologyComponentBundle);
+                throw new RuntimeException(e);
+            }
+        }
     }
 }

@@ -5,6 +5,7 @@
   "streamingEngine": "STORM",
   "builtin": true,
   "transformationClass": "org.apache.streamline.streams.layout.storm.KafkaSpoutFluxComponent",
+  "mavenDeps": "org.apache.storm:storm-kafka:STORM_VERSION^org.slf4j:slf4j-log4j12,org.apache.kafka:kafka_2.10:0.10.0.2.5.2.0-70^org.apache.zookeeper:zookeeper^log4j:log4j^org.slf4j:slf4j-log4j12",
   "topologyComponentUISpecification": {
     "fields": [
       {

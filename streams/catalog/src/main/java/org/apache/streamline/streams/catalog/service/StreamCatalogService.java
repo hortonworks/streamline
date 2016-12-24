@@ -946,8 +946,8 @@ public class StreamCatalogService {
         TopologyActions topologyActions = getTopologyActionsInstance(topology);
         LOG.debug("Deploying topology {}", topology);
         setUpClusterArtifacts(topology, topologyActions);
-        setUpExtraJars(topology, topologyActions);
-        topologyActions.deploy(getTopologyLayout(topology));
+        String mavenArtifacts = setUpExtraJars(topology, topologyActions);
+        topologyActions.deploy(getTopologyLayout(topology), mavenArtifacts);
     }
 
     /* Should have
@@ -1178,21 +1178,21 @@ public class StreamCatalogService {
         return importTopology(namespaceId, exported);
     }
 
-    private void setUpExtraJars(Topology topology, TopologyActions topologyActions) throws IOException {
+    // Copies all the extra jars needed for deploying the topology to extraJarsLocation and returns
+    // a string representing all additional maven modules needed for deploying the topology
+    private String setUpExtraJars(Topology topology, TopologyActions topologyActions) throws IOException {
         StormTopologyExtraJarsHandler extraJarsHandler = new StormTopologyExtraJarsHandler(this);
         topology.getTopologyDag().traverse(extraJarsHandler);
         Path extraJarsLocation = topologyActions.getExtraJarsLocation(getTopologyLayout(topology));
         makeEmptyDir(extraJarsLocation);
         Set<String> extraJars = new HashSet<>();
         extraJars.addAll(extraJarsHandler.getExtraJars());
-        extraJars.addAll(getBundleJars(getTopologyLayout(topology)));
+        extraJars.addAll(getBundleJars(extraJarsHandler.getTopologyComponentBundleSet()));
         downloadAndCopyJars(extraJars, extraJarsLocation);
+        return extraJarsHandler.getMavenDeps();
     }
 
-    private Set<String> getBundleJars (TopologyLayout topologyLayout) throws IOException {
-        TopologyComponentBundleJarHandler topologyComponentBundleJarHandler = new TopologyComponentBundleJarHandler(this);
-        topologyLayout.getTopologyDag().traverse(topologyComponentBundleJarHandler);
-        Set<TopologyComponentBundle> bundlesToDeploy = topologyComponentBundleJarHandler.getTopologyComponentBundleSet();
+    private Set<String> getBundleJars (Set<TopologyComponentBundle> bundlesToDeploy) throws IOException {
         Set<String> bundleJars = new HashSet<>();
         for (TopologyComponentBundle topologyComponentBundle: bundlesToDeploy) {
             bundleJars.add(topologyComponentBundle.getBundleJar());

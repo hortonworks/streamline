@@ -181,8 +181,6 @@ public class CustomProcessorInfo {
         uiFields.addAll(getCustomProcessorUIFieldsWithPrefix());
         uiFields.add(this.createUIField(TopologyLayoutConstants.JSON_KEY_PARALLELISM, TopologyLayoutConstants.JSON_KEY_PARALLELISM, true, true,
                 TopologyLayoutConstants.JSON_KEY_PARALLELISM_TOOLTIP, TopologyComponentUISpecification.UIFieldType.NUMBER.NUMBER, 1));
-        uiFields.add(this.createUIField(TopologyLayoutConstants.JSON_KEY_LOCAL_JAR_PATH, TopologyLayoutConstants.JSON_KEY_LOCAL_JAR_PATH, false, true,
-                TopologyLayoutConstants.JSON_KEY_LOCAL_JAR_PATH_TOOLTIP, TopologyComponentUISpecification.UIFieldType.STRING, null));
         uiFields.add(this.createUIField(NAME, NAME, false, false, "Custom processor name", TopologyComponentUISpecification.UIFieldType.STRING, this.name));
         uiFields.add(this.createUIField(DESCRIPTION, DESCRIPTION, false, false, "Custom processor description", TopologyComponentUISpecification.UIFieldType
                 .STRING, this.description));

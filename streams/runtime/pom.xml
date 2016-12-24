@@ -24,6 +24,16 @@
         <dependency>
             <groupId>org.apache.streamline</groupId>
             <artifactId>streamline-catalog</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.streamline</groupId>
+                    <artifactId>storage-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.streamline</groupId>
+                    <artifactId>tag-registry</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -33,6 +43,8 @@
         <dependency>
             <groupId>org.apache.storm</groupId>
             <artifactId>storm-core</artifactId>
+            <version>${storm.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.storm</groupId>

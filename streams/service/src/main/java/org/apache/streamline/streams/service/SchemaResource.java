@@ -44,11 +44,9 @@ public class SchemaResource {
     private static final Logger LOG = LoggerFactory.getLogger(SchemaResource.class);
 
     private final SchemaRegistryClient schemaRegistryClient;
-    private final AvroStreamsSchemaConverter avroStreamsSchemaConverter;
 
     public SchemaResource(SchemaRegistryClient schemaRegistryClient) {
         this.schemaRegistryClient = schemaRegistryClient;
-        avroStreamsSchemaConverter = new AvroStreamsSchemaConverter();
     }
 
     // This API would change once we consider other sources. Currently supports kafka sources for the given topic names.
@@ -67,7 +65,7 @@ public class SchemaResource {
             String schema = schemaVersionInfo != null ? schemaVersionInfo.getSchemaText() : null;
             LOG.debug("######### Received schema from schema registry: ", schema);
             if (schema != null && !schema.isEmpty()) {
-                schema = avroStreamsSchemaConverter.convertAvro(schema);
+                schema = AvroStreamsSchemaConverter.convertAvro(schema);
             }
             LOG.debug("######### Converted schema: ", schema);
             return WSUtils.respondEntity(schema, OK);

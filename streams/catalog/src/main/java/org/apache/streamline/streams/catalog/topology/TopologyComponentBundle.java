@@ -27,6 +27,7 @@ public class TopologyComponentBundle implements Storable {
     public static final String SCHEMA_CLASS = "schemaClass";
     public static final String TRANSFORMATION_CLASS = "transformationClass";
     public static final String BUILTIN = "builtin";
+    public static final String MAVEN_DEPS = "mavenDeps";
 
     public enum TopologyComponentType {
         SOURCE,
@@ -101,6 +102,12 @@ public class TopologyComponentBundle implements Storable {
      */
     private Boolean builtin = false;
 
+    /**
+     * A comma separated string representing the maven jar dependencies to be pulled while submitting a storm topology
+     * that has a component tied to this bundle. Format of this field is as supported by the --artifacts option in storm.py
+     */
+    private String mavenDeps;
+
     @Override
     @JsonIgnore
     public String getNameSpace () {
@@ -121,7 +128,8 @@ public class TopologyComponentBundle implements Storable {
                 new Schema.Field(UI_SPECIFICATION, Schema.Type.STRING),
                 Schema.Field.optional(SCHEMA_CLASS, Schema.Type.STRING),
                 new Schema.Field(TRANSFORMATION_CLASS, Schema.Type.STRING),
-                new Schema.Field(BUILTIN, Schema.Type.STRING)
+                new Schema.Field(BUILTIN, Schema.Type.STRING),
+                new Schema.Field(MAVEN_DEPS, Schema.Type.STRING)
         );
     }
 
@@ -161,6 +169,7 @@ public class TopologyComponentBundle implements Storable {
         map.put(SCHEMA_CLASS, schemaClass);
         map.put(TRANSFORMATION_CLASS, transformationClass);
         map.put(BUILTIN, builtin.toString());
+        map.put(MAVEN_DEPS, mavenDeps);
         return map;
     }
 
@@ -182,6 +191,7 @@ public class TopologyComponentBundle implements Storable {
         schemaClass = (String) map.get(SCHEMA_CLASS);
         transformationClass = (String) map.get(TRANSFORMATION_CLASS);
         builtin = Boolean.valueOf((String) map.get(BUILTIN));
+        mavenDeps = (String) map.get(MAVEN_DEPS);
         return this;
     }
 
@@ -273,6 +283,14 @@ public class TopologyComponentBundle implements Storable {
        this.builtin = builtin;
     }
 
+    public String getMavenDeps() {
+        return mavenDeps;
+    }
+
+    public void setMavenDeps(String mavenDeps) {
+        this.mavenDeps = mavenDeps;
+    }
+
     @Override
     public String toString () {
         return "TopologyComponentBundle{" +
@@ -287,6 +305,7 @@ public class TopologyComponentBundle implements Storable {
                 ", schemaClass=" + schemaClass + '\'' +
                 ", transformationClass='" + transformationClass + '\'' +
                 ", builtin='" + builtin + '\'' +
+                ", mavenDeps='" + mavenDeps + '\'' +
                 '}';
     }
 
@@ -313,6 +332,8 @@ public class TopologyComponentBundle implements Storable {
             return false;
         if (builtin != null ? !builtin.equals(that.builtin) : that.builtin!= null)
             return false;
+        if (mavenDeps != null ? !mavenDeps.equals(that.mavenDeps) : that.mavenDeps!= null)
+            return false;
         return !(transformationClass != null ? !transformationClass.equals(that.transformationClass) : that.transformationClass != null);
 
     }
@@ -329,6 +350,7 @@ public class TopologyComponentBundle implements Storable {
         result = 31 * result + (schemaClass != null ? schemaClass.hashCode() : 0);
         result = 31 * result + (transformationClass != null ? transformationClass.hashCode() : 0);
         result = 31 * result + (builtin != null ? builtin.hashCode() : 0);
+        result = 31 * result + (mavenDeps != null ? mavenDeps.hashCode() : 0);
         return result;
     }
 

@@ -39,7 +39,6 @@ public class CatalogRestClient {
     private final Client client;
 
     private static final String NOTIFIER_URL = "notifiers";
-    private static final String CUSTOM_PROCESSOR_JAR_DOWNLOAD_URL = "streams/componentbundles/PROCESSOR/custom";
     private static final String FILE_DOWNLOAD_URL = "files/download/";
 
     private final String rootCatalogURL;
@@ -59,11 +58,6 @@ public class CatalogRestClient {
         return getEntities(client.target(String.format("%s/%s/?name=%s", rootCatalogURL, NOTIFIER_URL, notifierName)),
                             NotifierInfo.class).get(0);
     }
-
-    public InputStream getCustomProcessorJar (String jarFileName) {
-        return getInputStream(jarFileName, CUSTOM_PROCESSOR_JAR_DOWNLOAD_URL);
-    }
-
 
     public InputStream getFile(Long jarId) {
         return getInputStream(jarId.toString(), FILE_DOWNLOAD_URL);
