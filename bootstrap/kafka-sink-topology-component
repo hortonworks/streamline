@@ -231,7 +231,7 @@
         "uiName": "Parallelism",
         "fieldName": "parallelism",
         "isOptional": true,
-        "tooltip": "Parallelism hint for kafka spout",
+        "tooltip": "Parallelism hint for kafka bolt",
         "type": "number",
         "defaultValue": 1
       }
