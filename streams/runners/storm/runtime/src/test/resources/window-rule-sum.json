@@ -1,0 +1,153 @@
+{
+  "outputStreams": [
+    {
+      "id": "outputstream",
+      "schema": {
+        "fields": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "optional": false
+          },
+          {
+            "name": "longField",
+            "type": "LONG",
+            "optional": false
+          },
+          {
+            "name": "doubleField",
+            "type": "DOUBLE",
+            "optional": false
+          },
+          {
+            "name": "intField",
+            "type": "INTEGER",
+            "optional": false
+          }
+        ]
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "rule_1",
+      "id": 1,
+      "ruleProcessorName": "rule_processsor_1",
+      "streams": [
+        "inputstream"
+      ],
+      "actions": [
+        {
+          "name": "notificationsink",
+          "outputFieldsAndDefaults": {
+            "body": "longSum is ${SUM(longField)}, doubleSum is ${SUM(doubleField)}, intSum is ${SUM(intField)}"
+          },
+          "outputStreams": ["outputstream"],
+          "notifierName": "email_notifier",
+          "__type": "org.apache.streamline.streams.layout.component.rule.action.NotifierAction"
+        }
+      ],
+      "description": "rule_1_desc",
+      "projection": {
+        "expressions": [
+          {
+            "class": "org.apache.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression",
+            "function": {
+              "name": "SUM",
+              "className": null,
+              "udf": false
+            },
+            "operands": [
+              {
+                "class": "org.apache.streamline.streams.layout.component.rule.expression.FieldExpression",
+                "value": {
+                  "name": "longField",
+                  "type": "LONG",
+                  "optional": false
+                }
+              }
+            ]
+          },
+          {
+            "class": "org.apache.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression",
+            "function": {
+              "name": "SUM",
+              "className": null,
+              "udf": false
+            },
+            "operands": [
+              {
+                "class": "org.apache.streamline.streams.layout.component.rule.expression.FieldExpression",
+                "value": {
+                  "name": "doubleField",
+                  "type": "DOUBLE",
+                  "optional": false
+                }
+              }
+            ]
+          },
+          {
+            "class": "org.apache.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression",
+            "function": {
+              "name": "SUM",
+              "className": null,
+              "udf": false
+            },
+            "operands": [
+              {
+                "class": "org.apache.streamline.streams.layout.component.rule.expression.FieldExpression",
+                "value": {
+                  "name": "intField",
+                  "type": "INTEGER",
+                  "optional": false
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "condition": {
+        "expression": {
+          "class": "org.apache.streamline.streams.layout.component.rule.expression.BinaryExpression",
+          "operator": "GREATER_THAN",
+          "first": {
+            "class": "org.apache.streamline.streams.layout.component.rule.expression.FieldExpression",
+            "value": {
+              "name": "id",
+              "type": "INTEGER",
+              "optional": false
+            }
+          },
+          "second": {
+            "class": "org.apache.streamline.streams.layout.component.rule.expression.Literal",
+            "value": "0"
+          }
+        }
+      },
+      "groupBy": {
+        "expressions": [
+          {
+            "class": "org.apache.streamline.streams.layout.component.rule.expression.FieldExpression",
+            "value": {
+              "name": "id",
+              "type": "INTEGER",
+              "optional": false
+            }
+          }
+        ]
+      },
+      "window": {
+        "windowLength": {
+          "class": ".Window$Count",
+          "count": 10
+        },
+        "slidingInterval": {
+          "class": ".Window$Count",
+          "count": 10
+        },
+        "tsField": null,
+        "lagMs": 0
+      }
+    }
+  ]
+}

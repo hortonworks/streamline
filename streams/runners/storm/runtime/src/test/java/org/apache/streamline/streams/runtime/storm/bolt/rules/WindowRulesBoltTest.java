@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 /**
  * Unit test for {@link WindowRulesBolt}
@@ -175,7 +176,29 @@ public class WindowRulesBoltTest {
         };
     }
 
+    @Test
+    public void testSum() throws Exception {
+        Assert.assertTrue(doTest(readFile("/window-rule-sum.json"), 1, this::getTupleForSum));
+        new Verifications() {
+            {
+                String streamId;
+                Collection<Tuple> anchors;
+                List<List<Object>> tuples = new ArrayList<>();
+                mockCollector.emit(streamId = withCapture(), anchors = withCapture(), withCapture(tuples));
+                Assert.assertEquals("outputstream", streamId);
+                Map<String, Object> fieldsAndValues1 = ((StreamlineEvent) tuples.get(0).get(0));
+                Assert.assertEquals("longSum is 55, doubleSum is 55.0, intSum is 55", fieldsAndValues1.get("body"));
+                Map<String, Object> fieldsAndValues2 = ((StreamlineEvent) tuples.get(1).get(0));
+                Assert.assertEquals("longSum is 155, doubleSum is 155.0, intSum is 155", fieldsAndValues2.get("body"));
+            }
+        };
+    }
+
     private boolean doTest(String rulesJson, int expectedExecuteCount) throws Exception {
+        return doTest(rulesJson, expectedExecuteCount, this::getNextTuple);
+    }
+
+    private boolean doTest(String rulesJson, int expectedExecuteCount, Function<Integer, Tuple> tupleGen) throws Exception {
         RulesProcessor rulesProcessor = Utils.createObjectFromJson(rulesJson, RulesProcessor.class);
         Window windowConfig = rulesProcessor.getRules().get(0).getWindow();
         final CountDownLatch latch = new CountDownLatch(expectedExecuteCount);
@@ -193,7 +216,7 @@ public class WindowRulesBoltTest {
         wbe.prepare(conf, mockContext, mockCollector);
         Thread.sleep(100);
         for (int i = 1; i <= 20; i++) {
-            wbe.execute(getNextTuple(i));
+            wbe.execute(tupleGen.apply(i));
         }
         // wait for up to 5 secs for the bolt's execute to finish
         return latch.await(5, TimeUnit.SECONDS);
@@ -208,4 +231,8 @@ public class WindowRulesBoltTest {
         return new TupleImpl(mockContext, new Values(event), 1, "inputstream");
     }
 
+    private Tuple getTupleForSum(int i) {
+        StreamlineEvent event = new StreamlineEventImpl(ImmutableMap.<String, Object>of("id", 1, "intField", i, "longField", (long) i, "doubleField", (double)i), "dsrcid");
+        return new TupleImpl(mockContext, new Values(event), 1, "inputstream");
+    }
 }
