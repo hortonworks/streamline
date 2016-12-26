@@ -76,9 +76,14 @@ public class StormTopologyActionsImpl implements TopologyActions {
             }
             stormJarLocation = conf.get(StormTopologyLayoutConstants.STORM_JAR_LOCATION_KEY);
             catalogRootUrl = conf.get(StormTopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL);
-            String res;
-            if ((res=conf.get(TopologyLayoutConstants.JAVA_JAR_COMMAND)) != null) {
-                javaJarCommand = res;
+
+            Map<String, String> env = System.getenv();
+            String javaHomeStr = env.get("JAVA_HOME");
+            if (StringUtils.isNotEmpty(javaHomeStr)) {
+                if (!javaHomeStr.endsWith(File.separator)) {
+                    javaHomeStr += File.separator;
+                }
+                javaJarCommand = javaHomeStr + "bin" + File.separator + "jar";
             } else {
                 javaJarCommand = "jar";
             }
