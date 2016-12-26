@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.google.common.collect.ImmutableMap;
+import org.apache.commons.lang.StringUtils;
 import org.apache.streamline.common.Config;
 import org.apache.streamline.registries.model.client.MLModelRegistryClient;
 import org.apache.streamline.streams.catalog.RuleInfo;
@@ -344,9 +345,11 @@ public class TopologyComponentFactory {
         Provider<StreamlineProcessor> provider = new Provider<StreamlineProcessor>() {
             @Override
             public StreamlineProcessor create(TopologyComponent component) {
-                String modelName = component.getConfig().get(ModelProcessor.CONFIG_MODEL_NAME);
+                String modelName = component.getConfig().getString(ModelProcessor.CONFIG_MODEL_NAME, StringUtils.EMPTY);
                 ModelProcessor modelProcessor = new ModelProcessor();
-                modelProcessor.setPmml(modelRegistryClient.getMLModelContents(modelName));
+                if (!modelName.equals(StringUtils.EMPTY)) {
+                    modelProcessor.setPmml(modelRegistryClient.getMLModelContents(modelName));
+                }
                 return modelProcessor;
             }
         };

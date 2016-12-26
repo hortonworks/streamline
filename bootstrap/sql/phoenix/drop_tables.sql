@@ -52,5 +52,6 @@ DROP SEQUENCE IF EXISTS service_configurations_sequence
 DROP SEQUENCE IF EXISTS components_sequence
 DROP SEQUENCE IF EXISTS namespaces_sequence
 DROP SEQUENCE IF EXISTS dashboard_sequence
+DROP SEQUENCE IF EXISTS ml_models_sequence
 DROP SEQUENCE IF EXISTS widget_sequence
 DROP SEQUENCE IF EXISTS datasource_sequence

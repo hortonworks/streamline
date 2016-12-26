@@ -22,6 +22,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.streamline.common.QueryParam;
 import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import org.apache.streamline.registries.model.data.MLModelInfo;
+import org.apache.streamline.storage.Storable;
 import org.apache.streamline.storage.StorageManager;
 import org.apache.streamline.storage.util.StorageUtils;
 import org.dmg.pmml.Field;
@@ -45,6 +46,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 public final class MLModelRegistryService {
@@ -53,6 +55,7 @@ public final class MLModelRegistryService {
     private final StorageManager storageManager;
     public MLModelRegistryService(StorageManager storageManager) {
         this.storageManager = storageManager;
+        this.storageManager.registerStorables(getStorableClasses());
     }
 
     public Collection<MLModelInfo> listModelInfos() {
@@ -150,6 +153,21 @@ public final class MLModelRegistryService {
             fieldNames.add(getModelField(modelEvaluator.getDataField(predictedField)));
         }
         return fieldNames;
+    }
+
+    private static Collection<Class<? extends Storable>> getStorableClasses() {
+        InputStream resourceAsStream = MLModelRegistryService.class.getClassLoader().getResourceAsStream("mlmodelregistrystorables.props");
+        HashSet<Class<? extends Storable>> classes = new HashSet<>();
+        try {
+            List<String> classNames = IOUtils.readLines(resourceAsStream, Charset.defaultCharset());
+            for (String className : classNames) {
+                classes.add((Class<? extends Storable>) Class.forName(className));
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        return classes;
     }
 
     private MLModelField getModelField(Field dataField) {
