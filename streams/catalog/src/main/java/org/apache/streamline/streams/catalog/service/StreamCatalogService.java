@@ -51,6 +51,7 @@ import org.apache.streamline.common.util.FileStorage;
 import org.apache.streamline.common.util.JsonSchemaValidator;
 import org.apache.streamline.common.util.ProxyUtil;
 import org.apache.streamline.common.util.WSUtils;
+import org.apache.streamline.registries.model.client.MLModelRegistryClient;
 import org.apache.streamline.storage.Storable;
 import org.apache.streamline.storage.StorableKey;
 import org.apache.streamline.storage.StorageManager;
@@ -193,11 +194,11 @@ public class StreamCatalogService {
     private final ConfigFileWriter configFileWriter;
     private final ClusterImporter clusterImporter;
 
-    public StreamCatalogService(StorageManager dao, FileStorage fileStorage, Map<String, Object> configuration) {
+    public StreamCatalogService(StorageManager dao, FileStorage fileStorage, MLModelRegistryClient modelRegistryClient, Map<String, Object> configuration) {
         this.dao = dao;
         dao.registerStorables(getStorableClasses());
         this.fileStorage = fileStorage;
-        this.topologyDagBuilder = new TopologyDagBuilder(this);
+        this.topologyDagBuilder = new TopologyDagBuilder(this, modelRegistryClient);
         this.configFileWriter = new ConfigFileWriter();
 
         Map<String, String> conf = new HashMap<>();

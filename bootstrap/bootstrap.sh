@@ -89,6 +89,7 @@ add_bundle /streams/componentbundles/TOPOLOGY $bootstrap_dir/storm-topology-comp
 add_bundle /streams/componentbundles/SINK $bootstrap_dir/druid-sink-topology-component
 add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/multilang-topology-component
 add_bundle /streams/componentbundles/SINK $bootstrap_dir/kafka-sink-topology-component
+add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/model-topology-component
 #add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/split-topology-component
 #post /streams/componentbundles/PROCESSOR $bootstrap_dir/stage-topology-component
 #post /streams/componentbundles/ACTION $bootstrap_dir/transform-action-topology-component

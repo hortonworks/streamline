@@ -15,5 +15,6 @@
     <modules>
         <module>tag-registry</module>
         <module>dashboard-registry</module>
+        <module>model-registry</module>
     </modules>
 </project>

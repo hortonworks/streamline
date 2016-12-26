@@ -130,6 +130,7 @@ public final class TopologyLayoutConstants {
 
     public static final String JSON_KEY_CLUSTERS = "clusters";
     public static final String JSON_KEY_SERVICES = "services";
+    public static final String JSON_KEY_PMML_FILE = "pmmlFile";
 
     public static final String JAVA_JAR_COMMAND = "javaJarCommand";
 

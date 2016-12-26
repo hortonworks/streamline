@@ -139,8 +139,11 @@
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-protobuf</artifactId>
         </dependency>
-        
-        <!-- test dependency -->
+        <dependency>
+            <groupId>org.apache.streamline</groupId>
+            <artifactId>streamline-sdk</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.streamline</groupId>
             <artifactId>streamline-examples-processors</artifactId>

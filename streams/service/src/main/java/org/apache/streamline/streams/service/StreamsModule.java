@@ -1,5 +1,6 @@
 package org.apache.streamline.streams.service;
 
+import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
 import org.apache.streamline.common.Constants;
 import org.apache.streamline.common.FileEventHandler;
 import org.apache.streamline.common.FileWatcher;
@@ -7,6 +8,7 @@ import org.apache.streamline.common.ModuleRegistration;
 import org.apache.streamline.common.TimeSeriesDBConfiguration;
 import org.apache.streamline.common.util.FileStorage;
 import org.apache.streamline.common.util.ReflectionHelper;
+import org.apache.streamline.registries.model.client.MLModelRegistryClient;
 import org.apache.streamline.registries.tag.client.TagClient;
 import org.apache.streamline.storage.StorageManager;
 import org.apache.streamline.storage.StorageManagerAware;
@@ -20,7 +22,6 @@ import org.apache.streamline.streams.layout.storm.StormTopologyLayoutConstants;
 import org.apache.streamline.streams.metrics.TimeSeriesQuerier;
 import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
 import org.apache.streamline.streams.notification.service.NotificationServiceImpl;
-import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
 import org.apache.streamline.streams.service.metadata.HBaseMetadataResource;
 import org.apache.streamline.streams.service.metadata.HiveMetadataResource;
 import org.apache.streamline.streams.service.metadata.KafkaMetadataResource;
@@ -49,8 +50,9 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
     @Override
     public List<Object> getResources() {
         List<Object> result = new ArrayList<>();
-        final StreamCatalogService streamcatalogService = new StreamCatalogService(storageManager, fileStorage, config);
         String catalogRootUrl = (String) config.get(Constants.CONFIG_CATALOG_ROOT_URL);
+        MLModelRegistryClient modelRegistryClient = new MLModelRegistryClient(catalogRootUrl);
+        final StreamCatalogService streamcatalogService = new StreamCatalogService(storageManager, fileStorage, modelRegistryClient, config);
         TagClient tagClient = new TagClient(catalogRootUrl);
         final CatalogService catalogService = new CatalogService(storageManager, fileStorage, tagClient);
         result.add(new MetricsResource(streamcatalogService));
