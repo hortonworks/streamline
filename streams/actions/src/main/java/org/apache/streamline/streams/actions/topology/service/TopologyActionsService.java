@@ -107,7 +107,7 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
         LOG.debug("Deploying topology {}", topology);
         setUpClusterArtifacts(topology, topologyActions);
         String mavenArtifacts = setUpExtraJars(topology, topologyActions);
-        topologyActions.deploy(CatalogToLayoutConverter.getTopologyLayout(topology), mavenArtifacts);
+        topologyActions.deploy(CatalogToLayoutConverter.getTopologyLayout(topology, dag), mavenArtifacts);
     }
 
     public void killTopology(Topology topology) throws Exception {

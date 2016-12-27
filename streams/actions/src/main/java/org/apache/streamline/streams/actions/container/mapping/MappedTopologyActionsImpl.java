@@ -1,7 +1,7 @@
 package org.apache.streamline.streams.actions.container.mapping;
 
 public enum MappedTopologyActionsImpl {
-    STORM("org.apache.streamline.streams.layout.storm.StormTopologyActionsImpl");
+    STORM("org.apache.streamline.streams.actions.storm.topology.StormTopologyActionsImpl");
 
     private final String className;
 
