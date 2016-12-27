@@ -429,6 +429,11 @@
                 </exclusions>
             </dependency>
             <dependency>
+                <groupId>org.apache.storm</groupId>
+                <artifactId>storm-pmml</artifactId>
+                <version>${storm.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.codehaus.groovy</groupId>
                 <artifactId>groovy-all</artifactId>
                 <version>${groovy.version}</version>

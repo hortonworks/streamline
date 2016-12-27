@@ -28,4 +28,6 @@ DROP TABLE IF EXISTS namespace_service_cluster_mapping;
 DROP TABLE IF EXISTS widget_datasource_mapping;
 DROP TABLE IF EXISTS widget;
 DROP TABLE IF EXISTS datasource;
+DROP TABLE IF EXISTS ml_models;
 DROP TABLE IF EXISTS dashboard;
+
