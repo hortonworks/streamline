@@ -22,20 +22,6 @@
             <artifactId>streamline-layout</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.streamline</groupId>
-            <artifactId>streamline-catalog</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.streamline</groupId>
-                    <artifactId>storage-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.streamline</groupId>
-                    <artifactId>tag-registry</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
