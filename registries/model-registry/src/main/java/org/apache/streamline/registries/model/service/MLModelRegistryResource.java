@@ -26,6 +26,7 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -37,6 +38,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -90,7 +92,7 @@ public final class MLModelRegistryResource {
     @Timed
     public Response addModelInfo(@FormDataParam("modelInfo") final MLModelInfo modelInfo,
                                  @FormDataParam("pmmlFile") final InputStream pmmlInputStream,
-                                 @FormDataParam("pmmlFile") final FormDataContentDisposition fileDisposition) throws IOException {
+                                 @FormDataParam("pmmlFile") final FormDataContentDisposition fileDisposition) throws IOException, SAXException, JAXBException {
         if (pmmlInputStream == null) {
             throw BadRequestException.missingParameter("pmmlFile");
         }
@@ -143,7 +145,7 @@ public final class MLModelRegistryResource {
             @PathParam("id") final Long modelId,
             @FormDataParam("modelInfo") final MLModelInfo modelInfo,
             @FormDataParam("pmmlFile") final InputStream pmmlInputStream,
-            @FormDataParam("pmmlFile") final FormDataContentDisposition fileDisposition) throws IOException {
+            @FormDataParam("pmmlFile") final FormDataContentDisposition fileDisposition) throws IOException, SAXException, JAXBException {
         if (pmmlInputStream == null) {
             throw BadRequestException.missingParameter("pmmlFile");
         }
