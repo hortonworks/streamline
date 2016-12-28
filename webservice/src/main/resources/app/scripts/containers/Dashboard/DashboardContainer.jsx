@@ -7,22 +7,27 @@ import {observer} from 'mobx-react' ;
 
 @observer
 export default class DashboardContainer extends Component {
-	constructor(props){
-		super(props);
-	}
-	render() {
-		let config = app_state.streamline_config;
-		let pivotURL = window.location.protocol + "//" + window.location.hostname + ":" + config.pivot.port;
-		return (
-			<BaseContainer ref="BaseContainer" routes={this.props.routes} headerContent={this.props.routes[this.props.routes.length - 1].name}>
-				<iframe 
-					src={pivotURL} 
-					frameBorder="0"
-					scrolling="no"
-					height="600px"
-					width="100%">
-				</iframe>
-			</BaseContainer>
-		)
-	}
+    constructor(props){
+        super(props);
+    }
+    render() {
+        let config = app_state.streamline_config;
+        let pivotURL = window.location.protocol + "//" + window.location.hostname + ":" + config.pivot.port+'/#/HOME/?q='+JSON.stringify(config.pivot.config);
+        return (
+            <BaseContainer ref="BaseContainer" routes={this.props.routes} headerContent={this.props.routes[this.props.routes.length - 1].name}>
+                {config.pivot ?
+                    <iframe 
+                        ref="Iframe"
+                        src={pivotURL} 
+                        frameBorder="0"
+                        scrolling="no"
+                        height="600px"
+                        width="100%">
+                    </iframe>
+                :
+                    null
+                }
+            </BaseContainer>
+        )
+    }
 }

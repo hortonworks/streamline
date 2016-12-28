@@ -19,10 +19,10 @@ require('./pivot-application.css');
 import * as React from 'react';
 import * as Q from 'q';
 import * as ReactCSSTransitionGroup from 'react-addons-css-transition-group';
-import { findByName } from 'plywood';
+import { findByName, AttributeInfo } from 'plywood';
 
 import { replaceHash } from '../../utils/url/url';
-import { DataCube, AppSettings, User, Collection, CollectionTile, Essence, Timekeeper, ViewSupervisor } from '../../../common/models/index';
+import { Cluster, DataCube, AppSettings, User, Collection, CollectionTile, Essence, Timekeeper, ViewSupervisor } from '../../../common/models/index';
 import { STRINGS } from '../../config/constants';
 import { MANIFESTS } from '../../../common/manifests/index';
 
@@ -38,6 +38,9 @@ import { CubeView } from '../../views/cube-view/cube-view';
 import { SettingsView } from '../../views/settings-view/settings-view';
 import { CollectionView } from '../../views/collection-view/collection-view';
 import { CollectionViewDelegate } from './collection-view-delegate/collection-view-delegate';
+import { generateUniqueName } from '../../../common/utils/string/string';
+import { indexByAttribute } from '../../../common/utils/array/array';
+import { ImmutableUtils } from '../../../common/utils/immutable-utils/immutable-utils';
 
 export interface PivotApplicationProps extends React.Props<any> {
   version: string;
@@ -97,9 +100,99 @@ export class PivotApplication extends React.Component<PivotApplicationProps, Piv
     this.globalHashChangeListener = this.globalHashChangeListener.bind(this);
   }
 
+  autoCreateCluster(clusterObj: any) {
+    let {host} = clusterObj;
+    let clusterData = new Cluster({
+      name: generateUniqueName('cl', name => indexByAttribute(clusterObj, 'name', name) === -1),
+      title: 'temp',
+      type: 'druid',
+      host: host.replace('http://', '')
+    });
+    Ajax.query({
+      method: "POST",
+      url: 'settings/cluster-connection',
+      data: {
+        cluster: clusterData
+      }
+    })
+      .then(
+        (resp) => {
+          var cluster = Cluster.fromJS(resp.cluster);
+          cluster = cluster
+            .changeTitle(`My ${cluster.type} cluster`)
+            .changeTimeout(Cluster.DEFAULT_TIMEOUT)
+            ;
+          this.saveCluster(cluster, resp.sources);
+        },
+        (xhr: XMLHttpRequest) => {
+          console.error((xhr as any).message);
+        }
+      )
+      .done();
+  }
+
+  saveCluster(cluster: Cluster, sources: string[]) {
+    var {appSettings} = this.state;
+    appSettings = ImmutableUtils.addInArray(appSettings, 'clusters', cluster);
+    Ajax.query({
+      method: "POST",
+      url: 'settings',
+      data: {appSettings: appSettings}
+    })
+      .then(
+        (status) => {
+          this.autoCreateDataCube(cluster, sources, appSettings);
+        },
+        (e: Error) => Notifier.failure('Woops', 'Something bad happened')
+      );
+  }
+
+  autoCreateDataCube(cluster: Cluster, sources: string[], appSettings: any) {
+    var newDataCube = DataCube.fromClusterAndSource(
+      generateUniqueName('dc', name => indexByAttribute(appSettings.dataCubes, 'name', name) === -1),
+      cluster,
+      sources[0] || null
+    );
+
+    Ajax.query({
+      method: "POST",
+      url: 'settings/attributes',
+      data: {
+        clusterName: newDataCube.clusterName,
+        source: newDataCube.source
+      }
+    })
+      .then(
+        (resp) => {
+          var attributes = AttributeInfo.fromJSs(resp.attributes);
+          newDataCube = newDataCube.fillAllFromAttributes(attributes);
+          Ajax.query({
+            method: "POST",
+            url: 'settings',
+            data: {appSettings: appSettings.appendDataCubes([newDataCube])}
+          })
+            .then(
+              (status) => {
+                this.setState({viewType: HOME});
+              },
+              (e: Error) => Notifier.failure('Woops', 'Something bad happened')
+            );
+        },
+        (xhr: XMLHttpRequest) => {
+          Notifier.failure('Woops', 'Something bad happened');
+        }
+      )
+      .done();
+  }
+
   componentWillMount() {
     var { appSettings, initTimekeeper } = this.props;
     var { dataCubes, collections } = appSettings;
+
+    var cluster: {} = (window as any)['__cluster__'];
+    if (appSettings.clusters.length === 0) {
+      this.autoCreateCluster(cluster);
+    }
 
     var hash = window.location.hash;
     var viewType = this.getViewTypeFromHash(hash);
@@ -134,10 +227,12 @@ export class PivotApplication extends React.Component<PivotApplicationProps, Piv
       }
     }
 
+    /*
     if (viewType === HOME && dataCubes.length === 1 && collections.length === 0) {
       viewType = CUBE;
       selectedItem = dataCubes[0];
     }
+     */
 
     this.setState({
       viewType,
@@ -249,6 +344,8 @@ export class PivotApplication extends React.Component<PivotApplicationProps, Piv
     const appSettings = this.state.appSettings || this.props.appSettings;
     const { dataCubes } = appSettings;
     var viewType = this.parseHash(hash)[0];
+
+    if (hash.search('/HOME') !== -1) return HOME;
 
     if (viewType === SETTINGS && user && user.allow['settings']) return SETTINGS;
 
@@ -492,7 +589,6 @@ export class PivotApplication extends React.Component<PivotApplicationProps, Piv
     const { maxFilters, maxSplits, user, stateful } = this.props;
     const { viewType, viewHash, selectedItem, appSettings, timekeeper, cubeViewSupervisor } = this.state;
     const { dataCubes, collections, customization, linkViewConfig } = appSettings;
-
     switch (viewType) {
       case NO_DATA:
         return <NoDataView

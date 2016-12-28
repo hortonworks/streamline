@@ -486,23 +486,23 @@ export default class RulesForm extends Component {
                                                 />
 					</div>
                                 </div>
-                                <div className="form-group">
-                                        <label>Rule Type <span className="text-danger">*</span></label>
-                                        <div>
-                        <Radio
-                            inline={true}
-                            data-label="General"
-                            onChange={this.handleRadioBtn.bind(this)}
-                                                        checked={this.state.ruleType ? true: false}>General
-                                                </Radio>
-                                                <Radio
-                            inline={true}
-                            data-label="Advanced"
-                            onChange={this.handleRadioBtn.bind(this)}
-                                                        checked={this.state.ruleType ? false : true}>Advanced
-                                                </Radio>
-					</div>
-                                </div>
+                                {/*<div className="form-group">
+                                                                        <label>Rule Type <span className="text-danger">*</span></label>
+                                                                        <div>
+                                                        <Radio
+                                                            inline={true}
+                                                            data-label="General"
+                                                            onChange={this.handleRadioBtn.bind(this)}
+                                                                                        checked={this.state.ruleType ? true: false}>General
+                                                                                </Radio>
+                                                                                <Radio
+                                                            inline={true}
+                                                            data-label="Advanced"
+                                                            onChange={this.handleRadioBtn.bind(this)}
+                                                                                        checked={this.state.ruleType ? false : true}>Advanced
+                                                                                </Radio>
+                                					</div>
+                                                                </div>*/}
                 {this.state.ruleType ?
                     <RuleFormula ref="RuleFormula" fields={this.props.parsedStreams} sql={this.state.sql} condition={this.state.condition}/>
                                         :

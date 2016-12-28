@@ -122,6 +122,15 @@ app.use((req: PivotRequest, res: Response, next: Function) => {
   next();
 });
 
+//Enable CORS
+/*
+app.use((req: PivotRequest, res: Response, next: Function) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+*/
+
 // Global, optional version check
 app.use((req: PivotRequest, res: Response, next: Function) => {
   var { version } = req.body;
