@@ -24,6 +24,14 @@
                     <groupId>io.dropwizard</groupId>
                     <artifactId>dropwizard-core</artifactId>
                 </exclusion>
+                <exclusion>
+                  <groupId>org.apache.hbase</groupId>
+                  <artifactId>hbase-client</artifactId>
+                </exclusion>
+                <exclusion>
+                  <groupId>org.glassfish.jersey.core</groupId>
+                  <artifactId>jersey-client</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -34,18 +42,22 @@
             <groupId>org.apache.streamline</groupId>
             <artifactId>streamline-runtime</artifactId>
             <exclusions>
-                <exclusion>
-                    <groupId>com.sun.jersey</groupId>
-                    <artifactId>jersey-client</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.sun.jersey</groupId>
-                    <artifactId>jersey-server</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.sun.jersey</groupId>
-                    <artifactId>jersey-json</artifactId>
-                </exclusion>
+              <exclusion>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>streamline-catalog</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>com.sun.jersey</groupId>
+                <artifactId>jersey-client</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>com.sun.jersey</groupId>
+                <artifactId>jersey-server</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>com.sun.jersey</groupId>
+                <artifactId>jersey-json</artifactId>
+              </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -65,6 +77,24 @@
             <artifactId>storm-hdfs</artifactId>
             <version>${storm.version}</version>
             <scope>provided</scope>
+            <exclusions>
+              <exclusion>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-client</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-hdfs</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-common</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-auth</artifactId>
+              </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.storm</groupId>

@@ -20,7 +20,6 @@ package org.apache.streamline.streams.runtime.storm.bolt.notification;
 
 import org.apache.streamline.common.util.ProxyUtil;
 import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.catalog.CatalogRestClient;
 import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.layout.component.impl.NotificationSink;
 import org.apache.streamline.streams.notification.Notification;
@@ -62,9 +61,6 @@ public class NotificationBoltTest {
     private static final Properties NOTIFIER_PROPS = new Properties();
 
     private static final Map<String, String> NOTIFIER_KV = new HashMap<>();
-
-    @Mocked
-    private CatalogRestClient catalogRestClient;
 
     @Mocked
     private OutputCollector collector;
