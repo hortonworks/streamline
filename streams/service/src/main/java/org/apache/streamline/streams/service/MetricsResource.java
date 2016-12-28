@@ -29,6 +29,7 @@ import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
 import org.apache.streamline.streams.metrics.topology.TopologyTimeSeriesMetrics;
 import org.apache.streamline.common.exception.service.exception.request.BadRequestException;
 import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import org.apache.streamline.streams.metrics.topology.service.TopologyMetricsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,9 +63,11 @@ public class MetricsResource {
     private final ForkJoinPool forkJoinPool = new ForkJoinPool(FORK_JOIN_POOL_PARALLELISM);
 
     private final StreamCatalogService catalogService;
+    private final TopologyMetricsService metricsService;
 
-    public MetricsResource(StreamCatalogService service) {
-        this.catalogService = service;
+    public MetricsResource(StreamCatalogService catalogService, TopologyMetricsService metricsService) {
+        this.catalogService = catalogService;
+        this.metricsService = metricsService;
     }
 
     @GET
@@ -73,7 +76,7 @@ public class MetricsResource {
     public Response getTopologyMetricsById(@PathParam("id") Long id) throws Exception {
         Topology topology = catalogService.getTopology(id);
         if (topology != null) {
-            Map<String, TopologyMetrics.ComponentMetric> topologyMetrics = catalogService.getTopologyMetrics(topology);
+            Map<String, TopologyMetrics.ComponentMetric> topologyMetrics = metricsService.getTopologyMetrics(topology);
             return WSUtils.respondEntity(topologyMetrics, OK);
         }
 
@@ -91,7 +94,7 @@ public class MetricsResource {
         Topology topology = catalogService.getTopology(id);
         if (topology != null) {
             TopologyTimeSeriesMetrics.TimeSeriesComponentMetric topologyMetrics =
-                    catalogService.getTopologyStats(topology, from, to);
+                    metricsService.getTopologyStats(topology, from, to);
             return WSUtils.respondEntity(topologyMetrics, OK);
         }
 
@@ -110,7 +113,7 @@ public class MetricsResource {
         Topology topology = catalogService.getTopology(id);
         TopologyComponent topologyComponent = catalogService.getTopologyComponent(id, topologyComponentId);
         if (topology != null && topologyComponent != null) {
-            Map<Long, Double> metrics = catalogService.getCompleteLatency(topology, topologyComponent, from, to);
+            Map<Long, Double> metrics = metricsService.getCompleteLatency(topology, topologyComponent, from, to);
             return WSUtils.respondEntity(metrics, OK);
         } else if (topology == null) {
             throw EntityNotFoundException.byId("Topology: " + id.toString());
@@ -143,7 +146,7 @@ public class MetricsResource {
                     topologyComponents.parallelStream()
                             .map(c -> {
                                 try {
-                                    return Pair.of(c, catalogService.getComponentStats(topology, c, from, to));
+                                    return Pair.of(c, metricsService.getComponentStats(topology, c, from, to));
                                 } catch (IOException e) {
                                     throw new RuntimeException(e);
                                 }
@@ -169,7 +172,7 @@ public class MetricsResource {
         TopologyComponent topologyComponent = catalogService.getTopologyComponent(id, topologyComponentId);
         if (topology != null && topologyComponent != null) {
             TopologyTimeSeriesMetrics.TimeSeriesComponentMetric metrics =
-                    catalogService.getComponentStats(topology, topologyComponent, from, to);
+                    metricsService.getComponentStats(topology, topologyComponent, from, to);
             return WSUtils.respondEntity(metrics, OK);
         } else if (topology == null) {
             throw EntityNotFoundException.byId("Topology: " + id.toString());
@@ -191,7 +194,7 @@ public class MetricsResource {
         Topology topology = catalogService.getTopology(id);
         TopologyComponent topologyComponent = catalogService.getTopologyComponent(id, topologyComponentId);
         if (topology != null && topologyComponent != null) {
-            Map<String, Map<Long, Double>> metrics = catalogService.getKafkaTopicOffsets(topology, topologyComponent, from, to);
+            Map<String, Map<Long, Double>> metrics = metricsService.getKafkaTopicOffsets(topology, topologyComponent, from, to);
             return WSUtils.respondEntity(metrics, OK);
         } else if (topology == null) {
             throw EntityNotFoundException.byId("Topology: " + id.toString());

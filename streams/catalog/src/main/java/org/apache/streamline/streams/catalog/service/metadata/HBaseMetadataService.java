@@ -14,7 +14,7 @@ import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.streamline.streams.catalog.exception.ServiceConfigurationNotFoundException;
 import org.apache.streamline.streams.catalog.exception.ServiceNotFoundException;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import org.apache.streamline.streams.catalog.service.EnvironmentService;
 import org.apache.streamline.streams.catalog.service.metadata.common.OverrideHadoopConfiguration;
 import org.apache.streamline.streams.catalog.service.metadata.common.Tables;
 import org.apache.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
@@ -42,10 +42,10 @@ public class HBaseMetadataService implements AutoCloseable {
      * HBaseConfiguration} and {@code hbase-site.xml} config related properties overridden with the values set in the hbase-site
      * config serialized in "streams json"
      */
-    public static HBaseMetadataService newInstance(StreamCatalogService catalogService, Long clusterId)
+    public static HBaseMetadataService newInstance(EnvironmentService environmentService, Long clusterId)
             throws IOException, ServiceConfigurationNotFoundException, ServiceNotFoundException {
 
-        return newInstance(HBaseConfiguration.create(), catalogService, clusterId);
+        return newInstance(HBaseConfiguration.create(), environmentService, clusterId);
     }
 
     /**
@@ -53,11 +53,11 @@ public class HBaseMetadataService implements AutoCloseable {
      * {@link HBaseConfiguration} and {@code hbase-site.xml} config related properties overridden with the values set in the
      * hbase-site config serialized in "streams json"
      */
-    public static HBaseMetadataService newInstance(Configuration hbaseConfig, StreamCatalogService catalogService, Long clusterId)
+    public static HBaseMetadataService newInstance(Configuration hbaseConfig, EnvironmentService environmentService, Long clusterId)
             throws IOException, ServiceConfigurationNotFoundException, ServiceNotFoundException {
 
         return new HBaseMetadataService(ConnectionFactory.createConnection(
-                OverrideHadoopConfiguration.override(catalogService, clusterId, ServiceConfigurations.HBASE,
+                OverrideHadoopConfiguration.override(environmentService, clusterId, ServiceConfigurations.HBASE,
                         STREAMS_JSON_SCHEMA_CONFIG_HBASE_SITE, hbaseConfig))
                 .getAdmin());
     }

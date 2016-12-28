@@ -13,7 +13,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.streamline.streams.catalog.exception.ServiceConfigurationNotFoundException;
 import org.apache.streamline.streams.catalog.exception.ServiceNotFoundException;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import org.apache.streamline.streams.catalog.service.EnvironmentService;
 import org.apache.streamline.streams.catalog.service.metadata.common.OverrideHadoopConfiguration;
 import org.apache.streamline.streams.catalog.service.metadata.common.Tables;
 import org.apache.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
@@ -52,9 +52,9 @@ public class HiveMetadataService implements AutoCloseable {
      * default {@link HiveConf} and {@code hivemetastore-site.xml} config related properties overridden with the
      * values set in the hivemetastore-site config serialized in "streams json"
      */
-    public static HiveMetadataService newInstance(StreamCatalogService catalogService, Long clusterId)
+    public static HiveMetadataService newInstance(EnvironmentService environmentService, Long clusterId)
             throws MetaException, IOException, ServiceConfigurationNotFoundException, ServiceNotFoundException {
-        return newInstance(new HiveConf(), catalogService, clusterId);
+        return newInstance(new HiveConf(), environmentService, clusterId);
     }
 
 
@@ -63,10 +63,10 @@ public class HiveMetadataService implements AutoCloseable {
      * the provided {@link HiveConf} and {@code hivemetastore-site.xml} config related properties overridden with the
      * values set in the hivemetastore-site config serialized in "streams json"
      */
-    public static HiveMetadataService newInstance(HiveConf hiveConf, StreamCatalogService catalogService, Long clusterId)
+    public static HiveMetadataService newInstance(HiveConf hiveConf, EnvironmentService environmentService, Long clusterId)
             throws MetaException, IOException, ServiceConfigurationNotFoundException, ServiceNotFoundException {
         return new HiveMetadataService(new HiveMetaStoreClient(
-                OverrideHadoopConfiguration.override(catalogService, clusterId, ServiceConfigurations.HIVE,
+                OverrideHadoopConfiguration.override(environmentService, clusterId, ServiceConfigurations.HIVE,
                         getConfigNames(), hiveConf)), hiveConf);
     }
 

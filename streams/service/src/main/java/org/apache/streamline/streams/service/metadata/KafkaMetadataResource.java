@@ -3,6 +3,7 @@ package org.apache.streamline.streams.service.metadata;
 import com.codahale.metrics.annotation.Timed;
 import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.Cluster;
+import org.apache.streamline.streams.catalog.service.EnvironmentService;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 
 import org.apache.streamline.streams.catalog.exception.EntityNotFoundException;
@@ -23,10 +24,10 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Produces(MediaType.APPLICATION_JSON)
 public class KafkaMetadataResource {
     private static final Logger LOG = LoggerFactory.getLogger(KafkaMetadataResource.class);
-    private final StreamCatalogService catalogService;
+    private final EnvironmentService environmentService;
 
-    public KafkaMetadataResource(StreamCatalogService catalogService) {
-        this.catalogService = catalogService;
+    public KafkaMetadataResource(EnvironmentService environmentService) {
+        this.environmentService = environmentService;
     }
 
     @GET
@@ -34,7 +35,7 @@ public class KafkaMetadataResource {
     @Timed
     public Response getBrokersByClusterName(@PathParam("clusterName") String clusterName)
         throws Exception {
-        final Cluster cluster = catalogService.getClusterByName(clusterName);
+        final Cluster cluster = environmentService.getClusterByName(clusterName);
         if (cluster == null) {
             throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
         }
@@ -45,7 +46,7 @@ public class KafkaMetadataResource {
     @Path("/clusters/{clusterId}/services/kafka/brokers")
     @Timed
     public Response getBrokersByClusterId(@PathParam("clusterId") Long clusterId) throws Exception {
-        try(final KafkaMetadataService kafkaMetadataService = KafkaMetadataService.newInstance(catalogService, clusterId)) {
+        try(final KafkaMetadataService kafkaMetadataService = KafkaMetadataService.newInstance(environmentService, clusterId)) {
             return WSUtils.respondEntity(kafkaMetadataService.getBrokerHostPortFromStreamsJson(clusterId), OK);
         } catch (EntityNotFoundException ex) {
             throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
@@ -57,7 +58,7 @@ public class KafkaMetadataResource {
     @Timed
     public Response getTopicsByClusterName(@PathParam("clusterName") String clusterName)
         throws Exception {
-        final Cluster cluster = catalogService.getClusterByName(clusterName);
+        final Cluster cluster = environmentService.getClusterByName(clusterName);
         if (cluster == null) {
             throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
         }
@@ -68,7 +69,7 @@ public class KafkaMetadataResource {
     @Path("/clusters/{clusterId}/services/kafka/topics")
     @Timed
     public Response getTopicsByClusterId(@PathParam("clusterId") Long clusterId) throws Exception {
-        try(final KafkaMetadataService kafkaMetadataService = KafkaMetadataService.newInstance(catalogService, clusterId)) {
+        try(final KafkaMetadataService kafkaMetadataService = KafkaMetadataService.newInstance(environmentService, clusterId)) {
             return WSUtils.respondEntity(kafkaMetadataService.getTopicsFromZk(), OK);
         } catch (EntityNotFoundException ex) {
             throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());

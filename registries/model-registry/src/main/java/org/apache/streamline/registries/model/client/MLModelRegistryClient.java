@@ -49,7 +49,7 @@ public final class MLModelRegistryClient {
 
     public String getMLModelContents(String modelName) {
         try {
-            Response response = client.target(String.format("%s/%s", modelRegistryURL, modelName)).request().get();
+            Response response = client.target(String.format("%s/%s/%s", modelRegistryURL, "pmml", modelName)).request().get();
             if(response.getStatus() != OK.getStatusCode()) {
                 throw new RuntimeException(
                         String.format("Error occurred while getting the response %s", response.getStatus()));

@@ -25,6 +25,7 @@
         <module>functions</module>
         <module>cluster</module>
         <module>multilang</module>
+        <module>actions</module>
     </modules>
 
 

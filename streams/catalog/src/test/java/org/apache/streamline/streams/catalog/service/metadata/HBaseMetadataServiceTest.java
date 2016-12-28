@@ -6,7 +6,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.streamline.streams.catalog.ServiceConfiguration;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import org.apache.streamline.streams.catalog.service.EnvironmentService;
 import org.apache.streamline.streams.catalog.service.metadata.common.Tables;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -33,7 +33,7 @@ public class HBaseMetadataServiceTest {
     private HBaseMetadataService hbaseService;
 
     @Mocked
-    private StreamCatalogService catalogService;
+    private EnvironmentService environmentService;
     @Mocked
     private ServiceConfiguration serviceConfiguration;
 
@@ -43,7 +43,7 @@ public class HBaseMetadataServiceTest {
             result = getHBaseSiteConfig();
         }};
 
-        hbaseService = HBaseMetadataService.newInstance(catalogService, 1L);
+        hbaseService = HBaseMetadataService.newInstance(environmentService, 1L);
 
         for (String namespace : HBASE_TEST_NAMESPACES) {
             hbaseService.createNamespace(namespace);

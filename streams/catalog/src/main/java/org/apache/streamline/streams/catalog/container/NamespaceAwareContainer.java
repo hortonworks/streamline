@@ -5,14 +5,13 @@ import org.apache.streamline.streams.catalog.Component;
 import org.apache.streamline.streams.catalog.Namespace;
 import org.apache.streamline.streams.catalog.NamespaceServiceClusterMapping;
 import org.apache.streamline.streams.catalog.Service;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import org.apache.streamline.streams.catalog.service.EnvironmentService;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import static java.util.stream.Collectors.toList;
 
@@ -22,10 +21,10 @@ import static java.util.stream.Collectors.toList;
  */
 public abstract class NamespaceAwareContainer<T> {
     private Map<Long, T> namespaceToInstance;
-    protected final StreamCatalogService catalogService;
+    protected final EnvironmentService environmentService;
 
-    public NamespaceAwareContainer(StreamCatalogService catalogService) {
-        this.catalogService = catalogService;
+    public NamespaceAwareContainer(EnvironmentService environmentService) {
+        this.environmentService = environmentService;
         namespaceToInstance = new HashMap<>();
     }
 
@@ -57,7 +56,7 @@ public abstract class NamespaceAwareContainer<T> {
 
     protected Collection<Service> getServiceForNamespace(Namespace namespace, String serviceName) {
         Collection<NamespaceServiceClusterMapping> serviceClusterMappings =
-                catalogService.listServiceClusterMapping(namespace.getId(), serviceName);
+                environmentService.listServiceClusterMapping(namespace.getId(), serviceName);
         if (serviceClusterMappings == null) {
             throw new RuntimeException("Service name " + serviceName + " is not set in namespace " +
                     namespace.getName() + "(" + namespace.getId() + ")");
@@ -66,12 +65,12 @@ public abstract class NamespaceAwareContainer<T> {
         Collection<Service> services = new ArrayList<>(serviceClusterMappings.size());
         for (NamespaceServiceClusterMapping mapping : serviceClusterMappings) {
             Long clusterId = mapping.getClusterId();
-            Cluster cluster = catalogService.getCluster(clusterId);
+            Cluster cluster = environmentService.getCluster(clusterId);
             if (cluster == null) {
                 throw new RuntimeException("Cluster " + clusterId + " is not found");
             }
 
-            Service service = catalogService.getServiceByName(clusterId, serviceName);
+            Service service = environmentService.getServiceByName(clusterId, serviceName);
             if (service == null) {
                 throw new RuntimeException("Service name " + serviceName + " is not found in Cluster " + clusterId);
             }
@@ -83,7 +82,7 @@ public abstract class NamespaceAwareContainer<T> {
     }
 
     protected Component getComponent(Service service, String componentName) {
-        Collection<Component> allComponents = catalogService.listComponents(service.getId());
+        Collection<Component> allComponents = environmentService.listComponents(service.getId());
 
         List<Component> components = allComponents.stream().filter(x -> x.getName().equals(componentName)).collect(toList());
         if (components == null || components.isEmpty()) {

@@ -6,7 +6,7 @@ import org.apache.streamline.common.util.WSUtils;
 import org.apache.streamline.streams.catalog.Cluster;
 import org.apache.streamline.streams.catalog.Service;
 import org.apache.streamline.streams.catalog.ServiceConfiguration;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import org.apache.streamline.streams.catalog.service.EnvironmentService;
 import org.apache.streamline.common.exception.service.exception.request.EntityAlreadyExistsException;
 import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
 
@@ -32,10 +32,10 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class ServiceConfigurationCatalogResource {
-    private StreamCatalogService catalogService;
+    private EnvironmentService environmentService;
 
-    public ServiceConfigurationCatalogResource(StreamCatalogService catalogService) {
-        this.catalogService = catalogService;
+    public ServiceConfigurationCatalogResource(EnvironmentService environmentService) {
+        this.environmentService = environmentService;
     }
 
     /**
@@ -47,7 +47,7 @@ public class ServiceConfigurationCatalogResource {
     public Response listServiceConfigurations(@PathParam("serviceId") Long serviceId, @Context UriInfo uriInfo) {
         List<QueryParam> queryParams = buildServiceIdAwareQueryParams(serviceId, uriInfo);
 
-        Collection<ServiceConfiguration> configurations = catalogService.listServiceConfigurations(queryParams);
+        Collection<ServiceConfiguration> configurations = environmentService.listServiceConfigurations(queryParams);
         if (configurations != null) {
             return WSUtils.respondEntities(configurations, OK);
         }
@@ -63,19 +63,19 @@ public class ServiceConfigurationCatalogResource {
     @Timed
     public Response listServiceConfigurationsByName(@PathParam("clusterName") String clusterName,
         @PathParam("serviceName") String serviceName, @Context UriInfo uriInfo) {
-        Cluster cluster = catalogService.getClusterByName(clusterName);
+        Cluster cluster = environmentService.getClusterByName(clusterName);
         if (cluster == null) {
             throw EntityNotFoundException.byName("cluster name " + clusterName);
         }
 
-        Service service = catalogService.getServiceByName(cluster.getId(), serviceName);
+        Service service = environmentService.getServiceByName(cluster.getId(), serviceName);
         if (service == null) {
             throw EntityNotFoundException.byName("service name " + serviceName);
         }
 
         List<QueryParam> queryParams = buildServiceIdAwareQueryParams(service.getId(), uriInfo);
 
-        Collection<ServiceConfiguration> configurations = catalogService.listServiceConfigurations(queryParams);
+        Collection<ServiceConfiguration> configurations = environmentService.listServiceConfigurations(queryParams);
         if (configurations != null) {
             return WSUtils.respondEntities(configurations, OK);
         }
@@ -87,7 +87,7 @@ public class ServiceConfigurationCatalogResource {
     @Path("/services/{serviceId}/configurations/{id}")
     @Timed
     public Response getConfigurationById(@PathParam("serviceId") Long serviceId, @PathParam("id") Long configurationId) {
-        ServiceConfiguration configuration = catalogService.getServiceConfiguration(configurationId);
+        ServiceConfiguration configuration = environmentService.getServiceConfiguration(configurationId);
         if (configuration != null) {
             if (configuration.getServiceId() == null || !configuration.getServiceId().equals(serviceId)) {
                 throw EntityNotFoundException.byId("service: " + serviceId.toString());
@@ -103,17 +103,17 @@ public class ServiceConfigurationCatalogResource {
     @Timed
     public Response getConfigurationByName(@PathParam("clusterName") String clusterName,
         @PathParam("serviceName") String serviceName, @PathParam("configurationName") String configurationName) {
-        Cluster cluster = catalogService.getClusterByName(clusterName);
+        Cluster cluster = environmentService.getClusterByName(clusterName);
         if (cluster == null) {
             throw EntityNotFoundException.byName("cluster name " + clusterName);
         }
 
-        Service service = catalogService.getServiceByName(cluster.getId(), serviceName);
+        Service service = environmentService.getServiceByName(cluster.getId(), serviceName);
         if (service == null) {
             throw EntityNotFoundException.byName("service name " + serviceName);
         }
 
-        ServiceConfiguration configuration = catalogService.getServiceConfigurationByName(service.getId(), configurationName);
+        ServiceConfiguration configuration = environmentService.getServiceConfigurationByName(service.getId(), configurationName);
         if (configuration != null) {
             return WSUtils.respondEntity(configuration, OK);
         }
@@ -128,19 +128,19 @@ public class ServiceConfigurationCatalogResource {
         // just overwrite the service id to given path param
         serviceConfiguration.setServiceId(serviceId);
 
-        Service service = catalogService.getService(serviceId);
+        Service service = environmentService.getService(serviceId);
         if (service == null) {
             throw EntityNotFoundException.byId("service: " + serviceId.toString());
         }
 
         String configurationName = serviceConfiguration.getName();
-        ServiceConfiguration result = catalogService.getServiceConfigurationByName(serviceId, configurationName);
+        ServiceConfiguration result = environmentService.getServiceConfigurationByName(serviceId, configurationName);
         if (result != null) {
             throw EntityAlreadyExistsException.byName("service id " +
                 serviceId + " and configuration name " + configurationName);
         }
 
-        ServiceConfiguration createdConfiguration = catalogService.addServiceConfiguration(serviceConfiguration);
+        ServiceConfiguration createdConfiguration = environmentService.addServiceConfiguration(serviceConfiguration);
         return WSUtils.respondEntity(createdConfiguration, CREATED);
     }
 
@@ -152,12 +152,12 @@ public class ServiceConfigurationCatalogResource {
         // overwrite service id to given path param
         serviceConfiguration.setServiceId(serviceId);
 
-        Service service = catalogService.getService(serviceId);
+        Service service = environmentService.getService(serviceId);
         if (service == null) {
             throw EntityNotFoundException.byId("service: " + serviceId.toString());
         }
 
-        ServiceConfiguration createdConfiguration = catalogService.addOrUpdateServiceConfiguration(serviceId,
+        ServiceConfiguration createdConfiguration = environmentService.addOrUpdateServiceConfiguration(serviceId,
             serviceConfiguration);
         return WSUtils.respondEntity(createdConfiguration, CREATED);
     }
@@ -166,7 +166,7 @@ public class ServiceConfigurationCatalogResource {
     @Path("/services/{serviceId}/configurations/{id}")
     @Timed
     public Response removeServiceConfiguration(@PathParam("id") Long serviceConfigurationId) {
-        ServiceConfiguration removedConfiguration = catalogService.removeServiceConfiguration(serviceConfigurationId);
+        ServiceConfiguration removedConfiguration = environmentService.removeServiceConfiguration(serviceConfigurationId);
         if (removedConfiguration != null) {
             return WSUtils.respondEntity(removedConfiguration, OK);
         }
@@ -182,7 +182,7 @@ public class ServiceConfigurationCatalogResource {
         // overwrite service id to given path param
         serviceConfiguration.setServiceId(serviceId);
 
-        ServiceConfiguration newConfiguration = catalogService.addOrUpdateServiceConfiguration(serviceId,
+        ServiceConfiguration newConfiguration = environmentService.addOrUpdateServiceConfiguration(serviceId,
             serviceConfigurationId, serviceConfiguration);
         return WSUtils.respondEntity(newConfiguration, CREATED);
     }

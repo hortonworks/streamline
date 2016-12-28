@@ -23,16 +23,16 @@ import java.util.Set;
  * and validates different configurations for different components in the
  * topology and the connections between them
  */
-class StormTopologyValidator {
+public class StormTopologyValidator {
     private static final Logger LOG = LoggerFactory.getLogger(StormTopologyValidator.class);
     private final Map topologyConfig;
     private final String catalogRootUrl;
-    StormTopologyValidator (Map topologyConfig, String catalogRootUrl) {
+    public StormTopologyValidator (Map topologyConfig, String catalogRootUrl) {
         this.topologyConfig = topologyConfig;
         this.catalogRootUrl = catalogRootUrl;
     }
 
-    void validate () throws Exception {
+    public void validate () throws Exception {
         String[] componentKeys = {
                 TopologyLayoutConstants.JSON_KEY_DATA_SOURCES,
                 TopologyLayoutConstants.JSON_KEY_DATA_SINKS,
@@ -58,7 +58,7 @@ class StormTopologyValidator {
 
     // if there is a link from a parser processor then the stream id has to
     // be present and it has to be one of the two streams - parsed or failed
-    void validateParserProcessorLinks () throws ComponentConfigException {
+    private void validateParserProcessorLinks () throws ComponentConfigException {
         List<Map> dataSources = (List) this.topologyConfig.get(TopologyLayoutConstants.JSON_KEY_DATA_SOURCES);
         Set<String> dataSourceNames = new HashSet<>();
         for (Map dataSource: dataSources) {
@@ -104,7 +104,7 @@ class StormTopologyValidator {
         }
     }
 
-    void validateRuleProcessorLinks () throws ComponentConfigException {
+    private void validateRuleProcessorLinks () throws ComponentConfigException {
         List<Map> dataSources = (List) this.topologyConfig.get(TopologyLayoutConstants.JSON_KEY_DATA_SOURCES);
         Set<String> dataSourceNames = new HashSet<>();
         for (Map dataSource: dataSources) {
@@ -154,7 +154,7 @@ class StormTopologyValidator {
         }
     }
 
-    void validateCustomProcessorLinks () throws ComponentConfigException {
+    private void validateCustomProcessorLinks () throws ComponentConfigException {
         List<Map> dataSources = (List) this.topologyConfig.get(TopologyLayoutConstants.JSON_KEY_DATA_SOURCES);
         Set<String> dataSourceNames = new HashSet<>();
         for (Map dataSource: dataSources) {

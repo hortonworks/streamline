@@ -11,7 +11,7 @@ import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.streamline.streams.catalog.ServiceConfiguration;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import org.apache.streamline.streams.catalog.service.EnvironmentService;
 import org.apache.streamline.streams.catalog.service.metadata.common.Tables;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -40,7 +40,7 @@ public class HiveMetadataServiceTest {
     private HiveMetadataService hiveService;
 
     @Mocked
-    private StreamCatalogService catalogService;
+    private EnvironmentService environmentService;
     @Mocked
     private ServiceConfiguration serviceConfiguration;
 
@@ -49,7 +49,7 @@ public class HiveMetadataServiceTest {
             serviceConfiguration.getConfigurationMap(); result = getHiveConfigs();
         }};
 
-        hiveService = HiveMetadataService.newInstance(catalogService, 1L);
+        hiveService = HiveMetadataService.newInstance(environmentService, 1L);
 
         for (String database : HIVE_TEST_DATABASES) {
             hiveService.createDatabase(database, "desc", "/tmp/h", new HashMap<>());

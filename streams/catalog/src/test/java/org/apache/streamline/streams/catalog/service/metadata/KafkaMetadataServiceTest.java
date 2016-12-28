@@ -6,7 +6,7 @@ import com.google.common.collect.Lists;
 import org.apache.curator.test.TestingServer;
 import org.apache.streamline.streams.catalog.Component;
 import org.apache.streamline.streams.catalog.exception.ZookeeperClientException;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import org.apache.streamline.streams.catalog.service.EnvironmentService;
 import org.apache.streamline.streams.catalog.service.metadata.common.HostPort;
 import org.junit.Assert;
 import org.junit.Test;
@@ -47,7 +47,7 @@ public class KafkaMetadataServiceTest {
     @Tested
     private KafkaMetadataService kafkaMetadataService;
     @Injectable
-    private StreamCatalogService catalogService;
+    private EnvironmentService environmentService;
     @Injectable
     private ZookeeperClient zkCli;
     @Injectable
@@ -89,7 +89,7 @@ public class KafkaMetadataServiceTest {
         new Expectations() {{
             component.getHosts(); result = expectedHosts;
             component.getPort(); result = expectedPort;
-            catalogService.getComponentByName(anyLong, anyString); result = component;
+            environmentService.getComponentByName(anyLong, anyString); result = component;
         }};
 
         final KafkaMetadataService.BrokersInfo<HostPort> brokerHostPort = kafkaMetadataService.getBrokerHostPortFromStreamsJson(1L);
@@ -173,7 +173,7 @@ public class KafkaMetadataServiceTest {
         final String connectionString = server.getConnectString();
         zkCli = ZookeeperClient.newInstance(connectionString);
         zkCli.start();
-//        kafkaMetadataService = new KafkaMetadataService(catalogService, zkCli, kafkaZkConnection);
+//        kafkaMetadataService = new KafkaMetadataService(environmentService, zkCli, kafkaZkConnection);
     }
 
     public void stopZk() {
@@ -186,7 +186,7 @@ public class KafkaMetadataServiceTest {
         startZk();
 
         // pass started zk to class under test
-        kafkaMetadataService = new KafkaMetadataService(catalogService, zkCli, kafkaZkConnection);
+        kafkaMetadataService = new KafkaMetadataService(environmentService, zkCli, kafkaZkConnection);
 
         try {
             if (zkNodeData != null) {

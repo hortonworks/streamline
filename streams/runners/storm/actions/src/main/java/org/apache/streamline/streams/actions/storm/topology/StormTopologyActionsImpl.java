@@ -1,16 +1,18 @@
-package org.apache.streamline.streams.layout.storm;
+package org.apache.streamline.streams.actions.storm.topology;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.streamline.common.Config;
+import org.apache.streamline.streams.actions.StatusImpl;
+import org.apache.streamline.streams.actions.TopologyActions;
 import org.apache.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.streamline.streams.layout.component.StatusImpl;
-import org.apache.streamline.streams.layout.component.TopologyActions;
 import org.apache.streamline.streams.layout.component.TopologyDag;
 import org.apache.streamline.streams.layout.component.TopologyLayout;
+import org.apache.streamline.streams.layout.storm.StormTopologyFluxGenerator;
+import org.apache.streamline.streams.layout.storm.StormTopologyLayoutConstants;
+import org.apache.streamline.streams.layout.storm.StormTopologyValidator;
 import org.apache.streamline.streams.storm.common.StormRestAPIClient;
 import org.apache.streamline.streams.storm.common.StormTopologyUtil;
 import org.apache.streamline.streams.storm.common.TopologyNotAliveException;
@@ -76,9 +78,14 @@ public class StormTopologyActionsImpl implements TopologyActions {
             }
             stormJarLocation = conf.get(StormTopologyLayoutConstants.STORM_JAR_LOCATION_KEY);
             catalogRootUrl = conf.get(StormTopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL);
-            String res;
-            if ((res=conf.get(TopologyLayoutConstants.JAVA_JAR_COMMAND)) != null) {
-                javaJarCommand = res;
+
+            Map<String, String> env = System.getenv();
+            String javaHomeStr = env.get("JAVA_HOME");
+            if (StringUtils.isNotEmpty(javaHomeStr)) {
+                if (!javaHomeStr.endsWith(File.separator)) {
+                    javaHomeStr += File.separator;
+                }
+                javaJarCommand = javaHomeStr + "bin" + File.separator + "jar";
             } else {
                 javaJarCommand = "jar";
             }

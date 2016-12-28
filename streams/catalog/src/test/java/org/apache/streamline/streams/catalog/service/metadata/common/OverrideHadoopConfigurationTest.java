@@ -5,7 +5,7 @@ import com.google.common.collect.Lists;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.streamline.streams.catalog.ServiceConfiguration;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import org.apache.streamline.streams.catalog.service.EnvironmentService;
 import org.apache.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,7 +29,7 @@ public class OverrideHadoopConfigurationTest {
     @Tested
     private OverrideHadoopConfiguration overrideHadoopConfiguration;
     @Mocked
-    private StreamCatalogService streamCatalogService;
+    private EnvironmentService environmentService;
     @Mocked
     private ServiceConfiguration serviceConfiguration;
 
@@ -79,7 +79,7 @@ public class OverrideHadoopConfigurationTest {
         Assert.assertEquals(configProps.get("k1"), "v11");
         Assert.assertEquals(configProps.get("k2"), "v21");
 
-        OverrideHadoopConfiguration.override(streamCatalogService, 23L, ServiceConfigurations.HBASE,
+        OverrideHadoopConfiguration.override(environmentService, 23L, ServiceConfigurations.HBASE,
                 Lists.newArrayList("hbase-site"), hbaseConfig);
 
         Assert.assertEquals(configProps.get("k1"), "v12");
@@ -104,7 +104,7 @@ public class OverrideHadoopConfigurationTest {
         final HBaseConfigurationTest hbaseConfig = new HBaseConfigurationTest(HBaseConfiguration.create());
         final Properties configProps = hbaseConfig.getProps();
 
-        OverrideHadoopConfiguration.override(streamCatalogService, 23L, ServiceConfigurations.HBASE,
+        OverrideHadoopConfiguration.override(environmentService, 23L, ServiceConfigurations.HBASE,
                 Lists.newArrayList("hbase-site"), hbaseConfig);
 
         Assert.assertFalse(configProps.containsKey("k1"));  // does not contain prop with null val

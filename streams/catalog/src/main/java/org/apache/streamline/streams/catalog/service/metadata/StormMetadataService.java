@@ -9,7 +9,7 @@ import org.apache.streamline.streams.catalog.Service;
 import org.apache.streamline.streams.catalog.ServiceConfiguration;
 import org.apache.streamline.streams.catalog.exception.ServiceComponentNotFoundException;
 import org.apache.streamline.streams.catalog.exception.ServiceNotFoundException;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import org.apache.streamline.streams.catalog.service.EnvironmentService;
 import org.apache.streamline.streams.catalog.service.metadata.common.HostPort;
 import org.apache.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import org.apache.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
@@ -50,14 +50,14 @@ public class StormMetadataService {
     }
 
     public static class Builder {
-        private StreamCatalogService catalogService;
+        private EnvironmentService environmentService;
         private Long clusterId;
         private String urlRelativePath = STORM_REST_API_TOPOLOGIES_DEFAULT_RELATIVE_PATH;
         private String username = "";
         private String password = "";
 
-        public Builder(StreamCatalogService catalogService, Long clusterId) {
-            this.catalogService = catalogService;
+        public Builder(EnvironmentService environmentService, Long clusterId) {
+            this.environmentService = environmentService;
             this.clusterId = clusterId;
         }
 
@@ -81,13 +81,13 @@ public class StormMetadataService {
         }
 
         private String getMainPageUrl() throws ServiceNotFoundException, ServiceComponentNotFoundException {
-            Service stormService = catalogService.getServiceByName(clusterId, STREAMS_JSON_SCHEMA_SERVICE_STORM);
+            Service stormService = environmentService.getServiceByName(clusterId, STREAMS_JSON_SCHEMA_SERVICE_STORM);
             if (stormService == null) {
                 throw new ServiceNotFoundException(clusterId, ServiceConfigurations.STORM);
             }
 
             String url = null;
-            ServiceConfiguration stormViewConfiguration = catalogService.getServiceConfigurationByName(stormService.getId(), SERVICE_STORM_VIEW);
+            ServiceConfiguration stormViewConfiguration = environmentService.getServiceConfigurationByName(stormService.getId(), SERVICE_STORM_VIEW);
             if (stormViewConfiguration != null) {
                 try {
                     Map<String, String> confMap = stormViewConfiguration.getConfigurationMap();
@@ -120,12 +120,12 @@ public class StormMetadataService {
         }
 
         private HostPort getHostPort() throws ServiceNotFoundException, ServiceComponentNotFoundException {
-            final Long serviceId = catalogService.getServiceIdByName(clusterId, STREAMS_JSON_SCHEMA_SERVICE_STORM);
+            final Long serviceId = environmentService.getServiceIdByName(clusterId, STREAMS_JSON_SCHEMA_SERVICE_STORM);
             if (serviceId == null) {
                 throw new ServiceNotFoundException(clusterId, ServiceConfigurations.STORM);
             }
 
-            final Component stormUiComp = catalogService.getComponentByName(serviceId, STREAMS_JSON_SCHEMA_COMPONENT_STORM_UI_SERVER);
+            final Component stormUiComp = environmentService.getComponentByName(serviceId, STREAMS_JSON_SCHEMA_COMPONENT_STORM_UI_SERVER);
 
             if (stormUiComp == null) {
                 throw new ServiceComponentNotFoundException(clusterId, ServiceConfigurations.STORM, ComponentPropertyPattern.STORM_UI_SERVER);

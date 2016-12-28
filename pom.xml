@@ -429,6 +429,11 @@
                 </exclusions>
             </dependency>
             <dependency>
+                <groupId>org.apache.storm</groupId>
+                <artifactId>storm-pmml</artifactId>
+                <version>${storm.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.codehaus.groovy</groupId>
                 <artifactId>groovy-all</artifactId>
                 <version>${groovy.version}</version>
@@ -617,6 +622,16 @@
                         <artifactId>mailapi</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>streamline-actions</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.streamline</groupId>
+                <artifactId>streamline-actions-storm</artifactId>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.streamline</groupId>

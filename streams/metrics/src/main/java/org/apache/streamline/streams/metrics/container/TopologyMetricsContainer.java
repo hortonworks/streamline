@@ -1,10 +1,12 @@
-package org.apache.streamline.streams.catalog.container;
+package org.apache.streamline.streams.metrics.container;
 
 import org.apache.streamline.streams.catalog.Component;
 import org.apache.streamline.streams.catalog.Namespace;
 import org.apache.streamline.streams.catalog.Service;
-import org.apache.streamline.streams.catalog.container.mapping.MappedTimeSeriesQuerierImpl;
-import org.apache.streamline.streams.catalog.container.mapping.MappedTopologyMetricsImpl;
+import org.apache.streamline.streams.catalog.container.NamespaceAwareContainer;
+import org.apache.streamline.streams.catalog.service.EnvironmentService;
+import org.apache.streamline.streams.metrics.container.mapping.MappedTimeSeriesQuerierImpl;
+import org.apache.streamline.streams.metrics.container.mapping.MappedTopologyMetricsImpl;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import org.apache.streamline.streams.exception.ConfigException;
@@ -21,8 +23,8 @@ public class TopologyMetricsContainer extends NamespaceAwareContainer<TopologyMe
     public static final String COMPONENT_NAME_METRICS_COLLECTOR = ComponentPropertyPattern.METRICS_COLLECTOR.name();
     public static final String COLLECTOR_API_URL_KEY = "collectorApiUrl";
 
-    public TopologyMetricsContainer(StreamCatalogService catalogService) {
-        super(catalogService);
+    public TopologyMetricsContainer(EnvironmentService environmentService) {
+        super(environmentService);
     }
 
     @Override

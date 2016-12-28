@@ -13,6 +13,7 @@ import org.apache.streamline.streams.catalog.Namespace;
 import org.apache.streamline.streams.catalog.NamespaceServiceClusterMapping;
 import org.apache.streamline.streams.catalog.Service;
 import org.apache.streamline.streams.catalog.ServiceConfiguration;
+import org.apache.streamline.streams.catalog.service.EnvironmentService;
 import org.apache.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.streamline.streams.catalog.service.metadata.StormMetadataService;
 import org.apache.streamline.streams.cluster.discovery.ambari.AmbariServiceNodeDiscoverer;
@@ -60,11 +61,11 @@ public class ClusterCatalogResource {
     public static final String RESPONSE_MESSAGE_BAD_INPUT_NOT_VALID_AMBARI_CLUSTER_REST_API_URL = "Bad input: Not valid Ambari cluster Rest API URL";
     public static final String RESPONSE_MESSAGE = "responseMessage";
     public static final String VERIFIED = "verified";
-    private final StreamCatalogService catalogService;
+    private final EnvironmentService environmentService;
     private static final Set<Long> importInProgressCluster = new HashSet<>();
 
-    public ClusterCatalogResource(StreamCatalogService catalogService) {
-        this.catalogService = catalogService;
+    public ClusterCatalogResource(EnvironmentService environmentService) {
+        this.environmentService = environmentService;
     }
 
     /**
@@ -80,7 +81,7 @@ public class ClusterCatalogResource {
         Boolean detail = false;
 
         if (params.isEmpty()) {
-            clusters = catalogService.listClusters();
+            clusters = environmentService.listClusters();
         } else {
             MultivaluedMap<String, String> copiedParams = new MultivaluedHashMap<>();
             copiedParams.putAll(params);
@@ -90,7 +91,7 @@ public class ClusterCatalogResource {
             }
 
             queryParams = WSUtils.buildQueryParameters(copiedParams);
-            clusters = catalogService.listClusters(queryParams);
+            clusters = environmentService.listClusters(queryParams);
         }
 
         if (clusters != null) {
@@ -105,7 +106,7 @@ public class ClusterCatalogResource {
     @Timed
     public Response getClusterById(@PathParam("id") Long clusterId,
                                    @javax.ws.rs.QueryParam("detail") Boolean detail) {
-        Cluster result = catalogService.getCluster(clusterId);
+        Cluster result = environmentService.getCluster(clusterId);
         if (result != null) {
             return buildClusterGetResponse(result, detail);
         }
@@ -118,7 +119,7 @@ public class ClusterCatalogResource {
     @Timed
     public Response getClusterByName(@PathParam("clusterName") String clusterName,
                                      @javax.ws.rs.QueryParam("detail") Boolean detail) {
-        Cluster result = catalogService.getClusterByName(clusterName);
+        Cluster result = environmentService.getClusterByName(clusterName);
         if (result != null) {
             return buildClusterGetResponse(result, detail);
         }
@@ -131,12 +132,12 @@ public class ClusterCatalogResource {
     @Path("/clusters")
     public Response addCluster(Cluster cluster) {
         String clusterName = cluster.getName();
-        Cluster result = catalogService.getClusterByName(clusterName);
+        Cluster result = environmentService.getClusterByName(clusterName);
         if (result != null) {
             throw EntityAlreadyExistsException.byName(clusterName);
         }
 
-        Cluster createdCluster = catalogService.addCluster(cluster);
+        Cluster createdCluster = environmentService.addCluster(cluster);
         return WSUtils.respondEntity(createdCluster, CREATED);
     }
 
@@ -146,7 +147,7 @@ public class ClusterCatalogResource {
     public Response removeCluster(@PathParam("id") Long clusterId) {
         assertNoNamespaceRefersCluster(clusterId);
 
-        Cluster removedCluster = catalogService.removeCluster(clusterId);
+        Cluster removedCluster = environmentService.removeCluster(clusterId);
         if (removedCluster != null) {
             return WSUtils.respondEntity(removedCluster, OK);
         }
@@ -159,7 +160,7 @@ public class ClusterCatalogResource {
     @Timed
     public Response addOrUpdateCluster(@PathParam("id") Long clusterId,
                                        Cluster cluster) {
-        Cluster newCluster = catalogService.addOrUpdateCluster(clusterId, cluster);
+        Cluster newCluster = environmentService.addOrUpdateCluster(clusterId, cluster);
         return WSUtils.respondEntity(newCluster, CREATED);
     }
 
@@ -202,7 +203,7 @@ public class ClusterCatalogResource {
             throw BadRequestException.missingParameter("clusterId");
         }
 
-        Cluster retrievedCluster = catalogService.getCluster(clusterId);
+        Cluster retrievedCluster = environmentService.getCluster(clusterId);
         if (retrievedCluster == null) {
             throw EntityNotFoundException.byId(String.valueOf(clusterId));
         }
@@ -224,7 +225,7 @@ public class ClusterCatalogResource {
 
             discoverer.init(null);
 
-            retrievedCluster = catalogService.importClusterServices(discoverer, retrievedCluster);
+            retrievedCluster = environmentService.importClusterServices(discoverer, retrievedCluster);
 
             injectStormViewAsStormConfiguration(clusterId, discoverer);
 
@@ -262,9 +263,9 @@ public class ClusterCatalogResource {
     private ClusterServicesImportResult buildClusterServicesImportResult(Cluster cluster) {
         ClusterServicesImportResult result = new ClusterServicesImportResult(cluster);
 
-        for (Service service : catalogService.listServices(cluster.getId())) {
-            Collection<ServiceConfiguration> configurations = catalogService.listServiceConfigurations(service.getId());
-            Collection<Component> components = catalogService.listComponents(service.getId());
+        for (Service service : environmentService.listServices(cluster.getId())) {
+            Collection<ServiceConfiguration> configurations = environmentService.listServiceConfigurations(service.getId());
+            Collection<Component> components = environmentService.listComponents(service.getId());
 
             ClusterServicesImportResult.ServiceWithComponents s =
                 new ClusterServicesImportResult.ServiceWithComponents(service);
@@ -277,7 +278,7 @@ public class ClusterCatalogResource {
     }
 
     private void injectStormViewAsStormConfiguration(Long clusterId, AmbariServiceNodeDiscoverer discoverer) {
-        Service stormService = catalogService.getServiceByName(clusterId, ServiceConfigurations.STORM.name());
+        Service stormService = environmentService.getServiceByName(clusterId, ServiceConfigurations.STORM.name());
         if (stormService != null) {
             // hack: find Storm View and inject to one of ServiceConfiguration for Storm service if available
             String stormViewURL = discoverer.getStormViewUrl();
@@ -289,17 +290,17 @@ public class ClusterCatalogResource {
                         "\":\"" + stormViewURL + "\"}");
                 serviceConfiguration.setDescription("a hack to store Storm View URL");
 
-                catalogService.addServiceConfiguration(serviceConfiguration);
+                environmentService.addServiceConfiguration(serviceConfiguration);
             }
         }
     }
 
     private void assertNoNamespaceRefersCluster(Long clusterId) {
-        Collection<Namespace> namespaces = catalogService.listNamespaces();
+        Collection<Namespace> namespaces = environmentService.listNamespaces();
         if (namespaces != null) {
             for (Namespace namespace : namespaces) {
                 Collection<NamespaceServiceClusterMapping> mappings =
-                        catalogService.listServiceClusterMapping(namespace.getId());
+                        environmentService.listServiceClusterMapping(namespace.getId());
                 if (mappings != null) {
                     boolean matched = mappings.stream().anyMatch(m -> Objects.equals(m.getClusterId(), clusterId));
                     if (matched) {

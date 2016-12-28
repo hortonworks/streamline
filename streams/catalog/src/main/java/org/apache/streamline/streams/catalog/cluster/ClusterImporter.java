@@ -7,7 +7,7 @@ import org.apache.streamline.streams.catalog.Cluster;
 import org.apache.streamline.streams.catalog.Component;
 import org.apache.streamline.streams.catalog.Service;
 import org.apache.streamline.streams.catalog.ServiceConfiguration;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import org.apache.streamline.streams.catalog.service.EnvironmentService;
 import org.apache.streamline.streams.cluster.discovery.ServiceNodeDiscoverer;
 import org.apache.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import org.apache.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
@@ -25,11 +25,11 @@ public class ClusterImporter {
     private static final Logger LOG = LoggerFactory.getLogger(ClusterImporter.class);
     private static final int FORK_JOIN_POOL_PARALLELISM = 20;
 
-    private final StreamCatalogService catalogService;
+    private final EnvironmentService environmentService;
     private final ForkJoinPool forkJoinPool;
 
-    public ClusterImporter(StreamCatalogService catalogService) {
-        this.catalogService = catalogService;
+    public ClusterImporter(EnvironmentService environmentService) {
+        this.environmentService = environmentService;
         this.forkJoinPool = new ForkJoinPool(FORK_JOIN_POOL_PARALLELISM);
     }
 
@@ -100,39 +100,39 @@ public class ClusterImporter {
     }
 
     private void addComponent(Map<String, Object> flattenConfigurations, Service service, String componentName, List<String> hosts) {
-        Component component = catalogService.initializeComponent(service, componentName, hosts);
+        Component component = environmentService.initializeComponent(service, componentName, hosts);
         setProtocolAndPortIfAvailable(flattenConfigurations, component);
-        catalogService.addComponent(component);
+        environmentService.addComponent(component);
     }
 
     private void addServiceConfiguration(ObjectMapper objectMapper, Service service, String confType, Map<String, Object> configuration, String actualFileName) throws JsonProcessingException {
-        ServiceConfiguration serviceConfiguration = catalogService.initializeServiceConfiguration(objectMapper,
+        ServiceConfiguration serviceConfiguration = environmentService.initializeServiceConfiguration(objectMapper,
                 service.getId(), confType, actualFileName, configuration);
 
-        catalogService.addServiceConfiguration(serviceConfiguration);
+        environmentService.addServiceConfiguration(serviceConfiguration);
     }
 
     private Service addService(Cluster cluster, String serviceName) {
-        Service service = catalogService.initializeService(cluster, serviceName);
-        catalogService.addService(service);
+        Service service = environmentService.initializeService(cluster, serviceName);
+        environmentService.addService(service);
         LOG.debug("service added {}", serviceName);
         return service;
     }
 
     private void removeAllServices(Cluster cluster) {
-        Collection<Service> services = catalogService.listServices(cluster.getId());
+        Collection<Service> services = environmentService.listServices(cluster.getId());
         for (Service service : services) {
-            Collection<Component> components = catalogService.listComponents(service.getId());
+            Collection<Component> components = environmentService.listComponents(service.getId());
             for (Component component : components) {
-                catalogService.removeComponent(component.getId());
+                environmentService.removeComponent(component.getId());
             }
 
-            Collection<ServiceConfiguration> configurations = catalogService.listServiceConfigurations(service.getId());
+            Collection<ServiceConfiguration> configurations = environmentService.listServiceConfigurations(service.getId());
             for (ServiceConfiguration configuration : configurations) {
-                catalogService.removeServiceConfiguration(configuration.getId());
+                environmentService.removeServiceConfiguration(configuration.getId());
             }
 
-            catalogService.removeService(service.getId());
+            environmentService.removeService(service.getId());
         }
     }
 
