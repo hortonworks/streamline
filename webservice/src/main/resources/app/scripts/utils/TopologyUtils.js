@@ -311,85 +311,84 @@ const deleteNode = function(topologyId, versionId, currentNode, nodes, edges, in
                 }
             });
 
-                Promise.all(nodePromiseArr)
-                .then(results=>{
-                        let nodeData = results[0];
-                        setLastChange(results[0].timestamp);
-                        //Delete streams of all nodes
-                        results.map(result=>{
-                                let node = result;
-                                if(node.outputStreams){
-                                        node.outputStreams.map(stream=>{
-                                                if(stream.id){
-                                                        promiseArr.push(TopologyREST.deleteNode(topologyId, 'streams', stream.id));
-                                                }
-                                        })
-                                }
-                        })
+        Promise.all(nodePromiseArr)
+        .then(results=>{
+            let nodeData = results[0];
+            setLastChange(results[0].timestamp);
 
+            //Delete Links
+            let edgeArr = this.getEdges(edges, currentNode);
 
-                        //Delete Rules incase of Rule Processor
-                        if(nodeData.type === 'RULE'){
-                                if(nodeData.config.properties.rules){
-                                        nodeData.config.properties.rules.map(ruleId=>{
-                                                promiseArr.push(TopologyREST.deleteNode(topologyId, 'rules', ruleId));
-                                        })
-				}
-                        }
+            edgeArr.map((o)=>{
+                promiseArr.push(TopologyREST.deleteNode(topologyId, 'edges', o.edgeId));
+            });
 
-                        //Delete Window incase of Rule Processor
-                        if(nodeData.type === 'WINDOW'){
-                                if(nodeData.config.properties.rules){
-                                        nodeData.config.properties.rules.map(ruleId=>{
-                                                promiseArr.push(TopologyREST.deleteNode(topologyId, 'windows', ruleId));
-                                        })
-				}
-                        }
+            //Delete Rules incase of Rule Processor
+            if(nodeData.type === 'RULE'){
+                if(nodeData.config.properties.rules){
+                    nodeData.config.properties.rules.map(ruleId=>{
+                        promiseArr.push(TopologyREST.deleteNode(topologyId, 'rules', ruleId));
+                    })
+                }
+            }
 
-                        //Delete Links
-                        let edgeArr = this.getEdges(edges, currentNode);
-
-                        edgeArr.map((o)=>{
-                                promiseArr.push(TopologyREST.deleteNode(topologyId, 'edges', o.edgeId));
-                        });
-
-                        //Delete data from metadata
-                        metaInfo = this.removeNodeFromMeta(metaInfo, currentNode);
-                        let metaData = {
-                                topologyId: topologyId,
-                                data: JSON.stringify(metaInfo)
-                        };
-                            promiseArr.push(TopologyREST.putMetaInfo(topologyId, versionId, {body: JSON.stringify(metaData)}));
+            //Delete Window incase of Rule Processor
+            if(nodeData.type === 'WINDOW'){
+                if(nodeData.config.properties.rules){
+                    nodeData.config.properties.rules.map(ruleId=>{
+                        promiseArr.push(TopologyREST.deleteNode(topologyId, 'windows', ruleId));
+                    })
+                }
+            }     
 
             //Delete current node
-                        promiseArr.push(TopologyREST.deleteNode(topologyId, this.getNodeType(currentNode.parentType), currentNode.nodeId));
+            promiseArr.push(TopologyREST.deleteNode(topologyId, this.getNodeType(currentNode.parentType), currentNode.nodeId));
 
-                        //If needed to reset any processor on delete - it comes here or in callback
-                        callback = function(){
-                                // Graph related Operations
-                                uinamesList.splice(uinamesList.indexOf(currentNode.uiname), 1);
-                                nodes.splice(nodes.indexOf(currentNode), 1);
-                                this.spliceLinksForNode(currentNode, edges);
-                                internalFlags.selectedNode = null;
-                                updateGraphMethod();
-                        }.bind(this)
-
-                        if(promiseArr.length > 0){
-                                //Make calls to delete node or nodes
-                                Promise.all(promiseArr)
-                                        .then((results)=>{
-                                                for(let i = 0; i < results.length; i++){
-                                                        if(results[i].responseMessage !== undefined){
-              FSReactToastr.error(
-                  <CommonNotification flag="error" content={results[i].responseMessage}/>, '', toastOpt)
-                                                        }
-                                                }
-                                                //call the callback
-                                                callback();
-                                        })
+            //Delete streams of all nodes
+            results.map(result=>{
+                let node = result;
+                if(node.outputStreams){
+                    node.outputStreams.map(stream=>{
+                        if(stream.id){
+                            promiseArr.push(TopologyREST.deleteNode(topologyId, 'streams', stream.id));
                         }
+                    })
+                }
+            })
 
-                })
+            //Delete data from metadata
+            metaInfo = this.removeNodeFromMeta(metaInfo, currentNode);
+            let metaData = {
+                topologyId: topologyId,
+                data: JSON.stringify(metaInfo)
+            };
+            promiseArr.push(TopologyREST.putMetaInfo(topologyId, versionId, {body: JSON.stringify(metaData)}));
+
+            //If needed to reset any processor on delete - it comes here or in callback
+            callback = function(){
+                // Graph related Operations
+                uinamesList.splice(uinamesList.indexOf(currentNode.uiname), 1);
+                nodes.splice(nodes.indexOf(currentNode), 1);
+                this.spliceLinksForNode(currentNode, edges);
+                internalFlags.selectedNode = null;
+                updateGraphMethod();
+            }.bind(this)
+
+            if(promiseArr.length > 0){
+                //Make calls to delete node or nodes
+                Promise.all(promiseArr)
+                    .then((results)=>{
+                        for(let i = 0; i < results.length; i++){
+                            if(results[i].responseMessage !== undefined){
+                                FSReactToastr.error(<CommonNotification flag="error" content={results[i].responseMessage}/>, '', toastOpt)
+                            }
+                        }
+                        //call the callback
+                        callback();
+                    })
+            }
+
+        })
 
 }
 
