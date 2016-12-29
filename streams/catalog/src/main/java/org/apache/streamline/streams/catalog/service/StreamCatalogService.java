@@ -1201,8 +1201,8 @@ public class StreamCatalogService {
     public TopologySource removeTopologySource(Long topologyId, Long sourceId, Long versionId) {
         TopologySource topologySource = getTopologySource(topologyId, sourceId, versionId);
         if (topologySource != null) {
-            topologySource = dao.<TopologySource>remove(new StorableKey(TOPOLOGY_SOURCE_NAMESPACE, topologySource.getPrimaryKey()));
             removeSourceStreamMapping(topologySource);
+            topologySource = dao.<TopologySource>remove(new StorableKey(TOPOLOGY_SOURCE_NAMESPACE, topologySource.getPrimaryKey()));
             topologySource.setVersionTimestamp(updateVersionTimestamp(versionId).getTimestamp());
         }
         return topologySource;
@@ -1490,8 +1490,8 @@ public class StreamCatalogService {
     public TopologyProcessor removeTopologyProcessor(Long topologyId, Long processorId, Long versionId) {
         TopologyProcessor topologyProcessor = getTopologyProcessor(topologyId, processorId, versionId);
         if (topologyProcessor != null) {
-            topologyProcessor = dao.<TopologyProcessor>remove(new StorableKey(TOPOLOGY_PROCESSOR_NAMESPACE, topologyProcessor.getPrimaryKey()));
             removeProcessorStreamMapping(topologyProcessor);
+            topologyProcessor = dao.<TopologyProcessor>remove(new StorableKey(TOPOLOGY_PROCESSOR_NAMESPACE, topologyProcessor.getPrimaryKey()));
             topologyProcessor.setVersionTimestamp(updateVersionTimestamp(versionId).getTimestamp());
         }
         return topologyProcessor;
