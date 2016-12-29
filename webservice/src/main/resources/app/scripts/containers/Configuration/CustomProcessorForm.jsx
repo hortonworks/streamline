@@ -131,11 +131,11 @@ class CustomProcessorForm extends Component {
     this.setState(obj);
   }
   validateName(name) {
-    let {processors} = this.props;
+    let {processors,id} = this.props;
     let stateObj = {showNameError: false};
     if(name !== '') {
       let hasProcessor = processors.filter((o)=>{return (o.name === name);})
-      if(hasProcessor.length === 1){
+      if(hasProcessor.length === 1 && name !== id){
           stateObj.showNameError = true;
       }
     }

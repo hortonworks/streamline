@@ -59,9 +59,11 @@ export default class CustomProcessorContainer extends Component {
     if(this.refs.CustomProcessorForm.getWrappedInstance().validateData()){
       this.refs.CustomProcessorForm.getWrappedInstance().handleSave().then((processor)=>{
         if(processor.responseMessage !== undefined){
-          let errorMsg = processor.responseMessage.indexOf('[cache-0.1.0-SNAPSHOT.jar] already exists') !== -1
+          let errorMsg = processor.responseMessage.indexOf('already exists') !== -1
                           ? "The jar file is already exists"
-                          : processor.responseMessage;
+                          : processor.responseMessage.indexOf('missing customProcessorImpl class') !== -1
+                            ? "Class name doesn't exists in a jar file"
+                            : processor.responseMessage;
           FSReactToastr.error(
               <CommonNotification flag="error" content={errorMsg}/>, '', toastOpt)
         } else {

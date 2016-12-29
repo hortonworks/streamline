@@ -53,41 +53,7 @@ export class string extends BaseField {
         const value = this.refs.input.value;
         const {Form} = this.context;
         this.props.data[this.props.value] = value;
-        Form.setState(Form.state, () => {
-          if(this.validate() && (this.props.fieldJson.hint !== undefined && this.props.fieldJson.hint.toLowerCase() === "schema")){
-            this.getSchema(value);
-          }
-        });
-    }
-
-    getSchema(val){
-        if(val != ''){
-            clearTimeout(this.topicTimer);
-            this.topicTimer = setTimeout(()=>{
-                this.getSchemaFromName(val);
-            }, 700)
-        }
-    }
-
-    getSchemaFromName(topicName){
-        let resultArr = [];
-        TopologyREST.getSchemaForKafka(topicName)
-            .then(result=>{
-                if(result.responseMessage !== undefined){
-                    this.refs.input.className = "form-control invalidInput";
-                    this.context.Form.state.Errors[this.props.valuePath] = 'Schema Not Found';
-                    this.context.Form.setState(this.context.Form.state);
-                } else {
-                    this.refs.input.className = "form-control";
-                    resultArr = result;
-                    if(typeof resultArr === 'string'){
-                        resultArr = JSON.parse(resultArr);
-                    }
-                    this.context.Form.state.Errors[this.props.valuePath] = '';
-                    this.context.Form.setState(this.context.Form.state);
-                }
-                this.context.Form.props.callback(resultArr);
-            })
+        this.validate();
     }
 
     validate () {
@@ -195,14 +161,73 @@ export class enumstring extends BaseField {
     handleChange = (val) => {
         this.props.data[this.props.value] = val.value;
         const {Form} = this.context;
+        Form.setState(Form.state, () => {
+          if(this.validate() && (this.props.fieldJson.hint !== undefined && this.props.fieldJson.hint.toLowerCase() === "schema")){
+            this.getSchema(this.props.data[this.props.value]);
+          }
+        });
+    }
+
+    getSchema(val){
+        if(val != ''){
+            clearTimeout(this.topicTimer);
+            this.topicTimer = setTimeout(()=>{
+                this.getSchemaFromName(val);
+            }, 700)
+        }
+    }
+
+    getSchemaFromName(topicName){
+        let resultArr = [];
+        TopologyREST.getSchemaForKafka(topicName)
+            .then(result=>{
+                if(result.responseMessage !== undefined){
+                    this.refs.select2.className = "form-control invalidInput";
+                    this.context.Form.state.Errors[this.props.valuePath] = 'Schema Not Found';
+                    this.context.Form.setState(this.context.Form.state);
+                } else {
+                    this.refs.select2.className = "form-control";
+                    resultArr = result;
+                    if(typeof resultArr === 'string'){
+                        resultArr = JSON.parse(resultArr);
+                    }
+                    this.context.Form.state.Errors[this.props.valuePath] = '';
+                    this.context.Form.setState(this.context.Form.state);
+                }
+                this.context.Form.props.callback(resultArr);
+            })
+    }
+
+    validate () {
+        return super.validate(this.props.data[this.props.value])
+    }
+    getField = () => {
+        return <Select
+                ref="select2"
+                clearable={false}
+                onChange={this.handleChange}
+                {...this.props.fieldAttr}
+                disabled={this.context.Form.props.readOnly}
+                value={this.props.data[this.props.value]}
+                className={this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}
+            />
+    }
+}
+
+export class CustomEnumstring extends BaseField {
+    handleChange = (val) => {
+        this.props.data[this.props.value] = val.value;
+        const {Form} = this.context;
         Form.setState(Form.state);
-        this.validate()
+        this.validate();
+        this.context.Form.props.populateClusterFields(val.value);
     }
     validate () {
         return super.validate(this.props.data[this.props.value])
     }
     getField = () => {
         return <Select
+                clearable={false}
                 onChange={this.handleChange}
                 {...this.props.fieldAttr}
                 disabled={this.context.Form.props.readOnly}

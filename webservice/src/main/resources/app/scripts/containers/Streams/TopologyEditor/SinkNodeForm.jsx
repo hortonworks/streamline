@@ -37,17 +37,22 @@ export default class SinkNodeForm extends Component {
             description: '',
             showRequired: true,
             activeTabKey: 1,
-            uiSpecification : []
+            uiSpecification : [],
+            clusterArr : [],
+            clusterName: '',
+            fetchLoader : true
         };
         this.fetchNotifier();
     }
 
     fetchData(){
-        let {topologyId, versionId, nodeType, nodeData, sourceNodes} = this.props;
+        let {topologyId, versionId, nodeType, nodeData, sourceNodes,namespaceId} = this.props;
+        const sourceParams = nodeData.parentType+'/'+nodeData.topologyComponentBundleId;
         let sourceNodeType = null;
         let promiseArr = [
             TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId),
             TopologyREST.getAllNodes(topologyId, versionId, 'edges'),
+            TopologyREST.getSourceComponentClusters(sourceParams,namespaceId)
         ];
         if(sourceNodes.length > 0){
             sourceNodeType = TopologyUtils.getNodeType(sourceNodes[0].parentType);
@@ -55,6 +60,7 @@ export default class SinkNodeForm extends Component {
         }
         Promise.all(promiseArr)
             .then(results=>{
+              let stateObj = {},tempArr = [];
                 this.nodeData = results[0];
                 if(results[1].entities){
                     results[1].entities.map((edge)=>{
@@ -67,10 +73,40 @@ export default class SinkNodeForm extends Component {
                         }
                     })
                 }
-                this.setState({formData: this.nodeData.config.properties, description: this.nodeData.description})
+                if(results[2].responseMessage !== undefined){
+                  this.setState({fetchLoader:false});
+                  FSReactToastr.error(<CommonNotification flag="error" content={results[0].responseMessage}/>, '', toastOpt);
+                }else{
+                  const clusters = results[2];
+                  tempArr = _.keys(clusters).map((x, i) => {
+                      return {
+                        fieldName : x,
+                        uiName : x
+                      }
+                  });
+                  stateObj.clusterArr = clusters;
+                }
+                if(!_.isEmpty(stateObj.clusterArr) && _.keys(stateObj.clusterArr).length > 1){
+                  this.fetchFields();
+                  stateObj.uiSpecification = this.pushClusterFields(tempArr);
+                }
+                stateObj.formData = this.nodeData.config.properties;
+                stateObj.description = this.nodeData.description;
+                stateObj.fetchLoader = false;
+                this.setState(stateObj, () => {
+                  if(stateObj.formData.clusters !== undefined){
+                    this.updateClusterFields(stateObj.formData.clusters);
+                  }
+                  if(_.keys(stateObj.clusterArr).length === 1){
+                    this.fetchFields();
+                    stateObj.uiSpecification = this.pushClusterFields(tempArr);
+                    stateObj.formData.clusters = _.keys(stateObj.clusterArr)[0];
+                    this.updateClusterFields(stateObj.formData.clusters);
+                  }
+                });
                 if(sourceNodes.length > 0){
                     //Finding the source node and updating actions for rules/windows
-                    this.sourceNodeData = results[2];
+                    this.sourceNodeData = results[3];
                     let sourcePromiseArr = [];
                     // sourceChildNodeType are processor nodes inner child, window or rule
                     let type = sourceNodes[0].currentType.toLowerCase();
@@ -88,6 +124,36 @@ export default class SinkNodeForm extends Component {
             })
     }
 
+    fetchFields = () => {
+      let obj = this.props.configData.topologyComponentUISpecification.fields;
+      const clusterFlag = obj.findIndex(x => {
+        return x.fieldName === 'clusters'
+      });
+      if(clusterFlag === -1){
+        const data = {
+                      "uiName": "Cluster Name",
+                      "fieldName": "clusters",
+                      "isOptional": false,
+                      "tooltip": "Cluster name to read data from",
+                      "type": "CustomEnumstring",
+                      "options": []
+                    };
+          obj.unshift(data);
+      }
+      return obj;
+    }
+
+    pushClusterFields = (opt) => {
+      const {uiSpecification} = this.state;
+      const obj = uiSpecification.map(x => {
+          if(x.fieldName === 'clusters'){
+            x.options = opt;
+          }
+        return x
+      });
+      return obj;
+    }
+
     fetchNotifier = () => {
       ClusterREST.getAllNotifier()
         .then(notifier => {
@@ -98,9 +164,11 @@ export default class SinkNodeForm extends Component {
             const obj = notifier.entities.filter(x => {
               return x.name === "email_notifier";
             });
-            let {configData} = this.props;
-            const {topologyComponentUISpecification} = configData;
-            let uiFields = topologyComponentUISpecification.fields || [];
+
+           let {configData} = this.props;
+           const {topologyComponentUISpecification} = configData;
+           let uiFields = topologyComponentUISpecification.fields || [];
+
             uiFields.map(x => {
               if(x.fieldName === "jarFileName"){
                   x.defaultValue = obj[0].jarFileName;
@@ -168,20 +236,64 @@ export default class SinkNodeForm extends Component {
         this.setState({description: description});
     }
 
+    populateClusterFields(val){
+      this.setState({clusterName : val}, () => {
+        this.updateClusterFields();
+      });
+    }
+
+    updateClusterFields(name){
+      const {clusterArr,clusterName} = this.state;
+      let data = {},obj=[];
+      let config = this.state.uiSpecification;
+      _.keys(clusterArr).map((x) => {
+        if(name || clusterName === x){
+        obj = config.map((list) => {
+            _.keys(clusterArr[x]).map(k => {
+                if(list.fieldName === k){
+                  if(_.isArray(clusterArr[x][k])  && (name || clusterName) === x){
+                    list.options = clusterArr[x][k].map(v => {
+                      return {
+                        fieldName : v,
+                        uiName : v
+                      }
+                    })
+                  }else{
+                    if(!_.isArray(clusterArr[x][k])){
+                      data[k] = clusterArr[x][k];
+                    }
+                  }
+                  clusterName ? data.clusters = clusterName : data.clusters = name;
+                }
+            })
+            return list;
+          });
+        }
+      });
+      const tempData = Object.assign({},this.state.formData,data);
+      this.setState({uiSpecification : obj,formData : tempData});
+    }
+
     render() {
-        let {configData} = this.props;
-        let {formData, streamObj = {},uiSpecification} = this.state;
+        let {formData, streamObj = {},uiSpecification,fetchLoader} = this.state;
 
         let fields = Utils.genFields(uiSpecification, [], formData,streamObj.fields);
-        const form = <Form
-                        ref="Form"
-                        readOnly={!this.props.editMode}
-                        showRequired={this.state.showRequired}
-                        FormData={formData}
-                        className="sink-modal-form form-overflow"
-                    >
-                        {fields}
-                    </Form>
+        const form = fetchLoader
+                      ? <div className="col-sm-12">
+                            <div className="loading-img text-center" style={{marginTop : "100px"}}>
+                                <img src="styles/img/start-loader.gif" alt="loading" />
+                            </div>
+                        </div>
+                      :  <Form
+                            ref="Form"
+                            readOnly={!this.props.editMode}
+                            showRequired={this.state.showRequired}
+                            FormData={formData}
+                            populateClusterFields={this.populateClusterFields.bind(this)}
+                            className="sink-modal-form form-overflow"
+                        >
+                            {fields}
+                        </Form>
         const inputSidebar = <StreamsSidebar ref="StreamSidebar" streamObj={streamObj} streamType="input" />
         return (
             <Tabs id="SinkForm" activeKey={this.state.activeTabKey} className="modal-tabs" onSelect={this.onSelectTab}>

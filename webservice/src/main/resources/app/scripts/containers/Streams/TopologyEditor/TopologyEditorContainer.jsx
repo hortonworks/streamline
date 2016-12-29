@@ -361,7 +361,8 @@ class TopologyEditorContainer extends Component {
     let obj = {
       editMode: !this.viewMode,
       topologyId: this.topologyId,
-      versionId: this.versionId
+      versionId: this.versionId,
+      namespaceId : this.namespaceId
     }, config = [];
     switch(node.parentType){
       case 'SOURCE':

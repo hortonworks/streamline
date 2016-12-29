@@ -526,10 +526,10 @@ const defineLinePath = function(p1, p2, flag){
 const showNodeModal = function(ModalScope, setModalContent, node, updateGraphMethod, allNodes, edges, linkShuffleOptions){
 	let currentEdges = this.getEdges(edges, node);
 	let scope = ModalScope(node);
-    setModalContent(node, updateGraphMethod, this.getConfigContainer(node, scope.configData, scope.editMode, scope.topologyId, scope.versionId, currentEdges, allNodes, linkShuffleOptions, edges, updateGraphMethod));
+    setModalContent(node, updateGraphMethod, this.getConfigContainer(node, scope.configData, scope.editMode, scope.topologyId, scope.versionId,scope.namespaceId, currentEdges, allNodes, linkShuffleOptions, edges, updateGraphMethod));
 }
 
-const getConfigContainer = function(node, configData, editMode, topologyId, versionId, currentEdges, allNodes, linkShuffleOptions, edges, updateGraphMethod){
+const getConfigContainer = function(node, configData, editMode, topologyId, versionId,namespaceId, currentEdges, allNodes, linkShuffleOptions, edges, updateGraphMethod){
 	let nodeType = this.getNodeType(node.parentType);
 	let sourceNodes = [], targetNodes = [];
         currentEdges.map((e)=>{
@@ -551,6 +551,7 @@ const getConfigContainer = function(node, configData, editMode, topologyId, vers
                 nodeType={nodeType}
                 topologyId={topologyId}
                 versionId={versionId}
+                namespaceId={namespaceId}
                 targetNodes={targetNodes}
                 linkShuffleOptions={linkShuffleOptions}
                 />;
@@ -565,6 +566,7 @@ const getConfigContainer = function(node, configData, editMode, topologyId, vers
                 nodeType={nodeType}
                 topologyId={topologyId}
                 versionId={versionId}
+                namespaceId={namespaceId}
                 sourceNodes={sourceNodes}
             />;
         }

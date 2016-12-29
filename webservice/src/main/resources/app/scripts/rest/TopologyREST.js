@@ -320,6 +320,14 @@ const TopologyREST = {
                                                         return {responseMessage: "Invalid JSON"};
                                                 })
         },
+  getSourceComponentClusters(source,nameSpaceId,options) {
+                options = options || {};
+                options.method = options.method || 'GET';
+                return fetch(baseUrl+'streams/componentbundles/'+source+'/hints/namespaces/'+nameSpaceId, options)
+                        .then( (response) => {
+				return response.json();
+                        })
+        }
 }
 
 export default TopologyREST

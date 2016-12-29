@@ -7,6 +7,9 @@ import TopologyREST from '../../../rest/TopologyREST';
 import Form from '../../../libs/form';
 import StreamsSidebar from '../../../components/StreamSidebar';
 import NotesForm from '../../../components/NotesForm';
+import FSReactToastr from '../../../components/FSReactToastr';
+import CommonNotification from '../../../utils/CommonNotification';
+import {toastOpt} from '../../../utils/Constants';
 
 export default class SourceNodeForm extends Component {
     static propTypes = {
@@ -21,32 +24,136 @@ export default class SourceNodeForm extends Component {
     constructor(props) {
         super(props);
         this.fetchData();
-        this.configJSON = props.configData.topologyComponentUISpecification.fields;
         this.state = {
             formData: {},
             streamObj: {},
             description: '',
             showRequired: true,
-            activeTabKey: 1
+            activeTabKey: 1,
+            clusterArr : [],
+            configJSON : this.fetchFields(),
+            clusterName : '',
+            fetchLoader : true
         };
     }
 
     fetchData(){
-        let {topologyId, versionId, nodeType, nodeData} = this.props;
-        TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId)
-            .then(results=>{
-                this.nodeData = results;
-                let stateObj = {};
-                if(this.nodeData.outputStreams.length === 0){
-                    this.createStream();
-                } else {
-                    this.streamObj = this.nodeData.outputStreams[0];
-                    stateObj.streamObj = this.streamObj;
+        let {topologyId, versionId, nodeType, nodeData,namespaceId} = this.props;
+        const sourceParams = nodeData.parentType+'/'+nodeData.topologyComponentBundleId;
+        let promiseArr = [
+          TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId),
+          TopologyREST.getSourceComponentClusters(sourceParams,namespaceId)
+        ];
+
+        Promise.all(promiseArr)
+          .then((results) => {
+            let stateObj = {},tempArr = [];
+            if(results[0].responseMessage !== undefined){
+              FSReactToastr.error(<CommonNotification flag="error" content={results[0].responseMessage}/>, '', toastOpt);
+            }else{
+              this.nodeData = results[0];
+              if(this.nodeData.outputStreams.length === 0){
+                  this.createStream();
+              } else {
+                  this.streamObj = this.nodeData.outputStreams[0];
+                  stateObj.streamObj = this.streamObj;
+              }
+            }
+            if(results[1].responseMessage !== undefined){
+              this.setState({fetchLoader : false});
+              FSReactToastr.error(<CommonNotification flag="error" content={results[1].responseMessage}/>, '', toastOpt);
+            }else{
+              const clusters = results[1];
+              tempArr = _.keys(clusters).map((x, i) => {
+                  return {
+                    fieldName : x,
+                    uiName : x
+                  }
+              });
+              stateObj.clusterArr = clusters;
+            }
+            stateObj.configJSON = this.pushClusterFields(tempArr);
+            stateObj.formData = this.nodeData.config.properties;
+            stateObj.description = this.nodeData.description;
+            stateObj.fetchLoader = false;
+            this.setState(stateObj, () => {
+              if(stateObj.formData.clusters !== undefined){
+                this.updateClusterFields(stateObj.formData.clusters);
+                this.setState({streamObj : this.state.streamObj});
+              }
+              if(_.keys(stateObj.clusterArr).length === 1){
+                stateObj.formData.clusters = _.keys(stateObj.clusterArr)[0];
+                this.updateClusterFields(stateObj.formData.clusters);
+              }
+            });
+          })
+    }
+    fetchFields = () => {
+      let obj = this.props.configData.topologyComponentUISpecification.fields;
+      const clusterFlag = obj.findIndex(x => {
+        return x.fieldName === 'clusters'
+      });
+      if(clusterFlag === -1){
+        const data = {
+                      "uiName": "Cluster Name",
+                      "fieldName": "clusters",
+                      "isOptional": false,
+                      "tooltip": "Cluster name to read data from",
+                      "type": "CustomEnumstring",
+                      "options": []
+                    };
+          obj.unshift(data);
+      }
+      return obj;
+    }
+    pushClusterFields = (opt) => {
+      const {configJSON} = this.state;
+      const obj = configJSON.map(x => {
+          if(x.fieldName === 'clusters'){
+            x.options = opt;
+          }
+        return x
+      });
+      return obj;
+    }
+
+    populateClusterFields(val){
+      const tempObj = Object.assign({},this.state.formData,{topic:''});
+      this.setState({clusterName : val,streamObj:'',formData:tempObj}, () => {
+        this.updateClusterFields();
+      });
+    }
+
+    updateClusterFields(name){
+      const {clusterArr,clusterName,streamObj} = this.state;
+      let data = {},obj=[];
+      let config = this.state.configJSON;
+      _.keys(clusterArr).map((x) => {
+        if(name || clusterName === x){
+        obj = config.map((list) => {
+            _.keys(clusterArr[x]).map(k => {
+                if(list.fieldName === k){
+                  if(_.isArray(clusterArr[x][k]) && (name || clusterName) === x){
+                    list.options = clusterArr[x][k].map(v => {
+                      return {
+                        fieldName : v,
+                        uiName : v
+                      }
+                    })
+                  }else{
+                    if(!_.isArray(clusterArr[x][k])){
+                      data[k] = clusterArr[x][k];
+                    }
+                  }
                 }
-                stateObj.formData = this.nodeData.config.properties
-                stateObj.description = this.nodeData.description;
-                this.setState(stateObj);
             })
+            data.clusters = clusterName ? clusterName : name;
+            return list;
+          });
+        }
+      });
+      const tempData = Object.assign({},this.state.formData,data);
+      this.setState({configJSON : obj,formData : tempData});
     }
 
     createStream(){
@@ -118,18 +225,26 @@ export default class SourceNodeForm extends Component {
     }
 
     render() {
+        const {configJSON,fetchLoader} = this.state;
         let formData = this.state.formData;
-        let fields = Utils.genFields(this.configJSON, [], formData);
-        const form = <Form
-                        ref="Form"
-                        readOnly={!this.props.editMode}
-                        showRequired={this.state.showRequired}
-                        FormData={formData}
-                        className="source-modal-form form-overflow"
-                        callback={this.showOutputStream.bind(this)}
-                    >
-                        {fields}
-                    </Form>
+        let fields = Utils.genFields(configJSON, [], formData);
+        const form = fetchLoader
+                      ? <div className="col-sm-12">
+                            <div className="loading-img text-center" style={{marginTop : "100px"}}>
+                                <img src="styles/img/start-loader.gif" alt="loading" />
+                            </div>
+                        </div>
+                      :  <Form
+                              ref="Form"
+                              readOnly={!this.props.editMode}
+                              showRequired={this.state.showRequired}
+                              FormData={formData}
+                              className="source-modal-form form-overflow"
+                              populateClusterFields={this.populateClusterFields.bind(this)}
+                              callback={this.showOutputStream.bind(this)}
+                          >
+                              {fields}
+                          </Form>
         const outputSidebar = <StreamsSidebar ref="StreamSidebar" streamObj={this.state.streamObj} streamType="output" />
         return (
             <Tabs id="SinkForm" activeKey={this.state.activeTabKey} className="modal-tabs" onSelect={this.onSelectTab}>
