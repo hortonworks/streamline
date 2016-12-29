@@ -136,10 +136,6 @@
         </dependency>
         <dependency>
             <groupId>org.apache.storm</groupId>
-            <artifactId>storm-pmml</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.storm</groupId>
             <artifactId>storm-sql-runtime</artifactId>
         </dependency>
         <dependency>
@@ -201,10 +197,18 @@
         <dependency>
             <groupId>org.apache.storm</groupId>
             <artifactId>storm-solr</artifactId>
+            <version>${storm.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.storm</groupId>
             <artifactId>flux-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.storm</groupId>
+            <artifactId>storm-pmml</artifactId>
+            <version>${storm.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.hortonworks.registries</groupId>
