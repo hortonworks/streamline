@@ -1,4 +1,5 @@
 ## 0.1.4
+ * STREAMLINE-515: storm-solr bundle spec and flux transformation class
  * STREAMLINE-427: Pull component jar dependencies using bundles from maven 
  * STREAMLINE-434: Check custom processor implementation in jar before uploading 
  * STREAMLINE-549: Add support for kafka sink

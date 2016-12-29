@@ -55,7 +55,6 @@
         <storm.version>1.1.0-SNAPSHOT</storm.version>
         <woodstox-core-asl.version>4.4.1</woodstox-core-asl.version>
         <druid.tranquility.version>0.8.2</druid.tranquility.version>
-        <jpmml.version>1.0.22</jpmml.version>
 
 
         <!-- Runtime Scope Dependencies -->
@@ -429,11 +428,6 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.storm</groupId>
-                <artifactId>storm-pmml</artifactId>
-                <version>${storm.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.codehaus.groovy</groupId>
                 <artifactId>groovy-all</artifactId>
                 <version>${groovy.version}</version>
@@ -474,16 +468,6 @@
                 <groupId>org.glassfish.jersey.media</groupId>
                 <artifactId>jersey-media-multipart</artifactId>
                 <version>${jersey.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jpmml</groupId>
-                <artifactId>pmml-schema</artifactId>
-                <version>${jpmml.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jpmml</groupId>
-                <artifactId>pmml-evaluator</artifactId>
-                <version>${jpmml.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.scala-lang</groupId>

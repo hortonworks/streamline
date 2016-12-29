@@ -196,7 +196,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
           "body": "rule_1 fired"
          },
         "outputStreams": ["sink-stream"],
-         "notifierName": "email_notifier",
+         "notifierName": "email_notifier.json",
           "__type": "org.apache.streamline.streams.layout.component.rule.action.NotifierAction"
        }
     ]
@@ -268,7 +268,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
           "body": "rule_1 fired"
          },
         "outputStreams": ["sink-stream"],
-         "notifierName": "email_notifier",
+         "notifierName": "email_notifier.json",
           "__type": "org.apache.streamline.streams.layout.component.rule.action.NotifierAction"
        }
     ]
@@ -363,7 +363,7 @@ windowedruleprocessorid=$(getId $out)
 # --
 # Get the notifier details for email notifier
 # --
-notifierJar=$(curl -s "${catalogurl}/notifiers?name=email_notifier" | grep -oE 'jarFileName\":"\S+?\"'|cut -d \" -f 3)
+notifierJar=$(curl -s "${catalogurl}/notifiers?name=email_notifier.json" | grep -oE 'jarFileName\":"\S+?\"'|cut -d \" -f 3)
 # --
 # Create notification sink
 # --
@@ -375,7 +375,7 @@ out=$(curl -s  -X POST -H "Content-Type: application/json" -H "Cache-Control: no
         "topologyComponentBundleId": '"${bundleId}"',
         "config": {
             "properties" : {
-          "notifierName": "email_notifier",
+          "notifierName": "email_notifier.json",
           "jarFileName": "'$notifierJar'",
           "className": "org.apache.streamline.streams.notifiers.EmailNotifier",
           "properties": {

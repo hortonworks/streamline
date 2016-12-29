@@ -34,10 +34,12 @@
         <dependency>
             <groupId>org.jpmml</groupId>
             <artifactId>pmml-schema</artifactId>
+            <version>1.0.22</version>
         </dependency>
         <dependency>
             <groupId>org.jpmml</groupId>
             <artifactId>pmml-evaluator</artifactId>
+            <version>1.0.22</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
