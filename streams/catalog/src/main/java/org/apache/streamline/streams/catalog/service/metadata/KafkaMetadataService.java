@@ -1,6 +1,7 @@
 package org.apache.streamline.streams.catalog.service.metadata;
 
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.streamline.streams.catalog.Component;
 import org.apache.streamline.streams.catalog.ServiceConfiguration;
 import org.apache.streamline.streams.catalog.exception.ServiceComponentNotFoundException;
@@ -14,8 +15,11 @@ import org.apache.streamline.streams.cluster.discovery.ambari.ServiceConfigurati
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * This class opens zookeeper client connections which must be closed either by calling the {@link KafkaMetadataService#close()}'
@@ -59,6 +63,11 @@ public class KafkaMetadataService implements AutoCloseable {
         return BrokersInfo.hostPort(kafkaBrokerComp.getHosts(), kafkaBrokerComp.getPort());
     }
 
+    public String getProtocolFromStreamsJson(Long clusterId) throws ServiceNotFoundException, ServiceComponentNotFoundException {
+        final Component kafkaBrokerComp = getKafkaBrokerComponent(clusterId);
+        return kafkaBrokerComp.getProtocol();
+    }
+
     public BrokersInfo<String> getBrokerInfoFromZk() throws ZookeeperClientException {
         final String brokerIdsZkPath = kafkaZkConnection.buildZkRootPath(KAFKA_BROKERS_IDS_ZK_RELATIVE_PATH);
         final List<String> brokerIds = zkCli.getChildren(brokerIdsZkPath);
@@ -87,6 +96,10 @@ public class KafkaMetadataService implements AutoCloseable {
     @Override
     public void close() throws Exception {
         zkCli.close();
+    }
+
+    public KafkaZkConnection getKafkaZkConnection() {
+        return kafkaZkConnection;
     }
 
     // ==== static methods used for object construction
@@ -126,6 +139,7 @@ public class KafkaMetadataService implements AutoCloseable {
      */
 
     public static class BrokersInfo<T> {
+
         private final List<T> brokers;
 
         public BrokersInfo(List<T> brokers) {
@@ -196,7 +210,8 @@ public class KafkaMetadataService implements AutoCloseable {
      * Wrapper class used to represent zookeeper connection string (including chRoot) as defined in the kafka broker property
      * {@link KafkaMetadataService#KAFKA_ZK_CONNECT_PROP}
      */
-    static class KafkaZkConnection implements ZookeeperClient.ZkConnectionStringFactory {
+    public static class KafkaZkConnection implements ZookeeperClient.ZkConnectionStringFactory {
+        public static final int DEFAULT_ZOOKEEPER_PORT = 2181;
         final String zkString;
         final String chRoot;
 
@@ -211,7 +226,7 @@ public class KafkaMetadataService implements AutoCloseable {
          * @param zkStringRaw zk connection string as defined in the broker zk property. It has the pattern
          *                    "hostname1:port1,hostname2:port2,hostname3:port3/chroot/path"
          */
-        static KafkaZkConnection newInstance(String zkStringRaw) {
+        public static KafkaZkConnection newInstance(String zkStringRaw) {
             final String[] split = zkStringRaw.split("/", 2);
             String zkString;
             String chRoot;
@@ -233,6 +248,23 @@ public class KafkaMetadataService implements AutoCloseable {
             return zkString;
         }
 
+        public List<HostPort> getZkHosts() {
+            if (StringUtils.isEmpty(zkString)) {
+                return Collections.emptyList();
+            }
+
+            return Arrays.stream(zkString.split(","))
+                    .map(zkConn -> {
+                        String[] splitted = zkConn.split(":");
+                        if (splitted.length > 1) {
+                            return new HostPort(splitted[0], Integer.valueOf(splitted[1]));
+                        } else {
+                            return new HostPort(splitted[0], DEFAULT_ZOOKEEPER_PORT);
+                        }
+                    })
+                    .collect(toList());
+        }
+
         String buildZkRootPath(String zkRelativePath) {
             if (zkRelativePath.startsWith("/")) {
                 return chRoot + zkRelativePath.substring(1);
@@ -245,7 +277,7 @@ public class KafkaMetadataService implements AutoCloseable {
             return zkString;
         }
 
-        String getChRoot() {
+        public String getChRoot() {
             return chRoot;
         }
     }

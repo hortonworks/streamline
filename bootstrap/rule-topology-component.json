@@ -5,7 +5,6 @@
   "builtin": true,
   "streamingEngine": "STORM",
   "transformationClass": "org.apache.streamline.streams.layout.storm.RuleBoltFluxComponent",
-  "schemaClass": "org.apache.streamline.streams.schema.RulesProcessorSchemaEvolver",
   "topologyComponentUISpecification": {
     "fields": [
       {

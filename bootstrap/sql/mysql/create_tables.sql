@@ -126,7 +126,7 @@ CREATE TABLE IF NOT EXISTS topology_component_bundles (
     subType TEXT NOT NULL,
     streamingEngine TEXT NOT NULL,
     topologyComponentUISpecification TEXT NOT NULL,
-    schemaClass TEXT,
+    fieldHintProviderClass TEXT,
     transformationClass TEXT,
     timestamp  BIGINT,
     bundleJar TEXT,

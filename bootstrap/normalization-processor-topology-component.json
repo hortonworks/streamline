@@ -4,7 +4,6 @@
   "subType": "NORMALIZATION",
   "builtin": true,
   "streamingEngine": "STORM",
-  "schemaClass": "org.apache.streamline.streams.schema.NormalizationProcessorSchemaEvolver",
   "transformationClass": "org.apache.streamline.streams.layout.storm.NormalizationBoltFluxComponent",
   "topologyComponentUISpecification": {
     "fields": [
