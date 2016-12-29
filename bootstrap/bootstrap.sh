@@ -78,10 +78,8 @@ add_bundle /streams/componentbundles/SOURCE $bootstrap_dir/hdfs-spout-topology-c
 # === Processor ===
 add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/rule-topology-component.json
 add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/window-topology-component.json
-add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/normalization-processor-topology-component.json
 add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/branch-topology-component.json
 add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/join-bolt-topology-component.json
-add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/multilang-topology-component.json
 add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/model-topology-component.json
 # === Sink ===
 add_bundle /streams/componentbundles/SINK $bootstrap_dir/hdfs-topology-component.json
@@ -97,6 +95,8 @@ add_bundle /streams/componentbundles/SINK $bootstrap_dir/kafka-sink-topology-com
 add_bundle /streams/componentbundles/TOPOLOGY $bootstrap_dir/storm-topology-component.json
 
 #add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/split-topology-component
+#add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/normalization-processor-topology-component.json
+#add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/multilang-topology-component.json
 #post /streams/componentbundles/PROCESSOR $bootstrap_dir/stage-topology-component
 #post /streams/componentbundles/ACTION $bootstrap_dir/transform-action-topology-component
 #post /streams/componentbundles/TRANSFORM $bootstrap_dir/projection-transform-topology-component
