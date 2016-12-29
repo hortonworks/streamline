@@ -16,7 +16,6 @@
         <module>streams</module>
         <module>registries</module>
         <module>webservice</module>
-        <module>pivot</module>
         <!--examples-->
         <module>examples/processors</module>
     </modules>
@@ -953,20 +952,28 @@
          </properties>
       </profile>
       <profile>
-            <id>dist</id>
-            <properties>
-                <exclude.unit.test.groups>
-                    org.apache.streamline.common.test.IntegrationTest,org.apache.streamline.common.test.HBaseIntegrationTest
-                </exclude.unit.test.groups>
-                <include.unit.test.groups></include.unit.test.groups>
-                <exclude.integration.test.groups>org.apache.streamline.common.test.HBaseIntegrationTest
-                </exclude.integration.test.groups>
-                <include.integration.test.groups>org.apache.streamline.common.test.IntegrationTest
-                </include.integration.test.groups>
-            </properties>
-            <modules>
-                <module>streamline-dist</module>
-            </modules>
+        <id>dist</id>
+         <properties>
+           <exclude.unit.test.groups>
+             org.apache.streamline.common.test.IntegrationTest,org.apache.streamline.common.test.HBaseIntegrationTest
+           </exclude.unit.test.groups>
+           <include.unit.test.groups></include.unit.test.groups>
+           <exclude.integration.test.groups>org.apache.streamline.common.test.HBaseIntegrationTest
+           </exclude.integration.test.groups>
+           <include.integration.test.groups>org.apache.streamline.common.test.IntegrationTest
+           </include.integration.test.groups>
+         </properties>
+         <modules>
+           <module>common</module>
+           <module>cache</module>
+           <module>storage</module>
+           <module>streams</module>
+           <module>registries</module>
+           <module>webservice</module>
+           <module>pivot</module>
+           <module>examples/processors</module>
+           <module>streamline-dist</module>
+         </modules>
         </profile>
         <profile>
             <id>dev-tests-including-external-env</id>
@@ -988,6 +995,13 @@
           </activation>
           <modules>
             <module>common</module>
+            <module>cache</module>
+            <module>storage</module>
+            <module>streams</module>
+            <module>registries</module>
+            <module>webservice</module>
+            <!--examples-->
+            <module>examples/processors</module>
           </modules>
           <properties>
             <exclude.unit.test.groups>
