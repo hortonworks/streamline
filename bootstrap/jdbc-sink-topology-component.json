@@ -1,7 +1,7 @@
 {
   "type": "SINK",
   "name": "JDBC Sink",
-  "subType": "JDBC SINK",
+  "subType": "JDBC",
   "builtin": true,
   "streamingEngine": "STORM",
   "transformationClass": "org.apache.streamline.streams.layout.storm.JDBCBoltFluxComponent",
