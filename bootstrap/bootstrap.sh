@@ -90,7 +90,7 @@ add_bundle /streams/componentbundles/SINK $bootstrap_dir/jdbc-sink-topology-comp
 add_bundle /streams/componentbundles/SINK $bootstrap_dir/cassandra-sink-topology-component.json
 add_bundle /streams/componentbundles/SINK $bootstrap_dir/druid-sink-topology-component.json
 add_bundle /streams/componentbundles/SINK $bootstrap_dir/solr-sink-topology-component.json
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/kafka-sink-topology-componen.json
+add_bundle /streams/componentbundles/SINK $bootstrap_dir/kafka-sink-topology-component.json
 # === Topology ===
 add_bundle /streams/componentbundles/TOPOLOGY $bootstrap_dir/storm-topology-component.json
 
