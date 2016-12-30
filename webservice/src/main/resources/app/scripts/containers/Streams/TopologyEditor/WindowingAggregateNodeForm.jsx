@@ -9,6 +9,7 @@ import AggregateUdfREST from '../../../rest/AggregateUdfREST';
 import Utils from '../../../utils/Utils';
 import CommonNotification from '../../../utils/CommonNotification';
 import {toastOpt} from '../../../utils/Constants'
+import { Scrollbars } from 'react-custom-scrollbars';
 
 export default class WindowingAggregateNodeForm extends Component {
 	static propTypes = {
@@ -133,22 +134,13 @@ export default class WindowingAggregateNodeForm extends Component {
 						} else {
 							stateObj.outputStreamId = 'window_stream_'+this.nodeData.id;
 							stateObj.outputStreamFields = [];
-							let dummyStreamObj = {
-								streamId: stateObj.outputStreamId,
-								fields: stateObj.outputStreamFields
-							}
-                                                        TopologyREST.createNode(topologyId, versionId, 'streams', {body: JSON.stringify(dummyStreamObj)})
-								.then(streamResult => {
-                                                                        this.streamData = streamResult;
-                                    this.context.ParentForm.setState({outputStreamObj:this.streamData})
-									this.nodeData.outputStreamIds = [this.streamData.id];
-                                                                        TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.nodeId, {body: JSON.stringify(this.nodeData)})
-								})
+							this.streamData = { streamId: stateObj.outputStreamId, fields: stateObj.outputStreamFields};
+							this.context.ParentForm.setState({outputStreamObj:this.streamData})
 						}
 						if(this.windowId){
                             TopologyREST.getNode(topologyId, versionId, 'windows', this.windowId)
 								.then((windowResult)=>{
-                                                                        let windowData = windowResult;
+                           	    	let windowData = windowResult;
 									if(windowData.projections.length === 0){
 										stateObj.outputFieldsArr = [{args:'', functionName: '', outputFieldName: ''}];
 									} else {
@@ -538,48 +530,52 @@ export default class WindowingAggregateNodeForm extends Component {
                 })
 		}
 	}
-        updateNode(windowObj, name, description){
+    updateNode(windowObj, name, description){
 		let {parallelism, outputStreamFields} = this.state;
-                let {topologyId, versionId, nodeType, nodeData} = this.props;
-                return TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId)
-				.then(result=>{
-                                        let data = result;
-                                        if(windowObj && windowObj){
-                                                let windowData = windowObj;
-						data.config.properties.parallelism = parallelism;
-						data.config.properties.rules = [windowData.id];
-						data.outputStreamIds = [this.streamData.id];
-						data.name = name;
-                                                data.description = description;
-						let streamData = {
+        let {topologyId, versionId, nodeType, nodeData} = this.props;
+        return TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId)
+			.then(result=>{
+	            let data = result;
+	            if(windowObj.responseMessage !== undefined){
+	            	FSReactToastr.error(<CommonNotification flag="error" content={windowObj.responseMessage}/>, '', toastOpt)
+	            } else {
+	            	let windowData = windowObj;
+					data.config.properties.parallelism = parallelism;
+					data.config.properties.rules = [windowData.id];
+					if(data.outputStreams.length > 0){
+						data.outputStreams[0].fields = outputStreamFields;
+					} else {
+						data.outputStreams.push({
 							streamId: this.streamData.streamId,
 							fields: outputStreamFields
-						}
-						let promiseArr = [
-                                                        TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.nodeId, {body: JSON.stringify(data)}),
-                                                        TopologyREST.updateNode(topologyId, versionId, 'streams', this.streamData.id, {body: JSON.stringify(streamData)})
-                        ]
-                        this.ruleTargetNodes.map((ruleNode)=>{
+						})
+					}
+					data.name = name;
+	                data.description = description;
+					let promiseArr = [
+	                    TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.nodeId, {body: JSON.stringify(data)})
+	                ]
+	                this.ruleTargetNodes.map((ruleNode)=>{
 						let streamObj = {
 							streamId: ruleNode.outputStreams[0].streamId,
 							fields: outputStreamFields
 						}
-                                promiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'streams', ruleNode.outputStreams[0].id, {body: JSON.stringify(streamObj)}));
-                        });
-                        return Promise.all(promiseArr);
-                            } else {
-                                    FSReactToastr.error(
-                                        <CommonNotification flag="error" content={windowObj.responseMessage}/>, '', toastOpt)
-                            }
-                        })
-        }
+	                    promiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'streams', ruleNode.outputStreams[0].id, {body: JSON.stringify(streamObj)}));
+	                });
+	                return Promise.all(promiseArr);
+	            }
+	        })
+    }
 
 	render() {
 		let {parallelism, selectedKeys, keysList, editMode, intervalType, intervalTypeArr, windowNum, slidingNum,
             durationType, slidingDurationType, durationTypeArr, outputFieldsArr, functionListArr, outputStreamId, outputStreamFields,argumentError } = this.state;
 		let {topologyId, nodeType, nodeData, targetNodes, linkShuffleOptions} = this.props;
-		return (
-                                <form className="modal-form processor-modal-form form-overflow">
+                return (<div className="modal-form processor-modal-form">
+              <Scrollbars autoHide
+                renderThumbHorizontal={props => <div {...props} style={{display : "none"}}/>}
+                >
+                                <form className="customFormClass">
                                         <div className="form-group">
                                                 <label>Select Keys <span className="text-danger">*</span></label>
                                                 <div>
@@ -759,6 +755,8 @@ export default class WindowingAggregateNodeForm extends Component {
                                                 })}
                                         </fieldset>
                                 </form>
+                              </Scrollbars>
+                              </div>
             )
         }
 }

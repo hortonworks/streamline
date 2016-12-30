@@ -10,6 +10,7 @@ import TopologyREST from '../../../rest/TopologyREST';
 import {BtnDelete, BtnEdit} from '../../../components/ActionButtons';
 import RulesForm from './RulesForm';
 import {pageSize} from '../../../utils/Constants';
+import { Scrollbars } from 'react-custom-scrollbars';
 
 export default class RulesNodeForm extends Component {
 	static propTypes = {
@@ -198,16 +199,19 @@ export default class RulesNodeForm extends Component {
 	render() {
                 let {topologyId, versionId, editMode, nodeType, nodeData, targetNodes, linkShuffleOptions} = this.props;
 		let {rules} = this.state;
-		return (
-                        <div className="modal-form processor-modal-form form-overflow">
+                return (<div>
+                        <div className="modal-form processor-modal-form">
+                            <Scrollbars autoHide
+                              renderThumbHorizontal={props => <div {...props} style={{display : "none"}}/>}
+                              >
                                 {editMode ?
-                                        <div className="clearfix row-margin-bottom">
+                                        <div className="clearfix row-margin-bottom customFormClass">
                                                 <button type="button" onClick={this.handleAddRule.bind(this)} className="btn btn-success pull-left">
                                                         <i className="fa fa-plus"></i> Add New Rules
                                                 </button>
                                         </div>
                                 : null}
-                                <div className="row">
+                                <div className="row customFormClass">
                                         <div className="col-sm-12">
                                                 <Table
                                                         className="table table-hover table-bordered"
@@ -238,6 +242,8 @@ export default class RulesNodeForm extends Component {
                                                 </Table>
                                         </div>
                                 </div>
+                              </Scrollbars>
+                        </div>
                                 <Modal ref="RuleModal" onKeyPress={this.handleKeyPress} dialogClassName="rule-modal-fixed-height" bsSize="large" data-title={this.state.modalTitle} data-resolve={this.handleSaveRule.bind(this)}>
 					<RulesForm
 						ref="RuleForm"

@@ -8,6 +8,7 @@ import FSReactToastr from '../../../components/FSReactToastr';
 import TopologyREST from '../../../rest/TopologyREST';
 import ModelRegistryREST from '../../../rest/ModelRegistryREST';
 import CommonNotification from '../../../utils/CommonNotification';
+import { Scrollbars } from 'react-custom-scrollbars';
 
 export default class ModelNodeForm extends Component {
   static propTypes = {
@@ -59,12 +60,12 @@ export default class ModelNodeForm extends Component {
       }else{
         this.nodeData = results[1];
         if(this.nodeData.outputStreams.length === 0){
-            this.createStream();
+            this.streamObj = { streamId: this.props.configData.subType.toLowerCase()+'_stream_'+this.nodeData.id, fields: []};
         } else {
             this.streamObj = this.nodeData.outputStreams[0];
-            stateObj.streamObj = this.streamObj;
-            this.context.ParentForm.setState({outputStreamObj:this.streamObj})
         }
+        stateObj.streamObj = this.streamObj;
+        this.context.ParentForm.setState({outputStreamObj:this.streamObj})
         stateObj.modelName = this.nodeData.config.properties.modelName;
         let o = stateObj.modelsNameArr.find((model)=>{return model.label == stateObj.modelName});
         if(o) stateObj.modelId = o.value;
@@ -74,31 +75,13 @@ export default class ModelNodeForm extends Component {
       }
     })
   }
-  createStream(){
-    let {topologyId, versionId, nodeType} = this.props;
-    let streamData = { streamId: this.props.configData.subType.toLowerCase()+'_stream_'+this.nodeData.id, fields: []};
-    TopologyREST.createNode(topologyId, versionId, 'streams', {body: JSON.stringify(streamData)})
-    .then(result=>{
-      this.nodeData.outputStreamIds = [result.id];
-      TopologyREST.updateNode(topologyId, versionId, nodeType, this.nodeData.id, {body: JSON.stringify(this.nodeData)})
-      .then((node)=>{
-        this.nodeData = node;
-        this.streamObj = this.nodeData.outputStreams[0];
-        this.setState({streamObj: this.streamObj});
-      })
-    })
-  }
   handleModelNameChange(obj){
     ModelRegistryREST.getModelRegistryOutputFields(obj.value)
       .then((outputFields) => {
         if(outputFields.responseMessage !== undefined){
           FSReactToastr.error(<CommonNotification flag="error" content={outputFields.responseMessage}/>, '', toastOpt)
         }else{
-          this.streamObj = {
-              streamId: this.nodeData.outputStreams[0].streamId,
-              fields: outputFields,
-              id: this.nodeData.outputStreams[0].id
-          };
+          this.streamObj.fields = outputFields;
           this.context.ParentForm.setState({outputStreamObj:this.streamObj})
           this.setState({modelName : obj.label, modelId: obj.value, streamObj: this.streamObj});
         }
@@ -110,6 +93,10 @@ export default class ModelNodeForm extends Component {
   }
 
   validateData(){
+    if(this.streamObj.fields.length === 0){
+      FSReactToastr.error(<CommonNotification flag="error" content={"Output stream fields cannot be blank."}/>, '', toastOpt);
+      return false;
+    }
     return  this.state.modelId != '' ? true : false;
   }
 
@@ -121,25 +108,27 @@ export default class ModelNodeForm extends Component {
     this.nodeData.config.properties.parallelism = parallelism;
     this.nodeData.description = description;
     this.nodeData.name = name;
-    this.nodeData.outputStreams = [{
-      fields: streamObj.fields,
-      streamId: streamObj.streamId,
-      id: this.nodeData.outputStreams[0].id,
-      topologyId: topologyId
-    }]
-    let promiseArr = [
-      TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)}),
-      TopologyREST.updateNode(topologyId, versionId, 'streams', this.nodeData.outputStreams[0].id, {body: JSON.stringify(this.streamObj)})
-    ];
-    return Promise.all(promiseArr);
+    if(this.nodeData.outputStreams.length > 0){
+      this.nodeData.outputStreams[0].fields = streamObj.fields;
+    } else {
+      this.nodeData.outputStreams.push({
+        fields: streamObj.fields,
+        streamId: streamObj.streamId,
+        topologyId: topologyId
+      })
+    }
+    return TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)});
   }
 
   render() {
     const {parallelism, modelsNameArr, modelId } = this.state;
     const { editMode } = this.props;
     return (
-      <div>
-        <form className="modal-form processor-modal-form form-overflow">
+      <div className="modal-form processor-modal-form">
+        <Scrollbars autoHide
+          renderThumbHorizontal={props => <div {...props} style={{display : "none"}}/>}
+          >
+        <form className="customFormClass">
             <div className="form-group row">
               <div className="col-sm-12">
                 <label>Model Name <span className="text-danger">*</span></label>
@@ -169,6 +158,7 @@ export default class ModelNodeForm extends Component {
               </div>
             </div>
         </form>
+      </Scrollbars>
       </div>
     )
   }

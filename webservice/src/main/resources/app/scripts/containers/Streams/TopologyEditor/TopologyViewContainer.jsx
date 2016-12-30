@@ -100,6 +100,7 @@ class TopologyEditorContainer extends Component {
         } else {
           var data = result;
           this.nameSpace = data.namespaceName;
+          this.namespaceId = data.topology.namespaceId;
           if(!versionId){
             versionId = data.topology.versionId;
           }
@@ -217,7 +218,8 @@ class TopologyEditorContainer extends Component {
     let obj = {
       editMode: !this.viewMode,
       topologyId: this.topologyId,
-      versionId: this.versionId
+      versionId: this.versionId,
+      namespaceId : this.namespaceId
     }, config = [];
     switch(node.parentType){
       case 'SOURCE':
@@ -350,6 +352,7 @@ class TopologyEditorContainer extends Component {
             setCurrentVersion = {this.setCurrentVersion.bind(this)}
             stormClusterId={this.state.stormClusterId}
             nameSpaceName = {this.nameSpace}
+            namespaceId={this.namespaceId}
           />
           <div id="viewMode" className="graph-bg">
             <EditorGraph

@@ -12,6 +12,7 @@ import ClusterREST from '../../../rest/ClusterREST';
 import FSReactToastr from '../../../components/FSReactToastr';
 import {toastOpt} from '../../../utils/Constants';
 import CommonNotification from '../../../utils/CommonNotification';
+import { Scrollbars } from 'react-custom-scrollbars';
 
 export default class SinkNodeForm extends Component {
     static propTypes = {
@@ -162,7 +163,7 @@ export default class SinkNodeForm extends Component {
                 <CommonNotification flag="error" content={notifier.responseMessage}/>, '', toastOpt);
           }else{
             const obj = notifier.entities.filter(x => {
-              return x.name === "email_notifier";
+              return x.name.indexOf("email_notifier") !== -1;
             });
 
            let {configData} = this.props;
@@ -172,7 +173,11 @@ export default class SinkNodeForm extends Component {
             uiFields.map(x => {
               if(x.fieldName === "jarFileName"){
                   x.defaultValue = obj[0].jarFileName;
-                  x.hint = "hidden";
+                  if(x.hint !== undefined){
+                    x.hint = x.hint+',hidden';
+                  } else {
+                    x.hint = "hidden";
+                  }
               }
             });
             this.setState({uiSpecification : uiFields});
@@ -237,13 +242,14 @@ export default class SinkNodeForm extends Component {
     }
 
     populateClusterFields(val){
-      this.setState({clusterName : val}, () => {
+      const tempObj = Object.assign({},this.state.formData,{topic:''});
+      this.setState({clusterName : val, formData: tempObj}, () => {
         this.updateClusterFields();
       });
     }
 
     updateClusterFields(name){
-      const {clusterArr,clusterName} = this.state;
+      const {clusterArr,clusterName, formData} = this.state;
       let data = {},obj=[];
       let config = this.state.uiSpecification;
       _.keys(clusterArr).map((x) => {
@@ -258,14 +264,21 @@ export default class SinkNodeForm extends Component {
                         uiName : v
                       }
                     })
+                    if(list.hint && list.hint.toLowerCase().indexOf("override") !== -1){
+                      if(formData[k] != ''){
+                        if(list.options.findIndex((o)=>{return o.fieldName == formData[k]}) == -1){
+                          list.options.push({fieldName: formData[k], uiName: formData[k]});
+                        }
+                      }
+                    }
                   }else{
                     if(!_.isArray(clusterArr[x][k])){
                       data[k] = clusterArr[x][k];
                     }
                   }
-                  clusterName ? data.clusters = clusterName : data.clusters = name;
                 }
             })
+            data.clusters = clusterName ? clusterName : name;
             return list;
           });
         }
@@ -284,16 +297,22 @@ export default class SinkNodeForm extends Component {
                                 <img src="styles/img/start-loader.gif" alt="loading" />
                             </div>
                         </div>
-                      :  <Form
-                            ref="Form"
-                            readOnly={!this.props.editMode}
-                            showRequired={this.state.showRequired}
-                            FormData={formData}
-                            populateClusterFields={this.populateClusterFields.bind(this)}
-                            className="sink-modal-form form-overflow"
-                        >
-                            {fields}
-                        </Form>
+                      :  <div className="sink-modal-form">
+                            <Scrollbars autoHide
+                                renderThumbHorizontal={props => <div {...props} style={{display : "none"}}/>}
+                                >
+                                <Form
+                                      ref="Form"
+                                      readOnly={!this.props.editMode}
+                                      showRequired={this.state.showRequired}
+                                      FormData={formData}
+                                      className="customFormClass"
+                                      populateClusterFields={this.populateClusterFields.bind(this)}
+                                  >
+                                      {fields}
+                                  </Form>
+                            </Scrollbars>
+                          </div>
         const inputSidebar = <StreamsSidebar ref="StreamSidebar" streamObj={streamObj} streamType="input" />
         return (
             <Tabs id="SinkForm" activeKey={this.state.activeTabKey} className="modal-tabs" onSelect={this.onSelectTab}>

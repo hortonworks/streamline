@@ -9,6 +9,7 @@ import {
     Button
 } from 'react-bootstrap';
 import Modal from '../../components/FSModal';
+import { Scrollbars } from 'react-custom-scrollbars';
 
 /* import common utils*/
 import ClusterREST from '../../rest/ClusterREST';
@@ -85,7 +86,7 @@ class PoolItemsCard extends Component{
                       </DropdownButton>
                     </div>
                 </div>
-                  <div className="service-body clearfix common-overflow">
+                  <div className="service-body clearfix">
                     {
                       (this.checkRefId(cluster.id))
                       ? <div className="service-components">
@@ -93,17 +94,22 @@ class PoolItemsCard extends Component{
                               <img src="styles/img/start-loader.gif" alt="loading" />
                           </div>
                         </div>
-                      :  <ul className="service-components ">
-                            {
-                              serviceWrap.length !== 0
-                              ? serviceWrap.map((items, i) => {
-                                  return <ServiceItems key={i} item={items.service}/>
-                                })
-                              : <div className="col-sm-12 text-center">
-                                  No Service
-                                </div>
-                            }
-                        </ul>
+                      : <Scrollbars style={{height: "185px" }}
+                          autoHide
+                          renderThumbHorizontal={props => <div {...props} style={{display : "none"}}/>}
+                          >
+                          <ul className="service-components ">
+                              {
+                                serviceWrap.length !== 0
+                                ? serviceWrap.map((items, i) => {
+                                    return <ServiceItems key={i} item={items.service}/>
+                                  })
+                                : <div className="col-sm-12 text-center">
+                                    No Service
+                                  </div>
+                              }
+                          </ul>
+                          </Scrollbars>
                     }
                   </div>
             </div>
@@ -207,7 +213,7 @@ class ServicePoolContainer extends Component{
         if (cluster.responseMessage !== undefined) {
           if(cluster.responseMessage.indexOf('Namespace refers the cluster') !== 1){
             FSReactToastr.info(
-              <CommonNotification flag="info" content={"This cluster has been shared with some NameSpace. So it can't be deleted."}/>, '', toastOpt)
+              <CommonNotification flag="info" content={"This cluster is shared with some environment. So it can't be deleted."}/>, '', toastOpt)
           }else{
             FSReactToastr.error(
               <CommonNotification flag="error" content={cluster.responseMessage}/>, '', toastOpt);
@@ -370,9 +376,9 @@ class ServicePoolContainer extends Component{
             }).indexOf(idCheck);
             entitiesWrap = this.state.entities;
             entitiesWrap[elPosition] = result;
-            sucessMsg = "Process has been completed successfully";
+            sucessMsg = "Process completed successfully";
           } else {
-            sucessMsg = "Cluster has been added successfully";
+            sucessMsg = "Cluster added successfully";
           }
           const tempDataArray = this.spliceTempArr(clusterID || idCheck);
 

@@ -5,6 +5,7 @@ import Select from 'react-select';
 import Utils from '../../../utils/Utils';
 import FSReactToastr from '../../../components/FSReactToastr';
 import TopologyREST from '../../../rest/TopologyREST';
+import { Scrollbars } from 'react-custom-scrollbars';
 
 export default class JoinNodeForm extends Component {
 	static propTypes = {
@@ -189,24 +190,15 @@ export default class JoinNodeForm extends Component {
                                                         }
                                                 }
                                                 if(this.nodeData.outputStreams && this.nodeData.outputStreams.length > 0){
-                                                        this.streamData = this.nodeData.outputStreams[0];
-                                                        stateObj.outputStreamId = this.nodeData.outputStreams[0].streamId;
-                                                        stateObj.outputStreamFields = JSON.parse(JSON.stringify(this.nodeData.outputStreams[0].fields));
-                                                        this.context.ParentForm.setState({outputStreamObj:this.streamData})
+                                                    this.streamData = this.nodeData.outputStreams[0];
+                                                    stateObj.outputStreamId = this.nodeData.outputStreams[0].streamId;
+                                                    stateObj.outputStreamFields = JSON.parse(JSON.stringify(this.nodeData.outputStreams[0].fields));
+                                                    this.context.ParentForm.setState({outputStreamObj:this.streamData})
                                                 } else {
-                                                        stateObj.outputStreamId = 'join_processor_stream_'+this.nodeData.id;
-                                                        stateObj.outputStreamFields = [];
-                                                        let dummyStreamObj = {
-                                                                streamId: stateObj.outputStreamId,
-                                                                fields: stateObj.outputStreamFields
-                                                        }
-                                                        TopologyREST.createNode(topologyId, versionId, 'streams', {body: JSON.stringify(dummyStreamObj)})
-                                                                .then(streamResult => {
-                                                                        this.streamData = streamResult;
-                                                                        this.context.ParentForm.setState({outputStreamObj:this.streamData})
-                                                                        this.nodeData.outputStreamIds = [this.streamData.id];
-                                                                        TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.nodeId, {body: JSON.stringify(this.nodeData)})
-                                                                })
+                                                    stateObj.outputStreamId = 'join_processor_stream_'+this.nodeData.id;
+                                                    stateObj.outputStreamFields = [];
+                                                    this.streamData = { streamId: stateObj.outputStreamId, fields: stateObj.outputStreamFields};
+                                                    this.context.ParentForm.setState({outputStreamObj:this.streamData});
                                                 }
                                                 this.setState(stateObj);
                     })
@@ -442,7 +434,14 @@ export default class JoinNodeForm extends Component {
 			.then(data=>{
                                 data.config.properties = configObj;
                                 data.config.properties.parallelism = parallelism;
-                                data.outputStreams[0].fields = outputStreamFields;
+                                if(data.outputStreams.length > 0){
+                                    data.outputStreams[0].fields = outputStreamFields;
+                                } else {
+                                    data.outputStreams.push({
+                                        fields: outputStreamFields,
+                                        streamId: this.streamData.streamId
+                                    })
+                                }                                
                                 data.name = name;
                                 data.description = description;
                                 // let streamData = {
@@ -463,8 +462,11 @@ export default class JoinNodeForm extends Component {
             durationType, slidingDurationType, durationTypeArr, joinFromStreamName, joinFromStreamKey, inputStreamsArr,
 		joinTypes} = this.state;
 		return (
-			<div>
-                                <form className="modal-form processor-modal-form form-overflow">
+                        <div  className="modal-form processor-modal-form">
+        <Scrollbars autoHide
+          renderThumbHorizontal={props => <div {...props} style={{display : "none"}}/>}
+          >
+                                <form className="customFormClass">
                                         <div className="form-group row">
                                                         <div className="col-sm-3">
                                                                 <label>Select Stream</label>
@@ -680,6 +682,7 @@ export default class JoinNodeForm extends Component {
                                                 </div>
                                         </div>
                                 </form>
+        </Scrollbars>
 			</div>
 		)
 	}

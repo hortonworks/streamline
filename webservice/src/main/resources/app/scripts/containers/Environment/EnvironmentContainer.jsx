@@ -9,6 +9,7 @@ import {
     Button
 } from 'react-bootstrap';
 import Modal from '../../components/FSModal';
+import { Scrollbars } from 'react-custom-scrollbars';
 
 /* import common utils*/
 import EnvironmentREST from '../../rest/EnvironmentREST';
@@ -98,7 +99,11 @@ class EnvironmentCards extends Component {
             <div className="service-title">
               <h5 className="environment-title">{`Services (${serviceCount()})`}</h5>
             </div>
-            <div className="service-body environment-body clearfix common-overflow">
+            <div className="service-body environment-body clearfix">
+              <Scrollbars style={{height: "500px" }}
+                  autoHide
+                  renderThumbHorizontal={props => <div {...props} style={{display : "none"}}/>}
+                  >
                 {
                   _.keys(mappings).length === 0
                     ? <div className="col-sm-12"><h4 className="text-center">No Mapping</h4></div>
@@ -106,6 +111,7 @@ class EnvironmentCards extends Component {
                          return <EnvironmentItems key={i} mapData={mappings[key]} name ={clusterName[key]} />
                     })
                 }
+                </Scrollbars>
             </div>
         </div>
       </div>

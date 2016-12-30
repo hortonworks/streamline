@@ -557,8 +557,11 @@ class TopologyEditorContainer extends Component {
             savedNode = savedNode[0];
           }
           if(savedNode.responseMessage !== undefined){
-            FSReactToastr.error(
-              <CommonNotification flag="error" content={savedNode.responseMessage}/>, '', toastOpt)
+            let msg = savedNode.responseMessage;
+            if(savedNode.responseMessage.indexOf("Stream with empty fields") !== -1){
+              msg = "Output stream fields cannot be blank.";
+            }
+            FSReactToastr.error(<CommonNotification flag="error" content={msg}/>, '', toastOpt)
           } else {
             this.lastUpdatedTime = new Date(savedNode.timestamp);
             this.setState({altFlag: !this.state.altFlag});
@@ -581,8 +584,8 @@ class TopologyEditorContainer extends Component {
             FSReactToastr.success(<strong>{this.node.uiname} updated successfully.</strong>);
             //render graph again
             this.updateGraphMethod();
+            this.refs.NodeModal.hide();
           }
-          this.refs.NodeModal.hide();
         })
       }
     } else {
@@ -694,7 +697,7 @@ class TopologyEditorContainer extends Component {
   }
   handleKeyPress(event){
     const that = this
-    if(event.key === "Enter"){
+    if(event.key === "Enter" && event.target.nodeName.toLowerCase() != "textarea"){
       this.refs.TopologyConfigModal.state.show ? this.handleSaveConfig(this) : '';
       this.refs.NodeModal.state.show ? this.handleSaveNodeModal(this) : '';
       this.refs.leaveEditable.state.show ? this.confirmLeave(this, true) : '';

@@ -1,5 +1,6 @@
 import React, {Component, PropTypes}from 'react';
 import Select from 'react-select';
+import { Scrollbars } from 'react-custom-scrollbars';
 
 export default class StreamSidebar extends Component {
     static propTypes = {
@@ -24,7 +25,7 @@ export default class StreamSidebar extends Component {
     render() {
         const {streamType, streamObj} = this.props;
         return (
-            <div className={streamType === 'input' ? "modal-sidebar-left form-overflow" : "modal-sidebar-right form-overflow"}>
+            <div className={streamType === 'input' ? "modal-sidebar-left" : "modal-sidebar-right"}>
                 <h4>{streamType === 'input' ? 'Input' : 'Output'}</h4>
                 {this.state.showDropdown && this.props.inputStreamOptions.length > 1 ?
                 <form className="">
@@ -42,16 +43,21 @@ export default class StreamSidebar extends Component {
                 </form>
                 : ''
                 }
-                <ul className="output-list">
-                {streamObj.fields && streamObj.fields.map((field, i)=>{
-                                return(
-                                        <li key={i}>
-                                                {field.name} {!field.optional ? <span className="text-danger">*</span> : null}
-                                                <span className="output-type">{field.type}</span>
-                                        </li>
-                                )
-                })}
-                </ul>
+                <Scrollbars  style={{height: "355px" }}
+                    autoHide
+                    renderThumbHorizontal={props => <div {...props} style={{display : "none"}}/>}
+                    >
+                    <ul className="output-list">
+                    {streamObj.fields && streamObj.fields.map((field, i)=>{
+                                    return(
+                                            <li key={i}>
+                                                    {field.name} {!field.optional ? <span className="text-danger">*</span> : null}
+                                                    <span className="output-type">{field.type}</span>
+                                            </li>
+                                    )
+                    })}
+                    </ul>
+                </Scrollbars>
             </div>
         );
   }

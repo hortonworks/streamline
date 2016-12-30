@@ -8,6 +8,7 @@ import TopologyREST from '../../../rest/TopologyREST';
 import {BtnDelete, BtnEdit} from '../../../components/ActionButtons';
 import BranchRulesForm from './BranchRulesForm';
 import {pageSize} from '../../../utils/Constants';
+import { Scrollbars } from 'react-custom-scrollbars';
 
 export default class BranchNodeForm extends Component {
     static propTypes = {
@@ -187,9 +188,12 @@ export default class BranchNodeForm extends Component {
         let {topologyId, versionId, editMode, nodeType, nodeData, targetNodes, linkShuffleOptions} = this.props;
         let {rules, processAll} = this.state;
         return (
-            <div className="modal-form processor-modal-form form-overflow">
+            <div className="modal-form processor-modal-form">
+              <Scrollbars autoHide
+                renderThumbHorizontal={props => <div {...props} style={{display : "none"}}/>}
+                >
                 {editMode ?
-                    <div className="clearfix row-margin-bottom">
+                    <div className="clearfix row-margin-bottom customFormClass">
                         <button type="button" onClick={this.handleAddRule.bind(this)} className="btn btn-success pull-left">
                             <i className="fa fa-plus"></i> Add New Rules
                         </button>
@@ -205,7 +209,7 @@ export default class BranchNodeForm extends Component {
                         </label>
                     </div>
                 : null}
-                <div className="row">
+                <div className="row customFormClass">
                     <div className="col-sm-12">
                         <Table
                             className="table table-hover table-bordered"
@@ -236,6 +240,7 @@ export default class BranchNodeForm extends Component {
                         </Table>
                     </div>
                 </div>
+              </Scrollbars>
                 <Modal ref="BranchRuleModal"
                   dialogClassName="rule-modal-fixed-height"
                   bsSize="large" data-title={this.state.modalTitle}

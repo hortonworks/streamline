@@ -158,10 +158,12 @@ const genFields = function(fieldsJSON, _fieldName = [], FormData = {},inputField
     const fields = [];
     fieldsJSON.forEach((d, i) => {
         if(d.hint !== undefined){
-          if(d.hint.toLowerCase()  === "inputfields"){
+          if(d.hint.toLowerCase().indexOf("inputfields") !== -1){
               d.options = inputFieldsData(inputFields);
-          }else if(d.hint.toLowerCase()  === "eventtime"){
+          }else if(d.hint.toLowerCase().indexOf("eventtime") !== -1){
               d.options = eventTimeData(inputFields);
+          }else if(d.hint.toLowerCase().indexOf("override") !== -1 && d.type === "enumstring"){
+              d.type = "creatableField";
           }
         }
         const Comp = Fields[d.type.split('.').join('')] || null;
@@ -201,7 +203,7 @@ const genFields = function(fieldsJSON, _fieldName = [], FormData = {},inputField
             if(!d.isOptional){
                 validators.push('required');
             }
-            if(d.hint !== undefined && d.hint.toLowerCase() === "email"){
+            if(d.hint !== undefined && d.hint.toLowerCase().indexOf("email") !== -1){
               validators.push('email');
             }
             fields.push(<Comp

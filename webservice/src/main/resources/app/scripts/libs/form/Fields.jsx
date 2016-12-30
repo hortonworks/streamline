@@ -32,7 +32,7 @@ export class BaseField extends Component {
         return (
             <FormGroup className={className}>
                 {
-                  labelHint !== null && labelHint === "hidden"
+                  labelHint !== null && labelHint.toLowerCase().indexOf("hidden") !== -1
                     ? ''
                     : <label>{this.props.label} {this.props.validation && this.props.validation.indexOf('required') !== -1 ? <span className="text-danger">*</span> : null}</label>
                 }
@@ -53,7 +53,43 @@ export class string extends BaseField {
         const value = this.refs.input.value;
         const {Form} = this.context;
         this.props.data[this.props.value] = value;
-        this.validate();
+        Form.setState(Form.state,()=>{
+          if(this.validate() && (this.props.fieldJson.hint !== undefined && this.props.fieldJson.hint.toLowerCase().indexOf("schema") !== -1)){
+            this.getSchema(this.props.data[this.props.value]);
+          }
+        });
+    }
+
+    getSchema(val){
+        if(val != ''){
+            clearTimeout(this.topicTimer);
+            this.topicTimer = setTimeout(()=>{
+                this.getSchemaFromName(val);
+            }, 700)
+        }
+    }
+
+    getSchemaFromName(topicName){
+        let resultArr = [];
+        TopologyREST.getSchemaForKafka(topicName)
+            .then(result=>{
+                if(result.responseMessage !== undefined){
+                    this.refs.input.className = "form-control invalidInput";
+                    this.context.Form.state.Errors[this.props.valuePath] = 'Schema Not Found';
+                    this.context.Form.setState(this.context.Form.state);
+                } else {
+                    this.refs.input.className = "form-control";
+                    resultArr = result;
+                    if(typeof resultArr === 'string'){
+                        resultArr = JSON.parse(resultArr);
+                    }
+                    this.context.Form.state.Errors[this.props.valuePath] = '';
+                    this.context.Form.setState(this.context.Form.state);
+                }
+                if(this.context.Form.props.callback){
+                    this.context.Form.props.callback(resultArr);
+                }
+            })
     }
 
     validate () {
@@ -67,29 +103,42 @@ export class string extends BaseField {
         </Popover>
       );
       const inputHint = this.props.fieldJson.hint || null;
+      let disabledField = this.context.Form.props.readOnly;
+      if(this.props.fieldJson.isUserInput !== undefined){
+        disabledField = disabledField || !this.props.fieldJson.isUserInput;
+      }
       return (
-          inputHint !== null && inputHint === "hidden"
+          inputHint !== null && inputHint.toLowerCase().indexOf("hidden") !== -1
           ? ''
           : <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
-                      <input
-                          type={
-                            this.props.fieldJson.hint !== undefined
-                              ? this.props.fieldJson.hint.toLowerCase() === "password"
-                                ? "password"
-                                : this.props.fieldJson.hint.toLowerCase() === "email"
-                                  ? "email"
-                                  : this.props.fieldJson.hint.toLowerCase() === "textarea"
-                                    ? "textarea"
-                                    : "text"
-                              :"text"
-                          }
-                          className={this.context.Form.state.Errors[this.props.valuePath] ? "form-control invalidInput" : "form-control"}
-                          ref="input"
-                          value={this.props.data[this.props.value] || ''}
-                          disabled={this.context.Form.props.readOnly}
-                          {...this.props.attrs}
-                          onChange={this.handleChange}
-                      />
+                {this.props.fieldJson.hint !== undefined && this.props.fieldJson.hint.toLowerCase().indexOf("textarea") !== -1
+                ? 
+                    <textarea
+                        className={this.context.Form.state.Errors[this.props.valuePath] ? "form-control invalidInput" : "form-control"}
+                        ref="input"
+                        disabled={disabledField}
+                        value={this.props.data[this.props.value] || ''}
+                        {...this.props.attrs}
+                        onChange={this.handleChange}
+                    />
+                :   <input
+                      type={
+                        this.props.fieldJson.hint !== undefined
+                          ? this.props.fieldJson.hint.toLowerCase().indexOf("password") !== -1
+                            ? "password"
+                            : this.props.fieldJson.hint.toLowerCase().indexOf("email") !== -1
+                              ? "email"
+                              : "text"
+                          :"text"
+                      }
+                      className={this.context.Form.state.Errors[this.props.valuePath] ? "form-control invalidInput" : "form-control"}
+                      ref="input"
+                      value={this.props.data[this.props.value] || ''}
+                      disabled={disabledField}
+                      {...this.props.attrs}
+                      onChange={this.handleChange}
+                    />
+                }
             </OverlayTrigger>
       )
     }
@@ -112,9 +161,19 @@ export class number extends BaseField {
           {this.props.fieldJson.tooltip}
         </Popover>
       );
-
+      let disabledField = this.context.Form.props.readOnly;
+      if(this.props.fieldJson.isUserInput !== undefined){
+        disabledField = disabledField || !this.props.fieldJson.isUserInput;
+      }
       return <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
-              <input type="number" className={this.context.Form.state.Errors[this.props.valuePath] ? "form-control invalidInput" : "form-control"} ref="input" value={this.props.data[this.props.value]} disabled={this.context.Form.props.readOnly} {...this.props.attrs} onChange={this.handleChange}/>
+              <input
+                type="number"
+                className={this.context.Form.state.Errors[this.props.valuePath] ? "form-control invalidInput" : "form-control"} 
+                ref="input"
+                value={this.props.data[this.props.value]}
+                disabled={disabledField}
+                {...this.props.attrs}
+                onChange={this.handleChange}/>
              </OverlayTrigger>
     }
 }
@@ -137,6 +196,10 @@ export class boolean extends BaseField {
             {this.props.fieldJson.tooltip}
           </Popover>
         );
+        let disabledField = this.context.Form.props.readOnly;
+        if(this.props.fieldJson.isUserInput !== undefined){
+            disabledField = disabledField || !this.props.fieldJson.isUserInput;
+        }
         return <FormGroup className={className}>
             <label>
               <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
@@ -144,7 +207,7 @@ export class boolean extends BaseField {
                     type="checkbox"
                     ref="input"
                     checked={this.props.data[this.props.value]}
-                    disabled={this.context.Form.props.readOnly}
+                    disabled={disabledField}
                     {...this.props.attrs}
                     onChange={this.handleChange}
                     style={{marginRight: '10px'}}
@@ -162,7 +225,7 @@ export class enumstring extends BaseField {
         this.props.data[this.props.value] = val.value;
         const {Form} = this.context;
         Form.setState(Form.state, () => {
-          if(this.validate() && (this.props.fieldJson.hint !== undefined && this.props.fieldJson.hint.toLowerCase() === "schema")){
+          if(this.validate() && (this.props.fieldJson.hint !== undefined && this.props.fieldJson.hint.toLowerCase().indexOf("schema") !== -1)){
             this.getSchema(this.props.data[this.props.value]);
           }
         });
@@ -194,7 +257,9 @@ export class enumstring extends BaseField {
                     this.context.Form.state.Errors[this.props.valuePath] = '';
                     this.context.Form.setState(this.context.Form.state);
                 }
-                this.context.Form.props.callback(resultArr);
+                if(this.context.Form.props.callback){
+                    this.context.Form.props.callback(resultArr);
+                }
             })
     }
 
@@ -202,12 +267,16 @@ export class enumstring extends BaseField {
         return super.validate(this.props.data[this.props.value])
     }
     getField = () => {
+        let disabledField = this.context.Form.props.readOnly;
+        if(this.props.fieldJson.isUserInput !== undefined){
+            disabledField = disabledField || !this.props.fieldJson.isUserInput;
+        }
         return <Select
                 ref="select2"
                 clearable={false}
                 onChange={this.handleChange}
                 {...this.props.fieldAttr}
-                disabled={this.context.Form.props.readOnly}
+                disabled={disabledField}
                 value={this.props.data[this.props.value]}
                 className={this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}
             />
@@ -226,11 +295,15 @@ export class CustomEnumstring extends BaseField {
         return super.validate(this.props.data[this.props.value])
     }
     getField = () => {
+        let disabledField = this.context.Form.props.readOnly;
+        if(this.props.fieldJson.isUserInput !== undefined){
+            disabledField = disabledField || !this.props.fieldJson.isUserInput;
+        }
         return <Select
                 clearable={false}
                 onChange={this.handleChange}
                 {...this.props.fieldAttr}
-                disabled={this.context.Form.props.readOnly}
+                disabled={disabledField}
                 value={this.props.data[this.props.value]}
                 className={this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}
             />
@@ -258,15 +331,84 @@ export class arraystring extends BaseField {
                 arr.push({value: value});
             })
         }
+        let disabledField = this.context.Form.props.readOnly;
+        if(this.props.fieldJson.isUserInput !== undefined){
+            disabledField = disabledField || !this.props.fieldJson.isUserInput;
+        }
         return <Creatable
             onChange={this.handleChange}
             multi={true}
-            disabled={this.context.Form.props.readOnly}
+            disabled={disabledField}
             {...this.props.fieldAttr}
             className={this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}
             valueKey="value"
             labelKey="value"
             value={arr}
+        />
+    }
+}
+
+export class creatableField extends BaseField {
+    handleChange = (val) => {
+        this.props.data[this.props.value] = val.value;
+        const {Form} = this.context;
+        Form.setState(Form.state,()=>{
+          if(this.validate() && (this.props.fieldJson.hint !== undefined && this.props.fieldJson.hint.toLowerCase().indexOf("schema") !== -1)){
+            this.getSchema(this.props.data[this.props.value]);
+          }
+        });
+    }
+    getSchema(val){
+        if(val != ''){
+            clearTimeout(this.topicTimer);
+            this.topicTimer = setTimeout(()=>{
+                this.getSchemaFromName(val);
+            }, 700)
+        }
+    }
+
+    getSchemaFromName(topicName){
+        let resultArr = [];
+        TopologyREST.getSchemaForKafka(topicName)
+            .then(result=>{
+                if(result.responseMessage !== undefined){
+                    this.refs.CustomCreatable.className = "form-control invalidInput";
+                    this.context.Form.state.Errors[this.props.valuePath] = 'Schema Not Found';
+                    this.context.Form.setState(this.context.Form.state);
+                } else {
+                    this.refs.CustomCreatable.className = "form-control";
+                    resultArr = result;
+                    if(typeof resultArr === 'string'){
+                        resultArr = JSON.parse(resultArr);
+                    }
+                    this.context.Form.state.Errors[this.props.valuePath] = '';
+                    this.context.Form.setState(this.context.Form.state);
+                }
+                if(this.context.Form.props.callback){
+                    this.context.Form.props.callback(resultArr);
+                }
+            })
+    }
+    validate() {
+        return super.validate(this.props.data[this.props.value])
+    }
+    getField = () => {
+        const val = {value: this.props.data[this.props.value]};
+        let disabledField = this.context.Form.props.readOnly;
+        if(this.props.fieldJson.isUserInput !== undefined){
+            disabledField = disabledField || !this.props.fieldJson.isUserInput;
+        }
+        return <Creatable
+            ref="CustomCreatable"
+            clearable={false}
+            onChange={this.handleChange}
+            multi={false}
+            disabled={disabledField}
+            {...this.props.fieldAttr}
+            className={this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}
+            valueKey="value"
+            labelKey="value"
+            value={val}
         />
     }
 }
@@ -285,10 +427,14 @@ export class arrayenumstring extends BaseField {
         return super.validate(this.props.data[this.props.value])
     }
     getField = () => {
+        let disabledField = this.context.Form.props.readOnly;
+        if(this.props.fieldJson.isUserInput !== undefined){
+            disabledField = disabledField || !this.props.fieldJson.isUserInput;
+        }
         return <Select
                 onChange={this.handleChange}
                 multi={true}
-                disabled={this.context.Form.props.readOnly}
+                disabled={disabledField}
                 {...this.props.fieldAttr}
                 value={this.props.data[this.props.value]}
                 className={this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}
@@ -461,9 +607,13 @@ export class arrayenumobject extends BaseField {
     }
     getField = () => {
         const fields = this.props.fieldJson.options;
-        this.props.data[this.props.value] = this.props.data[this.props.value] || [{
-            [this.props.fieldJson.options[0].fieldName] : {}
-        }];
+        if(this.props.fieldJson.isOptional){
+            this.props.data[this.props.value] = this.props.data[this.props.value] || [];
+        } else {
+            this.props.data[this.props.value] = this.props.data[this.props.value] || [{
+                [this.props.fieldJson.options[0].fieldName] : {}
+            }];
+        }
         return this.props.data[this.props.value].map((d, i) => {
             const splitElem = i > 0 ? <hr/> : null;
             const removeElem = <i className="fa fa-trash delete-icon" onClick={this.onRemove.bind(this, i)}></i>

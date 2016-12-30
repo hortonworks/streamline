@@ -179,11 +179,11 @@ a.dropdown-toggle ~ ul.dropdown-menu{
 /* Modal */
 .modal-fixed-height > .modal-content > .modal-body {
   /*height: 450px;*/
-  overflow-y: auto;
+  /*overflow-y: auto;*/
 }
 .rule-modal-fixed-height > .modal-content > .modal-body {
   height: 450px;
-  overflow-y: auto;
+  /*overflow-y: auto;*/
 }
 .modal-content {
   -webkit-box-shadow: 0 0px 10px rgba(0, 0, 0, .3);
@@ -284,7 +284,7 @@ label {
   top: 0px;
   bottom: -15px;
   right: 0px;
-  padding: 0px 20px !important;;
+  padding: 0 0 0 5px !important;;
 }
 .modal-sidebar-left {
   border-right: 2px #fafafa solid;
@@ -293,26 +293,26 @@ label {
   top: 0;
   bottom: -15px;
   left: 0px;
-  padding: 0px 20px !important;
+  padding: 0 0 0 20px!important;
 }
 .source-modal-form{
   margin-left: 10px;
-  width: 370px;
+  width: 390px;
   position: absolute;
   top:0;
   padding-top: 5px !important;
 }
 .processor-modal-form{
   margin-left: 200px;
-  width: 460px;
+  width: 500px;
   top:0;
   position: absolute;
   padding-top: 5px !important;
 }
 .sink-modal-form{
-  margin-left: 210px;
-  margin-right: 10px;
-  width: 370px;
+  margin-left: 200px;
+  /*margin-right: 10px;*/
+  width: 400px;
   top:0;
   position: absolute;
   padding-top: 5px !important;
@@ -777,7 +777,7 @@ label {
     top:60px;
     margin-left: -70px;
     background-color: #fff;
-    padding: 0 10px;
+    /*padding: 0 10px;*/
     font-size: 0.875em;
     border-radius: 0px 10px 10px 0px;
     box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
@@ -1323,53 +1323,22 @@ label {
 .panel-wrapper{
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 0 5px;
+  padding : 0 0 0 10px;
 }
-.source-modal-form.form-overflow,
-.modal-sidebar-right.form-overflow,
-.modal-sidebar-left.form-overflow,
-.processor-modal-form.form-overflow,
-.sink-modal-form.form-overflow{
-  height: 395px;
-  overflow-y: auto;
+.inner-panel{
+  width: 55px;
   overflow-x: hidden;
-  padding: 0 5px;
+}
+.source-modal-form,
+.modal-sidebar-right,
+.modal-sidebar-left,
+.processor-modal-form,
+.sink-modal-form{
+  height: 395px;
+  /*padding: 0 5px;*/
 }
 .modal-xl .processor-modal-form {
-  width: 760px;
-}
-.form-overflow::-webkit-scrollbar {
-    width: 2px;
-}
-.form-overflow::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 6px rgba(101, 103, 110,0.3);
-    -webkit-border-radius: 10px;
-    border-radius: 10px;
-}
-.form-overflow::-webkit-scrollbar-thumb {
-    -webkit-border-radius: 10px;
-    border-radius: 10px;
-    background: rgba(187, 187, 187,1);
-    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
-}
-.form-overflow::-webkit-scrollbar-thumb:window-inactive {
-        background: rgba(204,102,51,0.4);
-}
-.panel-wrapper::-webkit-scrollbar{
-    width: 0px;
-}
-.panel-wrapper::-webkit-scrollbar-track{
-  -webkit-box-shadow: inset 0 0 6px rgba(101, 103, 110,0);
-}
-.panel-wrapper::-webkit-scrollbar-track{
-  -webkit-box-shadow: inset 0 0 6px rgba(101, 103, 110,0);
-}
-.panel-wrapper::-webkit-scrollbar-thumb{
-  background: rgba(187, 187, 187,0);
-  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0);
-}
-.panel-wrapper::-webkit-scrollbar-thumb:window-inactive{
-  background: rgba(204,102,51,0);
+  width: 770px;
 }
 .form-overflow h4,
 .form-overflow > fieldset > legend{
@@ -1477,10 +1446,10 @@ span.version{
   display: inline-block;
 }
 .service-box .service-body {
-  padding: 15px;
-  height: 198px;
+  padding: 15px 0 15px 15px;
+  /*height: 198px;
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: auto;*/
 }
 .service-components,
 .select-env-service,
@@ -1530,8 +1499,8 @@ span.version{
 }
 .environment-body {
   padding-top: 0px !important;
-  height: 500px !important;
-  overflow-y: auto;
+  /*height: 500px !important;
+  overflow-y: auto;*/
 }
 .col-environment {
   width: 20%;
@@ -1918,6 +1887,26 @@ rect.extent{
     margin-left: 50px;
   }
 }
+.sidebar-menu li > a:hover .alpha-icon{
+  display: none !important;
+}
+.alpha-icon{
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  margin-left: -16px;
+  font-size: 12px;
+  color: #3b8c47;
+  display: block;
+  letter-spacing: .5px;
+}
+span.alpha-badge{
+  margin-left: 5px;
+  font-size: 12px;
+  letter-spacing: .5px;
+  color: #3b8c47;
+  font-style: italic;
+}
 .sidebar-menu,
 .main-sidebar .user-panel,
 .sidebar-menu > li.header {
@@ -2029,4 +2018,13 @@ rect.extent{
 }
 .CodeMirror-linenumbers{
   width: 29px !important;
+}
+.track-horizontal{
+  right : -7px;
+}
+.customFormClass{
+  padding : 0 20px 0 5px;
+}
+.btnDrag-wrapper{
+  padding: 0 10px;
 }

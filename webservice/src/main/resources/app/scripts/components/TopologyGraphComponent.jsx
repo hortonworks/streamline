@@ -446,7 +446,7 @@ export default class TopologyGraphComponent extends Component {
                 let {internalFlags, constants, nodes, topologyId, versionId, metaInfo, paths, edges, uinamesList, setLastChange} = this;
         let {imgUrl, parentType, name, currentType, topologyComponentBundleId} = itemObj;
 		internalFlags.graphMouseDown = true;
-        d3.event = event;
+        d3.event = dropevent;
         var xycoords = d3.mouse(this.svgG.node());
         d3.event = null;
 		let d = {
@@ -862,7 +862,8 @@ export default class TopologyGraphComponent extends Component {
 			this.updateGraph();
 		}
 		return connectDropTarget(
-			<svg className="topology-graph"></svg>
+                        <svg className="topology-graph" onDragOver={(event) => {
+          return window.dropevent = event.nativeEvent}}></svg>
 		)
 	}
 }

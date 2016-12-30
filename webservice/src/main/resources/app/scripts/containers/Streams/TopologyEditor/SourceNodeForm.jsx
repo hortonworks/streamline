@@ -10,6 +10,7 @@ import NotesForm from '../../../components/NotesForm';
 import FSReactToastr from '../../../components/FSReactToastr';
 import CommonNotification from '../../../utils/CommonNotification';
 import {toastOpt} from '../../../utils/Constants';
+import { Scrollbars } from 'react-custom-scrollbars';
 
 export default class SourceNodeForm extends Component {
     static propTypes = {
@@ -53,11 +54,11 @@ export default class SourceNodeForm extends Component {
             }else{
               this.nodeData = results[0];
               if(this.nodeData.outputStreams.length === 0){
-                  this.createStream();
+                  this.streamObj = { streamId: this.props.configData.subType.toLowerCase()+'_stream_'+this.nodeData.id, fields: []};
               } else {
                   this.streamObj = this.nodeData.outputStreams[0];
-                  stateObj.streamObj = this.streamObj;
               }
+              stateObj.streamObj = this.streamObj;
             }
             if(results[1].responseMessage !== undefined){
               this.setState({fetchLoader : false});
@@ -125,7 +126,7 @@ export default class SourceNodeForm extends Component {
     }
 
     updateClusterFields(name){
-      const {clusterArr,clusterName,streamObj} = this.state;
+      const {clusterArr,clusterName,streamObj, formData} = this.state;
       let data = {},obj=[];
       let config = this.state.configJSON;
       _.keys(clusterArr).map((x) => {
@@ -140,6 +141,13 @@ export default class SourceNodeForm extends Component {
                         uiName : v
                       }
                     })
+                    if(list.hint && list.hint.toLowerCase().indexOf("override") !== -1){
+                      if(formData[k] != ''){
+                        if(list.options.findIndex((o)=>{return o.fieldName == formData[k]}) == -1){
+                          list.options.push({fieldName: formData[k], uiName: formData[k]});
+                        }
+                      }
+                    }
                   }else{
                     if(!_.isArray(clusterArr[x][k])){
                       data[k] = clusterArr[x][k];
@@ -156,26 +164,15 @@ export default class SourceNodeForm extends Component {
       this.setState({configJSON : obj,formData : tempData});
     }
 
-    createStream(){
-        let {topologyId, versionId, nodeType} = this.props;
-        let streamData = { streamId: this.props.configData.subType.toLowerCase()+'_stream_'+this.nodeData.id, fields: []};
-        TopologyREST.createNode(topologyId, versionId, 'streams', {body: JSON.stringify(streamData)})
-            .then(result=>{
-                this.nodeData.outputStreamIds = [result.id];
-                TopologyREST.updateNode(topologyId, versionId, nodeType, this.nodeData.id, {body: JSON.stringify(this.nodeData)})
-                    .then((node)=>{
-                        this.nodeData = node;
-                        this.streamObj = this.nodeData.outputStreams[0];
-                        this.setState({streamObj: this.streamObj});
-                    })
-            })
-    }
-
     validateData(){
         let validDataFlag = true;
         if(!this.refs.Form.validate()){
             validDataFlag = false;
             this.setState({activeTabKey: 1, showRequired: true});
+        }
+        if(this.streamObj.fields.length === 0){
+          validDataFlag = false;
+          FSReactToastr.error(<CommonNotification flag="error" content={"Output stream fields cannot be blank."}/>, '', toastOpt);
         }
         return validDataFlag;
     }
@@ -186,28 +183,25 @@ export default class SourceNodeForm extends Component {
         let data = this.refs.Form.state.FormData;
         this.nodeData.config.properties = data;
         this.nodeData.name = name;
-        this.nodeData.outputStreams = [{
+        if(this.nodeData.outputStreams.length > 0){
+          this.nodeData.outputStreams[0].fields = this.streamObj.fields;
+        } else {
+          this.nodeData.outputStreams.push({
             fields: this.streamObj.fields,
             streamId: this.streamObj.streamId,
-            id: this.nodeData.outputStreams[0].id,
             topologyId: topologyId
-        }]
+          })
+        }
         this.nodeData.description = this.state.description;
-        let promiseArr = [
-            TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)}),
-            TopologyREST.updateNode(topologyId, versionId, 'streams', this.nodeData.outputStreams[0].id, {body: JSON.stringify(this.streamObj)})
-        ];
-        return Promise.all(promiseArr);
+        return TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)});
     }
 
     showOutputStream(resultArr){
         this.streamObj = {
             streamId: this.props.configData.subType.toLowerCase()+'_stream_'+this.nodeData.id,
-            fields: resultArr,
-            id: this.nodeData.outputStreams[0].id
+            fields: resultArr
         };
         this.setState({streamObj: this.streamObj});
-        // this.refs.StreamSidebar.update(this.streamObj);
     }
 
     onSelectTab = (eventKey) => {
@@ -234,17 +228,23 @@ export default class SourceNodeForm extends Component {
                                 <img src="styles/img/start-loader.gif" alt="loading" />
                             </div>
                         </div>
-                      :  <Form
-                              ref="Form"
-                              readOnly={!this.props.editMode}
-                              showRequired={this.state.showRequired}
-                              FormData={formData}
-                              className="source-modal-form form-overflow"
-                              populateClusterFields={this.populateClusterFields.bind(this)}
-                              callback={this.showOutputStream.bind(this)}
-                          >
-                              {fields}
-                          </Form>
+                      : <div className="source-modal-form">
+                            <Scrollbars autoHide
+                              renderThumbHorizontal={props => <div {...props} style={{display : "none"}}/>}
+                              >
+                                  <Form
+                                      ref="Form"
+                                      readOnly={!this.props.editMode}
+                                      showRequired={this.state.showRequired}
+                                      className="customFormClass"
+                                      FormData={formData}
+                                      populateClusterFields={this.populateClusterFields.bind(this)}
+                                      callback={this.showOutputStream.bind(this)}
+                                  >
+                                      {fields}
+                                  </Form>
+                            </Scrollbars>
+                          </div>
         const outputSidebar = <StreamsSidebar ref="StreamSidebar" streamObj={this.state.streamObj} streamType="output" />
         return (
             <Tabs id="SinkForm" activeKey={this.state.activeTabKey} className="modal-tabs" onSelect={this.onSelectTab}>
