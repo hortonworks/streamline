@@ -32,7 +32,7 @@
         "tooltip": "Kafka topic to write data to",
         "type": "enumstring",
         "options": [],
-        "hint": "schema"
+        "hint": "schema,override"
       },
       {
         "uiName": "Bootstrap Servers",
@@ -54,7 +54,8 @@
         "fieldName": "keyField",
         "isOptional": false,
         "tooltip": "Name of the key field",
-        "type": "string",
+        "type": "enumstring",
+        "options": [],
         "hint": "inputFields"
       },
       {
@@ -160,8 +161,7 @@
         "fieldName": "securityProtocol",
         "isOptional": true,
         "tooltip": "Protocol to be used to communicate with kafka brokers",
-        "type": "enumstring",
-        "options": ["PLAINTEXT", "SSL", "SASL_PLAINTEXT", "SASL_SSL"],
+        "type": "string",
         "defaultValue": "PLAINTEXT",
         "isUserInput": false
       },

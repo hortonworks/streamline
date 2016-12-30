@@ -23,7 +23,8 @@
         "isOptional": false,
         "tooltip": "Hbase table to write to",
         "type": "enumstring",
-        "options": []
+        "options": [],
+        "hint": "override"
       },
       {
         "uiName": "Column family",

@@ -39,7 +39,7 @@
         "tooltip": "Kafka topic to read data from",
         "type": "enumstring",
         "options": [],
-        "hint": "schema"
+        "hint": "schema,override"
       },
       {
         "uiName": "Zookeeper root node",
