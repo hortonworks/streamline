@@ -295,7 +295,7 @@ public class TopologyComponentUISpecification {
             }
             if (type.equals(UIFieldType.ENUMSTRING) || type.equals(UIFieldType.ARRAYENUMSTRING)) {
                 // options are mandatory for enum types
-                if (options == null) {
+                if (options == null || options.isEmpty()) {
                     logAndThrowException(String.format(PROPERTY_REQUIRED, OPTIONS, fieldName, type));
                 }
                 for (Object option: options) {
