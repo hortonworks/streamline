@@ -81,7 +81,8 @@
         "fieldName": "dimensions",
         "tooltip": "Datasource dimensions",
         "isOptional": false,
-        "type": "array.string",
+        "type": "array.enumstring",
+        "options": [],
         "hint": "inputFields"
       },
       {
