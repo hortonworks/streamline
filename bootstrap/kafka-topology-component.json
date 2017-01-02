@@ -6,7 +6,7 @@
   "builtin": true,
   "fieldHintProviderClass": "org.apache.streamline.streams.catalog.topology.component.bundle.impl.KafkaBundleHintProvider",
   "transformationClass": "org.apache.streamline.streams.layout.storm.KafkaSpoutFluxComponent",
-  "mavenDeps": "org.apache.storm:storm-kafka:STORM_VERSION^org.slf4j:slf4j-log4j12,org.apache.kafka:kafka_2.10:0.10.1.2.1.0.0-165^org.apache.zookeeper:zookeeper^log4j:log4j^org.slf4j:slf4j-log4j12",
+    "mavenDeps": "org.apache.storm:storm-kafka:STORM_VERSION^org.slf4j:slf4j-log4j12,org.apache.kafka:kafka_2.10:0.10.0.2.5.3.0-37^org.apache.zookeeper:zookeeper^log4j:log4j^org.slf4j:slf4j-log4j12",
   "topologyComponentUISpecification": {
     "fields": [
       {
