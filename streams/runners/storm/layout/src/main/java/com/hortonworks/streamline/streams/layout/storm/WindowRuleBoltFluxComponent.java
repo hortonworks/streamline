@@ -45,7 +45,7 @@ public class WindowRuleBoltFluxComponent extends RuleBoltFluxComponent {
         rulesProcessor = (RulesProcessor) conf.get(StormTopologyLayoutConstants.STREAMLINE_COMPONENT_CONF_KEY);
         String boltId = "windowruleBolt" + UUID_FOR_COMPONENTS;
         String boltClassName = "com.hortonworks.streamline.streams.runtime.storm.bolt.rules.WindowRulesBolt";
-        List boltConstructorArgs = new ArrayList();
+        List<String> boltConstructorArgs = new ArrayList<>();
         ObjectMapper mapper = new ObjectMapper();
         String rulesProcessorJson = null;
         try {
@@ -59,7 +59,7 @@ public class WindowRuleBoltFluxComponent extends RuleBoltFluxComponent {
         boltConstructorArgs.add("SQL");
         String[] configMethodNames = {"withWindowConfig"};
         Object[] configKeys = {getRefYaml(addWindowConfig())};
-        List configMethods = getConfigMethodsYaml(configMethodNames, configKeys);
+        List<Map<String, Object>> configMethods = getConfigMethodsYaml(configMethodNames, configKeys);
         component = createComponent(boltId, boltClassName, null, boltConstructorArgs, configMethods);
         addParallelismToComponent();
     }
@@ -83,7 +83,7 @@ public class WindowRuleBoltFluxComponent extends RuleBoltFluxComponent {
         } catch (JsonProcessingException e) {
             log.error("Error creating json config string for RulesProcessor", e);
         }
-        List constructorArgs = new ArrayList();
+        List<String> constructorArgs = new ArrayList<>();
         constructorArgs.add(windowJson);
         this.addToComponents(this.createComponent(windowId, windowClassName, null, constructorArgs, null));
         return windowId;

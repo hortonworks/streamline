@@ -89,10 +89,9 @@ public class ShellProcess implements Serializable {
         ISerializer serializer;
         try {
             //create a factory class
-            Class klass = Class.forName(serializerClassName);
+            Class<?> klass = Class.forName(serializerClassName);
             //obtain a serializer object
-            Object obj = klass.newInstance();
-            serializer = (ISerializer)obj;
+            serializer = (ISerializer) klass.newInstance();
         } catch(Exception e) {
             throw new RuntimeException("Failed to construct multilang serializer from serializer " + serializerClassName, e);
         }

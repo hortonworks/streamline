@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.request.ContentStreamUpdateRequest;
+import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.util.ContentStream;
 import org.apache.solr.common.util.ContentStreamBase;
 import org.apache.storm.solr.mapper.SolrMapper;
@@ -87,7 +88,7 @@ public class StreamlineSolrJsonMapper implements SolrMapper {
         return jsonListBuilder.toString();
     }
 
-    private SolrRequest createSolrRequest(String json) {
+    private SolrRequest<UpdateResponse> createSolrRequest(String json) {
         final ContentStreamUpdateRequest request = new ContentStreamUpdateRequest(jsonUpdateUrl);
         final ContentStream cs = new ContentStreamBase.StringStream(json, CONTENT_TYPE);
         request.addContentStream(cs);

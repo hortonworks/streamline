@@ -91,7 +91,7 @@ public class CassandraBoltFluxComponent extends AbstractFluxComponent {
             constructorArgs.add(flushFrequencyInSecs);
         }
 
-        Map configMethod = getConfigMethodWithRefArgs("withCassandraConfig", Collections.singletonList(addCassandraConfig()));
+        Map<String, Object> configMethod = getConfigMethodWithRefArgs("withCassandraConfig", Collections.singletonList(addCassandraConfig()));
 
         component = createComponent(boltClassId, CASSANDRA_BOLT_CLASS, null, constructorArgs, Collections.singletonList(configMethod));
 
@@ -122,7 +122,7 @@ public class CassandraBoltFluxComponent extends AbstractFluxComponent {
         List<String> fieldSelectorIds = createFieldSelectors(columns);
 
         String cql = createInsertToCql(tableName, columnNames);
-        Map configMethod = getConfigMethodWithRefListArg("bind", fieldSelectorIds);
+        Map<String, Object> configMethod = getConfigMethodWithRefListArg("bind", fieldSelectorIds);
         addToComponents(createComponent(mapperClassId, MAPPER_BUILDER_CLASS, null, Arrays.asList(cql), Arrays.asList(configMethod)));
 
         return mapperClassId;

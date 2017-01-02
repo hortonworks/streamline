@@ -39,7 +39,7 @@ public class HdfsBoltFluxComponent extends AbstractFluxComponent {
                 TopologyLayoutConstants.JSON_KEY_FS_URL,
                 TopologyLayoutConstants.JSON_KEY_CONFIG_KEY
         };
-        List configMethods = getConfigMethodsYaml(configMethodNames,
+        List<Map<String, Object>> configMethods = getConfigMethodsYaml(configMethodNames,
                 configKeys);
         String[] moreConfigMethodNames = {
             "withFileNameFormat",
@@ -76,7 +76,7 @@ public class HdfsBoltFluxComponent extends AbstractFluxComponent {
                 TopologyLayoutConstants.JSON_KEY_PREFIX,
                 TopologyLayoutConstants.JSON_KEY_EXTENSION
         };
-        List configMethods = getConfigMethodsYaml(configMethodNames,
+        List<Map<String, Object>> configMethods = getConfigMethodsYaml(configMethodNames,
                 configKeys);
         addToComponents(createComponent(fileNameFormatComponentId,
                 fileNameFormatClassName, null, null, configMethods));
@@ -118,7 +118,7 @@ public class HdfsBoltFluxComponent extends AbstractFluxComponent {
         String[] constructorArgNames = {
                 TopologyLayoutConstants.JSON_KEY_COUNT_POLICY_VALUE
         };
-        List constructorArgs = getConstructorArgsYaml(constructorArgNames);
+        List<Object> constructorArgs = getConstructorArgsYaml(constructorArgNames);
         addToComponents(createComponent(syncPolicyComponentId,
                 syncPolicyClassName, null, constructorArgs, null));
         return syncPolicyComponentId;

@@ -18,6 +18,7 @@ package com.hortonworks.streamline.streams.layout.storm;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -41,7 +42,7 @@ public class OpenTsdbBoltFluxComponent extends AbstractFluxComponent {
         addConfigs("withBatchSize", configMethodNames, values);
         addConfigsWithNoArgs("failTupleForFailedMetrics", configMethodNames, values);
 
-        List configMethods = getConfigMethodsYaml(configMethodNames.toArray(new String[0]), values.toArray());
+        List<Map<String, Object>> configMethods = getConfigMethodsYaml(configMethodNames.toArray(new String[0]), values.toArray());
 
         component = createComponent(boltId, boltClassName, null, boltConstructorArgs, configMethods);
 
@@ -51,7 +52,7 @@ public class OpenTsdbBoltFluxComponent extends AbstractFluxComponent {
     private void addConfigsWithNoArgs(String configKey, List<String> configMethodNames, List<Object> values) {
         if (conf.get(configKey) != null && ((Boolean)(conf.get(configKey)))) {
             configMethodNames.add(configKey);
-            values.add(ArgsType.NONE);
+            values.add(Args.NONE);
         }
     }
 
@@ -76,7 +77,7 @@ public class OpenTsdbBoltFluxComponent extends AbstractFluxComponent {
 
         //constructor args
         String[] constructorArgNames = {"metricField", "timestampField", "tagsField", "valueField"};
-        List mapperConstructorArgs = getConstructorArgsYaml(constructorArgNames);
+        List<Object> mapperConstructorArgs = getConstructorArgsYaml(constructorArgNames);
 
         addToComponents(createComponent(mapperComponentId, mapperClassName, null, mapperConstructorArgs, null));
 
@@ -89,7 +90,7 @@ public class OpenTsdbBoltFluxComponent extends AbstractFluxComponent {
 
         //constructor args
         String[] constructorArgNames = {"url"};
-        List builderConstructorArgs = getConstructorArgsYaml(constructorArgNames);
+        List<Object> builderConstructorArgs = getConstructorArgsYaml(constructorArgNames);
 
         List<String> configMethodNames = new ArrayList<>();
         List<Object> values = new ArrayList<>();
@@ -101,7 +102,7 @@ public class OpenTsdbBoltFluxComponent extends AbstractFluxComponent {
         addConfigsWithNoArgs("returnDetails", configMethodNames, values);
         addConfigsWithNoArgs("enableChunkedEncoding", configMethodNames, values);
 
-        List configMethods = getConfigMethodsYaml(configMethodNames.toArray(new String[0]), values.toArray());
+        List<Map<String, Object>> configMethods = getConfigMethodsYaml(configMethodNames.toArray(new String[0]), values.toArray());
 
         addToComponents(createComponent(clientBuilderId, clientBuilderClassName, null, builderConstructorArgs, configMethods));
 

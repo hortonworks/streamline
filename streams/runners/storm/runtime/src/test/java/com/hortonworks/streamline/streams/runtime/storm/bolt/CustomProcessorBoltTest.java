@@ -108,7 +108,7 @@ public class CustomProcessorBoltTest {
             customProcessorRuntime.initialize(withEqual(config));
             minTimes=1; maxTimes=1;
         }};
-        Map conf = new HashMap<>();
+        Map<Object, Object> conf = new HashMap<>();
         customProcessorBolt.prepare(conf, null, null);
         new VerificationsInOrder(){{
             customProcessorRuntime.initialize(config);
@@ -154,7 +154,7 @@ public class CustomProcessorBoltTest {
                 returns(results);
             }};
         }
-        Map conf = new HashMap<>();
+        Map<Object, Object> conf = new HashMap<>();
         customProcessorBolt.prepare(conf, null, mockOutputCollector);
         customProcessorBolt.execute(tuple);
         if (!isSuccess) {

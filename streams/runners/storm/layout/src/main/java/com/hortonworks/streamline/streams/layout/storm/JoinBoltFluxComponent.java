@@ -19,10 +19,7 @@ package com.hortonworks.streamline.streams.layout.storm;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.snakeyaml.DumperOptions;
-import com.fasterxml.jackson.dataformat.yaml.snakeyaml.Yaml;
 
 import com.hortonworks.streamline.streams.layout.component.rule.expression.Window;
 
@@ -33,8 +30,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -67,7 +62,7 @@ public class JoinBoltFluxComponent extends AbstractFluxComponent {
         String firstStream = fromSetting.get("stream").toString();
         String firstStreamKey = fromSetting.get("key").toString();
 
-        List boltConstructorArgs = new ArrayList();
+        List<String> boltConstructorArgs = new ArrayList<>();
         boltConstructorArgs.add("STREAM");
         boltConstructorArgs.add(firstStream);
         boltConstructorArgs.add(firstStreamKey);
@@ -76,7 +71,7 @@ public class JoinBoltFluxComponent extends AbstractFluxComponent {
         String[] configMethodNames = getConfiguredMethodNames(conf);
         Object[] configValues = getConfiguredMethodArgs(conf);
 
-        List configMethods = getConfigMethodsYaml(configMethodNames, configValues);
+        List<Map<String, Object>> configMethods = getConfigMethodsYaml(configMethodNames, configValues);
 
         component = createComponent(boltId, boltClassName, null, boltConstructorArgs, configMethods);
         addParallelismToComponent();
@@ -158,7 +153,7 @@ public class JoinBoltFluxComponent extends AbstractFluxComponent {
     private String addWindowToComponents(Map<String,Object> windowMap) {
         String windowId = "window_" + UUID_FOR_COMPONENTS;
         String windowClassName = "com.hortonworks.streamline.streams.layout.component.rule.expression.Window";
-        List constructorArgs = new ArrayList();
+        List<String> constructorArgs = new ArrayList<>();
         try {
             String windowJson = new ObjectMapper().writeValueAsString( windowMap );
             constructorArgs.add(windowJson);

@@ -194,7 +194,7 @@ public class NotifierInfo extends AbstractStorable {
 
     @Override
     public Map<String, Object> toMap() {
-        Map result = super.toMap();
+        Map<String, Object> result = super.toMap();
         try {
             result.put(PROPERTIES, this.getMapAsString(properties));
             result.put(FIELD_VALUES, this.getMapAsString(fieldValues));

@@ -23,6 +23,7 @@ import com.hortonworks.streamline.streams.StreamlineEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -88,7 +89,7 @@ public class DruidBoltFluxComponent extends AbstractFluxComponent {
                 KEY_QUERY_GRANULARITY
         };
 
-        List configMethods = getConfigMethodsYaml(configMethodNames, configKeys);
+        List<Map<String, Object>> configMethods = getConfigMethodsYaml(configMethodNames, configKeys);
         addToComponents(createComponent(componentId, className, null, constructorArgs, configMethods));
         return componentId;
     }
@@ -118,7 +119,7 @@ public class DruidBoltFluxComponent extends AbstractFluxComponent {
                 KEY_BATCH_SIZE, KEY_PENDING_BATCHES, KEY_LINGER_MILLS,
                 KEY_BLOCK_ON_FULL, KEY_DISCARD_STREAM_ID};
 
-        List configMethods = getConfigMethodsYaml(configKeys, configKeys);
+        List<Map<String, Object>> configMethods = getConfigMethodsYaml(configKeys, configKeys);
         addToComponents(createComponent(builderComponentId, builderClassName, null, null, configMethods));
         return builderComponentId;
     }

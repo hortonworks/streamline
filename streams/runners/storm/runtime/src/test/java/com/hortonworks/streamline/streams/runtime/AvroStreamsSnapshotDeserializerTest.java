@@ -98,7 +98,7 @@ public class AvroStreamsSnapshotDeserializerTest {
     }
 
     private static class CustomAvroSerializer extends AvroSnapshotSerializer {
-        public byte[] customSerialize(Object input) {
+        public byte[] customSerialize(GenericRecord input) {
             return doSerialize(input, new SchemaIdVersion(1L, 1));
         }
     }

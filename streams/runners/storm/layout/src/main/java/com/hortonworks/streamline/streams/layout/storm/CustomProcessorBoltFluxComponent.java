@@ -52,7 +52,7 @@ public class CustomProcessorBoltFluxComponent extends AbstractFluxComponent {
             LOG.error(message);
             throw new RuntimeException(message, e);
         }
-        List configMethods = getConfigMethodsYaml(configMethodNames, values);
+        List<Map<String, Object>> configMethods = getConfigMethodsYaml(configMethodNames, values);
         component = createComponent(boltId, boltClassName, null, null, configMethods);
         addParallelismToComponent();
     }
@@ -101,9 +101,9 @@ public class CustomProcessorBoltFluxComponent extends AbstractFluxComponent {
 
     private Map<String, Object> getCustomConfig () {
         Map<String, Object> config = new HashMap<>();
-        for (Map.Entry entry: conf.entrySet()) {
-            if (entry.getKey().toString().startsWith(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_PREFIX)) {
-                config.put(entry.getKey().toString().replaceFirst(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_PREFIX_REGEX, ""), entry.getValue());
+        for (Map.Entry<String, Object> entry: conf.entrySet()) {
+            if (entry.getKey().startsWith(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_PREFIX)) {
+                config.put(entry.getKey().replaceFirst(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_PREFIX_REGEX, ""), entry.getValue());
             }
         }
         return config;

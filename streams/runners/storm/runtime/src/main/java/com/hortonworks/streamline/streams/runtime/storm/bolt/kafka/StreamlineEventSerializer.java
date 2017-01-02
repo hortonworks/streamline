@@ -117,7 +117,7 @@ public class StreamlineEventSerializer implements Serializer<StreamlineEvent> {
             result.put(VALUE_KEY, input);
         } else if (input instanceof Map && !((Map) input).isEmpty()) {
             List<Schema.Field> fields = new ArrayList<>();
-            List values = new ArrayList<>();
+            List<Object> values = new ArrayList<>();
             for (Map.Entry<String, Object> entry: ((Map<String, Object>) input).entrySet()) {
                 Map<String, Object> fieldResult = getAvroSchemaAndValue(entry.getValue(), namespace + "." + schemaName, entry.getKey());
                 fields.add(new org.apache.avro.Schema.Field(entry.getKey(), (org.apache.avro.Schema) fieldResult.get(SCHEMA_KEY), null, null));
@@ -142,11 +142,11 @@ public class StreamlineEventSerializer implements Serializer<StreamlineEvent> {
             }
             org.apache.avro.Schema arraySchema = org.apache.avro.Schema.createArray((org.apache.avro.Schema) elementResults.get(0).get(SCHEMA_KEY));
             result.put(SCHEMA_KEY, arraySchema);
-            List values = new ArrayList<>();
+            List<Object> values = new ArrayList<>();
             for (Map<String, Object> elementResult: elementResults) {
                 values.add(elementResult.get(VALUE_KEY));
             }
-            result.put(VALUE_KEY, new GenericData.Array<Object>(arraySchema, values));
+            result.put(VALUE_KEY, new GenericData.Array<>(arraySchema, values));
         }
         return result;
     }
