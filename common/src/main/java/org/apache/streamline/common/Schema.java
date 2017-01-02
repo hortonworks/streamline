@@ -280,7 +280,7 @@ public class Schema implements Serializable {
 
         public Schema build() {
             if(fields.isEmpty()) {
-                throw new IllegalArgumentException("Parser schema with empty fields!");
+                throw new IllegalArgumentException("Schema with empty fields!");
             }
             return new Schema(fields);
         }

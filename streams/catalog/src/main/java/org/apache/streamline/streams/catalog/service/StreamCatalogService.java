@@ -1742,6 +1742,16 @@ public class StreamCatalogService {
       return null;
     }
 
+    private void validateStreamInfo(StreamInfo streamInfo) {
+        if (streamInfo.getFields().isEmpty()) {
+            throw new IllegalArgumentException("Stream with empty fields: " + streamInfo);
+        }
+        StorageUtils.ensureUnique(streamInfo, this::listStreamInfos,
+                QueryParam.params(StreamInfo.TOPOLOGYID, streamInfo.getTopologyId().toString(),
+                        StreamInfo.VERSIONID, streamInfo.getVersionId().toString(),
+                        StreamInfo.STREAMID, streamInfo.getStreamId()));
+    }
+
     public StreamInfo addStreamInfo(Long topologyId, StreamInfo streamInfo) {
         return addStreamInfo(topologyId, getCurrentVersionId(topologyId), streamInfo);
     }
@@ -1756,6 +1766,7 @@ public class StreamCatalogService {
         streamInfo.setVersionTimestamp(timestamp);
         streamInfo.setVersionId(versionId);
         streamInfo.setTopologyId(topologyId);
+        validateStreamInfo(streamInfo);
         dao.add(streamInfo);
         updateVersionTimestamp(versionId, timestamp);
         return streamInfo;
@@ -1768,6 +1779,7 @@ public class StreamCatalogService {
         stream.setTopologyId(topologyId);
         long timestamp = System.currentTimeMillis();
         stream.setVersionTimestamp(timestamp);
+        validateStreamInfo(stream);
         dao.addOrUpdate(stream);
         updateVersionTimestamp(currentVersionId, timestamp);
         return stream;
@@ -1790,7 +1802,7 @@ public class StreamCatalogService {
         return dao.list(STREAMINFO_NAMESPACE);
     }
 
-    public Collection<StreamInfo> listStreamInfos(List<QueryParam> params) throws Exception {
+    public Collection<StreamInfo> listStreamInfos(List<QueryParam> params) {
         return dao.find(STREAMINFO_NAMESPACE, params);
     }
 
