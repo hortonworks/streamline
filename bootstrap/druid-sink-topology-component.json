@@ -5,7 +5,7 @@
   "builtin": true,
   "streamingEngine": "STORM",
   "transformationClass": "org.apache.streamline.streams.layout.storm.DruidBoltFluxComponent",
-  "mavenDeps": "org.apache.storm:storm-druid:STORM_VERSION",
+  "mavenDeps": "org.apache.storm:storm-druid:STORM_VERSION,io.druid:druid-server:0.9.1,org.scala-lang:scala-library:2.11.8",
   "topologyComponentUISpecification": {
     "fields": [
       {
@@ -46,21 +46,23 @@
         "isOptional": true,
         "tooltip": "Stream Id to send dropped events (MessageDroppedException)",
         "type": "string",
-        "defaultValue": ""
+        "defaultValue": "DRUID-DISCARD-STREAM-ID"
       },
       {
         "uiName": "Name of the indexing service",
         "fieldName": "indexService",
         "isOptional": false,
         "tooltip": "The druid.service name of the indexing service Overlord node.",
-        "type": "string"
+        "type": "string",
+        "defaultValue": "druid/overlord"
       },
       {
         "uiName": "Service discovery path",
         "fieldName": "discoveryPath",
         "isOptional": false,
         "tooltip": "Curator service discovery path.",
-        "type": "string"
+        "type": "string",
+        "defaultValue": "/druid/discovery"
       },
       {
         "uiName": "Datasource name",
@@ -114,15 +116,17 @@
         "uiName": "Window Period",
         "fieldName": "windowPeriod",
         "isOptional": false,
-        "tooltip": "Window Period",
-        "type": "string"
+        "tooltip": "Window Period takes ISO 8601 Period format (https://en.wikipedia.org/wiki/ISO_8601)",
+        "type": "string",
+        "defaultValue": "PT10M"
       },
       {
         "uiName":"Index Retry Period",
         "fieldName": "indexRetryPeriod",
-        "tooltip": "If an indexing service overlord call fails for some apparently-transient reason, retry for this long before giving up.",
+        "tooltip": "If an indexing service overlord call fails for some apparently-transient reason, retry for this long before giving up. It takes ISO 8601 Period format (https://en.wikipedia.org/wiki/ISO_8601)",
         "isOptional": false,
-        "type": "string"
+        "type": "string",
+        "defaultValue": "PT10M"
       },
       {
         "uiName": "Segment Granularity",
@@ -274,7 +278,7 @@
            },
            {
              "uiName": "Long Max Aggregator",
-             "fieldName": "Longmax",
+             "fieldName": "longmax",
              "tooltip": "Long max Aggregator",
              "isOptional": true,
              "type": "object",

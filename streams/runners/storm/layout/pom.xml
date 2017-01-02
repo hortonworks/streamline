@@ -31,9 +31,13 @@
             <artifactId>storm-druid</artifactId>
             <version>${storm.version}</version>
             <scope>provided</scope>
-
         </dependency>
-
+        <dependency>
+            <groupId>io.druid</groupId>
+            <artifactId>druid-server</artifactId>
+            <version>0.9.1</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>

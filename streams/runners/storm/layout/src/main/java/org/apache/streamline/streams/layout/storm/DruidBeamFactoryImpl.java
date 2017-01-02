@@ -17,6 +17,7 @@
  */
 package org.apache.streamline.streams.layout.storm;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.metamx.common.Granularity;
 import com.metamx.tranquility.beam.Beam;
 import com.metamx.tranquility.beam.ClusteredBeamTuning;
@@ -45,8 +46,7 @@ import org.apache.storm.task.IMetricsContext;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
 
-import java.util.Collection;
-import java.util.HashMap;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +59,7 @@ import java.util.Map;
  */
 public class DruidBeamFactoryImpl implements DruidBeamFactory<Map<String, Object>> {
 
+    private static String PROCESSING_TIME = "processingTime";
     private String indexService = "druid/overlord"; // Your overlord's druid.service;
     private String discoveryPath = "/druid/discovery"; // Your overlord's druid.discovery.curator.path;
     private String dataSource = "test";
@@ -71,8 +72,11 @@ public class DruidBeamFactoryImpl implements DruidBeamFactory<Map<String, Object
     private String indexRetryPeriod = "PT10M";
     private String segmentGranularity = "HOUR";
     private String queryGranularity = "MINUTE";
-    private Map<String, Object> aggregatorInfo = new HashMap<>();
+    private String aggregatorJson = "";
 
+    public DruidBeamFactoryImpl(String aggregatorJson) {
+        this.aggregatorJson = aggregatorJson;
+    }
 
     @Override
     public Beam<Map<String, Object>> makeBeam(Map<?, ?> conf, IMetricsContext metrics) {
@@ -85,7 +89,13 @@ public class DruidBeamFactoryImpl implements DruidBeamFactory<Map<String, Object
             @Override
             public DateTime timestamp(Map<String, Object> theMap)
             {
-                return new DateTime(theMap.get(timestampField));
+                if(PROCESSING_TIME.equalsIgnoreCase(timestampField))
+                    return new DateTime(System.currentTimeMillis());
+
+                String eventTime = (String)theMap.get(timestampField);
+                if(eventTime == null)
+                    return null;
+                return new DateTime(new Long(eventTime));
             }
         };
 
@@ -128,6 +138,14 @@ public class DruidBeamFactoryImpl implements DruidBeamFactory<Map<String, Object
                 .buildBeam();
 
         return beam;
+    }
+
+    public String getAggregatorJson() {
+        return aggregatorJson;
+    }
+
+    public void setAggregatorJson(String aggregatorJson) {
+        this.aggregatorJson = aggregatorJson;
     }
 
     public String getIndexService() {
@@ -218,80 +236,79 @@ public class DruidBeamFactoryImpl implements DruidBeamFactory<Map<String, Object
         this.queryGranularity = queryGranularity;
     }
 
-    public Map<String, Object> getAggregatorInfo() {
-        return aggregatorInfo;
-    }
-
-    public void setAggregatorInfo(Map<String, Object> aggregatorInfo) {
-        this.aggregatorInfo = aggregatorInfo;
-    }
-
     private List<AggregatorFactory> getAggregatorList() {
         List<AggregatorFactory> aggregatorList = new LinkedList<>();
+        List<Map<String, Map<String, String>>> aggregatorInfo = parseJsonString(aggregatorJson);
+        for (Map<String, Map<String, String>> aggregator : aggregatorInfo) {
 
-        aggregatorList.addAll(getCountAggregators());
-        aggregatorList.addAll(getDoubleAggregators());
-        aggregatorList.addAll(getLongAggregators());
-
-        return aggregatorList;
-    }
-
-
-    private Collection<? extends AggregatorFactory> getCountAggregators() {
-        List<AggregatorFactory> aggregatorList = new LinkedList<>();
-        List<Map<String, Object>> list = (List<Map<String, Object>>) aggregatorInfo.get("count");
-
-        for (Map<String, Object> aggregrator: list ) {
-            aggregatorList.add(new CountAggregatorFactory((String)aggregrator.get("name")));
+            if (aggregator.containsKey("count")) {
+                Map<String, String> map = aggregator.get("count");
+                aggregatorList.add(getCountAggregator(map));
+            }
+            else if (aggregator.containsKey("doublesum")) {
+                Map<String, String> map = aggregator.get("doublesum");
+                aggregatorList.add(getDoubleSumAggregator(map));
+            }
+            else if (aggregator.containsKey("doublemax")) {
+                Map<String, String> map = aggregator.get("doublemax");
+                aggregatorList.add(getDoubleMaxAggregator(map));
+            }
+            else if (aggregator.containsKey("doublemin")) {
+                Map<String, String> map = aggregator.get("doublemin");
+                aggregatorList.add(getDoubleMinAggregator(map));
+            }
+            else if (aggregator.containsKey("longsum")) {
+                Map<String, String> map = aggregator.get("longsum");
+                aggregatorList.add(getLongSumAggregator(map));
+            }
+            else if (aggregator.containsKey("longmax")) {
+                Map<String, String> map = aggregator.get("longmax");
+                aggregatorList.add(getLongMaxAggregator(map));
+            }
+            else if (aggregator.containsKey("longmin")) {
+                Map<String, String> map = aggregator.get("longmin");
+                aggregatorList.add(getLongMinAggregator(map));
+            }
         }
 
         return aggregatorList;
     }
 
-    private Collection<? extends AggregatorFactory> getDoubleAggregators() {
-        List<AggregatorFactory> aggregatorList = new LinkedList<>();
-        List<Map<String, Object>> list = (List<Map<String, Object>>) aggregatorInfo.get("doublesum");
-
-        for (Map<String, Object> aggregrator: list ) {
-            aggregatorList.add(new DoubleSumAggregatorFactory((String)aggregrator.get("name"), (String)aggregrator.get("fieldName")));
-        }
-
-        list = (List<Map<String, Object>>) aggregatorInfo.get("doublemax");
-
-        for (Map<String, Object> aggregrator: list ) {
-            aggregatorList.add(new DoubleMaxAggregatorFactory((String)aggregrator.get("name"), (String)aggregrator.get("fieldName")));
-        }
-
-        list = (List<Map<String, Object>>) aggregatorInfo.get("doublemin");
-
-        for (Map<String, Object> aggregrator: list ) {
-            aggregatorList.add(new DoubleMinAggregatorFactory((String)aggregrator.get("name"), (String)aggregrator.get("fieldName")));
-        }
-
-        return aggregatorList;
+    private AggregatorFactory getLongMinAggregator(Map<String, String> map) {
+        return new LongMinAggregatorFactory(map.get("name"), map.get("fieldName"));
     }
 
-    private Collection<? extends AggregatorFactory> getLongAggregators() {
-        List<AggregatorFactory> aggregatorList = new LinkedList<>();
-        List<Map<String, Object>> list = (List<Map<String, Object>>) aggregatorInfo.get("longsum");
+    private AggregatorFactory getLongMaxAggregator(Map<String, String> map) {
+        return new LongMaxAggregatorFactory(map.get("name"), map.get("fieldName"));
+    }
 
-        for (Map<String, Object> aggregrator: list ) {
-            aggregatorList.add(new LongSumAggregatorFactory((String)aggregrator.get("name"), (String)aggregrator.get("fieldName")));
+    private AggregatorFactory getLongSumAggregator(Map<String, String> map) {
+        return new LongSumAggregatorFactory(map.get("name"), map.get("fieldName"));
+    }
+
+    private AggregatorFactory getDoubleMinAggregator(Map<String, String> map) {
+        return new DoubleMinAggregatorFactory(map.get("name"), map.get("fieldName"));
+    }
+
+    private AggregatorFactory getDoubleMaxAggregator(Map<String, String> map) {
+        return new DoubleMaxAggregatorFactory(map.get("name"), map.get("fieldName"));
+    }
+
+    private AggregatorFactory getDoubleSumAggregator(Map<String, String> map) {
+        return new DoubleSumAggregatorFactory(map.get("name"), map.get("fieldName"));
+    }
+
+    private AggregatorFactory getCountAggregator(Map<String, String> map) {
+        return new CountAggregatorFactory(map.get("name"));
+    }
+
+    private  List<Map<String, Map<String, String>>> parseJsonString(String aggregatorJson) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            return mapper.readValue(aggregatorJson, List.class);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Exception while parsing the aggregratorJson");
         }
-
-        list = (List<Map<String, Object>>) aggregatorInfo.get("longmax");
-
-        for (Map<String, Object> aggregrator: list ) {
-            aggregatorList.add(new LongMaxAggregatorFactory((String)aggregrator.get("name"), (String)aggregrator.get("fieldName")));
-        }
-
-        list = (List<Map<String, Object>>) aggregatorInfo.get("longmin");
-
-        for (Map<String, Object> aggregrator: list ) {
-            aggregatorList.add(new LongMinAggregatorFactory((String)aggregrator.get("name"), (String)aggregrator.get("fieldName")));
-        }
-
-        return aggregatorList;
     }
 
     private QueryGranularity getQueryGranularity() {
