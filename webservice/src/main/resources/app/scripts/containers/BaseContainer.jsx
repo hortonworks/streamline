@@ -13,6 +13,7 @@ import 'styles/css/toastr.min.css';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/addon/lint/lint.css';
 import 'styles/css/customScroll.css';
+import 'styles/css/paper-bootstrap-wizard.css';
 import 'styles/css/theme.css';
 import 'styles/css/graph-style.css';
 

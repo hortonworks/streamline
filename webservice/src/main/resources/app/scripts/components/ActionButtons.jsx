@@ -26,7 +26,21 @@ class BtnEdit extends Component {
 	}
 }
 
+class BtnView extends Component {
+        constructor(props){
+                super();
+        }
+        render(){
+                return(
+                        <button type="button" onClick={this.props.callback} className="info">
+                                <i className="fa fa-eye"></i>
+                        </button>
+                )
+        }
+}
+
 export {
 	BtnDelete,
-	BtnEdit
+        BtnEdit,
+  BtnView
 }

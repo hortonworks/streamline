@@ -23,6 +23,7 @@ import Modal from '../../../components/FSModal';
 import Editable from '../../../components/Editable';
 import state from '../../../app_state';
 import CommonNotification from '../../../utils/CommonNotification';
+import AnimatedLoader from '../../../components/AnimatedLoader';
 
 const componentTarget = {
   drop(props, monitor, component) {
@@ -180,7 +181,9 @@ class TopologyEditorContainer extends Component {
     isAppRunning: false,
     topologyStatus: '',
     unknown: '',
-    bundleArr:null
+    bundleArr:null,
+    progressCount: 0,
+    progressBarColor : 'red'
   }
 
   fetchData(versionId){
@@ -408,15 +411,15 @@ class TopologyEditorContainer extends Component {
     this.refs.BaseContainer.refs.Confirm.show({
       title: 'Are you sure you want to deploy this topology ?'
     }).then((confirmBox)=>{
-      document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay";
-      this.setState({topologyStatus: 'DEPLOYING...'})
+      this.refs.deployLoadingModal.show();
+      this.setState({topologyStatus: 'DEPLOYING...',progressCount : 12});
       TopologyREST.validateTopology(this.topologyId, this.versionId)
         .then(result=>{
           if(result.responseMessage !== undefined){
             FSReactToastr.error(
               <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt)
             let status = this.topologyMetric.status || 'NOT RUNNING';
-            document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay displayNone";
+            this.refs.deployLoadingModal.hide();
             this.setState({topologyStatus: status});
           } else {
             TopologyREST.deployTopology(this.topologyId, this.versionId)
@@ -425,9 +428,10 @@ class TopologyEditorContainer extends Component {
                   FSReactToastr.error(
                     <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
                   let status = this.topologyMetric.status || 'NOT RUNNING';
-                  document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay displayNone";
+                  this.refs.deployLoadingModal.hide();
                   this.setState({topologyStatus: status});
                 } else {
+                  this.refs.deployLoadingModal.hide();
                   FSReactToastr.success(<strong>Topology Deployed Successfully</strong>);
                   this.lastUpdatedTime = new Date(topology.timestamp);
                   this.setState({altFlag: !this.state.altFlag});
@@ -454,7 +458,6 @@ class TopologyEditorContainer extends Component {
                             description: ""
                           });
                           let status = this.topologyMetric.status || '';
-                          document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay displayNone";
                           this.setState({
                             topologyMetric: this.topologyMetric,
                             isAppRunning: true,
@@ -705,6 +708,7 @@ class TopologyEditorContainer extends Component {
     }
   }
   render() {
+    const {progressCount,progressBarColor} = this.state;
     let nodeType = this.node ? this.node.currentType : '';
     return (
       <BaseContainer ref="BaseContainer" routes={this.props.routes} onLandingPage="false" breadcrumbData={this.breadcrumbData} headerContent={this.getTopologyHeader()}>
@@ -809,6 +813,15 @@ class TopologyEditorContainer extends Component {
             ref="EdgeConfig"
             data={this.edgeConfigData}
           />
+        </Modal>
+        <Modal ref="deployLoadingModal"
+          hideHeader={true}
+          hideFooter={true}
+        >
+          <AnimatedLoader
+            progressBar={progressCount}
+            progressBarColor={progressBarColor}
+            />
         </Modal>
       </BaseContainer>
     )

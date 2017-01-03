@@ -15,6 +15,7 @@ import state from '../app_state';
 import ServicePoolContainer  from '../containers/Service/ServicePoolContainer';
 import EnvironmentContainer from '../containers/Environment/EnvironmentContainer';
 import ModelRegistryContainer from '../containers/ModelRegistry/ModelRegistryContainer';
+import ComponentDefinition from '../containers/Configuration/ComponentDefinition';
 
 const onEnter = (nextState, replace, callback) => {
 	var sidebarRoute = nextState.routes[1];
@@ -43,6 +44,7 @@ export default (
   <Route path="service-pool" name="Service Pool" component={ServicePoolContainer} onEnter={onEnter}/>
   <Route path="environments" name="Environments" component={EnvironmentContainer} onEnter={onEnter}/>
   <Route path="model-registry" name="Model Registry" component={ModelRegistryContainer} onEnter={onEnter}/>
+  <Route path="component-definition" name="Component Definition" component={ComponentDefinition} onEnter={onEnter}/>
   </Route>
 
 )

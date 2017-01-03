@@ -327,7 +327,15 @@ const TopologyREST = {
                         .then( (response) => {
 				return response.json();
                         })
-        }
+        },putComponentDefination(type,id,options) {
+      options = options || {};
+      options.method = options.method || 'PUT';
+        let url = baseUrl+'streams/componentbundles/'+type+'/'+id;
+        return fetch(url, options)
+        .then( (response) => {
+            return response.json();
+          })
+    }
 }
 
 export default TopologyREST
