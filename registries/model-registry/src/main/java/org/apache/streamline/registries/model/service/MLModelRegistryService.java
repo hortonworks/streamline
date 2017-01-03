@@ -67,7 +67,7 @@ public final class MLModelRegistryService {
     }
 
     public MLModelInfo addModelInfo(
-            MLModelInfo modelInfo, InputStream pmmlInputStream, String fileName) throws IOException {
+            MLModelInfo modelInfo, InputStream pmmlInputStream, String fileName) throws IOException, SAXException, JAXBException{
         if (modelInfo.getId() == null) {
             modelInfo.setId(storageManager.nextId(ML_MODEL_NAME_SPACE));
         }
@@ -85,7 +85,7 @@ public final class MLModelRegistryService {
     public MLModelInfo addOrUpdateModelInfo(
             Long modelId, MLModelInfo modelInfo,
             InputStream pmmlInputStream,
-            String fileName) throws IOException {
+            String fileName) throws IOException, SAXException, JAXBException {
         modelInfo.setId(modelId);
         modelInfo.setTimestamp(System.currentTimeMillis());
         modelInfo.setPmml(IOUtils.toString(pmmlInputStream, Charset.defaultCharset()));
@@ -127,9 +127,12 @@ public final class MLModelRegistryService {
     }
 
     public List<MLModelField> getModelOutputFields(MLModelInfo modelInfo) throws IOException, SAXException, JAXBException {
-        final List<MLModelField> fieldNames = new ArrayList<>();
-        PMMLManager pmmlManager = new PMMLManager(
-                IOUtil.unmarshal(new ByteArrayInputStream(modelInfo.getPmml().getBytes())));
+        return doGetOutputFieldsForPMMLStream(modelInfo.getPmml());
+    }
+
+    private List<MLModelField> doGetOutputFieldsForPMMLStream(String pmmlContents) throws SAXException, JAXBException {
+        List<MLModelField> fieldNames = new ArrayList<>();
+        PMMLManager pmmlManager = new PMMLManager(IOUtil.unmarshal(new ByteArrayInputStream(pmmlContents.getBytes())));
         Evaluator modelEvaluator = (ModelEvaluator<?>) pmmlManager.getModelManager(null, ModelEvaluatorFactory.getInstance());
         modelEvaluator.getPredictedFields().forEach((f) -> fieldNames.add(getModelField(modelEvaluator.getDataField(f))));
 
@@ -141,13 +144,17 @@ public final class MLModelRegistryService {
                 fieldNames.add(getModelField(outputField));
             }
         });
+
         return fieldNames;
     }
 
     public List<MLModelField> getModelInputFields(MLModelInfo modelInfo) throws IOException, SAXException, JAXBException {
+        return doGetInputFieldsFromPMMLStream(modelInfo.getPmml());
+    }
+
+    private List<MLModelField> doGetInputFieldsFromPMMLStream(String pmmlContents) throws SAXException, JAXBException {
         final List<MLModelField> fieldNames = new ArrayList<>();
-        PMMLManager pmmlManager = new PMMLManager(
-                IOUtil.unmarshal(new ByteArrayInputStream(modelInfo.getPmml().getBytes())));
+        PMMLManager pmmlManager = new PMMLManager(IOUtil.unmarshal(new ByteArrayInputStream(pmmlContents.getBytes())));
         Evaluator modelEvaluator = (ModelEvaluator<?>) pmmlManager.getModelManager(null, ModelEvaluatorFactory.getInstance());
         for (FieldName predictedField: modelEvaluator.getActiveFields()) {
             fieldNames.add(getModelField(modelEvaluator.getDataField(predictedField)));
@@ -174,7 +181,12 @@ public final class MLModelRegistryService {
         return new MLModelField(dataField.getName().getValue(), dataField.getDataType().toString());
     }
 
-    private void validateModelInfo(MLModelInfo modelInfo) {
+    private void validateModelInfo(MLModelInfo modelInfo) throws SAXException, JAXBException {
+        List<MLModelField> outputFields = doGetOutputFieldsForPMMLStream(modelInfo.getPmml());
+        if (outputFields.isEmpty()) {
+            throw new RuntimeException(
+                    String.format("PMML File %s does not support empty output", modelInfo.getUploadedFileName()));
+        }
         StorageUtils.ensureUnique(modelInfo, this::listModelInfo, QueryParam.params(
                 MLModelInfo.NAME, modelInfo.getName()));
     }
