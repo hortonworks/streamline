@@ -324,22 +324,22 @@
   background-color: #7A9E9F;
 }
 .wizard-card[data-color="green"] .picture:hover {
-  border-color: #7AC29A;
+  border-color: #3eae4a;
 }
 .wizard-card[data-color="green"] .nav-pills > li.active > a:after {
-  background-color: #7AC29A;
+  background-color: #3eae4a;
 }
 .wizard-card[data-color="green"] .nav-pills > li.active > a {
-  color: #7AC29A;
+  color: #3eae4a;
 }
 .wizard-card[data-color="green"] .nav-pills .icon-circle.checked {
-  border-color: #7AC29A;
+  border-color: #3eae4a;
 }
 .wizard-card[data-color="green"] .choice.active .card-checkboxes {
-  color: #7AC29A;
+  color: #3eae4a;
 }
 .wizard-card[data-color="green"] .wizard-navigation .progress-bar {
-  background-color: #7AC29A;
+  background-color: #3eae4a;
 }
 .wizard-card[data-color="blue"] .picture:hover {
   border-color: #68B3C8;

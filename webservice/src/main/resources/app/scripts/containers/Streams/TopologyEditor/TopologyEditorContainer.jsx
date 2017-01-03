@@ -183,7 +183,7 @@ class TopologyEditorContainer extends Component {
     unknown: '',
     bundleArr:null,
     progressCount: 0,
-    progressBarColor : 'red'
+    progressBarColor : 'green'
   }
 
   fetchData(versionId){
@@ -751,11 +751,11 @@ class TopologyEditorContainer extends Component {
               <div className="topology-footer">
                 {this.state.isAppRunning ?
                   <OverlayTrigger key={2} placement="top" overlay={<Tooltip id="tooltip">Kill</Tooltip>}>
-                    <a href="javascript:void(0);" className="hb lg danger pull-right" onClick={this.killTopology.bind(this)}><i className={this.state.topologyStatus === 'KILLING...' ? "fa fa-spinner fa-spin": "fa fa-times"}></i></a>
+                    <a href="javascript:void(0);" className="hb lg danger pull-right" onClick={this.killTopology.bind(this)}><i className="fa fa-times"></i></a>
                   </OverlayTrigger>
                   : (this.state.unknown !== "UNKNOWN")
                     ? <OverlayTrigger key={3} placement="top" overlay={<Tooltip id="tooltip">Run</Tooltip>}>
-                        <a href="javascript:void(0);" className="hb lg success pull-right" onClick={this.deployTopology.bind(this)}><i className={this.state.topologyStatus === 'DEPLOYING...'? "fa fa-spinner fa-spin" : "fa fa-paper-plane"}></i></a>
+                        <a href="javascript:void(0);" className="hb lg success pull-right" onClick={this.deployTopology.bind(this)}><i className="fa fa-paper-plane"></i></a>
                       </OverlayTrigger>
                     : ''
                 }
