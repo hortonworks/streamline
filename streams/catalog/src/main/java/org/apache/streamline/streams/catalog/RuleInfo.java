@@ -218,7 +218,11 @@ public class RuleInfo extends AbstractStorable {
     @JsonIgnore
     public Rule getRule() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(getParsedRuleStr(), Rule.class);
+        Rule rule = mapper.readValue(getParsedRuleStr(), Rule.class);
+        if (rule.getId() == null) {
+            rule.setId(getId());
+        }
+        return rule;
     }
 
     public Window getWindow() {
