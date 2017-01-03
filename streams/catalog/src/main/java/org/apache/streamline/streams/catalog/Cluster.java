@@ -17,6 +17,7 @@ public class Cluster extends AbstractStorable {
 
     private Long id;
     private String name;
+    private String ambariImportUrl = "";
     private String description = "";
     private Long timestamp;
 
@@ -29,6 +30,14 @@ public class Cluster extends AbstractStorable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getAmbariImportUrl() {
+        return ambariImportUrl;
+    }
+
+    public void setAmbariImportUrl(String ambariImportUrl) {
+        this.ambariImportUrl = ambariImportUrl;
     }
 
     /**
@@ -82,23 +91,20 @@ public class Cluster extends AbstractStorable {
 
         Cluster cluster = (Cluster) o;
 
-        if (getId() != null ? !getId().equals(cluster.getId()) : cluster.getId() != null)
+        if (getId() != null ? !getId().equals(cluster.getId()) : cluster.getId() != null) return false;
+        if (getName() != null ? !getName().equals(cluster.getName()) : cluster.getName() != null) return false;
+        if (getAmbariImportUrl() != null ? !getAmbariImportUrl().equals(cluster.getAmbariImportUrl()) : cluster.getAmbariImportUrl() != null)
             return false;
-        if (getName() != null ? !getName().equals(cluster.getName()) : cluster.getName() != null)
+        if (getDescription() != null ? !getDescription().equals(cluster.getDescription()) : cluster.getDescription() != null)
             return false;
-        if (getDescription() != null ?
-            !getDescription().equals(cluster.getDescription()) :
-            cluster.getDescription() != null) return false;
-        return getTimestamp() != null ?
-            getTimestamp().equals(cluster.getTimestamp()) :
-            cluster.getTimestamp() == null;
-
+        return getTimestamp() != null ? getTimestamp().equals(cluster.getTimestamp()) : cluster.getTimestamp() == null;
     }
 
     @Override
     public int hashCode() {
         int result = getId() != null ? getId().hashCode() : 0;
         result = 31 * result + (getName() != null ? getName().hashCode() : 0);
+        result = 31 * result + (getAmbariImportUrl() != null ? getAmbariImportUrl().hashCode() : 0);
         result = 31 * result + (getDescription() != null ? getDescription().hashCode() : 0);
         result = 31 * result + (getTimestamp() != null ? getTimestamp().hashCode() : 0);
         return result;
@@ -109,8 +115,9 @@ public class Cluster extends AbstractStorable {
         return "Cluster{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
+                ", ambariImportUrl='" + ambariImportUrl + '\'' +
                 ", description='" + description + '\'' +
                 ", timestamp=" + timestamp +
-                "}";
+                '}';
     }
 }

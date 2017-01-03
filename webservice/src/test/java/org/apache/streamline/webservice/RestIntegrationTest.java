@@ -852,6 +852,7 @@ public class RestIntegrationTest {
         cluster.setDescription("test");
         cluster.setId(id);
         cluster.setName(name);
+        cluster.setAmbariImportUrl("http://localhost:8080/api/v1/clusters/streamline");
         cluster.setTimestamp(System.currentTimeMillis());
         return cluster;
     }

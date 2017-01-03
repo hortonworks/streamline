@@ -327,6 +327,7 @@ CREATE TABLE IF NOT EXISTS udfs (
 CREATE TABLE IF NOT EXISTS clusters (
   id BIGINT AUTO_INCREMENT NOT NULL,
   name VARCHAR(256) NOT NULL,
+  ambariImportUrl TEXT,
   description TEXT,
   timestamp BIGINT,
   PRIMARY KEY (id)
