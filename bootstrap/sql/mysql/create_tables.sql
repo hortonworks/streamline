@@ -212,9 +212,8 @@ CREATE TABLE IF NOT EXISTS topology_source_stream_mapping (
     versionId BIGINT NOT NULL,
     streamId BIGINT NOT NULL,
     PRIMARY KEY (sourceId, versionId, streamId),
-    FOREIGN KEY (sourceId) REFERENCES topology_sources(id),
-    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id),
-    FOREIGN KEY (streamId) REFERENCES streaminfo(id)
+    FOREIGN KEY (sourceId, versionId) REFERENCES topology_sources(id, versionId),
+    FOREIGN KEY (streamId, versionId) REFERENCES streaminfo(id, versionId)
 );
 
 CREATE TABLE IF NOT EXISTS topology_sinks (
@@ -246,9 +245,8 @@ CREATE TABLE IF NOT EXISTS topology_processor_stream_mapping (
     versionId BIGINT NOT NULL,
     streamId BIGINT NOT NULL,
     PRIMARY KEY (processorId, versionId, streamId),
-    FOREIGN KEY (processorId) REFERENCES topology_processors(id),
-    FOREIGN KEY (versionId) REFERENCES topology_versioninfos(id),
-    FOREIGN KEY (streamId) REFERENCES streaminfo(id)
+    FOREIGN KEY (processorId, versionId) REFERENCES topology_processors(id, versionId),
+    FOREIGN KEY (streamId, versionId) REFERENCES streaminfo(id, versionId)
 );
 
 CREATE TABLE IF NOT EXISTS topology_edges (
