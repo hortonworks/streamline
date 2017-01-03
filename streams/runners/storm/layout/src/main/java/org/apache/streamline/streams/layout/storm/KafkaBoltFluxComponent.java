@@ -1,5 +1,6 @@
 package org.apache.streamline.streams.layout.storm;
 
+import org.apache.streamline.streams.layout.TopologyLayoutConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,12 +66,14 @@ public class KafkaBoltFluxComponent extends AbstractFluxComponent {
         String[] propertyNames = {
             "bootstrap.servers", "buffer.memory", "compression.type", "retries", "batch.size", "client.id", "connections.max.idle.ms",
             "linger.ms", "max.block.ms", "max.request.size", "receive.buffer.bytes", "request.timeout.ms", "security.protocol", "send.buffer.bytes",
-            "timeout.ms", "block.on.buffer.full", "max.in.flight.requests.per.connection", "metadata.fetch.timeout.ms", "metadata.max.age.ms", "reconnect.backoff.ms", "retry.backoff.ms"
+            "timeout.ms", "block.on.buffer.full", "max.in.flight.requests.per.connection", "metadata.fetch.timeout.ms", "metadata.max.age.ms",
+            "reconnect.backoff.ms", "retry.backoff.ms", "schema.registry.url"
         };
         String[] fieldNames = {
             "bootstrapServers", "bufferMemory", "compressionType", "retries", "batchSize", "clientId", "maxConnectionIdle",
             "lingerTime", "maxBlock", "maxRequestSize", "receiveBufferSize", "requestTimeout", "securityProtocol", "sendBufferSize",
-            "timeout", "blocKOnBufferFull", "maxInflighRequests", "metadataFetchTimeout", "metadataMaxAge", "reconnectBackoff", "retryBackoff"
+            "timeout", "blocKOnBufferFull", "maxInflighRequests", "metadataFetchTimeout", "metadataMaxAge", "reconnectBackoff", "retryBackoff",
+            TopologyLayoutConstants.SCHEMA_REGISTRY_URL
         };
         List<String> methodNames = new ArrayList<>();
         List args = new ArrayList<>();

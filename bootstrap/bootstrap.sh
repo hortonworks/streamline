@@ -74,7 +74,7 @@ run_cmd $update_storm_version_command
 
 # === Source ===
 add_bundle /streams/componentbundles/SOURCE $bootstrap_dir/kafka-source-topology-component.json
-add_bundle /streams/componentbundles/SOURCE $bootstrap_dir/hdfs-sink-topology-component.json
+add_bundle /streams/componentbundles/SOURCE $bootstrap_dir/hdfs-source-topology-component.json
 # === Processor ===
 add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/rule-topology-component.json
 add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/window-topology-component.json
@@ -83,7 +83,7 @@ add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/join-bolt-topology
 add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/model-topology-component.json
 # === Sink ===
 add_bundle /streams/componentbundles/SINK $bootstrap_dir/hdfs-sink-topology-component.json
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/hbase-topology-component.json
+add_bundle /streams/componentbundles/SINK $bootstrap_dir/hbase-sink-topology-component.json
 add_bundle /streams/componentbundles/SINK $bootstrap_dir/notification-topology-component.json
 add_bundle /streams/componentbundles/SINK $bootstrap_dir/opentsdb-sink-topology-component.json
 add_bundle /streams/componentbundles/SINK $bootstrap_dir/jdbc-sink-topology-component.json

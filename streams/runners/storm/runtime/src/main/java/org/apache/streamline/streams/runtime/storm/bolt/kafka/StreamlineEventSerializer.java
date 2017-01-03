@@ -20,6 +20,7 @@ public class StreamlineEventSerializer implements Serializer<StreamlineEvent> {
 
     private static final String SCHEMA_KEY = "schema";
     private static final String VALUE_KEY = "value";
+    private static final String SCHEMA_NAMESPACE = "com.hortonworks.registries";
     private final AvroSnapshotSerializer avroSnapshotSerializer;
     private SchemaCompatibility compatibility;
 
@@ -38,7 +39,7 @@ public class StreamlineEventSerializer implements Serializer<StreamlineEvent> {
         if (streamlineEvent == null || streamlineEvent.isEmpty()) {
             return null;
         } else {
-            return avroSnapshotSerializer.serialize(getAvroGenericRecord(streamlineEvent), createSchemaMetadata(topic));
+            return avroSnapshotSerializer.serialize(getAvroGenericRecord(streamlineEvent, topic), createSchemaMetadata(topic));
         }
     }
 
@@ -61,15 +62,15 @@ public class StreamlineEventSerializer implements Serializer<StreamlineEvent> {
         return Utils.getSchemaKey(topic, isKey);
     }
 
-    private static GenericRecord getAvroGenericRecord (Map<String, Object> streamlineEvent) {
+    private static GenericRecord getAvroGenericRecord (Map<String, Object> streamlineEvent, String topic) {
         GenericRecord result = null;
         if (streamlineEvent != null && !streamlineEvent.isEmpty()) {
-            result = (GenericRecord) getAvroSchemaAndValue(streamlineEvent).get(VALUE_KEY);
+            result = (GenericRecord) getAvroSchemaAndValue(streamlineEvent, SCHEMA_NAMESPACE, topic).get(VALUE_KEY);
         }
         return result;
     }
 
-    private static Map<String, Object> getAvroSchemaAndValue (Object input) {
+    private static Map<String, Object> getAvroSchemaAndValue (Object input, String namespace, String schemaName) {
         Map<String, Object> result = new HashMap<>();
         if (input == null) {
             result.put(SCHEMA_KEY, org.apache.avro.Schema.create(org.apache.avro.Schema.Type.NULL));
@@ -103,11 +104,12 @@ public class StreamlineEventSerializer implements Serializer<StreamlineEvent> {
             List<Schema.Field> fields = new ArrayList<>();
             List values = new ArrayList<>();
             for (Map.Entry<String, Object> entry: ((Map<String, Object>) input).entrySet()) {
-                Map<String, Object> fieldResult = getAvroSchemaAndValue(entry.getValue());
+                Map<String, Object> fieldResult = getAvroSchemaAndValue(entry.getValue(), namespace + "." + schemaName, entry.getKey());
                 fields.add(new org.apache.avro.Schema.Field(entry.getKey(), (org.apache.avro.Schema) fieldResult.get(SCHEMA_KEY), null, null));
                 values.add(fieldResult.get(VALUE_KEY));
             }
-            org.apache.avro.Schema recordSchema = org.apache.avro.Schema.createRecord(fields);
+            org.apache.avro.Schema recordSchema = org.apache.avro.Schema.createRecord(schemaName, null, namespace, false);
+            recordSchema.setFields(fields);
             result.put(SCHEMA_KEY, recordSchema);
             GenericRecord genericRecord = new GenericData.Record(recordSchema);
             for (int i = 0; i < fields.size(); ++i) {
@@ -121,7 +123,7 @@ public class StreamlineEventSerializer implements Serializer<StreamlineEvent> {
             // null name. We could potentiall hack it by plugging in a dummy name like arrayfield, but seems hacky so not taking that path
             List<Map<String, Object>> elementResults = new ArrayList<>();
             for (Object inputValue: (List) input) {
-                elementResults.add(getAvroSchemaAndValue(inputValue));
+                elementResults.add(getAvroSchemaAndValue(inputValue, namespace, schemaName));
             }
             org.apache.avro.Schema arraySchema = org.apache.avro.Schema.createArray((org.apache.avro.Schema) elementResults.get(0).get(SCHEMA_KEY));
             result.put(SCHEMA_KEY, arraySchema);
