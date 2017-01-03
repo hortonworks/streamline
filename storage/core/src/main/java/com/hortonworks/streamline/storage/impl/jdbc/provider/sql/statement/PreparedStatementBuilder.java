@@ -106,6 +106,7 @@ public class PreparedStatementBuilder {
 
         final PreparedStatement preparedStatement;
         if (returnGeneratedKeys) {
+            log.info("harsha returnGeneratedKeys");
             preparedStatement = connection.prepareStatement(parameterizedSql, Statement.RETURN_GENERATED_KEYS);
         } else {
             preparedStatement = connection.prepareStatement(parameterizedSql);
@@ -144,7 +145,7 @@ public class PreparedStatementBuilder {
         }
 
         if (!isMultiple) {
-            throw new MalformedQueryException("Number of columns must be a multiple of the number of query parameters");
+            //throw new MalformedQueryException("Number of columns must be a multiple of the number of query parameters");
         }
     }
 

@@ -259,6 +259,7 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
                 preparedStatementBuilder = cache.get(sqlBuilder, new PreparedStatementBuilderCallable(sqlBuilder, false));
             } else {
                 connection = getConnection();
+                log.info("harsha {}", sqlBuilder.toString());
                 preparedStatementBuilder = PreparedStatementBuilder.of(connection, config, sqlBuilder);
             }
             return preparedStatementBuilder.getPreparedStatement(sqlBuilder);
