@@ -122,7 +122,8 @@ export default class WindowingAggregateNodeForm extends Component {
 							streamsList: streamsList,
 							keysList: JSON.parse(JSON.stringify(fields)),
 							parallelism: configFields.parallelism || 1,
-							functionListArr: udfList
+                                                        functionListArr: udfList,
+              outputArr : this.outputData
 						}
 						//Find output streams and set appropriate fields
 						//else create streams with blank values
@@ -229,14 +230,9 @@ export default class WindowingAggregateNodeForm extends Component {
   }
 
 	handleKeysChange(arr){
-		let {selectedKeys, outputStreamFields} = this.state;
+                let {outputArr} = this.state;
 		let tempArr = [];
-		outputStreamFields.map(field=>{
-			if(selectedKeys.indexOf(field.name) === -1){
-				tempArr.push(field);
-			}
-		})
-		tempArr.push(...arr);
+    tempArr = _.concat(arr,outputArr);
 		this.streamData.fields = tempArr;
 		let keys = [];
 		if(arr && arr.length){
@@ -286,7 +282,6 @@ export default class WindowingAggregateNodeForm extends Component {
 	}
 
 	handleFieldChange(name, index, obj){
-    const {outputArr} = this.state;
 		let fieldsArr = this.state.outputFieldsArr;
 		let oldData = JSON.parse(JSON.stringify(fieldsArr[index]));
 		if(name === 'outputFieldName'){
@@ -334,18 +329,15 @@ export default class WindowingAggregateNodeForm extends Component {
         obj.type = this.getReturnType(newDataObj.functionName, fieldObj);
       }
     } else {
-      let o = this.outputData.filter((field)=>{return field.name === newDataObj.outputFieldName;});
-      if(o.length === 0){
-        let fieldObj = this.state.keysList.find((field)=>{return field.name == newDataObj.args});
-        if(index === this.outputData.length){
-          this.outputData.push({
-            name: newDataObj.outputFieldName,
-            type: this.getReturnType(newDataObj.functionName, fieldObj),
-            optional: false
-          })
-        }else{
-          this.outputData[index].name = newDataObj.outputFieldName;
-        }
+      let fieldObj = this.state.keysList.find((field)=>{return field.name == newDataObj.args});
+      if(index === this.outputData.length){
+        this.outputData.push({
+          name: newDataObj.outputFieldName,
+          type: this.getReturnType(newDataObj.functionName, fieldObj),
+          optional: false
+        })
+      }else{
+        this.outputData[index].name = newDataObj.outputFieldName;
       }
     }
 
@@ -367,14 +359,12 @@ export default class WindowingAggregateNodeForm extends Component {
 			return o.name === functionName;
 		})
 		if(obj){
-			if(obj.returnType){
+                        if(obj.argTypes){
           if(fieldObj){
-            let argList = obj.argTypes[0].includes(fieldObj.type);
+            let argList = obj.argTypes.toString().includes(fieldObj.type);
             (argList) ? this.setState({argumentError : false}) : this.setState({argumentError : true})
           }
-				return obj.returnType;
-			} else {
-				return fieldObj.type;
+                                return obj.returnType || fieldObj.type;
 			}
 		} else if(fieldObj){
 			return fieldObj.type;

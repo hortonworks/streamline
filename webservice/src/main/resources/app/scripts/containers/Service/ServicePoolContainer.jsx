@@ -201,8 +201,20 @@ class ServicePoolContainer extends Component{
   }
 
   handleUpdateCluster = (ID) => {
-    this.setState({showFields : true,idCheck : +ID});
-    this.adminFormModel.show();
+    ClusterREST.getCluster(ID)
+    .then((entity) => {
+      if (entity.responseMessage !== undefined) {
+          FSReactToastr.error(
+              <CommonNotification flag="error" content={entity.responseMessage}/>, '', toastOpt)
+      } else {
+          const url = entity.cluster.ambariImportUrl;
+          const tempObj = Object.assign(this.state.clusterData,{ambariUrl : url});
+          this.setState({showFields : true,idCheck : +ID,clusterData : tempObj}, () => {
+            this.adminFormModel.show();
+          });
+      }
+    });
+
   }
 
   handleDeleteCluster = (id) => {
@@ -284,10 +296,11 @@ class ServicePoolContainer extends Component{
 
   fetchClusterDetail = () => {
     const { clusterData,refIdArr} = this.state;
-    const {clusterName} = clusterData;
+    const {clusterName,ambariUrl} = clusterData;
     let data = {
       name : clusterName,
-      description : "This is an auto generated description"
+      description : "This is an auto generated description",
+      ambariImportUrl : ambariUrl
     };
     ClusterREST.postCluster({body : JSON.stringify(data)})
       .then((cluster) => {
@@ -436,7 +449,8 @@ class ServicePoolContainer extends Component{
 
   render(){
     const {routes} = this.props;
-    const {showInputErr,entities,showFields,fetchLoader,pageSize,pageIndex,refIdArr,loader} = this.state;
+    const {showInputErr,entities,showFields,fetchLoader,pageSize,pageIndex,refIdArr,loader,clusterData} = this.state;
+    const {ambariUrl} = clusterData;
     const splitData = _.chunk(entities,pageSize) || [];
     const adminFormFields = () =>{
       return <form className="modal-form config-modal-form" ref="modelForm">
@@ -449,6 +463,8 @@ class ServicePoolContainer extends Component{
                     placeholder="http://ambari_host:port/api/v1/cluster/CLUSTER_NAME"
                     ref="userUrl"
                     autoFocus="true"
+                    disabled={true}
+                    value={ambariUrl}
                   />
                   <p className="text-danger"></p>
               </div>
