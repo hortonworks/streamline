@@ -319,6 +319,7 @@ public class Schema implements Serializable {
         }
 
         public NestedField(NestedField other) {
+            super(other);
             fields = other.fields.stream().map(Field::copy).collect(Collectors.toList());
         }
 
@@ -390,6 +391,7 @@ public class Schema implements Serializable {
         }
 
         public ArrayField(ArrayField other) {
+            super(other);
             members = other.members.stream().map(Field::copy).collect(Collectors.toList());
         }
 
