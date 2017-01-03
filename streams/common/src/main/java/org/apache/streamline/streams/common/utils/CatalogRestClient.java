@@ -16,20 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.catalog;
+package org.apache.streamline.streams.common.utils;
 
-import org.apache.streamline.common.JsonClientUtil;
-import org.apache.streamline.common.exception.WrappedWebApplicationException;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import java.io.InputStream;
-import java.util.List;
 
 /**
  * TODO: All the configs should be read from some config file.
@@ -54,11 +49,6 @@ public class CatalogRestClient {
         client.register(MultiPartFeature.class);
     }
 
-    public NotifierInfo getNotifierInfo(String notifierName) {
-        return getEntities(client.target(String.format("%s/%s/?name=%s", rootCatalogURL, NOTIFIER_URL, notifierName)),
-                            NotifierInfo.class).get(0);
-    }
-
     public InputStream getFile(Long jarId) {
         return getInputStream(jarId.toString(), FILE_DOWNLOAD_URL);
     }
@@ -71,9 +61,5 @@ public class CatalogRestClient {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
-    }
-
-    private <T> List<T> getEntities(WebTarget target, Class<T> clazz) {
-        return JsonClientUtil.getEntities(target, "entities", clazz);
     }
 }

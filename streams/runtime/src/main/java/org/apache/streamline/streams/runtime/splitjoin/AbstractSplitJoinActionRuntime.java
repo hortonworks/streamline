@@ -20,7 +20,7 @@ package org.apache.streamline.streams.runtime.splitjoin;
 
 import org.apache.streamline.common.Constants;
 import org.apache.streamline.common.util.ProxyUtil;
-import org.apache.streamline.streams.catalog.CatalogRestClient;
+import org.apache.streamline.streams.common.utils.CatalogRestClient;
 import org.apache.streamline.streams.layout.component.rule.action.Action;
 import org.apache.streamline.streams.runtime.rule.action.AbstractActionRuntime;
 import org.apache.streamline.streams.runtime.rule.action.ActionRuntime;

@@ -23,7 +23,7 @@ import com.google.common.collect.Sets;
 import org.apache.streamline.common.Constants;
 import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.Result;
-import org.apache.streamline.streams.catalog.CatalogRestClient;
+import org.apache.streamline.streams.common.utils.CatalogRestClient;
 import org.apache.streamline.streams.common.StreamlineEventImpl;
 import org.apache.streamline.streams.layout.Transform;
 import org.apache.streamline.streams.layout.component.impl.splitjoin.JoinAction;
