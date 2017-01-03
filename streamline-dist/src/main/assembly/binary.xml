@@ -74,6 +74,20 @@
             </includes>
         </fileSet>
         <fileSet>
+            <directory>${project.basedir}./storage/tool/target/dependency</directory>
+            <outputDirectory>/bootstrap/lib</outputDirectory>
+            <includes>
+                <include>mariadb-java-client*</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>${project.basedir}./storage/core/target/dependency</directory>
+            <outputDirectory>/libs</outputDirectory>
+            <includes>
+                <include>mariadb-java-client*</include>
+            </includes>
+        </fileSet>
+        <fileSet>
             <directory>${project.basedir}./streams/notifier/target</directory>
             <outputDirectory>/bootstrap/notifier-jars</outputDirectory>
             <includes>
