@@ -18,25 +18,40 @@
 package org.apache.streamline.streams.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Preconditions;
 import org.apache.streamline.common.Schema;
 import org.apache.streamline.streams.StreamlineEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- *
- */
-public class AvroStreamsSchemaConverter {
-    private static final Logger LOG = LoggerFactory.getLogger(AvroStreamsSchemaConverter.class);
+import static org.apache.streamline.streams.StreamlineEvent.PRIMITIVE_PAYLOAD_FIELD;
 
-    public static String convertAvro(String schemaText) throws JsonProcessingException {
-        org.apache.avro.Schema avroSchema = new org.apache.avro.Schema.Parser().parse(schemaText);
-        LOG.debug("Generating streams schema for given avro schema [{}]", schemaText);
+/**
+ * Utility class to convert
+ * <ul>
+ * <li> streamline schema to avro schema </li>
+ * <li> avro schema to streamline schema </li>
+ * </ul>
+ */
+public class AvroStreamlineSchemaConverter {
+    private static final Logger LOG = LoggerFactory.getLogger(AvroStreamlineSchemaConverter.class);
+
+    /**
+     * Converts the given {@code avroSchemaText} to streamline schema {@link Schema}.
+     * @param avroSchemaText
+     * @return streamline schema for the given {@code avroSchemaText}
+     * @throws JsonProcessingException if any error occurs in generating json for generated streams schema fields.
+     */
+    public static String convertAvroSchemaToStreamlineSchema(String avroSchemaText) throws JsonProcessingException {
+        org.apache.avro.Schema avroSchema = new org.apache.avro.Schema.Parser().parse(avroSchemaText);
+        LOG.debug("Generating streams schema for given avro schema [{}]", avroSchemaText);
 
         Schema.Field field = generateStreamsSchemaField(avroSchema);
         List<Schema.Field> effFields;
@@ -48,6 +63,97 @@ public class AvroStreamsSchemaConverter {
         }
 
         return new ObjectMapper().writeValueAsString(effFields);
+    }
+
+    /**
+     * Converts the given {@code streamlineSchemaText} to avro schema.
+     * @param streamlineSchemaText
+     * @return avro schema for the given streamline schema
+     * @throws IOException if any IO error occurs
+     */
+    public static String convertStreamlineSchemaToAvroSchema(String streamlineSchemaText) throws IOException {
+        List<Schema.Field> fields = new ObjectMapper().readValue(streamlineSchemaText, new TypeReference<List<Schema.Field>>() {});
+        if(fields == null || fields.isEmpty()) {
+            throw new IllegalArgumentException("No fields in the given streamlineSchemaText");
+        }
+
+        org.apache.avro.Schema avroSchema;
+        // check for primitive type schema
+        if(fields.size() == 1 && PRIMITIVE_PAYLOAD_FIELD.equals(fields.iterator().next().getName())) {
+            avroSchema = generateAvroSchema(fields.iterator().next());
+        } else {
+
+            Schema schema = Schema.of(fields);
+
+            // current abstraction of streamline schema does not really map exactly like avro.
+            // streamline schema always takes root element of schema as list of fields and those fields can be either primitive or complex.
+            // todo get a parity of streamline schema and avro for root representation
+            List<org.apache.avro.Schema.Field> avroFields = new ArrayList<>();
+            for (Schema.Field field : schema.getFields()) {
+                LOG.info("Generating avro schema for field [{}]", field);
+                avroFields.add(new org.apache.avro.Schema.Field(field.getName(), generateAvroSchema(field), null, null));
+            }
+            avroSchema = org.apache.avro.Schema.createRecord("root", null, null, false);
+            avroSchema.setFields(avroFields);
+        }
+
+        return avroSchema.toString();
+    }
+
+    private static org.apache.avro.Schema generateAvroSchema(Schema.Field field) {
+        Preconditions.checkNotNull(field, "Given field can not be null");
+
+        org.apache.avro.Schema avroSchema = null;
+        switch (field.getType()) {
+            case BOOLEAN:
+                avroSchema = org.apache.avro.Schema.create(org.apache.avro.Schema.Type.BOOLEAN);
+                break;
+            case BYTE:
+                avroSchema = org.apache.avro.Schema.create(org.apache.avro.Schema.Type.INT);
+                break;
+            case SHORT:
+                avroSchema = org.apache.avro.Schema.create(org.apache.avro.Schema.Type.INT);
+                break;
+            case INTEGER:
+                avroSchema = org.apache.avro.Schema.create(org.apache.avro.Schema.Type.INT);
+                break;
+            case LONG:
+                avroSchema = org.apache.avro.Schema.create(org.apache.avro.Schema.Type.LONG);
+                break;
+            case FLOAT:
+                avroSchema = org.apache.avro.Schema.create(org.apache.avro.Schema.Type.FLOAT);
+                break;
+            case DOUBLE:
+                avroSchema = org.apache.avro.Schema.create(org.apache.avro.Schema.Type.DOUBLE);
+                break;
+            case STRING:
+                avroSchema = org.apache.avro.Schema.create(org.apache.avro.Schema.Type.STRING);
+                break;
+            case BINARY:
+                avroSchema = org.apache.avro.Schema.create(org.apache.avro.Schema.Type.BYTES);
+                break;
+            case NESTED:
+                List<org.apache.avro.Schema.Field> avroFields = new ArrayList<>();
+                for (Schema.Field innerField : ((Schema.NestedField) field).getFields()) {
+                    avroFields.add(new org.apache.avro.Schema.Field(innerField.getName(), generateAvroSchema(innerField), null, null));
+                }
+                avroSchema = org.apache.avro.Schema.createRecord(field.getName(), null, null, false);
+                avroSchema.setFields(avroFields);
+                break;
+            case ARRAY:
+                // for array even though we(Schema in streamline registry) support different types of elements in an array, avro expects an array
+                // schema to have elements of same type. Hence, for now we will restrict array to have elements of same type. Other option is convert
+                // a  streamline Schema Array field to Record in avro. However, with that the issue is that avro Field constructor does not allow a
+                // null name. We could potentiall hack it by plugging in a dummy name like arrayfield, but seems hacky so not taking that path
+                avroSchema = org.apache.avro.Schema.createArray(generateAvroSchema(((Schema.ArrayField) field).getMembers().get(0)));
+                break;
+            default:
+                throw new IllegalArgumentException("Given schema type is not supported: " + field.getType());
+        }
+
+        LOG.debug("Generated avro schema for given streamline field [{}]: [{}]", field, avroSchema);
+
+        return avroSchema;
     }
 
     private static Schema.Field generateStreamsSchemaField(org.apache.avro.Schema avroSchema) {
@@ -107,8 +213,8 @@ public class AvroStreamsSchemaConverter {
         }
 
         if (isPrimitive) {
-            effField = isOptional ? Schema.Field.optional(StreamlineEvent.PRIMITIVE_PAYLOAD_FIELD, fieldType)
-                    : Schema.Field.of(StreamlineEvent.PRIMITIVE_PAYLOAD_FIELD, fieldType);
+            effField = isOptional ? Schema.Field.optional(PRIMITIVE_PAYLOAD_FIELD, fieldType)
+                    : Schema.Field.of(PRIMITIVE_PAYLOAD_FIELD, fieldType);
         }
 
         return effField;
@@ -133,12 +239,16 @@ public class AvroStreamsSchemaConverter {
     }
 
     private static Schema.NestedField generateRecordSchema(org.apache.avro.Schema avroSchema) {
+        return generateRecordSchema(avroSchema, avroSchema.getName());
+    }
+
+    private static Schema.NestedField generateRecordSchema(org.apache.avro.Schema avroSchema, String name) {
         List<org.apache.avro.Schema.Field> avroFields = avroSchema.getFields();
         List<Schema.Field> fields = new ArrayList<>();
         for (org.apache.avro.Schema.Field avroField : avroFields) {
             if (avroField.schema().getType() == org.apache.avro.Schema.Type.RECORD) {
                 LOG.debug("Encountered record field and creating respective nested fields");
-                fields.add(generateRecordSchema(avroField.schema()));
+                fields.add(generateRecordSchema(avroField.schema(), avroField.name()));
             } else {
                 boolean isOptional = org.apache.avro.Schema.Type.UNION.equals(avroField.schema().getType());
                 Schema.Field field = isOptional ? Schema.Field.optional(avroField.name(), getStreamsSchemaFieldType(avroField.schema()))
@@ -147,7 +257,7 @@ public class AvroStreamsSchemaConverter {
             }
         }
 
-        return Schema.NestedField.optional(avroSchema.getName(), fields);
+        return Schema.NestedField.optional(name, fields);
     }
 
     private static Schema.Type getStreamsSchemaFieldType(org.apache.avro.Schema avroSchema) {
@@ -196,4 +306,5 @@ public class AvroStreamsSchemaConverter {
 
         return fieldType;
     }
+
 }
