@@ -83,7 +83,7 @@ public class StreamlineJPMMLModelRunner extends JPmmlModelRunner {
 
     private Map<String, List<Object>> toStreamLineEvents(Map<FieldName, ?> predScores) {
         Map<String, List<Object>> streamsToEvents = new HashMap<>();
-        final Map<String, Object> scoredVals = new HashMap<>();
+        final Map<String, Object> scoredVals = new LinkedHashMap<>();
 
         for (FieldName predictedField : getPredictedFields()) {
             Object targetValue = predScores.get(predictedField);
