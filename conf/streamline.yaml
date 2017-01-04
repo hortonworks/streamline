@@ -80,8 +80,7 @@ pivotConfiguration:
   name: "druid"
   type: "druid"
   host: "http://localhost:8082"
-#Temporary Pivot Configuration
-settingsLocation:
+ settingsLocation:
   location: file
   format: 'json'
   uri: 'data.json'

@@ -17,7 +17,8 @@ export default class TopologyConfigContainer extends Component {
         super(props)
         this.state = {
             formData: {},
-            formField: {}
+            formField: {},
+            fetchLoader : true
         }
         this.fetchData();
     }
@@ -26,23 +27,26 @@ export default class TopologyConfigContainer extends Component {
         const {topologyId, versionId} = this.props;
         let promiseArr = [
             TopologyREST.getTopologyConfig(),
-            TopologyREST.getTopology(topologyId, versionId)
+            TopologyREST.getTopologyWithoutMetrics(topologyId, versionId)
         ]
         Promise.all(promiseArr)
           .then( result => {
             const formField = result[0].entities[0].topologyComponentUISpecification;
-            const config = result[1].topology.config;
-            this.namespaceId = result[1].topology.namespaceId;
-            this.setState({formData : JSON.parse(config), formField : formField})
+            const config = result[1].config;
+            this.namespaceId = result[1].namespaceId;
+            this.setState({formData : JSON.parse(config), formField : formField,fetchLoader : false});
           }).catch(err => {
+            this.setState({fetchLoader : false});
             FSReactToastr.error(<CommonNotification flag="error" content={err.message}/>, '', toastOpt)
           })
     }
 
     validate(){
-        let validDataFlag = true;
-        if(!this.refs.Form.validate()){
-            validDataFlag = false;
+        let validDataFlag = false;
+        if(!this.state.fetchLoader){
+          if(this.refs.Form.validate()){
+              validDataFlag = true;
+          }
         }
         return validDataFlag;
     }
@@ -59,19 +63,27 @@ export default class TopologyConfigContainer extends Component {
     }
 
     render(){
-        const {formData,formField} = this.state;
+        const {formData,formField,fetchLoader} = this.state;
         let fields = Utils.genFields(formField.fields || [], [], formData);
 
         return(
             <div>
-                <Form
-                    ref="Form"
-                    FormData={formData}
-                    showRequired={null}
-                    className="modal-form config-modal-form"
-                >
-                    {fields}
-                </Form>
+              {
+                fetchLoader
+                ? <div className="col-sm-12">
+                      <div className="loading-img text-center" style={{marginTop : "150px"}}>
+                          <img src="styles/img/start-loader.gif" alt="loading" />
+                      </div>
+                  </div>
+                :  <Form
+                      ref="Form"
+                      FormData={formData}
+                      showRequired={null}
+                      className="modal-form config-modal-form"
+                  >
+                      {fields}
+                  </Form>
+              }
             </div>
         )
     }

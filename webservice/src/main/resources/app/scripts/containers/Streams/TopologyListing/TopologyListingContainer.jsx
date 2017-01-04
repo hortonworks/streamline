@@ -185,7 +185,7 @@ class TopologyItems extends Component {
                                             <i className="fa fa-square boxGap" style={{color : PieChartColor[v]}}></i>
                                             {Utils.secToMinConverter(d[Object.keys(d)[0]],"list")}
                                             <span>&nbsp;</span>
-                                            {Utils.ellipses(Object.keys(d)[0],9)}</h5>
+                                            {Utils.ellipses(Object.keys(d)[0],8)}</h5>
                                   })
                                 }
                             </div>

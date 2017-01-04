@@ -189,10 +189,12 @@ export default class SinkNodeForm extends Component {
     }
 
     validateData(){
-        let validDataFlag = true;
-        if(!this.refs.Form.validate()){
-            validDataFlag = false;
-            this.setState({activeTabKey: 1, showRequired: true});
+        let validDataFlag = false;
+        if(!this.state.fetchLoader){
+          if(this.refs.Form.validate()){
+              validDataFlag = true;
+              this.setState({activeTabKey: 1, showRequired: true});
+          }
         }
         return validDataFlag;
     }

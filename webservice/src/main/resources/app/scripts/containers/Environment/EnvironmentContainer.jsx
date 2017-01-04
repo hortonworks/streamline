@@ -63,11 +63,18 @@ class EnvironmentCards extends Component {
     super(props);
   }
 
+  checkRefId = (id) => {
+    const index = this.props.refIdArr.findIndex((x) => {
+      return x === id;
+    });
+    return index !== -1 ? true : false;
+  }
+
   onActionClick = (eventKey) => {
     this.props.nameSpaceClicked(eventKey, this.nameSpaceRef.dataset.id)
   }
   render(){
-    const {nameSpaceList, isLoading,clusterName,mapData} = this.props;
+    const {nameSpaceList,clusterName,mapData} = this.props;
     const ellipseIcon = <i className="fa fa-ellipsis-v"></i>;
     const {namespace,mappings = []} = nameSpaceList;
     const serviceCount = () => {
@@ -96,23 +103,33 @@ class EnvironmentCards extends Component {
                 </DropdownButton>
                 </div>
             </div>
-            <div className="service-title">
-              <h5 className="environment-title">{`Services (${serviceCount()})`}</h5>
-            </div>
-            <div className="service-body environment-body clearfix">
-              <Scrollbars style={{height: "500px" }}
-                  autoHide
-                  renderThumbHorizontal={props => <div {...props} style={{display : "none"}}/>}
-                  >
-                {
-                  _.keys(mappings).length === 0
-                    ? <div className="col-sm-12"><h4 className="text-center">No Mapping</h4></div>
-                    : _.keys(mappings).map((key , i) => {
-                         return <EnvironmentItems key={i} mapData={mappings[key]} name ={clusterName[key]} />
-                    })
-                }
-                </Scrollbars>
-            </div>
+            {
+              (this.checkRefId(namespace.id))
+              ? <div className="service-components">
+                  <div className="loading-img text-center">
+                      <img src="styles/img/start-loader.gif" alt="loading" style={{width : "100px",marginTop : "100px"}}/>
+                  </div>
+                </div>
+              : <div>
+                  <div className="service-title">
+                    <h5 className="environment-title">{`Services (${serviceCount()})`}</h5>
+                  </div>
+                  <div className="service-body environment-body clearfix">
+                    <Scrollbars style={{height: "500px" }}
+                        autoHide
+                        renderThumbHorizontal={props => <div {...props} style={{display : "none"}}/>}
+                        >
+                      {
+                        _.keys(mappings).length === 0
+                          ? <div className="col-sm-12"><h4 className="text-center">No Mapping</h4></div>
+                          : _.keys(mappings).map((key , i) => {
+                               return <EnvironmentItems key={i} mapData={mappings[key]} name ={clusterName[key]} />
+                          })
+                      }
+                      </Scrollbars>
+                  </div>
+                </div>
+            }
         </div>
       </div>
     )
@@ -124,16 +141,14 @@ class EnvironmentContainer extends Component{
     super(props)
     this.state = {
       entities : [],
-      isLoading: {
-          loader: false,
-          idCheck: ''
-      },
       fetchLoader : true,
       pageIndex : 0,
       pageSize : 5,
       clusterName : {},
       customMapData : [],
-      namespaceIdToEdit: null
+      namespaceIdToEdit: null,
+      refIdArr: [],
+      loader: false
     }
     this.fetchData();
   }
@@ -202,13 +217,14 @@ class EnvironmentContainer extends Component{
   }
 
   addEvtModelSaveClicked = () => {
+    const {namespaceIdToEdit} = this.state;
     const formData = this.EvtModelRef.handleSave();
+    let tempArr = _.cloneDeep(this.state.refIdArr);
     if(formData !== undefined){
-
       let promiseArr = [];
-      (!this.state.namespaceIdToEdit)
+      (!namespaceIdToEdit)
         ? promiseArr.push(EnvironmentREST.postNameSpace(null,{body : JSON.stringify(formData.obj)}))
-        : promiseArr.push(EnvironmentREST.putNameSpace(this.state.namespaceIdToEdit, {body : JSON.stringify(formData.obj)}));
+        : promiseArr.push(EnvironmentREST.putNameSpace(namespaceIdToEdit, {body : JSON.stringify(formData.obj)}));
 
       Promise.all(promiseArr)
         .then((result) => {
@@ -220,19 +236,30 @@ class EnvironmentContainer extends Component{
             formData.tempData.map(x =>{
               return x.namespaceId = entity.id;
             });
-            this.addEvtModel.hide();
+            tempArr.push(entity.id);
+            this.setState({refIdArr:tempArr},() => {this.addEvtModel.hide()});
             EnvironmentREST.postNameSpace(entity.id,{body : JSON.stringify(formData.tempData)})
               .then((mapping) => {
                 if (mapping.responseMessage !== undefined) {
-                    FSReactToastr.error(
-                        <CommonNotification flag="error" content={mapping.responseMessage}/>, '', toastOpt)
+                    (!namespaceIdToEdit) ? EnvironmentREST.deleteNameSpace(entity.id) : '';
+                    const tempDataArray = this.spliceTempArr(entity.id);
+                    this.setState({refIdArr : tempDataArray}, () => {
+                      let errorMsg = mapping.responseMessage;
+                      errorMsg = mapping.responseMessage.indexOf('Trying to modify mapping of streaming engine') !== -1
+                                  ? "Cannot change the stream engine while a topology is deployed in the same environment"
+                                  : mapping.responseMessage
+                      FSReactToastr.error(
+                          <CommonNotification flag="error" content={errorMsg}/>, '', toastOpt)
+                    })
                 } else{
-                  const nameSpaceEditId = this.state.namespaceIdToEdit;
-                  this.setState({fetchLoader : true}, () => {
+                  const nameSpaceId = namespaceIdToEdit;
+                  const tempDataArray = this.spliceTempArr(Number(entity.id || nameSpaceId));
+
+                  this.setState({fetchLoader : true,refIdArr : tempDataArray}, () => {
                     this.fetchData();
                     clearTimeout(clearTimer);
                     const clearTimer = setTimeout(() => {
-                      (nameSpaceEditId === null)
+                      (nameSpaceId === null)
                         ? FSReactToastr.success(<strong>Environment added successfully</strong>)
                         : FSReactToastr.success(<strong>Environment updated successfully</strong>);
                     },500);
@@ -243,6 +270,7 @@ class EnvironmentContainer extends Component{
         });
       }
   }
+
   pagePosition = (index) => {
     this.setState({pageIndex : index || 0})
   }
@@ -264,6 +292,17 @@ class EnvironmentContainer extends Component{
     this.setState({namespaceIdToEdit: id},()=>{
       this.addEvtModel.show();
     })
+  }
+
+  spliceTempArr = (id) => {
+    const tempArr = this.state.refIdArr;
+    const index = tempArr.findIndex((x) => {
+      return x === id;
+    });
+    if(index !== -1){
+      tempArr.splice(index , 1);
+    }
+    return tempArr;
   }
 
   handleDeleteNameSpace = (id) => {
@@ -309,7 +348,7 @@ class EnvironmentContainer extends Component{
   }
 
   render(){
-    const {entities,pageSize,pageIndex,fetchLoader,isLoading,clusterName, namespaceIdToEdit} = this.state;
+    const {entities,pageSize,pageIndex,fetchLoader,clusterName, namespaceIdToEdit,refIdArr,loader} = this.state;
     const {routes} = this.props;
     const splitData = _.chunk(entities,pageSize) || [];
     const modelTitle = <span>{namespaceIdToEdit === null ? "New " : "Edit "   }Environment{/* <i className="fa fa-info-circle"></i>*/}</span>
@@ -336,8 +375,9 @@ class EnvironmentContainer extends Component{
                   return <EnvironmentCards key={i}
                             nameSpaceList = {nameSpaceList}
                             nameSpaceClicked = {this.nameSpaceClicked}
-                            isLoading={isLoading}
                             clusterName={clusterName}
+                            refIdArr={refIdArr}
+                            loader = {loader}
                           />
               })
             }

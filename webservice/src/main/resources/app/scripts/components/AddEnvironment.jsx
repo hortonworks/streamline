@@ -41,6 +41,7 @@ class AddEnvironmentItems extends Component{
     }
     mapSelection(obj);
   }
+
   render(){
     const {clusterList} = this.props;
     const {cluster,services} = clusterList;
@@ -201,19 +202,29 @@ class AddEnvironment extends Component{
     if(index !== -1){
       this.selectionList[dataObj.clusterId].splice(index,1);
     }else{
-      if(dataObj.serviceName.toLowerCase() === "storm"){
+      if(dataObj.serviceName.toLowerCase() === "storm" || dataObj.serviceName.toLowerCase() === "ambari_metrics"){
         let t_clusterId, t_index;
         _.keys(this.selectionList).map(key => {
             this.selectionList[key].map((x , i) => {
-              if(x.serviceName.toLowerCase() === "storm"){
+              if(x.serviceName.toLowerCase() === "storm" || x.serviceName.toLowerCase() === "ambari_metrics"){
                 t_clusterId = key;
                 t_index = i;
               }
             })
         });
         if(t_clusterId !== undefined){
-          document.querySelector('[data-id="'+t_clusterId+'@'+dataObj.serviceName+'"]').className="";
-          this.selectionList[t_clusterId].splice(t_index,1);
+          let r_index = 0,r_id='',r_flag=true;
+          _.keys(this.selectionList).map(key => {
+            r_index = this.selectionList[key].findIndex(x => {
+              r_id = x.clusterId;
+              return x.serviceName === dataObj.serviceName;
+            });
+            if(r_index !== -1 && r_flag){
+                r_flag=false;
+                document.querySelector('[data-id="'+r_id+'@'+dataObj.serviceName+'"]').className="";
+                this.selectionList[r_id].splice(r_index,1);
+            }
+          });
         }
       }
       this.selectionList[dataObj.clusterId].push(dataObj);

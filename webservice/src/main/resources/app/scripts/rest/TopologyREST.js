@@ -96,6 +96,18 @@ const TopologyREST = {
 		  		return response.json();
 		  	})
 	},
+  getTopologyWithoutMetrics(id, versionId, options) {
+    options = options || {};
+    options.method = options.method || 'GET';
+              let url = baseUrl+'topologies/'+id;
+              if(versionId){
+                      url = baseUrl+'topologies/'+id+"/versions/"+versionId;
+              }
+      return fetch(url, options)
+    .then( (response) => {
+        return response.json();
+          })
+    },
 	getSourceComponent(options) {
 		options = options || {};
 		options.method = options.method || 'GET';

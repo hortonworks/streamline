@@ -136,9 +136,10 @@ export default class JoinNodeForm extends Component {
                                                                 let joinStreamOptions = inputStreams.filter((s)=>{return s.streamId !== fromObject.stream});
                                                                 let obj = inputStreams.find((s)=>{return s.streamId === fromObject.stream});
                                                                 if(joinStreams.length) {
-                                                                        joinStreams[0].streamOptions = joinStreamOptions;
-                                                                        joinStreams[0].withOptions = [obj];
-                                                                        joinStreams[0].keyOptions = selectedStream.fields;
+                                                                    let joinStream = inputStreams.find((s)=>{return s.streamId === configFields.joins[0].stream});
+                                                                    joinStreams[0].streamOptions = joinStreamOptions;
+                                                                    joinStreams[0].withOptions = [obj];
+                                                                    joinStreams[0].keyOptions = joinStream.fields;
                                                                 }
                                                         }
                                                 }

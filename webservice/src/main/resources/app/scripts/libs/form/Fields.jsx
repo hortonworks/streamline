@@ -112,7 +112,7 @@ export class string extends BaseField {
           ? ''
           : <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
                 {this.props.fieldJson.hint !== undefined && this.props.fieldJson.hint.toLowerCase().indexOf("textarea") !== -1
-                ? 
+                ?
                     <textarea
                         className={this.context.Form.state.Errors[this.props.valuePath] ? "form-control invalidInput" : "form-control"}
                         ref="input"
@@ -168,7 +168,7 @@ export class number extends BaseField {
       return <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
               <input
                 type="number"
-                className={this.context.Form.state.Errors[this.props.valuePath] ? "form-control invalidInput" : "form-control"} 
+                className={this.context.Form.state.Errors[this.props.valuePath] ? "form-control invalidInput" : "form-control"}
                 ref="input"
                 value={this.props.data[this.props.value]}
                 disabled={disabledField}

@@ -216,6 +216,7 @@ if (parsedArgs['auth']) {
 }
 
 export const VERBOSE = Boolean(parsedArgs['verbose'] || serverSettingsJS.verbose);
+serverSettingsJS = serverSettingsJS.pivotConfiguration;
 export const SERVER_SETTINGS = ServerSettings.fromJS(serverSettingsJS);
 
 // --- Tracker --------------------------------

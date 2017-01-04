@@ -165,14 +165,16 @@ export default class SourceNodeForm extends Component {
     }
 
     validateData(){
-        let validDataFlag = true;
-        if(!this.refs.Form.validate()){
+        let validDataFlag = false;
+        if(!this.state.fetchLoader){
+          if(this.refs.Form.validate()){
+              validDataFlag = true;
+              this.setState({activeTabKey: 1, showRequired: true});
+          }
+          if(this.streamObj.fields.length === 0){
             validDataFlag = false;
-            this.setState({activeTabKey: 1, showRequired: true});
-        }
-        if(this.streamObj.fields.length === 0){
-          validDataFlag = false;
-          FSReactToastr.error(<CommonNotification flag="error" content={"Output stream fields cannot be blank."}/>, '', toastOpt);
+            FSReactToastr.error(<CommonNotification flag="error" content={"Output stream fields cannot be blank."}/>, '', toastOpt);
+          }
         }
         return validDataFlag;
     }
