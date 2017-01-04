@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env pivot/node/node
 
 /*
  * Copyright 2015-2016 Imply Data, Inc.
@@ -18,6 +18,6 @@
 
 var path = require('path');
 var fs   = require('fs');
-var lib = path.join(path.dirname(fs.realpathSync(__filename)), '../pivot/server/www.js');
+var lib = path.join(path.dirname(fs.realpathSync(__filename)), '../pivot/build/server/www.js');
 
 require(lib);

@@ -13,12 +13,6 @@
     <artifactId>pivot</artifactId>
 
     <build>
-      <resources>
-        <resource>
-          <directory>./build</directory>
-        </resource>
-      </resources>
-
         <plugins>
           <!-- Handle Compiling Frontend -->
             <plugin>
