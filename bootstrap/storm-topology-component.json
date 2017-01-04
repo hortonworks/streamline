@@ -24,6 +24,21 @@
         "defaultValue": 1
       },
       {
+        "uiName": "Topology message timeout (seconds)",
+        "fieldName": "topology.message.timeout.secs",
+        "isOptional": true,
+        "tooltip": "The maximum amount of time given to the topology to fully process a message emitted by a spout",
+        "type": "number",
+        "defaultValue": 30
+      },
+      {
+        "uiName": "Tick tuple interval (seconds)",
+        "fieldName": "topology.tick.tuple.freq.secs",
+        "isOptional": true,
+        "tooltip": "How often a tick tuple should be sent to tasks",
+        "type": "number"
+      },
+      {
         "uiName": "Worker JVM options",
         "fieldName": "worker.childopts",
         "isOptional": true,
