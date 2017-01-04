@@ -19,6 +19,7 @@
 
 package org.apache.streamline.streams.layout.storm;
 
+import org.apache.streamline.streams.StreamlineEvent;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -35,7 +36,7 @@ public class HdfsSpoutFluxComponentTest {
     private static final String badDir = "/tmp/bad";
     private static final String lockDir = "/tmp/lock";
     private static final Integer lockTimeout = 10;
-    private static final String outputfields = "line1,line2";
+//    private static final String outputfields = StreamlineEvent.STREAMLINE_EVENT;
 
     HdfsSpoutFluxComponent comp;
     HashMap<String, Object> conf = new HashMap<>();
@@ -50,7 +51,6 @@ public class HdfsSpoutFluxComponentTest {
         conf.put(HdfsSpoutFluxComponent.KEY_BAD_FILES_DIR, badDir);
         conf.put(HdfsSpoutFluxComponent.KEY_LOCK_DIR, lockDir);
         conf.put(HdfsSpoutFluxComponent.KEY_LOCK_TIMEOUT_SEC, lockTimeout);
-        conf.put(HdfsSpoutFluxComponent.KEY_OUTPUT_FIELDS, outputfields);
         comp.withConfig(conf);
 
     }
@@ -75,7 +75,6 @@ public class HdfsSpoutFluxComponentTest {
         checkSettings(configMethods, "setBadFilesDir", badDir);
         checkSettings(configMethods, "setLockDir", lockDir);
         checkSettings(configMethods, "setLockTimeoutSec", lockTimeout.toString());
-        checkSettings(configMethods, "withOutputFields", outputfields);
     }
 
     private void checkSettings(ArrayList configMethods, String setting, String expectedVal) {

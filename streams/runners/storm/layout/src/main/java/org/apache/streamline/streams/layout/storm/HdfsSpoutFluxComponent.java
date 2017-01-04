@@ -19,7 +19,12 @@
 
 package org.apache.streamline.streams.layout.storm;
 
+import org.apache.streamline.streams.StreamlineEvent;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class HdfsSpoutFluxComponent extends AbstractFluxComponent {
 
@@ -60,10 +65,23 @@ public class HdfsSpoutFluxComponent extends AbstractFluxComponent {
                 KEY_OUTPUT_FIELDS,
                 KEY_COMMIT_FREQUENCY_SEC
         };
-        conf.put("withOutputFields", new String[]{"streamline-event"} ); // as it only emits StreamlineEvent tuples
 
+//        conf.put("withOutputFields", StreamlineEvent.STREAMLINE_EVENT); // as it only emits StreamlineEvent tuples
         List configMethods = getConfigMethodsYaml(configMethodNames,  configKeys);
+
+        addConfMethod(configMethods, "withOutputFields", new String[]{StreamlineEvent.STREAMLINE_EVENT + "xyz"});
+
         component = createComponent(spoutId, spoutClassName, null, null, configMethods);
         addParallelismToComponent();
+    }
+
+    private void addConfMethod(List configMethods, String methodName, String[] argument) {
+        Map method = new LinkedHashMap(1);
+        method.put(StormTopologyLayoutConstants.YAML_KEY_NAME, methodName);
+        ArrayList args = new ArrayList(1);
+        args.add(argument);
+        method.put(StormTopologyLayoutConstants.YAML_KEY_ARGS, args);
+
+        configMethods.add(method);
     }
 }
