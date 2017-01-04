@@ -5,7 +5,7 @@
   "builtin": true,
   "streamingEngine": "STORM",
   "transformationClass": "org.apache.streamline.streams.layout.storm.DruidBoltFluxComponent",
-  "mavenDeps": "org.apache.storm:storm-druid:STORM_VERSION,io.druid:druid-server:0.9.1,org.scala-lang:scala-library:2.11.8",
+  "mavenDeps": "org.apache.storm:storm-druid:STORM_VERSION,org.scala-lang:scala-library:2.11.8",
   "topologyComponentUISpecification": {
     "fields": [
       {

@@ -105,7 +105,7 @@ public class DruidBoltFluxComponent extends AbstractFluxComponent {
 
     private String addTupleDruidEventMapperComponent() {
         String componentId = "druidTupleDruidEventMapper" + UUID_FOR_COMPONENTS;
-        String className = "org.apache.storm.druid.bolt.TupleDruidEventMapper";
+        String className = "org.apache.streamline.streams.layout.storm.DruidEventMapper";
         List<String> constructorArgs = Lists.newArrayList(StreamlineEvent.STREAMLINE_EVENT);
         addToComponents(createComponent(componentId, className, null, constructorArgs, null));
         return componentId;

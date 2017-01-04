@@ -59,7 +59,7 @@ import java.util.Map;
  */
 public class DruidBeamFactoryImpl implements DruidBeamFactory<Map<String, Object>> {
 
-    private static String PROCESSING_TIME = "processingTime";
+    public static String PROCESSING_TIME = "processingTime";
     private String indexService = "druid/overlord"; // Your overlord's druid.service;
     private String discoveryPath = "/druid/discovery"; // Your overlord's druid.discovery.curator.path;
     private String dataSource = "test";
@@ -92,10 +92,7 @@ public class DruidBeamFactoryImpl implements DruidBeamFactory<Map<String, Object
                 if(PROCESSING_TIME.equalsIgnoreCase(timestampField))
                     return new DateTime(System.currentTimeMillis());
 
-                String eventTime = (String)theMap.get(timestampField);
-                if(eventTime == null)
-                    return null;
-                return new DateTime(new Long(eventTime));
+                return new DateTime(theMap.get(timestampField));
             }
         };
 
