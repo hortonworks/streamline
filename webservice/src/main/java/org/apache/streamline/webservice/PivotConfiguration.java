@@ -13,6 +13,8 @@ public class PivotConfiguration {
 
     private Map<String, Object> config;
 
+    private Map<String, Object> settingsLocation;
+
     public Integer getPort() {
         return port;
     }
@@ -29,4 +31,7 @@ public class PivotConfiguration {
         this.config = config;
     }
 
+    public Map<String, Object> getSettingsLocation() { return settingsLocation; }
+
+    public void setSettingsLocation(Map<String, Object> settingsLocation) { this.settingsLocation = settingsLocation; }
 }
