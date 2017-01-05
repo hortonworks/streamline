@@ -9,29 +9,22 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.Map;
 
 public class SQLScriptRunner {
-    private static final String OPTION_JDBC_URL = "url";
-    private static final String OPTION_JDBC_DRIVER_CLASS = "driver";
     private static final String OPTION_SCRIPT_PATH = "file";
-    private static final String OPTION_QUERY_DELIMITER = "delimiter";
-    private static final String OPTION_JDBC_USER = "user";
-    private static final String OPTION_JDBC_PASSWORD = "password";
+    private static final String OPTION_CONFIG_FILE_PATH = "config";
+    public static final String PLACEHOLDER_REPLACE_DBTYPE = "<dbtype>";
 
     private final String url;
     private final String user;
     private final String password;
-
-    public SQLScriptRunner(String url) {
-        this.url = url;
-        this.user = "";
-        this.password = "";
-    }
 
     public SQLScriptRunner(String url, String user, String password) {
         this.url = url;
@@ -42,7 +35,6 @@ public class SQLScriptRunner {
     public void runScript(String path, String delimiter) throws Exception {
         final File file = new File(path);
         if (!file.exists()) {
-            System.err.println("Given path " + path + " could not be found");
             throw new RuntimeException("File not found for given path " + path);
         }
 
@@ -70,46 +62,47 @@ public class SQLScriptRunner {
     public static void main(String[] args) throws Exception {
         Options options = new Options();
 
-        options.addOption(option(1, "u", OPTION_JDBC_URL, "JDBC Connect URL"));
-        options.addOption(option(1, "c", OPTION_JDBC_DRIVER_CLASS, "JDBC Driver class"));
+        options.addOption(option(1, "c", OPTION_CONFIG_FILE_PATH, "Config file path"));
         options.addOption(option(Option.UNLIMITED_VALUES, "f", OPTION_SCRIPT_PATH, "Script path to execute"));
-        options.addOption(option(1, "d", OPTION_QUERY_DELIMITER, "Query delimiter"));
-        options.addOption(option(1, "l", OPTION_JDBC_USER, "JDBC User Name"));
-        options.addOption(option(1, "p", OPTION_JDBC_PASSWORD, "JDBC Password"));
 
         CommandLineParser parser = new BasicParser();
         CommandLine commandLine = parser.parse(options, args);
 
-        if (!commandLine.hasOption(OPTION_JDBC_URL) ||
-            !commandLine.hasOption(OPTION_JDBC_DRIVER_CLASS) ||
-            !commandLine.hasOption(OPTION_QUERY_DELIMITER) ||
+        if (!commandLine.hasOption(OPTION_CONFIG_FILE_PATH) ||
             !commandLine.hasOption(OPTION_SCRIPT_PATH) ||
             commandLine.getOptionValues(OPTION_SCRIPT_PATH).length <= 0) {
             usage(options);
             System.exit(1);
         }
 
-        String url = commandLine.getOptionValue(OPTION_JDBC_URL);
-        String driver = commandLine.getOptionValue(OPTION_JDBC_DRIVER_CLASS);
-        String user = commandLine.hasOption(OPTION_JDBC_USER) ? commandLine.getOptionValue(OPTION_JDBC_USER) : "";
-        String password = commandLine.hasOption(OPTION_JDBC_PASSWORD) ? commandLine.getOptionValue(OPTION_JDBC_PASSWORD) : "";
+        String confFilePath = commandLine.getOptionValue(OPTION_CONFIG_FILE_PATH);
         String[] scripts = commandLine.getOptionValues(OPTION_SCRIPT_PATH);
-        String delimiter = commandLine.getOptionValue(OPTION_QUERY_DELIMITER);
 
         try {
-            Class.forName(driver);
-        } catch (ClassNotFoundException e) {
-            System.err.println("Driver class is not found in classpath. Please ensure that driver is in classpath.");
-            System.exit(2);
-        }
+            Map<String, Object> conf = Utils.readStreamlineConfig(confFilePath);
 
-        SQLScriptRunner SQLScriptRunner = new SQLScriptRunner(url, user, password);
+            StorageProviderConfigurationReader confReader = new StorageProviderConfigurationReader();
+            StorageProviderConfiguration storageProperties = confReader.readStorageConfig(conf);
 
-        for (String script : scripts) {
-            SQLScriptRunner.runScript(script, delimiter);
+            try {
+                Class.forName(storageProperties.getDriverClass());
+            } catch (ClassNotFoundException e) {
+                System.err.println("Driver class is not found in classpath. Please ensure that driver is in classpath.");
+                System.exit(1);
+            }
+
+            SQLScriptRunner SQLScriptRunner = new SQLScriptRunner(storageProperties.getUrl(), storageProperties.getUser(),
+                    storageProperties.getPassword());
+
+            for (String script : scripts) {
+                script = script.replace(PLACEHOLDER_REPLACE_DBTYPE, storageProperties.getDbType());
+                SQLScriptRunner.runScript(script, storageProperties.getDelimiter());
+            }
+        } catch (IOException e) {
+            System.err.println("Error occurred while reading config file: " + confFilePath);
+            System.exit(1);
         }
     }
-
 
     private static Option option(int argCount, String shortName, String longName, String description){
         return option(argCount, shortName, longName, longName, description);

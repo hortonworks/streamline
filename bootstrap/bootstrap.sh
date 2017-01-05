@@ -3,8 +3,14 @@
 # defaults
 verbose=false
 bootstrap_dir=$(dirname $0)
-host="localhost"
-port="8080"
+CONFIG_FILE_PATH=${bootstrap_dir}/../conf/streamline.yaml
+
+# Which java to use
+if [ -z "${JAVA_HOME}" ]; then
+  JAVA="java"
+else
+  JAVA="${JAVA_HOME}/bin/java"
+fi
 
 function run_cmd {
   cmd=$*
@@ -25,21 +31,21 @@ function run_cmd {
 function post {
   uri=$1
   data=$2
-  cmd="curl -sS -X POST http://${host}:${port}/api/v1/catalog$uri --data @$data -H 'Content-Type: application/json'"
+  cmd="curl -sS -X POST ${CATALOG_ROOT_URL}$uri --data @$data -H 'Content-Type: application/json'"
   echo "POST $data"
   run_cmd $cmd
 }
 
 function add_sample_bundle {
   echo "POST sample_bundle"
-  cmd="curl -sS -X POST -i -F topologyComponentBundle=@$bootstrap_dir/kafka-topology-bundle http://${host}:${port}/api/v1/catalog/streams/componentbundles/SOURCE/"
+  cmd="curl -sS -X POST -i -F topologyComponentBundle=@$bootstrap_dir/kafka-topology-bundle ${CATALOG_ROOT_URL}/streams/componentbundles/SOURCE/"
   run_cmd $cmd
 }
 
 function add_bundle {
   uri=$1
   data=$2
-  cmd="curl -sS -X POST -i -F topologyComponentBundle=@$data http://${host}:${port}/api/v1/catalog$uri"
+  cmd="curl -sS -X POST -i -F topologyComponentBundle=@$data ${CATALOG_ROOT_URL}$uri"
   echo "POST $data"
   run_cmd $cmd
 }
@@ -71,6 +77,25 @@ done
 #Below command to update storm version will be called by RE script. Need to remove later. Adding now for convenience
 update_storm_version_command="$bootstrap_dir/update-storm-version.sh 1.0.2.2.1.0.0-165"
 run_cmd $update_storm_version_command
+
+#---------------------------------------------
+# Get catalogRootUrl from configuration file
+#---------------------------------------------
+
+CONF_READER_MAIN_CLASS=org.apache.streamline.storage.tool.StreamlinePropertiesReader
+CLASSPATH=${bootstrap_dir}/lib/storage-tool-0.1.0-SNAPSHOT.jar:
+CATALOG_ROOT_URL_PROPERTY_KEY=catalogRootUrl
+
+echo "Configuration file: ${CONFIG_FILE_PATH}"
+
+CATALOG_ROOT_URL=`exec ${JAVA} -cp ${CLASSPATH} ${CONF_READER_MAIN_CLASS} ${CONFIG_FILE_PATH} ${CATALOG_ROOT_URL_PROPERTY_KEY}`
+
+# if it doesn't exit with code 0, just give up
+if [ $? -ne 0 ]; then
+  exit 1
+fi
+
+echo "Catalog Root URL: ${CATALOG_ROOT_URL}"
 
 # === Source ===
 add_bundle /streams/componentbundles/SOURCE $bootstrap_dir/kafka-source-topology-component.json
@@ -108,9 +133,9 @@ add_bundle /streams/componentbundles/TOPOLOGY $bootstrap_dir/storm-topology-comp
 # Execute other bootstrap scripts
 #----------------------------------
 script_dir=$(dirname $0)
-echo "Executing ${script_dir}/bootstrap-udf.sh ${host} ${port}"
-${script_dir}/bootstrap-udf.sh ${host} ${port}
+echo "Executing ${script_dir}/bootstrap-udf.sh ${CATALOG_ROOT_URL}"
+${script_dir}/bootstrap-udf.sh ${CATALOG_ROOT_URL}
 
-echo "Executing ${script_dir}/bootstrap-notifiers.sh ${host} ${port}"
-${script_dir}/bootstrap-notifiers.sh ${host} ${port}
+echo "Executing ${script_dir}/bootstrap-notifiers.sh ${CATALOG_ROOT_URL}"
+${script_dir}/bootstrap-notifiers.sh ${CATALOG_ROOT_URL}
 
