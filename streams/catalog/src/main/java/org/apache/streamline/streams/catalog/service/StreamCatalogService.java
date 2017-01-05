@@ -1638,25 +1638,45 @@ public class StreamCatalogService {
         for (StreamGrouping streamGrouping : edge.getStreamGroupings()) {
             List<String> fields;
             if ((fields = streamGrouping.getFields()) != null) {
-                Set<String> schemaFieldNames = getFieldNames(getStreamInfo(edge.getTopologyId(), streamGrouping.getStreamId(),
-                        edge.getVersionId()).getFields());
-                if (!schemaFieldNames.containsAll(fields)) {
-                    throw new IllegalArgumentException("Fields in the grouping " + fields +
-                                                               " must be a subset the stream fields " + schemaFieldNames);
-                }
+                Set<String> schemaFieldPatterns = getFieldPatterns(
+                        getStreamInfo(edge.getTopologyId(), streamGrouping.getStreamId(), edge.getVersionId())
+                                .getFields());
+                fields.forEach(field -> {
+                    schemaFieldPatterns.stream().filter(pat -> field.matches(pat)).findAny()
+                            .orElseThrow(() -> new IllegalArgumentException("Fields in the grouping " + fields +
+                                    " must be a subset the stream fields " + schemaFieldPatterns));
+                });
             }
         }
     }
 
-    private Set<String> getFieldNames(List<Schema.Field> fields) {
+    private Set<String> getFieldPatterns(List<Schema.Field> fields) {
         if (fields == null || fields.isEmpty()) {
             return Collections.emptySet();
         }
         Set<String> names = new HashSet<>();
         fields.forEach(field -> {
             if (field.getType() == Schema.Type.NESTED) {
-                getFieldNames(((Schema.NestedField) field).getFields())
+                getFieldPatterns(((Schema.NestedField) field).getFields())
                         .forEach(childFieldName -> names.add(field.getName() + "." + childFieldName));
+            } else if (field.getType() == Schema.Type.ARRAY) {
+                String pattern;
+                if (field.getName() == null || field.getName().isEmpty()) {
+                    pattern = "\\[\\d+\\]";
+                } else {
+                    pattern = field.getName() + "\\[\\d+\\]";
+                }
+                ((Schema.ArrayField) field).getMembers()
+                        .forEach(member -> {
+                            getFieldPatterns(Collections.singletonList(member))
+                                    .forEach(pat -> {
+                                        if (member.getType() == Schema.Type.ARRAY) {
+                                            names.add(pattern + pat);
+                                        } else if (member.getType() == Schema.Type.NESTED) {
+                                            names.add(pattern + "." + pat);
+                                        }
+                                    });
+                        });
             } else {
                 names.add(field.getName());
             }
