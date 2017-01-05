@@ -1,4 +1,6 @@
 ## 0.1.4
+ * STREAMLINE-651: Default isUserInput checkbox in UI to true for a CP config field 
+ * STREAMLINE-599: Fix NPE in ConsoleCustomProcessor initialize method 
  * STREAMLINE-598: Pre-populate values for fields for different bundles
  * STREAMLINE-515: storm-solr bundle spec and flux transformation class
  * STREAMLINE-427: Pull component jar dependencies using bundles from maven 

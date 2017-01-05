@@ -2076,3 +2076,6 @@ span.alpha-badge{
     width: 1.25em;
   }
 }
+input[type="checkbox"]{
+  vertical-align: sub;
+}

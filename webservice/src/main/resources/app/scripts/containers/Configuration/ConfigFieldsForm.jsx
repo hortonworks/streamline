@@ -18,7 +18,7 @@ export default class ConfigFieldsForm extends Component {
 		isOptional: false,
 		type: '',
 		defaultValue: '',
-		isUserInput: false,
+                isUserInput: true,
 		tooltip: '',
 		id: this.props.id
 	}
@@ -98,16 +98,13 @@ export default class ConfigFieldsForm extends Component {
                     </div>
                 </div>
                 <div className="form-group">
-                    <label>Is Optional</label>
-                    <div>
-						<input
-							name="isOptional"
-							onChange={this.handleToggle.bind(this)}
-							type="checkbox"
-							value={this.state.isOptional}
-							checked={this.state.isOptional}
-						/>
-					</div>
+                  <input
+                    name="isOptional"
+                    onChange={this.handleToggle.bind(this)}
+                    type="checkbox"
+                    value={this.state.isOptional}
+                    checked={this.state.isOptional}
+                  />&nbsp;&nbsp;<label>Is Optional</label>
 				</div>
 				<div className="form-group">
                     <label>Type <span className="text-danger">*</span></label>
@@ -135,8 +132,6 @@ export default class ConfigFieldsForm extends Component {
 					</div>
 				</div>
 				<div className="form-group">
-                    <label>Is User Input</label>
-                    <div>
 						<input
 							name="isUserInput"
 							onChange={this.handleToggle.bind(this)}
@@ -144,7 +139,7 @@ export default class ConfigFieldsForm extends Component {
 							value={this.state.isUserInput}
 							checked={this.state.isUserInput}
 						/>
-					</div>
+          &nbsp;&nbsp;<label>Is User Input</label>
 				</div>
 				<div className="form-group">
                     <label>Tooltip <span className="text-danger">*</span></label>

@@ -267,6 +267,8 @@ export class enumstring extends BaseField {
         return super.validate(this.props.data[this.props.value])
     }
     getField = () => {
+        const fieldsShown =  _.filter(this.context.Form.props.children, (x) => {return x.props.fieldJson.isOptional == false})
+        const lastChild = _.last(fieldsShown);
         let disabledField = this.context.Form.props.readOnly;
         if(this.props.fieldJson.isUserInput !== undefined){
             disabledField = disabledField || !this.props.fieldJson.isUserInput;
@@ -278,7 +280,7 @@ export class enumstring extends BaseField {
                 {...this.props.fieldAttr}
                 disabled={disabledField}
                 value={this.props.data[this.props.value]}
-                className={this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}
+                className={`${lastChild.props.label === this.props.fieldJson.uiName && fieldsShown.length > 4 ? "menu-outer-top" : ''}${this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}`}
             />
     }
 }
@@ -324,6 +326,8 @@ export class arraystring extends BaseField {
         return super.validate(this.props.data[this.props.value])
     }
     getField = () => {
+        const fieldsShown =  _.filter(this.context.Form.props.children, (x) => {return x.props.fieldJson.isOptional == false})
+        const lastChild = _.last(fieldsShown);
         const arr = [];
         let dataArr = this.props.data[this.props.value];
         if(dataArr && dataArr instanceof Array){
@@ -340,7 +344,7 @@ export class arraystring extends BaseField {
             multi={true}
             disabled={disabledField}
             {...this.props.fieldAttr}
-            className={this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}
+            className={`${lastChild.props.label === this.props.fieldJson.uiName && fieldsShown.length > 4 ? "menu-outer-top" : ''}${this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}`}
             valueKey="value"
             labelKey="value"
             value={arr}
@@ -393,6 +397,8 @@ export class creatableField extends BaseField {
         return super.validate(this.props.data[this.props.value])
     }
     getField = () => {
+        const fieldsShown =  _.filter(this.context.Form.props.children, (x) => {return x.props.fieldJson.isOptional == false})
+        const lastChild = _.last(fieldsShown);
         const val = {value: this.props.data[this.props.value]};
         let disabledField = this.context.Form.props.readOnly;
         if(this.props.fieldJson.isUserInput !== undefined){
@@ -405,7 +411,7 @@ export class creatableField extends BaseField {
             multi={false}
             disabled={disabledField}
             {...this.props.fieldAttr}
-            className={this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}
+            className={`${lastChild.props.label === this.props.fieldJson.uiName && fieldsShown.length > 4 ? "menu-outer-top" : ''}${this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}`}
             valueKey="value"
             labelKey="value"
             value={val}
@@ -427,6 +433,8 @@ export class arrayenumstring extends BaseField {
         return super.validate(this.props.data[this.props.value])
     }
     getField = () => {
+        const fieldsShown =  _.filter(this.context.Form.props.children, (x) => {return x.props.fieldJson.isOptional == false})
+        const lastChild = _.last(fieldsShown);
         let disabledField = this.context.Form.props.readOnly;
         if(this.props.fieldJson.isUserInput !== undefined){
             disabledField = disabledField || !this.props.fieldJson.isUserInput;
@@ -437,7 +445,7 @@ export class arrayenumstring extends BaseField {
                 disabled={disabledField}
                 {...this.props.fieldAttr}
                 value={this.props.data[this.props.value]}
-                className={this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}
+                className={`${lastChild.props.label === this.props.fieldJson.uiName && fieldsShown.length > 4 ? "menu-outer-top" : ''}${this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}`}
             />
     }
 }
