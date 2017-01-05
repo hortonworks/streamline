@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,11 +20,13 @@ import java.util.Map;
 public class ConsoleCustomProcessor implements CustomProcessorRuntime {
     protected static final Logger LOG = LoggerFactory.getLogger(ConsoleCustomProcessor.class);
     public static final String CONFIG_FIELD_NAME = "configField";
-    Map<String, Object> config;
+    Map<String, Object> config = new HashMap<>();
  
     public void initialize(Map<String, Object> config) {
-        this.config = config;
-        LOG.info("Initializing with config field " + CONFIG_FIELD_NAME + " = " + this.config.get(CONFIG_FIELD_NAME).toString());
+        if (config != null) {
+            this.config = config;
+        }
+        LOG.info("Initializing with config field " + CONFIG_FIELD_NAME + " = " + this.config.get(CONFIG_FIELD_NAME));
     }
 
     
@@ -37,7 +40,7 @@ public class ConsoleCustomProcessor implements CustomProcessorRuntime {
 
 
     public List<Result> process(StreamlineEvent event) throws ProcessingException {
-        LOG.debug("Processing {}", event);
+        LOG.info("Processing {}", event);
         List<Result> results = new ArrayList<>();
         results.add(new Result("stream1",Arrays.asList(event)));
         return results;
