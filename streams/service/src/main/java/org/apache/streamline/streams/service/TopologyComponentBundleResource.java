@@ -55,6 +55,8 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -307,19 +309,20 @@ public class TopologyComponentBundleResource {
         InputStream jarFile = null;
         try {
             jarFile = this.getFormDataFromMultiPartRequestAs(InputStream.class, form, JAR_FILE_PARAM_NAME);
+            byte[] jarBytes = getBytesForInputStream(jarFile);
             String customProcessorInfoStr = this.getFormDataFromMultiPartRequestAs(String.class, form, CP_INFO_PARAM_NAME);
-            String missingParam = (jarFile == null ? JAR_FILE_PARAM_NAME : (customProcessorInfoStr == null ? CP_INFO_PARAM_NAME : null));
+            String missingParam = (jarBytes == null ? JAR_FILE_PARAM_NAME : (customProcessorInfoStr == null ? CP_INFO_PARAM_NAME : null));
             if (missingParam != null) {
                 LOG.debug(missingParam + " is missing or invalid while adding custom processor");
                 throw BadRequestException.missingParameter(missingParam);
             }
             CustomProcessorInfo customProcessorInfo = new ObjectMapper().readValue(customProcessorInfoStr, CustomProcessorInfo.class);
-            if (!verifyCustomProcessorImplFromJar(jarFile, customProcessorInfo)) {
+            if (!verifyCustomProcessorImplFromJar(new ByteArrayInputStream(jarBytes), customProcessorInfo)) {
                 String message = "Custom Processor jar file is missing customProcessorImpl class " + customProcessorInfo.getCustomProcessorImpl();
                 LOG.debug(message);
                 throw BadRequestException.message(message);
             }
-            CustomProcessorInfo createdCustomProcessor = catalogService.addCustomProcessorInfoAsBundle(customProcessorInfo, jarFile);
+            CustomProcessorInfo createdCustomProcessor = catalogService.addCustomProcessorInfoAsBundle(customProcessorInfo, new ByteArrayInputStream(jarBytes));
             return WSUtils.respondEntity(createdCustomProcessor, CREATED);
         } catch (Exception e) {
             LOG.debug("Exception thrown while trying to add a custom processor", e);
@@ -345,19 +348,20 @@ public class TopologyComponentBundleResource {
         InputStream jarFile = null;
         try {
             jarFile = this.getFormDataFromMultiPartRequestAs(InputStream.class, form, JAR_FILE_PARAM_NAME);
+            byte[] jarBytes = getBytesForInputStream(jarFile);
             String customProcessorInfoStr = this.getFormDataFromMultiPartRequestAs(String.class, form, CP_INFO_PARAM_NAME);
-            String missingParam = (jarFile == null ? JAR_FILE_PARAM_NAME : (customProcessorInfoStr == null ? CP_INFO_PARAM_NAME : null));
+            String missingParam = (jarBytes == null ? JAR_FILE_PARAM_NAME : (customProcessorInfoStr == null ? CP_INFO_PARAM_NAME : null));
             if (missingParam != null) {
                 LOG.debug(missingParam + " is missing or invalid while adding/updating custom processor");
                 throw BadRequestException.missingParameter(missingParam);
             }
             CustomProcessorInfo customProcessorInfo = new ObjectMapper().readValue(customProcessorInfoStr, CustomProcessorInfo.class);
-            if (!verifyCustomProcessorImplFromJar(jarFile, customProcessorInfo)) {
+            if (!verifyCustomProcessorImplFromJar(new ByteArrayInputStream(jarBytes), customProcessorInfo)) {
                 String message = "Custom Processor jar file is missing customProcessorImpl class " + customProcessorInfo.getCustomProcessorImpl();
                 LOG.debug(message);
                 throw BadRequestException.message(message);
             }
-            CustomProcessorInfo updatedCustomProcessor = catalogService.updateCustomProcessorInfoAsBundle(customProcessorInfo, jarFile);
+            CustomProcessorInfo updatedCustomProcessor = catalogService.updateCustomProcessorInfoAsBundle(customProcessorInfo, new ByteArrayInputStream(jarBytes));
             return WSUtils.respondEntity(updatedCustomProcessor, OK);
         } catch (Exception e) {
             LOG.debug("Exception thrown while trying to add/update a custom processor", e);
@@ -468,6 +472,22 @@ public class TopologyComponentBundleResource {
             }
         } catch (IOException e) {
             //swallow to return false
+        }
+        return result;
+    }
+
+    private byte[] getBytesForInputStream (InputStream inputStream) {
+        byte[] result = null;
+        if (inputStream != null) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try {
+                org.apache.commons.io.IOUtils.copy(inputStream, baos);
+                result = baos.toByteArray();
+            } catch (IOException e) {
+                // print, swallow and return null
+                LOG.info("Error reading CP jar file", e);
+            }
+
         }
         return result;
     }
