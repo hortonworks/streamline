@@ -31,6 +31,7 @@ public final class TopologyLayoutConstants {
     public final static String JSON_KEY_MAPPER_IMPL =
             "hBaseMapperImplClassName";
     public final static String JSON_KEY_WRITE_TO_WAL = "writeToWAL";
+    public final static String JSON_KEY_BATCH_SIZE = "batchSize";
     public final static String JSON_KEY_FS_URL = "fsUrl";
     public final static String JSON_KEY_PATH = "path";
     public final static String JSON_KEY_PREFIX = "prefix";

@@ -34,6 +34,14 @@
         "type": "string"
       },
       {
+        "uiName": "Batch Size",
+        "fieldName": "batchSize",
+        "isOptional": true,
+        "tooltip": "Number of records in the batch to trigger flushing",
+        "type": "number",
+        "defaultValue": 15000
+      },
+      {
         "uiName": "Parallelism",
         "fieldName": "parallelism",
         "isOptional": true,

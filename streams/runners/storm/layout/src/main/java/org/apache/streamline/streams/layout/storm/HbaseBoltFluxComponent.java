@@ -28,6 +28,10 @@ public class HbaseBoltFluxComponent extends AbstractFluxComponent {
             configMethodNames.add("writeToWAL");
             values.add(conf.get(TopologyLayoutConstants.JSON_KEY_WRITE_TO_WAL));
         }
+        if (conf.get(TopologyLayoutConstants.JSON_KEY_BATCH_SIZE) != null) {
+            configMethodNames.add("withBatchSize");
+            values.add(conf.get(TopologyLayoutConstants.JSON_KEY_BATCH_SIZE));
+        }
         /*
          * configKey is mandatory for hbase bolt. The topology config is expected to contain
          * "hbaseConf" with the required hbase config.
