@@ -17,6 +17,7 @@
  */
 package org.apache.streamline.common;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.DatabindContext;
 import com.fasterxml.jackson.databind.JavaType;
@@ -412,8 +413,9 @@ public class Schema implements Serializable {
             return members;
         }
 
+        @JsonIgnore
         public boolean isHomogenous() {
-            return members.size() == 1;
+            return members != null && members.size() == 1;
         }
 
         @Override
