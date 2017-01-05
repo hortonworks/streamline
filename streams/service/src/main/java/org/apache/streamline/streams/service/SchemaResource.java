@@ -67,7 +67,7 @@ public class SchemaResource {
             if (schema != null && !schema.isEmpty()) {
                 schema = AvroStreamsSchemaConverter.convertAvro(schema);
             }
-            LOG.debug("######### Converted schema: ", schema);
+            LOG.debug("######### Converted schema: {}", schema);
             return WSUtils.respondEntity(schema, OK);
         } catch (SchemaNotFoundException e) {
             // ignore and log error

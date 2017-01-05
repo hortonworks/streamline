@@ -17,15 +17,16 @@
  */
 package org.apache.streamline.common;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.DatabindContext;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
-import com.fasterxml.jackson.databind.annotation.JsonTypeResolver;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.LinkedHashMultiset;
+import com.google.common.collect.Multiset;
 import org.apache.streamline.common.exception.ParserException;
 
 import java.io.Serializable;
@@ -35,6 +36,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 //TODO Make this class Jackson Compatible.
@@ -363,7 +365,11 @@ public class Schema implements Serializable {
      * A composite type that specifically represents an array or sequence of fields.
      */
     public static class ArrayField extends Field {
-        private final List<Field> members;
+        /*
+         * if members is a singleton it represents a homogeneous array of that type (e.g. Array[String])
+         * if not a heterogeneous array like a JSON array.
+         */
+        private List<Field> members;
 
         public static ArrayField of(String name, List<Field> fields) {
             return new ArrayField(name, fields);
@@ -379,6 +385,10 @@ public class Schema implements Serializable {
 
         public static ArrayField optional(String name, Field... fields) {
             return new ArrayField(name, Arrays.asList(fields), true);
+        }
+
+        // for jackson
+        private ArrayField() {
         }
 
         private ArrayField(String name, List<Field> members) {
@@ -401,6 +411,11 @@ public class Schema implements Serializable {
 
         public List<Field> getMembers() {
             return members;
+        }
+
+        @JsonIgnore
+        public boolean isHomogenous() {
+            return members != null && members.size() == 1;
         }
 
         @Override
@@ -546,19 +561,27 @@ public class Schema implements Serializable {
         if(fieldType == Type.NESTED) {
             field = new NestedField(fieldName, parseFields((Map<String, Object>)fieldValue));
         } else if(fieldType == Type.ARRAY) {
-            field = new ArrayField(fieldName, parseArray((List<Object>)fieldValue));
+            Multiset<Field> members = parseArray((List<Object>)fieldValue);
+            Set<Field> fieldTypes = members.elementSet();
+            if (fieldTypes.size() > 1) {
+                field = new ArrayField(fieldName, new ArrayList<>(members));
+            } else if (fieldTypes.size() == 1) {
+                field = new ArrayField(fieldName, new ArrayList<>(members.elementSet()));
+            } else {
+                throw new IllegalArgumentException("Array should have at least one element");
+            }
         } else {
             field = new Field(fieldName, fieldType);
         }
         return field;
     }
 
-    private static List<Field> parseArray(List<Object> array) throws ParserException {
-        List<Field> arrayMembers = new ArrayList<>();
+    private static Multiset<Field> parseArray(List<Object> array) throws ParserException {
+        Multiset<Field> members = LinkedHashMultiset.create();
         for(Object member: array) {
-            arrayMembers.add(parseField(null, member));
+            members.add(parseField(null, member));
         }
-        return arrayMembers;
+        return members;
     }
 
     //TODO: complete this and move into some parser utility class

@@ -18,19 +18,20 @@
 
 package org.apache.streamline.common;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.streamline.common.Schema.Type;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class SchemaTest {
     @Test
@@ -78,5 +79,28 @@ public class SchemaTest {
         Schema schema2;
         schema2 = mapper.readValue(expected, Schema.class);
         assertEquals(nested, schema2);
+    }
+
+    @Test
+    public void testfromMapData() throws Exception {
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("stringField", "test");
+        data.put("arrayField", Arrays.asList(1, 2, 3));
+        List<Object> members = Arrays.asList(1, "abc");
+        data.put("arrayField2", members);
+        Schema schema = Schema.fromMapData(data);
+        List<Schema.Field> fields = schema.getFields();
+        assertEquals("stringField", fields.get(0).getName());
+        assertEquals(Type.STRING, fields.get(0).getType());
+        assertEquals("arrayField", fields.get(1).getName());
+        assertEquals(Type.ARRAY, fields.get(1).getType());
+        assertEquals(1, ((Schema.ArrayField)fields.get(1)).getMembers().size());
+        assertEquals(Type.INTEGER, ((Schema.ArrayField)fields.get(1)).getMembers().get(0).getType());
+        assertTrue(((Schema.ArrayField)fields.get(1)).isHomogenous());
+        assertEquals("arrayField2", fields.get(2).getName());
+        assertEquals(Type.ARRAY, fields.get(2).getType());
+        assertEquals(Type.INTEGER, ((Schema.ArrayField)fields.get(2)).getMembers().get(0).getType());
+        assertEquals(Type.STRING, ((Schema.ArrayField)fields.get(2)).getMembers().get(1).getType());
+        assertFalse(((Schema.ArrayField)fields.get(2)).isHomogenous());
     }
 }

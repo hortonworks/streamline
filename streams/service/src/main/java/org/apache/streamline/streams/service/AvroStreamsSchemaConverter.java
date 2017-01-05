@@ -62,8 +62,10 @@ public class AvroStreamsSchemaConverter {
                 fieldType = Schema.Type.NESTED;
                 break;
             case ARRAY:
-                org.apache.avro.Schema.Type elementType = avroSchema.getElementType().getType();
-                fieldType = Schema.Type.ARRAY;
+                isPrimitive = false;
+                LOG.debug("Encountered array field and creating respective member fields");
+                effField = generateArraySchema(null, avroSchema);
+                LOG.debug("Generated array field [{}]", effField);
                 break;
             case ENUM:
             case STRING:
@@ -132,6 +134,10 @@ public class AvroStreamsSchemaConverter {
         return fieldType;
     }
 
+    private static Schema.ArrayField generateArraySchema(String name, org.apache.avro.Schema avroSchema) {
+        return Schema.ArrayField.of(name, generateStreamsSchemaField(avroSchema.getElementType()));
+    }
+
     private static Schema.NestedField generateRecordSchema(org.apache.avro.Schema avroSchema) {
         List<org.apache.avro.Schema.Field> avroFields = avroSchema.getFields();
         List<Schema.Field> fields = new ArrayList<>();
@@ -139,6 +145,9 @@ public class AvroStreamsSchemaConverter {
             if (avroField.schema().getType() == org.apache.avro.Schema.Type.RECORD) {
                 LOG.debug("Encountered record field and creating respective nested fields");
                 fields.add(generateRecordSchema(avroField.schema()));
+            } else if (avroField.schema().getType() == org.apache.avro.Schema.Type.ARRAY) {
+                LOG.debug("Encountered array field and creating respective member fields");
+                fields.add(generateArraySchema(avroField.name(), avroField.schema()));
             } else {
                 boolean isOptional = org.apache.avro.Schema.Type.UNION.equals(avroField.schema().getType());
                 Schema.Field field = isOptional ? Schema.Field.optional(avroField.name(), getStreamsSchemaFieldType(avroField.schema()))
