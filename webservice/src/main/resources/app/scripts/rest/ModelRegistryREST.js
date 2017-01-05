@@ -8,7 +8,7 @@ const ModelRegistryREST = {
   getAllModelRegistry(options) {
     options = options || {};
     options.method = options.method || 'GET';
-                return CustomFetch(baseUrl+modelsBaseURL, options)
+                return fetch(baseUrl+modelsBaseURL, options)
       .then( (response) => {
           return response.json();
     })

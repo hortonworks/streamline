@@ -7,7 +7,7 @@ const TopologyREST = {
         getAllTopology(sort,options) {
 		options = options || {};
 		options.method = options.method || 'GET';
-        return CustomFetch(baseUrl+'topologies?detail=true&sort='+sort+'&latencyTopN=3',options)
+        return fetch(baseUrl+'topologies?detail=true&sort='+sort+'&latencyTopN=3',options)
 			.then( (response) => {
 		  		return response.json();
 		  	})
@@ -67,7 +67,7 @@ const TopologyREST = {
                 if(versionId){
                         url = baseUrl+'topologies/'+id+"/versions/"+versionId+'/actions/deploy';
                 }
-                return CustomFetch(url, options)
+                return fetch(url, options)
 			.then( (response) => {
 		  		return response.json();
 		  	})
@@ -79,7 +79,7 @@ const TopologyREST = {
                 if(versionId){
                         url = baseUrl+'topologies/'+id+"/versions/"+versionId+'/actions/kill';
                 }
-                return CustomFetch(url, options)
+                return fetchclu(url, options)
 			.then( (response) => {
 		  		return response.json();
 		  	})

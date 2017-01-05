@@ -12,7 +12,7 @@
 
 /* Generic */
 body {
-  background-color: #f0f0f0;
+  background-color: #ececec;
   font-family: 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   /*padding-bottom: 30px;*/
@@ -214,7 +214,7 @@ a.dropdown-toggle ~ ul.dropdown-menu{
 }
 .modal-tabs {}
 .modal-tabs .nav-tabs {
-  background-color: #f0f0f0;
+  background-color: #ececec;
   padding: 15px 0px;
   border-bottom: none;
 }
@@ -593,8 +593,8 @@ label {
 .hb,
 .hb:before,
 .hb:after {
-        height: 24px;
-    width: 41px;
+    height: 18px;
+    width: 32px;
     box-sizing: border-box;
 
     background-color: #1290c0;
@@ -1169,7 +1169,7 @@ label {
   -moz-transition: all 1s ease-in-out;
   -o-transition: all 1s ease-in-out;
   transition: all 1s ease-in-out;
-  background-color: #f0f0f0;
+  background-color: #ececec;
   border-color : #cacaca;
 }
 .inputAnimateIn:focus{
@@ -2028,15 +2028,9 @@ span.alpha-badge{
 .btnDrag-wrapper{
   padding: 0 10px;
 }
-.intro-servicepool {
-  background-image: url('../images/intro-bg.png');
-  background-repeat: no-repeat;
-  background-size: 70%;
-  background-position: 200px bottom;
-}
 .intro-section {
   color: #6e6f71;
-  margin-top: 50px;
+  margin-top: 110px;
 }
 .intro-section-title {
   margin-bottom: 30px;
@@ -2078,4 +2072,33 @@ span.alpha-badge{
 }
 input[type="checkbox"]{
   vertical-align: sub;
+}
+.loading-text {
+  margin-top: 25px;
+  text-transform: uppercase;
+  font-size: 15px;
+}
+.noDataFound-text{
+  margin-top: 25px;
+  text-transform: uppercase;
+  font-size: 15px;
+}
+.loading-text:after {
+  overflow: hidden;
+  display: inline-block;
+  vertical-align: bottom;
+  -webkit-animation: ellipsis steps(4,end) 900ms infinite;
+  animation: ellipsis steps(4,end) 900ms infinite;
+  content: "\2026";
+  width: 0px;
+}
+@keyframes ellipsis {
+  to {
+    width: 1.25em;
+  }
+}
+@-webkit-keyframes ellipsis {
+  to {
+    width: 1.25em;
+  }
 }

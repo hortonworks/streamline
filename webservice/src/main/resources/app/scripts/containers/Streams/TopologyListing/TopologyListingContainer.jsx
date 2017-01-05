@@ -29,6 +29,7 @@ import Modal from '../../../components/FSModal';
 import AddTopology from './AddTopology';
 import ImportTopology from './ImportTopology';
 import CloneTopology from './CloneTopology';
+import CommonLoaderSign  from '../../../components/CommonLoaderSign';
 
 class CustPieChart extends PieChart{
   drawPie(){
@@ -561,71 +562,79 @@ class TopologyListingContainer extends Component {
 
         return (
             <BaseContainer ref="BaseContainer" routes={this.props.routes} headerContent={this.props.routes[this.props.routes.length - 1].name}>
-                <div id="add-environment">
-                  <DropdownButton title={btnIcon}
-                      id="actionDropdown"
-                      className="actionDropdown hb lg success"
-                      noCaret
-                    >
-                        <MenuItem onClick={this.onActionMenuClicked.bind(this,"create")}>
-                            &nbsp;New Application
-                        </MenuItem>
-                        <MenuItem onClick={this.onActionMenuClicked.bind(this,"import")}>
-                            &nbsp;Import Application
-                        </MenuItem>
-                    </DropdownButton>
-                </div>
-                <div className="row">
-                    <div className="page-title-box clearfix">
-                        <div className="col-md-4 col-md-offset-5 text-right">
-                            <FormGroup>
-                                <InputGroup>
-                                    <FormControl type="text"
-                                      placeholder="Search by name"
-                                      onKeyUp={this.onFilterChange}
-                                      className={`inputAnimateIn ${(slideInput) ? "inputAnimateOut" : ''}`}
-                                      onBlur={this.slideInputOut}
-                                    />
-                                    <InputGroup.Addon className="page-search">
-                                        <Button type="button"
-                                          className="searchBtn"
-                                          onClick={this.slideInput}
-                                        >
-                                          <i className="fa fa-search"></i>
-                                        </Button>
-                                    </InputGroup.Addon>
-                                </InputGroup>
-                            </FormGroup>
+                {
+                  !fetchLoader
+                  ? <div>
+                        <div id="add-environment">
+                          <DropdownButton title={btnIcon}
+                              id="actionDropdown"
+                              className="actionDropdown hb lg success"
+                              noCaret
+                            >
+                                <MenuItem onClick={this.onActionMenuClicked.bind(this,"create")}>
+                                    &nbsp;New Application
+                                </MenuItem>
+                                <MenuItem onClick={this.onActionMenuClicked.bind(this,"import")}>
+                                    &nbsp;Import Application
+                                </MenuItem>
+                            </DropdownButton>
                         </div>
+                        <div className="row">
+                            <div className="page-title-box clearfix">
+                                <div className="col-md-4 col-md-offset-5 text-right">
+                                    <FormGroup>
+                                        <InputGroup>
+                                            <FormControl type="text"
+                                              placeholder="Search by name"
+                                              onKeyUp={this.onFilterChange}
+                                              className={`inputAnimateIn ${(slideInput) ? "inputAnimateOut" : ''}`}
+                                              onBlur={this.slideInputOut}
+                                            />
+                                            <InputGroup.Addon className="page-search">
+                                                <Button type="button"
+                                                  className="searchBtn"
+                                                  onClick={this.slideInput}
+                                                >
+                                                  <i className="fa fa-search"></i>
+                                                </Button>
+                                            </InputGroup.Addon>
+                                        </InputGroup>
+                                    </FormGroup>
+                                </div>
 
-                        <div className="col-md-2 text-center">
-                          <DropdownButton title={sortTitle}
-                            id="sortDropdown"
-                            className="sortDropdown "
-                          >
-                              <MenuItem onClick={this.onSortByClicked.bind(this,"name")}>
-                                  &nbsp;Name
-                              </MenuItem>
-                              <MenuItem active onClick={this.onSortByClicked.bind(this,"last_updated")}>
-                                  &nbsp;Last Update
-                              </MenuItem>
-                              <MenuItem onClick={this.onSortByClicked.bind(this,"status")}>
-                                  &nbsp;Status
-                              </MenuItem>
-                          </DropdownButton>
-                        </div>
-                        <div className="col-md-1 col-sm-3 text-left">
+                                <div className="col-md-2 text-center">
+                                  <DropdownButton title={sortTitle}
+                                    id="sortDropdown"
+                                    className="sortDropdown "
+                                  >
+                                      <MenuItem onClick={this.onSortByClicked.bind(this,"name")}>
+                                          &nbsp;Name
+                                      </MenuItem>
+                                      <MenuItem active onClick={this.onSortByClicked.bind(this,"last_updated")}>
+                                          &nbsp;Last Update
+                                      </MenuItem>
+                                      <MenuItem onClick={this.onSortByClicked.bind(this,"status")}>
+                                          &nbsp;Status
+                                      </MenuItem>
+                                  </DropdownButton>
+                                </div>
+                                <div className="col-md-1 col-sm-3 text-left">
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
+                  : ''
+                }
                 <div className="row">
                     {
                       (fetchLoader)
-                      ? <div className="fullPageLoader">
-                          <img src="styles/img/start-loader.gif" alt="loading" />
-                        </div>
+                      ? <CommonLoaderSign
+                            imgName={"applications"}
+                        />
                       : (splitData.length === 0)
-                        ? <NoData/>
+                        ? <NoData
+                            imgName={"applications"}
+                        />
                         : splitData[pageIndex].map((list) => {
                             return <TopologyItems key={list.topology.id} topologyList={list} topologyAction={this.actionHandler} isLoading={isLoading}/>
                         })

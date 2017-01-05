@@ -310,24 +310,28 @@ export default class TagsContainer extends Component {
               <div className="row">
                 <div className="page-title-box clearfix">
                     <div className="col-md-4 col-md-offset-6 text-right">
-                      <FormGroup>
-                          <InputGroup>
-                              <FormControl type="text"
-                                placeholder="Search by name"
-                                onKeyUp={this.onFilterChange}
-                                className={`inputAnimateIn ${(slideInput) ? "inputAnimateOut" : ''}`}
-                                onBlur={this.slideInputOut}
-                              />
-                              <InputGroup.Addon>
-                                  <Button type="button"
-                                    className="searchBtn"
-                                    onClick={this.slideInput}
-                                  >
-                                    <i className="fa fa-search"></i>
-                                  </Button>
-                              </InputGroup.Addon>
-                          </InputGroup>
-                      </FormGroup>
+                      {
+                        filteredEntities.length !== 0
+                        ? <FormGroup>
+                              <InputGroup>
+                                  <FormControl type="text"
+                                    placeholder="Search by name"
+                                    onKeyUp={this.onFilterChange}
+                                    className={`inputAnimateIn ${(slideInput) ? "inputAnimateOut" : ''}`}
+                                    onBlur={this.slideInputOut}
+                                  />
+                                  <InputGroup.Addon>
+                                      <Button type="button"
+                                        className="searchBtn"
+                                        onClick={this.slideInput}
+                                      >
+                                        <i className="fa fa-search"></i>
+                                      </Button>
+                                  </InputGroup.Addon>
+                              </InputGroup>
+                          </FormGroup>
+                        : ''
+                      }
                     </div>
                     <div id="add-environment">
                       <a href="javascript:void(0);"
@@ -341,21 +345,24 @@ export default class TagsContainer extends Component {
               </div>
               <div className="row">
                     <div className="col-sm-12">
-                        <div className="box">
-                            <div className="box-body">
+
                               {
                                 (filteredEntities.length === 0)
-                                  ? <NoData />
-                                  : <Nestable
-                                    useDragHandle
-                                    items={ filteredEntities }
-                                    renderItem={ this.renderItem.bind(this) }
-                                    onUpdate={ this.updateItems.bind(this) }
-                                    childrenStyle={ styles.children }
-                                  />
+                                  ? <NoData
+                                      imgName={"default"}
+                                    />
+                                  :<div className="box">
+                                      <div className="box-body">
+                                          <Nestable
+                                            useDragHandle
+                                            items={ filteredEntities }
+                                            renderItem={ this.renderItem.bind(this) }
+                                            onUpdate={ this.updateItems.bind(this) }
+                                            childrenStyle={ styles.children }
+                                          />
+                                        </div>
+                                    </div>
                               }
-                            </div>
-                        </div>
                     </div>
               </div>
               <Modal ref="Modal"

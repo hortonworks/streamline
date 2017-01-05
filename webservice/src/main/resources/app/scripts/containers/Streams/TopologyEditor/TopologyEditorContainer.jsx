@@ -24,6 +24,7 @@ import Editable from '../../../components/Editable';
 import state from '../../../app_state';
 import CommonNotification from '../../../utils/CommonNotification';
 import AnimatedLoader from '../../../components/AnimatedLoader';
+import CommonLoaderSign  from '../../../components/CommonLoaderSign';
 
 const componentTarget = {
   drop(props, monitor, component) {
@@ -134,7 +135,7 @@ class TopologyEditorContainer extends Component {
     this.navigateFlag = false;
   }
   componentDidUpdate(){
-    document.getElementsByTagName('body')[0].classList.add('graph-bg');
+    this.state.fetchLoader ? '' : document.getElementsByTagName('body')[0].classList.add('graph-bg');
     document.querySelector('.editorHandler').setAttribute("class","editorHandler contentEditor-wrapper animated fadeIn ");
   }
   componentWillMount(){
@@ -183,7 +184,8 @@ class TopologyEditorContainer extends Component {
     unknown: '',
     bundleArr:null,
     progressCount: 0,
-    progressBarColor : 'green'
+    progressBarColor : 'green',
+    fetchLoader : true
   }
 
   fetchData(versionId){
@@ -268,6 +270,7 @@ class TopologyEditorContainer extends Component {
                   processorsBundle: this.processorConfigArr,
                   sinksBundle: this.sinkConfigArr
                 },
+                fetchLoader : false,
                 unknown
               });
               this.customProcessors = this.getCustomProcessors();
@@ -708,63 +711,69 @@ class TopologyEditorContainer extends Component {
     }
   }
   render() {
-    const {progressCount,progressBarColor} = this.state;
+    const {progressCount,progressBarColor,fetchLoader} = this.state;
     let nodeType = this.node ? this.node.currentType : '';
     return (
       <BaseContainer ref="BaseContainer" routes={this.props.routes} onLandingPage="false" breadcrumbData={this.breadcrumbData} headerContent={this.getTopologyHeader()}>
         <div className="row">
           <div className="col-sm-12">
-            <div className="graph-region">
-              <div className="zoomWrap clearfix">
-                <div className="topology-editor-controls pull-right">
-                  <span className="version">
-                    Last Change: <span style={{color:'#545454'}}>{Utils.splitTimeStamp(this.lastUpdatedTime)}</span>
-                  </span>
-                  <span className="version">
-                    Version: <span style={{color:'#545454'}}>{this.versionName}</span>
-                  </span>
-                  <OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Zoom In</Tooltip>}>
-                    <a href="javascript:void(0);" className="zoom-in" onClick={this.graphZoomAction.bind(this, 'zoom_in')}><i className="fa fa-search-plus"></i></a>
-                  </OverlayTrigger>
-                  <OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Zoom Out</Tooltip>}>
-                    <a href="javascript:void(0);" className="zoom-out" onClick={this.graphZoomAction.bind(this, 'zoom_out')}><i className="fa fa-search-minus"></i></a>
-                  </OverlayTrigger>
-                  <OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Configure</Tooltip>}>
-                    <a href="javascript:void(0);" className="config" onClick={this.showConfig.bind(this)}><i className="fa fa-gear"></i></a>
-                  </OverlayTrigger>
+            {
+              fetchLoader
+              ? <CommonLoaderSign
+                  imgName={"viewMode"}
+                />
+              : <div className="graph-region">
+                <div className="zoomWrap clearfix">
+                  <div className="topology-editor-controls pull-right">
+                    <span className="version">
+                      Last Change: <span style={{color:'#545454'}}>{Utils.splitTimeStamp(this.lastUpdatedTime)}</span>
+                    </span>
+                    <span className="version">
+                      Version: <span style={{color:'#545454'}}>{this.versionName}</span>
+                    </span>
+                    <OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Zoom In</Tooltip>}>
+                      <a href="javascript:void(0);" className="zoom-in" onClick={this.graphZoomAction.bind(this, 'zoom_in')}><i className="fa fa-search-plus"></i></a>
+                    </OverlayTrigger>
+                    <OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Zoom Out</Tooltip>}>
+                      <a href="javascript:void(0);" className="zoom-out" onClick={this.graphZoomAction.bind(this, 'zoom_out')}><i className="fa fa-search-minus"></i></a>
+                    </OverlayTrigger>
+                    <OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Configure</Tooltip>}>
+                      <a href="javascript:void(0);" className="config" onClick={this.showConfig.bind(this)}><i className="fa fa-gear"></i></a>
+                    </OverlayTrigger>
+                  </div>
+                </div>
+                <EditorGraph
+                  ref="EditorGraph"
+                  graphData={this.graphData}
+                  viewMode={this.viewMode}
+                  topologyId={this.topologyId}
+                  versionId={this.versionId}
+                  versionsArr={this.state.versionsArr}
+                  getModalScope={this.getModalScope.bind(this)}
+                  setModalContent={this.setModalContent.bind(this)}
+                  customProcessors={this.customProcessors}
+                  bundleArr={this.state.bundleArr}
+                  getEdgeConfigModal={this.showEdgeConfigModal.bind(this)}
+                  setLastChange={this.setLastChange.bind(this)}
+                />
+                <div className="topology-footer">
+                  {this.state.isAppRunning ?
+                    <OverlayTrigger key={2} placement="top" overlay={<Tooltip id="tooltip">Kill</Tooltip>}>
+                      <a href="javascript:void(0);" className="hb lg danger pull-right" onClick={this.killTopology.bind(this)}><i className="fa fa-times"></i></a>
+                    </OverlayTrigger>
+                    : (this.state.unknown !== "UNKNOWN")
+                      ? <OverlayTrigger key={3} placement="top" overlay={<Tooltip id="tooltip">Run</Tooltip>}>
+                          <a href="javascript:void(0);" className="hb lg success pull-right" onClick={this.deployTopology.bind(this)}><i className="fa fa-paper-plane"></i></a>
+                        </OverlayTrigger>
+                      : ''
+                  }
+                  <div className="topology-status">
+                    <p className="text-muted">Status:</p>
+                    <p>{(this.state.unknown === "UNKNOWN") ? "Storm server is not running" : this.state.topologyStatus || 'NOT RUNNING'}</p>
+                  </div>
                 </div>
               </div>
-              <EditorGraph
-                ref="EditorGraph"
-                graphData={this.graphData}
-                viewMode={this.viewMode}
-                topologyId={this.topologyId}
-                versionId={this.versionId}
-                versionsArr={this.state.versionsArr}
-                getModalScope={this.getModalScope.bind(this)}
-                setModalContent={this.setModalContent.bind(this)}
-                customProcessors={this.customProcessors}
-                bundleArr={this.state.bundleArr}
-                getEdgeConfigModal={this.showEdgeConfigModal.bind(this)}
-                setLastChange={this.setLastChange.bind(this)}
-              />
-              <div className="topology-footer">
-                {this.state.isAppRunning ?
-                  <OverlayTrigger key={2} placement="top" overlay={<Tooltip id="tooltip">Kill</Tooltip>}>
-                    <a href="javascript:void(0);" className="hb lg danger pull-right" onClick={this.killTopology.bind(this)}><i className="fa fa-times"></i></a>
-                  </OverlayTrigger>
-                  : (this.state.unknown !== "UNKNOWN")
-                    ? <OverlayTrigger key={3} placement="top" overlay={<Tooltip id="tooltip">Run</Tooltip>}>
-                        <a href="javascript:void(0);" className="hb lg success pull-right" onClick={this.deployTopology.bind(this)}><i className="fa fa-paper-plane"></i></a>
-                      </OverlayTrigger>
-                    : ''
-                }
-                <div className="topology-status">
-                  <p className="text-muted">Status:</p>
-                  <p>{(this.state.unknown === "UNKNOWN") ? "Storm server is not running" : this.state.topologyStatus || 'NOT RUNNING'}</p>
-                </div>
-              </div>
-            </div>
+            }
           </div>
         </div>
         <Modal ref="TopologyConfigModal"

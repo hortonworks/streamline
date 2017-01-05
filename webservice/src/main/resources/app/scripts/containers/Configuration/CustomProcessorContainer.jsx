@@ -49,6 +49,7 @@ export default class CustomProcessorContainer extends Component {
 	}
 
 	handleCancel() {
+    window.removeEventListener('keyup',this.handleKeyPress.bind(this),false);
 		this.fetchData();
 		this.setState({
 			showListing: true
@@ -64,6 +65,7 @@ export default class CustomProcessorContainer extends Component {
                           : processor.responseMessage.indexOf('missing customProcessorImpl class') !== -1
                             ? "Class name doesn't exists in a jar file"
                             : processor.responseMessage;
+          window.removeEventListener('keyup',this.handleKeyPress.bind(this),false);
           FSReactToastr.error(
               <CommonNotification flag="error" content={errorMsg}/>, '', toastOpt)
         } else {
@@ -123,16 +125,16 @@ export default class CustomProcessorContainer extends Component {
     );
   }
   componentDidUpdate(){
-    window.removeEventListener(this.handleKeyPress.bind(this),false);
-    if(!this.state.childPopUpFlag && this.state.showListing){
+    window.removeEventListener('keyup',this.handleKeyPress.bind(this),false);
+    if(this.state.childPopUpFlag && !this.state.showListing){
       window.addEventListener('keyup',this.handleKeyPress.bind(this),false);
     }
   }
   componentWillUnmount(){
-    window.removeEventListener(this.handleKeyPress.bind(this),false);
+    window.removeEventListener('keyup',this.handleKeyPress.bind(this),false);
   }
   handleKeyPress(event){
-      if(!this.state.childPopUpFlag){
+      if(!this.state.childPopUpFlag && this.refs.CustomProcessorForm){
         if(event.key === "Enter"){
           this.handleSave();
         }

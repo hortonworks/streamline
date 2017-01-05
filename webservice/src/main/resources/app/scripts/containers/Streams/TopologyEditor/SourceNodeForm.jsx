@@ -142,7 +142,7 @@ export default class SourceNodeForm extends Component {
                       }
                     })
                     if(list.hint && list.hint.toLowerCase().indexOf("override") !== -1){
-                      if(formData[k] != ''){
+                      if(formData[k]){
                         if(list.options.findIndex((o)=>{return o.fieldName == formData[k]}) == -1){
                           list.options.push({fieldName: formData[k], uiName: formData[k]});
                         }

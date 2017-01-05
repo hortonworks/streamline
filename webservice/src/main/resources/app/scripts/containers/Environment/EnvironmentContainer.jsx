@@ -25,6 +25,7 @@ import CommonNotification from '../../utils/CommonNotification';
 import {toastOpt} from '../../utils/Constants';
 import Paginate from '../../components/Paginate';
 import AddEnvironment from '../../components/AddEnvironment';
+import CommonLoaderSign  from '../../components/CommonLoaderSign';
 
 const MappingItem = (props) => {
   const {item} = props;
@@ -365,12 +366,14 @@ class EnvironmentContainer extends Component{
         <div className="row">
             {
               fetchLoader
-              ?   <div className="fullPageLoader">
-                      <img src="styles/img/start-loader.gif" alt="loading" />
-                  </div>
+              ?  <CommonLoaderSign
+                    imgName={"environments"}
+                />
               :
                 entities.length === 0
-                ? <NoData />
+                ? <NoData
+                    imgName={"environments"}
+                />
               : splitData[pageIndex].map((nameSpaceList,i) => {
                   return <EnvironmentCards key={i}
                             nameSpaceList = {nameSpaceList}

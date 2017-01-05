@@ -23,6 +23,7 @@ import NoData from '../../components/NoData';
 import CommonNotification from '../../utils/CommonNotification';
 import {toastOpt} from '../../utils/Constants';
 import Paginate from '../../components/Paginate';
+import CommonLoaderSign  from '../../components/CommonLoaderSign';
 
 const ServiceItems = (props) =>{
   const {item} = props;
@@ -517,11 +518,13 @@ class ServicePoolContainer extends Component{
         <div className="row">
             {
               (fetchLoader)
-              ? <div className="fullPageLoader">
-                  <img src="styles/img/start-loader.gif" alt="loading" />
-                </div>
+              ? <CommonLoaderSign
+                  imgName={"services"}
+                />
               : (splitData.length === 0)
-                ? <NoData/>
+                ?  <NoData
+                      imgName={"services"}
+                  />
               : splitData[pageIndex].map((list) => {
                     return <PoolItemsCard key={list.cluster.id}
                             clusterList={list}
