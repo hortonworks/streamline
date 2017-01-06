@@ -4,7 +4,7 @@
   "subType": "OPENTSDB",
   "builtin": true,
   "streamingEngine": "STORM",
-  "transformationClass": "org.apache.streamline.streams.layout.storm.OpenTsdbBoltFluxComponent",
+  "transformationClass": "com.hortonworks.streamline.streams.layout.storm.OpenTsdbBoltFluxComponent",
   "mavenDeps": "org.apache.storm:storm-opentsdb:STORM_VERSION",
   "topologyComponentUISpecification": {
     "fields": [

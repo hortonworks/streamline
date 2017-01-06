@@ -183,12 +183,12 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
       {
         "name": "hbasesink",
         "outputStreams": ["sink-stream"],
-        "__type": "org.apache.streamline.streams.layout.component.rule.action.TransformAction"
+        "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction"
       },
       {
         "name": "hdfssink",
         "outputStreams": ["sink-stream"],
-        "__type": "org.apache.streamline.streams.layout.component.rule.action.TransformAction"
+        "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction"
       },
       {
         "name": "notificationsink",
@@ -197,7 +197,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
          },
         "outputStreams": ["sink-stream"],
          "notifierName": "email_notifier.json",
-          "__type": "org.apache.streamline.streams.layout.component.rule.action.NotifierAction"
+          "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction"
        }
     ]
 }' "${catalogurl}/topologies/$topologyid/rules")
@@ -229,12 +229,12 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
       {
         "name": "hbasesink",
         "outputStreams": ["sink-stream"],
-        "__type": "org.apache.streamline.streams.layout.component.rule.action.TransformAction"
+        "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction"
       },
       {
         "name": "hdfssink",
         "outputStreams": ["sink-stream"],
-        "__type": "org.apache.streamline.streams.layout.component.rule.action.TransformAction"
+        "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction"
       }
     ]
 }' "${catalogurl}/topologies/$topologyid/rules")
@@ -255,12 +255,12 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
       {
         "name": "hbasesink",
         "outputStreams": ["sink-stream"],
-        "__type": "org.apache.streamline.streams.layout.component.rule.action.TransformAction"
+        "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction"
       },
       {
         "name": "hdfssink",
         "outputStreams": ["sink-stream"],
-        "__type": "org.apache.streamline.streams.layout.component.rule.action.TransformAction"
+        "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction"
       },
       {
         "name": "notificationsink",
@@ -269,7 +269,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
          },
         "outputStreams": ["sink-stream"],
          "notifierName": "email_notifier.json",
-          "__type": "org.apache.streamline.streams.layout.component.rule.action.NotifierAction"
+          "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction"
        }
     ]
 }' "${catalogurl}/topologies/$topologyid/rules")
@@ -307,12 +307,12 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
       {
         "name": "hbasesink",
         "outputStreams": ["sink-stream"],
-        "__type": "org.apache.streamline.streams.layout.component.rule.action.TransformAction"
+        "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction"
       },
       {
         "name": "hdfssink",
         "outputStreams": ["sink-stream"],
-        "__type": "org.apache.streamline.streams.layout.component.rule.action.TransformAction"
+        "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction"
       }
     ]
 }' "${catalogurl}/topologies/$topologyid/windows")
@@ -377,7 +377,7 @@ out=$(curl -s  -X POST -H "Content-Type: application/json" -H "Cache-Control: no
             "properties" : {
           "notifierName": "email_notifier.json",
           "jarFileName": "'$notifierJar'",
-          "className": "org.apache.streamline.streams.notifiers.EmailNotifier",
+          "className": "com.hortonworks.streamline.streams.notifiers.EmailNotifier",
           "properties": {
             "username": "hwemailtest@gmail.com",
             "password": "testing12",
@@ -418,7 +418,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
           "type": "fineGrained",
           "normalizationConfig": {
           "'$parserStream'": {
-          "__type": "org.apache.streamline.streams.layout.component.impl.normalization.FieldBasedNormalizationConfig",
+          "__type": "com.hortonworks.streamline.streams.layout.component.impl.normalization.FieldBasedNormalizationConfig",
             "transformers": [
               {
                 "inputField": {
@@ -469,7 +469,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
           "type": "bulk",
           "normalizationConfig": {
             "'$parserStream'": {
-            "__type": "org.apache.streamline.streams.layout.component.impl.normalization.BulkNormalizationConfig",
+            "__type": "com.hortonworks.streamline.streams.layout.component.impl.normalization.BulkNormalizationConfig",
               "normalizationScript": "Map<String, Object> result = new HashMap<>();return result;"
             }
           }

@@ -4,7 +4,7 @@
   "subType": "WINDOW",
   "builtin": true,
   "streamingEngine": "STORM",
-  "transformationClass": "org.apache.streamline.streams.layout.storm.WindowRuleBoltFluxComponent",
+  "transformationClass": "com.hortonworks.streamline.streams.layout.storm.WindowRuleBoltFluxComponent",
   "topologyComponentUISpecification": {
     "fields": [
       {

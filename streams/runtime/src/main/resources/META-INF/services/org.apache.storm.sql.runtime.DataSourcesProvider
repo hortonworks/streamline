@@ -36,6 +36,6 @@
 # of the interface defining the service. Storm SQL defines the service through the interface
 # org.apache.storm.sql.runtime.DataSourcesProvider, hence that being the name of this file.
 # The content of the file should be a single line with the fully qualified name of the class implementing the
-# service, which in this case is org.apache.streamline.streams.runtime.rule.sql.RulesDataSourcesProvider
+# service, which in this case is com.hortonworks.streamline.streams.runtime.rule.sql.RulesDataSourcesProvider
 
-org.apache.streamline.streams.runtime.rule.sql.RulesDataSourcesProvider
+com.hortonworks.streamline.streams.runtime.rule.sql.RulesDataSourcesProvider

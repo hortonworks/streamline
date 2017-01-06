@@ -4,7 +4,7 @@
   "subType": "NOTIFICATION",
   "builtin": true,
   "streamingEngine": "STORM",
-  "transformationClass": "org.apache.streamline.streams.layout.storm.NotificationBoltFluxComponent",
+  "transformationClass": "com.hortonworks.streamline.streams.layout.storm.NotificationBoltFluxComponent",
   "topologyComponentUISpecification": {
     "fields": [
       {
@@ -29,7 +29,7 @@
         "isOptional": false,
         "tooltip": "FQCN of notifier interface implementation",
         "type": "string",
-        "defaultValue": "org.apache.streamline.streams.notifiers.EmailNotifier"
+        "defaultValue": "com.hortonworks.streamline.streams.notifiers.EmailNotifier"
       },
       {
         "uiName": "Notification store class name",

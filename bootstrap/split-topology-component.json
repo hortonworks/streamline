@@ -4,7 +4,7 @@
   "subType": "SPLIT",
   "builtin": true,
   "streamingEngine": "STORM",
-  "transformationClass": "org.apache.streamline.streams.layout.storm.RuleBoltFluxComponent",
+  "transformationClass": "com.hortonworks.streamline.streams.layout.storm.RuleBoltFluxComponent",
   "topologyComponentUISpecification": {
     "fields": [
       {
@@ -27,7 +27,7 @@
         "isOptional": false,
         "tooltip": "Split type",
         "type": "string",
-        "defaultValue": "org.apache.streamline.streams.layout.component.impl.splitjoin.SplitAction"
+        "defaultValue": "com.hortonworks.streamline.streams.layout.component.impl.splitjoin.SplitAction"
       },
       {
         "uiName": "Parallelism",

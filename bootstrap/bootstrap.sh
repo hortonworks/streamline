@@ -82,7 +82,7 @@ run_cmd $update_storm_version_command
 # Get catalogRootUrl from configuration file
 #---------------------------------------------
 
-CONF_READER_MAIN_CLASS=org.apache.streamline.storage.tool.StreamlinePropertiesReader
+CONF_READER_MAIN_CLASS=com.hortonworks.streamline.storage.tool.StreamlinePropertiesReader
 CLASSPATH=${bootstrap_dir}/lib/storage-tool-0.1.0-SNAPSHOT.jar:
 CATALOG_ROOT_URL_PROPERTY_KEY=catalogRootUrl
 

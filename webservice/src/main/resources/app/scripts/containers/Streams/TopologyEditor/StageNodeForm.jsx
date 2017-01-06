@@ -200,7 +200,7 @@ export default class StageFormNode extends Component{
 					stageConfigData = {
 						name: "stage-action",
 						outputStreams: [],
-						__type: "org.apache.streamline.streams.layout.component.impl.splitjoin.StageAction"
+						__type: "com.hortonworks.streamline.streams.layout.component.impl.splitjoin.StageAction"
 					}
 				}
 				stageConfigData.transforms = [];
@@ -208,13 +208,13 @@ export default class StageFormNode extends Component{
 				if(transform === 'projection'){
 					transformObj = {
 						name: "projection-transform",
-						__type: "org.apache.streamline.streams.layout.component.rule.action.transform.ProjectionTransform",
+						__type: "com.hortonworks.streamline.streams.layout.component.rule.action.transform.ProjectionTransform",
 						projectionFields: transformFields
 					};
 				} else {
 					transformObj = {
 						name: "enrichment-transform",
-						__type: "org.apache.streamline.streams.layout.component.rule.action.transform.EnrichmentTransform",
+						__type: "com.hortonworks.streamline.streams.layout.component.rule.action.transform.EnrichmentTransform",
 						fieldsToBeEnriched: transformFields,
 						entryExpirationInterval: entryExpirationInterval,
 						entryRefreshInterval: entryRefreshInterval,

@@ -4,7 +4,7 @@
   "subType": "MULTILANG",
   "streamingEngine": "STORM",
   "builtin": true,
-  "transformationClass": "org.apache.streamline.streams.layout.storm.StreamsShellBoltFluxComponent",
+  "transformationClass": "com.hortonworks.streamline.streams.layout.storm.StreamsShellBoltFluxComponent",
   "topologyComponentUISpecification": {
     "fields": [
       {
