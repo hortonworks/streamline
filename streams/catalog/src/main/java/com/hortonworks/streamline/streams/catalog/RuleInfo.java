@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
  * A rule as represented in the UI layout
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class RuleInfo extends AbstractStorable {
+public class RuleInfo extends BaseRuleInfo {
     public static final String NAMESPACE = "ruleinfos";
 
     public static final String ID = "id";
@@ -206,6 +206,7 @@ public class RuleInfo extends AbstractStorable {
     }
 
     @JsonIgnore
+    @Override
     public String getParsedRuleStr() {
         return parsedRuleStr;
     }
@@ -213,16 +214,6 @@ public class RuleInfo extends AbstractStorable {
     @JsonIgnore
     public void setParsedRuleStr(String parsedRuleStr) {
         this.parsedRuleStr = parsedRuleStr;
-    }
-
-    @JsonIgnore
-    public Rule getRule() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        Rule rule = mapper.readValue(getParsedRuleStr(), Rule.class);
-        if (rule.getId() == null) {
-            rule.setId(getId());
-        }
-        return rule;
     }
 
     public Window getWindow() {
