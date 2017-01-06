@@ -1,12 +1,12 @@
 modules:
   - name: tag-registry
-    className: org.apache.streamline.registries.tag.service.TagRegistryModule
+    className: com.hortonworks.streamline.registries.tag.service.TagRegistryModule
   - name: dashboard-registry
-    className: org.apache.streamline.registries.dashboard.service.DashboardRegistryModule
+    className: com.hortonworks.streamline.registries.dashboard.service.DashboardRegistryModule
   - name: model-registry
-    className: org.apache.streamline.registries.model.service.MLModelRegistryModule
+    className: com.hortonworks.streamline.registries.model.service.MLModelRegistryModule
   - name: streams
-    className: org.apache.streamline.streams.service.StreamsModule
+    className: com.hortonworks.streamline.streams.service.StreamsModule
     config:
       #change the below to the path on your local machine
       streamlineStormJar: /tmp/streamline-runtime-storm-0.1.0-SNAPSHOT.jar
@@ -23,7 +23,7 @@ catalogRootUrl: "http://localhost:8080/api/v1/catalog"
 
 # Filesystem based jar storage
 fileStorageConfiguration:
- className: "org.apache.streamline.common.util.LocalFileSystemStorage"
+ className: "com.hortonworks.streamline.common.util.LocalFileSystemStorage"
  properties:
    directory: "/tmp"
 
@@ -36,7 +36,7 @@ pivotConfiguration:
 
 # HDFS based Jar storage
 # fileStorageConfiguration:
-#   className: "org.apache.streamline.common.util.HdfsFileStorage"
+#   className: "com.hortonworks.streamline.common.util.HdfsFileStorage"
 #   properties:
 #     fsUrl: "file:///"
 #     directory: "/tmp/test-hdfs"
@@ -46,11 +46,11 @@ pivotConfiguration:
 # Example configuration for inmemory is:
 #
 #storageProviderConfiguration:
-#  providerClass: "org.apache.streamline.storage.impl.memory.InMemoryStorageManager"
+#  providerClass: "com.hortonworks.streamline.storage.impl.memory.InMemoryStorageManager"
 #
 # Example configuration for phoenix based JDBC driver
 #storageProviderConfiguration:
-# providerClass: "org.apache.streamline.storage.impl.jdbc.JdbcStorageManager"
+# providerClass: "com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager"
 # properties:
 #   db.type: "phoenix"
 #   queryTimeoutInSecs: 30
@@ -60,7 +60,7 @@ pivotConfiguration:
 #
 # MySQL based jdbc provider configuration is:
 #storageProviderConfiguration:
-# providerClass: "org.apache.streamline.storage.impl.jdbc.JdbcStorageManager"
+# providerClass: "com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager"
 # properties:
 #   db.type: "mysql"
 #   queryTimeoutInSecs: 30
@@ -71,7 +71,7 @@ pivotConfiguration:
 #     dataSource.password: "streamline_password"
 
 storageProviderConfiguration:
- providerClass: "org.apache.streamline.storage.impl.memory.InMemoryStorageManager"
+ providerClass: "com.hortonworks.streamline.storage.impl.memory.InMemoryStorageManager"
 
 # use the simple server factory if you only want to run on a single port
 #server:
@@ -100,7 +100,7 @@ logging:
   # Logger-specific levels.
   loggers:
     # Sets the level for 'com.example.app' to DEBUG.
-    org.apache.streamline: DEBUG
+    com.hortonworks.streamline: DEBUG
   appenders:
     - type: console
 #    - type: file

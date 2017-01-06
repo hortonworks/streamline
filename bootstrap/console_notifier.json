@@ -1,7 +1,7 @@
 {
   "name":"console_notifier",
   "jarFileName": "notifiers.jar",
-  "className": "org.apache.streamline.streams.notifiers.ConsoleNotifier",
+  "className": "com.hortonworks.streamline.streams.notifiers.ConsoleNotifier",
   "properties": {
       "console": "vt100"
   },

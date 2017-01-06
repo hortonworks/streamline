@@ -4,7 +4,7 @@
   "subType": "SOLR",
   "builtin": true,
   "streamingEngine": "STORM",
-  "transformationClass": "org.apache.streamline.streams.layout.storm.SolrUpdateBoltFluxComponent",
+  "transformationClass": "com.hortonworks.streamline.streams.layout.storm.SolrUpdateBoltFluxComponent",
   "mavenDeps": "org.apache.storm:storm-solr:STORM_VERSION",
   "topologyComponentUISpecification": {
     "fields": [

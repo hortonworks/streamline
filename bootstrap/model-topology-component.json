@@ -4,7 +4,7 @@
 	"subType": "PMML_MODEL",
 	"builtin": true,
 	"streamingEngine": "STORM",
-	"transformationClass": "org.apache.streamline.streams.layout.storm.MLModelEvaluationFluxComponent",
+	"transformationClass": "com.hortonworks.streamline.streams.layout.storm.MLModelEvaluationFluxComponent",
     "mavenDeps": "org.apache.storm:storm-pmml:STORM_VERSION",
 	"topologyComponentUISpecification": {
 		"fields": [{

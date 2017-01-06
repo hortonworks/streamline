@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>streamline-runners-storm</artifactId>
-        <groupId>org.apache.streamline</groupId>
+        <groupId>com.hortonworks.streamline</groupId>
         <version>0.1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -13,11 +13,11 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.apache.streamline</groupId>
+            <groupId>com.hortonworks.streamline</groupId>
             <artifactId>streamline-layout-storm</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.streamline</groupId>
+            <groupId>com.hortonworks.streamline</groupId>
             <artifactId>streamline-notification</artifactId>
             <exclusions>
                 <exclusion>
@@ -39,15 +39,15 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.apache.streamline</groupId>
+            <groupId>com.hortonworks.streamline</groupId>
             <artifactId>streamline-notifier</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.streamline</groupId>
+            <groupId>com.hortonworks.streamline</groupId>
             <artifactId>streamline-runtime</artifactId>
             <exclusions>
               <exclusion>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-catalog</artifactId>
               </exclusion>
               <exclusion>
@@ -65,7 +65,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.apache.streamline</groupId>
+            <groupId>com.hortonworks.streamline</groupId>
             <artifactId>streamline-common</artifactId>
             <exclusions>
               <exclusion>
@@ -245,7 +245,7 @@
 
         <!-- Test dependencies -->
         <dependency>
-            <groupId>org.apache.streamline</groupId>
+            <groupId>com.hortonworks.streamline</groupId>
             <artifactId>streamline-examples-processors</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
@@ -306,7 +306,7 @@
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>org.apache.streamline.webservice.StreamlineApplication</mainClass>
+                                    <mainClass>com.hortonworks.streamline.webservice.StreamlineApplication</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>

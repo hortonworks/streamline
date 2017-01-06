@@ -4,7 +4,7 @@
   "subType": "JDBC",
   "builtin": true,
   "streamingEngine": "STORM",
-  "transformationClass": "org.apache.streamline.streams.layout.storm.JDBCBoltFluxComponent",
+  "transformationClass": "com.hortonworks.streamline.streams.layout.storm.JDBCBoltFluxComponent",
   "mavenDeps": "org.apache.storm:storm-jdbc:STORM_VERSION",
   "topologyComponentUISpecification": {
     "fields": [

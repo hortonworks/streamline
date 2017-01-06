@@ -541,7 +541,7 @@ POST /api/v1/catalog/parsers
 ```json
 {
   "name": "TestParser",
-  "className":"org.apache.streamline.registries.parser.json.JsonParser",
+  "className":"com.hortonworks.streamline.registries.parser.json.JsonParser",
   "parserSchema": {
                     "fields": [{"name": "DeviceName", "type": "STRING"}]
                   },
@@ -561,7 +561,7 @@ POST /api/v1/catalog/parsers
   "entity": {
     "id": 1,
     "name": "TestParser",
-    "className": "org.apache.streamline.registries.parser.json.JsonParser",
+    "className": "com.hortonworks.streamline.registries.parser.json.JsonParser",
     "jarStoragePath": "/tmp/parsers-0.1.0-SNAPSHOT.jar",
     "parserSchema": {
       "fields": [
@@ -609,7 +609,7 @@ GET /api/v1/catalog/parsers/{id}
   "entity": {
     "id": 1,
     "name": "TestParser",
-    "className": "org.apache.streamline.registries.parser.json.JsonParser",
+    "className": "com.hortonworks.streamline.registries.parser.json.JsonParser",
     "jarStoragePath": "/tmp/parsers-0.1.0-SNAPSHOT.jar",
     "parserSchema": {
       "fields": [{"name": "DeviceName", "type": "STRING"}]
@@ -676,7 +676,7 @@ GET /api/v1/catalog/parsers
     {
       "id": 1,
       "name": "TestParser",
-      "className": "org.apache.streamline.registries.parser.json.JsonParser",
+      "className": "com.hortonworks.streamline.registries.parser.json.JsonParser",
       "jarStoragePath": "/tmp/parsers-0.1.0-SNAPSHOT.jar",
       "parserSchema": {
         "fields": [{"name": "DeviceName","type": "STRING"}]
@@ -687,7 +687,7 @@ GET /api/v1/catalog/parsers
     {
       "id": 2,
       "name": "New Parser",
-      "className": "org.apache.streamline.parsers.TestParser",
+      "className": "com.hortonworks.streamline.parsers.TestParser",
       "jarStoragePath": "/tmp/test-0.1.0-SNAPSHOT.jar",
       "parserSchema": {
         "fields": [{"name": "DeviceName","type": "STRING"}]
@@ -718,7 +718,7 @@ DELETE /api/v1/catalog/parsers/ID
   "entity": {
     "id": 1,
     "name": "TestParser",
-    "className": "org.apache.streamline.registries.parser.json.JsonParser",
+    "className": "com.hortonworks.streamline.registries.parser.json.JsonParser",
     "jarStoragePath": "/tmp/parsers-0.1.0-SNAPSHOT.jar",
     "parserSchema": {
       "fields": [{"name": "DeviceName", "type": "STRING"}]
@@ -756,7 +756,7 @@ GET /api/v1/catalog/parsers/verify-upload
     Content-Type: application/json
     Content-Length: 158
     
-    {"responseCode":1000,"responseMessage":"Success","entities":["org.apache.streamline.registries.parser.json.JsonParser","org.apache.streamline.registries.parser.nest.NestParser"]}%
+    {"responseCode":1000,"responseMessage":"Success","entities":["com.hortonworks.streamline.registries.parser.json.JsonParser","com.hortonworks.streamline.registries.parser.nest.NestParser"]}%
     
 *Error Response*
 

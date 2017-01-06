@@ -4,7 +4,7 @@
   "subType": "BRANCH",
   "builtin": true,
   "streamingEngine": "STORM",
-  "transformationClass": "org.apache.streamline.streams.layout.storm.RuleBoltFluxComponent",
+  "transformationClass": "com.hortonworks.streamline.streams.layout.storm.RuleBoltFluxComponent",
   "topologyComponentUISpecification": {
     "fields": [
       {

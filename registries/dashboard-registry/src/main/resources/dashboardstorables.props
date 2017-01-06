@@ -1,4 +1,4 @@
-org.apache.streamline.registries.dashboard.entites.Dashboard
-org.apache.streamline.registries.dashboard.entites.Datasource
-org.apache.streamline.registries.dashboard.entites.Widget
-org.apache.streamline.registries.dashboard.entites.WidgetDatasourceMapping
+com.hortonworks.streamline.registries.dashboard.entites.Dashboard
+com.hortonworks.streamline.registries.dashboard.entites.Datasource
+com.hortonworks.streamline.registries.dashboard.entites.Widget
+com.hortonworks.streamline.registries.dashboard.entites.WidgetDatasourceMapping
