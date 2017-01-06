@@ -64,7 +64,7 @@
     "react-treebeard": "^1.1.4",
     "react-twitter-typeahead": "^1.1.12",
     "react-utils": "^1.0.0",
-    "reactable": "^0.14.0",
+    "reactable": "^0.14.1",
     "require-dir": "^0.3.0",
     "run-sequence": "^1.2.2",
     "system": "^1.0.6",

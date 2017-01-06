@@ -478,12 +478,16 @@ class TopologyListingContainer extends Component {
       this.btnClassChange();
     }
     btnClassChange = () => {
-      const actionMenu = document.querySelector('.actionDropdown');
-      actionMenu.setAttribute("class","actionDropdown hb lg success ");
-      actionMenu.parentElement.setAttribute("class","dropdown");
-      const sortDropdown = document.querySelector('.sortDropdown');
-      sortDropdown.setAttribute("class","sortDropdown");
-      sortDropdown.parentElement.setAttribute("class","dropdown")
+      if(!this.state.fetchLoader){
+        const actionMenu = document.querySelector('.actionDropdown');
+        actionMenu.setAttribute("class","actionDropdown hb lg success ");
+        if(this.state.entities.length !== 0){
+          actionMenu.parentElement.setAttribute("class","dropdown");
+          const sortDropdown = document.querySelector('.sortDropdown');
+          sortDropdown.setAttribute("class","sortDropdown");
+          sortDropdown.parentElement.setAttribute("class","dropdown")
+        }
+      }
     }
     pagePosition = (index) => {
       this.setState({pageIndex : index || 0})
@@ -579,49 +583,53 @@ class TopologyListingContainer extends Component {
                                 </MenuItem>
                             </DropdownButton>
                         </div>
-                        <div className="row">
-                            <div className="page-title-box clearfix">
-                                <div className="col-md-4 col-md-offset-5 text-right">
-                                    <FormGroup>
-                                        <InputGroup>
-                                            <FormControl type="text"
-                                              placeholder="Search by name"
-                                              onKeyUp={this.onFilterChange}
-                                              className={`inputAnimateIn ${(slideInput) ? "inputAnimateOut" : ''}`}
-                                              onBlur={this.slideInputOut}
-                                            />
-                                            <InputGroup.Addon className="page-search">
-                                                <Button type="button"
-                                                  className="searchBtn"
-                                                  onClick={this.slideInput}
-                                                >
-                                                  <i className="fa fa-search"></i>
-                                                </Button>
-                                            </InputGroup.Addon>
-                                        </InputGroup>
-                                    </FormGroup>
-                                </div>
+                        {
+                          splitData.length !== 0
+                          ? <div className="row">
+                              <div className="page-title-box clearfix">
+                                  <div className="col-md-4 col-md-offset-5 text-right">
+                                      <FormGroup>
+                                          <InputGroup>
+                                              <FormControl type="text"
+                                                placeholder="Search by name"
+                                                onKeyUp={this.onFilterChange}
+                                                className={`inputAnimateIn ${(slideInput) ? "inputAnimateOut" : ''}`}
+                                                onBlur={this.slideInputOut}
+                                              />
+                                              <InputGroup.Addon className="page-search">
+                                                  <Button type="button"
+                                                    className="searchBtn"
+                                                    onClick={this.slideInput}
+                                                  >
+                                                    <i className="fa fa-search"></i>
+                                                  </Button>
+                                              </InputGroup.Addon>
+                                          </InputGroup>
+                                      </FormGroup>
+                                  </div>
 
-                                <div className="col-md-2 text-center">
-                                  <DropdownButton title={sortTitle}
-                                    id="sortDropdown"
-                                    className="sortDropdown "
-                                  >
-                                      <MenuItem onClick={this.onSortByClicked.bind(this,"name")}>
-                                          &nbsp;Name
-                                      </MenuItem>
-                                      <MenuItem active onClick={this.onSortByClicked.bind(this,"last_updated")}>
-                                          &nbsp;Last Update
-                                      </MenuItem>
-                                      <MenuItem onClick={this.onSortByClicked.bind(this,"status")}>
-                                          &nbsp;Status
-                                      </MenuItem>
-                                  </DropdownButton>
-                                </div>
-                                <div className="col-md-1 col-sm-3 text-left">
-                                </div>
-                            </div>
-                        </div>
+                                  <div className="col-md-2 text-center">
+                                    <DropdownButton title={sortTitle}
+                                      id="sortDropdown"
+                                      className="sortDropdown "
+                                    >
+                                        <MenuItem onClick={this.onSortByClicked.bind(this,"name")}>
+                                            &nbsp;Name
+                                        </MenuItem>
+                                        <MenuItem active onClick={this.onSortByClicked.bind(this,"last_updated")}>
+                                            &nbsp;Last Update
+                                        </MenuItem>
+                                        <MenuItem onClick={this.onSortByClicked.bind(this,"status")}>
+                                            &nbsp;Status
+                                        </MenuItem>
+                                    </DropdownButton>
+                                  </div>
+                                  <div className="col-md-1 col-sm-3 text-left">
+                                  </div>
+                              </div>
+                          </div>
+                          :''
+                        }
                     </div>
                   : ''
                 }

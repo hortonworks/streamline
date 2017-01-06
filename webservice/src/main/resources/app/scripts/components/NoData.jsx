@@ -8,13 +8,13 @@ export default class NoData extends Component{
     const divStyle = {
       backgroundImage : 'url(' + imgUrl + ')',
       backgroundRepeat : "no-repeat",
-      backgroundPosition :`${imgName === ("services" || "environments") ? "right" : "center" } top`,
+      backgroundPosition :`${((imgName === "services") || (imgName === "environments")) ? "right" : "center" } top`,
       backgroundSize : "50%",
       height : window.innerHeight - 124
     }
       return (
-        <div className={`col-sm-12 ${ imgName === ("services" || "environments") ? "" : "text-center"}`} style={divStyle}>
-          { imgName === ("services" || "environments")
+        <div className={`col-sm-12 ${ ((imgName === "services") || (imgName === "environments")) ? "" : "text-center"}`} style={divStyle}>
+          { ((imgName === "services") || (imgName === "environments"))
             ? <div className="row">
               <div className="col-md-9 col-md-offset-2 intro-section">
                   <h4 className="intro-section-title">3 Easy Steps to get started...</h4>

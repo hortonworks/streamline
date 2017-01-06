@@ -461,7 +461,7 @@ class ServicePoolContainer extends Component{
                 <label>Url<span className="text-danger">*</span></label>
                   <input type="text"
                     className="form-control"
-                    placeholder="http://ambari_host:port/api/v1/cluster/CLUSTER_NAME"
+                    placeholder="http://ambari_host:port/api/v1/clusters/CLUSTER_NAME"
                     ref="userUrl"
                     autoFocus="true"
                     disabled={true}
@@ -502,7 +502,7 @@ class ServicePoolContainer extends Component{
                       ref="addURLInput"
                       onKeyPress={this.handleKeyPress}
                       className={`form-control ${showInputErr ? '' : 'invalidInput'}`}
-                      placeholder="http://ambari_host:port/api/v1/cluster/CLUSTER_NAME"
+                      placeholder="http://ambari_host:port/api/v1/clusters/CLUSTER_NAME"
                     />
                     <span className="input-group-btn">
                         <button className="btn btn-success"

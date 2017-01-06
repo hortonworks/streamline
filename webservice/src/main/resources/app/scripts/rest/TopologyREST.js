@@ -79,7 +79,7 @@ const TopologyREST = {
                 if(versionId){
                         url = baseUrl+'topologies/'+id+"/versions/"+versionId+'/actions/kill';
                 }
-                return fetchclu(url, options)
+                return fetch(url, options)
 			.then( (response) => {
 		  		return response.json();
 		  	})

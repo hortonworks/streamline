@@ -148,41 +148,56 @@ export class PivotApplication extends React.Component<PivotApplicationProps, Piv
   }
 
   autoCreateDataCube(cluster: Cluster, sources: string[], appSettings: any) {
-    var newDataCube = DataCube.fromClusterAndSource(
-      generateUniqueName('dc', name => indexByAttribute(appSettings.dataCubes, 'name', name) === -1),
-      cluster,
-      sources[0] || null
-    );
+    var cubesArr: any[] = [];
+    sources.map((source, i) => {
+      var newDataCube = DataCube.fromClusterAndSource(
+        generateUniqueName('dc' + i, name => indexByAttribute(appSettings.dataCubes, 'name', name) === -1),
+        cluster,
+        source || null
+      );
+      ((c_newDataCube) => {
+        Ajax.query({
+          method: "POST",
+          url: 'settings/attributes',
+          data: {
+            clusterName: c_newDataCube.clusterName,
+            source: c_newDataCube.source
+          }
+        })
+          .then(
+            (resp) => {
+              var attributes = AttributeInfo.fromJSs(resp.attributes);
+              c_newDataCube = c_newDataCube.fillAllFromAttributes(attributes);
+              cubesArr.push(c_newDataCube);
+              var o = { cubesArr, sources, appSettings };
+              this.makeFinalCall(o);
+            },
+            (xhr: XMLHttpRequest) => {
+              Notifier.failure('Woops', 'Something bad happened');
+            }
+          )
+          .done();
+      })(newDataCube);
+    });
+  }
 
-    Ajax.query({
-      method: "POST",
-      url: 'settings/attributes',
-      data: {
-        clusterName: newDataCube.clusterName,
-        source: newDataCube.source
-      }
-    })
-      .then(
-        (resp) => {
-          var attributes = AttributeInfo.fromJSs(resp.attributes);
-          newDataCube = newDataCube.fillAllFromAttributes(attributes);
-          Ajax.query({
-            method: "POST",
-            url: 'settings',
-            data: {appSettings: appSettings.appendDataCubes([newDataCube])}
-          })
-            .then(
-              (status) => {
-                this.setState({viewType: HOME});
-              },
-              (e: Error) => Notifier.failure('Woops', 'Something bad happened')
-            );
-        },
-        (xhr: XMLHttpRequest) => {
-          Notifier.failure('Woops', 'Something bad happened');
-        }
-      )
-      .done();
+  makeFinalCall(o: any) {
+    let { cubesArr, sources, appSettings } = o;
+    if (sources.length === cubesArr.length) {
+      let newAppSettings = appSettings.appendDataCubes(cubesArr);
+      Ajax.query({
+        method: "POST",
+        url: 'settings',
+        data: {appSettings: newAppSettings}
+      })
+        .then(
+          (status) => {
+            console.log("yo");
+            this.setState({viewType: HOME, appSettings: newAppSettings});
+          },
+          (e: Error) => Notifier.failure('Woops', 'Something bad happened')
+        );
+    }
   }
 
   componentWillMount() {
@@ -587,8 +602,11 @@ export class PivotApplication extends React.Component<PivotApplicationProps, Piv
 
   renderView() {
     const { maxFilters, maxSplits, user, stateful } = this.props;
-    const { viewType, viewHash, selectedItem, appSettings, timekeeper, cubeViewSupervisor } = this.state;
+    let { viewType, viewHash, selectedItem, appSettings, timekeeper, cubeViewSupervisor } = this.state;
     const { dataCubes, collections, customization, linkViewConfig } = appSettings;
+    if (viewType === NO_DATA) {
+      viewType = HOME;
+    }
     switch (viewType) {
       case NO_DATA:
         return <NoDataView
