@@ -276,129 +276,159 @@ const getNodeType = function(parentType){
 
 const deleteNode = function(topologyId, versionId, currentNode, nodes, edges, internalFlags, updateGraphMethod, metaInfo, uinamesList, setLastChange){
 	let promiseArr = [],
-		nodePromiseArr = [],
-		callback = null,
-		currentType = currentNode.currentType;
+	nodePromiseArr = [],
+	callback = null,
+	currentType = currentNode.currentType;
 
-                //Get data of current node
-        nodePromiseArr.push(TopologyREST.getNode(topologyId, versionId, this.getNodeType(currentNode.parentType), currentNode.nodeId))
+    //Get data of current node
+    nodePromiseArr.push(TopologyREST.getNode(topologyId, versionId, this.getNodeType(currentNode.parentType), currentNode.nodeId))
 
-                //Find out if the source of the current node is rules/windows
-                //then update those processor by removing actions from it.
-        let connectingNodes = edges.filter((obj)=>{ return obj.target == currentNode; });
-        let actionsPromiseArr = [];
-        connectingNodes.map((o,i)=>{
-            if(o.source.currentType.toLowerCase() === 'rule' || o.source.currentType.toLowerCase() === 'window' ||
-                o.source.currentType.toLowerCase() === 'branch'){
-                let type = o.source.currentType.toLowerCase() === 'rule' ? 'rules' : (o.source.currentType.toLowerCase() === 'branch' ? 'branchrules' : 'windows');
-                TopologyREST.getAllNodes(topologyId, versionId, type).then((results)=>{
-                    results.entities.map((nodeObj)=>{
-                        let actionsArr = nodeObj.actions,
-                            actions = [],
-                            hasAction = false;
-                        actionsArr.map((a)=>{
-                            if(a.name !== currentNode.uiname){
-                                actions.push(a);
-                            } else {
-                                hasAction = true;
-                            }
-                        });
-                        if(hasAction) {
-                            nodeObj.actions = actions;
-                            actionsPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, type, nodeObj.id, {body: JSON.stringify(nodeObj)}));
+    //Find out if the source of the current node is rules/windows
+    //then update those processor by removing actions from it.
+    let connectingNodes = edges.filter((obj)=>{ return obj.target == currentNode; });
+    let actionsPromiseArr = [];
+    connectingNodes.map((o,i)=>{
+        if(o.source.currentType.toLowerCase() === 'rule' || o.source.currentType.toLowerCase() === 'window' ||
+            o.source.currentType.toLowerCase() === 'branch'){
+            let type = o.source.currentType.toLowerCase() === 'rule' ? 'rules' : (o.source.currentType.toLowerCase() === 'branch' ? 'branchrules' : 'windows');
+            TopologyREST.getAllNodes(topologyId, versionId, type).then((results)=>{
+                results.entities.map((nodeObj)=>{
+                    let actionsArr = nodeObj.actions,
+                        actions = [],
+                        hasAction = false;
+                    actionsArr.map((a)=>{
+                        if(a.name !== currentNode.uiname){
+                            actions.push(a);
+                        } else {
+                            hasAction = true;
                         }
                     });
-                });
-            }
-        })
-
-        Promise.all(actionsPromiseArr).
-            then((results)=>{
-                for(let i = 0; i < results.length; i++){
-                    if(results[i].responseMessage !== undefined){
-                        FSReactToastr.error(<CommonNotification flag="error" content={results[i].responseMessage}/>, '', toastOpt)
+                    if(hasAction) {
+                        nodeObj.actions = actions;
+                        actionsPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, type, nodeObj.id, {body: JSON.stringify(nodeObj)}));
                     }
-                }
+                });
             });
+        }
+    })
 
-        Promise.all(nodePromiseArr)
-        .then(results=>{
-            let nodeData = results[0];
-            setLastChange(results[0].timestamp);
-
-            //Delete Links
-            let edgeArr = this.getEdges(edges, currentNode);
-
-            edgeArr.map((o)=>{
-                promiseArr.push(TopologyREST.deleteNode(topologyId, 'edges', o.edgeId));
-            });
-
-            //Delete Rules incase of Rule Processor
-            if(nodeData.type === 'RULE'){
-                if(nodeData.config.properties.rules){
-                    nodeData.config.properties.rules.map(ruleId=>{
-                        promiseArr.push(TopologyREST.deleteNode(topologyId, 'rules', ruleId));
-                    })
-                }
+    Promise.all(actionsPromiseArr)
+    .then((results)=>{
+        for(let i = 0; i < results.length; i++){
+            if(results[i].responseMessage !== undefined){
+                FSReactToastr.error(<CommonNotification flag="error" content={results[i].responseMessage}/>, '', toastOpt)
             }
+        }
+    });
 
-            //Delete Window incase of Rule Processor
-            if(nodeData.type === 'WINDOW'){
-                if(nodeData.config.properties.rules){
-                    nodeData.config.properties.rules.map(ruleId=>{
-                        promiseArr.push(TopologyREST.deleteNode(topologyId, 'windows', ruleId));
-                    })
-                }
-            }     
+    Promise.all(nodePromiseArr)
+    .then(results=>{
+        let nodeData = results[0];
+        nodeData.type = currentNode.currentType;
+        setLastChange(results[0].timestamp);
 
-            //Delete current node
-            promiseArr.push(TopologyREST.deleteNode(topologyId, this.getNodeType(currentNode.parentType), currentNode.nodeId));
+        callback = function(){
+            // Graph related Operations
+            uinamesList.splice(uinamesList.indexOf(currentNode.uiname), 1);
+            nodes.splice(nodes.indexOf(currentNode), 1);
+            this.spliceLinksForNode(currentNode, edges);
+            internalFlags.selectedNode = null;
+            updateGraphMethod();
+        }.bind(this)
 
-            //Delete streams of all nodes
-            results.map(result=>{
-                let node = result;
-                if(node.outputStreams){
-                    node.outputStreams.map(stream=>{
-                        if(stream.id){
-                            promiseArr.push(TopologyREST.deleteNode(topologyId, 'streams', stream.id));
-                        }
-                    })
+        //Delete data from metadata
+        metaInfo = this.removeNodeFromMeta(metaInfo, currentNode);
+        let metaData = {
+            topologyId: topologyId,
+            data: JSON.stringify(metaInfo)
+        };
+        promiseArr.push(TopologyREST.putMetaInfo(topologyId, versionId, {body: JSON.stringify(metaData)}));
+
+        //Delete Links
+        let edgeArr = this.getEdges(edges, currentNode);
+
+        edgeArr.map((o)=>{
+            promiseArr.push(TopologyREST.deleteNode(topologyId, 'edges', o.edgeId));
+        });
+
+        Promise.all(promiseArr)
+        .then((edgeResults)=>{
+            let edgeAPISuccess = true;
+            edgeResults.map((edge)=>{
+                if(edge.responseMessage !== undefined){
+                    edgeAPISuccess = false;
+                    FSReactToastr.error(<CommonNotification flag="error" content={edge.responseMessage}/>, '', toastOpt)
                 }
             })
+            if(edgeAPISuccess){
+                let processorsPromiseArr = [];
+                //Delete Rules incase of Rule Processor
+                if(nodeData.type.toLowerCase() === 'rule'){
+                    if(nodeData.config.properties.rules){
+                        nodeData.config.properties.rules.map(ruleId=>{
+                            processorsPromiseArr.push(TopologyREST.deleteNode(topologyId, 'rules', ruleId));
+                        })
+                    }
+                }
 
-            //Delete data from metadata
-            metaInfo = this.removeNodeFromMeta(metaInfo, currentNode);
-            let metaData = {
-                topologyId: topologyId,
-                data: JSON.stringify(metaInfo)
-            };
-            promiseArr.push(TopologyREST.putMetaInfo(topologyId, versionId, {body: JSON.stringify(metaData)}));
+                //Delete Window incase of Window Processor
+                if(nodeData.type.toLowerCase() === 'window'){
+                    if(nodeData.config.properties.rules){
+                        nodeData.config.properties.rules.map(ruleId=>{
+                            processorsPromiseArr.push(TopologyREST.deleteNode(topologyId, 'windows', ruleId));
+                        })
+                    }
+                }
 
-            //If needed to reset any processor on delete - it comes here or in callback
-            callback = function(){
-                // Graph related Operations
-                uinamesList.splice(uinamesList.indexOf(currentNode.uiname), 1);
-                nodes.splice(nodes.indexOf(currentNode), 1);
-                this.spliceLinksForNode(currentNode, edges);
-                internalFlags.selectedNode = null;
-                updateGraphMethod();
-            }.bind(this)
+                //Delete Branch incase of Branch Processor
+                if(nodeData.type.toLowerCase() === 'branch'){
+                    if(nodeData.config.properties.rules){
+                        nodeData.config.properties.rules.map(ruleId=>{
+                            processorsPromiseArr.push(TopologyREST.deleteNode(topologyId, 'branchrules', ruleId));
+                        })
+                    }
+                }
 
-            if(promiseArr.length > 0){
-                //Make calls to delete node or nodes
-                Promise.all(promiseArr)
-                    .then((results)=>{
-                        for(let i = 0; i < results.length; i++){
-                            if(results[i].responseMessage !== undefined){
-                                FSReactToastr.error(<CommonNotification flag="error" content={results[i].responseMessage}/>, '', toastOpt)
-                            }
+                //Delete current node
+                processorsPromiseArr.push(TopologyREST.deleteNode(topologyId, this.getNodeType(currentNode.parentType), currentNode.nodeId));
+
+                Promise.all(processorsPromiseArr)
+                .then((processorResult)=>{
+                    let processorAPISuccess = true;
+                    processorResult.map((processor)=>{
+                        if(processor.responseMessage !== undefined){
+                            processorAPISuccess = false;
+                            FSReactToastr.error(<CommonNotification flag="error" content={processor.responseMessage}/>, '', toastOpt)
                         }
-                        //call the callback
-                        callback();
                     })
+                    if(processorAPISuccess){
+                        let streamsPromiseArr = [];
+                        //Delete streams of all nodes
+                        results.map(result=>{
+                            let node = result;
+                            if(node.outputStreams){
+                                node.outputStreams.map(stream=>{
+                                    if(stream.id){
+                                        streamsPromiseArr.push(TopologyREST.deleteNode(topologyId, 'streams', stream.id));
+                                    }
+                                })
+                            }
+                        })
+                        Promise.all(streamsPromiseArr)
+                        .then((streamsResult)=>{
+                            streamsResult.map((stream)=>{
+                                if(stream.responseMessage !== undefined){
+                                    FSReactToastr.error(<CommonNotification flag="error" content={stream.responseMessage}/>, '', toastOpt)
+                                }
+                            })
+                            //call the callback
+                            callback();
+                        })
+                    }
+                })
             }
-
         })
+    })
 
 }
 
