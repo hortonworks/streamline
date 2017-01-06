@@ -19,7 +19,10 @@
 
 package org.apache.streamline.streams.layout.storm;
 
+import org.apache.streamline.common.Schema;
 import org.apache.streamline.streams.StreamlineEvent;
+import org.apache.streamline.streams.layout.component.Stream;
+import org.apache.streamline.streams.layout.component.impl.HdfsSource;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -51,6 +54,11 @@ public class HdfsSpoutFluxComponentTest {
         conf.put(HdfsSpoutFluxComponent.KEY_BAD_FILES_DIR, badDir);
         conf.put(HdfsSpoutFluxComponent.KEY_LOCK_DIR, lockDir);
         conf.put(HdfsSpoutFluxComponent.KEY_LOCK_TIMEOUT_SEC, lockTimeout);
+
+        HdfsSource hdfsSource = new HdfsSource();
+        hdfsSource.addOutputStream(new Stream("stream_1",  new Schema()));
+        conf.put(StormTopologyLayoutConstants.STREAMLINE_COMPONENT_CONF_KEY, hdfsSource );
+
         comp.withConfig(conf);
 
     }
@@ -64,7 +72,7 @@ public class HdfsSpoutFluxComponentTest {
 
         Object className = info.get("className");
         Assert.assertEquals("org.apache.storm.hdfs.spout.HdfsSpout", className);
-        Assert.assertEquals(8, ((ArrayList)info.get("configMethods")).size() ) ;
+        Assert.assertEquals(9, ((ArrayList)info.get("configMethods")).size() ) ;
 
 
         ArrayList configMethods = (ArrayList) info.get("configMethods");
