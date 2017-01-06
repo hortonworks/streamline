@@ -74,17 +74,10 @@
             </includes>
         </fileSet>
         <fileSet>
-            <directory>${project.basedir}./storage/tool/target/dependency</directory>
-            <outputDirectory>/bootstrap/lib</outputDirectory>
-            <includes>
-                <include>mariadb-java-client*</include>
-            </includes>
-        </fileSet>
-        <fileSet>
             <directory>${project.basedir}./storage/core/target/dependency</directory>
             <outputDirectory>/libs</outputDirectory>
             <includes>
-                <include>mariadb-java-client*</include>
+                <include>postgresql*</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -118,6 +111,13 @@
         <fileSet>
             <directory>${project.basedir}./bootstrap/sql/phoenix</directory>
             <outputDirectory>/bootstrap/sql/phoenix</outputDirectory>
+            <includes>
+                <include>**/*.sql</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>${project.basedir}./bootstrap/sql/postgresql</directory>
+            <outputDirectory>/bootstrap/sql/postgresql</outputDirectory>
             <includes>
                 <include>**/*.sql</include>
             </includes>
