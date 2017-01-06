@@ -3,8 +3,10 @@ package org.apache.streamline.storage.tool;
 public class StorageProviderConfiguration {
     private static final String MYSQL_DELIMITER = ";";
     private static final String PHOENIX_DELIMITER = "\n";
+    private static final String POSTGRESQL_DELIMITER = ";";
     private static final String PHOENIX = "phoenix";
     private static final String MYSQL = "mysql";
+    private static final String POSTGRESQL = "postgresql";
 
     private String driverClass;
     private String url;
@@ -23,6 +25,7 @@ public class StorageProviderConfiguration {
         this.delimiter = delimiter;
     }
 
+
     public static StorageProviderConfiguration mysql(String driverClass, String url) {
         return new StorageProviderConfiguration(driverClass, url, "", "", MYSQL, MYSQL_DELIMITER);
     }
@@ -33,6 +36,10 @@ public class StorageProviderConfiguration {
 
     public static StorageProviderConfiguration phoenix(String driverClass, String url) {
         return new StorageProviderConfiguration(driverClass, url, "", "", PHOENIX, PHOENIX_DELIMITER);
+    }
+
+    public static StorageProviderConfiguration postgresql(String driverClass, String url, String user, String password) {
+        return new StorageProviderConfiguration(driverClass, url, user, password, POSTGRESQL, POSTGRESQL_DELIMITER);
     }
 
     public String getDriverClass() {
@@ -58,4 +65,5 @@ public class StorageProviderConfiguration {
     public String getDelimiter() {
         return delimiter;
     }
+
 }

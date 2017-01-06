@@ -1,4 +1,4 @@
-package org.apache.streamline.storage.impl.jdbc.provider.postgres.factory;
+package org.apache.streamline.storage.impl.jdbc.provider.postgresql.factory;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
@@ -7,6 +7,7 @@ import org.apache.streamline.storage.impl.jdbc.config.ExecutionConfig;
 import org.apache.streamline.storage.impl.jdbc.connection.ConnectionBuilder;
 import org.apache.streamline.storage.impl.jdbc.connection.HikariCPConnectionBuilder;
 import org.apache.streamline.storage.impl.jdbc.provider.mysql.query.MySqlInsertUpdateDuplicate;
+import org.apache.streamline.storage.impl.jdbc.provider.postgresql.query.PostgresqlInsertUpdateDuplicate;
 import org.apache.streamline.storage.impl.jdbc.provider.sql.factory.AbstractQueryExecutor;
 import org.apache.streamline.storage.impl.jdbc.provider.sql.query.SqlInsertQuery;
 import org.apache.streamline.storage.impl.jdbc.provider.sql.query.SqlQuery;
@@ -25,13 +26,13 @@ import java.util.Properties;
  *
  * If the value of id is null, we let Postgres issue new ID and get the new ID. If the value of id is not null, we just use that value.
  */
-public class PostgresExecutor extends AbstractQueryExecutor {
+public class PostgresqlExecutor extends AbstractQueryExecutor {
 
     /**
      * @param config Object that contains arbitrary configuration that may be needed for any of the steps of the query execution process
      * @param connectionBuilder Object that establishes the connection to the database
      */
-    public PostgresExecutor(ExecutionConfig config, ConnectionBuilder connectionBuilder) {
+    public PostgresqlExecutor(ExecutionConfig config, ConnectionBuilder connectionBuilder) {
         super(config, connectionBuilder);
     }
 
@@ -41,7 +42,7 @@ public class PostgresExecutor extends AbstractQueryExecutor {
      * @param cacheBuilder Guava cache configuration. The maximum number of entries in cache (open connections)
      *                     must not exceed the maximum number of open database connections allowed
      */
-    public PostgresExecutor(ExecutionConfig config, ConnectionBuilder connectionBuilder, CacheBuilder<SqlQuery, PreparedStatementBuilder> cacheBuilder) {
+    public PostgresqlExecutor(ExecutionConfig config, ConnectionBuilder connectionBuilder, CacheBuilder<SqlQuery, PreparedStatementBuilder> cacheBuilder) {
         super(config, connectionBuilder, cacheBuilder);
     }
 
@@ -54,7 +55,7 @@ public class PostgresExecutor extends AbstractQueryExecutor {
 
     @Override
     public void insertOrUpdate(final Storable storable) {
-        insertOrUpdateWithUniqueId(storable, new MySqlInsertUpdateDuplicate(storable));
+        insertOrUpdateWithUniqueId(storable, new PostgresqlInsertUpdateDuplicate(storable));
     }
 
     @Override
@@ -63,7 +64,7 @@ public class PostgresExecutor extends AbstractQueryExecutor {
         return null;
     }
 
-    public static PostgresExecutor createExecutor(Map<String, Object> jdbcProps) {
+    public static PostgresqlExecutor createExecutor(Map<String, Object> jdbcProps) {
         Util.validateJDBCProperties(jdbcProps, Lists.newArrayList("dataSourceClassName", "dataSource.url"));
 
         String dataSourceClassName = (String) jdbcProps.get("dataSourceClassName");
@@ -86,7 +87,7 @@ public class PostgresExecutor extends AbstractQueryExecutor {
 
         HikariCPConnectionBuilder connectionBuilder = new HikariCPConnectionBuilder(hikariConfig);
         ExecutionConfig executionConfig = new ExecutionConfig(queryTimeOutInSecs);
-        return new PostgresExecutor(executionConfig, connectionBuilder);
+        return new PostgresqlExecutor(executionConfig, connectionBuilder);
     }
 
     private void insertOrUpdateWithUniqueId(final Storable storable, final SqlQuery sqlQuery) {
@@ -94,11 +95,13 @@ public class PostgresExecutor extends AbstractQueryExecutor {
             Long id = storable.getId();
             if (id == null) {
                 id = executeUpdateWithReturningGeneratedKey(sqlQuery);
+                log.info("after executeUPdate {}", id);
                 storable.setId(id);
             } else {
                 executeUpdate(sqlQuery);
             }
-        } catch (UnsupportedOperationException e) {
+        } catch (Exception e) {
+            log.info("wtf {}", e.getMessage());
             executeUpdate(sqlQuery);
         }
     }

@@ -1,10 +1,10 @@
-package org.apache.streamline.storage.impl.jdbc.provider.postgres.query;
+package org.apache.streamline.storage.impl.jdbc.provider.postgresql.query;
 
 import org.apache.streamline.storage.impl.jdbc.provider.sql.query.AbstractSqlQuery;
 
-public class PostgresQuery extends AbstractSqlQuery {
+public class PostgresqlQuery extends AbstractSqlQuery {
 
-    public PostgresQuery(String sql) {
+    public PostgresqlQuery(String sql) {
         this.sql = sql;
     }
 
