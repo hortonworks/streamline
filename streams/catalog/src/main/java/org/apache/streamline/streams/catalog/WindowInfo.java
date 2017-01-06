@@ -66,7 +66,9 @@ public class WindowInfo extends AbstractStorable {
         }
         setCondition(other.getCondition());
         setParsedRuleStr(other.getParsedRuleStr());
-        setWindow(new Window(other.getWindow()));
+        if (other.getWindow() != null) {
+            setWindow(new Window(other.getWindow()));
+        }
         if (other.getActions() != null) {
             setActions(other.getActions().stream().map(Action::copy).collect(Collectors.toList()));
         }
