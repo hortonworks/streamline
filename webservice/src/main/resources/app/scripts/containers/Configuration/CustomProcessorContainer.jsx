@@ -33,12 +33,13 @@ export default class CustomProcessorContainer extends Component {
 
 	fetchData() {
 		CustomProcessorREST.getAllProcessors()
-			.then((processors)=>{
+                        .then((processors)=>{
                                 if(processors.responseMessage !== undefined){
           FSReactToastr.error(
-              <CommonNotification flag="error" content={processors.responseMessage}/>, '', toastOpt)
-				} else {
-					let data = processors.entities;
+              <CommonNotification flag="error" content={processors.responseMessage}/>, '', toastOpt);
+              this.setState({fetchLoader:false});
+                                } else {
+                                        let data = processors.entities;
                                         this.setState({entities: data,fetchLoader:false})
 				}
 			})
@@ -168,10 +169,11 @@ export default class CustomProcessorContainer extends Component {
                         <div className="row">
                           <div className="page-title-box clearfix">
                               <div className="col-md-4 col-md-offset-6 text-right">
-                                <FormGroup>
                                 {
                                   filteredEntities.length !== 0
-                                  ?   <InputGroup>
+                                  ?
+                                    <FormGroup>
+                                        <InputGroup>
                                             <FormControl type="text"
                                               placeholder="Search by name"
                                               onKeyUp={this.onFilterChange}
@@ -187,9 +189,9 @@ export default class CustomProcessorContainer extends Component {
                                                 </Button>
                                             </InputGroup.Addon>
                                         </InputGroup>
+                                    </FormGroup>
                                   : ''
                                 }
-                                </FormGroup>
                               </div>
                               <div id="add-environment">
                                 <a href="javascript:void(0);"

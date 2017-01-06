@@ -1,20 +1,23 @@
 import React, {Component} from 'react';
 import {Link} from 'react-router';
+import _ from 'lodash';
 
 export default class NoData extends Component{
   render(){
     const {imgName} = this.props;
+    const tempArr = ["services","environments","applications"];
+    const index = _.findIndex(tempArr , function(o) { return o == 'services';})
     const imgUrl = `styles/img/back-${imgName}.png`;
     const divStyle = {
       backgroundImage : 'url(' + imgUrl + ')',
       backgroundRepeat : "no-repeat",
-      backgroundPosition :`${((imgName === "services") || (imgName === "environments")) ? "right" : "center" } top`,
+      backgroundPosition :`${(index !== -1) ? "right" : "center" } top`,
       backgroundSize : "50%",
       height : window.innerHeight - 124
     }
       return (
-        <div className={`col-sm-12 ${ ((imgName === "services") || (imgName === "environments")) ? "" : "text-center"}`} style={divStyle}>
-          { ((imgName === "services") || (imgName === "environments"))
+        <div className={`col-sm-12 ${ (index !== -1) ? "" : "text-center"}`} style={divStyle}>
+          { (index !== -1)
             ? <div className="row">
               <div className="col-md-9 col-md-offset-2 intro-section">
                   <h4 className="intro-section-title">3 Easy Steps to get started...</h4>

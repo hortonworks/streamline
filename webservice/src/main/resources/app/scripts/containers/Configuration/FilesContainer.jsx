@@ -31,12 +31,13 @@ export default class FilesContainer extends Component {
 
 	fetchData() {
 		FileREST.getAllFiles()
-			.then((files)=>{
+                        .then((files)=>{
                                 if(files.responseMessage !== undefined){
           FSReactToastr.error(
-              <CommonNotification flag="error" content={files.responseMessage}/>, '', toastOpt)
-				} else {
-					let data = files.entities;
+              <CommonNotification flag="error" content={files.responseMessage}/>, '', toastOpt);
+              this.setState({fetchLoader:false});
+                                } else {
+                                        let data = files.entities;
                                         this.setState({entities: data,fetchLoader:false})
 				}
 			})
@@ -117,7 +118,7 @@ export default class FilesContainer extends Component {
     }
   }
 	render() {
-    let {entities,filterValue,slideInput} = this.state;
+    let {entities,filterValue,slideInput,fetchLoader} = this.state;
     const filteredEntities = Utils.filterByName(entities , filterValue);
 		return (
 				<BaseContainer
@@ -125,82 +126,91 @@ export default class FilesContainer extends Component {
                   routes={this.props.routes}
                   headerContent={this.getHeaderContent()}
                 >
-                  <div className="row">
-                    <div className="page-title-box clearfix">
-                        <div className="col-md-4 col-md-offset-6 text-right">
-                          <FormGroup>
-                            {
-                              filteredEntities.length !== 0
-                              ? <InputGroup>
-                                    <FormControl type="text"
-                                      placeholder="Search by name"
-                                      onKeyUp={this.onFilterChange}
-                                      className={`inputAnimateIn ${(slideInput) ? "inputAnimateOut" : ''}`}
-                                      onBlur={this.slideInputOut}
-                                    />
-                                    <InputGroup.Addon>
-                                        <Button type="button"
-                                          className="searchBtn"
-                                          onClick={this.slideInput}
-                                        >
-                                          <i className="fa fa-search"></i>
-                                        </Button>
-                                    </InputGroup.Addon>
-                                </InputGroup>
-                              : ''
-                            }
-                          </FormGroup>
-                        </div>
-                        <div id="add-environment">
-                          <a href="javascript:void(0);"
-                            className="hb lg success actionDropdown"
-                            data-target="#addEnvironment"
-                            onClick={this.handleAdd.bind(this)}>
-                              <i className="fa fa-plus"></i>
-                          </a>
-                        </div>
-                    </div>
-                  </div>
-                  {
-                    filteredEntities.length === 0
-                    ? <NoData
+                {
+                  fetchLoader
+                  ?  <CommonLoaderSign
                         imgName={"default"}
-                      />
-                    : <div className="row">
-                          <div className="col-sm-12">
-                              <div className="box">
-                                  <div className="box-body">
-                                    <Table
-                                      className="table table-hover table-bordered"
-                                      noDataText="No records found."
-                                      currentPage={0}
-                                      itemsPerPage={filteredEntities.length > pageSize ? pageSize : 0} pageButtonLimit={5}>
-                                        <Thead>
-                                          <Th column="name">Name</Th>
-                                          <Th column="version">Version</Th>
-                                          <Th column="storedFileName">Stored File Name</Th>
-                                          <Th column="action">Actions</Th>
-                                        </Thead>
-                                      {filteredEntities.map((obj, i) => {
-                                        return (
-                                          <Tr key={`${obj.name}${i}`}>
-                                            <Td column="name">{obj.name}</Td>
-                                            <Td column="version">{obj.version}</Td>
-                                            <Td column="storedFileName">{obj.storedFileName}</Td>
-                                            <Td column="action">
-                                              <div className="btn-action">
-                                                <BtnDelete callback={this.handleDelete.bind(this, obj.id)}/>
-                                              </div>
-                                            </Td>
-                                          </Tr>
-                                        )
-                                      })}
-                                    </Table>
+                    />
+                  : <div>
+                      <div className="row">
+                        <div className="page-title-box clearfix">
+                            <div className="col-md-4 col-md-offset-6 text-right">
+                                {
+                                  filteredEntities.length !== 0
+                                  ?
+                                    <FormGroup>
+                                      <InputGroup>
+                                        <FormControl type="text"
+                                          placeholder="Search by name"
+                                          onKeyUp={this.onFilterChange}
+                                          className={`inputAnimateIn ${(slideInput) ? "inputAnimateOut" : ''}`}
+                                          onBlur={this.slideInputOut}
+                                        />
+                                        <InputGroup.Addon>
+                                            <Button type="button"
+                                              className="searchBtn"
+                                              onClick={this.slideInput}
+                                            >
+                                              <i className="fa fa-search"></i>
+                                            </Button>
+                                        </InputGroup.Addon>
+                                    </InputGroup>
+                                  </FormGroup>
+                                  : ''
+                                }
+                            </div>
+                            <div id="add-environment">
+                              <a href="javascript:void(0);"
+                                className="hb lg success actionDropdown"
+                                data-target="#addEnvironment"
+                                onClick={this.handleAdd.bind(this)}>
+                                  <i className="fa fa-plus"></i>
+                              </a>
+                            </div>
+                        </div>
+                      </div>
+                      {
+                        filteredEntities.length === 0
+                        ? <NoData
+                            imgName={"default"}
+                          />
+                        : <div className="row">
+                              <div className="col-sm-12">
+                                  <div className="box">
+                                      <div className="box-body">
+                                        <Table
+                                          className="table table-hover table-bordered"
+                                          noDataText="No records found."
+                                          currentPage={0}
+                                          itemsPerPage={filteredEntities.length > pageSize ? pageSize : 0} pageButtonLimit={5}>
+                                            <Thead>
+                                              <Th column="name">Name</Th>
+                                              <Th column="version">Version</Th>
+                                              <Th column="storedFileName">Stored File Name</Th>
+                                              <Th column="action">Actions</Th>
+                                            </Thead>
+                                          {filteredEntities.map((obj, i) => {
+                                            return (
+                                              <Tr key={`${obj.name}${i}`}>
+                                                <Td column="name">{obj.name}</Td>
+                                                <Td column="version">{obj.version}</Td>
+                                                <Td column="storedFileName">{obj.storedFileName}</Td>
+                                                <Td column="action">
+                                                  <div className="btn-action">
+                                                    <BtnDelete callback={this.handleDelete.bind(this, obj.id)}/>
+                                                  </div>
+                                                </Td>
+                                              </Tr>
+                                            )
+                                          })}
+                                        </Table>
+                                      </div>
                                   </div>
                               </div>
-                          </div>
+                        </div>
+                      }
                     </div>
-                  }
+                }
             <Modal ref="Modal"
             data-title="Add File"
             onKeyPress={this.handleKeyPress}

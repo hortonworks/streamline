@@ -538,7 +538,7 @@ export default class TopologyGraphComponent extends Component {
     if(that.props.viewMode){
       let flag  = true;
       thisGraph.nodes.map(x => {
-          return x.y > 400 ? flag = true :  flag = false
+          return x.y > 300 ? flag = true :  flag = false
       });
       if(flag){
         thisGraph.nodes.map(x => {

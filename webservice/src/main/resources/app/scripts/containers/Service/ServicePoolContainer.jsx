@@ -396,8 +396,8 @@ class ServicePoolContainer extends Component{
           }
           const tempDataArray = this.spliceTempArr(clusterID || idCheck);
 
-          this.setState({fetchLoader : true, loader : false,idCheck : '', entities: entitiesWrap, refIdArr : tempDataArray}, () => {
-            this.fetchData();
+          this.setState({fetchLoader : (idCheck) ? false : true, loader : false,idCheck : '', entities: entitiesWrap, refIdArr : tempDataArray}, () => {
+            sucessMsg.indexOf("added") !== - 1 ? this.fetchData() : ''
             clearTimeout(clearTimer);
             const clearTimer = setTimeout(() => {
               FSReactToastr.success(
@@ -495,46 +495,50 @@ class ServicePoolContainer extends Component{
 
     return(
       <BaseContainer ref="BaseContainer" routes={routes} headerContent={this.getHeaderContent()}>
-        <div className="row row-margin-bottom">
-            <div className="col-md-8 col-md-offset-2">
-                <div className="input-group">
-                    <input type="text"
-                      ref="addURLInput"
-                      onKeyPress={this.handleKeyPress}
-                      className={`form-control ${showInputErr ? '' : 'invalidInput'}`}
-                      placeholder="http://ambari_host:port/api/v1/clusters/CLUSTER_NAME"
-                    />
-                    <span className="input-group-btn">
-                        <button className="btn btn-success"
-                          type="button"
-                          onClick={this.addBtnClicked}>
-                          Add
-                        </button>
-                    </span>
-                </div>
-                <lable className={`text-danger ${showInputErr ? 'hidden' : ''}`}>This is not a valid Url</lable>
+        {
+          fetchLoader
+          ? <CommonLoaderSign
+              imgName={"services"}
+            />
+          : <div>
+              <div className="row row-margin-bottom">
+                  <div className="col-md-8 col-md-offset-2">
+                      <div className="input-group">
+                          <input type="text"
+                            ref="addURLInput"
+                            onKeyPress={this.handleKeyPress}
+                            className={`form-control ${showInputErr ? '' : 'invalidInput'}`}
+                            placeholder="http://ambari_host:port/api/v1/clusters/CLUSTER_NAME"
+                          />
+                          <span className="input-group-btn">
+                              <button className="btn btn-success"
+                                type="button"
+                                onClick={this.addBtnClicked}>
+                                Add
+                              </button>
+                          </span>
+                      </div>
+                      <lable className={`text-danger ${showInputErr ? 'hidden' : ''}`}>This is not a valid Url</lable>
+                  </div>
+              </div>
+              <div className="row">
+                  {
+                    (splitData.length === 0)
+                      ?  <NoData
+                            imgName={"services"}
+                        />
+                    : splitData[pageIndex].map((list) => {
+                          return <PoolItemsCard key={list.cluster.id}
+                                  clusterList={list}
+                                  poolActionClicked={this.poolActionClicked}
+                                  refIdArr={refIdArr}
+                                  loader = {loader}
+                                  />
+                      })
+                  }
+              </div>
             </div>
-        </div>
-        <div className="row">
-            {
-              (fetchLoader)
-              ? <CommonLoaderSign
-                  imgName={"services"}
-                />
-              : (splitData.length === 0)
-                ?  <NoData
-                      imgName={"services"}
-                  />
-              : splitData[pageIndex].map((list) => {
-                    return <PoolItemsCard key={list.cluster.id}
-                            clusterList={list}
-                            poolActionClicked={this.poolActionClicked}
-                            refIdArr={refIdArr}
-                            loader = {loader}
-                            />
-                })
-            }
-        </div>
+        }
         {
           (entities.length > pageSize)
             ? <Paginate

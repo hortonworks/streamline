@@ -29,7 +29,8 @@ export default class TagsContainer extends Component {
 		super(props);
     this.state = {
       filterValue:'',
-      slideInput : false
+      slideInput : false,
+      fetchLoader : true
     }
 		this.fetchData();
 	}
@@ -39,7 +40,8 @@ export default class TagsContainer extends Component {
 			.then((tags)=>{
                                 if(tags.responseMessage !== undefined){
           FSReactToastr.error(
-              <CommonNotification flag="error" content={tags.responseMessage}/>, '', toastOpt)
+              <CommonNotification flag="error" content={tags.responseMessage}/>, '', toastOpt);
+              this.setState({fetchLoader:false});
 				} else {
 					let data = this.tempData = tags.entities;
 					this.syncData(data);
@@ -73,7 +75,7 @@ export default class TagsContainer extends Component {
 				this.performAction(dataArr[i].id);
 			}
 		}
-		this.setState({entities: this.result});
+                this.setState({entities: this.result,fetchLoader:false});
 	}
 
 	getMetaData(dataArr){
@@ -278,7 +280,7 @@ export default class TagsContainer extends Component {
   }
 
  	render() {
-                const {entities, parentId, currentId, modalTitle ,filterValue,slideInput} = this.state;
+                const {entities, parentId, currentId, modalTitle ,filterValue,slideInput,fetchLoader} = this.state;
     const filterByTagName = function(entities, filterValue){
       let matchFilter = new RegExp(filterValue , 'i');
 
@@ -308,64 +310,72 @@ export default class TagsContainer extends Component {
             routes={this.props.routes}
             headerContent={this.getHeaderContent()}
           >
-              <div className="row">
-                <div className="page-title-box clearfix">
-                    <div className="col-md-4 col-md-offset-6 text-right">
-                      {
-                        filteredEntities.length !== 0
-                        ? <FormGroup>
-                              <InputGroup>
-                                  <FormControl type="text"
-                                    placeholder="Search by name"
-                                    onKeyUp={this.onFilterChange}
-                                    className={`inputAnimateIn ${(slideInput) ? "inputAnimateOut" : ''}`}
-                                    onBlur={this.slideInputOut}
-                                  />
-                                  <InputGroup.Addon>
-                                      <Button type="button"
-                                        className="searchBtn"
-                                        onClick={this.slideInput}
-                                      >
-                                        <i className="fa fa-search"></i>
-                                      </Button>
-                                  </InputGroup.Addon>
-                              </InputGroup>
-                          </FormGroup>
-                        : ''
-                      }
-                    </div>
-                    <div id="add-environment">
-                      <a href="javascript:void(0);"
-                        className="hb lg success actionDropdown"
-                        data-target="#addEnvironment"
-                          onClick={this.handleAdd.bind(this, null)}>
-                          <i className="fa fa-plus"></i>
-                      </a>
-                    </div>
+          {
+            fetchLoader
+            ?  <CommonLoaderSign
+                  imgName={"default"}
+              />
+            :<div>
+                <div className="row">
+                  <div className="page-title-box clearfix">
+                      <div className="col-md-4 col-md-offset-6 text-right">
+                        {
+                          filteredEntities.length !== 0
+                          ? <FormGroup>
+                                <InputGroup>
+                                    <FormControl type="text"
+                                      placeholder="Search by name"
+                                      onKeyUp={this.onFilterChange}
+                                      className={`inputAnimateIn ${(slideInput) ? "inputAnimateOut" : ''}`}
+                                      onBlur={this.slideInputOut}
+                                    />
+                                    <InputGroup.Addon>
+                                        <Button type="button"
+                                          className="searchBtn"
+                                          onClick={this.slideInput}
+                                        >
+                                          <i className="fa fa-search"></i>
+                                        </Button>
+                                    </InputGroup.Addon>
+                                </InputGroup>
+                            </FormGroup>
+                          : ''
+                        }
+                      </div>
+                      <div id="add-environment">
+                        <a href="javascript:void(0);"
+                          className="hb lg success actionDropdown"
+                          data-target="#addEnvironment"
+                            onClick={this.handleAdd.bind(this, null)}>
+                            <i className="fa fa-plus"></i>
+                        </a>
+                      </div>
+                  </div>
+                </div>
+                <div className="row">
+                      <div className="col-sm-12">
+
+                                {
+                                  (filteredEntities.length === 0)
+                                    ? <NoData
+                                        imgName={"default"}
+                                      />
+                                    :<div className="box">
+                                        <div className="box-body">
+                                            <Nestable
+                                              useDragHandle
+                                              items={ filteredEntities }
+                                              renderItem={ this.renderItem.bind(this) }
+                                              onUpdate={ this.updateItems.bind(this) }
+                                              childrenStyle={ styles.children }
+                                            />
+                                          </div>
+                                      </div>
+                                }
+                      </div>
                 </div>
               </div>
-              <div className="row">
-                    <div className="col-sm-12">
-
-                              {
-                                (filteredEntities.length === 0)
-                                  ? <NoData
-                                      imgName={"default"}
-                                    />
-                                  :<div className="box">
-                                      <div className="box-body">
-                                          <Nestable
-                                            useDragHandle
-                                            items={ filteredEntities }
-                                            renderItem={ this.renderItem.bind(this) }
-                                            onUpdate={ this.updateItems.bind(this) }
-                                            childrenStyle={ styles.children }
-                                          />
-                                        </div>
-                                    </div>
-                              }
-                    </div>
-              </div>
+          }
               <Modal ref="Modal"
                 onKeyPress={this.handleKeyPress}
                 data-title={modalTitle}

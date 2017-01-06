@@ -171,7 +171,7 @@ class TopologyItems extends Component {
                   (isLoading.loader && (isLoading.idCheck === topology.id))
                     ? <div className="stream-body">
                         <div className="loading-img text-center">
-                            <img src="styles/img/start-loader.gif" alt="loading" />
+                            <img src="styles/img/start-loader.gif" alt="loading" style={{width : "100px"}} />
                         </div>
                       </div>
                     : <div className="stream-body">
