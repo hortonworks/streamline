@@ -38,7 +38,7 @@ public class StreamlineJdbcMapper implements JdbcMapper {
     public List<Column> getColumns(ITuple tuple) {
         StreamlineEvent event = (StreamlineEvent) tuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
         List<Column> res = new ArrayList<>();
-        if (fieldsToColumns == null) {
+        if (fieldsToColumns.isEmpty()) {
             initFieldsToColumns();
         }
         for(String field: fields) {
@@ -57,6 +57,7 @@ public class StreamlineJdbcMapper implements JdbcMapper {
         for (Column<?> column: client.getColumnSchema(tableName)) {
             fieldsToColumns.put(column.getColumnName().toUpperCase(), column);
         }
+        LOG.info("fieldsToColumns {}", fieldsToColumns);
     }
 
     private Column<?> getColumn(String fieldName) {
