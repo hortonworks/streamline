@@ -18,6 +18,7 @@
  */
 package org.apache.streamline.streams.runtime.storm.bolt.model;
 
+import org.apache.storm.pmml.model.ModelOutputs;
 import org.apache.storm.pmml.model.jpmml.JpmmlModelOutputs;
 import org.apache.storm.pmml.runner.jpmml.JPmmlModelRunner;
 import org.apache.storm.pmml.runner.jpmml.JpmmlFactory;
@@ -33,11 +34,12 @@ import org.apache.streamline.common.util.Utils;
 import org.apache.streamline.streams.StreamlineEvent;
 import org.apache.streamline.streams.layout.component.impl.model.ModelProcessor;
 import org.apache.streamline.streams.layout.component.Stream;
+import org.dmg.pmml.PMML;
+import org.jpmml.evaluator.Evaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -59,13 +61,13 @@ public class PMMLModelEvaluationBolt extends BaseRichBolt {
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
         try {
-            InputStream modelInputStream = new ByteArrayInputStream(
-                    modelProcessor.getPmml().getBytes());
+            PMML pmmlModel = JpmmlFactory.newPmml(
+                    new ByteArrayInputStream(modelProcessor.getPmml().getBytes()));
             this.modelRunner = new StreamlineJPMMLModelRunner(
                     modelProcessor.getOutputStreams(),
                     modelProcessor.getId(),
-                    JpmmlFactory.newEvaluator(modelInputStream),
-                    JpmmlModelOutputs.toDefaultStream(modelInputStream));
+                    JpmmlFactory.newEvaluator(pmmlModel),
+                    JpmmlModelOutputs.toDefaultStream(pmmlModel));
             this.collector = collector;
         } catch (Exception e) {
             LOG.error("Unexpected exception while preparing the model evaluation bolt", e);
