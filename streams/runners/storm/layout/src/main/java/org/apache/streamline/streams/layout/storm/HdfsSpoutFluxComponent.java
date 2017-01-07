@@ -19,7 +19,15 @@
 
 package org.apache.streamline.streams.layout.storm;
 
+import org.apache.streamline.streams.StreamlineEvent;
+import org.apache.streamline.streams.layout.component.impl.HdfsSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class HdfsSpoutFluxComponent extends AbstractFluxComponent {
 
@@ -36,15 +44,30 @@ public class HdfsSpoutFluxComponent extends AbstractFluxComponent {
     public final static String KEY_OUTPUT_FIELDS          = "OutputFields";
     public final static String KEY_COMMIT_FREQUENCY_SEC   = "CommitFrequencySec";
 
+    HdfsSource hdfsSource = null;
+    private static final Logger LOG = LoggerFactory.getLogger(HdfsSpoutFluxComponent.class);
+
     @Override
     protected void generateComponent() {
+
+        hdfsSource = (HdfsSource) conf.get(StormTopologyLayoutConstants.STREAMLINE_COMPONENT_CONF_KEY);
+        if(hdfsSource==null) {
+            throw new IllegalArgumentException("HdfsSource object not found in conf");
+        }
+        if ( hdfsSource.getOutputStreams().size() != 1 ) {
+            String msg = "Hdfs source component [" + hdfsSource + "] should define exactly one output stream";
+            LOG.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
         String spoutId        = "hdfsSpout_" + UUID_FOR_COMPONENTS;
         String spoutClassName = "org.apache.storm.hdfs.spout.HdfsSpout";
         String[] configMethodNames = {
                 "setHdfsUri",              "setReaderType",       "setSourceDir",
                 "setArchiveDir",           "setBadFilesDir",      "setLockDir",
                 "setCommitFrequencyCount", "setMaxOutstanding",   "setLockTimeoutSec",
-                "setIgnoreSuffix",         "withOutputFields",    "setCommitFrequencySec" };
+                "setIgnoreSuffix",         "withOutputFields",    "setCommitFrequencySec"
+        };
 
         String[] configKeys = {
                 KEY_HDFS_URI,
@@ -60,10 +83,26 @@ public class HdfsSpoutFluxComponent extends AbstractFluxComponent {
                 KEY_OUTPUT_FIELDS,
                 KEY_COMMIT_FREQUENCY_SEC
         };
-        conf.put("withOutputFields", new String[]{"streamline-event"} ); // as it only emits StreamlineEvent tuples
 
         List configMethods = getConfigMethodsYaml(configMethodNames,  configKeys);
+        String outputStream =  hdfsSource.getOutputStreams().iterator().next().getId();
+        addConfMethod(configMethods, "withOutputStream", outputStream);
+
+        // Output field name is always StreamlineEvent.STREAMLINE_EVENT, so not configurable via UI
+        addConfMethod(configMethods, "withOutputFields", new String[]{StreamlineEvent.STREAMLINE_EVENT});
+
         component = createComponent(spoutId, spoutClassName, null, null, configMethods);
         addParallelismToComponent();
     }
+
+    private void addConfMethod(List configMethods, String methodName, Object argument) {
+        Map method = new LinkedHashMap(1);
+        method.put(StormTopologyLayoutConstants.YAML_KEY_NAME, methodName);
+        ArrayList args = new ArrayList(1);
+        args.add(argument);
+        method.put(StormTopologyLayoutConstants.YAML_KEY_ARGS, args);
+
+        configMethods.add(method);
+    }
+
 }

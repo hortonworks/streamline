@@ -27,6 +27,7 @@ import org.apache.streamline.streams.layout.component.StreamlineSource;
 import org.apache.streamline.streams.layout.component.OutputComponent;
 import org.apache.streamline.streams.layout.component.Stream;
 import org.apache.streamline.streams.layout.component.StreamGrouping;
+import org.apache.streamline.streams.layout.component.impl.HdfsSource;
 import org.apache.streamline.streams.layout.component.impl.KafkaSource;
 import org.apache.streamline.streams.layout.component.impl.MultiLangProcessor;
 import org.apache.streamline.streams.layout.component.impl.NotificationSink;
@@ -186,6 +187,7 @@ public class TopologyComponentFactory {
     private Map<String, Provider<StreamlineSource>> createSourceProviders() {
         ImmutableMap.Builder<String, Provider<StreamlineSource>> builder = ImmutableMap.builder();
         builder.put(kafkaSourceProvider());
+        builder.put(hdfsSourceProvider());
         return builder.build();
     }
 
@@ -258,6 +260,16 @@ public class TopologyComponentFactory {
             }
         };
         return new SimpleImmutableEntry<>(KAFKA, provider);
+    }
+
+    private Map.Entry<String, Provider<StreamlineSource>> hdfsSourceProvider() {
+        Provider<StreamlineSource> provider = new Provider<StreamlineSource>() {
+            @Override
+            public StreamlineSource create(TopologyComponent component) {
+                return new HdfsSource();
+            }
+        };
+        return new SimpleImmutableEntry<>(HDFS_SOURCE, provider);
     }
 
     private Map.Entry<String, Provider<StreamlineProcessor>> normalizationProcessorProvider() {
