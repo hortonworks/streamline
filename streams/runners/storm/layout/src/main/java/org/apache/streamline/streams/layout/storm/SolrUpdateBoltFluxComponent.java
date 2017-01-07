@@ -49,7 +49,7 @@ public class SolrUpdateBoltFluxComponent extends AbstractFluxComponent {
         final String componentId = "solrConfig" + UUID_FOR_COMPONENTS;
         final String className = "org.apache.storm.solr.config.SolrConfig";
         final List<Object> constructorArgs = new ArrayList<Object>() {{
-            add(JSON_KEY_SOLR_ZK_HOST_STRING);
+            add(conf.get(JSON_KEY_SOLR_ZK_HOST_STRING));
         }};
 
         addToComponents(createComponent(componentId, className, null, constructorArgs, null));
@@ -60,7 +60,7 @@ public class SolrUpdateBoltFluxComponent extends AbstractFluxComponent {
         final String componentId = "streamlineSolrJsonMapper" + UUID_FOR_COMPONENTS;
         final String className = "org.apache.streamline.streams.runtime.storm.bolt.solr.StreamlineSolrJsonMapper";
         final List<Object> constructorArgs = new ArrayList<Object>() {{
-            add(JSON_KEY_SOLR_COLLECTION_NAME);
+            add(conf.get(JSON_KEY_SOLR_COLLECTION_NAME));
         }};
 
         addToComponents(createComponent(componentId, className, null, constructorArgs, null));
@@ -71,7 +71,7 @@ public class SolrUpdateBoltFluxComponent extends AbstractFluxComponent {
         final String componentId = "countBasedCommit" + UUID_FOR_COMPONENTS;
         final String className = "org.apache.storm.solr.config.CountBasedCommit";
         final List<Object> constructorArgs = new ArrayList<Object>() {{
-            add(JSON_KEY_COMMIT_BATCH_SIZE);
+            add(conf.get(JSON_KEY_COMMIT_BATCH_SIZE));
         }};
 
         addToComponents(createComponent(componentId, className, null, constructorArgs, null));
