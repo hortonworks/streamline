@@ -49,6 +49,8 @@ public class JsonFileReader extends TextFileReader {
     public List<Object> next() throws IOException, ParseException {
         List<Object> lineTuple = super.next();
         String jsonLine = (String)lineTuple.get(0);
+        if(jsonLine==null)
+            return null;
         //1- convert Json to Map<>
         HashMap<String,Object> jsonMap = new ObjectMapper().readValue(jsonLine, HashMap.class);
 
