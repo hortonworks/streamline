@@ -16,15 +16,15 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.catalog.storage;
+package com.hortonworks.streamline.streams.catalog.storage;
 
-import org.apache.streamline.common.test.IntegrationTest;
-import org.apache.streamline.storage.StorableTest;
-import org.apache.streamline.storage.exception.NonIncrementalColumnException;
-import org.apache.streamline.storage.impl.jdbc.JdbcStorageManager;
-import org.apache.streamline.storage.impl.jdbc.mysql.MySqlStorageManagerWithCacheIntegrationTest;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
-import org.apache.streamline.streams.catalog.service.CatalogService;
+import com.hortonworks.streamline.common.test.IntegrationTest;
+import com.hortonworks.streamline.storage.StorableTest;
+import com.hortonworks.streamline.storage.exception.NonIncrementalColumnException;
+import com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager;
+import com.hortonworks.streamline.storage.impl.jdbc.mysql.MySqlStorageManagerWithCacheIntegrationTest;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
+import com.hortonworks.streamline.streams.catalog.service.CatalogService;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 

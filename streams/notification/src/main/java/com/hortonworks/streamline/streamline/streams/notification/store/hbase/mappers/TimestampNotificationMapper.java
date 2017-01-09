@@ -1,6 +1,6 @@
-package org.apache.streamline.streams.notification.store.hbase.mappers;
+package com.hortonworks.streamline.streams.notification.store.hbase.mappers;
 
-import org.apache.streamline.streams.notification.Notification;
+import com.hortonworks.streamline.streams.notification.Notification;
 
 import java.util.Arrays;
 import java.util.List;

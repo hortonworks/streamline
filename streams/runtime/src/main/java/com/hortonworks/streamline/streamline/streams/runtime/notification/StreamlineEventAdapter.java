@@ -16,23 +16,23 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.notification;
+package com.hortonworks.streamline.streams.runtime.notification;
 
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.notification.Notification;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.notification.Notification;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.streamline.streams.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_DATASOURCE_IDS;
-import static org.apache.streamline.streams.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_EVENT_IDS;
-import static org.apache.streamline.streams.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_NOTIFIER_NAME;
-import static org.apache.streamline.streams.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_RULE_ID;
-import static org.apache.streamline.streams.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_TIMESTAMP;
+import static com.hortonworks.streamline.streams.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_DATASOURCE_IDS;
+import static com.hortonworks.streamline.streams.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_EVENT_IDS;
+import static com.hortonworks.streamline.streams.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_NOTIFIER_NAME;
+import static com.hortonworks.streamline.streams.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_RULE_ID;
+import static com.hortonworks.streamline.streams.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_TIMESTAMP;
 
 /**
- * Adapts {@link StreamlineEvent} to {@link org.apache.streamline.streams.notification.Notification}
+ * Adapts {@link StreamlineEvent} to {@link com.hortonworks.streamline.streams.notification.Notification}
  */
 public class StreamlineEventAdapter implements Notification {
     private final StreamlineEvent event;

@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.streams.runtime.storm.spout;
+package com.hortonworks.streamline.streams.runtime.storm.spout;
 
 import com.hortonworks.registries.schemaregistry.SchemaMetadata;
 import com.hortonworks.registries.schemaregistry.avro.AvroSchemaProvider;
@@ -25,8 +25,8 @@ import org.apache.storm.shade.com.google.common.base.Preconditions;
 import org.apache.storm.spout.MultiScheme;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Values;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -1,8 +1,8 @@
-package org.apache.streamline.streams.catalog.storage;
+package com.hortonworks.streamline.streams.catalog.storage;
 
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorableTest;
-import org.apache.streamline.streams.catalog.FileInfo;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorableTest;
+import com.hortonworks.streamline.streams.catalog.FileInfo;
 
 import java.util.ArrayList;
 

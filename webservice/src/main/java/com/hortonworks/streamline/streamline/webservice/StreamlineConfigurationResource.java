@@ -1,8 +1,8 @@
-package org.apache.streamline.webservice;
+package com.hortonworks.streamline.webservice;
 
 import com.codahale.metrics.annotation.Timed;
-import org.apache.streamline.common.Constants;
-import org.apache.streamline.common.util.WSUtils;
+import com.hortonworks.streamline.common.Constants;
+import com.hortonworks.streamline.common.util.WSUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

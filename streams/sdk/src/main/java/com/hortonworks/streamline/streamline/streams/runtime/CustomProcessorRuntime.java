@@ -1,6 +1,6 @@
-package org.apache.streamline.streams.runtime;
+package com.hortonworks.streamline.streams.runtime;
 
-import org.apache.streamline.streams.exception.ConfigException;
+import com.hortonworks.streamline.streams.exception.ConfigException;
 
 import java.util.Map;
 

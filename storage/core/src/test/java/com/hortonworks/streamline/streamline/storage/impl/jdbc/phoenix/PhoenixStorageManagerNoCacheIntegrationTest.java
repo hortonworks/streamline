@@ -1,11 +1,11 @@
-package org.apache.streamline.storage.impl.jdbc.phoenix;
+package com.hortonworks.streamline.storage.impl.jdbc.phoenix;
 
-import org.apache.streamline.common.test.HBaseIntegrationTest;
-import org.apache.streamline.storage.impl.jdbc.JdbcStorageManagerIntegrationTest;
-import org.apache.streamline.storage.impl.jdbc.config.ExecutionConfig;
-import org.apache.streamline.storage.impl.jdbc.connection.HikariCPConnectionBuilder;
-import org.apache.streamline.storage.impl.jdbc.provider.phoenix.JdbcClient;
-import org.apache.streamline.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
+import com.hortonworks.streamline.common.test.HBaseIntegrationTest;
+import com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManagerIntegrationTest;
+import com.hortonworks.streamline.storage.impl.jdbc.config.ExecutionConfig;
+import com.hortonworks.streamline.storage.impl.jdbc.connection.HikariCPConnectionBuilder;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.phoenix.JdbcClient;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
 import com.zaxxer.hikari.HikariConfig;
 import org.junit.After;
 import org.junit.Before;

@@ -16,11 +16,11 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.cache.view.impl.redis;
+package com.hortonworks.streamline.cache.view.impl.redis;
 
-import org.apache.streamline.cache.AbstractCache;
-import org.apache.streamline.cache.Cache;
-import org.apache.streamline.cache.view.config.ExpiryPolicy;
+import com.hortonworks.streamline.cache.AbstractCache;
+import com.hortonworks.streamline.cache.Cache;
+import com.hortonworks.streamline.cache.view.config.ExpiryPolicy;
 import com.lambdaworks.redis.RedisConnection;
 
 import java.util.Collection;

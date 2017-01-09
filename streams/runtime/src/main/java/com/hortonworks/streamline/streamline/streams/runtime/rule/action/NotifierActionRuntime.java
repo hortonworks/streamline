@@ -16,21 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.runtime.rule.action;
+package com.hortonworks.streamline.streams.runtime.rule.action;
 
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.Result;
-import org.apache.streamline.streams.layout.Transform;
-import org.apache.streamline.streams.layout.component.rule.action.Action;
-import org.apache.streamline.streams.layout.component.rule.action.NotifierAction;
-import org.apache.streamline.streams.layout.component.rule.action.TransformAction;
-import org.apache.streamline.streams.layout.component.rule.action.transform.AddHeaderTransform;
-import org.apache.streamline.streams.layout.component.rule.action.transform.MergeTransform;
-import org.apache.streamline.streams.layout.component.rule.action.transform.ProjectionTransform;
-import org.apache.streamline.streams.layout.component.rule.action.transform.SubstituteTransform;
-import org.apache.streamline.streams.runtime.RuntimeService;
-import org.apache.streamline.streams.runtime.TransformActionRuntime;
-import org.apache.streamline.streams.runtime.transform.AddHeaderTransformRuntime;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.Result;
+import com.hortonworks.streamline.streams.layout.Transform;
+import com.hortonworks.streamline.streams.layout.component.rule.action.Action;
+import com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction;
+import com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction;
+import com.hortonworks.streamline.streams.layout.component.rule.action.transform.AddHeaderTransform;
+import com.hortonworks.streamline.streams.layout.component.rule.action.transform.MergeTransform;
+import com.hortonworks.streamline.streams.layout.component.rule.action.transform.ProjectionTransform;
+import com.hortonworks.streamline.streams.layout.component.rule.action.transform.SubstituteTransform;
+import com.hortonworks.streamline.streams.runtime.RuntimeService;
+import com.hortonworks.streamline.streams.runtime.TransformActionRuntime;
+import com.hortonworks.streamline.streams.runtime.transform.AddHeaderTransformRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

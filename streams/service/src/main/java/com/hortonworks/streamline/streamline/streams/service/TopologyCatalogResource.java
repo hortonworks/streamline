@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.service;
+package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -24,22 +24,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.streamline.common.util.ParallelStreamUtil;
-import org.apache.streamline.common.util.WSUtils;
-import org.apache.streamline.streams.actions.TopologyActions;
-import org.apache.streamline.streams.actions.topology.service.TopologyActionsService;
-import org.apache.streamline.streams.catalog.Namespace;
-import org.apache.streamline.streams.catalog.Topology;
-import org.apache.streamline.streams.catalog.TopologyVersionInfo;
-import org.apache.streamline.streams.catalog.service.EnvironmentService;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.streams.catalog.topology.TopologyData;
-import org.apache.streamline.streams.storm.common.TopologyNotAliveException;
-import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
-import org.apache.streamline.common.exception.service.exception.request.BadRequestException;
-import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
-import org.apache.streamline.streams.metrics.topology.service.TopologyMetricsService;
-import org.apache.streamline.streams.storm.common.StormNotReachableException;
+import com.hortonworks.streamline.common.util.ParallelStreamUtil;
+import com.hortonworks.streamline.common.util.WSUtils;
+import com.hortonworks.streamline.streams.actions.TopologyActions;
+import com.hortonworks.streamline.streams.actions.topology.service.TopologyActionsService;
+import com.hortonworks.streamline.streams.catalog.Namespace;
+import com.hortonworks.streamline.streams.catalog.Topology;
+import com.hortonworks.streamline.streams.catalog.TopologyVersionInfo;
+import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.catalog.topology.TopologyData;
+import com.hortonworks.streamline.streams.storm.common.TopologyNotAliveException;
+import com.hortonworks.streamline.streams.metrics.topology.TopologyMetrics;
+import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import com.hortonworks.streamline.streams.metrics.topology.service.TopologyMetricsService;
+import com.hortonworks.streamline.streams.storm.common.StormNotReachableException;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,8 +70,8 @@ import java.util.concurrent.TimeUnit;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
-import static org.apache.streamline.streams.catalog.TopologyVersionInfo.VERSION_PREFIX;
-import static org.apache.streamline.streams.service.TopologySortType.LAST_UPDATED;
+import static com.hortonworks.streamline.streams.catalog.TopologyVersionInfo.VERSION_PREFIX;
+import static com.hortonworks.streamline.streams.service.TopologySortType.LAST_UPDATED;
 
 
 @Path("/v1/catalog")

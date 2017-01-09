@@ -1,13 +1,13 @@
-package org.apache.streamline.streams.catalog.service.metadata;
+package com.hortonworks.streamline.streams.catalog.service.metadata;
 
-import org.apache.streamline.streams.catalog.Component;
-import org.apache.streamline.streams.catalog.exception.ServiceComponentNotFoundException;
-import org.apache.streamline.streams.catalog.exception.ServiceNotFoundException;
-import org.apache.streamline.streams.catalog.service.EnvironmentService;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.streams.catalog.service.metadata.common.HostPort;
-import org.apache.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
-import org.apache.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
+import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.exception.ServiceComponentNotFoundException;
+import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundException;
+import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.catalog.service.metadata.common.HostPort;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 
 import java.util.Collections;
 import java.util.List;

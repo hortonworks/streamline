@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.runtime.storm.bolt.solr;
+package com.hortonworks.streamline.streams.runtime.storm.bolt.solr;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,7 +10,7 @@ import org.apache.solr.common.util.ContentStreamBase;
 import org.apache.storm.solr.mapper.SolrMapper;
 import org.apache.storm.solr.mapper.SolrMapperException;
 import org.apache.storm.tuple.ITuple;
-import org.apache.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.StreamlineEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

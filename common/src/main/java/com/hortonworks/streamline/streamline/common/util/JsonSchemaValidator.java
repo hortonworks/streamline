@@ -1,4 +1,4 @@
-package org.apache.streamline.common.util;
+package com.hortonworks.streamline.common.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.fge.jackson.JsonLoader;

@@ -1,4 +1,4 @@
-package org.apache.streamline.common;
+package com.hortonworks.streamline.common;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.storage.exception;
+package com.hortonworks.streamline.storage.exception;
 
 /**
  * Exception thrown when the value specified for a query parameter is not compatible with the type of that parameter.

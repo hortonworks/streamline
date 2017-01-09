@@ -16,21 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.runtime.transform;
+package com.hortonworks.streamline.streams.runtime.transform;
 
-import org.apache.streamline.streams.layout.component.impl.splitjoin.JoinAction;
-import org.apache.streamline.streams.layout.component.impl.splitjoin.SplitAction;
-import org.apache.streamline.streams.layout.component.impl.splitjoin.StageAction;
-import org.apache.streamline.streams.layout.component.rule.action.Action;
-import org.apache.streamline.streams.layout.component.rule.action.NotifierAction;
-import org.apache.streamline.streams.layout.component.rule.action.TransformAction;
-import org.apache.streamline.streams.runtime.RuntimeService;
-import org.apache.streamline.streams.runtime.TransformActionRuntime;
-import org.apache.streamline.streams.runtime.rule.action.ActionRuntime;
-import org.apache.streamline.streams.runtime.rule.action.NotifierActionRuntime;
-import org.apache.streamline.streams.runtime.splitjoin.JoinActionRuntime;
-import org.apache.streamline.streams.runtime.splitjoin.SplitActionRuntime;
-import org.apache.streamline.streams.runtime.splitjoin.StageActionRuntime;
+import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.JoinAction;
+import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.SplitAction;
+import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.StageAction;
+import com.hortonworks.streamline.streams.layout.component.rule.action.Action;
+import com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction;
+import com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction;
+import com.hortonworks.streamline.streams.runtime.RuntimeService;
+import com.hortonworks.streamline.streams.runtime.TransformActionRuntime;
+import com.hortonworks.streamline.streams.runtime.rule.action.ActionRuntime;
+import com.hortonworks.streamline.streams.runtime.rule.action.NotifierActionRuntime;
+import com.hortonworks.streamline.streams.runtime.splitjoin.JoinActionRuntime;
+import com.hortonworks.streamline.streams.runtime.splitjoin.SplitActionRuntime;
+import com.hortonworks.streamline.streams.runtime.splitjoin.StageActionRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

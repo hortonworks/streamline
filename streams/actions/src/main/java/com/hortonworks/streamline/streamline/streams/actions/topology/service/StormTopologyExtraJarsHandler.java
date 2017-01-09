@@ -1,20 +1,20 @@
-package org.apache.streamline.streams.actions.topology.service;
+package com.hortonworks.streamline.streams.actions.topology.service;
 
 import com.google.common.base.Joiner;
-import org.apache.streamline.common.ComponentTypes;
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.streams.catalog.UDFInfo;
-import org.apache.streamline.streams.catalog.processor.CustomProcessorInfo;
-import org.apache.streamline.streams.catalog.topology.TopologyComponentBundle;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.streams.layout.component.Edge;
-import org.apache.streamline.streams.layout.component.StreamlineComponent;
-import org.apache.streamline.streams.layout.component.StreamlineProcessor;
-import org.apache.streamline.streams.layout.component.StreamlineSink;
-import org.apache.streamline.streams.layout.component.StreamlineSource;
-import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
-import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
-import org.apache.streamline.streams.layout.component.rule.Rule;
+import com.hortonworks.streamline.common.ComponentTypes;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.streams.catalog.UDFInfo;
+import com.hortonworks.streamline.streams.catalog.processor.CustomProcessorInfo;
+import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.layout.component.Edge;
+import com.hortonworks.streamline.streams.layout.component.StreamlineComponent;
+import com.hortonworks.streamline.streams.layout.component.StreamlineProcessor;
+import com.hortonworks.streamline.streams.layout.component.StreamlineSink;
+import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
+import com.hortonworks.streamline.streams.layout.component.TopologyDagVisitor;
+import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
+import com.hortonworks.streamline.streams.layout.component.rule.Rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,6 +1,6 @@
-package org.apache.streamline.streams.udaf;
+package com.hortonworks.streamline.streams.udaf;
 
-import org.apache.streamline.streams.udaf.NumberSum;
+import com.hortonworks.streamline.streams.udaf.NumberSum;
 import org.junit.Assert;
 import org.junit.Test;
 

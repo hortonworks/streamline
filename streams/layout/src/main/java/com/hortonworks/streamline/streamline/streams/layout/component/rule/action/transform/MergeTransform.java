@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.layout.component.rule.action.transform;
+package com.hortonworks.streamline.streams.layout.component.rule.action.transform;
 
-import org.apache.streamline.streams.layout.Transform;
+import com.hortonworks.streamline.streams.layout.Transform;
 
 import java.util.Map;
 

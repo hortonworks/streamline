@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.runtime.rule.action;
+package com.hortonworks.streamline.streams.runtime.rule.action;
 
 
-import org.apache.streamline.streams.layout.component.rule.Rule;
-import org.apache.streamline.streams.layout.component.rule.action.Action;
+import com.hortonworks.streamline.streams.layout.component.rule.Rule;
+import com.hortonworks.streamline.streams.layout.component.rule.action.Action;
 
 /**
  * This class contains the context information for an Action. This is passed in {@link ActionRuntime#setActionRuntimeContext(ActionRuntimeContext)}

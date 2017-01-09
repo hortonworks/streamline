@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.util;
+package com.hortonworks.streamline.util;
 
 import com.google.common.collect.Lists;
-import org.apache.streamline.common.util.FileStorage;
+import com.hortonworks.streamline.common.util.FileStorage;
 import org.junit.Assert;
 import org.junit.Test;
 

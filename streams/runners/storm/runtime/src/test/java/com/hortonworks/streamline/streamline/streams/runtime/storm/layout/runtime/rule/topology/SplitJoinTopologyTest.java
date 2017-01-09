@@ -16,22 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.runtime.storm.layout.runtime.rule.topology;
+package com.hortonworks.streamline.streams.runtime.storm.layout.runtime.rule.topology;
 
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.streams.layout.Transform;
-import org.apache.streamline.streams.layout.component.Stream;
-import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
-import org.apache.streamline.streams.layout.component.impl.splitjoin.JoinAction;
-import org.apache.streamline.streams.layout.component.impl.splitjoin.JoinProcessor;
-import org.apache.streamline.streams.layout.component.impl.splitjoin.SplitAction;
-import org.apache.streamline.streams.layout.component.impl.splitjoin.SplitProcessor;
-import org.apache.streamline.streams.layout.component.impl.splitjoin.StageAction;
-import org.apache.streamline.streams.layout.component.impl.splitjoin.StageProcessor;
-import org.apache.streamline.streams.layout.component.rule.action.transform.EnrichmentTransform;
-import org.apache.streamline.streams.layout.component.rule.action.transform.InmemoryTransformDataProvider;
-import org.apache.streamline.streams.runtime.processor.RuleProcessorRuntime;
-import org.apache.streamline.streams.runtime.storm.bolt.rules.RulesBolt;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.streams.layout.Transform;
+import com.hortonworks.streamline.streams.layout.component.Stream;
+import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
+import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.JoinAction;
+import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.JoinProcessor;
+import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.SplitAction;
+import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.SplitProcessor;
+import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.StageAction;
+import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.StageProcessor;
+import com.hortonworks.streamline.streams.layout.component.rule.action.transform.EnrichmentTransform;
+import com.hortonworks.streamline.streams.layout.component.rule.action.transform.InmemoryTransformDataProvider;
+import com.hortonworks.streamline.streams.runtime.processor.RuleProcessorRuntime;
+import com.hortonworks.streamline.streams.runtime.storm.bolt.rules.RulesBolt;
 import org.apache.storm.Config;
 import org.apache.storm.ILocalCluster;
 import org.apache.storm.LocalCluster;

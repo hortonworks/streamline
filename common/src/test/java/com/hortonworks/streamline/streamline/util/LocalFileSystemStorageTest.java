@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.util;
+package com.hortonworks.streamline.util;
 
-import org.apache.streamline.common.util.FileStorage;
-import org.apache.streamline.common.util.LocalFileSystemStorage;
+import com.hortonworks.streamline.common.util.FileStorage;
+import com.hortonworks.streamline.common.util.LocalFileSystemStorage;
 
 public class LocalFileSystemStorageTest extends AbstractFileStorageTest {
     @Override

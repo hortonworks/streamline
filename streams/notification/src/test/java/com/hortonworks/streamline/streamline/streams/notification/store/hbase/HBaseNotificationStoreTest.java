@@ -16,12 +16,12 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.streams.notification.store.hbase;
+package com.hortonworks.streamline.streams.notification.store.hbase;
 
-import org.apache.streamline.streams.notification.Notification;
-import org.apache.streamline.streams.notification.common.NotificationImpl;
-import org.apache.streamline.streams.notification.store.Criteria;
-import org.apache.streamline.streams.notification.store.CriteriaImpl;
+import com.hortonworks.streamline.streams.notification.Notification;
+import com.hortonworks.streamline.streams.notification.common.NotificationImpl;
+import com.hortonworks.streamline.streams.notification.store.Criteria;
+import com.hortonworks.streamline.streams.notification.store.CriteriaImpl;
 import mockit.Expectations;
 import mockit.Mock;
 import mockit.MockUp;

@@ -16,20 +16,20 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.storage.impl.jdbc.provider.mysql.factory;
+package com.hortonworks.streamline.storage.impl.jdbc.provider.mysql.factory;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.impl.jdbc.config.ExecutionConfig;
-import org.apache.streamline.storage.impl.jdbc.connection.ConnectionBuilder;
-import org.apache.streamline.storage.impl.jdbc.connection.HikariCPConnectionBuilder;
-import org.apache.streamline.storage.impl.jdbc.provider.mysql.query.MySqlInsertUpdateDuplicate;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.factory.AbstractQueryExecutor;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.query.SqlInsertQuery;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.query.SqlQuery;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
-import org.apache.streamline.storage.impl.jdbc.util.Util;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.impl.jdbc.config.ExecutionConfig;
+import com.hortonworks.streamline.storage.impl.jdbc.connection.ConnectionBuilder;
+import com.hortonworks.streamline.storage.impl.jdbc.connection.HikariCPConnectionBuilder;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.mysql.query.MySqlInsertUpdateDuplicate;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.factory.AbstractQueryExecutor;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlInsertQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
+import com.hortonworks.streamline.storage.impl.jdbc.util.Util;
 import com.zaxxer.hikari.HikariConfig;
 
 import java.util.Map;

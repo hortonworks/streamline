@@ -1,8 +1,8 @@
-package org.apache.streamline.streams.notifiers;
+package com.hortonworks.streamline.streams.notifiers;
 
-import org.apache.streamline.streams.notification.Notification;
-import org.apache.streamline.streams.notification.NotificationContext;
-import org.apache.streamline.streams.notification.NotifierConfig;
+import com.hortonworks.streamline.streams.notification.Notification;
+import com.hortonworks.streamline.streams.notification.NotificationContext;
+import com.hortonworks.streamline.streams.notification.NotifierConfig;
 import com.sun.mail.smtp.SMTPTransport;
 import mockit.Expectations;
 import mockit.Mocked;

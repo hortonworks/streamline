@@ -1,16 +1,16 @@
-package org.apache.streamline.streams.catalog.topology.component;
+package com.hortonworks.streamline.streams.catalog.topology.component;
 
 
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.registries.model.client.MLModelRegistryClient;
-import org.apache.streamline.streams.catalog.Topology;
-import org.apache.streamline.streams.catalog.TopologyComponent;
-import org.apache.streamline.streams.catalog.TopologyEdge;
-import org.apache.streamline.streams.catalog.TopologyProcessor;
-import org.apache.streamline.streams.catalog.TopologySink;
-import org.apache.streamline.streams.catalog.TopologySource;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.streams.layout.component.TopologyDag;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
+import com.hortonworks.streamline.streams.catalog.Topology;
+import com.hortonworks.streamline.streams.catalog.TopologyComponent;
+import com.hortonworks.streamline.streams.catalog.TopologyEdge;
+import com.hortonworks.streamline.streams.catalog.TopologyProcessor;
+import com.hortonworks.streamline.streams.catalog.TopologySink;
+import com.hortonworks.streamline.streams.catalog.TopologySource;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.layout.component.TopologyDag;
 
 import java.util.ArrayList;
 import java.util.List;

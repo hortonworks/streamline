@@ -1,16 +1,16 @@
-package org.apache.streamline.streams.metrics.topology.service;
+package com.hortonworks.streamline.streams.metrics.topology.service;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.streamline.streams.catalog.CatalogToLayoutConverter;
-import org.apache.streamline.streams.catalog.Namespace;
-import org.apache.streamline.streams.catalog.Topology;
-import org.apache.streamline.streams.catalog.TopologyComponent;
-import org.apache.streamline.streams.catalog.container.ContainingNamespaceAwareContainer;
-import org.apache.streamline.streams.catalog.service.EnvironmentService;
-import org.apache.streamline.streams.metrics.container.TopologyMetricsContainer;
-import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
-import org.apache.streamline.streams.metrics.topology.TopologyTimeSeriesMetrics;
+import com.hortonworks.streamline.streams.catalog.CatalogToLayoutConverter;
+import com.hortonworks.streamline.streams.catalog.Namespace;
+import com.hortonworks.streamline.streams.catalog.Topology;
+import com.hortonworks.streamline.streams.catalog.TopologyComponent;
+import com.hortonworks.streamline.streams.catalog.container.ContainingNamespaceAwareContainer;
+import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
+import com.hortonworks.streamline.streams.metrics.container.TopologyMetricsContainer;
+import com.hortonworks.streamline.streams.metrics.topology.TopologyMetrics;
+import com.hortonworks.streamline.streams.metrics.topology.TopologyTimeSeriesMetrics;
 
 import java.io.IOException;
 import java.util.ArrayList;

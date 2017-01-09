@@ -1,11 +1,11 @@
-package org.apache.streamline.streams.layout.storm;
+package com.hortonworks.streamline.streams.layout.storm;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.common.util.Utils;
-import org.apache.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.streamline.streams.layout.exception.ComponentConfigException;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.common.util.Utils;
+import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
+import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +24,7 @@ public class CustomProcessorBoltFluxComponent extends AbstractFluxComponent {
     @Override
     protected void generateComponent () {
         String boltId = "customProcessorBolt" + UUID_FOR_COMPONENTS;
-        String boltClassName = "org.apache.streamline.streams.runtime.storm.bolt.CustomProcessorBolt";
+        String boltClassName = "com.hortonworks.streamline.streams.runtime.storm.bolt.CustomProcessorBolt";
         String[] configMethodNames = {"customProcessorImpl", "outputSchema", "inputSchema", "config"};
         Object[] values = new Object[configMethodNames.length];
         values[0] = conf.get(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_IMPL);

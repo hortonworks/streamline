@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.apache.streamline</groupId>
+    <groupId>com.hortonworks.streamline</groupId>
     <artifactId>streamline</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
@@ -491,12 +491,12 @@
 
             <!-- Project Artifact Dependencies -->
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>cache</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>common</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
@@ -539,32 +539,32 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>registries</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>storage</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>storage-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-catalog</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-cluster</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-common</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
@@ -575,12 +575,12 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-layout</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-layout-storm</artifactId>
                 <version>${project.version}</version>
                 <!-- dropwizard and phoenix have conflicts in jersey related dependencies  -->
@@ -607,32 +607,32 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-actions</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-actions-storm</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-metrics</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-metrics-storm</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-common-storm</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-notification</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
@@ -643,7 +643,7 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-notifier</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
@@ -654,17 +654,17 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-runners</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-runners-storm</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-runtime</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
@@ -675,42 +675,42 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-runtime-storm</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-sdk</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streams</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>tag-registry</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>dashboard-registry</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>webservice</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>pivot</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -731,7 +731,7 @@
             </dependency>
             <!-- Test Scope Dependencies -->
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-examples-processors</artifactId>
                 <version>${project.version}</version>
                 <scope>test</scope>
@@ -846,7 +846,7 @@
                                             implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                     <transformer
                                             implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                        <mainClass>org.apache.streamline.webservice.StreamlineApplication</mainClass>
+                                        <mainClass>com.hortonworks.streamline.webservice.StreamlineApplication</mainClass>
                                     </transformer>
                                 </transformers>
                             </configuration>
@@ -942,12 +942,12 @@
          </modules>
          <properties>
            <exclude.unit.test.groups>
-             org.apache.streamline.common.test.IntegrationTest,org.apache.streamline.common.test.HBaseIntegrationTest
+             com.hortonworks.streamline.common.test.IntegrationTest,com.hortonworks.streamline.common.test.HBaseIntegrationTest
            </exclude.unit.test.groups>
            <include.unit.test.groups></include.unit.test.groups>
-           <exclude.integration.test.groups>org.apache.streamline.common.test.HBaseIntegrationTest
+           <exclude.integration.test.groups>com.hortonworks.streamline.common.test.HBaseIntegrationTest
            </exclude.integration.test.groups>
-           <include.integration.test.groups>org.apache.streamline.common.test.IntegrationTest
+           <include.integration.test.groups>com.hortonworks.streamline.common.test.IntegrationTest
            </include.integration.test.groups>
          </properties>
       </profile>
@@ -955,12 +955,12 @@
         <id>dist</id>
          <properties>
            <exclude.unit.test.groups>
-             org.apache.streamline.common.test.IntegrationTest,org.apache.streamline.common.test.HBaseIntegrationTest
+             com.hortonworks.streamline.common.test.IntegrationTest,com.hortonworks.streamline.common.test.HBaseIntegrationTest
            </exclude.unit.test.groups>
            <include.unit.test.groups></include.unit.test.groups>
-           <exclude.integration.test.groups>org.apache.streamline.common.test.HBaseIntegrationTest
+           <exclude.integration.test.groups>com.hortonworks.streamline.common.test.HBaseIntegrationTest
            </exclude.integration.test.groups>
-           <include.integration.test.groups>org.apache.streamline.common.test.IntegrationTest
+           <include.integration.test.groups>com.hortonworks.streamline.common.test.IntegrationTest
            </include.integration.test.groups>
          </properties>
          <modules>
@@ -979,12 +979,12 @@
             <id>dev-tests-including-external-env</id>
             <properties>
                 <exclude.unit.test.groups>
-                    org.apache.streamline.common.test.IntegrationTest,org.apache.streamline.common.test.HBaseIntegrationTest
+                    com.hortonworks.streamline.common.test.IntegrationTest,com.hortonworks.streamline.common.test.HBaseIntegrationTest
                 </exclude.unit.test.groups>
                 <include.unit.test.groups></include.unit.test.groups>
                 <exclude.integration.test.groups></exclude.integration.test.groups>
                 <include.integration.test.groups>
-                    org.apache.streamline.common.test.IntegrationTest,org.apache.streamline.common.test.HBaseIntegrationTest
+                    com.hortonworks.streamline.common.test.IntegrationTest,com.hortonworks.streamline.common.test.HBaseIntegrationTest
                 </include.integration.test.groups>
             </properties>
         </profile>
@@ -1005,12 +1005,12 @@
           </modules>
           <properties>
             <exclude.unit.test.groups>
-              org.apache.streamline.common.test.IntegrationTest,org.apache.streamline.common.test.HBaseIntegrationTest
+              com.hortonworks.streamline.common.test.IntegrationTest,com.hortonworks.streamline.common.test.HBaseIntegrationTest
             </exclude.unit.test.groups>
             <include.unit.test.groups></include.unit.test.groups>
-            <exclude.integration.test.groups>org.apache.streamline.common.test.HBaseIntegrationTest
+            <exclude.integration.test.groups>com.hortonworks.streamline.common.test.HBaseIntegrationTest
             </exclude.integration.test.groups>
-            <include.integration.test.groups>org.apache.streamline.common.test.IntegrationTest
+            <include.integration.test.groups>com.hortonworks.streamline.common.test.IntegrationTest
             </include.integration.test.groups>
           </properties>
       </profile>

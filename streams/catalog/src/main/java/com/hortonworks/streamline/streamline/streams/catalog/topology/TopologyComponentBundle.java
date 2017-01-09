@@ -1,13 +1,13 @@
-package org.apache.streamline.streams.catalog.topology;
+package com.hortonworks.streamline.streams.catalog.topology;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.storage.PrimaryKey;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorableKey;
-import org.apache.streamline.streams.layout.storm.FluxComponent;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.storage.PrimaryKey;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorableKey;
+import com.hortonworks.streamline.streams.layout.storm.FluxComponent;
 
 import java.io.IOException;
 import java.util.HashMap;

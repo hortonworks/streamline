@@ -1,9 +1,9 @@
-package org.apache.streamline.storage.impl.jdbc.phoenix;
+package com.hortonworks.streamline.storage.impl.jdbc.phoenix;
 
 import com.google.common.cache.CacheBuilder;
-import org.apache.streamline.common.test.HBaseIntegrationTest;
-import org.apache.streamline.storage.impl.jdbc.config.ExecutionConfig;
-import org.apache.streamline.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
+import com.hortonworks.streamline.common.test.HBaseIntegrationTest;
+import com.hortonworks.streamline.storage.impl.jdbc.config.ExecutionConfig;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
 import org.junit.experimental.categories.Category;
 
 /**

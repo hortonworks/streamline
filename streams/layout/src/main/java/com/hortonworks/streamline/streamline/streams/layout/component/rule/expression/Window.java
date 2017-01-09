@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.layout.component.rule.expression;
+package com.hortonworks.streamline.streams.layout.component.rule.expression;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;

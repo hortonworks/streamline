@@ -16,16 +16,16 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.cache.view.service;
+package com.hortonworks.streamline.cache.view.service;
 
-import org.apache.streamline.cache.Cache;
-import org.apache.streamline.cache.view.DataStoreBackedCache;
-import org.apache.streamline.cache.view.config.TypeConfig;
-import org.apache.streamline.cache.view.datastore.DataStoreReader;
-import org.apache.streamline.cache.view.datastore.DataStoreWriter;
-import org.apache.streamline.cache.view.io.loader.CacheLoader;
-import org.apache.streamline.cache.view.io.loader.CacheLoaderFactory;
-import org.apache.streamline.cache.view.io.writer.CacheWriter;
+import com.hortonworks.streamline.cache.Cache;
+import com.hortonworks.streamline.cache.view.DataStoreBackedCache;
+import com.hortonworks.streamline.cache.view.config.TypeConfig;
+import com.hortonworks.streamline.cache.view.datastore.DataStoreReader;
+import com.hortonworks.streamline.cache.view.datastore.DataStoreWriter;
+import com.hortonworks.streamline.cache.view.io.loader.CacheLoader;
+import com.hortonworks.streamline.cache.view.io.loader.CacheLoaderFactory;
+import com.hortonworks.streamline.cache.view.io.writer.CacheWriter;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;

@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.rule;
+package com.hortonworks.streamline.streams.rule;
 
 /**
  * <p>

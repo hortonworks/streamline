@@ -1,20 +1,20 @@
-package org.apache.streamline.streams.metrics.storm.topology;
+package com.hortonworks.streamline.streams.metrics.storm.topology;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import mockit.Mock;
 import mockit.MockUp;
-import org.apache.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.streamline.streams.layout.component.Component;
-import org.apache.streamline.streams.layout.component.StreamlineComponent;
-import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
-import org.apache.streamline.streams.layout.component.TopologyLayout;
-import org.apache.streamline.streams.metrics.TimeSeriesQuerier;
+import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
+import com.hortonworks.streamline.streams.layout.component.Component;
+import com.hortonworks.streamline.streams.layout.component.StreamlineComponent;
+import com.hortonworks.streamline.streams.layout.component.TopologyDagVisitor;
+import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
+import com.hortonworks.streamline.streams.metrics.TimeSeriesQuerier;
 import mockit.Expectations;
 import mockit.Mocked;
-import org.apache.streamline.streams.metrics.topology.TopologyTimeSeriesMetrics;
-import org.apache.streamline.streams.storm.common.StormRestAPIClient;
-import org.apache.streamline.streams.storm.common.StormRestAPIConstant;
-import org.apache.streamline.streams.storm.common.StormTopologyUtil;
+import com.hortonworks.streamline.streams.metrics.topology.TopologyTimeSeriesMetrics;
+import com.hortonworks.streamline.streams.storm.common.StormRestAPIClient;
+import com.hortonworks.streamline.streams.storm.common.StormRestAPIConstant;
+import com.hortonworks.streamline.streams.storm.common.StormTopologyUtil;
 import org.junit.Before;
 import org.junit.Test;
 

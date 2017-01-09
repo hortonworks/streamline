@@ -1,7 +1,7 @@
-package org.apache.streamline.streams.metrics.storm.graphite;
+package com.hortonworks.streamline.streams.metrics.storm.graphite;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import org.apache.streamline.streams.metrics.TimeSeriesQuerier;
+import com.hortonworks.streamline.streams.metrics.TimeSeriesQuerier;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;

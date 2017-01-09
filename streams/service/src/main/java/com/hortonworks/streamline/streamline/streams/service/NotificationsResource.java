@@ -16,19 +16,19 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.service;
+package com.hortonworks.streamline.streams.service;
 
 /**
  * Created by aiyer on 10/4/15.
  */
 
 import com.codahale.metrics.annotation.Timed;
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.common.util.WSUtils;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.notification.Notification;
-import org.apache.streamline.streams.notification.service.NotificationService;
-import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.util.WSUtils;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.notification.Notification;
+import com.hortonworks.streamline.streams.notification.service.NotificationService;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

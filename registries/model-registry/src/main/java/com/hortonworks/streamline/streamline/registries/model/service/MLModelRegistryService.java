@@ -16,15 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.registries.model.service;
+package com.hortonworks.streamline.registries.model.service;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
-import org.apache.streamline.registries.model.data.MLModelInfo;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorageManager;
-import org.apache.streamline.storage.util.StorageUtils;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import com.hortonworks.streamline.registries.model.data.MLModelInfo;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorageManager;
+import com.hortonworks.streamline.storage.util.StorageUtils;
 import org.dmg.pmml.Field;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.IOUtil;

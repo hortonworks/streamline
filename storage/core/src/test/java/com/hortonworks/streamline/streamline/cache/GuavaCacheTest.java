@@ -1,14 +1,14 @@
-package org.apache.streamline.cache;
+package com.hortonworks.streamline.cache;
 
 import com.google.common.cache.CacheBuilder;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.storage.PrimaryKey;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorableKey;
-import org.apache.streamline.storage.StorageManager;
-import org.apache.streamline.storage.cache.impl.GuavaCache;
-import org.apache.streamline.storage.catalog.AbstractStorable;
-import org.apache.streamline.storage.impl.memory.InMemoryStorageManager;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.storage.PrimaryKey;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorableKey;
+import com.hortonworks.streamline.storage.StorageManager;
+import com.hortonworks.streamline.storage.cache.impl.GuavaCache;
+import com.hortonworks.streamline.storage.catalog.AbstractStorable;
+import com.hortonworks.streamline.storage.impl.memory.InMemoryStorageManager;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;

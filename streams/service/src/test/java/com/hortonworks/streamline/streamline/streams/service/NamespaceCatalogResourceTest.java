@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.service;
+package com.hortonworks.streamline.streams.service;
 
 import com.google.common.collect.Lists;
 import mockit.Expectations;
@@ -6,14 +6,14 @@ import mockit.Injectable;
 import mockit.Tested;
 import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
-import org.apache.streamline.common.exception.service.exception.request.BadRequestException;
-import org.apache.streamline.streams.actions.topology.service.TopologyActionsService;
-import org.apache.streamline.streams.catalog.Namespace;
-import org.apache.streamline.streams.catalog.NamespaceServiceClusterMapping;
-import org.apache.streamline.streams.catalog.Topology;
-import org.apache.streamline.streams.catalog.service.EnvironmentService;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.streams.storm.common.TopologyNotAliveException;
+import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
+import com.hortonworks.streamline.streams.actions.topology.service.TopologyActionsService;
+import com.hortonworks.streamline.streams.catalog.Namespace;
+import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping;
+import com.hortonworks.streamline.streams.catalog.Topology;
+import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.storm.common.TopologyNotAliveException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

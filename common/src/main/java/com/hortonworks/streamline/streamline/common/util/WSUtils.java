@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.common.util;
+package com.hortonworks.streamline.common.util;
 
 import com.google.common.io.ByteStreams;
-import org.apache.streamline.common.CollectionResponse;
-import org.apache.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.CollectionResponse;
+import com.hortonworks.streamline.common.QueryParam;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;

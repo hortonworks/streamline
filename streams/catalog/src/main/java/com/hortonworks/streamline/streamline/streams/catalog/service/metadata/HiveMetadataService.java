@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.catalog.service.metadata;
+package com.hortonworks.streamline.streams.catalog.service.metadata;
 
 import com.google.common.collect.Lists;
 
@@ -11,12 +11,12 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.streamline.streams.catalog.exception.ServiceConfigurationNotFoundException;
-import org.apache.streamline.streams.catalog.exception.ServiceNotFoundException;
-import org.apache.streamline.streams.catalog.service.EnvironmentService;
-import org.apache.streamline.streams.catalog.service.metadata.common.OverrideHadoopConfiguration;
-import org.apache.streamline.streams.catalog.service.metadata.common.Tables;
-import org.apache.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
+import com.hortonworks.streamline.streams.catalog.exception.ServiceConfigurationNotFoundException;
+import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundException;
+import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
+import com.hortonworks.streamline.streams.catalog.service.metadata.common.OverrideHadoopConfiguration;
+import com.hortonworks.streamline.streams.catalog.service.metadata.common.Tables;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

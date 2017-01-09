@@ -1,13 +1,13 @@
-package org.apache.streamline.streams.runtime.rule.condition.expression;
+package com.hortonworks.streamline.streams.runtime.rule.condition.expression;
 
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.streams.layout.component.rule.expression.ArrayFieldExpression;
-import org.apache.streamline.streams.layout.component.rule.expression.BinaryExpression;
-import org.apache.streamline.streams.layout.component.rule.expression.Condition;
-import org.apache.streamline.streams.layout.component.rule.expression.Expression;
-import org.apache.streamline.streams.layout.component.rule.expression.FieldExpression;
-import org.apache.streamline.streams.layout.component.rule.expression.MapFieldExpression;
-import org.apache.streamline.streams.layout.component.rule.expression.Operator;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.ArrayFieldExpression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.BinaryExpression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Condition;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Expression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.MapFieldExpression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Operator;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -16,9 +16,9 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.cache;
+package com.hortonworks.streamline.cache;
 
-import org.apache.streamline.cache.view.io.loader.CacheLoaderCallback;
+import com.hortonworks.streamline.cache.view.io.loader.CacheLoaderCallback;
 
 import java.util.Collection;
 

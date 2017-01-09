@@ -1,10 +1,10 @@
-package org.apache.streamline.streams.catalog.topology.component.bundle.impl;
+package com.hortonworks.streamline.streams.catalog.topology.component.bundle.impl;
 
-import org.apache.streamline.streams.catalog.Cluster;
-import org.apache.streamline.streams.catalog.exception.ServiceConfigurationNotFoundException;
-import org.apache.streamline.streams.catalog.exception.ServiceNotFoundException;
-import org.apache.streamline.streams.catalog.service.metadata.HBaseMetadataService;
-import org.apache.streamline.streams.catalog.topology.component.bundle.AbstractBundleHintProvider;
+import com.hortonworks.streamline.streams.catalog.Cluster;
+import com.hortonworks.streamline.streams.catalog.exception.ServiceConfigurationNotFoundException;
+import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundException;
+import com.hortonworks.streamline.streams.catalog.service.metadata.HBaseMetadataService;
+import com.hortonworks.streamline.streams.catalog.topology.component.bundle.AbstractBundleHintProvider;
 
 import java.util.HashMap;
 import java.util.Map;

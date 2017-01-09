@@ -1,10 +1,10 @@
-package org.apache.streamline.streams.runtime.storm.grouping;
+package com.hortonworks.streamline.streams.runtime.storm.grouping;
 
 import org.apache.storm.generated.GlobalStreamId;
 import org.apache.storm.grouping.CustomStreamGrouping;
 import org.apache.storm.task.WorkerTopologyContext;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.runtime.storm.StreamlineRuntimeUtil;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.runtime.storm.StreamlineRuntimeUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;

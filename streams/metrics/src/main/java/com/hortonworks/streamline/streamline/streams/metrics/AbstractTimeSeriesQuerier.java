@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.metrics;
+package com.hortonworks.streamline.streams.metrics;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,14 +1,14 @@
-package org.apache.streamline.streams.actions.container;
+package com.hortonworks.streamline.streams.actions.container;
 
-import org.apache.streamline.streams.actions.TopologyActions;
-import org.apache.streamline.streams.catalog.Component;
-import org.apache.streamline.streams.catalog.Namespace;
-import org.apache.streamline.streams.catalog.Service;
-import org.apache.streamline.streams.catalog.container.NamespaceAwareContainer;
-import org.apache.streamline.streams.actions.container.mapping.MappedTopologyActionsImpl;
-import org.apache.streamline.streams.catalog.service.EnvironmentService;
-import org.apache.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
-import org.apache.streamline.streams.layout.TopologyLayoutConstants;
+import com.hortonworks.streamline.streams.actions.TopologyActions;
+import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.Namespace;
+import com.hortonworks.streamline.streams.catalog.Service;
+import com.hortonworks.streamline.streams.catalog.container.NamespaceAwareContainer;
+import com.hortonworks.streamline.streams.actions.container.mapping.MappedTopologyActionsImpl;
+import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
+import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 
 import java.util.HashMap;
 import java.util.List;

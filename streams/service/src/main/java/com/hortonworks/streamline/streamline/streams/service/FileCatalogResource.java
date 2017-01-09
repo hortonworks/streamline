@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.service;
+package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.streamline.common.util.WSUtils;
-import org.apache.streamline.streams.catalog.FileInfo;
-import org.apache.streamline.streams.catalog.service.CatalogService;
-import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import com.hortonworks.streamline.common.util.WSUtils;
+import com.hortonworks.streamline.streams.catalog.FileInfo;
+import com.hortonworks.streamline.streams.catalog.service.CatalogService;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;

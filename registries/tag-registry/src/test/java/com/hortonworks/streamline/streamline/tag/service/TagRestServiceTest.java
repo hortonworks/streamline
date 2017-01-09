@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.tag.service;
+package com.hortonworks.streamline.tag.service;
 
 
 import com.google.common.collect.ImmutableList;
-import org.apache.streamline.common.test.IntegrationTest;
-import org.apache.streamline.registries.tag.Tag;
-import org.apache.streamline.registries.tag.TaggedEntity;
-import org.apache.streamline.registries.tag.client.TagClient;
+import com.hortonworks.streamline.common.test.IntegrationTest;
+import com.hortonworks.streamline.registries.tag.Tag;
+import com.hortonworks.streamline.registries.tag.TaggedEntity;
+import com.hortonworks.streamline.registries.tag.client.TagClient;
 import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import org.junit.Assert;

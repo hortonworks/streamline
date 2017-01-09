@@ -16,16 +16,16 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.layout.component.rule;
+package com.hortonworks.streamline.streams.layout.component.rule;
 
 import com.google.common.collect.ImmutableList;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.layout.component.rule.action.Action;
-import org.apache.streamline.streams.layout.component.rule.expression.Condition;
-import org.apache.streamline.streams.layout.component.rule.expression.GroupBy;
-import org.apache.streamline.streams.layout.component.rule.expression.Having;
-import org.apache.streamline.streams.layout.component.rule.expression.Projection;
-import org.apache.streamline.streams.layout.component.rule.expression.Window;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.layout.component.rule.action.Action;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Condition;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.GroupBy;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Having;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Projection;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Window;
 
 import java.io.Serializable;
 import java.util.Collections;

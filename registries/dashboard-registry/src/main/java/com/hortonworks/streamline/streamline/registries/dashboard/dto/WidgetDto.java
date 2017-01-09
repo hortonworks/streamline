@@ -1,6 +1,6 @@
-package org.apache.streamline.registries.dashboard.dto;
+package com.hortonworks.streamline.registries.dashboard.dto;
 
-import org.apache.streamline.registries.dashboard.entites.Widget;
+import com.hortonworks.streamline.registries.dashboard.entites.Widget;
 
 import java.util.Set;
 

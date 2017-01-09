@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.runtime.storm.spout;
+package com.hortonworks.streamline.streams.runtime.storm.spout;
 
 import com.amazonaws.services.kinesis.model.Record;
 import org.apache.storm.kinesis.spout.RecordToTupleMapper;

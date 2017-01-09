@@ -4,7 +4,7 @@
   "subType": "CASSANDRA",
   "builtin": true,
   "streamingEngine": "STORM",
-  "transformationClass": "org.apache.streamline.streams.layout.storm.CassandraBoltFluxComponent",
+  "transformationClass": "com.hortonworks.streamline.streams.layout.storm.CassandraBoltFluxComponent",
   "mavenDeps": "org.apache.storm:storm-cassandra:STORM_VERSION,com.datastax.cassandra:cassandra-driver-core:2.1.7.1",
   "topologyComponentUISpecification": {
     "fields": [

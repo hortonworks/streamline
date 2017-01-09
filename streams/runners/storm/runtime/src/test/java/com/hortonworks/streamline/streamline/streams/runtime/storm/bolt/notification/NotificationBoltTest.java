@@ -16,19 +16,19 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.storm.bolt.notification;
+package com.hortonworks.streamline.streams.runtime.storm.bolt.notification;
 
-import org.apache.streamline.common.util.ProxyUtil;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.common.StreamlineEventImpl;
-import org.apache.streamline.streams.layout.component.impl.NotificationSink;
-import org.apache.streamline.streams.notification.Notification;
-import org.apache.streamline.streams.notification.NotificationContext;
-import org.apache.streamline.streams.notification.Notifier;
-import org.apache.streamline.streams.notification.service.NotificationQueueHandler;
-import org.apache.streamline.streams.notification.store.hbase.HBaseNotificationStore;
-import org.apache.streamline.streams.notifiers.ConsoleNotifier;
-import org.apache.streamline.streams.runtime.notification.StreamlineEventAdapter;
+import com.hortonworks.streamline.common.util.ProxyUtil;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.layout.component.impl.NotificationSink;
+import com.hortonworks.streamline.streams.notification.Notification;
+import com.hortonworks.streamline.streams.notification.NotificationContext;
+import com.hortonworks.streamline.streams.notification.Notifier;
+import com.hortonworks.streamline.streams.notification.service.NotificationQueueHandler;
+import com.hortonworks.streamline.streams.notification.store.hbase.HBaseNotificationStore;
+import com.hortonworks.streamline.streams.notifiers.ConsoleNotifier;
+import com.hortonworks.streamline.streams.runtime.notification.StreamlineEventAdapter;
 import mockit.Expectations;
 import mockit.Mock;
 import mockit.MockUp;
@@ -105,7 +105,7 @@ public class NotificationBoltTest {
             }
         });
 
-        bolt.withNotificationStoreClass("org.apache.streamline.streams.notification.store.hbase.HBaseNotificationStore");
+        bolt.withNotificationStoreClass("com.hortonworks.streamline.streams.notification.store.hbase.HBaseNotificationStore");
         notifier = new Notifier() {
             private NotificationContext myCtx;
 
@@ -191,7 +191,7 @@ public class NotificationBoltTest {
             }
         });
         consoleNotificationBolt.
-                withNotificationStoreClass("org.apache.streamline.streams.notification.store.hbase.HBaseNotificationStore");
+                withNotificationStoreClass("com.hortonworks.streamline.streams.notification.store.hbase.HBaseNotificationStore");
         final ConsoleNotifier consoleNotifier = new ConsoleNotifier();
         final Notification notification = new StreamlineEventAdapter(event);
         new MockUp<NotificationQueueHandler>() {

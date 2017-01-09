@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.runtime.normalization;
+package com.hortonworks.streamline.streams.runtime.normalization;
 
 /**
  * It is thrown when an issue occurs while normalizing the event.

@@ -1,12 +1,12 @@
-package org.apache.streamline.streams.runtime.processor;
+package com.hortonworks.streamline.streams.runtime.processor;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.exception.ProcessingException;
-import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
-import org.apache.streamline.streams.layout.component.rule.Rule;
-import org.apache.streamline.streams.runtime.rule.RuleRuntime;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.exception.ProcessingException;
+import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
+import com.hortonworks.streamline.streams.layout.component.rule.Rule;
+import com.hortonworks.streamline.streams.runtime.rule.RuleRuntime;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;

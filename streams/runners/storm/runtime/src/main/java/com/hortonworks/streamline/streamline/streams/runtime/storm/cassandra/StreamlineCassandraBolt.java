@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.streams.runtime.storm.cassandra;
+package com.hortonworks.streamline.streams.runtime.storm.cassandra;
 
 import org.apache.storm.cassandra.bolt.BatchCassandraWriterBolt;
 import org.apache.storm.cassandra.query.builder.BoundCQLStatementMapperBuilder;

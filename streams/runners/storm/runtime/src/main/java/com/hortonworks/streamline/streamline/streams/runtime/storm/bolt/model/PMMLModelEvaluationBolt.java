@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.runtime.storm.bolt.model;
+package com.hortonworks.streamline.streams.runtime.storm.bolt.model;
 
 import org.apache.storm.pmml.model.ModelOutputs;
 import org.apache.storm.pmml.model.jpmml.JpmmlModelOutputs;
@@ -30,10 +30,10 @@ import org.apache.storm.topology.base.BaseRichBolt;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
-import org.apache.streamline.common.util.Utils;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.layout.component.impl.model.ModelProcessor;
-import org.apache.streamline.streams.layout.component.Stream;
+import com.hortonworks.streamline.common.util.Utils;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.layout.component.impl.model.ModelProcessor;
+import com.hortonworks.streamline.streams.layout.component.Stream;
 import org.dmg.pmml.PMML;
 import org.jpmml.evaluator.Evaluator;
 import org.slf4j.Logger;

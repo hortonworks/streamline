@@ -16,18 +16,18 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.rule.sql;
+package com.hortonworks.streamline.streams.runtime.rule.sql;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.common.StreamlineEventImpl;
-import org.apache.streamline.streams.layout.component.rule.exception.ConditionEvaluationException;
-import org.apache.streamline.streams.runtime.rule.condition.expression.ExpressionRuntime;
-import org.apache.streamline.streams.runtime.rule.condition.expression.StormSqlExpression;
-import org.apache.streamline.streams.runtime.script.Script;
-import org.apache.streamline.streams.runtime.script.engine.ScriptEngine;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.layout.component.rule.exception.ConditionEvaluationException;
+import com.hortonworks.streamline.streams.runtime.rule.condition.expression.ExpressionRuntime;
+import com.hortonworks.streamline.streams.runtime.rule.condition.expression.StormSqlExpression;
+import com.hortonworks.streamline.streams.runtime.script.Script;
+import com.hortonworks.streamline.streams.runtime.script.engine.ScriptEngine;
 import org.apache.storm.tuple.Values;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,9 +40,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.streamline.streams.common.StreamlineEventImpl.GROUP_BY_TRIGGER_EVENT;
-import static org.apache.streamline.streams.runtime.rule.condition.expression.StormSqlExpression.RULE_SCHEMA;
-import static org.apache.streamline.streams.runtime.rule.condition.expression.StormSqlExpression.RULE_TABLE;
+import static com.hortonworks.streamline.streams.common.StreamlineEventImpl.GROUP_BY_TRIGGER_EVENT;
+import static com.hortonworks.streamline.streams.runtime.rule.condition.expression.StormSqlExpression.RULE_SCHEMA;
+import static com.hortonworks.streamline.streams.runtime.rule.condition.expression.StormSqlExpression.RULE_TABLE;
 
 /**
  * Evaluates the {@link ExpressionRuntime} for each {@code Input} using the provided {@code Storm} SQL Engine

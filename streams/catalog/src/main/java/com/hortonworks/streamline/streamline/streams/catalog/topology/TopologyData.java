@@ -1,16 +1,16 @@
-package org.apache.streamline.streams.catalog.topology;
+package com.hortonworks.streamline.streams.catalog.topology;
 
 import java.util.HashMap;
 import java.util.List;
 import com.google.common.base.Preconditions;
-import org.apache.streamline.streams.catalog.BranchRuleInfo;
-import org.apache.streamline.streams.catalog.RuleInfo;
-import org.apache.streamline.streams.catalog.TopologyEditorMetadata;
-import org.apache.streamline.streams.catalog.TopologySource;
-import org.apache.streamline.streams.catalog.TopologyProcessor;
-import org.apache.streamline.streams.catalog.TopologyEdge;
-import org.apache.streamline.streams.catalog.TopologySink;
-import org.apache.streamline.streams.catalog.WindowInfo;
+import com.hortonworks.streamline.streams.catalog.BranchRuleInfo;
+import com.hortonworks.streamline.streams.catalog.RuleInfo;
+import com.hortonworks.streamline.streams.catalog.TopologyEditorMetadata;
+import com.hortonworks.streamline.streams.catalog.TopologySource;
+import com.hortonworks.streamline.streams.catalog.TopologyProcessor;
+import com.hortonworks.streamline.streams.catalog.TopologyEdge;
+import com.hortonworks.streamline.streams.catalog.TopologySink;
+import com.hortonworks.streamline.streams.catalog.WindowInfo;
 
 import java.util.ArrayList;
 import java.util.Map;

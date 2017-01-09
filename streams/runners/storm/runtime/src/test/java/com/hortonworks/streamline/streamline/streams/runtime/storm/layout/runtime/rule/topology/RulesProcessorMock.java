@@ -16,25 +16,25 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.storm.layout.runtime.rule.topology;
+package com.hortonworks.streamline.streams.runtime.storm.layout.runtime.rule.topology;
 
 import com.google.common.collect.ImmutableList;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.common.Schema.Field;
-import org.apache.streamline.streams.layout.component.StreamlineSink;
-import org.apache.streamline.streams.layout.component.Sink;
-import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
-import org.apache.streamline.streams.layout.component.rule.Rule;
-import org.apache.streamline.streams.layout.component.rule.action.Action;
-import org.apache.streamline.streams.layout.component.rule.action.TransformAction;
-import org.apache.streamline.streams.layout.component.rule.expression.BinaryExpression;
-import org.apache.streamline.streams.layout.component.rule.expression.Condition;
-import org.apache.streamline.streams.layout.component.rule.expression.Expression;
-import org.apache.streamline.streams.layout.component.rule.expression.FieldExpression;
-import org.apache.streamline.streams.layout.component.rule.expression.FunctionExpression;
-import org.apache.streamline.streams.layout.component.rule.expression.Literal;
-import org.apache.streamline.streams.layout.component.rule.expression.Operator;
-import org.apache.streamline.streams.layout.component.rule.expression.Projection;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.common.Schema.Field;
+import com.hortonworks.streamline.streams.layout.component.StreamlineSink;
+import com.hortonworks.streamline.streams.layout.component.Sink;
+import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
+import com.hortonworks.streamline.streams.layout.component.rule.Rule;
+import com.hortonworks.streamline.streams.layout.component.rule.action.Action;
+import com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.BinaryExpression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Condition;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Expression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Literal;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Operator;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Projection;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -91,7 +91,7 @@ public class RulesProcessorMock {
             Expression humidity = new FieldExpression(Field.of("humidity", Schema.Type.INTEGER));
             Expression deviceName = new FieldExpression(Field.of("devicename", Schema.Type.STRING));
             Expression incr = new FunctionExpression("INCR",
-                                                     "org.apache.streamline.streams.runtime.storm.layout.runtime.rule.topology.RulesProcessorMock$Incr",
+                                                     "com.hortonworks.streamline.streams.runtime.storm.layout.runtime.rule.topology.RulesProcessorMock$Incr",
                                                      ImmutableList.<Expression>of(humidity, new Literal("10")));
             Expression upper = new FunctionExpression("UPPER", ImmutableList.<Expression>of(deviceName));
             projection.setExpressions(ImmutableList.<Expression>of(humidity, incr, upper));

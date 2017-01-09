@@ -1,7 +1,7 @@
-package org.apache.streamline.streams.metrics.container.mapping;
+package com.hortonworks.streamline.streams.metrics.container.mapping;
 
 public enum MappedTopologyMetricsImpl {
-    STORM("org.apache.streamline.streams.metrics.storm.topology.StormTopologyMetricsImpl");
+    STORM("com.hortonworks.streamline.streams.metrics.storm.topology.StormTopologyMetricsImpl");
 
     private final String className;
 

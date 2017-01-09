@@ -1,8 +1,8 @@
-package org.apache.streamline.streams.notifiers;
+package com.hortonworks.streamline.streams.notifiers;
 
-import org.apache.streamline.streams.notification.Notification;
-import org.apache.streamline.streams.notification.NotificationContext;
-import org.apache.streamline.streams.notification.Notifier;
+import com.hortonworks.streamline.streams.notification.Notification;
+import com.hortonworks.streamline.streams.notification.NotificationContext;
+import com.hortonworks.streamline.streams.notification.Notifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

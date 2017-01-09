@@ -1,10 +1,10 @@
-package org.apache.streamline.streams.service;
+package com.hortonworks.streamline.streams.service;
 
-import org.apache.streamline.common.CollectionResponse;
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.common.util.FileStorage;
-import org.apache.streamline.streams.catalog.NotifierInfo;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.common.CollectionResponse;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.util.FileStorage;
+import com.hortonworks.streamline.streams.catalog.NotifierInfo;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.integration.junit4.JMockit;

@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.util;
+package com.hortonworks.streamline.util;
 
-import org.apache.streamline.common.util.HdfsFileStorage;
+import com.hortonworks.streamline.common.util.HdfsFileStorage;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;

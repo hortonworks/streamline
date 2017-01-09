@@ -16,27 +16,27 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.cache.view.service;
+package com.hortonworks.streamline.cache.view.service;
 
-import org.apache.streamline.cache.view.Factory;
-import org.apache.streamline.cache.view.config.CacheConfig;
-import org.apache.streamline.cache.view.config.ConnectionConfig;
-import org.apache.streamline.cache.view.config.DataStoreConfig;
-import org.apache.streamline.cache.view.config.ExpiryPolicy;
-import org.apache.streamline.cache.view.config.TypeConfig;
-import org.apache.streamline.cache.view.datastore.DataStoreReader;
-import org.apache.streamline.cache.view.datastore.DataStoreWriter;
-import org.apache.streamline.cache.view.datastore.phoenix.PhoenixDataStore;
-import org.apache.streamline.cache.view.impl.redis.connection.RedisConnectionFactory;
-import org.apache.streamline.cache.view.impl.redis.connection.RedisConnectionPoolFactory;
-import org.apache.streamline.cache.view.io.loader.CacheLoaderAsyncFactory;
-import org.apache.streamline.cache.view.io.loader.CacheLoaderFactory;
-import org.apache.streamline.cache.view.io.loader.CacheLoaderSyncFactory;
-import org.apache.streamline.cache.view.io.writer.CacheWriter;
-import org.apache.streamline.cache.view.io.writer.CacheWriterAsync;
-import org.apache.streamline.cache.view.io.writer.CacheWriterSync;
-import org.apache.streamline.cache.view.service.registry.CacheServiceLocalRegistry;
-import org.apache.streamline.common.util.ReflectionHelper;
+import com.hortonworks.streamline.cache.view.Factory;
+import com.hortonworks.streamline.cache.view.config.CacheConfig;
+import com.hortonworks.streamline.cache.view.config.ConnectionConfig;
+import com.hortonworks.streamline.cache.view.config.DataStoreConfig;
+import com.hortonworks.streamline.cache.view.config.ExpiryPolicy;
+import com.hortonworks.streamline.cache.view.config.TypeConfig;
+import com.hortonworks.streamline.cache.view.datastore.DataStoreReader;
+import com.hortonworks.streamline.cache.view.datastore.DataStoreWriter;
+import com.hortonworks.streamline.cache.view.datastore.phoenix.PhoenixDataStore;
+import com.hortonworks.streamline.cache.view.impl.redis.connection.RedisConnectionFactory;
+import com.hortonworks.streamline.cache.view.impl.redis.connection.RedisConnectionPoolFactory;
+import com.hortonworks.streamline.cache.view.io.loader.CacheLoaderAsyncFactory;
+import com.hortonworks.streamline.cache.view.io.loader.CacheLoaderFactory;
+import com.hortonworks.streamline.cache.view.io.loader.CacheLoaderSyncFactory;
+import com.hortonworks.streamline.cache.view.io.writer.CacheWriter;
+import com.hortonworks.streamline.cache.view.io.writer.CacheWriterAsync;
+import com.hortonworks.streamline.cache.view.io.writer.CacheWriterSync;
+import com.hortonworks.streamline.cache.view.service.registry.CacheServiceLocalRegistry;
+import com.hortonworks.streamline.common.util.ReflectionHelper;
 import com.lambdaworks.redis.RedisClient;
 import com.lambdaworks.redis.RedisConnection;
 import com.lambdaworks.redis.codec.RedisCodec;

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.storage.exception;
+package com.hortonworks.streamline.storage.exception;
 
 /**
  * Exception that gets thrown when attempting to get the next id of a table or namespace for which

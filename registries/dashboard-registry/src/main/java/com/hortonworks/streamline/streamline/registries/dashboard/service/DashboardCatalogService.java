@@ -1,15 +1,15 @@
-package org.apache.streamline.registries.dashboard.service;
+package com.hortonworks.streamline.registries.dashboard.service;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.common.util.FileStorage;
-import org.apache.streamline.registries.dashboard.entites.Dashboard;
-import org.apache.streamline.registries.dashboard.entites.Datasource;
-import org.apache.streamline.registries.dashboard.entites.Widget;
-import org.apache.streamline.registries.dashboard.entites.WidgetDatasourceMapping;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorableKey;
-import org.apache.streamline.storage.StorageManager;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.util.FileStorage;
+import com.hortonworks.streamline.registries.dashboard.entites.Dashboard;
+import com.hortonworks.streamline.registries.dashboard.entites.Datasource;
+import com.hortonworks.streamline.registries.dashboard.entites.Widget;
+import com.hortonworks.streamline.registries.dashboard.entites.WidgetDatasourceMapping;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorableKey;
+import com.hortonworks.streamline.storage.StorageManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

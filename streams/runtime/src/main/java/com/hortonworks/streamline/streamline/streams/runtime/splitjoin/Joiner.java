@@ -1,9 +1,9 @@
 /**
  *
  */
-package org.apache.streamline.streams.runtime.splitjoin;
+package com.hortonworks.streamline.streams.runtime.splitjoin;
 
-import org.apache.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.StreamlineEvent;
 
 /**
  * Joins the received {@link EventGroup} and generates a resultant {@link StreamlineEvent}

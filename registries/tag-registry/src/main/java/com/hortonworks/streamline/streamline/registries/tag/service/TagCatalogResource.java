@@ -1,4 +1,4 @@
-package org.apache.streamline.registries.tag.service;
+package com.hortonworks.streamline.registries.tag.service;
 
 import com.codahale.metrics.annotation.Timed;
 import javax.ws.rs.DELETE;
@@ -10,12 +10,12 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
-import org.apache.streamline.common.util.WSUtils;
-import org.apache.streamline.registries.tag.Tag;
-import org.apache.streamline.registries.tag.TaggedEntity;
-import org.apache.streamline.registries.tag.dto.TagDto;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import com.hortonworks.streamline.common.util.WSUtils;
+import com.hortonworks.streamline.registries.tag.Tag;
+import com.hortonworks.streamline.registries.tag.TaggedEntity;
+import com.hortonworks.streamline.registries.tag.dto.TagDto;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;

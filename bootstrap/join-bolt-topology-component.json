@@ -4,7 +4,7 @@
   "subType": "JOIN",
   "builtin": true,
   "streamingEngine": "STORM",
-  "transformationClass": "org.apache.streamline.streams.layout.storm.JoinBoltFluxComponent",
+  "transformationClass": "com.hortonworks.streamline.streams.layout.storm.JoinBoltFluxComponent",
   "topologyComponentUISpecification": {
     "fields": [
       {

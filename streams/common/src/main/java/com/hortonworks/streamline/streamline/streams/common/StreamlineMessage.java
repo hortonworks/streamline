@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.streams.common;
+package com.hortonworks.streamline.streams.common;
 
 
 import java.util.Map;

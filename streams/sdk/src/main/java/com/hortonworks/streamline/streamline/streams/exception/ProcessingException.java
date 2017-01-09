@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.exception;
+package com.hortonworks.streamline.streams.exception;
 
 /**
  * Exception class representing an error while processing a message

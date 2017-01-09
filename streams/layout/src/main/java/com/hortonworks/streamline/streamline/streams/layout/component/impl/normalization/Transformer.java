@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.layout.component.impl.normalization;
+package com.hortonworks.streamline.streams.layout.component.impl.normalization;
 
-import org.apache.streamline.common.Schema;
+import com.hortonworks.streamline.common.Schema;
 
 import java.io.Serializable;
 

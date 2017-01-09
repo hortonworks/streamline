@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.layout.component.impl.splitjoin;
+package com.hortonworks.streamline.streams.layout.component.impl.splitjoin;
 
 
-import org.apache.streamline.streams.layout.component.rule.action.Action;
+import com.hortonworks.streamline.streams.layout.component.rule.action.Action;
 
 /**
  * {@link Action} configuration for joining the events split by a {@link SplitProcessor}.
- * When {@code joinerClassName} is not given then {@link org.apache.streamline.layout.runtime.splitjoin.DefaultJoiner} is used.
+ * When {@code joinerClassName} is not given then {@link com.hortonworks.streamline.layout.runtime.splitjoin.DefaultJoiner} is used.
  */
 public class JoinAction extends Action {
 
@@ -35,7 +35,7 @@ public class JoinAction extends Action {
     private Long jarId;
 
     /**
-     * custom {@link org.apache.streamline.layout.runtime.splitjoin.Joiner} class name
+     * custom {@link com.hortonworks.streamline.layout.runtime.splitjoin.Joiner} class name
      */
     private String joinerClassName;
 
@@ -97,7 +97,7 @@ public class JoinAction extends Action {
     }
 
     /**
-     * @return custom {@link org.apache.streamline.layout.runtime.splitjoin.Joiner} class name
+     * @return custom {@link com.hortonworks.streamline.layout.runtime.splitjoin.Joiner} class name
      */
     public String getJoinerClassName() {
         return joinerClassName;

@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.layout.component.rule.expression;
+package com.hortonworks.streamline.streams.layout.component.rule.expression;
 
 /**
  * A binary expression like x AND y, x < y etc.

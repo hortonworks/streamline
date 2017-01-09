@@ -15,14 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.streams.service;
+package com.hortonworks.streamline.streams.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.streams.StreamlineEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.apache.streamline.streams.StreamlineEvent.PRIMITIVE_PAYLOAD_FIELD;
+import static com.hortonworks.streamline.streams.StreamlineEvent.PRIMITIVE_PAYLOAD_FIELD;
 
 /**
  * Utility class to convert

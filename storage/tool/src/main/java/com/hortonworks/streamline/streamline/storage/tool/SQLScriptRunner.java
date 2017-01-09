@@ -1,4 +1,4 @@
-package org.apache.streamline.storage.tool;
+package com.hortonworks.streamline.storage.tool;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;

@@ -15,16 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.streams.runtime.storm.bolt.normalization;
+package com.hortonworks.streamline.streams.runtime.storm.bolt.normalization;
 
-import org.apache.streamline.common.util.Utils;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.Result;
-import org.apache.streamline.streams.common.StreamlineEventImpl;
-import org.apache.streamline.streams.layout.component.Stream;
-import org.apache.streamline.streams.layout.component.impl.normalization.NormalizationProcessor;
-import org.apache.streamline.streams.runtime.normalization.NormalizationProcessorRuntime;
-import org.apache.streamline.streams.runtime.storm.bolt.AbstractProcessorBolt;
+import com.hortonworks.streamline.common.util.Utils;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.Result;
+import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.layout.component.Stream;
+import com.hortonworks.streamline.streams.layout.component.impl.normalization.NormalizationProcessor;
+import com.hortonworks.streamline.streams.runtime.normalization.NormalizationProcessorRuntime;
+import com.hortonworks.streamline.streams.runtime.storm.bolt.AbstractProcessorBolt;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;

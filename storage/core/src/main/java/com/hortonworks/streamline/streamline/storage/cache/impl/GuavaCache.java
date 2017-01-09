@@ -1,18 +1,18 @@
-package org.apache.streamline.storage.cache.impl;
+package com.hortonworks.streamline.storage.cache.impl;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.UncheckedExecutionException;
-import org.apache.streamline.cache.Cache;
-import org.apache.streamline.cache.exception.NonexistentStorableKeyException;
-import org.apache.streamline.cache.stats.CacheStats;
-import org.apache.streamline.cache.view.config.ExpiryPolicy;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorableKey;
-import org.apache.streamline.storage.StorageManager;
-import org.apache.streamline.storage.exception.StorageException;
+import com.hortonworks.streamline.cache.Cache;
+import com.hortonworks.streamline.cache.exception.NonexistentStorableKeyException;
+import com.hortonworks.streamline.cache.stats.CacheStats;
+import com.hortonworks.streamline.cache.view.config.ExpiryPolicy;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorableKey;
+import com.hortonworks.streamline.storage.StorageManager;
+import com.hortonworks.streamline.storage.exception.StorageException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

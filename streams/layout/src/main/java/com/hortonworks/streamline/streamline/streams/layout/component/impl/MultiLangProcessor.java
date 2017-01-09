@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.layout.component.impl;
+package com.hortonworks.streamline.streams.layout.component.impl;
 
-import org.apache.streamline.streams.layout.component.StreamlineProcessor;
+import com.hortonworks.streamline.streams.layout.component.StreamlineProcessor;
 
 import java.util.Collections;
 import java.util.Set;

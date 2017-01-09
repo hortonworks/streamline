@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.exception;
+package com.hortonworks.streamline.streams.exception;
 
 /**
  * Exception class representing a malformed configuration.

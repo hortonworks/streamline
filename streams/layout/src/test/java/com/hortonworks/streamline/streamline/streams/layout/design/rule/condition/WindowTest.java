@@ -1,7 +1,7 @@
-package org.apache.streamline.streams.layout.design.rule.condition;
+package com.hortonworks.streamline.streams.layout.design.rule.condition;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.streamline.streams.layout.component.rule.expression.Window;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Window;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

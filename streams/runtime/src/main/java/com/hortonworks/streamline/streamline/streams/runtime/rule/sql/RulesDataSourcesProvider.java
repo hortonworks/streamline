@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.rule.sql;
+package com.hortonworks.streamline.streams.runtime.rule.sql;
 
-import org.apache.streamline.streams.runtime.rule.condition.expression.StormSqlExpression;
+import com.hortonworks.streamline.streams.runtime.rule.condition.expression.StormSqlExpression;
 import org.apache.storm.sql.runtime.DataSource;
 import org.apache.storm.sql.runtime.DataSourcesProvider;
 import org.apache.storm.sql.runtime.FieldInfo;

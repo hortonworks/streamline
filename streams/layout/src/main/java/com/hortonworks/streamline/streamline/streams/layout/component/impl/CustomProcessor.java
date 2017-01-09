@@ -1,7 +1,7 @@
-package org.apache.streamline.streams.layout.component.impl;
+package com.hortonworks.streamline.streams.layout.component.impl;
 
-import org.apache.streamline.streams.layout.component.StreamlineProcessor;
-import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
+import com.hortonworks.streamline.streams.layout.component.StreamlineProcessor;
+import com.hortonworks.streamline.streams.layout.component.TopologyDagVisitor;
 
 public class CustomProcessor extends StreamlineProcessor {
     @Override

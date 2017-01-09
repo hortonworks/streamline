@@ -1,8 +1,8 @@
-package org.apache.streamline.streams.metrics.topology;
+package com.hortonworks.streamline.streams.metrics.topology;
 
-import org.apache.streamline.streams.layout.component.Component;
-import org.apache.streamline.streams.layout.component.TopologyLayout;
-import org.apache.streamline.streams.metrics.TimeSeriesQuerier;
+import com.hortonworks.streamline.streams.layout.component.Component;
+import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
+import com.hortonworks.streamline.streams.metrics.TimeSeriesQuerier;
 
 import java.util.Map;
 

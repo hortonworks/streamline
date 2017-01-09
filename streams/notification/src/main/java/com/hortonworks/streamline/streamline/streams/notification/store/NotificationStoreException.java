@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.notification.store;
+package com.hortonworks.streamline.streams.notification.store;
 
 /**
  * Indicates a problem while trying to store data in notification store.

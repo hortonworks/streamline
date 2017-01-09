@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.layout;
+package com.hortonworks.streamline.streams.layout;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 

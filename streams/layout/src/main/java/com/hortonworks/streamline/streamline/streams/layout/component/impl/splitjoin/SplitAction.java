@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.layout.component.impl.splitjoin;
+package com.hortonworks.streamline.streams.layout.component.impl.splitjoin;
 
 
-import org.apache.streamline.streams.layout.component.rule.action.Action;
+import com.hortonworks.streamline.streams.layout.component.rule.action.Action;
 
 /**
  * {@link Action} configuration for splitting the events.

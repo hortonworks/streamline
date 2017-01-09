@@ -1,8 +1,8 @@
-package org.apache.streamline.registries.tag.service;
+package com.hortonworks.streamline.registries.tag.service;
 
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.registries.tag.Tag;
-import org.apache.streamline.registries.tag.TaggedEntity;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.registries.tag.Tag;
+import com.hortonworks.streamline.registries.tag.TaggedEntity;
 
 import java.util.Collection;
 import java.util.List;

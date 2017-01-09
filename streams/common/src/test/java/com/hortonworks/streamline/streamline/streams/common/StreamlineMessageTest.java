@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.common;
+package com.hortonworks.streamline.streams.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;

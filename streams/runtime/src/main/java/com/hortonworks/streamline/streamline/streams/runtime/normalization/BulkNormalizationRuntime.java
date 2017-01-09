@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.runtime.normalization;
+package com.hortonworks.streamline.streams.runtime.normalization;
 
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.layout.component.impl.normalization.BulkNormalizationConfig;
-import org.apache.streamline.streams.runtime.script.GroovyScript;
-import org.apache.streamline.streams.runtime.script.engine.GroovyScriptEngine;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.layout.component.impl.normalization.BulkNormalizationConfig;
+import com.hortonworks.streamline.streams.runtime.script.GroovyScript;
+import com.hortonworks.streamline.streams.runtime.script.engine.GroovyScriptEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

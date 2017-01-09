@@ -16,17 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.runtime.normalization;
+package com.hortonworks.streamline.streams.runtime.normalization;
 
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.common.exception.ParserException;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.Result;
-import org.apache.streamline.streams.exception.ProcessingException;
-import org.apache.streamline.streams.layout.component.Stream;
-import org.apache.streamline.streams.layout.component.impl.normalization.NormalizationConfig;
-import org.apache.streamline.streams.layout.component.impl.normalization.NormalizationProcessor;
-import org.apache.streamline.streams.runtime.ProcessorRuntime;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.common.exception.ParserException;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.Result;
+import com.hortonworks.streamline.streams.exception.ProcessingException;
+import com.hortonworks.streamline.streams.layout.component.Stream;
+import com.hortonworks.streamline.streams.layout.component.impl.normalization.NormalizationConfig;
+import com.hortonworks.streamline.streams.layout.component.impl.normalization.NormalizationProcessor;
+import com.hortonworks.streamline.streams.runtime.ProcessorRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -16,7 +16,7 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.streams.notification.store.hbase.mappers;
+package com.hortonworks.streamline.streams.notification.store.hbase.mappers;
 
 import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Put;

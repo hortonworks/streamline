@@ -1,30 +1,30 @@
-package org.apache.streamline.streams.service;
+package com.hortonworks.streamline.streams.service;
 
 import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
-import org.apache.streamline.common.Constants;
-import org.apache.streamline.common.FileEventHandler;
-import org.apache.streamline.common.FileWatcher;
-import org.apache.streamline.common.ModuleRegistration;
-import org.apache.streamline.common.util.FileStorage;
-import org.apache.streamline.common.util.ReflectionHelper;
-import org.apache.streamline.registries.model.client.MLModelRegistryClient;
-import org.apache.streamline.registries.tag.client.TagClient;
-import org.apache.streamline.storage.StorageManager;
-import org.apache.streamline.storage.StorageManagerAware;
-import org.apache.streamline.streams.actions.TopologyActions;
-import org.apache.streamline.streams.actions.topology.service.TopologyActionsService;
-import org.apache.streamline.streams.catalog.TopologyVersionInfo;
-import org.apache.streamline.streams.catalog.service.CatalogService;
-import org.apache.streamline.streams.catalog.service.EnvironmentService;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.streamline.streams.layout.storm.StormTopologyLayoutConstants;
-import org.apache.streamline.streams.metrics.topology.service.TopologyMetricsService;
-import org.apache.streamline.streams.notification.service.NotificationServiceImpl;
-import org.apache.streamline.streams.service.metadata.HBaseMetadataResource;
-import org.apache.streamline.streams.service.metadata.HiveMetadataResource;
-import org.apache.streamline.streams.service.metadata.KafkaMetadataResource;
-import org.apache.streamline.streams.service.metadata.StormMetadataResource;
+import com.hortonworks.streamline.common.Constants;
+import com.hortonworks.streamline.common.FileEventHandler;
+import com.hortonworks.streamline.common.FileWatcher;
+import com.hortonworks.streamline.common.ModuleRegistration;
+import com.hortonworks.streamline.common.util.FileStorage;
+import com.hortonworks.streamline.common.util.ReflectionHelper;
+import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
+import com.hortonworks.streamline.registries.tag.client.TagClient;
+import com.hortonworks.streamline.storage.StorageManager;
+import com.hortonworks.streamline.storage.StorageManagerAware;
+import com.hortonworks.streamline.streams.actions.TopologyActions;
+import com.hortonworks.streamline.streams.actions.topology.service.TopologyActionsService;
+import com.hortonworks.streamline.streams.catalog.TopologyVersionInfo;
+import com.hortonworks.streamline.streams.catalog.service.CatalogService;
+import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
+import com.hortonworks.streamline.streams.layout.storm.StormTopologyLayoutConstants;
+import com.hortonworks.streamline.streams.metrics.topology.service.TopologyMetricsService;
+import com.hortonworks.streamline.streams.notification.service.NotificationServiceImpl;
+import com.hortonworks.streamline.streams.service.metadata.HBaseMetadataResource;
+import com.hortonworks.streamline.streams.service.metadata.HiveMetadataResource;
+import com.hortonworks.streamline.streams.service.metadata.KafkaMetadataResource;
+import com.hortonworks.streamline.streams.service.metadata.StormMetadataResource;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -148,9 +148,9 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
     }
 
     private void watchFiles(StreamCatalogService catalogService) {
-        String customProcessorWatchPath = (String) config.get(org.apache.streamline.streams.common.Constants.CONFIG_CP_WATCH_PATH);
-        String customProcessorUploadFailPath = (String) config.get(org.apache.streamline.streams.common.Constants.CONFIG_CP_UPLOAD_FAIL_PATH);
-        String customProcessorUploadSuccessPath = (String) config.get(org.apache.streamline.streams.common.Constants.CONFIG_CP_UPLOAD_SUCCESS_PATH);
+        String customProcessorWatchPath = (String) config.get(com.hortonworks.streamline.streams.common.Constants.CONFIG_CP_WATCH_PATH);
+        String customProcessorUploadFailPath = (String) config.get(com.hortonworks.streamline.streams.common.Constants.CONFIG_CP_UPLOAD_FAIL_PATH);
+        String customProcessorUploadSuccessPath = (String) config.get(com.hortonworks.streamline.streams.common.Constants.CONFIG_CP_UPLOAD_SUCCESS_PATH);
         if (customProcessorWatchPath == null || customProcessorUploadFailPath == null || customProcessorUploadSuccessPath == null) {
             return;
         }

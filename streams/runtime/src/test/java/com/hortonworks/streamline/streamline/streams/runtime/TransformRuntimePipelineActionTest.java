@@ -15,18 +15,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.streams.runtime;
+package com.hortonworks.streamline.streams.runtime;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.Result;
-import org.apache.streamline.streams.common.StreamlineEventImpl;
-import org.apache.streamline.streams.layout.component.rule.action.TransformAction;
-import org.apache.streamline.streams.layout.component.rule.action.transform.MergeTransform;
-import org.apache.streamline.streams.layout.component.rule.action.transform.ProjectionTransform;
-import org.apache.streamline.streams.layout.component.rule.action.transform.SubstituteTransform;
-import org.apache.streamline.streams.runtime.rule.action.ActionRuntime;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.Result;
+import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction;
+import com.hortonworks.streamline.streams.layout.component.rule.action.transform.MergeTransform;
+import com.hortonworks.streamline.streams.layout.component.rule.action.transform.ProjectionTransform;
+import com.hortonworks.streamline.streams.layout.component.rule.action.transform.SubstituteTransform;
+import com.hortonworks.streamline.streams.runtime.rule.action.ActionRuntime;
 import org.junit.Test;
 
 import java.util.ArrayList;

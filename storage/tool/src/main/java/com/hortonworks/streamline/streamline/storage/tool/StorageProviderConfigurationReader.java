@@ -1,9 +1,9 @@
-package org.apache.streamline.storage.tool;
+package com.hortonworks.streamline.storage.tool;
 
 import java.util.Map;
 
 public class StorageProviderConfigurationReader {
-    private static final String JDBC_STORAGE_MANAGER_CLASS = "org.apache.streamline.storage.impl.jdbc.JdbcStorageManager";
+    private static final String JDBC_STORAGE_MANAGER_CLASS = "com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager";
     private static final String STORAGE_PROVIDER_CONFIGURATION = "storageProviderConfiguration";
     private static final String PROPERTIES = "properties";
     private static final String PROVIDER_CLASS = "providerClass";
@@ -54,7 +54,7 @@ public class StorageProviderConfigurationReader {
 
     /**
      * storageProviderConfiguration:
-     *   providerClass: "org.apache.streamline.storage.impl.jdbc.JdbcStorageManager"
+     *   providerClass: "com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager"
      *   properties:
      *     db.type: "mysql"
      *     queryTimeoutInSecs: 30
@@ -73,7 +73,7 @@ public class StorageProviderConfigurationReader {
 
     /**
      * storageProviderConfiguration:
-     *   providerClass: "org.apache.streamline.storage.impl.jdbc.JdbcStorageManager"
+     *   providerClass: "com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager"
      *   properties:
      *     db.type: "phoenix"
      *     queryTimeoutInSecs: 30

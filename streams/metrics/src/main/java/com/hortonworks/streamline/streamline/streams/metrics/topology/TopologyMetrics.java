@@ -1,8 +1,8 @@
-package org.apache.streamline.streams.metrics.topology;
+package com.hortonworks.streamline.streams.metrics.topology;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.streamline.streams.exception.ConfigException;
-import org.apache.streamline.streams.layout.component.TopologyLayout;
+import com.hortonworks.streamline.streams.exception.ConfigException;
+import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
 
 import java.util.List;
 import java.util.Map;

@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.storage.impl.jdbc.config;
+package com.hortonworks.streamline.storage.impl.jdbc.config;
 
-import org.apache.streamline.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
 
 /**
  * Wrapper object that serves has a placeholder for configuration (e.g. {@code query timeout}) that needs

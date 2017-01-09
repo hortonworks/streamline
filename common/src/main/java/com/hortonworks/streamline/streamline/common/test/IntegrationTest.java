@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.common.test;
+package com.hortonworks.streamline.common.test;
 
 /**
  * Marker interface used to mark integration tests. Integration tests will be run during the Maven

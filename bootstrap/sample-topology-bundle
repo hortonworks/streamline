@@ -169,7 +169,7 @@
       }
     ]
   },
-  "transformationClass": "org.apache.streamline.streams.layout.storm.KafkaSpoutFluxComponent",
+  "transformationClass": "com.hortonworks.streamline.streams.layout.storm.KafkaSpoutFluxComponent",
   "timestamp": 1440118796994,
   "builtin": true
 }

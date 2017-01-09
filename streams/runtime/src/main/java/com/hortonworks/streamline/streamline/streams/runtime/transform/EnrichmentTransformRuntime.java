@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.runtime.transform;
+package com.hortonworks.streamline.streams.runtime.transform;
 
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.layout.Transform;
-import org.apache.streamline.streams.layout.component.rule.action.transform.EnrichmentTransform;
-import org.apache.streamline.streams.layout.component.rule.action.transform.TransformDataProvider;
-import org.apache.streamline.streams.runtime.RuntimeService;
-import org.apache.streamline.streams.runtime.TransformRuntime;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.layout.Transform;
+import com.hortonworks.streamline.streams.layout.component.rule.action.transform.EnrichmentTransform;
+import com.hortonworks.streamline.streams.layout.component.rule.action.transform.TransformDataProvider;
+import com.hortonworks.streamline.streams.runtime.RuntimeService;
+import com.hortonworks.streamline.streams.runtime.TransformRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

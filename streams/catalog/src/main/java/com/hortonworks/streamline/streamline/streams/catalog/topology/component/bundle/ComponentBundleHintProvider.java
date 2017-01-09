@@ -1,8 +1,8 @@
-package org.apache.streamline.streams.catalog.topology.component.bundle;
+package com.hortonworks.streamline.streams.catalog.topology.component.bundle;
 
-import org.apache.streamline.streams.catalog.Namespace;
-import org.apache.streamline.streams.catalog.service.EnvironmentService;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.catalog.Namespace;
+import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 
 import java.util.Map;
 
@@ -17,7 +17,7 @@ public interface ComponentBundleHintProvider {
     /**
      * Initialize provider.
      *
-     * @param environmentService {@link org.apache.streamline.streams.catalog.service.EnvironmentService}
+     * @param environmentService {@link com.hortonworks.streamline.streams.catalog.service.EnvironmentService}
      */
     void init(EnvironmentService environmentService);
 

@@ -17,18 +17,18 @@
  * under the License.
  */
 
-package org.apache.streamline.streams.runtime;
+package com.hortonworks.streamline.streams.runtime;
 
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.Result;
-import org.apache.streamline.streams.layout.Transform;
-import org.apache.streamline.streams.layout.component.rule.action.Action;
-import org.apache.streamline.streams.layout.component.rule.action.TransformAction;
-import org.apache.streamline.streams.runtime.rule.action.AbstractActionRuntime;
-import org.apache.streamline.streams.runtime.rule.action.ActionRuntime;
-import org.apache.streamline.streams.runtime.rule.action.ActionRuntimeContext;
-import org.apache.streamline.streams.runtime.transform.IdentityTransformRuntime;
-import org.apache.streamline.streams.runtime.transform.TransformRuntimeService;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.Result;
+import com.hortonworks.streamline.streams.layout.Transform;
+import com.hortonworks.streamline.streams.layout.component.rule.action.Action;
+import com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction;
+import com.hortonworks.streamline.streams.runtime.rule.action.AbstractActionRuntime;
+import com.hortonworks.streamline.streams.runtime.rule.action.ActionRuntime;
+import com.hortonworks.streamline.streams.runtime.rule.action.ActionRuntimeContext;
+import com.hortonworks.streamline.streams.runtime.transform.IdentityTransformRuntime;
+import com.hortonworks.streamline.streams.runtime.transform.TransformRuntimeService;
 
 import java.util.ArrayList;
 import java.util.Collections;

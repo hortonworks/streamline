@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.cluster.discovery.ambari;
+package com.hortonworks.streamline.streams.cluster.discovery.ambari;
 
 /**
  * Defines mapping between config type and actual file name.

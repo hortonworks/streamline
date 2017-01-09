@@ -16,23 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.layout.component.rule.sql;
+package com.hortonworks.streamline.streams.layout.component.rule.sql;
 
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.streams.layout.component.Stream;
-import org.apache.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression;
-import org.apache.streamline.streams.layout.component.rule.expression.ArrayFieldExpression;
-import org.apache.streamline.streams.layout.component.rule.expression.AsExpression;
-import org.apache.streamline.streams.layout.component.rule.expression.BinaryExpression;
-import org.apache.streamline.streams.layout.component.rule.expression.Expression;
-import org.apache.streamline.streams.layout.component.rule.expression.ExpressionList;
-import org.apache.streamline.streams.layout.component.rule.expression.FieldExpression;
-import org.apache.streamline.streams.layout.component.rule.expression.FunctionExpression;
-import org.apache.streamline.streams.layout.component.rule.expression.Literal;
-import org.apache.streamline.streams.layout.component.rule.expression.MapFieldExpression;
-import org.apache.streamline.streams.layout.component.rule.expression.Operator;
-import org.apache.streamline.streams.layout.component.rule.expression.Udf;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.streams.layout.component.Stream;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.ArrayFieldExpression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.BinaryExpression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Expression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.ExpressionList;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Literal;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.MapFieldExpression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Operator;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Udf;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlBinaryOperator;
 import org.apache.calcite.sql.SqlCall;
@@ -55,7 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.apache.streamline.streams.layout.component.rule.expression.FieldExpression.STAR;
+import static com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression.STAR;
 
 public class ExpressionGenerator extends SqlBasicVisitor<Expression> {
     private final Map<String, Schema> streamIdToSchema = new HashMap<>();

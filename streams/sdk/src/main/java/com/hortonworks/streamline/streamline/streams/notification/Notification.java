@@ -16,7 +16,7 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.streams.notification;
+package com.hortonworks.streamline.streams.notification;
 
 import java.util.List;
 import java.util.Map;

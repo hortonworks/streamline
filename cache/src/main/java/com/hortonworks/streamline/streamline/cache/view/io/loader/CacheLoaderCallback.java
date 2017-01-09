@@ -16,7 +16,7 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.cache.view.io.loader;
+package com.hortonworks.streamline.cache.view.io.loader;
 
 import java.util.Map;
 

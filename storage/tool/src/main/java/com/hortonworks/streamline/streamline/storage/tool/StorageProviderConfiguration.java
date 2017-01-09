@@ -1,4 +1,4 @@
-package org.apache.streamline.storage.tool;
+package com.hortonworks.streamline.storage.tool;
 
 public class StorageProviderConfiguration {
     private static final String MYSQL_DELIMITER = ";";

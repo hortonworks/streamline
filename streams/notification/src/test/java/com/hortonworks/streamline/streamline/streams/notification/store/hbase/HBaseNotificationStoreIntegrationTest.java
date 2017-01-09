@@ -16,23 +16,23 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.streams.notification.store.hbase;
+package com.hortonworks.streamline.streams.notification.store.hbase;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.apache.streamline.common.test.HBaseIntegrationTest;
-import org.apache.streamline.streams.notification.Notification;
-import org.apache.streamline.streams.notification.store.CriteriaImpl;
-import org.apache.streamline.streams.notification.store.hbase.mappers.DatasourceNotificationMapper;
-import org.apache.streamline.streams.notification.store.hbase.mappers.DatasourceStatusNotificationMapper;
-import org.apache.streamline.streams.notification.store.hbase.mappers.NotificationMapper;
-import org.apache.streamline.streams.notification.store.hbase.mappers.NotifierStatusNotificationMapper;
-import org.apache.streamline.streams.notification.store.hbase.mappers.RuleNotificationMapper;
-import org.apache.streamline.streams.notification.store.hbase.mappers.RuleStatusNotificationMapper;
-import org.apache.streamline.streams.notification.store.hbase.mappers.TableMutation;
-import org.apache.streamline.streams.notification.store.hbase.mappers.TimestampNotificationMapper;
-import org.apache.streamline.streams.notification.util.NotificationTestObjectFactory;
+import com.hortonworks.streamline.common.test.HBaseIntegrationTest;
+import com.hortonworks.streamline.streams.notification.Notification;
+import com.hortonworks.streamline.streams.notification.store.CriteriaImpl;
+import com.hortonworks.streamline.streams.notification.store.hbase.mappers.DatasourceNotificationMapper;
+import com.hortonworks.streamline.streams.notification.store.hbase.mappers.DatasourceStatusNotificationMapper;
+import com.hortonworks.streamline.streams.notification.store.hbase.mappers.NotificationMapper;
+import com.hortonworks.streamline.streams.notification.store.hbase.mappers.NotifierStatusNotificationMapper;
+import com.hortonworks.streamline.streams.notification.store.hbase.mappers.RuleNotificationMapper;
+import com.hortonworks.streamline.streams.notification.store.hbase.mappers.RuleStatusNotificationMapper;
+import com.hortonworks.streamline.streams.notification.store.hbase.mappers.TableMutation;
+import com.hortonworks.streamline.streams.notification.store.hbase.mappers.TimestampNotificationMapper;
+import com.hortonworks.streamline.streams.notification.util.NotificationTestObjectFactory;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;

@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.notification.service;
+package com.hortonworks.streamline.streams.notification.service;
 
 /**
  * Indicates a runtime issue in the notification service while processing

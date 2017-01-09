@@ -16,10 +16,10 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.cache.view.io.loader;
+package com.hortonworks.streamline.cache.view.io.loader;
 
-import org.apache.streamline.cache.Cache;
-import org.apache.streamline.cache.view.datastore.DataStoreReader;
+import com.hortonworks.streamline.cache.Cache;
+import com.hortonworks.streamline.cache.view.datastore.DataStoreReader;
 
 public class CacheLoaderSyncFactory<K,V> implements CacheLoaderFactory<K,V> {
     @Override

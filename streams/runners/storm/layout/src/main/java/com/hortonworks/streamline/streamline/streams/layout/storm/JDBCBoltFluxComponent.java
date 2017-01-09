@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.layout.storm;
+package com.hortonworks.streamline.streams.layout.storm;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -91,7 +91,7 @@ public class JDBCBoltFluxComponent extends AbstractFluxComponent {
         addArg(constructorArgs, getRefYaml(connectionProviderId));
         String columnListId = getColumnList((List<String>) conf.get(KEY_COLUMNS));
         addArg(constructorArgs, getRefYaml(columnListId));
-        String className = "org.apache.streamline.streams.runtime.storm.bolt.StreamlineJdbcMapper";
+        String className = "com.hortonworks.streamline.streams.runtime.storm.bolt.StreamlineJdbcMapper";
         addToComponents(createComponent(componentId, className, null, constructorArgs, null));
         return componentId;
     }

@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.layout.storm;
+package com.hortonworks.streamline.streams.layout.storm;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.streamline.streams.layout.component.impl.model.ModelProcessor;
+import com.hortonworks.streamline.streams.layout.component.impl.model.ModelProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +34,7 @@ public class MLModelEvaluationFluxComponent extends AbstractFluxComponent {
     protected void generateComponent (){
         ModelProcessor modelProcessor = (ModelProcessor) conf.get(StormTopologyLayoutConstants.STREAMLINE_COMPONENT_CONF_KEY);
         String boltId = "modelEvaluationBolt" + UUID_FOR_COMPONENTS;
-        String boltClassName = "org.apache.streamline.streams.runtime.storm.bolt.model.PMMLModelEvaluationBolt";
+        String boltClassName = "com.hortonworks.streamline.streams.runtime.storm.bolt.model.PMMLModelEvaluationBolt";
         List constructorArgs = new ArrayList<>();
         String modelProcessorJson = "";
         ObjectMapper mapper = new ObjectMapper();

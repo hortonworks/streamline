@@ -16,15 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.runtime.splitjoin;
+package com.hortonworks.streamline.streams.runtime.splitjoin;
 
-import org.apache.streamline.common.Constants;
-import org.apache.streamline.common.util.ProxyUtil;
-import org.apache.streamline.streams.common.utils.CatalogRestClient;
-import org.apache.streamline.streams.layout.component.rule.action.Action;
-import org.apache.streamline.streams.runtime.rule.action.AbstractActionRuntime;
-import org.apache.streamline.streams.runtime.rule.action.ActionRuntime;
-import org.apache.streamline.streams.runtime.rule.action.ActionRuntimeContext;
+import com.hortonworks.streamline.common.Constants;
+import com.hortonworks.streamline.common.util.ProxyUtil;
+import com.hortonworks.streamline.streams.common.utils.CatalogRestClient;
+import com.hortonworks.streamline.streams.layout.component.rule.action.Action;
+import com.hortonworks.streamline.streams.runtime.rule.action.AbstractActionRuntime;
+import com.hortonworks.streamline.streams.runtime.rule.action.ActionRuntime;
+import com.hortonworks.streamline.streams.runtime.rule.action.ActionRuntimeContext;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

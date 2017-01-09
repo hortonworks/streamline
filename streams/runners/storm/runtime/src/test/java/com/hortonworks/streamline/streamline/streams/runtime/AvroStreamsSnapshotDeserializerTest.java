@@ -15,11 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.streams.runtime;
+package com.hortonworks.streamline.streams.runtime;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.registries.schemaregistry.SchemaIdVersion;
-import org.apache.streamline.streams.runtime.storm.spout.AvroStreamsSnapshotDeserializer;
+import com.hortonworks.streamline.streams.runtime.storm.spout.AvroStreamsSnapshotDeserializer;
 import com.hortonworks.registries.schemaregistry.SchemaMetadata;
 import com.hortonworks.registries.schemaregistry.SchemaVersionKey;
 import com.hortonworks.registries.schemaregistry.serdes.avro.AvroSnapshotSerializer;

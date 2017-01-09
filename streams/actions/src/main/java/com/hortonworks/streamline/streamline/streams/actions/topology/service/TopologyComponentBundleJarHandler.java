@@ -1,14 +1,14 @@
-package org.apache.streamline.streams.actions.topology.service;
+package com.hortonworks.streamline.streams.actions.topology.service;
 
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.streams.catalog.topology.TopologyComponentBundle;
-import org.apache.streamline.streams.layout.component.Edge;
-import org.apache.streamline.streams.layout.component.StreamlineComponent;
-import org.apache.streamline.streams.layout.component.StreamlineProcessor;
-import org.apache.streamline.streams.layout.component.StreamlineSink;
-import org.apache.streamline.streams.layout.component.StreamlineSource;
-import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
-import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
+import com.hortonworks.streamline.streams.layout.component.Edge;
+import com.hortonworks.streamline.streams.layout.component.StreamlineComponent;
+import com.hortonworks.streamline.streams.layout.component.StreamlineProcessor;
+import com.hortonworks.streamline.streams.layout.component.StreamlineSink;
+import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
+import com.hortonworks.streamline.streams.layout.component.TopologyDagVisitor;
+import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

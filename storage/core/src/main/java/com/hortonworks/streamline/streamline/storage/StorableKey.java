@@ -1,4 +1,4 @@
-package org.apache.streamline.storage;
+package com.hortonworks.streamline.storage;
 
 /**
  * Created by hlouro on 8/6/15.

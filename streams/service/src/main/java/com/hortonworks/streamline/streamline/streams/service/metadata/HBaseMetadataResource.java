@@ -1,12 +1,12 @@
-package org.apache.streamline.streams.service.metadata;
+package com.hortonworks.streamline.streams.service.metadata;
 
 import com.codahale.metrics.annotation.Timed;
-import org.apache.streamline.common.util.WSUtils;
-import org.apache.streamline.streams.catalog.Cluster;
-import org.apache.streamline.streams.catalog.exception.EntityNotFoundException;
-import org.apache.streamline.streams.catalog.service.EnvironmentService;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.streams.catalog.service.metadata.HBaseMetadataService;
+import com.hortonworks.streamline.common.util.WSUtils;
+import com.hortonworks.streamline.streams.catalog.Cluster;
+import com.hortonworks.streamline.streams.catalog.exception.EntityNotFoundException;
+import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.catalog.service.metadata.HBaseMetadataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +36,7 @@ public class HBaseMetadataResource {
         throws Exception {
         final Cluster cluster = environmentService.getClusterByName(clusterName);
         if (cluster == null) {
-            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
+            throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
         }
         return getNamespacesByClusterId(cluster.getId());
     }
@@ -49,7 +49,7 @@ public class HBaseMetadataResource {
         try (HBaseMetadataService hbaseMetadataService = HBaseMetadataService.newInstance(environmentService, clusterId)) {
             return WSUtils.respondEntity(hbaseMetadataService.getHBaseNamespaces(), OK);
         } catch (EntityNotFoundException ex) {
-            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
+            throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
         }
     }
 
@@ -62,7 +62,7 @@ public class HBaseMetadataResource {
         throws Exception {
         final Cluster cluster = environmentService.getClusterByName(clusterName);
         if (cluster == null) {
-            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byName(clusterName);
+            throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byName(clusterName);
         }
         return getTablesByClusterId(cluster.getId());
     }
@@ -74,7 +74,7 @@ public class HBaseMetadataResource {
         try (HBaseMetadataService hbaseMetadataService = HBaseMetadataService.newInstance(environmentService, clusterId)) {
             return WSUtils.respondEntity(hbaseMetadataService.getHBaseTables(), OK);
         } catch (EntityNotFoundException ex) {
-            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
+            throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
         }
     }
 
@@ -87,7 +87,7 @@ public class HBaseMetadataResource {
         throws Exception {
         final Cluster cluster = environmentService.getClusterByName(clusterName);
         if (cluster == null) {
-            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byName(clusterName);
+            throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byName(clusterName);
         }
         return getNamespaceTablesByClusterId(cluster.getId(), namespace);
     }
@@ -100,7 +100,7 @@ public class HBaseMetadataResource {
         try (HBaseMetadataService hbaseMetadataService = HBaseMetadataService.newInstance(environmentService, clusterId)) {
             return WSUtils.respondEntity(hbaseMetadataService.getHBaseTables(namespace), OK);
         } catch (EntityNotFoundException ex) {
-            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
+            throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
         }
     }
 

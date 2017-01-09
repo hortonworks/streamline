@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.layout.storm;
+package com.hortonworks.streamline.streams.layout.storm;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +53,7 @@ public class KinesisSpoutFluxComponent extends AbstractFluxComponent {
 
     private String getRecordToTupleMapper() {
         String componentId = "recordToTupleMapper" + UUID_FOR_COMPONENTS;
-        String className = "org.apache.streamline.streams.runtime.storm.spout.KinesisRecordToTupleMapper";
+        String className = "com.hortonworks.streamline.streams.runtime.storm.spout.KinesisRecordToTupleMapper";
         addToComponents(createComponent(componentId, className, null, null, null));
         return componentId;
     }

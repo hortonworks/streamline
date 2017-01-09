@@ -1,4 +1,4 @@
-package org.apache.streamline.storage.exception;
+package com.hortonworks.streamline.storage.exception;
 
 //TODO: Should this the a Checked Exception instead of a RuntimeException
 public class StorageException extends RuntimeException {

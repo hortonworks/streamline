@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.catalog.configuration;
+package com.hortonworks.streamline.streams.catalog.configuration;
 
 import org.junit.Test;
 

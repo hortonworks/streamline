@@ -1,6 +1,6 @@
-package org.apache.streamline.common.exception;
+package com.hortonworks.streamline.common.exception;
 
-import org.apache.streamline.common.exception.service.exception.WebServiceException;
+import com.hortonworks.streamline.common.exception.service.exception.WebServiceException;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;

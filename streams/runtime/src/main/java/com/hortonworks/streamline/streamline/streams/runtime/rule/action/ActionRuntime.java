@@ -17,10 +17,10 @@
  * under the License.
  */
 
-package org.apache.streamline.streams.runtime.rule.action;
+package com.hortonworks.streamline.streams.runtime.rule.action;
 
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.Result;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.Result;
 
 import java.io.Serializable;
 import java.util.List;

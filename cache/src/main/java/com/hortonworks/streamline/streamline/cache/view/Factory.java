@@ -16,7 +16,7 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.cache.view;
+package com.hortonworks.streamline.cache.view;
 
 public interface Factory<T> {
     T create();

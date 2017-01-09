@@ -1,15 +1,15 @@
-package org.apache.streamline.streams.catalog.storage;
+package com.hortonworks.streamline.streams.catalog.storage;
 
-import org.apache.streamline.common.test.HBaseIntegrationTest;
-import org.apache.streamline.storage.StorableTest;
-import org.apache.streamline.storage.exception.NonIncrementalColumnException;
-import org.apache.streamline.storage.impl.jdbc.JdbcStorageManager;
-import org.apache.streamline.storage.impl.jdbc.config.ExecutionConfig;
-import org.apache.streamline.storage.impl.jdbc.phoenix.PhoenixStorageManagerNoCacheIntegrationTest;
-import org.apache.streamline.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
-import org.apache.streamline.streams.catalog.RuleInfo;
-import org.apache.streamline.streams.catalog.service.CatalogService;
+import com.hortonworks.streamline.common.test.HBaseIntegrationTest;
+import com.hortonworks.streamline.storage.StorableTest;
+import com.hortonworks.streamline.storage.exception.NonIncrementalColumnException;
+import com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager;
+import com.hortonworks.streamline.storage.impl.jdbc.config.ExecutionConfig;
+import com.hortonworks.streamline.storage.impl.jdbc.phoenix.PhoenixStorageManagerNoCacheIntegrationTest;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
+import com.hortonworks.streamline.streams.catalog.RuleInfo;
+import com.hortonworks.streamline.streams.catalog.service.CatalogService;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

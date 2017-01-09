@@ -16,13 +16,13 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.rule.condition.expression;
+package com.hortonworks.streamline.streams.runtime.rule.condition.expression;
 
-import org.apache.streamline.common.Schema.Field;
-import org.apache.streamline.streams.layout.component.rule.expression.Condition;
-import org.apache.streamline.streams.layout.component.rule.expression.GroupBy;
-import org.apache.streamline.streams.layout.component.rule.expression.Having;
-import org.apache.streamline.streams.layout.component.rule.expression.Projection;
+import com.hortonworks.streamline.common.Schema.Field;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Condition;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.GroupBy;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Having;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Projection;
 
 import java.io.Serializable;
 

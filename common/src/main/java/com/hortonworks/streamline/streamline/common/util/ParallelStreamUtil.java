@@ -1,4 +1,4 @@
-package org.apache.streamline.common.util;
+package com.hortonworks.streamline.common.util;
 
 import com.google.common.base.Stopwatch;
 import org.slf4j.Logger;

@@ -1,22 +1,22 @@
-package org.apache.streamline.streams.service;
+package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.common.exception.ParserException;
-import org.apache.streamline.common.util.FileStorage;
-import org.apache.streamline.common.util.FileUtil;
-import org.apache.streamline.common.util.ProxyUtil;
-import org.apache.streamline.common.util.WSUtils;
-import org.apache.streamline.streams.catalog.UDFInfo;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.common.exception.ParserException;
+import com.hortonworks.streamline.common.util.FileStorage;
+import com.hortonworks.streamline.common.util.FileUtil;
+import com.hortonworks.streamline.common.util.ProxyUtil;
+import com.hortonworks.streamline.common.util.WSUtils;
+import com.hortonworks.streamline.streams.catalog.UDFInfo;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
-import org.apache.streamline.common.exception.service.exception.request.UnsupportedMediaTypeException;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import com.hortonworks.streamline.common.exception.service.exception.request.UnsupportedMediaTypeException;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -84,7 +84,7 @@ public class UDFCatalogResource {
      *       "name": "STDDEV",
      *       "description": "Standard deviation",
      *       "type": "AGGREGATE",
-     *       "className": "org.apache.streamline.streams.rule.udaf.Stddev"
+     *       "className": "com.hortonworks.streamline.streams.rule.udaf.Stddev"
      *     },
      *     { "id": 46,
      *        "name": "LOWER",
@@ -212,7 +212,7 @@ public class UDFCatalogResource {
      *     curl -X PUT 'http://localhost:8080/api/v1/catalog/udfs/34'
      *     -F udfJarFile=@/tmp/streams-functions-0.1.0-SNAPSHOT.jar
      *     -F udfConfig='{"name":"stddev", "description": "stddev",
-     *                   "type":"AGGREGATE", "className":"org.apache.streamline.streams.rule.udaf.Stddev"};type=application/json'
+     *                   "type":"AGGREGATE", "className":"com.hortonworks.streamline.streams.rule.udaf.Stddev"};type=application/json'
      * </p>
      * <pre>
      * {

@@ -16,14 +16,14 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.storm.bolt.rules;
+package com.hortonworks.streamline.streams.runtime.storm.bolt.rules;
 
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.common.StreamlineEventImpl;
-import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
-import org.apache.streamline.streams.runtime.processor.RuleProcessorRuntime;
-import org.apache.streamline.streams.runtime.storm.layout.runtime.rule.topology.RulesProcessorMock;
-import org.apache.streamline.streams.runtime.storm.layout.runtime.rule.topology.RulesTopologyTest;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
+import com.hortonworks.streamline.streams.runtime.processor.RuleProcessorRuntime;
+import com.hortonworks.streamline.streams.runtime.storm.layout.runtime.rule.topology.RulesProcessorMock;
+import com.hortonworks.streamline.streams.runtime.storm.layout.runtime.rule.topology.RulesTopologyTest;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Tested;

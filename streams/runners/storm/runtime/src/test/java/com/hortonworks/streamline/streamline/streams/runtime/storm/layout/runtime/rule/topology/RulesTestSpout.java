@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.storm.layout.runtime.rule.topology;
+package com.hortonworks.streamline.streams.runtime.storm.layout.runtime.rule.topology;
 
 import com.google.common.collect.Lists;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 import org.apache.storm.spout.SpoutOutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;

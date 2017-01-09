@@ -1,21 +1,21 @@
-package org.apache.streamline.storage.impl.jdbc.provider.sql.factory;
+package com.hortonworks.streamline.storage.impl.jdbc.provider.sql.factory;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorableFactory;
-import org.apache.streamline.storage.StorableKey;
-import org.apache.streamline.storage.exception.StorageException;
-import org.apache.streamline.storage.impl.jdbc.config.ExecutionConfig;
-import org.apache.streamline.storage.impl.jdbc.connection.ConnectionBuilder;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.query.SqlDeleteQuery;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.query.SqlInsertQuery;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.query.SqlQuery;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.query.SqlSelectQuery;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
-import org.apache.streamline.storage.impl.jdbc.util.Util;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorableFactory;
+import com.hortonworks.streamline.storage.StorableKey;
+import com.hortonworks.streamline.storage.exception.StorageException;
+import com.hortonworks.streamline.storage.impl.jdbc.config.ExecutionConfig;
+import com.hortonworks.streamline.storage.impl.jdbc.connection.ConnectionBuilder;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlDeleteQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlInsertQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlSelectQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
+import com.hortonworks.streamline.storage.impl.jdbc.util.Util;
 
 import java.sql.Connection;
 import java.sql.Date;

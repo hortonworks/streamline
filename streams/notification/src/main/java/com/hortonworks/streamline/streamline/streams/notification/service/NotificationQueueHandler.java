@@ -16,10 +16,10 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.streams.notification.service;
+package com.hortonworks.streamline.streams.notification.service;
 
-import org.apache.streamline.streams.notification.Notification;
-import org.apache.streamline.streams.notification.Notifier;
+import com.hortonworks.streamline.streams.notification.Notification;
+import com.hortonworks.streamline.streams.notification.Notifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

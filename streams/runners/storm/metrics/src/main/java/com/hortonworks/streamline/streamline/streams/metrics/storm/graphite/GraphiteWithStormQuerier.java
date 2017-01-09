@@ -1,9 +1,9 @@
-package org.apache.streamline.streams.metrics.storm.graphite;
+package com.hortonworks.streamline.streams.metrics.storm.graphite;
 
 import com.google.common.collect.Lists;
-import org.apache.streamline.common.JsonClientUtil;
-import org.apache.streamline.streams.exception.ConfigException;
-import org.apache.streamline.streams.metrics.AbstractTimeSeriesQuerier;
+import com.hortonworks.streamline.common.JsonClientUtil;
+import com.hortonworks.streamline.streams.exception.ConfigException;
+import com.hortonworks.streamline.streams.metrics.AbstractTimeSeriesQuerier;
 import org.apache.commons.lang.BooleanUtils;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.uri.internal.JerseyUriBuilder;

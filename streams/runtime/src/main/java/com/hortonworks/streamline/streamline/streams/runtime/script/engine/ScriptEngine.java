@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.script.engine;
+package com.hortonworks.streamline.streams.runtime.script.engine;
 
 
 public interface ScriptEngine<T> {

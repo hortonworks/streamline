@@ -1,7 +1,7 @@
-package org.apache.streamline.storage.impl.jdbc.provider.phoenix.query;
+package com.hortonworks.streamline.storage.impl.jdbc.provider.phoenix.query;
 
-import org.apache.streamline.storage.StorableKey;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.query.AbstractStorableKeyQuery;
+import com.hortonworks.streamline.storage.StorableKey;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.AbstractStorableKeyQuery;
 
 /**
  *

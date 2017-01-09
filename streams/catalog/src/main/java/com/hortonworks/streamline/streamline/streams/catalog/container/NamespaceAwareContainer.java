@@ -1,11 +1,11 @@
-package org.apache.streamline.streams.catalog.container;
+package com.hortonworks.streamline.streams.catalog.container;
 
-import org.apache.streamline.streams.catalog.Cluster;
-import org.apache.streamline.streams.catalog.Component;
-import org.apache.streamline.streams.catalog.Namespace;
-import org.apache.streamline.streams.catalog.NamespaceServiceClusterMapping;
-import org.apache.streamline.streams.catalog.Service;
-import org.apache.streamline.streams.catalog.service.EnvironmentService;
+import com.hortonworks.streamline.streams.catalog.Cluster;
+import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.Namespace;
+import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping;
+import com.hortonworks.streamline.streams.catalog.Service;
+import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
 
 import java.util.ArrayList;
 import java.util.Collection;

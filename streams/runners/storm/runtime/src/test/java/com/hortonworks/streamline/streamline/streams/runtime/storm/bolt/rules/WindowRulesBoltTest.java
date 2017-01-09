@@ -1,11 +1,11 @@
-package org.apache.streamline.streams.runtime.storm.bolt.rules;
+package com.hortonworks.streamline.streams.runtime.storm.bolt.rules;
 
 import com.google.common.collect.ImmutableMap;
-import org.apache.streamline.common.util.Utils;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.common.StreamlineEventImpl;
-import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
-import org.apache.streamline.streams.layout.component.rule.expression.Window;
+import com.hortonworks.streamline.common.util.Utils;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Window;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;
@@ -19,7 +19,7 @@ import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.TupleImpl;
 import org.apache.storm.tuple.Values;
 import org.apache.storm.windowing.TupleWindow;
-import org.apache.streamline.streams.runtime.processor.RuleProcessorRuntime;
+import com.hortonworks.streamline.streams.runtime.processor.RuleProcessorRuntime;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

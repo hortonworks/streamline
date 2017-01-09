@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.storage.exception;
+package com.hortonworks.streamline.storage.exception;
 
 /**
  * Exception thrown when attempting to build a SQL query that is not syntactically correct,

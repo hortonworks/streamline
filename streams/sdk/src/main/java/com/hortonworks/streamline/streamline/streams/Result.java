@@ -1,4 +1,4 @@
-package org.apache.streamline.streams;
+package com.hortonworks.streamline.streams;
 
 import java.util.List;
 

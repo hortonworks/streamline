@@ -15,10 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.storage.impl.jdbc.provider.sql.query;
+package com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query;
 
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorableKey;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorableKey;
 
 public abstract class AbstractStorableSqlQuery extends AbstractSqlQuery {
     final Storable storable;

@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.catalog.service.metadata;
+package com.hortonworks.streamline.streams.catalog.service.metadata;
 
 import mockit.Expectations;
 import mockit.Mocked;

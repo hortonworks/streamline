@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.streams.runtime.storm.bolt;
+package com.hortonworks.streamline.streams.runtime.storm.bolt;
 
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
@@ -24,11 +24,11 @@ import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
-import org.apache.streamline.streams.Result;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.common.StreamlineEventImpl;
-import org.apache.streamline.streams.common.utils.ShellContext;
-import org.apache.streamline.streams.runtime.processor.MultiLangProcessorRuntime;
+import com.hortonworks.streamline.streams.Result;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.common.utils.ShellContext;
+import com.hortonworks.streamline.streams.runtime.processor.MultiLangProcessorRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

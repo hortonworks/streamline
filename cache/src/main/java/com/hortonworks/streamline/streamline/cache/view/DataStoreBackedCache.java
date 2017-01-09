@@ -16,18 +16,18 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.cache.view;
+package com.hortonworks.streamline.cache.view;
 
-import org.apache.streamline.cache.AbstractCache;
-import org.apache.streamline.cache.Cache;
-import org.apache.streamline.cache.LoadableCache;
-import org.apache.streamline.cache.exception.CacheException;
-import org.apache.streamline.cache.stats.CacheStats;
-import org.apache.streamline.cache.view.datastore.DataStoreReader;
-import org.apache.streamline.cache.view.datastore.DataStoreWriter;
-import org.apache.streamline.cache.view.io.loader.CacheLoader;
-import org.apache.streamline.cache.view.io.loader.CacheLoaderCallback;
-import org.apache.streamline.cache.view.io.writer.CacheWriter;
+import com.hortonworks.streamline.cache.AbstractCache;
+import com.hortonworks.streamline.cache.Cache;
+import com.hortonworks.streamline.cache.LoadableCache;
+import com.hortonworks.streamline.cache.exception.CacheException;
+import com.hortonworks.streamline.cache.stats.CacheStats;
+import com.hortonworks.streamline.cache.view.datastore.DataStoreReader;
+import com.hortonworks.streamline.cache.view.datastore.DataStoreWriter;
+import com.hortonworks.streamline.cache.view.io.loader.CacheLoader;
+import com.hortonworks.streamline.cache.view.io.loader.CacheLoaderCallback;
+import com.hortonworks.streamline.cache.view.io.writer.CacheWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

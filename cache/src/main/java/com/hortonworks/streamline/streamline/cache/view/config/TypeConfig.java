@@ -16,7 +16,7 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.cache.view.config;
+package com.hortonworks.streamline.cache.view.config;
 
 public interface TypeConfig {
     enum Cache {REDIS, GUAVA, MEMCACHED}

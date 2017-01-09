@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.layout.component.rule.exception;
+package com.hortonworks.streamline.streams.layout.component.rule.exception;
 
 public class RuleExecutionException extends RuntimeException {
     public RuleExecutionException() {

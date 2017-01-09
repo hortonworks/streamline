@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.storm.bolt.rules;
+package com.hortonworks.streamline.streams.runtime.storm.bolt.rules;
 
 import mockit.integration.junit4.JMockit;
-import org.apache.streamline.streams.runtime.processor.RuleProcessorRuntime;
+import com.hortonworks.streamline.streams.runtime.processor.RuleProcessorRuntime;
 import org.junit.runner.RunWith;
 
 @RunWith(JMockit.class)

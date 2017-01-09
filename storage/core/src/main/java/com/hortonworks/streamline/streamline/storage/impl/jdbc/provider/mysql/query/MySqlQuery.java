@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.storage.impl.jdbc.provider.mysql.query;
+package com.hortonworks.streamline.storage.impl.jdbc.provider.mysql.query;
 
-import org.apache.streamline.storage.impl.jdbc.provider.sql.query.AbstractSqlQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.AbstractSqlQuery;
 
 public class MySqlQuery extends AbstractSqlQuery {
 

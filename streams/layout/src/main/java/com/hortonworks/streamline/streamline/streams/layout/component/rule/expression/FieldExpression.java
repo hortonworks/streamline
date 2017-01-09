@@ -1,6 +1,6 @@
-package org.apache.streamline.streams.layout.component.rule.expression;
+package com.hortonworks.streamline.streams.layout.component.rule.expression;
 
-import org.apache.streamline.common.Schema;
+import com.hortonworks.streamline.common.Schema;
 
 /**
  * A variable (field) expression, e.g. x

@@ -1,11 +1,11 @@
-package org.apache.streamline.streams.catalog;
+package com.hortonworks.streamline.streams.catalog;
 
-import org.apache.streamline.streams.catalog.Topology;
-import org.apache.streamline.streams.catalog.TopologyComponent;
-import org.apache.streamline.streams.layout.component.StreamlineComponent;
-import org.apache.streamline.streams.layout.component.TopologyDag;
-import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
-import org.apache.streamline.streams.layout.component.TopologyLayout;
+import com.hortonworks.streamline.streams.catalog.Topology;
+import com.hortonworks.streamline.streams.catalog.TopologyComponent;
+import com.hortonworks.streamline.streams.layout.component.StreamlineComponent;
+import com.hortonworks.streamline.streams.layout.component.TopologyDag;
+import com.hortonworks.streamline.streams.layout.component.TopologyDagVisitor;
+import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
 
 import java.io.IOException;
 
@@ -23,7 +23,7 @@ public final class CatalogToLayoutConverter {
                 topology.getConfig(), topologyDag);
     }
 
-    public static org.apache.streamline.streams.layout.component.Component getComponentLayout(TopologyComponent component) {
+    public static com.hortonworks.streamline.streams.layout.component.Component getComponentLayout(TopologyComponent component) {
         StreamlineComponent componentLayout = new StreamlineComponent() {
             @Override
             public void accept(TopologyDagVisitor visitor) {

@@ -16,24 +16,24 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.streams.notification.store.hbase;
+package com.hortonworks.streamline.streams.notification.store.hbase;
 
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.notification.Notification;
-import org.apache.streamline.streams.notification.store.Criteria;
-import org.apache.streamline.streams.notification.store.NotificationStore;
-import org.apache.streamline.streams.notification.store.NotificationStoreException;
-import org.apache.streamline.streams.notification.store.hbase.mappers.DatasourceNotificationMapper;
-import org.apache.streamline.streams.notification.store.hbase.mappers.DatasourceStatusNotificationMapper;
-import org.apache.streamline.streams.notification.store.hbase.mappers.StreamlineEventMapper;
-import org.apache.streamline.streams.notification.store.hbase.mappers.NotificationIndexMapper;
-import org.apache.streamline.streams.notification.store.hbase.mappers.NotificationMapper;
-import org.apache.streamline.streams.notification.store.hbase.mappers.NotifierNotificationMapper;
-import org.apache.streamline.streams.notification.store.hbase.mappers.NotifierStatusNotificationMapper;
-import org.apache.streamline.streams.notification.store.hbase.mappers.RuleNotificationMapper;
-import org.apache.streamline.streams.notification.store.hbase.mappers.RuleStatusNotificationMapper;
-import org.apache.streamline.streams.notification.store.hbase.mappers.TableMutation;
-import org.apache.streamline.streams.notification.store.hbase.mappers.TimestampNotificationMapper;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.notification.Notification;
+import com.hortonworks.streamline.streams.notification.store.Criteria;
+import com.hortonworks.streamline.streams.notification.store.NotificationStore;
+import com.hortonworks.streamline.streams.notification.store.NotificationStoreException;
+import com.hortonworks.streamline.streams.notification.store.hbase.mappers.DatasourceNotificationMapper;
+import com.hortonworks.streamline.streams.notification.store.hbase.mappers.DatasourceStatusNotificationMapper;
+import com.hortonworks.streamline.streams.notification.store.hbase.mappers.StreamlineEventMapper;
+import com.hortonworks.streamline.streams.notification.store.hbase.mappers.NotificationIndexMapper;
+import com.hortonworks.streamline.streams.notification.store.hbase.mappers.NotificationMapper;
+import com.hortonworks.streamline.streams.notification.store.hbase.mappers.NotifierNotificationMapper;
+import com.hortonworks.streamline.streams.notification.store.hbase.mappers.NotifierStatusNotificationMapper;
+import com.hortonworks.streamline.streams.notification.store.hbase.mappers.RuleNotificationMapper;
+import com.hortonworks.streamline.streams.notification.store.hbase.mappers.RuleStatusNotificationMapper;
+import com.hortonworks.streamline.streams.notification.store.hbase.mappers.TableMutation;
+import com.hortonworks.streamline.streams.notification.store.hbase.mappers.TimestampNotificationMapper;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.TableName;

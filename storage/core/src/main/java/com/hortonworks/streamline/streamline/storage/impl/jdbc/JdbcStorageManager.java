@@ -15,24 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.storage.impl.jdbc;
+package com.hortonworks.streamline.storage.impl.jdbc;
 
 
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.storage.PrimaryKey;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorableFactory;
-import org.apache.streamline.storage.StorableKey;
-import org.apache.streamline.storage.StorageManager;
-import org.apache.streamline.storage.exception.AlreadyExistsException;
-import org.apache.streamline.storage.exception.IllegalQueryParameterException;
-import org.apache.streamline.storage.exception.StorageException;
-import org.apache.streamline.storage.impl.jdbc.provider.mysql.factory.MySqlExecutor;
-import org.apache.streamline.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.query.MetadataHelper;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.query.SqlSelectQuery;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.storage.PrimaryKey;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorableFactory;
+import com.hortonworks.streamline.storage.StorableKey;
+import com.hortonworks.streamline.storage.StorageManager;
+import com.hortonworks.streamline.storage.exception.AlreadyExistsException;
+import com.hortonworks.streamline.storage.exception.IllegalQueryParameterException;
+import com.hortonworks.streamline.storage.exception.StorageException;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.mysql.factory.MySqlExecutor;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.MetadataHelper;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlSelectQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -16,7 +16,7 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.storm.bolt.notification;
+package com.hortonworks.streamline.streams.runtime.storm.bolt.notification;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
@@ -25,15 +25,15 @@ import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.topology.base.BaseRichBolt;
 import org.apache.storm.tuple.Tuple;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.layout.component.impl.NotificationSink;
-import org.apache.streamline.streams.notification.Notification;
-import org.apache.streamline.streams.notification.NotifierConfig;
-import org.apache.streamline.streams.notification.common.NotifierConfigImpl;
-import org.apache.streamline.streams.notification.service.NotificationService;
-import org.apache.streamline.streams.notification.service.NotificationServiceImpl;
-import org.apache.streamline.streams.notification.store.NotificationStore;
-import org.apache.streamline.streams.runtime.notification.StreamlineEventAdapter;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.layout.component.impl.NotificationSink;
+import com.hortonworks.streamline.streams.notification.Notification;
+import com.hortonworks.streamline.streams.notification.NotifierConfig;
+import com.hortonworks.streamline.streams.notification.common.NotifierConfigImpl;
+import com.hortonworks.streamline.streams.notification.service.NotificationService;
+import com.hortonworks.streamline.streams.notification.service.NotificationServiceImpl;
+import com.hortonworks.streamline.streams.notification.store.NotificationStore;
+import com.hortonworks.streamline.streams.runtime.notification.StreamlineEventAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.webservice;
+package com.hortonworks.streamline.webservice;
 
 import java.util.Map;
 

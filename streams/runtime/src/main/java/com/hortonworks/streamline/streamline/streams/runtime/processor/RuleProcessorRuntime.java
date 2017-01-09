@@ -16,33 +16,33 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.processor;
+package com.hortonworks.streamline.streams.runtime.processor;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.Result;
-import org.apache.streamline.streams.exception.ProcessingException;
-import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
-import org.apache.streamline.streams.layout.component.rule.Rule;
-import org.apache.streamline.streams.layout.component.rule.action.Action;
-import org.apache.streamline.streams.layout.component.rule.expression.Expression;
-import org.apache.streamline.streams.layout.component.rule.expression.FieldExpression;
-import org.apache.streamline.streams.layout.component.rule.expression.GroupBy;
-import org.apache.streamline.streams.runtime.ProcessorRuntime;
-import org.apache.streamline.streams.runtime.rule.RuleRuntime;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.Result;
+import com.hortonworks.streamline.streams.exception.ProcessingException;
+import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
+import com.hortonworks.streamline.streams.layout.component.rule.Rule;
+import com.hortonworks.streamline.streams.layout.component.rule.action.Action;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Expression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.GroupBy;
+import com.hortonworks.streamline.streams.runtime.ProcessorRuntime;
+import com.hortonworks.streamline.streams.runtime.rule.RuleRuntime;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.streamline.streams.runtime.rule.action.ActionRuntime;
-import org.apache.streamline.streams.runtime.rule.action.ActionRuntimeContext;
-import org.apache.streamline.streams.runtime.rule.condition.expression.GroovyExpression;
-import org.apache.streamline.streams.runtime.rule.condition.expression.StormSqlExpression;
-import org.apache.streamline.streams.runtime.rule.sql.SqlEngine;
-import org.apache.streamline.streams.runtime.rule.sql.SqlScript;
-import org.apache.streamline.streams.runtime.script.GroovyScript;
-import org.apache.streamline.streams.runtime.script.Script;
-import org.apache.streamline.streams.runtime.script.engine.GroovyScriptEngine;
-import org.apache.streamline.streams.runtime.transform.ActionRuntimeService;
+import com.hortonworks.streamline.streams.runtime.rule.action.ActionRuntime;
+import com.hortonworks.streamline.streams.runtime.rule.action.ActionRuntimeContext;
+import com.hortonworks.streamline.streams.runtime.rule.condition.expression.GroovyExpression;
+import com.hortonworks.streamline.streams.runtime.rule.condition.expression.StormSqlExpression;
+import com.hortonworks.streamline.streams.runtime.rule.sql.SqlEngine;
+import com.hortonworks.streamline.streams.runtime.rule.sql.SqlScript;
+import com.hortonworks.streamline.streams.runtime.script.GroovyScript;
+import com.hortonworks.streamline.streams.runtime.script.Script;
+import com.hortonworks.streamline.streams.runtime.script.engine.GroovyScriptEngine;
+import com.hortonworks.streamline.streams.runtime.transform.ActionRuntimeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,8 +55,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.streamline.streams.common.StreamlineEventImpl.GROUP_BY_TRIGGER_EVENT;
-import static org.apache.streamline.streams.layout.component.rule.expression.Window.WINDOW_ID;
+import static com.hortonworks.streamline.streams.common.StreamlineEventImpl.GROUP_BY_TRIGGER_EVENT;
+import static com.hortonworks.streamline.streams.layout.component.rule.expression.Window.WINDOW_ID;
 
 /**
  * Represents a runtime rules processor

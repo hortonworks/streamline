@@ -1,8 +1,8 @@
-package org.apache.streamline.storage.cache.writer;
+package com.hortonworks.streamline.storage.cache.writer;
 
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorableKey;
-import org.apache.streamline.storage.StorageManager;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorableKey;
+import com.hortonworks.streamline.storage.StorageManager;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;

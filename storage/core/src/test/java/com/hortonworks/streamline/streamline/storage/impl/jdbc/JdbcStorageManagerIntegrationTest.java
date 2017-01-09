@@ -16,15 +16,15 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.storage.impl.jdbc;
+package com.hortonworks.streamline.storage.impl.jdbc;
 
-import org.apache.streamline.common.test.IntegrationTest;
-import org.apache.streamline.storage.AbstractStoreManagerTest;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorableTest;
-import org.apache.streamline.storage.StorageManager;
-import org.apache.streamline.storage.impl.jdbc.connection.ConnectionBuilder;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
+import com.hortonworks.streamline.common.test.IntegrationTest;
+import com.hortonworks.streamline.storage.AbstractStoreManagerTest;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorableTest;
+import com.hortonworks.streamline.storage.StorageManager;
+import com.hortonworks.streamline.storage.impl.jdbc.connection.ConnectionBuilder;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
 import org.h2.tools.RunScript;
 import org.junit.After;
 import org.junit.Assert;

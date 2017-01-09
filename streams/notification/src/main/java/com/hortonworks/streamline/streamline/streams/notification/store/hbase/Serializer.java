@@ -16,7 +16,7 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.streams.notification.store.hbase;
+package com.hortonworks.streamline.streams.notification.store.hbase;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;

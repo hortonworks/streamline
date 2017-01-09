@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.registries.model.service;
+package com.hortonworks.streamline.registries.model.service;
 
 /**
  * Wrapper class for returning the field name and type information for

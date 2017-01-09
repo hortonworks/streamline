@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.storage.impl.jdbc.util;
+package com.hortonworks.streamline.storage.impl.jdbc.util;
 
 import java.lang.reflect.Field;
 import java.sql.Date;

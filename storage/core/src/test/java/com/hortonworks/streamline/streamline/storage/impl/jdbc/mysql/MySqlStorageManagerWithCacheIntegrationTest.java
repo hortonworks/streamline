@@ -16,16 +16,16 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.storage.impl.jdbc.mysql;
+package com.hortonworks.streamline.storage.impl.jdbc.mysql;
 
 import com.google.common.cache.CacheBuilder;
-import org.apache.streamline.common.test.IntegrationTest;
-import org.apache.streamline.storage.impl.jdbc.JdbcStorageManagerIntegrationTest;
-import org.apache.streamline.storage.impl.jdbc.config.ExecutionConfig;
-import org.apache.streamline.storage.impl.jdbc.config.HikariBasicConfig;
-import org.apache.streamline.storage.impl.jdbc.connection.ConnectionBuilder;
-import org.apache.streamline.storage.impl.jdbc.connection.HikariCPConnectionBuilder;
-import org.apache.streamline.storage.impl.jdbc.provider.mysql.factory.MySqlExecutor;
+import com.hortonworks.streamline.common.test.IntegrationTest;
+import com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManagerIntegrationTest;
+import com.hortonworks.streamline.storage.impl.jdbc.config.ExecutionConfig;
+import com.hortonworks.streamline.storage.impl.jdbc.config.HikariBasicConfig;
+import com.hortonworks.streamline.storage.impl.jdbc.connection.ConnectionBuilder;
+import com.hortonworks.streamline.storage.impl.jdbc.connection.HikariCPConnectionBuilder;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.mysql.factory.MySqlExecutor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;

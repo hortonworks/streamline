@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.notifiers;
+package com.hortonworks.streamline.streams.notifiers;
 
 /**
  * Signals some runtime issue with a notifier

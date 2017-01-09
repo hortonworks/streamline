@@ -1,8 +1,8 @@
-package org.apache.streamline.streams.runtime.storm.testing;
+package com.hortonworks.streamline.streams.runtime.storm.testing;
 
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.common.StreamlineEventImpl;
-import org.apache.streamline.streams.runtime.transform.AddHeaderTransformRuntime;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.runtime.transform.AddHeaderTransformRuntime;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;

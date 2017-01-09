@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.streams.layout.storm;
+package com.hortonworks.streamline.streams.layout.storm;
 
 import com.google.common.base.Joiner;
 
@@ -69,9 +69,9 @@ import java.util.stream.Collectors;
  */
 public class CassandraBoltFluxComponent extends AbstractFluxComponent {
 
-    private static final String CASSANDRA_BOLT_CLASS = "org.apache.streamline.streams.runtime.storm.cassandra.StreamlineCassandraBolt";
+    private static final String CASSANDRA_BOLT_CLASS = "com.hortonworks.streamline.streams.runtime.storm.cassandra.StreamlineCassandraBolt";
     private static final String MAPPER_BUILDER_CLASS = "org.apache.storm.cassandra.query.builder.BoundCQLStatementMapperBuilder";
-    private static final String FIELD_SELECTOR_CLASS_NAME = "org.apache.streamline.streams.runtime.storm.cassandra.StreamlineFieldSelector";
+    private static final String FIELD_SELECTOR_CLASS_NAME = "com.hortonworks.streamline.streams.runtime.storm.cassandra.StreamlineFieldSelector";
 
     private static final String COLUMN_NAME_KEY = "columnName";
     private static final String FIELD_NAME_KEY = "fieldName";

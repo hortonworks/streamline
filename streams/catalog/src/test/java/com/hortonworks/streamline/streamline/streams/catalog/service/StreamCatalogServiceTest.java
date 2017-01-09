@@ -1,15 +1,15 @@
-package org.apache.streamline.streams.catalog.service;
+package com.hortonworks.streamline.streams.catalog.service;
 
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Tested;
 import mockit.integration.junit4.JMockit;
-import org.apache.streamline.common.util.FileStorage;
-import org.apache.streamline.registries.model.client.MLModelRegistryClient;
-import org.apache.streamline.storage.StorableKey;
-import org.apache.streamline.storage.StorageManager;
-import org.apache.streamline.streams.catalog.Topology;
-import org.apache.streamline.streams.catalog.TopologyVersionInfo;
+import com.hortonworks.streamline.common.util.FileStorage;
+import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
+import com.hortonworks.streamline.storage.StorableKey;
+import com.hortonworks.streamline.storage.StorageManager;
+import com.hortonworks.streamline.streams.catalog.Topology;
+import com.hortonworks.streamline.streams.catalog.TopologyVersionInfo;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.layout.component.rule.action;
+package com.hortonworks.streamline.streams.layout.component.rule.action;
 
 
-import org.apache.streamline.streams.layout.Transform;
+import com.hortonworks.streamline.streams.layout.Transform;
 
 import java.util.ArrayList;
 import java.util.Collection;

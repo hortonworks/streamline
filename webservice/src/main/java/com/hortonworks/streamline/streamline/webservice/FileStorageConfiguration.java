@@ -1,4 +1,4 @@
-package org.apache.streamline.webservice;
+package com.hortonworks.streamline.webservice;
 
 import org.hibernate.validator.constraints.NotEmpty;
 

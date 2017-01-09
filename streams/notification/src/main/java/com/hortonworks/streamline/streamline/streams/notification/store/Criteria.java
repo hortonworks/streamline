@@ -16,7 +16,7 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.streams.notification.store;
+package com.hortonworks.streamline.streams.notification.store;
 
 import java.util.List;
 

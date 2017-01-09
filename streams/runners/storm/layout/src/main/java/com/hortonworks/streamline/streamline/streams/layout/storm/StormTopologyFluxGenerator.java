@@ -1,25 +1,25 @@
-package org.apache.streamline.streams.layout.storm;
+package com.hortonworks.streamline.streams.layout.storm;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Multimap;
-import org.apache.streamline.common.Config;
-import org.apache.streamline.streams.layout.component.Component;
-import org.apache.streamline.streams.layout.component.Edge;
-import org.apache.streamline.streams.layout.component.InputComponent;
-import org.apache.streamline.streams.layout.component.Stream;
-import org.apache.streamline.streams.layout.component.StreamlineProcessor;
-import org.apache.streamline.streams.layout.component.StreamlineSink;
-import org.apache.streamline.streams.layout.component.StreamlineSource;
-import org.apache.streamline.streams.layout.component.OutputComponent;
-import org.apache.streamline.streams.layout.component.StreamGrouping;
-import org.apache.streamline.streams.layout.component.TopologyDag;
-import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
-import org.apache.streamline.streams.layout.component.TopologyLayout;
-import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
-import org.apache.streamline.streams.layout.component.rule.Rule;
-import org.apache.streamline.streams.layout.component.rule.expression.Window;
+import com.hortonworks.streamline.common.Config;
+import com.hortonworks.streamline.streams.layout.component.Component;
+import com.hortonworks.streamline.streams.layout.component.Edge;
+import com.hortonworks.streamline.streams.layout.component.InputComponent;
+import com.hortonworks.streamline.streams.layout.component.Stream;
+import com.hortonworks.streamline.streams.layout.component.StreamlineProcessor;
+import com.hortonworks.streamline.streams.layout.component.StreamlineSink;
+import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
+import com.hortonworks.streamline.streams.layout.component.OutputComponent;
+import com.hortonworks.streamline.streams.layout.component.StreamGrouping;
+import com.hortonworks.streamline.streams.layout.component.TopologyDag;
+import com.hortonworks.streamline.streams.layout.component.TopologyDagVisitor;
+import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
+import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
+import com.hortonworks.streamline.streams.layout.component.rule.Rule;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Window;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,9 +33,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.streamline.streams.layout.storm.StormTopologyLayoutConstants.YAML_KEY_ID;
-import static org.apache.streamline.streams.layout.storm.StormTopologyLayoutConstants.YAML_KEY_STREAMS;
-import static org.apache.streamline.streams.layout.storm.StormTopologyLayoutConstants.YAML_KEY_TO;
+import static com.hortonworks.streamline.streams.layout.storm.StormTopologyLayoutConstants.YAML_KEY_ID;
+import static com.hortonworks.streamline.streams.layout.storm.StormTopologyLayoutConstants.YAML_KEY_STREAMS;
+import static com.hortonworks.streamline.streams.layout.storm.StormTopologyLayoutConstants.YAML_KEY_TO;
 
 public class StormTopologyFluxGenerator extends TopologyDagVisitor {
     private static final Logger LOG = LoggerFactory.getLogger(StormTopologyFluxGenerator.class);

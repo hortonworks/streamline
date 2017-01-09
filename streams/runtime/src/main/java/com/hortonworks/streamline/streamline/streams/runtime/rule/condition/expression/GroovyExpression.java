@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.rule.condition.expression;
+package com.hortonworks.streamline.streams.runtime.rule.condition.expression;
 
-import org.apache.streamline.streams.layout.component.rule.expression.Condition;
-import org.apache.streamline.streams.layout.component.rule.expression.ExpressionTranslator;
-import org.apache.streamline.streams.layout.component.rule.expression.Operator;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Condition;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.ExpressionTranslator;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Operator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

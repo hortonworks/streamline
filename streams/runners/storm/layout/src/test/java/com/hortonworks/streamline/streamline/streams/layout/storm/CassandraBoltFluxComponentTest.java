@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.streams.layout.storm;
+package com.hortonworks.streamline.streams.layout.storm;
 
 import org.apache.calcite.avatica.com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.calcite.avatica.com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,7 +40,7 @@ import java.util.stream.Stream;
 public class CassandraBoltFluxComponentTest {
     private static final Logger LOG = LoggerFactory.getLogger(CassandraBoltFluxComponentTest.class);
 
-    private static final String FIELD_SELECTOR_CLASS = "org.apache.streamline.streams.runtime.storm.cassandra.StreamlineFieldSelector";
+    private static final String FIELD_SELECTOR_CLASS = "com.hortonworks.streamline.streams.runtime.storm.cassandra.StreamlineFieldSelector";
     private static final String MAPPER_CLASS = "org.apache.storm.cassandra.query.builder.BoundCQLStatementMapperBuilder";
 
     @Test

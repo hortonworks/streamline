@@ -1,20 +1,20 @@
-package org.apache.streamline.streams.service;
+package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.common.util.WSUtils;
-import org.apache.streamline.storage.exception.AlreadyExistsException;
-import org.apache.streamline.streams.actions.topology.service.TopologyActionsService;
-import org.apache.streamline.streams.catalog.Namespace;
-import org.apache.streamline.streams.catalog.NamespaceServiceClusterMapping;
-import org.apache.streamline.streams.catalog.Topology;
-import org.apache.streamline.streams.catalog.service.EnvironmentService;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.common.exception.service.exception.request.BadRequestException;
-import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
-import org.apache.streamline.streams.storm.common.TopologyNotAliveException;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.util.WSUtils;
+import com.hortonworks.streamline.storage.exception.AlreadyExistsException;
+import com.hortonworks.streamline.streams.actions.topology.service.TopologyActionsService;
+import com.hortonworks.streamline.streams.catalog.Namespace;
+import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping;
+import com.hortonworks.streamline.streams.catalog.Topology;
+import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import com.hortonworks.streamline.streams.storm.common.TopologyNotAliveException;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;

@@ -1,7 +1,7 @@
-package org.apache.streamline.streams.metrics.storm.opentsdb;
+package com.hortonworks.streamline.streams.metrics.storm.opentsdb;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import org.apache.streamline.streams.metrics.TimeSeriesQuerier;
+import com.hortonworks.streamline.streams.metrics.TimeSeriesQuerier;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -17,7 +17,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
-import static org.apache.streamline.streams.metrics.storm.opentsdb.OpenTSDBWithStormQuerier.QUERY_API_URL;
+import static com.hortonworks.streamline.streams.metrics.storm.opentsdb.OpenTSDBWithStormQuerier.QUERY_API_URL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;

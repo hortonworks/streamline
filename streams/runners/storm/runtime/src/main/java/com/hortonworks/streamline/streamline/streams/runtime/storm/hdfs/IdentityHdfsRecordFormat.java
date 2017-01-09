@@ -1,6 +1,6 @@
-package org.apache.streamline.streams.runtime.storm.hdfs;
+package com.hortonworks.streamline.streams.runtime.storm.hdfs;
 
-import org.apache.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.StreamlineEvent;
 import org.apache.storm.hdfs.bolt.format.RecordFormat;
 import org.apache.storm.tuple.Tuple;
 
