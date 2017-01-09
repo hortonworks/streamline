@@ -1,20 +1,22 @@
 #!/usr/bin/env bash
 
-dir=$(dirname $0)/..
+dir=$(dirname $0)
+echo $dir
 CATALOG_ROOT_URL="${1:-http://localhost:8080/api/v1/catalog}"
 
 # Load Notifiers
 echo "Adding Email notifier"
-jarFile=./notifier-jars/streamline-notifier-0.1.0-SNAPSHOT.jar
+jarFile=${dir}/notifier-jars/streamline-notifier-0.1.0-SNAPSHOT.jar
+echo $jarFile
 if [[ ! -f ${jarFile} ]]
 then
   # try local build path
-  jarFile=${dir}/streams/notifier/target/streamline-notifier-0.1.0-SNAPSHOT.jar
-  if [[ ! -f ${jarFile} ]]
-  then
-    echo "Could not find streamline-notifier jar, Exiting ..."
-    exit 1
-  fi
+    jarFile=${dir}/../streams/notifier/target/streamline-notifier-0.1.0-SNAPSHOT.jar
+    if [[ ! -f ${jarFile} ]]
+    then
+        echo "Could not find streamline-notifier jar, Exiting ..."
+        exit 1
+    fi
 fi
 curl -X POST "${CATALOG_ROOT_URL}/notifiers" -F notifierJarFile=@${jarFile} -F notifierConfig='{
   "name": "email_notifier.json",

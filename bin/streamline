@@ -50,6 +50,8 @@ STREAMLINE_LAUNCH_COMMAND=$1
 APP_NAME=streamline
 
 STREAMLINE_START_CMD="$STREAMLINE_HOME/bin/streamline-server-start.sh $STREAMLINE_HOME/conf/streamline.yaml"
+STREAMLINE_SETUP_CMD="$STREAMLINE_HOME/bootstrap/bootstrap-storage.sh"
+STREAMLINE_BOOTSTRAP_CMD="$STREAMLINE_HOME/bootstrap/bootstrap.sh"
 
 #Name of PID file
 [ -z $PID_DIR ] && PID_DIR="/var/run/$APP_NAME"
@@ -75,9 +77,16 @@ function main {
          ;;
       clean)
          streamlineClean
+         ;;
+      setup)
+          streamlineSetup
           ;;
+      bootstrap)
+          streamlineBootstrap
+          ;;
+
       *)
-         printf "Usage: $0 {start|stop|status|clean}\n"
+         printf "Usage: $0 {start|stop|status|clean|setup|bootstrap}\n"
          ;;
    esac
 }
@@ -157,6 +166,22 @@ function streamlineClean {
      printf "Can't clean files.  Streamline is running with PID=$PID.\n"
      exit 1
    fi
+}
+
+function streamlineSetup {
+    printf "Running Streamline Setup.\n"
+    su $STREAMLINE_USER -c "$STREAMLINE_SETUP_CMD"
+}
+
+function streamlineBootstrap {
+    printf "Streamline "
+    getPID
+    if [ $? -eq 1 ]; then
+        printf "is not running. No pid file found.\n"
+        printf "Please start streamline server before running bootstrap.\n"
+        return 0
+    fi
+    su $STREAMLINE_USER -c "$STREAMLINE_BOOTSTRAP_CMD"
 }
 
 # Returns 0 if the Knox is running and sets the $PID variable.

@@ -16,6 +16,8 @@ done
 BOOTSTRAP_DIR=`dirname ${PRG}`
 CONFIG_FILE_PATH=${BOOTSTRAP_DIR}/../conf/streamline.yaml
 
+MAVEN_JAR_URL_PATH=https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.40.zip
+
 # Which java to use
 if [ -z "${JAVA_HOME}" ]; then
   JAVA="java"
@@ -24,7 +26,10 @@ else
 fi
 
 SCRIPT_RUNNER_MAIN_CLASS=com.hortonworks.streamline.storage.tool.SQLScriptRunner
-CLASSPATH=${BOOTSTRAP_DIR}/lib/storage-tool-0.1.0-SNAPSHOT.jar:
+for file in "${BOOTSTRAP_DIR}"/lib/*.jar;
+do
+    CLASSPATH="$CLASSPATH":"$file"
+done
 
 echo "Configuration file: ${CONFIG_FILE_PATH}"
 
@@ -32,4 +37,4 @@ SCRIPT_DIR="${BOOTSTRAP_DIR}/sql/<dbtype>"
 FILE_OPT="-f ${SCRIPT_DIR}/drop_tables.sql -f ${SCRIPT_DIR}/create_tables.sql"
 
 echo "Script files option: $FILE_OPT"
-exec ${JAVA} -cp ${CLASSPATH} ${SCRIPT_RUNNER_MAIN_CLASS} -c ${CONFIG_FILE_PATH} ${FILE_OPT}
+exec ${JAVA} -Dstreamline.bootstrap.dir=$BOOTSTRAP_DIR -cp ${CLASSPATH} ${SCRIPT_RUNNER_MAIN_CLASS} -c ${CONFIG_FILE_PATH} ${FILE_OPT} -m ${MAVEN_JAR_URL_PATH}
