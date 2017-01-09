@@ -163,7 +163,7 @@ public final class MLModelRegistryService {
     }
 
     private static Collection<Class<? extends Storable>> getStorableClasses() {
-        InputStream resourceAsStream = MLModelRegistryService.class.getClassLoader().getResourceAsStream("mlmodelregistrystorables.props");
+        InputStream resourceAsStream = MLModelRegistryService.class.getClassLoader().getResourceAsStream("modelregistrystorables.props");
         HashSet<Class<? extends Storable>> classes = new HashSet<>();
         try {
             List<String> classNames = IOUtils.readLines(resourceAsStream, Charset.defaultCharset());
