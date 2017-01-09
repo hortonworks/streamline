@@ -74,6 +74,13 @@
             </includes>
         </fileSet>
         <fileSet>
+            <directory>${project.basedir}./storage/core/target/dependency</directory>
+            <outputDirectory>/libs</outputDirectory>
+            <includes>
+                <include>postgresql*</include>
+            </includes>
+        </fileSet>
+        <fileSet>
             <directory>${project.basedir}./streams/notifier/target</directory>
             <outputDirectory>/bootstrap/notifier-jars</outputDirectory>
             <includes>
@@ -104,6 +111,13 @@
         <fileSet>
             <directory>${project.basedir}./bootstrap/sql/phoenix</directory>
             <outputDirectory>/bootstrap/sql/phoenix</outputDirectory>
+            <includes>
+                <include>**/*.sql</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>${project.basedir}./bootstrap/sql/postgresql</directory>
+            <outputDirectory>/bootstrap/sql/postgresql</outputDirectory>
             <includes>
                 <include>**/*.sql</include>
             </includes>

@@ -65,7 +65,7 @@ pivotConfiguration:
 #   db.type: "mysql"
 #   queryTimeoutInSecs: 30
 #   db.properties:
-#     dataSourceClassName: "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
+#     dataSourceClassName: "org.mariadb.jdbc.MariaDbDataSource"
 #     dataSource.url: "jdbc:mysql://localhost/test"
 #     dataSource.user: "streamline_user"
 #     dataSource.password: "streamline_password"

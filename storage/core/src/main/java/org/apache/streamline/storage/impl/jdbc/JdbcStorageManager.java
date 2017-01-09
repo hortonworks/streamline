@@ -29,6 +29,7 @@ import org.apache.streamline.storage.exception.AlreadyExistsException;
 import org.apache.streamline.storage.exception.IllegalQueryParameterException;
 import org.apache.streamline.storage.exception.StorageException;
 import org.apache.streamline.storage.impl.jdbc.provider.mysql.factory.MySqlExecutor;
+import org.apache.streamline.storage.impl.jdbc.provider.postgresql.factory.PostgresqlExecutor;
 import org.apache.streamline.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
 import org.apache.streamline.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
 import org.apache.streamline.storage.impl.jdbc.provider.sql.query.MetadataHelper;
@@ -216,7 +217,7 @@ public class JdbcStorageManager implements StorageManager {
 
         // When we have more providers we can add a layer to have a factory to create respective jdbc storage managers.
         // For now, keeping it simple as there are only 2.
-        if(!"phoenix".equals(type) && !"mysql".equals(type)) {
+        if(!"phoenix".equals(type) && !"mysql".equals(type) && !"postgresql".equals(type)) {
             throw new IllegalArgumentException("Unknown jdbc storage provider type: "+type);
         }
         log.info("jdbc provider type: [{}]", type);
@@ -233,6 +234,9 @@ public class JdbcStorageManager implements StorageManager {
                 break;
             case "mysql":
                 queryExecutor = MySqlExecutor.createExecutor(dbProperties);
+                break;
+            case "postgresql":
+                queryExecutor = PostgresqlExecutor.createExecutor(dbProperties);
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported storage provider type: "+type);

@@ -52,26 +52,17 @@ fileStorageConfiguration:
 #
 # MySQL based jdbc provider configuration is:
 # to add user and password please follow below convention
-#storageProviderConfiguration:
-# providerClass: "org.apache.streamline.storage.impl.jdbc.JdbcStorageManager"
-# properties:
-#   db.type: "mysql"
-#   queryTimeoutInSecs: 30
-#   db.properties:
-#     dataSourceClassName: "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
-#     dataSource.url: "jdbc:mysql://localhost/test"
-#     dataSource.user: "streamline_user"
-#     dataSource.password: "streamline_password"
-#
 
 storageProviderConfiguration:
  providerClass: "org.apache.streamline.storage.impl.jdbc.JdbcStorageManager"
  properties:
-   db.type: "phoenix"
+   db.type: "postgres"
    queryTimeoutInSecs: 30
    db.properties:
-     jdbcDriverClass: "org.apache.phoenix.jdbc.PhoenixDriver"
-     jdbcUrl: "jdbc:phoenix:localhost:2181"
+     dataSourceClassName: "org.postgresql.ds.PGSimpleDataSource"
+     dataSource.url: "jdbc:mysql://localhost/test_db"
+     dataSource.user: "tester"
+     dataSource.password: "test_password"
 
 
 pivotConfiguration:
