@@ -203,7 +203,6 @@ public class BranchRuleInfo extends AbstractStorable {
         ObjectMapper mapper = new ObjectMapper();
         Map<String, Object> map = super.toMap();
         try {
-            map.put(STREAM, stream != null ? mapper.writeValueAsString(stream) : "");
             map.put(ACTIONS, actions != null ? mapper.writerFor(new TypeReference<List<Action>>() {
             }).writeValueAsString(actions) : "");
         } catch (Exception e) {
