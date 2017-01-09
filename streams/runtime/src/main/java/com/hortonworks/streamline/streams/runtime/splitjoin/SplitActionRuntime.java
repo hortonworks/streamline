@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.runtime.splitjoin;
+package com.hortonworks.streamline.streams.runtime.splitjoin;
 
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.Result;
-import org.apache.streamline.streams.layout.component.impl.splitjoin.SplitAction;
-import org.apache.streamline.streams.layout.component.rule.action.Action;
-import org.apache.streamline.streams.runtime.RuntimeService;
-import org.apache.streamline.streams.runtime.rule.action.ActionRuntime;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.Result;
+import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.SplitAction;
+import com.hortonworks.streamline.streams.layout.component.rule.action.Action;
+import com.hortonworks.streamline.streams.runtime.RuntimeService;
+import com.hortonworks.streamline.streams.runtime.rule.action.ActionRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,9 +44,9 @@ public class SplitActionRuntime extends AbstractSplitJoinActionRuntime {
      * Other way to do it is have new events like GroupRootEvent and PartitionEvent, avoiding that for now to
      * have a simple approach. Any Stage processor can not have split action in them.
      */
-    public static final String SPLIT_GROUP_ID = "org.apache.streamline.split.group_id";
-    public static final String SPLIT_PARTITION_ID = "org.apache.streamline.split.partition_id";
-    public static final String SPLIT_TOTAL_PARTITIONS_ID = "org.apache.streamline.split.partition.total.count";
+    public static final String SPLIT_GROUP_ID = "com.hortonworks.streamline.split.group_id";
+    public static final String SPLIT_PARTITION_ID = "com.hortonworks.streamline.split.partition_id";
+    public static final String SPLIT_TOTAL_PARTITIONS_ID = "com.hortonworks.streamline.split.partition.total.count";
 
     private final SplitAction splitAction;
     private Splitter splitter;

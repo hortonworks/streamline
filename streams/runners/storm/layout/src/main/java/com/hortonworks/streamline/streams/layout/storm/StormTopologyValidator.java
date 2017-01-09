@@ -1,11 +1,11 @@
-package org.apache.streamline.streams.layout.storm;
+package com.hortonworks.streamline.streams.layout.storm;
 
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.common.util.ReflectionHelper;
-import org.apache.streamline.common.util.Utils;
-import org.apache.streamline.streams.layout.ConfigFieldValidation;
-import org.apache.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.streamline.streams.layout.exception.ComponentConfigException;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.common.util.ReflectionHelper;
+import com.hortonworks.streamline.common.util.Utils;
+import com.hortonworks.streamline.streams.layout.ConfigFieldValidation;
+import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
+import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

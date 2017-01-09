@@ -16,7 +16,7 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.cache.view.datastore;
+package com.hortonworks.streamline.cache.view.datastore;
 
 import java.util.Collection;
 import java.util.Map;

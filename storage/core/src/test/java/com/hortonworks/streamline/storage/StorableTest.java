@@ -1,7 +1,7 @@
-package org.apache.streamline.storage;
+package com.hortonworks.streamline.storage;
 
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.common.Schema;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.Schema;
 import org.junit.Assert;
 
 import java.util.ArrayList;

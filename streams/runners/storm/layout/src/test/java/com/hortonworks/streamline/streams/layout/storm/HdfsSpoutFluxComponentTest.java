@@ -17,12 +17,12 @@
  * under the License.
  */
 
-package org.apache.streamline.streams.layout.storm;
+package com.hortonworks.streamline.streams.layout.storm;
 
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.layout.component.Stream;
-import org.apache.streamline.streams.layout.component.impl.HdfsSource;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.layout.component.Stream;
+import com.hortonworks.streamline.streams.layout.component.impl.HdfsSource;
 import org.junit.Assert;
 import org.junit.Test;
 

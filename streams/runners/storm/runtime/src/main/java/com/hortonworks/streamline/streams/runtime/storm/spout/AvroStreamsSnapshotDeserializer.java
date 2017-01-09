@@ -15,9 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.streams.runtime.storm.spout;
+package com.hortonworks.streamline.streams.runtime.storm.spout;
 
-import org.apache.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.registries.schemaregistry.SchemaMetadata;
 import com.hortonworks.registries.schemaregistry.serdes.avro.AvroSnapshotDeserializer;
 import com.hortonworks.registries.schemaregistry.serde.SerDesException;

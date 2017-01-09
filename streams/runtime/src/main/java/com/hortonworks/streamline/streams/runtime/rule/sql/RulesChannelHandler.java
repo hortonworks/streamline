@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.runtime.rule.sql;
+package com.hortonworks.streamline.streams.runtime.rule.sql;
 
 import org.apache.storm.sql.runtime.ChannelContext;
 import org.apache.storm.sql.runtime.ChannelHandler;

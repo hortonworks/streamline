@@ -16,11 +16,11 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.streams.notification.util;
+package com.hortonworks.streamline.streams.notification.util;
 
 import com.google.common.collect.Lists;
-import org.apache.streamline.streams.notification.Notification;
-import org.apache.streamline.streams.notification.common.NotificationImpl;
+import com.hortonworks.streamline.streams.notification.Notification;
+import com.hortonworks.streamline.streams.notification.common.NotificationImpl;
 
 import java.util.Arrays;
 import java.util.HashMap;

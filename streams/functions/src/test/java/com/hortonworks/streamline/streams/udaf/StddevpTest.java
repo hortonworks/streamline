@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.udaf;
+package com.hortonworks.streamline.streams.udaf;
 
 import org.junit.Assert;
 import org.junit.Test;

@@ -1,10 +1,10 @@
-package org.apache.streamline.streams.metrics.storm.opentsdb;
+package com.hortonworks.streamline.streams.metrics.storm.opentsdb;
 
 import com.google.common.base.Joiner;
-import org.apache.streamline.common.JsonClientUtil;
-import org.apache.streamline.streams.exception.ConfigException;
-import org.apache.streamline.streams.metrics.AbstractTimeSeriesQuerier;
-import org.apache.streamline.streams.metrics.TimeSeriesQuerier;
+import com.hortonworks.streamline.common.JsonClientUtil;
+import com.hortonworks.streamline.streams.exception.ConfigException;
+import com.hortonworks.streamline.streams.metrics.AbstractTimeSeriesQuerier;
+import com.hortonworks.streamline.streams.metrics.TimeSeriesQuerier;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.uri.internal.JerseyUriBuilder;
 import org.slf4j.Logger;

@@ -1,12 +1,12 @@
-package org.apache.streamline.streams.layout.storm;
+package com.hortonworks.streamline.streams.layout.storm;
 
 import com.google.common.collect.Lists;
-import org.apache.streamline.streams.layout.ConfigFieldValidation;
-import org.apache.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.streamline.streams.layout.component.impl.KafkaSource;
+import com.hortonworks.streamline.streams.layout.ConfigFieldValidation;
+import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
+import com.hortonworks.streamline.streams.layout.component.impl.KafkaSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.streamline.streams.layout.exception.ComponentConfigException;
+import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -98,7 +98,7 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
 
     private String addSchemeComponent() {
         String streamsSchemeId = "streamsScheme-" + UUID_FOR_COMPONENTS;
-        String schemeClassName = "org.apache.streamline.streams.runtime.storm.spout.AvroKafkaSpoutScheme";
+        String schemeClassName = "com.hortonworks.streamline.streams.runtime.storm.spout.AvroKafkaSpoutScheme";
         String topicName = (String) conf.get(TopologyLayoutConstants.JSON_KEY_TOPIC);
         String schemaRegistryUrl = (String) conf.get(TopologyLayoutConstants.SCHEMA_REGISTRY_URL);
         List<String> constructorArgs = Lists.newArrayList((kafkaSource != null ? kafkaSource.getId() : ""), topicName, schemaRegistryUrl);

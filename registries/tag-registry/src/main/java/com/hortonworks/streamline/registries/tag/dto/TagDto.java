@@ -1,7 +1,7 @@
-package org.apache.streamline.registries.tag.dto;
+package com.hortonworks.streamline.registries.tag.dto;
 
 
-import org.apache.streamline.registries.tag.Tag;
+import com.hortonworks.streamline.registries.tag.Tag;
 
 import java.util.ArrayList;
 import java.util.List;

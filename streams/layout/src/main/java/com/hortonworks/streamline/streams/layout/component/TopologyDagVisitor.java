@@ -1,6 +1,6 @@
-package org.apache.streamline.streams.layout.component;
+package com.hortonworks.streamline.streams.layout.component;
 
-import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
+import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
 
 public abstract class TopologyDagVisitor {
     public void visit(RulesProcessor rulesProcessor) {

@@ -16,15 +16,15 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.layout.component.impl;
+package com.hortonworks.streamline.streams.layout.component.impl;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
-import org.apache.streamline.streams.layout.component.StreamlineProcessor;
-import org.apache.streamline.streams.layout.component.Stream;
-import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
-import org.apache.streamline.streams.layout.component.rule.Rule;
-import org.apache.streamline.streams.layout.component.rule.action.Action;
+import com.hortonworks.streamline.streams.layout.component.StreamlineProcessor;
+import com.hortonworks.streamline.streams.layout.component.Stream;
+import com.hortonworks.streamline.streams.layout.component.TopologyDagVisitor;
+import com.hortonworks.streamline.streams.layout.component.rule.Rule;
+import com.hortonworks.streamline.streams.layout.component.rule.action.Action;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

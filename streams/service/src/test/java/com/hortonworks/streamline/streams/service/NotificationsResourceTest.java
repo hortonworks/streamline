@@ -16,15 +16,15 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.service;
+package com.hortonworks.streamline.streams.service;
 
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.streams.notification.service.NotificationService;
-import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.streams.notification.service.NotificationService;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

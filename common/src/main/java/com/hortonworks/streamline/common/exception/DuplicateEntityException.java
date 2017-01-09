@@ -1,4 +1,4 @@
-package org.apache.streamline.common.exception;
+package com.hortonworks.streamline.common.exception;
 
 public class DuplicateEntityException extends RuntimeException {
     public DuplicateEntityException(String message) {

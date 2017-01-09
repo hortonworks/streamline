@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.runtime.storm.bolt.model;
+package com.hortonworks.streamline.streams.runtime.storm.bolt.model;
 
 import org.apache.storm.pmml.model.ModelOutputs;
 import org.apache.storm.pmml.runner.jpmml.JPmmlModelRunner;
 import org.apache.storm.tuple.Tuple;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.common.StreamlineEventImpl;
-import org.apache.streamline.streams.layout.component.Stream;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.layout.component.Stream;
 import org.dmg.pmml.FieldName;
 import org.jpmml.evaluator.Evaluator;
 import org.jpmml.evaluator.EvaluatorUtil;

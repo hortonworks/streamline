@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.runtime.transform;
+package com.hortonworks.streamline.streams.runtime.transform;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;

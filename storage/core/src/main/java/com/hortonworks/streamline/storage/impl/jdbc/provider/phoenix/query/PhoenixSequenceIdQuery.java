@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.storage.impl.jdbc.provider.phoenix.query;
+package com.hortonworks.streamline.storage.impl.jdbc.provider.phoenix.query;
 
-import org.apache.streamline.storage.impl.jdbc.config.ExecutionConfig;
-import org.apache.streamline.storage.impl.jdbc.connection.ConnectionBuilder;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.query.AbstractSqlQuery;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
+import com.hortonworks.streamline.storage.impl.jdbc.config.ExecutionConfig;
+import com.hortonworks.streamline.storage.impl.jdbc.connection.ConnectionBuilder;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.AbstractSqlQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

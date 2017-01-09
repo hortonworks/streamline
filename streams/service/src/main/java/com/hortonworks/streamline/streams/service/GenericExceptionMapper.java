@@ -1,8 +1,8 @@
-package org.apache.streamline.streams.service;
+package com.hortonworks.streamline.streams.service;
 
-import org.apache.streamline.common.exception.service.exception.WebServiceException;
-import org.apache.streamline.common.exception.service.exception.request.BadRequestException;
-import org.apache.streamline.common.exception.service.exception.server.UnhandledServerException;
+import com.hortonworks.streamline.common.exception.service.exception.WebServiceException;
+import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
+import com.hortonworks.streamline.common.exception.service.exception.server.UnhandledServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

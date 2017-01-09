@@ -1,16 +1,16 @@
-package org.apache.streamline.streams.catalog.topology.component.bundle.impl;
+package com.hortonworks.streamline.streams.catalog.topology.component.bundle.impl;
 
 import com.google.common.collect.Lists;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
-import org.apache.streamline.streams.catalog.Cluster;
-import org.apache.streamline.streams.catalog.service.EnvironmentService;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.streams.catalog.service.metadata.HBaseMetadataService;
-import org.apache.streamline.streams.catalog.service.metadata.common.Tables;
-import org.apache.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
+import com.hortonworks.streamline.streams.catalog.Cluster;
+import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.catalog.service.metadata.HBaseMetadataService;
+import com.hortonworks.streamline.streams.catalog.service.metadata.common.Tables;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

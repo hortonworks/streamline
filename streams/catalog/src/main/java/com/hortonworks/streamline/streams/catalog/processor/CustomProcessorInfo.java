@@ -1,12 +1,12 @@
-package org.apache.streamline.streams.catalog.processor;
+package com.hortonworks.streamline.streams.catalog.processor;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.common.util.Utils;
-import org.apache.streamline.streams.catalog.topology.TopologyComponentBundle;
-import org.apache.streamline.streams.catalog.topology.TopologyComponentUISpecification;
-import org.apache.streamline.streams.layout.TopologyLayoutConstants;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.common.util.Utils;
+import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
+import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentUISpecification;
+import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -176,7 +176,7 @@ public class CustomProcessorInfo {
             result.setName("customProcessorBoltComponent");
         }
         result.setBuiltin(true);
-        result.setTransformationClass("org.apache.streamline.streams.layout.storm.CustomProcessorBoltFluxComponent");
+        result.setTransformationClass("com.hortonworks.streamline.streams.layout.storm.CustomProcessorBoltFluxComponent");
         List<TopologyComponentUISpecification.UIField> uiFields = new ArrayList<>();
         uiFields.addAll(getCustomProcessorUIFieldsWithPrefix());
         uiFields.add(this.createUIField(TopologyLayoutConstants.JSON_KEY_PARALLELISM, TopologyLayoutConstants.JSON_KEY_PARALLELISM, true, true,

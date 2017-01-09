@@ -16,9 +16,9 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.streams.notification.store.hbase.mappers;
+package com.hortonworks.streamline.streams.notification.store.hbase.mappers;
 
-import org.apache.streamline.streams.notification.Notification;
+import com.hortonworks.streamline.streams.notification.Notification;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;

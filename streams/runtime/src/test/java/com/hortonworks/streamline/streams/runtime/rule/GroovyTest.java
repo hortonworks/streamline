@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.rule;
+package com.hortonworks.streamline.streams.runtime.rule;
 
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;

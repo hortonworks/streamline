@@ -630,9 +630,9 @@ class TopologyEditorContainer extends Component {
                 if(newEdge.target.currentType.toLowerCase() === 'notification'){
                   actionObj.outputFieldsAndDefaults = node.config.properties.fieldValues || {};
                   actionObj.notifierName = node.config.properties.notifierName || '';
-                  actionObj.__type = "org.apache.streamline.streams.layout.component.rule.action.NotifierAction";
+                  actionObj.__type = "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction";
                 } else {
-                  actionObj.__type = "org.apache.streamline.streams.layout.component.rule.action.TransformAction";
+                  actionObj.__type = "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction";
                   actionObj.transforms = [];
                 }
                 data.actions.push(actionObj);

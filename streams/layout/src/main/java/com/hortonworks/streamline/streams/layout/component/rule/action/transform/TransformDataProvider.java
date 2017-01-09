@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.layout.component.rule.action.transform;
+package com.hortonworks.streamline.streams.layout.component.rule.action.transform;
 
-import org.apache.streamline.common.Config;
+import com.hortonworks.streamline.common.Config;
 
 import java.io.Serializable;
 
 /**
- * Base class for configuration of any {@link org.apache.streamline.layout.runtime.transform.TransformDataProviderRuntime}
+ * Base class for configuration of any {@link com.hortonworks.streamline.layout.runtime.transform.TransformDataProviderRuntime}
  */
 public class TransformDataProvider implements Serializable {
     private Config config;

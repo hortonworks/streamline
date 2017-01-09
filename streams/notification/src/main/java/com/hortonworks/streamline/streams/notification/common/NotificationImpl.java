@@ -16,9 +16,9 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.streams.notification.common;
+package com.hortonworks.streamline.streams.notification.common;
 
-import org.apache.streamline.streams.notification.Notification;
+import com.hortonworks.streamline.streams.notification.Notification;
 
 import java.util.List;
 import java.util.Map;

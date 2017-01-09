@@ -15,12 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.streams.layout.component.impl.normalization;
+package com.hortonworks.streamline.streams.layout.component.impl.normalization;
 
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.streams.layout.component.StreamlineProcessor;
-import org.apache.streamline.streams.layout.component.Stream;
-import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.streams.layout.component.StreamlineProcessor;
+import com.hortonworks.streamline.streams.layout.component.Stream;
+import com.hortonworks.streamline.streams.layout.component.TopologyDagVisitor;
 
 import java.util.HashMap;
 import java.util.Map;

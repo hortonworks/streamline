@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.catalog.service.metadata.common;
+package com.hortonworks.streamline.streams.catalog.service.metadata.common;
 
 import org.apache.hadoop.hbase.TableName;
 

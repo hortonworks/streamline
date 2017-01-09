@@ -1,13 +1,13 @@
-package org.apache.streamline.streams.catalog.service.metadata;
+package com.hortonworks.streamline.streams.catalog.service.metadata;
 
 import com.google.common.collect.Lists;
 
 
 import org.apache.curator.test.TestingServer;
-import org.apache.streamline.streams.catalog.Component;
-import org.apache.streamline.streams.catalog.exception.ZookeeperClientException;
-import org.apache.streamline.streams.catalog.service.EnvironmentService;
-import org.apache.streamline.streams.catalog.service.metadata.common.HostPort;
+import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.exception.ZookeeperClientException;
+import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
+import com.hortonworks.streamline.streams.catalog.service.metadata.common.HostPort;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,8 +26,8 @@ import mockit.Injectable;
 import mockit.Tested;
 import mockit.integration.junit4.JMockit;
 
-import static org.apache.streamline.streams.catalog.service.metadata.KafkaMetadataService.KAFKA_BROKERS_IDS_ZK_RELATIVE_PATH;
-import static org.apache.streamline.streams.catalog.service.metadata.KafkaMetadataService.KAFKA_TOPICS_ZK_RELATIVE_PATH;
+import static com.hortonworks.streamline.streams.catalog.service.metadata.KafkaMetadataService.KAFKA_BROKERS_IDS_ZK_RELATIVE_PATH;
+import static com.hortonworks.streamline.streams.catalog.service.metadata.KafkaMetadataService.KAFKA_TOPICS_ZK_RELATIVE_PATH;
 
 @RunWith(JMockit.class)
 public class KafkaMetadataServiceTest {

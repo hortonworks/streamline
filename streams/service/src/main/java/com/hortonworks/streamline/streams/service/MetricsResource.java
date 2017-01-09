@@ -16,20 +16,20 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.service;
+package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.streamline.common.util.ParallelStreamUtil;
-import org.apache.streamline.common.util.WSUtils;
-import org.apache.streamline.streams.catalog.Topology;
-import org.apache.streamline.streams.catalog.TopologyComponent;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.streams.metrics.topology.TopologyMetrics;
-import org.apache.streamline.streams.metrics.topology.TopologyTimeSeriesMetrics;
-import org.apache.streamline.common.exception.service.exception.request.BadRequestException;
-import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
-import org.apache.streamline.streams.metrics.topology.service.TopologyMetricsService;
+import com.hortonworks.streamline.common.util.ParallelStreamUtil;
+import com.hortonworks.streamline.common.util.WSUtils;
+import com.hortonworks.streamline.streams.catalog.Topology;
+import com.hortonworks.streamline.streams.catalog.TopologyComponent;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.metrics.topology.TopologyMetrics;
+import com.hortonworks.streamline.streams.metrics.topology.TopologyTimeSeriesMetrics;
+import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import com.hortonworks.streamline.streams.metrics.topology.service.TopologyMetricsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -134,9 +134,9 @@ public class MetricsResource {
         Topology topology = catalogService.getTopology(id);
         if (topology != null) {
             List<TopologyComponent> topologyComponents = new ArrayList<>();
-            List<org.apache.streamline.common.QueryParam> queryParams = new ArrayList<>();
-            queryParams.add(new org.apache.streamline.common.QueryParam("topologyId", String.valueOf(topology.getId())));
-            queryParams.add(new org.apache.streamline.common.QueryParam("versionId", String.valueOf(topology.getVersionId())));
+            List<com.hortonworks.streamline.common.QueryParam> queryParams = new ArrayList<>();
+            queryParams.add(new com.hortonworks.streamline.common.QueryParam("topologyId", String.valueOf(topology.getId())));
+            queryParams.add(new com.hortonworks.streamline.common.QueryParam("versionId", String.valueOf(topology.getVersionId())));
 
             topologyComponents.addAll(catalogService.listTopologySources(queryParams));
             topologyComponents.addAll(catalogService.listTopologyProcessors(queryParams));

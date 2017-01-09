@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.storage.impl.jdbc.config;
+package com.hortonworks.streamline.storage.impl.jdbc.config;
 
 import com.zaxxer.hikari.HikariConfig;
 

@@ -1,6 +1,6 @@
-package org.apache.streamline.common;
+package com.hortonworks.streamline.common;
 
-import org.apache.streamline.common.util.FileStorage;
+import com.hortonworks.streamline.common.util.FileStorage;
 
 import java.util.List;
 import java.util.Map;

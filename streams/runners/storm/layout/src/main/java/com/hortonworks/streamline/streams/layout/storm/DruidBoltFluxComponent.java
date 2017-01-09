@@ -15,11 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.streams.layout.storm;
+package com.hortonworks.streamline.streams.layout.storm;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import org.apache.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.StreamlineEvent;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -64,7 +64,7 @@ public class DruidBoltFluxComponent extends AbstractFluxComponent {
 
     private String addDruidBeamFactoryComponent() {
         String componentId = "druidDruidBeamFactory" + UUID_FOR_COMPONENTS;
-        String className = "org.apache.streamline.streams.layout.storm.DruidBeamFactoryImpl";
+        String className = "com.hortonworks.streamline.streams.layout.storm.DruidBeamFactoryImpl";
 
         List<String> constructorArgs = Lists.newArrayList(getJsonString(conf.get(KEY_AGGR_LIST)));
 
@@ -105,7 +105,7 @@ public class DruidBoltFluxComponent extends AbstractFluxComponent {
 
     private String addTupleDruidEventMapperComponent() {
         String componentId = "druidTupleDruidEventMapper" + UUID_FOR_COMPONENTS;
-        String className = "org.apache.streamline.streams.layout.storm.DruidEventMapper";
+        String className = "com.hortonworks.streamline.streams.layout.storm.DruidEventMapper";
         List<String> constructorArgs = Lists.newArrayList(StreamlineEvent.STREAMLINE_EVENT);
         addToComponents(createComponent(componentId, className, null, constructorArgs, null));
         return componentId;

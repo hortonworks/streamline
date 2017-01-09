@@ -16,15 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.catalog;
+package com.hortonworks.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.storage.PrimaryKey;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.catalog.AbstractStorable;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.storage.PrimaryKey;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.catalog.AbstractStorable;
 import org.apache.commons.lang3.StringUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.streamline.streams.layout.component.rule.expression.Udf.Type;
+import static com.hortonworks.streamline.streams.layout.component.rule.expression.Udf.Type;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UDFInfo extends AbstractStorable {

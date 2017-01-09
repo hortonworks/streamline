@@ -1,13 +1,13 @@
-package org.apache.streamline.streams.service.metadata;
+package com.hortonworks.streamline.streams.service.metadata;
 
 import com.codahale.metrics.annotation.Timed;
-import org.apache.streamline.common.util.WSUtils;
-import org.apache.streamline.streams.catalog.Cluster;
-import org.apache.streamline.streams.catalog.service.EnvironmentService;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.common.util.WSUtils;
+import com.hortonworks.streamline.streams.catalog.Cluster;
+import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 
-import org.apache.streamline.streams.catalog.exception.EntityNotFoundException;
-import org.apache.streamline.streams.catalog.service.metadata.HiveMetadataService;
+import com.hortonworks.streamline.streams.catalog.exception.EntityNotFoundException;
+import com.hortonworks.streamline.streams.catalog.service.metadata.HiveMetadataService;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -34,7 +34,7 @@ public class HiveMetadataResource {
         throws Exception {
         final Cluster cluster = environmentService.getClusterByName(clusterName);
         if (cluster == null) {
-            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
+            throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
         }
         return getDatabasesByClusterId(cluster.getId());
     }
@@ -47,7 +47,7 @@ public class HiveMetadataResource {
         try(final HiveMetadataService hiveMetadataService = HiveMetadataService.newInstance(environmentService, clusterId)) {
             return WSUtils.respondEntity(hiveMetadataService.getHiveDatabases(), OK);
         } catch (EntityNotFoundException ex) {
-            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
+            throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
         }
     }
 
@@ -58,7 +58,7 @@ public class HiveMetadataResource {
         throws Exception {
         final Cluster cluster = environmentService.getClusterByName(clusterName);
         if (cluster == null) {
-            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
+            throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
         }
         return getDatabaseTablesByClusterId(cluster.getId(), dbName);
     }
@@ -71,7 +71,7 @@ public class HiveMetadataResource {
         try(final HiveMetadataService hiveMetadataService = HiveMetadataService.newInstance(environmentService, clusterId)) {
             return WSUtils.respondEntity(hiveMetadataService.getHiveTables(dbName), OK);
         } catch (EntityNotFoundException ex) {
-            throw org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
+            throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
         }
     }
 }

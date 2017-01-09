@@ -1,18 +1,18 @@
-package org.apache.streamline.streams.runtime.rule.condition.expression;
+package com.hortonworks.streamline.streams.runtime.rule.condition.expression;
 
 import com.google.common.collect.ImmutableList;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression;
-import org.apache.streamline.streams.layout.component.rule.expression.BinaryExpression;
-import org.apache.streamline.streams.layout.component.rule.expression.Condition;
-import org.apache.streamline.streams.layout.component.rule.expression.Expression;
-import org.apache.streamline.streams.layout.component.rule.expression.FieldExpression;
-import org.apache.streamline.streams.layout.component.rule.expression.FunctionExpression;
-import org.apache.streamline.streams.layout.component.rule.expression.GroupBy;
-import org.apache.streamline.streams.layout.component.rule.expression.Having;
-import org.apache.streamline.streams.layout.component.rule.expression.Literal;
-import org.apache.streamline.streams.layout.component.rule.expression.Operator;
-import org.apache.streamline.streams.layout.component.rule.expression.Projection;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.BinaryExpression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Condition;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Expression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.GroupBy;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Having;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Literal;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Operator;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Projection;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -27,7 +27,7 @@ public class StormSqlExpressionTest {
     @Test
     public void testCreateSelect() throws Exception {
         Condition condition = new Condition();
-        Expression function = new FunctionExpression("SUM", "org.apache.streamline.MyPlus",
+        Expression function = new FunctionExpression("SUM", "com.hortonworks.streamline.MyPlus",
                                                      ImmutableList.of(
                                                              new FieldExpression(Schema.Field.of("x", Schema.Type.INTEGER)),
                                                              new FieldExpression(Schema.Field.of("y", Schema.Type.INTEGER))
@@ -39,7 +39,7 @@ public class StormSqlExpressionTest {
                      stormSqlExpression.createTable("schema", "table"));
         assertEquals("SELECT STREAM x, y FROM table WHERE SUM(x, y) > 100",
                      stormSqlExpression.select("table"));
-        assertEquals(Arrays.asList("CREATE FUNCTION SUM AS 'org.apache.streamline.MyPlus'"),
+        assertEquals(Arrays.asList("CREATE FUNCTION SUM AS 'com.hortonworks.streamline.MyPlus'"),
                      stormSqlExpression.createFunctions());
     }
 
@@ -62,8 +62,8 @@ public class StormSqlExpressionTest {
     @Test
     public void testCreateFunctionDuplicate() throws Exception {
         Condition condition = new Condition();
-        Expression f1 = new FunctionExpression("FLOOR", "org.apache.streamline.Floor", ImmutableList.of(new Literal("100.5")));
-        Expression f2 = new FunctionExpression("FLOOR", "org.apache.streamline.Floor", ImmutableList.of(new Literal("2.5")));
+        Expression f1 = new FunctionExpression("FLOOR", "com.hortonworks.streamline.Floor", ImmutableList.of(new Literal("100.5")));
+        Expression f2 = new FunctionExpression("FLOOR", "com.hortonworks.streamline.Floor", ImmutableList.of(new Literal("2.5")));
         Expression expression1 = new BinaryExpression(Operator.GREATER_THAN,
                                                       new FieldExpression(Schema.Field.of("x", Schema.Type.INTEGER)), f1);
         Expression expression2 = new BinaryExpression(Operator.GREATER_THAN,
@@ -71,7 +71,7 @@ public class StormSqlExpressionTest {
         Expression expression = new BinaryExpression(Operator.AND, expression1, expression2);
         condition.setExpression(expression);
         stormSqlExpression = new StormSqlExpression(condition);
-        assertEquals(Arrays.asList("CREATE FUNCTION FLOOR AS 'org.apache.streamline.Floor'"),
+        assertEquals(Arrays.asList("CREATE FUNCTION FLOOR AS 'com.hortonworks.streamline.Floor'"),
                      stormSqlExpression.createFunctions());
 
     }
@@ -102,7 +102,7 @@ public class StormSqlExpressionTest {
     @Test
     public void testCreateSelectProject() throws Exception {
         Condition condition = new Condition();
-        Expression function = new FunctionExpression("SUM", "org.apache.streamline.MyPlus",
+        Expression function = new FunctionExpression("SUM", "com.hortonworks.streamline.MyPlus",
                                                      ImmutableList.of(
                                                              new FieldExpression(Schema.Field.of("x", Schema.Type.INTEGER)),
                                                              new FieldExpression(Schema.Field.of("y", Schema.Type.INTEGER))
@@ -119,7 +119,7 @@ public class StormSqlExpressionTest {
                      stormSqlExpression.createTable("schema", "table"));
         assertEquals("SELECT STREAM SUM(x, y) FROM table WHERE z > 100",
                      stormSqlExpression.select("table"));
-        assertEquals(Arrays.asList("CREATE FUNCTION SUM AS 'org.apache.streamline.MyPlus'"),
+        assertEquals(Arrays.asList("CREATE FUNCTION SUM AS 'com.hortonworks.streamline.MyPlus'"),
                      stormSqlExpression.createFunctions());
     }
 

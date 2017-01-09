@@ -16,18 +16,18 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.processor;
+package com.hortonworks.streamline.streams.runtime.processor;
 
 import com.google.common.util.concurrent.MoreExecutors;
-import org.apache.streamline.streams.Result;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.common.StreamlineEventImpl;
-import org.apache.streamline.streams.common.utils.ProcessorMsg;
-import org.apache.streamline.streams.common.utils.ShellContext;
-import org.apache.streamline.streams.common.utils.ShellMsg;
-import org.apache.streamline.streams.common.utils.ShellProcess;
-import org.apache.streamline.streams.exception.ProcessingException;
-import org.apache.streamline.streams.runtime.ProcessorRuntime;
+import com.hortonworks.streamline.streams.Result;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.common.utils.ProcessorMsg;
+import com.hortonworks.streamline.streams.common.utils.ShellContext;
+import com.hortonworks.streamline.streams.common.utils.ShellMsg;
+import com.hortonworks.streamline.streams.common.utils.ShellProcess;
+import com.hortonworks.streamline.streams.exception.ProcessingException;
+import com.hortonworks.streamline.streams.runtime.ProcessorRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

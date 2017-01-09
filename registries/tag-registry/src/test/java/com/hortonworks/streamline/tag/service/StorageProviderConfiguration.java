@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.tag.service;
+package com.hortonworks.streamline.tag.service;
 
 import java.util.Map;
 

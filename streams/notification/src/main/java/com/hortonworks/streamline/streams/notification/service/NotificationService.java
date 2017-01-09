@@ -16,14 +16,14 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.streams.notification.service;
+package com.hortonworks.streamline.streams.notification.service;
 
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.notification.Notification;
-import org.apache.streamline.streams.notification.NotificationContext;
-import org.apache.streamline.streams.notification.Notifier;
-import org.apache.streamline.streams.notification.NotifierConfig;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.notification.Notification;
+import com.hortonworks.streamline.streams.notification.NotificationContext;
+import com.hortonworks.streamline.streams.notification.Notifier;
+import com.hortonworks.streamline.streams.notification.NotifierConfig;
 
 import java.util.List;
 

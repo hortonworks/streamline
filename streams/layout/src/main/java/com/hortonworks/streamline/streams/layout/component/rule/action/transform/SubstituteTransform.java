@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.layout.component.rule.action.transform;
+package com.hortonworks.streamline.streams.layout.component.rule.action.transform;
 
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.layout.Transform;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.layout.Transform;
 
 import java.util.Collections;
 import java.util.HashSet;

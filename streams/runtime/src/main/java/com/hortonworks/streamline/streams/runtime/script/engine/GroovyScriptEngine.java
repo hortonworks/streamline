@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.script.engine;
+package com.hortonworks.streamline.streams.runtime.script.engine;
 
 import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
 
@@ -25,7 +25,7 @@ import javax.script.ScriptEngine;
 import java.io.Serializable;
 
 /** Implementation of Groovy Script engine used to evaluate Groovy expressions for each input */
-public class GroovyScriptEngine implements org.apache.streamline.streams.runtime.script.engine.ScriptEngine<ScriptEngine>, Serializable {
+public class GroovyScriptEngine implements com.hortonworks.streamline.streams.runtime.script.engine.ScriptEngine<ScriptEngine>, Serializable {
     @Override
     public javax.script.ScriptEngine getEngine() {
         javax.script.ScriptEngine engine = new GroovyScriptEngineImplSerializable();

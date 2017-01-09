@@ -1,12 +1,12 @@
-package org.apache.streamline.storage.catalog;
+package com.hortonworks.streamline.storage.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.common.exception.ParserException;
-import org.apache.streamline.common.util.ReflectionHelper;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorableKey;
-import org.apache.streamline.storage.exception.StorageException;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.common.exception.ParserException;
+import com.hortonworks.streamline.common.util.ReflectionHelper;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorableKey;
+import com.hortonworks.streamline.storage.exception.StorageException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

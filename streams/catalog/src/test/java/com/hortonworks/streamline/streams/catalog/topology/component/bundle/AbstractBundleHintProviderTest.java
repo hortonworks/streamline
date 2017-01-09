@@ -1,14 +1,14 @@
-package org.apache.streamline.streams.catalog.topology.component.bundle;
+package com.hortonworks.streamline.streams.catalog.topology.component.bundle;
 
 import com.google.common.collect.Lists;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
-import org.apache.streamline.streams.catalog.Cluster;
-import org.apache.streamline.streams.catalog.Namespace;
-import org.apache.streamline.streams.catalog.NamespaceServiceClusterMapping;
-import org.apache.streamline.streams.catalog.service.EnvironmentService;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.catalog.Cluster;
+import com.hortonworks.streamline.streams.catalog.Namespace;
+import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping;
+import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

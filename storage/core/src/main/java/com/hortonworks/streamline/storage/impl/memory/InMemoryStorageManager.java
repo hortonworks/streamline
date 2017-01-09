@@ -15,17 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.storage.impl.memory;
+package com.hortonworks.streamline.storage.impl.memory;
 
 
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.common.util.ReflectionHelper;
-import org.apache.streamline.storage.PrimaryKey;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorableKey;
-import org.apache.streamline.storage.StorageManager;
-import org.apache.streamline.storage.exception.AlreadyExistsException;
-import org.apache.streamline.storage.exception.StorageException;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.util.ReflectionHelper;
+import com.hortonworks.streamline.storage.PrimaryKey;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorableKey;
+import com.hortonworks.streamline.storage.StorageManager;
+import com.hortonworks.streamline.storage.exception.AlreadyExistsException;
+import com.hortonworks.streamline.storage.exception.StorageException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

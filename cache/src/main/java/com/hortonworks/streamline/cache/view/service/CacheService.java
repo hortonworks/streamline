@@ -16,11 +16,11 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.cache.view.service;
+package com.hortonworks.streamline.cache.view.service;
 
-import org.apache.streamline.cache.Cache;
-import org.apache.streamline.cache.view.config.ExpiryPolicy;
-import org.apache.streamline.cache.view.config.TypeConfig;
+import com.hortonworks.streamline.cache.Cache;
+import com.hortonworks.streamline.cache.view.config.ExpiryPolicy;
+import com.hortonworks.streamline.cache.view.config.TypeConfig;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;

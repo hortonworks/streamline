@@ -1,4 +1,4 @@
-package org.apache.streamline.common.exception.service.exception;
+package com.hortonworks.streamline.common.exception.service.exception;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;

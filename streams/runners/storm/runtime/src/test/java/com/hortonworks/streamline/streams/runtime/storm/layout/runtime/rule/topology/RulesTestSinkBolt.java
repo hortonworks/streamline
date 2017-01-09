@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.storm.layout.runtime.rule.topology;
+package com.hortonworks.streamline.streams.runtime.storm.layout.runtime.rule.topology;
 
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;

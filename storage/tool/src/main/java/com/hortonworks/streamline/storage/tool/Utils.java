@@ -1,4 +1,4 @@
-package org.apache.streamline.storage.tool;
+package com.hortonworks.streamline.storage.tool;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;

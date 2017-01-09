@@ -1,4 +1,4 @@
-package org.apache.streamline.storage;
+package com.hortonworks.streamline.storage;
 
 /**
  * An interface for independent modules to implement so that the storage manager used by streamline can be injected

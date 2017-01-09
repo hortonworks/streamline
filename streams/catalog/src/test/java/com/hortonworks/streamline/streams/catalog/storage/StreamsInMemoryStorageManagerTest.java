@@ -15,9 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.streams.catalog.storage;
+package com.hortonworks.streamline.streams.catalog.storage;
 
-import org.apache.streamline.storage.impl.memory.InMemoryStorageManagerTest;
+import com.hortonworks.streamline.storage.impl.memory.InMemoryStorageManagerTest;
 
 public class StreamsInMemoryStorageManagerTest extends InMemoryStorageManagerTest {
 

@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.script;
+package com.hortonworks.streamline.streams.runtime.script;
 
-import org.apache.streamline.streams.common.StreamlineEventImpl;
-import org.apache.streamline.streams.runtime.script.engine.GroovyScriptEngine;
+import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.runtime.script.engine.GroovyScriptEngine;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;

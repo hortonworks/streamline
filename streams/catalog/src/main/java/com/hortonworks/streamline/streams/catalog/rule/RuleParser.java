@@ -16,25 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.catalog.rule;
+package com.hortonworks.streamline.streams.catalog.rule;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.streams.catalog.RuleInfo;
-import org.apache.streamline.streams.catalog.StreamInfo;
-import org.apache.streamline.streams.catalog.TopologyVersionInfo;
-import org.apache.streamline.streams.catalog.UDFInfo;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.streams.layout.component.Stream;
-import org.apache.streamline.streams.layout.component.rule.expression.Condition;
-import org.apache.streamline.streams.layout.component.rule.expression.ExpressionList;
-import org.apache.streamline.streams.layout.component.rule.expression.GroupBy;
-import org.apache.streamline.streams.layout.component.rule.expression.Having;
-import org.apache.streamline.streams.layout.component.rule.expression.Projection;
-import org.apache.streamline.streams.layout.component.rule.expression.Udf;
-import org.apache.streamline.streams.layout.component.rule.sql.ExpressionGenerator;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.streams.catalog.RuleInfo;
+import com.hortonworks.streamline.streams.catalog.StreamInfo;
+import com.hortonworks.streamline.streams.catalog.TopologyVersionInfo;
+import com.hortonworks.streamline.streams.catalog.UDFInfo;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.layout.component.Stream;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Condition;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.ExpressionList;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.GroupBy;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Having;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Projection;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Udf;
+import com.hortonworks.streamline.streams.layout.component.rule.sql.ExpressionGenerator;
 import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.sql.SqlIdentifier;
 import org.apache.calcite.sql.SqlJoin;
@@ -56,7 +56,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.apache.streamline.streams.layout.component.rule.expression.FieldExpression.STAR;
+import static com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression.STAR;
 
 public class RuleParser {
     private static final Logger LOG = LoggerFactory.getLogger(RuleParser.class);

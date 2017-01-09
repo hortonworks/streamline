@@ -1,4 +1,4 @@
-package org.apache.streamline.storage.impl.jdbc.provider.phoenix;
+package com.hortonworks.streamline.storage.impl.jdbc.provider.phoenix;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

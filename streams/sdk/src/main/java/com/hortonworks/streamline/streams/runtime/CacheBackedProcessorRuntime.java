@@ -1,11 +1,11 @@
-package org.apache.streamline.streams.runtime;
+package com.hortonworks.streamline.streams.runtime;
 
-import org.apache.streamline.cache.Cache;
-import org.apache.streamline.cache.view.config.CacheConfig;
-import org.apache.streamline.streams.Result;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.exception.ConfigException;
-import org.apache.streamline.streams.exception.ProcessingException;
+import com.hortonworks.streamline.cache.Cache;
+import com.hortonworks.streamline.cache.view.config.CacheConfig;
+import com.hortonworks.streamline.streams.Result;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.exception.ConfigException;
+import com.hortonworks.streamline.streams.exception.ProcessingException;
 
 import java.util.List;
 import java.util.Map;

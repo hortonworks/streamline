@@ -16,10 +16,10 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.streams.notification.store;
+package com.hortonworks.streamline.streams.notification.store;
 
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.notification.Notification;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.notification.Notification;
 
 import java.util.List;
 import java.util.Map;

@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.storage.impl.jdbc.provider.sql.query;
+package com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query;
 
-import org.apache.streamline.storage.impl.jdbc.config.ExecutionConfig;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
+import com.hortonworks.streamline.storage.impl.jdbc.config.ExecutionConfig;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.transform;
+package com.hortonworks.streamline.streams.runtime.transform;
 
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.runtime.TransformRuntime;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.runtime.TransformRuntime;
 
 import java.util.Collections;
 import java.util.List;

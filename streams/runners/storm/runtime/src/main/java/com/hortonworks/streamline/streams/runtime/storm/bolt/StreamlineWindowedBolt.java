@@ -1,8 +1,8 @@
-package org.apache.streamline.streams.runtime.storm.bolt;
+package com.hortonworks.streamline.streams.runtime.storm.bolt;
 
 
 import org.apache.storm.topology.base.BaseWindowedBolt;
-import org.apache.streamline.streams.layout.component.rule.expression.Window;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Window;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;

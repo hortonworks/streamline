@@ -1,7 +1,7 @@
-package org.apache.streamline.streams.layout.storm;
+package com.hortonworks.streamline.streams.layout.storm;
 
-import org.apache.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.streamline.streams.layout.exception.ComponentConfigException;
+import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
+import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

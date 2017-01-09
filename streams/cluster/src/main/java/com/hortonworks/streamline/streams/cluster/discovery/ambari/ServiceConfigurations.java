@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.cluster.discovery.ambari;
+package com.hortonworks.streamline.streams.cluster.discovery.ambari;
 
 /**
  * Defines mapping between Service and its configuration types. DO NOT Change the order of

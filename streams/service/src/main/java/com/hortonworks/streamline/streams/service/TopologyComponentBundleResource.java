@@ -16,26 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.service;
+package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.common.util.FileUtil;
-import org.apache.streamline.common.util.ProxyUtil;
-import org.apache.streamline.common.util.WSUtils;
-import org.apache.streamline.streams.catalog.Namespace;
-import org.apache.streamline.streams.catalog.processor.CustomProcessorInfo;
-import org.apache.streamline.streams.catalog.service.EnvironmentService;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.streams.catalog.topology.TopologyComponentBundle;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.util.FileUtil;
+import com.hortonworks.streamline.common.util.ProxyUtil;
+import com.hortonworks.streamline.common.util.WSUtils;
+import com.hortonworks.streamline.streams.catalog.Namespace;
+import com.hortonworks.streamline.streams.catalog.processor.CustomProcessorInfo;
+import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.streamline.streams.catalog.topology.component.bundle.ComponentBundleHintProvider;
-import org.apache.streamline.streams.layout.exception.ComponentConfigException;
-import org.apache.streamline.common.exception.service.exception.request.BadRequestException;
-import org.apache.streamline.common.exception.service.exception.request.CustomProcessorOnlyException;
-import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
-import org.apache.streamline.streams.runtime.CustomProcessorRuntime;
+import com.hortonworks.streamline.streams.catalog.topology.component.bundle.ComponentBundleHintProvider;
+import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
+import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
+import com.hortonworks.streamline.common.exception.service.exception.request.CustomProcessorOnlyException;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import com.hortonworks.streamline.streams.runtime.CustomProcessorRuntime;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.slf4j.Logger;

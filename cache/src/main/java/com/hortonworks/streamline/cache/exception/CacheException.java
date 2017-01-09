@@ -1,4 +1,4 @@
-package org.apache.streamline.cache.exception;
+package com.hortonworks.streamline.cache.exception;
 
 //TODO: Should this the a Checked Exception instead of a RuntimeException
 public class CacheException extends RuntimeException {

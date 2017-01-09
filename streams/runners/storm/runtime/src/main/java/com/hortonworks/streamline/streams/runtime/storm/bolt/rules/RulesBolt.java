@@ -16,16 +16,16 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.storm.bolt.rules;
+package com.hortonworks.streamline.streams.runtime.storm.bolt.rules;
 
-import org.apache.streamline.common.Constants;
-import org.apache.streamline.common.util.Utils;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.Result;
-import org.apache.streamline.streams.common.StreamlineEventImpl;
-import org.apache.streamline.streams.layout.component.Stream;
-import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
-import org.apache.streamline.streams.runtime.processor.RuleProcessorRuntime;
+import com.hortonworks.streamline.common.Constants;
+import com.hortonworks.streamline.common.util.Utils;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.Result;
+import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.layout.component.Stream;
+import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
+import com.hortonworks.streamline.streams.runtime.processor.RuleProcessorRuntime;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;

@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.cluster.discovery.ambari;
+package com.hortonworks.streamline.streams.cluster.discovery.ambari;
 
 /**
  * Data structure of "Service Configuration" in Ambari REST API response.

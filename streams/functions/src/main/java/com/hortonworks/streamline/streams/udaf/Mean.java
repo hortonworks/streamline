@@ -1,7 +1,7 @@
-package org.apache.streamline.streams.udaf;
+package com.hortonworks.streamline.streams.udaf;
 
 
-import org.apache.streamline.streams.rule.UDAF;
+import com.hortonworks.streamline.streams.rule.UDAF;
 
 public class Mean implements UDAF<StddevOnline, Number, Double> {
     @Override

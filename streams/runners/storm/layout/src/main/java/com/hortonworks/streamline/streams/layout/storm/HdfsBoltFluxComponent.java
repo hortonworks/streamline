@@ -1,7 +1,7 @@
-package org.apache.streamline.streams.layout.storm;
+package com.hortonworks.streamline.streams.layout.storm;
 
-import org.apache.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.streamline.streams.layout.exception.ComponentConfigException;
+import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
+import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,7 +69,7 @@ public class HdfsBoltFluxComponent extends AbstractFluxComponent {
         String recordFormatComponentId = "recordFormat" +
                 UUID_FOR_COMPONENTS;
         // currently only IdentityHdfsRecordFormat is supported.
-        String recordFormatClassName = "org.apache.streamline.streams.runtime.storm.hdfs" +
+        String recordFormatClassName = "com.hortonworks.streamline.streams.runtime.storm.hdfs" +
                 ".IdentityHdfsRecordFormat";
         addToComponents(createComponent(recordFormatComponentId,
                 recordFormatClassName, null, null, null));

@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.streamline.tag.service;
+package com.hortonworks.streamline.tag.service;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;

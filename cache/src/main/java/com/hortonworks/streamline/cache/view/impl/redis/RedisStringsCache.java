@@ -16,12 +16,12 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.cache.view.impl.redis;
+package com.hortonworks.streamline.cache.view.impl.redis;
 
-import org.apache.streamline.cache.Cache;
-import org.apache.streamline.cache.exception.CacheException;
-import org.apache.streamline.cache.stats.CacheStats;
-import org.apache.streamline.cache.view.config.ExpiryPolicy;
+import com.hortonworks.streamline.cache.Cache;
+import com.hortonworks.streamline.cache.exception.CacheException;
+import com.hortonworks.streamline.cache.stats.CacheStats;
+import com.hortonworks.streamline.cache.view.config.ExpiryPolicy;
 import com.lambdaworks.redis.RedisConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

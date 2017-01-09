@@ -1,17 +1,17 @@
-package org.apache.streamline.streams.catalog;
+package com.hortonworks.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.storage.PrimaryKey;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.catalog.AbstractStorable;
-import org.apache.streamline.streams.layout.component.rule.Rule;
-import org.apache.streamline.streams.layout.component.rule.action.Action;
-import org.apache.streamline.streams.layout.component.rule.expression.Window;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.storage.PrimaryKey;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.catalog.AbstractStorable;
+import com.hortonworks.streamline.streams.layout.component.rule.Rule;
+import com.hortonworks.streamline.streams.layout.component.rule.action.Action;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Window;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;

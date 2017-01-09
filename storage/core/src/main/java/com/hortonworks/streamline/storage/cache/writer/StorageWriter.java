@@ -1,7 +1,7 @@
-package org.apache.streamline.storage.cache.writer;
+package com.hortonworks.streamline.storage.cache.writer;
 
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorableKey;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorableKey;
 
 /**
  * Created by hlouro on 8/7/15.

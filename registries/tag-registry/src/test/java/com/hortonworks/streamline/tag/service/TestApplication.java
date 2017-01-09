@@ -17,21 +17,21 @@
  * under the License.
  */
 
-package org.apache.streamline.tag.service;
+package com.hortonworks.streamline.tag.service;
 
 
 import com.google.common.cache.CacheBuilder;
-import org.apache.streamline.cache.Cache;
-import org.apache.streamline.registries.tag.service.CatalogTagService;
-import org.apache.streamline.registries.tag.service.TagCatalogResource;
-import org.apache.streamline.registries.tag.service.TagService;
-import org.apache.streamline.storage.CacheBackedStorageManager;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorableKey;
-import org.apache.streamline.storage.StorageManager;
-import org.apache.streamline.storage.cache.impl.GuavaCache;
-import org.apache.streamline.storage.cache.writer.StorageWriteThrough;
-import org.apache.streamline.storage.cache.writer.StorageWriter;
+import com.hortonworks.streamline.cache.Cache;
+import com.hortonworks.streamline.registries.tag.service.CatalogTagService;
+import com.hortonworks.streamline.registries.tag.service.TagCatalogResource;
+import com.hortonworks.streamline.registries.tag.service.TagService;
+import com.hortonworks.streamline.storage.CacheBackedStorageManager;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorableKey;
+import com.hortonworks.streamline.storage.StorageManager;
+import com.hortonworks.streamline.storage.cache.impl.GuavaCache;
+import com.hortonworks.streamline.storage.cache.writer.StorageWriteThrough;
+import com.hortonworks.streamline.storage.cache.writer.StorageWriter;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;

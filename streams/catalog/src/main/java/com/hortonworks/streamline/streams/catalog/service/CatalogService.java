@@ -16,16 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.catalog.service;
+package com.hortonworks.streamline.streams.catalog.service;
 
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.common.util.FileStorage;
-import org.apache.streamline.registries.tag.client.TagClient;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorableKey;
-import org.apache.streamline.storage.StorageManager;
-import org.apache.streamline.storage.util.StorageUtils;
-import org.apache.streamline.streams.catalog.FileInfo;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.util.FileStorage;
+import com.hortonworks.streamline.registries.tag.client.TagClient;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorableKey;
+import com.hortonworks.streamline.storage.StorageManager;
+import com.hortonworks.streamline.storage.util.StorageUtils;
+import com.hortonworks.streamline.streams.catalog.FileInfo;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

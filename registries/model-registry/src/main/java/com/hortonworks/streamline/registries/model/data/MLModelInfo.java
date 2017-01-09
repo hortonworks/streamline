@@ -16,15 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.registries.model.data;
+package com.hortonworks.streamline.registries.model.data;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.common.Schema.Field;
-import org.apache.streamline.common.Schema.Type;
-import org.apache.streamline.storage.PrimaryKey;
-import org.apache.streamline.storage.catalog.AbstractStorable;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.common.Schema.Field;
+import com.hortonworks.streamline.common.Schema.Type;
+import com.hortonworks.streamline.storage.PrimaryKey;
+import com.hortonworks.streamline.storage.catalog.AbstractStorable;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.layout.component.rule.action;
+package com.hortonworks.streamline.streams.layout.component.rule.action;
 
 
 import java.util.Collections;

@@ -1,7 +1,7 @@
-package org.apache.streamline.streams.storm.common;
+package com.hortonworks.streamline.streams.storm.common;
 
-import org.apache.streamline.common.JsonClientUtil;
-import org.apache.streamline.common.exception.WrappedWebApplicationException;
+import com.hortonworks.streamline.common.JsonClientUtil;
+import com.hortonworks.streamline.common.exception.WrappedWebApplicationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

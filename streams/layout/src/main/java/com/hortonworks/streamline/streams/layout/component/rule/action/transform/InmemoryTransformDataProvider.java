@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.layout.component.rule.action.transform;
+package com.hortonworks.streamline.streams.layout.component.rule.action.transform;
 
 import java.util.Collections;
 import java.util.HashMap;

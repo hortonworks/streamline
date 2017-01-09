@@ -1,4 +1,4 @@
-package org.apache.streamline.common.util;
+package com.hortonworks.streamline.common.util;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

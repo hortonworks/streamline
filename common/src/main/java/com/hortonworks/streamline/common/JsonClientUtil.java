@@ -1,8 +1,8 @@
-package org.apache.streamline.common;
+package com.hortonworks.streamline.common;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.streamline.common.exception.WrappedWebApplicationException;
+import com.hortonworks.streamline.common.exception.WrappedWebApplicationException;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Entity;

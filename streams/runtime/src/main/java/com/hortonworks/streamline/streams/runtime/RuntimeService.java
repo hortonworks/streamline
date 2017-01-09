@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.runtime;
+package com.hortonworks.streamline.streams.runtime;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -16,13 +16,13 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.storage.impl.jdbc.provider.sql.factory;
+package com.hortonworks.streamline.storage.impl.jdbc.provider.sql.factory;
 
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorableFactory;
-import org.apache.streamline.storage.StorableKey;
-import org.apache.streamline.storage.exception.NonIncrementalColumnException;
-import org.apache.streamline.storage.impl.jdbc.config.ExecutionConfig;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorableFactory;
+import com.hortonworks.streamline.storage.StorableKey;
+import com.hortonworks.streamline.storage.exception.NonIncrementalColumnException;
+import com.hortonworks.streamline.storage.impl.jdbc.config.ExecutionConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

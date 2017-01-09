@@ -16,7 +16,7 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.cache.view.test;
+package com.hortonworks.streamline.cache.view.test;
 
 import com.lambdaworks.redis.RedisConnection;
 import org.slf4j.Logger;

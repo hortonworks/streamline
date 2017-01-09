@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.streamline.common;
+package com.hortonworks.streamline.common;
 
 
 public class Constants {

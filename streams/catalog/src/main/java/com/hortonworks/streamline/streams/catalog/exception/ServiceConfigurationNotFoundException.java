@@ -1,7 +1,7 @@
-package org.apache.streamline.streams.catalog.exception;
+package com.hortonworks.streamline.streams.catalog.exception;
 
 
-import org.apache.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 
 public class ServiceConfigurationNotFoundException extends EntityNotFoundException {
     public ServiceConfigurationNotFoundException(String message) {

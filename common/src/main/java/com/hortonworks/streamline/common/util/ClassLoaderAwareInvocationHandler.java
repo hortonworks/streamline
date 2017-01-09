@@ -1,4 +1,4 @@
-package org.apache.streamline.common.util;
+package com.hortonworks.streamline.common.util;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;

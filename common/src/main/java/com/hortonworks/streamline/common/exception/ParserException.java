@@ -1,4 +1,4 @@
-package org.apache.streamline.common.exception;
+package com.hortonworks.streamline.common.exception;
 
 /**
  * Base class of exceptions that should be thrown when an exceptional situation occurs while parsing some input of data.

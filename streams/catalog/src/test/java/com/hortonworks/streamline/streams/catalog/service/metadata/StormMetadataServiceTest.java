@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.catalog.service.metadata;
+package com.hortonworks.streamline.streams.catalog.service.metadata;
 
 import com.google.common.collect.Lists;
 
@@ -6,7 +6,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.streamline.streams.catalog.service.metadata.StormMetadataService;
+import com.hortonworks.streamline.streams.catalog.service.metadata.StormMetadataService;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

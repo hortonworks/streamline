@@ -392,7 +392,7 @@ export default class NormalizationNodeForm extends Component {
 			let streamFields = this.state.transformers.filter((o)=>{return o.streamId === s.streamId});
 			if(streamFields.length) {
 				let obj = {
-					__type: "org.apache.streamline.streams.layout.component.impl.normalization.FieldBasedNormalizationConfig",
+					__type: "com.hortonworks.streamline.streams.layout.component.impl.normalization.FieldBasedNormalizationConfig",
 					transformers: [],
 					fieldsToBeFiltered: [],
 					newFieldValueGenerators: []

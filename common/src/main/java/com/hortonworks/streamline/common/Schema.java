@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.common;
+package com.hortonworks.streamline.common;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -29,7 +29,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
-import org.apache.streamline.common.exception.ParserException;
+import com.hortonworks.streamline.common.exception.ParserException;
 
 import java.io.Serializable;
 import java.util.ArrayList;

@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.registries.model.service;
+package com.hortonworks.streamline.registries.model.service;
 
 import com.codahale.metrics.annotation.Timed;
-import org.apache.streamline.common.exception.service.exception.request.BadRequestException;
-import org.apache.streamline.common.util.WSUtils;
-import org.apache.streamline.registries.model.data.MLModelInfo;
+import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
+import com.hortonworks.streamline.common.util.WSUtils;
+import com.hortonworks.streamline.registries.model.data.MLModelInfo;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;

@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.catalog.exception;
+package com.hortonworks.streamline.streams.catalog.exception;
 
 
 public class ClusterNotFoundException extends EntityNotFoundException {

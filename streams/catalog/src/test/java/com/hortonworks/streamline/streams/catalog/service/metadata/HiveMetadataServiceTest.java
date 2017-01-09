@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.catalog.service.metadata;
+package com.hortonworks.streamline.streams.catalog.service.metadata;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -10,9 +10,9 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.streamline.streams.catalog.ServiceConfiguration;
-import org.apache.streamline.streams.catalog.service.EnvironmentService;
-import org.apache.streamline.streams.catalog.service.metadata.common.Tables;
+import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
+import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
+import com.hortonworks.streamline.streams.catalog.service.metadata.common.Tables;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;

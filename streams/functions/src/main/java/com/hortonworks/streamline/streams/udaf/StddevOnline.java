@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.udaf;
+package com.hortonworks.streamline.streams.udaf;
 
 /**
  * Computes online variance and stddev of values using

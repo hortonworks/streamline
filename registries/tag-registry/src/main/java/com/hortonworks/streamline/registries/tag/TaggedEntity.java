@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.registries.tag;
+package com.hortonworks.streamline.registries.tag;
 
-import org.apache.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.Storable;
 
 public class TaggedEntity {
     private String namespace;

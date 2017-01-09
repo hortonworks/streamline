@@ -16,13 +16,13 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.layout.storm;
+package com.hortonworks.streamline.streams.layout.storm;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
-import org.apache.streamline.streams.layout.component.Stream;
-import org.apache.streamline.streams.layout.component.impl.MultiLangProcessor;
+import com.hortonworks.streamline.streams.layout.component.Stream;
+import com.hortonworks.streamline.streams.layout.component.impl.MultiLangProcessor;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,7 +39,7 @@ public class StreamsShellBoltFluxComponent extends  AbstractFluxComponent {
     protected void generateComponent() {
         multiLangProcessor = (MultiLangProcessor) conf.get(StormTopologyLayoutConstants.STREAMLINE_COMPONENT_CONF_KEY);
         String boltId = "streamsShellBolt" + UUID_FOR_COMPONENTS;
-        String boltClassName = "org.apache.streamline.streams.runtime.storm.bolt.StreamsShellBolt";
+        String boltClassName = "com.hortonworks.streamline.streams.runtime.storm.bolt.StreamsShellBolt";
 
         String[] constructorArgNames = {"command", "processTimeout"};
         List<Object> boltConstructorArgs = getConstructorArgsYaml(constructorArgNames);

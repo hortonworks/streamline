@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.actions;
+package com.hortonworks.streamline.streams.actions;
 
 import java.util.HashMap;
 import java.util.Map;

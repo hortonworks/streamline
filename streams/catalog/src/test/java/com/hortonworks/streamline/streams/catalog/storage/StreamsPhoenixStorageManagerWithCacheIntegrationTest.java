@@ -1,10 +1,10 @@
-package org.apache.streamline.streams.catalog.storage;
+package com.hortonworks.streamline.streams.catalog.storage;
 
-import org.apache.streamline.common.test.HBaseIntegrationTest;
-import org.apache.streamline.storage.impl.jdbc.JdbcStorageManager;
-import org.apache.streamline.storage.impl.jdbc.phoenix.PhoenixStorageManagerWithCacheIntegrationTest;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.common.test.HBaseIntegrationTest;
+import com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager;
+import com.hortonworks.streamline.storage.impl.jdbc.phoenix.PhoenixStorageManagerWithCacheIntegrationTest;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import org.junit.experimental.categories.Category;
 
 /**

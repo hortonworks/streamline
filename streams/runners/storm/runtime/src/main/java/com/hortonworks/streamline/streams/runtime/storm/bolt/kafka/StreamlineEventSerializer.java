@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.runtime.storm.bolt.kafka;
+package com.hortonworks.streamline.streams.runtime.storm.bolt.kafka;
 
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
@@ -8,7 +8,7 @@ import com.hortonworks.registries.schemaregistry.SchemaCompatibility;
 import com.hortonworks.registries.schemaregistry.SchemaMetadata;
 import com.hortonworks.registries.schemaregistry.serdes.avro.AvroSnapshotSerializer;
 import com.hortonworks.registries.schemaregistry.serdes.avro.kafka.Utils;
-import org.apache.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.StreamlineEvent;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

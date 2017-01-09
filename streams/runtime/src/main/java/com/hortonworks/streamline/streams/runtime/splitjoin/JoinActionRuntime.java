@@ -16,17 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.runtime.splitjoin;
+package com.hortonworks.streamline.streams.runtime.splitjoin;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.Result;
-import org.apache.streamline.streams.common.StreamlineEventImpl;
-import org.apache.streamline.streams.layout.component.impl.splitjoin.JoinAction;
-import org.apache.streamline.streams.layout.component.rule.action.Action;
-import org.apache.streamline.streams.runtime.RuntimeService;
-import org.apache.streamline.streams.runtime.rule.action.ActionRuntime;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.Result;
+import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.JoinAction;
+import com.hortonworks.streamline.streams.layout.component.rule.action.Action;
+import com.hortonworks.streamline.streams.runtime.RuntimeService;
+import com.hortonworks.streamline.streams.runtime.rule.action.ActionRuntime;
 
 import java.util.ArrayList;
 import java.util.Collections;

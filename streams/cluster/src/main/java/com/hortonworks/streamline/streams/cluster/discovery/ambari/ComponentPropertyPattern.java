@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.cluster.discovery.ambari;
+package com.hortonworks.streamline.streams.cluster.discovery.ambari;
 
 import java.util.regex.Pattern;
 

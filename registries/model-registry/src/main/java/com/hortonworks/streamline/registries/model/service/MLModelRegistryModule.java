@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.registries.model.service;
+package com.hortonworks.streamline.registries.model.service;
 
-import org.apache.streamline.common.ModuleRegistration;
-import org.apache.streamline.common.util.FileStorage;
-import org.apache.streamline.storage.StorageManager;
-import org.apache.streamline.storage.StorageManagerAware;
+import com.hortonworks.streamline.common.ModuleRegistration;
+import com.hortonworks.streamline.common.util.FileStorage;
+import com.hortonworks.streamline.storage.StorageManager;
+import com.hortonworks.streamline.storage.StorageManagerAware;
 
 import java.util.Collections;
 import java.util.List;

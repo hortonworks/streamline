@@ -1,12 +1,12 @@
-package org.apache.streamline.streams.layout.storm;
+package com.hortonworks.streamline.streams.layout.storm;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.streamline.streams.layout.component.impl.NotificationSink;
-import org.apache.streamline.streams.layout.exception.ComponentConfigException;
+import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
+import com.hortonworks.streamline.streams.layout.component.impl.NotificationSink;
+import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
 
 import java.util.List;
 import java.util.Map;
@@ -21,7 +21,7 @@ public class NotificationBoltFluxComponent extends AbstractFluxComponent {
     protected void generateComponent() {
         notificationSink = (NotificationSink) conf.get(StormTopologyLayoutConstants.STREAMLINE_COMPONENT_CONF_KEY);
         String boltId = "notificationBolt" + UUID_FOR_COMPONENTS;
-        String boltClassName = "org.apache.streamline.streams.runtime.storm.bolt.notification.NotificationBolt";
+        String boltClassName = "com.hortonworks.streamline.streams.runtime.storm.bolt.notification.NotificationBolt";
         String[] constructorArgNames = {TopologyLayoutConstants.JSON_KEY_NOTIFICATION_SINK_JSON};
         try {
             if (notificationSink == null) {
@@ -50,7 +50,7 @@ public class NotificationBoltFluxComponent extends AbstractFluxComponent {
         // Streamline frameworks supports email notifiers by default. However there is support for custom notifiers as well. Here, we handle validation for fields
         // necessary for email notifiers only. Otherwise we pass. For other custom notifiers we could add validate method to Notifier interface and call it
         // here or we could let the custom notifier handle it at runtime after submitting the topology
-        if ("org.apache.streamline.streams.notifiers.EmailNotifier".equals(className)) {
+        if ("com.hortonworks.streamline.streams.notifiers.EmailNotifier".equals(className)) {
             validateStringFields();
             validateProperties();
             validateFieldValues();

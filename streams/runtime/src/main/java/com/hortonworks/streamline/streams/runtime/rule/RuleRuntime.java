@@ -16,16 +16,16 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.rule;
+package com.hortonworks.streamline.streams.runtime.rule;
 
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.Result;
-import org.apache.streamline.streams.exception.ProcessingException;
-import org.apache.streamline.streams.layout.component.rule.Rule;
-import org.apache.streamline.streams.layout.component.rule.exception.ConditionEvaluationException;
-import org.apache.streamline.streams.runtime.ProcessorRuntime;
-import org.apache.streamline.streams.runtime.rule.action.ActionRuntime;
-import org.apache.streamline.streams.runtime.script.Script;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.Result;
+import com.hortonworks.streamline.streams.exception.ProcessingException;
+import com.hortonworks.streamline.streams.layout.component.rule.Rule;
+import com.hortonworks.streamline.streams.layout.component.rule.exception.ConditionEvaluationException;
+import com.hortonworks.streamline.streams.runtime.ProcessorRuntime;
+import com.hortonworks.streamline.streams.runtime.rule.action.ActionRuntime;
+import com.hortonworks.streamline.streams.runtime.script.Script;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

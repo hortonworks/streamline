@@ -15,9 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.streams.udf;
+package com.hortonworks.streamline.streams.udf;
 
-import org.apache.streamline.streams.rule.UDF;
+import com.hortonworks.streamline.streams.rule.UDF;
 
 /**
  * Identity function which returns the passed value.

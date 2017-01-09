@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.layout.component.impl.normalization;
+package com.hortonworks.streamline.streams.layout.component.impl.normalization;
 
-import org.apache.streamline.common.Schema;
+import com.hortonworks.streamline.common.Schema;
 
 /**
- * It represents normalization configuration which uses bulk script to normalize payload from input {@link org.apache.streamline.common.Schema}
- * to output {@link org.apache.streamline.common.Schema}.
+ * It represents normalization configuration which uses bulk script to normalize payload from input {@link com.hortonworks.streamline.common.Schema}
+ * to output {@link com.hortonworks.streamline.common.Schema}.
  *
  */
 public class BulkNormalizationConfig extends NormalizationConfig {

@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.cluster.discovery.ambari;
+package com.hortonworks.streamline.streams.cluster.discovery.ambari;
 
 /**
  * Constants which is used for parsing Ambari REST API response.

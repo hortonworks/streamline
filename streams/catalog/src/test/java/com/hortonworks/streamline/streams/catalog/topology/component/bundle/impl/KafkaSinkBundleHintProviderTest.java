@@ -1,16 +1,16 @@
-package org.apache.streamline.streams.catalog.topology.component.bundle.impl;
+package com.hortonworks.streamline.streams.catalog.topology.component.bundle.impl;
 
 import com.google.common.collect.Lists;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
-import org.apache.streamline.streams.catalog.Cluster;
-import org.apache.streamline.streams.catalog.exception.ServiceNotFoundException;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.streams.catalog.service.metadata.KafkaMetadataService;
-import org.apache.streamline.streams.catalog.service.metadata.common.HostPort;
-import org.apache.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
+import com.hortonworks.streamline.streams.catalog.Cluster;
+import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundException;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.catalog.service.metadata.KafkaMetadataService;
+import com.hortonworks.streamline.streams.catalog.service.metadata.common.HostPort;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -16,9 +16,9 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.cache.view.service;
+package com.hortonworks.streamline.cache.view.service;
 
-import org.apache.streamline.cache.view.Factory;
+import com.hortonworks.streamline.cache.view.Factory;
 
 public class CacheServiceJsonFactory<K,V> implements Factory<CacheService<K,V>> {
     @Override

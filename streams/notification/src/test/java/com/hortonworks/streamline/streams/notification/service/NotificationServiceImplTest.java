@@ -16,16 +16,16 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.streams.notification.service;
+package com.hortonworks.streamline.streams.notification.service;
 
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.common.util.ProxyUtil;
-import org.apache.streamline.streams.notification.Notification;
-import org.apache.streamline.streams.notification.NotificationContext;
-import org.apache.streamline.streams.notification.Notifier;
-import org.apache.streamline.streams.notification.NotifierConfig;
-import org.apache.streamline.streams.notification.store.Criteria;
-import org.apache.streamline.streams.notification.store.NotificationStore;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.util.ProxyUtil;
+import com.hortonworks.streamline.streams.notification.Notification;
+import com.hortonworks.streamline.streams.notification.NotificationContext;
+import com.hortonworks.streamline.streams.notification.Notifier;
+import com.hortonworks.streamline.streams.notification.NotifierConfig;
+import com.hortonworks.streamline.streams.notification.store.Criteria;
+import com.hortonworks.streamline.streams.notification.store.NotificationStore;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;

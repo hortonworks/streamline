@@ -1,6 +1,6 @@
-package org.apache.streamline.streams.metrics;
+package com.hortonworks.streamline.streams.metrics;
 
-import org.apache.streamline.streams.exception.ConfigException;
+import com.hortonworks.streamline.streams.exception.ConfigException;
 
 import java.util.Map;
 

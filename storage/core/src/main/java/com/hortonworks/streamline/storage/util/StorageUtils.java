@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.storage.util;
+package com.hortonworks.streamline.storage.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.common.exception.DuplicateEntityException;
-import org.apache.streamline.storage.Storable;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.exception.DuplicateEntityException;
+import com.hortonworks.streamline.storage.Storable;
 
 import java.io.IOException;
 import java.util.Collection;

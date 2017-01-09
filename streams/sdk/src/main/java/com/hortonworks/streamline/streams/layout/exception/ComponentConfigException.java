@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.layout.exception;
+package com.hortonworks.streamline.streams.layout.exception;
 
 /**
  * Indicates an issue while trying to validate a json for a topology layout.

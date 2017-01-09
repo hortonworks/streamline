@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.storm.layout.runtime.rule.topology;
+package com.hortonworks.streamline.streams.runtime.storm.layout.runtime.rule.topology;
 
-import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
-import org.apache.streamline.streams.runtime.processor.RuleProcessorRuntime;
-import org.apache.streamline.streams.runtime.storm.bolt.rules.RulesBolt;
+import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
+import com.hortonworks.streamline.streams.runtime.processor.RuleProcessorRuntime;
+import com.hortonworks.streamline.streams.runtime.storm.bolt.rules.RulesBolt;
 import org.apache.storm.Config;
 import org.apache.storm.ILocalCluster;
 import org.apache.storm.LocalCluster;

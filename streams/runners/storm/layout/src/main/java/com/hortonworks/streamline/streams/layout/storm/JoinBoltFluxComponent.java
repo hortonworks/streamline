@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.layout.storm;
+package com.hortonworks.streamline.streams.layout.storm;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.snakeyaml.DumperOptions;
 import com.fasterxml.jackson.dataformat.yaml.snakeyaml.Yaml;
 
-import org.apache.streamline.streams.layout.component.rule.expression.Window;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Window;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -62,7 +62,7 @@ public class JoinBoltFluxComponent extends AbstractFluxComponent {
     @Override
     protected void generateComponent()  {
         String boltId        = "joinBolt_" + UUID_FOR_COMPONENTS;
-        String boltClassName = "org.apache.streamline.streams.runtime.storm.bolt.query.WindowedQueryBolt";
+        String boltClassName = "com.hortonworks.streamline.streams.runtime.storm.bolt.query.WindowedQueryBolt";
 
         Map<String, Object> fromSetting = ((Map<String, Object>) conf.get("from"));
         String firstStream = fromSetting.get("stream").toString();
@@ -158,7 +158,7 @@ public class JoinBoltFluxComponent extends AbstractFluxComponent {
     // returns the window ID
     private String addWindowToComponents(Map<String,Object> windowMap) {
         String windowId = "window_" + UUID_FOR_COMPONENTS;
-        String windowClassName = "org.apache.streamline.streams.layout.component.rule.expression.Window";
+        String windowClassName = "com.hortonworks.streamline.streams.layout.component.rule.expression.Window";
         List constructorArgs = new ArrayList();
         try {
             String windowJson = new ObjectMapper().writeValueAsString( windowMap );

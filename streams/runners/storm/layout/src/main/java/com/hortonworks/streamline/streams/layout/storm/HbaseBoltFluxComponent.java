@@ -1,7 +1,7 @@
-package org.apache.streamline.streams.layout.storm;
+package com.hortonworks.streamline.streams.layout.storm;
 
-import org.apache.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.streamline.streams.layout.exception.ComponentConfigException;
+import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
+import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +47,7 @@ public class HbaseBoltFluxComponent extends AbstractFluxComponent {
         String hbaseMapperComponentId = "hbaseMapper" + UUID_FOR_COMPONENTS;
 
         // currently only ParserOutputHbaseMapper is supported.
-        String hbaseMapperClassName = "org.apache.streamline.streams.runtime.storm.hbase.StreamlineEventHBaseMapper";
+        String hbaseMapperClassName = "com.hortonworks.streamline.streams.runtime.storm.hbase.StreamlineEventHBaseMapper";
 
         //constructor args
         String[] constructorArgNames = {

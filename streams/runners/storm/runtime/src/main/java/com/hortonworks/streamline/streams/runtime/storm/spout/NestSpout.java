@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.runtime.storm.spout;
+package com.hortonworks.streamline.streams.runtime.storm.spout;
 
 import org.apache.storm.spout.SpoutOutputCollector;
 import org.apache.storm.task.TopologyContext;

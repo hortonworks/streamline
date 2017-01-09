@@ -1,7 +1,7 @@
-package org.apache.streamline.storage;
+package com.hortonworks.streamline.storage;
 
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.storage.exception.StorageException;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.storage.exception.StorageException;
 
 import java.util.Collection;
 import java.util.List;

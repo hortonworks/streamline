@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.script;
+package com.hortonworks.streamline.streams.runtime.script;
 
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.layout.component.rule.expression.Expression;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Expression;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import org.slf4j.Logger;
@@ -44,11 +44,11 @@ public class GroovyScript<O> extends Script<StreamlineEvent, O, javax.script.Scr
     private transient volatile ThreadLocal<groovy.lang.Script> parsedScript;
     private final Map<String, Object> initialBindings;
 
-    public GroovyScript(String expression, org.apache.streamline.streams.runtime.script.engine.ScriptEngine<ScriptEngine> scriptEngine) {
+    public GroovyScript(String expression, com.hortonworks.streamline.streams.runtime.script.engine.ScriptEngine<ScriptEngine> scriptEngine) {
         this(expression, scriptEngine, Collections.<String, Object>emptyMap());
     }
 
-    public GroovyScript(String expression, org.apache.streamline.streams.runtime.script.engine.ScriptEngine<ScriptEngine> scriptEngine, Map<String, Object> initialBindings) {
+    public GroovyScript(String expression, com.hortonworks.streamline.streams.runtime.script.engine.ScriptEngine<ScriptEngine> scriptEngine, Map<String, Object> initialBindings) {
         super(expression, scriptEngine);
         this.initialBindings = initialBindings;
     }

@@ -16,20 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.runtime.storm.bolt.normalization;
+package com.hortonworks.streamline.streams.runtime.storm.bolt.normalization;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.common.StreamlineEventImpl;
-import org.apache.streamline.streams.layout.component.Stream;
-import org.apache.streamline.streams.layout.component.impl.normalization.BulkNormalizationConfig;
-import org.apache.streamline.streams.layout.component.impl.normalization.FieldBasedNormalizationConfig;
-import org.apache.streamline.streams.layout.component.impl.normalization.FieldValueGenerator;
-import org.apache.streamline.streams.layout.component.impl.normalization.NormalizationConfig;
-import org.apache.streamline.streams.layout.component.impl.normalization.NormalizationProcessor;
-import org.apache.streamline.streams.layout.component.impl.normalization.Transformer;
-import org.apache.streamline.streams.runtime.normalization.NormalizationException;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.layout.component.Stream;
+import com.hortonworks.streamline.streams.layout.component.impl.normalization.BulkNormalizationConfig;
+import com.hortonworks.streamline.streams.layout.component.impl.normalization.FieldBasedNormalizationConfig;
+import com.hortonworks.streamline.streams.layout.component.impl.normalization.FieldValueGenerator;
+import com.hortonworks.streamline.streams.layout.component.impl.normalization.NormalizationConfig;
+import com.hortonworks.streamline.streams.layout.component.impl.normalization.NormalizationProcessor;
+import com.hortonworks.streamline.streams.layout.component.impl.normalization.Transformer;
+import com.hortonworks.streamline.streams.runtime.normalization.NormalizationException;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import mockit.Expectations;

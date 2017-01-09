@@ -1,6 +1,6 @@
-package org.apache.streamline.streams.common;
+package com.hortonworks.streamline.streams.common;
 
-import org.apache.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.StreamlineEvent;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 

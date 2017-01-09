@@ -210,9 +210,9 @@ export default class EdgeConfigContainer extends Component {
                                 if(this.props.data.edge.target.currentType.toLowerCase() === 'notification'){
                                     actionObj.outputFieldsAndDefaults = sourceNode.config.properties.fieldValues || {};
                                     actionObj.notifierName = sourceNode.config.properties.notifierName || '';
-                                    actionObj.__type = "org.apache.streamline.streams.layout.component.rule.action.NotifierAction";
+                                    actionObj.__type = "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction";
                                 } else {
-                                    actionObj.__type = "org.apache.streamline.streams.layout.component.rule.action.TransformAction";
+                                    actionObj.__type = "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction";
                                     actionObj.transforms = [];
                                 }
                                 let obj = _.find(data.actions, {name: actionObj.name});
@@ -238,9 +238,9 @@ export default class EdgeConfigContainer extends Component {
                                 if(this.props.data.edge.target.currentType.toLowerCase() === 'notification'){
                                     actionObj.outputFieldsAndDefaults = sourceNode.config.properties.fieldValues || {};
                                     actionObj.notifierName = sourceNode.config.properties.notifierName || '';
-                                    actionObj.__type = "org.apache.streamline.streams.layout.component.rule.action.NotifierAction";
+                                    actionObj.__type = "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction";
                                 } else {
-                                    actionObj.__type = "org.apache.streamline.streams.layout.component.rule.action.TransformAction";
+                                    actionObj.__type = "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction";
                                     actionObj.transforms = [];
                                 }
                                 data.actions.push(actionObj);

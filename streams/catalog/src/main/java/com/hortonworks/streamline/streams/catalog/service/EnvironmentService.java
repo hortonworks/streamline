@@ -1,20 +1,20 @@
-package org.apache.streamline.streams.catalog.service;
+package com.hortonworks.streamline.streams.catalog.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.storage.StorableKey;
-import org.apache.streamline.storage.StorageManager;
-import org.apache.streamline.streams.catalog.Cluster;
-import org.apache.streamline.streams.catalog.Component;
-import org.apache.streamline.streams.catalog.Namespace;
-import org.apache.streamline.streams.catalog.NamespaceServiceClusterMapping;
-import org.apache.streamline.streams.catalog.Service;
-import org.apache.streamline.streams.catalog.ServiceConfiguration;
-import org.apache.streamline.streams.catalog.cluster.ClusterImporter;
-import org.apache.streamline.streams.catalog.container.ContainingNamespaceAwareContainer;
-import org.apache.streamline.streams.cluster.discovery.ServiceNodeDiscoverer;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.storage.StorableKey;
+import com.hortonworks.streamline.storage.StorageManager;
+import com.hortonworks.streamline.streams.catalog.Cluster;
+import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.Namespace;
+import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping;
+import com.hortonworks.streamline.streams.catalog.Service;
+import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
+import com.hortonworks.streamline.streams.catalog.cluster.ClusterImporter;
+import com.hortonworks.streamline.streams.catalog.container.ContainingNamespaceAwareContainer;
+import com.hortonworks.streamline.streams.cluster.discovery.ServiceNodeDiscoverer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

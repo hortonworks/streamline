@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.layout;
+package com.hortonworks.streamline.streams.layout;
 
 import org.junit.Assert;
 import org.junit.Test;

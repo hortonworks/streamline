@@ -16,25 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.runtime.splitjoin;
+package com.hortonworks.streamline.streams.runtime.splitjoin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
-import org.apache.streamline.common.Constants;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.Result;
-import org.apache.streamline.streams.common.utils.CatalogRestClient;
-import org.apache.streamline.streams.common.StreamlineEventImpl;
-import org.apache.streamline.streams.layout.Transform;
-import org.apache.streamline.streams.layout.component.impl.splitjoin.JoinAction;
-import org.apache.streamline.streams.layout.component.impl.splitjoin.SplitAction;
-import org.apache.streamline.streams.layout.component.impl.splitjoin.StageAction;
-import org.apache.streamline.streams.layout.component.rule.Rule;
-import org.apache.streamline.streams.layout.component.rule.action.Action;
-import org.apache.streamline.streams.layout.component.rule.action.transform.EnrichmentTransform;
-import org.apache.streamline.streams.layout.component.rule.action.transform.InmemoryTransformDataProvider;
-import org.apache.streamline.streams.layout.component.rule.action.transform.ProjectionTransform;
-import org.apache.streamline.streams.runtime.rule.action.ActionRuntimeContext;
+import com.hortonworks.streamline.common.Constants;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.Result;
+import com.hortonworks.streamline.streams.common.utils.CatalogRestClient;
+import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.layout.Transform;
+import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.JoinAction;
+import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.SplitAction;
+import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.StageAction;
+import com.hortonworks.streamline.streams.layout.component.rule.Rule;
+import com.hortonworks.streamline.streams.layout.component.rule.action.Action;
+import com.hortonworks.streamline.streams.layout.component.rule.action.transform.EnrichmentTransform;
+import com.hortonworks.streamline.streams.layout.component.rule.action.transform.InmemoryTransformDataProvider;
+import com.hortonworks.streamline.streams.layout.component.rule.action.transform.ProjectionTransform;
+import com.hortonworks.streamline.streams.runtime.rule.action.ActionRuntimeContext;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
@@ -320,8 +320,8 @@ public class SplitJoinTest {
     @Test
     @Ignore
     public void testCustomLoadedSplitJoin() throws Exception {
-        final String splitterClassName = "org.apache.streamline.layout.runtime.splitjoin.CustomSplitter";
-        final String joinerClassName = "org.apache.streamline.layout.runtime.splitjoin.CustomJoiner";
+        final String splitterClassName = "com.hortonworks.streamline.layout.runtime.splitjoin.CustomSplitter";
+        final String joinerClassName = "com.hortonworks.streamline.layout.runtime.splitjoin.CustomJoiner";
 
         final InputStream splitJarInputStream = this.getClass().getResourceAsStream("/custom-split-join-lib.jar");
         final InputStream joinJarInputStream = this.getClass().getResourceAsStream("/custom-split-join-lib.jar");
@@ -349,8 +349,8 @@ public class SplitJoinTest {
     @Test
     public void testActionsJsonSerDeser() throws Exception {
         Action[] actions = {
-                new SplitAction(System.currentTimeMillis(), "org.apache.streamline.sj.SplitterClass"),
-                new JoinAction(System.currentTimeMillis(), "org.apache.streamline.sj.JoinerClass"),
+                new SplitAction(System.currentTimeMillis(), "com.hortonworks.streamline.sj.SplitterClass"),
+                new JoinAction(System.currentTimeMillis(), "com.hortonworks.streamline.sj.JoinerClass"),
                 new StageAction(Collections.<Transform>singletonList(new ProjectionTransform("projection", Collections.singleton("foo")))),
         };
         for (Action action : actions) {

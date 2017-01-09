@@ -15,12 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.streams.layout.storm;
+package com.hortonworks.streamline.streams.layout.storm;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.streamline.streams.layout.storm.DruidBoltFluxComponent.KEY_BATCH_SIZE;
+import static com.hortonworks.streamline.streams.layout.storm.DruidBoltFluxComponent.KEY_BATCH_SIZE;
 
 /**
  *
@@ -58,7 +58,7 @@ public class SolrUpdateBoltFluxComponent extends AbstractFluxComponent {
 
     private String addSolrMapper() {
         final String componentId = "streamlineSolrJsonMapper" + UUID_FOR_COMPONENTS;
-        final String className = "org.apache.streamline.streams.runtime.storm.bolt.solr.StreamlineSolrJsonMapper";
+        final String className = "com.hortonworks.streamline.streams.runtime.storm.bolt.solr.StreamlineSolrJsonMapper";
         final List<Object> constructorArgs = new ArrayList<Object>() {{
             add(conf.get(JSON_KEY_SOLR_COLLECTION_NAME));
         }};

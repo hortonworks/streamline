@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.layout.component.rule.expression;
+package com.hortonworks.streamline.streams.layout.component.rule.expression;
 
 /**
  * As expression e.g. select temperature AS temp ...

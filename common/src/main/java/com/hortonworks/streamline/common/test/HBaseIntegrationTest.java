@@ -1,4 +1,4 @@
-package org.apache.streamline.common.test;
+package com.hortonworks.streamline.common.test;
 
 /**
  *

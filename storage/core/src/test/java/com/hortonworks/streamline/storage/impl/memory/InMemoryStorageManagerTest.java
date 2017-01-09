@@ -15,11 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.storage.impl.memory;
+package com.hortonworks.streamline.storage.impl.memory;
 
-import org.apache.streamline.storage.AbstractStoreManagerTest;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorageManager;
+import com.hortonworks.streamline.storage.AbstractStoreManagerTest;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorageManager;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -16,31 +16,31 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.webservice;
+package com.hortonworks.streamline.webservice;
 
 import com.google.common.cache.CacheBuilder;
 import io.dropwizard.server.AbstractServerFactory;
-import org.apache.streamline.cache.Cache;
-import org.apache.streamline.common.Constants;
-import org.apache.streamline.common.ModuleRegistration;
-import org.apache.streamline.common.util.FileStorage;
-import org.apache.streamline.common.util.ReflectionHelper;
-import org.apache.streamline.storage.CacheBackedStorageManager;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorableKey;
-import org.apache.streamline.storage.StorageManager;
-import org.apache.streamline.storage.StorageManagerAware;
-import org.apache.streamline.storage.cache.impl.GuavaCache;
-import org.apache.streamline.storage.cache.writer.StorageWriteThrough;
-import org.apache.streamline.storage.cache.writer.StorageWriter;
-import org.apache.streamline.streams.exception.ConfigException;
+import com.hortonworks.streamline.cache.Cache;
+import com.hortonworks.streamline.common.Constants;
+import com.hortonworks.streamline.common.ModuleRegistration;
+import com.hortonworks.streamline.common.util.FileStorage;
+import com.hortonworks.streamline.common.util.ReflectionHelper;
+import com.hortonworks.streamline.storage.CacheBackedStorageManager;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorableKey;
+import com.hortonworks.streamline.storage.StorageManager;
+import com.hortonworks.streamline.storage.StorageManagerAware;
+import com.hortonworks.streamline.storage.cache.impl.GuavaCache;
+import com.hortonworks.streamline.storage.cache.writer.StorageWriteThrough;
+import com.hortonworks.streamline.storage.cache.writer.StorageWriter;
+import com.hortonworks.streamline.streams.exception.ConfigException;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import org.apache.streamline.streams.service.GenericExceptionMapper;
+import com.hortonworks.streamline.streams.service.GenericExceptionMapper;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.slf4j.Logger;

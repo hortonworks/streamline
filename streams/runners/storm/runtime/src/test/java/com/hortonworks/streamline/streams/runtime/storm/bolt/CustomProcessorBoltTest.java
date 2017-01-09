@@ -1,12 +1,12 @@
-package org.apache.streamline.streams.runtime.storm.bolt;
+package com.hortonworks.streamline.streams.runtime.storm.bolt;
 
 import mockit.Mocked;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.Result;
-import org.apache.streamline.streams.common.StreamlineEventImpl;
-import org.apache.streamline.streams.exception.ProcessingException;
-import org.apache.streamline.examples.processors.ConsoleCustomProcessor;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.Result;
+import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.exception.ProcessingException;
+import com.hortonworks.streamline.examples.processors.ConsoleCustomProcessor;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Tested;

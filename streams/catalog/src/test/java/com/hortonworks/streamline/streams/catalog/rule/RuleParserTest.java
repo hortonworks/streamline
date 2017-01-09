@@ -16,26 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.catalog.rule;
+package com.hortonworks.streamline.streams.catalog.rule;
 
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.streams.catalog.RuleInfo;
-import org.apache.streamline.streams.catalog.StreamInfo;
-import org.apache.streamline.streams.catalog.UDFInfo;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.streams.layout.component.Stream;
-import org.apache.streamline.streams.layout.component.rule.expression.AsExpression;
-import org.apache.streamline.streams.layout.component.rule.expression.BinaryExpression;
-import org.apache.streamline.streams.layout.component.rule.expression.Condition;
-import org.apache.streamline.streams.layout.component.rule.expression.FieldExpression;
-import org.apache.streamline.streams.layout.component.rule.expression.Literal;
-import org.apache.streamline.streams.layout.component.rule.expression.Operator;
-import org.apache.streamline.streams.layout.component.rule.expression.Projection;
-import org.apache.streamline.streams.layout.component.rule.expression.Udf;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.streams.catalog.RuleInfo;
+import com.hortonworks.streamline.streams.catalog.StreamInfo;
+import com.hortonworks.streamline.streams.catalog.UDFInfo;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.layout.component.Stream;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.BinaryExpression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Condition;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Literal;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Operator;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Projection;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Udf;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;

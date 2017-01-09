@@ -16,11 +16,11 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.cache;
+package com.hortonworks.streamline.cache;
 
 
-import org.apache.streamline.cache.stats.CacheStats;
-import org.apache.streamline.cache.view.config.ExpiryPolicy;
+import com.hortonworks.streamline.cache.stats.CacheStats;
+import com.hortonworks.streamline.cache.view.config.ExpiryPolicy;
 
 import java.util.Collection;
 import java.util.Map;

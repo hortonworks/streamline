@@ -16,12 +16,12 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.script;
+package com.hortonworks.streamline.streams.runtime.script;
 
 
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.layout.component.rule.expression.Expression;
-import org.apache.streamline.streams.runtime.script.engine.ScriptEngine;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Expression;
+import com.hortonworks.streamline.streams.runtime.script.engine.ScriptEngine;
 
 import javax.script.ScriptException;
 import java.io.Serializable;

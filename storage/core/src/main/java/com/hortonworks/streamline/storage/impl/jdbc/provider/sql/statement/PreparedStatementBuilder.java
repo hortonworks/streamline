@@ -16,14 +16,14 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.storage.impl.jdbc.provider.sql.statement;
+package com.hortonworks.streamline.storage.impl.jdbc.provider.sql.statement;
 
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.storage.exception.MalformedQueryException;
-import org.apache.streamline.storage.impl.jdbc.config.ExecutionConfig;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.query.AbstractStorableKeyQuery;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.query.AbstractStorableSqlQuery;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.query.SqlQuery;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.storage.exception.MalformedQueryException;
+import com.hortonworks.streamline.storage.impl.jdbc.config.ExecutionConfig;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.AbstractStorableKeyQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.AbstractStorableSqlQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

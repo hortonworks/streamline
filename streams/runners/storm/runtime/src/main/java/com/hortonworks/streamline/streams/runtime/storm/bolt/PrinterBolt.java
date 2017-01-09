@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.runtime.storm.bolt;
+package com.hortonworks.streamline.streams.runtime.storm.bolt;
 
 import org.apache.storm.topology.BasicOutputCollector;
 import org.apache.storm.topology.OutputFieldsDeclarer;

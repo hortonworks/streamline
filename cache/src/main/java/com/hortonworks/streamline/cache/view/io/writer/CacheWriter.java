@@ -16,9 +16,9 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.cache.view.io.writer;
+package com.hortonworks.streamline.cache.view.io.writer;
 
-import org.apache.streamline.cache.view.datastore.DataStoreWriter;
+import com.hortonworks.streamline.cache.view.datastore.DataStoreWriter;
 
 /**
  * Marker interface

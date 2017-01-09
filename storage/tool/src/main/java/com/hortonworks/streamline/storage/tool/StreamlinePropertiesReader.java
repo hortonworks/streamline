@@ -1,4 +1,4 @@
-package org.apache.streamline.storage.tool;
+package com.hortonworks.streamline.storage.tool;
 
 import java.io.IOException;
 import java.util.Map;

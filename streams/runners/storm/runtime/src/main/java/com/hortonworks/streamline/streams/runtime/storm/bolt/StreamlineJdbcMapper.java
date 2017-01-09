@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.runtime.storm.bolt;
+package com.hortonworks.streamline.streams.runtime.storm.bolt;
 
 import org.apache.storm.jdbc.common.Column;
 import org.apache.storm.jdbc.common.ConnectionProvider;
@@ -6,7 +6,7 @@ import org.apache.storm.jdbc.common.JdbcClient;
 import org.apache.storm.jdbc.common.Util;
 import org.apache.storm.jdbc.mapper.JdbcMapper;
 import org.apache.storm.tuple.ITuple;
-import org.apache.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.StreamlineEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

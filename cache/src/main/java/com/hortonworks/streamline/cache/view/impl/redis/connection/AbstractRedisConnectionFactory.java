@@ -16,9 +16,9 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.cache.view.impl.redis.connection;
+package com.hortonworks.streamline.cache.view.impl.redis.connection;
 
-import org.apache.streamline.cache.view.Factory;
+import com.hortonworks.streamline.cache.view.Factory;
 import com.lambdaworks.redis.RedisClient;
 import com.lambdaworks.redis.RedisConnection;
 import com.lambdaworks.redis.codec.RedisCodec;

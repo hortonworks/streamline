@@ -1,6 +1,6 @@
-package org.apache.streamline.streams.runtime;
+package com.hortonworks.streamline.streams.runtime;
 
-import org.apache.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.StreamlineEvent;
 
 import java.io.Serializable;
 import java.util.List;

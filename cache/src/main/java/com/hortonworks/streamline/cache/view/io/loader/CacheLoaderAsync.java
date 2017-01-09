@@ -16,15 +16,15 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.cache.view.io.loader;
+package com.hortonworks.streamline.cache.view.io.loader;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
-import org.apache.streamline.cache.Cache;
-import org.apache.streamline.cache.view.datastore.DataStoreReader;
+import com.hortonworks.streamline.cache.Cache;
+import com.hortonworks.streamline.cache.view.datastore.DataStoreReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

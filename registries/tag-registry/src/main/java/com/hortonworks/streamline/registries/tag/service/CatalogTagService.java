@@ -1,20 +1,20 @@
-package org.apache.streamline.registries.tag.service;
+package com.hortonworks.streamline.registries.tag.service;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.common.exception.DuplicateEntityException;
-import org.apache.streamline.common.util.WSUtils;
-import org.apache.streamline.registries.tag.Tag;
-import org.apache.streamline.registries.tag.TagStorableMapping;
-import org.apache.streamline.registries.tag.TaggedEntity;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorableKey;
-import org.apache.streamline.storage.StorageManager;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.exception.DuplicateEntityException;
+import com.hortonworks.streamline.common.util.WSUtils;
+import com.hortonworks.streamline.registries.tag.Tag;
+import com.hortonworks.streamline.registries.tag.TagStorableMapping;
+import com.hortonworks.streamline.registries.tag.TaggedEntity;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorableKey;
+import com.hortonworks.streamline.storage.StorageManager;
 import org.apache.commons.io.IOUtils;
-import org.apache.streamline.storage.util.StorageUtils;
+import com.hortonworks.streamline.storage.util.StorageUtils;
 
 import java.io.IOException;
 import java.io.InputStream;

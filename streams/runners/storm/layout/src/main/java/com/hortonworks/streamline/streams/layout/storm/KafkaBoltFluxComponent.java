@@ -1,6 +1,6 @@
-package org.apache.streamline.streams.layout.storm;
+package com.hortonworks.streamline.streams.layout.storm;
 
-import org.apache.streamline.streams.layout.TopologyLayoutConstants;
+import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +39,7 @@ public class KafkaBoltFluxComponent extends AbstractFluxComponent {
 
     private String addTupleToKafkaMapper () {
         String mapperComponentId = "tupleToKafkaMapper" + UUID_FOR_COMPONENTS;
-        String mapperClassName = "org.apache.streamline.streams.runtime.storm.bolt.kafka.StreamlineEventToKafkaMapper";
+        String mapperClassName = "com.hortonworks.streamline.streams.runtime.storm.bolt.kafka.StreamlineEventToKafkaMapper";
         String[] constructorArgNames = { "keyField" };
         List constructorArgs = getConstructorArgsYaml(constructorArgNames);
         addToComponents(createComponent(mapperComponentId, mapperClassName, null, constructorArgs, null));
@@ -80,7 +80,7 @@ public class KafkaBoltFluxComponent extends AbstractFluxComponent {
         methodNames.add(methodName);
         args.add(new String[]{specialPropertyNames[0], getKeySerializer()});
         methodNames.add(methodName);
-        args.add(new String[]{specialPropertyNames[1], "org.apache.streamline.streams.runtime.storm.bolt.kafka.StreamlineEventSerializer"});
+        args.add(new String[]{specialPropertyNames[1], "com.hortonworks.streamline.streams.runtime.storm.bolt.kafka.StreamlineEventSerializer"});
         methodNames.add(methodName);
         args.add(new String[]{specialPropertyNames[2], getAckMode()});
         for (int j = 0; j < propertyNames.length; ++j) {

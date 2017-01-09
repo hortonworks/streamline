@@ -1,16 +1,16 @@
-package org.apache.streamline.streams.service;
+package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.common.util.FileStorage;
-import org.apache.streamline.common.util.WSUtils;
-import org.apache.streamline.streams.catalog.NotifierInfo;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.common.exception.service.exception.request.UnsupportedMediaTypeException;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.util.FileStorage;
+import com.hortonworks.streamline.common.util.WSUtils;
+import com.hortonworks.streamline.streams.catalog.NotifierInfo;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.common.exception.service.exception.request.UnsupportedMediaTypeException;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,7 +97,7 @@ public class NotifierInfoCatalogResource {
      * -F notifierConfig='{
      *  "name":"email_notifier",
      *  "description": "testing",
-     * "className":"org.apache.streamline.streams.notifiers.EmailNotifier",
+     * "className":"com.hortonworks.streamline.streams.notifiers.EmailNotifier",
      *   "properties": {
      *     "username": "hwemailtest@gmail.com",
      *     "password": "testing12",

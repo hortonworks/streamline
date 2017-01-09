@@ -1,13 +1,13 @@
-package org.apache.streamline.streams.catalog;
+package com.hortonworks.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.storage.PrimaryKey;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorableKey;
-import org.apache.streamline.streams.layout.component.TopologyDag;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.storage.PrimaryKey;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorableKey;
+import com.hortonworks.streamline.streams.layout.component.TopologyDag;
 
 import java.util.HashMap;
 import java.util.Map;

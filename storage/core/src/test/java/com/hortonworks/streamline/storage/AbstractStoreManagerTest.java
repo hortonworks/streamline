@@ -1,6 +1,6 @@
-package org.apache.streamline.storage;
+package com.hortonworks.streamline.storage;
 
-import org.apache.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.QueryParam;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;

@@ -1,15 +1,15 @@
-package org.apache.streamline.registries.dashboard.service;
+package com.hortonworks.streamline.registries.dashboard.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
-import org.apache.streamline.common.util.WSUtils;
-import org.apache.streamline.registries.dashboard.dto.WidgetDto;
-import org.apache.streamline.registries.dashboard.entites.Dashboard;
-import org.apache.streamline.registries.dashboard.entites.Datasource;
-import org.apache.streamline.registries.dashboard.entites.Widget;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import com.hortonworks.streamline.common.util.WSUtils;
+import com.hortonworks.streamline.registries.dashboard.dto.WidgetDto;
+import com.hortonworks.streamline.registries.dashboard.entites.Dashboard;
+import com.hortonworks.streamline.registries.dashboard.entites.Datasource;
+import com.hortonworks.streamline.registries.dashboard.entites.Widget;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;

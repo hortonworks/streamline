@@ -1,4 +1,4 @@
-package org.apache.streamline.common.util;
+package com.hortonworks.streamline.common.util;
 
 import java.net.URL;
 import java.net.URLClassLoader;

@@ -1,12 +1,12 @@
-package org.apache.streamline.streams.catalog.service.metadata.common;
+package com.hortonworks.streamline.streams.catalog.service.metadata.common;
 
 import com.google.common.collect.Lists;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.streamline.streams.catalog.ServiceConfiguration;
-import org.apache.streamline.streams.catalog.service.EnvironmentService;
-import org.apache.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
+import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
+import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

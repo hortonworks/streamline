@@ -1,8 +1,8 @@
-package org.apache.streamline.streams.catalog.topology;
+package com.hortonworks.streamline.streams.catalog.topology;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.streamline.streams.layout.exception.ComponentConfigException;
+import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
+import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
 
 import java.util.HashSet;
 import java.util.List;

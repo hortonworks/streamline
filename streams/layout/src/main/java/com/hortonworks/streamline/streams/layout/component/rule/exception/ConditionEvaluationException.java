@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.layout.component.rule.exception;
+package com.hortonworks.streamline.streams.layout.component.rule.exception;
 
 /** Exception thrown when evaluating a rule condition.
  *  This exception may be caused by attempting the evaluation of syntactically condition expression*/

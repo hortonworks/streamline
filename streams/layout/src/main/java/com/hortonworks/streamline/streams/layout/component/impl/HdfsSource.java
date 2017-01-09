@@ -1,6 +1,6 @@
-package org.apache.streamline.streams.layout.component.impl;
+package com.hortonworks.streamline.streams.layout.component.impl;
 
-import org.apache.streamline.streams.layout.component.StreamlineSource;
+import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
 
 
 public class HdfsSource extends StreamlineSource {

@@ -1,4 +1,4 @@
-package org.apache.streamline.cache.exception;
+package com.hortonworks.streamline.cache.exception;
 
 /**
  * Exception thrown if no value exists for a specific  key,

@@ -1,10 +1,10 @@
-package org.apache.streamline.registries.dashboard.entites;
+package com.hortonworks.streamline.registries.dashboard.entites;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.registries.dashboard.dto.WidgetDto;
-import org.apache.streamline.storage.PrimaryKey;
-import org.apache.streamline.storage.catalog.AbstractStorable;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.registries.dashboard.dto.WidgetDto;
+import com.hortonworks.streamline.storage.PrimaryKey;
+import com.hortonworks.streamline.storage.catalog.AbstractStorable;
 
 import java.util.HashMap;
 import java.util.Map;

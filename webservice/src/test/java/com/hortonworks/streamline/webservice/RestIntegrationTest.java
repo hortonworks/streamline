@@ -16,34 +16,34 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.webservice;
+package com.hortonworks.streamline.webservice;
 
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.common.test.IntegrationTest;
-import org.apache.streamline.registries.tag.dto.TagDto;
-import org.apache.streamline.streams.catalog.Cluster;
-import org.apache.streamline.streams.catalog.Component;
-import org.apache.streamline.streams.catalog.FileInfo;
-import org.apache.streamline.streams.catalog.Namespace;
-import org.apache.streamline.streams.catalog.NamespaceServiceClusterMapping;
-import org.apache.streamline.streams.catalog.NotifierInfo;
-import org.apache.streamline.streams.catalog.Service;
-import org.apache.streamline.streams.catalog.ServiceConfiguration;
-import org.apache.streamline.streams.catalog.Topology;
-import org.apache.streamline.streams.catalog.TopologyEditorMetadata;
-import org.apache.streamline.streams.catalog.processor.CustomProcessorInfo;
-import org.apache.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.streamline.examples.processors.ConsoleCustomProcessor;
-import org.apache.streamline.streams.service.TopologyCatalogResource;
-import org.apache.streamline.streams.catalog.topology.TopologyComponentBundle;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.common.test.IntegrationTest;
+import com.hortonworks.streamline.registries.tag.dto.TagDto;
+import com.hortonworks.streamline.streams.catalog.Cluster;
+import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.FileInfo;
+import com.hortonworks.streamline.streams.catalog.Namespace;
+import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping;
+import com.hortonworks.streamline.streams.catalog.NotifierInfo;
+import com.hortonworks.streamline.streams.catalog.Service;
+import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
+import com.hortonworks.streamline.streams.catalog.Topology;
+import com.hortonworks.streamline.streams.catalog.TopologyEditorMetadata;
+import com.hortonworks.streamline.streams.catalog.processor.CustomProcessorInfo;
+import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
+import com.hortonworks.streamline.examples.processors.ConsoleCustomProcessor;
+import com.hortonworks.streamline.streams.service.TopologyCatalogResource;
+import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
 import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import org.apache.commons.io.IOUtils;
-import org.apache.streamline.streams.service.TopologyComponentBundleResource;
+import com.hortonworks.streamline.streams.service.TopologyComponentBundleResource;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.BodyPart;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;

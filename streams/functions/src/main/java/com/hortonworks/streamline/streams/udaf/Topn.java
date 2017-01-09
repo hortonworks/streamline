@@ -1,6 +1,6 @@
-package org.apache.streamline.streams.udaf;
+package com.hortonworks.streamline.streams.udaf;
 
-import org.apache.streamline.streams.rule.UDAF2;
+import com.hortonworks.streamline.streams.rule.UDAF2;
 
 import java.util.ArrayList;
 import java.util.Collections;

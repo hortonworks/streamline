@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.layout.component.rule.sql;
+package com.hortonworks.streamline.streams.layout.component.rule.sql;
 
 import com.google.common.collect.ImmutableMap;
-import org.apache.streamline.streams.layout.component.rule.expression.Operator;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Operator;
 import org.apache.calcite.sql.SqlBinaryOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 

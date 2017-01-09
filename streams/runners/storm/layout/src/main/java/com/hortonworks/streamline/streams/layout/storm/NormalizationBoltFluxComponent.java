@@ -1,10 +1,10 @@
-package org.apache.streamline.streams.layout.storm;
+package com.hortonworks.streamline.streams.layout.storm;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.streamline.streams.layout.component.impl.normalization.NormalizationProcessor;
-import org.apache.streamline.streams.layout.exception.ComponentConfigException;
+import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
+import com.hortonworks.streamline.streams.layout.component.impl.normalization.NormalizationProcessor;
+import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +25,7 @@ public class NormalizationBoltFluxComponent extends AbstractFluxComponent {
     protected void generateComponent() {
         normalizationProcessor = (NormalizationProcessor) conf.get(StormTopologyLayoutConstants.STREAMLINE_COMPONENT_CONF_KEY);
         String boltId = "normalizationBolt" + UUID_FOR_COMPONENTS;
-        String boltClassName = "org.apache.streamline.streams.runtime.storm.bolt.normalization.NormalizationBolt";
+        String boltClassName = "com.hortonworks.streamline.streams.runtime.storm.bolt.normalization.NormalizationBolt";
         List boltConstructorArgs = new ArrayList();
         ObjectMapper mapper = new ObjectMapper();
         String normalizationProcessorJson = null;

@@ -15,15 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.streams.layout.component.impl.normalization;
+package com.hortonworks.streamline.streams.layout.component.impl.normalization;
 
-import org.apache.streamline.common.Schema;
+import com.hortonworks.streamline.common.Schema;
 
 import java.util.List;
 
 /**
  * Design time Normalization processor configuration for each field in schema. It contains {@link Transformer}s, {@link FieldValueGenerator}s and
- * {@link org.apache.streamline.common.Schema.Field}s to be filtered/removed before they are emitted to the next component in topology.
+ * {@link com.hortonworks.streamline.common.Schema.Field}s to be filtered/removed before they are emitted to the next component in topology.
  *
  */
 public class FieldBasedNormalizationConfig extends NormalizationConfig {

@@ -16,18 +16,18 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.rule.condition.expression;
+package com.hortonworks.streamline.streams.runtime.rule.condition.expression;
 
 import com.google.common.base.Joiner;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.streams.layout.component.rule.expression.Condition;
-import org.apache.streamline.streams.layout.component.rule.expression.Expression;
-import org.apache.streamline.streams.layout.component.rule.expression.ExpressionTranslator;
-import org.apache.streamline.streams.layout.component.rule.expression.FunctionExpression;
-import org.apache.streamline.streams.layout.component.rule.expression.GroupBy;
-import org.apache.streamline.streams.layout.component.rule.expression.Having;
-import org.apache.streamline.streams.layout.component.rule.expression.Operator;
-import org.apache.streamline.streams.layout.component.rule.expression.Projection;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Condition;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Expression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.ExpressionTranslator;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.GroupBy;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Having;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Operator;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Projection;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -138,7 +138,7 @@ public class StormSqlExpression extends ExpressionRuntime {
     }
 
     /*
-     * e.g. [CREATE FUNCTION TEST_FN AS 'org.apache.streamline.builtin.TestFn']
+     * e.g. [CREATE FUNCTION TEST_FN AS 'com.hortonworks.streamline.builtin.TestFn']
      */
     public List<String> createFunctions() {
         List<String> result = new ArrayList<>();

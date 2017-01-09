@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.runtime.transform;
+package com.hortonworks.streamline.streams.runtime.transform;
 
-import org.apache.streamline.streams.layout.component.rule.action.transform.InmemoryTransformDataProvider;
-import org.apache.streamline.streams.layout.component.rule.action.transform.TransformDataProvider;
-import org.apache.streamline.streams.runtime.RuntimeService;
+import com.hortonworks.streamline.streams.layout.component.rule.action.transform.InmemoryTransformDataProvider;
+import com.hortonworks.streamline.streams.layout.component.rule.action.transform.TransformDataProvider;
+import com.hortonworks.streamline.streams.runtime.RuntimeService;
 
 /**
  *

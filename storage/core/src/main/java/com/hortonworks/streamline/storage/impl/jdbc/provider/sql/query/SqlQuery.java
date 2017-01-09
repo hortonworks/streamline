@@ -15,10 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.storage.impl.jdbc.provider.sql.query;
+package com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query;
 
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.storage.PrimaryKey;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.storage.PrimaryKey;
 
 import java.sql.PreparedStatement;
 import java.util.List;

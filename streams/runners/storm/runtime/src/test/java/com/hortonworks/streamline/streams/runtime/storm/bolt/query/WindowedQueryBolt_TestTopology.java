@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.runtime.storm.bolt.query;
+package com.hortonworks.streamline.streams.runtime.storm.bolt.query;
 
 import org.apache.storm.Config;
 import org.apache.storm.StormSubmitter;

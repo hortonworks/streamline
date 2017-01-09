@@ -15,10 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.storage.impl.jdbc.provider.mysql.query;
+package com.hortonworks.streamline.storage.impl.jdbc.provider.mysql.query;
 
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.query.AbstractStorableSqlQuery;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.AbstractStorableSqlQuery;
 
 public class MySqlInsertUpdateDuplicate extends AbstractStorableSqlQuery {
 

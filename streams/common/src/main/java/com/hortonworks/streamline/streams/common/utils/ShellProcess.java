@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.streams.common.utils;
+package com.hortonworks.streamline.streams.common.utils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +38,7 @@ public class ShellProcess implements Serializable {
     private ISerializer serializer;
     private Long pid;
     private String componentName;
-    private String serializerClassName = "org.apache.streamline.streams.common.utils.JsonMultilangSerializer";
+    private String serializerClassName = "com.hortonworks.streamline.streams.common.utils.JsonMultilangSerializer";
 
     public ShellProcess(String[] command) {
         this.command = command;

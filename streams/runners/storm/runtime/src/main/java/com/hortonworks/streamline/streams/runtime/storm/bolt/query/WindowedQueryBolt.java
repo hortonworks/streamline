@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.streams.runtime.storm.bolt.query;
+package com.hortonworks.streamline.streams.runtime.storm.bolt.query;
 
 
 import org.apache.storm.task.OutputCollector;
@@ -24,9 +24,9 @@ import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.windowing.TupleWindow;
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.common.StreamlineEventImpl;
-import org.apache.streamline.streams.runtime.storm.bolt.StreamlineWindowedBolt;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.runtime.storm.bolt.StreamlineWindowedBolt;
 
 import java.io.Serializable;
 import java.util.ArrayList;

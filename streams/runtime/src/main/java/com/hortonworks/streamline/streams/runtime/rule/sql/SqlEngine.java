@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.rule.sql;
+package com.hortonworks.streamline.streams.runtime.rule.sql;
 
 
-import org.apache.streamline.streams.runtime.script.engine.ScriptEngine;
+import com.hortonworks.streamline.streams.runtime.script.engine.ScriptEngine;
 import org.apache.storm.sql.StormSql;
 import org.apache.storm.sql.runtime.ChannelContext;
 import org.apache.storm.task.OutputCollector;

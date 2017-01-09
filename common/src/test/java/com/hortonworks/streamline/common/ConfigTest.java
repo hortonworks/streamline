@@ -1,4 +1,4 @@
-package org.apache.streamline.common;
+package com.hortonworks.streamline.common;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;

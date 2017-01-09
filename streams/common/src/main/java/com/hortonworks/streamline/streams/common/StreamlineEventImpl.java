@@ -1,9 +1,9 @@
-package org.apache.streamline.streams.common;
+package com.hortonworks.streamline.streams.common;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
-import org.apache.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.StreamlineEvent;
 
 import java.util.Collections;
 import java.util.HashMap;

@@ -1,9 +1,9 @@
-package org.apache.streamline.streams.service;
+package com.hortonworks.streamline.streams.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.streamline.streams.catalog.processor.CustomProcessorInfo;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.streams.layout.exception.ComponentConfigException;
+import com.hortonworks.streamline.streams.catalog.processor.CustomProcessorInfo;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
 import mockit.Injectable;
 import mockit.Tested;
 import mockit.VerificationsInOrder;

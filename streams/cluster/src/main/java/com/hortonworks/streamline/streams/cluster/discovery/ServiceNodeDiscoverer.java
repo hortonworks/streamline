@@ -1,6 +1,6 @@
-package org.apache.streamline.streams.cluster.discovery;
+package com.hortonworks.streamline.streams.cluster.discovery;
 
-import org.apache.streamline.streams.exception.ConfigException;
+import com.hortonworks.streamline.streams.exception.ConfigException;
 
 import java.util.List;
 import java.util.Map;

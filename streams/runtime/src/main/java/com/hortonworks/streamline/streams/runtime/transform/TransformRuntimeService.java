@@ -16,16 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.runtime.transform;
+package com.hortonworks.streamline.streams.runtime.transform;
 
-import org.apache.streamline.streams.layout.Transform;
-import org.apache.streamline.streams.layout.component.rule.action.transform.AddHeaderTransform;
-import org.apache.streamline.streams.layout.component.rule.action.transform.EnrichmentTransform;
-import org.apache.streamline.streams.layout.component.rule.action.transform.MergeTransform;
-import org.apache.streamline.streams.layout.component.rule.action.transform.ProjectionTransform;
-import org.apache.streamline.streams.layout.component.rule.action.transform.SubstituteTransform;
-import org.apache.streamline.streams.runtime.RuntimeService;
-import org.apache.streamline.streams.runtime.TransformRuntime;
+import com.hortonworks.streamline.streams.layout.Transform;
+import com.hortonworks.streamline.streams.layout.component.rule.action.transform.AddHeaderTransform;
+import com.hortonworks.streamline.streams.layout.component.rule.action.transform.EnrichmentTransform;
+import com.hortonworks.streamline.streams.layout.component.rule.action.transform.MergeTransform;
+import com.hortonworks.streamline.streams.layout.component.rule.action.transform.ProjectionTransform;
+import com.hortonworks.streamline.streams.layout.component.rule.action.transform.SubstituteTransform;
+import com.hortonworks.streamline.streams.runtime.RuntimeService;
+import com.hortonworks.streamline.streams.runtime.TransformRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Service to create {@link org.apache.streamline.streams.runtime.TransformRuntime} instances of a given
+ * Service to create {@link com.hortonworks.streamline.streams.runtime.TransformRuntime} instances of a given
  * {@link Transform} by using respective factory
  */
 public class TransformRuntimeService extends RuntimeService<TransformRuntime, Transform> {

@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.layout.component.impl.splitjoin;
+package com.hortonworks.streamline.streams.layout.component.impl.splitjoin;
 
-import org.apache.streamline.streams.layout.Transform;
-import org.apache.streamline.streams.layout.component.rule.action.Action;
-import org.apache.streamline.streams.layout.component.rule.action.TransformAction;
-import org.apache.streamline.streams.layout.component.rule.action.transform.EnrichmentTransform;
-import org.apache.streamline.streams.layout.component.rule.action.transform.ProjectionTransform;
+import com.hortonworks.streamline.streams.layout.Transform;
+import com.hortonworks.streamline.streams.layout.component.rule.action.Action;
+import com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction;
+import com.hortonworks.streamline.streams.layout.component.rule.action.transform.EnrichmentTransform;
+import com.hortonworks.streamline.streams.layout.component.rule.action.transform.ProjectionTransform;
 
 import java.util.List;
 

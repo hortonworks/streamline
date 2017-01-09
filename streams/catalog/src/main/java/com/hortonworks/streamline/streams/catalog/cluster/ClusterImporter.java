@@ -1,16 +1,16 @@
-package org.apache.streamline.streams.catalog.cluster;
+package com.hortonworks.streamline.streams.catalog.cluster;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.streamline.common.util.ParallelStreamUtil;
-import org.apache.streamline.streams.catalog.Cluster;
-import org.apache.streamline.streams.catalog.Component;
-import org.apache.streamline.streams.catalog.Service;
-import org.apache.streamline.streams.catalog.ServiceConfiguration;
-import org.apache.streamline.streams.catalog.service.EnvironmentService;
-import org.apache.streamline.streams.cluster.discovery.ServiceNodeDiscoverer;
-import org.apache.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
-import org.apache.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
+import com.hortonworks.streamline.common.util.ParallelStreamUtil;
+import com.hortonworks.streamline.streams.catalog.Cluster;
+import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.Service;
+import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
+import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
+import com.hortonworks.streamline.streams.cluster.discovery.ServiceNodeDiscoverer;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

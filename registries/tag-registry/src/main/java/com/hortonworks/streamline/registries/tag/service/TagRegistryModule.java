@@ -1,9 +1,9 @@
-package org.apache.streamline.registries.tag.service;
+package com.hortonworks.streamline.registries.tag.service;
 
-import org.apache.streamline.common.ModuleRegistration;
-import org.apache.streamline.common.util.FileStorage;
-import org.apache.streamline.storage.StorageManager;
-import org.apache.streamline.storage.StorageManagerAware;
+import com.hortonworks.streamline.common.ModuleRegistration;
+import com.hortonworks.streamline.common.util.FileStorage;
+import com.hortonworks.streamline.storage.StorageManager;
+import com.hortonworks.streamline.storage.StorageManagerAware;
 
 import java.util.ArrayList;
 import java.util.List;

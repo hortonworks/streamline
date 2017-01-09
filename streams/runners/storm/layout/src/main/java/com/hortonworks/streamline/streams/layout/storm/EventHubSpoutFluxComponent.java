@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.layout.storm;
+package com.hortonworks.streamline.streams.layout.storm;
 
 import java.util.ArrayList;
 import java.util.List;

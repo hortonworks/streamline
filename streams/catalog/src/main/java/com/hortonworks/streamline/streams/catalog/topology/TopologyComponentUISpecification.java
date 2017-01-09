@@ -1,9 +1,9 @@
-package org.apache.streamline.streams.catalog.topology;
+package com.hortonworks.streamline.streams.catalog.topology;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.streamline.streams.layout.exception.ComponentConfigException;
+import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

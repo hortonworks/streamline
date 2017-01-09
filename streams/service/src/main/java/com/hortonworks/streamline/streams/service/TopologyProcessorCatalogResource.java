@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.service;
+package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
-import org.apache.streamline.common.QueryParam;
-import org.apache.streamline.common.util.WSUtils;
-import org.apache.streamline.streams.catalog.TopologyProcessor;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.util.WSUtils;
+import com.hortonworks.streamline.streams.catalog.TopologyProcessor;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -41,7 +41,7 @@ import java.util.List;
 
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
-import static org.apache.streamline.common.util.WSUtils.buildTopologyIdAndVersionIdAwareQueryParams;
+import static com.hortonworks.streamline.common.util.WSUtils.buildTopologyIdAndVersionIdAwareQueryParams;
 
 /**
  * Processor component within an StreamlineTopology

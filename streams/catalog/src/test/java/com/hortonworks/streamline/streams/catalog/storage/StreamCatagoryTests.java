@@ -1,11 +1,11 @@
-package org.apache.streamline.streams.catalog.storage;
+package com.hortonworks.streamline.streams.catalog.storage;
 
 import com.google.common.collect.Lists;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorableTest;
-import org.apache.streamline.streams.catalog.NotifierInfo;
-import org.apache.streamline.streams.catalog.StreamInfo;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorableTest;
+import com.hortonworks.streamline.streams.catalog.NotifierInfo;
+import com.hortonworks.streamline.streams.catalog.StreamInfo;
 
 import java.util.ArrayList;
 import java.util.HashMap;

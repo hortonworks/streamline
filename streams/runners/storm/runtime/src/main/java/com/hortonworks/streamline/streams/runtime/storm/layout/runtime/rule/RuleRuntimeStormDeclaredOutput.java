@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.storm.layout.runtime.rule;
+package com.hortonworks.streamline.streams.runtime.storm.layout.runtime.rule;
 
 import org.apache.storm.tuple.Fields;
 

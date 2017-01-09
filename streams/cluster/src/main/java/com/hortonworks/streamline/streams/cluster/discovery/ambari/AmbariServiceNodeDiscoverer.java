@@ -1,11 +1,11 @@
-package org.apache.streamline.streams.cluster.discovery.ambari;
+package com.hortonworks.streamline.streams.cluster.discovery.ambari;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import org.apache.streamline.common.JsonClientUtil;
-import org.apache.streamline.common.exception.WrappedWebApplicationException;
-import org.apache.streamline.streams.cluster.discovery.ServiceNodeDiscoverer;
-import org.apache.streamline.streams.exception.ConfigException;
+import com.hortonworks.streamline.common.JsonClientUtil;
+import com.hortonworks.streamline.common.exception.WrappedWebApplicationException;
+import com.hortonworks.streamline.streams.cluster.discovery.ServiceNodeDiscoverer;
+import com.hortonworks.streamline.streams.exception.ConfigException;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.slf4j.Logger;

@@ -1,6 +1,6 @@
-package org.apache.streamline.streams.catalog.service.metadata;
+package com.hortonworks.streamline.streams.catalog.service.metadata;
 
-import org.apache.streamline.streams.catalog.exception.ZookeeperClientException;
+import com.hortonworks.streamline.streams.catalog.exception.ZookeeperClientException;
 
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;

@@ -1,4 +1,4 @@
-package org.apache.streamline.storage.exception;
+package com.hortonworks.streamline.storage.exception;
 
 public class AlreadyExistsException extends StorageException {
 

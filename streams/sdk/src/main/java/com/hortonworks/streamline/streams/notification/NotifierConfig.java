@@ -1,4 +1,4 @@
-package org.apache.streamline.streams.notification;
+package com.hortonworks.streamline.streams.notification;
 
 import java.util.Map;
 import java.util.Properties;

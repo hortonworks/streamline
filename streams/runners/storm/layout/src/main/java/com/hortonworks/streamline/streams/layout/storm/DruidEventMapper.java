@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.layout.storm;
+package com.hortonworks.streamline.streams.layout.storm;
 
 import org.apache.storm.druid.bolt.ITupleDruidEventMapper;
 import org.apache.storm.tuple.ITuple;

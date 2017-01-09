@@ -1,12 +1,12 @@
-package org.apache.streamline.streams.layout.storm;
+package com.hortonworks.streamline.streams.layout.storm;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
-import org.apache.streamline.streams.layout.component.impl.RulesProcessor;
-import org.apache.streamline.streams.layout.component.rule.Rule;
-import org.apache.streamline.streams.layout.component.rule.expression.Window;
+import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
+import com.hortonworks.streamline.streams.layout.component.rule.Rule;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Window;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +29,7 @@ public class WindowRuleBoltFluxComponent extends RuleBoltFluxComponent {
     protected void generateComponent() {
         rulesProcessor = (RulesProcessor) conf.get(StormTopologyLayoutConstants.STREAMLINE_COMPONENT_CONF_KEY);
         String boltId = "windowruleBolt" + UUID_FOR_COMPONENTS;
-        String boltClassName = "org.apache.streamline.streams.runtime.storm.bolt.rules.WindowRulesBolt";
+        String boltClassName = "com.hortonworks.streamline.streams.runtime.storm.bolt.rules.WindowRulesBolt";
         List boltConstructorArgs = new ArrayList();
         ObjectMapper mapper = new ObjectMapper();
         String rulesProcessorJson = null;
@@ -51,7 +51,7 @@ public class WindowRuleBoltFluxComponent extends RuleBoltFluxComponent {
 
     private String addWindowConfig() {
         String windowId = "window" + UUID_FOR_COMPONENTS;
-        String windowClassName = "org.apache.streamline.streams.layout.component.rule.expression.Window";
+        String windowClassName = "com.hortonworks.streamline.streams.layout.component.rule.expression.Window";
         ObjectMapper mapper = new ObjectMapper();
         String windowJson = null;
         try {

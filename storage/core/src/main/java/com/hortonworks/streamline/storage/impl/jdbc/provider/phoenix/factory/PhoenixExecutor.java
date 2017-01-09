@@ -1,20 +1,20 @@
-package org.apache.streamline.storage.impl.jdbc.provider.phoenix.factory;
+package com.hortonworks.streamline.storage.impl.jdbc.provider.phoenix.factory;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.StorableKey;
-import org.apache.streamline.storage.impl.jdbc.config.ExecutionConfig;
-import org.apache.streamline.storage.impl.jdbc.connection.ConnectionBuilder;
-import org.apache.streamline.storage.impl.jdbc.connection.HikariCPConnectionBuilder;
-import org.apache.streamline.storage.impl.jdbc.provider.phoenix.query.PhoenixDeleteQuery;
-import org.apache.streamline.storage.impl.jdbc.provider.phoenix.query.PhoenixSelectQuery;
-import org.apache.streamline.storage.impl.jdbc.provider.phoenix.query.PhoenixSequenceIdQuery;
-import org.apache.streamline.storage.impl.jdbc.provider.phoenix.query.PhoenixUpsertQuery;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.factory.AbstractQueryExecutor;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.query.SqlQuery;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
-import org.apache.streamline.storage.impl.jdbc.util.Util;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorableKey;
+import com.hortonworks.streamline.storage.impl.jdbc.config.ExecutionConfig;
+import com.hortonworks.streamline.storage.impl.jdbc.connection.ConnectionBuilder;
+import com.hortonworks.streamline.storage.impl.jdbc.connection.HikariCPConnectionBuilder;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.phoenix.query.PhoenixDeleteQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.phoenix.query.PhoenixSelectQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.phoenix.query.PhoenixSequenceIdQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.phoenix.query.PhoenixUpsertQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.factory.AbstractQueryExecutor;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
+import com.hortonworks.streamline.storage.impl.jdbc.util.Util;
 import com.zaxxer.hikari.HikariConfig;
 
 import java.util.Collection;

@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.streams.layout.component.impl.model;
+package com.hortonworks.streamline.streams.layout.component.impl.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.apache.streamline.streams.layout.component.StreamlineProcessor;
+import com.hortonworks.streamline.streams.layout.component.StreamlineProcessor;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class ModelProcessor extends StreamlineProcessor {

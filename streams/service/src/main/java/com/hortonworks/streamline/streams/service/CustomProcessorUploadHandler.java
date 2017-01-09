@@ -1,13 +1,13 @@
-package org.apache.streamline.streams.service;
+package com.hortonworks.streamline.streams.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.streamline.common.FileEventHandler;
-import org.apache.streamline.common.util.FileUtil;
-import org.apache.streamline.common.util.ProxyUtil;
-import org.apache.streamline.streams.catalog.processor.CustomProcessorInfo;
-import org.apache.streamline.streams.catalog.service.StreamCatalogService;
-import org.apache.streamline.streams.runtime.CustomProcessorRuntime;
-import org.apache.streamline.streams.layout.exception.ComponentConfigException;
+import com.hortonworks.streamline.common.FileEventHandler;
+import com.hortonworks.streamline.common.util.FileUtil;
+import com.hortonworks.streamline.common.util.ProxyUtil;
+import com.hortonworks.streamline.streams.catalog.processor.CustomProcessorInfo;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.runtime.CustomProcessorRuntime;
+import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.io.FileUtils;

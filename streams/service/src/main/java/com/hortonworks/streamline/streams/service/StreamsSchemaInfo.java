@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.streams.service;
+package com.hortonworks.streamline.streams.service;
 
 import com.google.common.base.Preconditions;
 import com.hortonworks.registries.schemaregistry.SchemaMetadata;

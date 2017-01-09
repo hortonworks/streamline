@@ -16,16 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.layout.component.rule.action.transform;
+package com.hortonworks.streamline.streams.layout.component.rule.action.transform;
 
-import org.apache.streamline.streams.layout.Transform;
+import com.hortonworks.streamline.streams.layout.Transform;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * This class can be used to configure enrichment transform which can be used in any {@link org.apache.streamline.streams.layout.component.rule.action.Action}
+ * This class can be used to configure enrichment transform which can be used in any {@link com.hortonworks.streamline.streams.layout.component.rule.action.Action}
  * of a rule based processor.
  *
  */

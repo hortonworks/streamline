@@ -1,4 +1,4 @@
-package org.apache.streamline.common;
+package com.hortonworks.streamline.common;
 
 /**
  * The components supported by default in Streamline

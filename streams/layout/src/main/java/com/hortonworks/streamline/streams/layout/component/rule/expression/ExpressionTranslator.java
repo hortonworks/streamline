@@ -1,5 +1,5 @@
-package org.apache.streamline.streams.layout.component.rule.expression;
-import org.apache.streamline.common.Schema;
+package com.hortonworks.streamline.streams.layout.component.rule.expression;
+import com.hortonworks.streamline.common.Schema;
 
 import java.util.ArrayList;
 import java.util.Collections;

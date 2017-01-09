@@ -1,7 +1,7 @@
-package org.apache.streamline.streams.layout.storm;
+package com.hortonworks.streamline.streams.layout.storm;
 
-import org.apache.streamline.common.util.ProxyUtil;
-import org.apache.streamline.streams.layout.component.StreamlineComponent;
+import com.hortonworks.streamline.common.util.ProxyUtil;
+import com.hortonworks.streamline.streams.layout.component.StreamlineComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.net.MalformedURLException;

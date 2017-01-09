@@ -1,9 +1,9 @@
-package org.apache.streamline.streams.layout.component;
+package com.hortonworks.streamline.streams.layout.component;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.streamline.common.Config;
+import com.hortonworks.streamline.common.Config;
 
 import java.io.IOException;
 import java.util.Map;

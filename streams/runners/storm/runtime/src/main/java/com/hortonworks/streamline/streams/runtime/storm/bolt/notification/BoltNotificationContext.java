@@ -16,10 +16,10 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.streams.runtime.storm.bolt.notification;
+package com.hortonworks.streamline.streams.runtime.storm.bolt.notification;
 
-import org.apache.streamline.streams.notification.NotifierConfig;
-import org.apache.streamline.streams.notification.common.DefaultNotificationContext;
+import com.hortonworks.streamline.streams.notification.NotifierConfig;
+import com.hortonworks.streamline.streams.notification.common.DefaultNotificationContext;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.tuple.Tuple;
 import org.slf4j.Logger;

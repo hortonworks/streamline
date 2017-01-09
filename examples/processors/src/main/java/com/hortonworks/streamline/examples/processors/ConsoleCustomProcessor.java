@@ -1,10 +1,10 @@
-package org.apache.streamline.examples.processors;
+package com.hortonworks.streamline.examples.processors;
 
-import org.apache.streamline.streams.StreamlineEvent;
-import org.apache.streamline.streams.Result;
-import org.apache.streamline.streams.exception.ConfigException;
-import org.apache.streamline.streams.exception.ProcessingException;
-import org.apache.streamline.streams.runtime.CustomProcessorRuntime;
+import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.Result;
+import com.hortonworks.streamline.streams.exception.ConfigException;
+import com.hortonworks.streamline.streams.exception.ProcessingException;
+import com.hortonworks.streamline.streams.runtime.CustomProcessorRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

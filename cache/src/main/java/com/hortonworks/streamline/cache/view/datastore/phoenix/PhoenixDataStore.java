@@ -16,11 +16,11 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.cache.view.datastore.phoenix;
+package com.hortonworks.streamline.cache.view.datastore.phoenix;
 
-import org.apache.streamline.cache.view.datastore.AbstractDataStore;
-import org.apache.streamline.cache.view.datastore.DataStoreReader;
-import org.apache.streamline.cache.view.datastore.DataStoreWriter;
+import com.hortonworks.streamline.cache.view.datastore.AbstractDataStore;
+import com.hortonworks.streamline.cache.view.datastore.DataStoreReader;
+import com.hortonworks.streamline.cache.view.datastore.DataStoreWriter;
 
 import java.util.Collection;
 import java.util.Map;

@@ -1,6 +1,6 @@
-package org.apache.streamline.streams.metrics.storm.topology;
+package com.hortonworks.streamline.streams.metrics.storm.topology;
 
-import org.apache.streamline.streams.metrics.TimeSeriesQuerier;
+import com.hortonworks.streamline.streams.metrics.TimeSeriesQuerier;
 
 /**
  * Metric name conversion table between Streamline and Storm. It also contains function information for aggregation.

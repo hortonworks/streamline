@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.streamline.streams.runtime.rule.action;
+package com.hortonworks.streamline.streams.runtime.rule.action;
 
 import java.util.Map;
 

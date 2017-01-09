@@ -16,12 +16,12 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.streams.notification.store.hbase.mappers;
+package com.hortonworks.streamline.streams.notification.store.hbase.mappers;
 
 import com.google.common.collect.Lists;
-import org.apache.streamline.common.util.ReflectionHelper;
-import org.apache.streamline.streams.notification.Notification;
-import org.apache.streamline.streams.notification.util.NotificationTestObjectFactory;
+import com.hortonworks.streamline.common.util.ReflectionHelper;
+import com.hortonworks.streamline.streams.notification.Notification;
+import com.hortonworks.streamline.streams.notification.util.NotificationTestObjectFactory;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,8 +31,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.streamline.streams.notification.store.hbase.mappers.AbstractNotificationMapper.CHARSET;
-import static org.apache.streamline.streams.notification.store.hbase.mappers.Mapper.ROWKEY_SEP;
+import static com.hortonworks.streamline.streams.notification.store.hbase.mappers.AbstractNotificationMapper.CHARSET;
+import static com.hortonworks.streamline.streams.notification.store.hbase.mappers.Mapper.ROWKEY_SEP;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

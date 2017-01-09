@@ -1,7 +1,7 @@
-package org.apache.streamline.streams.layout.component.impl;
+package com.hortonworks.streamline.streams.layout.component.impl;
 
-import org.apache.streamline.streams.layout.component.StreamlineSink;
-import org.apache.streamline.streams.layout.component.TopologyDagVisitor;
+import com.hortonworks.streamline.streams.layout.component.StreamlineSink;
+import com.hortonworks.streamline.streams.layout.component.TopologyDagVisitor;
 
 import java.util.Collections;
 import java.util.Map;

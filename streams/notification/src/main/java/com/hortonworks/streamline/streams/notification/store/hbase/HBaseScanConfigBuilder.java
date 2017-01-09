@@ -16,12 +16,12 @@
  *   limitations under the License.
  */
 
-package org.apache.streamline.streams.notification.store.hbase;
+package com.hortonworks.streamline.streams.notification.store.hbase;
 
-import org.apache.streamline.streams.notification.store.Criteria;
-import org.apache.streamline.streams.notification.store.NotificationStoreException;
-import org.apache.streamline.streams.notification.store.hbase.mappers.IndexMapper;
-import org.apache.streamline.streams.notification.store.hbase.mappers.Mapper;
+import com.hortonworks.streamline.streams.notification.store.Criteria;
+import com.hortonworks.streamline.streams.notification.store.NotificationStoreException;
+import com.hortonworks.streamline.streams.notification.store.hbase.mappers.IndexMapper;
+import com.hortonworks.streamline.streams.notification.store.hbase.mappers.Mapper;
 import org.apache.hadoop.hbase.filter.CompareFilter;
 import org.apache.hadoop.hbase.filter.SingleColumnValueFilter;
 import org.slf4j.Logger;

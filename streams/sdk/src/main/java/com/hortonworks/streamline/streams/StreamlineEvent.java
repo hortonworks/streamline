@@ -1,4 +1,4 @@
-package org.apache.streamline.streams;
+package com.hortonworks.streamline.streams;
 
 import java.util.Map;
 
@@ -14,7 +14,7 @@ public interface StreamlineEvent  extends Map<String,Object> {
 
     String STREAMLINE_EVENT = "streamline-event"; // do not use . or _ in key names
 
-    String PRIMITIVE_PAYLOAD_FIELD = "org.apache.streamline.streams.payload.primitive.field";
+    String PRIMITIVE_PAYLOAD_FIELD = "com.hortonworks.streamline.streams.payload.primitive.field";
 
     String NESTED_FIELD_SPLIT_REGEX = "\\.";
 
