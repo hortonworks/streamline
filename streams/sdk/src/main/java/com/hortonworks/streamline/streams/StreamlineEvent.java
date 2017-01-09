@@ -83,6 +83,15 @@ public interface StreamlineEvent  extends Map<String,Object> {
     StreamlineEvent addFieldsAndValues(Map<String, Object> fieldsAndValues);
 
     /**
+     * Returns a new Streamline event with the given key-value pair added to the existing fieldsAndValues.
+     *
+     * @param key the key
+     * @param value the value
+     * @return the new StreamlineEvent
+     */
+    StreamlineEvent addFieldAndValue(String key, Object value);
+
+    /**
      * Returns a new Streamline event with the given headers added to the existing headers.
      * All the other fields are copied from this event.
      *
@@ -97,4 +106,49 @@ public interface StreamlineEvent  extends Map<String,Object> {
      * @return
      */
     byte[] getBytes();
+
+    /*
+     * Below methods are overridden to include the javadocs and the @deprecated annotation similar to the guava's immutable map.
+     */
+
+    /**
+     * Guaranteed to throw an exception and leave the map unmodified.
+     *
+     * @throws UnsupportedOperationException always
+     * @deprecated Unsupported operation.
+     */
+    @Deprecated
+    @Override
+    Object put(String k, Object v);
+
+    /**
+     * Guaranteed to throw an exception and leave the map unmodified.
+     *
+     * @throws UnsupportedOperationException always
+     * @deprecated Unsupported operation.
+     */
+    @Deprecated
+    @Override
+    Object remove(Object o);
+
+    /**
+     * Guaranteed to throw an exception and leave the map unmodified.
+     *
+     * @throws UnsupportedOperationException always
+     * @deprecated Unsupported operation.
+     */
+    @Deprecated
+    @Override
+    void putAll(Map<? extends String, ? extends Object> map);
+
+    /**
+     * Guaranteed to throw an exception and leave the map unmodified.
+     *
+     * @throws UnsupportedOperationException always
+     * @deprecated Unsupported operation.
+     */
+    @Deprecated
+    @Override
+    void clear();
+
 }

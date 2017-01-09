@@ -20,6 +20,7 @@ package com.hortonworks.streamline.streams.layout.storm;
 
 import org.apache.storm.druid.bolt.ITupleDruidEventMapper;
 import org.apache.storm.tuple.ITuple;
+import org.apache.streamline.streams.StreamlineEvent;
 
 import java.util.Map;
 
@@ -38,8 +39,7 @@ public final class DruidEventMapper implements ITupleDruidEventMapper<Map<String
 
     @Override
     public Map<String, Object> getEvent(ITuple tuple) {
-        Map<String, Object> event = (Map<String, Object>) tuple.getValueByField(eventFiledName);
-        event.put(DruidBeamFactoryImpl.PROCESSING_TIME, System.currentTimeMillis());
-        return event;
+        StreamlineEvent event = (StreamlineEvent) tuple.getValueByField(eventFiledName);
+        return event.addFieldAndValue(DruidBeamFactoryImpl.PROCESSING_TIME, System.currentTimeMillis());
     }
 }

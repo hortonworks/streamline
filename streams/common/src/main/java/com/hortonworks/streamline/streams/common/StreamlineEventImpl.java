@@ -3,28 +3,37 @@ package com.hortonworks.streamline.streams.common;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.ForwardingMap;
+import com.google.common.collect.ImmutableMap;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
  * A default implementation of StreamlineEvent.
  */
-public class StreamlineEventImpl  extends HashMap<String,Object> implements StreamlineEvent {
+public final class StreamlineEventImpl extends ForwardingMap<String, Object> implements StreamlineEvent {
     // Default value chosen to be blank and not the default used in storm since wanted to keep it independent of storm.
     public final static String DEFAULT_SOURCE_STREAM = "default";
     // special event to trigger evaluation of group by
-    public static final StreamlineEvent GROUP_BY_TRIGGER_EVENT = new StreamlineEventImpl(null, null);
+    public static final StreamlineEvent GROUP_BY_TRIGGER_EVENT = new StreamlineEventImpl(Collections.emptyMap(), "");
 
     private final Map<String, Object> header;
     private final String sourceStream;
     private final Map<String, Object> auxiliaryFieldsAndValues;
     private final String dataSourceId;
     private final String id;
+    private final ImmutableMap<String, Object> delegate;
+
+    @Override
+    protected Map<String, Object> delegate() {
+        return delegate;
+    }
 
     /**
      * Creates an StreamlineEvent with given keyValues, dataSourceId
@@ -48,13 +57,13 @@ public class StreamlineEventImpl  extends HashMap<String,Object> implements Stre
         this(keyValues, dataSourceId, UUID.randomUUID().toString(), header, DEFAULT_SOURCE_STREAM);
     }
 
+
     /**
      * Creates an StreamlineEvent with given keyValues, dataSourceId, id and header.
      */
     public StreamlineEventImpl(Map<String, Object> keyValues, String dataSourceId, String id, Map<String, Object> header) {
         this(keyValues, dataSourceId, id, header, DEFAULT_SOURCE_STREAM);
     }
-
 
     /**
      * Creates an StreamlineEvent with given keyValues, dataSourceId, id and header and sourceStream.
@@ -75,25 +84,34 @@ public class StreamlineEventImpl  extends HashMap<String,Object> implements Stre
      * Creates an StreamlineEvent with given keyValues, dataSourceId, id, header and sourceStream.
      */
     public StreamlineEventImpl(Map<String, Object> keyValues, String dataSourceId, String id, Map<String, Object> header, String sourceStream, Map<String, Object> auxiliaryFieldsAndValues) {
-        super();
-        if(keyValues!=null)
-            putAll(keyValues);
+        this.delegate = ImmutableMap.<String, Object>builder().putAll(keyValues).build();
         this.dataSourceId = dataSourceId;
         this.id = id;
         this.header = header;
         this.sourceStream = sourceStream;
-        this.auxiliaryFieldsAndValues = (auxiliaryFieldsAndValues != null ? new HashMap<>(auxiliaryFieldsAndValues) : new HashMap<String, Object>());
+        this.auxiliaryFieldsAndValues = auxiliaryFieldsAndValues != null ? new HashMap<>(auxiliaryFieldsAndValues) : new HashMap<>();
     }
 
     public StreamlineEventImpl(StreamlineEventImpl other) {
-        super(other);
         this.header = other.header;
         this.sourceStream = other.sourceStream;
-        this.auxiliaryFieldsAndValues = new HashMap<String,Object>(other.auxiliaryFieldsAndValues);
+        this.auxiliaryFieldsAndValues = new HashMap<>(other.auxiliaryFieldsAndValues);
         this.dataSourceId = other.dataSourceId;
         this.id = other.id;
+        this.delegate = ImmutableMap.copyOf(other);
     }
 
+    /*
+     * Creates a copy of 'other' but with the given keyValues.
+     */
+    private StreamlineEventImpl(StreamlineEventImpl other, ImmutableMap<String, Object> keyValues) {
+        this.header = other.header;
+        this.sourceStream = other.sourceStream;
+        this.auxiliaryFieldsAndValues = new HashMap<>(other.auxiliaryFieldsAndValues);
+        this.dataSourceId = other.dataSourceId;
+        this.id = other.id;
+        this.delegate = ImmutableMap.copyOf(keyValues);
+    }
 
     @Override
     public Map<String, Object> getAuxiliaryFieldsAndValues() {
@@ -131,6 +149,7 @@ public class StreamlineEventImpl  extends HashMap<String,Object> implements Stre
         return sourceStream;
     }
 
+
     /**
      * Returns a new Streamline event with the given fieldsAndValues added to the existing fieldsAndValues
      *
@@ -139,11 +158,16 @@ public class StreamlineEventImpl  extends HashMap<String,Object> implements Stre
      */
     @Override
     public StreamlineEvent addFieldsAndValues(Map<String, Object> fieldsAndValues) {
-        StreamlineEvent result = new StreamlineEventImpl(this);
-        result.putAll(fieldsAndValues);
-        return result;
+        Objects.requireNonNull(fieldsAndValues, "keyValues is null");
+        ImmutableMap<String, Object> kv = ImmutableMap.<String, Object>builder()
+                .putAll(delegate).putAll(fieldsAndValues).build();
+        return new StreamlineEventImpl(this, kv);
     }
 
+    @Override
+    public StreamlineEvent addFieldAndValue(String key, Object value) {
+        return addFieldsAndValues(Collections.singletonMap(key, value));
+    }
 
     /**
      * Returns a new Streamline event with the given headers added to the existing headers.
@@ -182,6 +206,35 @@ public class StreamlineEventImpl  extends HashMap<String,Object> implements Stre
     public int hashCode() {
         return id.hashCode();
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public final Object put(String k, Object v) {
+        return super.put(k, v);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public final Object remove(Object o) {
+        return super.remove(o);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public final void putAll(Map<? extends String, ? extends Object> map) {
+        super.putAll(map);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public final void clear() {
+        super.clear();
+    }
+
 
     @Override
     public String toString() {
