@@ -18,9 +18,11 @@
 package org.apache.streamline.common;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.DatabindContext;
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.type.TypeFactory;
@@ -291,11 +293,17 @@ public class Schema implements Serializable {
     /**
      * A composite type for representing nested types.
      */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class NestedField extends Field {
+        private String namespace;
         private List<Field> fields;
 
         public static NestedField of(String name, List<Field> fields) {
             return new NestedField(name, fields);
+        }
+
+        public static NestedField of(String name, String namespace,  Field... fields) {
+            return new NestedField(name, namespace, Arrays.asList(fields), false);
         }
 
         public static NestedField of(String name, Field... fields) {
@@ -306,17 +314,27 @@ public class Schema implements Serializable {
             return new NestedField(name, fields, true);
         }
 
+        public static NestedField optional(String name, String namespace, Field... fields) {
+            return new NestedField(name, namespace, Arrays.asList(fields), true);
+        }
+
         public static NestedField optional(String name, Field... fields) {
             return new NestedField(name, Arrays.asList(fields), true);
         }
 
         private NestedField() {}
+
         private NestedField(String name, List<Field> fields) {
             this(name, fields, false);
         }
 
         private NestedField(String name, List<Field> fields, boolean optional) {
+            this(name, null, fields, optional);
+        }
+
+        private NestedField(String name, String namespace, List<Field> fields, boolean optional) {
             super(name, Type.NESTED, optional);
+            this.namespace = namespace;
             this.fields = ImmutableList.copyOf(fields);
         }
 
@@ -333,12 +351,16 @@ public class Schema implements Serializable {
             return fields;
         }
 
+        public String getNamespace() {
+            return namespace;
+        }
+
         @Override
         public String toString() {
             return "NestedField{" +
-                    "name='" + name + '\'' +
-                    "fields=" + fields +
-                    "} ";
+                    "namespace='" + namespace + '\'' +
+                    ", fields=" + fields +
+                    '}' + super.toString();
         }
 
         @Override
@@ -349,13 +371,14 @@ public class Schema implements Serializable {
 
             NestedField that = (NestedField) o;
 
-            return !(fields != null ? !fields.equals(that.fields) : that.fields != null);
-
+            if (namespace != null ? !namespace.equals(that.namespace) : that.namespace != null) return false;
+            return fields != null ? fields.equals(that.fields) : that.fields == null;
         }
 
         @Override
         public int hashCode() {
             int result = super.hashCode();
+            result = 31 * result + (namespace != null ? namespace.hashCode() : 0);
             result = 31 * result + (fields != null ? fields.hashCode() : 0);
             return result;
         }
