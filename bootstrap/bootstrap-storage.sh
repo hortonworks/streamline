@@ -24,7 +24,10 @@ else
 fi
 
 SCRIPT_RUNNER_MAIN_CLASS=com.hortonworks.streamline.storage.tool.SQLScriptRunner
-CLASSPATH=${BOOTSTRAP_DIR}/lib/storage-tool-0.1.0-SNAPSHOT.jar:
+for file in "${BOOTSTRAP_DIR}"/lib/*.jar;
+do
+    CLASSPATH="$CLASSPATH":"$file"
+done
 
 echo "Using Configuration file: ${CONFIG_FILE_PATH}"
 
