@@ -96,7 +96,7 @@ class TopologyItems extends Component {
         this.props.topologyAction(eventKey, this.streamRef.dataset.id)
     }
     streamBoxClick = (id,event) => {
-      if(event.target.nodeName !== 'I'){
+      if((event.target.nodeName !== 'BUTTON' && event.target.nodeName !== 'I' && event.target.nodeName !== 'A')|| event.target.title === "Edit"){
         this.context.router.push('applications/'+id+'/view');
       }
     }
@@ -119,7 +119,8 @@ class TopologyItems extends Component {
             graphVal += d[Object.keys(d)[0]];
         })
         const unitLeft = _.slice(latencyWrap, 0, latencyWrap.length/2);
-        const unitRight = _.slice(latencyWrap, latencyWrap.length/2 , latencyWrap.length)
+        const unitRight = _.slice(latencyWrap, latencyWrap.length/2 , latencyWrap.length);
+        const ellipseIcon = <i className="fa fa-ellipsis-v"></i>;
 
         return (
             <div className="col-sm-4">
@@ -149,21 +150,32 @@ class TopologyItems extends Component {
                     </div>
                     <div className="pull-right">
                         <div className="stream-actions">
-                          <a href="javascript:void(0)" title="Refresh" onClick={this.onActionClick.bind(this ,"refresh/"+topology.id)}>
-                            <i className="fa fa-refresh" aria-hidden="true"></i>
-                          </a>
-                          <Link to={`applications/${topology.id}/edit`} title="Edit">
-                            <i className="fa fa-pencil" aria-hidden="true"></i>
-                          </Link>
-                          <a href="javascript:void(0)" title="Clone" onClick={this.onActionClick.bind(this ,"clone/"+topology.id)}>
-                            <i className="fa fa-clone" aria-hidden="true"></i>
-                          </a>
-                          <a href="javascript:void(0)" title="Export" onClick={this.onActionClick.bind(this ,"export/"+topology.id)}>
-                            <i className="fa fa-share-square-o" aria-hidden="true"></i>
-                          </a>
-                          <a href="javascript:void(0)" title="Delete" className="close" onClick={this.onActionClick.bind(this ,"delete/"+topology.id)}>
-                            <i className="fa fa-times-circle" aria-hidden="true"></i>
-                          </a>
+                          <DropdownButton title={ellipseIcon}
+                              id="actionDropdown"
+                              className="dropdown-toggle"
+                              noCaret
+                              bsStyle="link"
+                            >
+                                <MenuItem title="Refresh" onClick={this.onActionClick.bind(this ,"refresh/"+topology.id)}>
+                                    <i className="fa fa-refresh"></i>
+                                    &nbsp;Refresh
+                                </MenuItem>
+                                <MenuItem title="Edit" onClick={this.onActionClick.bind(this ,"edit/"+topology.id)}>
+                                    <i className="fa fa-pencil"></i>
+                                    &nbsp;Edit
+                                </MenuItem>
+                                <MenuItem title="Clone" onClick={this.onActionClick.bind(this ,"clone/"+topology.id)}>
+                                    <i className="fa fa-clone"></i>
+                                    &nbsp;Clone
+                                </MenuItem>
+                                <MenuItem title="Export" onClick={this.onActionClick.bind(this ,"export/"+topology.id)}>
+                                    <i className="fa fa-share-square-o"></i>
+                                    &nbsp;Export
+                                </MenuItem>
+                            </DropdownButton>
+                            <a href="javascript:void(0)" title="Delete" className="close" onClick={this.onActionClick.bind(this ,"delete/"+topology.id)}>
+                              <i className="fa fa-times-circle"></i>
+                            </a>
                         </div>
                     </div>
                 </div>

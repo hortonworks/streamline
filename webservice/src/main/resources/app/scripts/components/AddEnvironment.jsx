@@ -13,10 +13,10 @@ const ItemsMapping = (props) => {
     let name = item.name.replace('_',' ');
     return(
       <li>
-        <img onClick={itemClicked}
+        <div><img onClick={itemClicked}
           data-id={`${item.clusterId}@${item.name}`}
           className=''
-          src={`styles/img/icon-${item.name.toLowerCase()}.png`}/>
+          src={`styles/img/icon-${item.name.toLowerCase()}.png`}/></div>
           {name}
       </li>
     )

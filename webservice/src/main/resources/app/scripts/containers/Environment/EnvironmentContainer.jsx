@@ -149,7 +149,8 @@ class EnvironmentContainer extends Component{
       customMapData : [],
       namespaceIdToEdit: null,
       refIdArr: [],
-      loader: false
+      loader: false,
+      checkServices : false
     }
     this.fetchData();
   }
@@ -181,6 +182,7 @@ class EnvironmentContainer extends Component{
 
     Promise.all(promiseArr)
     .then(result => {
+      let serviceLen = 0, serviceFlag=false;
       // call for get All cluster Name
       if (result[0].responseMessage !== undefined) {
           this.setState({fetchLoader : false, namespaceIdToEdit: null});
@@ -188,6 +190,7 @@ class EnvironmentContainer extends Component{
               <CommonNotification flag="error" content={result[0].responseMessage}/>, '', toastOpt)
       }else{
         const entities = result[0].entities;
+        serviceLen = entities.length;
         entities.map(x => {
           if(obj[Number(x.cluster.id)] === undefined){
             obj[Number(x.cluster.id)] = x.cluster.name;
@@ -201,7 +204,10 @@ class EnvironmentContainer extends Component{
       }else{
         const resultSet = result[1].entities;
         const mappingList = this.customMapping(resultSet);
-        this.setState({fetchLoader : false,entities: mappingList,pageIndex:0 ,clusterName : obj, namespaceIdToEdit: null});
+        if(resultSet.length === 0 && serviceLen !== 0){
+          serviceFlag = true;
+        }
+        this.setState({fetchLoader : false,entities: mappingList,pageIndex:0 ,clusterName : obj, namespaceIdToEdit: null,checkServices:serviceFlag});
       }
 
     }).catch((err) => {
@@ -349,7 +355,7 @@ class EnvironmentContainer extends Component{
   }
 
   render(){
-    const {entities,pageSize,pageIndex,fetchLoader,clusterName, namespaceIdToEdit,refIdArr,loader} = this.state;
+    const {entities,pageSize,pageIndex,fetchLoader,clusterName, namespaceIdToEdit,refIdArr,loader,checkServices} = this.state;
     const {routes} = this.props;
     const splitData = _.chunk(entities,pageSize) || [];
     const modelTitle = <span>{namespaceIdToEdit === null ? "New " : "Edit "   }Environment{/* <i className="fa fa-info-circle"></i>*/}</span>
@@ -372,6 +378,7 @@ class EnvironmentContainer extends Component{
               :
                 entities.length === 0
                 ? <NoData
+                    serviceFlag={checkServices}
                     imgName={"environments"}
                 />
               : splitData[pageIndex].map((nameSpaceList,i) => {

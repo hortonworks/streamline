@@ -347,7 +347,19 @@ const TopologyREST = {
         .then( (response) => {
             return response.json();
           })
-    }
+    },
+createSchema(options) {
+        options = options || {};
+        options.method = options.method || 'POST';
+        options.headers = options.headers || {
+          'Content-Type' : 'application/json',
+          'Accept' : 'application/json'
+        };
+        return fetch('/api/v1/schemas', options)
+        .then( (response) => {
+          return response.json();
+        })
+  }
 }
 
 export default TopologyREST

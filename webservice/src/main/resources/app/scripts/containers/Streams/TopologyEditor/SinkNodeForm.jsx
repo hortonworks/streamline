@@ -93,6 +93,7 @@ export default class SinkNodeForm extends Component {
                 }
                 stateObj.formData = this.nodeData.config.properties;
                 stateObj.description = this.nodeData.description;
+                stateObj.formData.nodeType = this.props.nodeData.parentType;
                 stateObj.fetchLoader = false;
                 this.setState(stateObj, () => {
                   if(stateObj.formData.clusters !== undefined){
@@ -203,11 +204,28 @@ export default class SinkNodeForm extends Component {
         let {topologyId, versionId, nodeType, nodeData} = this.props;
         let nodeId = this.nodeData.id;
         let data = this.refs.Form.state.FormData;
+        delete data.nodeType;
         this.nodeData.config.properties = data;
         let oldName = this.nodeData.name;
         this.nodeData.name = name;
         this.nodeData.description = this.state.description;
-        let promiseArr = [TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)})];
+        const schemaData = {
+  				schemaMetadata: {
+  					type: "avro",
+  					schemaGroup: 'Kafka',
+  					name: data.topic.indexOf(":v") === -1 ? data.topic+":v" : data.topic,
+  					description: "auto_description",
+  					compatibility: "BACKWARD"
+  				},
+  				schemaVersion: {
+            description : 'auto_description',
+            schemaText : JSON.stringify(this.state.streamObj.fields)
+  				}
+        }
+        let promiseArr = [
+          TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)}),
+          TopologyREST.createSchema({body : JSON.stringify(schemaData)})
+        ];
         if(this.allSourceChildNodeData && this.allSourceChildNodeData.length > 0){
             this.allSourceChildNodeData.map((childData)=>{
                 let child = childData;

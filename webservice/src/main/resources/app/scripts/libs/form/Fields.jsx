@@ -356,8 +356,9 @@ export class creatableField extends BaseField {
     handleChange = (val) => {
         this.props.data[this.props.value] = val.value;
         const {Form} = this.context;
+        const nodeType = this.props.data.nodeType !== undefined ? this.props.data.nodeType : '';
         Form.setState(Form.state,()=>{
-          if(this.validate() && (this.props.fieldJson.hint !== undefined && this.props.fieldJson.hint.toLowerCase().indexOf("schema") !== -1)){
+          if(this.validate() && (this.props.fieldJson.hint !== undefined && this.props.fieldJson.hint.toLowerCase().indexOf("schema") !== -1 && nodeType.toLowerCase() !== "sink")){
             this.getSchema(this.props.data[this.props.value]);
           }
         });

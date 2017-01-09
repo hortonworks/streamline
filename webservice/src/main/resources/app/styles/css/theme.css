@@ -496,14 +496,15 @@ label {
         background-color: #feba33;
 }
 .stream-box .stream-head .stream-actions a {
-  margin-left:10px;
-  color: #838383;
+  /*margin-left:10px;
+  color: #838383;*/
 }
 .stream-box .stream-head .stream-actions a.close{
   position: absolute;
   top: -6px;
   right: -8px;
   font-size: 20px;
+  display: none;
 }
 .actionDropdown > i {
   font-size: 16px;
@@ -517,10 +518,10 @@ label {
     padding: 0px 7.5px;
     position: relative;
 }
-.stream-actions{
-  display: none;
+.stream-actions > .dropdown ul.dropdown-menu{
+  left : -116px;
 }
-.stream-box:hover .stream-actions{
+.stream-box:hover .stream-actions a.close{
   display: block;
 }
 .stream-box:hover .stream-components{
@@ -1471,7 +1472,7 @@ span.version{
   width: 56px;
 }
 .service-components > li > img,
-.select-env-service > li > img,
+.select-env-service > li > div > img,
 .environment-components > li > img {
   display: block;
   padding: 8px;
@@ -1482,12 +1483,27 @@ span.version{
   -webkit-filter: grayscale(100%);
   filter: grayscale(100%);
 }
+.select-env-service > li > div > img{
+  max-width: 100%;
+  margin-bottom: 0;
+}
+.select-env-service > li > div{
+  -webkit-filter: none;
+  filter: none;
+}
 .service-components > li:hover > img,
-.select-env-service > li:hover > img,
 .environment-components > li:hover > img {
   border-color: #1191c2;
   -webkit-filter: none;
   filter: none;
+}
+.select-env-service > li:hover > div > img{
+  -webkit-filter: grayscale(100%);
+  filter: grayscale(100%);
+}
+.select-env-service > li:hover > div{
+  border-radius: 8px;
+  border:1px solid #1191c2;
 }
 .service-loader {
   padding: 15px 0px 30px;
