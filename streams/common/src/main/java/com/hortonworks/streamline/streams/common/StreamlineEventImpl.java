@@ -211,28 +211,28 @@ public final class StreamlineEventImpl extends ForwardingMap<String, Object> imp
      * {@inheritDoc}
      */
     public final Object put(String k, Object v) {
-        return super.put(k, v);
+        return StreamlineEvent.super.put(k, v);
     }
 
     /**
      * {@inheritDoc}
      */
     public final Object remove(Object o) {
-        return super.remove(o);
+        return StreamlineEvent.super.remove(o);
     }
 
     /**
      * {@inheritDoc}
      */
     public final void putAll(Map<? extends String, ? extends Object> map) {
-        super.putAll(map);
+        StreamlineEvent.super.putAll(map);
     }
 
     /**
      * {@inheritDoc}
      */
     public final void clear() {
-        super.clear();
+        StreamlineEvent.super.clear();
     }
 
 

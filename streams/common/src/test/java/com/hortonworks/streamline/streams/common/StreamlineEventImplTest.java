@@ -4,7 +4,9 @@ import com.hortonworks.streamline.streams.StreamlineEvent;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
@@ -89,5 +91,54 @@ public class StreamlineEventImplTest {
         StreamlineEvent event2 = new StreamlineEventImpl(map, StringUtils.EMPTY, event1.getId());
 
         assertEquals(event1.hashCode(), event2.hashCode());
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testPut() throws Exception {
+        Map<String, Object> map = new HashMap<>();
+        map.put("foo", "bar");
+
+        StreamlineEvent event = new StreamlineEventImpl(map, StringUtils.EMPTY);
+        event.put("key", "val");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testClear() throws Exception {
+        Map<String, Object> map = new HashMap<>();
+        map.put("foo", "bar");
+
+        StreamlineEvent event = new StreamlineEventImpl(map, StringUtils.EMPTY);
+        event.clear();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testPutAll() throws Exception {
+        Map<String, Object> map = new HashMap<>();
+        map.put("foo", "bar");
+
+        StreamlineEvent event = new StreamlineEventImpl(Collections.emptyMap(), StringUtils.EMPTY);
+        event.putAll(map);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testRemove() throws Exception {
+        Map<String, Object> map = new HashMap<>();
+        map.put("foo", "bar");
+
+        StreamlineEvent event = new StreamlineEventImpl(Collections.emptyMap(), StringUtils.EMPTY);
+        event.remove("foo");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testRemoveIterator() throws Exception {
+        Map<String, Object> map = new HashMap<>();
+        map.put("foo", "bar");
+
+        StreamlineEvent event = new StreamlineEventImpl(map, StringUtils.EMPTY);
+        Iterator<Map.Entry<String, Object>> it = event.entrySet().iterator();
+        while(it.hasNext()) {
+            it.next();
+            it.remove();
+        }
     }
 }

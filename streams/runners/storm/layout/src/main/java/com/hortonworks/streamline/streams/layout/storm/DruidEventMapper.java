@@ -18,9 +18,9 @@
  */
 package com.hortonworks.streamline.streams.layout.storm;
 
+import com.hortonworks.streamline.streams.StreamlineEvent;
 import org.apache.storm.druid.bolt.ITupleDruidEventMapper;
 import org.apache.storm.tuple.ITuple;
-import org.apache.streamline.streams.StreamlineEvent;
 
 import java.util.Map;
 

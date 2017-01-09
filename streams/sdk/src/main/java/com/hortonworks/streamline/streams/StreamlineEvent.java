@@ -119,7 +119,9 @@ public interface StreamlineEvent  extends Map<String,Object> {
      */
     @Deprecated
     @Override
-    Object put(String k, Object v);
+    default Object put(String k, Object v) {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Guaranteed to throw an exception and leave the map unmodified.
@@ -129,7 +131,9 @@ public interface StreamlineEvent  extends Map<String,Object> {
      */
     @Deprecated
     @Override
-    Object remove(Object o);
+    default Object remove(Object o) {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Guaranteed to throw an exception and leave the map unmodified.
@@ -139,7 +143,9 @@ public interface StreamlineEvent  extends Map<String,Object> {
      */
     @Deprecated
     @Override
-    void putAll(Map<? extends String, ? extends Object> map);
+    default void putAll(Map<? extends String, ? extends Object> map) {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Guaranteed to throw an exception and leave the map unmodified.
@@ -149,6 +155,8 @@ public interface StreamlineEvent  extends Map<String,Object> {
      */
     @Deprecated
     @Override
-    void clear();
+    default void clear() {
+        throw new UnsupportedOperationException();
+    }
 
 }
