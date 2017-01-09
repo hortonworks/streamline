@@ -57,8 +57,7 @@ STREAMLINE_START_CMD="$STREAMLINE_HOME/bin/streamline-server-start.sh $STREAMLIN
 
 #Name of PID file
 PID_FILE="$PID_DIR/$APP_NAME.pid"
-#Name of LOG/OUT/ERR file
-OUT_FILE="$LOG_DIR/$APP_NAME.out"
+#Name of ERR file
 ERR_FILE="$LOG_DIR/$APP_NAME.err"
 
 
@@ -93,7 +92,7 @@ function streamlineStart {
    printf "Starting Streamline "
 
    rm -f $PID_FILE
-   su $STREAMLINE_USER -c "nohup $STREAMLINE_START_CMD >>$OUT_FILE 2>>$ERR_FILE & echo \$! > $PID_FILE"
+   su $STREAMLINE_USER -c "nohup $STREAMLINE_START_CMD >>/dev/null 2>>$ERR_FILE & echo \$! > $PID_FILE"
 
    getPID
    streamlineIsRunning $PID
@@ -116,7 +115,7 @@ function streamlineStop {
    fi
 
    printf "Stopping Streamline [$PID] "
-   streamlineKill $PID >>$OUT_FILE 2>>$ERR_FILE
+   streamlineKill $PID >>/dev/null 2>>$ERR_FILE
 
    if [ $? -ne 0 ]; then
      printf "failed. \n"
