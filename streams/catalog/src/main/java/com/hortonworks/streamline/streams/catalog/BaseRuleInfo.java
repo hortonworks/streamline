@@ -1,9 +1,9 @@
-package org.apache.streamline.streams.catalog;
+package com.hortonworks.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.streamline.storage.catalog.AbstractStorable;
-import org.apache.streamline.streams.layout.component.rule.Rule;
+import com.hortonworks.streamline.storage.catalog.AbstractStorable;
+import com.hortonworks.streamline.streams.layout.component.rule.Rule;
 
 import java.io.IOException;
 
