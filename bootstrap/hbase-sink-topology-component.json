@@ -37,9 +37,9 @@
         "uiName": "Batch Size",
         "fieldName": "batchSize",
         "isOptional": true,
-        "tooltip": "Number of records in the batch to trigger flushing",
+        "tooltip": "Number of records in the batch to trigger flushing. Note that every batch needs to be full before it can be flushed as tick tuple is not supported currently due to the fact that all bolts in topology receive a tick tuple if enabled",
         "type": "number",
-        "defaultValue": 15000
+        "defaultValue": 100
       },
       {
         "uiName": "Parallelism",

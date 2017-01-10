@@ -20,8 +20,7 @@ public class ComponentTypes {
     public static final String OPENTSDB = "OPENTSDB";
     public static final String HBASE = "HBASE";
     public static final String HDFS = "HDFS";
-    public static final String HDFS_SOURCE = "HDFS-SOURCE";
     public static final String NOTIFICATION = "NOTIFICATION";
-    public static final String PMML_MODEL = "PMML_MODEL";
+    public static final String PMML = "PMML";
     public static final String MULTILANG = "MULTILANG";
 }

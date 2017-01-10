@@ -1,7 +1,7 @@
 {
 	"type": "PROCESSOR",
-	"name": "PMML Model Evaluation Bolt",
-	"subType": "PMML_MODEL",
+	"name": "PMML Model Evaluator",
+	"subType": "PMML",
 	"builtin": true,
 	"streamingEngine": "STORM",
 	"transformationClass": "com.hortonworks.streamline.streams.layout.storm.MLModelEvaluationFluxComponent",
