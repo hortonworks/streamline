@@ -44,6 +44,11 @@ public final class TopologyLayoutConstants {
     public final static String JSON_KEY_COUNT_POLICY_VALUE = "countPolicyValue";
     public final static String JSON_KEY_ROTATION_POLICY_IMPL =
             "rotationPolicyImpl";
+    public final static String JSON_KEY_ROTATION_POLICY = "rotationPolicy";
+    public final static String JSON_KEY_TIME_BASED_ROTATION = "timeBasedRotation";
+    public final static String JSON_KEY_SIZE_BASED_ROTATION = "sizeBasedRotation";
+    public final static String JSON_KEY_ROTATION_SIZE = "rotationSize";
+    public final static String JSON_KEY_ROTATION_SIZE_UNIT = "rotationSizeUnit";
     public final static String JSON_KEY_ROTATION_INTERVAL = "rotationInterval";
     public final static String JSON_KEY_ROTATION_INTERVAL_UNIT = "rotationIntervalUnit";
     public final static String JSON_KEY_ROTATION_ACTIONS = "rotationActions";

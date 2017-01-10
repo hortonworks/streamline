@@ -5,6 +5,7 @@ import com.hortonworks.streamline.streams.layout.exception.ComponentConfigExcept
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Implementation for HdfsBolt
@@ -94,17 +95,26 @@ public class HdfsBoltFluxComponent extends AbstractFluxComponent {
     private String addRotationPolicyComponent () {
         String rotationPolicyComponentId = "rotationPolicy" +
                 UUID_FOR_COMPONENTS;
-        // currently only TimedRotationPolicy is supported. Add check in
-        // validation
-        String rotationPolicyClassName = "org.apache.storm.hdfs.bolt.rotation" +
-                ".TimedRotationPolicy";
-        String[] constructorArgNames = {
-            TopologyLayoutConstants.JSON_KEY_ROTATION_INTERVAL,
-            TopologyLayoutConstants.JSON_KEY_ROTATION_INTERVAL_UNIT
-        };
-        List constructorArgs = getConstructorArgsYaml(constructorArgNames);
+        String rotationPolicyClassName = null;
+        Object[] constructorArgs = new Object[2];
+        if (conf.get(TopologyLayoutConstants.JSON_KEY_ROTATION_POLICY) != null) {
+            Map<String, Object> rotationPolicy = (Map<String, Object>) conf.get(TopologyLayoutConstants.JSON_KEY_ROTATION_POLICY);
+            if (rotationPolicy.containsKey(TopologyLayoutConstants.JSON_KEY_TIME_BASED_ROTATION)) {
+                rotationPolicyClassName = "org.apache.storm.hdfs.bolt.rotation.TimedRotationPolicy";
+                rotationPolicy = (Map<String, Object>) rotationPolicy.get(TopologyLayoutConstants.JSON_KEY_TIME_BASED_ROTATION);
+                constructorArgs[0] = rotationPolicy.get(TopologyLayoutConstants.JSON_KEY_ROTATION_INTERVAL);
+                constructorArgs[1] = rotationPolicy.get(TopologyLayoutConstants.JSON_KEY_ROTATION_INTERVAL_UNIT);
+            } else if (rotationPolicy.containsKey(TopologyLayoutConstants.JSON_KEY_SIZE_BASED_ROTATION)) {
+                rotationPolicyClassName = "org.apache.storm.hdfs.bolt.rotation.FileSizeRotationPolicy";
+                rotationPolicy = (Map<String, Object>) rotationPolicy.get(TopologyLayoutConstants.JSON_KEY_SIZE_BASED_ROTATION);
+                constructorArgs[0] = rotationPolicy.get(TopologyLayoutConstants.JSON_KEY_ROTATION_SIZE);
+                constructorArgs[1] = rotationPolicy.get(TopologyLayoutConstants.JSON_KEY_ROTATION_SIZE_UNIT);
+            } else {
+                throw new RuntimeException("Rotation policy not supported for hdfs bolt");
+            }
+        }
         addToComponents(createComponent(rotationPolicyComponentId,
-                rotationPolicyClassName, null, constructorArgs, null));
+                rotationPolicyClassName, null, getConstructorArgsYaml(constructorArgs), null));
         return rotationPolicyComponentId;
     }
 
