@@ -96,8 +96,11 @@ class TopologyItems extends Component {
         this.props.topologyAction(eventKey, this.streamRef.dataset.id)
     }
     streamBoxClick = (id,event) => {
-      if((event.target.nodeName !== 'BUTTON' && event.target.nodeName !== 'I' && event.target.nodeName !== 'A')|| event.target.title === "Edit"){
+      // check whether the element of streamBox is click..
+      if((event.target.nodeName !== 'BUTTON' && event.target.nodeName !== 'I' && event.target.nodeName !== 'A')){
         this.context.router.push('applications/'+id+'/view');
+      }else if(event.target.title === "Edit"){
+        this.context.router.push('applications/'+id+'/edit');
       }
     }
     render() {
@@ -373,11 +376,13 @@ class TopologyListingContainer extends Component {
 
     deleteSingleTopology = (id) => {
       this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete ?'}).then((confirmBox) => {
+        this.setState({fetchLoader : true});
         TopologyREST.deleteTopology(id).then((topology) => {
           // TopologyREST.deleteMetaInfo(id);
           this.fetchData();
           confirmBox.cancel();
           if (topology.responseMessage !== undefined) {
+            this.setState({fetchLoader : false});
             FSReactToastr.error(
               <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
           } else {
@@ -386,6 +391,7 @@ class TopologyListingContainer extends Component {
             )
           }
         }).catch((err) => {
+          this.setState({fetchLoader : false});
           FSReactToastr.error(
             <CommonNotification flag="error" content={err.message}/>, '', toastOpt)
         })

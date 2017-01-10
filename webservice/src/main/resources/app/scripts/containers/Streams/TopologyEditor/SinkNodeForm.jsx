@@ -202,6 +202,7 @@ export default class SinkNodeForm extends Component {
 
     handleSave(name){
         let {topologyId, versionId, nodeType, nodeData} = this.props;
+        const {uiSpecification} = this.state;
         let nodeId = this.nodeData.id;
         let data = this.refs.Form.state.FormData;
         delete data.nodeType;
@@ -209,14 +210,27 @@ export default class SinkNodeForm extends Component {
         let oldName = this.nodeData.name;
         this.nodeData.name = name;
         this.nodeData.description = this.state.description;
-        let schemaData = null;
-        if(nodeData.currentType.toLowerCase() === 'kafka' || nodeData.currentType.toLowerCase() === 'hbase'){
-          let name = data.topic || data.table;
-          schemaData = {
+        let promiseArr = [
+          TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)})
+        ];
+        // Check hint schema is present in the uiSpecification fields
+        let schemaName ='';
+        uiSpecification.map((x) => {
+          if(x.hint !== undefined && x.hint.indexOf('schema') !== -1){
+            _.keys(data).map((k) => {
+              if(x.fieldName === k && !_.isEmpty(data[k])){
+                schemaName = data[k];
+              }
+            })
+          }
+        });
+        // if the hint schema is present then create the schema by POST request
+        if(schemaName){
+          const schemaData = {
             schemaMetadata: {
               type: "avro",
               schemaGroup: 'Kafka',
-              name: name.indexOf(":v") === -1 ? name+":v" : name,
+              name: schemaName.indexOf(":v") === -1 ? schemaName+":v" : schemaName,
               description: "auto_description",
               compatibility: "BACKWARD"
             },
@@ -225,11 +239,6 @@ export default class SinkNodeForm extends Component {
               schemaText : JSON.stringify(this.state.streamObj.fields)
             }
           }
-        }
-        let promiseArr = [
-          TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)})
-        ];
-        if(schemaData){
           promiseArr.push(TopologyREST.createSchema({body : JSON.stringify(schemaData)}));
         }
         if(this.allSourceChildNodeData && this.allSourceChildNodeData.length > 0){
@@ -291,7 +300,7 @@ export default class SinkNodeForm extends Component {
                       }
                     })
                     if(list.hint && list.hint.toLowerCase().indexOf("override") !== -1){
-                      if(formData[k] != ''){
+                      if(formData[k]){
                         if(list.options.findIndex((o)=>{return o.fieldName == formData[k]}) == -1){
                           list.options.push({fieldName: formData[k], uiName: formData[k]});
                         }
