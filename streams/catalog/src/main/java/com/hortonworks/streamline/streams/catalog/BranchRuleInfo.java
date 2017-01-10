@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  * A branch rule as represented in the UI layout
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class BranchRuleInfo extends AbstractStorable {
+public class BranchRuleInfo extends BaseRuleInfo {
     public static final String NAMESPACE = "branchruleinfos";
 
     public static final String ID = "id";
@@ -159,6 +159,7 @@ public class BranchRuleInfo extends AbstractStorable {
     }
 
     @JsonIgnore
+    @Override
     public String getParsedRuleStr() {
         return parsedRuleStr;
     }
@@ -166,12 +167,6 @@ public class BranchRuleInfo extends AbstractStorable {
     @JsonIgnore
     public void setParsedRuleStr(String parsedRuleStr) {
         this.parsedRuleStr = parsedRuleStr;
-    }
-
-    @JsonIgnore
-    public Rule getRule() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(getParsedRuleStr(), Rule.class);
     }
 
     public List<Action> getActions() {

@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class WindowInfo extends AbstractStorable {
+public class WindowInfo extends BaseRuleInfo {
     public static final String NAMESPACE = "windowinfos";
 
     public static final String ID = "id";
@@ -167,6 +167,7 @@ public class WindowInfo extends AbstractStorable {
     }
 
     @JsonIgnore
+    @Override
     public String getParsedRuleStr() {
         return parsedRuleStr;
     }
@@ -174,12 +175,6 @@ public class WindowInfo extends AbstractStorable {
     @JsonIgnore
     public void setParsedRuleStr(String parsedRuleStr) {
         this.parsedRuleStr = parsedRuleStr;
-    }
-
-    @JsonIgnore
-    public Rule getRule() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(getParsedRuleStr(), Rule.class);
     }
 
     public Window getWindow() {

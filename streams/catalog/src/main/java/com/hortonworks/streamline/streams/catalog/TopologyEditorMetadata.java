@@ -189,6 +189,7 @@ public class TopologyEditorMetadata extends AbstractStorable {
         private List<TopologyComponentUICordinates> sinks;
         private List<TopologyComponentUICordinates> processors;
         private GraphTransform graphTransforms;
+        private List<Object> customNames;
 
         @JsonCreator
         public TopologyUIData() {
@@ -224,6 +225,14 @@ public class TopologyEditorMetadata extends AbstractStorable {
 
         public void setGraphTransforms(GraphTransform graphTranforms) {
             this.graphTransforms = graphTranforms;
+        }
+
+        public List<Object> getCustomNames() {
+            return customNames;
+        }
+
+        public void setCustomNames(List<Object> customNames) {
+            this.customNames = customNames;
         }
     }
 }
