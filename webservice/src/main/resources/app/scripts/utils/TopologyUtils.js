@@ -729,7 +729,7 @@ const getConfigContainer = function(node, configData, editMode, topologyId, vers
                     updateGraphMethod={updateGraphMethod}
                 />};
             break;
-            case 'PMML_MODEL': //Pmml
+            case 'PMML': //Pmml
                 childElement = () => { return <ModelNodeForm
                     ref="ProcessorChildElement"
                     nodeData={node}

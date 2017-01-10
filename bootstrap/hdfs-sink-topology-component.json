@@ -27,10 +27,9 @@
       {
         "uiName": "Path",
         "fieldName": "path",
-        "isOptional": true,
+        "isOptional": false,
         "tooltip": "Path for default file name format",
-        "type": "string",
-        "defaultValue": "/storm"
+        "type": "string"
       },
       {
         "uiName": "prefix",

@@ -269,7 +269,7 @@ public class TopologyComponentFactory {
                 return new HdfsSource();
             }
         };
-        return new SimpleImmutableEntry<>(HDFS_SOURCE, provider);
+        return new SimpleImmutableEntry<>(HDFS, provider);
     }
 
     private Map.Entry<String, Provider<StreamlineProcessor>> normalizationProcessorProvider() {
@@ -365,7 +365,7 @@ public class TopologyComponentFactory {
                 return modelProcessor;
             }
         };
-        return new SimpleImmutableEntry<>(PMML_MODEL, provider);
+        return new SimpleImmutableEntry<>(PMML, provider);
     }
 
     private interface RuleExtractor {

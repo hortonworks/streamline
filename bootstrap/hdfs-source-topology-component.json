@@ -1,7 +1,7 @@
 {
   "type": "SOURCE",
   "name": "Hdfs Source",
-  "subType": "HDFS-SOURCE",
+  "subType": "HDFS",
   "streamingEngine": "STORM",
   "builtin": true,
   "fieldHintProviderClass": "com.hortonworks.streamline.streams.catalog.topology.component.bundle.impl.HDFSSpoutBundleHintProvider",
