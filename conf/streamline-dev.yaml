@@ -13,10 +13,6 @@ modules:
       stormHomeDir: /usr/local/Cellar/storm/0.10.0/
       # schema registry configuration
       schemaRegistryUrl: "http://localhost:9090/api/v1"
-      #Custom processor upload configuration
-      #customProcessorWatchPath: "/tmp"
-      #customProcessorUploadFailPath: "/tmp/failed"
-      #customProcessorUploadSuccessPath: "/tmp/uploaded"
       mavenRepoUrl: "hwx-public^http://repo.hortonworks.com/content/groups/public/,hwx-private^http://nexus-private.hortonworks.com/nexus/content/groups/public/"
 
 catalogRootUrl: "http://localhost:8080/api/v1/catalog"
@@ -33,52 +29,18 @@ pivotConfiguration:
   name: "druid"
   type: "druid"
   host: "http://localhost:8082"
-
-# HDFS based Jar storage
-# fileStorageConfiguration:
-#   className: "com.hortonworks.streamline.common.util.HdfsFileStorage"
-#   properties:
-#     fsUrl: "file:///"
-#     directory: "/tmp/test-hdfs"
+ settingsLocation:
+  location: file
+  format: 'json'
+  uri: 'data.json'
+  writable: true
 
 # storage provider configuration
 #
 # Example configuration for inmemory is:
 #
-#storageProviderConfiguration:
-#  providerClass: "com.hortonworks.streamline.storage.impl.memory.InMemoryStorageManager"
-#
-# Example configuration for phoenix based JDBC driver
-#storageProviderConfiguration:
-# providerClass: "com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager"
-# properties:
-#   db.type: "phoenix"
-#   queryTimeoutInSecs: 30
-#   db.properties:
-#     jdbcDriverClass: "org.apache.phoenix.jdbc.PhoenixDriver"
-#     jdbcUrl: "jdbc:phoenix:localhost:2181"
-#
-# MySQL based jdbc provider configuration is:
-#storageProviderConfiguration:
-# providerClass: "com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager"
-# properties:
-#   db.type: "mysql"
-#   queryTimeoutInSecs: 30
-#   db.properties:
-#     dataSourceClassName: "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
-#     dataSource.url: "jdbc:mysql://localhost/test"
-#     dataSource.user: "streamline_user"
-#     dataSource.password: "streamline_password"
-
 storageProviderConfiguration:
- providerClass: "com.hortonworks.streamline.storage.impl.memory.InMemoryStorageManager"
-
-# use the simple server factory if you only want to run on a single port
-#server:
-#  providerClass: simple
-#  connector:
-#    providerClass: http
-#    port: 8080
+  providerClass: "com.hortonworks.streamline.storage.impl.memory.InMemoryStorageManager"
 
 enableCors: true
 corsUrlPatterns:
@@ -103,12 +65,12 @@ logging:
     com.hortonworks.streamline: DEBUG
   appenders:
     - type: console
-#    - type: file
-#      threshold: DEBUG
-#      logFormat: "%-6level [%d{HH:mm:ss.SSS}] [%t] %logger{5} - %X{code} %msg %n"
-#      currentLogFilename: /tmp/application.log
-#      archivedLogFilenamePattern: /tmp/application-%d{yyyy-MM-dd}-%i.log.gz
-#      archivedFileCount: 7
-#      timeZone: UTC
-#      maxFileSize: 10MB
+    - type: file
+       threshold: DEBUG
+       logFormat: "%-6level [%d{HH:mm:ss.SSS}] [%t] %logger{5} - %X{code} %msg %n"
+       currentLogFilename: ./logs/streamline.log
+       archivedLogFilenamePattern: ./logs/streamline-%d{yyyy-MM-dd}-%i.log.gz
+       archivedFileCount: 7
+       timeZone: UTC
+       maxFileSize: 10MB
 
