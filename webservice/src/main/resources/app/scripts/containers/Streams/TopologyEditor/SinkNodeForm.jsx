@@ -209,23 +209,29 @@ export default class SinkNodeForm extends Component {
         let oldName = this.nodeData.name;
         this.nodeData.name = name;
         this.nodeData.description = this.state.description;
-        const schemaData = {
-  				schemaMetadata: {
-  					type: "avro",
-  					schemaGroup: 'Kafka',
-  					name: data.topic.indexOf(":v") === -1 ? data.topic+":v" : data.topic,
-  					description: "auto_description",
-  					compatibility: "BACKWARD"
-  				},
-  				schemaVersion: {
-            description : 'auto_description',
-            schemaText : JSON.stringify(this.state.streamObj.fields)
-  				}
+        let schemaData = null;
+        if(nodeData.currentType.toLowerCase() === 'kafka' || nodeData.currentType.toLowerCase() === 'hbase'){
+          let name = data.topic || data.table;
+          schemaData = {
+            schemaMetadata: {
+              type: "avro",
+              schemaGroup: 'Kafka',
+              name: name.indexOf(":v") === -1 ? name+":v" : name,
+              description: "auto_description",
+              compatibility: "BACKWARD"
+            },
+            schemaVersion: {
+              description : 'auto_description',
+              schemaText : JSON.stringify(this.state.streamObj.fields)
+            }
+          }
         }
         let promiseArr = [
-          TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)}),
-          TopologyREST.createSchema({body : JSON.stringify(schemaData)})
+          TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)})
         ];
+        if(schemaData){
+          promiseArr.push(TopologyREST.createSchema({body : JSON.stringify(schemaData)}));
+        }
         if(this.allSourceChildNodeData && this.allSourceChildNodeData.length > 0){
             this.allSourceChildNodeData.map((childData)=>{
                 let child = childData;
