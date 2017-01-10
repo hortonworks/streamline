@@ -66,11 +66,11 @@ logging:
   appenders:
     - type: console
     - type: file
-       threshold: DEBUG
-       logFormat: "%-6level [%d{HH:mm:ss.SSS}] [%t] %logger{5} - %X{code} %msg %n"
-       currentLogFilename: ./logs/streamline.log
-       archivedLogFilenamePattern: ./logs/streamline-%d{yyyy-MM-dd}-%i.log.gz
-       archivedFileCount: 7
-       timeZone: UTC
-       maxFileSize: 10MB
+      threshold: DEBUG
+      logFormat: "%-6level [%d{HH:mm:ss.SSS}] [%t] %logger{5} - %X{code} %msg %n"
+      currentLogFilename: ./logs/streamline.log
+      archivedLogFilenamePattern: ./logs/streamline-%d{yyyy-MM-dd}-%i.log.gz
+      archivedFileCount: 7
+      timeZone: UTC
+      maxFileSize: 10MB
 
