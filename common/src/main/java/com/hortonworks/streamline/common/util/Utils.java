@@ -10,6 +10,13 @@ import java.util.Map;
 
 public class Utils {
     private static final Logger LOG = LoggerFactory.getLogger(Utils.class);
+
+    public static void requireNonEmpty(String s, String msg) {
+        if (s == null || s.isEmpty()) {
+            throw new IllegalArgumentException(msg);
+        }
+    }
+
     /**
      * This method takes in a schema represented as a map and returns a {@link Schema}
      * @param schemaConfig A map representing {@link Schema}

@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
+import com.hortonworks.streamline.common.util.Utils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import com.hortonworks.streamline.common.ComponentTypes;
@@ -107,6 +108,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static com.hortonworks.streamline.common.util.WSUtils.CURRENT_VERSION;
 import static com.hortonworks.streamline.common.util.WSUtils.currentVersionQueryParam;
@@ -143,6 +145,7 @@ public class StreamCatalogService {
     private static final ArrayList<Class<?>> UDF_CLASSES = Lists.newArrayList(UDAF.class, UDAF2.class, UDF.class, UDF2.class,
                                                                               UDF3.class, UDF4.class, UDF5.class, UDF6.class, UDF7.class);
     public static final long PLACEHOLDER_ID = -1L;
+    private static final String CLONE_SUFFIX = "-clone";
 
     private final StorageManager dao;
     private final FileStorage fileStorage;
@@ -763,11 +766,49 @@ public class StreamCatalogService {
     public Topology cloneTopology(Long namespaceId, Topology topology) throws Exception {
         Preconditions.checkNotNull(topology, "Topology does not exist");
         TopologyData exported = new TopologyData(doExportTopology(topology));
-        exported.setTopologyName(exported.getTopologyName() + "-clone");
+        Optional<String> latest = getLatestCloneName(exported.getTopologyName(), listTopologies());
+        exported.setTopologyName(getNextCloneName(latest.orElse(topology.getName())));
         if (namespaceId == null) {
             namespaceId = topology.getNamespaceId();
         }
         return importTopology(namespaceId, exported);
+    }
+
+    Optional<String> getLatestCloneName(String topologyName, Collection<Topology> topologies) {
+        String prefix = getTopologyClonePrefix(topologyName);
+        return topologies.stream()
+                .filter(t -> t.getName().startsWith(prefix))
+                .map(Topology::getName)
+                .max((t1, t2) -> getCloneNum(t1) - getCloneNum(t2));
+    }
+
+    private int getCloneNum(String topologyName) {
+        int idx = topologyName.lastIndexOf(CLONE_SUFFIX);
+        if (idx != -1 && topologyName.substring(idx).matches(String.format("^%s\\d*$", CLONE_SUFFIX))) {
+            String numPart = topologyName.substring(idx + CLONE_SUFFIX.length());
+            return numPart.isEmpty() ? 1 : Integer.parseInt(numPart);
+        }
+        return -1;
+    }
+
+    String getNextCloneName(String topologyName) {
+        Utils.requireNonEmpty(topologyName, "Empty topology name");
+        String prefix;
+        String suffix = "";
+        int cloneNum = getCloneNum(topologyName);
+        if (cloneNum == -1) {
+            prefix = topologyName;
+            suffix = CLONE_SUFFIX;
+        } else {
+            prefix = getTopologyClonePrefix(topologyName);
+            suffix = CLONE_SUFFIX + (cloneNum + 1);
+        }
+        return prefix + suffix;
+    }
+
+    private String getTopologyClonePrefix(String topologyName) {
+        int idx = topologyName.lastIndexOf(CLONE_SUFFIX);
+        return idx == -1 ? topologyName : topologyName.substring(0, idx);
     }
 
     public Collection<TopologyComponentBundle.TopologyComponentType> listTopologyComponentBundleTypes() {
