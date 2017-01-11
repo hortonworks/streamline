@@ -154,18 +154,44 @@ const inputFieldsData = function(inputFields){
   return inputFieldsArr;
 }
 
+const checkNestedInputFields = function(inputObj,fieldsData){
+  // if the inputObj doesn't have options and hint the inputObj return it self
+  if(!inputObj.options && inputObj.hint === undefined){
+    return inputObj;
+  }
+  const populateFields = (obj) => {
+    if(obj.options && obj.hint === undefined){
+          obj.options.map((x) => {
+            if(x.fields){
+              x.fields.map((k) => {
+                populateFields(k);
+              })
+            }
+          })
+      return obj;
+    }else{
+      //InputObj which have options and hint of "inputfields" OR "eventtime" OR "override"
+      //those fields are mapped by inputFieldsData function
+      if(obj.options && obj.hint !== undefined){
+        if(obj.hint.toLowerCase().indexOf("inputfields") !== -1){
+          obj.options = inputFieldsData(fieldsData)
+        }else if(obj.hint.toLowerCase().indexOf("eventtime") !== -1){
+          obj.options = eventTimeData(fieldsData)
+        }else if(obj.hint.toLowerCase().indexOf("override") !== -1 && obj.type === "enumstring"){
+          obj.type = "creatableField";
+        }
+      }
+      return obj;
+    }
+  }
+  return populateFields(inputObj);
+}
+
+
 const genFields = function(fieldsJSON, _fieldName = [], FormData = {},inputFields = []){
     const fields = [];
     fieldsJSON.forEach((d, i) => {
-        if(d.hint !== undefined){
-          if(d.hint.toLowerCase().indexOf("inputfields") !== -1){
-              d.options = inputFieldsData(inputFields);
-          }else if(d.hint.toLowerCase().indexOf("eventtime") !== -1){
-              d.options = eventTimeData(inputFields);
-          }else if(d.hint.toLowerCase().indexOf("override") !== -1 && d.type === "enumstring"){
-              d.type = "creatableField";
-          }
-        }
+        d = checkNestedInputFields(d,inputFields);
         const Comp = Fields[d.type.split('.').join('')] || null;
         let _name = [..._fieldName, d.fieldName];
         if(Comp){

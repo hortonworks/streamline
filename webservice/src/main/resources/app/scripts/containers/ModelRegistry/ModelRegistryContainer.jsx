@@ -71,7 +71,9 @@ class ModelRegistryContainer extends Component{
             this.setState({fetchLoader : false});
             let errorMag = model.responseMessage.indexOf('already exists') !== -1
                             ? "Model with the same name is already existing"
-                            : model.responseMessage;
+                            : model.responseMessage.indexOf('http') !== -1
+                              ? "This is not a valid xml file for PMML."
+                              : model.responseMessage
             FSReactToastr.error(
                 <CommonNotification flag="error" content={errorMag}/>, '', toastOpt);
           } else {

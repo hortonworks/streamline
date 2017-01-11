@@ -324,7 +324,6 @@ export default class SinkNodeForm extends Component {
 
     render() {
         let {formData, streamObj = {},uiSpecification,fetchLoader} = this.state;
-
         let fields = Utils.genFields(uiSpecification, [], formData,streamObj.fields);
         const form = fetchLoader
                       ? <div className="col-sm-12">
