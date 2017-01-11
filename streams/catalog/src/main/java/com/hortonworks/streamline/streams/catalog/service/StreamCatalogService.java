@@ -775,40 +775,14 @@ public class StreamCatalogService {
     }
 
     Optional<String> getLatestCloneName(String topologyName, Collection<Topology> topologies) {
-        String prefix = getTopologyClonePrefix(topologyName);
-        return topologies.stream()
-                .filter(t -> t.getName().startsWith(prefix))
-                .map(Topology::getName)
-                .max((t1, t2) -> getCloneNum(t1) - getCloneNum(t2));
-    }
-
-    private int getCloneNum(String topologyName) {
-        int idx = topologyName.lastIndexOf(CLONE_SUFFIX);
-        if (idx != -1 && topologyName.substring(idx).matches(String.format("^%s\\d*$", CLONE_SUFFIX))) {
-            String numPart = topologyName.substring(idx + CLONE_SUFFIX.length());
-            return numPart.isEmpty() ? 1 : Integer.parseInt(numPart);
-        }
-        return -1;
+        return Utils.getLatestName(
+                topologies.stream().map(Topology::getName).collect(Collectors.toSet()),
+                Utils.getPrefix(topologyName, CLONE_SUFFIX),
+                CLONE_SUFFIX);
     }
 
     String getNextCloneName(String topologyName) {
-        Utils.requireNonEmpty(topologyName, "Empty topology name");
-        String prefix;
-        String suffix = "";
-        int cloneNum = getCloneNum(topologyName);
-        if (cloneNum == -1) {
-            prefix = topologyName;
-            suffix = CLONE_SUFFIX;
-        } else {
-            prefix = getTopologyClonePrefix(topologyName);
-            suffix = CLONE_SUFFIX + (cloneNum + 1);
-        }
-        return prefix + suffix;
-    }
-
-    private String getTopologyClonePrefix(String topologyName) {
-        int idx = topologyName.lastIndexOf(CLONE_SUFFIX);
-        return idx == -1 ? topologyName : topologyName.substring(0, idx);
+        return Utils.getNextName(topologyName, CLONE_SUFFIX);
     }
 
     public Collection<TopologyComponentBundle.TopologyComponentType> listTopologyComponentBundleTypes() {
