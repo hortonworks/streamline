@@ -515,7 +515,7 @@ class TopologyListingContainer extends Component {
           this.addTopologyRef.handleSave().then((topology)=>{
             if (topology.responseMessage !== undefined) {
               let errorMag = topology.responseMessage.indexOf('already exists') !== -1
-                              ? "Stream with the same name is already existing"
+                              ? "Application with same name already exists. Please choose a unique Application Name"
                               : topology.responseMessage;
               FSReactToastr.error(
                   <CommonNotification flag="error" content={errorMag}/>, '', toastOpt);
@@ -536,7 +536,7 @@ class TopologyListingContainer extends Component {
           this.importTopologyRef.handleSave().then((topology)=>{
             if (topology.responseMessage !== undefined) {
               let errorMag = topology.responseMessage.indexOf('already exists') !== -1
-                              ? "Stream with the same name is already existing"
+                              ? "Application with same name already exists. Please choose a unique Application Name"
                               : topology.responseMessage;
               FSReactToastr.error(
                   <CommonNotification flag="error" content={errorMag}/>, '', toastOpt);
@@ -555,7 +555,7 @@ class TopologyListingContainer extends Component {
               let errorMag = topology.responseMessage.indexOf('NoSuchElementException') !== -1
                               ? "There might be some unconfigure Nodes. so please configure it first."
                               : topology.responseMessage.indexOf('already exists') !== -1
-                                ? "Stream with the same name is already existing"
+                                ? "Application with same name already exists. Please choose a unique Application Name"
                                 : topology.responseMessage;
               FSReactToastr.error(
                   <CommonNotification flag="error" content={errorMag}/>, '', toastOpt)
