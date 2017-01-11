@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -82,6 +83,12 @@ public class StreamCatalogServiceTest {
         return topology;
     }
 
+    private Topology createTopology(String name) {
+        Topology topology = new Topology();
+        topology.setName(name);
+        return topology;
+    }
+
     private TopologyVersionInfo createTopologyVersionInfo(Long id, Long topologyId) {
         TopologyVersionInfo topologyVersionInfo = new TopologyVersionInfo();
         topologyVersionInfo.setId(id);
@@ -91,5 +98,25 @@ public class StreamCatalogServiceTest {
         topologyVersionInfo.setTimestamp(System.currentTimeMillis());
         return topologyVersionInfo;
     }
+
+    @Test
+    public void testGetCloneSuffix() {
+        assertEquals("foo-clone", streamCatalogService.getNextCloneName("foo"));
+        assertEquals("foo-clone2", streamCatalogService.getNextCloneName("foo-clone"));
+        assertEquals("foo-clone3", streamCatalogService.getNextCloneName("foo-clone2"));
+    }
+
+    @Test
+    public void testGetLatestCloneName() {
+        List<Topology> topologies = new ArrayList<>();
+        topologies.add(createTopology("foo"));
+        topologies.add(createTopology("foo-clone"));
+        topologies.add(createTopology("foo-clone2"));
+        topologies.add(createTopology("foo-clone9"));
+        topologies.add(createTopology("foo-clone10"));
+        topologies.add(createTopology("bar"));
+        assertEquals("foo-clone10", streamCatalogService.getLatestCloneName("foo", topologies).get());
+    }
+
 
 }
