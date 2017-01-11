@@ -1,6 +1,6 @@
 {
   "type": "PROCESSOR",
-  "name": "Join bolt",
+  "name": "Join",
   "subType": "JOIN",
   "builtin": true,
   "streamingEngine": "STORM",

@@ -85,6 +85,7 @@ run_cmd $update_storm_version_command
 CONF_READER_MAIN_CLASS=com.hortonworks.streamline.storage.tool.StreamlinePropertiesReader
 CLASSPATH=${bootstrap_dir}/lib/storage-tool-0.1.0-SNAPSHOT.jar:
 CATALOG_ROOT_URL_PROPERTY_KEY=catalogRootUrl
+component_dir=${bootstrap_dir}/components
 
 echo "Configuration file: ${CONFIG_FILE_PATH}"
 
@@ -96,46 +97,65 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Catalog Root URL: ${CATALOG_ROOT_URL}"
+echo $component_dir
 
-# === Source ===
-add_bundle /streams/componentbundles/SOURCE $bootstrap_dir/kafka-source-topology-component.json
-add_bundle /streams/componentbundles/SOURCE $bootstrap_dir/hdfs-source-topology-component.json
-# === Processor ===
-add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/rule-topology-component.json
-add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/window-topology-component.json
-add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/branch-topology-component.json
-add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/join-bolt-topology-component.json
-add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/model-topology-component.json
-# === Sink ===
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/hdfs-sink-topology-component.json
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/hbase-sink-topology-component.json
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/notification-topology-component.json
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/opentsdb-sink-topology-component.json
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/jdbc-sink-topology-component.json
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/cassandra-sink-topology-component.json
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/druid-sink-topology-component.json
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/solr-sink-topology-component.json
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/kafka-sink-topology-component.json
-# === Topology ===
-add_bundle /streams/componentbundles/TOPOLOGY $bootstrap_dir/storm-topology-component.json
+function add_all_bundles {
+    # === Source ===
+    add_bundle /streams/componentbundles/SOURCE $component_dir/sources/kafka-source-topology-component.json
+    add_bundle /streams/componentbundles/SOURCE $component_dir/sources/hdfs-source-topology-component.json
+    # === Processor ===
+    add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/rule-topology-component.json
+    add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/window-topology-component.json
+    add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/branch-topology-component.json
+    add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/join-bolt-topology-component.json
+    add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/model-topology-component.json
+    # === Sink ===
+    add_bundle /streams/componentbundles/SINK $component_dir/sinks/hdfs-sink-topology-component.json
+    add_bundle /streams/componentbundles/SINK $component_dir/sinks/hbase-sink-topology-component.json
+    add_bundle /streams/componentbundles/SINK $component_dir/sinks/notification-sink-topology-component.json
+    add_bundle /streams/componentbundles/SINK $component_dir/sinks/opentsdb-sink-topology-component.json
+    add_bundle /streams/componentbundles/SINK $component_dir/sinks/jdbc-sink-topology-component.json
+    add_bundle /streams/componentbundles/SINK $component_dir/sinks/cassandra-sink-topology-component.json
+    add_bundle /streams/componentbundles/SINK $component_dir/sinks/druid-sink-topology-component.json
+    add_bundle /streams/componentbundles/SINK $component_dir/sinks/solr-sink-topology-component.json
+    add_bundle /streams/componentbundles/SINK $component_dir/sinks/kafka-sink-topology-component.json
+    # === Topology ===
+    add_bundle /streams/componentbundles/TOPOLOGY $component_dir/topology/storm-topology-component.json
 
-#add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/split-topology-component
-#add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/normalization-processor-topology-component.json
-#add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/multilang-topology-component.json
-#post /streams/componentbundles/PROCESSOR $bootstrap_dir/stage-topology-component
-#post /streams/componentbundles/ACTION $bootstrap_dir/transform-action-topology-component
-#post /streams/componentbundles/TRANSFORM $bootstrap_dir/projection-transform-topology-component
-#post /streams/componentbundles/TRANSFORM $bootstrap_dir/enrichment-transform-topology-component
-#note that the below is just a sample for ui to work with. Once UI is ready, all above will be replaced with new bundle components
-#add_sample_bundle
+    #add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/split-topology-component
+    #add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/normalization-processor-topology-component.json
+    #add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/multilang-topology-component.json
+    #post /streams/componentbundles/PROCESSOR $component_dir/sinks/stage-topology-component
+    #post /streams/componentbundles/ACTION $component_dir/sinks/transform-action-topology-component
+    #post /streams/componentbundles/TRANSFORM $component_dir/sinks/projection-transform-topology-component
+    #post /streams/componentbundles/TRANSFORM $component_dir/sinks/enrichment-transform-topology-component
+    #note that the below is just a sample for ui to work with. Once UI is ready, all above will be replaced with new bundle components
+    #add_sample_bundle
 
-#----------------------------------
-# Execute other bootstrap scripts
-#----------------------------------
-script_dir=$(dirname $0)
-echo "Executing ${script_dir}/bootstrap-udf.sh ${CATALOG_ROOT_URL}"
-${script_dir}/bootstrap-udf.sh ${CATALOG_ROOT_URL}
+    #----------------------------------
+    # Execute other bootstrap scripts
+    #----------------------------------
+    script_dir=$(dirname $0)
+    echo "Executing ${script_dir}/bootstrap-udf.sh ${CATALOG_ROOT_URL}"
+    ${script_dir}/bootstrap-udf.sh ${CATALOG_ROOT_URL}
 
-echo "Executing ${script_dir}/bootstrap-notifiers.sh ${CATALOG_ROOT_URL}"
-${script_dir}/bootstrap-notifiers.sh ${CATALOG_ROOT_URL}
+    echo "Executing ${script_dir}/bootstrap-notifiers.sh ${CATALOG_ROOT_URL}"
+    ${script_dir}/bootstrap-notifiers.sh ${CATALOG_ROOT_URL}
+}
 
+function main {
+    echo ""
+    echo "===================================================================================="
+    echo "Running bootstrap.sh will create streamline default components. This script should be"
+    echo "executed only once. Re-running bootstrap.sh script can create duplicate components."
+    read -p "Are you sure you want to proceed. (y/n)? " yesorno
+    
+    case ${yesorno:0:1} in
+        y|Y)
+            add_all_bundles;;
+        * )
+            exit;;
+    esac
+}
+
+main

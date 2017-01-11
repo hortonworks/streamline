@@ -1,6 +1,6 @@
 {
   "type": "SINK",
-  "name": "Kafka Bolt",
+  "name": "Kafka",
   "subType": "KAFKA",
   "streamingEngine": "STORM",
   "builtin": true,

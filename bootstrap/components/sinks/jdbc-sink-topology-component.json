@@ -1,6 +1,6 @@
 {
   "type": "SINK",
-  "name": "JDBC Sink",
+  "name": "JDBC",
   "subType": "JDBC",
   "builtin": true,
   "streamingEngine": "STORM",

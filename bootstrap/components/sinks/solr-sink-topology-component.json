@@ -1,6 +1,6 @@
 {
   "type": "SINK",
-  "name": "Solr Sink",
+  "name": "Solr",
   "subType": "SOLR",
   "builtin": true,
   "streamingEngine": "STORM",

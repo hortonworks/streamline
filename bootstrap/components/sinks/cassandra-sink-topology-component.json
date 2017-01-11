@@ -1,6 +1,6 @@
 {
   "type": "SINK",
-  "name": "Cassandra Bolt",
+  "name": "Cassandra",
   "subType": "CASSANDRA",
   "builtin": true,
   "streamingEngine": "STORM",

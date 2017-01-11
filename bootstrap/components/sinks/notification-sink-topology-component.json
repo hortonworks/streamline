@@ -1,6 +1,6 @@
 {
   "type": "SINK",
-  "name": "Notification bolt",
+  "name": "Notification",
   "subType": "NOTIFICATION",
   "builtin": true,
   "streamingEngine": "STORM",

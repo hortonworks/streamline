@@ -1,6 +1,6 @@
 {
   "type": "PROCESSOR",
-  "name": "Branch Bolt",
+  "name": "Branch",
   "subType": "BRANCH",
   "builtin": true,
   "streamingEngine": "STORM",

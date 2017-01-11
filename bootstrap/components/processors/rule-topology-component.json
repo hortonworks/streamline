@@ -1,6 +1,6 @@
 {
   "type": "PROCESSOR",
-  "name": "Rule bolt",
+  "name": "Rule",
   "subType": "RULE",
   "builtin": true,
   "streamingEngine": "STORM",

@@ -1,6 +1,6 @@
 {
 	"type": "PROCESSOR",
-	"name": "PMML Model Evaluator",
+	"name": "PMML",
 	"subType": "PMML",
 	"builtin": true,
 	"streamingEngine": "STORM",

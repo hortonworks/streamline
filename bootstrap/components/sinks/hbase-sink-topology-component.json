@@ -1,6 +1,6 @@
 {
   "type": "SINK",
-  "name": "Hbase Bolt",
+  "name": "Hbase",
   "subType": "HBASE",
   "builtin": true,
   "streamingEngine": "STORM",

@@ -1,6 +1,6 @@
 {
   "type": "SINK",
-  "name": "Open tsdb bolt",
+  "name": "OpenTSDB",
   "subType": "OPENTSDB",
   "builtin": true,
   "streamingEngine": "STORM",
