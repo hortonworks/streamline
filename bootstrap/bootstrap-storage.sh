@@ -26,10 +26,28 @@ fi
 SCRIPT_RUNNER_MAIN_CLASS=com.hortonworks.streamline.storage.tool.SQLScriptRunner
 CLASSPATH=${BOOTSTRAP_DIR}/lib/storage-tool-0.1.0-SNAPSHOT.jar:
 
-echo "Configuration file: ${CONFIG_FILE_PATH}"
+echo "Using Configuration file: ${CONFIG_FILE_PATH}"
 
-SCRIPT_DIR="${BOOTSTRAP_DIR}/sql/<dbtype>"
-FILE_OPT="-f ${SCRIPT_DIR}/drop_tables.sql -f ${SCRIPT_DIR}/create_tables.sql"
+function streamlineBootstrapStorage {
+    SCRIPT_DIR="${BOOTSTRAP_DIR}/sql/<dbtype>"
+    FILE_OPT="-f ${SCRIPT_DIR}/drop_tables.sql -f ${SCRIPT_DIR}/create_tables.sql"
 
-echo "Script files option: $FILE_OPT"
-exec ${JAVA} -cp ${CLASSPATH} ${SCRIPT_RUNNER_MAIN_CLASS} -c ${CONFIG_FILE_PATH} ${FILE_OPT}
+    echo "Script files option: $FILE_OPT"
+    exec ${JAVA} -cp ${CLASSPATH} ${SCRIPT_RUNNER_MAIN_CLASS} -c ${CONFIG_FILE_PATH} ${FILE_OPT}
+}
+
+function main {
+    echo ""
+    echo "===================================================================================="
+    echo "Running bootstrap-storage will drop any existing streamline tables and re-create them."
+    read -p "Are you sure you want to proceed. (y/n)? " yesorno
+    
+    case ${yesorno:0:1} in
+        y|Y)
+            streamlineBootstrapStorage;;
+        * )
+            exit;;
+    esac
+}
+
+main

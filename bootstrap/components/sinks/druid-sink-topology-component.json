@@ -1,6 +1,6 @@
 {
   "type": "SINK",
-  "name": "Druid Sink",
+  "name": "Druid",
   "subType": "DRUID",
   "builtin": true,
   "streamingEngine": "STORM",

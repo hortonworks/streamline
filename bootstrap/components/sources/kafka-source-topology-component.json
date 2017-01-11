@@ -1,6 +1,6 @@
 {
   "type": "SOURCE",
-  "name": "Kafka Spout",
+  "name": "Kafka",
   "subType": "KAFKA",
   "streamingEngine": "STORM",
   "builtin": true,

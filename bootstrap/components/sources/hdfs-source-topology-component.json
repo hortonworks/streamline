@@ -1,6 +1,6 @@
 {
   "type": "SOURCE",
-  "name": "Hdfs Source",
+  "name": "Hdfs",
   "subType": "HDFS",
   "streamingEngine": "STORM",
   "builtin": true,

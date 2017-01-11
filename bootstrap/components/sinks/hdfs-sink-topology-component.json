@@ -1,6 +1,6 @@
 {
   "type": "SINK",
-  "name": "Hdfs Bolt",
+  "name": "Hdfs",
   "subType": "HDFS",
   "builtin": true,
   "streamingEngine": "STORM",

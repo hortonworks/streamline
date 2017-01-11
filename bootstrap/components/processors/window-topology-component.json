@@ -1,6 +1,6 @@
 {
   "type": "PROCESSOR",
-  "name": "Aggregate processor",
+  "name": "Aggregate",
   "subType": "WINDOW",
   "builtin": true,
   "streamingEngine": "STORM",
