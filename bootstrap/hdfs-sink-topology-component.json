@@ -17,14 +17,6 @@
         "type": "string"
       },
       {
-        "uiName": "Config key",
-        "fieldName": "configKey",
-        "isOptional": true,
-        "tooltip": "Config key to get any hdfs configuration from topology level configuration",
-        "type": "string",
-        "defaultValue": ""
-      },
-      {
         "uiName": "Path",
         "fieldName": "path",
         "isOptional": false,
@@ -55,23 +47,71 @@
         "type": "number"
       },
       {
-        "uiName": "Rotation interval multiplier",
-        "fieldName": "rotationInterval",
+        "uiName": "Rotation Policy",
+        "fieldName": "rotationPolicy",
         "isOptional": false,
-        "tooltip": "Rotation interval multiplier for timed rotation policy",
-        "type": "number"
-      },
-      {
-        "uiName": "rotationIntervalUnit",
-        "fieldName": "rotationIntervalUnit",
-        "isOptional": false,
-        "tooltip": "Rotation interval unit for timed rotation policy",
-        "type": "enumstring",
+        "tooltip": "Strategy to rotate files in hdfs",
+        "type": "enumobject",
+        "defaultValue": "timeBasedRotation",
         "options": [
-          "SECONDS",
-          "MINUTES",
-          "HOURS",
-          "DAYS"
+          {
+            "uiName": "Time Based Rotation",
+            "fieldName": "timeBasedRotation",
+            "tooltip": "Time based rotation policy that needs rotation interval and unit of interval",
+            "isOptional": false,
+            "type": "object",
+            "fields": [
+              {
+                "uiName": "Rotation Interval Multiplier",
+                "fieldName": "rotationInterval",
+                "isOptional": false,
+                "tooltip": "Rotation interval multiplier for timed rotation policy",
+                "type": "number"
+              },
+              {
+                "uiName": "Rotation Interval Unit",
+                "fieldName": "rotationIntervalUnit",
+                "isOptional": false,
+                "tooltip": "Rotation interval unit for timed rotation policy",
+                "type": "enumstring",
+                "options": [
+                  "SECONDS",
+                  "MINUTES",
+                  "HOURS",
+                  "DAYS"
+                ]
+              }
+            ]
+          },
+          {
+            "uiName": "File Size Based Rotation",
+            "fieldName": "sizeBasedRotation",
+            "tooltip": "File size based rotation policy that needs rotation size and unit of size",
+            "isOptional": false,
+            "type": "object",
+            "fields": [
+              {
+                "uiName": "Rotation Size Multiplier",
+                "fieldName": "rotationSize",
+                "isOptional": false,
+                "tooltip": "Rotation size multiplier for size based rotation policy",
+                "type": "number"
+              },
+              {
+                "uiName": "Rotation Size Unit",
+                "fieldName": "rotationSizeUnit",
+                "isOptional": false,
+                "tooltip": "File size unit for size based rotation policy",
+                "type": "enumstring",
+                "options": [
+                  "KB",
+                  "MB",
+                  "GB",
+                  "TB"
+                ]
+              }
+            ]
+          }
         ]
       },
       {

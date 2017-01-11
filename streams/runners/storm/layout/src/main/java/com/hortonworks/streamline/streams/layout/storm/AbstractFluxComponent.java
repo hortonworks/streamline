@@ -132,6 +132,16 @@ public abstract class AbstractFluxComponent implements FluxComponent {
         return constructorArgs;
     }
 
+    protected List getConstructorArgsYaml (Object[] values) {
+        List constructorArgs = new ArrayList();
+        if ((values != null) && (values.length > 0)) {
+            for (Object value: values) {
+                constructorArgs.add(value);
+            }
+        }
+        return constructorArgs;
+    }
+
     protected List getConfigMethodsYaml (String[] configMethodNames, String[] configKeys) {
         List configMethods = new ArrayList();
         List<String> nonNullConfigMethodNames = new ArrayList<>();
