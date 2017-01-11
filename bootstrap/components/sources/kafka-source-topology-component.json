@@ -42,18 +42,10 @@
         "hint": "schema,override"
       },
       {
-        "uiName": "Zookeeper root node",
-        "fieldName": "zkRoot",
+        "uiName": "Consumer Group Id",
+        "fieldName": "consumerGroupId",
         "isOptional": false,
-        "tooltip": "Zookeeper root node to store offsets committed by spout",
-        "type": "string"
-        
-      },
-      {
-        "uiName": "Spout config id",
-        "fieldName": "spoutConfigId",
-        "isOptional": false,
-        "tooltip": "Unique id for this spout representing the zookeeper node under the zookeeper root node zkRoot property",
+        "tooltip": "A unique string that identifies the consumer group this source belongs to. It is used to keep track of consumer offset",
         "type": "string"
       },
       {

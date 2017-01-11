@@ -77,12 +77,12 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
         List spoutConfigConstructorArgs = new ArrayList();
         Map ref = getRefYaml(zkHostsRef);
         spoutConfigConstructorArgs.add(ref);
-        String[] constructorArgNames = {
-            TopologyLayoutConstants.JSON_KEY_TOPIC,
-            TopologyLayoutConstants.JSON_KEY_ZK_ROOT,
-            TopologyLayoutConstants.JSON_KEY_SPOUT_CONFIG_ID
+        Object[] constructorArgs = {
+            conf.get(TopologyLayoutConstants.JSON_KEY_TOPIC),
+            TopologyLayoutConstants.ZK_ROOT_NODE,
+            conf.get(TopologyLayoutConstants.JSON_KEY_CONSUMER_GROUP_ID)
         };
-        spoutConfigConstructorArgs.addAll(getConstructorArgsYaml(constructorArgNames));
+        spoutConfigConstructorArgs.addAll(getConstructorArgsYaml(constructorArgs));
         addToComponents(createComponent(spoutConfigComponentId, spoutConfigClassName,
                 propertiesYaml, spoutConfigConstructorArgs, null));
 
@@ -169,8 +169,7 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
         String[] requiredStringFields = {
             TopologyLayoutConstants.JSON_KEY_ZK_URL,
             TopologyLayoutConstants.JSON_KEY_TOPIC,
-            TopologyLayoutConstants.JSON_KEY_ZK_ROOT,
-            TopologyLayoutConstants.JSON_KEY_SPOUT_CONFIG_ID
+            TopologyLayoutConstants.JSON_KEY_CONSUMER_GROUP_ID
         };
         validateStringFields(requiredStringFields, true);
         String[] optionalStringFields = {

@@ -58,9 +58,8 @@ public final class TopologyLayoutConstants {
     public final static String JSON_KEY_CONFIG_KEY = "configKey";
     public final static String JSON_KEY_BROKER_HOSTS_IMPL = "brokerHostsImpl";
     public final static String JSON_KEY_ZK_PATH = "zkPath";
-    public final static String JSON_KEY_ZK_ROOT = "zkRoot";
     public final static String JSON_KEY_REFRESH_FREQ_SECS = "refreshFreqSecs";
-    public final static String JSON_KEY_SPOUT_CONFIG_ID = "spoutConfigId";
+    public final static String JSON_KEY_CONSUMER_GROUP_ID = "consumerGroupId";
     public final static String JSON_KEY_FETCH_SIZE_BYTES = "fetchSizeBytes";
     public final static String JSON_KEY_SOCKET_TIMEOUT_MS = "socketTimeoutMs";
     public final static String JSON_KEY_FETCH_MAX_WAIT = "fetchMaxWait";
@@ -171,5 +170,6 @@ public final class TopologyLayoutConstants {
             "has invalid fields for grouping ";
     public static final String ERR_MSG_CP_IMPL_INSTANTIATION = "Error instantiating custom processor implementation class %s ";
     public static final String ERR_MSG_CP_CONFIG_EXCEPTION = "Custom processor %s threw exception while validating the custom config fields.";
+    public final static String ZK_ROOT_NODE = "/streamline/kafka-source";
 
 }
