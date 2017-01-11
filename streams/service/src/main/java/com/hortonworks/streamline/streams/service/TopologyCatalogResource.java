@@ -227,11 +227,15 @@ public class TopologyCatalogResource {
         Topology res = null;
         for (TopologyVersionInfo version : versions) {
             Topology removed = catalogService.removeTopology(topologyId, version.getId(), true);
-            if (removed.getVersionId().equals(currentVersionId)) {
+            if (removed != null && removed.getVersionId().equals(currentVersionId)) {
                 res = removed;
             }
         }
-        return WSUtils.respondEntity(res, OK);
+        if (res != null) {
+            return WSUtils.respondEntity(res, OK);
+        } else {
+            throw EntityNotFoundException.byId(topologyId.toString());
+        }
     }
 
     private Response removeCurrentTopologyVersion(Long topologyId) {
@@ -535,11 +539,15 @@ public class TopologyCatalogResource {
     @Path("/topologies/actions/import")
     @Timed
     public Response importTopology(@FormDataParam("file") final InputStream inputStream,
-                                   @FormDataParam("namespaceId") final Long namespaceId) throws Exception {
+                                   @FormDataParam("namespaceId") final Long namespaceId,
+                                   @FormDataParam("topologyName") final String topologyName) throws Exception {
         if (namespaceId == null) {
             throw new IllegalArgumentException("Missing namespaceId");
         }
         TopologyData topologyData = new ObjectMapper().readValue(inputStream, TopologyData.class);
+        if (topologyName != null && !topologyName.isEmpty()) {
+            topologyData.setTopologyName(topologyName);
+        }
         Topology importedTopology = catalogService.importTopology(namespaceId, topologyData);
         return WSUtils.respondEntity(importedTopology, OK);
     }
