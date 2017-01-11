@@ -624,18 +624,27 @@ class TopologyEditorContainer extends Component {
               results.map((result)=>{
                 let data = result;
                 let actionObj = {
-                  name: newEdge.target.uiname,
                   outputStreams: [node.outputStreams[0].streamId]
                 };
                 if(newEdge.target.currentType.toLowerCase() === 'notification'){
                   actionObj.outputFieldsAndDefaults = node.config.properties.fieldValues || {};
                   actionObj.notifierName = node.config.properties.notifierName || '';
+                  actionObj.name = 'notifierAction';
                   actionObj.__type = "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction";
                 } else {
+                  actionObj.name = 'transformAction';
                   actionObj.__type = "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction";
                   actionObj.transforms = [];
                 }
-                data.actions.push(actionObj);
+                let hasActionType = false;
+                if(data.actions.length > 0) {
+                  data.actions.map((a)=>{
+                    if(a.__type === actionObj.__type)
+                      hasActionType = true;
+                  });
+                }
+                if(!hasActionType)
+                  data.actions.push(actionObj);
                 saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'windows', data.id, {body: JSON.stringify(data)}))
               })
               Promise.all(saveRulesPromiseArr)

@@ -21,7 +21,9 @@ export default class RulesNodeForm extends Component {
                 versionId: PropTypes.number.isRequired,
 		sourceNode: PropTypes.array.isRequired,
 		targetNodes: PropTypes.array.isRequired,
-		linkShuffleOptions: PropTypes.array.isRequired
+                linkShuffleOptions: PropTypes.array.isRequired,
+                graphEdges: PropTypes.array.isRequired,
+                updateGraphMethod: PropTypes.func.isRequired
 	};
 
 	constructor(props) {
@@ -71,9 +73,11 @@ export default class RulesNodeForm extends Component {
 
 				//Found all target edges connected from current node
 				let allEdges = results[1].entities;
+                                this.allEdges = allEdges;
 				this.nodeToOtherEdges = allEdges.filter((e)=>{return e.fromId === nodeData.nodeId});
 
 				let allStreams = results[2].entities;
+                                this.allStreams = allStreams;
 
                 //find all input streams from connected edges
                 this.allEdgesToNode = allEdges.filter((e)=>{return e.toId === nodeData.nodeId});
@@ -83,8 +87,8 @@ export default class RulesNodeForm extends Component {
                         this.parsedStreams.push(_.find(allStreams, {id: g.streamId}));
                     });
                 });
-				if(this.nodeData.outputStreams.length === 0 || this.nodeData.outputStreams.length < this.parsedStreams.length) {
-					this.saveStreams();
+                                if(this.nodeData.outputStreams.length === 0) {
+                                        this.context.ParentForm.setState({outputStreamObj: {}});
                                 } else {
                                         this.streamData = this.nodeData.outputStreams[0];
                                         this.context.ParentForm.setState({outputStreamObj:this.streamData})
@@ -96,34 +100,6 @@ export default class RulesNodeForm extends Component {
 				console.error(err);
 			})
 	}
-
-        saveStreams() {
-            let {topologyId, versionId, nodeType} = this.props;
-            let promiseForStreams = [];
-            this.parsedStreams.map((s, i)=>{
-			let streamData = {
-                streamId: 'rule_processor_'+(this.nodeData.id)+'_stream_'+(i+1),
-                fields: s.fields
-            };
-			//TODO - Need to find out exact streams that needs to be created and save only those
-			if((i+1) > this.nodeData.outputStreams.length)
-                                promiseForStreams.push(TopologyREST.createNode(topologyId, versionId, 'streams', {body: JSON.stringify(streamData)}));
-                        });
-            Promise.all(promiseForStreams)
-                .then(results=>{
-                    this.nodeData.outputStreamIds = this.nodeData.outputStreams.map((s)=>{return s.id;}) || [];
-                    results.map((s)=>{
-                        this.nodeData.outputStreamIds.push(s.id);
-                        this.streamData = s;
-                        this.context.ParentForm.setState({outputStreamObj:this.streamData})
-                    });
-                    TopologyREST.updateNode(topologyId, versionId, nodeType, this.nodeData.id, {body: JSON.stringify(this.nodeData)})
-                        .then((node)=>{
-                            this.nodeData = node;
-                            this.setState({outputStreams: node.outputStreams});
-                        })
-                })
-        }
 
 	validateData(){
 		return true;
@@ -162,13 +138,26 @@ export default class RulesNodeForm extends Component {
 
 	handleDeleteRule(id){
                 let {topologyId, versionId, nodeType, nodeData} = this.props;
+                let stream = _.find(this.allStreams, {streamId: 'rule_processor_stream_'+id});
+                let edge = _.find(this.allEdges, function(e) { return e.streamGroupings[0].streamId ===  stream.id});
 		this.refs.Confirm.show({
 			title: 'Are you sure you want to delete rule ?'
 		}).then((confirmBox)=>{
-			let promiseArr = [TopologyREST.deleteNode(topologyId, 'rules', id)];
-
+                        let promiseArr = [
+                                TopologyREST.deleteNode(topologyId, 'rules', id),
+                                TopologyREST.deleteNode(topologyId, 'streams', stream.id)
+                        ];
+                        if(edge) {
+                                promiseArr.push(TopologyREST.deleteNode(topologyId, 'edges', edge.id));
+                        }
 			let rules = this.nodeData.config.properties.rules;
 			rules.splice(rules.indexOf(id), 1);
+                        this.nodeData.outputStreamIds = [];
+                        this.nodeData.outputStreams.map((s)=>{
+                                if(s.id !== stream.id)
+                                        this.nodeData.outputStreamIds.push(s.id);
+                        });
+                        delete this.nodeData.outputStreams;
 
                         promiseArr.push(TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.nodeId, {body: JSON.stringify(this.nodeData)}));
 
@@ -176,6 +165,9 @@ export default class RulesNodeForm extends Component {
 				.then(result=>{
 					FSReactToastr.success(<strong>Rule deleted successfully</strong>);
 					this.fetchData();
+                                        if(edge)
+                        this.props.graphEdges.splice(this.props.graphEdges.indexOf(edge), 1);
+                    this.props.updateGraphMethod();
 				})
 			confirmBox.cancel();
 		},()=>{})

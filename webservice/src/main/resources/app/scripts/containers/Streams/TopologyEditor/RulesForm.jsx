@@ -386,7 +386,7 @@ export default class RulesForm extends Component {
 	handleSave(){
         let {topologyId, versionId, ruleObj, nodeData, nodeType, parsedStreams} = this.props;
 		let {name, description, ruleType, sql, actions} = this.state;
-        let ruleData = {}, condition = "", streams = [], selectedFields = [];
+        let ruleData = {}, condition = "", streams = [], selectedFields = [], streamData = {};
 		if(ruleType){
 			//if general rule, than take from RuleFormula
                         condition = this.refs.RuleFormula.conditionStr;
@@ -429,14 +429,30 @@ export default class RulesForm extends Component {
               <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt)
 					return false;
 				} else {
-                                        let msg = result.name + " " + (ruleObj.id ? "updated" : "added") + ' successfully';
+                    let msg = result.name + " " + (ruleObj.id ? "updated" : "added") + ' successfully';
 					FSReactToastr.success(<strong>{msg}</strong>);
-					//Update node with rule
-                                        return this.updateNode(result, results[1]);
+                                        streamData = {
+                                                streamId: 'rule_processor_stream_'+(results[0].id),
+                                                fields: parsedStreams[0].fields
+                                        };
+                                        if(ruleObj.id) {
+                                                return this.updateNode(result, results[1]);
+                                        } else {
+                                        return TopologyREST.createNode(topologyId, versionId, 'streams', {body: JSON.stringify(streamData)})
+                                                .then((streamResult)=>{
+                                                        if(streamResult.responseMessage !== undefined){
+                                                                FSReactToastr.error(<CommonNotification flag="error" content={streamResult.responseMessage}/>, '', toastOpt)
+                                                                return false;
+                                                        } else {
+                                                                //Update node with rule
+                                                                return this.updateNode(result, results[1], streamResult);
+                                                        }
+                                                })
+                                        }
 				}
 			})
 	}
-	updateNode(ruleData, ruleProcessorData){
+        updateNode(ruleData, ruleProcessorData, streamData){
                 let {topologyId, versionId, ruleObj, nodeData, nodeType} = this.props;
 		let promiseArr = [];
 		//Add into node if its newly created rule
@@ -444,6 +460,17 @@ export default class RulesForm extends Component {
 			let rulesArr = ruleProcessorData.config.properties.rules || [];
 			rulesArr.push(ruleData.id);
 			ruleProcessorData.config.properties.rules = rulesArr;
+                        ruleProcessorData.outputStreamIds = [];
+                        if(ruleProcessorData.outputStreams.length) {
+                                ruleProcessorData.outputStreams.map((s)=>{
+                                        ruleProcessorData.outputStreamIds.push(s.id);
+                                });
+                                ruleProcessorData.outputStreamIds.push(streamData.id);
+                                delete ruleProcessorData.outputStreams;
+                        } else {
+                                delete ruleProcessorData.outputStreams;
+                                ruleProcessorData.outputStreamIds = [streamData.id];
+                        }
                         promiseArr.push(TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.id, {body: JSON.stringify(ruleProcessorData)}));
 		}
 		return Promise.all(promiseArr)

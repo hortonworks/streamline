@@ -391,6 +391,9 @@ export default class RulesForm extends Component {
                                                 streamId: 'branch_processor_stream_'+(results[0].id),
 						fields: parsedStream.fields
 					};
+                                        if(ruleObj.id) {
+                                                return this.updateNode(result, results[1]);
+                                        } else {
 					return TopologyREST.createNode(topologyId, versionId, 'streams', {body: JSON.stringify(streamData)})
 						.then((streamResult)=>{
                                                         if(streamResult.responseMessage !== undefined){
@@ -401,7 +404,7 @@ export default class RulesForm extends Component {
                                                                 return this.updateNode(result, results[1], streamResult);
 							}
 						})
-
+                                        }
 				}
 			})
 	}

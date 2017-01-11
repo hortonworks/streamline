@@ -287,20 +287,62 @@ const deleteNode = function(topologyId, versionId, currentNode, nodes, edges, in
     //then update those processor by removing actions from it.
     let connectingNodes = edges.filter((obj)=>{ return obj.target == currentNode; });
     let actionsPromiseArr = [];
+    let currentActionType = "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction";
+    let streamId = null;
     connectingNodes.map((o,i)=>{
         if(o.source.currentType.toLowerCase() === 'rule' || o.source.currentType.toLowerCase() === 'window' ||
             o.source.currentType.toLowerCase() === 'branch'){
             let type = o.source.currentType.toLowerCase() === 'rule' ? 'rules' : (o.source.currentType.toLowerCase() === 'branch' ? 'branchrules' : 'windows');
-            TopologyREST.getAllNodes(topologyId, versionId, type).then((results)=>{
-                results.entities.map((nodeObj)=>{
+            streamId = o.streamGrouping.streamId;
+            let currentNodeEdges = edges.filter((obj)=>{ return obj.source === o.source && streamId === obj.streamGrouping.streamId});
+            if(currentNode.currentType.toLowerCase() === 'notification'){
+                currentActionType = "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction";
+            } else {
+                currentActionType = "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction";
+            }
+            let rulesPromiseArr = [
+                TopologyREST.getAllNodes(topologyId, versionId, 'streams'),
+                TopologyREST.getAllNodes(topologyId, versionId, type)
+            ];
+
+            Promise.all(rulesPromiseArr).then((results)=>{
+                results[1].entities.map((nodeObj)=>{
                     let actionsArr = nodeObj.actions,
                         actions = [],
                         hasAction = false;
+                    let ruleStream = results[0].entities.find((s)=>{ return s.id === streamId});
                     actionsArr.map((a)=>{
-                        if(a.name !== currentNode.uiname){
-                            actions.push(a);
-                        } else {
+                        if(a.outputStreams[0] === ruleStream.streamId && a.__type === currentActionType){
                             hasAction = true;
+                            if(currentNodeEdges.length > 1) {
+                                if(currentActionType === 'com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction') {
+                                    let notifierActionsArr = currentNodeEdges.filter((obj)=>{ return obj.target !== currentNode && obj.target.currentType.toLowerCase() === 'notification'; });
+                                    if(notifierActionsArr.length > 0) {
+                                    let targetNode = notifierActionsArr[0].target;
+                                    let stream = results[0].entities.find((s)=>{ return s.id === notifierActionsArr[0].streamGrouping.streamId});
+                                    actions.push({
+                                        __type: currentActionType,
+                                        name: 'notifierAction',
+                                        outputStreams: [stream.streamId],
+                                        transforms: []
+                                    });
+                                    }
+                                } else if(currentActionType === 'com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction') {
+                                    let transformActionsArr = currentNodeEdges.filter((obj)=>{ return obj.target !== currentNode && obj.target.currentType.toLowerCase() !== 'notification'; });
+                                    if(transformActionsArr.length > 0) {
+                                    let targetNode = transformActionsArr[0].target;
+                                    let stream = results[0].entities.find((s)=>{ return s.id === transformActionsArr[0].streamGrouping.streamId});
+                                    actions.push({
+                                     __type: currentActionType,
+                                        name: 'transformAction',
+                                        outputStreams: [stream.streamId],
+                                        transforms: []
+                                    });
+                                    }
+                                }
+                            }
+                        } else {
+                            actions.push(a);
                         }
                     });
                     if(hasAction) {
@@ -438,10 +480,12 @@ const getEdges = function(allEdges, currentNode){
 	});
 }
 
-const deleteEdge = function(selectedEdge, topologyId, versionId, internalFlags, edges, updateGraphMethod, setLastChange){
+const deleteEdge = function(selectedEdge, topologyId, versionId, internalFlags, edges, nodes, updateGraphMethod, setLastChange){
+    let targetNodeType = selectedEdge.target.parentType === 'PROCESSOR' ? 'processors' : 'sinks';
     let promiseArr = [TopologyREST.deleteNode(topologyId, 'edges', selectedEdge.edgeId),
-				TopologyREST.getNode(topologyId, versionId, 'processors', selectedEdge.target.nodeId)];
-    if(selectedEdge.source.currentType.toLowerCase() === 'rule' || selectedEdge.source.currentType.toLowerCase() === 'window'){
+                                TopologyREST.getNode(topologyId, versionId, targetNodeType, selectedEdge.target.nodeId),
+                TopologyREST.getAllNodes(topologyId, versionId, 'streams')];
+    if(selectedEdge.source.currentType.toLowerCase() === 'rule' || selectedEdge.source.currentType.toLowerCase() === 'window' || selectedEdge.source.currentType.toLowerCase() === 'branch'){
         promiseArr.push(TopologyREST.getNode(topologyId, versionId, 'processors', selectedEdge.source.nodeId));
     }
     Promise.all(promiseArr)
@@ -454,17 +498,25 @@ const deleteEdge = function(selectedEdge, topologyId, versionId, internalFlags, 
 				joinProcessorNode.config.properties.from = {};
 				TopologyREST.updateNode(topologyId, versionId, 'processors', joinProcessorNode.id, {body: JSON.stringify(joinProcessorNode)});
 			}
-            }
-            if(results.length === 3){
+        }
+        if(results.length === 4){
 		//Find the connected source rule/window
                 let rulePromises = [];
-                let ruleProcessorNode = results[2];
+                let ruleProcessorNode = results[3];
+                let ruleStream = results[2].entities.find((s)=>{ return s.id === selectedEdge.streamGrouping.streamId});
+                let currentNodeEdges = edges.filter((obj)=>{ return obj.source === selectedEdge.source && obj.streamGrouping.streamId === selectedEdge.streamGrouping.streamId});
+                let currentActionType = "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction";
                 let t = selectedEdge.source.currentType.toLowerCase();
                 let type = t === 'window' ? 'windows' : (t === 'rule' ? 'rules' : 'branchrules');
                 if(ruleProcessorNode.config.properties.rules){
                     ruleProcessorNode.config.properties.rules.map(ruleId=>{
                         rulePromises.push(TopologyREST.getNode(topologyId, versionId, type, ruleId));
                     })
+                }
+                if(selectedEdge.target.currentType.toLowerCase() === 'notification'){
+                    currentActionType = "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction";
+                } else {
+                    currentActionType = "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction";
                 }
                 Promise.all(rulePromises)
                     .then(rulesResults=>{
@@ -474,13 +526,43 @@ const deleteEdge = function(selectedEdge, topologyId, versionId, internalFlags, 
                                 //If source rule has target notification inside rule action,
                                 //then remove and update the rules/window.
                                 let index = null;
+                                let actionObj = null;
                                 rule.actions.map((a, i)=>{
-                                    if(a.name === selectedEdge.target.uiname){
+                                    if(a.outputStreams[0] === ruleStream.streamId && a.__type === currentActionType){
                                         index = i;
-									}
-                                                                })
+                                        if(currentNodeEdges.length > 1) {
+                                            if(currentActionType === 'com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction') {
+                                                let notifierActionsArr = currentNodeEdges.filter((obj)=>{ return obj.target !== selectedEdge.target && obj.target.currentType.toLowerCase() === 'notification'; });
+                                                if(notifierActionsArr.length > 0) {
+                                                    let targetNode = notifierActionsArr[0].target;
+                                                    let stream = results[2].entities.find((s)=>{ return s.id === notifierActionsArr[0].streamGrouping.streamId});
+                                                    actionObj = {
+                                                        __type: currentActionType,
+                                                        name: 'notifierAction',
+                                                        outputStreams: [stream.streamId],
+                                                        transforms: []
+                                                    };
+                                                }
+                                            } else if(currentActionType === 'com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction') {
+                                                let transformActionsArr = currentNodeEdges.filter((obj)=>{ return obj.target !== selectedEdge.target && obj.target.currentType.toLowerCase() !== 'notification'; });
+                                                if(transformActionsArr.length > 0) {
+                                                    let targetNode = transformActionsArr[0].target;
+                                                    let stream = results[2].entities.find((s)=>{ return s.id === transformActionsArr[0].streamGrouping.streamId});
+                                                    actionObj = {
+                                                        __type: currentActionType,
+                                                        name: 'transformAction',
+                                                        outputStreams: [stream.streamId],
+                                                        transforms: []
+                                                    };
+                                                }
+                                            }
+                                        }
+                                    }
+                                });
                                 if(index !== null){
-                                    rule.actions.splice(index, 1);
+                                    if(actionObj !== null)
+                                        rule.actions[index] = actionObj;
+                                    else rule.actions.splice(index, 1);
                                     TopologyREST.updateNode(topologyId, versionId, type, rule.id, {body: JSON.stringify(rule)});
                                 }
                             }
@@ -625,6 +707,8 @@ const getConfigContainer = function(node, configData, editMode, topologyId, vers
                     sourceNode={sourceNodes}
                     targetNodes={targetNodes}
                     linkShuffleOptions={linkShuffleOptions}
+                    graphEdges={edges}
+                    updateGraphMethod={updateGraphMethod}
                 />};
             break;
             case 'CUSTOM': //Custom

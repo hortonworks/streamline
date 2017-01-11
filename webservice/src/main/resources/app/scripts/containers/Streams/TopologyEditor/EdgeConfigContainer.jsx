@@ -107,7 +107,7 @@ export default class EdgeConfigContainer extends Component {
                             }
                         });
                     });
-                    if(nodeType === 'branch') {
+                    if(nodeType === 'branch' || nodeType === 'rule') {
                         let id = streamId.split('_')[3];
                         var ruleObject = _.find(rulesArr, {id: parseInt(id, 10)});
                     }
@@ -128,16 +128,12 @@ export default class EdgeConfigContainer extends Component {
             this.setState({grouping: obj.value})
         } else this.setState({grouping: ''});
     }
-    handleRulesChange(arr) {
-        let rules = [];
-        if(arr && arr.length){
-            for(let r of arr){
-                rules.push(r.value);
-            }
-            this.setState({rules: rules});
-        } else {
-            this.setState({rules: []});
-        }
+    handleRulesChange(obj) {
+        if(obj) {
+            let id = obj.id;
+            var streamObject = _.find(this.state.streamsArr, {value: 'rule_processor_stream_'+id});
+            this.setState({rules: obj.value, streamId: streamObject.value, streamFields: JSON.stringify(streamObject.fields, null, "  ")});
+        } else this.setState({rules: [], streamId: '', streamFields: ''});
     }
     handleBranchRulesChange(obj) {
         if(obj) {
@@ -204,46 +200,61 @@ export default class EdgeConfigContainer extends Component {
                             let data = result;
                             if(type === 'rules' || type === 'branchrules') {
                                 let actionObj = {
-                                    name: this.props.data.edge.target.uiname,
                                     outputStreams: [streamObj.value]
                                 };
                                 if(this.props.data.edge.target.currentType.toLowerCase() === 'notification'){
                                     actionObj.outputFieldsAndDefaults = sourceNode.config.properties.fieldValues || {};
                                     actionObj.notifierName = sourceNode.config.properties.notifierName || '';
+                                    actionObj.name = 'notifierAction';
                                     actionObj.__type = "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction";
                                 } else {
+                                    actionObj.name = 'transformAction';
                                     actionObj.__type = "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction";
                                     actionObj.transforms = [];
                                 }
-                                let obj = _.find(data.actions, {name: actionObj.name});
-                                if(type === 'branchrules') {
-                                    if(rules === data.name && !obj) {
+                                let obj = _.find(data.actions, (a)=>{return a.outputStreams[0] === streamObj.value && a.__type === actionObj.__type;});
+                                let hasActionType = false;
+                                if(data.actions.length > 0) {
+                                    data.actions.map((a)=>{
+                                        if(a.__type === actionObj.__type)
+                                            hasActionType = true;
+                                    });
+                                }
+                                if(obj && rules === data.name)
+                                    obj.outputStreams = [streamObj.value];
+                                if(rules === data.name && !obj && !hasActionType) {
                                         data.actions.push(actionObj);
-                                    } else if(rules !== data.name && obj) {
+                                } else if(rules !== data.name && obj) {
                                         data.actions = [];
-                                    }
-                                } else {
-                                    if(rules.indexOf(data.name) > -1 && !obj) {
-                                        data.actions.push(actionObj);
-                                    } else if(rules.indexOf(data.name) === -1 && obj) {
-                                        data.actions = [];
-                                    }
                                 }
                                 saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, type, data.id, {body: JSON.stringify(data)}));
                             } else if(type === 'windows') {
                                 let actionObj = {
-                                    name: this.props.data.edge.target.uiname,
                                     outputStreams: [streamObj.value]
                                 };
                                 if(this.props.data.edge.target.currentType.toLowerCase() === 'notification'){
                                     actionObj.outputFieldsAndDefaults = sourceNode.config.properties.fieldValues || {};
                                     actionObj.notifierName = sourceNode.config.properties.notifierName || '';
+                                    actionObj.name = 'notifierAction';
                                     actionObj.__type = "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction";
                                 } else {
+                                    actionObj.name = 'transformAction';
                                     actionObj.__type = "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction";
                                     actionObj.transforms = [];
                                 }
-                                data.actions.push(actionObj);
+                                let obj = _.find(data.actions, (a)=>{return a.outputStreams[0] === streamObj.value && a.__type === actionObj.__type;});
+                                let hasActionType = false;
+                                if(data.actions.length > 0) {
+                                data.actions.map((a)=>{
+                                    if(a.__type === actionObj.__type)
+                                        hasActionType = true;
+                                    });
+                                }
+                                if(obj)
+                                    obj.outputStreams = [streamObj.value];
+                                if(!obj && !hasActionType) {
+                                    data.actions.push(actionObj);
+                                }
                                 saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, type, data.id, {body: JSON.stringify(data)}))
                             }
                         })
@@ -289,7 +300,7 @@ export default class EdgeConfigContainer extends Component {
                             onChange={this.handleStreamChange.bind(this)}
                             clearable={false}
                             required={true}
-                            disabled={nodeType === 'branch' ? true : false}
+                            disabled={nodeType === 'branch' || nodeType === 'rule' ? true : false}
                         />
                     </div>
                 </div>
@@ -316,9 +327,7 @@ export default class EdgeConfigContainer extends Component {
                                 value={rules}
                                 options={rulesArr}
                                 onChange={this.handleRulesChange.bind(this)}
-                                multi={true}
                                 clearable={false}
-                                joinValues={true}
                                 required={true}
                             />
                         }

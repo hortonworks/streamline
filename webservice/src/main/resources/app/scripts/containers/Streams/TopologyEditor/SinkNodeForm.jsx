@@ -244,9 +244,8 @@ export default class SinkNodeForm extends Component {
         if(this.allSourceChildNodeData && this.allSourceChildNodeData.length > 0){
             this.allSourceChildNodeData.map((childData)=>{
                 let child = childData;
-                let obj = child.actions.find((o)=>{return o.name == oldName});
+                let obj = child.actions.find((o)=>{return o.outputStreams[0] == this.state.streamObj.streamId && o.name === 'notifierAction'});
                 if(obj){
-                    obj.name = name;
                     if(nodeData.currentType.toLowerCase() == 'notification'){
                         obj.outputFieldsAndDefaults = this.nodeData.config.properties.fieldValues || {};
                         obj.notifierName = this.nodeData.config.properties.notifierName || '';

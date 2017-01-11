@@ -496,8 +496,8 @@ export default class TopologyGraphComponent extends Component {
 	}
 
 	deleteEdge(selectedEdge){
-        let {topologyId, versionId, internalFlags, edges, updateGraph, setLastChange} = this;
-        TopologyUtils.deleteEdge(selectedEdge, topologyId, versionId, internalFlags, edges, updateGraph.bind(this), setLastChange);
+        let {topologyId, versionId, internalFlags, edges, nodes, updateGraph, setLastChange} = this;
+        TopologyUtils.deleteEdge(selectedEdge, topologyId, versionId, internalFlags, edges, nodes, updateGraph.bind(this), setLastChange);
         this.edgeStream.style('display', 'none');
 	}
 
