@@ -84,7 +84,7 @@ public final class StreamlineEventImpl extends ForwardingMap<String, Object> imp
      * Creates an StreamlineEvent with given keyValues, dataSourceId, id, header and sourceStream.
      */
     public StreamlineEventImpl(Map<String, Object> keyValues, String dataSourceId, String id, Map<String, Object> header, String sourceStream, Map<String, Object> auxiliaryFieldsAndValues) {
-        this.delegate = ImmutableMap.<String, Object>builder().putAll(keyValues).build();
+        this.delegate = ImmutableMap.copyOf(keyValues);
         this.dataSourceId = dataSourceId;
         this.id = id;
         this.header = header;
@@ -98,7 +98,7 @@ public final class StreamlineEventImpl extends ForwardingMap<String, Object> imp
         this.auxiliaryFieldsAndValues = new HashMap<>(other.auxiliaryFieldsAndValues);
         this.dataSourceId = other.dataSourceId;
         this.id = other.id;
-        this.delegate = ImmutableMap.copyOf(other);
+        this.delegate = ImmutableMap.copyOf(other.delegate);
     }
 
     /*
