@@ -418,7 +418,7 @@ public class TopologyComponentBundleResource {
                 throw EntityNotFoundException.byId("namespace id: " + namespaceId);
             }
 
-            Map<String, Map<String, Object>> hints = provider.provide(namespace);
+            Map<Long, ComponentBundleHintProvider.BundleHintsResponse> hints = provider.provide(namespace);
             return WSUtils.respondEntity(hints, OK);
         } else {
             return WSUtils.respondEntity(Collections.emptyMap(), OK);

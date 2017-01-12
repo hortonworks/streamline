@@ -28,17 +28,6 @@ public class StormMetadataResource {
     }
 
     @GET
-    @Path("/clusters/name/{clusterName}/services/storm/topologies")
-    @Timed
-    public Response getTopologiesByClusterName(@PathParam("clusterName") String clusterName) {
-        final Cluster cluster = environmentService.getClusterByName(clusterName);
-        if (cluster == null) {
-            throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
-        }
-        return getTopologiesByClusterId(cluster.getId());
-    }
-
-    @GET
     @Path("/clusters/{clusterId}/services/storm/topologies")
     @Timed
     public Response getTopologiesByClusterId(@PathParam("clusterId") Long clusterId) {

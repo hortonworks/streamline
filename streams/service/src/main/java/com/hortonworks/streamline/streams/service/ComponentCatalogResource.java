@@ -56,34 +56,6 @@ public class ComponentCatalogResource {
         throw EntityNotFoundException.byFilter(queryParams.toString());
     }
 
-    /**
-     * List ALL components or the ones matching specific query params.
-     */
-    @GET
-    @Path("/clusters/name/{clusterName}/services/name/{serviceName}/components")
-    @Timed
-    public Response listComponentsByName(@PathParam("clusterName") String clusterName,
-        @PathParam("serviceName") String serviceName, @Context UriInfo uriInfo) {
-        Cluster cluster = environmentService.getClusterByName(clusterName);
-        if (cluster == null) {
-            throw EntityNotFoundException.byName("cluster name " + clusterName);
-        }
-
-        Service service = environmentService.getServiceByName(cluster.getId(), serviceName);
-        if (service == null) {
-            throw EntityNotFoundException.byName("service name " + serviceName);
-        }
-
-        List<QueryParam> queryParams = buildServiceIdAwareQueryParams(service.getId(), uriInfo);
-
-        Collection<Component> components = environmentService.listComponents(queryParams);
-        if (components != null) {
-            return WSUtils.respondEntities(components, OK);
-        }
-
-        throw EntityNotFoundException.byFilter(queryParams.toString());
-    }
-
     @GET
     @Path("/services/{serviceId}/components/{id}")
     @Timed
@@ -97,30 +69,6 @@ public class ComponentCatalogResource {
         }
 
         throw EntityNotFoundException.byId(buildMessageForCompositeId(serviceId, componentId));
-    }
-
-    @GET
-    @Path("/clusters/name/{clusterName}/services/name/{serviceName}/components/name/{componentName}")
-    @Timed
-    public Response getComponentByName(@PathParam("clusterName") String clusterName,
-        @PathParam("serviceName") String serviceName, @PathParam("componentName") String componentName) {
-        Cluster cluster = environmentService.getClusterByName(clusterName);
-        if (cluster == null) {
-            throw EntityNotFoundException.byName("cluster name " + clusterName);
-        }
-
-        Service service = environmentService.getServiceByName(cluster.getId(), serviceName);
-        if (service == null) {
-            throw EntityNotFoundException.byName("service name " + serviceName);
-        }
-
-        Component component = environmentService.getComponentByName(service.getId(), componentName);
-        if (component != null) {
-            return WSUtils.respondEntity(component, OK);
-        }
-
-        throw EntityNotFoundException.byName(buildMessageForCompositeName(clusterName,
-            serviceName, componentName));
     }
 
     @POST
@@ -203,11 +151,4 @@ public class ComponentCatalogResource {
         return String.format("service id <%d>, component id <%d>",
                 serviceId, componentId);
     }
-
-    private String buildMessageForCompositeName(String clusterName, String serviceName,
-        String componentName) {
-        return String.format("cluster name <%s>, service name <%s>, component name <%s>",
-            clusterName, serviceName, componentName);
-    }
-
 }

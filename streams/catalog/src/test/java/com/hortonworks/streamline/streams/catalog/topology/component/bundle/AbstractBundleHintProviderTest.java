@@ -73,11 +73,14 @@ public class AbstractBundleHintProviderTest {
         Namespace namespace = new Namespace();
         namespace.setId(TEST_NAMESPACE_ID);
 
-        Map<String, Map<String, Object>> hints = provider.provide(namespace);
+        Map<Long, ComponentBundleHintProvider.BundleHintsResponse> hints = provider.provide(namespace);
         Assert.assertEquals(3, hints.size());
-        Assert.assertEquals(TEST_HINTS, hints.get(cluster1.getName()));
-        Assert.assertEquals(TEST_HINTS, hints.get(cluster2.getName()));
-        Assert.assertEquals(TEST_HINTS, hints.get(cluster3.getName()));
+        Assert.assertEquals(cluster1, hints.get(cluster1.getId()).getCluster());
+        Assert.assertEquals(TEST_HINTS, hints.get(cluster1.getId()).getHints());
+        Assert.assertEquals(cluster2, hints.get(cluster2.getId()).getCluster());
+        Assert.assertEquals(TEST_HINTS, hints.get(cluster2.getId()).getHints());
+        Assert.assertEquals(cluster3, hints.get(cluster3.getId()).getCluster());
+        Assert.assertEquals(TEST_HINTS, hints.get(cluster3.getId()).getHints());
     }
 
     private Cluster createDummyCluster(long id, String clusterName) {

@@ -131,39 +131,6 @@ and show only sample for creating a service, service configuration, component.
 }
 ```
 
-`GET /api/v1/catalog/clusters/name/:clustername`
-
-**Success Response**
-
-    GET /api/v1/catalog/clusters/name/production
-    HTTP/1.1 200 OK
-    Content-Type: application/json
-
-```json
-{
-  "responseCode": 1000,
-  "responseMessage": "Success",
-  "entity": {
-    "id": 1,
-    "name": "production",
-    "description": "The production cluster that handles streaming events",
-    "timestamp": 1475657006739
-  }
-}
-```
-**Error Response**
-
-    GET /api/v1/catalog/clusters/name/production10
-    HTTP/1.1 404 Not Found
-    Content-Type: application/json
-    
-```json
-{
-  "responseCode": 1102,
-  "responseMessage": "Entity with name [production10] not found. Please check webservice/ErrorCodes.md for more details."
-}
-```
-
 ### List Clusters
 
 `GET /api/v1/catalog/clusters`
@@ -686,13 +653,9 @@ User should create a new Cluster entity or specify existing one. If user chooses
 
 `GET /api/v1/catalog/clusters/:clusterId/services`
 
-`GET /api/v1/catalog/clusters/name/:clusterName/services`
-
 ### Get Service
 
 `GET /api/v1/catalog/clusters/{clusterId}/services/{id}`
-
-`GET /api/v1/catalog/clusters/name/{clusterName}/services/name/{serviceName}`
 
 ### Update Service
 
@@ -750,8 +713,6 @@ User should create a new Cluster entity or specify existing one. If user chooses
 
 `GET /api/v1/catalog/services/:serviceId/configurations/:configurationId`
 
-`GET /api/v1/catalog/clusters/name/:clusterName/services/name/:serviceName/configurations/:configurationName`
-
 ### Update Service Configuration
 
 `PUT /api/v1/catalog/services/:serviceId/configurations/:configurationId`
@@ -805,13 +766,9 @@ User should create a new Cluster entity or specify existing one. If user chooses
 
 `GET /api/v1/catalog/clusters/:clusterId/services`
 
-`GET /api/v1/catalog/clusters/name/:clusterName/services`
-
 ### Get Component
 
 `GET /api/v1/catalog/clusters/{clusterId}/services/{id}`
-
-`GET /api/v1/catalog/clusters/name/{clusterName}/services/name/{serviceName}`
 
 ### Update Component
 

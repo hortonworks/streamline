@@ -111,10 +111,11 @@ public class EnvironmentService {
         return this.dao.get(new StorableKey(CLUSTER_NAMESPACE, cluster.getPrimaryKey()));
     }
 
-    public Cluster getClusterByName(String clusterName) {
-        Collection<Cluster> clusters = listClusters(Lists.newArrayList(new QueryParam("name", clusterName)));
+    public Cluster getClusterByNameAndImportUrl(String clusterName, String ambariImportUrl) {
+        Collection<Cluster> clusters = listClusters(
+                Lists.newArrayList(new QueryParam("name", clusterName), new QueryParam("ambariImportUrl", ambariImportUrl)));
         if (clusters.size() > 1) {
-            LOG.warn("Multiple Clusters have same name: {} returning first match.", clusterName);
+            LOG.warn("Multiple Clusters have same name {} and import url {} : returning first match.", clusterName, ambariImportUrl);
             return clusters.iterator().next();
         } else if (clusters.size() == 1) {
             return clusters.iterator().next();
@@ -330,49 +331,6 @@ public class EnvironmentService {
         }
         this.dao.addOrUpdate(serviceConfiguration);
         return serviceConfiguration;
-    }
-
-    public Map<String, Object> getDeserializedConfiguration(String clusterName, String serviceName,
-                                                            String serviceConfiguraionName) throws IOException {
-        Cluster cluster = getClusterByName(clusterName);
-        if (cluster == null) {
-            return null;
-        }
-
-        Service service = getServiceByName(cluster.getId(), serviceName);
-        if (service == null) {
-            return null;
-        }
-
-        ServiceConfiguration serviceConfiguration = getServiceConfigurationByName(service.getId(), serviceConfiguraionName);
-        if (serviceConfiguration == null) {
-            return null;
-        }
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.readValue(serviceConfiguration.getConfiguration(), Map.class);
-    }
-
-    public Object lookupConfiguration(String clusterName, String serviceName,
-                                      String serviceConfiguraionName, String configKey) throws IOException {
-        Cluster cluster = getClusterByName(clusterName);
-        if (cluster == null) {
-            return null;
-        }
-
-        Service service = getServiceByName(cluster.getId(), serviceName);
-        if (service == null) {
-            return null;
-        }
-
-        ServiceConfiguration serviceConfiguration = getServiceConfigurationByName(service.getId(), serviceConfiguraionName);
-        if (serviceConfiguration == null) {
-            return null;
-        }
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        Map<String, Object> conf = objectMapper.readValue(serviceConfiguration.getConfiguration(), Map.class);
-        return conf.get(configKey);
     }
 
     public Collection<Namespace> listNamespaces() {

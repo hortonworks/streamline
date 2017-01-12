@@ -58,28 +58,6 @@ public class ServiceCatalogResource {
         throw EntityNotFoundException.byFilter(queryParams.toString());
     }
 
-    /**
-     * List ALL services or the ones matching specific query params.
-     */
-    @GET
-    @Path("/clusters/name/{clusterName}/services")
-    @Timed
-    public Response listServicesByName(@PathParam("clusterName") String clusterName, @Context UriInfo uriInfo) {
-        Cluster cluster = environmentService.getClusterByName(clusterName);
-        if (cluster == null) {
-            throw EntityNotFoundException.byName("cluster name " + clusterName);
-        }
-
-        List<QueryParam> queryParams = buildClusterIdAwareQueryParams(cluster.getId(), uriInfo);
-        Collection<Service> services;
-        services = environmentService.listServices(queryParams);
-        if (services != null) {
-            return WSUtils.respondEntities(services, OK);
-        }
-
-        throw EntityNotFoundException.byFilter(queryParams.toString());
-    }
-
     @GET
     @Path("/clusters/{clusterId}/services/{id}")
     @Timed
@@ -93,24 +71,6 @@ public class ServiceCatalogResource {
         }
 
         throw EntityNotFoundException.byId(buildMessageForCompositeId(clusterId, serviceId));
-    }
-
-    @GET
-    @Path("/clusters/name/{clusterName}/services/name/{serviceName}")
-    @Timed
-    public Response getServiceByName(@PathParam("clusterName") String clusterName,
-        @PathParam("serviceName") String serviceName) {
-        Cluster cluster = environmentService.getClusterByName(clusterName);
-        if (cluster == null) {
-            throw EntityNotFoundException.byName("cluster name " + clusterName);
-        }
-
-        Service result = environmentService.getServiceByName(cluster.getId(), serviceName);
-        if (result != null) {
-            return WSUtils.respondEntity(result, OK);
-        }
-
-        throw EntityNotFoundException.byId(buildMessageForCompositeName(clusterName, serviceName));
     }
 
     @Timed
@@ -181,11 +141,6 @@ public class ServiceCatalogResource {
     private String buildMessageForCompositeId(Long clusterId, Long serviceId) {
         return String.format("cluster id <%d>, service id <%d>",
             clusterId, serviceId);
-    }
-
-    private String buildMessageForCompositeName(String clusterName, String serviceName) {
-        return String.format("cluster name <%s>, service name <%s>",
-            clusterName, serviceName);
     }
 
 }
