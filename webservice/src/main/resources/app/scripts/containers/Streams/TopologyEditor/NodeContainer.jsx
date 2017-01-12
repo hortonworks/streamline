@@ -6,8 +6,8 @@ import { DragSource } from 'react-dnd';
 
 const nodeSource = {
 	beginDrag(props, monitor, component) {
-        const { imgPath, type, name, nodeType, topologyComponentBundleId } = props;
-        return { imgPath, type, name, nodeType, topologyComponentBundleId };
+        const { imgPath, type, name, nodeType, topologyComponentBundleId,nodeLable } = props;
+        return { imgPath, type, name, nodeType, topologyComponentBundleId,nodeLable };
 	}
 };
 

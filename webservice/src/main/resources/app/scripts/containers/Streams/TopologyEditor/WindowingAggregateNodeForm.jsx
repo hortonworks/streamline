@@ -85,6 +85,7 @@ export default class WindowingAggregateNodeForm extends Component {
 								streamIdArr.push(streamObj.streamId);
                                 promiseArr.push(TopologyREST.getNode(topologyId, versionId, 'streams', streamObj.streamId))
 							}
+                                                        this.connectingEdge = result;
 						})
 					}
 				})
@@ -533,6 +534,16 @@ export default class WindowingAggregateNodeForm extends Component {
 						}
 	                    promiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'streams', ruleNode.outputStreams[0].id, {body: JSON.stringify(streamObj)}));
 	                });
+                                        let edgeObj = {
+                                                fromId: this.connectingEdge.fromId,
+                                                toId: this.connectingEdge.toId,
+                                                streamGroupings: [{
+                                                        streamId: this.connectingEdge.streamGroupings[0].streamId,
+                                                        grouping: 'FIELDS',
+                                                        fields: windowObj.groupbykeys
+                                                }]
+                                        }
+                                        promiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'edges', this.connectingEdge.id, {body: JSON.stringify(edgeObj)}));
 	                return Promise.all(promiseArr);
 	            }
 	        })

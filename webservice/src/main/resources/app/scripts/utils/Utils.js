@@ -173,9 +173,9 @@ const checkNestedInputFields = function(inputObj,fieldsData){
       //InputObj which have options and hint of "inputfields" OR "eventtime" OR "override"
       //those fields are mapped by inputFieldsData function
       if(obj.options && obj.hint !== undefined){
-        if(obj.hint.toLowerCase().indexOf("inputfields") !== -1){
+        if(obj.hint.toLowerCase().indexOf("inputfields") !== -1 && !obj.options.length){
           obj.options = inputFieldsData(fieldsData)
-        }else if(obj.hint.toLowerCase().indexOf("eventtime") !== -1){
+        }else if(obj.hint.toLowerCase().indexOf("eventtime") !== -1 && !obj.options.length){
           obj.options = eventTimeData(fieldsData)
         }else if(obj.hint.toLowerCase().indexOf("override") !== -1 && obj.type === "enumstring"){
           obj.type = "creatableField";

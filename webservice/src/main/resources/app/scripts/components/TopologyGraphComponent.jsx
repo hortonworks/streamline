@@ -454,11 +454,11 @@ export default class TopologyGraphComponent extends Component {
             y: xycoords[1] - (constants.rectangleHeight / 2) - 5.5,
             parentType: itemObj.type,
             currentType: itemObj.nodeType,
-            uiname: itemObj.name,
+            uiname: itemObj.nodeLable,
             imageURL: itemObj.imgPath,
 			isConfigured: false,
             parallelismCount: 1,
-            nodeLabel: itemObj.name,
+            nodeLabel: itemObj.nodeLable,
             topologyComponentBundleId: itemObj.topologyComponentBundleId
 		};
 		nodes.push(d);
@@ -793,7 +793,7 @@ export default class TopologyGraphComponent extends Component {
         //label text for node type
         newGs.each(function(d) {
             let gEl = d3.select(this),
-                title = d.nodeLabel;
+                title = d.nodeLabel.length > 15 ? d.nodeLabel.slice(0, 10) + '...' : d.nodeLabel ;
             let el = gEl.append("text")
                 .attr("class", function(d){ return 'node-type-label';})
                 .attr("filter", function(d){ if(!d.isConfigured){ return "url(#grayscale)"; } else return ""; })

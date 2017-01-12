@@ -19,7 +19,7 @@ import ComponentDefinition from '../containers/Configuration/ComponentDefinition
 
 const onEnter = (nextState, replace, callback) => {
 	var sidebarRoute = nextState.routes[1];
-        if(sidebarRoute && sidebarRoute.name === 'All Streams'){
+        if(sidebarRoute && sidebarRoute.name === 'My Applications'){
                 state.sidebar_activeKey = 1;
     state.sidebar_toggleFlag = false;
 	}
@@ -29,10 +29,10 @@ const onEnter = (nextState, replace, callback) => {
 export default (
 
   <Route path="/" component={null} name="Home" onEnter={onEnter}>
-    <IndexRoute name="All Streams" component={TopologyListContainer} onEnter={onEnter} />
+    <IndexRoute name="My Applications" component={TopologyListContainer} onEnter={onEnter} />
   <Route path="metrics" name="Metrics" component={MetricsContainer} onEnter={onEnter}/>
-  <Route path="applications" name="All Streams" onEnter={onEnter}>
-    <IndexRoute name="All Streams" component={TopologyListContainer} onEnter={onEnter} />
+  <Route path="applications" name="My Applications" onEnter={onEnter}>
+    <IndexRoute name="My Applications" component={TopologyListContainer} onEnter={onEnter} />
     {/*<Route path=":id" name="Application Editor" component={TopologyEditorContainer} onEnter={onEnter}/>*/}
     <Route path=":id/view" name="Application Editor" component={TopologyViewContainer} onEnter={onEnter}/>
     <Route path=":id/edit" name="Application Editor" component={TopologyEditorContainer} onEnter={onEnter}/>

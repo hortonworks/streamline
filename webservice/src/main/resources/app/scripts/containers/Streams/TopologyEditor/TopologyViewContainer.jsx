@@ -308,7 +308,7 @@ class TopologyViewContainer extends Component {
   getTopologyHeader() {
     return (
       <span>
-        <Link to="/">All Streams</Link> <span className="title-separator">/</span> View: {this.state.topologyName}
+        <Link to="/">My Applications</Link> <span className="title-separator">/</span> View: {this.state.topologyName}
       </span>
     );
   }

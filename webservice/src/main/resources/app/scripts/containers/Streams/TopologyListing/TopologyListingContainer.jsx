@@ -17,6 +17,7 @@ import TopologyREST from '../../../rest/TopologyREST';
 import Utils from '../../../utils/Utils';
 import TopologyUtils from '../../../utils/TopologyUtils';
 import FSReactToastr from '../../../components/FSReactToastr';
+import EnvironmentREST from '../../../rest/EnvironmentREST';
 
 /* component import */
 import BaseContainer from '../../BaseContainer';
@@ -308,7 +309,8 @@ class TopologyListingContainer extends Component {
             fetchLoader : true,
             pageIndex : 0,
             pageSize : 9,
-            cloneFromId: null
+            cloneFromId: null,
+            checkEnvironment : false
         }
 
         this.fetchData();
@@ -316,19 +318,31 @@ class TopologyListingContainer extends Component {
 
     fetchData() {
       const sortKey = this.state.sorted.key;
-        TopologyREST.getAllTopology(sortKey).then((topology) => {
-            if (topology.responseMessage !== undefined) {
-              this.setState({fetchLoader : false});
-                FSReactToastr.error(
-                    <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
-            } else {
-                let result = Utils.sortArray(topology.entities.slice(), 'timestamp', false);
-                this.setState({fetchLoader : false,entities: result,pageIndex:0});
+      let promiseArr = [
+        EnvironmentREST.getAllNameSpaces(),
+        TopologyREST.getAllTopology(sortKey)
+      ];
+      Promise.all(promiseArr)
+        .then((results) => {
+          let environmentLen = 0 , environmentFlag = false;
+          if(results[0].responseMessage !== undefined){
+            this.setState({fetchLoader : false,checkEnvironment:false});
+              FSReactToastr.error(
+                  <CommonNotification flag="error" content={results[0].responseMessage}/>, '', toastOpt)
+          }else{
+            environmentLen = results[0].entities.length;
+          }
+          if(results[1].responseMessage !== undefined){
+            this.setState({fetchLoader : false,checkEnvironment:false});
+              FSReactToastr.error(
+                  <CommonNotification flag="error" content={results[1].responseMessage}/>, '', toastOpt)
+          }else{
+            let result = Utils.sortArray(results[1].entities.slice(), 'timestamp', false);
+            if(result.length === 0 && environmentLen !== 0){
+                environmentFlag = true;
             }
-        }).catch((err) => {
-            this.setState({fetchLoader : false});
-            FSReactToastr.error(
-                <CommonNotification flag="error" content={err.message}/>, '', toastOpt)
+            this.setState({fetchLoader : false,entities: result,pageIndex:0,checkEnvironment : environmentFlag});
+          }
         });
     }
 
@@ -576,7 +590,7 @@ class TopologyListingContainer extends Component {
     }
 
     render() {
-        const {entities,filterValue,isLoading,fetchLoader,slideInput,pageSize,pageIndex} = this.state;
+        const {entities,filterValue,isLoading,fetchLoader,slideInput,pageSize,pageIndex,checkEnvironment} = this.state;
         const filteredEntities = TopologyUtils.topologyFilter(entities, filterValue);
         const splitData = _.chunk(filteredEntities,pageSize) || [];
         const btnIcon = <i className="fa fa-plus"></i>;
@@ -659,6 +673,7 @@ class TopologyListingContainer extends Component {
                         />
                       : (splitData.length === 0)
                         ? <NoData
+                            environmentFlag={checkEnvironment}
                             imgName={"applications"}
                         />
                         : splitData[pageIndex].map((list) => {

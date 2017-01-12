@@ -2118,3 +2118,6 @@ input[type="checkbox"]{
     width: 1.25em;
   }
 }
+.dropdown button.btn-link{
+  color: #484848;
+}

@@ -560,6 +560,14 @@ class TopologyEditorContainer extends Component {
         //Make the save request
         this.refs.ConfigModal.handleSave(this.modalTitle).then((savedNode)=>{
           if(savedNode instanceof Array){
+            if(this.node.currentType.toLowerCase() === 'window' || this.node.currentType.toLowerCase() === 'join') {
+              let updatedEdges = [];
+              savedNode.map((n, i)=>{
+                if(i > 0)
+                  updatedEdges.push(n);
+              });
+              TopologyUtils.updateGraphEdges(this.graphData.edges, updatedEdges);
+            }
             savedNode = savedNode[0];
           }
           if(savedNode.responseMessage !== undefined){
@@ -687,7 +695,7 @@ class TopologyEditorContainer extends Component {
   getTopologyHeader() {
     return (
       <span>
-        <Link to="/">All Streams</Link> /&nbsp;
+        <Link to="/">My Applications</Link> /&nbsp;
           <Editable
               id="applicationName"
               ref="topologyNameEditable"

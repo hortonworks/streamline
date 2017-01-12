@@ -780,6 +780,7 @@ const getConfigContainer = function(node, configData, editMode, topologyId, vers
                     targetNodes={targetNodes}
                     linkShuffleOptions={linkShuffleOptions}
                     currentEdges={currentEdges}
+                    graphEdges={edges}
                 />};
             break;
             case 'WINDOW': //Windowing
@@ -953,7 +954,7 @@ const generateNodeData = function(nodes, componentBundle, metadata, resultArr){
 			currentMetaObj = currentMetaObj[0];
 		}
 
-		let nodeLabel = componentObj.subType;
+                let nodeLabel = componentObj.name;
 		if(componentObj.subType.toLowerCase() === 'custom'){
 			let config = componentObj.topologyComponentUISpecification.fields,
             name = _.find(config, {fieldName: "name"});
@@ -1099,6 +1100,13 @@ const getNodeStreams = function(topologyId, versionId, nodeId, parentType, edges
         })
 }
 
+const updateGraphEdges = function(graphEdges, newEdges) {
+    newEdges.map((edge)=>{
+        let currentEdge = graphEdges.find((e)=>{return e.edgeId === edge.id;});
+        currentEdge.streamGrouping = edge.streamGroupings[0];
+    });
+}
+
 export default {
 	defineMarkers,
 	isValidConnection,
@@ -1131,5 +1139,6 @@ export default {
     updateParallelismCount,
     topologyFilter,
     getEdgeData,
-    getNodeStreams
+    getNodeStreams,
+    updateGraphEdges
 };

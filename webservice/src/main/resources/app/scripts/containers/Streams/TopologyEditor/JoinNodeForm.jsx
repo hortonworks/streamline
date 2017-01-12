@@ -380,9 +380,9 @@ export default class JoinNodeForm extends Component {
 	}
 
         handleSave(name, description){
-        let {topologyId, versionId, nodeType} = this.props;
+        let {topologyId, versionId, nodeType, currentEdges} = this.props;
                 let {outputKeys, windowNum, slidingNum, durationType, slidingDurationType, intervalType, parallelism,
-                        outputStreamFields, joinFromStreamName, joinFromStreamKey, joinStreams} = this.state;
+                        outputStreamFields, joinFromStreamName, joinFromStreamKey, joinStreams, inputStreamsArr} = this.state;
                 let configObj = {
                         from: {
                                 stream: joinFromStreamName,
@@ -442,7 +442,7 @@ export default class JoinNodeForm extends Component {
                                         fields: outputStreamFields,
                                         streamId: this.streamData.streamId
                                     })
-                                }                                
+                                }
                                 data.name = name;
                                 data.description = description;
                                 // let streamData = {
@@ -453,6 +453,33 @@ export default class JoinNodeForm extends Component {
                                         TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(data)}),
                                         // TopologyREST.updateNode(topologyId, versionId, 'streams', this.streamData.id, {body: JSON.stringify(streamData)})
                                         ]
+                                // update edges with fields grouping
+                                var streamObj = inputStreamsArr.find((s)=>{return s.streamId === configObj.from.stream;});
+                                var edgeObj = currentEdges.find((e)=>{return streamObj.id === e.streamGrouping.streamId;});
+                                var edgeData = {
+                                        fromId: edgeObj.source.nodeId,
+                                        toId: edgeObj.target.nodeId,
+                                        streamGroupings: [{
+                                            streamId: edgeObj.streamGrouping.streamId,
+                                            grouping: 'FIELDS',
+                                            fields: [configObj.from.key]
+                                        }]
+                                    };
+                                promiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'edges', edgeObj.edgeId, {body: JSON.stringify(edgeData)}));
+                                configObj.joins.map((obj)=>{
+                                    streamObj = inputStreamsArr.find((s)=>{return s.streamId === obj.stream;});
+                                    edgeObj = currentEdges.find((e)=>{return streamObj.id === e.streamGrouping.streamId;});
+                                    edgeData = {
+                                        fromId: edgeObj.source.nodeId,
+                                        toId: edgeObj.target.nodeId,
+                                        streamGroupings: [{
+                                            streamId: edgeObj.streamGrouping.streamId,
+                                            grouping: 'FIELDS',
+                                            fields: [obj.key]
+                                        }]
+                                    };
+                                    promiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'edges', edgeObj.edgeId, {body: JSON.stringify(edgeData)}));
+                                });
                 return Promise.all(promiseArr);
 			})
 	}
