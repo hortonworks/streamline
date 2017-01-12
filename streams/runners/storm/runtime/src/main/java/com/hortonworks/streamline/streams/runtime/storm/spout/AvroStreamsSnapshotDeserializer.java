@@ -21,6 +21,7 @@ import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.registries.schemaregistry.SchemaMetadata;
 import com.hortonworks.registries.schemaregistry.serdes.avro.AvroSnapshotDeserializer;
 import com.hortonworks.registries.schemaregistry.serde.SerDesException;
+import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericEnumSymbol;
 import org.apache.avro.generic.GenericFixed;
@@ -66,7 +67,7 @@ public class AvroStreamsSnapshotDeserializer extends AvroSnapshotDeserializer {
             for (Schema.Field field : fields) {
                 keyValues.put(field.name(), convertValue(indexedRecord.get(field.pos())));
             }
-            value = keyValues;
+            value = new StreamlineEventImpl(keyValues, null);
 
         } else if (deserializedObj instanceof ByteBuffer) { // byte array representation
             ByteBuffer byteBuffer = (ByteBuffer) deserializedObj;
@@ -87,7 +88,7 @@ public class AvroStreamsSnapshotDeserializer extends AvroSnapshotDeserializer {
             for (Map.Entry entry : map.entrySet()) {
                 keyValues.put(entry.getKey().toString(), convertValue(entry.getValue()));
             }
-            value = keyValues;
+            value = new StreamlineEventImpl(keyValues, null);
 
         } else if (deserializedObj instanceof Collection) { // type of array
             Collection<Object> collection = (Collection<Object>) deserializedObj;
