@@ -9,13 +9,23 @@ import {observer} from 'mobx-react' ;
 export default class DashboardContainer extends Component {
     constructor(props){
         super(props);
+        this.firstTimeLoad = true;
     }
     render() {
         let config = app_state.streamline_config;
-        let pivotURL = window.location.protocol + "//" + window.location.hostname + ":" + config.pivot.port+'/#/HOME/?q='+JSON.stringify(config.pivot.config);
+        let pivotURL = '';
+        if(config.pivot.port){
+            if(this.firstTimeLoad){
+                this.firstTimeLoad = false;
+                pivotURL = window.location.protocol + "//" + window.location.hostname + ":" + config.pivot.port+'/#/HOME/?q='+JSON.stringify(config.pivot.config);
+            } else {
+                this.firstTimeLoad = true;
+                pivotURL = window.location.protocol + "//" + window.location.hostname + ":" + config.pivot.port+'/#';
+            }
+        }
         return (
             <BaseContainer ref="BaseContainer" routes={this.props.routes} headerContent={this.props.routes[this.props.routes.length - 1].name}>
-                {config.pivot ?
+                {config.pivot.port ?
                     <iframe 
                         ref="Iframe"
                         src={pivotURL} 

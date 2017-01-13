@@ -361,7 +361,7 @@ export class SettingsManager {
       .then(
         () => clusterManager.getSources(),
         (e) => {
-          throw new Error('Unable to connect tp cluster');
+          throw new Error('Unable to connect to cluster');
         }
       )
       .then((sources) => {

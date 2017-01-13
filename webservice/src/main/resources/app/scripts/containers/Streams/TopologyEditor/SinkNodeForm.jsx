@@ -79,11 +79,16 @@ export default class SinkNodeForm extends Component {
                   FSReactToastr.error(<CommonNotification flag="error" content={results[0].responseMessage}/>, '', toastOpt);
                 }else{
                   const clusters = results[2];
-                  tempArr = _.keys(clusters).map((x, i) => {
-                      return {
-                        fieldName : x,
-                        uiName : x
-                      }
+                  _.keys(clusters).map((x) => {
+                     _.keys(clusters[x]).map(k =>{
+                        if(k === "cluster"){
+                          const obj = {
+                                        fieldName : clusters[x][k].name+'-'+clusters[x][k].ambariImportUrl,
+                                        uiName : clusters[x][k].name
+                                      }
+                          tempArr.push(obj);
+                        }
+                      })
                   });
                   stateObj.clusterArr = clusters;
                 }
@@ -97,7 +102,8 @@ export default class SinkNodeForm extends Component {
                 stateObj.fetchLoader = false;
                 this.setState(stateObj, () => {
                   if(stateObj.formData.clusters !== undefined){
-                    this.updateClusterFields(stateObj.formData.clusters);
+                    const keyName = this.getClusterKey(stateObj.formData.clusters)
+                    this.updateClusterFields(keyName);
                   }
                   if(_.keys(stateObj.clusterArr).length === 1){
                     this.fetchFields();
@@ -277,9 +283,23 @@ export default class SinkNodeForm extends Component {
 
     populateClusterFields(val){
       const tempObj = Object.assign({},this.state.formData,{topic:''});
-      this.setState({clusterName : val, formData: tempObj}, () => {
+      const keyName = this.getClusterKey(val.split('-')[0])
+      this.setState({clusterName : keyName, formData: tempObj}, () => {
         this.updateClusterFields();
       });
+    }
+
+    getClusterKey(name){
+      const {clusterArr} = this.state;
+      let key = '';
+      _.keys(clusterArr).map(x => {
+        _.keys(clusterArr[x]).map(k => {
+          if(clusterArr[x][k].name === name){
+            key = x;
+          }
+        })
+      })
+      return key;
     }
 
     updateClusterFields(name){
@@ -289,10 +309,10 @@ export default class SinkNodeForm extends Component {
       _.keys(clusterArr).map((x) => {
         if(name || clusterName === x){
         obj = config.map((list) => {
-            _.keys(clusterArr[x]).map(k => {
+            _.keys(clusterArr[x].hints).map(k => {
                 if(list.fieldName === k){
-                  if(_.isArray(clusterArr[x][k])  && (name || clusterName) === x){
-                    list.options = clusterArr[x][k].map(v => {
+                  if(_.isArray(clusterArr[x].hints[k])  && (name || clusterName) === x){
+                    list.options = clusterArr[x].hints[k].map(v => {
                       return {
                         fieldName : v,
                         uiName : v
@@ -306,13 +326,13 @@ export default class SinkNodeForm extends Component {
                       }
                     }
                   }else{
-                    if(!_.isArray(clusterArr[x][k])){
-                      data[k] = clusterArr[x][k];
+                    if(!_.isArray(clusterArr[x].hints[k])){
+                      data[k] = clusterArr[x].hints[k];
                     }
                   }
                 }
             })
-            data.clusters = clusterName ? clusterName : name;
+            data.clusters = clusterArr[name || clusterName].cluster.name;
             return list;
           });
         }

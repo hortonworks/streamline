@@ -125,7 +125,7 @@ export class PivotApplication extends React.Component<PivotApplicationProps, Piv
           this.saveCluster(cluster, resp.sources);
         },
         (xhr: XMLHttpRequest) => {
-          console.error((xhr as any).message);
+          Notifier.failure('Woops', (xhr as any).message);
         }
       )
       .done();
@@ -192,7 +192,6 @@ export class PivotApplication extends React.Component<PivotApplicationProps, Piv
       })
         .then(
           (status) => {
-            console.log("yo");
             this.setState({viewType: HOME, appSettings: newAppSettings});
           },
           (e: Error) => Notifier.failure('Woops', 'Something bad happened')

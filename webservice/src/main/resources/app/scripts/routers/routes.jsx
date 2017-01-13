@@ -19,10 +19,21 @@ import ComponentDefinition from '../containers/Configuration/ComponentDefinition
 
 const onEnter = (nextState, replace, callback) => {
 	var sidebarRoute = nextState.routes[1];
-        if(sidebarRoute && sidebarRoute.name === 'My Applications'){
-                state.sidebar_activeKey = 1;
-    state.sidebar_toggleFlag = false;
-	}
+  if(sidebarRoute){
+    if(sidebarRoute.name === 'My Applications'){
+      state.sidebar_activeKey = 1;
+      state.sidebar_toggleFlag = false;
+    } else if(sidebarRoute.name === 'Dashboard'){
+      state.sidebar_activeKey = 4;
+      state.sidebar_toggleFlag = false;
+    } else if(sidebarRoute.name === 'Model Registry'){
+      state.sidebar_activeKey = 5;
+      state.sidebar_toggleFlag = false;
+    } else {
+      state.sidebar_activeKey = 3;
+      state.sidebar_toggleFlag = false;
+    }
+  }
 	callback();
 }
 

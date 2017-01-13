@@ -133,7 +133,7 @@ const kFormatter = function(num){
 
 const eventTimeData = function(inputFields){
   const eventTimeArr = inputFields.filter((k,i) =>{
-    return k.type === "LONG";
+    return k.type.toLowerCase() === "long";
   }).map((v) => {
     return {
       fieldName : v.name,
@@ -175,7 +175,7 @@ const checkNestedInputFields = function(inputObj,fieldsData){
       if(obj.options && obj.hint !== undefined){
         if(obj.hint.toLowerCase().indexOf("inputfields") !== -1 && !obj.options.length){
           obj.options = inputFieldsData(fieldsData)
-        }else if(obj.hint.toLowerCase().indexOf("eventtime") !== -1 && !obj.options.length){
+        }else if(obj.hint.toLowerCase().indexOf("eventtime") !== -1 && (obj.options.length === 0 || obj.options[0].uiName === "processingTime")){
           obj.options = eventTimeData(fieldsData)
         }else if(obj.hint.toLowerCase().indexOf("override") !== -1 && obj.type === "enumstring"){
           obj.type = "creatableField";

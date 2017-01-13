@@ -296,18 +296,32 @@ export class CustomEnumstring extends BaseField {
     validate () {
         return super.validate(this.props.data[this.props.value])
     }
+    renderFieldOption(node){
+        const name = this.splitFields(node);
+        let styleObj = {fontWeight:"bold"};
+        let styleObj2 = {paddingLeft: (10 * name[0]) + "px",fontSize:12,fontWeight:"normal"};
+        return (<span style={styleObj}>{node.label}<br/><span style={styleObj2}>{node.value}</span></span>);
+    }
+    splitFields(text){
+      const nameObj  = _.isObject(text) ? text.label.split('[') : text ? text.split('[')[0] : '';
+      return nameObj
+    }
     getField = () => {
         let disabledField = this.context.Form.props.readOnly;
         if(this.props.fieldJson.isUserInput !== undefined){
             disabledField = disabledField || !this.props.fieldJson.isUserInput;
         }
+        const selectedValue = this.props.fieldAttr.options.find((d)=>{
+          return d.label == this.props.data[this.props.value];
+        })
         return <Select
                 clearable={false}
                 onChange={this.handleChange}
                 {...this.props.fieldAttr}
                 disabled={disabledField}
-                value={this.props.data[this.props.value]}
+                value={selectedValue}
                 className={this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}
+                optionRenderer={this.renderFieldOption.bind(this)}
             />
     }
 }

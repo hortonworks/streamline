@@ -11,6 +11,8 @@ import {BtnDelete, BtnEdit} from '../../../components/ActionButtons';
 import RulesForm from './RulesForm';
 import {pageSize} from '../../../utils/Constants';
 import { Scrollbars } from 'react-custom-scrollbars';
+import {toastOpt} from '../../../utils/Constants';
+import CommonNotification from '../../../utils/CommonNotification';
 
 export default class RulesNodeForm extends Component {
 	static propTypes = {
@@ -139,36 +141,67 @@ export default class RulesNodeForm extends Component {
 	handleDeleteRule(id){
                 let {topologyId, versionId, nodeType, nodeData} = this.props;
                 let stream = _.find(this.allStreams, {streamId: 'rule_processor_stream_'+id});
-                let edge = _.find(this.allEdges, function(e) { return e.streamGroupings[0].streamId ===  stream.id});
+                let edges = _.filter(this.allEdges, function(e) { return e.streamGroupings[0].streamId ===  stream.id});
 		this.refs.Confirm.show({
 			title: 'Are you sure you want to delete rule ?'
 		}).then((confirmBox)=>{
-                        let promiseArr = [
-                                TopologyREST.deleteNode(topologyId, 'rules', id),
-                                TopologyREST.deleteNode(topologyId, 'streams', stream.id)
-                        ];
-                        if(edge) {
-                                promiseArr.push(TopologyREST.deleteNode(topologyId, 'edges', edge.id));
+                        let promiseArr = [];
+                        if(edges.length > 0) {
+                                edges.map((e)=>{
+                                        promiseArr.push(TopologyREST.deleteNode(topologyId, 'edges', e.id));
+                                });
                         }
-			let rules = this.nodeData.config.properties.rules;
-			rules.splice(rules.indexOf(id), 1);
-                        this.nodeData.outputStreamIds = [];
-                        this.nodeData.outputStreams.map((s)=>{
-                                if(s.id !== stream.id)
-                                        this.nodeData.outputStreamIds.push(s.id);
-                        });
-                        delete this.nodeData.outputStreams;
-
-                        promiseArr.push(TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.nodeId, {body: JSON.stringify(this.nodeData)}));
-
 			Promise.all(promiseArr)
-				.then(result=>{
-					FSReactToastr.success(<strong>Rule deleted successfully</strong>);
-					this.fetchData();
-                                        if(edge)
-                        this.props.graphEdges.splice(this.props.graphEdges.indexOf(edge), 1);
-                    this.props.updateGraphMethod();
-				})
+                        .then((edgeResult)=>{
+                                let edgeSuccess = true;
+                                if(edgeResult.responseMessage !== undefined){
+                                        FSReactToastr.error(<CommonNotification flag="error" content={edgeResult.responseMessage}/>, '', toastOpt);
+                                } else if(edges.length > 0) {
+                                        edges.map((e)=>{
+                                                this.props.graphEdges.splice(this.props.graphEdges.indexOf(e), 1);
+                                        });
+                                        this.props.updateGraphMethod();
+                                }
+                                if(edgeSuccess){
+                                        TopologyREST.deleteNode(topologyId, 'rules', id)
+                                        .then((ruleResult)=>{
+                                                let ruleAPISuccess = true;
+                                                if(ruleResult.responseMessage !== undefined){
+                                                        ruleAPISuccess = false;
+                                                        FSReactToastr.error(<CommonNotification flag="error" content={ruleResult.responseMessage}/>, '', toastOpt);
+                                                }
+                                                if(ruleAPISuccess){
+                                                        let rules = this.nodeData.config.properties.rules;
+                                                        rules.splice(rules.indexOf(id), 1);
+                                                        this.nodeData.outputStreamIds = [];
+                                                        this.nodeData.outputStreams.map((s)=>{
+                                                                if(s.id !== stream.id)
+                                                                this.nodeData.outputStreamIds.push(s.id);
+                                                        });
+                                                        delete this.nodeData.outputStreams;
+                                                        TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.nodeId, {body: JSON.stringify(this.nodeData)})
+                                                        .then((nodeResult)=>{
+                                                                let nodeAPISuccess = true;
+                                                                if(nodeAPISuccess.responseMessage !== undefined) {
+                                                                nodeAPISuccess = false;
+                                                                FSReactToastr.error(<CommonNotification flag="error" content={nodeResult.responseMessage}/>, '', toastOpt);
+                                                                }
+                                                                if(nodeAPISuccess) {
+                                                                        TopologyREST.deleteNode(topologyId, 'streams', stream.id)
+                                                                        .then((streamResult)=>{
+                                                                                if(streamResult.responseMessage !== undefined){
+                                                                                        FSReactToastr.error(<CommonNotification flag="error" content={streamResult.responseMessage}/>, '', toastOpt)
+                                                                                } else {
+                                                                                        FSReactToastr.success(<strong>Rule deleted successfully</strong>);
+                                                                                        this.fetchData();
+                                                                                }
+                                                                        });
+                                                                }
+                                                        });
+                                                }
+                                        });
+                                }
+                        });
 			confirmBox.cancel();
 		},()=>{})
 	}

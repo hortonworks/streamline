@@ -112,6 +112,7 @@ export default class TopologyGraphComponent extends Component {
             .attr("class", "edge-stream")
             .attr('width', 200)
             .attr('height', 200)
+            .attr('x', 0)
             .append("xhtml:body")
             .attr('class', 'edge-details')
             .style('display','none')
@@ -422,7 +423,7 @@ export default class TopologyGraphComponent extends Component {
 	svgMouseDown() {
 		this.internalFlags.graphMouseDown = true;
         let {paths, constants, internalFlags} = this;
-        if(!event.target.closest('.edge-details') && internalFlags.selectedEdge) {
+        if(!d3.event.target.closest('.edge-details') && internalFlags.selectedEdge) {
             TopologyUtils.removeSelectFromEdge(d3, paths, constants, internalFlags);
             this.edgeStream.style('display', 'none');
         }
