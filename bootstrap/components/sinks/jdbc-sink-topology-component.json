@@ -34,7 +34,8 @@
         "fieldName": "dataSource.password",
         "isOptional": false,
         "tooltip": "Database password",
-        "type": "string"
+        "type": "string",
+        "hint": "password"
       },
       {
         "uiName": "Table name",
@@ -48,7 +49,9 @@
         "fieldName": "columns",
         "tooltip": "The names of the database columns",
         "isOptional": false,
-        "type": "array.string"
+        "type": "array.enumstring",
+        "options": [],
+        "hint": "inputFields"
       }
     ]
   }
