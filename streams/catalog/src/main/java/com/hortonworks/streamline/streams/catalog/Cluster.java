@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.streamline.common.Schema;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.catalog.AbstractStorable;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -75,6 +76,14 @@ public class Cluster extends AbstractStorable {
 
     public void setTimestamp(Long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    @JsonIgnore
+    public String getNameWithImportUrl() {
+        if (StringUtils.isEmpty(ambariImportUrl)) {
+            return name + " []";
+        }
+        return name + " [" + ambariImportUrl + "]";
     }
 
     @JsonIgnore

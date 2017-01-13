@@ -28,18 +28,6 @@ public class HiveMetadataResource {
     }
 
     @GET
-    @Path("/clusters/name/{clusterName}/services/hive/databases")
-    @Timed
-    public Response getDatabasesByClusterName(@PathParam("clusterName") String clusterName)
-        throws Exception {
-        final Cluster cluster = environmentService.getClusterByName(clusterName);
-        if (cluster == null) {
-            throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
-        }
-        return getDatabasesByClusterId(cluster.getId());
-    }
-
-    @GET
     @Path("/clusters/{clusterId}/services/hive/databases")
     @Timed
     public Response getDatabasesByClusterId(@PathParam("clusterId") Long clusterId)
@@ -49,18 +37,6 @@ public class HiveMetadataResource {
         } catch (EntityNotFoundException ex) {
             throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
         }
-    }
-
-    @GET
-    @Path("/clusters/name/{clusterName}/services/hive/databases/{dbName}/tables")
-    @Timed
-    public Response getDatabaseTablesByClusterName(@PathParam("clusterName") String clusterName, @PathParam("dbName") String dbName)
-        throws Exception {
-        final Cluster cluster = environmentService.getClusterByName(clusterName);
-        if (cluster == null) {
-            throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
-        }
-        return getDatabaseTablesByClusterId(cluster.getId(), dbName);
     }
 
     @GET

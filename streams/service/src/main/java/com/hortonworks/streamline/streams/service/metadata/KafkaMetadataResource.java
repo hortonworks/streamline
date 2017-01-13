@@ -31,18 +31,6 @@ public class KafkaMetadataResource {
     }
 
     @GET
-    @Path("/clusters/name/{clusterName}/services/kafka/brokers")
-    @Timed
-    public Response getBrokersByClusterName(@PathParam("clusterName") String clusterName)
-        throws Exception {
-        final Cluster cluster = environmentService.getClusterByName(clusterName);
-        if (cluster == null) {
-            throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
-        }
-        return getBrokersByClusterId(cluster.getId());
-    }
-
-    @GET
     @Path("/clusters/{clusterId}/services/kafka/brokers")
     @Timed
     public Response getBrokersByClusterId(@PathParam("clusterId") Long clusterId) throws Exception {
@@ -51,18 +39,6 @@ public class KafkaMetadataResource {
         } catch (EntityNotFoundException ex) {
             throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
         }
-    }
-
-    @GET
-    @Path("/clusters/name/{clusterName}/services/kafka/topics")
-    @Timed
-    public Response getTopicsByClusterName(@PathParam("clusterName") String clusterName)
-        throws Exception {
-        final Cluster cluster = environmentService.getClusterByName(clusterName);
-        if (cluster == null) {
-            throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
-        }
-        return getTopicsByClusterId(cluster.getId());
     }
 
     @GET

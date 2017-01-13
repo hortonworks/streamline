@@ -1,5 +1,6 @@
 package com.hortonworks.streamline.streams.catalog.topology.component.bundle;
 
+import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.Namespace;
 import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
@@ -14,6 +15,24 @@ import java.util.Map;
  * mapped to namespace 'env1' and provide that values to be used as hint.
  */
 public interface ComponentBundleHintProvider {
+    class BundleHintsResponse {
+        private Cluster cluster;
+        private Map<String, Object> hints;
+
+        public BundleHintsResponse(Cluster cluster, Map<String, Object> hints) {
+            this.cluster = cluster;
+            this.hints = hints;
+        }
+
+        public Cluster getCluster() {
+            return cluster;
+        }
+
+        public Map<String, Object> getHints() {
+            return hints;
+        }
+    }
+
     /**
      * Initialize provider.
      *
@@ -25,7 +44,7 @@ public interface ComponentBundleHintProvider {
      * Provide hints on specific component bundle with selected namespace.
      *
      * @param namespace selected namespace
-     * @return Hint structures. The structure of map should be cluster name -> field name -> values.
+     * @return Hint structures. The structure of map should be cluster id -> (cluster, hints).
      */
-    Map<String, Map<String, Object>> provide(Namespace namespace);
+    Map<Long, BundleHintsResponse> provide(Namespace namespace);
 }

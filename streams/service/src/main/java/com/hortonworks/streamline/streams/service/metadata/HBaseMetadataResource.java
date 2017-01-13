@@ -30,18 +30,6 @@ public class HBaseMetadataResource {
     }
 
     @GET
-    @Path("/clusters/name/{clusterName}/services/hbase/namespaces")
-    @Timed
-    public Response getNamespacesByClusterName(@PathParam("clusterName") String clusterName)
-        throws Exception {
-        final Cluster cluster = environmentService.getClusterByName(clusterName);
-        if (cluster == null) {
-            throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byName("cluster name " + clusterName);
-        }
-        return getNamespacesByClusterId(cluster.getId());
-    }
-
-    @GET
     @Path("/clusters/{clusterId}/services/hbase/namespaces")
     @Timed
     public Response getNamespacesByClusterId(@PathParam("clusterId") Long clusterId)
@@ -56,18 +44,6 @@ public class HBaseMetadataResource {
     // ===
 
     @GET
-    @Path("/clusters/name/{clusterName}/services/hbase/tables")
-    @Timed
-    public Response getTablesByClusterName(@PathParam("clusterName") String clusterName)
-        throws Exception {
-        final Cluster cluster = environmentService.getClusterByName(clusterName);
-        if (cluster == null) {
-            throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byName(clusterName);
-        }
-        return getTablesByClusterId(cluster.getId());
-    }
-
-    @GET
     @Path("/clusters/{clusterId}/services/hbase/tables")
     @Timed
     public Response getTablesByClusterId(@PathParam("clusterId") Long clusterId) throws Exception {
@@ -79,18 +55,6 @@ public class HBaseMetadataResource {
     }
 
     // ===
-
-    @GET
-    @Path("/clusters/name/{clusterName}/services/hbase/namespaces/{namespace}/tables")
-    @Timed
-    public Response getNamespaceTablesByClusterName(@PathParam("clusterName") String clusterName, @PathParam("namespace") String namespace)
-        throws Exception {
-        final Cluster cluster = environmentService.getClusterByName(clusterName);
-        if (cluster == null) {
-            throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byName(clusterName);
-        }
-        return getNamespaceTablesByClusterId(cluster.getId(), namespace);
-    }
 
     @GET
     @Path("/clusters/{clusterId}/services/hbase/namespaces/{namespace}/tables")

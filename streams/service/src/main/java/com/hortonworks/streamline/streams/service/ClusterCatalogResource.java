@@ -114,27 +114,15 @@ public class ClusterCatalogResource {
         throw EntityNotFoundException.byId(clusterId.toString());
     }
 
-    @GET
-    @Path("/clusters/name/{clusterName}")
-    @Timed
-    public Response getClusterByName(@PathParam("clusterName") String clusterName,
-                                     @javax.ws.rs.QueryParam("detail") Boolean detail) {
-        Cluster result = environmentService.getClusterByName(clusterName);
-        if (result != null) {
-            return buildClusterGetResponse(result, detail);
-        }
-
-        throw EntityNotFoundException.byName(clusterName);
-    }
-
     @Timed
     @POST
     @Path("/clusters")
     public Response addCluster(Cluster cluster) {
         String clusterName = cluster.getName();
-        Cluster result = environmentService.getClusterByName(clusterName);
+        String ambariImportUrl = cluster.getAmbariImportUrl();
+        Cluster result = environmentService.getClusterByNameAndImportUrl(clusterName, ambariImportUrl);
         if (result != null) {
-            throw EntityAlreadyExistsException.byName(clusterName);
+            throw EntityAlreadyExistsException.byName(cluster.getNameWithImportUrl());
         }
 
         Cluster createdCluster = environmentService.addCluster(cluster);

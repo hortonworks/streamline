@@ -15,14 +15,15 @@ public abstract class AbstractBundleHintProvider implements ComponentBundleHintP
 
     protected EnvironmentService environmentService;
 
+
     @Override
     public void init(EnvironmentService environmentService) {
         this.environmentService = environmentService;
     }
 
     @Override
-    public Map<String, Map<String, Object>> provide(Namespace namespace) {
-        Map<String, Map<String, Object>> hintMap = new HashMap<>();
+    public Map<Long, BundleHintsResponse> provide(Namespace namespace) {
+        Map<Long, BundleHintsResponse> hintMap = new HashMap<>();
 
         Collection<NamespaceServiceClusterMapping> serviceMappings = environmentService.listServiceClusterMapping(
                 namespace.getId(), getServiceName());
@@ -33,7 +34,8 @@ public abstract class AbstractBundleHintProvider implements ComponentBundleHintP
                 throw new RuntimeException(new ClusterNotFoundException(clusterId));
             }
 
-            hintMap.put(cluster.getName(), getHintsOnCluster(cluster));
+            BundleHintsResponse response = new BundleHintsResponse(cluster, getHintsOnCluster(cluster));
+            hintMap.put(clusterId, response);
         }
 
         return hintMap;
