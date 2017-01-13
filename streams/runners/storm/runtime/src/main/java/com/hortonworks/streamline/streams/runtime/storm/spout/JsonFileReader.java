@@ -19,6 +19,7 @@
 package com.hortonworks.streamline.streams.runtime.storm.spout;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -29,6 +30,7 @@ import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,18 +50,24 @@ public class JsonFileReader extends TextFileReader {
 
     public List<Object> next() throws IOException, ParseException {
         List<Object> lineTuple = super.next();
-        String jsonLine = (String)lineTuple.get(0);
-        if(jsonLine==null)
+        String jsonLine = (String) lineTuple.get(0);
+        if ( jsonLine==null )
             return null;
-        //1- convert Json to Map<>
-        HashMap<String,Object> jsonMap = new ObjectMapper().readValue(jsonLine, HashMap.class);
+        if ( jsonLine.trim().isEmpty() )
+            return next();
 
-        //2- make StreamlineEvent from map
-        StreamlineEventImpl slEvent = new StreamlineEventImpl(jsonMap, "HdfsSpout");
+        try {
+            //1- convert Json to Map<>
+            HashMap<String, Object> jsonMap = new ObjectMapper().readValue(jsonLine, HashMap.class);
 
-        //3- create tuple from StreamlineEvent
-        ArrayList<Object> tuple = new ArrayList<>();
-        tuple.add(slEvent);
-        return tuple;
+            //2- make StreamlineEvent from map
+            StreamlineEventImpl slEvent = new StreamlineEventImpl(jsonMap, "HdfsSpout");
+
+            //3- create tuple from StreamlineEvent
+            return Collections.singletonList(slEvent);
+        } catch (JsonProcessingException e) {
+            throw new ParseException("Json parsing error at location : " + getFileOffset().toString(), e);
+        }
+
     }
 }
