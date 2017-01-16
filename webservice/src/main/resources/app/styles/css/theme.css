@@ -2121,3 +2121,6 @@ input[type="checkbox"]{
 .dropdown button.btn-link{
   color: #484848;
 }
+.col-md-4:nth-child(3n+4) {
+   clear: left;
+}

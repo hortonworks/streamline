@@ -283,18 +283,18 @@ export default class SinkNodeForm extends Component {
 
     populateClusterFields(val){
       const tempObj = Object.assign({},this.state.formData,{topic:''});
-      const keyName = this.getClusterKey(val.split('-')[0])
+      const keyName = this.getClusterKey(val.split('-')[1])
       this.setState({clusterName : keyName, formData: tempObj}, () => {
         this.updateClusterFields();
       });
     }
 
-    getClusterKey(name){
+    getClusterKey(url){
       const {clusterArr} = this.state;
       let key = '';
       _.keys(clusterArr).map(x => {
         _.keys(clusterArr[x]).map(k => {
-          if(clusterArr[x][k].name === name){
+          if(clusterArr[x][k].ambariImportUrl === url){
             key = x;
           }
         })

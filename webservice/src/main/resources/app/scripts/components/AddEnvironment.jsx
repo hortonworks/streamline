@@ -265,7 +265,7 @@ class AddEnvironment extends Component{
           ? <small ref="missingStorm"> (Atleast one streaming engine (eg: STORM) must be selected.)</small>
           : ''
         }
-        <div className="row">
+        <div className="row environment-modal-services">
           {
             fetchLoader
             ? <div className="col-sm-12">
