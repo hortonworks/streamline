@@ -18,12 +18,13 @@
  */
 package com.hortonworks.streamline.streams.runtime.storm.bolt.model;
 
-import org.apache.storm.pmml.model.ModelOutputs;
-import org.apache.storm.pmml.runner.jpmml.JPmmlModelRunner;
-import org.apache.storm.tuple.Tuple;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 import com.hortonworks.streamline.streams.layout.component.Stream;
+
+import org.apache.storm.pmml.model.ModelOutputs;
+import org.apache.storm.pmml.runner.jpmml.JPmmlModelRunner;
+import org.apache.storm.tuple.Tuple;
 import org.dmg.pmml.FieldName;
 import org.jpmml.evaluator.Evaluator;
 import org.jpmml.evaluator.EvaluatorUtil;
@@ -31,8 +32,7 @@ import org.jpmml.evaluator.FieldValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -43,10 +43,13 @@ public class StreamlineJPMMLModelRunner extends JPmmlModelRunner {
     private static final Logger LOG = LoggerFactory.getLogger(StreamlineJPMMLModelRunner.class);
     private final String modelId;
     private final Set<Stream> outputStreams;
+
     public StreamlineJPMMLModelRunner(Set<Stream> outputStreams, String modelId, Evaluator evaluator, ModelOutputs modelOutputs) {
         super(evaluator, modelOutputs);
+        LOG.debug("HMCL Creating {}", this.getClass().getName());
         this.modelId = modelId;
         this.outputStreams = outputStreams;
+        LOG.debug("HMCL Created {}", this.getClass().getName());
     }
 
     /**
@@ -96,7 +99,7 @@ public class StreamlineJPMMLModelRunner extends JPmmlModelRunner {
         };
 
         for (Stream stream : outputStreams) {
-            streamsToEvents.put(stream.getId(), Arrays.asList(new StreamlineEventImpl(scoredVals, modelId)));
+            streamsToEvents.put(stream.getId(), Collections.singletonList(new StreamlineEventImpl(scoredVals, modelId)));
         }
 
         return streamsToEvents;

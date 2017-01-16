@@ -18,34 +18,72 @@
  */
 package com.hortonworks.streamline.streams.layout.storm;
 
+import com.google.common.collect.Lists;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.streamline.streams.layout.component.impl.model.ModelProcessor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class MLModelEvaluationFluxComponent extends AbstractFluxComponent {
     private static final Logger LOG = LoggerFactory.getLogger(MLModelEvaluationFluxComponent.class);
 
+    private String modelOutputsComponentId;
+
     @Override
-    protected void generateComponent (){
-        ModelProcessor modelProcessor = (ModelProcessor) conf.get(StormTopologyLayoutConstants.STREAMLINE_COMPONENT_CONF_KEY);
-        String boltId = "modelEvaluationBolt" + UUID_FOR_COMPONENTS;
-        String boltClassName = "com.hortonworks.streamline.streams.runtime.storm.bolt.model.PMMLModelEvaluationBolt";
-        List constructorArgs = new ArrayList<>();
-        String modelProcessorJson = "";
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            modelProcessorJson = mapper.writeValueAsString(modelProcessor);
-        } catch (JsonProcessingException e) {
-            LOG.error("Error creating json config string for NormalizationProcessor", e);
-            throw new RuntimeException(e);
-        }
-        constructorArgs.add(modelProcessorJson);
-        component = createComponent(boltId, boltClassName, null, constructorArgs, null);
+    protected void generateComponent() {
+        LOG.debug("Generating [{}]", this.getClass().getSimpleName());
+        final String boltId = "PMMLPredictorBolt" + UUID_FOR_COMPONENTS;
+        final String boltClassName = "org.apache.storm.pmml.PMMLPredictorBolt";
+        final List<Object> boltConstructorArgs = Lists.newArrayList(
+                getRefYaml(modelRunnerFactory()),
+                getRefYaml(modelOutputs()));
+
+        component = createComponent(boltId, boltClassName, null, boltConstructorArgs, null);
         addParallelismToComponent();
+        LOG.debug("SUCCESSFULLY generated [{}]", this.getClass().getSimpleName());
+    }
+
+    private String modelRunnerFactory() {
+        final String componentId = "ModelRunnerFactory_" + UUID_FOR_COMPONENTS;
+        final String className = "com.hortonworks.streamline.streams.runtime.storm.bolt.model.StreamlineJPMMLModelRunnerFactory";
+        final List<Object> constructorArgs = Lists.newArrayList(modelProcessorJson(), getRefYaml(modelOutputs()));
+
+        addToComponents(createComponent(componentId, className, null, constructorArgs, null));
+        LOG.debug("Created [{}] with component id [{}]", "StreamlineJPMMLModelRunnerFactory", componentId);
+        return componentId;
+    }
+
+    private String modelOutputs() {
+        if (modelOutputsComponentId == null) {
+            modelOutputsComponentId = "ModelOutputs_" + UUID_FOR_COMPONENTS;
+            final String className = "com.hortonworks.streamline.streams.runtime.storm.bolt.model.StreamlineEventModelOutputs";
+            final List<Object> constructorArgs = Collections.singletonList(modelProcessorJson());
+
+            addToComponents(createComponent(modelOutputsComponentId, className, null, constructorArgs, null));
+        }
+        LOG.debug("Created [{}] with component id [{}]", "StreamlineEventModelOutputs", modelOutputsComponentId);
+        return modelOutputsComponentId;
+    }
+
+
+    private String modelProcessorJson() {
+        final ModelProcessor modelProcessorUI = (ModelProcessor) conf.get(StormTopologyLayoutConstants.STREAMLINE_COMPONENT_CONF_KEY);
+
+        ObjectMapper mapper = new ObjectMapper();
+        String modelProcessorJson;
+        try {
+            modelProcessorJson = mapper.writeValueAsString(modelProcessorUI);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error creating JSON config string for ML ModelProcessor", e);
+        }
+
+        LOG.debug("Created ML ModelProcessor JSON config [{}]", modelProcessorJson);
+        return  modelProcessorJson;
     }
 }
