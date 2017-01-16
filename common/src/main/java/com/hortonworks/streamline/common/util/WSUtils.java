@@ -44,6 +44,8 @@ public class WSUtils {
     public static final String TOPOLOGY_ID = "topologyId";
     public static final String VERSION_ID = "versionId";
     public static final String NAME = "name";
+    public static final String FROM_ID = "fromId";
+    public static final String TO_ID = "toId";
 
     private WSUtils() {
     }
@@ -58,6 +60,26 @@ public class WSUtils {
         return Response.status(status)
                 .entity(entity)
                 .build();
+    }
+
+    public static List<QueryParam> buildEdgesFromQueryParam(Long topologyId,
+                                                            Long versionId,
+                                                            Long componentId) {
+        return QueryParam.params(
+                TOPOLOGY_ID, topologyId.toString(),
+                VERSION_ID, versionId.toString(),
+                FROM_ID, componentId.toString()
+        );
+    }
+
+    public static List<QueryParam> buildEdgesToQueryParam(Long topologyId,
+                                                            Long versionId,
+                                                            Long componentId) {
+        return QueryParam.params(
+                TOPOLOGY_ID, topologyId.toString(),
+                VERSION_ID, versionId.toString(),
+                TO_ID, componentId.toString()
+        );
     }
 
     public static List<QueryParam> buildQueryParameters(MultivaluedMap<String, String> params) {
