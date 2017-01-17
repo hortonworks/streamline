@@ -184,7 +184,7 @@ const checkNestedInputFields = function(inputObj,fieldsData){
       return obj;
     }
   }
-  return populateFields(inputObj);
+  return populateFields(JSON.parse(JSON.stringify(inputObj)));
 }
 
 

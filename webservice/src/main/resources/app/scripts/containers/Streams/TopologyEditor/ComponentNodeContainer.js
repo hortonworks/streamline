@@ -44,17 +44,17 @@ export default class ComponentNodeContainer extends Component {
             }
         }
         this.state = {
-            datasources: Utils.sortArray(bundleArr.sourceBundle, 'subType', true),
-            processors: Utils.sortArray(bundleArr.processorsBundle, 'subType', true),
-            sinks: Utils.sortArray(bundleArr.sinksBundle, 'subType', true)
+            datasources: Utils.sortArray(bundleArr.sourceBundle, 'name', true),
+            processors: Utils.sortArray(bundleArr.processorsBundle, 'name', true),
+            sinks: Utils.sortArray(bundleArr.sinksBundle, 'name', true)
         };
     }
     componentWillReceiveProps(nextProps, oldProps){
         if(nextProps.bundleArr != this.props.bundleArr){
             this.setState({
-                datasources: Utils.sortArray(nextProps.bundleArr.sourceBundle, 'subType', true),
-                processors: Utils.sortArray(nextProps.bundleArr.processorsBundle, 'subType', true),
-                sinks: Utils.sortArray(nextProps.bundleArr.sinksBundle, 'subType', true)
+                datasources: Utils.sortArray(nextProps.bundleArr.sourceBundle, 'name', true),
+                processors: Utils.sortArray(nextProps.bundleArr.processorsBundle, 'name', true),
+                sinks: Utils.sortArray(nextProps.bundleArr.sinksBundle, 'name', true)
             });
         }
     }
@@ -83,7 +83,7 @@ export default class ComponentNodeContainer extends Component {
                                 <NodeContainer
                                     key={i}
                                     imgPath={"styles/img/icon-"+source.subType.toLowerCase()+".png"}
-                                    name={source.subType}
+                                    name={source.name.toUpperCase()}
                                     type={source.type}
                                     nodeLable = {source.name.toUpperCase()}
                                     nodeType={source.subType}
@@ -118,7 +118,7 @@ export default class ComponentNodeContainer extends Component {
                                 <NodeContainer
                                     key={i}
                                     imgPath={"styles/img/icon-"+processor.subType.toLowerCase()+".png"}
-                                    name={processor.subType}
+                                    name={processor.name.toUpperCase()}
                                     nodeLable = {processor.name.toUpperCase()}
                                     type={processor.type}
                                     nodeType={processor.subType}
@@ -137,7 +137,7 @@ export default class ComponentNodeContainer extends Component {
                             <NodeContainer
                                 key={i}
                                 imgPath={"styles/img/icon-"+sink.subType.toLowerCase()+".png"}
-                                name={sink.subType}
+                                name={sink.name.toUpperCase()}
                                 nodeLable = {sink.name.toUpperCase()}
                                 type={sink.type}
                                 nodeType={sink.subType}

@@ -300,10 +300,10 @@ export class CustomEnumstring extends BaseField {
         const name = this.splitFields(node);
         let styleObj = {fontWeight:"bold"};
         let styleObj2 = {paddingLeft: (10 * name[0]) + "px",fontSize:12,fontWeight:"normal"};
-        return (<span style={styleObj}>{node.label}<br/><span style={styleObj2}>{node.value}</span></span>);
+        return (<span style={styleObj}>{node.label}<br/><span style={styleObj2}>{node.value.split('@#$')[1]}</span></span>);
     }
     splitFields(text){
-      const nameObj  = _.isObject(text) ? text.label.split('[') : text ? text.split('[')[0] : '';
+      const nameObj  = _.isObject(text) ? text.label.split('@#$') : text ? text.split('@#$')[0] : '';
       return nameObj
     }
     getField = () => {

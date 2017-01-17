@@ -69,7 +69,7 @@ export default class SourceNodeForm extends Component {
                  _.keys(clusters[x]).map(k =>{
                     if(k === "cluster"){
                       const obj = {
-                                    fieldName : clusters[x][k].name+'-'+clusters[x][k].ambariImportUrl,
+                                    fieldName : clusters[x][k].name+'@#$'+clusters[x][k].ambariImportUrl,
                                     uiName : clusters[x][k].name
                                   }
                       tempArr.push(obj);
@@ -126,7 +126,7 @@ export default class SourceNodeForm extends Component {
     populateClusterFields(val){
       const tempObj = Object.assign({},this.state.formData,{topic:''});
       // split the val by (-) to find the key by URL
-      const keyName = this.getClusterKey(val.split('-')[1])
+      const keyName = this.getClusterKey(val.split('@#$')[1])
       this.setState({clusterName : keyName,streamObj:'',formData:tempObj}, () => {
         this.updateClusterFields();
       });
