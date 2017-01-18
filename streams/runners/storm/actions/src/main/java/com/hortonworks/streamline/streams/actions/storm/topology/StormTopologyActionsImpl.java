@@ -118,10 +118,12 @@ public class StormTopologyActionsImpl implements TopologyActions {
         commands.add("org.apache.storm.flux.Flux");
         commands.add("--remote");
         commands.add(fileName);
-        int exitValue = executeShellProcess(commands).exitValue;
+        ShellProcessResult shellProcessResult = executeShellProcess(commands);
+        int exitValue = shellProcessResult.exitValue;
         if (exitValue != 0) {
+            LOG.error("Topology deploy command failed - exit code: {} / output: {}", exitValue, shellProcessResult.stdout);
             throw new Exception("Topology could not be deployed " +
-                    "successfully.");
+                    "successfully: storm deploy command failed");
         }
     }
 
@@ -192,7 +194,13 @@ public class StormTopologyActionsImpl implements TopologyActions {
                     commands.add(name);
                 });
 
-                executeShellProcess(commands);
+                ShellProcessResult shellProcessResult = executeShellProcess(commands);
+                if (shellProcessResult.exitValue != 0) {
+                    LOG.error("Adding artifacts to jar command failed - exit code: {} / output: {}",
+                            shellProcessResult.exitValue, shellProcessResult.stdout);
+                    throw new RuntimeException("Topology could not be deployed " +
+                            "successfully: fail to add artifacts to jar");
+                }
                 LOG.debug("Added files {} to jar {}", artifactFileNames, jarFile);
                 return newJar;
             }
