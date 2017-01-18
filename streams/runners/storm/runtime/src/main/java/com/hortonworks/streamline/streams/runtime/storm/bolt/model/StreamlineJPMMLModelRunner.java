@@ -46,10 +46,8 @@ public class StreamlineJPMMLModelRunner extends JPmmlModelRunner {
 
     public StreamlineJPMMLModelRunner(Set<Stream> outputStreams, String modelId, Evaluator evaluator, ModelOutputs modelOutputs) {
         super(evaluator, modelOutputs);
-        LOG.debug("HMCL Creating {}", this.getClass().getName());
         this.modelId = modelId;
         this.outputStreams = outputStreams;
-        LOG.debug("HMCL Created {}", this.getClass().getName());
     }
 
     /**

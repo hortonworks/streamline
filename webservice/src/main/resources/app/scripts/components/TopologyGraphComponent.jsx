@@ -199,7 +199,7 @@ export default class TopologyGraphComponent extends Component {
             clearTimeout(this.saveMetaInfoTimer);
             this.saveMetaInfoTimer = setTimeout(()=>{
                 let {topologyId, versionId, versionsArr, metaInfo, editMode} = thisGraph;
-				if(versionId && versionsArr && sourceEvent !== null){
+                if(versionId && versionsArr && sourceEvent !== null && sourceEvent.target.nodeName !== 'text'){
 					let versionName = versionsArr.find((o)=>{return o.id == versionId}).name;
 	                if(versionName.toLowerCase() == 'current' && editMode){
 						TopologyUtils.saveMetaInfo(topologyId, versionId, null, metaInfo, null);
@@ -612,7 +612,10 @@ export default class TopologyGraphComponent extends Component {
             .attr("filter", function(d){ if(!d.isConfigured){ return "url(#grayscale)"; } else return ""; })
             .attr("filter", function(d){ return "url(#dropshadow)"; });
 		thisGraph.rectangles.selectAll('image')
-            .attr("filter", function(d){ return "url(#grayscale)"; });
+            .attr("filter", function(d){ return "url(#grayscale)"; })
+            .attr("xlink:href", function(d){
+              return d.nodeId ? d.imageURL : "styles/img/start-loader.gif";
+            });
 		thisGraph.rectangles.selectAll('circle')
 			.attr("filter", function(d){ if(!d.isConfigured){ return "url(#grayscale)"; } else return ""; });
 		thisGraph.rectangles.selectAll('text.node-title')
@@ -660,7 +663,9 @@ export default class TopologyGraphComponent extends Component {
             })
             .call(thisGraph.drag);
         //Image
-        newGs.append("image").attr("xlink:href", function(d){return d.imageURL;})
+        newGs.append("image").attr("xlink:href", function(d){
+          return d.nodeId ? d.imageURL : "styles/img/start-loader.gif";
+        })
             .attr("width", constants.rectangleHeight - 15).attr("height", constants.rectangleHeight - 15).attr("x", 8).attr("y", 7)
             .attr("filter", function(d){ return "url(#grayscale)"; })
             .on("mouseover", function(d){

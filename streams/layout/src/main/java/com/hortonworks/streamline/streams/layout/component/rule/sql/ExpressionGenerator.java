@@ -54,11 +54,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import static com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression.STAR;
 
 public class ExpressionGenerator extends SqlBasicVisitor<Expression> {
-    private final Map<String, Schema> streamIdToSchema = new HashMap<>();
+    private final Map<String, Schema> streamIdToSchema = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     private final Map<String, Udf> catalogUdfs;
     private final Set<String> referredUdfs = new HashSet<>();
     public ExpressionGenerator(List<Stream> streams, Map<String, Udf> catalogUdfs) {

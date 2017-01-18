@@ -7,7 +7,8 @@ import {Panel, Radio} from 'react-bootstrap';
 import TopologyREST from '../../../rest/TopologyREST';
 import FSReactToastr from '../../../components/FSReactToastr';
 import CommonNotification from '../../../utils/CommonNotification';
-import {toastOpt} from '../../../utils/Constants'
+import {toastOpt} from '../../../utils/Constants';
+import _ from 'lodash';
 
 class RuleFormula extends Component {
 	constructor(props){
@@ -27,25 +28,63 @@ class RuleFormula extends Component {
 		let data = [{
 			field1: null,
 			operator: null,
-			field2: null
+                        field2: null,
+                        keyPath1: null,
+                        keyPath2: null
 		}];
         let fields = [];
         props.fields.map((f)=>{
             fields = [...fields, ...f.fields];
         });
+        this.fieldsArr = [];
+        this.getSchemaFields(fields, 0);
 		this.state = {
 			data: data,
-                fields: fields,
-                fields2Arr: JSON.parse(JSON.stringify(fields)),
+            fields: this.fieldsArr,
+            fields2Arr: JSON.parse(JSON.stringify(this.fieldsArr)),
 			sqlStr: props.sql,
 			show: false
 		};
 	}
 	componentDidMount(){
 		if(this.props.sql){
-                this.prepareFormula(this.props.sql, this.props.condition);
+            this.prepareFormula(this.props.sql, this.props.condition);
 		}
 	}
+
+    getSchemaFields(fields, level, keyPath=[]){
+        fields.map((field)=>{
+            let obj = {
+                name: field.name,
+                optional: field.optional,
+                type: field.type,
+                level: level,
+                keyPath: ''
+            };
+
+            if(field.type === 'NESTED'){
+                obj.disabled = true;
+                let _keypath = keyPath.slice();
+                _keypath.push(field.name);
+                this.fieldsArr.push(obj);
+                this.getSchemaFields(field.fields, level + 1, _keypath);
+            } else {
+                obj.disabled = false;
+                obj.keyPath = keyPath.join('.');
+                this.fieldsArr.push(obj);
+            }
+
+        })
+    }
+
+    renderFieldOption(node){
+        let styleObj = {paddingLeft: (10 * node.level) + "px"};
+        if(node.disabled){
+            styleObj.fontWeight = "bold";
+        }
+        return (<span style={styleObj}>{node.name}</span>);
+    }
+
     prepareFormula(sqlStr, conditionStr){
         let arr = [];
         let t = [];
@@ -59,13 +98,22 @@ class RuleFormula extends Component {
         } else {
             arr = sqlStr.split(' ');
             let index = arr.findIndex(function(d){return d.toLowerCase().indexOf('where') !== -1});
-                        arr.map((d,i)=>{
-                                if(i > index){
-                                        if(d !== ''){
-                                                t.push(d);
-                                        }
+            arr.map((d,i)=>{
+                if(i > index){
+                    if(d !== ''){
+                        if(isNaN(parseInt(d, 10))){
+                                let names = d.split('.');
+                                if(names.length > 1){
+                                        t.push(names[names.length - 1]);
+                                } else {
+                                        t.push(d);
 				}
-                        })
+                        } else {
+                                t.push(d);
+                        }
+                    }
+                                }
+            })
         }
 		let dummyArr = ['field1', 'operator','field2','logicalOp'];
 		let j = 0;
@@ -112,6 +160,7 @@ class RuleFormula extends Component {
 						onChange={this.handleChange.bind(this, 'field1', i)}
 						labelKey="name"
 						valueKey="name"
+                                                optionRenderer={this.renderFieldOption.bind(this)}
 					/>
 				</div>
 				<div className="col-sm-3">
@@ -130,6 +179,7 @@ class RuleFormula extends Component {
 						onChange={this.handleChange.bind(this, 'field2', i)}
 						labelKey="name"
 						valueKey="name"
+                                                optionRenderer={this.renderFieldOption.bind(this)}
 					/>
 				</div>
 				<div className="col-sm-1">
@@ -152,6 +202,7 @@ class RuleFormula extends Component {
 						onChange={this.handleChange.bind(this, 'field1', 0)}
 						labelKey="name"
 						valueKey="name"
+                                                optionRenderer={this.renderFieldOption.bind(this)}
 					/>
 				</div>
 				<div className="col-sm-3">
@@ -170,6 +221,7 @@ class RuleFormula extends Component {
 						onChange={this.handleChange.bind(this, 'field2', 0)}
 						labelKey="name"
 						valueKey="name"
+                                                optionRenderer={this.renderFieldOption.bind(this)}
 					/>
 				</div>
 				<div className="col-sm-1">
@@ -185,12 +237,17 @@ class RuleFormula extends Component {
 	}
 	handleRowAdd(){
 		let {data} = this.state;
-		data.push({field1: null, operator: null, field2: null, logicalOp: null})
+        data.push({field1: null, operator: null, field2: null, logicalOp: null, keyPath1: null, keyPath2: null})
 		this.setState({data: data});
 	}
 	handleChange(name, index, obj){
 		let {data} = this.state;
 		data[index][name] = obj ? obj.name : null;
+        if(name == 'field1') {
+            data[index]['keyPath1'] = obj ? obj.keyPath : null;
+        } else if(name == 'field2') {
+            data[index]['keyPath2'] = obj ? obj.keyPath : null;
+        }
 		this.setState({data: data, show: true});
 	}
 	getOp(op){
@@ -222,31 +279,72 @@ class RuleFormula extends Component {
 		}
 	}
 	previewQuery(){
-		let {data} = this.state;
+        let {data, fields, fields2Arr} = this.state;
 		let streamName = this.props.fields[0].streamId;
 		this.sqlStrQuery = "select * from "+streamName+" where ";
-                this.conditionStr = '';
+        this.conditionStr = '';
+        this.ruleCondition = '';
 		this.validSQL = true;
 		return(
 			<pre className="query-preview" key={1}>
 				select * from {this.renderTableName(streamName)} <span className="text-danger">where</span>
 				{data.map((d,i)=>{
+                    let field1_name = '';
+                    let field2_name = '';
+                    if(d.keyPath1 && d.keyPath1.length > 0) {
+                            var keysArr1 = d.keyPath1.split(".");
+                            if(keysArr1.length > 0) {
+                                    keysArr1.map((k, n)=>{
+                                            if(n === 0) {
+                                                    field1_name += k;
+                                            } else {
+                                                    field1_name += "['" + k + "']";
+                                            }
+                                    });
+                                    field1_name += "['" + d.field1 + "']";
+                            } else {
+                                    field1_name += d.keyPath1 + "['" + d.field1 + "']";
+                            }
+                    } else {
+                            field1_name += d.field1;
+                    }
+                    if(d.keyPath2 && d.keyPath2.length > 0) {
+                            var keysArr2 = d.keyPath2.split(".");
+                            if(keysArr2.length > 0) {
+                                    keysArr2.map((k, n)=>{
+                                            if(n === 0) {
+                                                    field2_name += k;
+                                            } else {
+                                                    field2_name += "['" + k + "']";
+                                            }
+                                    });
+                                    field2_name += "['" + d.field2 + "']";
+                            } else {
+                                    field2_name += d.keyPath2 + "['" + d.field2 + "']";
+                            }
+                    } else {
+                            field2_name += d.field2;
+                    }
+                    let field1 = d.keyPath1 && d.keyPath1.length > 0 ? (d.keyPath1 + '.' + d.field1) : d.field1;
+                    let field2 = d.keyPath2 && d.keyPath2.length > 0 ? (d.keyPath2 + '.' + d.field2) : d.field2;
 					if(d.hasOwnProperty('logicalOp')){
-						this.sqlStrQuery += ' ' + d.logicalOp + ' ' + d.field1 + ' ' + d.operator + ' ' + d.field2;
-                                                this.conditionStr += ' ' + d.logicalOp + ' ' + d.field1 + ' ' + d.operator + ' ' + d.field2;
+                        this.sqlStrQuery += ' ' + d.logicalOp + ' ' + field1 + ' ' + d.operator + ' ' + field2;
+                        this.conditionStr += ' ' + d.logicalOp + ' ' + field1 + ' ' + d.operator + ' ' + field2;
+                        this.ruleCondition += ' ' + d.logicalOp + ' ' + field1_name + ' ' + d.operator + ' ' + field2_name;
 						return[
 							this.renderOperator(d.logicalOp, i+'.1'),
-							this.renderFieldName(d.field1, i),
+                            this.renderFieldName(field1_name, i),
 							this.renderOperator(d.operator, i),
-							this.renderFieldName(d.field2, i)
+                            this.renderFieldName(field2_name, i)
 						]
 					} else {
-						this.sqlStrQuery += d.field1 + ' ' + d.operator + ' ' + d.field2;
-                                                this.conditionStr += d.field1 + ' ' + d.operator + ' ' + d.field2;
+                        this.sqlStrQuery += field1 + ' ' + d.operator + ' ' + field2;
+                        this.conditionStr += field1 + ' ' + d.operator + ' ' + field2;
+                        this.ruleCondition += field1_name + ' ' + d.operator + ' ' + field2_name;
 						return[
-							this.renderFieldName(d.field1, i),
+                            this.renderFieldName(field1_name, i),
 							this.renderOperator(d.operator, i),
-							this.renderFieldName(d.field2, i)
+                            this.renderFieldName(field2_name, i)
 						]
 					}
 				})}
@@ -293,10 +391,10 @@ class RuleFormula extends Component {
 				})}
                 {this.state.show ?
 					<div className="form-group">
-                                                <label>Query Preview:</label>
-                                                <div className="row">
-                                                        <div className="col-sm-12">{this.previewQuery()}</div>
-                                                </div>
+                        <label>Query Preview:</label>
+                        <div className="row">
+                            <div className="col-sm-12">{this.previewQuery()}</div>
+                        </div>
 					</div>
 				: null}
 			</div>
@@ -315,12 +413,12 @@ export default class RulesForm extends Component {
 		}
 	}
 	getNode(ruleId){
-                let {topologyId, versionId} = this.props;
-                TopologyREST.getNode(topologyId, versionId, 'rules', ruleId)
-			.then(rule=>{
-                                let {name, description, sql, actions} = rule;
-				this.setState({name, description, sql, actions})
-			})
+        let {topologyId, versionId} = this.props;
+        TopologyREST.getNode(topologyId, versionId, 'rules', ruleId)
+            .then(rule=>{
+		let {name, description, sql, actions} = rule;
+                this.setState({name, description, sql, actions})
+            })
 	}
 	updateCode(sql){
 		this.setState({
@@ -332,37 +430,37 @@ export default class RulesForm extends Component {
 		let name = e.target.name;
 		let value = e.target.value === '' ? '' : e.target.type !== 'number' ? e.target.value : parseInt(e.target.value, 10);
 		obj[name] = value;
-                if(name === 'description'){
+        if(name === 'description'){
 			obj['showDescriptionError'] = (value === '');
 		}
 		this.setState(obj);
 	}
-        handleNameChange(e) {
-                let obj = this.validateName(e.target.value);
-                obj[e.target.name] = e.target.value;
-                this.setState(obj);
-        }
-        validateName(name) {
-                let {rules, ruleObj} = this.props;
-                let stateObj = {showInvalidName: false, showNameError: false};
-                if(name === '') {
-                        stateObj.showNameError = true;
-                } else {
-                        let hasRules = rules.filter((o)=>{return (o.name === name);})
-                        if(hasRules.length === 1){
-                                if(ruleObj.id) {
-                                        if(hasRules[0].id !== ruleObj.id) {
-                                                stateObj.showInvalidName = true;
-                                                stateObj.showNameError = true;
-                                        }
-                                } else {
-                                        stateObj.showInvalidName = true;
-                                        stateObj.showNameError = true;
-                                }
+    handleNameChange(e) {
+        let obj = this.validateName(e.target.value);
+        obj[e.target.name] = e.target.value;
+        this.setState(obj);
+    }
+    validateName(name) {
+            let {rules, ruleObj} = this.props;
+            let stateObj = {showInvalidName: false, showNameError: false};
+            if(name === '') {
+                stateObj.showNameError = true;
+            } else {
+                let hasRules = rules.filter((o)=>{return (o.name === name);})
+                if(hasRules.length === 1){
+                    if(ruleObj.id) {
+                        if(hasRules[0].id !== ruleObj.id) {
+                            stateObj.showInvalidName = true;
+                            stateObj.showNameError = true;
                         }
+                    } else {
+                        stateObj.showInvalidName = true;
+                        stateObj.showNameError = true;
+                    }
                 }
-                return stateObj;
-        }
+            }
+        return stateObj;
+    }
 	validateData(){
 		let {name, description, ruleType, sql} = this.state;
 		if(ruleType){
@@ -383,95 +481,91 @@ export default class RulesForm extends Component {
 			return true;
 		}
 	}
+	searchSchemaForFields(fields){
+        let flag = false;
+        fields.map((field)=>{
+            if(!flag){
+                if(field.type == 'NESTED'){
+                    flag = this.searchSchemaForFields(field.fields);
+                } else if(this.selectedFields.indexOf(field.name) != -1){
+                    flag = true;
+                }
+            }
+        })
+        return flag;
+    }
 	handleSave(){
         let {topologyId, versionId, ruleObj, nodeData, nodeType, parsedStreams} = this.props;
 		let {name, description, ruleType, sql, actions} = this.state;
-        let ruleData = {}, condition = "", streams = [], selectedFields = [], streamData = {};
+        let ruleData = {}, condition = "", streams = [];
+		this.selectedFields = [];
 		if(ruleType){
 			//if general rule, than take from RuleFormula
-                        condition = this.refs.RuleFormula.conditionStr;
-                        //get selected fields
-                        let conditionData = this.refs.RuleFormula.state.data;
-                        conditionData.map((o)=>{
-                                if(selectedFields.indexOf(o.field1) === -1)
-                                        selectedFields.push(o.field1);
-                                if(selectedFields.indexOf(o.field2) === -1)
-                                        selectedFields.push(o.field2);
-                        });
-                        //Adding stream names
-                        parsedStreams.map((stream)=>{
-                                stream.fields.map((field)=>{
-                                        if(selectedFields.indexOf(field.name) !== -1){
-                                                if(streams.indexOf(stream.streamId) === -1){
-                                                        streams.push(stream.streamId);
-                                                }
-                                        }
-                                })
-                        })
-                        ruleData = {name, description, streams, condition, actions};
-                } else {
-                        ruleData = {name, description, sql, actions};
+            condition = this.refs.RuleFormula.ruleCondition;
+            //get selected fields
+            let conditionData = this.refs.RuleFormula.state.data;
+            conditionData.map((o)=>{
+                if(this.selectedFields.indexOf(o.field1) === -1)
+                    this.selectedFields.push(o.field1);
+                if(this.selectedFields.indexOf(o.field2) === -1)
+                    this.selectedFields.push(o.field2);
+            });
+            //Adding stream names
+            parsedStreams.map((stream)=>{
+                if(this.searchSchemaForFields(stream.fields)) {
+                        if(streams.indexOf(stream.streamId) === -1){
+                        streams.push(stream.streamId);
+                    }
+                }
+            })
+            ruleData = {name, description, streams, condition, actions};
+        } else {
+            ruleData = {name, description, sql, actions};
 		}
 		let promiseArr = [];
 		if(ruleObj.id){
 			//update rule
-                        promiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'rules', ruleObj.id, {body: JSON.stringify(ruleData)}));
+            promiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'rules', ruleObj.id, {body: JSON.stringify(ruleData)}));
 		} else {
 			//create rule
-                        promiseArr.push(TopologyREST.createNode(topologyId, versionId, 'rules', {body: JSON.stringify(ruleData)}));
+            promiseArr.push(TopologyREST.createNode(topologyId, versionId, 'rules', {body: JSON.stringify(ruleData)}));
 		}
-                promiseArr.push(TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.id));
+        promiseArr.push(TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.id));
 		return Promise.all(promiseArr)
 			.then(results=>{
 				let result = results[0];
-                                if(result.responseMessage !== undefined){
-          FSReactToastr.error(
-              <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt)
+                if(result.responseMessage !== undefined){
+          			FSReactToastr.error(<CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt)
 					return false;
 				} else {
                     let msg = result.name + " " + (ruleObj.id ? "updated" : "added") + ' successfully';
 					FSReactToastr.success(<strong>{msg}</strong>);
-                                        streamData = {
-                                                streamId: 'rule_processor_stream_'+(results[0].id),
-                                                fields: parsedStreams[0].fields
-                                        };
-                                        if(ruleObj.id) {
-                                                return this.updateNode(result, results[1]);
-                                        } else {
-                                        return TopologyREST.createNode(topologyId, versionId, 'streams', {body: JSON.stringify(streamData)})
-                                                .then((streamResult)=>{
-                                                        if(streamResult.responseMessage !== undefined){
-                                                                FSReactToastr.error(<CommonNotification flag="error" content={streamResult.responseMessage}/>, '', toastOpt)
-                                                                return false;
-                                                        } else {
-                                                                //Update node with rule
-                                                                return this.updateNode(result, results[1], streamResult);
-                                                        }
-                                                })
-                                        }
+					if(ruleObj.id) {
+	                    return Promise.resolve(result);
+	                } else {
+						return this.updateNode(result, results[1]);
+                	}
 				}
 			})
 	}
-        updateNode(ruleData, ruleProcessorData, streamData){
-                let {topologyId, versionId, ruleObj, nodeData, nodeType} = this.props;
+    updateNode(ruleData, ruleProcessorData){
+        let {topologyId, versionId, ruleObj, nodeData, nodeType, parsedStreams} = this.props;
 		let promiseArr = [];
 		//Add into node if its newly created rule
 		if(!ruleObj.id){
 			let rulesArr = ruleProcessorData.config.properties.rules || [];
 			rulesArr.push(ruleData.id);
 			ruleProcessorData.config.properties.rules = rulesArr;
-                        ruleProcessorData.outputStreamIds = [];
-                        if(ruleProcessorData.outputStreams.length) {
-                                ruleProcessorData.outputStreams.map((s)=>{
-                                        ruleProcessorData.outputStreamIds.push(s.id);
-                                });
-                                ruleProcessorData.outputStreamIds.push(streamData.id);
-                                delete ruleProcessorData.outputStreams;
-                        } else {
-                                delete ruleProcessorData.outputStreams;
-                                ruleProcessorData.outputStreamIds = [streamData.id];
-                        }
-                        promiseArr.push(TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.id, {body: JSON.stringify(ruleProcessorData)}));
+			let newStreamObj = {
+				streamId: 'rule_processor_stream_'+(ruleData.id),
+				fields: parsedStreams[0].fields
+			};
+			if(ruleProcessorData.outputStreams.length > 0) {
+				ruleProcessorData.outputStreams.push(newStreamObj);
+ 			} else {
+				ruleProcessorData.outputStreams = [newStreamObj];
+			}
+            promiseArr.push(TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.id, {body: JSON.stringify(ruleProcessorData)}));
 		}
 		return Promise.all(promiseArr)
 			.then(results=>{

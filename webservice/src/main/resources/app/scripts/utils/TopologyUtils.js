@@ -127,6 +127,10 @@ const createNode = function(topologyId, versionId, data, callback, metaInfo, pat
 			obj["outputStreamIds"] = [];
 		}
                 promiseArr.push(TopologyREST.createNode(topologyId, versionId, nodeType, {body: JSON.stringify(obj)}));
+                if(callback) {
+                    //call the callback to update the graph
+                    callback();
+                }
 	});
 
 	//Make calls to create node or nodes

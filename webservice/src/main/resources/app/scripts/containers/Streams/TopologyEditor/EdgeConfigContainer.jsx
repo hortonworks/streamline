@@ -4,6 +4,9 @@ import _ from 'lodash';
 import Select from 'react-select';
 import TopologyREST from '../../../rest/TopologyREST';
 import TopologyUtils from '../../../utils/TopologyUtils';
+import FSReactToastr from '../../../components/FSReactToastr';
+import CommonNotification from '../../../utils/CommonNotification';
+import {toastOpt} from '../../../utils/Constants'
 
 import ReactCodemirror from 'react-codemirror';
 import CodeMirror from 'codemirror';
@@ -33,6 +36,7 @@ export default class EdgeConfigContainer extends Component {
         this.topologyId = data.topologyId;
         this.versionId = data.versionId;
         this.target = data.target;
+        this.fieldsArr = [];
 
         let obj = {
             streamId: data.streamName ? data.streamName : '',
@@ -66,7 +70,6 @@ export default class EdgeConfigContainer extends Component {
                 let streamsArr = [];
                 let fields = this.state.isEdit ? {} : node.outputStreams[0].fields;
                 let streamId = this.state.isEdit ? this.state.streamId : node.outputStreams[0].streamId;
-                let groupingFieldsArr = [];
                 node.outputStreams.map((s)=>{
                     streamsArr.push({
                         label: s.streamId,
@@ -77,15 +80,14 @@ export default class EdgeConfigContainer extends Component {
                     if(this.props.data.streamName === s.streamId)
                         fields = s.fields;
                 });
-                fields.map((f)=>{
-                    groupingFieldsArr.push({value: f.name, label: f.name});
-                });
+                this.fieldsArr = [];
+                this.getSchemaFields(fields, 0);
                 this.setState({
                     sourceNode: result,
                     streamsArr: streamsArr,
                     streamId: streamId,
                     streamFields: JSON.stringify(fields, null, "  "),
-                    groupingFieldsArr: groupingFieldsArr
+                    groupingFieldsArr: this.fieldsArr
                 });
                 if(nodeType === 'rule' || nodeType === 'branch') {
                     let type = nodeType === 'rule' ? 'rules' : 'branchrules';
@@ -116,6 +118,41 @@ export default class EdgeConfigContainer extends Component {
                 })
             }
         });
+    }
+
+    getSchemaFields(fields, level, parentName){
+        if(parentName == undefined){
+            parentName = '';
+        }
+        fields.map((field)=>{
+            let _pName = parentName == '' ? field.name : parentName+'.'+field.name;
+            let obj = {
+                name: field.name,
+                optional: field.optional,
+                type: field.type,
+                level: level,
+                value: _pName,
+                label: field.name
+            };
+
+            if(field.type === 'NESTED'){
+                obj.disabled = true;
+                this.fieldsArr.push(obj);
+                this.getSchemaFields(field.fields, level + 1, _pName);
+            } else {
+                obj.disabled = false;
+                this.fieldsArr.push(obj);
+            }
+
+        })
+    }
+
+    renderFieldOption(node){
+        let styleObj = {paddingLeft: (10 * node.level) + "px"};
+        if(node.disabled){
+            styleObj.fontWeight = "bold";
+        }
+        return (<span style={styleObj}>{node.name}</span>);
     }
 
     handleStreamChange(obj){
@@ -263,17 +300,27 @@ export default class EdgeConfigContainer extends Component {
             }
         }
         if(this.state.isEdit) {
-            TopologyREST.updateNode(topologyId, versionId, 'edges', this.props.data.edge.edgeId, {body: JSON.stringify(edgeData)}).then((edge)=>{
-            let edgeObj = _.find(this.props.data.edges, {edgeId: this.props.data.edge.edgeId});
-              edgeObj.streamGrouping = edge.streamGroupings[0];
+            TopologyREST.updateNode(topologyId, versionId, 'edges', this.props.data.edge.edgeId, {body: JSON.stringify(edgeData)})
+            .then((edge)=>{
+                if(edge.responseMessage !== undefined){
+                    FSReactToastr.error(<CommonNotification flag="error" content={edge.responseMessage}/>, '', toastOpt)
+                } else {
+                    let edgeObj = _.find(this.props.data.edges, {edgeId: this.props.data.edge.edgeId});
+                    edgeObj.streamGrouping = edge.streamGroupings[0];
+                }
             });
         } else {
-            TopologyREST.createNode(topologyId, versionId, 'edges', {body: JSON.stringify(edgeData)}).then((edge)=>{
-                this.props.data.edge.edgeId = edge.id;
-                this.props.data.edge.streamGrouping = edge.streamGroupings[0];
-                this.props.data.edges.push(this.props.data.edge);
-                //call the callback to update the graph
-                this.props.data.callback();
+            TopologyREST.createNode(topologyId, versionId, 'edges', {body: JSON.stringify(edgeData)})
+            .then((edge)=>{
+                if(edge.responseMessage !== undefined){
+                    FSReactToastr.error(<CommonNotification flag="error" content={edge.responseMessage}/>, '', toastOpt)
+                } else {
+                    this.props.data.edge.edgeId = edge.id;
+                    this.props.data.edge.streamGrouping = edge.streamGroupings[0];
+                    this.props.data.edges.push(this.props.data.edge);
+                    //call the callback to update the graph
+                    this.props.data.callback();
+                }
             });
        }
     }
@@ -358,6 +405,7 @@ export default class EdgeConfigContainer extends Component {
                            multi={true}
                            required={true}
                            disabled={groupingFieldsArr.length ? false : true}
+                           optionRenderer={this.renderFieldOption.bind(this)}
                        />
                    </div>
                </div>
