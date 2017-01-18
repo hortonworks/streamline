@@ -111,6 +111,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.hortonworks.streamline.common.util.WSUtils.CURRENT_VERSION;
+import static com.hortonworks.streamline.common.util.WSUtils.TOPOLOGY_ID;
+import static com.hortonworks.streamline.common.util.WSUtils.VERSION_ID;
+import static com.hortonworks.streamline.common.util.WSUtils.buildEdgesFromQueryParam;
+import static com.hortonworks.streamline.common.util.WSUtils.buildEdgesToQueryParam;
 import static com.hortonworks.streamline.common.util.WSUtils.currentVersionQueryParam;
 import static com.hortonworks.streamline.common.util.WSUtils.versionIdQueryParam;
 import static com.hortonworks.streamline.streams.catalog.TopologyEdge.StreamGrouping;
@@ -442,19 +446,19 @@ public class StreamCatalogService {
         // remove sinks
         Collection<TopologySink> sinks = listTopologySinks(topologyIdVersionIdQueryParams);
         for (TopologySink sink : sinks) {
-            removeTopologySink(topologyId, sink.getId(), versionId);
+            removeTopologySink(topologyId, sink.getId(), versionId, false);
         }
 
         // remove processors
         Collection<TopologyProcessor> processors = listTopologyProcessors(topologyIdVersionIdQueryParams);
         for (TopologyProcessor processor: processors) {
-            removeTopologyProcessor(topologyId, processor.getId(), versionId);
+            removeTopologyProcessor(topologyId, processor.getId(), versionId, false);
         }
 
         // remove sources
         Collection<TopologySource> sources = listTopologySources(topologyIdVersionIdQueryParams);
         for (TopologySource source : sources) {
-            removeTopologySource(topologyId, source.getId(), versionId);
+            removeTopologySource(topologyId, source.getId(), versionId, false);
         }
 
         // remove output streams
@@ -1209,18 +1213,39 @@ public class StreamCatalogService {
         return newStreamIds;
     }
 
-    public TopologySource removeTopologySource(Long topologyId, Long sourceId) {
-        return removeTopologySource(topologyId, sourceId, getCurrentVersionId(topologyId));
+    public TopologySource removeTopologySource(Long topologyId, Long sourceId, boolean removeEdges) {
+        return removeTopologySource(topologyId, sourceId, getCurrentVersionId(topologyId), removeEdges);
     }
 
-    public TopologySource removeTopologySource(Long topologyId, Long sourceId, Long versionId) {
+    public TopologySource removeTopologySource(Long topologyId, Long sourceId, Long versionId, boolean removeEdges) {
         TopologySource topologySource = getTopologySource(topologyId, sourceId, versionId);
         if (topologySource != null) {
+            if (removeEdges) {
+                removeAllEdges(topologySource);
+            }
             removeSourceStreamMapping(topologySource);
             topologySource = dao.<TopologySource>remove(new StorableKey(TOPOLOGY_SOURCE_NAMESPACE, topologySource.getPrimaryKey()));
             topologySource.setVersionTimestamp(updateVersionTimestamp(versionId).getTimestamp());
         }
         return topologySource;
+    }
+
+    // removes any incoming or outgoing edges from the component
+    private void removeAllEdges(TopologyComponent c) {
+        removeTopologyEdge(buildEdgesFromQueryParam(c.getTopologyId(), c.getVersionId(), c.getId()));
+        removeTopologyEdge(buildEdgesToQueryParam(c.getTopologyId(), c.getVersionId(), c.getId()));
+    }
+
+    private void removeTopologyEdge(List<QueryParam> queryParams) {
+        try {
+            listTopologyEdges(queryParams).forEach(edge -> {
+                LOG.debug("Removing edge {}", edge);
+                removeTopologyEdge(edge.getTopologyId(), edge.getId(), edge.getVersionId());
+            });
+        } catch (Exception ex) {
+            LOG.error("Got exception while removing edge", ex);
+            throw new RuntimeException(ex);
+        }
     }
 
     public Collection<TopologySource> listTopologySources() {
@@ -1417,13 +1442,16 @@ public class StreamCatalogService {
         return dao.remove(new StorableKey(TOPOLOGY_SINK_NAMESPACE, topologySink.getPrimaryKey()));
     }
 
-    public TopologySink removeTopologySink(Long topologyId, Long sinkId) {
-        return removeTopologySink(topologyId, sinkId, getCurrentVersionId(topologyId));
+    public TopologySink removeTopologySink(Long topologyId, Long sinkId, boolean removeEdges) {
+        return removeTopologySink(topologyId, sinkId, getCurrentVersionId(topologyId), removeEdges);
     }
 
-    public TopologySink removeTopologySink(Long topologyId, Long sinkId, Long versionId) {
+    public TopologySink removeTopologySink(Long topologyId, Long sinkId, Long versionId, boolean removeEdges) {
         TopologySink topologySink = getTopologySink(topologyId, sinkId, versionId);
         if (topologySink != null) {
+            if (removeEdges) {
+                removeAllEdges(topologySink);
+            }
             topologySink = dao.<TopologySink>remove(new StorableKey(TOPOLOGY_SINK_NAMESPACE, topologySink.getPrimaryKey()));
             topologySink.setVersionTimestamp(updateVersionTimestamp(versionId).getTimestamp());
         }
@@ -1498,13 +1526,16 @@ public class StreamCatalogService {
         return topologyProcessor;
     }
 
-    public TopologyProcessor removeTopologyProcessor(Long topologyId, Long processorId) {
-        return removeTopologyProcessor(topologyId, processorId, getCurrentVersionId(topologyId));
+    public TopologyProcessor removeTopologyProcessor(Long topologyId, Long processorId, boolean removeEdges) {
+        return removeTopologyProcessor(topologyId, processorId, getCurrentVersionId(topologyId), removeEdges);
     }
 
-    public TopologyProcessor removeTopologyProcessor(Long topologyId, Long processorId, Long versionId) {
+    public TopologyProcessor removeTopologyProcessor(Long topologyId, Long processorId, Long versionId, boolean removeEdges) {
         TopologyProcessor topologyProcessor = getTopologyProcessor(topologyId, processorId, versionId);
         if (topologyProcessor != null) {
+            if (removeEdges) {
+                removeAllEdges(topologyProcessor);
+            }
             removeProcessorStreamMapping(topologyProcessor);
             topologyProcessor = dao.<TopologyProcessor>remove(new StorableKey(TOPOLOGY_PROCESSOR_NAMESPACE, topologyProcessor.getPrimaryKey()));
             topologyProcessor.setVersionTimestamp(updateVersionTimestamp(versionId).getTimestamp());
