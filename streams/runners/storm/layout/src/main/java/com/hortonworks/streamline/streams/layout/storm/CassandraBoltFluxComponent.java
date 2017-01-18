@@ -84,7 +84,13 @@ public class CassandraBoltFluxComponent extends AbstractFluxComponent {
 
         List<Object> constructorArgs = new ArrayList<>();
         constructorArgs.add(getRefYaml(addCassandraCqlMapperBuilder()));
-        constructorArgs.add(conf.get("flushFrequencyInSecs"));
+
+        // we should handle null value since Flux throws error while finding method with null in arguments
+        // pass flushFrequencyInMilliSecs only if it's available
+        Object flushFrequencyInSecs = conf.get("flushFrequencyInMilliSecs");
+        if (flushFrequencyInSecs != null) {
+            constructorArgs.add(flushFrequencyInSecs);
+        }
 
         Map configMethod = getConfigMethodWithRefArgs("withCassandraConfig", Collections.singletonList(addCassandraConfig()));
 
@@ -117,7 +123,7 @@ public class CassandraBoltFluxComponent extends AbstractFluxComponent {
         List<String> fieldSelectorIds = createFieldSelectors(columns);
 
         String cql = createInsertToCql(tableName, columnNames);
-        Map configMethod = getConfigMethodWithRefArgs("bind", fieldSelectorIds);
+        Map configMethod = getConfigMethodWithRefListArg("bind", fieldSelectorIds);
         addToComponents(createComponent(mapperClassId, MAPPER_BUILDER_CLASS, null, Arrays.asList(cql), Arrays.asList(configMethod)));
 
         return mapperClassId;
@@ -133,6 +139,19 @@ public class CassandraBoltFluxComponent extends AbstractFluxComponent {
             refMap.put(StormTopologyLayoutConstants.YAML_KEY_REF, refId);
             methodArgs.add(refMap);
         }
+        configMethod.put(StormTopologyLayoutConstants.YAML_KEY_ARGS, methodArgs);
+
+        return configMethod;
+    }
+
+    private Map<String, Object> getConfigMethodWithRefListArg(String configMethodName, List<String> refIds) {
+        Map<String, Object> configMethod = new LinkedHashMap<>();
+        configMethod.put(StormTopologyLayoutConstants.YAML_KEY_NAME, configMethodName);
+
+        List<Map<String, Object>> methodArgs = new ArrayList<>();
+        Map<String, Object> refMap = new HashMap<>();
+        refMap.put(StormTopologyLayoutConstants.YAML_KEY_REF_LIST, refIds);
+        methodArgs.add(refMap);
         configMethod.put(StormTopologyLayoutConstants.YAML_KEY_ARGS, methodArgs);
 
         return configMethod;
@@ -154,7 +173,7 @@ public class CassandraBoltFluxComponent extends AbstractFluxComponent {
         List<String> fieldSelectorIds = new ArrayList<>(columns.size());
         for (Map<String, String> column : columns) {
             String fieldSelectorId = idStr + (++ct);
-            List<String> constructorArgs = Arrays.asList(column.get(COLUMN_NAME_KEY), column.get(FIELD_NAME_KEY));
+            List<String> constructorArgs = Arrays.asList(column.get(FIELD_NAME_KEY), column.get(COLUMN_NAME_KEY));
             addToComponents(createComponent(fieldSelectorId, FIELD_SELECTOR_CLASS_NAME, null, constructorArgs, null));
             fieldSelectorIds.add(fieldSelectorId);
         }

@@ -31,6 +31,7 @@ public final class StormTopologyLayoutConstants {
     public static final String YAML_KEY_PROPERTIES = "properties";
     public static final String YAML_KEY_CONSTRUCTOR_ARGS = "constructorArgs";
     public static final String YAML_KEY_REF = "ref";
+    public static final String YAML_KEY_REF_LIST = "reflist";
     public static final String YAML_KEY_ARGS = "args";
     public static final String YAML_KEY_CONFIG_METHODS = "configMethods";
     public static final String YAML_KEY_FROM = "from";

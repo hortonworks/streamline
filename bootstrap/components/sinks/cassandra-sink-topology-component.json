@@ -5,7 +5,7 @@
   "builtin": true,
   "streamingEngine": "STORM",
   "transformationClass": "com.hortonworks.streamline.streams.layout.storm.CassandraBoltFluxComponent",
-  "mavenDeps": "org.apache.storm:storm-cassandra:STORM_VERSION,com.datastax.cassandra:cassandra-driver-core:2.1.7.1",
+  "mavenDeps": "org.apache.storm:storm-cassandra:STORM_VERSION,com.datastax.cassandra:cassandra-driver-core:3.1.2",
   "topologyComponentUISpecification": {
     "fields": [
       {
@@ -51,7 +51,7 @@
       },
       {
         "uiName": "Cassandra Configuration",
-        "fieldName": "cassandraConfig",
+        "fieldName": "cassandraEndpointConfig",
         "tooltip": "Cassandra cluster configuration",
         "isOptional": false,
         "type": "object",
@@ -111,8 +111,9 @@
             "fieldName": "cassandra.retryPolicy",
             "tooltip": "Retry policy classname",
             "isOptional": false,
-            "type": "string",
-            "defaultValue": "com.datastax.driver.core.policies.DefaultRetryPolicy"
+            "type": "enumstring",
+            "defaultValue": "DefaultRetryPolicy",
+            "options": ["DowngradingConsistencyRetryPolicy", "FallthroughRetryPolicy", "DefaultRetryPolicy"]
           },
           {
             "uiName": "Consistency Level",

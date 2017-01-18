@@ -41,9 +41,7 @@ public class StreamlineFieldSelector extends FieldSelector {
 
     protected Object getFieldValue(ITuple tuple) {
         StreamlineEvent streamlineEvent = (StreamlineEvent) tuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
-
-//        return streamlineEvent.get(field);
-        return null;
+        return streamlineEvent.get(field);
     }
 
 }
