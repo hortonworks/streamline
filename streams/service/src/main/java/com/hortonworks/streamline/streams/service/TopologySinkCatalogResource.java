@@ -271,8 +271,9 @@ public class TopologySinkCatalogResource {
     @DELETE
     @Path("/topologies/{topologyId}/sinks/{id}")
     @Timed
-    public Response removeTopologySink(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sinkId) {
-        TopologySink topologySink = catalogService.removeTopologySink(topologyId, sinkId);
+    public Response removeTopologySink(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sinkId,
+                                       @javax.ws.rs.QueryParam("removeEdges") boolean removeEdges) {
+        TopologySink topologySink = catalogService.removeTopologySink(topologyId, sinkId, removeEdges);
         if (topologySink != null) {
             return WSUtils.respondEntity(topologySink, OK);
         }

@@ -295,8 +295,9 @@ public class TopologySourceCatalogResource {
     @DELETE
     @Path("/topologies/{topologyId}/sources/{id}")
     @Timed
-    public Response removeTopologySource(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sourceId) {
-        TopologySource topologySource = catalogService.removeTopologySource(topologyId, sourceId);
+    public Response removeTopologySource(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sourceId,
+                                         @javax.ws.rs.QueryParam("removeEdges") boolean removeEdges) {
+        TopologySource topologySource = catalogService.removeTopologySource(topologyId, sourceId, removeEdges);
         if (topologySource != null) {
             return WSUtils.respondEntity(topologySource, OK);
         }
