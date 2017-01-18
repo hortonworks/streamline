@@ -73,7 +73,7 @@ class PoolItemsCard extends Component{
       <div className="col-md-4">
             <div className="service-box" data-id={cluster.id} ref={(ref) => this.clusterRef = ref}>
                 <div className="service-head clearfix">
-                    <h4 className="pull-left no-margin">{cluster.name}</h4>
+                    <h4 className="pull-left no-margin">{cluster.name}<br /><span>{cluster.ambariImportUrl}</span></h4>
                     <div className="pull-right">
                       <DropdownButton noCaret title={ellipseIcon} id="dropdown" bsStyle="link" className="dropdown-toggle">
                           <MenuItem onClick={this.onActionClick.bind(this ,"refresh/")}>

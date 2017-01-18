@@ -310,7 +310,8 @@ class TopologyListingContainer extends Component {
             pageIndex : 0,
             pageSize : 9,
             cloneFromId: null,
-            checkEnvironment : false
+            checkEnvironment : false,
+            sourceCheck : false
         }
 
         this.fetchData();
@@ -320,28 +321,40 @@ class TopologyListingContainer extends Component {
       const sortKey = this.state.sorted.key;
       let promiseArr = [
         EnvironmentREST.getAllNameSpaces(),
-        TopologyREST.getAllTopology(sortKey)
+        TopologyREST.getSourceComponent(),
+        TopologyREST.getAllTopology(sortKey),
       ];
       Promise.all(promiseArr)
         .then((results) => {
-          let environmentLen = 0 , environmentFlag = false;
+          let environmentLen = 0 , environmentFlag = false,sourceLen = 0,sourceFlag = false;
           if(results[0].responseMessage !== undefined){
-            this.setState({fetchLoader : false,checkEnvironment:false});
+            this.setState({fetchLoader : false,checkEnvironment:false,sourceCheck:false});
               FSReactToastr.error(
                   <CommonNotification flag="error" content={results[0].responseMessage}/>, '', toastOpt)
           }else{
             environmentLen = results[0].entities.length;
           }
           if(results[1].responseMessage !== undefined){
-            this.setState({fetchLoader : false,checkEnvironment:false});
+            this.setState({fetchLoader : false,checkEnvironment:false,sourceCheck:false});
               FSReactToastr.error(
-                  <CommonNotification flag="error" content={results[1].responseMessage}/>, '', toastOpt)
+                  <CommonNotification flag="error" content={results[0].responseMessage}/>, '', toastOpt)
           }else{
-            let result = Utils.sortArray(results[1].entities.slice(), 'timestamp', false);
-            if(result.length === 0 && environmentLen !== 0){
-                environmentFlag = true;
+             sourceLen = results[1].entities.length;
+          }
+          if(results[2].responseMessage !== undefined){
+            this.setState({fetchLoader : false,checkEnvironment:false,sourceCheck:false});
+              FSReactToastr.error(
+                  <CommonNotification flag="error" content={results[2].responseMessage}/>, '', toastOpt)
+          }else{
+            let result = Utils.sortArray(results[2].entities.slice(), 'timestamp', false);
+            if(sourceLen !== 0){
+              if(result.length === 0 && environmentLen !== 0){
+                  environmentFlag = true;
+              }
+            }else{
+              sourceFlag = true;
             }
-            this.setState({fetchLoader : false,entities: result,pageIndex:0,checkEnvironment : environmentFlag});
+            this.setState({fetchLoader : false,entities: result,pageIndex:0,checkEnvironment : environmentFlag,sourceCheck : sourceFlag});
           }
         });
     }
@@ -590,7 +603,7 @@ class TopologyListingContainer extends Component {
     }
 
     render() {
-        const {entities,filterValue,isLoading,fetchLoader,slideInput,pageSize,pageIndex,checkEnvironment} = this.state;
+        const {entities,filterValue,isLoading,fetchLoader,slideInput,pageSize,pageIndex,checkEnvironment,sourceCheck} = this.state;
         const filteredEntities = TopologyUtils.topologyFilter(entities, filterValue);
         const splitData = _.chunk(filteredEntities,pageSize) || [];
         const btnIcon = <i className="fa fa-plus"></i>;
@@ -616,7 +629,7 @@ class TopologyListingContainer extends Component {
                             </DropdownButton>
                         </div>
                         {
-                          splitData.length !== 0
+                          ((filterValue && splitData.length === 0) || splitData.length !== 0)
                           ? <div className="row">
                               <div className="page-title-box clearfix">
                                   <div className="col-md-4 col-md-offset-5 text-right">
@@ -675,6 +688,8 @@ class TopologyListingContainer extends Component {
                         ? <NoData
                             environmentFlag={checkEnvironment}
                             imgName={"applications"}
+                            sourceCheck = {sourceCheck}
+                            searchVal={filterValue}
                         />
                         : splitData[pageIndex].map((list) => {
                             return <TopologyItems key={list.topology.id} topologyList={list} topologyAction={this.actionHandler} isLoading={isLoading}/>

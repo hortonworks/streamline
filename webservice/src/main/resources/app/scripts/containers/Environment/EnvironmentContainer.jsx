@@ -34,7 +34,7 @@ const MappingItem = (props) => {
 }
 
 const EnvironmentItems = (props) => {
-  let {mapData,name} = props;
+  let {mapData,clusterObj} = props;
   let a = [], b = [];
   mapData.map((m)=>{
     if(m.serviceName.length > 8){
@@ -47,7 +47,7 @@ const EnvironmentItems = (props) => {
   mapData = a;
   return (
     <div>
-      <h5 className="environment-title">{name}</h5>
+      <h5 className="environment-title">{clusterObj.name}<br /><span>{clusterObj.clusterURL}</span></h5>
       <ul className="environment-components clearfix">
           {
             mapData.map((item , i) => {
@@ -75,7 +75,7 @@ class EnvironmentCards extends Component {
     this.props.nameSpaceClicked(eventKey, this.nameSpaceRef.dataset.id)
   }
   render(){
-    const {nameSpaceList,clusterName,mapData} = this.props;
+    const {nameSpaceList,clusterDetails,mapData} = this.props;
     const ellipseIcon = <i className="fa fa-ellipsis-v"></i>;
     const {namespace,mappings = []} = nameSpaceList;
     const serviceCount = () => {
@@ -124,7 +124,7 @@ class EnvironmentCards extends Component {
                         _.keys(mappings).length === 0
                           ? <div className="col-sm-12"><h4 className="text-center">No Mapping</h4></div>
                           : _.keys(mappings).map((key , i) => {
-                               return <EnvironmentItems key={i} mapData={mappings[key]} name ={clusterName[key]} />
+                               return <EnvironmentItems key={i} mapData={mappings[key]} clusterObj ={clusterDetails[key]} />
                           })
                       }
                       </Scrollbars>
@@ -145,7 +145,7 @@ class EnvironmentContainer extends Component{
       fetchLoader : true,
       pageIndex : 0,
       pageSize : 5,
-      clusterName : {},
+      clusterDetails : {},
       customMapData : [],
       namespaceIdToEdit: null,
       refIdArr: [],
@@ -193,7 +193,7 @@ class EnvironmentContainer extends Component{
         serviceLen = entities.length;
         entities.map(x => {
           if(obj[Number(x.cluster.id)] === undefined){
-            obj[Number(x.cluster.id)] = x.cluster.name;
+            obj[Number(x.cluster.id)] = {name : x.cluster.name , clusterURL : x.cluster.ambariImportUrl};
           }
         });
       }
@@ -207,7 +207,7 @@ class EnvironmentContainer extends Component{
         if(resultSet.length === 0 && serviceLen !== 0){
           serviceFlag = true;
         }
-        this.setState({fetchLoader : false,entities: mappingList,pageIndex:0 ,clusterName : obj, namespaceIdToEdit: null,checkServices:serviceFlag});
+        this.setState({fetchLoader : false,entities: mappingList,pageIndex:0 ,clusterDetails : obj, namespaceIdToEdit: null,checkServices:serviceFlag});
       }
 
     }).catch((err) => {
@@ -355,7 +355,7 @@ class EnvironmentContainer extends Component{
   }
 
   render(){
-    const {entities,pageSize,pageIndex,fetchLoader,clusterName, namespaceIdToEdit,refIdArr,loader,checkServices} = this.state;
+    const {entities,pageSize,pageIndex,fetchLoader,clusterDetails, namespaceIdToEdit,refIdArr,loader,checkServices} = this.state;
     const {routes} = this.props;
     const splitData = _.chunk(entities,pageSize) || [];
     const modelTitle = <span>{namespaceIdToEdit === null ? "New " : "Edit "   }Environment{/* <i className="fa fa-info-circle"></i>*/}</span>
@@ -385,7 +385,7 @@ class EnvironmentContainer extends Component{
                   return <EnvironmentCards key={i}
                             nameSpaceList = {nameSpaceList}
                             nameSpaceClicked = {this.nameSpaceClicked}
-                            clusterName={clusterName}
+                            clusterDetails={clusterDetails}
                             refIdArr={refIdArr}
                             loader = {loader}
                           />

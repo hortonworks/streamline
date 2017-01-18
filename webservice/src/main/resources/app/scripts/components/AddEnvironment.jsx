@@ -6,6 +6,7 @@ import CommonNotification from '../utils/CommonNotification';
 import {toastOpt} from '../utils/Constants';
 import ClusterREST from '../rest/ClusterREST';
 import EnvironmentREST from '../rest/EnvironmentREST';
+import {Confirm} from '../components/FSModal';
 
 
 const ItemsMapping = (props) => {
@@ -63,7 +64,7 @@ class AddEnvironmentItems extends Component{
     return(
       <div className="col-md-4">
       <div className="environment-modal-widget">
-          <h5 className="environment-title no-margin-top">{cluster.name}</h5>
+          <h5 className="environment-title no-margin-top">{cluster.name}<br/><span>{cluster.ambariImportUrl}</span></h5>
           <ul className="select-env-service clearfix">
             {
               serviceWrap.length === 0
@@ -88,7 +89,7 @@ class AddEnvironment extends Component{
     super(props)
     this.state = {
       entities : [],
-      fetchLoader : true,
+      fetchLoader : true
     };
     this.selectionList = {};
     this.fetchData();
@@ -195,102 +196,126 @@ class AddEnvironment extends Component{
   }
 
   mapSelectionHandler = (dataObj) => {
-    const index = this.selectionList[dataObj.clusterId].findIndex((x)=>{
-      return x.serviceName == dataObj.serviceName
-    });
+  const index = this.selectionList[dataObj.clusterId].findIndex((x)=>{
+    return x.serviceName == dataObj.serviceName
+  });
 
-    if(index !== -1){
-      this.selectionList[dataObj.clusterId].splice(index,1);
-    }else{
-      if(dataObj.serviceName.toLowerCase() === "storm" || dataObj.serviceName.toLowerCase() === "ambari_metrics"){
-        let t_clusterId, t_index;
-        _.keys(this.selectionList).map(key => {
-            this.selectionList[key].map((x , i) => {
-              if(x.serviceName.toLowerCase() === "storm" || x.serviceName.toLowerCase() === "ambari_metrics"){
-                t_clusterId = key;
-                t_index = i;
-              }
-            })
-        });
-        if(t_clusterId !== undefined){
-          let r_index = 0,r_id='',r_flag=true;
-          _.keys(this.selectionList).map(key => {
-            r_index = this.selectionList[key].findIndex(x => {
-              r_id = x.clusterId;
-              return x.serviceName === dataObj.serviceName;
-            });
-            if(r_index !== -1 && r_flag){
-                r_flag=false;
-                document.querySelector('[data-id="'+r_id+'@'+dataObj.serviceName+'"]').className="";
-                this.selectionList[r_id].splice(r_index,1);
+  if(index !== -1){
+    this.selectionList[dataObj.clusterId].splice(index,1);
+  }else{
+    if(dataObj.serviceName.toLowerCase() === "storm" || dataObj.serviceName.toLowerCase() === "ambari_metrics"){
+      let t_clusterId, t_index,storm_id='';
+      _.keys(this.selectionList).map(key => {
+          this.selectionList[key].map((x , i) => {
+            if(x.serviceName.toLowerCase() === "storm" || x.serviceName.toLowerCase() === "ambari_metrics"){
+              x.serviceName.toLowerCase() === "storm" ? storm_id = key : '';
+              t_clusterId = key;
+              t_index = i;
             }
+          })
+      });
+      if(t_clusterId !== undefined){
+        let r_index = 0,r_id='',r_flag=true;
+        _.keys(this.selectionList).map(key => {
+          r_index = this.selectionList[key].findIndex(x => {
+            r_id = x.clusterId;
+            return x.serviceName === dataObj.serviceName;
           });
-        }
+          if(r_index !== -1 && r_flag){
+            if(dataObj.serviceName.toLowerCase() === "storm"){
+                this.refs.changeStreamEngine.show({
+                  title: 'Are you sure you want to change storm for this environment ?'
+                }).then(()=>{
+                  this.sliceSelectedKeyIndex(storm_id,dataObj.serviceName)
+                },()=>{
+                  this.sliceSelectedKeyIndex(dataObj.clusterId,dataObj.serviceName)
+                });
+            }else{
+              this.sliceSelectedKeyIndex(r_id,dataObj.serviceName)
+            }
+            r_flag=false;
+          }
+        });
       }
-      this.selectionList[dataObj.clusterId].push(dataObj);
     }
+    this.selectionList[dataObj.clusterId].push(dataObj);
   }
+}
+
+sliceSelectedKeyIndex = (r_serviceId,r_serviceName) => {
+  document.querySelector('[data-id="'+r_serviceId+'@'+r_serviceName+'"]').className="";
+  const cancelIndex = this.selectionList[r_serviceId].findIndex((x)=>{
+    return x.serviceName == r_serviceName
+  });
+  cancelIndex !== -1 ? this.selectionList[r_serviceId].splice(cancelIndex,1) : '';
+  this.refs.changeStreamEngine.hide();
+}
+
   componentWillUnmount(){
     this.selectionList = [];
   }
+
   render(){
     const {fetchLoader,entities} = this.state;
     return(
-      <div className="modal-form config-modal-form" ref="addEvtModelRef">
-        <div className="form-group">
-          <label>Name <span className="text-danger">*</span></label>
-            <input
-              type="text"
-              ref={(ref) => this.nameRef = ref}
-              name="environmentName"
-              placeholder="Environment Name"
-              required="true"
-              className="form-control"
-            />
-        </div>
-        <div className="form-group">
-          <label>Description <span className="text-danger">*</span></label>
-            <input
-              type="text"
-              ref={(ref) => this.descRef = ref}
-              name="description"
-              placeholder="Description"
-              required="true"
-              className="form-control"
-            />
-        </div>
-        <h4 className="environment-modal-title">Select Services</h4>
-        {
-          entities.length !== 0
-          ? <small ref="missingStorm"> (Atleast one streaming engine (eg: STORM) must be selected.)</small>
-          : ''
-        }
-        <div className="row environment-modal-services">
+      <div>
+        <div className="modal-form config-modal-form" ref="addEvtModelRef">
+          <div className="form-group">
+            <label>Name <span className="text-danger">*</span></label>
+              <input
+                type="text"
+                ref={(ref) => this.nameRef = ref}
+                name="environmentName"
+                placeholder="Environment Name"
+                required="true"
+                className="form-control"
+              />
+          </div>
+          <div className="form-group">
+            <label>Description <span className="text-danger">*</span></label>
+              <input
+                type="text"
+                ref={(ref) => this.descRef = ref}
+                name="description"
+                placeholder="Description"
+                required="true"
+                className="form-control"
+              />
+          </div>
+          <h4 className="environment-modal-title">Select Services</h4>
           {
-            fetchLoader
-            ? <div className="col-sm-12">
-                <div className="loading-img text-center">
-                      <img src="styles/img/start-loader.gif" alt="loading" />
-                </div>
-              </div>
-            : <div>
-                {
-                  entities.length === 0
-                  ? <div className="col-sm-12 text-center">
-                      No Clusters
-                    </div>
-                : entities.map( list => {
-                    return <AddEnvironmentItems
-                            key={list.cluster.id}
-                            clusterList={list}
-                            mapSelection={this.mapSelectionHandler}
-                            />
-                  })
-                }
-              </div>
+            entities.length !== 0
+            ? <small ref="missingStorm"> (Atleast one streaming engine (eg: STORM) must be selected.)</small>
+            : ''
           }
+          <div className="row environment-modal-services">
+            {
+              fetchLoader
+              ? <div className="col-sm-12">
+                  <div className="loading-img text-center">
+                        <img src="styles/img/start-loader.gif" alt="loading" />
+                  </div>
+                </div>
+              : <div>
+                  {
+                    entities.length === 0
+                    ? <div className="col-sm-12 text-center">
+                        No Clusters
+                      </div>
+                  : entities.map( list => {
+                      return <AddEnvironmentItems
+                              key={list.cluster.id}
+                              clusterList={list}
+                              mapSelection={this.mapSelectionHandler}
+                              />
+                    })
+                  }
+                </div>
+            }
 
+          </div>
         </div>
+        <Confirm ref="changeStreamEngine"/>
       </div>
     )
   }

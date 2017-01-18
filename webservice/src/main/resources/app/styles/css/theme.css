@@ -1531,6 +1531,11 @@ span.version{
   color: #8b8b8b;
   font-size: 16px;
 }
+h5.environment-title span,.service-box .service-head h4 span{
+  font-size: 10px;
+  white-space: normal;
+  word-break: break-all;
+}
 .environment-components > li {
   margin-right: 6px;
   margin-bottom: 6px;
