@@ -156,6 +156,8 @@ export class number extends BaseField {
         return super.validate(this.props.data[this.props.value])
     }
     getField = () => {
+      const min = this.props.fieldJson.min !== undefined ? this.props.fieldJson.min : 0;
+      const max = this.props.fieldJson.max !== undefined ? this.props.fieldJson.max : Number.MAX_SAFE_INTEGER;
       const popoverContent = (
         <Popover id="popover-trigger-hover-focus">
           {this.props.fieldJson.tooltip}
@@ -173,6 +175,8 @@ export class number extends BaseField {
                 value={this.props.data[this.props.value]}
                 disabled={disabledField}
                 {...this.props.attrs}
+                min={min}
+                max={max}
                 onChange={this.handleChange}/>
              </OverlayTrigger>
     }

@@ -328,7 +328,8 @@ const deleteNode = function(topologyId, versionId, currentNode, nodes, edges, in
                                         __type: currentActionType,
                                         name: 'notifierAction',
                                         outputStreams: [stream.streamId],
-                                        transforms: []
+                                        outputFieldsAndDefaults: {},
+                                        notifierName: ''
                                     });
                                     }
                                 } else if(currentActionType === 'com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction') {
@@ -544,7 +545,8 @@ const deleteEdge = function(selectedEdge, topologyId, versionId, internalFlags, 
                                                         __type: currentActionType,
                                                         name: 'notifierAction',
                                                         outputStreams: [stream.streamId],
-                                                        transforms: []
+                                                        notifierName: '',
+                                                        outputFieldsAndDefaults: {}
                                                     };
                                                 }
                                             } else if(currentActionType === 'com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction') {

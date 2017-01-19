@@ -487,7 +487,7 @@ export default class NormalizationNodeForm extends Component {
 												let t = _.find(this.state.transformers, {streamId: this.state.currentStream, inputField: f});
 												return (
 													<li key={i} className={f.isOptional ? "optional" : "mandatory"}>
-														{editMode ? 
+                                                                                                                {editMode ?
 															<OverlayTrigger
 																trigger="click"
 																placement="bottom"
@@ -574,7 +574,7 @@ export default class NormalizationNodeForm extends Component {
 										type="number"
 										className="form-control"
 										disabled={!this.state.editMode}
-										min="0"
+                                                                                min="1"
 										inputMode="numeric"
 									/>
 								</div>

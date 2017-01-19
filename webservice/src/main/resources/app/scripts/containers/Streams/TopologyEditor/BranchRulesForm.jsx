@@ -507,14 +507,21 @@ export default class RulesForm extends Component {
 			let rulesArr = ruleProcessorData.config.properties.rules || [];
 			rulesArr.push(ruleData.id);
 			ruleProcessorData.config.properties.rules = rulesArr;
-			let newStreamObj = {
-				streamId: 'branch_processor_stream_'+(ruleData.id),
+                        let transformStreamObj = {
+                                streamId: 'branch_transform_stream_'+(ruleData.id),
+                                fields: parsedStream.fields
+                        };
+                        let notifierStreamObj = {
+                                streamId: 'branch_notifier_stream_'+(ruleData.id),
 				fields: parsedStream.fields
 			};
 			if(ruleProcessorData.outputStreams.length > 0) {
-				ruleProcessorData.outputStreams.push(newStreamObj);
+                                ruleProcessorData.outputStreams.push(transformStreamObj);
+                                ruleProcessorData.outputStreams.push(notifierStreamObj);
  			} else {
-				ruleProcessorData.outputStreams = [newStreamObj];
+				ruleProcessorData.outputStreams = [];
+                                ruleProcessorData.outputStreams.push(transformStreamObj);
+                                ruleProcessorData.outputStreams.push(notifierStreamObj);
 			}
 			promiseArr.push(TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.id, {body: JSON.stringify(ruleProcessorData)}));
 		}

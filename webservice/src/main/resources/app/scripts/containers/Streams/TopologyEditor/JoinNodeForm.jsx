@@ -23,51 +23,61 @@ export default class JoinNodeForm extends Component {
 
 	constructor(props) {
 		super(props);
-                let {editMode, sourceNode} = props;
-		this.fetchData();
+        let {editMode, sourceNode} = props;
+        this.fetchTopologyConfig();
+        this.fetchData();
 
-                this.sourceNodesId = [];
+        this.sourceNodesId = [];
 
-                sourceNode.map((n)=>{
-                        this.sourceNodesId.push(n.nodeId);
-                });
+        sourceNode.map((n)=>{
+            this.sourceNodesId.push(n.nodeId);
+        });
 
-                let configDataFields = props.configData.topologyComponentUISpecification.fields;
-                let joinOptions = _.find(configDataFields, {fieldName: 'jointype'}).options;
-                let joinTypes = [];
-                joinOptions.map((o)=>{
-                        joinTypes.push({value: o, label: o});
-                });
+        let configDataFields = props.configData.topologyComponentUISpecification.fields;
+        let joinOptions = _.find(configDataFields, {fieldName: 'jointype'}).options;
+        let joinTypes = [];
+        joinOptions.map((o)=>{
+            joinTypes.push({value: o, label: o});
+        });
 
 		var obj = {
 			parallelism: 1,
 			editMode: editMode,
-                        fieldList: [],
-                        intervalType: ".Window$Duration",
-                        intervalTypeArr: [
-                                {value: ".Window$Duration", label: "Time"},
-                                {value: ".Window$Count", label: "Count"}
-                        ],
-                        windowNum: '',
-                        slidingNum: '',
-                        durationType: "Seconds",
-                        slidingDurationType: "Seconds",
-                        durationTypeArr: [
-                                {value: "Seconds", label: "Seconds"},
-                                {value: "Minutes", label: "Minutes"},
-                                {value: "Hours", label: "Hours"},
-                        ],
-                        outputKeys: [],
-                        outputStreamFields: [],
-                        joinFromStreamName: '',
-                        joinFromStreamKey: '',
-                        joinFromStreamKeys: [],
-                        joinTypes: joinTypes,
-                        joinStreams: [],
-                        inputStreamsArr: []
+            fieldList: [],
+            intervalType: ".Window$Duration",
+            intervalTypeArr: [
+                {value: ".Window$Duration", label: "Time"},
+                {value: ".Window$Count", label: "Count"}
+            ],
+            windowNum: '',
+            slidingNum: '',
+            durationType: "Seconds",
+            slidingDurationType: "Seconds",
+            durationTypeArr: [
+                {value: "Seconds", label: "Seconds"},
+                {value: "Minutes", label: "Minutes"},
+                {value: "Hours", label: "Hours"},
+            ],
+            outputKeys: [],
+            outputStreamFields: [],
+            joinFromStreamName: '',
+            joinFromStreamKey: '',
+            joinFromStreamKeys: [],
+            joinTypes: joinTypes,
+            joinStreams: [],
+            inputStreamsArr: []
 		};
 		this.state = obj;
 	}
+
+    fetchTopologyConfig(){
+        let {topologyId, versionId} = this.props;
+        TopologyREST.getTopologyWithoutMetrics(topologyId, versionId)
+        .then((result)=>{
+            this.topologyConfigResponse = result;
+            this.topologyConfig = JSON.parse(result.config);
+        })
+    }
 
     getSchemaFields(fields, level, keyPath=[]){
         fields.map((field)=>{
@@ -512,6 +522,14 @@ export default class JoinNodeForm extends Component {
                     durationMs: Utils.numberToMilliseconds(slidingNum, slidingDurationType)
                 };
             }
+            //Updating message timeout (in seconds) for topology level configuration
+            let timeoutSeconds = ((configObj.window.windowLength.durationMs + (slidingNum !== '' ? configObj.window.slidingInterval.durationMs : 0)) / 1000) + 5;
+            if(this.topologyConfig['topology.message.timeout.secs'] < timeoutSeconds){
+                this.topologyConfig['topology.message.timeout.secs'] = timeoutSeconds;
+                this.topologyConfigResponse.config = JSON.stringify(this.topologyConfig);
+                let {name, config, namespaceId} = this.topologyConfigResponse;
+                TopologyREST.putTopology(topologyId, versionId, {body: JSON.stringify({name, config, namespaceId})});
+            }
         } else if (intervalType === '.Window$Count'){
             configObj.window.windowLength.count = windowNum;
             if(slidingNum !== ''){
@@ -723,7 +741,7 @@ export default class JoinNodeForm extends Component {
                                                         className="form-control"
                                                         required={true}
                                                         disabled={!editMode}
-                                                        min="0"
+                                                        min="1"
                                                         inputMode="numeric"
                                                     />
                                                 </div>

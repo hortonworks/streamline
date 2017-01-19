@@ -188,7 +188,7 @@ export default class SplitNodeForm extends Component {
 										type="number"
 										className="form-control"
 										disabled={!this.state.editMode}
-										min="0"
+                                                                                min="1"
 										inputMode="numeric"
 									/>
 								</div>

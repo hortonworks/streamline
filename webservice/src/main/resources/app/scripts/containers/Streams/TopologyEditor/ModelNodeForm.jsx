@@ -152,7 +152,7 @@ export default class ModelNodeForm extends Component {
                     className="form-control"
                     required={true}
                     disabled={!editMode}
-                    min="0"
+                    min="1"
                     inputMode="numeric"
                 />
               </div>

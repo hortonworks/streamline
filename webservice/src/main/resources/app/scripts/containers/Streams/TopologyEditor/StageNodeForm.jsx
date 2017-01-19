@@ -184,7 +184,7 @@ export default class StageFormNode extends Component{
 			validateDataFlag = false;
 		if(transformFields.length == 0)
 			validateDataFlag = false;
-		
+
 		this.setState({showError: true, showErrorLabel: true, changedFields: changedFields});
 		return validateDataFlag;
 	}
@@ -326,7 +326,7 @@ export default class StageFormNode extends Component{
 										type="number"
 										className="form-control"
 									    disabled={!editMode}
-									    min="0"
+                                                                            min="1"
 										inputMode="numeric"
 									/>
 								</div>

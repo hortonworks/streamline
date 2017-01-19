@@ -78,7 +78,7 @@ export default class CustomNodeForm extends Component {
 					if(i.type === "boolean")
 						stateObj[i.fieldName] = (properties[i.fieldName]) === true ? true : false;
 					else
-						stateObj[i.fieldName] = properties[i.fieldName] ? properties[i.fieldName] : '';
+                                                stateObj[i.fieldName] = properties[i.fieldName] ? properties[i.fieldName] : (i.defaultValue || '');
 				});
 
 				if(this.nodeData.outputStreams.length === 0)
@@ -224,7 +224,7 @@ export default class CustomNodeForm extends Component {
                                             className={!f.isOptional && showError && f.isInvalid ? "form-control invalidInput" : "form-control"}
                                             required={f.isOptional ? false : true}
                                             disabled={!this.state.editMode}
-                                            min={f.type === "number" ? "0" : null}
+                                            min={(f.type === "number" && f.fieldName === "parallelism") ? 1 : f.type === "number" ? 0 : null}
                                             inputMode={f.type === "number" ? "numeric" : null}
                                         />
                                     }

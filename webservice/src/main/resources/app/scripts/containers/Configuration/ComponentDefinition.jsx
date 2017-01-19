@@ -83,7 +83,7 @@ export default class ComponentDefinition extends Component {
           FSReactToastr.error(
               <CommonNotification flag="error" content={definition.responseMessage}/>, '', toastOpt)
         } else {
-          FSReactToastr.success(<strong>Definition update successfully</strong>);
+          FSReactToastr.success(<strong>Definition updated successfully</strong>);
         }
       })
   }

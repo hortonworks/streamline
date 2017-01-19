@@ -693,7 +693,7 @@ export default class TopologyGraphComponent extends Component {
             .on("click", function(d){
                 if(thisGraph.editMode){
                     let value = parseInt(d.parallelismCount, 10) + 1;
-                    d.parallelismCount = value <= 0 ? 0 : value;
+                    d.parallelismCount = value <= 1 ? 1 : value;
                     clearTimeout(thisGraph.clickTimeout);
                     thisGraph.clickTimeout = setTimeout(function(){
                         TopologyUtils.updateParallelismCount(thisGraph.topologyId, this.versionId, d, thisGraph.setLastChange);
@@ -706,7 +706,7 @@ export default class TopologyGraphComponent extends Component {
             .on("click", function(d){
                 if(thisGraph.editMode){
                     let value = parseInt(d.parallelismCount, 10) - 1;
-                    d.parallelismCount = value <= 0 ? 0 : value;
+                    d.parallelismCount = value <= 1 ? 1 : value;
                     clearTimeout(thisGraph.clickTimeout);
                     thisGraph.clickTimeout = setTimeout(function(){
                         TopologyUtils.updateParallelismCount(thisGraph.topologyId, this.versionId, d, thisGraph.setLastChange);
