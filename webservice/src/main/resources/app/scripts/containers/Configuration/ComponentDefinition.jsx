@@ -106,74 +106,81 @@ export default class ComponentDefinition extends Component {
                 ?  <CommonLoaderSign
                       imgName={"default"}
                   />
-                : filteredEntities.length === 0
-                  ? <NoData
-                      imgName={"default"}
-                    />
-                  : <div>
-                      <div className="row">
-                        <div className="page-title-box clearfix">
-                            <div className="col-md-4 col-md-offset-6 text-right">
-                              <FormGroup>
-                                  <InputGroup>
-                                      <FormControl type="text"
-                                        placeholder="Search by name"
-                                        onKeyUp={this.onFilterChange}
-                                        className={`inputAnimateIn ${(slideInput) ? "inputAnimateOut" : ''}`}
-                                        onBlur={this.slideInputOut}
-                                      />
-                                      <InputGroup.Addon>
-                                          <Button type="button"
-                                            className="searchBtn"
-                                            onClick={this.slideInput}
-                                          >
-                                            <i className="fa fa-search"></i>
-                                          </Button>
-                                      </InputGroup.Addon>
-                                  </InputGroup>
-                              </FormGroup>
-                            </div>
-                        </div>
-                      </div>
-                      <div className="row">
-                            <div className="col-sm-12">
-                                <div className="box">
-                                    <div className="box-body">
-                                      <Table
-                                        className="table table-hover table-bordered"
-                                        noDataText="No records found."
-                                        currentPage={0}
-                                        itemsPerPage={filteredEntities.length > pageSize ? pageSize : 0} pageButtonLimit={5}>
-                                          <Thead>
-                                            <Th column="name">Name</Th>
-                                            <Th column="type">Type</Th>
-                                            <Th column="action">Actions</Th>
-                                          </Thead>
-                                        {filteredEntities.map((obj, i) => {
-                                          return (
-                                            <Tr key={`${obj.name}${i}`}>
-                                              <Td column="name">{obj.name}</Td>
-                                              <Td column="type">{obj.type}</Td>
-                                              <Td column="action">
-                                                {
-                                                  obj.builtin
-                                                  ? <div className="btn-action">
-                                                      <BtnEdit callback={this.handleEditDefinition.bind(this, obj.id,false)}/>
-                                                    </div>
-                                                  : <div className="btn-action">
-                                                      <BtnView callback={this.handleEditDefinition.bind(this, obj.id,true)}/>
-                                                    </div>
-                                                }
-                                              </Td>
-                                            </Tr>
-                                          )
-                                        })}
-                                      </Table>
-                                    </div>
+                : <div>
+                  {
+                    ((filterValue && filteredEntities.length === 0) || filteredEntities !== 0)
+                        ?  <div className="row">
+                            <div className="page-title-box clearfix">
+                                <div className="col-md-4 col-md-offset-6 text-right">
+                                  <FormGroup>
+                                      <InputGroup>
+                                          <FormControl type="text"
+                                            placeholder="Search by name"
+                                            onKeyUp={this.onFilterChange}
+                                            className={`inputAnimateIn ${(slideInput) ? "inputAnimateOut" : ''}`}
+                                            onBlur={this.slideInputOut}
+                                          />
+                                          <InputGroup.Addon>
+                                              <Button type="button"
+                                                className="searchBtn"
+                                                onClick={this.slideInput}
+                                              >
+                                                <i className="fa fa-search"></i>
+                                              </Button>
+                                          </InputGroup.Addon>
+                                      </InputGroup>
+                                  </FormGroup>
                                 </div>
                             </div>
-                      </div>
-                    </div>
+                          </div>
+                        : ''
+                  }
+                  {
+                    filteredEntities.length === 0
+                      ? <NoData
+                          imgName={"default"}
+                          searchVal={filterValue}
+                        />
+                      : <div className="row">
+                                <div className="col-sm-12">
+                                    <div className="box">
+                                        <div className="box-body">
+                                          <Table
+                                            className="table table-hover table-bordered"
+                                            noDataText="No records found."
+                                            currentPage={0}
+                                            itemsPerPage={filteredEntities.length > pageSize ? pageSize : 0} pageButtonLimit={5}>
+                                              <Thead>
+                                                <Th column="name">Name</Th>
+                                                <Th column="type">Type</Th>
+                                                <Th column="action">Actions</Th>
+                                              </Thead>
+                                            {filteredEntities.map((obj, i) => {
+                                              return (
+                                                <Tr key={`${obj.name}${i}`}>
+                                                  <Td column="name">{obj.name}</Td>
+                                                  <Td column="type">{obj.type}</Td>
+                                                  <Td column="action">
+                                                    {
+                                                      obj.builtin
+                                                      ? <div className="btn-action">
+                                                          <BtnEdit callback={this.handleEditDefinition.bind(this, obj.id,false)}/>
+                                                        </div>
+                                                      : <div className="btn-action">
+                                                          <BtnView callback={this.handleEditDefinition.bind(this, obj.id,true)}/>
+                                                        </div>
+                                                    }
+                                                  </Td>
+                                                </Tr>
+                                              )
+                                            })}
+                                          </Table>
+                                        </div>
+                                    </div>
+                                </div>
+                          </div>
+                  }
+                  </div>
               }
                 <Modal ref="definitionModel"
                   data-title="Edit Definition"

@@ -220,33 +220,33 @@ export default class SinkNodeForm extends Component {
           TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)})
         ];
         // Check hint schema is present in the uiSpecification fields
-        let schemaName ='';
-        uiSpecification.map((x) => {
-          if(x.hint !== undefined && x.hint.indexOf('schema') !== -1){
-            _.keys(data).map((k) => {
-              if(x.fieldName === k && !_.isEmpty(data[k])){
-                schemaName = data[k];
-              }
-            })
-          }
-        });
+        // let schemaName ='';
+        // uiSpecification.map((x) => {
+        //   if(x.hint !== undefined && x.hint.indexOf('schema') !== -1){
+        //     _.keys(data).map((k) => {
+        //       if(x.fieldName === k && !_.isEmpty(data[k])){
+        //         schemaName = data[k];
+        //       }
+        //     })
+        //   }
+        // });
         // if the hint schema is present then create the schema by POST request
-        if(schemaName){
-          const schemaData = {
-            schemaMetadata: {
-              type: "avro",
-              schemaGroup: 'Kafka',
-              name: schemaName.indexOf(":v") === -1 ? schemaName+":v" : schemaName,
-              description: "auto_description",
-              compatibility: "BACKWARD"
-            },
-            schemaVersion: {
-              description : 'auto_description',
-              schemaText : JSON.stringify(this.state.streamObj.fields)
-            }
-          }
-          promiseArr.push(TopologyREST.createSchema({body : JSON.stringify(schemaData)}));
-        }
+        // if(schemaName){
+        //   const schemaData = {
+        //     schemaMetadata: {
+        //       type: "avro",
+        //       schemaGroup: 'Kafka',
+        //       name: schemaName.indexOf(":v") === -1 ? schemaName+":v" : schemaName,
+        //       description: "auto_description",
+        //       compatibility: "BACKWARD"
+        //     },
+        //     schemaVersion: {
+        //       description : 'auto_description',
+        //       schemaText : JSON.stringify(this.state.streamObj.fields)
+        //     }
+        //   }
+        //   promiseArr.push(TopologyREST.createSchema({body : JSON.stringify(schemaData)}));
+        // }
         if(this.allSourceChildNodeData && this.allSourceChildNodeData.length > 0){
             this.allSourceChildNodeData.map((childData)=>{
                 let child = childData;

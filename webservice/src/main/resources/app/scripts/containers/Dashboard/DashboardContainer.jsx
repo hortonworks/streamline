@@ -23,6 +23,7 @@ export default class DashboardContainer extends Component {
                 pivotURL = window.location.protocol + "//" + window.location.hostname + ":" + config.pivot.port+'/#';
             }
         }
+        let height = window.innerHeight - 100;
         return (
             <BaseContainer ref="BaseContainer" routes={this.props.routes} headerContent={this.props.routes[this.props.routes.length - 1].name}>
                 {config.pivot.port ?
@@ -31,7 +32,7 @@ export default class DashboardContainer extends Component {
                         src={pivotURL} 
                         frameBorder="0"
                         scrolling="no"
-                        height="600px"
+                        height={height+"px"}
                         width="100%">
                     </iframe>
                 :

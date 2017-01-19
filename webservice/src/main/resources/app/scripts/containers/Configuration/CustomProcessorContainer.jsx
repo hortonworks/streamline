@@ -170,7 +170,7 @@ export default class CustomProcessorContainer extends Component {
                           <div className="page-title-box clearfix">
                               <div className="col-md-4 col-md-offset-6 text-right">
                                 {
-                                  filteredEntities.length !== 0
+                                  ((filterValue && filteredEntities.length === 0) || filteredEntities.length !== 0)
                                   ?
                                     <FormGroup>
                                         <InputGroup>
@@ -207,6 +207,7 @@ export default class CustomProcessorContainer extends Component {
                           filteredEntities.length === 0
                           ? <NoData
                               imgName={"default"}
+                              searchVal={filterValue}
                             />
                           : <div className="row">
                                 <div className="col-sm-12">
