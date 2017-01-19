@@ -20,7 +20,7 @@
         "uiName": "Path",
         "fieldName": "path",
         "isOptional": false,
-        "tooltip": "Path for default file name format",
+        "tooltip": "Directory to which the files will be written",
         "type": "string"
       },
       {
@@ -43,14 +43,14 @@
         "uiName": "Count policy value",
         "fieldName": "countPolicyValue",
         "isOptional": false,
-        "tooltip": "Count value for count sync policy",
+        "tooltip": "Number of records to wait for before flushing to Hdfs",
         "type": "number"
       },
       {
         "uiName": "Rotation Policy",
         "fieldName": "rotationPolicy",
         "isOptional": false,
-        "tooltip": "Strategy to rotate files in hdfs",
+        "tooltip": "Strategy to rotate files in Hdfs",
         "type": "enumobject",
         "defaultValue": "timeBasedRotation",
         "options": [
@@ -113,6 +113,15 @@
             ]
           }
         ]
+      },
+      {
+        "uiName": "Output Fields",
+        "fieldName": "outputFields",
+        "isOptional": false,
+        "tooltip": "Specify the output fields, in the desired order",
+        "type": "array.enumstring",
+        "options": [],
+        "hint": "inputFields"
       },
       {
         "uiName": "Parallelism",

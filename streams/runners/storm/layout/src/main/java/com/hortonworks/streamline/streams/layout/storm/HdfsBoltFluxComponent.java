@@ -4,6 +4,8 @@ import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -69,12 +71,27 @@ public class HdfsBoltFluxComponent extends AbstractFluxComponent {
     private String addRecordFormatComponent () {
         String recordFormatComponentId = "recordFormat" +
                 UUID_FOR_COMPONENTS;
-        // currently only IdentityHdfsRecordFormat is supported.
-        String recordFormatClassName = "com.hortonworks.streamline.streams.runtime.storm.hdfs" +
-                ".IdentityHdfsRecordFormat";
+        // currently only HdfsTextOutputFormat is supported.
+        String recordFormatClassName
+                = "com.hortonworks.streamline.streams.runtime.storm.hdfs.HdfsTextOutputFormat";
+
+        List<Map<String, Object>> configMethods = new ArrayList<>();
+
+        // setup the call to 'withFields()' config method
+        Map<String, Object> withFieldsMethod = new LinkedHashMap<>();
+        withFieldsMethod.put(StormTopologyLayoutConstants.YAML_KEY_NAME, "withFields");
+        String outputFields = getCommaSepList( (List<String>) conf.get("outputFields") ) ;
+        withFieldsMethod.put(StormTopologyLayoutConstants.YAML_KEY_ARGS, Arrays.asList(outputFields));
+        configMethods.add(withFieldsMethod);
+
         addToComponents(createComponent(recordFormatComponentId,
-                recordFormatClassName, null, null, null));
+                recordFormatClassName, null, null, configMethods));
         return recordFormatComponentId;
+    }
+
+    // returns a String with comma separated fields
+    private static String getCommaSepList(List<String> fields) {
+        return fields.stream().reduce( (a, b) -> a + "," + b ).get();
     }
 
     private String addSyncPolicyComponent () {
