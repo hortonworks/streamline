@@ -20,6 +20,7 @@ package com.hortonworks.streamline.streams.runtime.rule.sql;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableMap;
 import com.hortonworks.streamline.common.Schema;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
@@ -161,15 +162,18 @@ public class SqlScript extends Script<StreamlineEvent, Collection<StreamlineEven
             if (input == null) {
                 result = null;
             } else if (outputFields != null && !outputFields.isEmpty()) {
-                Map<String, Object> fieldsAndValues = new HashMap<>();
+                StreamlineEventImpl.Builder builder = StreamlineEventImpl.builder();
                 for (int i = 0; i < outputFields.size(); i++) {
-                    fieldsAndValues.put(outputFields.get(i), input.get(i));
+                    builder.put(outputFields.get(i), input.get(i));
                 }
                 if (inputEvent != null) {
-                    result = new StreamlineEventImpl(fieldsAndValues, inputEvent.getDataSourceId(), inputEvent.getId(),
-                                                inputEvent.getHeader(), inputEvent.getSourceStream());
+                    result = builder.dataSourceId(inputEvent.getDataSourceId())
+                            .id(inputEvent.getId())
+                            .header(inputEvent.getHeader())
+                            .sourceStream(inputEvent.getSourceStream())
+                            .build();
                 } else {
-                    result = new StreamlineEventImpl(fieldsAndValues, "");
+                    result = builder.build();
                 }
             } else {
                 result = inputEvent;

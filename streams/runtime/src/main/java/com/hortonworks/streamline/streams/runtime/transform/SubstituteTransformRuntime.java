@@ -17,6 +17,7 @@
  */
 package com.hortonworks.streamline.streams.runtime.transform;
 
+import com.google.common.collect.ImmutableMap;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 import com.hortonworks.streamline.streams.layout.Transform;
@@ -68,16 +69,16 @@ public class SubstituteTransformRuntime implements TransformRuntime {
     }
 
     private List<StreamlineEvent> substitute(StreamlineEvent input) {
-        Map<String, Object> substitutedFieldsAndValues = new HashMap<>();
+        StreamlineEventImpl.Builder builder = StreamlineEventImpl.builder();
         StrSubstitutor substitutor = new StrSubstitutor(input);
         for(Map.Entry<String, Object> entry: input.entrySet()) {
             if(shouldSubstitue(entry.getKey(), entry.getValue())) {
-                substitutedFieldsAndValues.put(entry.getKey(), substitutor.replace(entry.getValue()));
+                builder.put(entry.getKey(), substitutor.replace(entry.getValue()));
             } else {
-                substitutedFieldsAndValues.put(entry.getKey(), entry.getValue());
+                builder.put(entry.getKey(), entry.getValue());
             }
         }
-        return Collections.<StreamlineEvent>singletonList(new StreamlineEventImpl(substitutedFieldsAndValues, input.getDataSourceId()));
+        return Collections.<StreamlineEvent>singletonList(builder.dataSourceId(input.getDataSourceId()).build());
     }
 
     private boolean shouldSubstitue(String key, Object value) {

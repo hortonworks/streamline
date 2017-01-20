@@ -84,12 +84,102 @@ public final class StreamlineEventImpl extends ForwardingMap<String, Object> imp
      * Creates an StreamlineEvent with given keyValues, dataSourceId, id, header and sourceStream.
      */
     public StreamlineEventImpl(Map<String, Object> keyValues, String dataSourceId, String id, Map<String, Object> header, String sourceStream, Map<String, Object> auxiliaryFieldsAndValues) {
-        this.delegate = ImmutableMap.copyOf(keyValues);
+        if (keyValues instanceof StreamlineEventImpl) {
+            this.delegate = ImmutableMap.copyOf(((StreamlineEventImpl) keyValues).delegate());
+        } else {
+            this.delegate = ImmutableMap.copyOf(keyValues);
+        }
         this.dataSourceId = dataSourceId;
         this.id = id;
-        this.header = header;
         this.sourceStream = sourceStream;
+        this.header = header != null ? new HashMap<>(header) : new HashMap<>();
         this.auxiliaryFieldsAndValues = auxiliaryFieldsAndValues != null ? new HashMap<>(auxiliaryFieldsAndValues) : new HashMap<>();
+    }
+
+    public static class Builder {
+        private ImmutableMap.Builder<String, Object> kvBuilder;
+        private Map<String, Object> kv;
+        private Map<String, Object> header;
+        private Map<String, Object> auxiliaryFieldsAndValues;
+        private String sourceStream = DEFAULT_SOURCE_STREAM;
+        private String dataSourceId = "";
+        private String id = UUID.randomUUID().toString();
+
+        private Builder() {}
+
+        public Builder header(Map<String, Object> header) {
+            this.header = header;
+            return this;
+        }
+
+        public Builder auxiliaryFieldsAndValues(Map<String, Object> auxiliaryFieldsAndValues) {
+            this.auxiliaryFieldsAndValues = auxiliaryFieldsAndValues;
+            return this;
+        }
+
+        public Builder sourceStream(String sourceStream) {
+            this.sourceStream = sourceStream;
+            return this;
+        }
+
+        public Builder dataSourceId(String dataSourceId) {
+            this.dataSourceId = dataSourceId;
+            return this;
+        }
+
+        public Builder id(String id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder put(String key, Object value) {
+            if (kvBuilder == null) {
+                kvBuilder = ImmutableMap.builder();
+                if (kv != null) {
+                    kvBuilder.putAll(kv);
+                }
+            }
+            kvBuilder.put(key, value);
+            return this;
+        }
+
+        public Builder putAll(Map<String, Object> fieldsAndValues) {
+            if (kvBuilder == null) {
+                // avoids unnecessary copy if the fieldsAndValues is already immutable.
+                if (kv == null) {
+                    kv = fieldsAndValues;
+                } else {
+                    kvBuilder = ImmutableMap.builder();
+                    kvBuilder.putAll(kv).putAll(fieldsAndValues);
+                }
+            } else {
+                kvBuilder.putAll(fieldsAndValues);
+            }
+            return this;
+        }
+
+        public StreamlineEventImpl build() {
+            Map<String, Object> fieldsAndValues;
+            if (kvBuilder != null) {
+                fieldsAndValues = kvBuilder.build();
+            } else if (kv != null) {
+                fieldsAndValues = kv;
+            } else {
+                fieldsAndValues = Collections.emptyMap();
+            }
+            return new StreamlineEventImpl(
+                    fieldsAndValues,
+                    this.dataSourceId,
+                    this.id,
+                    this.header,
+                    this.sourceStream,
+                    this.auxiliaryFieldsAndValues);
+        }
+
+    }
+
+    public static StreamlineEventImpl.Builder builder() {
+        return new StreamlineEventImpl.Builder();
     }
 
     public StreamlineEventImpl(StreamlineEventImpl other) {

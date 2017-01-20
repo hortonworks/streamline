@@ -17,6 +17,7 @@
  */
 package com.hortonworks.streamline.streams.runtime.transform;
 
+import com.google.common.collect.ImmutableMap;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 import com.hortonworks.streamline.streams.layout.Transform;
@@ -44,13 +45,14 @@ public class MergeTransformRuntime implements TransformRuntime {
 
     @Override
     public List<StreamlineEvent> execute(StreamlineEvent input) {
-        Map<String, Object> merged = new HashMap<>(input);
+        StreamlineEventImpl.Builder builder = StreamlineEventImpl.builder();
+        builder.putAll(input);
         for (Map.Entry<String, ?> entry : mergeTransform.getDefaults().entrySet()) {
-            if (!merged.containsKey(entry.getKey())) {
-                merged.put(entry.getKey(), entry.getValue());
+            if (!input.containsKey(entry.getKey())) {
+                builder.put(entry.getKey(), entry.getValue());
             }
         }
-        return Collections.<StreamlineEvent>singletonList(new StreamlineEventImpl(merged, input.getDataSourceId()));
+        return Collections.<StreamlineEvent>singletonList(builder.dataSourceId(input.getDataSourceId()).build());
     }
 
     @Override

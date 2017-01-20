@@ -17,10 +17,12 @@
  */
 package com.hortonworks.streamline.streams.runtime.storm.spout;
 
-import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.hortonworks.registries.schemaregistry.SchemaMetadata;
-import com.hortonworks.registries.schemaregistry.serdes.avro.AvroSnapshotDeserializer;
 import com.hortonworks.registries.schemaregistry.serde.SerDesException;
+import com.hortonworks.registries.schemaregistry.serdes.avro.AvroSnapshotDeserializer;
+import com.hortonworks.streamline.streams.StreamlineEvent;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericEnumSymbol;
 import org.apache.avro.generic.GenericFixed;
@@ -28,9 +30,7 @@ import org.apache.avro.generic.IndexedRecord;
 
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,15 +44,15 @@ public class AvroStreamsSnapshotDeserializer extends AvroSnapshotDeserializer {
                                    Integer writerSchemaVersion, Integer readerSchemaVersion) throws SerDesException {
         Object deserializedObj = super.doDeserialize(payloadInputStream, schemaMetadata, writerSchemaVersion, readerSchemaVersion);
 
-        Map<String, Object> keyValues = new LinkedHashMap<>();
+        ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
         Object values = convertValue(deserializedObj);
         if (values instanceof Map) {
-            keyValues.putAll((Map) values);
+            builder.putAll((Map) values);
         } else {
-            keyValues.put(StreamlineEvent.PRIMITIVE_PAYLOAD_FIELD, values);
+            builder.put(StreamlineEvent.PRIMITIVE_PAYLOAD_FIELD, values);
         }
 
-        return keyValues;
+        return builder.build();
     }
 
     private Object convertValue(Object deserializedObj) {
@@ -62,11 +62,11 @@ public class AvroStreamsSnapshotDeserializer extends AvroSnapshotDeserializer {
         if (deserializedObj instanceof IndexedRecord) { // record
             IndexedRecord indexedRecord = (IndexedRecord) deserializedObj;
             List<Schema.Field> fields = indexedRecord.getSchema().getFields();
-            Map<String, Object> keyValues = new LinkedHashMap<>();
+            ImmutableMap.Builder<String, Object> keyValues = ImmutableMap.builder();
             for (Schema.Field field : fields) {
                 keyValues.put(field.name(), convertValue(indexedRecord.get(field.pos())));
             }
-            value = keyValues;
+            value = keyValues.build();
 
         } else if (deserializedObj instanceof ByteBuffer) { // byte array representation
             ByteBuffer byteBuffer = (ByteBuffer) deserializedObj;
@@ -83,19 +83,19 @@ public class AvroStreamsSnapshotDeserializer extends AvroSnapshotDeserializer {
 
         } else if (deserializedObj instanceof Map) { // type of map
             Map<Object, Object> map = (Map<Object, Object>) deserializedObj;
-            Map<String, Object> keyValues = new LinkedHashMap<>();
+            ImmutableMap.Builder<String, Object> keyValues = ImmutableMap.builder();
             for (Map.Entry entry : map.entrySet()) {
                 keyValues.put(entry.getKey().toString(), convertValue(entry.getValue()));
             }
-            value = keyValues;
+            value = keyValues.build();
 
         } else if (deserializedObj instanceof Collection) { // type of array
             Collection<Object> collection = (Collection<Object>) deserializedObj;
-            List<Object> values = new ArrayList<>(collection.size());
+            ImmutableList.Builder<Object> values = ImmutableList.builder();
             for (Object obj : collection) {
                 values.add(convertValue(obj));
             }
-            value = values;
+            value = values.build();
 
         } else if (deserializedObj instanceof GenericFixed) { // fixed type
             GenericFixed genericFixed = (GenericFixed) deserializedObj;

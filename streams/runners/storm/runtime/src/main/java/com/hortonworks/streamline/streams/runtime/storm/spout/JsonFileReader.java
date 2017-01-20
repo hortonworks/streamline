@@ -61,7 +61,7 @@ public class JsonFileReader extends TextFileReader {
             HashMap<String, Object> jsonMap = new ObjectMapper().readValue(jsonLine, HashMap.class);
 
             //2- make StreamlineEvent from map
-            StreamlineEventImpl slEvent = new StreamlineEventImpl(jsonMap, "HdfsSpout");
+            StreamlineEventImpl slEvent = StreamlineEventImpl.builder().putAll(jsonMap).dataSourceId("HdfsSpout").build();
 
             //3- create tuple from StreamlineEvent
             return Collections.singletonList(slEvent);

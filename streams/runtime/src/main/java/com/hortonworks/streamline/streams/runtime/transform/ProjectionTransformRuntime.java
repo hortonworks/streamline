@@ -17,6 +17,7 @@
  */
 package com.hortonworks.streamline.streams.runtime.transform;
 
+import com.google.common.collect.ImmutableMap;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 import com.hortonworks.streamline.streams.layout.Transform;
@@ -50,11 +51,11 @@ public class ProjectionTransformRuntime implements TransformRuntime {
     }
 
     private List<StreamlineEvent> doTransform(StreamlineEvent input) {
-        Map<String, Object> result = new HashMap<>();
+        StreamlineEventImpl.Builder builder = StreamlineEventImpl.builder();
         for (String field : projectionTransform.getProjectionFields()) {
-            result.put(field, input.get(field));
+            builder.put(field, input.get(field));
         }
-        return Collections.<StreamlineEvent>singletonList(new StreamlineEventImpl(result, input.getDataSourceId()));
+        return Collections.<StreamlineEvent>singletonList(builder.dataSourceId(input.getDataSourceId()).build());
     }
 
     @Override

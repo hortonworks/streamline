@@ -18,6 +18,7 @@
 package com.hortonworks.streamline.streams.runtime.storm.bolt.query;
 
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -480,8 +481,7 @@ public class WindowedQueryBolt extends StreamlineWindowedBolt {
     // Performs projection and creates output tuple structure as expected by StreamLine compliant
     protected ArrayList<Object> doProjectionStreamLine(ArrayList<Tuple> tuplesRow, String[][] projectionKeys) {
 
-        HashMap<String, Object> projection = new HashMap<>(projectionKeys.length);
-
+        StreamlineEventImpl.Builder eventBuilder = StreamlineEventImpl.builder();
         // Todo: note to self: may be able to optimize this ... perhaps inner loop can be outside to avoid rescanning tuples
         for ( int i = 0; i < projectionKeys.length; i++ ) {
             String flattenedKey = dotSeparatedOutputKeyNames[i];
@@ -489,13 +489,13 @@ public class WindowedQueryBolt extends StreamlineWindowedBolt {
             for ( Tuple cell : tuplesRow ) {
                 Object field = getNestedField(projectionKeys[i], cell) ;
                 if (field != null) {
-                    projection.put(outputKeyName, field);
+                    eventBuilder.put(outputKeyName, field);
                     break;
                 }
             }
         }
         ArrayList<Object> resultRow = new ArrayList<>();
-        StreamlineEventImpl slEvent = new StreamlineEventImpl(projection, "multiple sources");
+        StreamlineEventImpl slEvent = eventBuilder.dataSourceId("multiple sources").build();
         resultRow.add(slEvent);
         return resultRow;
     }
