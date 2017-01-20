@@ -80,6 +80,7 @@ export default class JoinNodeForm extends Component {
     }
 
     getSchemaFields(fields, level, keyPath=[]){
+      this.fieldTempArr = []
         fields.map((field)=>{
             let obj = {
                 name: field.name,
@@ -101,7 +102,9 @@ export default class JoinNodeForm extends Component {
                 this.tempFieldsArr.push(obj);
             }
 
-        })
+        });
+        // To make a unique field array
+        this.fieldTempArr = _.uniqBy(this.tempFieldsArr,'name');
     }
 
     renderFieldOption(node){
@@ -185,7 +188,6 @@ export default class JoinNodeForm extends Component {
                         let joinStreamOptions = inputStreams.filter((s)=>{return s.streamId !== fromObject.stream});
                         let obj = inputStreams.find((s)=>{return s.streamId === fromObject.stream});
                         if(joinStreams.length) {
-                            let joinStream = inputStreams.find((s)=>{return s.streamId === configFields.joins[0].stream}) || [];
                             joinStreams[0].streamOptions = joinStreamOptions;
                             joinStreams[0].withOptions = [obj];
                             this.tempFieldsArr = [];
@@ -720,7 +722,7 @@ export default class JoinNodeForm extends Component {
                                         }
                                         <div className="form-group">
                                             <div className="row">
-                                                <div className="col-sm-6">
+                                                <div className="col-sm-12">
                                                         <label>Window Interval Type <span className="text-danger">*</span></label>
                                                         <Select
                                                                 value={intervalType}
@@ -731,7 +733,7 @@ export default class JoinNodeForm extends Component {
                                                                 clearable={false}
                                                         />
                                                 </div>
-                                                <div className="col-sm-6">
+                                                {/*<div className="col-sm-6">
                                                     <label>Parallelism</label>
                                                     <input
                                                         name="parallelism"
@@ -744,7 +746,7 @@ export default class JoinNodeForm extends Component {
                                                         min="1"
                                                         inputMode="numeric"
                                                     />
-                                                </div>
+                                                </div>*/}
                                             </div>
                                         </div>
                                         <div className="form-group row">
@@ -816,7 +818,7 @@ export default class JoinNodeForm extends Component {
                                                         <Select
                                                                 className="menu-outer-top"
                                                                 value={outputKeys}
-                                                                options={this.tempFieldsArr}
+                                                                options={this.fieldTempArr}
                                                                 onChange={this.handleFieldsChange.bind(this)}
                                                                 multi={true}
                                                                 required={true}

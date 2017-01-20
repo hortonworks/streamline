@@ -191,9 +191,12 @@ export default class CustomNodeForm extends Component {
                         this.state.userInputs.map((f, i)=>{
                             return (
                                 <div className="form-group" key={i}>
-                                    <label>{f.uiName}
-                                        {f.isOptional ? null : <span className="text-danger">*</span>}
-                                    </label>
+                                    { f.fieldName !== "parallelism"
+                                      ? <label>{f.uiName}
+                                            {f.isOptional ? null : <span className="text-danger">*</span>}
+                                        </label>
+                                      : ''
+                                    }
                                     <div>
                                     {
                                         f.type === "boolean" ?
@@ -216,17 +219,19 @@ export default class CustomNodeForm extends Component {
                                                 disabled={!this.state.editMode}>false
                                             </Radio>]
                                         :
-                                        <input
-                                            name={f.fieldName}
-                                            value={this.state[f.fieldName]}
-                                            onChange={this.handleValueChange.bind(this, f)}
-                                            type={f.type}
-                                            className={!f.isOptional && showError && f.isInvalid ? "form-control invalidInput" : "form-control"}
-                                            required={f.isOptional ? false : true}
-                                            disabled={!this.state.editMode}
-                                            min={(f.type === "number" && f.fieldName === "parallelism") ? 1 : f.type === "number" ? 0 : null}
-                                            inputMode={f.type === "number" ? "numeric" : null}
-                                        />
+                                          f.fieldName !== "parallelism"
+                                            ? <input
+                                                  name={f.fieldName}
+                                                  value={this.state[f.fieldName]}
+                                                  onChange={this.handleValueChange.bind(this, f)}
+                                                  type={f.type}
+                                                  className={!f.isOptional && showError && f.isInvalid ? "form-control invalidInput" : "form-control"}
+                                                  required={f.isOptional ? false : true}
+                                                  disabled={!this.state.editMode}
+                                                  min={(f.type === "number" && f.fieldName === "parallelism") ? 1 : f.type === "number" ? 0 : null}
+                                                  inputMode={f.type === "number" ? "numeric" : null}
+                                              />
+                                            : ''
                                     }
                                     </div>
                                 </div>

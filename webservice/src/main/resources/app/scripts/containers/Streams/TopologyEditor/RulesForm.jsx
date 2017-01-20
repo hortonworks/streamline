@@ -539,7 +539,10 @@ export default class RulesForm extends Component {
 					return false;
 				} else {
                     let msg = result.name + " " + (ruleObj.id ? "updated" : "added") + ' successfully';
-					FSReactToastr.success(<strong>{msg}</strong>);
+          clearTimeout(clearTimer);
+          const clearTimer = setTimeout(() => {
+            FSReactToastr.success(<strong>{msg}</strong>);
+          },500);
 					if(ruleObj.id) {
 	                    return Promise.resolve(result);
 	                } else {

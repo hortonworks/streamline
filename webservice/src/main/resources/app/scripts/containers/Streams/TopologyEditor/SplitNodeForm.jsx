@@ -178,7 +178,7 @@ export default class SplitNodeForm extends Component {
 									/>
 								</div>
 							</div>
-							<div className="form-group">
+                                                        {/*<div className="form-group">
 								<label className="col-sm-3 control-label">Parallelism</label>
 								<div className="col-sm-6">
 									<input
@@ -192,7 +192,7 @@ export default class SplitNodeForm extends Component {
 										inputMode="numeric"
 									/>
 								</div>
-							</div>
+                                                        </div>*/}
 						</form>
 					</Tab>
 					<Tab eventKey={2} title="Output Streams">

@@ -835,7 +835,7 @@ export default class WindowingAggregateNodeForm extends Component {
                                                                 : null}
                                                         </div>
                         </div>
-                        <div className="form-group">
+                      {/*  <div className="form-group">
                             <label>Parallelism</label>
                             <div>
                                 <input
@@ -850,7 +850,7 @@ export default class WindowingAggregateNodeForm extends Component {
                                     inputMode="numeric"
                                 />
                             </div>
-                        </div>
+                        </div>*/}
                         <fieldset className="fieldset-default">
                             <legend>Output Fields</legend>
                             {

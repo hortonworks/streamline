@@ -198,8 +198,11 @@ export default class RulesNodeForm extends Component {
                                                                                     }
                                                                                 });
                                                                                 if(streamAPISuccess ){
-                                                                                        FSReactToastr.success(<strong>Rule deleted successfully</strong>);
-                                                                                        this.fetchData();
+                                                                                  clearTimeout(clearTimer);
+                                                                                  const clearTimer = setTimeout(() => {
+                                                                                    FSReactToastr.success(<strong>Rule deleted successfully</strong>);
+                                                                                  },500);
+                                                                                  this.fetchData();
                                                                                 }
                                                                         });
                                                                 }
@@ -214,10 +217,10 @@ export default class RulesNodeForm extends Component {
 
 	handleSaveRule(){
 		if(this.refs.RuleForm.validateData()){
+      this.refs.RuleModal.hide();
 			this.refs.RuleForm.handleSave().then((results)=>{
 				if(results){
 					this.fetchData();
-					this.refs.RuleModal.hide();
 				}
 			})
 		}

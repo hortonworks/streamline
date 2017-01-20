@@ -123,6 +123,8 @@ export default class EdgeConfigContainer extends Component {
                         var ruleObject = _.find(rulesArr, {id: parseInt(id, 10)});
                     }
                     showRules =  true;
+                    if(this.state.isEdit)
+                        this.ruleChanged = ruleObject.value;
                     this.setState({showRules: showRules, rulesArr: rulesArr, rules: ruleObject ? ruleObject.value : rules});
                 })
             }
@@ -260,18 +262,27 @@ export default class EdgeConfigContainer extends Component {
                                     actionObj.__type = "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction";
                                     actionObj.transforms = [];
                                 }
+                                let actionName = actionObj.name == 'transformAction' ? 'transform' : 'notifier';
+                                let streamID = nodeType+'_'+actionName+'_stream_'+data.id;
                                 if(data.name === rules) {
                                     let hasActionType = false;
                                     let obj = _.find(data.actions, (a)=>{return a.__type === actionObj.__type;});
-                                    let actionName = actionObj.name == 'transformAction' ? 'transform' : 'notifier';
                                     if(obj)
                                         hasActionType = true;
                                     if(obj){
                                     } else if(!hasActionType) {
-                                        let streamID = nodeType+'_'+actionName+'_stream_'+data.id;
                                         actionObj.outputStreams = [streamID];
                                         data.actions.push(actionObj);
-                                        TopologyREST.updateNode(topologyId, versionId, type, data.id, {body: JSON.stringify(data)});
+                                        saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, type, data.id, {body: JSON.stringify(data)}));
+                                    }
+                                } else {
+                                    let obj = _.find(data.actions, (a)=>{return a.__type === actionObj.__type});
+                                    let currentNodeEdges = [];
+                                    if(obj && this.ruleChanged && this.ruleChanged === data.name){
+                                        data.actions = _.filter(data.actions, (a)=>{
+                                            return actionObj.__type !== a.__type;
+                                        });
+                                        saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, type, data.id, {body: JSON.stringify(data)}));
                                     }
                                 }
                             } else if(type === 'windows') {
@@ -304,7 +315,8 @@ export default class EdgeConfigContainer extends Component {
                                 }
                                 saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, type, data.id, {body: JSON.stringify(data)}))
                             }
-                        })
+                        });
+                        Promise.all(saveRulesPromiseArr).then(()=>{});
                     })
             }
         }

@@ -169,7 +169,6 @@ export default class BranchNodeForm extends Component {
                             this.nodeData.outputStreams = this.nodeData.outputStreams.filter((s)=>{
                                 return s.id !== transformStream.id && s.id !== notifierStream.id;
                             });
-                            delete this.nodeData.outputStreams;
                             TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.nodeId, {body: JSON.stringify(this.nodeData)})
                             .then((nodeResult)=>{
                                 let nodeAPISuccess = true;
