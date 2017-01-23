@@ -222,13 +222,15 @@ svg > foreignObject > p {
   cursor: pointer;
   font-size: 12px
 }
-.conceptG .fa-caret-up,
-.conceptG .fa-caret-down {
+.conceptG .fa-caret-right,
+.conceptG .fa-caret-left {
   fill: #a9a9a9;
   cursor: pointer;
+  font-size: 20px;
 }
 .conceptG .parallelism-count{
   cursor: auto;
+  font-size: 13px;
 }
 .link-group .fa-random{
   fill: #69BE29;

@@ -2129,3 +2129,12 @@ input[type="checkbox"]{
 .col-md-4:nth-child(3n+4) {
    clear: left;
 }
+.dragline{
+  animation-delay: 1000s;
+  animation: dash 20s infinite linear;
+}
+@keyframes dash {
+  to {
+    stroke-dashoffset: 1000;
+  }
+}

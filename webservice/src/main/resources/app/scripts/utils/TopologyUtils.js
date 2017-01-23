@@ -20,6 +20,7 @@ import ModelNodeForm from '../containers/Streams/TopologyEditor/ModelNodeForm';
 //Sinks
 import SinkNodeForm from '../containers/Streams/TopologyEditor/SinkNodeForm';
 import CommonNotification from './CommonNotification';
+import {deleteNodeIdArr} from '../utils/Constants';
 
 const defineMarkers = function(svg){
 	// define arrow markers for graph links
@@ -221,7 +222,7 @@ const removeNodeFromMeta = function(metaInfo, currentNode){
 	return metaInfo;
 }
 
-const createEdge = function(mouseDownNode, d, paths, edges, internalFlags, callback, topologyId, versionId, getEdgeConfigModal, setLastChange){
+const createEdge = function(mouseDownNode, d, paths, edges, internalFlags, callback, topologyId, versionId, getEdgeConfigModal, setLastChange,drawLine){
 	if(this.isValidConnection(mouseDownNode, d)){
 		let newEdge = {
 			source: mouseDownNode,
@@ -251,6 +252,7 @@ const createEdge = function(mouseDownNode, d, paths, edges, internalFlags, callb
                     if(newEdge.source.currentType.toLowerCase() === 'window' || newEdge.source.currentType.toLowerCase() === 'rule'){
                             nodeData.type = newEdge.source.currentType.toUpperCase();
                     }
+                    drawLine.classed('hidden',true);
                     if(getEdgeConfigModal){
                             getEdgeConfigModal(topologyId, versionId, newEdge, edges, callback, nodeData);
                     } else {
@@ -278,11 +280,19 @@ const getNodeType = function(parentType){
 	}
 }
 
+const spliceDeleteNodeArr = function(nodeId){
+  const index = deleteNodeIdArr.findIndex((x) => { return Number(x) === nodeId});
+  if(index !== -1){
+    deleteNodeIdArr.splice(index,1);
+  }
+}
+
 const deleteNode = function(topologyId, versionId, currentNode, nodes, edges, internalFlags, updateGraphMethod, metaInfo, uinamesList, setLastChange){
 	let promiseArr = [],
 	nodePromiseArr = [],
 	callback = null,
 	currentType = currentNode.currentType;
+  deleteNodeIdArr.push(currentNode.nodeId);
 
     //Get data of current node
     nodePromiseArr.push(TopologyREST.getNode(topologyId, versionId, this.getNodeType(currentNode.parentType), currentNode.nodeId))
@@ -380,6 +390,7 @@ const deleteNode = function(topologyId, versionId, currentNode, nodes, edges, in
             nodes.splice(nodes.indexOf(currentNode), 1);
             this.spliceLinksForNode(currentNode, edges);
             internalFlags.selectedNode = null;
+            this.spliceDeleteNodeArr(currentNode.nodeId);
             updateGraphMethod();
         }.bind(this)
 
@@ -862,15 +873,14 @@ const MouseUpAction = function(topologyId, versionId, d3node, d, metaInfo, inter
     }
 
 	// if (!mouseDownNode) return;
-
-	dragLine.classed("hidden", true);
+  // dragLine.classed("hidden", true);
 
 	if (mouseDownNode && mouseDownNode !== d) {
 		// we're in a different node: create new edge for mousedown edge and add to graph
         if(hasSource.length && d.currentType.toLowerCase() === 'branch') {
 			FSReactToastr.warning(<strong>Edge cannot be connected to Branch.</strong>);
 		} else {
-                        this.createEdge(mouseDownNode, d, paths, edges, internalFlags, updateGraphMethod, topologyId, versionId, getEdgeConfigModal, setLastChange);
+                        this.createEdge(mouseDownNode, d, paths, edges, internalFlags, updateGraphMethod, topologyId, versionId, getEdgeConfigModal, setLastChange,dragLine);
 		}
         this.updateMetaInfo(topologyId, versionId, d, metaInfo);
 	} else {
@@ -1146,5 +1156,6 @@ export default {
     topologyFilter,
     getEdgeData,
     getNodeStreams,
-    updateGraphEdges
+    updateGraphEdges,
+    spliceDeleteNodeArr
 };
