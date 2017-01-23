@@ -81,6 +81,8 @@ public class TopologyComponentUISpecification {
         private static final String FIELDS = "fields";
         private static final String OPTIONS = "options";
         private static final String HINT = "hint";
+        private static final String MIN_VALUE = "min";
+        private static final String MAX_VALUE = "max";
         private String uiName;
         private String fieldName;
         private boolean isUserInput = true;
@@ -92,6 +94,8 @@ public class TopologyComponentUISpecification {
         private List options;
         // A field to hint UI any special handling. For example, password field, email field, schema field, etc
         private String hint;
+        private Integer min;
+        private Integer max;
 
         public UIField () {}
 
@@ -106,6 +110,8 @@ public class TopologyComponentUISpecification {
             this.type = uiField.type;
             this.uiName = uiField.uiName;
             this.hint = uiField.hint;
+            this.min = uiField.min;
+            this.max = uiField.max;
         }
         public String getUiName() {
             return uiName;
@@ -185,6 +191,22 @@ public class TopologyComponentUISpecification {
 
         public void setHint(String hint) {
             this.hint = hint;
+        }
+
+        public Integer getMin() {
+            return min;
+        }
+
+        public void setMin(Integer min) {
+            this.min = min;
+        }
+
+        public Integer getMax() {
+            return max;
+        }
+
+        public void setMax(Integer max) {
+            this.max = max;
         }
 
         @Override
