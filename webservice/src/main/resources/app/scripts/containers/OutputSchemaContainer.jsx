@@ -68,7 +68,7 @@ export default class OutputSchemaContainer extends Component {
 			//Dynamic Names of streams
                         let newStreamId = 'Stream_1';
 			while(this.streamNamesList.indexOf(newStreamId) !== -1){
-				let arr = newStreamId.split('-');
+				let arr = newStreamId.split('_');
 				let count = 1;
 				if(arr.length > 1){
 					count = parseInt(arr[1], 10) + 1;
