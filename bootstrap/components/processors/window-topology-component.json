@@ -13,7 +13,9 @@
         "isOptional": true,
         "tooltip": "Parallelism hint for aggregate processor",
         "type": "number",
-        "defaultValue": 1
+        "defaultValue": 1,
+        "min": 1,
+        "hint": "hidden"
       }
     ]
   }

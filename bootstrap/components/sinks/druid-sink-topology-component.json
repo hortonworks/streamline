@@ -331,7 +331,17 @@
                   "type": "enumstring",
                   "options": [],
                   "hint": "inputFields"
-                }
+                },
+               {
+                 "uiName": "Parallelism",
+                 "fieldName": "parallelism",
+                 "isOptional": true,
+                 "tooltip": "Parallelism hint",
+                 "type": "number",
+                 "defaultValue": 1,
+                 "min": 1,
+                 "hint": "hidden"
+               }
              ]
            }
         ]
