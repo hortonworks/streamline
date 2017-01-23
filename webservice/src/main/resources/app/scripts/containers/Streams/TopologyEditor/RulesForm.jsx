@@ -539,7 +539,10 @@ export default class RulesForm extends Component {
 					return false;
 				} else {
                     let msg = result.name + " " + (ruleObj.id ? "updated" : "added") + ' successfully';
-					FSReactToastr.success(<strong>{msg}</strong>);
+          clearTimeout(clearTimer);
+          const clearTimer = setTimeout(() => {
+            FSReactToastr.success(<strong>{msg}</strong>);
+          },500);
 					if(ruleObj.id) {
 	                    return Promise.resolve(result);
 	                } else {
@@ -556,14 +559,21 @@ export default class RulesForm extends Component {
 			let rulesArr = ruleProcessorData.config.properties.rules || [];
 			rulesArr.push(ruleData.id);
 			ruleProcessorData.config.properties.rules = rulesArr;
-			let newStreamObj = {
-				streamId: 'rule_processor_stream_'+(ruleData.id),
+                        let transformStreamObj = {
+                                streamId: 'rule_transform_stream_'+(ruleData.id),
+                                fields: parsedStreams[0].fields
+                        };
+                        let notifierStreamObj = {
+                                streamId: 'rule_notifier_stream_'+(ruleData.id),
 				fields: parsedStreams[0].fields
 			};
 			if(ruleProcessorData.outputStreams.length > 0) {
-				ruleProcessorData.outputStreams.push(newStreamObj);
+                                ruleProcessorData.outputStreams.push(transformStreamObj);
+                                ruleProcessorData.outputStreams.push(notifierStreamObj);
  			} else {
-				ruleProcessorData.outputStreams = [newStreamObj];
+				ruleProcessorData.outputStreams = [];
+                                ruleProcessorData.outputStreams.push(transformStreamObj);
+                                ruleProcessorData.outputStreams.push(notifierStreamObj);
 			}
             promiseArr.push(TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.id, {body: JSON.stringify(ruleProcessorData)}));
 		}

@@ -142,7 +142,7 @@ export default class ModelNodeForm extends Component {
                     clearable={false}
                   />
               </div>
-              <div className="col-sm-12">
+              {/*<div className="col-sm-12">
                 <label>Parallelism</label>
                 <input
                     name="parallelism"
@@ -152,10 +152,10 @@ export default class ModelNodeForm extends Component {
                     className="form-control"
                     required={true}
                     disabled={!editMode}
-                    min="0"
+                    min="1"
                     inputMode="numeric"
                 />
-              </div>
+              </div>*/}
             </div>
         </form>
       </Scrollbars>

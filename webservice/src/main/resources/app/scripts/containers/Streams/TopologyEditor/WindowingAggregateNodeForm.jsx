@@ -30,6 +30,7 @@ export default class WindowingAggregateNodeForm extends Component {
         this.ruleTargetNodes = [];
         this.fieldsArr = [];
 		let {editMode} = props;
+        this.fetchTopologyConfig();
 		this.fetchData();
 		var obj = {
 			parallelism: 1,
@@ -63,6 +64,15 @@ export default class WindowingAggregateNodeForm extends Component {
 		this.state = obj;
     this.outputData = [];
 	}
+
+    fetchTopologyConfig(){
+        let {topologyId, versionId} = this.props;
+        TopologyREST.getTopologyWithoutMetrics(topologyId, versionId)
+        .then((result)=>{
+            this.topologyConfigResponse = result;
+            this.topologyConfig = JSON.parse(result.config);
+        })
+    }
 
 	fetchData(){
         let {topologyId, versionId, nodeType, nodeData, currentEdges, targetNodes} = this.props;
@@ -138,7 +148,7 @@ export default class WindowingAggregateNodeForm extends Component {
 							stateObj.outputStreamFields = JSON.parse(JSON.stringify(this.nodeData.outputStreams[0].fields));
                             this.context.ParentForm.setState({outputStreamObj:this.streamData})
 						} else {
-							stateObj.outputStreamId = 'window_stream_'+this.nodeData.id;
+                                                        stateObj.outputStreamId = 'window_transform_stream_'+this.nodeData.id;
 							stateObj.outputStreamFields = [];
 							this.streamData = { streamId: stateObj.outputStreamId, fields: stateObj.outputStreamFields};
 							this.context.ParentForm.setState({outputStreamObj:this.streamData})
@@ -564,7 +574,7 @@ export default class WindowingAggregateNodeForm extends Component {
         }
 
     handleSave(name, description){
-                let {_groupByKeys, selectedKeys, windowNum, slidingNum, outputFieldsArr, durationType, slidingDurationType,
+        let {_groupByKeys, selectedKeys, windowNum, slidingNum, outputFieldsArr, durationType, slidingDurationType,
 			intervalType, streamsList, parallelism} = this.state;
         let {topologyId, versionId, nodeType, nodeData} = this.props;
 		let windowObj = {
@@ -572,7 +582,7 @@ export default class WindowingAggregateNodeForm extends Component {
 			description: 'window description auto generated',
 			projections:[],
 			streams: [],
-                        groupbykeys: _groupByKeys,
+            groupbykeys: _groupByKeys,
 			window:{
 				windowLength:{
 					class: intervalType,
@@ -580,10 +590,11 @@ export default class WindowingAggregateNodeForm extends Component {
 			},
 			actions:this.windowAction || []
 		}
+        let promiseArr = [TopologyREST.getNode(topologyId, versionId, 'windows', this.windowId)];
 
 		//Adding stream names into data
 		streamsList.map((stream)=>{
-                        if(this.searchSchemaForFields(stream.fields) === true) {
+            if(this.searchSchemaForFields(stream.fields) === true) {
                 if(windowObj.streams.indexOf(stream.streamId) === -1){
                     windowObj.streams.push(stream.streamId);
                 }
@@ -591,27 +602,27 @@ export default class WindowingAggregateNodeForm extends Component {
 		})
 		//Adding projections aka output fields into data
 		outputFieldsArr.map((obj)=>{
-                        let fieldObj = this.fieldsArr.find((f)=>{
-                                return f.name == obj.args
-                        });
-                        let argsOrExpr = obj.args;
-                        if(fieldObj.level !== 0){
-                                let parents = fieldObj.keyPath.split('.');
-                                let s = parents.splice(0,1);
-                                parents.push(obj.args);
-                                argsOrExpr = s+"['"+parents.toString().replace(",","']['")+"']";
-                        }
+            let fieldObj = this.fieldsArr.find((f)=>{
+                return f.name == obj.args
+            });
+            let argsOrExpr = obj.args;
+            if(fieldObj.level !== 0){
+                let parents = fieldObj.keyPath.split('.');
+                let s = parents.splice(0,1);
+                parents.push(obj.args);
+                argsOrExpr = s+"['"+parents.toString().replace(",","']['")+"']";
+            }
 			let o = {};
 			if(!obj.functionName || obj.functionName === ''){
-                                o.expr = argsOrExpr;
+                o.expr = argsOrExpr;
 			} else {
-                                o.args=[argsOrExpr];
+                o.args=[argsOrExpr];
 				o.functionName=obj.functionName;
 			}
 			o.outputFieldName = obj.outputFieldName;
 			windowObj.projections.push(o);
 		})
-                _groupByKeys.map((field)=>{
+        _groupByKeys.map((field)=>{
 			let o = {
 				expr: field
 			};
@@ -628,6 +639,14 @@ export default class WindowingAggregateNodeForm extends Component {
 					durationMs: Utils.numberToMilliseconds(slidingNum, slidingDurationType)
 				};
 			}
+            //Updating message timeout (in seconds) for topology level configuration
+            let timeoutSeconds = ((windowObj.window.windowLength.durationMs + (slidingNum !== '' ? windowObj.window.slidingInterval.durationMs : 0)) / 1000) + 5;
+            if(this.topologyConfig['topology.message.timeout.secs'] < timeoutSeconds){
+                this.topologyConfig['topology.message.timeout.secs'] = timeoutSeconds;
+                this.topologyConfigResponse.config = JSON.stringify(this.topologyConfig);
+                let {name, config, namespaceId} = this.topologyConfigResponse;
+                promiseArr.push(TopologyREST.putTopology(topologyId, versionId, {body: JSON.stringify({name, config, namespaceId})}));
+            }
 		} else if (intervalType === '.Window$Count'){
 			windowObj.window.windowLength.count = windowNum;
 			if(slidingNum !== ''){
@@ -638,16 +657,15 @@ export default class WindowingAggregateNodeForm extends Component {
 			}
 		}
 		if(this.windowId){
-                return TopologyREST.getNode(topologyId, versionId, 'windows', this.windowId)
-                .then((result)=>{
-                let data = result;
-                windowObj.actions = result.actions || [];
-
+            return Promise.all(promiseArr)
+            .then((results)=>{
+                let data = results[0];
+                windowObj.actions = data.actions || [];
                 return TopologyREST.updateNode(topologyId, versionId, 'windows', this.windowId, {body: JSON.stringify(windowObj)})
-                    .then(windowResult=>{
-			return this.updateNode(windowResult, name, description);
-                    })
+                .then(windowResult=>{
+                    return this.updateNode(windowResult, name, description);
                 })
+            })
 		}
 	}
     generateOutputFields(fields, level){
@@ -674,12 +692,18 @@ export default class WindowingAggregateNodeForm extends Component {
 					data.config.properties.rules = [windowData.id];
                     this.streamFields = this.generateOutputFields(this.streamData.fields, 0);
 					if(data.outputStreams.length > 0){
-                        data.outputStreams[0].fields = this.streamFields;
+                        data.outputStreams.map((s)=>{
+                            s.fields = this.streamFields;
+                        });
 					} else {
 						data.outputStreams.push({
 							streamId: this.streamData.streamId,
                             fields: this.streamFields
-						})
+                                                });
+                        data.outputStreams.push({
+                            streamId: 'window_notifier_stream_'+ nodeData.nodeId,
+                            fields: this.streamFields
+                        });
 					}
 					data.name = name;
 	                data.description = description;
@@ -811,7 +835,7 @@ export default class WindowingAggregateNodeForm extends Component {
                                                                 : null}
                                                         </div>
                         </div>
-                        <div className="form-group">
+                      {/*  <div className="form-group">
                             <label>Parallelism</label>
                             <div>
                                 <input
@@ -822,11 +846,11 @@ export default class WindowingAggregateNodeForm extends Component {
                                     className="form-control"
                                     required={true}
                                     disabled={!editMode}
-                                    min="0"
+                                    min="1"
                                     inputMode="numeric"
                                 />
                             </div>
-                        </div>
+                        </div>*/}
                         <fieldset className="fieldset-default">
                             <legend>Output Fields</legend>
                             {

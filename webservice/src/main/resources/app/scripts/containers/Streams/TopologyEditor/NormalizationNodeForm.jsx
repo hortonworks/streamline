@@ -487,7 +487,7 @@ export default class NormalizationNodeForm extends Component {
 												let t = _.find(this.state.transformers, {streamId: this.state.currentStream, inputField: f});
 												return (
 													<li key={i} className={f.isOptional ? "optional" : "mandatory"}>
-														{editMode ? 
+                                                                                                                {editMode ?
 															<OverlayTrigger
 																trigger="click"
 																placement="bottom"
@@ -564,7 +564,7 @@ export default class NormalizationNodeForm extends Component {
 							expanded={this.state.showOptionalFields}
 							onSelect={this.showHidePanel.bind(this)}
 						>
-							<div className="form-group">
+                                                {/*	<div className="form-group">
 								<label className="col-sm-3 control-label">Parallelism</label>
 								<div className="col-sm-6">
 									<input
@@ -574,11 +574,11 @@ export default class NormalizationNodeForm extends Component {
 										type="number"
 										className="form-control"
 										disabled={!this.state.editMode}
-										min="0"
+                                                                                min="1"
 										inputMode="numeric"
 									/>
 								</div>
-							</div>
+                                                        </div>*/}
 						</Panel>
 					</Tab>
                         <Tab eventKey={2} title="Output Streams" unmountOnExit={true}>

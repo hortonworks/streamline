@@ -323,7 +323,12 @@ export default class SinkNodeForm extends Component {
                     }
                   }else{
                     if(!_.isArray(clusterArr[x].hints[k])){
-                      data[k] = clusterArr[x].hints[k];
+                      // if (!formData[k]) this means it has come first time
+                      // OR
+                      // if (!name) this means user had change the cluster name
+                      if(!formData[k] || !name){
+                        data[k] = clusterArr[x].hints[k];
+                      }
                     }
                   }
                 }

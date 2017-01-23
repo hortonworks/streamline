@@ -140,8 +140,9 @@ export default class RulesNodeForm extends Component {
 
 	handleDeleteRule(id){
                 let {topologyId, versionId, nodeType, nodeData} = this.props;
-                let stream = _.find(this.allStreams, {streamId: 'rule_processor_stream_'+id});
-                let edges = _.filter(this.allEdges, function(e) { return e.streamGroupings[0].streamId ===  stream.id});
+                let transformStream = _.find(this.allStreams, {streamId: 'rule_transform_stream_'+id});
+                let notifierStream = _.find(this.allStreams, {streamId: 'rule_notifier_stream_'+id});
+                let edges = _.filter(this.allEdges, function(e) { return e.streamGroupings[0].streamId ===  transformStream.id || e.streamGroupings[0].streamId ===  notifierStream.id});
 		this.refs.Confirm.show({
 			title: 'Are you sure you want to delete rule ?'
 		}).then((confirmBox)=>{
@@ -173,12 +174,9 @@ export default class RulesNodeForm extends Component {
                                                 if(ruleAPISuccess){
                                                         let rules = this.nodeData.config.properties.rules;
                                                         rules.splice(rules.indexOf(id), 1);
-                                                        this.nodeData.outputStreamIds = [];
-                                                        this.nodeData.outputStreams.map((s)=>{
-                                                                if(s.id !== stream.id)
-                                                                this.nodeData.outputStreamIds.push(s.id);
+                                                        this.nodeData.outputStreams = this.nodeData.outputStreams.filter((s)=>{
+                                                            return s.id !== transformStream.id && s.id !== notifierStream.id;
                                                         });
-                                                        delete this.nodeData.outputStreams;
                                                         TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.nodeId, {body: JSON.stringify(this.nodeData)})
                                                         .then((nodeResult)=>{
                                                                 let nodeAPISuccess = true;
@@ -187,13 +185,24 @@ export default class RulesNodeForm extends Component {
                                                                 FSReactToastr.error(<CommonNotification flag="error" content={nodeResult.responseMessage}/>, '', toastOpt);
                                                                 }
                                                                 if(nodeAPISuccess) {
-                                                                        TopologyREST.deleteNode(topologyId, 'streams', stream.id)
-                                                                        .then((streamResult)=>{
-                                                                                if(streamResult.responseMessage !== undefined){
-                                                                                        FSReactToastr.error(<CommonNotification flag="error" content={streamResult.responseMessage}/>, '', toastOpt)
-                                                                                } else {
-                                                                                        FSReactToastr.success(<strong>Rule deleted successfully</strong>);
-                                                                                        this.fetchData();
+                                                                    var streamsPromiseArr = [TopologyREST.deleteNode(topologyId, 'streams', transformStream.id),
+                                                                        TopologyREST.deleteNode(topologyId, 'streams', notifierStream.id)
+                                                                        ];
+                                                                        Promise.all(streamsPromiseArr)
+                                                                        .then((streamResults)=>{
+                                                                                let streamAPISuccess= true;
+                                                                                streamResults.map((streamResult)=>{
+                                                                                    if(streamResult.responseMessage !== undefined){
+                                                                                        streamAPISuccess = false;
+                                                                                        FSReactToastr.error(<CommonNotification flag="error" content={streamResult.responseMessage}/>, '', toastOpt);
+                                                                                    }
+                                                                                });
+                                                                                if(streamAPISuccess ){
+                                                                                  clearTimeout(clearTimer);
+                                                                                  const clearTimer = setTimeout(() => {
+                                                                                    FSReactToastr.success(<strong>Rule deleted successfully</strong>);
+                                                                                  },500);
+                                                                                  this.fetchData();
                                                                                 }
                                                                         });
                                                                 }
@@ -208,10 +217,10 @@ export default class RulesNodeForm extends Component {
 
 	handleSaveRule(){
 		if(this.refs.RuleForm.validateData()){
+      this.refs.RuleModal.hide();
 			this.refs.RuleForm.handleSave().then((results)=>{
 				if(results){
 					this.fetchData();
-					this.refs.RuleModal.hide();
 				}
 			})
 		}

@@ -23,53 +23,64 @@ export default class JoinNodeForm extends Component {
 
 	constructor(props) {
 		super(props);
-                let {editMode, sourceNode} = props;
-		this.fetchData();
+        let {editMode, sourceNode} = props;
+        this.fetchTopologyConfig();
+        this.fetchData();
 
-                this.sourceNodesId = [];
+        this.sourceNodesId = [];
 
-                sourceNode.map((n)=>{
-                        this.sourceNodesId.push(n.nodeId);
-                });
+        sourceNode.map((n)=>{
+            this.sourceNodesId.push(n.nodeId);
+        });
 
-                let configDataFields = props.configData.topologyComponentUISpecification.fields;
-                let joinOptions = _.find(configDataFields, {fieldName: 'jointype'}).options;
-                let joinTypes = [];
-                joinOptions.map((o)=>{
-                        joinTypes.push({value: o, label: o});
-                });
+        let configDataFields = props.configData.topologyComponentUISpecification.fields;
+        let joinOptions = _.find(configDataFields, {fieldName: 'jointype'}).options;
+        let joinTypes = [];
+        joinOptions.map((o)=>{
+            joinTypes.push({value: o, label: o});
+        });
 
 		var obj = {
 			parallelism: 1,
 			editMode: editMode,
-                        fieldList: [],
-                        intervalType: ".Window$Duration",
-                        intervalTypeArr: [
-                                {value: ".Window$Duration", label: "Time"},
-                                {value: ".Window$Count", label: "Count"}
-                        ],
-                        windowNum: '',
-                        slidingNum: '',
-                        durationType: "Seconds",
-                        slidingDurationType: "Seconds",
-                        durationTypeArr: [
-                                {value: "Seconds", label: "Seconds"},
-                                {value: "Minutes", label: "Minutes"},
-                                {value: "Hours", label: "Hours"},
-                        ],
-                        outputKeys: [],
-                        outputStreamFields: [],
-                        joinFromStreamName: '',
-                        joinFromStreamKey: '',
-                        joinFromStreamKeys: [],
-                        joinTypes: joinTypes,
-                        joinStreams: [],
-                        inputStreamsArr: []
+            fieldList: [],
+            intervalType: ".Window$Duration",
+            intervalTypeArr: [
+                {value: ".Window$Duration", label: "Time"},
+                {value: ".Window$Count", label: "Count"}
+            ],
+            windowNum: '',
+            slidingNum: '',
+            durationType: "Seconds",
+            slidingDurationType: "Seconds",
+            durationTypeArr: [
+                {value: "Seconds", label: "Seconds"},
+                {value: "Minutes", label: "Minutes"},
+                {value: "Hours", label: "Hours"},
+            ],
+            outputKeys: [],
+            outputStreamFields: [],
+            joinFromStreamName: '',
+            joinFromStreamKey: '',
+            joinFromStreamKeys: [],
+            joinTypes: joinTypes,
+            joinStreams: [],
+            inputStreamsArr: []
 		};
 		this.state = obj;
 	}
 
+    fetchTopologyConfig(){
+        let {topologyId, versionId} = this.props;
+        TopologyREST.getTopologyWithoutMetrics(topologyId, versionId)
+        .then((result)=>{
+            this.topologyConfigResponse = result;
+            this.topologyConfig = JSON.parse(result.config);
+        })
+    }
+
     getSchemaFields(fields, level, keyPath=[]){
+      this.fieldTempArr = []
         fields.map((field)=>{
             let obj = {
                 name: field.name,
@@ -91,7 +102,9 @@ export default class JoinNodeForm extends Component {
                 this.tempFieldsArr.push(obj);
             }
 
-        })
+        });
+        // To make a unique field array
+        this.fieldTempArr = _.uniqBy(this.tempFieldsArr,'name');
     }
 
     renderFieldOption(node){
@@ -175,7 +188,6 @@ export default class JoinNodeForm extends Component {
                         let joinStreamOptions = inputStreams.filter((s)=>{return s.streamId !== fromObject.stream});
                         let obj = inputStreams.find((s)=>{return s.streamId === fromObject.stream});
                         if(joinStreams.length) {
-                            let joinStream = inputStreams.find((s)=>{return s.streamId === configFields.joins[0].stream}) || [];
                             joinStreams[0].streamOptions = joinStreamOptions;
                             joinStreams[0].withOptions = [obj];
                             this.tempFieldsArr = [];
@@ -512,6 +524,14 @@ export default class JoinNodeForm extends Component {
                     durationMs: Utils.numberToMilliseconds(slidingNum, slidingDurationType)
                 };
             }
+            //Updating message timeout (in seconds) for topology level configuration
+            let timeoutSeconds = ((configObj.window.windowLength.durationMs + (slidingNum !== '' ? configObj.window.slidingInterval.durationMs : 0)) / 1000) + 5;
+            if(this.topologyConfig['topology.message.timeout.secs'] < timeoutSeconds){
+                this.topologyConfig['topology.message.timeout.secs'] = timeoutSeconds;
+                this.topologyConfigResponse.config = JSON.stringify(this.topologyConfig);
+                let {name, config, namespaceId} = this.topologyConfigResponse;
+                TopologyREST.putTopology(topologyId, versionId, {body: JSON.stringify({name, config, namespaceId})});
+            }
         } else if (intervalType === '.Window$Count'){
             configObj.window.windowLength.count = windowNum;
             if(slidingNum !== ''){
@@ -702,7 +722,7 @@ export default class JoinNodeForm extends Component {
                                         }
                                         <div className="form-group">
                                             <div className="row">
-                                                <div className="col-sm-6">
+                                                <div className="col-sm-12">
                                                         <label>Window Interval Type <span className="text-danger">*</span></label>
                                                         <Select
                                                                 value={intervalType}
@@ -713,7 +733,7 @@ export default class JoinNodeForm extends Component {
                                                                 clearable={false}
                                                         />
                                                 </div>
-                                                <div className="col-sm-6">
+                                                {/*<div className="col-sm-6">
                                                     <label>Parallelism</label>
                                                     <input
                                                         name="parallelism"
@@ -723,10 +743,10 @@ export default class JoinNodeForm extends Component {
                                                         className="form-control"
                                                         required={true}
                                                         disabled={!editMode}
-                                                        min="0"
+                                                        min="1"
                                                         inputMode="numeric"
                                                     />
-                                                </div>
+                                                </div>*/}
                                             </div>
                                         </div>
                                         <div className="form-group row">
@@ -798,7 +818,7 @@ export default class JoinNodeForm extends Component {
                                                         <Select
                                                                 className="menu-outer-top"
                                                                 value={outputKeys}
-                                                                options={this.tempFieldsArr}
+                                                                options={this.fieldTempArr}
                                                                 onChange={this.handleFieldsChange.bind(this)}
                                                                 multi={true}
                                                                 required={true}

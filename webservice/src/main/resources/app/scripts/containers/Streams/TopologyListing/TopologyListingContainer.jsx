@@ -491,6 +491,7 @@ class TopologyListingContainer extends Component {
       }
       el.target.parentElement.setAttribute("class","active");
       const sortKey = (eventKey.toString() === "name") ? "name&ascending=true" : eventKey;
+      this.setState({fetchLoader: true});
       TopologyREST.getAllTopology(sortKey).then((topology) => {
         if (topology.responseMessage !== undefined) {
             FSReactToastr.error(

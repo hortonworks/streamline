@@ -193,8 +193,9 @@
                   "fieldName": "fieldName",
                   "tooltip": "fieldName",
                   "isOptional": false,
-                  "type": "string",
-                  "defaultValue": null
+                  "type": "enumstring",
+                  "options": [],
+                  "hint": "inputFields"
                 }
              ]
            },
@@ -219,8 +220,9 @@
                   "fieldName": "fieldName",
                   "tooltip": "fieldName",
                   "isOptional": false,
-                  "type": "string",
-                  "defaultValue": null
+                  "type": "enumstring",
+                  "options": [],
+                  "hint": "inputFields"
                 }
              ]
            },
@@ -245,8 +247,9 @@
                   "fieldName": "fieldName",
                   "tooltip": "fieldName",
                   "isOptional": false,
-                  "type": "string",
-                  "defaultValue": null
+                  "type": "enumstring",
+                  "options": [],
+                  "hint": "inputFields"
                 }
              ]
            },
@@ -271,8 +274,9 @@
                   "fieldName": "fieldName",
                   "tooltip": "fieldName",
                   "isOptional": false,
-                  "type": "string",
-                  "defaultValue": null
+                  "type": "enumstring",
+                  "options": [],
+                  "hint": "inputFields"
                 }
              ]
            },
@@ -297,8 +301,9 @@
                   "fieldName": "fieldName",
                   "tooltip": "fieldName",
                   "isOptional": false,
-                  "type": "string",
-                  "defaultValue": null
+                  "type": "enumstring",
+                  "options": [],
+                  "hint": "inputFields"
                 }
              ]
            },
@@ -323,8 +328,9 @@
                   "fieldName": "fieldName",
                   "tooltip": "fieldName",
                   "isOptional": false,
-                  "type": "string",
-                  "defaultValue": null
+                  "type": "enumstring",
+                  "options": [],
+                  "hint": "inputFields"
                 }
              ]
            }

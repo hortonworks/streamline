@@ -328,8 +328,11 @@ class TopologyEditorContainer extends Component {
       TopologyREST.putTopology(this.topologyId, this.versionId, {body: JSON.stringify(data)})
         .then(topology=>{
           if(topology.responseMessage !== undefined){
-      FSReactToastr.error(
-        <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
+            let errorMag = topology.responseMessage.indexOf('already exists') !== -1
+                            ? "Application with same name already exists. Please choose a unique Application Name"
+                            : topology.responseMessage;
+            FSReactToastr.error(
+                <CommonNotification flag="error" content={errorMag}/>, '', toastOpt);
           } else {
             FSReactToastr.success(<strong>Topology name updated successfully</strong>);
             this.topologyName = topology.name;
@@ -610,7 +613,7 @@ class TopologyEditorContainer extends Component {
     this.edgeConfigData = {topologyId: topologyId, versionId: versionId, edge: newEdge, edges: edges, callback: callback, streamName: streamName, grouping: grouping, groupingFields: groupingFields};
     this.edgeConfigTitle = newEdge.source.uiname + '-' + newEdge.target.uiname;
     let nodeType = newEdge.source.currentType.toLowerCase();
-    if(node && node.outputStreams.length === 1 && nodeType !== 'rule' && nodeType !== 'branch'){
+    if(node && nodeType !== 'rule' && nodeType !== 'branch'){
       let edgeData = {
         fromId: newEdge.source.nodeId,
         toId: newEdge.target.nodeId,
@@ -620,7 +623,20 @@ class TopologyEditorContainer extends Component {
         }]
       };
 
+      if(newEdge.target.currentType.toLowerCase() === 'window' || newEdge.target.currentType.toLowerCase() === 'join'){
+        edgeData.streamGroupings[0].grouping = 'FIELDS';
+        edgeData.streamGroupings[0].fields = null;
+      }
+
       if(node && nodeType === 'window'){
+        let outputStreamObj = {};
+        if(newEdge.target.currentType.toLowerCase() === 'notification'){
+          outputStreamObj = _.find(node.outputStreams,{streamId: nodeType+'_notifier_stream_'+node.id});
+          edgeData.streamGroupings[0].streamId = outputStreamObj.id;
+        } else {
+          outputStreamObj = _.find(node.outputStreams,{streamId: nodeType+'_transform_stream_'+node.id});
+          edgeData.streamGroupings[0].streamId = outputStreamObj.id;
+        }
         if(node.config.properties.rules && node.config.properties.rules.length > 0){
           let rulesPromiseArr = [];
           let saveRulesPromiseArr = [];
@@ -632,7 +648,7 @@ class TopologyEditorContainer extends Component {
               results.map((result)=>{
                 let data = result;
                 let actionObj = {
-                  outputStreams: [node.outputStreams[0].streamId]
+                  outputStreams: [outputStreamObj.streamId]
                 };
                 if(newEdge.target.currentType.toLowerCase() === 'notification'){
                   actionObj.outputFieldsAndDefaults = node.config.properties.fieldValues || {};

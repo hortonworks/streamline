@@ -1,6 +1,6 @@
 import React, {Component, PropTypes}from 'react';
 import ReactDOM, { findDOMNode } from 'react-dom';
-import { ItemTypes, Components } from '../utils/Constants';
+import { ItemTypes, Components, deleteNodeIdArr } from '../utils/Constants';
 import { DragDropContext, DropTarget } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import d3 from 'd3';
@@ -113,9 +113,9 @@ export default class TopologyGraphComponent extends Component {
             .attr('width', 200)
             .attr('height', 200)
             .attr('x', 0)
+            .style('display','none')
             .append("xhtml:body")
             .attr('class', 'edge-details')
-            .style('display','none')
             .html('<p><strong>ID:</strong> </p>'+
                     '<p><strong>Grouping:</strong> </p>'+
                     '<p><button class="btn btn-xs btn-warning editEdge">Edit</button>'+
@@ -128,7 +128,7 @@ export default class TopologyGraphComponent extends Component {
             .html('');
         svgG.call(this.toolTip);
         $('.container.wrapper').append($('body > .d3-tip'));
-
+    this.main_edgestream = d3.select('.edge-stream');
 		this.drag = d3.behavior.drag()
 			.origin(function(d) {
 				return {
@@ -304,12 +304,14 @@ export default class TopologyGraphComponent extends Component {
 		let prevEdge = internalFlags.selectedEdge;
 		if (!prevEdge || prevEdge !== d) {
 			TopologyUtils.replaceSelectEdge(d3, d3path, d, constants, internalFlags, paths);
+            this.main_edgestream.style('display', 'block');
             d3.select('.edge-stream').attr('x', this.getBoundingBoxCenter(d3path)[0]-100);
             d3.select('.edge-stream').attr('y', this.getBoundingBoxCenter(d3path)[1]);
             TopologyUtils.getEdgeData(d, this.topologyId, this.versionId, this.setEdgeData.bind(this));
 		} else {
 			TopologyUtils.removeSelectFromEdge(d3, paths, constants, internalFlags);
                         this.edgeStream.style('display', 'none');
+                        this.main_edgestream.style('display', 'none');
 		}
 	}
 
@@ -325,21 +327,25 @@ export default class TopologyGraphComponent extends Component {
                 '<p><button class="btn btn-xs btn-success editEdge"><i class="fa fa-pencil"></i> Edit</button> '+
                 '<button class="btn btn-xs btn-danger deleteEdge"><i class="fa fa-trash"></i> Delete</button></p>'+
                 '</div>');
+            this.main_edgestream.style('display', 'block');
             this.edgeStream.style('display', 'block');
             d3.select('.editEdge')
                 .on("click", function() {
                     this.getEdgeConfigModal(this.topologyId, this.versionId, obj.edgeData, this.edges, this.updateGraph, null, obj.streamName, obj.grouping, obj.groupingFields);
                     this.edgeStream.style('display', 'none');
+                    this.main_edgestream.style('display', 'none');
                 }.bind(this));
             d3.select('.deleteEdge')
                 .on("click", function() {
                     this.deleteEdge(this.internalFlags.selectedEdge);
                     this.edgeStream.style('display', 'none');
+                    this.main_edgestream.style('display', 'none');
                 }.bind(this));
         } else {
                         this.edgeStream.html('<div><p><strong>Stream:</strong> '+name+'</p>'+
                 '<strong>Grouping:</strong> '+obj.grouping+
                 '</div>');
+                this.main_edgestream.style('display', 'block');
             this.edgeStream.style('display', 'block');
         }
     }
@@ -375,7 +381,8 @@ export default class TopologyGraphComponent extends Component {
 		let {internalFlags} = this;
 		d3.event.stopPropagation();
 		internalFlags.mouseDownNode = d;
-                this.edgeStream.style('display', 'none');
+    this.edgeStream.style('display', 'none');
+    this.main_edgestream.style('display', 'none');
 	}
 
 	//mousedown on circle
@@ -383,7 +390,8 @@ export default class TopologyGraphComponent extends Component {
                 let {internalFlags, constants, paths} = this;
 		d3.event.stopPropagation();
 		internalFlags.mouseDownNode = d;
-                this.edgeStream.style('display', 'none');
+    this.edgeStream.style('display', 'none');
+    this.main_edgestream.style('display', 'none');
                 if(internalFlags.selectedEdge) {
                         TopologyUtils.removeSelectFromEdge(d3, paths, constants, internalFlags);
                 }
@@ -426,6 +434,7 @@ export default class TopologyGraphComponent extends Component {
         if(!d3.event.target.closest('.edge-details') && internalFlags.selectedEdge) {
             TopologyUtils.removeSelectFromEdge(d3, paths, constants, internalFlags);
             this.edgeStream.style('display', 'none');
+            this.main_edgestream.style('display', 'none');
         }
 	}
 
@@ -500,6 +509,7 @@ export default class TopologyGraphComponent extends Component {
         let {topologyId, versionId, internalFlags, edges, nodes, updateGraph, setLastChange} = this;
         TopologyUtils.deleteEdge(selectedEdge, topologyId, versionId, internalFlags, edges, nodes, updateGraph.bind(this), setLastChange);
         this.edgeStream.style('display', 'none');
+        this.main_edgestream.style('display', 'none');
 	}
 
 	svgKeyUp() {
@@ -524,7 +534,12 @@ export default class TopologyGraphComponent extends Component {
                 bbox = element.getBBox();
             return [bbox.x + bbox.width/2, bbox.y + bbox.height/2];
         }
-
+  deleteNodePool(id){
+    const flag = deleteNodeIdArr.findIndex((x) => {
+      return Number(x) === id;
+    })
+    return flag !== -1 ? true : false;
+  }
 	updateGraph() {
     let that = this;
 		var duplicateLinks = document.getElementsByClassName('visible-link')
@@ -580,6 +595,7 @@ export default class TopologyGraphComponent extends Component {
             .on("mouseout", function(d) {
                 if(!thisGraph.editMode) {
                     thisGraph.edgeStream.style('display', 'none');
+                    this.main_edgestream.style('display', 'none');
                 }
             })
 			.on("mousedown", function(d){
@@ -614,7 +630,7 @@ export default class TopologyGraphComponent extends Component {
 		thisGraph.rectangles.selectAll('image')
             .attr("filter", function(d){ return "url(#grayscale)"; })
             .attr("xlink:href", function(d){
-              return d.nodeId ? d.imageURL : "styles/img/start-loader.gif";
+              return that.deleteNodePool(d.nodeId) ? "styles/img/start-loader.gif" : d.nodeId ? d.imageURL : "styles/img/start-loader.gif";
             });
 		thisGraph.rectangles.selectAll('circle')
 			.attr("filter", function(d){ if(!d.isConfigured){ return "url(#grayscale)"; } else return ""; });
@@ -688,12 +704,12 @@ export default class TopologyGraphComponent extends Component {
             })
             .call(thisGraph.drag);
         //Parallelism Icons
-        newGs.append("text").attr("class","fa fa-caret-up").attr("x","165px").attr("y","13px")
-            .text(function(d){return '\uf0d8';})
+        newGs.append("text").attr("class","fa fa-caret-right").attr("x","173px").attr("y","26px")
+            .text(function(d){return '\uf0da';})
             .on("click", function(d){
                 if(thisGraph.editMode){
                     let value = parseInt(d.parallelismCount, 10) + 1;
-                    d.parallelismCount = value <= 0 ? 0 : value;
+                    d.parallelismCount = value <= 1 ? 1 : value;
                     clearTimeout(thisGraph.clickTimeout);
                     thisGraph.clickTimeout = setTimeout(function(){
                         TopologyUtils.updateParallelismCount(thisGraph.topologyId, this.versionId, d, thisGraph.setLastChange);
@@ -701,12 +717,12 @@ export default class TopologyGraphComponent extends Component {
                     thisGraph.updateGraph();
                 }
             });
-        newGs.append("text").attr("class","fa fa-caret-down").attr("x","165px").attr("y","35px")
-            .text(function(d){return '\uf0d7';})
+        newGs.append("text").attr("class","fa fa-caret-left").attr("x","143px").attr("y","26px")
+            .text(function(d){return '\uf0d9';})
             .on("click", function(d){
                 if(thisGraph.editMode){
                     let value = parseInt(d.parallelismCount, 10) - 1;
-                    d.parallelismCount = value <= 0 ? 0 : value;
+                    d.parallelismCount = value <= 1 ? 1 : value;
                     clearTimeout(thisGraph.clickTimeout);
                     thisGraph.clickTimeout = setTimeout(function(){
                         TopologyUtils.updateParallelismCount(thisGraph.topologyId, this.versionId, d, thisGraph.setLastChange);
@@ -714,7 +730,7 @@ export default class TopologyGraphComponent extends Component {
                     thisGraph.updateGraph();
                 }
             });
-        newGs.append("text").attr("class","parallelism-count").attr("x","163px").attr("y","24px")
+        newGs.append("text").attr("class","parallelism-count").attr("x","162px").attr("y","24px").attr("text-anchor", "middle")
             .text(function(d){return d.parallelismCount.toString().length < 2 ? "0"+d.parallelismCount : d.parallelismCount;});
         //RHS Circle
         newGs.append("circle")
