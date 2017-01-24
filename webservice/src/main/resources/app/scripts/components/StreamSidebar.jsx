@@ -40,8 +40,8 @@ export default class StreamSidebar extends Component {
 
     render() {
         const {streamType, streamObj} = this.props;
+        this.fieldsArr = [];
         if(streamObj.fields){
-          this.fieldsArr = [];
           this.getSchemaFields(streamObj.fields, 0);
         }
         return (
