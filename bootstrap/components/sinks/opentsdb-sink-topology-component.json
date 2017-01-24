@@ -9,6 +9,49 @@
   "topologyComponentUISpecification": {
     "fields": [
       {
+        "uiName": "REST API URL",
+        "fieldName": "url",
+        "isOptional": false,
+        "tooltip": "The URL of the REST API (ex: http://localhost:4242)",
+        "type": "string"
+      },
+      {
+        "uiName": "Metric Field Name",
+        "fieldName": "metricField",
+        "isOptional": false,
+        "tooltip": "Metric Field Name",
+        "type": "enumstring",
+        "options": [],
+        "hint": "inputFields"
+      },
+      {
+        "uiName": "Timestamp Field Name",
+        "fieldName": "timestampField",
+        "isOptional": false,
+        "tooltip": "Timestamp Field Name",
+        "type": "enumstring",
+        "options": [],
+        "hint": "inputFields"
+      },
+      {
+        "uiName": "Tags Field Name",
+        "fieldName": "tagsField",
+        "isOptional": false,
+        "tooltip": "Tags Field Name",
+        "type": "enumstring",
+        "options": [],
+        "hint": "inputFields"
+      },
+      {
+        "uiName": "Value Field Name",
+        "fieldName": "valueField",
+        "isOptional": false,
+        "tooltip": "Value Field Name",
+        "type": "enumstring",
+        "options": [],
+        "hint": "inputFields"
+      },
+      {
         "uiName": "Batch size",
         "fieldName": "withBatchSize",
         "isOptional": true,
@@ -39,6 +82,14 @@
         "tooltip": "Flag to indicate whether to sync",
         "type": "boolean",
         "defaultValue": true
+      },
+      {
+        "uiName": "Sync timeout (milliseconds)",
+        "fieldName": "syncTimeout",
+        "isOptional": false,
+        "tooltip": "Sync timeout in milliseconds, only effective when sync is true",
+        "type": "number",
+        "defaultValue": 500
       },
       {
         "uiName": "Return summary?",
