@@ -29,7 +29,7 @@ public class OpenTsdbBoltFluxComponent extends AbstractFluxComponent {
     protected void generateComponent() {
 
         String boltId = "openTsdbBolt" + UUID_FOR_COMPONENTS;
-        String boltClassName = "org.apache.storm.hdfs.bolt.OpenTsdbBolt";
+        String boltClassName = "org.apache.storm.opentsdb.bolt.OpenTsdbBolt";
 
         List<Object> boltConstructorArgs = new ArrayList<>();
         boltConstructorArgs.add(getRefYaml(addOpenTsdbClientBuilderComponent()));
@@ -38,7 +38,7 @@ public class OpenTsdbBoltFluxComponent extends AbstractFluxComponent {
         List<String> configMethodNames = new ArrayList<>();
         List<Object> values = new ArrayList<>();
 
-        addConfigsWithNoArgs("withFlushInterval", configMethodNames, values);
+        addConfigs("withFlushInterval", configMethodNames, values);
         addConfigs("withBatchSize", configMethodNames, values);
         addConfigsWithNoArgs("failTupleForFailedMetrics", configMethodNames, values);
 
@@ -63,10 +63,17 @@ public class OpenTsdbBoltFluxComponent extends AbstractFluxComponent {
         }
     }
 
+    private void addConfigsWithDifferentMethod(String configKey, String methodName, List<String> configMethodNames, List<Object> values) {
+        if (conf.get(configKey) != null) {
+            configMethodNames.add(methodName);
+            values.add(conf.get(configKey));
+        }
+    }
+
     private String addOpenTsdbDataPointMapperComponent() {
         String mapperComponentId = "openTsdbDataPointMapper" + UUID_FOR_COMPONENTS;
 
-        String mapperClassName = "org.apache.storm.opentsdb.bolt.TupleOpenTsdbDatapointMapper";
+        String mapperClassName = "com.hortonworks.streamline.streams.layout.storm.OpenTsdbTupleDatapointMapper";
 
         //constructor args
         String[] constructorArgNames = {"metricField", "timestampField", "tagsField", "valueField"};
@@ -79,7 +86,7 @@ public class OpenTsdbBoltFluxComponent extends AbstractFluxComponent {
 
     private String addOpenTsdbClientBuilderComponent() {
         String clientBuilderId = "openTsdbClientBuilder" + UUID_FOR_COMPONENTS;
-        String clientBuilderClassName = "org.apache.storm.opentsdb.client.OpenTsdbClient.Builder";
+        String clientBuilderClassName = "org.apache.storm.opentsdb.client.OpenTsdbClient$Builder";
 
         //constructor args
         String[] constructorArgNames = {"url"};
@@ -87,7 +94,10 @@ public class OpenTsdbBoltFluxComponent extends AbstractFluxComponent {
 
         List<String> configMethodNames = new ArrayList<>();
         List<Object> values = new ArrayList<>();
-        addConfigsWithNoArgs("sync", configMethodNames, values);
+
+        if (conf.get("sync") != null && ((Boolean)(conf.get("sync")))) {
+            addConfigsWithDifferentMethod("syncTimeout", "sync", configMethodNames, values);
+        }
         addConfigsWithNoArgs("returnSummary", configMethodNames, values);
         addConfigsWithNoArgs("returnDetails", configMethodNames, values);
         addConfigsWithNoArgs("enableChunkedEncoding", configMethodNames, values);
