@@ -37,6 +37,16 @@
         "tooltip": "URL endpoint for Solr requests to index JSON documents",
         "type": "string",
         "defaultValue": "/update/json/docs"
+      },
+      {
+        "uiName": "Parallelism",
+        "fieldName": "parallelism",
+        "isOptional": true,
+        "tooltip": "Parallelism hint",
+        "type": "number",
+        "defaultValue": 1,
+        "min": 1,
+        "hint": "hidden"
       }
     ]
   }

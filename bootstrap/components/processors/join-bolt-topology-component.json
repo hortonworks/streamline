@@ -32,7 +32,9 @@
         "isOptional": true,
         "tooltip": "Parallelism hint for rule bolt",
         "type": "number",
-        "defaultValue": 1
+        "defaultValue": 1,
+        "min": 1,
+        "hint": "hidden"
       }
     ]
   }

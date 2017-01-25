@@ -114,6 +114,16 @@
         "tooltip": "Flag to indicate whether to enable chuncked encoding",
         "type": "boolean",
         "defaultValue": true
+      },
+      {
+        "uiName": "Parallelism",
+        "fieldName": "parallelism",
+        "isOptional": true,
+        "tooltip": "Parallelism hint",
+        "type": "number",
+        "defaultValue": 1,
+        "min": 1,
+        "hint": "hidden"
       }
     ]
   }
