@@ -18,6 +18,7 @@
         <module>webservice</module>
         <!--examples-->
         <module>examples/processors</module>
+        <module>docker</module>
     </modules>
 
     <properties>
