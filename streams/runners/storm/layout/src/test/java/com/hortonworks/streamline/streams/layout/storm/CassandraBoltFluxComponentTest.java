@@ -78,8 +78,9 @@ public class CassandraBoltFluxComponentTest {
 
         // only one config method with name 'bind'
         Assert.assertEquals("bind", bindMethodConfig.get("name"));
-        List<Map<String, String>> args = (List<Map<String, String>>) bindMethodConfig.get("args");
-        List<String> bindArgRefs = args.stream().map(map -> map.get("ref")).collect(Collectors.toList());
+        List<Map<String, Object>> args = (List<Map<String, Object>>) bindMethodConfig.get("args");
+        Assert.assertEquals(1, args.size());
+        List<String> bindArgRefs = (List<String>) args.get(0).get("reflist");
 
         // bind method args should be same as field selectors that are configured
         Assert.assertEquals(selectorIds, bindArgRefs);
