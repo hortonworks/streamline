@@ -1275,6 +1275,9 @@ label {
     top:auto;
     bottom: 35px!important;
 }
+.Select-menu-outer {
+  z-index: 9;
+}
 .Select-control{
   overflow: auto;
 }
