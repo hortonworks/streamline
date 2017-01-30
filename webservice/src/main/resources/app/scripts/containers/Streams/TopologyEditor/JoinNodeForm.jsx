@@ -524,14 +524,6 @@ export default class JoinNodeForm extends Component {
                     durationMs: Utils.numberToMilliseconds(slidingNum, slidingDurationType)
                 };
             }
-            //Updating message timeout (in seconds) for topology level configuration
-            let timeoutSeconds = ((configObj.window.windowLength.durationMs + (slidingNum !== '' ? configObj.window.slidingInterval.durationMs : 0)) / 1000) + 5;
-            if(this.topologyConfig['topology.message.timeout.secs'] < timeoutSeconds){
-                this.topologyConfig['topology.message.timeout.secs'] = timeoutSeconds;
-                this.topologyConfigResponse.config = JSON.stringify(this.topologyConfig);
-                let {name, config, namespaceId} = this.topologyConfigResponse;
-                TopologyREST.putTopology(topologyId, versionId, {body: JSON.stringify({name, config, namespaceId})});
-            }
         } else if (intervalType === '.Window$Count'){
             configObj.window.windowLength.count = windowNum;
             if(slidingNum !== ''){

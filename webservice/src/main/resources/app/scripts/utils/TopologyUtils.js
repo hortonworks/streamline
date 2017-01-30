@@ -287,7 +287,7 @@ const spliceDeleteNodeArr = function(nodeId){
   }
 }
 
-const deleteNode = function(topologyId, versionId, currentNode, nodes, edges, internalFlags, updateGraphMethod, metaInfo, uinamesList, setLastChange){
+const deleteNode = function(topologyId, versionId, currentNode, nodes, edges, internalFlags, updateGraphMethod, metaInfo, uinamesList, setLastChange,topologyConfigMessageCB){
 	let promiseArr = [],
 	nodePromiseArr = [],
 	callback = null,
@@ -392,6 +392,9 @@ const deleteNode = function(topologyId, versionId, currentNode, nodes, edges, in
             internalFlags.selectedNode = null;
             this.spliceDeleteNodeArr(currentNode.nodeId);
             updateGraphMethod();
+            if(topologyConfigMessageCB){
+              topologyConfigMessageCB(currentNode.nodeId);
+            }
         }.bind(this)
 
         //Delete data from metadata

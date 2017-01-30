@@ -80,7 +80,7 @@ class EditorGraph extends Component{
   }
   render(){
     const actualHeight = (window.innerHeight - (this.props.viewMode ? 360 : 100))+'px';
-    const { versionsArr, connectDropTarget , viewMode, topologyId, versionId, graphData, getModalScope, setModalContent, getEdgeConfigModal, setLastChange} = this.props;
+    const { versionsArr, connectDropTarget , viewMode, topologyId, versionId, graphData, getModalScope, setModalContent, getEdgeConfigModal, setLastChange,topologyConfigMessageCB} = this.props;
     const { boxes, bundleArr } = this.state;
     return connectDropTarget(
       <div>
@@ -97,6 +97,7 @@ class EditorGraph extends Component{
             setModalContent={setModalContent}
             getEdgeConfigModal={getEdgeConfigModal}
             setLastChange={setLastChange}
+            topologyConfigMessageCB={topologyConfigMessageCB}
           />
           {state.showComponentNodeContainer ?
             <ComponentNodeContainer
@@ -133,6 +134,7 @@ class TopologyEditorContainer extends Component {
     this.fetchData();
     this.nextRoutes = '';
     this.navigateFlag = false;
+    this.tempIntervalArr = [];
   }
   componentDidUpdate(){
     this.state.fetchLoader ? '' : document.getElementsByTagName('body')[0].classList.add('graph-bg');
@@ -185,7 +187,9 @@ class TopologyEditorContainer extends Component {
     bundleArr:null,
     progressCount: 0,
     progressBarColor : 'green',
-    fetchLoader : true
+    fetchLoader : true,
+    mapSlideInterval : [],
+    defaultTimeSec : 0
   }
 
   fetchData(versionId){
@@ -218,6 +222,7 @@ class TopologyEditorContainer extends Component {
               let allNodes = [];
               this.topologyName = data.topology.name;
               this.topologyConfig = JSON.parse(data.topology.config);
+              this.defaultTimeSec = this.topologyConfig["topology.message.timeout.secs"];
               this.runtimeObj = data.runtime || {metric : (data.runtime === undefined) ? '' : data.runtime.metric};
               this.topologyMetric = this.runtimeObj.metric || {misc : (this.runtimeObj.metric === undefined) ? '' : this.runtimeObj.metric.misc};
 
@@ -271,9 +276,12 @@ class TopologyEditorContainer extends Component {
                   sinksBundle: this.sinkConfigArr
                 },
                 fetchLoader : false,
-                unknown
+                unknown,
+                mapTopologyConfig : this.topologyConfig,
+                defaultTimeSec : this.defaultTimeSec
               });
               this.customProcessors = this.getCustomProcessors();
+              this.processorSlideInterval(processorsNode);
             });
         }
       });
@@ -293,6 +301,126 @@ class TopologyEditorContainer extends Component {
         }
       }
     };
+  }
+  // fetchProcessors on graph render
+  fetchProcessors(){
+    const {topologyVersion,defaultTimeSec,topologyName} = this.state;
+      TopologyREST.getAllNodes(this.topologyId,topologyVersion, 'processors')
+        .then((processor) => {
+          if(processor.responseMessage !== undefined){
+            FSReactToastr.error(<CommonNotification flag="error" content={processor.responseMessage}/>, '', toastOpt);
+          } else{
+            this.topologyConfig["topology.message.timeout.secs"] = defaultTimeSec;
+            if(processor.entities.length > 0){
+              this.processorSlideInterval(processor.entities);
+            }else{
+              this.tempIntervalArr = [];
+              this.setState({mapTopologyConfig : this.topologyConfig,mapSlideInterval : this.tempIntervalArr},() => {
+                this.setTopologyConfig(topologyName,topologyVersion)
+              });
+            }
+          }
+        });
+  }
+  setTopologyConfig(topologyName,topologyVersion){
+    let dataObj = {
+        name: topologyName,
+        config: JSON.stringify(this.state.mapTopologyConfig),
+        namespaceId: this.namespaceId
+    }
+    this.setState({mapSlideInterval : this.tempIntervalArr},() => {
+      TopologyREST.putTopology(this.topologyId, topologyVersion, {body: JSON.stringify(dataObj)});
+    });
+  }
+  processorSlideInterval(processors){
+    const {defaultTimeSec,topologyName,topologyVersion} = this.state;
+    let tempIntervalArr = []
+    const p_String = "JOIN,AGGREGATE";
+    const p_index = _.findIndex(processors , function(processor) {
+      const name = processor.name !== undefined ? processor.name.split('-') : '';
+       return p_String.indexOf(name[0]) !== -1
+     })
+    if(p_index === -1){
+      this.tempIntervalArr = [];
+      this.topologyConfig["topology.message.timeout.secs"] = defaultTimeSec;
+      this.setState({mapTopologyConfig : this.topologyConfig,mapSlideInterval :this.tempIntervalArr },() =>{
+        return ;
+      });
+    }else{
+      processors.map((processor) => {
+        if(processor.name !== undefined){
+          if(processor.name.indexOf("JOIN") !== -1  && processor.config.properties.window !== undefined){
+            this.mapSlideInterval(processor.id,processor.config.properties.window);
+            this.setTopologyConfig(topologyName,topologyVersion);
+          }else{
+            if(processor.name.indexOf("AGGREGATE") !== -1){
+              this.fetchWindowSlideInterval(processor)
+              .then((result) => {
+                this.setTopologyConfig(topologyName,topologyVersion);
+              })
+            }
+          }
+        }
+      });
+    }
+  }
+  mapSlideInterval(id,timeObj){
+    this.tempIntervalArr = this.state.mapSlideInterval;
+    let timeoutSec = this.topologyConfig["topology.message.timeout.secs"];
+    let slideIntVal = 0,totalVal = 0;
+    _.keys(timeObj).map((x) => {
+      _.keys(timeObj[x]).map((k) => {
+        if(k === "durationMs"){
+          // the server give value only in millseconds
+          totalVal+= timeObj[x][k];
+        }
+      });
+    });
+    slideIntVal = Utils.convertMillsecondsToSecond(totalVal);
+    const index = this.tempIntervalArr.findIndex((x)=>{
+      return x.id === id
+    });
+    if(index === -1){
+      this.tempIntervalArr.push({id : id,value : slideIntVal+5});
+    }else{
+      timeoutSec = 0;
+      this.tempIntervalArr[index].value = slideIntVal+5;
+    }
+    const maxObj = _.maxBy(this.tempIntervalArr,"value");
+    const maxVal = maxObj.value;
+    this.topologyConfig["topology.message.timeout.secs"] = timeoutSec >= maxVal
+    ? timeoutSec
+    : maxVal;
+  }
+  fetchWindowSlideInterval(obj){
+    if(_.keys(obj.config.properties).length > 0){
+      const ruleId = obj.config.properties.rules[0];
+      const id = obj.id;
+      return TopologyREST.getNode(obj.topologyId, obj.versionId,'windows',ruleId)
+        .then((node) => {
+          if(node.responseMessage !== undefined){
+            FSReactToastr.error(<CommonNotification flag="error" content={node.responseMessage}/>, '', toastOpt);
+          }else{
+            this.mapSlideInterval(id,node.window);
+          }
+        })
+    }
+  }
+  topologyConfigMessageCB(id){
+    const {defaultTimeSec} = this.state;
+    this.tempIntervalArr = this.state.mapSlideInterval;
+    if(id){
+      this.topologyConfig["topology.message.timeout.secs"] = defaultTimeSec;
+      const index = this.tempIntervalArr.findIndex((x)=>{
+        return x.id === id
+      });
+      if(index !== -1){
+        this.tempIntervalArr.splice(index,1);
+      }
+      this.setState({mapSlideInterval : this.tempIntervalArr},() => {
+        this.fetchProcessors();
+      })
+    }
   }
   showConfig(){
     this.refs.TopologyConfigModal.show();
@@ -318,11 +446,11 @@ class TopologyEditorContainer extends Component {
     }
   }
   saveTopologyName(){
-    let {topologyName} = this.state;
+    let {topologyName,mapTopologyConfig} = this.state;
     if(this.validateName(topologyName)){
       let data = {
         name: topologyName,
-        config: JSON.stringify(this.topologyConfig),
+        config: JSON.stringify(mapTopologyConfig),
         namespaceId: this.namespaceId
       }
       TopologyREST.putTopology(this.topologyId, this.versionId, {body: JSON.stringify(data)})
@@ -337,6 +465,7 @@ class TopologyEditorContainer extends Component {
             FSReactToastr.success(<strong>Topology name updated successfully</strong>);
             this.topologyName = topology.name;
             this.topologyConfig = JSON.parse(topology.config);
+            this.setState({mapTopologyConfig : this.topologyConfig});
           }
           this.refs.topologyNameEditable.hideEditor();
         })
@@ -361,7 +490,7 @@ class TopologyEditorContainer extends Component {
             this.topologyName = config.name;
             this.topologyConfig = JSON.parse(config.config);
             this.lastUpdatedTime = new Date(config.timestamp);
-            this.setState({topologyName: this.topologyName});
+            this.setState({topologyName: this.topologyName,mapTopologyConfig :this.topologyConfig});
           }
         });
     }
@@ -571,6 +700,7 @@ class TopologyEditorContainer extends Component {
               });
               TopologyUtils.updateGraphEdges(this.graphData.edges, updatedEdges);
             }
+            this.processorSlideInterval(savedNode);
             savedNode = savedNode[0];
           }
           if(savedNode.responseMessage !== undefined){
@@ -744,7 +874,7 @@ class TopologyEditorContainer extends Component {
     }
   }
   render() {
-    const {progressCount,progressBarColor,fetchLoader} = this.state;
+    const {progressCount,progressBarColor,fetchLoader,mapTopologyConfig} = this.state;
     let nodeType = this.node ? this.node.currentType : '';
     return (
       <BaseContainer ref="BaseContainer" routes={this.props.routes} onLandingPage="false" breadcrumbData={this.breadcrumbData} headerContent={this.getTopologyHeader()}>
@@ -788,6 +918,7 @@ class TopologyEditorContainer extends Component {
                   bundleArr={this.state.bundleArr}
                   getEdgeConfigModal={this.showEdgeConfigModal.bind(this)}
                   setLastChange={this.setLastChange.bind(this)}
+                  topologyConfigMessageCB={this.topologyConfigMessageCB.bind(this)}
                 />
                 <div className="topology-footer">
                   {this.state.isAppRunning ?
@@ -816,7 +947,7 @@ class TopologyEditorContainer extends Component {
           <TopologyConfig ref="topologyConfig"
             topologyId={this.topologyId}
             versionId={this.versionId}
-            data={this.topologyConfig}
+            data={mapTopologyConfig}
             topologyName={this.state.topologyName}
             viewMode={this.viewMode}/>
         </Modal>

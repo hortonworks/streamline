@@ -274,6 +274,9 @@ const validateURL = function(url){
   return result;
 }
 
+const convertMillsecondsToSecond = function(milliSec){
+  return Math.round(milliSec / 1000);
+}
 export default {
 	sortArray,
 	numberToMilliseconds,
@@ -288,5 +291,6 @@ export default {
         genFields,
         kFormatter,
         scrollMe,
-        validateURL
+        validateURL,
+        convertMillsecondsToSecond
 };

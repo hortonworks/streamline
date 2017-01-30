@@ -501,8 +501,8 @@ export default class TopologyGraphComponent extends Component {
 	}
 
 	deleteNode(selectedNode){
-        let {topologyId, versionId, nodes, edges, internalFlags, updateGraph, metaInfo, uinamesList, setLastChange} = this;
-        TopologyUtils.deleteNode(topologyId, versionId, selectedNode, nodes, edges, internalFlags, updateGraph.bind(this), metaInfo, uinamesList, setLastChange);
+        let {topologyId, versionId, nodes, edges, internalFlags, updateGraph, metaInfo, uinamesList, setLastChange,topologyConfigMessageCB} = this;
+        TopologyUtils.deleteNode(topologyId, versionId, selectedNode, nodes, edges, internalFlags, updateGraph.bind(this), metaInfo, uinamesList, setLastChange,topologyConfigMessageCB);
 	}
 
 	deleteEdge(selectedEdge){
@@ -558,7 +558,7 @@ export default class TopologyGraphComponent extends Component {
       });
       if(flag){
         thisGraph.nodes.map(x => {
-          return x.y = (x.y/4);
+          return x.y = (x.y/3);
         });
       }
     }
@@ -874,6 +874,7 @@ export default class TopologyGraphComponent extends Component {
 		this.setModalContent = this.props.setModalContent;
         this.getEdgeConfigModal = this.props.getEdgeConfigModal;
         this.setLastChange = this.props.setLastChange;
+        this.topologyConfigMessageCB= this.props.topologyConfigMessageCB;
 		if(this.renderFlag){
             d3.select("." + this.constants.graphClass)
                 .attr("transform", "translate(" + this.graphTransforms.dragCoords + ")" + "scale(" + this.graphTransforms.zoomScale + ")");

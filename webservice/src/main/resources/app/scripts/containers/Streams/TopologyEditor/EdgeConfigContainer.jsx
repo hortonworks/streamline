@@ -354,7 +354,8 @@ export default class EdgeConfigContainer extends Component {
             mode: "application/json",
             styleActiveLine: true,
             gutters: ["CodeMirror-lint-markers"],
-            readOnly: 'nocursor'
+            readOnly: true,
+            theme: 'default no-cursor'
         }
         return(
             <form className="modal-form edge-modal-form">
