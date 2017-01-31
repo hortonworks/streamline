@@ -51,6 +51,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
@@ -66,6 +67,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 
@@ -170,6 +172,17 @@ public class TopologyComponentBundleResource {
             if (topologyComponentBundle == null) {
                 LOG.debug(TOPOLOGY_COMPONENT_BUNDLE_PARAM_NAME + " is missing or invalid");
                 throw BadRequestException.missingParameter(TOPOLOGY_COMPONENT_BUNDLE_PARAM_NAME);
+            }
+            List<QueryParam> queryParams;
+            MultivaluedMap<String, String> params = new MultivaluedHashMap<>();
+            params.putSingle(TopologyComponentBundle.STREAMING_ENGINE, topologyComponentBundle.getStreamingEngine());
+            params.putSingle(TopologyComponentBundle.SUB_TYPE, topologyComponentBundle.getSubType());
+            queryParams = WSUtils.buildQueryParameters(params);
+            Collection<TopologyComponentBundle> topologyComponentBundles = catalogService.listTopologyComponentBundlesForTypeWithFilter(componentType,
+                    queryParams);
+            if (topologyComponentBundles != null && topologyComponentBundles.size() > 0) {
+                LOG.warn("Received a post request for an already registered bundle. Not creating entity for " + topologyComponentBundle);
+                return WSUtils.respondEntity(topologyComponentBundle, CONFLICT);
             }
             if (!topologyComponentBundle.getBuiltin()) {
                 bundleJar = this.getFormDataFromMultiPartRequestAs(InputStream.class, form, BUNDLE_JAR_FILE_PARAM_NAME);

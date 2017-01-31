@@ -146,16 +146,8 @@ function add_all_bundles {
 function main {
     echo ""
     echo "===================================================================================="
-    echo "Running bootstrap.sh will create streamline default components. This script should be"
-    echo "executed only once. Re-running bootstrap.sh script can create duplicate components."
-    read -p "Are you sure you want to proceed. (y/n)? " yesorno
-    
-    case ${yesorno:0:1} in
-        y|Y)
-            add_all_bundles;;
-        * )
-            exit;;
-    esac
+    echo "Running bootstrap.sh will create streamline default components, notifiers and udfs."
+    add_all_bundles
 }
 
 main
