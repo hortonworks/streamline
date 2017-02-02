@@ -63,7 +63,7 @@ public class NotifierInfoCatalogResource {
     @GET
     @Path("/notifiers")
     @Timed
-    public Response listNotifiers(@Context UriInfo uriInfo) throws Exception {
+    public Response listNotifiers(@Context UriInfo uriInfo) {
         List<QueryParam> queryParams = new ArrayList<>();
         MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
         Collection<NotifierInfo> notifierInfos;
@@ -133,12 +133,7 @@ public class NotifierInfoCatalogResource {
         }
         NotifierInfo notifierInfo = notifierConfig.getValueAs(NotifierInfo.class);
         Collection<NotifierInfo> existing = null;
-        try {
-            existing = catalogService.listNotifierInfos(
-                    Collections.singletonList(new QueryParam(NotifierInfo.NOTIFIER_NAME, notifierInfo.getName())));
-        } catch (Exception e) {
-            //swallow the exception
-        }
+        existing = catalogService.listNotifierInfos(Collections.singletonList(new QueryParam(NotifierInfo.NOTIFIER_NAME, notifierInfo.getName())));
         if (existing != null && !existing.isEmpty()) {
             LOG.warn("Received a post request for an already registered notifier. Not creating entity for " + notifierInfo);
             return WSUtils.respondEntity(notifierInfo, CONFLICT);

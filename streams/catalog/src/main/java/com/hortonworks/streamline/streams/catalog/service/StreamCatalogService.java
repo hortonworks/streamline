@@ -201,7 +201,7 @@ public class StreamCatalogService {
         return this.dao.list(NOTIFIER_INFO_NAMESPACE);
     }
 
-    public Collection<NotifierInfo> listNotifierInfos(List<QueryParam> params) throws Exception {
+    public Collection<NotifierInfo> listNotifierInfos(List<QueryParam> params) {
         return dao.find(NOTIFIER_INFO_NAMESPACE, params);
     }
 

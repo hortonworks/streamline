@@ -180,7 +180,7 @@ public class TopologyComponentBundleResource {
             queryParams = WSUtils.buildQueryParameters(params);
             Collection<TopologyComponentBundle> topologyComponentBundles = catalogService.listTopologyComponentBundlesForTypeWithFilter(componentType,
                     queryParams);
-            if (topologyComponentBundles != null && topologyComponentBundles.size() > 0) {
+            if (topologyComponentBundles != null && !topologyComponentBundles.isEmpty()) {
                 LOG.warn("Received a post request for an already registered bundle. Not creating entity for " + topologyComponentBundle);
                 return WSUtils.respondEntity(topologyComponentBundle, CONFLICT);
             }
